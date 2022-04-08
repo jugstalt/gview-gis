@@ -1,15 +1,10 @@
+using gView.Framework.Data;
+using gView.Framework.Globalisation;
+using gView.Framework.IO;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
 using System.Text;
 using System.Windows.Forms;
-using gView.Framework.UI;
-using gView.Framework.Data;
-using gView.Framework.Carto;
-using gView.Framework.IO;
-using gView.Framework.Globalisation;
 
 namespace gView.Framework.UI.Dialogs
 {
@@ -25,8 +20,10 @@ namespace gView.Framework.UI.Dialogs
 
         public Panel PropertyPage(IDataset dataset, ILayer layer)
         {
-            if (!ShowWith(dataset, layer)) 
+            if (!ShowWith(dataset, layer))
+            {
                 return null;
+            }
 
             if (dataset.ConnectionString.Trim().StartsWith("<"))
             {
@@ -55,7 +52,7 @@ namespace gView.Framework.UI.Dialogs
 
         public void Commit()
         {
-            
+
         }
 
         #endregion
@@ -68,7 +65,9 @@ namespace gView.Framework.UI.Dialogs
             foreach (string key in dic.Keys)
             {
                 if (String.IsNullOrEmpty(dic[key]))
+                {
                     sb.Append(key);
+                }
                 else
                 {
                     switch (key.ToLower())

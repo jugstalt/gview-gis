@@ -1,29 +1,22 @@
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Text;
-using System.Windows.Forms;
 using gView.Framework.Data;
-using gView.Framework.Carto;
 using gView.Framework.Symbology;
-using gView.Framework.UI;
-using gView.Framework.Carto.UI;
 using gView.Framework.Symbology.UI;
-using System.Linq;
 using gView.Win.Carto.Rendering.UI.Framework.Carto.Rendering.Extensions;
+using System;
+using System.Drawing;
+using System.Linq;
+using System.Windows.Forms;
 
 namespace gView.Framework.Carto.Rendering.UI
 {
-    internal partial class PropertyForm_SimpleLabelRenderer : Form,IPropertyPanel2
+    internal partial class PropertyForm_SimpleLabelRenderer : Form, IPropertyPanel2
     {
         private SimpleLabelRenderer _renderer;
         private IFeatureClass _fc;
 
         public PropertyForm_SimpleLabelRenderer()
         {
-            
+
         }
 
         private void MakeGUI()
@@ -32,10 +25,15 @@ namespace gView.Framework.Carto.Rendering.UI
             {
                 foreach (IField field in _fc.Fields.ToEnumerable())
                 {
-                    if (field.type == FieldType.binary || field.type == FieldType.Shape) continue;
+                    if (field.type == FieldType.binary || field.type == FieldType.Shape)
+                    {
+                        continue;
+                    }
 
                     if (field.type == FieldType.String && _renderer.FieldName == "")
+                    {
                         _renderer.FieldName = field.name;
+                    }
 
                     LabelFieldItem item = new LabelFieldItem(field);
                     cmbFields.Items.Add(item);
@@ -48,7 +46,9 @@ namespace gView.Framework.Carto.Rendering.UI
                 cmbFields.Items.Add("{Expression}");
 
                 if (_renderer.UseExpression)
+                {
                     cmbFields.SelectedIndex = cmbFields.Items.Count - 1;
+                }
             }
 
             gbPlacement.Visible = _renderer.TextSymbol != null;
@@ -103,7 +103,7 @@ namespace gView.Framework.Carto.Rendering.UI
         {
             System.Drawing.Graphics gr = System.Drawing.Graphics.FromHwnd(panelPreview.Handle);
 
-            Rectangle rect=new Rectangle(0, 0, panelPreview.Width, panelPreview.Height);
+            Rectangle rect = new Rectangle(0, 0, panelPreview.Width, panelPreview.Height);
             using (SolidBrush brush = new SolidBrush(Color.White))
             {
                 gr.FillRectangle(brush, rect);
@@ -126,12 +126,15 @@ namespace gView.Framework.Carto.Rendering.UI
 
         private void PropertyForm_SimpleLabelRenderer_Load(object sender, EventArgs e)
         {
-            
+
         }
 
         private void cmbFields_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if (_renderer == null) return;
+            if (_renderer == null)
+            {
+                return;
+            }
 
             if (cmbFields.SelectedItem is LabelFieldItem)
             {
@@ -154,7 +157,10 @@ namespace gView.Framework.Carto.Rendering.UI
 
         private void btnSymbol_Click(object sender, EventArgs e)
         {
-            if (!(_renderer.TextSymbol is ISymbol)) return;
+            if (!(_renderer.TextSymbol is ISymbol))
+            {
+                return;
+            }
 
             FormSymbol dlg = new FormSymbol((ISymbol)_renderer.TextSymbol);
             if (dlg.ShowDialog() == DialogResult.OK)
@@ -169,7 +175,10 @@ namespace gView.Framework.Carto.Rendering.UI
 
         private void SetSymbolAlignment(TextSymbolAlignment align)
         {
-            if (_renderer == null) return;
+            if (_renderer == null)
+            {
+                return;
+            }
 
             symbolAlignmentPriorityControl.PrimarySymbolAlignment = align;
 
@@ -229,9 +238,9 @@ namespace gView.Framework.Carto.Rendering.UI
 
         private void symbolAlignmentPriorityControl_OnPriorityChanged(object sender, EventArgs e)
         {
-            if(_renderer?.TextSymbol is ILabel)
+            if (_renderer?.TextSymbol is ILabel)
             {
-                ((ILabel)_renderer.TextSymbol).SecondaryTextSymbolAlignments = 
+                ((ILabel)_renderer.TextSymbol).SecondaryTextSymbolAlignments =
                     symbolAlignmentPriorityControl.SecondarySymbolAlignments?.ToArray();
             }
         }
@@ -253,7 +262,10 @@ namespace gView.Framework.Carto.Rendering.UI
 
         private void btnRotation_Click(object sender, EventArgs e)
         {
-            if (_renderer == null || _fc == null) return;
+            if (_renderer == null || _fc == null)
+            {
+                return;
+            }
 
             FormRotationType dlg = new FormRotationType(_renderer.SymbolRotation, _fc);
             dlg.ShowDialog();
@@ -261,7 +273,10 @@ namespace gView.Framework.Carto.Rendering.UI
 
         private void btnExpression_Click(object sender, EventArgs e)
         {
-            if (_renderer == null) return;
+            if (_renderer == null)
+            {
+                return;
+            }
 
             FormLabelExpression labelExpression = new FormLabelExpression(_fc);
             labelExpression.Expression = _renderer.LabelExpression;
@@ -280,7 +295,10 @@ namespace gView.Framework.Carto.Rendering.UI
                 case Geometry.GeometryType.Polyline:
                     FormLineLabellingOrientation dlgLLO = new FormLineLabellingOrientation(_renderer);
                     if (dlgLLO.ShowDialog() == DialogResult.OK)
+                    {
                         _renderer.CartoLineLabelling = dlgLLO.CartoLineLabelling;
+                    }
+
                     break;
             }
         }
@@ -291,7 +309,9 @@ namespace gView.Framework.Carto.Rendering.UI
         {
             _renderer = renderer as SimpleLabelRenderer;
             if (layer != null)
+            {
                 _fc = layer.FeatureClass;
+            }
 
             InitializeComponent();
 
@@ -323,7 +343,11 @@ namespace gView.Framework.Carto.Rendering.UI
 
         public override string ToString()
         {
-            if (_field == null) return "null";
+            if (_field == null)
+            {
+                return "null";
+            }
+
             return _field.aliasname;
         }
     }

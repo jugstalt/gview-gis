@@ -1,61 +1,59 @@
-using System;
-using System.Drawing;
-using System.Collections;
-using System.ComponentModel;
-using System.Windows.Forms;
 using Microsoft.Win32;
+using System;
+using System.ComponentModel;
 using System.IO;
+using System.Windows.Forms;
 using System.Xml;
 
 namespace gView.Framework.UI.Dialogs
 {
-	/// <summary>
-	/// Zusammenfassung für FormComponents.
-	/// </summary>
-	public class FormComponents : System.Windows.Forms.Form, IControl
-	{
-		private System.Windows.Forms.ListBox lstComponents;
-		private System.Windows.Forms.MainMenu mainMenu1;
-		private System.Windows.Forms.MenuItem menuItem1;
-		private System.Windows.Forms.MenuItem menuItem2;
-		private System.Windows.Forms.OpenFileDialog openFileDialog1;
-		private System.Windows.Forms.MenuItem menuItem3;
-		private System.Windows.Forms.Splitter splitter1;
+    /// <summary>
+    /// Zusammenfassung für FormComponents.
+    /// </summary>
+    public class FormComponents : System.Windows.Forms.Form, IControl
+    {
+        private System.Windows.Forms.ListBox lstComponents;
+        private System.Windows.Forms.MainMenu mainMenu1;
+        private System.Windows.Forms.MenuItem menuItem1;
+        private System.Windows.Forms.MenuItem menuItem2;
+        private System.Windows.Forms.OpenFileDialog openFileDialog1;
+        private System.Windows.Forms.MenuItem menuItem3;
+        private System.Windows.Forms.Splitter splitter1;
         private System.Windows.Forms.TreeView treeView1;
         private ImageList imageList1;
         private ImageList imageList2;
         private IContainer components;
 
-		public FormComponents()
-		{
-			//
-			// Erforderlich für die Windows Form-Designerunterstützung
-			//
-			InitializeComponent();
-		}
+        public FormComponents()
+        {
+            //
+            // Erforderlich für die Windows Form-Designerunterstützung
+            //
+            InitializeComponent();
+        }
 
-		/// <summary>
-		/// Die verwendeten Ressourcen bereinigen.
-		/// </summary>
-		protected override void Dispose( bool disposing )
-		{
-			if( disposing )
-			{
-				if(components != null)
-				{
-					components.Dispose();
-				}
-			}
-			base.Dispose( disposing );
-		}
+        /// <summary>
+        /// Die verwendeten Ressourcen bereinigen.
+        /// </summary>
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                if (components != null)
+                {
+                    components.Dispose();
+                }
+            }
+            base.Dispose(disposing);
+        }
 
-		#region Vom Windows Form-Designer generierter Code
-		/// <summary>
-		/// Erforderliche Methode für die Designerunterstützung. 
-		/// Der Inhalt der Methode darf nicht mit dem Code-Editor geändert werden.
-		/// </summary>
-		private void InitializeComponent()
-		{
+        #region Vom Windows Form-Designer generierter Code
+        /// <summary>
+        /// Erforderliche Methode für die Designerunterstützung. 
+        /// Der Inhalt der Methode darf nicht mit dem Code-Editor geändert werden.
+        /// </summary>
+        private void InitializeComponent()
+        {
             this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormComponents));
             this.lstComponents = new System.Windows.Forms.ListBox();
@@ -143,173 +141,190 @@ namespace gView.Framework.UI.Dialogs
             this.Load += new System.EventHandler(this.FormComponents_Load);
             this.ResumeLayout(false);
 
-		}
-		#endregion
+        }
+        #endregion
 
-		private void menuItem2_Click(object sender, System.EventArgs e)
-		{
-			if(openFileDialog1.ShowDialog(this)==DialogResult.OK) 
-			{
-				gView.Framework.system.UI.AssemblyExplorer explorer=new gView.Framework.system.UI.AssemblyExplorer();
-				if(explorer.Explore(openFileDialog1.FileName)=="") 
-				{
-					MessageBox.Show("No Components found!");
-					return;
-				}
-				if(lstComponents.Items.IndexOf(openFileDialog1.FileName)==-1) 
-				{
-					addComponent(openFileDialog1.FileName);
-					lstComponents.Items.Add(openFileDialog1.FileName);
-				}
-				
-				writeComponents();
-				makeTree();
-			}
-		}
+        private void menuItem2_Click(object sender, System.EventArgs e)
+        {
+            if (openFileDialog1.ShowDialog(this) == DialogResult.OK)
+            {
+                gView.Framework.system.UI.AssemblyExplorer explorer = new gView.Framework.system.UI.AssemblyExplorer();
+                if (explorer.Explore(openFileDialog1.FileName) == "")
+                {
+                    MessageBox.Show("No Components found!");
+                    return;
+                }
+                if (lstComponents.Items.IndexOf(openFileDialog1.FileName) == -1)
+                {
+                    addComponent(openFileDialog1.FileName);
+                    lstComponents.Items.Add(openFileDialog1.FileName);
+                }
 
-		private void writeComponents() 
-		{
-			gView.Framework.system.UI.AssemblyExplorer explorer=new gView.Framework.system.UI.AssemblyExplorer();
+                writeComponents();
+                makeTree();
+            }
+        }
 
-			// Refresh Components
-			string str="";
-			foreach(string assemblyname in lstComponents.Items) 
-			{
-				str+=explorer.Explore(assemblyname)+"\n";
-			}
+        private void writeComponents()
+        {
+            gView.Framework.system.UI.AssemblyExplorer explorer = new gView.Framework.system.UI.AssemblyExplorer();
+
+            // Refresh Components
+            string str = "";
+            foreach (string assemblyname in lstComponents.Items)
+            {
+                str += explorer.Explore(assemblyname) + "\n";
+            }
 
             string filename = gView.Framework.system.SystemVariables.MyCommonApplicationData + @"/gViewGisOS_plugins.xml";
-			StreamWriter sw=new StreamWriter(filename); 
-			sw.WriteLine("<components>\n"+str+"</components>");
-			sw.Close();
+            StreamWriter sw = new StreamWriter(filename);
+            sw.WriteLine("<components>\n" + str + "</components>");
+            sw.Close();
 
-			RegistryKey key=Registry.LocalMachine.OpenSubKey(@"Software\gViewGisOS",true);
-			if(key!=null) 
-			{
-				key.SetValue("comp",filename);
-				key.Close();
-			}
-		}
-		private void fillList() 
-		{
-			lstComponents.Items.Clear();
+            RegistryKey key = Registry.LocalMachine.OpenSubKey(@"Software\gViewGisOS", true);
+            if (key != null)
+            {
+                key.SetValue("comp", filename);
+                key.Close();
+            }
+        }
+        private void fillList()
+        {
+            lstComponents.Items.Clear();
 
-			RegistryKey key=Registry.LocalMachine.OpenSubKey(@"Software\gViewGisOS\assemblies",false);
-			if(key==null) return;
+            RegistryKey key = Registry.LocalMachine.OpenSubKey(@"Software\gViewGisOS\assemblies", false);
+            if (key == null)
+            {
+                return;
+            }
 
-			foreach(string assembly in key.GetValueNames()) 
-			{
-				if(assembly.IndexOf("assembly_")!=0) continue;
+            foreach (string assembly in key.GetValueNames())
+            {
+                if (assembly.IndexOf("assembly_") != 0)
+                {
+                    continue;
+                }
 
-				lstComponents.Items.Add(key.GetValue(assembly).ToString());
-			}
+                lstComponents.Items.Add(key.GetValue(assembly).ToString());
+            }
 
-			writeComponents();
-		}
+            writeComponents();
+        }
 
-		private void makeTree() 
-		{
-			treeView1.Nodes.Clear();
+        private void makeTree()
+        {
+            treeView1.Nodes.Clear();
 
-			try 
-			{
-				RegistryKey key=Registry.LocalMachine.OpenSubKey(@"Software\gViewGisOS",false);
-				if(key==null) return;
-				string filename=key.GetValue("comp").ToString();
+            try
+            {
+                RegistryKey key = Registry.LocalMachine.OpenSubKey(@"Software\gViewGisOS", false);
+                if (key == null)
+                {
+                    return;
+                }
 
-				XmlDocument doc=new XmlDocument();
-				doc.Load(filename);
+                string filename = key.GetValue("comp").ToString();
 
-				foreach(XmlNode nodename in doc.ChildNodes[0].ChildNodes) 
-				{
-					TreeNode parent=null;
-					foreach(TreeNode node in treeView1.Nodes) 
-					{
-						if(node.Text==nodename.Name) 
-						{
-							parent=node;
-							break;
-						}
-					}
-					if(parent==null) 
-					{
-						parent=new TreeNode(nodename.Name,0,0);
-						treeView1.Nodes.Add(parent);
-					}
+                XmlDocument doc = new XmlDocument();
+                doc.Load(filename);
 
-					TreeNode nNode=new TreeNode(nodename.Attributes["fullname"].Value+"             ("+
-						nodename.Attributes["assembly"].Value+")",1,1);
-					parent.Nodes.Add(nNode);
-				}
-			} 
-			catch 
-			{
-				return;
-			}
-		}
+                foreach (XmlNode nodename in doc.ChildNodes[0].ChildNodes)
+                {
+                    TreeNode parent = null;
+                    foreach (TreeNode node in treeView1.Nodes)
+                    {
+                        if (node.Text == nodename.Name)
+                        {
+                            parent = node;
+                            break;
+                        }
+                    }
+                    if (parent == null)
+                    {
+                        parent = new TreeNode(nodename.Name, 0, 0);
+                        treeView1.Nodes.Add(parent);
+                    }
 
-		private void addComponent(string assemblyPath) 
-		{
-			removeComponent(assemblyPath);
+                    TreeNode nNode = new TreeNode(nodename.Attributes["fullname"].Value + "             (" +
+                        nodename.Attributes["assembly"].Value + ")", 1, 1);
+                    parent.Nodes.Add(nNode);
+                }
+            }
+            catch
+            {
+                return;
+            }
+        }
 
-			Registry.LocalMachine.CreateSubKey(@"Software\gViewGisOS\assemblies");
-			RegistryKey key=Registry.LocalMachine.OpenSubKey(@"Software\gViewGisOS\assemblies",true);
+        private void addComponent(string assemblyPath)
+        {
+            removeComponent(assemblyPath);
 
-			int num=1;
-			while(true) 
-			{
-				string assembly="assembly_"+num.ToString();
+            Registry.LocalMachine.CreateSubKey(@"Software\gViewGisOS\assemblies");
+            RegistryKey key = Registry.LocalMachine.OpenSubKey(@"Software\gViewGisOS\assemblies", true);
 
-				bool found=false;
-				foreach(string valuename in key.GetValueNames()) 
-				{
-					if(valuename==assembly) 
-					{
-						found=true;
-						break;
-					}
-				}
-				if(!found) 
-				{
-					key.SetValue(assembly,assemblyPath);
-					break;
-				}
-				num++;
-			}
-			key.Close();
-		}
+            int num = 1;
+            while (true)
+            {
+                string assembly = "assembly_" + num.ToString();
 
-		private void removeComponent(string assemblyPath) 
-		{
-			RegistryKey key=Registry.LocalMachine.OpenSubKey(@"Software\gViewGisOS\assemblies",true);
-			if(key==null) return;
+                bool found = false;
+                foreach (string valuename in key.GetValueNames())
+                {
+                    if (valuename == assembly)
+                    {
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found)
+                {
+                    key.SetValue(assembly, assemblyPath);
+                    break;
+                }
+                num++;
+            }
+            key.Close();
+        }
 
-			foreach(string valuename in key.GetValueNames()) 
-			{
-				if(valuename.IndexOf("assembly_")==0) 
-				{
-					if(key.GetValue(valuename).ToString().ToLower()==assemblyPath.ToLower())
-					{
-						key.DeleteValue(valuename);
-					}
-				}
-			}
-			key.Close();
-		}
+        private void removeComponent(string assemblyPath)
+        {
+            RegistryKey key = Registry.LocalMachine.OpenSubKey(@"Software\gViewGisOS\assemblies", true);
+            if (key == null)
+            {
+                return;
+            }
 
-		private void menuItem3_Click(object sender, System.EventArgs e)
-		{
-			if(lstComponents.SelectedItem==null) return;
-			removeComponent(lstComponents.SelectedItem.ToString());
-			fillList();
-			makeTree();
-		}
+            foreach (string valuename in key.GetValueNames())
+            {
+                if (valuename.IndexOf("assembly_") == 0)
+                {
+                    if (key.GetValue(valuename).ToString().ToLower() == assemblyPath.ToLower())
+                    {
+                        key.DeleteValue(valuename);
+                    }
+                }
+            }
+            key.Close();
+        }
 
-		private void FormComponents_Load(object sender, System.EventArgs e)
-		{
-			fillList();
-			makeTree();
-		}
+        private void menuItem3_Click(object sender, System.EventArgs e)
+        {
+            if (lstComponents.SelectedItem == null)
+            {
+                return;
+            }
+
+            removeComponent(lstComponents.SelectedItem.ToString());
+            fillList();
+            makeTree();
+        }
+
+        private void FormComponents_Load(object sender, System.EventArgs e)
+        {
+            fillList();
+            makeTree();
+        }
 
         #region IControl Member
 

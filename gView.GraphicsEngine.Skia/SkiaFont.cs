@@ -1,9 +1,6 @@
 ﻿using gView.GraphicsEngine.Abstraction;
 using gView.GraphicsEngine.Skia.Extensions;
 using SkiaSharp;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace gView.GraphicsEngine.Skia
 {
@@ -14,7 +11,7 @@ namespace gView.GraphicsEngine.Skia
         public SkiaFont(string name, float size, FontStyle fontStyle, GraphicsUnit unit, char? typefaceCharakter = null)
         {
             var pixelSize = size;
-            switch(unit)
+            switch (unit)
             {
                 case GraphicsUnit.Point:
                     pixelSize = size.FontSizePointsToPixels();
@@ -33,11 +30,11 @@ namespace gView.GraphicsEngine.Skia
             this.Style = fontStyle;
             this.Unit = unit;
 
-            if(typefaceCharakter.HasValue)
+            if (typefaceCharakter.HasValue)
             {
                 var fontManager = SKFontManager.Default;
                 var typeFace = fontManager.MatchCharacter(name, typefaceCharakter.Value);
-                if(typeFace!=null)
+                if (typeFace != null)
                 {
                     _skPaint.Typeface = typeFace;
                 }

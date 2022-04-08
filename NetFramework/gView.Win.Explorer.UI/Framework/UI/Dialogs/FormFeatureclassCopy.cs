@@ -1,17 +1,14 @@
+using gView.Framework.Data;
+using gView.Framework.FDB;
+using gView.Framework.Geometry;
+using gView.Framework.system;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Data;
-using System.Drawing;
-using System.Text;
 using System.IO;
-using System.Windows.Forms;
-using gView.Framework.Data;
-using gView.Framework.UI;
-using gView.Framework.Geometry;
-using gView.Framework.FDB;
-using gView.Framework.system;
+using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace gView.Framework.UI.Dialogs
 {
@@ -21,7 +18,7 @@ namespace gView.Framework.UI.Dialogs
         private IDataset _destDataset = null;
         private List<IFileFeatureDatabase> _destDatabases = null;
         private int _maxFieldLength = 255;
-        private string _directory=String.Empty;
+        private string _directory = String.Empty;
         private bool _schemaOnly = false;
 
         private FormFeatureclassCopy()
@@ -29,7 +26,7 @@ namespace gView.Framework.UI.Dialogs
             InitializeComponent();
         }
 
-        public FormFeatureclassCopy(List<IFeatureClass> featureClasses,IDataset destDataset)
+        public FormFeatureclassCopy(List<IFeatureClass> featureClasses, IDataset destDataset)
             : this()
         {
             _fcs = featureClasses;
@@ -41,7 +38,10 @@ namespace gView.Framework.UI.Dialogs
             var dlg = new FormFeatureclassCopy();
 
             if (exObjects == null)
+            {
                 return dlg;
+            }
+
             dlg._fcs = new List<IFeatureClass>();
 
             foreach (IExplorerObject exObject in exObjects)
@@ -54,7 +54,10 @@ namespace gView.Framework.UI.Dialogs
                 else if (instanace is IFeatureDataset)
                 {
                     List<IDatasetElement> elements = await (((IFeatureDataset)instanace).Elements());
-                    if (elements == null) continue;
+                    if (elements == null)
+                    {
+                        continue;
+                    }
 
                     foreach (IDatasetElement element in elements)
                     {
@@ -86,7 +89,10 @@ namespace gView.Framework.UI.Dialogs
             dlg._directory = directory;
 
             if (exObjects == null)
+            {
                 return dlg;
+            }
+
             dlg._fcs = new List<IFeatureClass>();
 
             foreach (IExplorerObject exObject in exObjects)
@@ -99,7 +105,10 @@ namespace gView.Framework.UI.Dialogs
                 else if (instance is IFeatureDataset)
                 {
                     List<IDatasetElement> elements = await (((IFeatureDataset)instance).Elements());
-                    if (elements == null) continue;
+                    if (elements == null)
+                    {
+                        continue;
+                    }
 
                     foreach (IDatasetElement element in elements)
                     {
@@ -128,7 +137,10 @@ namespace gView.Framework.UI.Dialogs
 
         private void FormFeatureclassCopy_Load(object sender, EventArgs e)
         {
-            if (_fcs == null) return;
+            if (_fcs == null)
+            {
+                return;
+            }
 
             if (SchemaOnly)
             {
@@ -159,14 +171,19 @@ namespace gView.Framework.UI.Dialogs
                     lstFeatureclasses.Items.Add(item);
                 }
                 if (lstFeatureclasses.Items.Count > 0)
+                {
                     lstFeatureclasses.Items[0].Selected = true;
+                }
             }
             else
             {
                 panelFormat.Visible = true;
                 foreach (IFileFeatureDatabase database in _destDatabases)
                 {
-                    if (database == null) continue;
+                    if (database == null)
+                    {
+                        continue;
+                    }
 
                     List<FeatureClassListViewItem> items = new List<FeatureClassListViewItem>();
                     foreach (IFeatureClass fc in _fcs)
@@ -193,7 +210,9 @@ namespace gView.Framework.UI.Dialogs
                     cmbDestFormat.Items.Add(new FileDatabaseItem(database, items));
                 }
                 if (cmbDestFormat.Items.Count > 0)
+                {
                     cmbDestFormat.SelectedIndex = 0;
+                }
 
                 //btnScript.Visible = false;
             }
@@ -202,8 +221,15 @@ namespace gView.Framework.UI.Dialogs
         private void lstFeatureclasses_SelectedIndexChanged(object sender, EventArgs e)
         {
             gvFields.DataSource = null;
-            if (_fcs == null) return;
-            if (lstFeatureclasses.SelectedItems.Count == 0 || lstFeatureclasses.SelectedIndices[0] < 0 || lstFeatureclasses.SelectedIndices[0] >= _fcs.Count) return;
+            if (_fcs == null)
+            {
+                return;
+            }
+
+            if (lstFeatureclasses.SelectedItems.Count == 0 || lstFeatureclasses.SelectedIndices[0] < 0 || lstFeatureclasses.SelectedIndices[0] >= _fcs.Count)
+            {
+                return;
+            }
 
             FeatureClassListViewItem item = lstFeatureclasses.SelectedItems[0] as FeatureClassListViewItem;
             gvFields.DataSource = item.Fields;
@@ -213,7 +239,10 @@ namespace gView.Framework.UI.Dialogs
         private void cmbDestFormat_SelectedIndexChanged(object sender, EventArgs e)
         {
             lstFeatureclasses.Items.Clear();
-            if (!(cmbDestFormat.SelectedItem is FileDatabaseItem)) return;
+            if (!(cmbDestFormat.SelectedItem is FileDatabaseItem))
+            {
+                return;
+            }
 
             FileDatabaseItem dsItem = (FileDatabaseItem)cmbDestFormat.SelectedItem;
             foreach (FeatureClassListViewItem item in dsItem.ListViewItems)
@@ -221,12 +250,17 @@ namespace gView.Framework.UI.Dialogs
                 lstFeatureclasses.Items.Add(item);
             }
             if (lstFeatureclasses.Items.Count > 0)
+            {
                 lstFeatureclasses.Items[0].Selected = true;
+            }
         }
 
         async private void btnScript_Click(object sender, EventArgs e)
         {
-            if (_fcs.Count == 0) return;
+            if (_fcs.Count == 0)
+            {
+                return;
+            }
 
             SaveFileDialog dlg = new SaveFileDialog();
             dlg.Title = "Explort Script...";
@@ -261,7 +295,7 @@ namespace gView.Framework.UI.Dialogs
             {
                 return;
             }
-            
+
             if (dlg.ShowDialog() == DialogResult.OK)
             {
 
@@ -271,7 +305,11 @@ namespace gView.Framework.UI.Dialogs
                 //foreach (IFeatureClass fc in _fcs)
                 foreach (FeatureClassListViewItem item in FeatureClassItems)
                 {
-                    if (!item.Checked || item.FeatureClass == null) continue;
+                    if (!item.Checked || item.FeatureClass == null)
+                    {
+                        continue;
+                    }
+
                     IDataset ds = item.FeatureClass.Dataset;
                     string connStr = ds.ConnectionString;
                     if (item.FeatureClass.Dataset is IDataset2)
@@ -292,16 +330,30 @@ namespace gView.Framework.UI.Dialogs
                     StringBuilder sb2 = new StringBuilder();
                     foreach (IField field in ftrans.SourceFields.ToEnumerable())
                     {
-                        if (field.type == FieldType.ID || field.type == FieldType.Shape) continue;
+                        if (field.type == FieldType.ID || field.type == FieldType.Shape)
+                        {
+                            continue;
+                        }
 
-                        if (sb1.Length != 0) sb1.Append(";");
+                        if (sb1.Length != 0)
+                        {
+                            sb1.Append(";");
+                        }
+
                         sb1.Append(field.name);
                     }
                     foreach (IField field in ftrans.DestinationFields.ToEnumerable())
                     {
-                        if (field.type == FieldType.ID || field.type == FieldType.Shape) continue;
+                        if (field.type == FieldType.ID || field.type == FieldType.Shape)
+                        {
+                            continue;
+                        }
 
-                        if (sb2.Length != 0) sb2.Append(";");
+                        if (sb2.Length != 0)
+                        {
+                            sb2.Append(";");
+                        }
+
                         sb2.Append(field.name);
                     }
                     sb.Append("\"%GVIEW4_HOME%\\gView.Cmd.CopyFeatureclass\" -source_connstr \"" + connStr + "\" -source_guid \"" + PlugInManager.PlugInID(ds) + "\" -source_fc \"" + item.FeatureClass.Name + "\" ");
@@ -331,7 +383,10 @@ namespace gView.Framework.UI.Dialogs
                 }
             }
 
-            if (encoding == null) return false;
+            if (encoding == null)
+            {
+                return false;
+            }
 
             byte[] bytes = encoding.GetBytes(str);
             BinaryWriter bw = new BinaryWriter(stream);
@@ -355,10 +410,17 @@ namespace gView.Framework.UI.Dialogs
 
         private void txtTargetFeatureclass_TextChanged(object sender, EventArgs e)
         {
-            if (lstFeatureclasses.SelectedItems.Count == 0) return;
+            if (lstFeatureclasses.SelectedItems.Count == 0)
+            {
+                return;
+            }
 
             FeatureClassListViewItem item = lstFeatureclasses.SelectedItems[0] as FeatureClassListViewItem;
-            if (item == null) return;
+            if (item == null)
+            {
+                return;
+            }
+
             item.TargetName = txtTargetFeatureclass.Text;
         }
 
@@ -390,7 +452,9 @@ namespace gView.Framework.UI.Dialogs
             public override string ToString()
             {
                 if (_db != null)
+                {
                     return _db.DatabaseName;
+                }
 
                 return "";
             }
@@ -430,7 +494,11 @@ namespace gView.Framework.UI.Dialogs
 
             _fields.Columns.Add("Aliasname", typeof(string)).DefaultValue = "";
 
-            if (_fc == null || _fc.Fields == null) return;
+            if (_fc == null || _fc.Fields == null)
+            {
+                return;
+            }
+
             this.Text = fc.Name;
 
             foreach (IField field in _fc.Fields.ToEnumerable())
@@ -459,14 +527,25 @@ namespace gView.Framework.UI.Dialogs
         {
             get
             {
-                if (_fc == null || _fc.Fields==null) return null;
+                if (_fc == null || _fc.Fields == null)
+                {
+                    return null;
+                }
+
                 FieldTranslation ftrans = new FieldTranslation();
-                
+
                 foreach (DataRow row in _fields.Rows)
                 {
-                    if ((bool)row[0] == false) continue;
+                    if ((bool)row[0] == false)
+                    {
+                        continue;
+                    }
+
                     IField field = _fc.FindField(row["Source Name"].ToString());
-                    if (field == null) continue;
+                    if (field == null)
+                    {
+                        continue;
+                    }
 
                     Field f = new Field(field);
                     f.aliasname = row["Aliasname"].ToString();

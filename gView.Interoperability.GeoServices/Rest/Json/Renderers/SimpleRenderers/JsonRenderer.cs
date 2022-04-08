@@ -208,7 +208,7 @@ namespace gView.Interoperability.GeoServices.Rest.Json.Renderers.SimpleRenderers
                     };
                 }
 
-                if(symbol is Framework.Symbology.HatchSymbol)
+                if (symbol is Framework.Symbology.HatchSymbol)
                 {
                     var hatchSymbol = (Framework.Symbology.HatchSymbol)symbol;
                     return new SimpleFillSymbol()

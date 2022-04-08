@@ -1,11 +1,6 @@
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Text;
-using System.Windows.Forms;
 using gView.Framework.Data;
+using System;
+using System.Windows.Forms;
 
 namespace gView.Framework.Carto.Rendering.UI
 {
@@ -23,13 +18,19 @@ namespace gView.Framework.Carto.Rendering.UI
 
         private void MakeGUI()
         {
-            if (_fc == null) return;
+            if (_fc == null)
+            {
+                return;
+            }
 
             lstFields.Items.Clear();
 
             foreach (IField field in _fc.Fields.ToEnumerable())
             {
-                if (field == null) continue;
+                if (field == null)
+                {
+                    continue;
+                }
 
                 lstFields.Items.Add(field.name);
             }
@@ -43,7 +44,10 @@ namespace gView.Framework.Carto.Rendering.UI
 
         private void lstFields_DoubleClick(object sender, EventArgs e)
         {
-            if (lstFields.SelectedItems.Count != 1) return;
+            if (lstFields.SelectedItems.Count != 1)
+            {
+                return;
+            }
 
             string s1 = txtExpression.Text.Substring(0, txtExpression.SelectionStart);
             string s2 = txtExpression.Text.Substring(txtExpression.SelectionStart + txtExpression.SelectionLength, txtExpression.Text.Length - txtExpression.SelectionStart - txtExpression.SelectionLength);

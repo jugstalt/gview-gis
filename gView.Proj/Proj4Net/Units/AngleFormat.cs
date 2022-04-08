@@ -1,7 +1,7 @@
+using Proj4Net.Utility;
 using System;
 using System.Globalization;
 using System.Text;
-using Proj4Net.Utility;
 
 namespace Proj4Net.Units
 {
@@ -11,11 +11,11 @@ namespace Proj4Net.Units
     public class AngleFormatException : FormatException
     {
         public AngleFormatException(String qualifier)
-            :base(String.Format("'{0}' is present more than once in format string", qualifier))
+            : base(String.Format("'{0}' is present more than once in format string", qualifier))
         {
         }
     }
-    
+
     /// <summary>
     /// Class for formatting and parsing angles in D/M/S notation
     /// </summary>
@@ -61,11 +61,11 @@ namespace Proj4Net.Units
 
         #region Fields
 
-        private static readonly NumberFormatInfo AngleNumberFormatInfo = 
+        private static readonly NumberFormatInfo AngleNumberFormatInfo =
             (NumberFormatInfo)CultureInfo.InvariantCulture.NumberFormat.Clone();
         private readonly String _pattern;
         private readonly Boolean _isDegrees;
-        
+
         #endregion
 
         #region Object construction and disposal
@@ -136,13 +136,17 @@ namespace Proj4Net.Units
             if (!(arg is float || arg is double))
             {
                 if (arg is IFormattable)
+                {
                     return ((IFormattable)arg).ToString(format, formatProvider);
+                }
 
                 return arg != null ? arg.ToString() : String.Empty;
             }
 
             if (String.IsNullOrEmpty(format))
+            {
                 format = _pattern;
+            }
             else
             {
                 CheckFormatString(format);
@@ -166,16 +170,19 @@ namespace Proj4Net.Units
                 }
             }
 
-            double ddmmss = _isDegrees 
-                ? number 
+            double ddmmss = _isDegrees
+                ? number
                 : ProjectionMath.ToDegrees(number);
             int iddmmss = (int)Math.Round(ddmmss * 3600);
             if (iddmmss < 0)
+            {
                 iddmmss = -iddmmss;
+            }
+
             int fraction = iddmmss % 3600;
 
             StringBuilder result = new StringBuilder();
-            foreach(char c in format)
+            foreach (char c in format)
             {
                 int f;
                 switch (c)
@@ -189,13 +196,19 @@ namespace Proj4Net.Units
                     case 'M':
                         f = fraction / 60;
                         if (f < 10)
+                        {
                             result.Append('0');
+                        }
+
                         result.Append(f);
                         break;
                     case 'S':
                         f = fraction % 60;
                         if (f < 10)
+                        {
                             result.Append('0');
+                        }
+
                         result.Append(f);
                         break;
                     case 'F':
@@ -203,15 +216,25 @@ namespace Proj4Net.Units
                         break;
                     case 'W':
                         if (negative)
+                        {
                             result.Append('W');
+                        }
                         else
+                        {
                             result.Append('E');
+                        }
+
                         break;
                     case 'N':
                         if (negative)
+                        {
                             result.Append('S');
+                        }
                         else
+                        {
                             result.Append('N');
+                        }
+
                         break;
                     default:
                         result.Append(c);
@@ -225,13 +248,15 @@ namespace Proj4Net.Units
 
         private static void CheckFormatString(String format)
         {
-            char[] singles = new char[] {'D','M','S','W', 'N'};
+            char[] singles = new char[] { 'D', 'M', 'S', 'W', 'N' };
             foreach (var c in singles)
             {
                 int firstOccurence = format.IndexOf(c);
                 if (firstOccurence > -1 &&
                     format.IndexOf(c, firstOccurence + 1) > -1)
+                {
                     throw new AngleFormatException(c.ToString());
+                }
             }
 
         }
@@ -242,9 +267,9 @@ namespace Proj4Net.Units
             double result;
             Boolean negate = false;
             int length = text.Length;
-            if ( length > 0)
+            if (length > 0)
             {
-                char c = text[length-1];
+                char c = text[length - 1];
                 switch (c)
                 {
                     case 'W':
@@ -261,7 +286,10 @@ namespace Proj4Net.Units
 
             int i = text.IndexOf('d');
             if (i == -1)
+            {
                 i = text.IndexOf('\u00b0');
+            }
+
             if (i != -1)
             {
                 String dd = text.Substring(0, i);
@@ -269,7 +297,10 @@ namespace Proj4Net.Units
                 d = Convert.ToDouble(dd, CultureInfo.InvariantCulture);
                 i = mmss.IndexOf('m');
                 if (i == -1)
+                {
                     i = mmss.IndexOf('\'');
+                }
+
                 if (i != -1)
                 {
                     if (i != 0)
@@ -278,7 +309,10 @@ namespace Proj4Net.Units
                         m = Convert.ToDouble(mm, CultureInfo.InvariantCulture);
                     }
                     if (mmss.EndsWith("s") || mmss.EndsWith("\""))
+                    {
                         mmss = mmss.Substring(0, mmss.Length - 1);
+                    }
+
                     if (i != mmss.Length - 1)
                     {
                         String ss = mmss.Substring(i + 1);
@@ -291,27 +325,43 @@ namespace Proj4Net.Units
                         throw new ArgumentOutOfRangeException("s", "Seconds must be between 0 and 59");
 #else
                     if (m < 0 || m > 59)
+                    {
                         throw new ArgumentOutOfRangeException("m", m, "Minutes must be between 0 and 59");
+                    }
+
                     if (s < 0 || s >= 60)
+                    {
                         throw new ArgumentOutOfRangeException("s", s, "Seconds must be between 0 and 59");
+                    }
 #endif
                 }
                 else if (i != 0)
+                {
                     m = Convert.ToDouble(mmss, CultureInfo.InvariantCulture);
+                }
+
                 if (_isDegrees)
+                {
                     result = ProjectionMath.DegreesMinutesSecondsToDegrees(d, m, s);
+                }
                 else
+                {
                     result = ProjectionMath.DegreesMinutesSecondsToRadians(d, m, s);
+                }
             }
             else
             {
                 result = Convert.ToDouble(text, CultureInfo.InvariantCulture);
                 if (!_isDegrees)
+                {
                     result = ProjectionMath.ToRadians(result);
+                }
             }
 
             if (negate)
+            {
                 result = -result;
+            }
 
             return result;
         }

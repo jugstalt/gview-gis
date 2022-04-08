@@ -1,15 +1,13 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-using gView.Framework.IO;
 using gView.Framework.Carto;
-using gView.MapServer;
 using gView.Framework.Data;
-using System.Xml;
-using gView.Framework.UI;
-using System.Reflection;
+using gView.Framework.IO;
 using gView.Framework.system;
+using gView.Framework.UI;
+using gView.MapServer;
+using System;
+using System.Reflection;
 using System.Threading.Tasks;
+using System.Xml;
 
 namespace gView.Interoperability.ArcXML.Dataset
 {
@@ -21,7 +19,7 @@ namespace gView.Interoperability.ArcXML.Dataset
         private credentialMethod _credMethod = credentialMethod.none;
         private string _credUser = String.Empty, _credPwd = String.Empty, _credDomain = String.Empty;
         private static object lockThis = new object();
- 
+
         #region IMetadataProvider Member
 
         async public Task<bool> ApplyTo(object Object)
@@ -51,7 +49,10 @@ namespace gView.Interoperability.ArcXML.Dataset
         void cls_ModifyResponseOuput(object sender, EventArgs e)
         {
             if (!(e is ModifyOutputEventArgs) ||
-                ((ModifyOutputEventArgs)e).OutputNode == null) return;
+                ((ModifyOutputEventArgs)e).OutputNode == null)
+            {
+                return;
+            }
 
             XmlNode output = ((ModifyOutputEventArgs)e).OutputNode;
 
@@ -116,7 +117,10 @@ namespace gView.Interoperability.ArcXML.Dataset
             _credUser = (string)stream.Load("credUser", String.Empty);
             _credPwd = (string)stream.Load("credPwd", String.Empty);
             if (!String.IsNullOrEmpty(_credPwd))
+            {
                 _credPwd = Crypto.Decrypt(_credPwd, "5A01A23E93664a8e8A3DC8F84C05FAD1");
+            }
+
             _credDomain = (string)stream.Load("credDomain", String.Empty);
 
             _modifyOutputFile = (string)stream.Load("modOFile", String.Empty);
@@ -128,7 +132,7 @@ namespace gView.Interoperability.ArcXML.Dataset
             stream.Save("credMethod", (int)_credMethod);
             stream.Save("credUser", _credUser);
             stream.Save("credPwd",
-                String.IsNullOrEmpty(_credPwd) ? 
+                String.IsNullOrEmpty(_credPwd) ?
                     String.Empty :
                     Crypto.Encrypt(_credPwd, "5A01A23E93664a8e8A3DC8F84C05FAD1")
                 );
@@ -177,23 +181,38 @@ namespace gView.Interoperability.ArcXML.Dataset
         #region Helper
         private ArcIMSClass ArcIMSServiceClass(IServiceMap map)
         {
-            if (map.MapElements == null) return null;
+            if (map.MapElements == null)
+            {
+                return null;
+            }
+
             foreach (IDatasetElement element in map.MapElements)
             {
                 if (element != null && element.Class is ArcIMSClass)
+                {
                     return (ArcIMSClass)element.Class;
+                }
             }
             return null;
         }
         async private Task<bool> ServiceMapIsSVC(IMapServer server, IServiceMap map)
         {
-            if (server == null || map == null) return false;
+            if (server == null || map == null)
+            {
+                return false;
+            }
 
             foreach (IMapService service in await server.Maps(null))
             {
-                if (service == null) continue;
+                if (service == null)
+                {
+                    continue;
+                }
+
                 if (service.Name == map.Name && service.Type == MapServiceType.SVC)
+                {
                     return true;
+                }
             }
             return false;
         }
@@ -208,7 +227,9 @@ namespace gView.Interoperability.ArcXML.Dataset
 
             IPlugInParameter p = uiAssembly.CreateInstance("gView.Interoperability.ArcXML.UI.PropertyPage.Metadata") as IPlugInParameter;
             if (p != null)
+            {
                 p.Parameter = this;
+            }
 
             return p;
         }

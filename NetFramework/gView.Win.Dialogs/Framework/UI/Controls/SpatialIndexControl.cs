@@ -1,15 +1,11 @@
+using gView.Framework.Data;
+using gView.Framework.FDB;
+using gView.Framework.Geometry;
+using gView.Framework.UI.Controls.Filter;
+using gView.Framework.UI.Dialogs;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Drawing;
-using System.Data;
-using System.Text;
 using System.Windows.Forms;
-using gView.Framework.Geometry;
-using gView.Framework.Data;
-using gView.Framework.UI.Controls.Filter;
-using gView.Framework.FDB;
-using gView.Framework.UI.Dialogs;
 
 namespace gView.Framework.UI.Controls
 {
@@ -52,7 +48,11 @@ namespace gView.Framework.UI.Controls
             }
             set
             {
-                if (value == null) return;
+                if (value == null)
+                {
+                    return;
+                }
+
                 numLeft.Value = (decimal)value.minx;
                 numBottom.Value = (decimal)value.miny;
                 numRight.Value = (decimal)value.maxx;
@@ -60,9 +60,9 @@ namespace gView.Framework.UI.Controls
 
                 CalcCellSize();
             }
-        } 
+        }
         #endregion
-        
+
         #region Levels
         public int Levels
         {
@@ -79,7 +79,7 @@ namespace gView.Framework.UI.Controls
                 }
             }
         }
-        
+
         private void numLevels_ValueChanged(object sender, EventArgs e)
         {
             CalcCellSize();
@@ -199,7 +199,10 @@ namespace gView.Framework.UI.Controls
                 foreach (IExplorerObject exObject in dlg.ExplorerObjects)
                 {
                     var instance = await exObject?.GetInstanceAsync();
-                    if (instance == null) continue;
+                    if (instance == null)
+                    {
+                        continue;
+                    }
 
                     IEnvelope objEnvelope = null;
 
@@ -207,7 +210,11 @@ namespace gView.Framework.UI.Controls
                     {
                         foreach (IDatasetElement element in await ((IDataset)instance).Elements())
                         {
-                            if (element == null) continue;
+                            if (element == null)
+                            {
+                                continue;
+                            }
+
                             objEnvelope = ClassEnvelope(element.Class);
                         }
                     }
@@ -219,9 +226,13 @@ namespace gView.Framework.UI.Controls
                     if (objEnvelope != null)
                     {
                         if (bounds == null)
+                        {
                             bounds = new Envelope(objEnvelope);
+                        }
                         else
+                        {
                             bounds.Union(objEnvelope);
+                        }
                     }
                 }
 
@@ -248,7 +259,10 @@ namespace gView.Framework.UI.Controls
                 foreach (IExplorerObject exObject in dlg.ExplorerObjects)
                 {
                     var instance = await exObject?.GetInstanceAsync();
-                    if (instance == null) continue;
+                    if (instance == null)
+                    {
+                        continue;
+                    }
 
                     if (instance is IFeatureClass &&
                         ((IFeatureClass)instance).Dataset != null &&
@@ -261,9 +275,14 @@ namespace gView.Framework.UI.Controls
                         if (def != null)
                         {
                             if (bounds == null)
+                            {
                                 bounds = new Envelope(def.Bounds);
+                            }
                             else
+                            {
                                 bounds.Union(def.Bounds);
+                            }
+
                             levels = Math.Max(levels, def.MaxLevel);
                         }
                     }
@@ -296,10 +315,16 @@ namespace gView.Framework.UI.Controls
 
         private IEnvelope ProjectEnvelope(IEnvelope env, ISpatialReference sRef)
         {
-            if (sRef == null || env == null || _sRef == null) return env;
+            if (sRef == null || env == null || _sRef == null)
+            {
+                return env;
+            }
 
             IGeometry geom = GeometricTransformerFactory.Transform2D(env, sRef, _sRef);
-            if (geom != null) return geom.Envelope;
+            if (geom != null)
+            {
+                return geom.Envelope;
+            }
 
             return null;
         }
@@ -317,13 +342,24 @@ namespace gView.Framework.UI.Controls
                 panelRaster.Visible = true;
 
                 if (cmbLevel1.SelectedIndex == -1)
+                {
                     cmbLevel1.SelectedIndex = (cmbIndexType.SelectedIndex == 1 ? 1 : 3);
+                }
+
                 if (cmbLevel2.SelectedIndex == -1)
+                {
                     cmbLevel2.SelectedIndex = (cmbIndexType.SelectedIndex == 1 ? 1 : 3);
+                }
+
                 if (cmbLevel3.SelectedIndex == -1)
+                {
                     cmbLevel3.SelectedIndex = (cmbIndexType.SelectedIndex == 1 ? 1 : 3);
+                }
+
                 if (cmbLevel4.SelectedIndex == -1)
+                {
                     cmbLevel4.SelectedIndex = (cmbIndexType.SelectedIndex == 1 ? 1 : 3);
+                }
             }
             gpExtent.Enabled = cmbIndexType.SelectedIndex != 2;
 

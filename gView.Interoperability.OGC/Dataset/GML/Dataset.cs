@@ -64,7 +64,7 @@ namespace gView.Interoperability.OGC.Dataset.GML
 
                 return true;
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 _errMsg = ex.Message;
                 return false;
@@ -185,7 +185,7 @@ namespace gView.Interoperability.OGC.Dataset.GML
                 _xsd_file = fi_xsd.FullName;
 
                 XmlDocument schema = new XmlDocument();
-                schema.LoadXml(System.IO.File.ReadAllText( fi_xsd.FullName));
+                schema.LoadXml(System.IO.File.ReadAllText(fi_xsd.FullName));
                 XmlSchemaReader schemaReader = new XmlSchemaReader(schema);
                 string targetNamespace = schemaReader.TargetNamespaceURI;
                 if (targetNamespace == String.Empty)

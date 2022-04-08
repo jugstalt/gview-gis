@@ -90,10 +90,19 @@ namespace gView.Win.Carto.Items
                 foreach (var layer in tocElement.Layers)
                 {
                     if (visible == true && enable == true)
+                    {
                         break;
+                    }
 
-                    if (!enable) enable = tool.Enable(layer);
-                    if (!visible) visible = tool.Visible(layer);
+                    if (!enable)
+                    {
+                        enable = tool.Enable(layer);
+                    }
+
+                    if (!visible)
+                    {
+                        visible = tool.Visible(layer);
+                    }
                 }
             }
 
@@ -103,7 +112,10 @@ namespace gView.Win.Carto.Items
 
         private void ContextMenuButton_Click(object sender, RoutedEventArgs e)
         {
-            if (_doc == null || Tool == null || _contextType == null) return;
+            if (_doc == null || Tool == null || _contextType == null)
+            {
+                return;
+            }
 
             if (_contextType.ContextObject is IMap)
             {
@@ -116,7 +128,9 @@ namespace gView.Win.Carto.Items
                 foreach (var layer in tocElement.Layers)
                 {
                     if (layer.Class == null || layer.Class.Dataset == null)
+                    {
                         continue;
+                    }
 
                     Tool.OnEvent(layer, layer.Class.Dataset);
                 }

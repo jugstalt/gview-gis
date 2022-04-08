@@ -204,7 +204,7 @@ namespace gView.Framework.UI.Dialogs
 
                 #endregion Graphics Engine
 
-                if(refresh)
+                if (refresh)
                 {
                     if (_app != null)
                     {

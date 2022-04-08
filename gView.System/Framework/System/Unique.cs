@@ -1,6 +1,4 @@
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 
 namespace gView.Framework.system
@@ -10,7 +8,9 @@ namespace gView.Framework.system
         new public void Add(T t)
         {
             if (base.Contains(t))
+            {
                 return;
+            }
 
             base.Add(t);
         }
@@ -20,7 +20,11 @@ namespace gView.Framework.system
             StringBuilder sb = new StringBuilder();
             for (int i = 0; i < this.Count; i++)
             {
-                if (sb.Length > 0) sb.Append(seperator);
+                if (sb.Length > 0)
+                {
+                    sb.Append(seperator);
+                }
+
                 sb.Append(this[i].ToString());
             }
             return sb.ToString();

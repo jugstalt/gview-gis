@@ -13,9 +13,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-using System;
 using GeoAPI.Geometries;
 using Proj4Net.Utility;
+using System;
 
 namespace Proj4Net.Projection
 {
@@ -157,7 +157,9 @@ namespace Proj4Net.Projection
             del = del;
 
             if (err != 0)
+            {
                 throw new ProjectionException("Error " + err);
+            }
 
             switch (ConicType)
             {
@@ -193,7 +195,10 @@ namespace Proj4Net.Projection
                     _c2 = Math.Cos(del);
                     _c1 = 1.0 / Math.Tan(_sig);
                     if (Math.Abs(del = ProjectionLatitude - _sig) - EPS10 >= ProjectionMath.PiHalf)
+                    {
                         throw new ProjectionException("-43");
+                    }
+
                     _rho0 = _c2 * (_c1 - Math.Tan(del));
                     MaxLatitude = ProjectionMath.ToRadians(60);//FIXME
                     break;

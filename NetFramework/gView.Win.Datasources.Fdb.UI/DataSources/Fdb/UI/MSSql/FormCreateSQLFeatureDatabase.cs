@@ -1,16 +1,12 @@
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Text;
-using System.Windows.Forms;
+using gView.DataSources.Fdb.MSSql;
 using gView.Framework.IO;
+using gView.Framework.system;
 using gView.Framework.UI;
 using gView.Framework.UI.Dialogs;
-using gView.Framework.system;
+using System;
+using System.ComponentModel;
 using System.Drawing.Design;
-using gView.DataSources.Fdb.MSSql;
+using System.Windows.Forms;
 
 namespace gView.DataSources.Fdb.UI.MSSql
 {
@@ -106,7 +102,10 @@ namespace gView.DataSources.Fdb.UI.MSSql
                     await fdb.Open(ConnectionString);
 
                     UserData parameters = _advancedSettings.ToUserData();
-                    if (btnOnlyRepository.Checked) parameters.SetUserData("CreateDatabase", false);
+                    if (btnOnlyRepository.Checked)
+                    {
+                        parameters.SetUserData("CreateDatabase", false);
+                    }
 
                     if (!fdb.Create(txtDatabase.Text, parameters))
                     {
@@ -163,9 +162,13 @@ namespace gView.DataSources.Fdb.UI.MSSql
             btnCreateDatabase.Enabled = btnOnlyRepository.Enabled = !chkUseFile.Checked;
 
             if (chkUseFile.Checked == true)
+            {
                 btnOK.Enabled = txtFilename.Text.Trim() != String.Empty;
+            }
             else
+            {
                 btnOK.Enabled = true;
+            }
         }
 
         private void btnGetMDF_Click(object sender, EventArgs e)
@@ -231,15 +234,29 @@ namespace gView.DataSources.Fdb.UI.MSSql
                 UserData ud = new UserData();
 
                 if (!String.IsNullOrEmpty(_name))
+                {
                     ud.SetUserData("NAME", _name);
+                }
+
                 if (!String.IsNullOrEmpty(_filename))
+                {
                     ud.SetUserData("FILENAME", _filename);
+                }
+
                 if (_size > 0)
+                {
                     ud.SetUserData("SIZE", _size.ToString());
+                }
+
                 if (_maxsize > 0)
+                {
                     ud.SetUserData("MAXSIZE", _maxsize.ToString());
+                }
+
                 if (_filegrowth > 0)
+                {
                     ud.SetUserData("FILEGROWTH", _filegrowth);
+                }
 
                 return ud;
             }

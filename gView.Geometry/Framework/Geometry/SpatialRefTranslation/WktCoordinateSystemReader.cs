@@ -1,7 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Text;
-using gView.Framework.Geometry;
 using System.IO;
 
 namespace gView.Framework.Geometry.SpatialRefTranslation
@@ -93,7 +90,7 @@ namespace gView.Framework.Geometry.SpatialRefTranslation
                 case "METER":
                 case "METRE":
                 case "KILOMETRE":
-                    case "KILOMETER":
+                case "KILOMETER":
                     unit = new LinearUnit(unitsPerUnit, String.Empty, authority, authorityCode, unitName, String.Empty, String.Empty);
                     break;
                 case "DEGREE":
@@ -202,7 +199,7 @@ namespace gView.Framework.Geometry.SpatialRefTranslation
 
         private static CompoundCoordinateSystem ReadCompoundCoordinateSystem(WktStreamTokenizer tokenizer, bool includeAuthority)
         {
-            
+
             //COMPD_CS[
             //"OSGB36 / British National Grid + ODN",
             //PROJCS[]
@@ -283,8 +280,15 @@ namespace gView.Framework.Geometry.SpatialRefTranslation
                 tokenizer.ReadToken("]");
                 paramList.Add(paramName, paramValue);
 
-                if (!tokenizer.TryReadToken(",")) break;
-                if (!tokenizer.TryReadToken("PARAMETER")) break;
+                if (!tokenizer.TryReadToken(","))
+                {
+                    break;
+                }
+
+                if (!tokenizer.TryReadToken("PARAMETER"))
+                {
+                    break;
+                }
             }
 
             ProjectionParameter[] paramArray = new ProjectionParameter[paramList.Count];
@@ -340,10 +344,17 @@ namespace gView.Framework.Geometry.SpatialRefTranslation
             if (tokenizer.TryReadToken(","))
             {
                 if (tokenizer.TryReadToken("AXIS"))
+                {
                     axisInfo1 = ReadAxisInfo(tokenizer);
+                }
+
                 if (tokenizer.TryReadToken(","))
+                {
                     if (tokenizer.TryReadToken("AXIS"))
+                    {
                         axisInfo2 = ReadAxisInfo(tokenizer);
+                    }
+                }
             }
 
             string authority = String.Empty;
@@ -356,11 +367,26 @@ namespace gView.Framework.Geometry.SpatialRefTranslation
             tokenizer.ReadToken("]");
 
             int axisInfoDim = 0;
-            if (axisInfo1 != null) axisInfoDim = 1;
-            if (axisInfo2 != null) axisInfoDim = 2;
+            if (axisInfo1 != null)
+            {
+                axisInfoDim = 1;
+            }
+
+            if (axisInfo2 != null)
+            {
+                axisInfoDim = 2;
+            }
+
             AxisInfo[] axisArray = new AxisInfo[axisInfoDim];
-            if (axisInfo1 != null) axisArray[0] = axisInfo1;
-            if (axisInfo2 != null) axisArray[1] = axisInfo2;
+            if (axisInfo1 != null)
+            {
+                axisArray[0] = axisInfo1;
+            }
+
+            if (axisInfo2 != null)
+            {
+                axisArray[1] = axisInfo2;
+            }
 
             ProjectedCoordinateSystem projectedCS = new ProjectedCoordinateSystem(geographicCS.HorizontalDatum, axisArray, geographicCS, unit as LinearUnit, projection, String.Empty, authority, authorityCode, name, String.Empty, String.Empty);
 
@@ -394,10 +420,17 @@ namespace gView.Framework.Geometry.SpatialRefTranslation
             if (tokenizer.TryReadToken(","))
             {
                 if (tokenizer.TryReadToken("AXIS"))
+                {
                     axisInfo1 = ReadAxisInfo(tokenizer);
-                if(tokenizer.TryReadToken(","))
+                }
+
+                if (tokenizer.TryReadToken(","))
+                {
                     if (tokenizer.TryReadToken("AXIS"))
+                    {
                         axisInfo2 = ReadAxisInfo(tokenizer);
+                    }
+                }
             }
 
             string authority = String.Empty;
@@ -491,7 +524,7 @@ namespace gView.Framework.Geometry.SpatialRefTranslation
             //VERT_DATUM["Ordnance Datum Newlyn",2005,AUTHORITY["EPSG","5101"]]
             //UNIT["metre",1,AUTHORITY["EPSG","9001"]]
             //AUTHORITY["EPSG","5701"]
-            
+
             tokenizer.ReadToken("[");
             string name = tokenizer.ReadDoubleQuotedWord();
             tokenizer.ReadToken(",");
@@ -502,7 +535,10 @@ namespace gView.Framework.Geometry.SpatialRefTranslation
             string authority = String.Empty;
             string authorityCode = String.Empty;
             if (includeAuthority)
+            {
                 tokenizer.ReadAuthority(ref authority, ref authorityCode);
+            }
+
             tokenizer.ReadToken("]");
 
             VerticalCoordinateSystem verticalCS = new VerticalCoordinateSystem(name, verticalDatum, String.Empty, authority, authorityCode, String.Empty, String.Empty);
@@ -546,7 +582,7 @@ namespace gView.Framework.Geometry.SpatialRefTranslation
             {
                 case "GEOGTRAN":
                     Geotransformation geotrans = ReadGeotransformation(tokenizer, includeAuthority);
-                    returnObject = geotrans; 
+                    returnObject = geotrans;
                     break;
                 default:
                     throw new ParseException(String.Format("'{0'} is not recongnized.", objectName));
@@ -574,8 +610,8 @@ namespace gView.Framework.Geometry.SpatialRefTranslation
 
             tokenizer.ReadToken("[");
             string name = tokenizer.ReadDoubleQuotedWord();
-            
-            tokenizer.ReadToken(",");   
+
+            tokenizer.ReadToken(",");
             tokenizer.ReadToken("GEOGCS");
 
             GeographicCoordinateSystem geographicCS1 = WktCoordinateSystemReader.ReadGeographicCoordinateSystem(tokenizer, includeAuthority);
@@ -606,8 +642,15 @@ namespace gView.Framework.Geometry.SpatialRefTranslation
                     tokenizer.ReadToken("]");
                     paramList.Add(paramName, paramValue);
 
-                    if (!tokenizer.TryReadToken(",")) break;
-                    if (!tokenizer.TryReadToken("PARAMETER")) break;
+                    if (!tokenizer.TryReadToken(","))
+                    {
+                        break;
+                    }
+
+                    if (!tokenizer.TryReadToken("PARAMETER"))
+                    {
+                        break;
+                    }
                 }
             }
             return new Geotransformation(name, method, geographicCS1, geographicCS2, paramList, "", "", "", "");

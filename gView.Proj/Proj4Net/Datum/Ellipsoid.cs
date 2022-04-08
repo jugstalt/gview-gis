@@ -46,9 +46,9 @@ namespace Proj4Net.Datum
     /// <see cref="CLARKE_1866"/>, <see cref="GRS80"/>, and <see cref="WGS84"/>.
     /// </summary>
     /// <seealso cref="Datum"/>
-    public class Ellipsoid : 
+    public class Ellipsoid :
 #if !SILVERLIGHT
-        ICloneable, 
+        ICloneable,
 #endif
         IEquatable<Ellipsoid>
     {
@@ -280,21 +280,23 @@ namespace Proj4Net.Datum
             _poleRadius = poleRadius;
 
             if (poleRadius == 0.0 && reciprocalFlattening == 0.0)
+            {
                 throw new ArgumentException("One of poleRadius or reciprocalFlattening must be specified");
+            }
             // don't check for only one of poleRadius or reciprocalFlattening to be specified,
             // since some defs actually supply two
 
             // reciprocalFlattening takes precedence over poleRadius
             if (reciprocalFlattening != 0)
             {
-                double flattening = 1.0/reciprocalFlattening;
+                double flattening = 1.0 / reciprocalFlattening;
                 double f = flattening;
-                _eccentricity2 = 2*f - f*f;
-                _poleRadius = equatorRadius*Math.Sqrt(1.0 - _eccentricity2);
+                _eccentricity2 = 2 * f - f * f;
+                _poleRadius = equatorRadius * Math.Sqrt(1.0 - _eccentricity2);
             }
             else
             {
-                _eccentricity2 = 1.0 - (poleRadius*poleRadius)/(equatorRadius*equatorRadius);
+                _eccentricity2 = 1.0 - (poleRadius * poleRadius) / (equatorRadius * equatorRadius);
             }
             _eccentricity = Math.Sqrt(_eccentricity2);
         }
@@ -364,7 +366,7 @@ namespace Proj4Net.Datum
             set
             {
                 _eccentricity2 = value;
-                _poleRadius = _equatorRadius*Math.Sqrt(1.0 - value);
+                _poleRadius = _equatorRadius * Math.Sqrt(1.0 - value);
                 _eccentricity = Math.Sqrt(value);
             }
         }
@@ -377,12 +379,17 @@ namespace Proj4Net.Datum
 
         public bool Equals(Ellipsoid e, double e2Tolerance)
         {
-            if (_equatorRadius != e._equatorRadius) 
+            if (_equatorRadius != e._equatorRadius)
+            {
                 return false;
-            
+            }
+
             if (Math.Abs(_eccentricity2
-                - e._eccentricity2) > e2Tolerance) return false;
-            
+                - e._eccentricity2) > e2Tolerance)
+            {
+                return false;
+            }
+
             return true;
         }
 

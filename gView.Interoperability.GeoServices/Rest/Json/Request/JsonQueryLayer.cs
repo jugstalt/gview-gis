@@ -1,9 +1,5 @@
 ﻿using gView.Interoperability.GeoServices.Rest.Reflection;
 using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.Text;
-using static gView.Interoperability.GeoServices.Rest.Json.JsonMapService;
 
 namespace gView.Interoperability.GeoServices.Rest.Json.Request
 {

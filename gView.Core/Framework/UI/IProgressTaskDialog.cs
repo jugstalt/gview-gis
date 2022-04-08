@@ -9,5 +9,5 @@ namespace gView.Framework.UI
         bool UserInteractive { get; }
     }
 
-    
+
 }

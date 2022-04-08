@@ -1,9 +1,5 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
 using gView.Framework.UI;
-using gView.Framework.Db.UI;
-using gView.Framework.Db;
+using System;
 using System.Windows.Forms;
 
 namespace gView.DataSources.Fdb.UI.MSSql

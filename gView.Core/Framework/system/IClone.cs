@@ -4,8 +4,8 @@
 /// </summary>
 namespace gView.Framework.system
 {
-    public interface IClone 
-	{
-		object Clone();
-	}
+    public interface IClone
+    {
+        object Clone();
+    }
 }

@@ -1,9 +1,8 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
 using gView.Framework.Data;
-using System.IO;
 using gView.Framework.Geometry;
+using System;
+using System.IO;
+using System.Text;
 
 namespace gView.Framework.OGC.WFS
 {

@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
 namespace gView.Server.AppCode.Extensions
 {
@@ -14,7 +11,9 @@ namespace gView.Server.AppCode.Extensions
         public static bool CheckRegex(this string input, string regex)
         {
             if (String.IsNullOrWhiteSpace(regex))
+            {
                 return true;
+            }
 
             return new Regex(regex).IsMatch(input);
         }

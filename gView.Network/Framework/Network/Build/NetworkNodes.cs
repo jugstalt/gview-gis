@@ -1,8 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using gView.Framework.Data;
 using gView.Framework.Geometry;
-using gView.Framework.Data;
+using System;
+using System.Collections.Generic;
 
 namespace gView.Framework.Network.Build
 {
@@ -19,10 +18,15 @@ namespace gView.Framework.Network.Build
         public int Add(IPoint p, double tolerance)
         {
             if (p == null)
+            {
                 return -1;
+            }
+
             int index = IndexOf(p, tolerance);
             if (index != -1)
+            {
                 return index;
+            }
 
             int gridIndex = _grid.XYIndex(p);
             List<NetworkNode> nodes = _grid[gridIndex];
@@ -39,25 +43,37 @@ namespace gView.Framework.Network.Build
         public NetworkNode Find(IPoint p, double tolerance)
         {
             if (p == null)
+            {
                 return null;
+            }
 
             Envelope env = new Envelope(p.X - tolerance, p.Y - tolerance, p.X + tolerance, p.Y + tolerance);
             foreach (int index in _grid.XYIndices(env))
             {
                 List<NetworkNode> nodes = _grid[index];
                 if (nodes == null)
+                {
                     continue;
+                }
 
                 foreach (NetworkNode node in nodes)
                 {
                     double dx = node.Point.X - p.X;
                     if (Math.Abs(dx) > tolerance)
+                    {
                         continue;
+                    }
+
                     double dy = node.Point.Y - p.Y;
                     if (Math.Abs(dy) > tolerance)
+                    {
                         continue;
+                    }
+
                     if (node.Point.Equals(p, tolerance))
+                    {
                         return node;
+                    }
                 }
             }
             return null;
@@ -70,18 +86,28 @@ namespace gView.Framework.Network.Build
             {
                 List<NetworkNode> nodes = _grid[index];
                 if (nodes == null)
+                {
                     continue;
+                }
 
                 foreach (NetworkNode node in nodes)
                 {
                     double dx = node.Point.X - p.X;
                     if (Math.Abs(dx) > tolerance)
+                    {
                         continue;
+                    }
+
                     double dy = node.Point.Y - p.Y;
                     if (Math.Abs(dy) > tolerance)
+                    {
                         continue;
+                    }
+
                     if (node.Point.Equals(p, tolerance))
+                    {
                         return node.Id;
+                    }
                 }
             }
             return -1;
@@ -108,7 +134,9 @@ namespace gView.Framework.Network.Build
                     foreach (NetworkNode node in t)
                     {
                         if (node.Id == nodeId)
+                        {
                             return node;
+                        }
                     }
                 }
                 return null;
@@ -123,9 +151,13 @@ namespace gView.Framework.Network.Build
             int IComparer<NetworkNode>.Compare(NetworkNode x, NetworkNode y)
             {
                 if (x.Id < y.Id)
+                {
                     return -1;
+                }
                 else if (x.Id > y.Id)
+                {
                     return 1;
+                }
 
                 return 0;
             }
@@ -150,14 +182,22 @@ namespace gView.Framework.Network.Build
         public int Add(IPoint p, double tolerance)
         {
             if (p == null)
+            {
                 return -1;
+            }
+
             int index = IndexOf(p, tolerance);
             if (index != -1)
+            {
                 return index;
+            }
 
             long nid = _tree.InsertSINode(p.Envelope);
             if (!_NIDs.ContainsKey(nid))
+            {
                 _NIDs.Add(nid, new List<NetworkNode>());
+            }
+
             List<NetworkNode> nodes = _NIDs[nid];
             NetworkNode node = new NetworkNode(++_nodeIdSequence, p);
             nodes.Add(node);
@@ -166,7 +206,9 @@ namespace gView.Framework.Network.Build
         public NetworkNode Find(IPoint p, double tolerance)
         {
             if (p == null)
+            {
                 return null;
+            }
 
             Envelope env = new Envelope(p.X - tolerance, p.Y - tolerance, p.X + tolerance, p.Y + tolerance);
             List<long> nids = _tree.CollectNIDs(env);
@@ -177,7 +219,9 @@ namespace gView.Framework.Network.Build
                 foreach (NetworkNode node in nodes)
                 {
                     if (node.Point.Equals(p, tolerance))
+                    {
                         return node;
+                    }
                 }
             }
 
@@ -193,7 +237,9 @@ namespace gView.Framework.Network.Build
             {
                 int index = IndexOf(nid, p, tolerance);
                 if (index != -1)
+                {
                     return index;
+                }
             }
             return -1;
         }
@@ -201,19 +247,29 @@ namespace gView.Framework.Network.Build
         public int IndexOf(long nid, IPoint p, double tolerance)
         {
             if (!_NIDs.ContainsKey(nid))
+            {
                 return -1;
+            }
 
             List<NetworkNode> nodes = _NIDs[nid];
             foreach (NetworkNode node in nodes)
             {
                 double dx = node.Point.X - p.X;
                 if (Math.Abs(dx) > tolerance)
+                {
                     continue;
+                }
+
                 double dy = node.Point.Y - p.Y;
                 if (Math.Abs(dy) > tolerance)
+                {
                     continue;
+                }
+
                 if (node.Point.Equals(p, tolerance))
+                {
                     return node.Id;
+                }
             }
 
             return -1;
@@ -226,7 +282,9 @@ namespace gView.Framework.Network.Build
             {
                 List<NetworkNode> nodes = _NIDs[nid];
                 foreach (NetworkNode node in nodes)
+                {
                     list.Add(node);
+                }
             }
             list.Sort(new NodeIdComparer());
             return list;
@@ -240,9 +298,13 @@ namespace gView.Framework.Network.Build
             int IComparer<NetworkNode>.Compare(NetworkNode x, NetworkNode y)
             {
                 if (x.Id < y.Id)
+                {
                     return -1;
+                }
                 else if (x.Id > y.Id)
+                {
                     return 1;
+                }
 
                 return 0;
             }

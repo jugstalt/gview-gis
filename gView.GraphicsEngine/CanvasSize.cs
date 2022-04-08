@@ -1,9 +1,4 @@
-﻿using gView.GraphicsEngine.Generics;
-using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace gView.GraphicsEngine
+﻿namespace gView.GraphicsEngine
 {
     public struct CanvasSize
     {

@@ -1,14 +1,14 @@
+using gView.Framework.Data;
+using gView.Framework.Geometry;
+using gView.Framework.IO;
+using gView.Framework.OGC.GML;
+using gView.Framework.system;
 using System;
 using System.Collections.Generic;
-using System.Text;
-using gView.Framework.Data;
 using System.IO;
-using gView.Framework.system;
-using System.Xml;
-using gView.Framework.Geometry;
-using gView.Framework.OGC.GML;
-using gView.Framework.IO;
+using System.Text;
 using System.Threading.Tasks;
+using System.Xml;
 
 namespace gView.Framework.OGC.WFS
 {
@@ -42,7 +42,9 @@ namespace gView.Framework.OGC.WFS
             var result = new Filter(version);
 
             if (filter_cabs == null)  // Default erstellen
+            {
                 filter_cabs = new Filter_Capabilities();
+            }
 
             string ogcFilter = await Filter.ToWFS(fc, filter, filter_cabs, version);
             result.GenerateFromString(ogcFilter, fc);
@@ -61,7 +63,10 @@ namespace gView.Framework.OGC.WFS
                 doc.LoadXml(ogcFilter);
 
                 XmlNode filterNode = doc.SelectSingleNode("Filter");
-                if (filterNode == null) return;
+                if (filterNode == null)
+                {
+                    return;
+                }
 
                 foreach (XmlNode childNode in filterNode.ChildNodes)
                 {
@@ -123,9 +128,13 @@ namespace gView.Framework.OGC.WFS
             StreamWriter sw = new StreamWriter(ms, Encoding.UTF8);
 
             if (useNamespace)
+            {
                 sw.WriteLine("<Filter xmlns=\"http://www.opengis.net/ogc\" >");
+            }
             else
+            {
                 sw.WriteLine("<Filter>");
+            }
 
             foreach (FilterObject fObject in _filterObjects)
             {
@@ -156,7 +165,11 @@ namespace gView.Framework.OGC.WFS
 
                     foreach (XmlNode pNode in doc.SelectNodes("//PropertyName"))
                     {
-                        if (names.Contains(pNode.InnerText)) continue;
+                        if (names.Contains(pNode.InnerText))
+                        {
+                            continue;
+                        }
+
                         names.Add(pNode.InnerText);
                     }
                 }
@@ -191,7 +204,9 @@ namespace gView.Framework.OGC.WFS
             foreach (FilterObject fObject in _filterObjects)
             {
                 if (!fObject.Check(feature, featureSRef))
+                {
                     return false;
+                }
             }
 
             return true;
@@ -206,7 +221,10 @@ namespace gView.Framework.OGC.WFS
         }
         private void SetDefaultSrsName(FilterObject filterObject, string srsName)
         {
-            if (filterObject == null) return;
+            if (filterObject == null)
+            {
+                return;
+            }
 
             if (filterObject is SpatialComparisonOperator &&
                String.IsNullOrEmpty(((SpatialComparisonOperator)filterObject).srsName))
@@ -287,7 +305,10 @@ namespace gView.Framework.OGC.WFS
             {
                 sw.WriteLine("<And>");
                 foreach (FilterObject fObject in this.FilterObjects)
+                {
                     fObject.WriteTo(sw, version);
+                }
+
                 sw.WriteLine("</And>");
             }
 
@@ -296,7 +317,9 @@ namespace gView.Framework.OGC.WFS
                 foreach (FilterObject fObject in this.FilterObjects)
                 {
                     if (!fObject.Check(feature, featureSRef))
+                    {
                         return false;
+                    }
                 }
 
                 return true;
@@ -309,7 +332,10 @@ namespace gView.Framework.OGC.WFS
             {
                 sw.WriteLine("<Or>");
                 foreach (FilterObject fObject in this.FilterObjects)
+                {
                     fObject.WriteTo(sw, version);
+                }
+
                 sw.WriteLine("</Or>");
             }
 
@@ -318,7 +344,9 @@ namespace gView.Framework.OGC.WFS
                 foreach (FilterObject fObject in this.FilterObjects)
                 {
                     if (fObject.Check(feature, featureSRef))
+                    {
                         return true;
+                    }
                 }
 
                 return false;
@@ -410,7 +438,10 @@ namespace gView.Framework.OGC.WFS
             private bool DateTimeCompare(DateTime val)
             {
                 DateTime lit;
-                if (!DateTime.TryParse(Literal.ToString(), out lit)) return false;
+                if (!DateTime.TryParse(Literal.ToString(), out lit))
+                {
+                    return false;
+                }
 
                 switch (Operator)
                 {
@@ -457,13 +488,18 @@ namespace gView.Framework.OGC.WFS
             }
             public override bool Check(IFeature feature, ISpatialReference featureSRef)
             {
-                if (feature == null) return false;
+                if (feature == null)
+                {
+                    return false;
+                }
 
                 object val = feature[PropertyName];
                 if (val == null || val == DBNull.Value)
                 {
                     if (Operator == CompOperator.NullCheck)
+                    {
                         return true;
+                    }
 
                     return false;
                 }
@@ -485,9 +521,14 @@ namespace gView.Framework.OGC.WFS
                 XmlNode nodeLiteral = node.SelectSingleNode("Literal");
 
                 if (nodePropertyName != null)
+                {
                     PropertyName = nodePropertyName.InnerText;
+                }
+
                 if (nodeLiteral != null)
+                {
                     Literal = nodeLiteral.InnerText;
+                }
 
                 switch (node.Name)
                 {
@@ -572,21 +613,28 @@ namespace gView.Framework.OGC.WFS
                 get
                 {
                     if (sFilter != null && sFilter.FilterSpatialReference != null)
+                    {
                         return sFilter.FilterSpatialReference.Name;
+                    }
 
                     return String.Empty;
                 }
                 set
                 {
                     if (sFilter != null)
+                    {
                         sFilter.FilterSpatialReference = SpatialReference.FromID(value);
+                    }
                 }
             }
 
             public override bool Check(IFeature feature, ISpatialReference featureSRef)
             {
                 if (feature == null || feature.Shape == null ||
-                    sFilter == null || sFilter.Geometry == null) return false;
+                    sFilter == null || sFilter.Geometry == null)
+                {
+                    return false;
+                }
 
                 IGeometry pGeometry = GeometricTransformerFactory.Transform2D(
                     sFilter.Geometry,
@@ -600,7 +648,10 @@ namespace gView.Framework.OGC.WFS
             }
             public override void WriteTo(StreamWriter sw, GmlVersion version)
             {
-                if (sFilter == null) return;
+                if (sFilter == null)
+                {
+                    return;
+                }
 
                 //Operator = SpatialCompOperator.BBOX;
                 sw.WriteLine("<" + Operator.ToString() + ">");
@@ -614,7 +665,10 @@ namespace gView.Framework.OGC.WFS
             }
             public override void BuildFromNode(XmlNode node)
             {
-                if (node == null) return;
+                if (node == null)
+                {
+                    return;
+                }
 
                 switch (node.Name.ToLower())
                 {
@@ -663,7 +717,10 @@ namespace gView.Framework.OGC.WFS
                     if (sFilter.Geometry != null)
                     {
                         if (child.Attributes["srsName"] != null)
+                        {
                             srsName = child.Attributes["srsName"].Value;
+                        }
+
                         break;
                     }
                 }
@@ -688,7 +745,10 @@ namespace gView.Framework.OGC.WFS
         #region Static Members
         async static public Task<string> ToWFS(IFeatureClass fc, IQueryFilter filter, Filter_Capabilities filterCaps, GmlVersion version)
         {
-            if (filterCaps == null) return String.Empty;
+            if (filterCaps == null)
+            {
+                return String.Empty;
+            }
 
             if (filter is IBufferQueryFilter)
             {
@@ -705,7 +765,9 @@ namespace gView.Framework.OGC.WFS
                     sFilter.FilterSpatialReference.Name : "";
 
                 if (sFilter.WhereClause != String.Empty)
+                {
                     sw.WriteLine("<ogc:And>");
+                }
 
                 string op = filterCaps.SpatialOperator(sFilter.SpatialRelation);
                 sw.WriteLine("  <ogc:" + op + ">");
@@ -729,7 +791,9 @@ namespace gView.Framework.OGC.WFS
                 if (sFilter.WhereClause != String.Empty)
                 {
                     if (filter.WhereClause.ToLower().Contains(" in ("))
+                    {
                         ParseInWhereClause(filter.WhereClause, sw);
+                    }
                     else
                     {
                         ParseWhereClause(filter.WhereClause, sw);
@@ -751,7 +815,9 @@ namespace gView.Framework.OGC.WFS
             else if (filter is IQueryFilter)
             {
                 if (filter.WhereClause.ToLower().Contains(" in ("))
+                {
                     ParseInWhereClause(filter.WhereClause, sw);
+                }
                 else
                 {
                     ParseWhereClause(filter.WhereClause, sw);
@@ -805,14 +871,21 @@ namespace gView.Framework.OGC.WFS
             IQueryFilter newFilter = null;
             ParseWFSFilter(fc, filter, "", ns, whereClause, ref newFilter, gmlVersion);
 
-            if (newFilter == null) newFilter = new QueryFilter();
+            if (newFilter == null)
+            {
+                newFilter = new QueryFilter();
+            }
+
             newFilter.WhereClause = RemoveOuterBrackets(whereClause.ToString());
 
             return newFilter;
         }
         static public void AppendSortBy(IQueryFilter filter, XmlNode SortBy)
         {
-            if (filter == null || SortBy == null) return;
+            if (filter == null || SortBy == null)
+            {
+                return;
+            }
 
             XmlNamespaceManager ns = null;
             if (SortBy.NamespaceURI != String.Empty)
@@ -822,8 +895,15 @@ namespace gView.Framework.OGC.WFS
             }
 
             XmlNode sortProperty = SortBy.SelectSingleNode("SortProperty", ns);
-            if (sortProperty == null) sortProperty = SortBy.SelectSingleNode("OGC:SortProperty", ns);
-            if (sortProperty == null) return;
+            if (sortProperty == null)
+            {
+                sortProperty = SortBy.SelectSingleNode("OGC:SortProperty", ns);
+            }
+
+            if (sortProperty == null)
+            {
+                return;
+            }
 
             string prop = String.Empty, order = String.Empty;
             foreach (XmlNode child in sortProperty.ChildNodes)
@@ -847,7 +927,9 @@ namespace gView.Framework.OGC.WFS
             {
                 filter.OrderBy = prop;
                 if (!String.IsNullOrEmpty(order))
+                {
                     filter.OrderBy += " " + order;
+                }
             }
         }
         #region Helper
@@ -855,7 +937,10 @@ namespace gView.Framework.OGC.WFS
         #region ToWFS
         private static void CreateRowIDFilter(IFeatureClass fc, IRowIDFilter filter, StreamWriter sw)
         {
-            if (fc == null || filter == null || sw == null) return;
+            if (fc == null || filter == null || sw == null)
+            {
+                return;
+            }
 
             string fcName = XML.Globals.TypeWithoutPrefix(fc.Name);
             foreach (int id in filter.IDs)
@@ -875,9 +960,16 @@ namespace gView.Framework.OGC.WFS
 
         static void tokenizer_OnTransformToken(ref string text)
         {
-            if (text == String.Empty) return;
+            if (text == String.Empty)
+            {
+                return;
+            }
+
             if (text.LastIndexOf("[") == 0 &&
-                text.IndexOf("]") == text.Length - 1) return;
+                text.IndexOf("]") == text.Length - 1)
+            {
+                return;
+            }
 
             text = ParseFlatWhereClause(text);
         }
@@ -885,7 +977,10 @@ namespace gView.Framework.OGC.WFS
         private static string ParseFlatWhereClause(string whereClause)
         {
             StringBuilder sb = new StringBuilder();
-            if (whereClause == String.Empty) return String.Empty;
+            if (whereClause == String.Empty)
+            {
+                return String.Empty;
+            }
 
             if (whereClause.Contains("(") || whereClause.Contains(")"))
             {
@@ -907,18 +1002,35 @@ namespace gView.Framework.OGC.WFS
             }
 
             string op = String.Empty;
-            if (useAND) op = "And";
-            if (useOR) op = "Or";
-            if (useNOT) op = "Not";
+            if (useAND)
+            {
+                op = "And";
+            }
+
+            if (useOR)
+            {
+                op = "Or";
+            }
+
+            if (useNOT)
+            {
+                op = "Not";
+            }
 
             string[] properties = SplitByString(whereClause, " " + op + " ");
 
             if (op != String.Empty)
+            {
                 sb.Append("<ogc:" + op + ">");
+            }
 
             foreach (string property in properties)
             {
-                if (property == String.Empty) continue;
+                if (property == String.Empty)
+                {
+                    continue;
+                }
+
                 if (property[0] == '[' && property[property.Length - 1] == ']')
                 {
                     sb.Append(property);
@@ -964,7 +1076,9 @@ namespace gView.Framework.OGC.WFS
                 sb.Append(@"</" + operatorName + ">");
             }
             if (op != String.Empty)
+            {
                 sb.Append("</ogc:" + op + ">");
+            }
 
             return sb.ToString();
         }
@@ -972,13 +1086,20 @@ namespace gView.Framework.OGC.WFS
         private static void ParseInWhereClause(string whereClause, StreamWriter sw)
         {
             while (whereClause.IndexOf(" ,") != -1)
+            {
                 whereClause = whereClause.Replace(" ,", ",");
+            }
+
             while (whereClause.IndexOf(", ") != -1)
+            {
                 whereClause = whereClause.Replace(", ", ",");
+            }
 
             string[] parts = whereClause.Trim().Split(' ');
             if (parts.Length != 3)
+            {
                 throw (new Exception("Whereclause to complex..."));
+            }
 
             string field = parts[0];
             string[] ids = parts[2].Substring(1, parts[2].Length - 2).Split(',');
@@ -986,7 +1107,11 @@ namespace gView.Framework.OGC.WFS
             StringBuilder sb = new StringBuilder();
             foreach (string id in ids)
             {
-                if (sb.Length > 0) sb.Append(" OR ");
+                if (sb.Length > 0)
+                {
+                    sb.Append(" OR ");
+                }
+
                 sb.Append(field + "=" + id);
             }
 
@@ -1001,7 +1126,10 @@ namespace gView.Framework.OGC.WFS
 
             foreach (string part in parts)
             {
-                if (part == op) return true;
+                if (part == op)
+                {
+                    return true;
+                }
             }
             return false;
         }
@@ -1010,7 +1138,9 @@ namespace gView.Framework.OGC.WFS
         {
             clause = clause.Trim();
             while (clause.IndexOf("  ") != -1)
+            {
                 clause = clause.Replace("  ", " ");
+            }
 
             return clause;
         }
@@ -1122,7 +1252,10 @@ namespace gView.Framework.OGC.WFS
         #region FromWFS
         private static void ParseWFSFilter(IFeatureClass fc, XmlNode parentNode, string LogicalOperator, XmlNamespaceManager ns, StringBuilder sb, ref IQueryFilter newFilter, GmlVersion gmlVersion)
         {
-            if (parentNode == null) return;
+            if (parentNode == null)
+            {
+                return;
+            }
 
             foreach (XmlNode child in parentNode.ChildNodes)
             {
@@ -1154,7 +1287,10 @@ namespace gView.Framework.OGC.WFS
                     case "ogc:BBOX":
                     case "BBOX":
                         if (newFilter != null)
+                        {
                             throw new Exception("Invalid or corrupt Filter!!!");
+                        }
+
                         newFilter = new SpatialFilter();
                         ((ISpatialFilter)newFilter).SpatialRelation = spatialRelation.SpatialRelationEnvelopeIntersects;
                         gmlNode = (ns != null) ? child.SelectSingleNode("GML:*", ns) : child.ChildNodes[0];
@@ -1162,7 +1298,10 @@ namespace gView.Framework.OGC.WFS
                     case "ogc:Intersects":
                     case "Intersects":
                         if (newFilter != null)
+                        {
                             throw new Exception("Invalid or corrupt Filter!!!");
+                        }
+
                         newFilter = new SpatialFilter();
                         ((ISpatialFilter)newFilter).SpatialRelation = spatialRelation.SpatialRelationIntersects;
                         gmlNode = (ns != null) ? child.SelectSingleNode("GML:*", ns) : child.ChildNodes[0];
@@ -1170,7 +1309,10 @@ namespace gView.Framework.OGC.WFS
                     case "ogc:Within":
                     case "Within":
                         if (newFilter != null)
+                        {
                             throw new Exception("Invalid or corrupt Filter!!!");
+                        }
+
                         newFilter = new SpatialFilter();
                         ((ISpatialFilter)newFilter).SpatialRelation = spatialRelation.SpatialRelationContains;
                         gmlNode = (ns != null) ? child.SelectSingleNode("GML:*", ns) : child.ChildNodes[0];
@@ -1178,7 +1320,10 @@ namespace gView.Framework.OGC.WFS
                     case "ogc:Contains":
                     case "Contains":
                         if (newFilter != null)
+                        {
                             throw new Exception("Invalid or corrupt Filter!!!");
+                        }
+
                         newFilter = new SpatialFilter();
                         ((ISpatialFilter)newFilter).SpatialRelation = spatialRelation.SpatialRelationContains;
                         gmlNode = (ns != null) ? child.SelectSingleNode("GML:*", ns) : child.ChildNodes[0];
@@ -1193,10 +1338,14 @@ namespace gView.Framework.OGC.WFS
                 {
                     ((ISpatialFilter)newFilter).Geometry = GeometryTranslator.GML2Geometry(gmlNode.OuterXml, gmlVersion);
                     if (((ISpatialFilter)newFilter).Geometry == null)
+                    {
                         throw new Exception("Unknown GML Geometry...");
+                    }
 
                     if (gmlNode.Attributes["srsName"] != null)
+                    {
                         ((ISpatialFilter)newFilter).FilterSpatialReference = SpatialReference.FromID(gmlNode.Attributes["srsName"].Value);
+                    }
                 }
             }
         }
@@ -1205,7 +1354,10 @@ namespace gView.Framework.OGC.WFS
         {
             //if(fc==null) 
             //    throw new ArgumentException("ParseWFSFilterNode: FeatureClass is null...");
-            if (node == null) return String.Empty;
+            if (node == null)
+            {
+                return String.Empty;
+            }
 
             string op = String.Empty;
             switch (node.Name)
@@ -1289,28 +1441,46 @@ namespace gView.Framework.OGC.WFS
 
         private static void AppendClause(string op, string clause, StringBuilder sb)
         {
-            if (clause == String.Empty) return;
+            if (clause == String.Empty)
+            {
+                return;
+            }
 
             if (sb.Length > 0)
+            {
                 sb.Append(" " + op + " ");
+            }
+
             sb.Append(clause);
         }
 
         private static string RemoveOuterBrackets(string sql)
         {
-            if (sql == null || sql == String.Empty) return String.Empty;
+            if (sql == null || sql == String.Empty)
+            {
+                return String.Empty;
+            }
 
             byte[] c = new byte[sql.Length];
             int pos = 0;
             for (int i = 0; i < sql.Length; i++)
             {
                 if (sql[i] == '(')
+                {
                     c[i] = (byte)++pos;
+                }
+
                 if (sql[i] == ')')
+                {
                     c[i] = (byte)pos--;
+                }
             }
 
-            if (c[0] != 1 || c[c.Length - 1] != 1) return sql;
+            if (c[0] != 1 || c[c.Length - 1] != 1)
+            {
+                return sql;
+            }
+
             if (CountValues(c, 1) == 2)
             {
                 return RemoveOuterBrackets(sql.Substring(1, sql.Length - 2));
@@ -1324,8 +1494,12 @@ namespace gView.Framework.OGC.WFS
         {
             int counter = 0;
             for (int i = 0; i < array.Length; i++)
+            {
                 if (array[i] == val)
+                {
                     counter++;
+                }
+            }
 
             return counter;
         }
@@ -1356,7 +1530,10 @@ namespace gView.Framework.OGC.WFS
 
         public Filter_Capabilities(XmlNode node, XmlNamespaceManager ns)
         {
-            if (node == null) return;
+            if (node == null)
+            {
+                return;
+            }
 
             #region GeometryOperands
             foreach (XmlNode n in node.SelectNodes("OGC:Spatial_Capabilities/OGC:GeometryOperands/OGC:GeometryOperand", ns))
@@ -1366,7 +1543,9 @@ namespace gView.Framework.OGC.WFS
             foreach (XmlNode n in node.SelectNodes("OGC:Spatial_Capabilities/OGC:Geometry_Operands", ns))
             {
                 foreach (XmlNode c in n.ChildNodes)
+                {
                     GeometryOperands.Add(gView.Framework.OGC.XML.Globals.TypeWithoutPrefix(c.Name));
+                }
             }
             #endregion
 
@@ -1378,7 +1557,9 @@ namespace gView.Framework.OGC.WFS
             foreach (XmlNode n in node.SelectNodes("OGC:Spatial_Capabilities/OGC:Spatial_Operators", ns))
             {
                 foreach (XmlNode c in n.ChildNodes)
+                {
                     SpatialOperators.Add(gView.Framework.OGC.XML.Globals.TypeWithoutPrefix(c.Name));
+                }
             }
             #endregion
 
@@ -1390,7 +1571,9 @@ namespace gView.Framework.OGC.WFS
             foreach (XmlNode n in node.SelectNodes("OGC:Scalar_Capabilities/OGC:Comparison_Operators", ns))
             {
                 foreach (XmlNode c in n.ChildNodes)
+                {
                     ComparisonOperators.Add(gView.Framework.OGC.XML.Globals.TypeWithoutPrefix(c.Name));
+                }
             }
             #endregion
 
@@ -1402,7 +1585,9 @@ namespace gView.Framework.OGC.WFS
             foreach (XmlNode n in node.SelectNodes("OGC:Scalar_Capabilities/OGC:Arithmetic_Operators/OGC:Functions", ns))
             {
                 foreach (XmlNode c in n.ChildNodes)
+                {
                     ArithmeticFunctions.Add(gView.Framework.OGC.XML.Globals.TypeWithoutPrefix(c.Name));
+                }
             }
             #endregion
 
@@ -1424,7 +1609,10 @@ namespace gView.Framework.OGC.WFS
         {
             foreach (string l in list)
             {
-                if (l.ToLower() == op.ToLower()) return l;
+                if (l.ToLower() == op.ToLower())
+                {
+                    return l;
+                }
             }
             return String.Empty;
         }
@@ -1473,7 +1661,10 @@ namespace gView.Framework.OGC.WFS
             if (!SupportsSpatialOperator(relation))
             {
                 if (SupportsSpatialOperator("BBOX"))
+                {
                     return "BBOX";
+                }
+
                 return String.Empty;
             }
 

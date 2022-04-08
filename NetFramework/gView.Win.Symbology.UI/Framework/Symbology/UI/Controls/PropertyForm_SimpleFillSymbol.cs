@@ -6,46 +6,46 @@ namespace gView.Framework.Symbology.UI
     /// Zusammenfassung für PropertyForm_SimpleFillSymbol.
     /// </summary>
     internal class PropertyForm_SimpleFillSymbol : System.Windows.Forms.Form, IPropertyPageUI, gView.Framework.Symbology.UI.IPropertyPanel
-	{
-		private System.Windows.Forms.ColorDialog colorDialog1;
-		/// <summary>
-		/// Erforderliche Designervariable.
-		/// </summary>
-		private System.ComponentModel.Container components = null;
-		public System.Windows.Forms.Panel panelLineSymbol;
-		private System.Windows.Forms.TabControl tabControl1;
-		private System.Windows.Forms.TabPage tabPage1;
-		private System.Windows.Forms.PropertyGrid propertyGrid;
-		public System.Windows.Forms.Panel panelFillSymbol;
-		private IFillSymbol _symbol=null;
+    {
+        private System.Windows.Forms.ColorDialog colorDialog1;
+        /// <summary>
+        /// Erforderliche Designervariable.
+        /// </summary>
+        private System.ComponentModel.Container components = null;
+        public System.Windows.Forms.Panel panelLineSymbol;
+        private System.Windows.Forms.TabControl tabControl1;
+        private System.Windows.Forms.TabPage tabPage1;
+        private System.Windows.Forms.PropertyGrid propertyGrid;
+        public System.Windows.Forms.Panel panelFillSymbol;
+        private IFillSymbol _symbol = null;
 
-		public PropertyForm_SimpleFillSymbol()
-		{
-			InitializeComponent();
-		}
+        public PropertyForm_SimpleFillSymbol()
+        {
+            InitializeComponent();
+        }
 
-		/// <summary>
-		/// Die verwendeten Ressourcen bereinigen.
-		/// </summary>
-		protected override void Dispose( bool disposing )
-		{
-			if( disposing )
-			{
-				if(components != null)
-				{
-					components.Dispose();
-				}
-			}
-			base.Dispose( disposing );
-		}
+        /// <summary>
+        /// Die verwendeten Ressourcen bereinigen.
+        /// </summary>
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                if (components != null)
+                {
+                    components.Dispose();
+                }
+            }
+            base.Dispose(disposing);
+        }
 
-		#region Vom Windows Form-Designer generierter Code
-		/// <summary>
-		/// Erforderliche Methode für die Designerunterstützung. 
-		/// Der Inhalt der Methode darf nicht mit dem Code-Editor geändert werden.
-		/// </summary>
-		private void InitializeComponent()
-		{
+        #region Vom Windows Form-Designer generierter Code
+        /// <summary>
+        /// Erforderliche Methode für die Designerunterstützung. 
+        /// Der Inhalt der Methode darf nicht mit dem Code-Editor geändert werden.
+        /// </summary>
+        private void InitializeComponent()
+        {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(PropertyForm_SimpleFillSymbol));
             this.colorDialog1 = new System.Windows.Forms.ColorDialog();
             this.panelLineSymbol = new System.Windows.Forms.Panel();
@@ -106,33 +106,33 @@ namespace gView.Framework.Symbology.UI
             this.panelFillSymbol.ResumeLayout(false);
             this.ResumeLayout(false);
 
-		}
-		#endregion
+        }
+        #endregion
 
-		private void PropertyForm_SimpleFillSymbol_Load(object sender, System.EventArgs e)
-		{
+        private void PropertyForm_SimpleFillSymbol_Load(object sender, System.EventArgs e)
+        {
 
-		}
+        }
 
-		private void propertyGrid_PropertyValueChanged(object s, System.Windows.Forms.PropertyValueChangedEventArgs e)
-		{
-			if(PropertyChanged!=null)
+        private void propertyGrid_PropertyValueChanged(object s, System.Windows.Forms.PropertyValueChangedEventArgs e)
+        {
+            if (PropertyChanged != null)
             {
                 PropertyChanged(_symbol);
             }
         }
 
-		#region IPropertryPageUI
+        #region IPropertryPageUI
 
-		public event PropertyChangedEvent PropertyChanged=null;
+        public event PropertyChangedEvent PropertyChanged = null;
 
-		#endregion
+        #endregion
 
         #region PropertyPanel Member
 
         public object PropertyPanel(ISymbol symbol)
         {
-            if (symbol is SimpleFillSymbol || 
+            if (symbol is SimpleFillSymbol ||
                 symbol is HatchSymbol ||
                 symbol is GradientFillSymbol ||
                 symbol is PolygonMaskSymbol)

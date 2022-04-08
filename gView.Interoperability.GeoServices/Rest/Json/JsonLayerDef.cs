@@ -1,13 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace gView.Interoperability.GeoServices.Rest.Json
+﻿namespace gView.Interoperability.GeoServices.Rest.Json
 {
     public class JsonLayerDef
     {
-         
+
     }
 }

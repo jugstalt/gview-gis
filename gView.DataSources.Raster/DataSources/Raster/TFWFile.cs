@@ -1,30 +1,32 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.IO;
-using System.Drawing;
-using gView.Framework.Geometry;
 using gView.Framework.Data;
+using gView.Framework.Geometry;
+using System;
+using System.Drawing;
+using System.IO;
 
 namespace gView.DataSources.Raster
 {
-    public class TFWFile : IRasterWorldFile 
+    public class TFWFile : IRasterWorldFile
     {
         double _dx_x = 1.0;
         double _dx_y = 0.0;
         double _dy_x = 0.0;
         double _dy_y = -1.0;
         double _X = 0.0, _Y = 0.0;
-        double _detA=1.0;
+        double _detA = 1.0;
         bool _valid = false;
-        string _filename=String.Empty;
+        string _filename = String.Empty;
 
         public TFWFile(string filename)
         {
             try
             {
                 FileInfo fi = new FileInfo(filename);
-                if (!fi.Exists) return;
+                if (!fi.Exists)
+                {
+                    return;
+                }
+
                 _filename = filename;
 
                 StreamReader sr = new StreamReader(filename);
@@ -33,11 +35,15 @@ namespace gView.DataSources.Raster
                 while ((line = sr.ReadLine()) != null)
                 {
                     line = line.Trim();
-                    if (line == "") continue;
+                    if (line == "")
+                    {
+                        continue;
+                    }
+
                     double val = 0.0;
                     try
                     {
-                        val = Convert.ToDouble(line.Replace(".",","));
+                        val = Convert.ToDouble(line.Replace(".", ","));
                     }
                     catch
                     {
@@ -65,7 +71,10 @@ namespace gView.DataSources.Raster
                             break;
                     }
                     pos++;
-                    if (pos > 5) break;
+                    if (pos > 5)
+                    {
+                        break;
+                    }
                 }
                 sr.Close();
 
@@ -97,11 +106,11 @@ namespace gView.DataSources.Raster
             get { return _valid; }
             internal set { _valid = value; }
         }
-        
+
 
         public string Filename { get { return _filename; } set { _filename = value; } }
 
-        
+
         public double dx_X { get { return _dx_x; } }
         public double dx_Y { get { return _dx_y; } }
         public double dy_X { get { return _dy_x; } }
@@ -147,7 +156,7 @@ namespace gView.DataSources.Raster
             int w = width / xSplit;
             int h = height / ySplit;
 
-            int count=0;
+            int count = 0;
             for (int y = 0; y < ySplit; y++)
             {
                 for (int x = 0; x < xSplit; x++)
@@ -169,7 +178,7 @@ namespace gView.DataSources.Raster
             }
         }
 
-        public  Polygon CreatePolygon(int width, int height)
+        public Polygon CreatePolygon(int width, int height)
         {
             Polygon polygon = new Polygon();
             Ring ring = new Ring();
@@ -191,7 +200,7 @@ namespace gView.DataSources.Raster
             //matrix22 A = new matrix22(dx_X, dx_Y, dy_X, dy_Y);
             matrix22 A = new matrix22(dx_X, dy_X, dx_Y, dy_Y);
             vector2 X = new vector2(
-                _X - dx_X / 2.0 - dy_X / 2.0, 
+                _X - dx_X / 2.0 - dy_X / 2.0,
                 _Y - dx_Y / 2.0 - dy_Y / 2.0);
 
             for (int i = 0; i < vecs.Length; i++)
@@ -203,7 +212,10 @@ namespace gView.DataSources.Raster
         {
             //matrix22 A = new matrix22(dx_X, dx_Y, dy_X, dy_Y);
             matrix22 A = new matrix22(dx_X, dy_X, dx_Y, dy_Y);
-            if (!A.Inv()) return false;
+            if (!A.Inv())
+            {
+                return false;
+            }
 
             vector2 X = new vector2(
                 _X - dx_X / 2.0 - dy_X / 2.0,
@@ -211,7 +223,7 @@ namespace gView.DataSources.Raster
 
             for (int i = 0; i < vecs.Length; i++)
             {
-                vecs[i] = A * (vecs[i]-X);
+                vecs[i] = A * (vecs[i] - X);
             }
             return true;
         }
@@ -222,9 +234,15 @@ namespace gView.DataSources.Raster
         {
             get
             {
-                if (!_valid) return false;
+                if (!_valid)
+                {
+                    return false;
+                }
 
-                if (_filename != String.Empty && _filename != null) return true;
+                if (_filename != String.Empty && _filename != null)
+                {
+                    return true;
+                }
 
                 if (X == 0.0 && Y == 0.0 &&
                     dx_X == 1.0 && dx_Y == 0.0 &&
@@ -250,7 +268,7 @@ namespace gView.DataSources.Raster
             y = Y;
         }
 
-        static public vector2 operator -(vector2 v1,vector2 v2)
+        static public vector2 operator -(vector2 v1, vector2 v2)
         {
             return new vector2(v1.x - v2.x, v1.y - v2.y);
         }
@@ -304,11 +322,14 @@ namespace gView.DataSources.Raster
             d = x11;
         }
 
-        public bool Inv() 
+        public bool Inv()
         {
             double det = a * d - b * c;
-            if(det==0.0) return false;
-            
+            if (det == 0.0)
+            {
+                return false;
+            }
+
             // swap a/d
             double h = a;
             a = d; d = h;
@@ -331,18 +352,21 @@ namespace gView.DataSources.Raster
     }
     public class ImageSplitter
     {
-        public ImageSplitter(string filename, string outputPath,int xSplit,int ySplit)
+        public ImageSplitter(string filename, string outputPath, int xSplit, int ySplit)
         {
             try
             {
                 FileInfo fi = new FileInfo(filename);
-                if (!fi.Exists) return;
+                if (!fi.Exists)
+                {
+                    return;
+                }
 
                 Image image = Image.FromFile(filename);
                 string fname = filename.Substring(0, filename.Length - fi.Extension.Length);
                 string ftitle = fi.Name.Substring(0, fi.Name.Length - fi.Extension.Length);
 
-                string tfwfilename =  fname + ".tfw";
+                string tfwfilename = fname + ".tfw";
                 TFWFile tfw = new TFWFile(tfwfilename);
 
                 int w = image.Width / xSplit;

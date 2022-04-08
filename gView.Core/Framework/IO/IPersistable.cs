@@ -1,14 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 
 namespace gView.Framework.IO
 {
     public interface IMetadataProvider : IPersistable
     {
-       Task<bool> ApplyTo(object Object);
+        Task<bool> ApplyTo(object Object);
         string Name { get; }
     }
 }

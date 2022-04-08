@@ -66,7 +66,7 @@
 
 //        public void Insert(int index, object value)
 //        {
-            
+
 //        }
 
 //        public bool IsFixedSize
@@ -81,12 +81,12 @@
 
 //        public void Remove(object value)
 //        {
-            
+
 //        }
 
 //        public void RemoveAt(int index)
 //        {
-            
+
 //        }
 
 //        public object this[int index]
@@ -97,7 +97,7 @@
 //            }
 //            set
 //            {
-                
+
 //            }
 //        }
 

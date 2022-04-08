@@ -1,11 +1,10 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.IO;
-using gView.Framework.IO;
 using gView.Framework.Carto;
 using gView.Framework.Data;
+using gView.Framework.IO;
 using gView.Framework.system.UI;
+using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
 
 namespace gView.Framework.UI
@@ -35,7 +34,9 @@ namespace gView.Framework.UI
             try
             {
                 if (!(new FileInfo(filename).Exists))
+                {
                     return Task.FromResult<IExplorerFileObject>(null);
+                }
             }
             catch
             {
@@ -101,7 +102,7 @@ namespace gView.Framework.UI
 
                 //_mapDocument.LoadMapDocument(_filename);
                 await stream.LoadAsync("MapDocument", _mapDocument);
-                
+
                 foreach (IMap map in _mapDocument.Maps)
                 {
                     base.AddChildObject(new MapExplorerObject(this, _filename, map));
@@ -109,7 +110,7 @@ namespace gView.Framework.UI
 
                 return true;
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 string errMsg = ex.Message;
                 return false;
@@ -125,9 +126,15 @@ namespace gView.Framework.UI
             try
             {
                 if (cache.Contains(FullName))
+                {
                     return Task.FromResult(cache[FullName]);
+                }
+
                 FileInfo fi = new FileInfo(FullName);
-                if (!fi.Exists || fi.Extension.ToLower() != ".mxl") return null;
+                if (!fi.Exists || fi.Extension.ToLower() != ".mxl")
+                {
+                    return null;
+                }
 
                 MapDocumentExplorerObject ex = new MapDocumentExplorerObject(null, FullName);
                 cache.Append(ex);
@@ -163,7 +170,11 @@ namespace gView.Framework.UI
         {
             get
             {
-                if (_map == null) return "???";
+                if (_map == null)
+                {
+                    return "???";
+                }
+
                 return _map.Name;
             }
         }
@@ -201,7 +212,9 @@ namespace gView.Framework.UI
         {
             await base.Refresh();
             if (_map == null)
+            {
                 return false;
+            }
 
             //foreach (IDatasetElement element in _map.MapElements)
             //{
@@ -210,7 +223,11 @@ namespace gView.Framework.UI
             //}
             foreach (ITOCElement element in _map.TOC.Elements)
             {
-                if (element.ParentGroup != null) continue;
+                if (element.ParentGroup != null)
+                {
+                    continue;
+                }
+
                 if (element.ElementType == TOCElementType.ClosedGroup ||
                     element.ElementType == TOCElementType.OpenedGroup)
                 {
@@ -231,11 +248,17 @@ namespace gView.Framework.UI
 
         async public Task<IExplorerObject> CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache cache)
         {
-            if (cache.Contains(FullName)) return cache[FullName];
+            if (cache.Contains(FullName))
+            {
+                return cache[FullName];
+            }
 
             FullName = FullName.Replace("/", @"\");
             int lastIndex = FullName.LastIndexOf(@"\");
-            if (lastIndex == -1) return null;
+            if (lastIndex == -1)
+            {
+                return null;
+            }
 
             string mxlName = FullName.Substring(0, lastIndex);
             string mapName = FullName.Substring(lastIndex + 1, FullName.Length - lastIndex - 1);
@@ -243,7 +266,9 @@ namespace gView.Framework.UI
             MapDocumentExplorerObject mapDocument = new MapDocumentExplorerObject();
             mapDocument = await mapDocument.CreateInstanceByFullName(mxlName, cache) as MapDocumentExplorerObject;
             if (mapDocument == null || await mapDocument.ChildObjects() == null)
+            {
                 return null;
+            }
 
             foreach (MapExplorerObject mapObject in await mapDocument.ChildObjects())
             {
@@ -283,7 +308,11 @@ namespace gView.Framework.UI
         {
             get
             {
-                if (_parent == null || _layer == null) return "";
+                if (_parent == null || _layer == null)
+                {
+                    return "";
+                }
+
                 return _parent.FullName + "/" + Name;
             }
         }
@@ -314,18 +343,27 @@ namespace gView.Framework.UI
 
         async public Task<IExplorerObject> CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache cache)
         {
-            if (cache.Contains(FullName)) return cache[FullName];
+            if (cache.Contains(FullName))
+            {
+                return cache[FullName];
+            }
 
             FullName = FullName.Replace("/", @"\");
             int lastIndex = FullName.LastIndexOf(@"\");
-            if (lastIndex == -1) return null;
+            if (lastIndex == -1)
+            {
+                return null;
+            }
 
             string mapName = FullName.Substring(0, lastIndex);
             string mflName = FullName.Substring(lastIndex + 1, FullName.Length - lastIndex - 1);
 
             MapExplorerObject mapObject = new MapExplorerObject();
             mapObject = await mapObject.CreateInstanceByFullName(mapName, cache) as MapExplorerObject;
-            if (mapObject == null || await mapObject.ChildObjects() == null) return null;
+            if (mapObject == null || await mapObject.ChildObjects() == null)
+            {
+                return null;
+            }
 
             foreach (FeatureLayerExplorerObject mflObject in await mapObject.ChildObjects())
             {
@@ -368,7 +406,11 @@ namespace gView.Framework.UI
         {
             get
             {
-                if (_parent == null) return "";
+                if (_parent == null)
+                {
+                    return "";
+                }
+
                 return _parent.FullName + @"\" + this.Name;
             }
         }
@@ -405,24 +447,37 @@ namespace gView.Framework.UI
         {
             try
             {
-                if (cache.Contains(FullName)) return cache[FullName];
+                if (cache.Contains(FullName))
+                {
+                    return cache[FullName];
+                }
 
                 FullName = FullName.Replace("/", @"\");
                 int lastIndex = FullName.LastIndexOf(@"\");
-                if (lastIndex == -1) return null;
+                if (lastIndex == -1)
+                {
+                    return null;
+                }
 
                 string parentName = FullName.Substring(0, lastIndex);
                 string tocName = FullName.Substring(lastIndex + 1, FullName.Length - lastIndex - 1);
 
                 lastIndex = parentName.LastIndexOf(@"\");
-                if (lastIndex == -1) return null;
+                if (lastIndex == -1)
+                {
+                    return null;
+                }
+
                 string mapDocname = parentName.Substring(0, lastIndex);
                 FileInfo mapDoc = new FileInfo(mapDocname);
                 if (mapDoc.Exists)
                 {
                     MapExplorerObject mapObject = new MapExplorerObject();
                     mapObject = await mapObject.CreateInstanceByFullName(parentName, cache) as MapExplorerObject;
-                    if (mapObject == null || await mapObject.ChildObjects() == null) return null;
+                    if (mapObject == null || await mapObject.ChildObjects() == null)
+                    {
+                        return null;
+                    }
 
                     foreach (TOCElementExplorerObject tocObject in await mapObject.ChildObjects())
                     {
@@ -437,7 +492,10 @@ namespace gView.Framework.UI
                 {
                     TOCGroupElementExplorerObject parentTocObject = new TOCGroupElementExplorerObject();
                     parentTocObject = await parentTocObject.CreateInstanceByFullName(parentName, cache) as TOCGroupElementExplorerObject;
-                    if (parentTocObject == null || await parentTocObject.ChildObjects() == null) return null;
+                    if (parentTocObject == null || await parentTocObject.ChildObjects() == null)
+                    {
+                        return null;
+                    }
 
                     foreach (TOCElementExplorerObject tocObject in await parentTocObject.ChildObjects())
                     {
@@ -477,14 +535,23 @@ namespace gView.Framework.UI
             _childs = new List<IExplorerObject>();
 
             if (_element == null || _element.TOC == null)
+            {
                 return false;
+            }
+
             if (_element.ElementType == TOCElementType.ClosedGroup)
+            {
                 _element.OpenCloseGroup(true);
+            }
 
             List<ITOCElement> elements = _element.TOC.GroupedElements(_element);
             foreach (ITOCElement element in _element.TOC.GroupedElements(_element))
             {
-                if (element.ParentGroup != _element) continue;
+                if (element.ParentGroup != _element)
+                {
+                    continue;
+                }
+
                 if (element.ElementType == TOCElementType.ClosedGroup ||
                     element.ElementType == TOCElementType.OpenedGroup)
                 {
@@ -503,18 +570,28 @@ namespace gView.Framework.UI
         async public Task<List<IExplorerObject>> ChildObjects()
         {
 
-            if (_childs == null) await this.Refresh();
+            if (_childs == null)
+            {
+                await this.Refresh();
+            }
+
             return _childs;
         }
 
         public Task<bool> DiposeChildObjects()
         {
             if (_childs == null)
+            {
                 return Task.FromResult(false);
+            }
 
             foreach (IExplorerObject exObject in _childs)
             {
-                if (exObject == null) continue;
+                if (exObject == null)
+                {
+                    continue;
+                }
+
                 exObject.Dispose();
             }
             _childs = null;

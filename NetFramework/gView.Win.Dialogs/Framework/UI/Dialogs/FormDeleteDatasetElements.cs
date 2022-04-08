@@ -1,12 +1,6 @@
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Text;
-using System.Windows.Forms;
-using gView.Framework.UI;
 using gView.Framework.Data;
+using System.Collections.Generic;
+using System.Windows.Forms;
 
 namespace gView.Framework.UI.Dialogs
 {
@@ -16,10 +10,17 @@ namespace gView.Framework.UI.Dialogs
         {
             InitializeComponent();
 
-            if (datasetElements == null) return;
+            if (datasetElements == null)
+            {
+                return;
+            }
+
             foreach (IDatasetElement datasetElement in datasetElements)
             {
-                if (datasetElement == null) continue;
+                if (datasetElement == null)
+                {
+                    continue;
+                }
 
                 int imgIndex = 0;
                 if (datasetElement.Class is IFeatureClass)
@@ -54,7 +55,9 @@ namespace gView.Framework.UI.Dialogs
                 foreach (DatasetItemListViewItem item in lstObjects.Items)
                 {
                     if (item.Checked)
+                    {
                         list.Add(item.DatasetElement);
+                    }
                 }
                 return list;
             }
@@ -67,7 +70,11 @@ namespace gView.Framework.UI.Dialogs
 
             public DatasetItemListViewItem(IDatasetElement datasetElement, int imageIndex)
             {
-                if (datasetElement == null) return;
+                if (datasetElement == null)
+                {
+                    return;
+                }
+
                 base.Text = datasetElement.Title;
                 base.ImageIndex = imageIndex;
                 base.Checked = true;
@@ -83,5 +90,5 @@ namespace gView.Framework.UI.Dialogs
         #endregion
     }
 
-    
+
 }

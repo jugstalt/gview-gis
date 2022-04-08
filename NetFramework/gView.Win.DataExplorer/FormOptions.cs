@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
+﻿using gView.Framework.UI;
+using System;
 using System.Windows.Forms;
-using gView.Framework.UI;
 
 namespace gView.Win.DataExplorer
 {
@@ -34,7 +28,9 @@ namespace gView.Win.DataExplorer
         private void btnOK_Click(object sender, EventArgs e)
         {
             if (_page != null)
+            {
                 _page.Commit();
+            }
         }
     }
 }

@@ -3,7 +3,7 @@ using System.IO;
 
 namespace gView.Framework.Geometry
 {
-    
+
 
     /// <summary>
     /// Zusammenfassung für IGeometry.
@@ -23,5 +23,5 @@ namespace gView.Framework.Geometry
         bool Equals(object obj, double epsi);
     }
 
-    
+
 }

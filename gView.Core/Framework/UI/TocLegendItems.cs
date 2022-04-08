@@ -12,11 +12,14 @@ namespace gView.Framework.UI
             if (Items != null)
             {
                 foreach (var item in Items)
+                {
                     item.Dispose();
+                }
+
                 Items = null;
             }
         }
     }
 
-    
+
 }

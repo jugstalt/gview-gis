@@ -1,9 +1,4 @@
-﻿using gView.Interoperability.GeoServices.Rest.Json.Renderers;
-using gView.Interoperability.GeoServices.Rest.Json.Renderers.SimpleRenderers;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using gView.Interoperability.GeoServices.Rest.Json.Renderers.SimpleRenderers;
 
 namespace gView.Interoperability.GeoServices.Rest.Json.Rest.Renderers.OtherRenderers
 {

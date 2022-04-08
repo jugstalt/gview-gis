@@ -30,7 +30,9 @@ namespace gView.Win.Carto
         private void btnOK_Click(object sender, EventArgs e)
         {
             if (_page != null)
+            {
                 _page.Commit();
+            }
         }
     }
 }

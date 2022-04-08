@@ -1,10 +1,10 @@
-﻿using gView.Framework.system;
+﻿using gView.Framework.IO;
+using gView.Framework.system;
 using System;
-using System.Linq;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Xml;
-using gView.Framework.IO;
 
 namespace gView.Symbology.Framework.Symbology.IO
 {
@@ -12,7 +12,7 @@ namespace gView.Symbology.Framework.Symbology.IO
     {
         public void Serialize(MemoryStream ms, object obj)
         {
-            if(obj==null)
+            if (obj == null)
             {
                 return;
             }
@@ -44,7 +44,7 @@ namespace gView.Symbology.Framework.Symbology.IO
             }
         }
 
-        public object Deserialize<T>(MemoryStream ms, IErrorReport errorReport, object source, bool writeError=false)
+        public object Deserialize<T>(MemoryStream ms, IErrorReport errorReport, object source, bool writeError = false)
         {
             // ToDo:
             if (typeof(T).Equals(typeof(GraphicsEngine.Abstraction.IFont)))
@@ -60,22 +60,30 @@ namespace gView.Symbology.Framework.Symbology.IO
 
                 XmlNode nameNode = doc.SelectSingleNode("//Name");
                 if (nameNode != null)
+                {
                     name = nameNode.InnerText;
+                }
 
                 XmlNode sizeNode = doc.SelectSingleNode("//Size");
                 if (sizeNode != null)
+                {
                     size = NumberConverter.ToFloat(sizeNode.InnerText);
+                }
 
                 XmlNode styleNode = doc.SelectSingleNode("//Style");
                 if (styleNode != null)
+                {
                     fontStyle = (GraphicsEngine.FontStyle)Enum.Parse(typeof(GraphicsEngine.FontStyle), styleNode.InnerText);
+                }
 
                 XmlNode unitNode = doc.SelectSingleNode("//Unit");
                 if (styleNode != null)
+                {
                     grUnit = (GraphicsEngine.GraphicsUnit)Enum.Parse(typeof(GraphicsEngine.GraphicsUnit), unitNode.InnerText);
+                }
 
                 var fontFamily = System.Drawing.FontFamily.Families.Where(f => f.Name == name).FirstOrDefault();
-                if(fontFamily == null)
+                if (fontFamily == null)
                 {
                     fontFamily = System.Drawing.FontFamily.GenericSansSerif;
 

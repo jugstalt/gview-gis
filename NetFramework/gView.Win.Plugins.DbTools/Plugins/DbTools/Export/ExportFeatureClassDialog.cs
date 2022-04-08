@@ -11,7 +11,6 @@ using gView.Framework.UI.Controls.Filter;
 using gView.Framework.UI.Dialogs;
 using System;
 using System.Collections.Generic;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -254,7 +253,7 @@ namespace gView.Plugins.DbTools.Export
                 {
                     if (element is IFeatureLayer)
                     {
-                       await ExportDatasetObject(((IFeatureLayer)element).FeatureClass);
+                        await ExportDatasetObject(((IFeatureLayer)element).FeatureClass);
                     }
                 }
             }
@@ -457,7 +456,7 @@ namespace gView.Plugins.DbTools.Export
 
             private FeatureClassImportProgressReporter()
             {
-                
+
             }
 
             async static public Task<FeatureClassImportProgressReporter> CreateAsync(object import, IFeatureClass source)
@@ -476,7 +475,7 @@ namespace gView.Plugins.DbTools.Export
                     if (source != null)
                     {
                         reporter._report.featureMax = await source.CountFeatures();
-                    } 
+                    }
                     ((FDBImport)import).ReportAction += new FDBImport.ReportActionEvent(reporter.FeatureClassImportProgressReporter_ReportAction);
                     ((FDBImport)import).ReportProgress += new FDBImport.ReportProgressEvent(reporter.FeatureClassImportProgressReporter_ReportProgress);
                     ((FDBImport)import).ReportRequest += new FDBImport.ReportRequestEvent(reporter.FeatureClassImportProgressReporter_ReportRequest);
@@ -488,7 +487,7 @@ namespace gView.Plugins.DbTools.Export
                     if (source != null)
                     {
                         reporter._report.featureMax = await source.CountFeatures();
-                    } 
+                    }
                     ((FeatureImport)import).ReportAction += new FeatureImport.ReportActionEvent(reporter.import_ReportAction);
                     ((FeatureImport)import).ReportProgress += new FeatureImport.ReportProgressEvent(reporter.import_ReportProgress);
                     ((FeatureImport)import).ReportRequest += new FeatureImport.ReportRequestEvent(reporter.import_ReportRequest);

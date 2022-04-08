@@ -35,7 +35,7 @@ namespace gView.Win.DataSources.GeoJson.UI
                 value = value ?? String.Empty;
 
                 txtName.Text = value.ExtractConnectionStringParameter("name");
-                txtTarget.Text= value.ExtractConnectionStringParameter("target");
+                txtTarget.Text = value.ExtractConnectionStringParameter("target");
 
                 webAuthControl.ConnectionString = value;
             }

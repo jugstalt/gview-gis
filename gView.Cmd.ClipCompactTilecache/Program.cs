@@ -62,7 +62,7 @@ namespace gView.Cmd.ClipCompactTilecache
             PlugInManager compMan = new PlugInManager();
             IFeatureDataset gmlDataset = compMan.CreateInstance(new Guid("dbabe7f1-fe46-4731-ab2b-8a324c60554e")) as IFeatureDataset;
 
-            if(gmlDataset == null)
+            if (gmlDataset == null)
             {
                 Console.WriteLine("GML Dataset-plugin is not supported");
                 return 1;

@@ -5,5 +5,5 @@
         bool OpenModal();
     }
 
-    
+
 }

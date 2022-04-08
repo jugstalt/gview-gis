@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using gView.Framework.Network;
-using gView.Framework.UI;
+﻿using gView.Framework.Network.Algorthm;
 using gView.Framework.system;
-using gView.Framework.Network.Algorthm;
+using gView.Framework.UI;
 using System.Threading.Tasks;
 
 namespace gView.Framework.Network.Tracers
@@ -22,7 +18,9 @@ namespace gView.Framework.Network.Tracers
         public bool CanTrace(NetworkTracerInputCollection input)
         {
             if (input == null)
+            {
                 return false;
+            }
 
             return input.Collect(NetworkTracerInputType.SourceNode).Count == 1 &&
                    input.Collect(NetworkTracerInputType.SinkNode).Count == 1;
@@ -31,7 +29,9 @@ namespace gView.Framework.Network.Tracers
         async public Task<NetworkTracerOutputCollection> Trace(INetworkFeatureClass network, NetworkTracerInputCollection input, ICancelTracker cancelTraker)
         {
             if (network == null || !CanTrace(input))
+            {
                 return null;
+            }
 
             GraphTable gt = new GraphTable(network.GraphTableAdapter());
             NetworkSourceInput source = input.Collect(NetworkTracerInputType.SourceNode)[0] as NetworkSourceInput;
@@ -45,25 +45,34 @@ namespace gView.Framework.Network.Tracers
 
             // Kürzesten Weg berechenen
             if (!dijkstra.Calculate(gt, source.NodeId, sink.NodeId))
+            {
                 return null;
+            }
 
             Dijkstra.Nodes initialNodes = dijkstra.DijkstraPathNodes(sink.NodeId);
             dijkstra = new Dijkstra(initialNodes, cancelTraker);
             dijkstra.ForbiddenTargetNodeIds = initialNodes.IdsToList();
 
             for (int i = 1; i < initialNodes.Count - 1; i++)
+            {
                 dijkstra.Calculate(gt, initialNodes[i].Id);
+            }
 
             NetworkTracerOutputCollection output = new NetworkTracerOutputCollection();
 
             NetworkPathOutput pathOutput = new NetworkPathOutput();
             Dijkstra.Nodes nodes = dijkstra.DijkstraNodes;
             foreach (Dijkstra.Node node in nodes)
+            {
                 pathOutput.Add(new NetworkEdgeOutput(node.EId));
+            }
+
             output.Add(pathOutput);
 
             if (input.Collect(NetworkTracerInputType.AppendNodeFlags).Count > 0)
+            {
                 await Helper.AppendNodeFlags(network, gt, Helper.NodeIds(nodes), output);
+            }
 
             return output;
         }

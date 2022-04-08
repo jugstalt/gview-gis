@@ -72,7 +72,10 @@ namespace gView.Framework.Symbology
             float wy = (float)(-sin_a * lx + cos_a * ly);
 
             if (wx >= 0 && wx <= _width &&
-                wy >= 0 && wy <= _height) return true;
+                wy >= 0 && wy <= _height)
+            {
+                return true;
+            }
 
             return false;
         }
@@ -95,14 +98,25 @@ namespace gView.Framework.Symbology
                 AnnotationPolygon lp = (AnnotationPolygon)cand;
 
                 if (this._points == null)
+                {
                     this._points = this.ToCoords();
+                }
+
                 if (lp._points == null)
+                {
                     lp._points = lp.ToCoords();
+                }
 
                 if (HasSeperateLine(this, lp))
+                {
                     return false;
+                }
+
                 if (HasSeperateLine(lp, this))
+                {
                     return false;
+                }
+
                 return true;
             }
             else if (cand is AnnotationPolygonCollection)
@@ -110,7 +124,9 @@ namespace gView.Framework.Symbology
                 foreach (IAnnotationPolygonCollision child in ((AnnotationPolygonCollection)cand))
                 {
                     if (this.CheckCollision(child))
+                    {
                         return true;
+                    }
                 }
             }
             return false;
@@ -132,7 +148,9 @@ namespace gView.Framework.Symbology
 
                 if ((t_min <= c_max && t_max <= c_min) ||
                     (c_min <= t_max && c_max <= t_min))
+                {
                     return true;
+                }
             }
 
             return false;
@@ -160,10 +178,16 @@ namespace gView.Framework.Symbology
         {
             get
             {
-                if (_points == null) _points = ToCoords();
+                if (_points == null)
+                {
+                    _points = ToCoords();
+                }
 
                 if (index < 0 || index >= _points.Length)
+                {
                     return _points[0];
+                }
+
                 return _points[index];
             }
         }

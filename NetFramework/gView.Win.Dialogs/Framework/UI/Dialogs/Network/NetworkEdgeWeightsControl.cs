@@ -1,16 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Drawing;
-using System.Data;
-using System.Text;
-using System.Windows.Forms;
-using gView.Framework.Network;
-using gView.Framework.Data;
+﻿using gView.Framework.Data;
 using gView.Framework.FDB;
-using gView.Framework.system;
-using System.Xml;
+using gView.Framework.Network;
 using gView.Framework.Network.Algorthm;
+using gView.Framework.system;
+using System;
+using System.Collections.Generic;
+using System.Windows.Forms;
 
 namespace gView.Framework.UI.Dialogs.Network
 {
@@ -26,10 +21,14 @@ namespace gView.Framework.UI.Dialogs.Network
             InitializeComponent();
 
             if (dataset != null)
+            {
                 _database = dataset.Database as IFeatureDatabase3;
+            }
 
             if (_database == null)
+            {
                 throw new ArgumentException();
+            }
 
             _selected = selected;
 
@@ -38,7 +37,9 @@ namespace gView.Framework.UI.Dialogs.Network
             {
                 ISimpleNumberCalculation calc = pluginMan.CreateInstance<ISimpleNumberCalculation>(calcType);
                 if (calc == null)
+                {
                     continue;
+                }
 
                 _calculators.Add(calc);
             }
@@ -100,19 +101,31 @@ namespace gView.Framework.UI.Dialogs.Network
                     }
                     IGraphWeightFeatureClass gwfc = weight.FeatureClasses[fcId];
                     if (gwfc == null)
+                    {
                         fieldCell.Value = "<none>";
+                    }
                     else
+                    {
                         fieldCell.Value = gwfc.FieldName;
+                    }
+
                     row.Cells.Add(fieldCell);
 
                     DataGridViewComboBoxCell calcCell = new DataGridViewComboBoxCell();
                     calcCell.Items.Add("<none>");
                     foreach (ISimpleNumberCalculation calc in _calculators)
+                    {
                         calcCell.Items.Add(calc.Name);
+                    }
+
                     if (gwfc == null || gwfc.SimpleNumberCalculation == null)
+                    {
                         calcCell.Value = "<none>";
+                    }
                     else
+                    {
                         calcCell.Value = gwfc.SimpleNumberCalculation.Name;
+                    }
 
                     row.Cells.Add(calcCell);
 
@@ -128,7 +141,9 @@ namespace gView.Framework.UI.Dialogs.Network
         private void gridFcs_CellValueChanged(object sender, DataGridViewCellEventArgs e)
         {
             if (e.RowIndex < 0 || lstWeights.SelectedItems.Count != 1)
+            {
                 return;
+            }
 
             IGraphWeight weight = ((WeightListViewItem)lstWeights.SelectedItems[0]).GraphWeight;
             int fcId = Convert.ToInt32(gridFcs.Rows[e.RowIndex].Cells[0].Value);
@@ -160,7 +175,10 @@ namespace gView.Framework.UI.Dialogs.Network
                 else
                 {
                     if (gridFcs.Rows[e.RowIndex].Cells[3].Value.ToString() == "<none>")
+                    {
                         ((GraphWeightFeatureClass)gwfc).SimpleNumberCalculation = null;
+                    }
+
                     foreach (ISimpleNumberCalculation calc in _calculators)
                     {
                         if (calc.Name == gridFcs.Rows[e.RowIndex].Cells[3].Value.ToString())
@@ -176,7 +194,9 @@ namespace gView.Framework.UI.Dialogs.Network
         private void gridFcs_CellClick(object sender, DataGridViewCellEventArgs e)
         {
             if (e.RowIndex < 0 || lstWeights.SelectedItems.Count != 1)
+            {
                 return;
+            }
 
             IGraphWeight weight = ((WeightListViewItem)lstWeights.SelectedItems[0]).GraphWeight;
             int fcId = Convert.ToInt32(gridFcs.Rows[e.RowIndex].Cells[0].Value);
@@ -230,7 +250,9 @@ namespace gView.Framework.UI.Dialogs.Network
                     }
 
                     if (weight.FeatureClasses.Count > 0)
+                    {
                         weights.Add(weight);
+                    }
                 }
 
                 return weights.Count > 0 ? weights : null;

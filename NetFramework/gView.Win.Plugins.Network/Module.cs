@@ -1,14 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using gView.Framework.system;
-using gView.Framework.UI;
-using gView.Framework.Carto;
-using gView.Plugins.Network.Graphic;
+﻿using gView.Framework.Carto;
 using gView.Framework.Data;
-using gView.Framework.Network.Algorthm;
 using gView.Framework.Geometry;
 using gView.Framework.Network;
+using gView.Framework.Network.Algorthm;
+using gView.Framework.system;
+using gView.Framework.UI;
+using gView.Plugins.Network.Graphic;
+using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace gView.Plugins.Network
@@ -35,7 +34,9 @@ namespace gView.Plugins.Network
         static public Module GetModule(IMapDocument doc)
         {
             if (doc == null || !(doc.Application is IMapApplication))
+            {
                 return null;
+            }
 
             return ((IMapApplication)doc.Application).IMapApplicationModule(new Guid("F3DBF95F-F915-4c10-8568-2BC873A745F6")) as Module;
         }
@@ -55,7 +56,9 @@ namespace gView.Plugins.Network
 
                     _weight = null;
                     if (OnSelectedNetorkFeatureClassChanged != null)
+                    {
                         OnSelectedNetorkFeatureClassChanged(this, new EventArgs());
+                    }
                 }
             }
         }
@@ -91,7 +94,9 @@ namespace gView.Plugins.Network
             {
                 _startIndex = value;
                 if (_startIndex >= 0)
+                {
                     _startEdgeIndex = -1;
+                }
             }
         }
         private int _endIndex = -1;
@@ -108,7 +113,9 @@ namespace gView.Plugins.Network
             {
                 _startEdgeIndex = value;
                 if (_startEdgeIndex >= 0)
+                {
                     _startIndex = -1;
+                }
             }
         }
 
@@ -133,7 +140,9 @@ namespace gView.Plugins.Network
         async public Task<List<int>> QueryAllowedNodeIds(double minBufferDist, double maxBufferDist)
         {
             if (_nfc == null || _startPoint == null || _endPoint == null)
+            {
                 return null;
+            }
 
             Path path = new Path();
             path.AddPoint(_startPoint);
@@ -144,7 +153,9 @@ namespace gView.Plugins.Network
             double bufferDist = Math.Min(Math.Max(path.Length * 0.1, minBufferDist), maxBufferDist);
             IPolygon polygon = pLine.Buffer(bufferDist);
             if (polygon == null)
+            {
                 return null;
+            }
 
             SpatialFilter filter = new SpatialFilter();
             filter.Geometry = polygon;
@@ -152,7 +163,9 @@ namespace gView.Plugins.Network
 
             IFeatureCursor cursor = await _nfc.GetNodeFeatures(filter);
             if (cursor == null)
+            {
                 return null;
+            }
 
             List<int> allowedNodeIds = new List<int>();
             IFeature feature;
@@ -170,13 +183,19 @@ namespace gView.Plugins.Network
             foreach (IGraphicElement grElement in display.GraphicsContainer.Elements)
             {
                 if (grElement is GraphicNetworkPathEdge)
+                {
                     list.Add((GraphicNetworkPathEdge)grElement);
+                }
                 else if (grElement is GraphicFlagPoint)
+                {
                     list.Add((GraphicFlagPoint)grElement);
+                }
             }
 
             foreach (IGraphicElement element in list)
+            {
                 display.GraphicsContainer.Elements.Remove(element);
+            }
         }
         public void RemoveNetworkStartGraphicElement(IDisplay display)
         {
@@ -190,7 +209,9 @@ namespace gView.Plugins.Network
                 }
             }
             if (g != null)
+            {
                 display.GraphicsContainer.Elements.Remove(g);
+            }
         }
         public void RemoveNetworkTargetGraphicElement(IDisplay display)
         {
@@ -204,13 +225,17 @@ namespace gView.Plugins.Network
                 }
             }
             if (g != null)
+            {
                 display.GraphicsContainer.Elements.Remove(g);
+            }
         }
 
         async public Task<IFeatureCursor> NetworkPathEdges(Dijkstra.NetworkPath networkPath)
         {
             if (_nfc == null)
+            {
                 return null;
+            }
 
             RowIDFilter filter = new RowIDFilter(String.Empty);
             foreach (Dijkstra.NetworkPathEdge edge in networkPath)
@@ -223,7 +248,9 @@ namespace gView.Plugins.Network
         async public Task<IFeatureCursor> NetworkPathEdges(NetworkEdgeCollectionOutput edgeCollection)
         {
             if (_nfc == null)
+            {
                 return null;
+            }
 
             RowIDFilter filter = new RowIDFilter(String.Empty);
             foreach (NetworkEdgeOutput edge in edgeCollection)
@@ -241,7 +268,9 @@ namespace gView.Plugins.Network
         async public Task<IFeatureCursor> NetworkPathEdges(Dijkstra.Nodes nodes, string fields)
         {
             if (_nfc == null)
+            {
                 return null;
+            }
 
             //StringBuilder sb = new StringBuilder();
             //sb.Append("FDB_OID in (");
@@ -266,11 +295,16 @@ namespace gView.Plugins.Network
             //filter.WhereClause = sb.ToString();
             RowIDFilter filter = new RowIDFilter(String.Empty);
             foreach (Dijkstra.Node node in nodes)
+            {
                 filter.IDs.Add(node.EId);
+            }
+
             if (!String.IsNullOrEmpty(fields))
             {
                 foreach (string field in fields.Split(','))
+                {
                     filter.AddField(field);
+                }
             }
 
             return await _nfc.GetEdgeFeatures(filter);

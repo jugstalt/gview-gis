@@ -1,9 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Drawing;
-using System.Data;
-using System.Text;
 using System.Windows.Forms;
 
 namespace gView.Framework.UI.Controls.Wizard
@@ -38,7 +34,9 @@ namespace gView.Framework.UI.Controls.Wizard
             {
                 panelPage.Controls.Clear();
                 if (_pages[_pageIndex] is IWizardPageNotification)
+                {
                     ((IWizardPageNotification)_pages[_pageIndex]).OnShowWizardPage();
+                }
 
                 panelPage.Controls.Add(_pages[_pageIndex]);
             }
@@ -55,9 +53,13 @@ namespace gView.Framework.UI.Controls.Wizard
             {
                 _pageIndex++;
                 if (CheckPageNecessity(_pageIndex) == false)
+                {
                     btnNext_Click(sender, e);
+                }
                 else
+                {
                     RefreshPage();
+                }
             }
         }
 
@@ -67,9 +69,13 @@ namespace gView.Framework.UI.Controls.Wizard
             {
                 _pageIndex--;
                 if (CheckPageNecessity(_pageIndex) == false)
+                {
                     btnPrev_Click(sender, e);
+                }
                 else
+                {
                     RefreshPage();
+                }
             }
         }
 
@@ -79,7 +85,9 @@ namespace gView.Framework.UI.Controls.Wizard
             {
                 if (_pages[pageIndex] is IWizardPageNecessity &&
                     ((IWizardPageNecessity)_pages[pageIndex]).CheckNecessity() == false)
+                {
                     return false;
+                }
 
                 return true;
             }
@@ -94,7 +102,9 @@ namespace gView.Framework.UI.Controls.Wizard
                 for (int i = 0; i < _pages.Count; i++)
                 {
                     if (CheckPageNecessity(i))
+                    {
                         max = i;
+                    }
                 }
                 return max;
             }

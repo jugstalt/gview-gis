@@ -5,7 +5,6 @@ using gView.Interoperability.GeoServices.Rest.Json.FeatureServer;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace gView.Interoperability.GeoServices.Request
 {
@@ -16,7 +15,9 @@ namespace gView.Interoperability.GeoServices.Request
             try
             {
                 if (String.IsNullOrWhiteSpace(val) || !val.Contains(","))
+                {
                     return new int[] { 400, 400 };
+                }
 
                 var size = val.Split(',');
                 return new int[] { int.Parse(size[0]), int.Parse(size[1]) };
@@ -83,7 +84,7 @@ namespace gView.Interoperability.GeoServices.Request
 
                 return jsonMultipoint;
             }
-            if(shape is IEnvelope)
+            if (shape is IEnvelope)
             {
                 return new JsonGeometry()
                 {
@@ -102,7 +103,9 @@ namespace gView.Interoperability.GeoServices.Request
                 {
                     var path = polyline[r];
                     if (path == null || path.PointCount == 0)
+                    {
                         continue;
+                    }
 
                     double?[,] points = new double?[path.PointCount, 2];
                     for (int p = 0, pointCount = path.PointCount; p < pointCount; p++)
@@ -130,7 +133,9 @@ namespace gView.Interoperability.GeoServices.Request
                 {
                     var ring = polygon[r];
                     if (ring == null || ring.PointCount == 0)
+                    {
                         continue;
+                    }
 
                     double?[,] points = new double?[ring.PointCount, 2];
                     for (int p = 0, pointCount = ring.PointCount; p < pointCount; p++)
@@ -155,7 +160,9 @@ namespace gView.Interoperability.GeoServices.Request
         static public IGeometry ToGeometry(this JsonGeometry geometry)
         {
             if (geometry == null)
+            {
                 return null;
+            }
 
             IGeometry shape = null;
 
@@ -175,7 +182,9 @@ namespace gView.Interoperability.GeoServices.Request
                 {
                     var jsonPath = geometry.Paths[p];
                     if (jsonPath.Length < 1)
+                    {
                         continue;
+                    }
 
                     var path = new Path();
                     for (int i = 0, pointCount = jsonPath.GetLength(0); i < pointCount; i++)
@@ -195,7 +204,9 @@ namespace gView.Interoperability.GeoServices.Request
                 {
                     var jsonRing = geometry.Rings[p];
                     if (jsonRing.Length < 1)
+                    {
                         continue;
+                    }
 
                     var ring = new Ring();
                     for (int i = 0, pointCount = jsonRing.GetLength(0); i < pointCount; i++)
@@ -223,7 +234,7 @@ namespace gView.Interoperability.GeoServices.Request
                 shape = multiPoint;
             }
 
-            if(shape != null && geometry.SpatialReference!=null && geometry.SpatialReference.Wkid>0)
+            if (shape != null && geometry.SpatialReference != null && geometry.SpatialReference.Wkid > 0)
             {
                 shape.Srs = geometry.SpatialReference.Wkid;
             }

@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Windows.Forms;
 using System.Xml;
 
@@ -15,7 +12,7 @@ namespace gView.Framework.UI.Dialogs
             : base()
         {
         }
-        public XmlDocument XmlDocument 
+        public XmlDocument XmlDocument
         {
             get
             {
@@ -45,7 +42,11 @@ namespace gView.Framework.UI.Dialogs
             }
             this.Nodes.Clear();
 
-            if (_doc == null) return;
+            if (_doc == null)
+            {
+                return;
+            }
+
             foreach (XmlNode child in _doc.ChildNodes)
             {
                 AppendNode(null, child);
@@ -54,7 +55,10 @@ namespace gView.Framework.UI.Dialogs
 
         private void AppendNode(TreeNode parent, XmlNode xmlNode)
         {
-            if (xmlNode == null) return;
+            if (xmlNode == null)
+            {
+                return;
+            }
 
             TreeNode node = new TreeNode(xmlNode.Name, 0, 0);
             if (parent == null)

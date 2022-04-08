@@ -77,7 +77,11 @@ namespace gView.Framework.OGC.WFS
 
         public bool ParseParameters(XmlDocument doc)
         {
-            if (doc == null) return false;
+            if (doc == null)
+            {
+                return false;
+            }
+
             XmlNamespaceManager ns = new XmlNamespaceManager(doc.NameTable);
             ns.AddNamespace("WFS", "http://www.opengis.net/wfs");
             ns.AddNamespace("OGC", "http://www.opengis.net/ogc");
@@ -130,18 +134,28 @@ namespace gView.Framework.OGC.WFS
             if (query != null)
             {
                 _typeName = query.Attributes["typeName"].Value;
-                
+
                 _filter = query.SelectSingleNode("Filter", ns);
                 if (_filter == null)
+                {
                     _filter = query.SelectSingleNode("WFS:Filter", ns);
+                }
+
                 if (_filter == null)
+                {
                     _filter = query.SelectSingleNode("OGC:Filter", ns);
+                }
 
                 _sortBy = query.SelectSingleNode("SortBy", ns);
                 if (_sortBy == null)
+                {
                     _sortBy = query.SelectSingleNode("WFS:SortBy", ns);
+                }
+
                 if (_sortBy == null)
+                {
                     _sortBy = query.SelectSingleNode("OGC:SortBy", ns);
+                }
 
                 if (query.Attributes["srsName"] != null)
                 {
@@ -166,7 +180,7 @@ namespace gView.Framework.OGC.WFS
 
         private void WriteError(String msg, String code)
         {
-            
+
 
         }
 
@@ -240,7 +254,10 @@ namespace gView.Framework.OGC.WFS
 
             public Parameters(string[] list)
             {
-                if (list == null) return;
+                if (list == null)
+                {
+                    return;
+                }
 
                 foreach (string l in list)
                 {
@@ -249,7 +266,10 @@ namespace gView.Framework.OGC.WFS
                     string p1 = p[0].Trim().ToUpper(), pp;
                     string p2 = ((p.Length > 1) ? p[1].Trim() : "");
 
-                    if (_parameters.TryGetValue(p1, out pp)) continue;
+                    if (_parameters.TryGetValue(p1, out pp))
+                    {
+                        continue;
+                    }
 
                     _parameters.Add(p1, p2);
                 }
@@ -261,7 +281,9 @@ namespace gView.Framework.OGC.WFS
                 {
                     string o;
                     if (!_parameters.TryGetValue(parameter.ToUpper(), out o))
+                    {
                         return null;
+                    }
 
                     return o;
                 }

@@ -1,17 +1,12 @@
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Text;
-using System.Windows.Forms;
-using gView.Framework.UI;
 using gView.Framework.Data;
+using gView.Framework.UI;
 using gView.Server.Connector;
+using System;
+using System.Windows.Forms;
 
 namespace gView.MapServer.Lib.UI
 {
-    public partial class FormSelectService : Form,IModalDialog,IConnectionString
+    public partial class FormSelectService : Form, IModalDialog, IConnectionString
     {
         public FormSelectService()
         {
@@ -32,7 +27,7 @@ namespace gView.MapServer.Lib.UI
                     lstServices.Items.Add(new ListViewItem(service.Name, (int)service.Type));
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 Cursor = Cursors.Default;
 
@@ -49,7 +44,9 @@ namespace gView.MapServer.Lib.UI
         public bool OpenModal()
         {
             if (this.ShowDialog() == DialogResult.OK)
+            {
                 return true;
+            }
 
             return false;
         }
@@ -76,8 +73,15 @@ namespace gView.MapServer.Lib.UI
         private void btnOK_Click(object sender, EventArgs e)
         {
             string username = txtUser.Text;
-            if (chkRouteThroughUser.Checked) username = "$";
-            if (chkRouteThroughRole.Checked) username = "#";
+            if (chkRouteThroughUser.Checked)
+            {
+                username = "$";
+            }
+
+            if (chkRouteThroughRole.Checked)
+            {
+                username = "#";
+            }
 
             _connectionString = "server=" + txtServer.Text + ":" + numPort.Value + ";user=" +
                 username + ";pwd=" + txtPwd.Text + ";service=" + lstServices.SelectedItems[0].Text;

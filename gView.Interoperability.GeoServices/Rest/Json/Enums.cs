@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace gView.Interoperability.GeoServices.Rest.Json
+﻿namespace gView.Interoperability.GeoServices.Rest.Json
 {
     public enum EsriFieldType
     {
@@ -47,7 +43,7 @@ namespace gView.Interoperability.GeoServices.Rest.Json
 
     public enum ImageFormat
     {
-        png, 
+        png,
         png24,
         png32,
         jpg

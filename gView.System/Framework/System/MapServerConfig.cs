@@ -1,8 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Data;
-using Microsoft.Win32;
 using System.Xml;
 
 namespace gView.Framework.system
@@ -67,7 +63,9 @@ namespace gView.Framework.system
         static private string GetAttributeValue(XmlNode node, string attrName, string defValue)
         {
             if (node == null || node.Attributes[attrName] == null)
+            {
                 return defValue;
+            }
 
             return node.Attributes[attrName].Value;
         }
@@ -76,7 +74,11 @@ namespace gView.Framework.system
         {
             get
             {
-                if (!_loaded) Load();
+                if (!_loaded)
+                {
+                    Load();
+                }
+
                 return _defaultOutputPath;
             }
             set
@@ -88,7 +90,11 @@ namespace gView.Framework.system
         {
             get
             {
-                if (!_loaded) Load();
+                if (!_loaded)
+                {
+                    Load();
+                }
+
                 return _defaultOutputUrl;
             }
             set
@@ -100,7 +106,11 @@ namespace gView.Framework.system
         {
             get
             {
-                if (!_loaded) Load();
+                if (!_loaded)
+                {
+                    Load();
+                }
+
                 return _removeInterval;
             }
             set
@@ -112,7 +122,11 @@ namespace gView.Framework.system
         {
             get
             {
-                if (!_loaded) Load();
+                if (!_loaded)
+                {
+                    Load();
+                }
+
                 return _defaultTileCachePath;
             }
             set
@@ -124,7 +138,11 @@ namespace gView.Framework.system
         {
             get
             {
-                if (!_loaded) Load();
+                if (!_loaded)
+                {
+                    Load();
+                }
+
                 return _defaultOnlineResource;
             }
             set
@@ -135,7 +153,10 @@ namespace gView.Framework.system
 
         static public void Commit()
         {
-            if (!_loaded) Load();
+            if (!_loaded)
+            {
+                Load();
+            }
         }
 
         public class ServerConfig
@@ -158,42 +179,61 @@ namespace gView.Framework.system
         {
             get
             {
-                if (!_loaded) Load();
+                if (!_loaded)
+                {
+                    Load();
+                }
 
                 return _servers.Length;
             }
         }
         static public ServerConfig Server(int serverNumber)
         {
-            if (!_loaded) Load();
+            if (!_loaded)
+            {
+                Load();
+            }
 
-            if (serverNumber < 0 || serverNumber >= ServerCount) return null;
+            if (serverNumber < 0 || serverNumber >= ServerCount)
+            {
+                return null;
+            }
 
             return _servers[serverNumber];
         }
 
         static public ServerConfig ServerByPort(int port)
         {
-            if (!_loaded) Load();
+            if (!_loaded)
+            {
+                Load();
+            }
 
             for (int i = 0; i < _servers.Length; i++)
             {
                 if (_servers[i].Port == port)
+                {
                     return _servers[i];
+                }
             }
             return null;
         }
 
         static public ServerConfig ServerByInstancePort(int port)
         {
-            if (!_loaded) Load();
+            if (!_loaded)
+            {
+                Load();
+            }
 
             for (int s = 0; s < _servers.Length; s++)
             {
                 for (int i = 0; i < _servers[s].Instances.Length; i++)
                 {
                     if (_servers[s].Instances[i].Port == port)
+                    {
                         return _servers[s];
+                    }
                 }
             }
             return null;
@@ -201,14 +241,19 @@ namespace gView.Framework.system
 
         static public ServerConfig.InstanceConfig InstanceByInstancePort(int port)
         {
-            if (!_loaded) Load();
+            if (!_loaded)
+            {
+                Load();
+            }
 
             for (int s = 0; s < _servers.Length; s++)
             {
                 for (int i = 0; i < _servers[s].Instances.Length; i++)
                 {
                     if (_servers[s].Instances[i].Port == port)
+                    {
                         return _servers[s].Instances[i];
+                    }
                 }
             }
             return null;

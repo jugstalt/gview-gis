@@ -451,7 +451,7 @@ namespace gView.DataSources.MongoDb.UI
                 var dlg = new FormBeforeCreateFeatureclass();
                 dlg.ShowDialog();
 
-                if(dlg.GeneralizeToLevel>=0)
+                if (dlg.GeneralizeToLevel >= 0)
                 {
                     return new MongoGeometryDef(geomDef)
                     {

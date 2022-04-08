@@ -1,13 +1,12 @@
 using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace gView.Framework.Geometry
 {
     class GeomTriangle
     {
         private Vector2D _a, _b, _c;
-        
+
         public GeomTriangle(Vector2D a, Vector2D b, Vector2D c)
         {
             _a = a;
@@ -48,8 +47,8 @@ namespace gView.Framework.Geometry
             double a2 = v2.Angle;
             double r = (a1 < a2) ? -Math.PI / 2.0 : Math.PI / 2.0;
 
-            v1.Rotate(r);  
-            v2.Rotate(-r); 
+            v1.Rotate(r);
+            v2.Rotate(-r);
             v2.Rotate(-r);
 
             vecs.Add(new Vector2D(v1));

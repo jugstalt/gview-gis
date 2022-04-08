@@ -110,7 +110,7 @@ namespace gView.Framework.UI.Controls
             if (!(_contextItem is LayerItem))
             {
                 return;
-            } 
+            }
             ((LayerItem)_contextItem).TOCElement.LayerLocked = true;
 
             _iMapDocument.TemporaryRestore();

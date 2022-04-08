@@ -1,7 +1,6 @@
 using gView.Framework.SpatialAlgorithms;
 using gView.Framework.SpatialAlgorithms.Clipper;
 using gView.Framework.system;
-using Proj4Net;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -318,13 +317,13 @@ namespace gView.Framework.Geometry
 
         public bool Contains(IEnvelope envelope)
         {
-            if (envelope.minx < m_minx || 
+            if (envelope.minx < m_minx ||
                 envelope.maxx > m_maxx)
             {
                 return false;
             }
 
-            if (envelope.miny < m_miny || 
+            if (envelope.miny < m_miny ||
                 envelope.maxy > m_maxy)
             {
                 return false;
@@ -588,7 +587,9 @@ namespace gView.Framework.Geometry
         {
             string[] bbox = bboxString.Split(',');
             if (bbox.Length != 4)
+            {
                 throw new Exception("Invalid BBOX parameter. Must consist of 4 elements of type double or integer");
+            }
 
             double MinX = bbox[0].ToDouble();
             double MinY = bbox[1].ToDouble();
@@ -876,7 +877,9 @@ namespace gView.Framework.Geometry
         public double Distance2D(IPoint p)
         {
             if (p == null)
+            {
                 return double.MaxValue;
+            }
 
             return Math.Sqrt((p.X - m_x) * (p.X - m_x) + (p.Y - m_y) * (p.Y - m_y));
         }
@@ -1205,7 +1208,7 @@ namespace gView.Framework.Geometry
         {
             get
             {
-                return m_points==null ? 0 : m_points.Count;
+                return m_points == null ? 0 : m_points.Count;
             }
         }
 
@@ -1621,11 +1624,15 @@ namespace gView.Framework.Geometry
             get
             {
                 if (this.PointCount == 0)
+                {
                     return null;
+                }
 
                 double length = this.Length;
                 if (length == 0)
+                {
                     return this[0];
+                }
 
                 return Algorithm.PolylinePoint(new Polyline(this), length / 2D);
             }
@@ -1635,7 +1642,9 @@ namespace gView.Framework.Geometry
         {
             var path = new Path(this);
             if (this is Ring)
+            {
                 path.ClosePath();
+            }
 
             return new Polyline(path);
         }
@@ -2180,7 +2189,9 @@ namespace gView.Framework.Geometry
         public double Distance2D(IPolyline candidate)
         {
             if (candidate == null || candidate.PathCount == 0 || this.PathCount == 0)
+            {
                 return double.MaxValue;
+            }
 
             double dist = double.MaxValue;
             foreach (var candidatePath in candidate.Paths)
@@ -2353,7 +2364,9 @@ namespace gView.Framework.Geometry
             get
             {
                 if (_rings == null)
+                {
                     return 0;
+                }
 
                 return _rings
                     .Where(r => r != null)
@@ -2378,7 +2391,7 @@ namespace gView.Framework.Geometry
             List<IRing> v = _rings;
             _rings = new List<IRing>();
 
-            foreach(var ring in v)
+            foreach (var ring in v)
             {
                 _rings.AddRange(Algorithm.SplitRing(ring));
             }
@@ -2554,7 +2567,7 @@ namespace gView.Framework.Geometry
             }
 
             List<IHole> result = new List<IHole>();
-            foreach(IHole hole in _rings.Where(r=>r is IHole))
+            foreach (IHole hole in _rings.Where(r => r is IHole))
             {
                 if (SpatialAlgorithms.Algorithm.Jordan(ring, hole))
                 {
@@ -2846,7 +2859,9 @@ namespace gView.Framework.Geometry
         public double Distance2D(IPolygon candidate)
         {
             if (candidate == null || candidate.RingCount == 0 || this.RingCount == 0)
+            {
                 return double.MaxValue;
+            }
 
             double dist = double.MaxValue;
             foreach (var candidateRing in candidate.Rings)
@@ -2873,10 +2888,14 @@ namespace gView.Framework.Geometry
                 var polygon = (Polygon)obj;
 
                 if (polygon.RingCount != this.RingCount)
+                {
                     return false;
+                }
 
                 if (Math.Abs(polygon.Area - this.Area) > epsi)
+                {
                     return false;
+                }
 
                 var rings = _rings.OrderBy(r => r.Area).ToArray();
                 var candidateRings = polygon._rings.OrderBy(r => r.Area).ToArray();
@@ -2893,10 +2912,14 @@ namespace gView.Framework.Geometry
                     //    return false;
 
                     if (Math.Abs(ring.Area - candidateRing.Area) > epsi)
+                    {
                         return false;
+                    }
 
                     if (!ring.Envelope.Equals(candidateRing.Envelope))
+                    {
                         return false;
+                    }
 
                     // ToDo:
                     // Testen, ob die Punkte eines Rings alle auf der Kante des anderen liegen...
@@ -2996,7 +3019,7 @@ namespace gView.Framework.Geometry
         {
             get
             {
-                return _childGeometries==null ? 0 : _childGeometries.Count;
+                return _childGeometries == null ? 0 : _childGeometries.Count;
             }
         }
 

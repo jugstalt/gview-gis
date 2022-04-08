@@ -4,9 +4,6 @@ using gView.Framework.Geometry;
 using gView.Framework.system;
 using gView.Interoperability.GeoServices.Rest.Reflection;
 using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace gView.Interoperability.GeoServices.Rest.Json.Request
 {

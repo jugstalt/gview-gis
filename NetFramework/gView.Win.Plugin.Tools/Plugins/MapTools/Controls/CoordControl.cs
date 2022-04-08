@@ -1,11 +1,6 @@
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Drawing;
-using System.Data;
-using System.Text;
-using System.Windows.Forms;
 using gView.Framework.Geometry;
+using System;
+using System.Windows.Forms;
 
 namespace gView.Plugins.MapTools.Controls
 {
@@ -54,7 +49,7 @@ namespace gView.Plugins.MapTools.Controls
                 {
                     numX.Value = (decimal)value.X;
                     numY.Value = (decimal)value.Y;
-                    
+
                     if (panelLonLat.Visible)
                     {
                         SetDMS();
@@ -69,7 +64,7 @@ namespace gView.Plugins.MapTools.Controls
             set
             {
                 if (value != null &&
-                    (_sRef==null ||
+                    (_sRef == null ||
                      !value.Equals(_sRef)))
                 {
                     IPoint p = GeometricTransformerFactory.Transform2D(
@@ -89,7 +84,9 @@ namespace gView.Plugins.MapTools.Controls
                         panelLonLat.Visible = false;
                     }
                     if (p != null)
+                    {
                         this.Point = p;
+                    }
                 }
             }
         }
@@ -162,7 +159,7 @@ namespace gView.Plugins.MapTools.Controls
         {
             return d + m / (decimal)60 + s / (decimal)3600;
         }
-       
+
         private void SetDMS()
         {
             numLon.ValueChanged -= new EventHandler(numLonLat_ValueChanged);
@@ -228,9 +225,14 @@ namespace gView.Plugins.MapTools.Controls
                     break;
             }
             if (cmbLon.SelectedIndex == 1)
+            {
                 numX.Value = -numX.Value;
+            }
+
             if (cmbLat.SelectedIndex == 1)
+            {
                 numY.Value = -numY.Value;
+            }
         }
         #endregion
     }

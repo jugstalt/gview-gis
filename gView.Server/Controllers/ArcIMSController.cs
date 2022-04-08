@@ -60,7 +60,7 @@ namespace gView.Server.Controllers
 
                 #region Request 
 
-                if(String.IsNullOrEmpty(content))
+                if (String.IsNullOrEmpty(content))
                 {
                     content = await GetBody();
                 }

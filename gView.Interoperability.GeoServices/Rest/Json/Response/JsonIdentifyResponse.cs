@@ -1,8 +1,6 @@
 ﻿using gView.Interoperability.GeoServices.Rest.Json.Features.Geometry;
 using Newtonsoft.Json;
-using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace gView.Interoperability.GeoServices.Rest.Json.Response
 {

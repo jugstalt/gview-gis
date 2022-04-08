@@ -1,7 +1,5 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
 using gView.Framework.Geometry;
+using System.Collections.Generic;
 
 namespace gView.Framework.Topology
 {
@@ -9,7 +7,10 @@ namespace gView.Framework.Topology
     {
         new public void Add(IPoint p)
         {
-            if (p == null || this.Contains(p)) return;
+            if (p == null || this.Contains(p))
+            {
+                return;
+            }
 
             base.Add(p);
         }
@@ -17,8 +18,10 @@ namespace gView.Framework.Topology
         {
             foreach (IPoint point in this)
             {
-                if (point.Equals(p, double.Epsilon)) 
+                if (point.Equals(p, double.Epsilon))
+                {
                     return true;
+                }
             }
             return false;
         }

@@ -1,9 +1,6 @@
+using gView.Framework.FDB;
 using System;
 using System.Collections.Generic;
-using System.Text;
-using gView.Framework.FDB;
-using gView.Framework.Data;
-using gView.Data.Fields.Fields.AutoFields;
 using System.Threading.Tasks;
 
 namespace gView.Framework.Data.Fields.AutoFields
@@ -40,9 +37,15 @@ namespace gView.Framework.Data.Fields.AutoFields
 
         async public Task<bool> OnInsert(IFeatureClass fc, IFeature feature)
         {
-            if (fc == null || feature == null) return false;
+            if (fc == null || feature == null)
+            {
+                return false;
+            }
 
-            if (feature.Shape == null) return true;
+            if (feature.Shape == null)
+            {
+                return true;
+            }
 
             SpatialFilter filter = new SpatialFilter();
             filter.Geometry = feature.Shape;
@@ -57,11 +60,18 @@ namespace gView.Framework.Data.Fields.AutoFields
                 IFeature f;
                 while (((f = await cursor.NextFeature()) != null))
                 {
-                    if (f[this.name] == null || f[this.name] == DBNull.Value) continue;
+                    if (f[this.name] == null || f[this.name] == DBNull.Value)
+                    {
+                        continue;
+                    }
+
                     int level = Convert.ToInt32(f[this.name]);
-                    
+
                     int index = levels.BinarySearch(level);
-                    if (index >= 0) continue;
+                    if (index >= 0)
+                    {
+                        continue;
+                    }
 
                     levels.Insert(~index, level);
                 }
@@ -82,13 +92,20 @@ namespace gView.Framework.Data.Fields.AutoFields
                                 break;
                             }
                         }
-                        if (Level == 0) Level = max + 1;
+                        if (Level == 0)
+                        {
+                            Level = max + 1;
+                        }
                     }
                 }
                 if (feature[this.name] != null)
+                {
                     feature[this.name] = Level;
+                }
                 else
+                {
                     feature.Fields.Add(new FieldValue(this.name, Level));
+                }
             }
 
             return true;

@@ -1,13 +1,9 @@
+using gView.Framework.Geometry;
+using gView.Framework.UI;
+using gView.Framework.UI.Dialogs;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Text;
 using System.Windows.Forms;
-using gView.Framework.Geometry;
-using gView.Framework.UI.Dialogs;
-using gView.Framework.UI;
 
 namespace gView.Plugins.MapTools.Dialogs
 {
@@ -21,7 +17,9 @@ namespace gView.Plugins.MapTools.Dialogs
             InitializeComponent();
 
             if (_items.Count == 0)
+            {
                 _items.Add(new SpatialReferenceItem(SpatialReference.FromID("epsg:4326")));
+            }
 
             _doc = doc;
         }
@@ -43,11 +41,16 @@ namespace gView.Plugins.MapTools.Dialogs
                 _doc.FocusMap == null ||
                 _doc.FocusMap.Display == null ||
                 _doc.FocusMap.Display.Envelope == null)
+            {
                 this.Close();
+            }
 
             foreach (SpatialReferenceItem item in _items)
             {
-                if (item == null) return;
+                if (item == null)
+                {
+                    return;
+                }
 
                 cmbSRef.Items.Add(item);
                 if (item.SpatialReference != null &&
@@ -81,7 +84,7 @@ namespace gView.Plugins.MapTools.Dialogs
             if (dlg.ShowDialog() == DialogResult.OK)
             {
                 if (dlg.SpatialReference != null &&
-                    (sRef==null ||
+                    (sRef == null ||
                      !dlg.SpatialReference.Equals(sRef)))
                 {
                     SpatialReferenceItem item = new SpatialReferenceItem(dlg.SpatialReference);
@@ -120,7 +123,9 @@ namespace gView.Plugins.MapTools.Dialogs
             public override string ToString()
             {
                 if (_sRef != null)
+                {
                     return (String.IsNullOrEmpty(_sRef.Description) ? _sRef.Name : _sRef.Description);
+                }
 
                 return "Unknown";
             }

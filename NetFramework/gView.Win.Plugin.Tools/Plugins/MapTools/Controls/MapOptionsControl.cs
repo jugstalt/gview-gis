@@ -1,14 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Drawing;
-using System.Data;
-using System.Linq;
-using System.Text;
-using System.Windows.Forms;
+﻿using gView.Framework.system;
 using gView.Framework.UI;
-using gView.Framework.system;
-using System.Xml;
+using System.Collections.Generic;
+using System.Windows.Forms;
 
 namespace gView.Plugins.MapTools.Controls
 {
@@ -26,7 +19,10 @@ namespace gView.Plugins.MapTools.Controls
         {
             foreach (IMapOptionPage page in _optionPages)
             {
-                if (page == null) continue;
+                if (page == null)
+                {
+                    continue;
+                }
 
                 page.Commit();
             }
@@ -45,10 +41,16 @@ namespace gView.Plugins.MapTools.Controls
                 foreach (var pageType in compMan.GetPlugins(gView.Framework.system.Plugins.Type.IMapOptionPage))
                 {
                     IMapOptionPage page = compMan.CreateInstance<IMapOptionPage>(pageType);
-                    if (page == null) continue;
+                    if (page == null)
+                    {
+                        continue;
+                    }
 
                     Panel pagePanel = page.OptionPage(_document);
-                    if (pagePanel == null) continue;
+                    if (pagePanel == null)
+                    {
+                        continue;
+                    }
 
                     TabPage tabPage = new TabPage(page.Title);
                     tabPage.Controls.Add(pagePanel);

@@ -1,12 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
+﻿using System.IO;
 using System.Windows.Forms;
-using System.IO;
 
 namespace gView.Framework.UI.Dialogs
 {
@@ -28,7 +21,7 @@ namespace gView.Framework.UI.Dialogs
 " + html + "</body></html>";
 
 
-            MemoryStream ms=new MemoryStream(
+            MemoryStream ms = new MemoryStream(
                 System.Text.Encoding.Default.GetBytes(html));
 
             webBrowser1.DocumentStream = ms;

@@ -1,8 +1,5 @@
 ﻿using gView.Framework.Carto;
-using gView.Framework.Data;
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace gView.Framework.Data
 {
@@ -77,7 +74,7 @@ namespace gView.Framework.Data
                 return queryFilter;
             }
 
-            if(queryFilter == null)
+            if (queryFilter == null)
             {
                 return new QueryFilter() { WhereClause = appendFilter };
             }

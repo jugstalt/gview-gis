@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-
 namespace gView.Framework.LinAlg
 {
     public class LinearEquation2
@@ -22,7 +18,10 @@ namespace gView.Framework.LinAlg
         public bool Solve()
         {
             double detA = Det.Calc22(_a00, _a01, _a10, _a11);
-            if (detA == 0.0) return false;
+            if (detA == 0.0)
+            {
+                return false;
+            }
 
             t1 = Det.Calc22(_l0, _a01,
                             _l1, _a11) / detA;
@@ -49,7 +48,9 @@ namespace gView.Framework.LinAlg
         public void SetRow(int row, double l, double c1, double c2, double c3)
         {
             if (row < 0 || row >= 3)
+            {
                 return;
+            }
 
             _l[row] = l;
             _c1[row] = c1;
@@ -63,7 +64,10 @@ namespace gView.Framework.LinAlg
                                      _c1[1], _c2[1], _c3[1],
                                      _c1[2], _c2[2], _c3[2]);
 
-            if (detA == 0.0) return false;
+            if (detA == 0.0)
+            {
+                return false;
+            }
 
             t1 = Det.Calc33(_l[0], _c2[0], _c3[0],
                             _l[1], _c2[1], _c3[1],

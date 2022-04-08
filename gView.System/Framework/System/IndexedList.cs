@@ -1,6 +1,4 @@
-using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace gView.Framework.system
 {
@@ -13,7 +11,10 @@ namespace gView.Framework.system
         new public void Add(T item)
         {
             int index = base.BinarySearch(item);
-            if (index >= 0) return;
+            if (index >= 0)
+            {
+                return;
+            }
 
             base.Insert(~index, item);
         }
@@ -26,7 +27,10 @@ namespace gView.Framework.system
         new public int IndexOf(T item)
         {
             int index = base.BinarySearch(item);
-            if (index >= 0) return index;
+            if (index >= 0)
+            {
+                return index;
+            }
 
             return -1;
         }

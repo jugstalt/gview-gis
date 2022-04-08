@@ -1,10 +1,8 @@
+using gView.Framework.IO;
+using gView.Framework.system;
 using System;
 using System.Collections.Generic;
 using System.Text;
-using gView.Framework.IO;
-using gView.Framework.system;
-using gView.Framework.Data;
-using System.Threading.Tasks;
 
 namespace gView.Framework.Metadata
 {
@@ -21,16 +19,23 @@ namespace gView.Framework.Metadata
             {
                 object obj;
                 if (_dictionary.TryGetValue(key, out obj))
+                {
                     return obj;
+                }
 
                 return null;
             }
             set
             {
                 if (key.Contains(";"))
+                {
                     throw new Exception("The charakter ';' is not allowed in this dictionary keys!");
-                if(key=="__DictionaryKeys")
+                }
+
+                if (key == "__DictionaryKeys")
+                {
                     throw new Exception("The name '__DiretoryKeys' is not allowed in this dictionary keys!");
+                }
 
                 object obj;
                 if (_dictionary.TryGetValue(key, out obj))
@@ -54,7 +59,10 @@ namespace gView.Framework.Metadata
 
             foreach (string key in stream.Load("__DictionaryKeys", "").ToString().Split(';'))
             {
-                if (String.IsNullOrEmpty(key)) continue;
+                if (String.IsNullOrEmpty(key))
+                {
+                    continue;
+                }
 
                 _dictionary.Add(key, stream.Load(key, null));
             }
@@ -66,8 +74,10 @@ namespace gView.Framework.Metadata
 
             foreach (string key in _dictionary.Keys)
             {
-                if (_dictionary[key] != null) 
+                if (_dictionary[key] != null)
+                {
                     stream.Save(key, _dictionary[key]);
+                }
             }
         }
 
@@ -79,7 +89,11 @@ namespace gView.Framework.Metadata
             StringBuilder sb = new StringBuilder();
             foreach (string key in _dictionary.Keys)
             {
-                if (sb.Length > 0) sb.Append(";");
+                if (sb.Length > 0)
+                {
+                    sb.Append(";");
+                }
+
                 sb.Append(key);
             }
             return sb.ToString();
@@ -113,13 +127,17 @@ namespace gView.Framework.Metadata
         public void Load(IPersistStream stream)
         {
             if (_metadata != null)
+            {
                 _metadata.ReadMetadata(stream);
+            }
         }
 
         public void Save(IPersistStream stream)
         {
             if (_metadata != null)
+            {
                 _metadata.WriteMetadata(stream);
+            }
         }
 
         #endregion

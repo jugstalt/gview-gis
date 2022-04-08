@@ -359,7 +359,7 @@ namespace gView.Framework.Carto
             }
             return null;
         }
-        
+
         #endregion
 
         protected List<IFeatureLayer> OrderedLabelLayers(List<ILayer> layers)
@@ -434,7 +434,7 @@ namespace gView.Framework.Carto
         }
 
         #region IMap
-        
+
         public void AddDataset(IDataset service, int order)
         {
             /*

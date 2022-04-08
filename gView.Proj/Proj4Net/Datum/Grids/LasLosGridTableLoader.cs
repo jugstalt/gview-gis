@@ -17,7 +17,7 @@ namespace Proj4Net.Datum.Grids
         /// <returns>true if the header could be read.</returns>
         internal override bool ReadHeader(GridTable table)
         {
-            using(var br = new BinaryReader(OpenGridTableStream()))
+            using (var br = new BinaryReader(OpenGridTableStream()))
             {
                 br.BaseStream.Seek(64, SeekOrigin.Current);
 
@@ -46,18 +46,18 @@ namespace Proj4Net.Datum.Grids
         /// <returns>true if the data could be read.</returns>
         internal override bool ReadData(GridTable table)
         {
-            using(var brLos = new BinaryReader(OpenGridTableStream()))
-            using(var brLas = new BinaryReader(OpenLasStream()))
+            using (var brLos = new BinaryReader(OpenGridTableStream()))
+            using (var brLas = new BinaryReader(OpenLasStream()))
             {
                 var numPhis = table.NumPhis;
                 var coeffs = new PhiLambda[numPhis][];
                 var numLambdas = table.NumLambdas;
-                
+
                 //position the stream
-                var offset = sizeof (float)*(numLambdas + 1);
+                var offset = sizeof(float) * (numLambdas + 1);
                 brLas.BaseStream.Seek(offset, SeekOrigin.Current);
                 brLos.BaseStream.Seek(offset, SeekOrigin.Current);
-                    
+
                 for (var i = 0; i < numPhis; i++)
                 {
                     //Skip first 'zero' value
@@ -73,7 +73,7 @@ namespace Proj4Net.Datum.Grids
                     }
                     table.Coefficients = coeffs;
                 }
-                
+
                 return true;
             }
         }

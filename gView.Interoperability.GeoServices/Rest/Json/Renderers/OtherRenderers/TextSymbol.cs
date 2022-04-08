@@ -1,8 +1,4 @@
 ﻿using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace gView.Interoperability.GeoServices.Rest.Json.Renderers.OtherRenderers
 {
@@ -33,25 +29,25 @@ namespace gView.Interoperability.GeoServices.Rest.Json.Renderers.OtherRenderers
         public string Type { get; set; }
 
         [JsonProperty("color", NullValueHandling = NullValueHandling.Ignore)]
-        public int [] Color { get; set; }
+        public int[] Color { get; set; }
 
         [JsonProperty("backgroundColor", NullValueHandling = NullValueHandling.Ignore)]
-        public int [] BackgroundColor { get; set; }
+        public int[] BackgroundColor { get; set; }
 
         [JsonProperty("borderLineSize", NullValueHandling = NullValueHandling.Ignore)]
         public int? BorderLineSize { get; set; }
 
         [JsonProperty("borderLineColor", NullValueHandling = NullValueHandling.Ignore)]
-        public int [] BorderLineColor { get; set; }
+        public int[] BorderLineColor { get; set; }
 
         [JsonProperty("haloSize", NullValueHandling = NullValueHandling.Ignore)]
         public int? HaloSize { get; set; }
 
         [JsonProperty("haloColor", NullValueHandling = NullValueHandling.Ignore)]
-        public int [] HaloColor { get; set; }
+        public int[] HaloColor { get; set; }
 
         [JsonProperty("verticalAlignment")]
-        public string VerticalAlignment { get; set; }  
+        public string VerticalAlignment { get; set; }
 
         [JsonProperty("horizontalAlignment")]
         public string HorizontalAlignment { get; set; }
@@ -71,7 +67,7 @@ namespace gView.Interoperability.GeoServices.Rest.Json.Renderers.OtherRenderers
         [JsonProperty("kerning")]
         public bool Kerning { get; set; }
 
-        [JsonProperty("font",NullValueHandling = NullValueHandling.Ignore)]
+        [JsonProperty("font", NullValueHandling = NullValueHandling.Ignore)]
         public Font Font { get; set; }
 
         //public void SetHalo(LabelRenderer renderer)

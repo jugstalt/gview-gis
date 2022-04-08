@@ -1,5 +1,5 @@
-using System;
 using Proj4Net.Datum;
+using System;
 
 namespace Proj4Net.Parser
 {
@@ -41,7 +41,9 @@ namespace Proj4Net.Parser
             get
             {
                 if (_datum != null)
+                {
                     return _datum;
+                }
                 // if no _ellipsoid was specified, return WGS84 as the default
                 if (_ellipsoid == null && !IsDefinedExplicitly)
                 {
@@ -49,10 +51,14 @@ namespace Proj4Net.Parser
                 }
                 // if _ellipsoid was WGS84, return that _datum
                 if (_ellipsoid == Ellipsoid.WGS84)
+                {
                     return Proj4Net.Datum.Datum.WGS84;
+                }
 
                 if (!string.IsNullOrEmpty(_nadGrids))
+                {
                     return new Datum.Datum("User", _nadGrids, _ellipsoid, "User-defined");
+                }
 
                 // otherwise, return _a custom _datum with the specified _ellipsoid
                 return new Datum.Datum("User", _datumTransform, Ellipsoid, "User-defined");
@@ -74,7 +80,10 @@ namespace Proj4Net.Parser
             get
             {
                 if (_ellipsoid != null)
+                {
                     return _ellipsoid;
+                }
+
                 return new Ellipsoid("user", _a, _es, "User-defined");
             }
             set

@@ -1,8 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using gView.Framework.Geometry;
 using gView.Framework.system;
-using gView.Framework.Geometry;
+using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace gView.Framework.Network
@@ -46,7 +45,9 @@ namespace gView.Framework.Network
             foreach (INetworkTracerInput input in this)
             {
                 if (input == null)
+                {
                     continue;
+                }
 
                 switch (type)
                 {
@@ -55,47 +56,80 @@ namespace gView.Framework.Network
                         break;
                     case NetworkTracerInputType.SinkNode:
                         if (input is NetworkSinkInput)
+                        {
                             ret.Add(input);
+                        }
+
                         break;
                     case NetworkTracerInputType.SourceNode:
                         if (input is NetworkSourceInput && !(input is NetworkSinkInput))
+                        {
                             ret.Add(input);
+                        }
+
                         break;
                     case NetworkTracerInputType.SoruceEdge:
                         if (input is NetworkSourceEdgeInput)
+                        {
                             ret.Add(input);
+                        }
+
                         break;
                     case NetworkTracerInputType.Weight:
                         if (input is NetworkWeighInput)
+                        {
                             ret.Add(input);
+                        }
+
                         break;
                     case NetworkTracerInputType.IgnoreSwitches:
                         if (input is NetworkIgnoreSwitchState)
+                        {
                             ret.Add(input);
+                        }
+
                         break;
                     case NetworkTracerInputType.AllowedNodeIds:
                         if (input is NetworkInputAllowedNodeIds)
+                        {
                             ret.Add(input);
+                        }
+
                         break;
                     case NetworkTracerInputType.ForbiddenTargetNodeIds:
                         if (input is NetworkInputForbiddenTargetNodeIds)
+                        {
                             ret.Add(input);
+                        }
+
                         break;
                     case NetworkTracerInputType.ForbiddenStartNodeEdgeIds:
                         if (input is NetworkInputForbiddenStartNodeEdgeIds)
+                        {
                             ret.Add(input);
+                        }
+
                         break;
                     case NetworkTracerInputType.ForbiddenEdgeIds:
                         if (input is NetworkInputForbiddenEdgeIds)
+                        {
                             ret.Add(input);
+                        }
+
                         break;
                     case NetworkTracerInputType.AppendNodeFlags:
                         if (input is NetworkAppendNodeFlagsInput)
+                        {
                             ret.Add(input);
+                        }
+
                         break;
                     case NetworkTracerInputType.BarrierNodes:
                         if (input is NetworkBarrierNodeInput)
+                        {
                             ret.Add(input);
+                        }
+
                         break;
                 }
             }
@@ -110,7 +144,9 @@ namespace gView.Framework.Network
             foreach (INetworkTracerInput input in this)
             {
                 if (!(input is INetworkNode))
+                {
                     continue;
+                }
 
                 int id = ((INetworkNode)input).NodeId;
 
@@ -121,35 +157,59 @@ namespace gView.Framework.Network
                         break;
                     case NetworkTracerInputType.SinkNode:
                         if (input is NetworkSinkInput)
+                        {
                             ret.Add(id);
+                        }
+
                         break;
                     case NetworkTracerInputType.SourceNode:
                         if (input is NetworkSourceInput && !(input is NetworkSinkInput))
+                        {
                             ret.Add(id);
+                        }
+
                         break;
                     case NetworkTracerInputType.Weight:
                         if (input is NetworkWeighInput)
+                        {
                             ret.Add(id);
+                        }
+
                         break;
                     case NetworkTracerInputType.IgnoreSwitches:
                         if (input is NetworkIgnoreSwitchState)
+                        {
                             ret.Add(id);
+                        }
+
                         break;
                     case NetworkTracerInputType.AllowedNodeIds:
                         if (input is NetworkInputAllowedNodeIds)
+                        {
                             ret.Add(id);
+                        }
+
                         break;
                     case NetworkTracerInputType.ForbiddenTargetNodeIds:
                         if (input is NetworkInputForbiddenTargetNodeIds)
+                        {
                             ret.Add(id);
+                        }
+
                         break;
                     case NetworkTracerInputType.AppendNodeFlags:
                         if (input is NetworkAppendNodeFlagsInput)
+                        {
                             ret.Add(id);
+                        }
+
                         break;
                     case NetworkTracerInputType.BarrierNodes:
                         if (input is NetworkBarrierNodeInput)
+                        {
                             ret.Add(id);
+                        }
+
                         break;
                 }
             }
@@ -164,7 +224,9 @@ namespace gView.Framework.Network
             foreach (INetworkTracerInput input in this)
             {
                 if (!(input is INetworkEdge))
+                {
                     continue;
+                }
 
                 int id = ((INetworkEdge)input).EdgeId;
 
@@ -175,19 +237,31 @@ namespace gView.Framework.Network
                         break;
                     case NetworkTracerInputType.SoruceEdge:
                         if (input is NetworkSourceEdgeInput)
+                        {
                             ret.Add(id);
+                        }
+
                         break;
                     case NetworkTracerInputType.Weight:
                         if (input is NetworkWeighInput)
+                        {
                             ret.Add(id);
+                        }
+
                         break;
                     case NetworkTracerInputType.ForbiddenStartNodeEdgeIds:
                         if (input is NetworkInputForbiddenStartNodeEdgeIds)
+                        {
                             ret.Add(id);
+                        }
+
                         break;
                     case NetworkTracerInputType.ForbiddenEdgeIds:
                         if (input is NetworkInputForbiddenEdgeIds)
+                        {
                             ret.Add(id);
+                        }
+
                         break;
                 }
             }
@@ -396,8 +470,12 @@ namespace gView.Framework.Network
             : base()
         {
             if (edgeIds != null)
+            {
                 foreach (int edgeId in edgeIds)
+                {
                     this.Add(new NetworkEdgeOutput(edgeId));
+                }
+            }
         }
     }
     public class NetworkPathOutput : NetworkEdgeCollectionOutput

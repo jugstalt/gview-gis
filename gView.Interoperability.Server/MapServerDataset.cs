@@ -123,14 +123,18 @@ namespace gView.Interoperability.Server
                 doc.LoadXml(axl);
 
                 if (_class == null)
+                {
                     _class = new MapServerClass(this);
+                }
 
                 double dpi = 96.0;
                 XmlNode screen = doc.SelectSingleNode("//ENVIRONMENT/SCREEN");
                 if (screen != null)
                 {
                     if (screen.Attributes["dpi"] != null)
+                    {
                         dpi = Convert.ToDouble(screen.Attributes["dpi"].Value.Replace(".", ","));
+                    }
                 }
                 double dpm = (dpi / 0.0254);
 
@@ -143,7 +147,9 @@ namespace gView.Interoperability.Server
                         gView.Framework.Geometry.SpatialReference.FromProj4(sRef, spatialReference.Attributes["param"].Value);
 
                         if (spatialReference.Attributes["name"] != null)
+                        {
                             sRef.Name = spatialReference.Attributes["name"].Value;
+                        }
 
                         _class.SpatialReference = sRef;
                     }
@@ -220,7 +226,10 @@ namespace gView.Interoperability.Server
                     }
                     */
 
-                    if (layerNode.Attributes["visible"] != null) bool.TryParse(layerNode.Attributes["visible"].Value, out visible);
+                    if (layerNode.Attributes["visible"] != null)
+                    {
+                        bool.TryParse(layerNode.Attributes["visible"].Value, out visible);
+                    }
 
                     IClass themeClass = null;
                     IWebServiceTheme theme = null;
@@ -237,7 +246,11 @@ namespace gView.Interoperability.Server
                             ((MapThemeFeatureClass)themeClass).fClassTypeString = FCLASS.Attributes["type"].Value;
                         }
                         theme = LayerFactory.Create(themeClass, _class) as IWebServiceTheme;
-                        if (theme == null) continue;
+                        if (theme == null)
+                        {
+                            continue;
+                        }
+
                         theme.Visible = visible;
                     }
                     else if (layerNode.Attributes["type"] != null && layerNode.Attributes["type"].Value == "image")
@@ -267,9 +280,14 @@ namespace gView.Interoperability.Server
                     try
                     {
                         if (layerNode.Attributes["minscale"] != null)
+                        {
                             theme.MinimumScale = Convert.ToDouble(layerNode.Attributes["minscale"].Value.Replace(".", ",")) * dpm;
+                        }
+
                         if (layerNode.Attributes["maxscale"] != null)
+                        {
                             theme.MaximumScale = Convert.ToDouble(layerNode.Attributes["maxscale"].Value.Replace(".", ",")) * dpm;
+                        }
                     }
                     catch { }
                     _themes.Add(theme);
@@ -335,7 +353,9 @@ namespace gView.Interoperability.Server
         public Task<IDatasetElement> Element(string title)
         {
             if (_class != null && title == _class.Name)
+            {
                 return Task.FromResult<IDatasetElement>(new DatasetElement(_class));
+            }
 
             return Task.FromResult<IDatasetElement>(null);
         }
@@ -387,7 +407,10 @@ namespace gView.Interoperability.Server
         public MapServerClass(MapServerDataset dataset)
         {
             _dataset = dataset;
-            if (_dataset != null) _name = _dataset._name;
+            if (_dataset != null)
+            {
+                _name = _dataset._name;
+            }
         }
 
         #region IClass Member
@@ -417,7 +440,11 @@ namespace gView.Interoperability.Server
 
         async public Task<bool> MapRequest(gView.Framework.Carto.IDisplay display)
         {
-            if (_dataset == null) return false;
+            if (_dataset == null)
+            {
+                return false;
+            }
+
             if (!_dataset._opened)
             {
                 await _dataset.Open();
@@ -492,7 +519,11 @@ namespace gView.Interoperability.Server
                     {
                         foreach (string role in context.ServiceRequest.Identity.UserRoles)
                         {
-                            if (String.IsNullOrEmpty(role)) continue;
+                            if (String.IsNullOrEmpty(role))
+                            {
+                                continue;
+                            }
+
                             roles += "|" + role;
                         }
                     }
@@ -525,12 +556,17 @@ namespace gView.Interoperability.Server
                 try
                 {
                     System.IO.FileInfo fi = new System.IO.FileInfo(output.Attributes["file"].Value);
-                    if (fi.Exists) bitmap = Current.Engine.CreateBitmap(fi.FullName);
+                    if (fi.Exists)
+                    {
+                        bitmap = Current.Engine.CreateBitmap(fi.FullName);
+                    }
                 }
                 catch { }
 
                 if (bitmap == null)
+                {
                     bitmap = WebFunctions.DownloadImage(output);
+                }
 
                 if (bitmap != null)
                 {
@@ -539,7 +575,9 @@ namespace gView.Interoperability.Server
                     _image.Envelope = display.Envelope;
 
                     if (AfterMapRequest != null)
+                    {
                         AfterMapRequest(this, display, _image);
+                    }
                 }
 
                 return _image != null;
@@ -570,8 +608,16 @@ namespace gView.Interoperability.Server
         {
             get
             {
-                if (_dataset == null) return null;
-                if (!_dataset._opened) _dataset.Open();
+                if (_dataset == null)
+                {
+                    return null;
+                }
+
+                if (!_dataset._opened)
+                {
+                    _dataset.Open();
+                }
+
                 return _dataset.Envelope().Result;
             }
         }
@@ -580,10 +626,18 @@ namespace gView.Interoperability.Server
         {
             get
             {
-                if (_clonedThemes != null) return _clonedThemes;
+                if (_clonedThemes != null)
+                {
+                    return _clonedThemes;
+                }
+
                 if (_dataset != null)
                 {
-                    if (!_dataset._opened) _dataset.Open();
+                    if (!_dataset._opened)
+                    {
+                        _dataset.Open();
+                    }
+
                     return _dataset._themes;
                 }
                 return new List<IWebServiceTheme>();
@@ -613,7 +667,11 @@ namespace gView.Interoperability.Server
 
             foreach (IWebServiceTheme theme in Themes)
             {
-                if (theme == null || theme.Class == null) continue;
+                if (theme == null || theme.Class == null)
+                {
+                    continue;
+                }
+
                 clone._clonedThemes.Add(LayerFactory.Create(theme.Class, theme as ILayer, clone) as IWebServiceTheme);
             }
             clone.AfterMapRequest = AfterMapRequest;
@@ -626,14 +684,20 @@ namespace gView.Interoperability.Server
         {
             if (context == null ||
                 context.MapServer == null ||
-                context.MapServer.LoggingEnabled(loggingMethod.request_detail_pro) == false) return;
+                context.MapServer.LoggingEnabled(loggingMethod.request_detail_pro) == false)
+            {
+                return;
+            }
         }
 
         public static void ErrorLog(IServiceRequestContext context, string header, string server, string service, Exception ex)
         {
             if (context == null ||
                 context.MapServer == null ||
-                context.MapServer.LoggingEnabled(loggingMethod.error) == false) return;
+                context.MapServer.LoggingEnabled(loggingMethod.error) == false)
+            {
+                return;
+            }
 
             StringBuilder msg = new StringBuilder();
             if (ex != null)
@@ -661,7 +725,11 @@ namespace gView.Interoperability.Server
 
         async protected override Task<string> SendRequest(IUserData userData, string axlRequest)
         {
-            if (_dataset == null) return "";
+            if (_dataset == null)
+            {
+                return "";
+            }
+
             string server = ConfigTextStream.ExtractValue(_dataset.ConnectionString, "server");
             string service = ConfigTextStream.ExtractValue(_dataset.ConnectionString, "service");
 
@@ -677,7 +745,11 @@ namespace gView.Interoperability.Server
                 {
                     foreach (string role in context.ServiceRequest.Identity.UserRoles)
                     {
-                        if (String.IsNullOrEmpty(role)) continue;
+                        if (String.IsNullOrEmpty(role))
+                        {
+                            continue;
+                        }
+
                         roles += "|" + role;
                     }
                 }
@@ -749,7 +821,11 @@ namespace gView.Interoperability.Server
 
         async protected override Task<string> SendRequest(IUserData userData, string axlRequest)
         {
-            if (_dataset == null) return "";
+            if (_dataset == null)
+            {
+                return "";
+            }
+
             string server = ConfigTextStream.ExtractValue(_dataset.ConnectionString, "server");
             string service = ConfigTextStream.ExtractValue(_dataset.ConnectionString, "service");
 
@@ -765,7 +841,11 @@ namespace gView.Interoperability.Server
                 {
                     foreach (string role in context.ServiceRequest.Identity.UserRoles)
                     {
-                        if (String.IsNullOrEmpty(role)) continue;
+                        if (String.IsNullOrEmpty(role))
+                        {
+                            continue;
+                        }
+
                         roles += "|" + role;
                     }
                 }

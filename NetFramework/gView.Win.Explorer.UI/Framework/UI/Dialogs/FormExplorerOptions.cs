@@ -1,13 +1,7 @@
+using gView.Framework.system;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Xml;
-using System.Drawing;
-using System.Text;
 using System.Windows.Forms;
-using gView.Framework.UI;
-using gView.Framework.system;
 
 namespace gView.Framework.UI.Dialogs
 {
@@ -26,10 +20,16 @@ namespace gView.Framework.UI.Dialogs
             foreach (var pageTypes in compMan.GetPlugins(Plugins.Type.IExplorerOptionPage))
             {
                 IExplorerOptionPage page = compMan.CreateInstance<IExplorerOptionPage>(pageTypes);
-                if (page == null) continue;
+                if (page == null)
+                {
+                    continue;
+                }
 
                 Panel pagePanel = page.OptionPage();
-                if (pagePanel == null) continue;
+                if (pagePanel == null)
+                {
+                    continue;
+                }
 
                 TabPage tabPage = new TabPage(page.Title);
                 tabPage.Controls.Add(pagePanel);
@@ -49,7 +49,10 @@ namespace gView.Framework.UI.Dialogs
         {
             foreach (IMapOptionPage page in _optionPages)
             {
-                if (page == null) continue;
+                if (page == null)
+                {
+                    continue;
+                }
 
                 page.Commit();
             }

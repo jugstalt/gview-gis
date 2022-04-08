@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using gView.Framework.UI;
+using System;
 using System.Threading.Tasks;
-using gView.Framework.UI;
 
 namespace gView.Framework.system.UI
 {
@@ -58,7 +55,9 @@ namespace gView.Framework.system.UI
         virtual public void OnCreate(object hook)
         {
             if (hook is IMapDocument)
+            {
                 this.MapDocument = (IMapDocument)hook;
+            }
         }
 
         virtual public Task<bool> OnEvent(object MapEvent)

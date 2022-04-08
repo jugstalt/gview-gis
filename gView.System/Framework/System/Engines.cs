@@ -1,8 +1,6 @@
 ﻿using gView.GraphicsEngine.Abstraction;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace gView.Framework.system
 {
@@ -21,7 +19,7 @@ namespace gView.Framework.system
 
         static public void RegisterGraphcisEngine(this IGraphicsEngine engine)
         {
-            if (engine!=null &&
+            if (engine != null &&
                 _registeredGraphicsEngines.Where(e => e.EngineName == engine.EngineName).Count() == 0)
             {
                 _registeredGraphicsEngines.Add(engine);

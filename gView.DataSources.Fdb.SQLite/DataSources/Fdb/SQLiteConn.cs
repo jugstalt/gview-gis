@@ -2,11 +2,10 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Linq;
-using System.Text;
-using System.Xml;
-using System.Threading.Tasks;
 using System.Data.SQLite;
+using System.Text;
+using System.Threading.Tasks;
+using System.Xml;
 
 namespace gView.DataSources.Fdb.Sqlite
 {
@@ -89,10 +88,17 @@ namespace gView.DataSources.Fdb.Sqlite
 
         async public Task<bool> SQLQuery(System.Data.DataSet ds, string sql, string table, bool writeable)
         {
-            if (!writeable) return await SQLQuery(ds, sql, table);
+            if (!writeable)
+            {
+                return await SQLQuery(ds, sql, table);
+            }
 
             //throw new NotImplementedException();
-            if (_updateAdapter != null) _updateAdapter.Dispose();
+            if (_updateAdapter != null)
+            {
+                _updateAdapter.Dispose();
+            }
+
             try
             {
                 _updateAdapter = new SQLiteDataAdapter(sql, _connectionString);
@@ -186,7 +192,7 @@ namespace gView.DataSources.Fdb.Sqlite
                     var command = new SQLiteCommand(sql, connection);
                     await connection.OpenAsync();
 
-                    using(var reader=await command.ExecuteReaderAsync())
+                    using (var reader = await command.ExecuteReaderAsync())
                     {
                         DataTable tab = new DataTable(table);
                         ds.Tables.Add(tab);
@@ -195,7 +201,7 @@ namespace gView.DataSources.Fdb.Sqlite
                         {
                             int fieldCount = reader.FieldCount;
 
-                            if (tab.Columns.Count==0)
+                            if (tab.Columns.Count == 0)
                             {
                                 for (int i = 0; i < fieldCount; i++)
                                 {
@@ -204,7 +210,7 @@ namespace gView.DataSources.Fdb.Sqlite
                             }
 
                             DataRow row = tab.NewRow();
-                            for(int i=0;i<fieldCount;i++)
+                            for (int i = 0; i < fieldCount; i++)
                             {
                                 row[i] = reader.GetValue(i);
                             }
@@ -250,18 +256,33 @@ namespace gView.DataSources.Fdb.Sqlite
             while (field != "")
             {
                 string val = getFieldValue(feature, field);
-                if (val == "") return false;
+                if (val == "")
+                {
+                    return false;
+                }
+
                 sql = sql.Replace("[" + field + "]", val);
                 field = getFieldPlacehoder(sql);
             }
 
             DataSet ds = new DataSet();
-            if (!await SQLQuery(ds, sql, "JOIN")) return false;
-            if (ds.Tables["JOIN"].Rows.Count == 0) return false;
+            if (!await SQLQuery(ds, sql, "JOIN"))
+            {
+                return false;
+            }
+
+            if (ds.Tables["JOIN"].Rows.Count == 0)
+            {
+                return false;
+            }
+
             DataRow row = ds.Tables["JOIN"].Rows[0];
 
             XmlNodeList fields = feature.SelectNodes("FIELDS");
-            if (fields.Count == 0) return false;
+            if (fields.Count == 0)
+            {
+                return false;
+            }
 
             int rowCount = ds.Tables["JOIN"].Rows.Count;
             XmlAttribute attr;
@@ -286,11 +307,20 @@ namespace gView.DataSources.Fdb.Sqlite
                     foreach (DataRow row2 in ds.Tables["JOIN"].Rows)
                     {
                         if (count < rowCount)
+                        {
                             sb.Append("<tr><td nowrap style='border-bottom: gray 1px solid'>");
+                        }
                         else
+                        {
                             sb.Append("<tr><td nowrap>");
+                        }
+
                         string val = row2[col.ColumnName].ToString().Trim();
-                        if (val == "") val = "&nbsp;";
+                        if (val == "")
+                        {
+                            val = "&nbsp;";
+                        }
+
                         sb.Append(val + "</td></tr>");
                         count++;
                     }
@@ -357,17 +387,26 @@ namespace gView.DataSources.Fdb.Sqlite
                     int fieldIndex = 0;
                     foreach (string f in field.Replace(" ", "").Split(','))
                     {
-                        if (String.IsNullOrWhiteSpace(f)) continue;
+                        if (String.IsNullOrWhiteSpace(f))
+                        {
+                            continue;
+                        }
 
                         if (fieldIndex > 0)
+                        {
                             sql += ",";
+                        }
+
                         sql += "[" + f + "] DESC";
                         fieldIndex++;
                     }
                     sql += ")";
 
-                    using(SQLiteCommand command = new SQLiteCommand(sql, connection))
+                    using (SQLiteCommand command = new SQLiteCommand(sql, connection))
+                    {
                         command.ExecuteNonQuery();
+                    }
+
                     connection.Close();
                 }
             }
@@ -398,12 +437,18 @@ namespace gView.DataSources.Fdb.Sqlite
                         //if (field == "COUNT") field = "COUNT_";
 
                         sql += field + " " + dataTypes[i];
-                        if (i < (fields.Length - 1)) sql += ",";
+                        if (i < (fields.Length - 1))
+                        {
+                            sql += ",";
+                        }
                     }
                     sql += ");";
 
                     using (SQLiteCommand command = new SQLiteCommand(sql, connection))
+                    {
                         command.ExecuteNonQuery();
+                    }
+
                     connection.Close();
                 }
             }
@@ -425,7 +470,10 @@ namespace gView.DataSources.Fdb.Sqlite
                     connection.Open();
 
                     using (SQLiteCommand command = new SQLiteCommand(sql, connection))
+                    {
                         command.ExecuteNonQuery();
+                    }
+
                     connection.Close();
                 }
             }
@@ -454,7 +502,10 @@ namespace gView.DataSources.Fdb.Sqlite
                     string sql = "DROP INDEX " + name + ";";
 
                     using (SQLiteCommand command = new SQLiteCommand(sql, connection))
+                    {
                         command.ExecuteNonQuery();
+                    }
+
                     connection.Close();
                 }
             }
@@ -478,7 +529,10 @@ namespace gView.DataSources.Fdb.Sqlite
                     string sql = "DROP TABLE " + name + ";";
 
                     using (SQLiteCommand command = new SQLiteCommand(sql, connection))
+                    {
                         command.ExecuteNonQuery();
+                    }
+
                     connection.Close();
                 }
             }
@@ -500,7 +554,7 @@ namespace gView.DataSources.Fdb.Sqlite
                     connection.Open();
                     if (connection.State == ConnectionState.Open)
                     {
-                        using(SQLiteCommand command = new SQLiteCommand("SELECT * FROM " + name, connection))
+                        using (SQLiteCommand command = new SQLiteCommand("SELECT * FROM " + name, connection))
                         using (SQLiteDataReader reader = command.ExecuteReader(CommandBehavior.SchemaOnly))
                         {
                             _schemaTable = reader.GetSchemaTable();
@@ -529,7 +583,7 @@ namespace gView.DataSources.Fdb.Sqlite
                     connection.Open();
                     if (connection.State == ConnectionState.Open)
                     {
-                        using(SQLiteCommand command = new SQLiteCommand("SELECT * FROM " + name, connection))
+                        using (SQLiteCommand command = new SQLiteCommand("SELECT * FROM " + name, connection))
                         using (SQLiteDataReader reader = command.ExecuteReader(CommandBehavior.SchemaOnly))
                         {
                             schema = reader.GetSchemaTable();
@@ -570,7 +624,9 @@ namespace gView.DataSources.Fdb.Sqlite
                         dataTypes += "INTEGER";
                     }
                     else
+                    {
                         dataTypes += "TEXT(50) WITH COMPRESSION";
+                    }
                 }
 
                 if (createTable(tab.TableName, fields.Split(';'), dataTypes.Split(';')))
@@ -590,7 +646,10 @@ namespace gView.DataSources.Fdb.Sqlite
                                 }
                                 ds.Tables[0].Rows.Add(newRow);
                             }
-                            if (!this.UpdateData(ref ds, tab.TableName)) return false;
+                            if (!this.UpdateData(ref ds, tab.TableName))
+                            {
+                                return false;
+                            }
                         }
                         else
                         {
@@ -654,7 +713,7 @@ namespace gView.DataSources.Fdb.Sqlite
 
         public void Dispose()
         {
-            
+
         }
 
         #endregion
@@ -664,9 +723,16 @@ namespace gView.DataSources.Fdb.Sqlite
         private string getFieldPlacehoder(string str)
         {
             int pos = str.IndexOf("[");
-            if (pos == -1) return "";
+            if (pos == -1)
+            {
+                return "";
+            }
+
             int pos2 = str.IndexOf("]");
-            if (pos2 == -1) return "";
+            if (pos2 == -1)
+            {
+                return "";
+            }
 
             return str.Substring(pos + 1, pos2 - pos - 1);
         }

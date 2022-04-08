@@ -44,10 +44,15 @@ namespace gView.Cmd.CompactTileBundle
 
             FileInfo bundleFile = new FileInfo(bundlePath);
             if (!bundleFile.Exists)
+            {
                 throw new ArgumentException("Bundle file not exits: " + bundleFile.FullName);
+            }
+
             FileInfo bundlxFile = new FileInfo(bundleFile.FullName.Substring(0, bundleFile.FullName.Length - bundleFile.Extension.Length) + ".tilebundlx");
             if (!bundlxFile.Exists)
+            {
                 throw new ArgumentException("Bundle index file not exists: " + bundlxFile.FullName);
+            }
 
             if (action == Action.Explode)
             {
@@ -79,7 +84,10 @@ namespace gView.Cmd.CompactTileBundle
                             byte[] data = bundle.ImageData(tilePos, tileLength);
 
                             if (!rDir.Exists)
+                            {
                                 rDir.Create();
+                            }
+
                             File.WriteAllBytes(rDir.FullName + @"/" + (c + startCol).ToString() + ".jpg", data);
                         }
                     }

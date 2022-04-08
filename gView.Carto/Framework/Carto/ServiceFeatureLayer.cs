@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
 using gView.Framework.Data;
 
 namespace gView.Framework.Carto
@@ -11,7 +8,10 @@ namespace gView.Framework.Carto
 
         public ServiceFeatureLayer(IFeatureLayer layer)
         {
-            if (layer == null) return;
+            if (layer == null)
+            {
+                return;
+            }
 
             _layer = layer;
             _renderer = layer.FeatureRenderer;
@@ -34,7 +34,11 @@ namespace gView.Framework.Carto
         {
             get
             {
-                if (_layer == null) return null;
+                if (_layer == null)
+                {
+                    return null;
+                }
+
                 return _layer.FeatureClass;
             }
         }

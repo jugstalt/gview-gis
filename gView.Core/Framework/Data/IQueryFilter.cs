@@ -9,26 +9,26 @@ namespace gView.Framework.Data
     /// Zusammenfassung für IQuery.
     /// </summary>
 
-    public interface IQueryFilter : ICloneable,IClone4,IUserData
-	{
+    public interface IQueryFilter : ICloneable, IClone4, IUserData
+    {
         void AddField(string fieldname, bool caseSensitive = true);
         void AddField(string fieldname, string alias);
         string Alias(string fieldname);
 
         IEnumerable<string> QuerySubFields { get; }
-        string SubFields { get ; set ; }
+        string SubFields { get; set; }
         string SubFieldsAndAlias { get; }
-		string WhereClause { set ; get ; }
+        string WhereClause { set; get; }
         string JsonWhereClause { get; }
-		string OrderBy { set; get; }
+        string OrderBy { set; get; }
         bool NoLock { set; get; }
-		int BeginRecord { get ; set ;}
+        int BeginRecord { get; set; }
         int Limit { get; set; }
-		int LastQueryFeatureCount { get ; }
-		bool HasMore { get ; }
+        int LastQueryFeatureCount { get; }
+        bool HasMore { get; }
 
-		string fieldPrefix { get ; set ; }
-		string fieldPostfix { get ; set ; }
+        string fieldPrefix { get; set; }
+        string fieldPostfix { get; set; }
 
         ISpatialReference FeatureSpatialReference { get; set; }
         ISpatialReference ContextLayerDefaultSpatialReference { get; set; }

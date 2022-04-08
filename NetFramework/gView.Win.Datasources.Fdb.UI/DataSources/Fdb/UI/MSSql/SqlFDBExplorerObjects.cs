@@ -20,7 +20,6 @@ using System.Data;
 using System.Data.SqlClient;
 using System.IO;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -467,7 +466,7 @@ namespace gView.DataSources.Fdb.UI.MSSql
         void ShrinkDatabase_Click(object sender, EventArgs e)
         {
             SqlCommandInterpreter interpreter = new SqlCommandInterpreter(_connectionString, SystemVariables.ApplicationDirectory + @"/sql/sqlFDB/shrinkDatabase.sql");
-            interpreter.DatabaseName = ConfigTextStream.ExtractValue(_connectionString, "database");;
+            interpreter.DatabaseName = ConfigTextStream.ExtractValue(_connectionString, "database"); ;
             SqlCommandProgressReporter reporter = new SqlCommandProgressReporter(interpreter);
 
             FormTaskProgress progress = new FormTaskProgress(reporter, interpreter.Exectue(null));

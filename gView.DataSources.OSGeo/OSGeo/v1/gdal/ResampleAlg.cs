@@ -9,11 +9,12 @@
 namespace OSGeo_v1.GDAL
 {
 
-public enum ResampleAlg {
-  GRA_NearestNeighbour = 0,
-  GRA_Bilinear = 1,
-  GRA_Cubic = 2,
-  GRA_CubicSpline = 3
-}
+    public enum ResampleAlg
+    {
+        GRA_NearestNeighbour = 0,
+        GRA_Bilinear = 1,
+        GRA_Cubic = 2,
+        GRA_CubicSpline = 3
+    }
 
 }

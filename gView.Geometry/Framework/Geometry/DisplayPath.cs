@@ -1,8 +1,6 @@
-﻿using System;
+﻿using gView.Framework.system;
+using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using gView.Framework.system;
 
 namespace gView.Framework.Geometry
 {
@@ -77,7 +75,10 @@ namespace gView.Framework.Geometry
         {
             get
             {
-                if (_points.Count < 2) return 0.0f;
+                if (_points.Count < 2)
+                {
+                    return 0.0f;
+                }
 
                 float len = 0.0f;
                 for (int i = 1; i < _points.Count; i++)
@@ -93,7 +94,9 @@ namespace gView.Framework.Geometry
         public GraphicsEngine.CanvasPointF? PointAt(float stat)
         {
             if (_points.Count == 0)
+            {
                 return null;
+            }
 
             float Station = 0.0f, Station0 = 0.0f;
             float x1, y1, x2, y2;
@@ -141,12 +144,12 @@ namespace gView.Framework.Geometry
 
         public void Serialize(System.IO.BinaryWriter w, IGeometryDef geomDef)
         {
-            
+
         }
 
         public void Deserialize(System.IO.BinaryReader r, IGeometryDef geomDef)
         {
-            
+
         }
 
         public bool Equals(object obj, double epsi)
@@ -156,7 +159,7 @@ namespace gView.Framework.Geometry
 
         public int? Srs { get; set; }
 
-        public int VertexCount => _points==null ? 0 : _points.Count;
+        public int VertexCount => _points == null ? 0 : _points.Count;
 
         #endregion
 

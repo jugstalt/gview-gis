@@ -1,13 +1,11 @@
+using gView.Framework.IO;
+using gView.Framework.system;
 using System;
 using System.Collections.Generic;
-using System.Text;
-using System.Windows.Forms;
-using gView.Framework.system;
-using System.IO;
-using gView.Framework.IO;
 using System.Drawing;
 using System.Drawing.Imaging;
-using System.Threading.Tasks;
+using System.IO;
+using System.Windows.Forms;
 
 namespace gView.Framework.UI
 {
@@ -24,13 +22,16 @@ namespace gView.Framework.UI
                 RemoveFavorite(name, path);
                 FileInfo fi = new FileInfo(ConfigPath);
 
-                XmlStream stream= new XmlStream("Favorites");
+                XmlStream stream = new XmlStream("Favorites");
                 FavoriteList favList = new FavoriteList();
                 if (fi.Exists)
                 {
                     stream.ReadStream(fi.FullName);
                     favList = (FavoriteList)stream.Load("favlist", null, favList);
-                    if (favList == null) favList = new FavoriteList();
+                    if (favList == null)
+                    {
+                        favList = new FavoriteList();
+                    }
                 }
                 favList.Add(new Favorite(name, path, image));
 
@@ -50,12 +51,18 @@ namespace gView.Framework.UI
             try
             {
                 FileInfo fi = new FileInfo(ConfigPath);
-                if (!fi.Exists) return false;
+                if (!fi.Exists)
+                {
+                    return false;
+                }
 
                 XmlStream stream = new XmlStream("Favorites");
                 stream.ReadStream(fi.FullName);
                 FavoriteList favList = (FavoriteList)stream.Load("favlist", null, new FavoriteList());
-                if (favList == null) return false;
+                if (favList == null)
+                {
+                    return false;
+                }
 
                 favList.Remove(name, path);
 
@@ -114,7 +121,9 @@ namespace gView.Framework.UI
                 foreach (Favorite fav in ListOperations<Favorite>.Clone(this))
                 {
                     if (fav.Name == name && fav.Path == path)
+                    {
                         this.Remove(fav);
+                    }
                 }
             }
 
@@ -229,9 +238,13 @@ namespace gView.Framework.UI
             {
                 this.Text = _fav.Name;
                 if (fav.Image == null)
+                {
                     this.Image = global::gView.Win.Explorer.UI.Properties.Resources.folder_go;
+                }
                 else
+                {
                     this.Image = fav.Image;
+                }
             }
         }
 

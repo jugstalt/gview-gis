@@ -1,13 +1,8 @@
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Text;
-using System.Windows.Forms;
-using gView.Framework.UI;
 using gView.Framework.Globalisation;
-using gView.Framework.system;
+using gView.Framework.UI;
+using System;
+using System.Drawing;
+using System.Windows.Forms;
 
 namespace gView.Plugins.MapTools.Dialogs
 {
@@ -20,22 +15,35 @@ namespace gView.Plugins.MapTools.Dialogs
         {
             InitializeComponent();
 
-            if (identify == null) return;
+            if (identify == null)
+            {
+                return;
+            }
 
             if (identify.toolType == ToolType.click)
+            {
                 btnMethodClick.Checked = true;
+            }
             else if (identify.toolType == ToolType.rubberband)
+            {
                 btnMethodRubberband.Checked = true;
+            }
 
             if (identify.UserDefinedQueries != null)
+            {
                 _queries = identify.UserDefinedQueries.Clone() as QueryThemes;
+            }
 
             numTolerance.Value = (decimal)identify.Tolerance;
 
             if (identify.ThemeMode == QueryThemeMode.Default)
+            {
                 btnDefault.Checked = true;
+            }
             else if (identify.ThemeMode == QueryThemeMode.Custom)
+            {
                 btnCustom.Checked = true;
+            }
 
             _doc = doc;
             btnQueryThemeEditor.Enabled = _doc != null;
@@ -53,7 +61,11 @@ namespace gView.Plugins.MapTools.Dialogs
         {
             get
             {
-                if (btnMethodClick.Checked) return ToolType.click;
+                if (btnMethodClick.Checked)
+                {
+                    return ToolType.click;
+                }
+
                 return ToolType.rubberband;
             }
         }
@@ -62,7 +74,11 @@ namespace gView.Plugins.MapTools.Dialogs
         {
             get
             {
-                if (btnDefault.Checked) return QueryThemeMode.Default;
+                if (btnDefault.Checked)
+                {
+                    return QueryThemeMode.Default;
+                }
+
                 return QueryThemeMode.Custom;
             }
         }
@@ -102,7 +118,10 @@ namespace gView.Plugins.MapTools.Dialogs
         {
             get
             {
-                if (_doc == null || !(_doc.Application is IGUIApplication)) return null;
+                if (_doc == null || !(_doc.Application is IGUIApplication))
+                {
+                    return null;
+                }
 
                 IGUIApplication app = _doc.Application as IGUIApplication;
                 return app.Tool(new Guid("F13D5923-70C8-4c6b-9372-0760D3A8C08C")) as Identify;
@@ -113,24 +132,33 @@ namespace gView.Plugins.MapTools.Dialogs
         {
             Panel panel = OptionPage(_doc);
             if (panel == null || _dlg == null)
+            {
                 return;
+            }
 
             if (_dlg.ShowDialog() == DialogResult.OK)
+            {
                 this.Commit();
+            }
         }
 
         #region IMapOptionPage Member
 
         public Panel OptionPage(IMapDocument document)
         {
-            _doc=document;
+            _doc = document;
 
             if (!IsAvailable(document))
+            {
                 return null;
+            }
 
             IGUIApplication app = document.Application as IGUIApplication;
             Identify identify = ToolIdentify;
-            if(identify==null) return null;
+            if (identify == null)
+            {
+                return null;
+            }
 
             _dlg = new OptionPageIdentify(_doc, identify);
             return _dlg.OptionPanel;
@@ -153,7 +181,10 @@ namespace gView.Plugins.MapTools.Dialogs
         public void Commit()
         {
             Identify identify = ToolIdentify;
-            if (identify == null || _dlg == null) return;
+            if (identify == null || _dlg == null)
+            {
+                return;
+            }
 
             identify.Tolerance = _dlg.Tolerance;
             identify.toolType = _dlg.IdentifyToolType;
@@ -165,10 +196,16 @@ namespace gView.Plugins.MapTools.Dialogs
 
         public bool IsAvailable(IMapDocument document)
         {
-            if (document == null || document.Application == null) return false;
+            if (document == null || document.Application == null)
+            {
+                return false;
+            }
 
             if (document.Application is IMapApplication &&
-                ((IMapApplication)document.Application).ReadOnly == true) return false;
+                ((IMapApplication)document.Application).ReadOnly == true)
+            {
+                return false;
+            }
 
             return true;
         }

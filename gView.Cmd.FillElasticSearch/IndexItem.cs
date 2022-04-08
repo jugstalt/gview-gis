@@ -1,21 +1,16 @@
 ﻿using Nest;
 using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace gView.Cmd.FillElasticSearch
 {
-    [ElasticsearchType(Name="item")]
+    [ElasticsearchType(Name = "item")]
     public class Item
     {
         [Text(Name = "id", Index = false)]
         [JsonProperty(PropertyName = "id")]
         public string Id { get; set; }
 
-        [Text(Name="suggested_text", Boost = 2.0, Index = true, Analyzer = "german")]
+        [Text(Name = "suggested_text", Boost = 2.0, Index = true, Analyzer = "german")]
         [JsonProperty(PropertyName = "suggested_text")]
         public string SuggestedText { get; set; }
 
@@ -45,7 +40,7 @@ namespace gView.Cmd.FillElasticSearch
         [JsonProperty(PropertyName = "id")]
         public string Id { get; set; }
 
-        [Text(Name = "category",Index = true)]
+        [Text(Name = "category", Index = true)]
         [JsonProperty(PropertyName = "category")]
         public string Category { get; set; }
 

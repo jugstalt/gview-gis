@@ -135,7 +135,7 @@ namespace gView.DataSources.CosmoDb
 
                 int degreeOfParallelism = 5;
                 var containers = new List<ExpandoObject>[degreeOfParallelism];
-                for(int i=0;i<degreeOfParallelism;i++)
+                for (int i = 0; i < degreeOfParallelism; i++)
                 {
                     containers[i] = new List<ExpandoObject>();
                 }
@@ -173,7 +173,7 @@ namespace gView.DataSources.CosmoDb
                 }
 
                 Task[] tasks = new Task[5];
-                for(int i=0;i<degreeOfParallelism;i++)
+                for (int i = 0; i < degreeOfParallelism; i++)
                 {
                     tasks[i] = Task.Factory.StartNew(async (object index) =>
                     {
@@ -530,7 +530,7 @@ namespace gView.DataSources.CosmoDb
 
         internal DocumentCollection GetFeatureCollection(GeometryType geomType)
         {
-            switch(geomType)
+            switch (geomType)
             {
                 case GeometryType.Point:
                 case GeometryType.Multipoint:

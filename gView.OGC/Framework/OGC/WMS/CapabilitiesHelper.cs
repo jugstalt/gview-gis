@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Globalization;
 
 namespace gView.Framework.OGC.WMS
@@ -30,11 +29,15 @@ namespace gView.Framework.OGC.WMS
                     foreach (object http in caps.Capability.Request.GetMap.DCPType[0].HTTP)
                     {
                         if (http is Version_1_1_1.Get)
+                        {
                             _getMapOnlineResource = ((Version_1_1_1.Get)http).OnlineResource.href;
+                        }
                     }
                 }
                 if (caps.Capability.Request.GetMap != null)
+                {
                     _imageFormats = caps.Capability.Request.GetMap.Format;
+                }
                 #endregion
 
                 #region GetFeatureInfo
@@ -45,11 +48,15 @@ namespace gView.Framework.OGC.WMS
                     foreach (object http in caps.Capability.Request.GetFeatureInfo.DCPType[0].HTTP)
                     {
                         if (http is Version_1_1_1.Get)
+                        {
                             _getFeatureInfoOnlineResource = ((Version_1_1_1.Get)http).OnlineResource.href;
+                        }
                     }
                 }
                 if (caps.Capability.Request.GetFeatureInfo != null)
+                {
                     _getFeatureInfoFormats = caps.Capability.Request.GetFeatureInfo.Format;
+                }
                 #endregion
 
                 #region GetLegendGraphic
@@ -60,7 +67,9 @@ namespace gView.Framework.OGC.WMS
                     foreach (object http in caps.Capability.Request.GetLegendGraphic.DCPType[0].HTTP)
                     {
                         if (http is Version_1_1_1.Get)
+                        {
                             _getLegendGraphicOnlineResource = ((Version_1_1_1.Get)http).OnlineResource.href;
+                        }
                     }
                 }
                 #endregion
@@ -74,9 +83,11 @@ namespace gView.Framework.OGC.WMS
                     if (layer.Style != null && layer.Style.Length > 0)
                     {
                         for (int s = 0; s < layer.Style.Length; s++)
+                        {
                             wmslayer.Styles.Add(new WMSStyle(layer.Style[s].Name, layer.Style[s].Title));
+                        }
                     }
-                    
+
                     if (layer.ScaleHint != null)
                     {
                         try { wmslayer.MinScale = double.Parse(layer.ScaleHint.min.Replace(",", "."), Nhi) * 2004.4; }
@@ -94,14 +105,18 @@ namespace gView.Framework.OGC.WMS
 
                 #region GetMap
                 if (caps.Capability.Request.GetMap.DCPType.Length > 0)
+                {
                     _getMapOnlineResource = caps.Capability.Request.GetMap.DCPType[0].HTTP.Get.OnlineResource.href;
+                }
 
                 _imageFormats = caps.Capability.Request.GetMap.Format;
                 #endregion
 
                 #region GetFeatureInfo
                 if (caps.Capability.Request.GetMap.DCPType.Length > 0)
+                {
                     _getFeatureInfoOnlineResource = caps.Capability.Request.GetFeatureInfo.DCPType[0].HTTP.Get.OnlineResource.href;
+                }
 
                 _getFeatureInfoFormats = caps.Capability.Request.GetFeatureInfo.Format;
                 #endregion
@@ -117,13 +132,18 @@ namespace gView.Framework.OGC.WMS
 
         private void AddCascadingLayers(Version_1_3_0.Layer layer, string parentName)
         {
-            if (layer == null) return;
+            if (layer == null)
+            {
+                return;
+            }
 
             if (layer.Layer1 != null)
             {
                 parentName = String.IsNullOrEmpty(parentName) ? layer.Title : parentName + "/" + layer.Title;
                 for (int i = 0; i < layer.Layer1.Length; i++)
+                {
                     AddCascadingLayers(layer.Layer1[i], parentName);
+                }
             }
             else
             {
@@ -132,12 +152,19 @@ namespace gView.Framework.OGC.WMS
                 if (layer.Style != null && layer.Style.Length > 0)
                 {
                     for (int s = 0; s < layer.Style.Length; s++)
+                    {
                         wmslayer.Styles.Add(new WMSStyle(layer.Style[s].Name, layer.Style[s].Title));
+                    }
                 }
                 if (layer.MinScaleDenominator > 0.0)
+                {
                     wmslayer.MinScale = layer.MinScaleDenominator;
+                }
+
                 if (layer.MaxScaleDenominator > 0.0)
+                {
                     wmslayer.MaxScale = layer.MaxScaleDenominator;
+                }
 
                 _layers.Add(wmslayer);
             }
@@ -180,7 +207,9 @@ namespace gView.Framework.OGC.WMS
             foreach (WMSLayer layer in _layers)
             {
                 if (layer.Name == oName)
+                {
                     return layer;
+                }
             }
             return null;
         }
@@ -189,15 +218,23 @@ namespace gView.Framework.OGC.WMS
         {
             string[] p = name.Split('|');
             if (p.Length != 2)
+            {
                 return null;
+            }
 
             WMSLayer layer = LayerByName(name);
             if (layer == null)
+            {
                 return null;
+            }
 
             foreach (WMSStyle style in layer.Styles)
+            {
                 if (style.Name == p[1])
+                {
                     return style;
+                }
+            }
 
             return null;
         }

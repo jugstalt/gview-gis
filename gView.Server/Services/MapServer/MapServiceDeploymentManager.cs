@@ -31,13 +31,13 @@ namespace gView.Server.Services.MapServer
 
         public MapServiceDeploymentManager(MapServiceManager mapServicerService,
                                            AccessControlService accessControlService,
-                                           ILogger<MapServiceDeploymentManager> logger=null)
+                                           ILogger<MapServiceDeploymentManager> logger = null)
         {
             _mapServerService = mapServicerService;
             _accessControlService = accessControlService;
             _logger = logger ?? new ConsoleLogger<MapServiceDeploymentManager>();
 
-            MapDocument= new ServerMapDocument(_mapServerService);
+            MapDocument = new ServerMapDocument(_mapServerService);
         }
 
         async public Task<bool> AddMap(string mapName, string mapXml, string usr, string pwd)

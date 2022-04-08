@@ -14,16 +14,16 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-using System;
 using GeoAPI.Geometries;
 using Proj4Net.Utility;
+using System;
 
 namespace Proj4Net.Projection
 {
 
-/*
- * This file was semi-automatically converted from the public-domain USGS PROJ source.
- */
+    /*
+     * This file was semi-automatically converted from the public-domain USGS PROJ source.
+     */
 
     public class LambertAzimuthalEqualAreaProjection : Projection
     {
@@ -86,7 +86,7 @@ namespace Proj4Net.Projection
 
                 _e = Math.Sqrt(_es);
                 qp = ProjectionMath.Qsfn(1.0, _e, _oneEs);
-                mmf = 0.5/(1.0 - _es);
+                mmf = 0.5 / (1.0 - _es);
                 apa = ProjectionMath.AuthSet(_es);
                 switch (mode)
                 {
@@ -95,18 +95,18 @@ namespace Proj4Net.Projection
                         dd = 1.0;
                         break;
                     case AzimuthalMode.Equator:
-                        dd = 1.0/(rq = Math.Sqrt(.5*qp));
+                        dd = 1.0 / (rq = Math.Sqrt(.5 * qp));
                         xmf = 1.0;
-                        ymf = .5*qp;
+                        ymf = .5 * qp;
                         break;
                     case AzimuthalMode.Oblique:
-                        rq = Math.Sqrt(.5*qp);
+                        rq = Math.Sqrt(.5 * qp);
                         sinphi = Math.Sin(phi0);
-                        sinb1 = ProjectionMath.Qsfn(sinphi, _e, _oneEs)/qp;
-                        cosb1 = Math.Sqrt(1.0 - sinb1*sinb1);
-                        dd = Math.Cos(phi0)/(Math.Sqrt(1.0 - _es*sinphi*sinphi)*
-                                             rq*cosb1);
-                        ymf = (xmf = rq)/dd;
+                        sinb1 = ProjectionMath.Qsfn(sinphi, _e, _oneEs) / qp;
+                        cosb1 = Math.Sqrt(1.0 - sinb1 * sinb1);
+                        dd = Math.Cos(phi0) / (Math.Sqrt(1.0 - _es * sinphi * sinphi) *
+                                             rq * cosb1);
+                        ymf = (xmf = rq) / dd;
                         xmf *= dd;
                         break;
                 }
@@ -146,26 +146,39 @@ namespace Proj4Net.Projection
                 case AzimuthalMode.Equator:
                 case AzimuthalMode.Oblique:
                     if (mode == AzimuthalMode.Equator)
-                        dst.Y = 1.0 + cosphi*coslam;
+                    {
+                        dst.Y = 1.0 + cosphi * coslam;
+                    }
                     else
-                        dst.Y = 1.0 + sinph0*sinphi + cosph0*cosphi*coslam;
+                    {
+                        dst.Y = 1.0 + sinph0 * sinphi + cosph0 * cosphi * coslam;
+                    }
 
-                    if (dst.Y <= EPS10) throw new ProjectionException("F");
-                    dst.X = (dst.Y = Math.Sqrt(2.0/dst.Y))*cosphi*Math.Sin(lplam);
+                    if (dst.Y <= EPS10)
+                    {
+                        throw new ProjectionException("F");
+                    }
+
+                    dst.X = (dst.Y = Math.Sqrt(2.0 / dst.Y)) * cosphi * Math.Sin(lplam);
                     dst.Y *= mode == AzimuthalMode.Equator
                                  ? sinphi
-                                 : cosph0*sinphi - sinph0*cosphi*coslam;
+                                 : cosph0 * sinphi - sinph0 * cosphi * coslam;
                     break;
 
                 case AzimuthalMode.NorthPole:
                 case AzimuthalMode.SouthPole:
                     if (mode == AzimuthalMode.NorthPole)
+                    {
                         coslam = -coslam;
-                    if (Math.Abs(lpphi + phi0) < EPS10) throw new ProjectionException("F");
-                    ;
-                    dst.Y = ProjectionMath.PiFourth - lpphi*.5;
-                    dst.Y = 2.0*(mode == AzimuthalMode.SouthPole ? Math.Cos(dst.Y) : Math.Sin(dst.Y));
-                    dst.X = dst.Y*Math.Sin(lplam);
+                    }
+
+                    if (Math.Abs(lpphi + phi0) < EPS10)
+                    {
+                        throw new ProjectionException("F");
+                    };
+                    dst.Y = ProjectionMath.PiFourth - lpphi * .5;
+                    dst.Y = 2.0 * (mode == AzimuthalMode.SouthPole ? Math.Cos(dst.Y) : Math.Sin(dst.Y));
+                    dst.X = dst.Y * Math.Sin(lplam);
                     dst.Y *= coslam;
                     break;
             }
@@ -181,16 +194,16 @@ namespace Proj4Net.Projection
             q = ProjectionMath.Qsfn(sinphi, _e, _oneEs);
             if (mode == AzimuthalMode.Oblique || mode == AzimuthalMode.Equator)
             {
-                sinb = q/qp;
-                cosb = Math.Sqrt(1.0 - sinb*sinb);
+                sinb = q / qp;
+                cosb = Math.Sqrt(1.0 - sinb * sinb);
             }
             switch (mode)
             {
                 case AzimuthalMode.Oblique:
-                    b = 1.0 + sinb1*sinb + cosb1*cosb*coslam;
+                    b = 1.0 + sinb1 * sinb + cosb1 * cosb * coslam;
                     break;
                 case AzimuthalMode.Equator:
-                    b = 1.0 + cosb*coslam;
+                    b = 1.0 + cosb * coslam;
                     break;
                 case AzimuthalMode.NorthPole:
                     b = ProjectionMath.PiHalf + lpphi;
@@ -201,7 +214,10 @@ namespace Proj4Net.Projection
                     q = qp + q;
                     break;
             }
-            if (Math.Abs(b) < EPS10) throw new ProjectionException("F");
+            if (Math.Abs(b) < EPS10)
+            {
+                throw new ProjectionException("F");
+            }
 
             switch (mode)
             {
@@ -209,24 +225,27 @@ namespace Proj4Net.Projection
                 case AzimuthalMode.Equator:
                     if (mode == AzimuthalMode.Oblique)
                     {
-                        dst.Y = ymf*(b = Math.Sqrt(2.0/b))
-                                *(cosb1*sinb - sinb1*cosb*coslam);
+                        dst.Y = ymf * (b = Math.Sqrt(2.0 / b))
+                                * (cosb1 * sinb - sinb1 * cosb * coslam);
                     }
                     else
                     {
-                        dst.Y = (b = Math.Sqrt(2.0/(1.0 + cosb*coslam)))*sinb*ymf;
+                        dst.Y = (b = Math.Sqrt(2.0 / (1.0 + cosb * coslam))) * sinb * ymf;
                     }
-                    dst.X = xmf*b*cosb*sinlam;
+                    dst.X = xmf * b * cosb * sinlam;
                     break;
                 case AzimuthalMode.NorthPole:
                 case AzimuthalMode.SouthPole:
                     if (q >= 0.0)
                     {
-                        dst.X = (b = Math.Sqrt(q))*sinlam;
-                        dst.Y = coslam*(mode == AzimuthalMode.SouthPole ? b : -b);
+                        dst.X = (b = Math.Sqrt(q)) * sinlam;
+                        dst.Y = coslam * (mode == AzimuthalMode.SouthPole ? b : -b);
                     }
                     else
+                    {
                         dst.X = dst.Y = 0.0;
+                    }
+
                     break;
             }
         }
@@ -250,8 +269,12 @@ namespace Proj4Net.Projection
             double lpphi, lplam;
 
             rh = ProjectionMath.Hypot(xyx, xyy);
-            if ((lpphi = rh*.5) > 1.0) throw new ProjectionException("I_ERROR");
-            lpphi = 2.0*Math.Asin(lpphi);
+            if ((lpphi = rh * .5) > 1.0)
+            {
+                throw new ProjectionException("I_ERROR");
+            }
+
+            lpphi = 2.0 * Math.Asin(lpphi);
             if (mode == AzimuthalMode.Oblique || mode == AzimuthalMode.Equator)
             {
                 sinz = Math.Sin(lpphi);
@@ -260,16 +283,16 @@ namespace Proj4Net.Projection
             switch (mode)
             {
                 case AzimuthalMode.Equator:
-                    lpphi = Math.Abs(rh) <= EPS10 ? 0.0 : Math.Asin(xyy*sinz/rh);
+                    lpphi = Math.Abs(rh) <= EPS10 ? 0.0 : Math.Asin(xyy * sinz / rh);
                     xyx *= sinz;
-                    xyy = cosz*rh;
+                    xyy = cosz * rh;
                     break;
                 case AzimuthalMode.Oblique:
                     lpphi = Math.Abs(rh) <= EPS10
                                 ? phi0
-                                : Math.Asin(cosz*sinph0 + xyy*sinz*cosph0/rh);
-                    xyx *= sinz*cosph0;
-                    xyy = (cosz - Math.Sin(lpphi)*sinph0)*rh;
+                                : Math.Asin(cosz * sinph0 + xyy * sinz * cosph0 / rh);
+                    xyx *= sinz * cosph0;
+                    xyy = (cosz - Math.Sin(lpphi) * sinph0) * rh;
                     break;
                 case AzimuthalMode.NorthPole:
                     xyy = -xyy;
@@ -303,24 +326,27 @@ namespace Proj4Net.Projection
                         dst.Y = lpphi;
                         return;
                     }
-                    cCe = Math.Cos(sCe = 2.0*Math.Asin(.5*rho/rq));
+                    cCe = Math.Cos(sCe = 2.0 * Math.Asin(.5 * rho / rq));
                     xyx *= (sCe = Math.Sin(sCe));
                     if (mode == AzimuthalMode.Oblique)
                     {
-                        q = qp*(ab = cCe*sinb1 + xyy*sCe*cosb1/rho);
-                        xyy = rho*cosb1*cCe - xyy*sinb1*sCe;
+                        q = qp * (ab = cCe * sinb1 + xyy * sCe * cosb1 / rho);
+                        xyy = rho * cosb1 * cCe - xyy * sinb1 * sCe;
                     }
                     else
                     {
-                        q = qp*(ab = xyy*sCe/rho);
-                        xyy = rho*cCe;
+                        q = qp * (ab = xyy * sCe / rho);
+                        xyy = rho * cCe;
                     }
                     break;
                 case AzimuthalMode.NorthPole:
                 case AzimuthalMode.SouthPole:
                     if (mode == AzimuthalMode.NorthPole)
+                    {
                         xyy = -xyy;
-                    if (0 == (q = (xyx*xyx + xyy*xyy)))
+                    }
+
+                    if (0 == (q = (xyx * xyx + xyy * xyy)))
                     {
                         lplam = 0.0;
                         lpphi = phi0;
@@ -331,9 +357,12 @@ namespace Proj4Net.Projection
                     /*
         q = P->qp - q;
         */
-                    ab = 1.0 - q/qp;
+                    ab = 1.0 - q / qp;
                     if (mode == AzimuthalMode.SouthPole)
-                        ab = - ab;
+                    {
+                        ab = -ab;
+                    }
+
                     break;
             }
             lplam = Math.Atan2(xyx, xyy);

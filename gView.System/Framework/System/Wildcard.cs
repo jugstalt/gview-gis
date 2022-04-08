@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-
 namespace gView.Framework.system
 {
     public class WildcardEx : global::System.Text.RegularExpressions.Regex

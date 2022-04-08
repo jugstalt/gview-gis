@@ -1,15 +1,13 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
 using gView.Framework.IO;
 using gView.Framework.system;
+using System;
+using System.Collections.Generic;
+using System.Windows.Forms;
 
 namespace gView.Framework.UI.Controls
 {
     internal enum ToolbarPanel { top = 0, bottom = 1, left = 2, right = 3, flow = 4 }
-    public class ToolbarStrip : ToolStrip, IToolbar,IPlugInWrapper
+    public class ToolbarStrip : ToolStrip, IToolbar, IPlugInWrapper
     {
         IToolbar _toolbar;
         ToolStripContainer _container;
@@ -53,7 +51,10 @@ namespace gView.Framework.UI.Controls
 
         private ToolStripPanel ToolPanel(ToolbarPanel panel)
         {
-            if (_container == null) return null;
+            if (_container == null)
+            {
+                return null;
+            }
 
             switch (panel)
             {
@@ -75,12 +76,19 @@ namespace gView.Framework.UI.Controls
         {
             get
             {
-                if (_toolbar == null) return new List<Guid>();
+                if (_toolbar == null)
+                {
+                    return new List<Guid>();
+                }
+
                 return _toolbar.GUIDs;
             }
             set
             {
-                if (_toolbar != null) _toolbar.GUIDs = value;
+                if (_toolbar != null)
+                {
+                    _toolbar.GUIDs = value;
+                }
             }
         }
 
@@ -91,7 +99,9 @@ namespace gView.Framework.UI.Controls
         public void Load(IPersistStream stream)
         {
             if (_toolbar == null)
+            {
                 return;
+            }
 
             _toolbar.Load(stream);
 
@@ -112,7 +122,11 @@ namespace gView.Framework.UI.Controls
             ToolStripPanel toolStripPanel = this.ToolPanel(_panel);
             if (toolStripPanel != null && this.Parent != toolStripPanel)
             {
-                if (this.Parent != null) this.Parent.Controls.Remove(this);
+                if (this.Parent != null)
+                {
+                    this.Parent.Controls.Remove(this);
+                }
+
                 toolStripPanel.Controls.Add(this);
             }
 
@@ -121,7 +135,9 @@ namespace gView.Framework.UI.Controls
         public void Save(IPersistStream stream)
         {
             if (_toolbar == null)
-                return; 
+            {
+                return;
+            }
 
             _toolbar.Save(stream);
 

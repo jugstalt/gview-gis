@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Drawing;
-using System.Data;
-using System.Linq;
-using System.Text;
+﻿using gView.Framework.UI;
+using System;
 using System.Windows.Forms;
-using gView.Framework.UI;
 
 namespace gView.Framework.Data.Joins.UI
 {
@@ -16,7 +10,7 @@ namespace gView.Framework.Data.Joins.UI
 
         public FeatureLayerJoinControl()
         {
-            InitializeComponent();  
+            InitializeComponent();
         }
 
         #region Events
@@ -70,7 +64,9 @@ namespace gView.Framework.Data.Joins.UI
                 foreach (IDatasetElement element in mapDocument.FocusMap.MapElements)
                 {
                     if (/*element == layer ||*/ !(element.Class is ITableClass))
+                    {
                         continue;
+                    }
 
                     ITOCElement tocElement = mapDocument.FocusMap.TOC.GetTOCElement(element as ILayer);
                     string alias = tocElement != null ? tocElement.Name : element.Title;

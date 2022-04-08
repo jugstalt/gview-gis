@@ -1,8 +1,8 @@
-using System;
-using System.Text;
 using Proj4Net.Datum;
 using Proj4Net.Projection;
 using Proj4Net.Units;
+using System;
+using System.Text;
 
 namespace Proj4Net
 {
@@ -45,14 +45,17 @@ namespace Proj4Net
             {
                 String projName = "null-proj";
                 if (proj != null)
+                {
                     projName = proj.Name;
+                }
+
                 _name = projName + "-CS";
             }
         }
 
         public String Name
         {
-            get {return _name;}
+            get { return _name; }
         }
 
         public String[] Parameters
@@ -72,7 +75,10 @@ namespace Proj4Net
 
         public String GetParameterString()
         {
-            if (_parameters == null) return "";
+            if (_parameters == null)
+            {
+                return "";
+            }
 
             StringBuilder buf = new StringBuilder();
             for (int i = 0; i < _parameters.Length; i++)
@@ -96,10 +102,10 @@ namespace Proj4Net
         {
             var datum = Datum;
             var geoProj = new LongLatProjection
-                              {
-                                    Ellipsoid = Projection.Ellipsoid, 
-                                    Unit = Units.Units.Degrees
-                              };
+            {
+                Ellipsoid = Projection.Ellipsoid,
+                Unit = Units.Units.Degrees
+            };
             geoProj.Initialize();
             return new CoordinateReferenceSystem("GEO-" + datum.Code, null, datum, geoProj);
         }

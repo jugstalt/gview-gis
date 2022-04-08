@@ -357,7 +357,7 @@ namespace gView.Framework.UI
                         catch { }
                     }
                 });
-                
+
             }
             catch { }
         }
@@ -379,7 +379,7 @@ namespace gView.Framework.UI
                     lock (_temporaryRestoreLocker)
                     {
                         var fi2 = new FileInfo(fi.FullName + "_");
-                        if(fi2.Exists)
+                        if (fi2.Exists)
                         {
                             fi2.Delete();
                         }

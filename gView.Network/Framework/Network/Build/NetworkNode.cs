@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using gView.Framework.Geometry;
-using gView.Framework.Network;
+﻿using gView.Framework.Geometry;
 
 namespace gView.Framework.Network.Build
 {

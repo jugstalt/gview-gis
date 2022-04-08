@@ -1,6 +1,3 @@
-using System;
-using System.Text;
-
 namespace gView.Framework.GeoProcessing
 {
     public enum QueryMethod

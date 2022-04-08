@@ -14,9 +14,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-using System;
 using GeoAPI.Geometries;
 using Proj4Net.Utility;
+using System;
 
 namespace Proj4Net.Projection
 {

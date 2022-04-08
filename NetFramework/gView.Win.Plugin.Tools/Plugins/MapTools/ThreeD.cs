@@ -1,11 +1,6 @@
+using gView.Framework.UI;
 using System;
 using System.Collections.Generic;
-using System.Text;
-using gView.Framework.UI;
-using gView.Framework.Carto;
-using gView.Framework.Geometry;
-using gView.Framework.Symbology;
-using gView.Plugins.MapTools.Graphics;
 using System.Threading.Tasks;
 
 namespace gView.Plugins.MapTools
@@ -89,7 +84,7 @@ namespace gView.Plugins.MapTools
 
         public void OnCreate(object hook)
         {
-            
+
         }
 
         public Task<bool> OnEvent(object MapEvent)

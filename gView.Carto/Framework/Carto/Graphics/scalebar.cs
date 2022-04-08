@@ -1,5 +1,4 @@
 using System;
-using System.Drawing;
 
 namespace gView.Framework.Carto.Graphics
 {
@@ -96,7 +95,7 @@ namespace gView.Framework.Carto.Graphics
                 int dist = (int)Math.Round(bl * 5, 0);
 
                 // Hintergrund und Rahmen zeichnen
-                canvas.FillRectangle(brush, new GraphicsEngine.CanvasRectangleF( a + 0, 15 * fac + y, bm_bl, 5 * fac));
+                canvas.FillRectangle(brush, new GraphicsEngine.CanvasRectangleF(a + 0, 15 * fac + y, bm_bl, 5 * fac));
                 canvas.FillRectangle(brush, new GraphicsEngine.CanvasRectangleF(a + 2 * bm_bl, 15 * fac + y, bm_bl, 5 * fac));
                 canvas.FillRectangle(brush, new GraphicsEngine.CanvasRectangleF(a + 4 * bm_bl, 15 * fac + y, bm_bl, 5 * fac));
 
@@ -142,9 +141,9 @@ namespace gView.Framework.Carto.Graphics
         }
 
         private void drawString(GraphicsEngine.Abstraction.ICanvas canvas,
-                                GraphicsEngine.Abstraction.IFont font, 
-                                string text, 
-                                float x, 
+                                GraphicsEngine.Abstraction.IFont font,
+                                string text,
+                                float x,
                                 float y)
         {
             using (var brush = GraphicsEngine.Current.Engine.CreateSolidBrush(GraphicsEngine.ArgbColor.White))

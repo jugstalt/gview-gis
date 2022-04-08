@@ -1,16 +1,11 @@
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Text;
-using System.Windows.Forms;
-using gView.Framework.Db;
-using gView.Framework.UI.Dialogs;
-using gView.Framework.Geometry;
 using gView.Framework.Data;
-using gView.Framework.UI;
+using gView.Framework.Db;
 using gView.Framework.Db.UI;
+using gView.Framework.Geometry;
+using gView.Framework.UI;
+using gView.Framework.UI.Dialogs;
+using System;
+using System.Windows.Forms;
 
 namespace gView.DataSources.EventTable.UI
 {
@@ -47,7 +42,9 @@ namespace gView.DataSources.EventTable.UI
             set
             {
                 if (value != null)
+                {
                     txtConnectionString.Text = value.ToString();
+                }
             }
         }
 
@@ -82,7 +79,11 @@ namespace gView.DataSources.EventTable.UI
         {
             get
             {
-                if (String.IsNullOrEmpty(txtSR.Text)) return null;
+                if (String.IsNullOrEmpty(txtSR.Text))
+                {
+                    return null;
+                }
+
                 SpatialReference sr = new SpatialReference();
                 sr.FromXmlString(txtSR.Text);
 
@@ -91,9 +92,13 @@ namespace gView.DataSources.EventTable.UI
             set
             {
                 if (value == null)
+                {
                     txtSR.Text = String.Empty;
+                }
                 else
+                {
                     txtSR.Text = value.ToXmlString();
+                }
             }
         }
 
@@ -169,7 +174,10 @@ namespace gView.DataSources.EventTable.UI
             try
             {
                 DbConnectionString dbConnStr = this.DbConnectionString;
-                if (dbConnStr == null) return null;
+                if (dbConnStr == null)
+                {
+                    return null;
+                }
 
                 CommonDbConnection conn = new CommonDbConnection();
                 conn.ConnectionString2 = dbConnStr.ConnectionString;
@@ -185,7 +193,9 @@ namespace gView.DataSources.EventTable.UI
                 foreach (IField field in fields.ToEnumerable())
                 {
                     if (field.type == fType)
+                    {
                         f.Add(field);
+                    }
                 }
                 return f;
             }
@@ -200,7 +210,10 @@ namespace gView.DataSources.EventTable.UI
             try
             {
                 DbConnectionString dbConnStr = this.DbConnectionString;
-                if (dbConnStr == null) return null;
+                if (dbConnStr == null)
+                {
+                    return null;
+                }
 
                 CommonDbConnection conn = new CommonDbConnection();
                 conn.ConnectionString2 = dbConnStr.ConnectionString;

@@ -1,11 +1,5 @@
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Text;
-using System.Windows.Forms;
 using gView.Framework.Data;
+using System.Windows.Forms;
 
 namespace gView.Framework.UI.Dialogs
 {
@@ -33,7 +27,7 @@ namespace gView.Framework.UI.Dialogs
             get { return txtLabel.Text; }
             set { txtLabel.Text = value; }
         }
-        
+
         public GridColorClass ColorClass
         {
             get
@@ -47,7 +41,10 @@ namespace gView.Framework.UI.Dialogs
             }
             set
             {
-                if (value == null) return;
+                if (value == null)
+                {
+                    return;
+                }
 
                 this.MinValue = value.MinValue;
                 this.MaxValue = value.MaxValue;

@@ -10,12 +10,12 @@ namespace gView.DataSources.Raster.File
         //
 
         [DllImport("MrSIDLib.dll", SetLastError = true, ThrowOnUnmappableChar = true)]
-        public static extern System.IntPtr LoadMrSIDReader(string filename,ref MrSidGeoCoord geoCoords);
+        public static extern System.IntPtr LoadMrSIDReader(string filename, ref MrSidGeoCoord geoCoords);
 
         [DllImport("MrSIDLib.dll", SetLastError = true, ThrowOnUnmappableChar = true)]
         public static extern System.IntPtr LoadMrSIDMemReader(IntPtr data, int data_size, ref MrSidGeoCoord geoCoords);
 
-        [DllImport("MrSIDLib.dll", SetLastError = true, ThrowOnUnmappableChar = true, CharSet=CharSet.Ansi)]
+        [DllImport("MrSIDLib.dll", SetLastError = true, ThrowOnUnmappableChar = true, CharSet = CharSet.Ansi)]
         public static extern System.IntPtr LoadJP2Reader(string filename, ref MrSidGeoCoord geoCoords);
 
         [DllImport("MrSIDLib.dll", SetLastError = true, ThrowOnUnmappableChar = true)]
@@ -43,7 +43,7 @@ namespace gView.DataSources.Raster.File
         public static extern Int32 GetTotalRows(IntPtr sceneBuffer);
 
         [DllImport("MrSIDLib.dll", SetLastError = true, ThrowOnUnmappableChar = true)]
-        public static extern void ReadBandData(IntPtr sceneBuffer,IntPtr data, uint pixelBytes,uint rowBytes);
+        public static extern void ReadBandData(IntPtr sceneBuffer, IntPtr data, uint pixelBytes, uint rowBytes);
     }
 
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]

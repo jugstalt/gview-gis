@@ -75,7 +75,7 @@ namespace gView.Plugins.Editor
                 {
                     ((CalcToolMenuItem)item).Click += new EventHandler(Tool_Click);
                 }
-                else if(item is ToolStripMenuItem)
+                else if (item is ToolStripMenuItem)
                 {
                     foreach (ToolStripItem item2 in ((ToolStripMenuItem)item).DropDownItems)
                     {
@@ -164,7 +164,7 @@ namespace gView.Plugins.Editor
             }
 
             if (!(sender is CalcToolMenuItem) ||
-                ((CalcToolMenuItem)sender).CalcTool==null)
+                ((CalcToolMenuItem)sender).CalcTool == null)
             {
                 return;
             }
@@ -200,7 +200,7 @@ namespace gView.Plugins.Editor
                 {
                     ((PenToolMenuItem)item).PenTool.OnCreate(module);
                 }
-                else if(item is CalcToolMenuItem &&
+                else if (item is CalcToolMenuItem &&
                     ((CalcToolMenuItem)item).CalcTool != null)
                 {
                     ((CalcToolMenuItem)item).CalcTool.OnCreate(module);
@@ -263,11 +263,11 @@ namespace gView.Plugins.Editor
                 foreach (ToolStripItem item in _items)
                 {
                     if (item is CalcToolMenuItem &&
-                        ((CalcToolMenuItem)item).CalcTool!=null)
+                        ((CalcToolMenuItem)item).CalcTool != null)
                     {
                         if (_selected != null && _selected.PenTool != null)
                         {
-                            CalcToolMenuItem citem=(CalcToolMenuItem)item;
+                            CalcToolMenuItem citem = (CalcToolMenuItem)item;
                             item.Enabled = (citem.CalcTool.Enabled == true &&
                                           _selected.PenTool.UseCalcToolResultType(citem.CalcTool.ResultType));
                         }
@@ -476,7 +476,7 @@ namespace gView.Plugins.Editor
                 }
 
                 filter.SubFields = fc.ShapeFieldName;
-                double distance=0.0;
+                double distance = 0.0;
                 using (IFeatureCursor cursor = fc.GetFeatures(filter).Result)
                 {
                     IFeature feature;
@@ -808,7 +808,7 @@ namespace gView.Plugins.Editor
             }
             else
             {
-                double alpha=double.NaN;
+                double alpha = double.NaN;
                 IPoint p2 = null;
                 if (part != null && part.PointCount >= 2)
                 {
@@ -851,7 +851,7 @@ namespace gView.Plugins.Editor
                 #endregion
 
                 #region Otrho 2
-                if (part!=null && part.PointCount >= 2)
+                if (part != null && part.PointCount >= 2)
                 {
                     r = new Point(Math.Cos(alpha), Math.Sin(alpha));
                     r_ = new Point(-r.Y, r.X);
@@ -918,7 +918,7 @@ namespace gView.Plugins.Editor
 
                     return _module.Sketch.Part.PointCount < 2;
                 case CalcToolResultType.Direction:
-                    if (_module.Sketch==null || _module.Sketch.Part == null)
+                    if (_module.Sketch == null || _module.Sketch.Part == null)
                     {
                         return false;
                     }
@@ -954,7 +954,7 @@ namespace gView.Plugins.Editor
             }
             else if (type == CalcToolResultType.AbsolutPos &&
                     result is IPoint &&
-                    (_module.Sketch.Part==null ||
+                    (_module.Sketch.Part == null ||
                     _module.Sketch.Part.PointCount < 2))
             {
                 _module.Sketch.AddPoint(new Point((IPoint)result));
@@ -1052,17 +1052,17 @@ namespace gView.Plugins.Editor
                 return;
             }
 
-            double to=2.0*Math.PI;
+            double to = 2.0 * Math.PI;
 
             //double circum = 2.0 * raduis * Math.PI;
             //int numPoints = (int)(((double)(circum / maxVertexDistance)) + 1);
             //double step = 2.0 * Math.PI / numPoints;
-            
+
 
             double step = Math.PI / 30.0;
 
             path.RemoveAllPoints();
-            
+
             for (double w = 0.0; w < to; w += step)
             {
                 path.AddPoint(new Point(middle.X + raduis * Math.Cos(w),
@@ -1107,7 +1107,7 @@ namespace gView.Plugins.Editor
 
             public void Draw(IDisplay display)
             {
-                if (display != null && _geometry!=null)
+                if (display != null && _geometry != null)
                 {
                     display.Draw(ConstructPenTool._lineSymbol, _geometry);
                 }
@@ -1210,7 +1210,7 @@ namespace gView.Plugins.Editor
                 SetStatusText(Globalisation.GetResString("S7", String.Empty));
                 return true;
             }
-            else if(_fixed)
+            else if (_fixed)
             {
                 _point1.X = _polyLine[0][0].X / 2.0 + _world.X / 2.0;
                 _point1.Y = _polyLine[0][0].Y / 2.0 + _world.Y / 2.0;
@@ -1289,7 +1289,7 @@ namespace gView.Plugins.Editor
                     if (result is IPoint)
                     {
                         _fixed = (_point1 != null);
-                        
+
                         _world = (IPoint)result;
                         MouseClick();
                         base.DrawConstructionSketch(_geometry);
@@ -1385,7 +1385,7 @@ namespace gView.Plugins.Editor
             }
             else if (_clickPos == 2)
             {
-                _p12=new Point(_world);
+                _p12 = new Point(_world);
                 ConstructPenTool.BuildRay((Path)_polyLine1[0], _p11, _p12, _module.MapDocument.FocusMap.Display.Envelope);
                 SetStatusText(Globalisation.GetResString("S11", String.Empty));
                 return true;
@@ -1540,7 +1540,7 @@ namespace gView.Plugins.Editor
     }
     class ConstructDistanceDistance : ConstructPenTool
     {
-        private IPoint _p1 = null, _p2=null, _p=null, _world = null, _middle1 = null, _middle2 = null;
+        private IPoint _p1 = null, _p2 = null, _p = null, _world = null, _middle1 = null, _middle2 = null;
         private double _radius1 = -1, _radius2 = -1;
         private AggregateGeometry _geometry = null;
         private Polyline _polyLine1 = null, _polyLine2 = null;
@@ -2401,7 +2401,7 @@ namespace gView.Plugins.Editor
             }
         }
 
-        
+
         //public override bool MouseClick()
         //{
         //    return false;
@@ -3180,7 +3180,7 @@ namespace gView.Plugins.Editor
                     _module.CreateStandardFeature();
                 }
 
-                return new Point(p1.X / 2.0 + p2.X / 2.0, 
+                return new Point(p1.X / 2.0 + p2.X / 2.0,
                                  p1.Y / 2.0 + p2.Y / 2.0);
             }
             return null;

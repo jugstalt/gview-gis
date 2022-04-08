@@ -1,11 +1,7 @@
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
 using System.Drawing;
-using System.Data;
-using System.Text;
-using System.Windows.Forms;
 using System.Runtime.InteropServices;
+using System.Windows.Forms;
 
 namespace gView.Framework.UI.Controls
 {
@@ -39,7 +35,7 @@ namespace gView.Framework.UI.Controls
 
                 if (_hWnd != (IntPtr)0)
                 {
-                    SetScrollInfo(_hWnd, SB_HORZ, ref _hsi, true);   
+                    SetScrollInfo(_hWnd, SB_HORZ, ref _hsi, true);
                 }
             }
         }
@@ -62,7 +58,7 @@ namespace gView.Framework.UI.Controls
 
                 if (_hWnd != (IntPtr)0)
                 {
-                    SetScrollInfo(_hWnd, SB_VERT, ref _vsi, true); 
+                    SetScrollInfo(_hWnd, SB_VERT, ref _vsi, true);
                 }
             }
         }
@@ -83,8 +79,8 @@ namespace gView.Framework.UI.Controls
 
 
         #region Scrolling
-        
-        ScrollInfoStruct _vsi=new ScrollInfoStruct();
+
+        ScrollInfoStruct _vsi = new ScrollInfoStruct();
         ScrollInfoStruct _hsi = new ScrollInfoStruct();
         IntPtr _hWnd = (IntPtr)0;
         protected override void WndProc(ref Message msg)
@@ -112,8 +108,8 @@ namespace gView.Framework.UI.Controls
             {
                 base.WndProc(ref msg);
             }
-            catch(Exception ex) 
-            { 
+            catch (Exception ex)
+            {
             }
         }
 

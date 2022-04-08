@@ -1,7 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Text;
-using gView.Framework.system;
 using System.IO;
 
 namespace gView.Framework.system
@@ -67,7 +64,10 @@ namespace gView.Framework.system
                     }
                     else
                     {
-                        if (!fi.Directory.Exists) fi.Directory.Create();
+                        if (!fi.Directory.Exists)
+                        {
+                            fi.Directory.Create();
+                        }
                     }
 
                     using (StreamWriter sw = new StreamWriter(filename, true))
@@ -81,7 +81,10 @@ namespace gView.Framework.system
 #endif
                         //if (text.IndexOf(@"\n") != -1) text = text.Replace(@"\n", "\n" + timeStamp);
                         //if (text.IndexOf("><") != -1) text = text.Replace("><", ">\n" + timeStamp + "<");
-                        if (text.IndexOf("><") != -1) text = text.Replace("><", ">\n" + "<");
+                        if (text.IndexOf("><") != -1)
+                        {
+                            text = text.Replace("><", ">\n" + "<");
+                        }
 
                         sw.WriteLine(timeStamp + text);
                         sw.Close();
@@ -95,7 +98,7 @@ namespace gView.Framework.system
             }
         }
 
-//#if(DEBUG)
+        //#if(DEBUG)
         private static DateTime _lastDt = DateTime.Now;
         public static void LogDebug(string text)
         {
@@ -104,7 +107,7 @@ namespace gView.Framework.system
 
             Log(filename, text);
         }
-//#endif
+        //#endif
 
         private static bool log_archive
         {

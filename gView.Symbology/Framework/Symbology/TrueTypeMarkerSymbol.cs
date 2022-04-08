@@ -18,13 +18,13 @@ using System.Xml;
 namespace gView.Framework.Symbology
 {
     [gView.Framework.system.RegisterPlugIn("71E22086-D511-4a41-AAE1-BBC78572F277")]
-    public sealed class TrueTypeMarkerSymbol : LegendItem, 
-                                               IPropertyPage, 
-                                               IPointSymbol, 
-                                               ISymbolRotation, 
+    public sealed class TrueTypeMarkerSymbol : LegendItem,
+                                               IPropertyPage,
+                                               IPointSymbol,
+                                               ISymbolRotation,
                                                IFontColor,
-                                               ISymbolPositioningUI, 
-                                               ISymbolSize, 
+                                               ISymbolPositioningUI,
+                                               ISymbolSize,
                                                ISymbolCurrentGraphicsEngineDependent
     {
         private float _xOffset = 0, _yOffset = 0, _angle = 0, _rotation = 0, _hOffset = 0, _vOffset = 0;
@@ -103,7 +103,7 @@ namespace gView.Framework.Symbology
                     display.Canvas.RotateTransform(_angle + _rotation);
 
                     double xo = _xOffset, yo = _yOffset;
-                    
+
                     if (_angle != 0 || _rotation != 0 || _lastRotation != 0)
                     {
                         if (_rotation != _lastRotation)
@@ -401,7 +401,7 @@ namespace gView.Framework.Symbology
             }
             fac *= options.DpiFactor;
 
-            TrueTypeMarkerSymbol marker = new TrueTypeMarkerSymbol(Current.Engine.CreateFont(Font.Name, Math.Max(Font.Size * fac / display.Screen.LargeFontsFactor , 2f), _font.Style), _brush.Color);
+            TrueTypeMarkerSymbol marker = new TrueTypeMarkerSymbol(Current.Engine.CreateFont(Font.Name, Math.Max(Font.Size * fac / display.Screen.LargeFontsFactor, 2f), _font.Style), _brush.Color);
             marker.Angle = Angle;
             marker.HorizontalOffset = HorizontalOffset * fac;
             marker.VerticalOffset = VerticalOffset * fac;
@@ -553,7 +553,7 @@ namespace gView.Framework.Symbology
 
         private void SetCurrentEngineOffset()
         {
-            if(_engineOffset.ContainsKey(Current.Engine.EngineName))
+            if (_engineOffset.ContainsKey(Current.Engine.EngineName))
             {
                 _hOffset = _engineOffset[Current.Engine.EngineName].HorizontalOffset;
                 _vOffset = _engineOffset[Current.Engine.EngineName].VerticalOffset;

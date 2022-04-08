@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace gView.GraphicsEngine.Filters
+﻿namespace gView.GraphicsEngine.Filters
 {
     // Never change the numbers
     public enum FilterImplementations

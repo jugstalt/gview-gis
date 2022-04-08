@@ -1,7 +1,4 @@
 ﻿using gView.Framework.system;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace gView.Framework.Carto.LayerRenderers
 {

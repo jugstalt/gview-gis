@@ -2,10 +2,6 @@
 using gView.Framework.Geometry;
 using gView.Framework.system.UI;
 using gView.Framework.UI;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace gView.Win.DataSources.GeoJson.UI.ExplorerObjects

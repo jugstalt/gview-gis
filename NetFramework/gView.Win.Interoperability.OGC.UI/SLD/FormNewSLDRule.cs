@@ -1,15 +1,10 @@
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Text;
-using System.Windows.Forms;
 using gView.Framework.Data;
-using gView.Interoperability.OGC.SLD;
-using gView.Framework.UI.Dialogs;
-using System.Xml;
 using gView.Framework.Geometry;
+using gView.Framework.UI.Dialogs;
+using gView.Interoperability.OGC.SLD;
+using System;
+using System.Windows.Forms;
+using System.Xml;
 
 namespace gView.Interoperability.OGC.UI.SLD
 {
@@ -22,7 +17,9 @@ namespace gView.Interoperability.OGC.UI.SLD
         public FormNewSLDRule(IFeatureLayer layer, SLDRenderer.Rule rule)
         {
             if (rule == null || layer == null)
+            {
                 return;
+            }
 
             InitializeComponent();
 
@@ -78,7 +75,10 @@ namespace gView.Interoperability.OGC.UI.SLD
         #region Tab Filter
         async private void btnQueryBuilder_Click(object sender, EventArgs e)
         {
-            if (_rule == null || _layer == null) return;
+            if (_rule == null || _layer == null)
+            {
+                return;
+            }
 
             FormQueryBuilder dlg = await FormQueryBuilder.CreateAsync(_layer);
 
@@ -102,27 +102,45 @@ namespace gView.Interoperability.OGC.UI.SLD
 
         private void TabScalesGUI()
         {
-            if (_rule == null) return;
+            if (_rule == null)
+            {
+                return;
+            }
 
             txtMinScale.Enabled = txtMaxScale.Enabled =
                 radioScales.Checked;
 
             if (radioAllScales.Checked)
             {
-                if (_rule.MinScale > 0) _rule.MinScale = -_rule.MinScale;
-                if (_rule.MaxScale > 0) _rule.MaxScale = -_rule.MaxScale;
+                if (_rule.MinScale > 0)
+                {
+                    _rule.MinScale = -_rule.MinScale;
+                }
+
+                if (_rule.MaxScale > 0)
+                {
+                    _rule.MaxScale = -_rule.MaxScale;
+                }
             }
         }
 
         private void txtMinScale_ValueChanged(object sender, EventArgs e)
         {
-            if (_rule == null) return;
+            if (_rule == null)
+            {
+                return;
+            }
+
             _rule.MinScale = (double)txtMinScale.Value;
         }
 
         private void txtMaxScale_ValueChanged(object sender, EventArgs e)
         {
-            if (_rule == null) return;
+            if (_rule == null)
+            {
+                return;
+            }
+
             _rule.MaxScale = (double)txtMaxScale.Value;
         }
         #endregion
@@ -139,16 +157,25 @@ namespace gView.Interoperability.OGC.UI.SLD
                 _rule.Symbol = symbolControl1.Symbol;
 
                 if (radioFilterNone.Checked)
+                {
                     _rule.filterType = SLDRenderer.Rule.FilterType.None;
+                }
                 else if (radioFilterOgc.Checked)
+                {
                     _rule.filterType = SLDRenderer.Rule.FilterType.OgcFilter;
+                }
                 else if (radioFilterElse.Checked)
+                {
                     _rule.filterType = SLDRenderer.Rule.FilterType.ElseFilter;
+                }
 
                 if (txtQuery.Text.Trim() != String.Empty)
                 {
                     if (_queryFilter == null)
+                    {
                         _queryFilter = new QueryFilter();
+                    }
+
                     _queryFilter.WhereClause = txtQuery.Text;
                     _rule.Filter = await gView.Framework.OGC.WFS.Filter.CreataAsync(_layer.FeatureClass, _queryFilter, Framework.Geometry.GmlVersion.v1);
                 }
@@ -165,8 +192,15 @@ namespace gView.Interoperability.OGC.UI.SLD
                 {
                     if (radioAllScales.Checked)
                     {
-                        if (_rule.MinScale > 0) _rule.MinScale = -_rule.MinScale;
-                        if (_rule.MaxScale > 0) _rule.MaxScale = -_rule.MaxScale;
+                        if (_rule.MinScale > 0)
+                        {
+                            _rule.MinScale = -_rule.MinScale;
+                        }
+
+                        if (_rule.MaxScale > 0)
+                        {
+                            _rule.MaxScale = -_rule.MaxScale;
+                        }
                     }
                 }
             }

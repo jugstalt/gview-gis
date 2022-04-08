@@ -1,11 +1,4 @@
-﻿using gView.Framework.Security;
-using gView.Framework.system;
-using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System;
 
 namespace gView.Server.AppCode
 {

@@ -9,12 +9,13 @@
 namespace OSGeo_v1.GDAL
 {
 
-public enum XMLNodeType {
-  CXT_Element = 0,
-  CXT_Text = 1,
-  CXT_Attribute = 2,
-  CXT_Comment = 3,
-  CXT_Literal = 4
-}
+    public enum XMLNodeType
+    {
+        CXT_Element = 0,
+        CXT_Text = 1,
+        CXT_Attribute = 2,
+        CXT_Comment = 3,
+        CXT_Literal = 4
+    }
 
 }

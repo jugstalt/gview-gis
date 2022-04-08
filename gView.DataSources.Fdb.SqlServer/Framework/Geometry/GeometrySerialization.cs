@@ -1,8 +1,5 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.IO;
 using System.Data.SqlTypes;
+using System.IO;
 
 namespace gView.Framework.Geometry
 {
@@ -22,7 +19,7 @@ namespace gView.Framework.Geometry
                 geomDef.GeometryType = geometry.GeometryType;
                 serialize = geometry.Serialize;
             }
-            
+
             if (serialize != null)
             {
                 using (BinaryWriter writer = new BinaryWriter(new MemoryStream()))

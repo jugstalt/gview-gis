@@ -32,10 +32,10 @@ namespace gView.Framework.Carto
 
             this.Display.MapUnits = original.Display.MapUnits;
             this.Display.DisplayUnits = original.Display.DisplayUnits;
-            
+
             this.Display.mapScale = original.Display.mapScale;
             this.Display.refScale = original.refScale;
-            this.Display.SpatialReference = original.SpatialReference !=null ? original.SpatialReference.Clone() as ISpatialReference : null;
+            this.Display.SpatialReference = original.SpatialReference != null ? original.SpatialReference.Clone() as ISpatialReference : null;
 
             foreach (IGraphicElement grElement in original.Display.GraphicsContainer.Elements)
             {
@@ -276,7 +276,7 @@ namespace gView.Framework.Carto
 
             public void RefreshSettings(bool forceReloadAll = true)
             {
-                
+
             }
 
             #endregion
@@ -288,7 +288,7 @@ namespace gView.Framework.Carto
         protected Map _map;
         private IRasterLayer _layer;
         private ICancelTracker _cancelTracker;
-        private InterpolationMethod _interpolMethod=InterpolationMethod.Fast;
+        private InterpolationMethod _interpolMethod = InterpolationMethod.Fast;
         private float _transparency = 0.0f;
         private GraphicsEngine.ArgbColor _transColor = GraphicsEngine.ArgbColor.Transparent;
         static private IRasterLayer _lastRasterLayer = null;

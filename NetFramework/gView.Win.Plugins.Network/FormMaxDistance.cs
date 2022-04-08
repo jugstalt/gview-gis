@@ -1,9 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Text;
 using System.Windows.Forms;
 
 namespace gView.Plugins.Network
@@ -20,9 +15,13 @@ namespace gView.Plugins.Network
             get
             {
                 if (btnUseMaxDistance.Checked)
+                {
                     return Convert.ToDouble(numMaxDistance.Value);
+                }
                 else
+                {
                     return double.MaxValue;
+                }
             }
         }
 

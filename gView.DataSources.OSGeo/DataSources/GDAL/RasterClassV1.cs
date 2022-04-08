@@ -500,7 +500,7 @@ namespace gView.DataSources.GDAL
 
                 return new RasterPaintContext(bitmap);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 if (bitmap != null && bitmapData != null)
                 {

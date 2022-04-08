@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace gView.Framework.system
 {
@@ -39,10 +38,16 @@ namespace gView.Framework.system
         }
         private string TransformToken(Token token)
         {
-            if (token == null || token.Text == String.Empty) return String.Empty;
+            if (token == null || token.Text == String.Empty)
+            {
+                return String.Empty;
+            }
 
             string text = token.Text;
-            if (OnTransformToken != null) OnTransformToken(ref text);
+            if (OnTransformToken != null)
+            {
+                OnTransformToken(ref text);
+            }
 
             for (int i = 0; i < token.ChildTokens.Count; i++)
             {
@@ -55,7 +60,7 @@ namespace gView.Framework.system
         private string RemoveStrings(string text)
         {
             #region Parse Quotes
-            
+
             Token.SubStringIndices index = null;
             List<Token.SubStringIndices> indeces = new List<Token.SubStringIndices>();
 
@@ -75,7 +80,10 @@ namespace gView.Framework.system
                     }
                 }
             }
-            if (index != null) throw new Exception("Syntax error...");
+            if (index != null)
+            {
+                throw new Exception("Syntax error...");
+            }
             #endregion
 
             #region Cut Strings
@@ -86,7 +94,10 @@ namespace gView.Framework.system
                 for (int i = 0; i < indeces.Count - 1; i++)
                 {
                     if (i == 0)
+                    {
                         t += text.Substring(0, indeces[i].from);
+                    }
+
                     t += _qouteChar + "[STRING" + i + "]" + _qouteChar;
                     t += text.Substring(indeces[i].to + 1, indeces[i + 1].from - indeces[i].to - 1);
 
@@ -130,7 +141,7 @@ namespace gView.Framework.system
         public Token(string text)
             : this(text, '(', ')')
         {
-            
+
         }
 
         public Token(string text, char opener, char closer)
@@ -164,7 +175,11 @@ namespace gView.Framework.system
                     pos++;
                     if (pos == 1)
                     {
-                        if (index != null) throw new Exception("Syntax error...");
+                        if (index != null)
+                        {
+                            throw new Exception("Syntax error...");
+                        }
+
                         index = new SubStringIndices(i);
                     }
                 }
@@ -173,15 +188,25 @@ namespace gView.Framework.system
                     pos--;
                     if (pos == 0)
                     {
-                        if (index == null) throw new Exception("Syntax error...");
+                        if (index == null)
+                        {
+                            throw new Exception("Syntax error...");
+                        }
+
                         index.to = i;
                         indeces.Add(index);
                         index = null;
                     }
-                    else if (pos < 0) throw new Exception("Syntax error...");
+                    else if (pos < 0)
+                    {
+                        throw new Exception("Syntax error...");
+                    }
                 }
             }
-            if (index != null) throw new Exception("Syntax error...");
+            if (index != null)
+            {
+                throw new Exception("Syntax error...");
+            }
             #endregion
 
             #region Cut Expressions
@@ -192,7 +217,10 @@ namespace gView.Framework.system
                 for (int i = 0; i < indeces.Count - 1; i++)
                 {
                     if (i == 0)
+                    {
                         t += text.Substring(0, indeces[i].from);
+                    }
+
                     t += "[" + i + "]";
                     t += text.Substring(indeces[i].to + 1, indeces[i + 1].from - indeces[i].to - 1);
 

@@ -1,8 +1,7 @@
+using gView.Framework.Globalisation;
+using gView.Framework.UI;
 using System;
 using System.Collections.Generic;
-using System.Text;
-using gView.Framework.UI;
-using gView.Framework.Globalisation;
 
 namespace gView.Plugins.Editor
 {
@@ -26,7 +25,7 @@ namespace gView.Plugins.Editor
             _guids.Add(new Guid("FD340DE3-0BC1-4b3e-99D2-E8DCD55A46F2"));
             _guids.Add(new Guid("B576D3F9-F7C9-46d5-8A8C-16B3974F1BD7"));  // Attributes
             _guids.Add(new Guid("00000000-0000-0000-0000-000000000000"));
-           
+
             _guids.Add(new Guid("96099E8C-163E-46ec-BA33-41696BFAE4D5"));   // Save Feature
             _guids.Add(new Guid("AC4620D4-3DE4-49ea-A902-0B267BA46BBF"));   // Delete Feature
             _guids.Add(new Guid("00000000-0000-0000-0000-000000000000"));
@@ -65,7 +64,7 @@ namespace gView.Plugins.Editor
             }
             set
             {
-                _guids=value;
+                _guids = value;
             }
         }
 
@@ -75,12 +74,12 @@ namespace gView.Plugins.Editor
 
         public void Load(gView.Framework.IO.IPersistStream stream)
         {
-            
+
         }
 
         public void Save(gView.Framework.IO.IPersistStream stream)
         {
-            
+
         }
 
         #endregion

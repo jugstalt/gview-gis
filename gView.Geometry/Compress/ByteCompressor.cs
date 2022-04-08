@@ -1,15 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace gView.Framework.Geometry.Compress
+﻿namespace gView.Framework.Geometry.Compress
 {
     class ByteCompressor
     {
         static internal byte[] Compress(int val)
         {
             bool isNeg = val < 0;
-            if (isNeg) val = -val;
+            if (isNeg)
+            {
+                val = -val;
+            }
 
             byte[] c = new byte[5];
             for (int i = 0; i < 5; i++)
@@ -18,7 +17,10 @@ namespace gView.Framework.Geometry.Compress
                 {
                     c[i] = (byte)(val & 0x3f);
                     val = val >> 6;
-                    if (isNeg) c[i] |= 0x40;
+                    if (isNeg)
+                    {
+                        c[i] |= 0x40;
+                    }
                 }
                 else
                 {
@@ -26,7 +28,9 @@ namespace gView.Framework.Geometry.Compress
                     val = val >> 7;
                 }
                 if (val == 0)
+                {
                     break;
+                }
             }
 
             byte[] ret = TrimBytes(c);
@@ -41,13 +45,19 @@ namespace gView.Framework.Geometry.Compress
             for (int i = len - 1; i >= 0; i--)
             {
                 if (bytes[i] != 0)
+                {
                     break;
+                }
+
                 len--;
             }
 
             byte[] ret = new byte[len == 0 ? 1 : len];
             for (int i = 0; i < ret.Length; i++)
+            {
                 ret[i] = bytes[i];
+            }
+
             return ret;
         }
 
@@ -71,7 +81,11 @@ namespace gView.Framework.Geometry.Compress
                 v = v + (b << m);
                 if (stopBit)
                 {
-                    if (isNeg) v = -v;
+                    if (isNeg)
+                    {
+                        v = -v;
+                    }
+
                     ret[index++] = v;
                     v = m = 0;
                     isNeg = false;

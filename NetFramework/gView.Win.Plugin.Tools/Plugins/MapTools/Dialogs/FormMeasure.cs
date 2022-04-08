@@ -1,17 +1,13 @@
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Text;
-using System.Windows.Forms;
-using gView.Framework.UI;
 using gView.Framework.Carto;
 using gView.Framework.Globalisation;
+using gView.Framework.UI;
+using System;
+using System.Drawing;
+using System.Windows.Forms;
 
 namespace gView.Plugins.MapTools.Dialogs
 {
-    public partial class FormMeasure : UserControl,IDockableToolWindow
+    public partial class FormMeasure : UserControl, IDockableToolWindow
     {
         IMapDocument _doc = null;
         Measure _tool = null;
@@ -29,7 +25,11 @@ namespace gView.Plugins.MapTools.Dialogs
         private delegate void tool_ShapeChangedCallback(MeasureGraphicsElement grElement);
         void tool_ShapeChanged(MeasureGraphicsElement grElement)
         {
-            if (grElement == null) return;
+            if (grElement == null)
+            {
+                return;
+            }
+
             if (this.toolStrip1.InvokeRequired)
             {
                 tool_ShapeChangedCallback d = new tool_ShapeChangedCallback(tool_ShapeChanged);
@@ -128,14 +128,21 @@ namespace gView.Plugins.MapTools.Dialogs
         {
             get
             {
-                if (_doc == null || !(_doc.Application is IGUIApplication)) return null;
+                if (_doc == null || !(_doc.Application is IGUIApplication))
+                {
+                    return null;
+                }
+
                 return ((IGUIApplication)_doc.Application).Tool(new Guid("D185D794-4BC8-4f3c-A5EA-494155692EAC")) as Measure;
             }
         }
 
         private void btnNew_Click(object sender, EventArgs e)
         {
-            if (_tool == null) return;
+            if (_tool == null)
+            {
+                return;
+            }
 
             _tool.Stop(false);
             _tool.RemoveGraphicFromMap();
@@ -143,20 +150,30 @@ namespace gView.Plugins.MapTools.Dialogs
 
         private void btnStop_Click(object sender, EventArgs e)
         {
-            if (_tool == null) return;
+            if (_tool == null)
+            {
+                return;
+            }
 
             _tool.Stop(false);
-            if (_doc.Application is IMapApplication) 
+            if (_doc.Application is IMapApplication)
+            {
                 ((IMapApplication)_doc.Application).RefreshActiveMap(DrawPhase.Graphics);
+            }
         }
 
         private void btnStopAndClose_Click(object sender, EventArgs e)
         {
-            if (_tool == null) return;
+            if (_tool == null)
+            {
+                return;
+            }
 
             _tool.Stop(true);
-            if (_doc.Application is IMapApplication) 
+            if (_doc.Application is IMapApplication)
+            {
                 ((IMapApplication)_doc.Application).RefreshActiveMap(DrawPhase.Graphics);
+            }
         }
     }
 }

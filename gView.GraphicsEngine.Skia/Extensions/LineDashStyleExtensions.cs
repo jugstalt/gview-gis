@@ -8,10 +8,10 @@ namespace gView.GraphicsEngine.Skia.Extensions
         static public float[] ToPickerArray(this LineDashStyle dashStyle, float penWidth, LineCap lineCap)
         {
             float[] pickerArray = null;
-            float dashhWidth = 4f, dashHole=2f;
+            float dashhWidth = 4f, dashHole = 2f;
             float dotWidth = 1f, dotHole = 1f;
 
-            switch(lineCap)
+            switch (lineCap)
             {
                 case LineCap.Square:
                     dashhWidth -= 1;
@@ -27,7 +27,7 @@ namespace gView.GraphicsEngine.Skia.Extensions
                     break;
             }
 
-            switch(dashStyle)
+            switch (dashStyle)
             {
                 case LineDashStyle.Dot:
                     pickerArray = new[] { dotWidth, dotHole };

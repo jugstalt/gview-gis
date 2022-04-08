@@ -21,7 +21,7 @@ namespace gView.DataSources.VectorTileCache
         private DatasetState _state = DatasetState.unknown;
         private IEnumerable<IDatasetElement> _dsElements = null;
         private Json.VectorTilesCapabilities _capabilities;
-        
+
         internal static HttpClient _httpClient = new HttpClient(new HttpClientHandler()
         {
             AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate
@@ -58,7 +58,7 @@ namespace gView.DataSources.VectorTileCache
 
         public void Dispose()
         {
-           
+
         }
 
         public Task<IDatasetElement> Element(string title)
@@ -116,9 +116,9 @@ namespace gView.DataSources.VectorTileCache
                 this.TileUrls = _capabilities.Tiles;
 
                 var dsElements = new List<IDatasetElement>();
-                if(_capabilities.VectorLayers!=null)
+                if (_capabilities.VectorLayers != null)
                 {
-                    foreach(var vectorLayer in _capabilities.VectorLayers)
+                    foreach (var vectorLayer in _capabilities.VectorLayers)
                     {
                         dsElements.Add(new DatasetElement(new FeatureClass(this, vectorLayer.Id))
                         {
@@ -137,7 +137,7 @@ namespace gView.DataSources.VectorTileCache
 
         async public Task<bool> LoadAsync(IPersistStream stream)
         {
-             await this.SetConnectionString((string)stream.Load("connectionstring", ""));
+            await this.SetConnectionString((string)stream.Load("connectionstring", ""));
 
             return true;
         }
@@ -177,7 +177,7 @@ namespace gView.DataSources.VectorTileCache
 
         public Task<IEnvelope> Envelope()
         {
-            if(_capabilities?.Bounds != null && _capabilities.Bounds.Length==4)
+            if (_capabilities?.Bounds != null && _capabilities.Bounds.Length == 4)
             {
                 return Task.FromResult<IEnvelope>(new Envelope(
                     _capabilities.Bounds[0],
@@ -196,7 +196,7 @@ namespace gView.DataSources.VectorTileCache
 
         public void SetSpatialReference(ISpatialReference sRef)
         {
-            
+
         }
 
         #endregion

@@ -1,16 +1,11 @@
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Text;
-using System.Windows.Forms;
-using System.IO;
 using gView.DataSources.Raster.File;
+using System;
+using System.IO;
+using System.Windows.Forms;
 
 namespace gView.DataSources.Raster.UI
 {
-    internal partial class FormRasterFileDataset : Form,gView.Framework.Data.IDatasetEnum
+    internal partial class FormRasterFileDataset : Form, gView.Framework.Data.IDatasetEnum
     {
         public FormRasterFileDataset()
         {
@@ -29,12 +24,19 @@ namespace gView.DataSources.Raster.UI
         {
             get
             {
-                if (_pos > 0) return null;
+                if (_pos > 0)
+                {
+                    return null;
+                }
 
                 RasterFileDataset dataset = new RasterFileDataset();
                 foreach (ListViewItem item in listView1.Items)
                 {
-                    if (!(item is RasterFileItem)) continue;
+                    if (!(item is RasterFileItem))
+                    {
+                        continue;
+                    }
+
                     dataset.AddRasterFile(((RasterFileItem)item).Filename);
                 }
                 _pos++;
@@ -55,7 +57,7 @@ namespace gView.DataSources.Raster.UI
             }
         }
 
-        private RasterFileItem _contextItem=null;
+        private RasterFileItem _contextItem = null;
         private void listView1_MouseMove(object sender, MouseEventArgs e)
         {
             ListViewItem item = listView1.GetItemAt(e.X, e.Y);
@@ -73,7 +75,11 @@ namespace gView.DataSources.Raster.UI
 
         private void previewToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (_contextItem == null) return;
+            if (_contextItem == null)
+            {
+                return;
+            }
+
             FormImagePreview dlg = new FormImagePreview();
             dlg.Filename = _contextItem.Filename;
             dlg.ShowDialog();
@@ -82,7 +88,7 @@ namespace gView.DataSources.Raster.UI
 
     internal class RasterFileItem : ListViewItem
     {
-        private string _filename="";
+        private string _filename = "";
         public RasterFileItem(string filename)
         {
             FileInfo fi = new FileInfo(filename);

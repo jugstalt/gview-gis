@@ -19,7 +19,7 @@ namespace gView.Server.AppCode
         private ConcurrentDictionary<IMap, IEnumerable<IMapApplicationModule>> _mapModules = new ConcurrentDictionary<IMap, IEnumerable<IMapApplicationModule>>();
         private ITableRelations _tableRelations;
         private MapServiceManager _mapServerService;
-             
+
         public ServerMapDocument(MapServiceManager mapServerService)
         {
             _mapServerService = mapServerService;

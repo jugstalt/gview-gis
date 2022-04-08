@@ -1,8 +1,6 @@
-using System;
-using System.Windows.Forms;
-using gView.Framework.Carto;
 using gView.Framework.Data;
 using gView.Framework.UI;
+using System.Windows.Forms;
 
 namespace gView.Plugins.MapTools.Controls
 {
@@ -10,9 +8,13 @@ namespace gView.Plugins.MapTools.Controls
     {
         private ITOCElement _element = null;
 
-        public SelectionTOCLayerNode(IMapDocument mapDocument, ITOCElement element,bool check)
+        public SelectionTOCLayerNode(IMapDocument mapDocument, ITOCElement element, bool check)
         {
-            if (element == null) return;
+            if (element == null)
+            {
+                return;
+            }
+
             _element = element;
 
             base.Checked = check;
@@ -37,7 +39,10 @@ namespace gView.Plugins.MapTools.Controls
 
         public void RefreshText()
         {
-            if (_element == null) return;
+            if (_element == null)
+            {
+                return;
+            }
 
             base.Text = _element.Name;
 

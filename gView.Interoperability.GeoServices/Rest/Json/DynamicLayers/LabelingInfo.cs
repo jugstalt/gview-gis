@@ -3,9 +3,6 @@ using gView.Framework.Geometry;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace gView.Interoperability.GeoServices.Rest.Json.DynamicLayers
 {
@@ -61,7 +58,7 @@ namespace gView.Interoperability.GeoServices.Rest.Json.DynamicLayers
             labelRenderer.TextSymbol = Renderers.SimpleRenderers.JsonRenderer.FromSymbolJObject(Symbol as JObject) as Framework.Symbology.ITextSymbol;
 
             return labelRenderer;
-        } 
+        }
 
         #endregion
     }

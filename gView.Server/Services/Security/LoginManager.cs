@@ -201,7 +201,7 @@ namespace gView.Server.Services.Security
 
                 #region Authorization Header
 
-                if(!String.IsNullOrEmpty(request.Headers["Authorization"]))
+                if (!String.IsNullOrEmpty(request.Headers["Authorization"]))
                 {
                     var userPwd = request.Headers["Authorization"].ToString().FromAuthorizationHeader();
                     var path = _mapServerService.Options.LoginManagerRootPath + "/token";
@@ -230,7 +230,7 @@ namespace gView.Server.Services.Security
             return LoginAuthToken(request);
         }
 
-       
+
 
         #endregion
 
@@ -250,7 +250,7 @@ namespace gView.Server.Services.Security
             return null;
         }
 
-        
+
 
         private AuthToken CreateAuthTokenWithoutPasswordCheck(string path, string username, AuthToken.AuthTypes authType, int expireMiniutes = 30)
         {

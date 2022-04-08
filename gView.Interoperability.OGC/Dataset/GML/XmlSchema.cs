@@ -1,10 +1,9 @@
+using gView.Framework.Data;
+using gView.Framework.Geometry;
 using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Xml;
-using gView.Framework.Data;
-using System.IO;
-using gView.Framework.Geometry;
 
 namespace gView.Interoperability.OGC.Dataset.GML
 {
@@ -15,7 +14,11 @@ namespace gView.Interoperability.OGC.Dataset.GML
 
         public XmlSchemaReader(XmlDocument schema)
         {
-            if (schema == null) return;
+            if (schema == null)
+            {
+                return;
+            }
+
             _schema = schema;
             _ns = new XmlNamespaceManager(_schema.NameTable);
             _ns.AddNamespace("W3", "http://www.w3.org/2001/XMLSchema");
@@ -25,7 +28,10 @@ namespace gView.Interoperability.OGC.Dataset.GML
         {
             get
             {
-                if (_schema == null) return null;
+                if (_schema == null)
+                {
+                    return null;
+                }
 
                 List<string> names = new List<string>();
                 foreach (XmlNode element in _schema.SelectNodes("W3:schema/W3:element[@name]", _ns))
@@ -41,21 +47,29 @@ namespace gView.Interoperability.OGC.Dataset.GML
             shapeFieldname = "";
             geomType = GeometryType.Unknown;
 
-            if (_schema == null) return null;
+            if (_schema == null)
+            {
+                return null;
+            }
 
-            XmlNode elementNode = _schema.SelectSingleNode("W3:schema/W3:element[@name='" + elementName + "']",_ns);
+            XmlNode elementNode = _schema.SelectSingleNode("W3:schema/W3:element[@name='" + elementName + "']", _ns);
             if (elementNode == null || elementNode.Attributes["type"] == null)
             {
                 elementNode = _schema.SelectSingleNode("W3:schema/W3:element[@name='" + TypeWithoutPrefix(elementName) + "']", _ns);
                 if (elementNode == null || elementNode.Attributes["type"] == null)
+                {
                     return null;
+                }
             }
 
             string type = TypeWithoutPrefix(elementNode.Attributes["type"].Value);
             XmlNode complexTypeNode = _schema.SelectSingleNode("W3:schema/W3:complexType[@name='" + type + "']", _ns);
-            if (complexTypeNode == null) return null;
+            if (complexTypeNode == null)
+            {
+                return null;
+            }
 
-            Fields fields=new Fields();
+            Fields fields = new Fields();
             foreach (XmlNode eNode in complexTypeNode.SelectNodes("W3:complexContent/W3:extension/W3:sequence/W3:element", _ns))
             {
                 string name = String.Empty;
@@ -63,7 +77,7 @@ namespace gView.Interoperability.OGC.Dataset.GML
                 {
                     name = eNode.Attributes["name"].Value;
                 }
-                
+
                 FieldType fType = FieldType.String;
                 int size = 8;
                 XmlNode restrictionNode = eNode.SelectSingleNode("W3:simpleType/W3:restriction[@base]", _ns);
@@ -76,7 +90,10 @@ namespace gView.Interoperability.OGC.Dataset.GML
                             fType = FieldType.String;
                             XmlNode maxLengthNode = restrictionNode.SelectSingleNode("W3:maxLength[@value]", _ns);
                             if (maxLengthNode != null)
+                            {
                                 size = int.Parse(maxLengthNode.Attributes["value"].Value);
+                            }
+
                             break;
                         case "decimal":
                             fType = FieldType.Double;
@@ -130,7 +147,7 @@ namespace gView.Interoperability.OGC.Dataset.GML
                             continue;
                         case "featureidtype":
                         case "gmlobjectidtype":
-                            fType=FieldType.ID;
+                            fType = FieldType.ID;
                             break;
                         case "datetime":
                             fType = FieldType.Date;
@@ -175,8 +192,10 @@ namespace gView.Interoperability.OGC.Dataset.GML
                             continue;
                     }
                 }
-                if(name!=String.Empty)
+                if (name != String.Empty)
+                {
                     fields.Add(new Field(name, fType, size));
+                }
             }
             return fields;
         }
@@ -185,10 +204,16 @@ namespace gView.Interoperability.OGC.Dataset.GML
         {
             get
             {
-                if (_schema == null) return String.Empty;
+                if (_schema == null)
+                {
+                    return String.Empty;
+                }
 
                 XmlNode schemaNode = _schema.SelectSingleNode("W3:schema[@targetNamespace]", _ns);
-                if (schemaNode == null) return String.Empty;
+                if (schemaNode == null)
+                {
+                    return String.Empty;
+                }
 
                 return schemaNode.Attributes["targetNamespace"].Value;
             }
@@ -196,10 +221,16 @@ namespace gView.Interoperability.OGC.Dataset.GML
 
         public string MyNamespaceName(string elementName)
         {
-            if (_schema == null) return null;
+            if (_schema == null)
+            {
+                return null;
+            }
 
             XmlNode elementNode = _schema.SelectSingleNode("W3:schema/W3:element[@name='" + elementName + "']", _ns);
-            if (elementNode == null || elementNode.Attributes["type"] == null) return null;
+            if (elementNode == null || elementNode.Attributes["type"] == null)
+            {
+                return null;
+            }
 
             string myns = elementNode.Attributes["type"].Value.Split(':')[0];
 
@@ -218,25 +249,38 @@ namespace gView.Interoperability.OGC.Dataset.GML
 
         public XmlSchemaWriter(IFeatureClass fc)
         {
-            if (fc == null) return;
+            if (fc == null)
+            {
+                return;
+            }
 
             _fcschemas = new List<FeatureClassSchema>();
             _fcschemas.Add(new FeatureClassSchema(fc.Name, fc));
         }
         public XmlSchemaWriter(List<IFeatureClass> fcs)
         {
-            if (fcs == null) return;
+            if (fcs == null)
+            {
+                return;
+            }
 
             _fcschemas = new List<FeatureClassSchema>();
             foreach (IFeatureClass fc in fcs)
             {
-                if (fc == null) continue;
+                if (fc == null)
+                {
+                    continue;
+                }
+
                 _fcschemas.Add(new FeatureClassSchema(fc.Name, fc));
             }
         }
         public XmlSchemaWriter(FeatureClassSchema fcschema)
         {
-            if (fcschema == null) return;
+            if (fcschema == null)
+            {
+                return;
+            }
 
             _fcschemas = new List<FeatureClassSchema>();
             _fcschemas.Add(fcschema);
@@ -248,7 +292,10 @@ namespace gView.Interoperability.OGC.Dataset.GML
 
         public string Write()
         {
-            if (_fcschemas == null) return "";
+            if (_fcschemas == null)
+            {
+                return "";
+            }
 
             StringBuilder sb = new StringBuilder();
 
@@ -269,7 +316,11 @@ namespace gView.Interoperability.OGC.Dataset.GML
 
             foreach (FeatureClassSchema fcschema in _fcschemas)
             {
-                if (fcschema==null || fcschema.FeatureClass == null) continue;
+                if (fcschema == null || fcschema.FeatureClass == null)
+                {
+                    continue;
+                }
+
                 IFeatureClass fc = fcschema.FeatureClass;
 
                 sb.Append(@"<element name=""" + fcschema.FeatureClassID + @""" 
@@ -303,7 +354,10 @@ namespace gView.Interoperability.OGC.Dataset.GML
 
                 foreach (IField field in fc.Fields.ToEnumerable())
                 {
-                    if (field.name == fc.ShapeFieldName) continue;
+                    if (field.name == fc.ShapeFieldName)
+                    {
+                        continue;
+                    }
 
                     sb.Append(@"<element name=""" + field.name + @""" ");
                     switch (field.type)
@@ -365,7 +419,7 @@ namespace gView.Interoperability.OGC.Dataset.GML
         {
             private string _fcID;
             private IFeatureClass _fc;
-            
+
             public FeatureClassSchema(string fcID, IFeatureClass fc)
             {
                 _fcID = fcID;

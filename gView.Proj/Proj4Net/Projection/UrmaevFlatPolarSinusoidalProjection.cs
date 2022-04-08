@@ -13,9 +13,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-using System;
 using GeoAPI.Geometries;
 using Proj4Net.Utility;
+using System;
 
 namespace Proj4Net.Projection
 {
@@ -58,7 +58,10 @@ namespace Proj4Net.Projection
         { // urmfps
             base.Initialize();
             if (n <= 0.0 || n > 1.0)
+            {
                 throw new ProjectionException("-40");
+            }
+
             C_y = Cy / n;
         }
 

@@ -1,10 +1,9 @@
+using gView.Framework.Data;
+using gView.Framework.FDB;
+using gView.Framework.Geometry;
 using System;
 using System.Collections.Generic;
-using System.Text;
-using gView.Framework.FDB;
 using System.IO;
-using gView.Framework.Data;
-using gView.Framework.Geometry;
 using System.Threading.Tasks;
 
 namespace gView.Interoperability.OGC.Dataset.GML
@@ -25,7 +24,9 @@ namespace gView.Interoperability.OGC.Dataset.GML
                     _directoryName = value;
                     FileInfo fi = new FileInfo(_directoryName);
                     if (fi.Exists)
+                    {
                         _directoryName = fi.DirectoryName;
+                    }
                 }
                 catch { }
             }
@@ -40,7 +41,9 @@ namespace gView.Interoperability.OGC.Dataset.GML
             {
                 DirectoryInfo di = new DirectoryInfo(name);
                 if (!di.Exists)
+                {
                     di.Create();
+                }
 
                 _directoryName = name;
                 return true;
@@ -95,16 +98,23 @@ namespace gView.Interoperability.OGC.Dataset.GML
 
         async public Task<int> CreateFeatureClass(string dsname, string fcname, gView.Framework.Geometry.IGeometryDef geomDef, IFields fields)
         {
-            if (geomDef == null || fields == null) return -1;
+            if (geomDef == null || fields == null)
+            {
+                return -1;
+            }
 
             string filename = _directoryName + @"/" + fcname + ".gml";
             Fields f = new Fields();
 
             foreach (IField field in fields.ToEnumerable())
+            {
                 f.Add(field);
+            }
 
             if (!await GMLFile.Create(filename, geomDef, f, _gmlVersion))
+            {
                 return -1;
+            }
 
             return 0;
         }
@@ -135,7 +145,10 @@ namespace gView.Interoperability.OGC.Dataset.GML
             try
             {
                 DirectoryInfo di = new DirectoryInfo(dsName);
-                if (!di.Exists) di.Delete();
+                if (!di.Exists)
+                {
+                    di.Delete();
+                }
 
                 return Task.FromResult<bool>(true);
             }
@@ -175,7 +188,10 @@ namespace gView.Interoperability.OGC.Dataset.GML
 
         async public Task<IFeatureCursor> Query(gView.Framework.Data.IFeatureClass fc, gView.Framework.Data.IQueryFilter filter)
         {
-            if (fc == null) return null;
+            if (fc == null)
+            {
+                return null;
+            }
 
             return await fc.GetFeatures(filter);
         }
@@ -186,7 +202,7 @@ namespace gView.Interoperability.OGC.Dataset.GML
 
         public void Dispose()
         {
-            
+
         }
 
         #endregion
@@ -196,7 +212,10 @@ namespace gView.Interoperability.OGC.Dataset.GML
 
         public Task<bool> Insert(gView.Framework.Data.IFeatureClass fClass, gView.Framework.Data.IFeature feature)
         {
-            if (fClass == null || feature == null) return Task.FromResult<bool>(false);
+            if (fClass == null || feature == null)
+            {
+                return Task.FromResult<bool>(false);
+            }
 
             List<IFeature> features = new List<IFeature>();
             return Insert(fClass, features);
@@ -205,9 +224,11 @@ namespace gView.Interoperability.OGC.Dataset.GML
         async public Task<bool> Insert(gView.Framework.Data.IFeatureClass fClass, List<gView.Framework.Data.IFeature> features)
         {
             if (fClass == null || !(fClass.Dataset is Dataset) || features == null)
+            {
                 return false;
+            }
 
-            GMLFile gmlFile=null;
+            GMLFile gmlFile = null;
             try
             {
                 // use always the same GMLFile...
@@ -225,14 +246,21 @@ namespace gView.Interoperability.OGC.Dataset.GML
                 return false;
             }
             if (gmlFile == null)
+            {
                 return false;
+            }
 
             foreach (IFeature feature in features)
             {
-                if (feature == null) continue;
+                if (feature == null)
+                {
+                    continue;
+                }
 
                 if (!gmlFile.AppendFeature(fClass, feature))
+                {
                     return false;
+                }
             }
 
             return true;
@@ -269,7 +297,10 @@ namespace gView.Interoperability.OGC.Dataset.GML
 
         public bool Flush(IFeatureClass fClass)
         {
-            if (fClass == null || !(fClass.Dataset is Dataset)) return false;
+            if (fClass == null || !(fClass.Dataset is Dataset))
+            {
+                return false;
+            }
 
             GMLFile gmlFile = null;
             try
@@ -284,7 +315,10 @@ namespace gView.Interoperability.OGC.Dataset.GML
             {
                 return false;
             }
-            if (gmlFile == null) return false;
+            if (gmlFile == null)
+            {
+                return false;
+            }
 
             return gmlFile.Flush();
         }
@@ -302,6 +336,6 @@ namespace gView.Interoperability.OGC.Dataset.GML
         #endregion
 
 
-        
+
     }
 }

@@ -1,6 +1,4 @@
-﻿using gView.GraphicsEngine.Generics;
-
-namespace gView.GraphicsEngine
+﻿namespace gView.GraphicsEngine
 {
     public struct CanvasPointF
     {

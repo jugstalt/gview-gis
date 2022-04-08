@@ -1,5 +1,5 @@
-﻿using System;
-using gView.Framework.system;
+﻿using gView.Framework.system;
+using System;
 
 namespace gView.Framework.UI
 {
@@ -12,5 +12,5 @@ namespace gView.Framework.UI
         void Exit();
     }
 
-    
+
 }

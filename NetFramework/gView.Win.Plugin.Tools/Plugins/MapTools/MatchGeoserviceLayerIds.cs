@@ -1,20 +1,16 @@
 ﻿using gView.Framework.Carto;
 using gView.Framework.Globalisation;
-using gView.Framework.IO;
 using gView.Framework.system;
 using gView.Framework.UI;
 using gView.Framework.UI.Events;
 using gView.Win.Plugin.Tools.Plugins.MapTools.Dialogs;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace gView.Win.Plugin.Tools.Plugins.MapTools
 {
     [RegisterPlugIn("78DA3670-8F3D-49B9-A38D-12BADB554E9A")]
-    public class MatchGeoserviceLayerIds : ITool , IMapContextMenuItem
+    public class MatchGeoserviceLayerIds : ITool, IMapContextMenuItem
     {
         private IMapDocument _doc = null;
 

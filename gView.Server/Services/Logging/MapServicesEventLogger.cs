@@ -73,7 +73,7 @@ namespace gView.Server.Services.Logging
                     if (!mapService.RunningSinceUtc.HasValue)
                     {
                         var settings = await mapService?.GetSettingsAsync();
-                        if(settings!=null)
+                        if (settings != null)
                         {
                             ticks = settings.RefreshService.Ticks;
                         }

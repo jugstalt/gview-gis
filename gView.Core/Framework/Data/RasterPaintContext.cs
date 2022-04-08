@@ -1,7 +1,4 @@
 ﻿using gView.GraphicsEngine.Abstraction;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace gView.Framework.Data
 {
@@ -18,7 +15,7 @@ namespace gView.Framework.Data
 
         public virtual void Dispose()
         {
-            if(_bitmap!=null)
+            if (_bitmap != null)
             {
                 _bitmap.Dispose();
                 _bitmap = null;

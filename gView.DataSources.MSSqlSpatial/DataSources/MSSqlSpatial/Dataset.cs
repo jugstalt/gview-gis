@@ -1,13 +1,12 @@
+using gView.Framework.Data;
+using gView.Framework.FDB;
+using gView.Framework.Geometry;
+using gView.Framework.OGC.DB;
 using System;
 using System.Collections.Generic;
-using System.Text;
-using System.Data.Common;
-using gView.Framework.Data;
-using gView.Framework.Geometry;
 using System.Data;
-using gView.Framework.FDB;
-using gView.Framework.OGC.DB;
-using gView.Framework.OGC;
+using System.Data.Common;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace gView.DataSources.MSSqlSpatial
@@ -185,12 +184,19 @@ namespace gView.DataSources.MSSqlSpatial
                             {
                                 byte[] envelope = (byte[])reader["envelope"];
                                 IGeometry geometry = gView.Framework.OGC.OGC.WKBToGeometry(envelope);
-                                if (geometry == null) continue;
+                                if (geometry == null)
+                                {
+                                    continue;
+                                }
 
                                 if (env == null)
+                                {
                                     env = new Envelope(geometry.Envelope);
+                                }
                                 else
+                                {
                                     env.Union(geometry.Envelope);
+                                }
                             }
                         }
                     }
@@ -201,12 +207,14 @@ namespace gView.DataSources.MSSqlSpatial
                 string msg = ex.Message;
             }
             if (env == null)
+            {
                 return new Envelope(-1000, -1000, 1000, 1000);
+            }
 
             return env;
         }
 
-        public override DbCommand SelectCommand(gView.Framework.OGC.DB.OgcSpatialFeatureclass fc, IQueryFilter filter, out string shapeFieldName, string functionName="", string functionField="", string functionAlias="")
+        public override DbCommand SelectCommand(gView.Framework.OGC.DB.OgcSpatialFeatureclass fc, IQueryFilter filter, out string shapeFieldName, string functionName = "", string functionField = "", string functionAlias = "")
         {
             shapeFieldName = String.Empty;
 
@@ -302,7 +310,11 @@ namespace gView.DataSources.MSSqlSpatial
             StringBuilder fieldNames = new StringBuilder();
             foreach (string fieldName in filter.SubFields.Split(' '))
             {
-                if (fieldNames.Length > 0) fieldNames.Append(",");
+                if (fieldNames.Length > 0)
+                {
+                    fieldNames.Append(",");
+                }
+
                 if (fieldName == "[" + fc.ShapeFieldName + "]")
                 {
                     fieldNames.Append(fc.ShapeFieldName + ".STAsBinary() as temp_geometry");
@@ -352,10 +364,10 @@ namespace gView.DataSources.MSSqlSpatial
             return command;
         }
 
-        protected override string AddGeometryColumn(string schemaName, 
-                                                    string tableName, 
-                                                    string colunName, 
-                                                    IGeometryDef geomDef, 
+        protected override string AddGeometryColumn(string schemaName,
+                                                    string tableName,
+                                                    string colunName,
+                                                    IGeometryDef geomDef,
                                                     string geomTypeString)
         {
             //return "CREATE SPATIAL INDEX SIndx_Postcodes_" + colunName + "_col1 ON " + tableName + "(" + colunName + ")";
@@ -456,7 +468,9 @@ namespace gView.DataSources.MSSqlSpatial
                             row["colName"].ToString(), false);
 
                         if (fc.Fields.Count > 0)
+                        {
                             layers.Add(new DatasetElement(fc));
+                        }
                     }
                     catch { }
                 }
@@ -470,7 +484,9 @@ namespace gView.DataSources.MSSqlSpatial
                             row["colName"].ToString(), true);
 
                         if (fc.Fields.Count > 0)
+                        {
                             layers.Add(new DatasetElement(fc));
+                        }
                     }
                     catch { }
                 }
@@ -513,20 +529,24 @@ namespace gView.DataSources.MSSqlSpatial
             {
                 string tableName = row["tabName"].ToString();
                 if (await EqualsTableName(tableName, title, false))
+                {
                     return new DatasetElement(await Featureclass.Create(this,
                         tableName,
                         IDFieldName(title),
                         row["colName"].ToString(), false));
+                }
             }
 
             foreach (DataRow row in views.Rows)
             {
                 string tableName = row["tabName"].ToString();
                 if (await EqualsTableName(tableName, title, true))
+                {
                     return new DatasetElement(await Featureclass.Create(this,
                         tableName,
                         IDFieldName(title),
                         row["colName"].ToString(), true));
+                }
             }
 
             return null;
@@ -551,12 +571,16 @@ namespace gView.DataSources.MSSqlSpatial
             if (isView)
             {
                 if (_viewSchemas.ContainsKey(tableName.ToLower()))
+                {
                     return _viewSchemas[tableName.ToLower()] + "." + tableName;
+                }
             }
             else
             {
                 if (_tableSchemas.ContainsKey(tableName.ToLower()))
+                {
                     return _tableSchemas[tableName.ToLower()] + "." + tableName;
+                }
             }
 
             return null;
@@ -565,11 +589,15 @@ namespace gView.DataSources.MSSqlSpatial
         async internal Task<string> TableNamePlusSchema(string tableName, bool isView)
         {
             if (tableName.Contains("."))
+            {
                 return tableName;
+            }
 
             string ret = TableNamePlusSchemaFromCache(tableName, isView);
             if (ret != null)
+            {
                 return ret;
+            }
 
             try
             {
@@ -612,7 +640,9 @@ namespace gView.DataSources.MSSqlSpatial
         private string ToDbName(string name)
         {
             if (!name.StartsWith("["))
+            {
                 return "[" + name.Replace(".", "].[") + "]";
+            }
 
             return name;
         }
@@ -620,11 +650,15 @@ namespace gView.DataSources.MSSqlSpatial
         async protected Task<bool> EqualsTableName(string tableName, string title, bool isView)
         {
             if (tableName.ToLower() == title.ToLower())
+            {
                 return true;
+            }
 
             tableName = await TableNamePlusSchema(tableName, isView);
             if (tableName.ToLower() == title.ToLower())
+            {
                 return true;
+            }
 
             return false;
         }
@@ -633,13 +667,20 @@ namespace gView.DataSources.MSSqlSpatial
 
         virtual public void BeforeInsertFeaturesEvent(IFeatureClass sourceFc, IFeatureClass destFc)
         {
-            if (sourceFc == null || destFc == null) return;
+            if (sourceFc == null || destFc == null)
+            {
+                return;
+            }
+
             try
             {
                 Envelope env = new Envelope(sourceFc.Envelope);
                 env.Raise(150.0);
 
-                if (env == null) return;
+                if (env == null)
+                {
+                    return;
+                }
 
                 using (DbConnection conn = this.ProviderFactory.CreateConnection())
                 {
@@ -688,7 +729,7 @@ namespace gView.DataSources.MSSqlSpatial
                     if (sourceFc.SpatialReference != null && sourceFc.SpatialReference.Name.ToLower().StartsWith("epsg:"))
                     {
                         int srid = 0;
-                        int.TryParse(sourceFc.SpatialReference.Name.Split(':')[1],out srid);
+                        int.TryParse(sourceFc.SpatialReference.Name.Split(':')[1], out srid);
 
                         if (srid > 0)
                         {
@@ -914,7 +955,11 @@ namespace gView.DataSources.MSSqlSpatial
             StringBuilder fieldNames = new StringBuilder();
             foreach (string fieldName in filter.SubFields.Split(' '))
             {
-                if (fieldNames.Length > 0) fieldNames.Append(",");
+                if (fieldNames.Length > 0)
+                {
+                    fieldNames.Append(",");
+                }
+
                 if (fieldName == "[" + fc.ShapeFieldName + "]")
                 {
                     fieldNames.Append(fc.ShapeFieldName + ".STAsBinary() as temp_geometry");
@@ -1052,19 +1097,23 @@ namespace gView.DataSources.MSSqlSpatial
             {
                 string tableName = row["tabName"].ToString();
                 if (await EqualsTableName(tableName, title, false))
+                {
                     return new DatasetElement(await Featureclass.Create(this,
                         tableName,
                         IDFieldName(title),
                         row["colName"].ToString(), false));
+                }
             }
             foreach (DataRow row in views.Rows)
             {
                 string tableName = row["tabName"].ToString();
                 if (await EqualsTableName(tableName, title, true))
+                {
                     return new DatasetElement(await Featureclass.Create(this,
                         tableName,
                         IDFieldName(title),
                         row["colName"].ToString(), true));
+                }
             }
 
             return null;
@@ -1076,13 +1125,20 @@ namespace gView.DataSources.MSSqlSpatial
 
         override public void BeforeInsertFeaturesEvent(IFeatureClass sourceFc, IFeatureClass destFc)
         {
-            if (sourceFc == null || destFc == null) return;
+            if (sourceFc == null || destFc == null)
+            {
+                return;
+            }
+
             try
             {
                 Envelope env = new Envelope(sourceFc.Envelope);
                 env.Raise(1.5);
 
-                if (env == null) return;
+                if (env == null)
+                {
+                    return;
+                }
 
                 using (DbConnection conn = this.ProviderFactory.CreateConnection())
                 {
@@ -1116,21 +1172,23 @@ namespace gView.DataSources.MSSqlSpatial
     {
         private Featureclass(GeometryDataset dataset, string name, string idFieldName, string shapeFieldName, bool isView)
         {
-            
+
         }
 
         async static public Task<IFeatureClass> Create(GeometryDataset dataset, string name, string idFieldName, string shapeFieldName, bool isView)
         {
             var featureClass = new Featureclass(dataset, name, idFieldName, shapeFieldName, isView);
 
-            featureClass._name =await dataset.TableNamePlusSchema(name, isView);
+            featureClass._name = await dataset.TableNamePlusSchema(name, isView);
             featureClass._idfield = idFieldName;
             featureClass._shapefield = shapeFieldName;
             featureClass._geomType = GeometryType.Unknown;
 
             featureClass._dataset = dataset;
             if (featureClass._dataset is GeographyDataset)
+            {
                 featureClass._sRef = gView.Framework.Geometry.SpatialReference.FromID("epsg:4326");
+            }
 
             await featureClass.ReadSchema();
 
@@ -1141,15 +1199,18 @@ namespace gView.DataSources.MSSqlSpatial
                 {
                     if ((field.type == FieldType.integer || field.type == FieldType.biginteger || field.type == FieldType.ID)
                         && field.name.ToLower() == featureClass._dataset.OgcDictionary("gview_id").ToLower())
+                    {
                         featureClass._idfield = field.name;
-                    ((Field)field).type = FieldType.ID;
+                    } ((Field)field).type = FieldType.ID;
                 }
             }
 
             //base._geomType = geometryType.Polygon;
 
             if (featureClass._sRef == null)
+            {
                 featureClass._sRef = await gView.Framework.OGC.DB.OgcSpatialFeatureclass.TrySelectSpatialReference(dataset, featureClass);
+            }
 
             return featureClass;
         }

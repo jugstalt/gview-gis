@@ -14,11 +14,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-using System;
-using System.Collections.Generic;
 using GeoAPI.Geometries;
 using Proj4Net.Datum.Grids;
 using Proj4Net.Utility;
+using System;
+using System.Collections.Generic;
 
 namespace Proj4Net.Datum
 {
@@ -68,25 +68,27 @@ namespace Proj4Net.Datum
         public static readonly Datum OSGB36 = new Datum("OSGB36", 446.448, -125.157, 542.060, 0.1502, 0.2470, 0.8421, -20.4894, Ellipsoid.AIRY, "Airy 1830");
 
         public static readonly Datum @null = new Datum("@null", 0, 0, 0, Ellipsoid.SPHERE, "@null");
-                                                          //+towgs84=446.448,-125.157, 542.06,  0.15,   0.247,  0.842,  -20.489 +units=m +no_defs
+        //+towgs84=446.448,-125.157, 542.06,  0.15,   0.247,  0.842,  -20.489 +units=m +no_defs
 
         private readonly String _code;
         private readonly String _name;
         private readonly Ellipsoid _ellipsoid;
         private readonly double[] _transform;
         private readonly string[] _grids;
-        
+
         public Datum(String code,
             String transformSpec,
             Ellipsoid ellipsoid,
             String name)
             : this(code, (double[])null, ellipsoid, name)
         {
-            transformSpec=transformSpec.Replace("@null", "");
+            transformSpec = transformSpec.Replace("@null", "");
             if (string.IsNullOrEmpty(transformSpec))
+            {
                 return;
-            
-            _grids = transformSpec.Split(new[] {','}, StringSplitOptions.RemoveEmptyEntries);
+            }
+
+            _grids = transformSpec.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
         }
 
         /// <summary>
@@ -128,10 +130,10 @@ namespace Proj4Net.Datum
             double deltaX, double deltaY, double deltaZ,
             double rx, double ry, double rz, double scaleFactor,
             Ellipsoid ellipsoid, String name)
-            : this(code, new[] { deltaX, deltaY, deltaZ, 
-                ProjectionMath.ArcSecondsToRadians(rx), 
-                ProjectionMath.ArcSecondsToRadians(ry), 
-                ProjectionMath.ArcSecondsToRadians(rz), 
+            : this(code, new[] { deltaX, deltaY, deltaZ,
+                ProjectionMath.ArcSecondsToRadians(rx),
+                ProjectionMath.ArcSecondsToRadians(ry),
+                ProjectionMath.ArcSecondsToRadians(rz),
                 (scaleFactor / Million) + 1 }, ellipsoid, name)
         {
         }
@@ -145,14 +147,19 @@ namespace Proj4Net.Datum
             _name = name;
             _ellipsoid = ellipsoid;
             if (transform != null)
+            {
                 _transform = CheckTransformAllZero(transform);
+            }
         }
 
         private static Double[] CheckTransformAllZero(Double[] values)
         {
             for (var i = 0; i < values.Length; i++)
             {
-                if (values[i] != 0d) return values;
+                if (values[i] != 0d)
+                {
+                    return values;
+                }
             }
             return null;
         }
@@ -189,15 +196,25 @@ namespace Proj4Net.Datum
                 if (_transform == null)
                 {
                     return _grids != null
-                        ? DatumTransformType.GridShift 
+                        ? DatumTransformType.GridShift
                         : DatumTransformType.WGS84;
                 }
 
-                if (IsIdentity(_transform)) return DatumTransformType.WGS84;
+                if (IsIdentity(_transform))
+                {
+                    return DatumTransformType.WGS84;
+                }
 
-                if (_transform.Length == 3) return DatumTransformType.ThreeParameters;
-                if (_transform.Length == 7) return DatumTransformType.SevenParameters;
-                
+                if (_transform.Length == 3)
+                {
+                    return DatumTransformType.ThreeParameters;
+                }
+
+                if (_transform.Length == 7)
+                {
+                    return DatumTransformType.SevenParameters;
+                }
+
                 return DatumTransformType.WGS84;
             }
         }
@@ -216,9 +233,14 @@ namespace Proj4Net.Datum
                 if (i == 6)
                 {
                     if (transform[i] != 1.0 && transform[i] != 0.0)
+                    {
                         return false;
+                    }
                 }
-                else if (transform[i] != 0.0) return false;
+                else if (transform[i] != 0.0)
+                {
+                    return false;
+                }
             }
             return true;
         }
@@ -232,7 +254,7 @@ namespace Proj4Net.Datum
         }
 
         public const double ELLIPSOID_E2_TOLERANCE = 0.000000000050;
-  
+
         /// <summary>
         /// Tests if this is equal to another {@link Datum}.
         /// <para/>
@@ -257,7 +279,9 @@ namespace Proj4Net.Datum
             {
                 if (Math.Abs(_ellipsoid.EccentricitySquared
                      - datum._ellipsoid.EccentricitySquared) > ELLIPSOID_E2_TOLERANCE)
+                {
                     return false;
+                }
             }
 
             // false if transform parameters are not identical
@@ -266,25 +290,31 @@ namespace Proj4Net.Datum
                 for (var i = 0; i < _transform.Length; i++)
                 {
                     if (_transform[i] != datum._transform[i])
+                    {
                         return false;
+                    }
                 }
                 return true;
             }
-            
-            if(TransformType == DatumTransformType.GridShift)
+
+            if (TransformType == DatumTransformType.GridShift)
             {
                 if (_grids.Length != datum._grids.Length)
+                {
                     return false;
+                }
 
                 var gridList = new List<string>(datum._grids);
                 gridList.Sort();
                 for (var i = 0; i < _grids.Length; i++)
                 {
                     if (!gridList.Contains(_grids[i]))
+                    {
                         return false;
+                    }
                 }
             }
-            
+
             return true; // datums are equal
 
         }
@@ -355,14 +385,17 @@ namespace Proj4Net.Datum
                 var uri = new Uri(System.IO.Path.Combine(".", gridName));
                 var table = GridTable.Load(uri);
                 if (table == null)
-                {    
+                {
                     if (!gridOptional)
+                    {
                         throw new Proj4NetException();
+                    }
+
                     continue;
                 }
 
                 GridTable useTable;
-                if(table.Applies(new PhiLambda { Lambda = c.Y, Phi = c.X}, out useTable))
+                if (table.Applies(new PhiLambda { Lambda = c.Y, Phi = c.X }, out useTable))
                 {
                     useTable.Apply(c, inverse);
                 }

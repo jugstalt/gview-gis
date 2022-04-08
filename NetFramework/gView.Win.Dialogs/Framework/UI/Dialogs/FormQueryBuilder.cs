@@ -1,13 +1,11 @@
+using gView.Framework.Data;
+using gView.Framework.system;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
-using System.Drawing;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using gView.Framework.Data;
-using gView.Framework.system;
 
 namespace gView.Framework.UI.Dialogs
 {
@@ -23,7 +21,7 @@ namespace gView.Framework.UI.Dialogs
             InitializeComponent();
         }
 
-        static public Task<FormQueryBuilder> CreateAsync(IFeatureLayer layer) 
+        static public Task<FormQueryBuilder> CreateAsync(IFeatureLayer layer)
         {
             return CreateAsync((layer != null) ? layer.FeatureClass : (ITableClass)null);
         }
@@ -32,9 +30,11 @@ namespace gView.Framework.UI.Dialogs
             var dlg = new FormQueryBuilder();
             dlg._tc = tc;
 
-            
+
             if (dlg._tc == null)
+            {
                 return dlg;
+            }
 
             gView.Framework.Data.QueryFilter filter = new gView.Framework.Data.QueryFilter();
             filter.SubFields = "*";
@@ -60,7 +60,10 @@ namespace gView.Framework.UI.Dialogs
             foreach (IField field in dlg._tc.Fields.ToEnumerable())
             {
                 if (field.type == FieldType.binary ||
-                    field.type == FieldType.Shape) continue;
+                    field.type == FieldType.Shape)
+                {
+                    continue;
+                }
 
                 dlg.lstFields.Items.Add(Field.WhereClauseFieldName(field.name));
             }
@@ -89,7 +92,7 @@ namespace gView.Framework.UI.Dialogs
             }
             set
             {
-                switch(value) 
+                switch (value)
                 {
                     case CombinationMethod.New:
                         cmbMethod.SelectedIndex = 0;
@@ -109,8 +112,12 @@ namespace gView.Framework.UI.Dialogs
 
         private void button1_Click(object sender, EventArgs e)
         {
-            if (!(sender is Button)) return;
-            string txt = " "+((Button)sender).Text+" ";
+            if (!(sender is Button))
+            {
+                return;
+            }
+
+            string txt = " " + ((Button)sender).Text + " ";
 
             insertText2WhereClause(txt);
         }
@@ -132,14 +139,24 @@ namespace gView.Framework.UI.Dialogs
 
         private void FillUniqueValues()
         {
-            if (_tc == null) return;
+            if (_tc == null)
+            {
+                return;
+            }
+
             lstUniqueValues.Items.Clear();
-            if (lstFields.SelectedItem == null) return;
-            
+            if (lstFields.SelectedItem == null)
+            {
+                return;
+            }
+
             string colName = lstFields.SelectedItem.ToString();
             colName = colName.Replace("[", String.Empty).Replace("]", String.Empty); // Joined Fields
             IField field = _tc.FindField(colName);
-            if (field == null) return;
+            if (field == null)
+            {
+                return;
+            }
 
             List<string> list;
             if (_values.TryGetValue(colName, out list))
@@ -147,9 +164,13 @@ namespace gView.Framework.UI.Dialogs
                 foreach (string val in list)
                 {
                     if (field.type == FieldType.String)
+                    {
                         lstUniqueValues.Items.Add("'" + val + "'");
+                    }
                     else
+                    {
                         lstUniqueValues.Items.Add(val);
+                    }
                 }
             }
             else
@@ -157,8 +178,15 @@ namespace gView.Framework.UI.Dialogs
                 foreach (DataRow row in _table.Table.Select("", colName))
                 {
                     string val = row[colName].ToString();
-                    if (field.type == FieldType.String) val = "'" + val + "'";
-                    if (lstUniqueValues.Items.IndexOf(val) != -1) continue;
+                    if (field.type == FieldType.String)
+                    {
+                        val = "'" + val + "'";
+                    }
+
+                    if (lstUniqueValues.Items.IndexOf(val) != -1)
+                    {
+                        continue;
+                    }
 
                     lstUniqueValues.Items.Add(val);
                 }
@@ -170,29 +198,48 @@ namespace gView.Framework.UI.Dialogs
             btnCompleteList.Enabled = lstFields.SelectedItem != null;
             lstUniqueValues.Items.Clear();
 
-            if (_tc == null || _table.Table == null || lstFields.SelectedItem == null) return;
-            string colName=lstFields.SelectedItem.ToString();
+            if (_tc == null || _table.Table == null || lstFields.SelectedItem == null)
+            {
+                return;
+            }
+
+            string colName = lstFields.SelectedItem.ToString();
             colName = colName.Replace("[", String.Empty).Replace("]", String.Empty); // Joined Fields
-            if (_table.Table.Columns[colName] == null) return;
+            if (_table.Table.Columns[colName] == null)
+            {
+                return;
+            }
 
             FillUniqueValues();
         }
 
         private void lstFields_DoubleClick(object sender, EventArgs e)
         {
-            if (lstFields.SelectedItem == null) return;
+            if (lstFields.SelectedItem == null)
+            {
+                return;
+            }
+
             insertText2WhereClause(lstFields.SelectedItem.ToString());
         }
 
         private void lstUniqueValues_DoubleClick(object sender, EventArgs e)
         {
-            if (lstUniqueValues.SelectedItem == null) return;
+            if (lstUniqueValues.SelectedItem == null)
+            {
+                return;
+            }
+
             insertText2WhereClause(lstUniqueValues.SelectedItem.ToString());
         }
 
         async private void btnCompleteList_Click(object sender, EventArgs e)
         {
-            if (_tc == null || lstFields.SelectedItems == null) return;
+            if (_tc == null || lstFields.SelectedItems == null)
+            {
+                return;
+            }
+
             string fieldName = lstFields.SelectedItem.ToString().Replace("[", String.Empty).Replace("]", String.Empty); // Joined Fields [...]
             IField field = _tc.FindField(fieldName);
 
@@ -203,7 +250,10 @@ namespace gView.Framework.UI.Dialogs
             this.Cursor = Cursors.WaitCursor;
 
             ICursor cursor = await _tc.Search(filter);
-            if(cursor==null) return;
+            if (cursor == null)
+            {
+                return;
+            }
 
             _cancelTracker.Reset();
             BackgroundWorker bw = new BackgroundWorker();
@@ -221,14 +271,17 @@ namespace gView.Framework.UI.Dialogs
         async void CompleteList_DoWork(object sender, DoWorkEventArgs e)
         {
             ICursor cursor = e.Argument as ICursor;
-            if (cursor == null) return;
+            if (cursor == null)
+            {
+                return;
+            }
 
             List<string> list = null;
             try
             {
                 IRow row;
                 while ((row = (cursor is IFeatureCursor) ? await ((IFeatureCursor)cursor).NextFeature() :
-                              (cursor is IRowCursor)     ? await ((IRowCursor)cursor).NextRow() : null) != null)
+                              (cursor is IRowCursor) ? await ((IRowCursor)cursor).NextRow() : null) != null)
                 {
                     if (list == null)
                     {
@@ -242,19 +295,27 @@ namespace gView.Framework.UI.Dialogs
                         }
                     }
                     list.Add(row[0].ToString());
-                    if (!_cancelTracker.Continue) break;
+                    if (!_cancelTracker.Continue)
+                    {
+                        break;
+                    }
                 }
             }
             finally
             {
-                if (cursor != null) cursor.Dispose();
+                if (cursor != null)
+                {
+                    cursor.Dispose();
+                }
             }
         }
 
         private void FormQueryBuilder_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.KeyCode == Keys.Escape)
+            {
                 _cancelTracker.Cancel();
+            }
         }
 
         private void btnOK_Click(object sender, EventArgs e)

@@ -1,9 +1,7 @@
 ﻿using gView.GraphicsEngine.Abstraction;
 using gView.GraphicsEngine.Skia.Extensions;
 using SkiaSharp;
-using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace gView.GraphicsEngine.Skia
 {

@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace gView.Interoperability.GeoServices.Exceptions
+﻿namespace gView.Interoperability.GeoServices.Exceptions
 {
     public class ExecuteQueryException : GeoServicesException
     {

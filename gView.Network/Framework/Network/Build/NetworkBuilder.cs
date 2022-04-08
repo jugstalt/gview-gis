@@ -1,12 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using gView.Framework.Data;
+﻿using gView.Framework.Data;
 using gView.Framework.Geometry;
 using gView.Framework.system;
 using gView.Framework.UI;
 using System.Collections;
-using gView.Framework.Network;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace gView.Framework.Network.Build
@@ -23,7 +20,9 @@ namespace gView.Framework.Network.Build
         public NetworkBuilder(IEnvelope bounds, double tolerance)
         {
             if (bounds == null)
+            {
                 bounds = new Envelope();
+            }
 
             _nodes = new NetworkNodes(bounds);
             _edges = new NetworkEdges(bounds);
@@ -33,14 +32,20 @@ namespace gView.Framework.Network.Build
         public void AddEdgeFeature(int fcId, IFeature feature, bool oneWay, Hashtable weights, bool useWithComplexEdges)
         {
             if (feature == null)
+            {
                 return;
+            }
 
             NetworkEdges edges = null;
             if (feature.Shape is IPolyline)
+            {
                 edges = new NetworkEdges((IPolyline)feature.Shape);
+            }
 
             if (edges == null)
+            {
                 return;
+            }
 
             foreach (NetworkEdge edge in edges)
             {
@@ -60,7 +65,9 @@ namespace gView.Framework.Network.Build
         public void AddNodeFeature(int fcId, IFeature feature, bool isSwitch, bool switchState, NetworkNodeType nodeType)
         {
             if (feature == null || !(feature.Shape is IPoint))
+            {
                 return;
+            }
 
             NetworkNode node = _nodes.Find((IPoint)feature.Shape, _tolerance);
             if (node == null)
@@ -71,7 +78,9 @@ namespace gView.Framework.Network.Build
                 SplitToComplexEdges(node);
             }
             if (node == null)
+            {
                 return;
+            }
 
             node.SwitchAble = isSwitch;
             node.SwitchState = switchState;
@@ -94,7 +103,9 @@ namespace gView.Framework.Network.Build
         public bool SplitToComplexEdges(NetworkNode node)
         {
             if (node == null || node.Point == null)
+            {
                 return false;
+            }
 
             Envelope env = new Envelope(node.Point.X - _tolerance, node.Point.Y - _tolerance,
                                         node.Point.X + _tolerance, node.Point.Y + _tolerance);
@@ -103,7 +114,9 @@ namespace gView.Framework.Network.Build
             foreach (NetworkEdge edge in edges)
             {
                 if (edge.FromNodeIndex == node.Id || edge.ToNodeIndex == node.Id)
+                {
                     continue;
+                }
 
                 double dist, stat;
 
@@ -117,7 +130,9 @@ namespace gView.Framework.Network.Build
                         Polyline p2 = SpatialAlgorithms.Algorithm.PolylineSplit(pLine, stat, double.MaxValue);
                         if (p1.PathCount != 1 ||
                            p2.PathCount != 1)
+                        {
                             continue;
+                        }
 
                         // Edge bekommt neue Geometrie
                         edge.Path = p1[0];
@@ -160,7 +175,10 @@ namespace gView.Framework.Network.Build
             report.Message = "Create Graph...";
             report.featureMax = _edges.Count; //nodes.Count;
             report.featurePos = 0;
-            if (reportProgress != null) reportProgress(report);
+            if (reportProgress != null)
+            {
+                reportProgress(report);
+            }
             #endregion
 
             #region Old and Slow
@@ -195,14 +213,19 @@ namespace gView.Framework.Network.Build
             {
                 _graphEdges.Add(new NetworkGraphEdge(edge.FromNodeIndex, edge.ToNodeIndex, edge.Id, edge.Length, edge.GeoLength));
                 if (edge.OneWay == false)
+                {
                     _graphEdges.Add(new NetworkGraphEdge(edge.ToNodeIndex, edge.FromNodeIndex, edge.Id, edge.Length, edge.GeoLength));
+                }
 
                 edgeIndex++;
                 #region Report
                 if (edgeIndex % 100 == 0)
                 {
                     report.featurePos = edgeIndex;
-                    if (reportProgress != null) reportProgress(report);
+                    if (reportProgress != null)
+                    {
+                        reportProgress(report);
+                    }
                 }
                 #endregion
             }
@@ -210,7 +233,10 @@ namespace gView.Framework.Network.Build
             #region Report
             report.Message = "Sorting Graph...";
             report.featurePos = report.featureMax;
-            if (reportProgress != null) reportProgress(report);
+            if (reportProgress != null)
+            {
+                reportProgress(report);
+            }
             #endregion
 
             _graphEdges.Sort(new NetworkGraphEdges.NodeIndexComparer());
@@ -268,7 +294,9 @@ namespace gView.Framework.Network.Build
             public Task<IFeature> NextFeature()
             {
                 if (_nodes == null || _pos >= _nodes.Count)
+                {
                     return Task.FromResult<IFeature>(null);
+                }
 
                 NetworkNode node = _nodes[_pos++];
 
@@ -304,7 +332,10 @@ namespace gView.Framework.Network.Build
                 get
                 {
                     if (_nodes != null)
+                    {
                         return _nodes.Count;
+                    }
+
                     return 0;
                 }
             }
@@ -326,7 +357,9 @@ namespace gView.Framework.Network.Build
             public Task<IFeature> NextFeature()
             {
                 if (_edges == null || _pos >= _edges.Count)
+                {
                     return Task.FromResult<IFeature>(null);
+                }
 
                 NetworkEdge edge = _edges[_pos++];
 
@@ -363,7 +396,10 @@ namespace gView.Framework.Network.Build
                 get
                 {
                     if (_edges != null)
+                    {
                         return _edges.Count;
+                    }
+
                     return 0;
                 }
             }
@@ -385,7 +421,9 @@ namespace gView.Framework.Network.Build
             public Task<IFeature> NextFeature()
             {
                 if (_graphEdges == null || _pos >= _graphEdges.Count)
+                {
                     return Task.FromResult<IFeature>(null);
+                }
 
                 NetworkGraphEdge edge = _graphEdges[_pos++];
 
@@ -417,7 +455,9 @@ namespace gView.Framework.Network.Build
                 get
                 {
                     if (_graphEdges != null)
+                    {
                         return _graphEdges.Count;
+                    }
 
                     return 0;
                 }

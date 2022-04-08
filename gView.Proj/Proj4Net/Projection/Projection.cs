@@ -13,13 +13,13 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-using System;
-using System.Collections.Generic;
-using System.Text;
 using GeoAPI.Geometries;
 using Proj4Net.Datum;
 using Proj4Net.Units;
 using Proj4Net.Utility;
+using System;
+using System.Collections.Generic;
+using System.Text;
 
 namespace Proj4Net.Projection
 {
@@ -34,17 +34,17 @@ namespace Proj4Net.Projection
     /// distinguished by different values for the
     /// projection parameters.
     /// </summary>
-    public class Projection 
+    public class Projection
 #if !SILVERLIGHT
         : ICloneable
 #endif
     {
 
         public Projection()
-            :this(Datum.Ellipsoid.SPHERE, null)
+            : this(Datum.Ellipsoid.SPHERE, null)
         {
         }
-        public Projection(Ellipsoid ellipsoid, IDictionary<String,String> parameterMap)
+        public Projection(Ellipsoid ellipsoid, IDictionary<String, String> parameterMap)
         {
             _ellipsoid = ellipsoid;
         }
@@ -161,16 +161,19 @@ namespace Proj4Net.Projection
         private Meridian _primeMeridian;
 
         // Some useful constants
-// ReSharper disable InconsistentNaming
+        // ReSharper disable InconsistentNaming
         protected const double EPS10 = 1e-10;
         protected const double RTD = ProjectionMath.RadiansToDegrees;
         protected const double DTR = ProjectionMath.DegreesToRadians;
-// ReSharper restore InconsistentNaming
+        // ReSharper restore InconsistentNaming
 
         protected void CopyParams(Projection to)
         {
             if (to == null)
+            {
                 throw new ArgumentNullException("to");
+            }
+
             to._a = _a;
             to._alpha = _alpha;
             to._e = _e;
@@ -218,7 +221,10 @@ namespace Proj4Net.Projection
         {
             double x = src.X * DTR;
             if (_projectionLongitude != 0)
+            {
                 x = ProjectionMath.NormalizeLongitude(x - _projectionLongitude);
+            }
+
             return ProjectRadians(x, src.Y * DTR, dst);
         }
 
@@ -233,7 +239,10 @@ namespace Proj4Net.Projection
         {
             double x = src.X;
             if (_projectionLongitude != 0)
+            {
                 x = ProjectionMath.NormalizeLongitude(x - _projectionLongitude);
+            }
+
             return ProjectRadians(x, src.Y, dst);
         }
 
@@ -313,11 +322,19 @@ namespace Proj4Net.Projection
             }
             ProjectInverse(x, y, dst);
             if (dst.X < -Math.PI)
+            {
                 dst.X = -Math.PI;
+            }
             else if (dst.X > Math.PI)
+            {
                 dst.X = Math.PI;
+            }
+
             if (_projectionLongitude != 0)
+            {
                 dst.X = ProjectionMath.NormalizeLongitude(dst.X + _projectionLongitude);
+            }
+
             return dst;
         }
 
@@ -417,11 +434,15 @@ namespace Proj4Net.Projection
         ///<summary>Get/Set the name of this Projection</summary>
         public String Name
         {
-            get {
+            get
+            {
                 if (String.IsNullOrEmpty(_name))
+                {
                     return ToString();
-                return _name;
                 }
+
+                return _name;
+            }
             set
             {
                 _name = value;
@@ -445,21 +466,39 @@ namespace Proj4Net.Projection
                     " +a=" + _a
                     );
                 if (_es != 0)
+                {
                     sb.Append(" +es=" + _es);
+                }
+
                 sb.Append(" +lon_0=");
                 sb.Append(_projectionLongitude.ToString(format));
                 sb.Append(" +lat_0=");
                 sb.Append(_projectionLatitude.ToString(format));
                 if (_falseEasting != 1)
+                {
                     sb.Append(" +x_0=" + _falseEasting);
+                }
+
                 if (_falseNorthing != 1)
+                {
                     sb.Append(" +y_0=" + _falseNorthing);
+                }
+
                 if (_scaleFactor != 1)
+                {
                     sb.Append(" +k=" + _scaleFactor);
+                }
+
                 if (_fromMetres != 1)
+                {
                     sb.Append(" +fr_meters=" + _fromMetres);
+                }
+
                 if (_primeMeridian.Name != NamedMeridian.Greenwich)
+                {
                     sb.Append(_primeMeridian.Proj4Description);
+                }
+
                 return sb.ToString();
             }
         }
@@ -574,8 +613,8 @@ namespace Proj4Net.Projection
         ///</summary>
         public Double ProjectionLongitudeDegrees
         {
-            get { return _projectionLongitude*RTD;}
-            set { _projectionLongitude = DTR*value; }
+            get { return _projectionLongitude * RTD; }
+            set { _projectionLongitude = DTR * value; }
         }
 
         ///<summary>
@@ -592,8 +631,8 @@ namespace Proj4Net.Projection
         ///</summary>
         public Double TrueScaleLatitudeDegrees
         {
-            get { return _trueScaleLatitude*RTD; }
-            set { _trueScaleLatitude = DTR*value; }
+            get { return _trueScaleLatitude * RTD; }
+            set { _trueScaleLatitude = DTR * value; }
         }
 
         ///<summary>
@@ -620,8 +659,8 @@ namespace Proj4Net.Projection
         ///</summary>
         public double ProjectionLatitude2
         {
-            get { return _projectionLatitude2;}
-            set {_projectionLatitude2 = value;}
+            get { return _projectionLatitude2; }
+            set { _projectionLatitude2 = value; }
         }
 
         ///<summary>
@@ -647,8 +686,8 @@ namespace Proj4Net.Projection
         ///</summary>
         public double AlphaDegrees
         {
-            get { return _alpha*RTD; }
-            set { _alpha = DTR*value; }
+            get { return _alpha * RTD; }
+            set { _alpha = DTR * value; }
         }
 
         /**
@@ -657,7 +696,7 @@ namespace Proj4Net.Projection
         public double LonCDegrees
         {
             get { return _lonc; }
-            set { _lonc = DTR * value;}
+            set { _lonc = DTR * value; }
         }
 
         /**
@@ -730,7 +769,7 @@ namespace Proj4Net.Projection
                 _e = value;
                 _es = Math.Pow(value, 2d);
                 _oneEs = 1d - _es;
-                _roneEs = 1d/_oneEs;
+                _roneEs = 1d / _oneEs;
             }
         }
 
@@ -744,7 +783,7 @@ namespace Proj4Net.Projection
             {
                 _es = value;
                 _oneEs = 1d - _oneEs;
-                _roneEs = 1d/_roneEs;
+                _roneEs = 1d / _roneEs;
                 _e = Math.Sqrt(_es);
             }
         }
@@ -797,27 +836,45 @@ namespace Proj4Net.Projection
         }
 
         public virtual void Initialize(IDictionary<String, String> parameters)
-        {}
+        { }
 
         public static float NormalizeLongitude(float angle)
         {
             if (Double.IsInfinity(angle) || Double.IsNaN(angle))
+            {
                 throw new ArgumentException("Infinite or NaN longitude", "angle");
+            }
+
             while (angle > 180)
+            {
                 angle -= 360;
+            }
+
             while (angle < -180)
+            {
                 angle += 360;
+            }
+
             return angle;
         }
 
         public static double NormalizeLongitudeRadians(double angle)
         {
             if (Double.IsInfinity(angle) || Double.IsNaN(angle))
+            {
                 throw new ArgumentException("Infinite or NaN longitude");
+            }
+
             while (angle > Math.PI)
+            {
                 angle -= ProjectionMath.TwoPI;
+            }
+
             while (angle < -Math.PI)
+            {
                 angle += ProjectionMath.TwoPI;
+            }
+
             return angle;
         }
 

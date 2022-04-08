@@ -1,11 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using gView.Framework.Carto;
+﻿using gView.Framework.Carto;
 using gView.Framework.system;
 using gView.Framework.UI;
+using System;
+using System.Collections.Generic;
 using System.Reflection;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace gView.Framework.Data.Joins
@@ -17,7 +16,7 @@ namespace gView.Framework.Data.Joins
         private IFeatureLayer _joinLayer;
         private string _selectFieldNames = String.Empty;
         private int _joinLayerId = -1;
-        private Dictionary<string,IRow> _rows=new Dictionary<string,IRow>();
+        private Dictionary<string, IRow> _rows = new Dictionary<string, IRow>();
 
         #region IFeatureLayerJoin Member
 
@@ -43,7 +42,9 @@ namespace gView.Framework.Data.Joins
             get
             {
                 if (_joinLayer != null)
+                {
                     return _joinLayer.Fields;
+                }
 
                 return new Fields();
             }
@@ -56,10 +57,14 @@ namespace gView.Framework.Data.Joins
         async public Task<IRow> GetJoinedRow(string val)
         {
             if (_rows.ContainsKey(val))
+            {
                 return _rows[val];
+            }
 
             if (this.FeatureLayer == null || !(this.FeatureLayer.Class is ITableClass))
+            {
                 return null;
+            }
 
             QueryFilter filter = new QueryFilter();
             filter.SubFields = _selectFieldNames;
@@ -70,9 +75,13 @@ namespace gView.Framework.Data.Joins
             using (ICursor cursor = await ((ITableClass)this.FeatureLayer.Class).Search(filter))
             {
                 if (cursor is IFeatureCursor)
-                    ret= await ((IFeatureCursor)cursor).NextFeature();
+                {
+                    ret = await ((IFeatureCursor)cursor).NextFeature();
+                }
                 else if (cursor is IRowCursor)
-                    ret= await ((IRowCursor)cursor).NextRow();
+                {
+                    ret = await ((IRowCursor)cursor).NextRow();
+                }
             }
             _rows.Add(val, ret);
             return ret;
@@ -81,7 +90,9 @@ namespace gView.Framework.Data.Joins
         async public Task PerformCacheQuery(string[] vals)
         {
             if (this.FeatureLayer == null || !(this.FeatureLayer.Class is ITableClass) || vals == null)
+            {
                 return;
+            }
 
             QueryFilter filter = new QueryFilter();
             filter.SubFields = _selectFieldNames;
@@ -90,12 +101,24 @@ namespace gView.Framework.Data.Joins
             StringBuilder where = new StringBuilder();
             foreach (string val in vals)
             {
-                if (_rows.ContainsKey(val)) continue;
+                if (_rows.ContainsKey(val))
+                {
+                    continue;
+                }
+
                 _rows.Add(val, null);
-                if (where.Length > 0) where.Append(",");
+                if (where.Length > 0)
+                {
+                    where.Append(",");
+                }
+
                 where.Append(QueryValue(field, val));
             }
-            if (where.Length == 0) return;
+            if (where.Length == 0)
+            {
+                return;
+            }
+
             filter.WhereClause = this.JoinField + " in (" + where.ToString() + ")";
 
             using (ICursor cursor = await ((ITableClass)this.FeatureLayer.Class).Search(filter))
@@ -104,11 +127,18 @@ namespace gView.Framework.Data.Joins
                 {
                     IRow row = null;
                     if (cursor is IFeatureCursor)
+                    {
                         row = await ((IFeatureCursor)cursor).NextFeature();
+                    }
                     else if (cursor is IRowCursor)
+                    {
                         row = await ((IRowCursor)cursor).NextRow();
+                    }
+
                     if (row == null)
+                    {
                         break;
+                    }
 
                     string key = row[this.JoinField].ToString();
                     _rows[key] = row;
@@ -119,7 +149,9 @@ namespace gView.Framework.Data.Joins
         async public Task<ICursor> PerformQuery(IQueryFilter filter)
         {
             if (this.FeatureLayer == null || !(this.FeatureLayer.Class is ITableClass) || filter == null)
+            {
                 return null;
+            }
 
             return await ((ITableClass)this.FeatureLayer.Class).Search(filter);
         }
@@ -127,11 +159,16 @@ namespace gView.Framework.Data.Joins
         public void Init(string selectFieldNames)
         {
             if (selectFieldNames != null)
+            {
                 _selectFieldNames = selectFieldNames.Replace(",", " ");
+            }
+
             if (String.IsNullOrEmpty(_selectFieldNames.Trim()))
+            {
                 _selectFieldNames = "*";
+            }
         }
-       
+
         public joinType JoinType
         {
             get;
@@ -145,7 +182,9 @@ namespace gView.Framework.Data.Joins
             foreach (IDatasetElement element in map.MapElements)
             {
                 if (element.ID == _joinLayerId && element is IFeatureLayer)
+                {
                     _joinLayer = (IFeatureLayer)element;
+                }
             }
         }
 
@@ -170,7 +209,10 @@ namespace gView.Framework.Data.Joins
             stream.Save("jointype", (int)this.JoinType);
 
             if (_joinLayer != null)
+            {
                 stream.Save("joinlayerid", _joinLayer.ID);
+            }
+
             stream.Save("joinfield", this.JoinField);
         }
 
@@ -192,7 +234,9 @@ namespace gView.Framework.Data.Joins
             {
                 _joinLayer = value;
                 if (_joinLayer != null)
+                {
                     _joinLayerId = _joinLayer.ID;
+                }
             }
         }
 
@@ -257,7 +301,9 @@ namespace gView.Framework.Data.Joins
         private string QueryValue(IField field, string val)
         {
             if (field == null)
+            {
                 return val;
+            }
 
             switch (field.type)
             {

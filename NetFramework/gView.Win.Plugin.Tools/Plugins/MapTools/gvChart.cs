@@ -1,9 +1,6 @@
-﻿using System;
+﻿using gView.Framework.Globalisation;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Windows.Forms.DataVisualization.Charting;
-using gView.Framework.Globalisation;
 
 namespace gView.Plugins.MapTools
 {
@@ -17,7 +14,7 @@ namespace gView.Plugins.MapTools
         }
 
         private Chart _chart;
-        private DisplayMode _displayMode=DisplayMode.EverySerieInTheSameChartArea;
+        private DisplayMode _displayMode = DisplayMode.EverySerieInTheSameChartArea;
         private gvChartType _chartType = gvChart.ChartTypes[0]; // Column
 
         public gvChart(Chart chart)
@@ -31,7 +28,9 @@ namespace gView.Plugins.MapTools
             get
             {
                 if (_chartType.DisplayMode != DisplayMode.Mixed)
+                {
                     return _chartType.DisplayMode;
+                }
 
                 return _displayMode;
             }
@@ -41,7 +40,7 @@ namespace gView.Plugins.MapTools
                 this.Refresh();
             }
         }
-        
+
         public gvChartType ChartType
         {
             get { return _chartType; }
@@ -49,7 +48,10 @@ namespace gView.Plugins.MapTools
             {
                 _chartType = value;
                 if (_chartType.DisplayMode != DisplayMode.Mixed)
+                {
                     _displayMode = _chartType.DisplayMode;
+                }
+
                 this.Refresh();
             }
         }
@@ -61,7 +63,7 @@ namespace gView.Plugins.MapTools
             _chart.ChartAreas.Clear();
             _chart.Series.Clear();
 
-            if (ChartDisplayMode == DisplayMode.EverySerieInTheSameChartArea || ChartDisplayMode==DisplayMode.Mixed)
+            if (ChartDisplayMode == DisplayMode.EverySerieInTheSameChartArea || ChartDisplayMode == DisplayMode.Mixed)
             {
                 _chart.ChartAreas.Add(CreateChartArea("area"));
 
@@ -141,7 +143,7 @@ namespace gView.Plugins.MapTools
             new gvChartType(){ ChartType = SeriesChartType.Bar, DisplayMode = DisplayMode.Mixed, Name = "Bar Chart"},
             new gvChartType(){ ChartType = SeriesChartType.StackedBar, DisplayMode = DisplayMode.Mixed, Name = "Staked Bar Chart"},
             new gvChartType(){ ChartType = SeriesChartType.StackedBar100, DisplayMode = DisplayMode.EverySerieInTheSameChartArea, Name = "Stacket Bar Chart (100%)"},
-            
+
             new gvChartType(){ ChartType = SeriesChartType.Area, DisplayMode = DisplayMode.Mixed, Name = "Area Chart"},
             new gvChartType(){ ChartType = SeriesChartType.SplineArea, DisplayMode = DisplayMode.Mixed, Name = "Spline Area Chart"},
             new gvChartType(){ ChartType = SeriesChartType.StackedArea, DisplayMode = DisplayMode.Mixed, Name = "Stacked Area Chart"},

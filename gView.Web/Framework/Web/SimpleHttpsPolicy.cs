@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Net;
 using System.IO;
 using System.Security.Cryptography.X509Certificates;
 
@@ -33,11 +30,15 @@ namespace gView.Framework.Web
                 filename = filename.Trim();
 
                 if (String.IsNullOrEmpty(filename))
+                {
                     return null;
+                }
 
                 FileInfo fi = new FileInfo(filename);
                 if (fi.Exists)
+                {
                     return fi;
+                }
             }
             catch { }
             return null;
@@ -49,7 +50,9 @@ namespace gView.Framework.Web
             {
                 FileInfo fi = CertificateFile(filename);
                 if (fi == null)
+                {
                     return null;
+                }
 
                 //return new X509Certificate2(@"C:\Inetpub\wwwroot\etc\cer\extern_geoland.p12", "NuekomJGrY");
                 if (fi.Extension.ToLower() == ".p12" || fi.Extension.ToLower() == ".pfx")

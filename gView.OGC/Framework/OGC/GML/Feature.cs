@@ -1,9 +1,6 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
 using gView.Framework.Data;
-using System.IO;
 using gView.Framework.Geometry;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace gView.Framework.OGC.GML
@@ -13,7 +10,10 @@ namespace gView.Framework.OGC.GML
         #region Feature To GML
         public static void Feature2GML(IFeature feature, IFeatureClass fc, string fcID, StringBuilder sb, string srsName, IGeometricTransformer transformer, GmlVersion version)
         {
-            if (feature == null || fc == null) return;
+            if (feature == null || fc == null)
+            {
+                return;
+            }
 
             sb.Append(@"
    <gml:featureMember>
@@ -39,7 +39,10 @@ namespace gView.Framework.OGC.GML
             // Fields
             foreach (FieldValue fv in feature.Fields)
             {
-                if (fv.Name == fc.ShapeFieldName) continue;
+                if (fv.Name == fc.ShapeFieldName)
+                {
+                    continue;
+                }
 
                 // TODO: Value soll noch auf <,>,&,... untersucht werden !!!
                 sb.Append(@"
@@ -57,7 +60,10 @@ namespace gView.Framework.OGC.GML
 
         async public static Task Features2GML(IFeatureCursor cursor, IFeatureClass fc, string fcID, StringBuilder sb, string srsName, IGeometricTransformer transformer, GmlVersion version, int maxFeatures)
         {
-            if (cursor == null || fc == null) return;
+            if (cursor == null || fc == null)
+            {
+                return;
+            }
 
             int count = 0;
             IFeature feature = null;
@@ -66,7 +72,9 @@ namespace gView.Framework.OGC.GML
                 Feature2GML(feature, fc, fcID, sb, srsName, transformer, version);
                 count++;
                 if (maxFeatures > 0 && count > maxFeatures)
+                {
                     break;
+                }
             }
         }
         #endregion

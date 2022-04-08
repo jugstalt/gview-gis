@@ -9,10 +9,11 @@
 namespace OSGeo_v1.GDAL
 {
 
-public enum RATFieldType {
-  GFT_Integer,
-  GFT_Real,
-  GFT_String
-}
+    public enum RATFieldType
+    {
+        GFT_Integer,
+        GFT_Real,
+        GFT_String
+    }
 
 }

@@ -1,9 +1,5 @@
 using System;
 using System.Xml;
-using System.Text;
-using gView.Framework.UI;
-using System.Reflection;
-using System.Collections.Generic;
 
 namespace gView.Framework.system
 {
@@ -23,7 +19,11 @@ namespace gView.Framework.system
             while (pos1 != -1)
             {
                 pos2 = url.IndexOf("]", pos1);
-                if (pos2 == -1) break;
+                if (pos2 == -1)
+                {
+                    break;
+                }
+
                 string field = url.Substring(pos1 + 1, pos2 - pos1 - 1);
                 url = url.Replace("[" + field + "]", getFieldValue(feature, field).Replace(" ", "%20"));
                 pos1 = url.IndexOf("[");
@@ -63,7 +63,11 @@ namespace gView.Framework.system
                 {
                     fieldnames[i] = fieldnames[i].Substring(pos + 1, fieldnames[i].Length - pos - 1);
                 }
-                if (fieldname != "") fieldname += ";";
+                if (fieldname != "")
+                {
+                    fieldname += ";";
+                }
+
                 fieldname += fieldnames[i];
             }
 
@@ -77,8 +81,16 @@ namespace gView.Framework.system
             {
                 pos = filename.IndexOf(".", pos + 1);
             }
-            if (pos == -1) return filename + add;
-            if (pos == 0) return add + filename;
+            if (pos == -1)
+            {
+                return filename + add;
+            }
+
+            if (pos == 0)
+            {
+                return add + filename;
+            }
+
             return filename.Substring(0, pos) + add + filename.Substring(pos, filename.Length - pos);
         }
 
@@ -100,9 +112,21 @@ namespace gView.Framework.system
         }
         static public bool isHNR(string val)
         {
-            if (val.Length == 0) return false;
-            if (IsNumber(val)) return true;
-            if (!IsNumber(val.Substring(0, val.Length - 1))) return false;
+            if (val.Length == 0)
+            {
+                return false;
+            }
+
+            if (IsNumber(val))
+            {
+                return true;
+            }
+
+            if (!IsNumber(val.Substring(0, val.Length - 1)))
+            {
+                return false;
+            }
+
             return true;
         }
         static public void splitHNR(string hnr, out string hnr1, out string hnr2)

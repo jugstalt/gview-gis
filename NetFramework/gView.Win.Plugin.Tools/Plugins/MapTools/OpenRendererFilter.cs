@@ -1,9 +1,6 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
 using gView.Framework.Data;
-using gView.Framework.UI;
 using gView.Framework.Geometry;
+using gView.Framework.UI;
 using gView.Framework.UI.Controls.Filter;
 using System.Threading.Tasks;
 
@@ -29,7 +26,10 @@ namespace gView.Plugins.MapTools
             bool match = await base.Match(exObject);
 
             // Grouplayer nicht...
-            if (exObject is IExplorerParentObject) return false;
+            if (exObject is IExplorerParentObject)
+            {
+                return false;
+            }
 
             var instance = await exObject?.GetInstanceAsync();
 
@@ -51,7 +51,7 @@ namespace gView.Plugins.MapTools
             //{
             //    return ((IFeatureLayer)exObject.Object).FeatureClass.GeometryType == _geomType;
             //}
-            
+
             return match;
         }
     }

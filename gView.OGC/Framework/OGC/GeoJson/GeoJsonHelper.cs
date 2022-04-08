@@ -1,11 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using gView.Framework.Data;
+﻿using gView.Framework.Data;
 using gView.Framework.Geometry;
 using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace gView.Framework.OGC.GeoJson
 {
@@ -32,19 +31,23 @@ namespace gView.Framework.OGC.GeoJson
 
         async public static Task<string> ToGeoJsonFeatures(IFeatureCursor cursor, int maxFeatures)
         {
-            StringBuilder sb=new StringBuilder();
+            StringBuilder sb = new StringBuilder();
 
             int counter = 0;
             IFeature feature;
             while ((feature = await cursor.NextFeature()) != null)
             {
                 if (counter != 0)
+                {
                     sb.Append(",");
+                }
 
                 sb.Append(ToGeoJson(feature));
                 counter++;
                 if (counter >= maxFeatures)
+                {
                     break;
+                }
             }
 
             return sb.ToString();
@@ -70,7 +73,9 @@ namespace gView.Framework.OGC.GeoJson
             foreach (var feature in features)
             {
                 if (sb.Length > 0)
+                {
                     sb.Append(",");
+                }
 
                 sb.Append(ToGeoJson(feature));
             }
@@ -87,7 +92,11 @@ namespace gView.Framework.OGC.GeoJson
             sb.Append(@",""properties"":{");
             for (int i = 0, to = feature.Fields.Count; i < to; i++)
             {
-                if (i > 0) sb.Append(",");
+                if (i > 0)
+                {
+                    sb.Append(",");
+                }
+
                 FieldValue fv = feature.Fields[i];
                 //sb.Append($"\"" + fv.Name + "\":\"" + fv.Value.ToString() + "\"");
                 sb.Append($"\"{ fv.Name }\":{ JsonConvert.SerializeObject(fv.Value) }");
@@ -141,7 +150,11 @@ namespace gView.Framework.OGC.GeoJson
                     sb.Append(@"{""type"":""MultiLineString"",""coordinates"":[[");
                     for (int p = 0, to = pLine.PathCount; p < to; p++)
                     {
-                        if (p > 0) sb.Append("],[");
+                        if (p > 0)
+                        {
+                            sb.Append("],[");
+                        }
+
                         sb.Append(ToGeoJsonPoints(pLine[p]));
                     }
                     sb.Append("]]}");
@@ -167,7 +180,11 @@ namespace gView.Framework.OGC.GeoJson
                     sb.Append(@"{""type"":""MultiPolygon"",""coordinates"":[[");
                     for (int r = 0, to = polygon.RingCount; r < to; r++)
                     {
-                        if (r > 0) sb.Append("],[");
+                        if (r > 0)
+                        {
+                            sb.Append("],[");
+                        }
+
                         sb.Append(ToGeoJsonPoints(polygon[r]));
                     }
                     sb.Append("]]}");
@@ -201,7 +218,11 @@ namespace gView.Framework.OGC.GeoJson
             sb.Append("[");
             for (int i = 0, to = pColl.PointCount; i < to; i++)
             {
-                if (i > 0) sb.Append(",");
+                if (i > 0)
+                {
+                    sb.Append(",");
+                }
+
                 sb.Append(ToGeoJsonPoint(pColl[i]));
             }
             sb.Append("]");

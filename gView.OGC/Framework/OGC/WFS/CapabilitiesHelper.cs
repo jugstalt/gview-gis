@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Globalization;
 
 namespace gView.Framework.OGC.WFS
@@ -26,7 +25,10 @@ namespace gView.Framework.OGC.WFS
 
                 #region OnlineResources
                 if (caps.Service.OnlineResource != null)
+                {
                     _onlineResource = caps.Service.OnlineResource.ToString();
+                }
+
                 foreach (object item in caps.Capability.Request.Items)
                 {
                     if (item is Version_1_0_0.GetCapabilitiesType)
@@ -45,9 +47,14 @@ namespace gView.Framework.OGC.WFS
                             foreach (object http in dtt.HTTP)
                             {
                                 if (http is Version_1_0_0.GetType)
+                                {
                                     _getGFTOnlineResource = _getGFTOnlineResource = ((Version_1_0_0.GetType)http).onlineResource;
+                                }
+
                                 if (http is Version_1_0_0.PostType)
+                                {
                                     _postDFTOnlineResource = _postGFTOnlineResource = ((Version_1_0_0.PostType)http).onlineResource;
+                                }
                             }
                         }
                     }
@@ -83,7 +90,9 @@ namespace gView.Framework.OGC.WFS
                 foreach (Version_1_1_0.Operation operation in caps.OperationsMetadata.Operation)
                 {
                     if (operation.DCP == null || operation.DCP.Length == 0)
+                    {
                         continue;
+                    }
 
                     switch (operation.name.ToLower())
                     {
@@ -112,9 +121,13 @@ namespace gView.Framework.OGC.WFS
                                     {
                                         Version_1_1_0.OnlineResourceType or = (Version_1_1_0.OnlineResourceType)http.Items[i];
                                         if (http.ItemsElementName[i].ToString().ToLower() == "get")
+                                        {
                                             _getDFTOnlineResource = or.href;
+                                        }
                                         else if (http.ItemsElementName[i].ToString().ToLower() == "post")
+                                        {
                                             _postDFTOnlineResource = or.href;
+                                        }
                                     }
                                 }
                             }
@@ -129,9 +142,13 @@ namespace gView.Framework.OGC.WFS
                                     {
                                         Version_1_1_0.OnlineResourceType or = (Version_1_1_0.OnlineResourceType)http.Items[i];
                                         if (http.ItemsElementName[i].ToString().ToLower() == "get")
+                                        {
                                             _getGFTOnlineResource = or.href;
+                                        }
                                         else if (http.ItemsElementName[i].ToString().ToLower() == "post")
+                                        {
                                             _postGFTOnlineResource = or.href;
+                                        }
                                     }
                                 }
                             }

@@ -1,8 +1,7 @@
+using gView.Framework.Proj;
 using System;
 using System.Collections.Generic;
 using System.Text;
-using gView.Framework.Geometry;
-using gView.Framework.Proj;
 
 namespace gView.Framework.Geometry.SpatialRefTranslation
 {
@@ -10,7 +9,7 @@ namespace gView.Framework.Geometry.SpatialRefTranslation
     {
         private class P4Parameter
         {
-            private string _p,_v;
+            private string _p, _v;
             public P4Parameter(string p, string v)
             {
                 _p = p;
@@ -56,7 +55,11 @@ namespace gView.Framework.Geometry.SpatialRefTranslation
 
             foreach (P4Parameter parameter in _p4parameters)
             {
-                if (sb.Length > 0) sb.Append(" ");
+                if (sb.Length > 0)
+                {
+                    sb.Append(" ");
+                }
+
                 sb.Append(parameter.Parameter + "=" + parameter.ParameterValue);
             }
             return sb.ToString();
@@ -69,8 +72,8 @@ namespace gView.Framework.Geometry.SpatialRefTranslation
             #region Ellipsoid
             Ellipsoid ellipsoid = geogrCoordSystem.HorizontalDatum.Ellipsoid;
 
-            double majorAxis,minorAxis,invFlattening;
-            string ellps = ProjDB.SpheroidByName(ellipsoid.Name,out majorAxis,out minorAxis,out invFlattening);
+            double majorAxis, minorAxis, invFlattening;
+            string ellps = ProjDB.SpheroidByName(ellipsoid.Name, out majorAxis, out minorAxis, out invFlattening);
 
             if (ellps != String.Empty &&
                 majorAxis == ellipsoid.SemiMajorAxis &&
@@ -102,9 +105,11 @@ namespace gView.Framework.Geometry.SpatialRefTranslation
         {
             string projP4 = ProjDB.ProjectionP4ByName(projCoordSystem.Projection.Name);
             if (projP4 == String.Empty)
+            {
                 throw new NotImplementedException("Unknown projection " + projCoordSystem.Projection.Name);
+            }
 
-            _p4parameters.Add(new P4Parameter("+proj",projP4));
+            _p4parameters.Add(new P4Parameter("+proj", projP4));
 
             WriteGeographicCoordinateSystem(projCoordSystem.GeographicCoordinateSystem);
 

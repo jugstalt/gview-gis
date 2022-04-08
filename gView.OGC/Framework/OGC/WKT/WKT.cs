@@ -1,7 +1,6 @@
-using System;
+using gView.Framework.Geometry;
 using System.Collections.Generic;
 using System.Text;
-using gView.Framework.Geometry;
 
 namespace gView.Framework.OGC
 {
@@ -25,9 +24,16 @@ namespace gView.Framework.OGC
                 for (int i = 0; i < ((IMultiPoint)geometry).PointCount; i++)
                 {
                     IPoint mPoint = ((IMultiPoint)geometry)[i];
-                    if (mPoint == null) continue;
+                    if (mPoint == null)
+                    {
+                        continue;
+                    }
 
-                    if (!first) sb.Append(",");
+                    if (!first)
+                    {
+                        sb.Append(",");
+                    }
+
                     sb.Append("(");
                     AppendPoint(sb, mPoint);
                     sb.Append(")");
@@ -75,7 +81,10 @@ namespace gView.Framework.OGC
 
                             foreach (IPolygon mPoly in polygons)
                             {
-                                if (!first) sb.Append(",");
+                                if (!first)
+                                {
+                                    sb.Append(",");
+                                }
 
                                 sb.Append("(");
                                 AppendPolygon(sb, mPoly);
@@ -95,9 +104,16 @@ namespace gView.Framework.OGC
                 for (int i = 0; i < ((IAggregateGeometry)geometry).GeometryCount; i++)
                 {
                     IGeometry aGeom = ((IAggregateGeometry)geometry)[i];
-                    if (aGeom == null) continue;
+                    if (aGeom == null)
+                    {
+                        continue;
+                    }
 
-                    if (!first) sb.Append(",");
+                    if (!first)
+                    {
+                        sb.Append(",");
+                    }
+
                     sb.Append(ToWKT(aGeom));
                     first = false;
                 }
@@ -127,14 +143,20 @@ namespace gView.Framework.OGC
 
         private static void AppendPoint(StringBuilder sb, IPoint point)
         {
-            if (point == null) return;
+            if (point == null)
+            {
+                return;
+            }
 
             sb.Append(point.X.ToString(_nhi) + " " + point.Y.ToString(_nhi));
         }
 
         private static void AppendPointCollection(StringBuilder sb, IPointCollection pColl)
         {
-            if (pColl == null || pColl.PointCount == 0) return;
+            if (pColl == null || pColl.PointCount == 0)
+            {
+                return;
+            }
 
             sb.Append("(");
             bool first = true;
@@ -143,7 +165,11 @@ namespace gView.Framework.OGC
                 IPoint p = pColl[i];
                 if (p != null)
                 {
-                    if (!first) sb.Append(",");
+                    if (!first)
+                    {
+                        sb.Append(",");
+                    }
+
                     AppendPoint(sb, p);
                     first = false;
                 }
@@ -153,7 +179,10 @@ namespace gView.Framework.OGC
 
         private static void AppendPolyline(StringBuilder sb, IPolyline pLine)
         {
-            if (pLine == null || pLine.PathCount == 0) return;
+            if (pLine == null || pLine.PathCount == 0)
+            {
+                return;
+            }
 
             bool first = true;
             for (int i = 0; i < pLine.PathCount; i++)
@@ -161,7 +190,11 @@ namespace gView.Framework.OGC
                 IPath p = pLine[i];
                 if (p != null && p.PointCount > 1)
                 {
-                    if (!first) sb.Append(",");
+                    if (!first)
+                    {
+                        sb.Append(",");
+                    }
+
                     AppendPointCollection(sb, p);
                     first = false;
                 }
@@ -170,7 +203,10 @@ namespace gView.Framework.OGC
 
         private static void AppendPolygon(StringBuilder sb, IPolygon poly)
         {
-            if (poly == null || poly.RingCount == 0) return;
+            if (poly == null || poly.RingCount == 0)
+            {
+                return;
+            }
 
             bool first = true;
             for (int i = 0; i < poly.RingCount; i++)
@@ -178,7 +214,11 @@ namespace gView.Framework.OGC
                 IRing r = poly[i];
                 if (r != null && r.PointCount > 2)
                 {
-                    if (!first) sb.Append(",");
+                    if (!first)
+                    {
+                        sb.Append(",");
+                    }
+
                     r.ClosePath();
                     AppendPointCollection(sb, r);
                     first = false;

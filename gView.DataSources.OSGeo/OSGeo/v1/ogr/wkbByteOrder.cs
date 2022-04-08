@@ -6,11 +6,13 @@
  * the SWIG interface file instead.
  * ----------------------------------------------------------------------------- */
 
-namespace OSGeo_v1.OGR {
+namespace OSGeo_v1.OGR
+{
 
-public enum wkbByteOrder {
-  wkbXDR = 0,
-  wkbNDR = 1
-}
+    public enum wkbByteOrder
+    {
+        wkbXDR = 0,
+        wkbNDR = 1
+    }
 
 }

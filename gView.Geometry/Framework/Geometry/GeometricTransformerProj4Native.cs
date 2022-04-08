@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
 
@@ -80,14 +78,27 @@ namespace gView.Framework.Geometry
                         //Console.Write("FromID: " + this.GetHashCode()+"\t"+ System.Threading.Thread.CurrentThread.ManagedThreadId + "\t");
 
                         if (_fromSRef != null && value != null &&
-                            _fromSRef.Equals(value)) return;
+                            _fromSRef.Equals(value))
+                        {
+                            return;
+                        }
+
                         _fromSRef = value;
 
                         if (_fromID != IntPtr.Zero)
+                        {
                             Proj4Wrapper.pj_free(_fromID);
+                        }
 
-                        if (value == null) return;
-                        if (value.Parameters == null) return;
+                        if (value == null)
+                        {
+                            return;
+                        }
+
+                        if (value.Parameters == null)
+                        {
+                            return;
+                        }
 
                         string[] parms = allParameters(value);
                         _fromID = Proj4Wrapper.pj_init(parms.Length, parms);
@@ -131,14 +142,27 @@ namespace gView.Framework.Geometry
                     try
                     {
                         if (_toSRef != null && value != null &&
-                            _toSRef.Equals(value)) return;
+                            _toSRef.Equals(value))
+                        {
+                            return;
+                        }
+
                         _toSRef = value;
 
                         if (_toID != IntPtr.Zero)
+                        {
                             Proj4Wrapper.pj_free(_toID);
+                        }
 
-                        if (value == null) return;
-                        if (value.Parameters == null) return;
+                        if (value == null)
+                        {
+                            return;
+                        }
+
+                        if (value.Parameters == null)
+                        {
+                            return;
+                        }
 
                         string[] parms = allParameters(value);
                         _toID = Proj4Wrapper.pj_init(parms.Length, parms);
@@ -175,7 +199,10 @@ namespace gView.Framework.Geometry
                 {
                     try
                     {
-                        if (_fromID != IntPtr.Zero) Proj4Wrapper.pj_free(_fromID);
+                        if (_fromID != IntPtr.Zero)
+                        {
+                            Proj4Wrapper.pj_free(_fromID);
+                        }
                     }
                     catch { }
                     _fromID = IntPtr.Zero;
@@ -189,7 +216,10 @@ namespace gView.Framework.Geometry
                 {
                     try
                     {
-                        if (_toID != IntPtr.Zero) Proj4Wrapper.pj_free(_toID);
+                        if (_toID != IntPtr.Zero)
+                        {
+                            Proj4Wrapper.pj_free(_toID);
+                        }
                     }
                     catch { }
                     _toID = IntPtr.Zero;
@@ -220,8 +250,15 @@ namespace gView.Framework.Geometry
 
         private string[] allParameters(ISpatialReference sRef)
         {
-            if (sRef == null) return "".Split();
-            if (sRef.Datum == null) return sRef.Parameters;
+            if (sRef == null)
+            {
+                return "".Split();
+            }
+
+            if (sRef.Datum == null)
+            {
+                return sRef.Parameters;
+            }
 
             string parameters = "";
             foreach (string param in sRef.Parameters)
@@ -234,17 +271,28 @@ namespace gView.Framework.Geometry
         }
         private string allParametersString(ISpatialReference sRef)
         {
-            if (sRef == null) return String.Empty;
+            if (sRef == null)
+            {
+                return String.Empty;
+            }
 
             StringBuilder sb = new StringBuilder();
             foreach (string param in sRef.Parameters)
             {
-                if (sb.Length > 0) sb.Append(" ");
+                if (sb.Length > 0)
+                {
+                    sb.Append(" ");
+                }
+
                 sb.Append(param.Trim());
             }
             if (sRef.Datum != null && !String.IsNullOrEmpty(sRef.Datum.Parameter))
             {
-                if (sb.Length > 0) sb.Append(" ");
+                if (sb.Length > 0)
+                {
+                    sb.Append(" ");
+                }
+
                 sb.Append(sRef.Datum.Parameter);
             }
             return sb.ToString();
@@ -254,7 +302,9 @@ namespace gView.Framework.Geometry
             foreach (string param in sRef.Parameters)
             {
                 if (param == p)
+                {
                     return true;
+                }
             }
             return false;
         }
@@ -270,14 +320,24 @@ namespace gView.Framework.Geometry
 
         private object Transform2D_(object geometry, IntPtr from, IntPtr to, bool fromProjective, bool toProjektive)
         {
-            if (geometry == null) return null;
+            if (geometry == null)
+            {
+                return null;
+            }
 
-            if (from == IntPtr.Zero || to == IntPtr.Zero) return geometry;
+            if (from == IntPtr.Zero || to == IntPtr.Zero)
+            {
+                return geometry;
+            }
+
             if (geometry is PointCollection)
             {
                 PointCollection pColl = (PointCollection)geometry;
                 int pointCount = pColl.PointCount;
-                if (pointCount == 0) return geometry;
+                if (pointCount == 0)
+                {
+                    return geometry;
+                }
 
                 IntPtr buffer = Marshal.AllocHGlobal(pointCount * 2 * sizeof(double));
 
@@ -296,7 +356,10 @@ namespace gView.Framework.Geometry
                                 b[pointCount + i] = pColl[i].Y;
                             }
 
-                            if (!fromProjective) ToRad(buffer, pointCount * 2);
+                            if (!fromProjective)
+                            {
+                                ToRad(buffer, pointCount * 2);
+                            }
 
                             xPtr = (IntPtr)(&b[0]);
                             yPtr = (IntPtr)(&b[pointCount]);
@@ -313,17 +376,28 @@ namespace gView.Framework.Geometry
                             Proj4Wrapper.pj_transform(from, to, pointCount, 0, xPtr, yPtr, IntPtr.Zero);
                             //}
                         }
-                        if (!toProjektive) ToDeg(buffer, pointCount * 2);
+                        if (!toProjektive)
+                        {
+                            ToDeg(buffer, pointCount * 2);
+                        }
 
                         IPointCollection target = null;
                         if (pColl is IRing)
+                        {
                             target = new Ring();
+                        }
                         else if (pColl is IPath)
+                        {
                             target = new Path();
+                        }
                         else if (pColl is IMultiPoint)
+                        {
                             target = new MultiPoint();
+                        }
                         else
+                        {
                             target = new PointCollection();
+                        }
 
                         unsafe
                         {
@@ -374,7 +448,10 @@ namespace gView.Framework.Geometry
             {
                 double[] x = { ((IPoint)geometry).X };
                 double[] y = { ((IPoint)geometry).Y };
-                if (!fromProjective) ToRad(x, y);
+                if (!fromProjective)
+                {
+                    ToRad(x, y);
+                }
 
                 lock (LockThis1)
                 {
@@ -400,7 +477,10 @@ namespace gView.Framework.Geometry
                         }
                     }
                 }
-                if (!toProjektive) ToDeg(x, y);
+                if (!toProjektive)
+                {
+                    ToDeg(x, y);
+                }
 
                 return new Point(x[0], y[0]);
             }
@@ -445,7 +525,10 @@ namespace gView.Framework.Geometry
 
         private void ToDeg(double[] x, double[] y)
         {
-            if (x.Length != y.Length) return;
+            if (x.Length != y.Length)
+            {
+                return;
+            }
 
             for (int i = 0; i < x.Length; i++)
             {
@@ -460,13 +543,18 @@ namespace gView.Framework.Geometry
             {
                 double* b = (double*)buffer;
                 for (int i = 0; i < count; i++)
+                {
                     b[i] = b[i] * RAD2DEG;
+                }
             }
         }
 
         private void ToRad(double[] x, double[] y)
         {
-            if (x.Length != y.Length) return;
+            if (x.Length != y.Length)
+            {
+                return;
+            }
 
             for (int i = 0; i < x.Length; i++)
             {
@@ -506,12 +594,18 @@ namespace gView.Framework.Geometry
                 //catch { }
                 try
                 {
-                    if (_fromID != IntPtr.Zero) Proj4Wrapper.pj_free(_fromID);
+                    if (_fromID != IntPtr.Zero)
+                    {
+                        Proj4Wrapper.pj_free(_fromID);
+                    }
                 }
                 catch { }
                 try
                 {
-                    if (_toID != IntPtr.Zero) Proj4Wrapper.pj_free(_toID);
+                    if (_toID != IntPtr.Zero)
+                    {
+                        Proj4Wrapper.pj_free(_toID);
+                    }
                 }
                 catch { }
                 _fromSRef = _toSRef = null;
@@ -524,9 +618,15 @@ namespace gView.Framework.Geometry
 
         static public IGeometry Transform2D(IGeometry geometry, ISpatialReference from, ISpatialReference to)
         {
-            if (geometry == null) return null;
+            if (geometry == null)
+            {
+                return null;
+            }
 
-            if (from == null || to == null || from.Equals(to)) return geometry;
+            if (from == null || to == null || from.Equals(to))
+            {
+                return geometry;
+            }
 
             using (IGeometricTransformer transformer = GeometricTransformerFactory.Create())
             {

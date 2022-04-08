@@ -1,14 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Windows.Forms;
+﻿using gView.DataSources.Fdb.MSAccess;
 using gView.Framework.Data;
-using gView.DataSources.Fdb.MSAccess;
+using System;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace gView.DataSources.Fdb.UI
 {
@@ -39,14 +33,19 @@ namespace gView.DataSources.Fdb.UI
             cmbRefFeatureClass.Items.Clear();
 
             if (_dataset == null)
+            {
                 return;
+            }
 
             foreach (IDatasetElement element in await _dataset.Elements())
             {
                 if (element.Class is IFeatureClass)
                 {
                     if (element.Class.Name.Contains("@"))
+                    {
                         continue;
+                    }
+
                     cmbRefFeatureClass.Items.Add(new FeatureClassItem((IFeatureClass)element.Class));
                 }
             }
@@ -60,7 +59,10 @@ namespace gView.DataSources.Fdb.UI
                     if (fields == null ||
                         fields.FindField("FDB_OID") == null ||
                         fields.FindField("FDB_SHAPE") == null ||
-                        fields.FindField("FDB_NID") == null) continue;
+                        fields.FindField("FDB_NID") == null)
+                    {
+                        continue;
+                    }
 
                     cmbDatabaseViews.Items.Add(view);
                 }

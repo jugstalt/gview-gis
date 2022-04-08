@@ -1,12 +1,10 @@
+using gView.Framework.Data;
+using gView.Framework.Geometry;
+using gView.Framework.IO;
+using gView.Framework.Web;
+using gView.Interoperability.OGC.Dataset.WFS;
 using System;
 using System.Collections.Generic;
-using System.Text;
-using gView.Framework.Data;
-using gView.Framework.IO;
-using gView.Framework.Geometry;
-using gView.Framework.Web;
-using System.Xml;
-using gView.Interoperability.OGC.Dataset.WFS;
 using System.Threading.Tasks;
 
 namespace gView.Interoperability.OGC.Dataset.WMS
@@ -165,7 +163,9 @@ namespace gView.Interoperability.OGC.Dataset.WMS
             if (_class == null && _wfsDataset != null)
             {
                 foreach (IDatasetElement element in _wfsDataset.Elements)
+                {
                     elements.Add(element);
+                }
             }
 
             return Task.FromResult(elements);
@@ -190,14 +190,18 @@ namespace gView.Interoperability.OGC.Dataset.WMS
         {
             if (_class != null && (
                 title == _class.Name || title.ToLower() == ConnectionString.ToLower()))
+            {
                 return Task.FromResult<IDatasetElement>(new DatasetElement(_class));
+            }
 
             if (_wfsDataset != null)
             {
                 foreach (IDatasetElement element in _wfsDataset.Elements)
                 {
                     if (element.Title == title)
+                    {
                         return Task.FromResult(element);
+                    }
                 }
             }
 
@@ -324,11 +328,16 @@ namespace gView.Interoperability.OGC.Dataset.WMS
                 for (i = pos + 1; i < xml.Length; i++)
                 {
                     if (xml[i] == '<')
+                    {
                         o++;
+                    }
                     else if (xml[i] == '>')
                     {
                         o--;
-                        if (o == 0) break;
+                        if (o == 0)
+                        {
+                            break;
+                        }
                     }
                 }
 
@@ -345,9 +354,13 @@ namespace gView.Interoperability.OGC.Dataset.WMS
         {
             string c = "?";
             if (url.EndsWith("?") || url.EndsWith("&"))
+            {
                 c = "";
+            }
             else if (url.Contains("?"))
+            {
                 c = "&";
+            }
 
             return url + c + parameters;
         }

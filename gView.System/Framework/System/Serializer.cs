@@ -1,10 +1,9 @@
 using System;
-using System.Collections.Generic;
-using System.Text;
 using System.IO;
-using System.Xml.Serialization;
 using System.Net;
+using System.Text;
 using System.Xml;
+using System.Xml.Serialization;
 
 namespace gView.Framework.system
 {
@@ -30,7 +29,11 @@ namespace gView.Framework.system
         {
             HttpWebRequest wReq = (HttpWebRequest)HttpWebRequest.Create(url);
 
-            if (proxy != null) wReq.Proxy = proxy;
+            if (proxy != null)
+            {
+                wReq.Proxy = proxy;
+            }
+
             wReq.Timeout = 360000;
             HttpWebResponse wresp = (HttpWebResponse)wReq.GetResponse();
 
@@ -45,7 +48,10 @@ namespace gView.Framework.system
             while (Bytes2Read > 0)
             {
                 int len = stream.Read(b, 0, Bytes2Read);
-                if (len == 0) break;
+                if (len == 0)
+                {
+                    break;
+                }
 
                 memStream.Write(b, 0, len);
             }
@@ -60,15 +66,20 @@ namespace gView.Framework.system
         public string Serialize(T o, XmlSerializerNamespaces ns)
         {
             XmlSerializer ser = new XmlSerializer(typeof(T));
-            
+
             MemoryStream ms = new MemoryStream();
             UTF8Encoding utf8e = new UTF8Encoding();
             XmlTextWriter xmlSink = new XmlTextWriter(ms, utf8e);
             xmlSink.Formatting = Formatting.Indented;
             if (ns != null)
+            {
                 ser.Serialize(xmlSink, o, ns);
+            }
             else
+            {
                 ser.Serialize(xmlSink, o);
+            }
+
             byte[] utf8EncodedData = ms.ToArray();
             return utf8e.GetString(utf8EncodedData);
         }

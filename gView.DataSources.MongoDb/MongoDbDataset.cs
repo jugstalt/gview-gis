@@ -47,7 +47,7 @@ namespace gView.DataSources.MongoDb
                     throw new Exception($"Featureclass {fcname} already exists");
                 }
 
-                if(BeforeCreateFeatureClass!=null)
+                if (BeforeCreateFeatureClass != null)
                 {
                     geomDef = BeforeCreateFeatureClass(fcname, geomDef);
                 }

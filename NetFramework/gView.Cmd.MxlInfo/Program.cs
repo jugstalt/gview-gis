@@ -6,7 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 
 namespace gView.Cmd.MxlInfo
-{ 
+{
     internal class Program
     {
         private static async Task<int> Main(string[] args)
@@ -61,7 +61,9 @@ namespace gView.Cmd.MxlInfo
                             foreach (var dsElement in map.MapElements.Where(e => e.DatasetID == datasetID))
                             {
                                 if (dsElement?.Class == null)
+                                {
                                     continue;
+                                }
 
                                 var featureLayer = featureLayers.Where(l => l.DatasetID == datasetID && l.Class == dsElement.Class)
                                                                 .FirstOrDefault();

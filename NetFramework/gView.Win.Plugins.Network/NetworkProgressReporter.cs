@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using gView.Framework.system;
 using gView.Framework.UI;
-using gView.Framework.system;
 
 namespace gView.Plugins.Network
 {
@@ -35,7 +32,9 @@ namespace gView.Plugins.Network
         public void FireProgressReporter(ProgressReport progressEventReport)
         {
             if (ReportProgress != null)
+            {
                 ReportProgress(progressEventReport);
+            }
         }
     }
 }

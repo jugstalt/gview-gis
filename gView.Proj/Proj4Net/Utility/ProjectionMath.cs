@@ -24,7 +24,7 @@ namespace Proj4Net.Utility
         public const double Pi = Math.PI;
         public const double PiHalf = Math.PI / 2.0;
         [Obsolete("Use PiHalf")] public const double PIHalf = PiHalf;
-        public const double PiFourth = Math.PI/4.0;
+        public const double PiFourth = Math.PI / 4.0;
         [Obsolete("Use PiFourth")] public const double PIFourth = PiFourth;
         [Obsolete("Use PiFourth")]
         public const double FORTPI = PiFourth;
@@ -35,7 +35,7 @@ namespace Proj4Net.Utility
         //public readonly static Rectangle2D WorldBoundsRad = new Rectangle2D.Double(-Math.PI, -Math.PI/2, Math.PI*2, Math.PI);
         //public readonly static Rectangle2D WorldBounds = new Rectangle2D.Double(-180, -90, 360, 180);
 
-	    public const double EPS10 = 1.0e-10;
+        public const double EPS10 = 1.0e-10;
 
         /// <summary>
         /// Converts radians to degrees
@@ -97,7 +97,10 @@ namespace Proj4Net.Utility
         public static double Asin(double v)
         {
             if (Math.Abs(v) > 1.0d)
+            {
                 return v < 0.0 ? -ProjectionMath.PiHalf : ProjectionMath.PiHalf;
+            }
+
             return Math.Asin(v);
         }
 
@@ -105,7 +108,10 @@ namespace Proj4Net.Utility
         public static double Acos(double v)
         {
             if (Math.Abs(v) > 1.0d)
+            {
                 return v < 0.0 ? Pi : 0.0;
+            }
+
             return Math.Acos(v);
         }
 
@@ -127,13 +133,23 @@ namespace Proj4Net.Utility
         public static double Hypot(double x, double y)
         {
             if (x < 0.0)
+            {
                 x = -x;
+            }
             else if (x == 0.0)
+            {
                 return y < 0.0 ? -y : y;
+            }
+
             if (y < 0.0)
+            {
                 y = -y;
+            }
             else if (y == 0.0)
+            {
                 return x;
+            }
+
             if (x < y)
             {
                 x /= y;
@@ -203,7 +219,10 @@ namespace Proj4Net.Utility
         public static double DegreesMinutesSecondsToDegrees(double d, double m, double s)
         {
             if (d >= 0)
+            {
                 return (d + m / 60 + s / 3600);
+            }
+
             return (d - m / 60 - s / 3600);
         }
 
@@ -215,11 +234,20 @@ namespace Proj4Net.Utility
         public static double NormalizeLatitude(double angle)
         {
             if (Double.IsInfinity(angle) || Double.IsNaN(angle))
+            {
                 throw new ArgumentException("Infinite latitude", "angle");
+            }
+
             while (angle > ProjectionMath.PiHalf)
+            {
                 angle -= Math.PI;
+            }
+
             while (angle < -ProjectionMath.PiHalf)
+            {
                 angle += Math.PI;
+            }
+
             return angle;
             //		return Math.IEEEremainder(angle, Math.PI);
         }
@@ -232,11 +260,20 @@ namespace Proj4Net.Utility
         public static double NormalizeLongitude(double angle)
         {
             if (Double.IsInfinity(angle) || Double.IsNaN(angle))
+            {
                 throw new ArgumentException("Infinite longitude", "angle");
+            }
+
             while (angle > Math.PI)
+            {
                 angle -= TwoPI;
+            }
+
             while (angle < -Math.PI)
+            {
                 angle += TwoPI;
+            }
+
             return angle;
             //		return Math.IEEEremainder(angle, Math.PI);
         }
@@ -244,11 +281,20 @@ namespace Proj4Net.Utility
         public static double NormalizeAngle(double angle)
         {
             if (Double.IsInfinity(angle) || Double.IsNaN(angle))
+            {
                 throw new ArgumentException("Infinite angle", "angle");
+            }
+
             while (angle > TwoPI)
+            {
                 angle -= TwoPI;
+            }
+
             while (angle < 0)
+            {
                 angle += TwoPI;
+            }
+
             return angle;
         }
 
@@ -300,7 +346,10 @@ namespace Proj4Net.Utility
         {
             a = Math.Abs(a);
             if (b < 0)
+            {
                 return -a;
+            }
+
             return a;
         }
 
@@ -308,7 +357,10 @@ namespace Proj4Net.Utility
         {
             a = Math.Abs(a);
             if (b < 0)
+            {
                 return -a;
+            }
+
             return a;
         }
         /*
@@ -450,7 +502,10 @@ namespace Proj4Net.Utility
                 phi += dphi;
             } while (Math.Abs(dphi) > 1e-10 && --i != 0);
             if (i <= 0)
+            {
                 throw new ConvergenceFailureException("Computation of phi2 failed to converage after " + NumberOfIteratations + " iterations");
+            }
+
             return phi;
         }
 
@@ -498,7 +553,9 @@ namespace Proj4Net.Utility
                 t = 1d - es * s * s;
                 phi -= t = (mlfn(phi, s, Math.Cos(phi), en) - arg) * (t * Math.Sqrt(t)) * k;
                 if (Math.Abs(t) < 1e-11)
+                {
                     return phi;
+                }
             }
             return phi;
         }
@@ -559,22 +616,39 @@ namespace Proj4Net.Utility
             if (round)
             {
                 if (f < 1.5)
+                {
                     nf = 1d;
+                }
                 else if (f < 3d)
+                {
                     nf = 2d;
+                }
                 else if (f < 7d)
+                {
                     nf = 5d;
+                }
                 else
+                {
                     nf = 10d;
+                }
             }
             else if (f <= 1d)
+            {
                 nf = 1d;
+            }
             else if (f <= 2d)
+            {
                 nf = 2d;
+            }
             else if (f <= 5d)
+            {
                 nf = 5d;
+            }
             else
+            {
                 nf = 10d;
+            }
+
             return nf * Math.Pow(10d, expv);
         }
 
@@ -598,7 +672,11 @@ namespace Proj4Net.Utility
         [Obsolete("Use NormalizeAngle")]
         public static double Adjlon(double lon)
         {
-            if (Math.Abs(lon) <= Math.PI) return (lon);
+            if (Math.Abs(lon) <= Math.PI)
+            {
+                return (lon);
+            }
+
             lon += Math.PI;  /* adjust to 0..2pi rad */
             lon -= 2 * Math.PI * Math.Floor(lon / (2 * Math.PI)); /* remove integral # of 'revolutions'*/
             lon -= Math.PI;  /* adjust back to -pi..pi rad */

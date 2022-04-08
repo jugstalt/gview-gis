@@ -1,13 +1,9 @@
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Text;
-using System.Windows.Forms;
-using gView.Framework.UI;
 using gView.Framework.Data;
 using gView.Framework.system;
+using gView.Framework.UI;
+using System;
+using System.Drawing;
+using System.Windows.Forms;
 
 namespace gView.Plugins.Editor.Dialogs
 {
@@ -28,7 +24,11 @@ namespace gView.Plugins.Editor.Dialogs
 
             _module = module;
 
-            if (_module == null) return;
+            if (_module == null)
+            {
+                return;
+            }
+
             _module.OnChangeSelectedFeature += new Module.OnChangeSelectedFeatureEventHandler(Module_OnChangeSelectedFeature);
             _module.OnCreateStandardFeature += new Module.OnCreateStandardFeatureEventHandler(Module_OnChangeSelectedFeature);
         }
@@ -73,7 +73,10 @@ namespace gView.Plugins.Editor.Dialogs
 
         private void MakeGUI()
         {
-            if (_module == null) return;
+            if (_module == null)
+            {
+                return;
+            }
 
             attributeControl.RefreshGUI();
         }

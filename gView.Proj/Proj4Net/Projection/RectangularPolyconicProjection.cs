@@ -13,8 +13,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-using System;
 using GeoAPI.Geometries;
+using System;
 
 namespace Proj4Net.Projection
 {
@@ -35,9 +35,14 @@ namespace Proj4Net.Projection
             double fa;
 
             if (mode)
+            {
                 fa = Math.Tan(lplam * fxb) * fxa;
+            }
             else
+            {
                 fa = 0.5 * lplam;
+            }
+
             if (Math.Abs(lpphi) < EPS)
             {
                 xy.Y = fa + fa;

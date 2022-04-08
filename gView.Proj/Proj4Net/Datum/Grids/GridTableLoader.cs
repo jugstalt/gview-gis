@@ -26,7 +26,10 @@ namespace Proj4Net.Datum.Grids
         protected Stream OpenGridTableStream()
         {
             if (UriEx.IsFile(_uri))
+            {
                 return File.OpenRead(_uri.LocalPath);
+            }
+
             throw new NotSupportedException();
         }
 
@@ -36,7 +39,7 @@ namespace Proj4Net.Datum.Grids
         /// <param name="table">The grid tabel to initialize</param>
         /// <returns>true if the header could be read.</returns>
         internal abstract bool ReadHeader(GridTable table);
-        
+
         /// <summary>
         /// Parses the grid table data
         /// </summary>
@@ -48,7 +51,10 @@ namespace Proj4Net.Datum.Grids
         {
             var bytes = reader.ReadBytes(8);
             if (BitConverter.IsLittleEndian)
+            {
                 Array.Reverse(bytes);
+            }
+
             return BitConverter.ToDouble(bytes, 0);
         }
 
@@ -57,7 +63,10 @@ namespace Proj4Net.Datum.Grids
             var bytes = new byte[8];
             Buffer.BlockCopy(bytes, offset, bytes, 0, 8);
             if (BitConverter.IsLittleEndian)
+            {
                 Array.Reverse(bytes);
+            }
+
             return BitConverter.ToDouble(bytes, 0);
         }
     }

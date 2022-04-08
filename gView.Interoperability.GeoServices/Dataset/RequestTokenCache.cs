@@ -5,7 +5,6 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Concurrent;
 using System.Net;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace gView.Interoperability.GeoServices.Dataset

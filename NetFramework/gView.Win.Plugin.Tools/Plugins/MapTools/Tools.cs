@@ -1,15 +1,12 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-using gView.Framework.UI;
-using gView.Framework.UI.Events;
+using gView.Framework.Carto;
 using gView.Framework.Data;
 using gView.Framework.Geometry;
-using gView.Framework.Carto;
-using gView.Framework.UI.Dialogs;
-using gView.Framework.system;
 using gView.Framework.Globalisation;
+using gView.Framework.UI;
 using gView.Framework.UI.Controls.Filter;
+using gView.Framework.UI.Dialogs;
+using gView.Framework.UI.Events;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace gView.Plugins.MapTools
@@ -25,10 +22,16 @@ namespace gView.Plugins.MapTools
         {
             get
             {
-                if (_doc == null || _doc.Application == null) return false;
+                if (_doc == null || _doc.Application == null)
+                {
+                    return false;
+                }
 
                 if (_doc.Application is IMapApplication &&
-                    ((IMapApplication)_doc.Application).ReadOnly == true) return false;
+                    ((IMapApplication)_doc.Application).ReadOnly == true)
+                {
+                    return false;
+                }
 
                 //LicenseTypes lt = _doc.Application.ComponentLicenseType("gview.desktop;gview.map");
                 //return (lt == LicenseTypes.Licensed || lt == LicenseTypes.Express);
@@ -44,13 +47,17 @@ namespace gView.Plugins.MapTools
         public void OnCreate(object hook)
         {
             if (hook is IMapDocument)
+            {
                 _doc = hook as IMapDocument;
+            }
         }
 
         async public Task<bool> OnEvent(object MapEvent)
         {
             if (!(MapEvent is MapEvent))
+            {
                 return false;
+            }
 
             IMap map = ((MapEvent)MapEvent).Map;
 
@@ -71,7 +78,9 @@ namespace gView.Plugins.MapTools
                     if (((MapEvent)MapEvent).UserData == null)
                     {
                         if (datasetProps.ShowDialog() != System.Windows.Forms.DialogResult.OK)
+                        {
                             return true;
+                        }
                     }
                 }
                 catch  // Kann ObjectDisposed Exception werfen...
@@ -109,7 +118,9 @@ namespace gView.Plugins.MapTools
                             foreach (string p in map.Display.SpatialReference.Parameters)
                             {
                                 if (p.ToLower().Trim() == "+nadgrids=@null")
+                                {
                                     found = false;
+                                }
                             }
                             if (found)
                             {
@@ -119,17 +130,25 @@ namespace gView.Plugins.MapTools
                             {
                                 IGeometry geom = GeometricTransformerFactory.Transform2D(classEnv.ToPolygon(0), sRef, map.Display.SpatialReference);
                                 if (geom != null)
+                                {
                                     classEnv = geom.Envelope;
+                                }
                                 else
+                                {
                                     classEnv = null;
+                                }
                             }
                         }
                         if (classEnv != null)
                         {
                             if (env == null)
+                            {
                                 env = new Envelope(classEnv);
+                            }
                             else
+                            {
                                 env.Union(classEnv);
+                            }
                         }
                     }
 

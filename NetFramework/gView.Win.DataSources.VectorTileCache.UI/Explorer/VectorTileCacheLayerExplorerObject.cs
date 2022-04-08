@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using gView.Framework.Data;
 using gView.Framework.system.UI;
 using gView.Framework.UI;
-using gView.Framework.IO;
-using System.Windows.Forms;
-using gView.Framework.Data;
 using System.Threading.Tasks;
 
 namespace gView.Win.DataSources.VectorTileCache.UI.Explorer
@@ -23,7 +17,10 @@ namespace gView.Win.DataSources.VectorTileCache.UI.Explorer
         public VectorTileCacheLayerExplorerObject(VectorTileCacheDatasetExplorerObject parent, IDatasetElement element)
             : base(parent, typeof(FeatureClass), 1)
         {
-            if (element == null) return;
+            if (element == null)
+            {
+                return;
+            }
 
             _parent = parent;
             _fcname = element.Title;
@@ -76,21 +73,31 @@ namespace gView.Win.DataSources.VectorTileCache.UI.Explorer
         async public Task<IExplorerObject> CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache cache)
         {
             if (cache.Contains(FullName))
+            {
                 return cache[FullName];
+            }
 
             FullName = FullName.Replace("/", @"\");
             int lastIndex = FullName.LastIndexOf(@"\");
-            if (lastIndex == -1) return null;
+            if (lastIndex == -1)
+            {
+                return null;
+            }
 
             string[] parts = FullName.Split('\\');
-            if (parts.Length != 3) return null;
+            if (parts.Length != 3)
+            {
+                return null;
+            }
 
             var parent = new VectorTileCacheDatasetExplorerObject();
 
             parent = await parent.CreateInstanceByFullName(parts[0] + @"\" + parts[1], cache) as VectorTileCacheDatasetExplorerObject;
 
             if (parent == null)
+            {
                 return null;
+            }
 
             var childObjects = await parent.ChildObjects();
             if (childObjects != null)

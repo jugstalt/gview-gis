@@ -2,10 +2,7 @@
 using gView.Framework.Geometry;
 using gView.Framework.IO;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace gView.DataSources.EventTable
 {
@@ -70,7 +67,9 @@ namespace gView.DataSources.EventTable
 
             string sr = (string)stream.Load("sref", String.Empty);
             if (String.IsNullOrEmpty(sr))
+            {
                 _sRef = null;
+            }
             else
             {
                 _sRef = new SpatialReference();
@@ -86,7 +85,9 @@ namespace gView.DataSources.EventTable
             stream.Save("xfield", _xField);
             stream.Save("yfield", _yField);
             if (_sRef != null)
+            {
                 stream.Save("sref", _sRef.ToXmlString());
+            }
         }
 
         #endregion

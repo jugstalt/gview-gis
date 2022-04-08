@@ -1,12 +1,7 @@
 ﻿using gView.Framework.Carto.UI;
 using gView.Framework.Symbology;
 using gView.Framework.Sys.UI.Extensions;
-using System;
-using System.Collections.Generic;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace gView.Win.Carto.Rendering.UI.Framework.Carto.Rendering.Extensions
 {

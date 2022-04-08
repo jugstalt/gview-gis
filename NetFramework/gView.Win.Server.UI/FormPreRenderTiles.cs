@@ -1,24 +1,21 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Text;
-using System.Windows.Forms;
-using gView.MapServer;
-using gView.Framework.IO;
-using gView.Framework.UI.Dialogs;
-using gView.Framework.UI;
-using gView.Framework.system;
-using System.Threading;
-using gView.Framework.Metadata;
-using gView.Framework.Geometry;
-using gView.Framework.Carto;
+﻿using gView.Framework.Carto;
 using gView.Framework.Data;
+using gView.Framework.Geometry;
 using gView.Framework.Geometry.Tiling;
+using gView.Framework.IO;
+using gView.Framework.Metadata;
+using gView.Framework.system;
+using gView.Framework.UI;
 using gView.Framework.UI.Controls.Filter;
-using gView.Server.Connector;
+using gView.Framework.UI.Dialogs;
 using gView.Interoperability.Server;
+using gView.Server.Connector;
+using System;
+using System.Collections.Generic;
+using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace gView.MapServer.Lib.UI
 {
@@ -50,7 +47,9 @@ namespace gView.MapServer.Lib.UI
                     cmbEpsg.Items.Add(epsg);
                 }
                 if (cmbEpsg.Items.Count > 0)
+                {
                     cmbEpsg.SelectedIndex = 0;
+                }
             }
 
             if (_mapServerClass != null && _mapServerClass.Dataset != null)
@@ -62,22 +61,39 @@ namespace gView.MapServer.Lib.UI
             numMaxParallelRequest.Value = _maxParallelRequests;
 
             if (metadata.FormatPng)
+            {
                 cmbImageFormat.Items.Add("image/png");
+            }
+
             if (metadata.FormatJpg)
+            {
                 cmbImageFormat.Items.Add("image/jpeg");
+            }
 
             if (metadata.UpperLeft && metadata.UpperLeftCacheTiles)
+            {
                 cmbOrigin.Items.Add("Upper Left");
+            }
+
             if (metadata.LowerLeft && metadata.LowerLeftCacheTiles)
+            {
                 cmbOrigin.Items.Add("Lower Left");
+            }
 
             if (cmbImageFormat.Items.Count > 0)
+            {
                 cmbImageFormat.SelectedIndex = 0;
+            }
+
             if (cmbOrigin.Items.Count > 0)
+            {
                 cmbOrigin.SelectedIndex = 0;
+            }
 
             if (cmbCacheFormat.Items.Count > 0)
+            {
                 cmbCacheFormat.SelectedIndex = 0;
+            }
         }
 
         private void cmbEpsg_SelectedIndexChanged(object sender, EventArgs e)
@@ -85,15 +101,21 @@ namespace gView.MapServer.Lib.UI
             lstScales.Items.Clear();
 
             if (_metadata == null)
+            {
                 return;
+            }
 
             ISpatialReference sRef = SpatialReference.FromID("epsg:" + cmbEpsg.SelectedItem.ToString());
             if (sRef == null)
+            {
                 return;
+            }
 
             IEnvelope extent = _metadata.GetEPSGEnvelope((int)cmbEpsg.SelectedItem);
             if (extent == null)
+            {
                 return;
+            }
 
             double width = extent.Width;
             double height = extent.Height;
@@ -131,7 +153,9 @@ namespace gView.MapServer.Lib.UI
                     geometricTransformer.SetSpatialReferences(oldSRef, newSRef);
                     IGeometry geom = geometricTransformer.Transform2D(this.CurrentExtent) as IGeometry;
                     if (geom != null)
+                    {
                         this.CurrentExtent = geom.Envelope;
+                    }
                 }
             }
             lblEpsg.Text = "(EPSG:" + (cmbEpsg.SelectedItem != null ? cmbEpsg.SelectedItem.ToString() : "0") + ")";
@@ -143,7 +167,9 @@ namespace gView.MapServer.Lib.UI
             foreach (ListViewItem item in lstScales.Items)
             {
                 if (item.Checked)
+                {
                     _preRenderScales.Add(double.Parse(item.Text.Replace(",", "."), _nhi));
+                }
             }
 
             _maxParallelRequests = (int)numMaxParallelRequest.Value;
@@ -167,9 +193,13 @@ namespace gView.MapServer.Lib.UI
             }
             _selectedEpsg = (int)cmbEpsg.SelectedItem;
             if (chkUseExtent.Checked == true)
+            {
                 _bounds = this.CurrentExtent;
+            }
             else
+            {
                 _bounds = null;
+            }
 
             _cacheFormat = cmbCacheFormat.SelectedItem.ToString().ToLower();
 
@@ -182,7 +212,7 @@ namespace gView.MapServer.Lib.UI
             Thread thread = new Thread(new ThreadStart(RunThread));
             thread.Start();
 
-            while(thread.IsAlive)
+            while (thread.IsAlive)
             {
                 await Task.Delay(100);
             }
@@ -190,7 +220,9 @@ namespace gView.MapServer.Lib.UI
         private void RunThread()
         {
             if (_metadata == null || _mapServerClass == null || _mapServerClass.Dataset == null || _preRenderScales.Count == 0)
+            {
                 return;
+            }
 
             //await Task.Delay(1000);
 
@@ -201,13 +233,20 @@ namespace gView.MapServer.Lib.UI
 
             ISpatialReference sRef = SpatialReference.FromID("epsg:" + _selectedEpsg);
             if (sRef == null)
+            {
                 return;
+            }
 
             IEnvelope extent = _metadata.GetEPSGEnvelope(_selectedEpsg);
             if (extent == null)
+            {
                 return;
+            }
+
             if (_bounds == null)
+            {
                 _bounds = extent;
+            }
 
             double width = extent.Width;
             double height = extent.Height;
@@ -223,8 +262,8 @@ namespace gView.MapServer.Lib.UI
                 (_orientation == GridOrientation.UpperLeft ?
                     _metadata.GetOriginUpperLeft(_selectedEpsg) :
                     _metadata.GetOriginLowerLeft(_selectedEpsg)),
-                    /*new Point(extent.minx, extent.maxy) :
-                    new Point(extent.minx, extent.miny))*/
+                /*new Point(extent.minx, extent.maxy) :
+                new Point(extent.minx, extent.miny))*/
                 _metadata.TileWidth, _metadata.TileHeight, 96.0,
                 _orientation);
 
@@ -259,9 +298,13 @@ namespace gView.MapServer.Lib.UI
 
             var thread = threadPool.FreeThread;
             if (_orientation == GridOrientation.UpperLeft)
-                thread.Start("init/" + _cacheFormat + "/ul/" + cmbEpsg.SelectedItem.ToString() + "/" +  _imgExt.Replace(".",""));
+            {
+                thread.Start("init/" + _cacheFormat + "/ul/" + cmbEpsg.SelectedItem.ToString() + "/" + _imgExt.Replace(".", ""));
+            }
             else
-                thread.Start("init/" + _cacheFormat + "/ll/" + cmbEpsg.SelectedItem.ToString() + "/" +  _imgExt.Replace(".", ""));
+            {
+                thread.Start("init/" + _cacheFormat + "/ll/" + cmbEpsg.SelectedItem.ToString() + "/" + _imgExt.Replace(".", ""));
+            }
 
             foreach (double scale in _preRenderScales)
             {
@@ -281,7 +324,7 @@ namespace gView.MapServer.Lib.UI
 
                 string boundingTiles = _cacheFormat == "compact" ? "/" + row0 + "|" + (row0 + rows) + "|" + col0 + "|" + (col0 + cols) : String.Empty;
 
-                for (int row = row0; row < (row0 + rows)+(step-1); row += step)
+                for (int row = row0; row < (row0 + rows) + (step - 1); row += step)
                 {
                     for (int col = col0; col < (col0 + cols) + (step - 1); col += step)
                     {
@@ -289,21 +332,31 @@ namespace gView.MapServer.Lib.UI
                         {
                             Thread.Sleep(50);
                             if (!_cancelTracker.Continue)
+                            {
                                 return;
+                            }
                         }
                         if (_orientation == GridOrientation.UpperLeft)
+                        {
                             thread.Start("tile:render/" + _cacheFormat + "/ul/" + cmbEpsg.SelectedItem.ToString() + "/" + scale.ToString(_nhi) + "/" + row + "/" + col + _imgExt + boundingTiles);
+                        }
                         else
+                        {
                             thread.Start("tile:render/" + _cacheFormat + "/ll/" + cmbEpsg.SelectedItem.ToString() + "/" + scale.ToString(_nhi) + "/" + row + "/" + col + _imgExt + boundingTiles);
+                        }
 
                         if (ReportProgress != null)
                         {
                             report.featurePos++;
                             if (report.featurePos % 5 == 0 || _cacheFormat == "compact")
+                            {
                                 ReportProgress(report);
+                            }
                         }
                         if (!_cancelTracker.Continue)
+                        {
                             return;
+                        }
                     }
                 }
             }
@@ -468,7 +521,9 @@ namespace gView.MapServer.Lib.UI
                     geometricTransformer.SetSpatialReferences(classSRef, sRef);
                     IGeometry geom = geometricTransformer.Transform2D(envelope) as IGeometry;
                     if (geom == null)
+                    {
                         return null;
+                    }
 
                     envelope = geom.Envelope;
                 }
@@ -493,8 +548,10 @@ namespace gView.MapServer.Lib.UI
                 foreach (IExplorerObject exObject in dlg.ExplorerObjects)
                 {
                     var objectInstance = await exObject?.GetInstanceAsync();
-                    if (objectInstance == null) 
+                    if (objectInstance == null)
+                    {
                         continue;
+                    }
 
                     IEnvelope objEnvelope = null;
 
@@ -502,7 +559,11 @@ namespace gView.MapServer.Lib.UI
                     {
                         foreach (IDatasetElement element in await ((IDataset)objectInstance).Elements())
                         {
-                            if (element == null) continue;
+                            if (element == null)
+                            {
+                                continue;
+                            }
+
                             objEnvelope = ClassEnvelope(element.Class, sRef);
                         }
                     }
@@ -514,9 +575,13 @@ namespace gView.MapServer.Lib.UI
                     if (objEnvelope != null)
                     {
                         if (bounds == null)
+                        {
                             bounds = new Envelope(objEnvelope);
+                        }
                         else
+                        {
                             bounds.Union(objEnvelope);
+                        }
                     }
                 }
 

@@ -1,13 +1,10 @@
-using System;
-using System.Xml;
-using System.Drawing;
-using System.Collections;
-using System.ComponentModel;
-using System.Windows.Forms;
-using System.Text;
-using gView.Framework.Db;
-using System.Collections.Generic;
 using gView.Framework.system;
+using System;
+using System.Collections.Generic;
+using System.Drawing;
+using System.Text;
+using System.Windows.Forms;
+using System.Xml;
 
 namespace gView.Framework.Db.UI
 {
@@ -51,7 +48,9 @@ namespace gView.Framework.Db.UI
         {
             _initialConnString = initialConnString;
             if (_initialConnString != null)
+            {
                 _useProvider = _initialConnString.UseProviderInConnectionString;
+            }
         }
 
         /// <summary>
@@ -206,7 +205,7 @@ namespace gView.Framework.Db.UI
             LoadXml();
         }
 
-        private float FontScaleFactor {get;set;}
+        private float FontScaleFactor { get; set; }
 
         private string _providerID = String.Empty;
         public string ProviderID
@@ -228,7 +227,10 @@ namespace gView.Framework.Db.UI
         private bool _xmlLoaded = false;
         private void LoadXml()
         {
-            if (_xmlLoaded) return;
+            if (_xmlLoaded)
+            {
+                return;
+            }
 
             try
             {
@@ -253,10 +255,17 @@ namespace gView.Framework.Db.UI
                                 break;
                             }
                         }
-                        if (!found) continue;
+                        if (!found)
+                        {
+                            continue;
+                        }
                     }
 
-                    if (provider.Attributes["name"] == null) continue;
+                    if (provider.Attributes["name"] == null)
+                    {
+                        continue;
+                    }
+
                     cmbConnections.Items.Add(new ConnectionItem(provider));
 
                     if (_initialConnString != null &&
@@ -266,7 +275,10 @@ namespace gView.Framework.Db.UI
                     }
                 }
                 if (cmbConnections.Items.Count > 0 &&
-                    cmbConnections.SelectedIndex == -1) cmbConnections.SelectedIndex = 0;
+                    cmbConnections.SelectedIndex == -1)
+                {
+                    cmbConnections.SelectedIndex = 0;
+                }
             }
             catch (Exception ex)
             {
@@ -281,37 +293,43 @@ namespace gView.Framework.Db.UI
             }
         }
 
-		private void cmbConnections_SelectedIndexChanged(object sender, System.EventArgs e)
-		{
-			if(cmbConnections.SelectedItem is ConnectionItem) 
-			{
-				ConnectionItem item=(ConnectionItem)cmbConnections.SelectedItem;
-				cmbTypes.Items.Clear();
-				foreach(string name in item.ConnectionSchemas) 
-				{
-					cmbTypes.Items.Add(name);
+        private void cmbConnections_SelectedIndexChanged(object sender, System.EventArgs e)
+        {
+            if (cmbConnections.SelectedItem is ConnectionItem)
+            {
+                ConnectionItem item = (ConnectionItem)cmbConnections.SelectedItem;
+                cmbTypes.Items.Clear();
+                foreach (string name in item.ConnectionSchemas)
+                {
+                    cmbTypes.Items.Add(name);
                     if (_initialConnString != null &&
                         name == _initialConnString.SchemaName)
                     {
                         cmbTypes.SelectedIndex = cmbTypes.Items.Count - 1;
                     }
-				}
+                }
                 if (cmbTypes.Items.Count > 0 &&
-                    cmbTypes.SelectedIndex == -1) cmbTypes.SelectedIndex = 0;
-			}
-		}
-        
-		private string _connectionString="";
-		public string ConnectionString 
-		{
-			get { return _connectionString; }
-		}
+                    cmbTypes.SelectedIndex == -1)
+                {
+                    cmbTypes.SelectedIndex = 0;
+                }
+            }
+        }
+
+        private string _connectionString = "";
+        public string ConnectionString
+        {
+            get { return _connectionString; }
+        }
         public DbConnectionString DbConnectionString
         {
             get
             {
                 if (!(cmbConnections.SelectedItem is ConnectionItem) ||
-                    cmbTypes.SelectedItem == null) return null;
+                    cmbTypes.SelectedItem == null)
+                {
+                    return null;
+                }
 
                 DbConnectionString dbConnString = new DbConnectionString();
 
@@ -320,7 +338,10 @@ namespace gView.Framework.Db.UI
                 dbConnString.UseProviderInConnectionString = _useProvider;
 
                 string[] parameters = Parameters();
-                if (parameters == null) return null;
+                if (parameters == null)
+                {
+                    return null;
+                }
 
                 foreach (string param in parameters)
                 {
@@ -336,46 +357,73 @@ namespace gView.Framework.Db.UI
                 return dbConnString;
             }
         }
-		private string [] Parameters() 
-		{
-			if(cmbTypes.SelectedItem==null) return null;
-			if(cmbConnections.SelectedItem==null) return null;
+        private string[] Parameters()
+        {
+            if (cmbTypes.SelectedItem == null)
+            {
+                return null;
+            }
 
-			return Parameters(((ConnectionItem)cmbConnections.SelectedItem).ConnectionSchema(cmbTypes.SelectedItem.ToString()));
+            if (cmbConnections.SelectedItem == null)
+            {
+                return null;
+            }
 
-		}
+            return Parameters(((ConnectionItem)cmbConnections.SelectedItem).ConnectionSchema(cmbTypes.SelectedItem.ToString()));
 
-		private string [] Parameters(XmlNode ConnectionType) 
-		{
-            if (ConnectionType == null) return null;
+        }
 
-			string commandLine = _connectionString = ConnectionType.InnerText.Trim();
-			int pos1=0,pos2;
-			pos1=commandLine.IndexOf("[");
-			string parameters="";
+        private string[] Parameters(XmlNode ConnectionType)
+        {
+            if (ConnectionType == null)
+            {
+                return null;
+            }
 
-			while(pos1!=-1) 
-			{
-				pos2=commandLine.IndexOf("]",pos1);
-				if(pos2==-1) break;
-				if(parameters!="") parameters+=";";
-				parameters+=commandLine.Substring(pos1+1,pos2-pos1-1);
-				pos1=commandLine.IndexOf("[",pos2);
-			}
-			if(parameters!="")
-				return parameters.Split(';');
-			else 
-				return null;
-			
-		}
+            string commandLine = _connectionString = ConnectionType.InnerText.Trim();
+            int pos1 = 0, pos2;
+            pos1 = commandLine.IndexOf("[");
+            string parameters = "";
+
+            while (pos1 != -1)
+            {
+                pos2 = commandLine.IndexOf("]", pos1);
+                if (pos2 == -1)
+                {
+                    break;
+                }
+
+                if (parameters != "")
+                {
+                    parameters += ";";
+                }
+
+                parameters += commandLine.Substring(pos1 + 1, pos2 - pos1 - 1);
+                pos1 = commandLine.IndexOf("[", pos2);
+            }
+            if (parameters != "")
+            {
+                return parameters.Split(';');
+            }
+            else
+            {
+                return null;
+            }
+        }
 
         private void cmbTypes_SelectedIndexChanged(object sender, System.EventArgs e)
         {
-            if (cmbTypes.SelectedItem == null) return;
+            if (cmbTypes.SelectedItem == null)
+            {
+                return;
+            }
 
             panelParameters.Controls.Clear();
             string[] parameters = Parameters();
-            if (parameters == null) return;
+            if (parameters == null)
+            {
+                return;
+            }
 
             int i = 0;
             foreach (string param in parameters)
@@ -395,7 +443,9 @@ namespace gView.Framework.Db.UI
 
                 string v;
                 if (_values.TryGetValue(box.Name, out v))
+                {
                     box.Text = v;
+                }
 
                 box.TextChanged += new EventHandler(box_TextChanged);
                 if (param.ToLower().IndexOf("password") == 0)
@@ -420,7 +470,9 @@ namespace gView.Framework.Db.UI
                 if (_initialConnString != null)
                 {
                     if (_initialConnString.GetUserData(param) != null)
+                    {
                         box.Text = _initialConnString.GetUserData(param).ToString();
+                    }
                 }
                 i++;
             }
@@ -431,44 +483,50 @@ namespace gView.Framework.Db.UI
 
         void box_TextChanged(object sender, EventArgs e)
         {
-            if (!(sender is TextBox)) return;
+            if (!(sender is TextBox))
+            {
+                return;
+            }
 
             TextBox tb = sender as TextBox;
             _values.Remove(tb.Name);
             _values.Add(tb.Name, tb.Text);
         }
 
-		private void btnOK_Click(object sender, System.EventArgs e)
-		{
-			buildConnectionString(_useProvider);
-		}
+        private void btnOK_Click(object sender, System.EventArgs e)
+        {
+            buildConnectionString(_useProvider);
+        }
 
-		private void buildConnectionString(bool useProvider) 
-		{
-			string [] parameters=Parameters();
-			if(parameters==null) return;
+        private void buildConnectionString(bool useProvider)
+        {
+            string[] parameters = Parameters();
+            if (parameters == null)
+            {
+                return;
+            }
 
             _connectionString = ((useProvider) ? ((ConnectionItem)cmbConnections.SelectedItem).Provider + ":" : String.Empty)
                 + _connectionString;
 
-			foreach(string param in parameters) 
-			{
-				foreach(Control control in panelParameters.Controls) 
-				{
-					if(control is TextBox && control.Name=="box_"+param.Replace(" ","_")) 
-					{
-						_connectionString=_connectionString.Replace("["+param+"]",((TextBox)control).Text);
-					}
-				}
-			}
-		}
+            foreach (string param in parameters)
+            {
+                foreach (Control control in panelParameters.Controls)
+                {
+                    if (control is TextBox && control.Name == "box_" + param.Replace(" ", "_"))
+                    {
+                        _connectionString = _connectionString.Replace("[" + param + "]", ((TextBox)control).Text);
+                    }
+                }
+            }
+        }
 
-		private void button1_Click(object sender, System.EventArgs e)
-		{
+        private void button1_Click(object sender, System.EventArgs e)
+        {
             this.Cursor = Cursors.WaitCursor;
-			buildConnectionString(true);
+            buildConnectionString(true);
 
-			DataProvider provider=new DataProvider();
+            DataProvider provider = new DataProvider();
             try
             {
                 if (provider.Open(this.ConnectionString, true))
@@ -481,132 +539,167 @@ namespace gView.Framework.Db.UI
                 else
                 {
                     this.Cursor = Cursors.Default;
-                    MessageBox.Show(provider.lastErrorMessage,"Error",MessageBoxButtons.OK,MessageBoxIcon.Error);
+                    MessageBox.Show(provider.lastErrorMessage, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
             catch (Exception ex)
             {
                 this.Cursor = Cursors.Default;
-                MessageBox.Show(ex.Message,"Exception",MessageBoxButtons.OK,MessageBoxIcon.Error);
+                MessageBox.Show(ex.Message, "Exception", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
-		}
-	}
+        }
+    }
 
-	internal class ConnectionItem 
-	{
-		XmlNode _connection;
+    internal class ConnectionItem
+    {
+        XmlNode _connection;
 
-		public ConnectionItem(XmlNode connection) 
-		{
-			_connection=connection;
-		}
+        public ConnectionItem(XmlNode connection)
+        {
+            _connection = connection;
+        }
 
-		public string [] ConnectionSchemas 
-		{
-			get 
-			{
-				StringBuilder sb=new StringBuilder();
-				foreach(XmlNode type in _connection.SelectNodes("schema")) 
-				{
-					if(type.Attributes["name"]==null) continue;
-					if(sb.Length>0) sb.Append("|");
-					sb.Append(type.Attributes["name"].Value);
-				}
-				return sb.ToString().Split('|');
-			}
-		}
+        public string[] ConnectionSchemas
+        {
+            get
+            {
+                StringBuilder sb = new StringBuilder();
+                foreach (XmlNode type in _connection.SelectNodes("schema"))
+                {
+                    if (type.Attributes["name"] == null)
+                    {
+                        continue;
+                    }
 
-		public XmlNode ConnectionSchema(string name) 
-		{
-			return _connection.SelectSingleNode("schema[@name='"+name+"']");
-		}
+                    if (sb.Length > 0)
+                    {
+                        sb.Append("|");
+                    }
 
-		public string FileFilter(string schema) 
-		{
+                    sb.Append(type.Attributes["name"].Value);
+                }
+                return sb.ToString().Split('|');
+            }
+        }
+
+        public XmlNode ConnectionSchema(string name)
+        {
+            return _connection.SelectSingleNode("schema[@name='" + name + "']");
+        }
+
+        public string FileFilter(string schema)
+        {
             XmlNode schemaNode = _connection.SelectSingleNode("schema[@name='" + schema + "' and @filefilter]");
-            if (schemaNode == null || schemaNode.Attributes["filefilter"] == null) return String.Empty;
+            if (schemaNode == null || schemaNode.Attributes["filefilter"] == null)
+            {
+                return String.Empty;
+            }
 
             return schemaNode.Attributes["filefilter"].Value;
-		}
+        }
 
-		public string Provider 
-		{
-			get 
-			{
-				if(_connection.Attributes["provider"]==null) return "";
+        public string Provider
+        {
+            get
+            {
+                if (_connection.Attributes["provider"] == null)
+                {
+                    return "";
+                }
+
                 return _connection.Attributes["provider"].Value;
-			}
-		}
+            }
+        }
 
         public string ID
         {
             get
             {
-                if (_connection.Attributes["id"] == null) return "";
+                if (_connection.Attributes["id"] == null)
+                {
+                    return "";
+                }
+
                 return _connection.Attributes["id"].Value;
             }
         }
 
-		public override string ToString()
-		{
-			if(_connection==null) return "";
-			if(_connection.Attributes["name"]==null) return "";
-			return _connection.Attributes["name"].Value;
-		}
+        public override string ToString()
+        {
+            if (_connection == null)
+            {
+                return "";
+            }
 
-	}
+            if (_connection.Attributes["name"] == null)
+            {
+                return "";
+            }
 
-	internal class GetPathButton : Button 
-	{
-		public enum GetPathButtonType { file,folder }
+            return _connection.Attributes["name"].Value;
+        }
 
-		private GetPathButtonType _type;
-		private string _filter;
-		private TextBox _box;
+    }
 
-		public GetPathButton(GetPathButtonType type,TextBox box) : base() 
-		{
-			_type=type;
-			_box=box;
+    internal class GetPathButton : Button
+    {
+        public enum GetPathButtonType { file, folder }
 
-			this.Top=_box.Top;
-			this.Left=_box.Left+_box.Width;
-			this.Height=_box.Height;
-			this.Width=30;
-			this.Text="...";
-			this.FlatStyle=FlatStyle.Popup;
+        private GetPathButtonType _type;
+        private string _filter;
+        private TextBox _box;
 
-			this.Click+=new EventHandler(button_Click);
-		}
+        public GetPathButton(GetPathButtonType type, TextBox box) : base()
+        {
+            _type = type;
+            _box = box;
 
-		public string Filter 
-		{
-			set { _filter=value; }
-			get { return _filter; }
-		}
+            this.Top = _box.Top;
+            this.Left = _box.Left + _box.Width;
+            this.Height = _box.Height;
+            this.Width = 30;
+            this.Text = "...";
+            this.FlatStyle = FlatStyle.Popup;
 
-		private void button_Click(object sender, System.EventArgs e)
-		{
-			switch(_type) 
-			{
-				case GetPathButtonType.file:
-					OpenFileDialog dlg=new OpenFileDialog();
-					dlg.Filter=_filter;
-					if(_box!=null) dlg.FileName=_box.Text;
-					if(dlg.ShowDialog()==DialogResult.OK && _box!=null) 
-					{
-						_box.Text=dlg.FileName;
-					}
-					break;
-				case GetPathButtonType.folder:
-					FolderBrowserDialog fDlg=new FolderBrowserDialog();
-					if(_box!=null) fDlg.SelectedPath=_box.Text;
-					if(fDlg.ShowDialog()==DialogResult.OK && _box!=null) 
-					{
-						_box.Text=fDlg.SelectedPath;
-					}
-					break;
-			}
-		}
-	}
+            this.Click += new EventHandler(button_Click);
+        }
+
+        public string Filter
+        {
+            set { _filter = value; }
+            get { return _filter; }
+        }
+
+        private void button_Click(object sender, System.EventArgs e)
+        {
+            switch (_type)
+            {
+                case GetPathButtonType.file:
+                    OpenFileDialog dlg = new OpenFileDialog();
+                    dlg.Filter = _filter;
+                    if (_box != null)
+                    {
+                        dlg.FileName = _box.Text;
+                    }
+
+                    if (dlg.ShowDialog() == DialogResult.OK && _box != null)
+                    {
+                        _box.Text = dlg.FileName;
+                    }
+                    break;
+                case GetPathButtonType.folder:
+                    FolderBrowserDialog fDlg = new FolderBrowserDialog();
+                    if (_box != null)
+                    {
+                        fDlg.SelectedPath = _box.Text;
+                    }
+
+                    if (fDlg.ShowDialog() == DialogResult.OK && _box != null)
+                    {
+                        _box.Text = fDlg.SelectedPath;
+                    }
+                    break;
+            }
+        }
+    }
 }

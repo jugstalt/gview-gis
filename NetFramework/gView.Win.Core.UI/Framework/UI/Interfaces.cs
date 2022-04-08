@@ -5,7 +5,6 @@ using gView.Framework.IO;
 using gView.Framework.system;
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -92,7 +91,7 @@ namespace gView.Framework.UI
         System.Windows.Forms.ToolStripItem ToolItem { get; }
     }
 
-    public enum ToolItemLabelPosition { top = 0, bottom = 1,left=2,right=3 }
+    public enum ToolItemLabelPosition { top = 0, bottom = 1, left = 2, right = 3 }
     public interface IToolItemLabel
     {
         string Label { get; }
@@ -254,7 +253,7 @@ namespace gView.Framework.UI
             get;
             set;
         }
-        
+
         Task RefreshActiveMap(DrawPhase drawPhase);
         Task RefreshTOC();
         void RefreshTOCElement(IDatasetElement element);

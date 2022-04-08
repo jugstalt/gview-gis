@@ -1,12 +1,8 @@
+using gView.Framework.Globalisation;
+using gView.Framework.IO;
+using gView.Framework.UI;
 using System;
 using System.Collections.Generic;
-using System.Text;
-using System.Windows.Forms;
-using gView.Framework.system;
-using gView.Framework.IO;
-using gView.Framework.Globalisation;
-using gView.Framework.UI;
-using System.Threading.Tasks;
 
 namespace gView.Plugins.MapTools
 {
@@ -135,7 +131,7 @@ namespace gView.Plugins.MapTools
 
         public string Name
         {
-            get { return LocalizedResources.GetResString("Toolbars.Tools", "Tools");  }
+            get { return LocalizedResources.GetResString("Toolbars.Tools", "Tools"); }
         }
 
         public List<Guid> GUIDs
@@ -168,7 +164,7 @@ namespace gView.Plugins.MapTools
     }
 
     [gView.Framework.system.RegisterPlugIn("9FBD6EB9-9D41-475f-BEC4-1D983B1590BC")]
-    public class ScaleToolbar : IToolbar,IPersistable
+    public class ScaleToolbar : IToolbar, IPersistable
     {
         private bool _visible = true;
         private List<Guid> _guids;
@@ -194,7 +190,7 @@ namespace gView.Plugins.MapTools
             }
             set
             {
-                
+
             }
         }
 

@@ -1,14 +1,6 @@
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Text;
-using System.Windows.Forms;
-using gView.Framework.UI;
 using gView.Framework.Data;
-using gView.Framework.UI.Dialogs;
-using gView.Framework.Carto;
+using System;
+using System.Windows.Forms;
 
 namespace gView.Framework.UI.Dialogs
 {
@@ -31,9 +23,13 @@ namespace gView.Framework.UI.Dialogs
             if (_layer != null && _layer.FilterQuery != null)
             {
                 if (!String.IsNullOrEmpty(_layer.FilterQuery.JsonWhereClause))
+                {
                     txtExpression.Text = _layer.FilterQuery.JsonWhereClause;
+                }
                 else
+                {
                     txtExpression.Text = _layer.FilterQuery.WhereClause;
+                }
             }
             return panelPage;
         }
@@ -51,7 +47,10 @@ namespace gView.Framework.UI.Dialogs
 
         public void Commit()
         {
-            if (_layer == null) return;
+            if (_layer == null)
+            {
+                return;
+            }
 
             QueryFilter filter = new QueryFilter();
             filter.WhereClause = txtExpression.Text;
@@ -63,7 +62,10 @@ namespace gView.Framework.UI.Dialogs
 
         async private void btnQueryBuilder_Click(object sender, EventArgs e)
         {
-            if (_layer == null) return;
+            if (_layer == null)
+            {
+                return;
+            }
 
             FormQueryBuilder dlg = await FormQueryBuilder.CreateAsync(_layer);
             if (dlg.ShowDialog() == DialogResult.OK)

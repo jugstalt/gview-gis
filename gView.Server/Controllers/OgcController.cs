@@ -98,7 +98,7 @@ namespace gView.Server.Controllers
 
                 var response = serviceRequest.Response;
 
-                if(response is byte[])
+                if (response is byte[])
                 {
                     return Result((byte[])response, serviceRequest.ResponseContentType);
                 }
@@ -153,7 +153,7 @@ namespace gView.Server.Controllers
             var imageData = serviceRequest.Response as byte[];
             if (imageData != null)
             {
-                if(serviceRequest.ResponseExpries.HasValue)
+                if (serviceRequest.ResponseExpries.HasValue)
                 {
                     base.AppendEtag(serviceRequest.ResponseExpries.Value);
                 }
@@ -184,7 +184,9 @@ namespace gView.Server.Controllers
         private IActionResult Result(byte[] data, string contentType)
         {
             if (String.IsNullOrEmpty(contentType))
+            {
                 contentType = "text/plain";
+            }
 
             return File(data, contentType);
         }

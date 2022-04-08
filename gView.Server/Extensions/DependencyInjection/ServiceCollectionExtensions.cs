@@ -4,9 +4,6 @@ using gView.Server.Services.MapServer;
 using gView.Server.Services.Security;
 using Microsoft.Extensions.DependencyInjection;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace gView.Server.Extensions.DependencyInjection
 {
@@ -23,12 +20,12 @@ namespace gView.Server.Extensions.DependencyInjection
             services.AddTransient<UrlHelperService>();
             services.AddTransient<LoginManager>();
             services.AddTransient<AccessControlService>();
-            
+
             services.AddTransient<MapServicesEventLogger>();
 
             return services;
         }
-        
+
         static public IServiceCollection AddAccessTokenAuthService(this IServiceCollection services,
                                                                    Action<AccessTokenAuthServiceOptions> configAction)
         {

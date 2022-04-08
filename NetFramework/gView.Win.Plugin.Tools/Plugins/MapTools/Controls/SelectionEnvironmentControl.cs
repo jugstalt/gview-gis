@@ -1,18 +1,14 @@
+using gView.Framework.Carto;
+using gView.Framework.Data;
+using gView.Framework.Geometry;
+using gView.Framework.Globalisation;
+using gView.Framework.UI;
+using gView.Framework.UI.Dialogs;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
-using System.Data;
 using System.Windows.Forms;
-using gView.Framework.UI;
-using gView.Framework.Carto;
-using gView.Framework.Data;
-using gView.Framework.system;
-using gView.Framework.UI.Dialogs;
-using gView.Framework.Geometry;
-using gView.Framework.Symbology;
-using gView.Framework.Globalisation;
 
 namespace gView.Plugins.MapTools.Controls
 {
@@ -24,7 +20,7 @@ namespace gView.Plugins.MapTools.Controls
         Polygon
     }
 
-	public class SelectionEnvironmentControl : System.Windows.Forms.UserControl,IDockableToolWindow
+    public class SelectionEnvironmentControl : System.Windows.Forms.UserControl, IDockableToolWindow
     {
         private IContainer components;
         private ImageList imageList1;
@@ -35,7 +31,7 @@ namespace gView.Plugins.MapTools.Controls
         private ToolStripButton btnAlphabetic;
         private TreeView tree;
 
-		private IMapDocument _doc=null;
+        private IMapDocument _doc = null;
         private selectionMothode _methode;
         private ToolStripSeparator toolStripSeparator1;
 
@@ -79,41 +75,41 @@ namespace gView.Plugins.MapTools.Controls
         private Select _tool = null;
         private string _selectedString = String.Empty;
 
-		public SelectionEnvironmentControl(Select tool)
-		{
-			// Dieser Aufruf ist für den Windows Form-Designer erforderlich.
-			InitializeComponent();
+        public SelectionEnvironmentControl(Select tool)
+        {
+            // Dieser Aufruf ist für den Windows Form-Designer erforderlich.
+            InitializeComponent();
 
-			_tool = tool;
+            _tool = tool;
             SelectionMethode = selectionMothode.Rectangle;
             SpatialRelation = (_tool != null) ? _tool.SpatialRelation : spatialRelation.SpatialRelationIntersects;
             CombinationMethode = (_tool != null) ? _tool.CombinationMethode : CombinationMethod.New;
 
             _selectedString = chkSelByLoc_UseSelected.Text;
-		}
+        }
 
-		/// <summary> 
-		/// Die verwendeten Ressourcen bereinigen.
-		/// </summary>
-		protected override void Dispose( bool disposing )
-		{
-			if( disposing )
-			{
-				if(components != null)
-				{
-					components.Dispose();
-				}
-			}
-			base.Dispose( disposing );
-		}
+        /// <summary> 
+        /// Die verwendeten Ressourcen bereinigen.
+        /// </summary>
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                if (components != null)
+                {
+                    components.Dispose();
+                }
+            }
+            base.Dispose(disposing);
+        }
 
-		#region Vom Komponenten-Designer generierter Code
-		/// <summary> 
-		/// Erforderliche Methode für die Designerunterstützung. 
-		/// Der Inhalt der Methode darf nicht mit dem Code-Editor geändert werden.
-		/// </summary>
-		private void InitializeComponent()
-		{
+        #region Vom Komponenten-Designer generierter Code
+        /// <summary> 
+        /// Erforderliche Methode für die Designerunterstützung. 
+        /// Der Inhalt der Methode darf nicht mit dem Code-Editor geändert werden.
+        /// </summary>
+        private void InitializeComponent()
+        {
             this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(SelectionEnvironmentControl));
             this.imageList1 = new System.Windows.Forms.ImageList(this.components);
@@ -511,13 +507,13 @@ namespace gView.Plugins.MapTools.Controls
             this.ResumeLayout(false);
             this.PerformLayout();
 
-		}
-		#endregion
+        }
+        #endregion
 
         public IMapDocument MapDocument
         {
             set
-            {  
+            {
                 _doc = value;
                 LinkEvents();
                 buildTree();
@@ -530,7 +526,10 @@ namespace gView.Plugins.MapTools.Controls
 
         private void LinkEvents()
         {
-            if (_doc == null) return;
+            if (_doc == null)
+            {
+                return;
+            }
 
             _doc.MapAdded -= new MapAddedEvent(_iMapDocument_MapAdded);
             _doc.MapDeleted -= new MapDeletedEvent(_iMapDocument_MapDeleted);
@@ -550,7 +549,7 @@ namespace gView.Plugins.MapTools.Controls
                     _doc.FocusMap.Display.GraphicsContainer.SelectionChanged += new EventHandler(GraphicsContainer_SelectionChanged);
                 }
             }
-            
+
             if (_doc.Application is IMapApplication)
             {
                 ((IMapApplication)_doc.Application).AfterLoadMapDocument -= new AfterLoadMapDocumentEvent(Application_AfterLoadMapDocument);
@@ -562,7 +561,10 @@ namespace gView.Plugins.MapTools.Controls
         {
             btnSelByGraphic.Enabled = false;
             IGraphicsContainer container = sender as IGraphicsContainer;
-            if (container == null) return;
+            if (container == null)
+            {
+                return;
+            }
 
             btnSelByGraphic.Enabled = (container.SelectedElements.Count > 0);
         }
@@ -579,7 +581,10 @@ namespace gView.Plugins.MapTools.Controls
             {
                 _methode = value;
 
-                if (_tool != null) _tool.SelectionMethode = value;
+                if (_tool != null)
+                {
+                    _tool.SelectionMethode = value;
+                }
 
                 switch (_methode)
                 {
@@ -606,7 +611,11 @@ namespace gView.Plugins.MapTools.Controls
             get { return (_tool != null) ? _tool.SpatialRelation : spatialRelation.SpatialRelationIntersects; }
             set
             {
-                if (_tool != null) _tool.SpatialRelation = value;
+                if (_tool != null)
+                {
+                    _tool.SpatialRelation = value;
+                }
+
                 btnIntersects.Checked = btnContains.Checked = btnWithin.Checked = false;
 
                 switch (value)
@@ -631,7 +640,11 @@ namespace gView.Plugins.MapTools.Controls
             get { return (_tool != null) ? _tool.CombinationMethode : CombinationMethod.New; }
             set
             {
-                if (_tool != null) _tool.CombinationMethode = value;
+                if (_tool != null)
+                {
+                    _tool.CombinationMethode = value;
+                }
+
                 btnCombinationNew.Checked = btnCombinationSymDifference.Checked =
                     btnCombinationUnion.Checked = btnCombinationIntersection.Checked =
                     btnCombinationDifference.Checked = false;
@@ -662,18 +675,18 @@ namespace gView.Plugins.MapTools.Controls
             }
         }
 
-		private void _iMapDocument_LayerAdded(IMap sender,ILayer layer) 
-		{
-		    buildTree();
-		}
-		private void _iMapDocument_MapAdded(IMap map) 
-		{
-			buildTree();
-		}
-		private void _iMapDocument_MapDeleted(IMap map) 
-		{
-			buildTree();
-		}
+        private void _iMapDocument_LayerAdded(IMap sender, ILayer layer)
+        {
+            buildTree();
+        }
+        private void _iMapDocument_MapAdded(IMap map)
+        {
+            buildTree();
+        }
+        private void _iMapDocument_MapDeleted(IMap map)
+        {
+            buildTree();
+        }
         private void _iMapDocument_AferSetFocusMap(IMap map)
         {
             if (map.TOC != null)
@@ -696,10 +709,22 @@ namespace gView.Plugins.MapTools.Controls
 
         private void buildTree()
         {
-            if (_doc == null) return;
+            if (_doc == null)
+            {
+                return;
+            }
+
             IMap map = _doc.FocusMap;
-            if (map == null) return;
-            if (map.TOC == null) return;
+            if (map == null)
+            {
+                return;
+            }
+
+            if (map.TOC == null)
+            {
+                return;
+            }
+
             ISelectionEnvironment selEnv = map.SelectionEnvironment;
 
             tree.Nodes.Clear();
@@ -710,13 +735,20 @@ namespace gView.Plugins.MapTools.Controls
             {
                 tree.ShowLines = tree.ShowPlusMinus = tree.ShowRootLines = true;
 
-                if (map.TOC == null) return;
+                if (map.TOC == null)
+                {
+                    return;
+                }
+
                 List<ITOCElement> tocElements = map.TOC.Elements;
 
                 foreach (ITOCElement tocElement in tocElements)
                 {
-                    if (tocElement.ParentGroup != null) continue;
-                    
+                    if (tocElement.ParentGroup != null)
+                    {
+                        continue;
+                    }
+
                     insertTreeNode(tocElements, tocElement, null, selLayers);
                 }
             }
@@ -732,25 +764,30 @@ namespace gView.Plugins.MapTools.Controls
 
                 foreach (ITOCElement tocElement in tocElements)
                 {
-                    if (tocElement.ElementType != TOCElementType.Layer) continue;
+                    if (tocElement.ElementType != TOCElementType.Layer)
+                    {
+                        continue;
+                    }
+
                     insertTreeNode(tocElements, tocElement, null, selLayers);
                 }
             }
             tree.AfterCheck += new TreeViewEventHandler(tree_AfterCheck);
         }
 
-        private void insertTreeNode(List<ITOCElement> elements,ITOCElement tocElement, TreeNode parent,List<IDatasetElement> selLayers)
+        private void insertTreeNode(List<ITOCElement> elements, ITOCElement tocElement, TreeNode parent, List<IDatasetElement> selLayers)
         {
             if (tocElement.ElementType == TOCElementType.Layer)
             {
                 bool check = false, found = false;
                 foreach (IDatasetElement elem in tocElement.Layers)
                 {
-                    if (!(elem is IFeatureSelection)) continue;
-
-                    ((IFeatureSelection)elem).FeatureSelectionChanged -= new FeatureSelectionChangedEvent(SelectionEnvironmentControl_FeatureSelectionChanged);
+                    if (!(elem is IFeatureSelection))
+                    {
+                        continue;
+                    } ((IFeatureSelection)elem).FeatureSelectionChanged -= new FeatureSelectionChangedEvent(SelectionEnvironmentControl_FeatureSelectionChanged);
                     ((IFeatureSelection)elem).FeatureSelectionChanged += new FeatureSelectionChangedEvent(SelectionEnvironmentControl_FeatureSelectionChanged);
-                    
+
                     found = true;
                     foreach (IDatasetElement selElem in selLayers)
                     {
@@ -760,14 +797,21 @@ namespace gView.Plugins.MapTools.Controls
                             break;
                         }
                     }
-                    if (check) break;
+                    if (check)
+                    {
+                        break;
+                    }
                 }
                 if (found)
                 {
                     if (parent == null)
+                    {
                         tree.Nodes.Add(new SelectionTOCLayerNode(_doc, tocElement, check));
+                    }
                     else
+                    {
                         parent.Nodes.Add(new SelectionTOCLayerNode(_doc, tocElement, check));
+                    }
                 }
             }
 
@@ -776,9 +820,13 @@ namespace gView.Plugins.MapTools.Controls
             {
                 TreeNode p = new TreeNode(tocElement.Name);
                 if (parent == null)
+                {
                     tree.Nodes.Add(p);
+                }
                 else
+                {
                     parent.Nodes.Add(p);
+                }
 
                 foreach (ITOCElement elem in elements)
                 {
@@ -799,31 +847,46 @@ namespace gView.Plugins.MapTools.Controls
                         }
                     }
                     if (tocElement.ElementType == TOCElementType.OpenedGroup)
+                    {
                         p.Expand();
+                    }
                 }
                 else
                 {
                     if (parent == null)
+                    {
                         tree.Nodes.Remove(p);
+                    }
                     else
+                    {
                         parent.Nodes.Remove(p);
+                    }
                 }
             }
         }
 
         void SelectionEnvironmentControl_FeatureSelectionChanged(IFeatureSelection sender)
         {
-            if (sender == null || sender.SelectionSet == null) return;
+            if (sender == null || sender.SelectionSet == null)
+            {
+                return;
+            }
 
             SelectionTOCLayerNode node = FindNode(tree.Nodes, sender as ILayer);
-            if (node != null) node.RefreshText();
+            if (node != null)
+            {
+                node.RefreshText();
+            }
 
             tree.Refresh();
         }
 
         private SelectionTOCLayerNode FindNode(TreeNodeCollection nodes, ILayer layer)
         {
-            if (layer == null) return null;
+            if (layer == null)
+            {
+                return null;
+            }
 
             foreach (TreeNode node in nodes)
             {
@@ -831,17 +894,27 @@ namespace gView.Plugins.MapTools.Controls
                 {
                     SelectionTOCLayerNode cnode = FindNode(node.Nodes, layer);
                     if (cnode != null)
+                    {
                         return cnode;
+                    }
                     else
+                    {
                         continue;
+                    }
                 }
 
                 ITOCElement element = ((SelectionTOCLayerNode)node).Element;
-                if (element == null || element.Layers == null) continue;
+                if (element == null || element.Layers == null)
+                {
+                    continue;
+                }
 
                 foreach (ILayer l in element.Layers)
                 {
-                    if (l == layer) return node as SelectionTOCLayerNode;
+                    if (l == layer)
+                    {
+                        return node as SelectionTOCLayerNode;
+                    }
                 }
             }
 
@@ -850,17 +923,31 @@ namespace gView.Plugins.MapTools.Controls
 
         private void tree_AfterCheck(object sender, TreeViewEventArgs e)
         {
-            if (_doc == null) return;
+            if (_doc == null)
+            {
+                return;
+            }
+
             IMap map = _doc.FocusMap;
-            if (map == null) return;
+            if (map == null)
+            {
+                return;
+            }
+
             ISelectionEnvironment selEnv = map.SelectionEnvironment;
-            if (selEnv == null) return;
+            if (selEnv == null)
+            {
+                return;
+            }
 
             if (e.Node is SelectionTOCLayerNode)
             {
                 foreach (IDatasetElement element in ((SelectionTOCLayerNode)e.Node).Element.Layers)
                 {
-                    if (!(element is IFeatureSelection)) continue;
+                    if (!(element is IFeatureSelection))
+                    {
+                        continue;
+                    }
 
                     if (e.Node.Checked)
                     {
@@ -871,7 +958,10 @@ namespace gView.Plugins.MapTools.Controls
                         selEnv.RemoveFromSelectableElements(element);
                     }
                 }
-                if (_clickNode == e.Node) CheckParentNodes(e.Node);
+                if (_clickNode == e.Node)
+                {
+                    CheckParentNodes(e.Node);
+                }
             }
             else
             {
@@ -882,7 +972,10 @@ namespace gView.Plugins.MapTools.Controls
 
         private void CheckChildNodes(TreeNode parent)
         {
-            if (parent == null) return;
+            if (parent == null)
+            {
+                return;
+            }
 
             foreach (TreeNode node in parent.Nodes)
             {
@@ -893,8 +986,15 @@ namespace gView.Plugins.MapTools.Controls
 
         private void CheckParentNodes(TreeNode node)
         {
-            if (node == null) return;
-            if (node.Parent == null) return;
+            if (node == null)
+            {
+                return;
+            }
+
+            if (node.Parent == null)
+            {
+                return;
+            }
 
             bool check = false;
             foreach (TreeNode childs in node.Parent.Nodes)
@@ -956,12 +1056,12 @@ namespace gView.Plugins.MapTools.Controls
             }
             else if (e.Button == MouseButtons.Left)
             {
-                 TreeNode node = tree.GetNodeAt(e.X, e.Y);
-                 if (node is SelectionTOCLayerNode)
-                 {
-                     _clickNode = (SelectionTOCLayerNode)node;
-                     return;
-                 }
+                TreeNode node = tree.GetNodeAt(e.X, e.Y);
+                if (node is SelectionTOCLayerNode)
+                {
+                    _clickNode = (SelectionTOCLayerNode)node;
+                    return;
+                }
             }
             _contextNode = null;
             _clickNode = null;
@@ -969,8 +1069,15 @@ namespace gView.Plugins.MapTools.Controls
 
         async private void toolStripMenuItemSelectByAttributes_Click(object sender, EventArgs e)
         {
-            if (_contextNode == null) return;
-            if (!(_contextNode.Element.Layers[0] is IFeatureLayer)) return;
+            if (_contextNode == null)
+            {
+                return;
+            }
+
+            if (!(_contextNode.Element.Layers[0] is IFeatureLayer))
+            {
+                return;
+            }
 
             FormQueryBuilder dlg = await FormQueryBuilder.CreateAsync((IFeatureLayer)_contextNode.Element.Layers[0]);
             if (dlg.ShowDialog() == DialogResult.OK)
@@ -990,32 +1097,54 @@ namespace gView.Plugins.MapTools.Controls
 
         private void toolStripMenuItemClearSelection_Click(object sender, EventArgs e)
         {
-            if (_doc == null || _doc.FocusMap == null || _doc.Application == null) return;
+            if (_doc == null || _doc.FocusMap == null || _doc.Application == null)
+            {
+                return;
+            }
 
-            if (!(_contextNode is SelectionTOCLayerNode)) return;
+            if (!(_contextNode is SelectionTOCLayerNode))
+            {
+                return;
+            }
 
             ITOCElement element = ((SelectionTOCLayerNode)_contextNode).Element;
-            if (element == null || element.Layers == null) return;
+            if (element == null || element.Layers == null)
+            {
+                return;
+            }
 
             foreach (ILayer layer in element.Layers)
             {
-                if (!(layer is IFeatureSelection)) continue;
-                ((IFeatureSelection)layer).ClearSelection();
+                if (!(layer is IFeatureSelection))
+                {
+                    continue;
+                } ((IFeatureSelection)layer).ClearSelection();
                 ((IFeatureSelection)layer).FireSelectionChangedEvent();
             }
 
             if (_doc.Application is IMapApplication)
+            {
                 ((IMapApplication)_doc.Application).RefreshActiveMap(DrawPhase.Selection | DrawPhase.Graphics);
+            }
         }
 
         async private void toolStripMenuItemZoomToSelection_Click(object sender, EventArgs e)
         {
-            if (_doc == null || _doc.FocusMap == null || _doc.Application == null) return;
+            if (_doc == null || _doc.FocusMap == null || _doc.Application == null)
+            {
+                return;
+            }
 
-            if (!(_contextNode is SelectionTOCLayerNode)) return;
+            if (!(_contextNode is SelectionTOCLayerNode))
+            {
+                return;
+            }
 
             ITOCElement element = ((SelectionTOCLayerNode)_contextNode).Element;
-            if (element == null || element.Layers == null) return;
+            if (element == null || element.Layers == null)
+            {
+                return;
+            }
 
             gView.Framework.Geometry.Envelope env = null;
 
@@ -1025,10 +1154,16 @@ namespace gView.Plugins.MapTools.Controls
                     !(layer is IFeatureLayer) ||
                     ((IFeatureLayer)layer).FeatureClass == null ||
                     ((IFeatureSelection)layer).SelectionSet == null ||
-                    ((IFeatureSelection)layer).SelectionSet.Count == 0) continue;
+                    ((IFeatureSelection)layer).SelectionSet.Count == 0)
+                {
+                    continue;
+                }
 
                 IFeatureClass fc = ((IFeatureLayer)layer).FeatureClass;
-                if (fc == null) continue;
+                if (fc == null)
+                {
+                    continue;
+                }
 
                 IQueryFilter filter = null;
                 if (((IFeatureSelection)layer).SelectionSet is IIDSelectionSet)
@@ -1040,7 +1175,10 @@ namespace gView.Plugins.MapTools.Controls
                 {
                     filter = ((IQueryFilteredSelectionSet)((IFeatureSelection)layer).SelectionSet).QueryFilter;
                 }
-                if (filter == null) return;
+                if (filter == null)
+                {
+                    return;
+                }
 
                 bool project = false;
                 if (fc.SpatialReference != null && !fc.SpatialReference.Equals(_doc.FocusMap.Display.SpatialReference))
@@ -1052,17 +1190,28 @@ namespace gView.Plugins.MapTools.Controls
 
                 using (IFeatureCursor cursor = await fc.GetFeatures(filter))
                 {
-                    if (cursor == null) continue;
+                    if (cursor == null)
+                    {
+                        continue;
+                    }
+
                     IFeature feat;
                     while ((feat = await cursor.NextFeature()) != null)
                     {
-                        if (feat.Shape == null) continue;
+                        if (feat.Shape == null)
+                        {
+                            continue;
+                        }
 
                         IEnvelope envelope = feat.Shape.Envelope;
                         if (project)
                         {
                             IGeometry geom = GeometricTransformerFactory.Transform2D(envelope, fc.SpatialReference, _doc.FocusMap.Display.SpatialReference);
-                            if (geom == null) continue;
+                            if (geom == null)
+                            {
+                                continue;
+                            }
+
                             envelope = geom.Envelope;
                         }
                         if (env == null)
@@ -1083,7 +1232,9 @@ namespace gView.Plugins.MapTools.Controls
                 env.Raise(110.0);
                 _doc.FocusMap.Display.ZoomTo(env);
                 if (_doc.Application is IMapApplication)
+                {
                     await ((IMapApplication)_doc.Application).RefreshActiveMap(DrawPhase.All);
+                }
             }
         }
 
@@ -1131,20 +1282,29 @@ namespace gView.Plugins.MapTools.Controls
 
         private void btnApplySelection_Click(object sender, EventArgs e)
         {
-            if (_tool == null || _doc == null || _doc.Application == null) return;
+            if (_tool == null || _doc == null || _doc.Application == null)
+            {
+                return;
+            }
 
             Cursor = Cursors.WaitCursor;
             if (_tool.SelectByGeometry(_doc.FocusMap, _tool.SelectionGeometry))
             {
                 if (_doc.Application is IMapApplication)
+                {
                     ((IMapApplication)_doc.Application).RefreshActiveMap(DrawPhase.Selection);
+                }
             }
             Cursor = Cursors.Default;
         }
 
         private void btnClearSelectionFigure_Click(object sender, EventArgs e)
         {
-            if (_tool == null) return;
+            if (_tool == null)
+            {
+                return;
+            }
+
             _tool.ClearSelectionFigure();
         }
 
@@ -1178,7 +1338,10 @@ namespace gView.Plugins.MapTools.Controls
 
         private void RefreshSelByLocationGUI()
         {
-            if (_doc == null || _doc.FocusMap == null || _doc.FocusMap.SelectionEnvironment == null) return;
+            if (_doc == null || _doc.FocusMap == null || _doc.FocusMap.SelectionEnvironment == null)
+            {
+                return;
+            }
 
             IFeatureLayer layer = (cmbSelByLocLayer.SelectedItem is FeatureLayerItem) ? (cmbSelByLocLayer.SelectedItem as FeatureLayerItem).FeatureLayer : null;
             cmbSelByLocLayer.Items.Clear();
@@ -1189,11 +1352,16 @@ namespace gView.Plugins.MapTools.Controls
                 if (element is IFeatureLayer && ((IFeatureLayer)element).FeatureClass != null)
                 {
                     tocElement = _doc.FocusMap.TOC.GetTOCElement(element as ILayer);
-                    if (tocElement == null) return;
+                    if (tocElement == null)
+                    {
+                        return;
+                    }
 
                     cmbSelByLocLayer.Items.Add(new FeatureLayerItem(element as IFeatureLayer, tocElement.Name));
                     if (element == layer)
-                        cmbSelByLocLayer.SelectedIndex = cmbSelByLocLayer.Items.Count - 1; 
+                    {
+                        cmbSelByLocLayer.SelectedIndex = cmbSelByLocLayer.Items.Count - 1;
+                    }
                 }
                 else if (element is IWebServiceLayer && ((IWebServiceLayer)element).WebServiceClass != null)
                 {
@@ -1201,14 +1369,22 @@ namespace gView.Plugins.MapTools.Controls
 
                     foreach (IWebServiceTheme theme in wsClass.Themes)
                     {
-                        if (theme.FeatureClass == null) continue;
+                        if (theme.FeatureClass == null)
+                        {
+                            continue;
+                        }
 
                         tocElement = _doc.FocusMap.TOC.GetTOCElement(theme as ILayer);
-                        if (tocElement == null) return;
+                        if (tocElement == null)
+                        {
+                            return;
+                        }
 
                         cmbSelByLocLayer.Items.Add(new FeatureLayerItem(theme as IFeatureLayer, tocElement.Name));
                         if (theme == layer)
-                            cmbSelByLocLayer.SelectedIndex = cmbSelByLocLayer.Items.Count - 1; 
+                        {
+                            cmbSelByLocLayer.SelectedIndex = cmbSelByLocLayer.Items.Count - 1;
+                        }
                     }
                 }
             }
@@ -1226,7 +1402,9 @@ namespace gView.Plugins.MapTools.Controls
                     }
                 }
                 if (cmbSelByLocLayer.SelectedIndex == -1 && cmbSelByLocLayer.Items.Count > 0)
+                {
                     cmbSelByLocLayer.SelectedIndex = 0;
+                }
             }
 
             if (cmbSelByLoc_BufferUnit.Items.Count == 0)
@@ -1242,7 +1420,10 @@ namespace gView.Plugins.MapTools.Controls
         private void cmbSelByLocLayer_SelectedIndexChanged(object sender, EventArgs e)
         {
             FeatureLayerItem item = cmbSelByLocLayer.SelectedItem as FeatureLayerItem;
-            if (item == null || item.FeatureLayer == null) return;
+            if (item == null || item.FeatureLayer == null)
+            {
+                return;
+            }
 
             if (item.FeatureLayer is IFeatureSelection &&
                 ((IFeatureSelection)item.FeatureLayer).SelectionSet != null &&
@@ -1274,13 +1455,22 @@ namespace gView.Plugins.MapTools.Controls
 
         async private void btnApplySelByLocation_Click(object sender, EventArgs e)
         {
-            if (_doc == null || _doc.FocusMap == null || _doc.FocusMap.Display == null) return;
+            if (_doc == null || _doc.FocusMap == null || _doc.FocusMap.Display == null)
+            {
+                return;
+            }
 
             FeatureLayerItem item = cmbSelByLocLayer.SelectedItem as FeatureLayerItem;
-            if (item == null || item.FeatureLayer == null) return;
+            if (item == null || item.FeatureLayer == null)
+            {
+                return;
+            }
 
             IFeatureLayer layer = item.FeatureLayer;
-            if (layer.FeatureClass == null) return;
+            if (layer.FeatureClass == null)
+            {
+                return;
+            }
 
             IFeatureCursor cursor = null;
             try
@@ -1309,7 +1499,7 @@ namespace gView.Plugins.MapTools.Controls
                 }
                 else
                 {
-                    QueryFilter filter=new QueryFilter();
+                    QueryFilter filter = new QueryFilter();
                     filter.AddField(layer.FeatureClass.ShapeFieldName);
                     filter.FeatureSpatialReference = _doc.FocusMap.Display.SpatialReference;
                     cursor = await layer.FeatureClass.GetFeatures(filter);
@@ -1319,7 +1509,10 @@ namespace gView.Plugins.MapTools.Controls
                 IFeature feature;
                 while ((feature = await cursor.NextFeature()) != null)
                 {
-                    if (feature.Shape == null) continue;
+                    if (feature.Shape == null)
+                    {
+                        continue;
+                    }
 
                     aGeometry.AddGeometry(feature.Shape);
                 }
@@ -1339,16 +1532,23 @@ namespace gView.Plugins.MapTools.Controls
 
                     if (chkSelByLoc_AppendBuffer.Enabled &&
                         chkSelByLoc_AppendBuffer.Checked)
+                    {
                         _doc.FocusMap.Display.GraphicsContainer.Elements.Add(new gView.Plugins.MapTools.Graphics.GraphicPolygon(geometry as IPolygon));
+                    }
                 }
                 _tool.SelectByGeometry(_doc.FocusMap, geometry);
 
                 if (_doc.Application is IMapApplication)
+                {
                     await ((IMapApplication)_doc.Application).RefreshActiveMap(DrawPhase.Graphics | DrawPhase.Selection);
+                }
             }
             finally
             {
-                if (cursor != null) cursor.Dispose();
+                if (cursor != null)
+                {
+                    cursor.Dispose();
+                }
             }
         }
 
@@ -1357,7 +1557,7 @@ namespace gView.Plugins.MapTools.Controls
             private IFeatureLayer _layer;
             private string _alias = "";
 
-            public FeatureLayerItem(IFeatureLayer layer,string alias)
+            public FeatureLayerItem(IFeatureLayer layer, string alias)
             {
                 _layer = layer;
                 _alias = alias;
@@ -1376,7 +1576,10 @@ namespace gView.Plugins.MapTools.Controls
         #region Aggregate
         private void AggregateGeometry(IGeometry geom, IGeometry aggregate)
         {
-            if (aggregate == null || geom == null) return;
+            if (aggregate == null || geom == null)
+            {
+                return;
+            }
 
             if (aggregate is IPolygon && geom is IPolygon)
             {
@@ -1393,7 +1596,10 @@ namespace gView.Plugins.MapTools.Controls
         #region SelectByGraphics
         private void btnSelByGraphic_Click(object sender, EventArgs e)
         {
-            if (_tool == null || _doc == null || _doc.FocusMap == null || _doc.FocusMap.Display == null || _doc.FocusMap.Display.GraphicsContainer == null) return;
+            if (_tool == null || _doc == null || _doc.FocusMap == null || _doc.FocusMap.Display == null || _doc.FocusMap.Display.GraphicsContainer == null)
+            {
+                return;
+            }
 
             AggregateGeometry aGeometry = new AggregateGeometry();
             foreach (IGraphicElement grElement in _doc.FocusMap.Display.GraphicsContainer.SelectedElements)
@@ -1401,7 +1607,10 @@ namespace gView.Plugins.MapTools.Controls
                 if (grElement is IGraphicElement2)
                 {
                     IGeometry geom = ((IGraphicElement2)grElement).Geometry;
-                    if (geom == null) continue;
+                    if (geom == null)
+                    {
+                        continue;
+                    }
 
                     aGeometry.AddGeometry(geom);
                 }
@@ -1414,24 +1623,39 @@ namespace gView.Plugins.MapTools.Controls
 
             _tool.SelectByGeometry(_doc.FocusMap, aGeometry);
             if (_doc.Application is IMapApplication)
+            {
                 ((IMapApplication)_doc.Application).RefreshActiveMap(DrawPhase.Graphics | DrawPhase.Selection);
+            }
         }
         #endregion
 
         private void btnCombination_Click(object sender, EventArgs e)
         {
-            if (_tool == null) return;
+            if (_tool == null)
+            {
+                return;
+            }
 
             if (sender == btnCombinationNew)
+            {
                 this.CombinationMethode = CombinationMethod.New;
+            }
             else if (sender == btnCombinationUnion)
+            {
                 this.CombinationMethode = CombinationMethod.Union;
+            }
             else if (sender == btnCombinationIntersection)
+            {
                 this.CombinationMethode = CombinationMethod.Intersection;
+            }
             else if (sender == btnCombinationDifference)
+            {
                 this.CombinationMethode = CombinationMethod.Difference;
+            }
             else if (sender == btnCombinationSymDifference)
+            {
                 this.CombinationMethode = CombinationMethod.SymDifference;
+            }
         }
 
 

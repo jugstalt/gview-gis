@@ -1,24 +1,20 @@
 
+using gView.Framework.Data;
+using gView.Framework.Db;
+using gView.Framework.Editor.Core;
+using gView.Framework.FDB;
+using gView.Framework.Geometry;
+using gView.Framework.Network;
+using gView.Framework.Offline;
+using gView.Framework.system;
+using gView.Framework.UI;
 using System;
-using System.Data;
-using System.Data.Common;
 using System.Collections;
 using System.Collections.Generic;
-using System.Runtime.Serialization;
-using System.Runtime.Serialization.Formatters.Binary;
+using System.Data;
+using System.Data.Common;
 using System.IO;
 using System.Text;
-using gView.Framework.Db;
-using gView.Framework.Data;
-using gView.Framework.Carto;
-using gView.Framework.Geometry;
-using gView.Framework.FDB;
-using gView.Framework.UI;
-using gView.Framework.system;
-using gView.Framework.Symbology;
-using gView.Framework.Offline;
-using gView.Framework.Network;
-using gView.Framework.Editor.Core;
 using System.Threading.Tasks;
 
 namespace gView.DataSources.Fdb.MSAccess
@@ -76,7 +72,11 @@ namespace gView.DataSources.Fdb.MSAccess
 
         async virtual public Task<int> FeatureClassID(int DatasetID, string name)
         {
-            if (_conn == null) return -1;
+            if (_conn == null)
+            {
+                return -1;
+            }
+
             try
             {
                 _errMsg = "";
@@ -107,7 +107,11 @@ namespace gView.DataSources.Fdb.MSAccess
         async virtual public Task<int> DatasetID(string name)
         {
             _errMsg = "";
-            if (_conn == null) return -1;
+            if (_conn == null)
+            {
+                return -1;
+            }
+
             try
             {
                 DataSet ds = new DataSet();
@@ -135,7 +139,11 @@ namespace gView.DataSources.Fdb.MSAccess
         async virtual public Task<string> DatasetName(int DatasetID)
         {
             _errMsg = "";
-            if (_conn == null) return String.Empty;
+            if (_conn == null)
+            {
+                return String.Empty;
+            }
+
             try
             {
                 DataSet ds = new DataSet();
@@ -164,7 +172,11 @@ namespace gView.DataSources.Fdb.MSAccess
         async virtual public Task<int> DatasetIDByFeatureClass(string fcName)
         {
             _errMsg = "";
-            if (_conn == null) return -1;
+            if (_conn == null)
+            {
+                return -1;
+            }
+
             try
             {
                 DataSet ds = new DataSet();
@@ -192,7 +204,10 @@ namespace gView.DataSources.Fdb.MSAccess
         async virtual public Task<string> DatasetNameByFeatureClass(string fcName)
         {
             int DatasetID = await DatasetIDByFeatureClass(fcName);
-            if (DatasetID == -1) return String.Empty;
+            if (DatasetID == -1)
+            {
+                return String.Empty;
+            }
 
             return await DatasetName(DatasetID);
         }
@@ -208,8 +223,15 @@ namespace gView.DataSources.Fdb.MSAccess
             }
 
             FileInfo fi = new FileInfo(_filename = name);
-            if (fi.Extension.ToLower() != ".mdb") fi = new FileInfo(_filename = name + ".mdb");
-            if (fi.Exists) fi.Delete();
+            if (fi.Extension.ToLower() != ".mdb")
+            {
+                fi = new FileInfo(_filename = name + ".mdb");
+            }
+
+            if (fi.Exists)
+            {
+                fi.Delete();
+            }
 
             tpl.CopyTo(fi.FullName);
             /*
@@ -274,10 +296,12 @@ namespace gView.DataSources.Fdb.MSAccess
             }
 
             if (LinkedDatasetCacheInstance != null)
+            {
                 LinkedDatasetCacheInstance.Dispose();
+            }
         }
 
-        public string LastErrorMessage { get { return _errMsg; }  set { _errMsg = value; } }
+        public string LastErrorMessage { get { return _errMsg; } set { _errMsg = value; } }
         public Exception LastException { get { return (_conn != null ? _conn.lastException : null); } }
 
         virtual public Task<int> CreateDataset(string name, ISpatialReference sRef)
@@ -293,7 +317,11 @@ namespace gView.DataSources.Fdb.MSAccess
         async virtual protected Task<int> CreateDataset(string name, ISpatialReference sRef, ISpatialIndexDef sIndexDef, bool imagedataset, string imageSpace)
         {
             _errMsg = "";
-            if (_conn == null) return -1;
+            if (_conn == null)
+            {
+                return -1;
+            }
+
             try
             {
                 int sRefID = await CreateSpatialReference(sRef);
@@ -406,7 +434,11 @@ namespace gView.DataSources.Fdb.MSAccess
         async virtual public Task<string[]> DatasetNames()
         {
             _errMsg = "";
-            if (_conn == null) return null;
+            if (_conn == null)
+            {
+                return null;
+            }
+
             try
             {
                 DataSet ds = new DataSet();
@@ -418,7 +450,11 @@ namespace gView.DataSources.Fdb.MSAccess
                 StringBuilder sb = new StringBuilder();
                 foreach (DataRow row in ds.Tables[0].Rows)
                 {
-                    if (sb.Length != 0) sb.Append("@");
+                    if (sb.Length != 0)
+                    {
+                        sb.Append("@");
+                    }
+
                     sb.Append(row["Name"].ToString());
                 }
                 ds.Dispose();
@@ -449,7 +485,11 @@ namespace gView.DataSources.Fdb.MSAccess
         {
             Fields fields = new Fields(Fields);
 
-            if (_conn == null) return -1;
+            if (_conn == null)
+            {
+                return -1;
+            }
+
             int dsID = await DatasetID(dsname);
             if (dsID == -1)
             {
@@ -463,7 +503,10 @@ namespace gView.DataSources.Fdb.MSAccess
                 return -1;
             }
             bool tempFC = false;
-            if (fcname.ToUpper().IndexOf("_TMP_") == 0) tempFC = true;
+            if (fcname.ToUpper().IndexOf("_TMP_") == 0)
+            {
+                tempFC = true;
+            }
 
             if (geomDef == null)
             {
@@ -513,7 +556,10 @@ namespace gView.DataSources.Fdb.MSAccess
                 row["HasM"] = geomDef.HasM;
                 row["ShapeField"] = "SHAPE";
                 if (!recreate)
+                {
                     ds.Tables[0].Rows.Add(row);
+                }
+
                 if (!tempFC)
                 {
                     if (!_conn.UpdateData(ref ds, "FC"))
@@ -525,10 +571,16 @@ namespace gView.DataSources.Fdb.MSAccess
                 ds.Dispose();
                 ds = null;
 
-                if (fields == null) fields = new Fields();
+                if (fields == null)
+                {
+                    fields = new Fields();
+                }
 
                 Fields FieldsCopy = new Fields();
-                foreach (IField f in fields.ToEnumerable()) FieldsCopy.Add(f);
+                foreach (IField f in fields.ToEnumerable())
+                {
+                    FieldsCopy.Add(f);
+                }
 
                 foreach (IField f in FieldsCopy.ToEnumerable())
                 {
@@ -546,7 +598,9 @@ namespace gView.DataSources.Fdb.MSAccess
                         fields.Remove(f);
                     }
                     if (_conn.dbType == DBType.npgsql && f is Field)
+                    {
                         ((Field)f).name = ColumnName(f.name);
+                    }
                 }
                 // OID
                 Field field = new Field();
@@ -581,7 +635,10 @@ namespace gView.DataSources.Fdb.MSAccess
                         }
                     }
                     else
+                    {
                         field.type = FieldType.binary;
+                    }
+
                     fields.Insert(1, field);
                     // FDB_NID
                     if (!msSpatial)
@@ -645,7 +702,10 @@ namespace gView.DataSources.Fdb.MSAccess
                         }
                     }
                 }
-                if (tempFC) return -99;
+                if (tempFC)
+                {
+                    return -99;
+                }
 
                 int FC_ID = await FeatureClassID(dsID, fcname);
                 if (FC_ID == -1)
@@ -667,7 +727,11 @@ namespace gView.DataSources.Fdb.MSAccess
                 }
                 foreach (IField field_ in fields.ToEnumerable())
                 {
-                    if (field_.name.ToLower().IndexOf("fdb_") == 0) continue;
+                    if (field_.name.ToLower().IndexOf("fdb_") == 0)
+                    {
+                        continue;
+                    }
+
                     row = ds.Tables[0].NewRow();
                     row["FClassID"] = FC_ID;
                     row["FieldName"] = field_.name;
@@ -704,7 +768,9 @@ namespace gView.DataSources.Fdb.MSAccess
                     geomDef.GeometryType == GeometryType.Aggregate)
                 {
                     if (msSpatial == false)
+                    {
                         this.InitSpatialIndex2(fcname);
+                    }
                 }
                 // Index für Netzwerk Graphen
                 if (geomDef.GeometryType == GeometryType.Network)
@@ -795,7 +861,7 @@ namespace gView.DataSources.Fdb.MSAccess
             linkedConnectionString = Crypto.Encrypt(linkedConnectionString, "gView.Linked.Dataset");
 
             DataSet ds = new DataSet();
-            if (!await _conn.SQLQuery(ds, "SELECT * FROM " + TableName("FDB_LinkedConnections") + " WHERE " + DbColName("Plugin") + "=" + GuidToSql(linkedDsGuid) + " AND "+DbColName("Connection")+"='" + linkedConnectionString + "'", "Linked", true))
+            if (!await _conn.SQLQuery(ds, "SELECT * FROM " + TableName("FDB_LinkedConnections") + " WHERE " + DbColName("Plugin") + "=" + GuidToSql(linkedDsGuid) + " AND " + DbColName("Connection") + "='" + linkedConnectionString + "'", "Linked", true))
             {
                 _errMsg = _conn.errorMessage;
                 return -1;
@@ -872,7 +938,10 @@ namespace gView.DataSources.Fdb.MSAccess
         }
         async virtual protected Task<bool> DeleteFeatureClass(string fcName, bool deleteFeatureClassesRow)
         {
-            if (_conn == null) return false;
+            if (_conn == null)
+            {
+                return false;
+            }
 
             if (await IsNetworkSubFeatureclass(fcName))
             {
@@ -882,7 +951,9 @@ namespace gView.DataSources.Fdb.MSAccess
             if (!_conn.dropTable(FcsiTableName(fcName)))
             {
                 if (await TableExists(TableName("FCSI_" + fcName))) // event. war Tab. schon gelöscht!!! Hier nicht DBSchema vor Tabelle angeben
+                {
                     _errMsg = _conn.errorMessage;
+                }
             }
             if (!_conn.dropTable(FcTableName(fcName)))
             {
@@ -905,9 +976,14 @@ namespace gView.DataSources.Fdb.MSAccess
             {
                 fcIDs.Add(Convert.ToInt32(row["ID"]));
                 if ((GeometryType)row["GeometryType"] == GeometryType.Network)
+                {
                     isNetwork = true;
+                }
+
                 if (deleteFeatureClassesRow)
+                {
                     row.Delete();
+                }
             }
             if (deleteFeatureClassesRow)
             {
@@ -929,7 +1005,9 @@ namespace gView.DataSources.Fdb.MSAccess
                     if (tab != null)
                     {
                         foreach (DataRow row in tab.Rows)
+                        {
                             DropTable(TableName(fcName + "_Weights_" + ((Guid)row["WeightGuid"]).ToString("N").ToLower()));
+                        }
                     }
                     _conn.ExecuteNoneQuery("DELETE FROM " + TableName("FDB_NetworkWeights") + " WHERE " + DbColName("NetworkId") + "=" + fcID.ToString());
                 }
@@ -947,7 +1025,10 @@ namespace gView.DataSources.Fdb.MSAccess
 
         async virtual public Task<bool> DeleteDataset(string dsname)
         {
-            if (_conn == null) return false;
+            if (_conn == null)
+            {
+                return false;
+            }
 
             int dsID = await DatasetID(dsname);
             if (dsID == -1)
@@ -976,12 +1057,19 @@ namespace gView.DataSources.Fdb.MSAccess
                             IFeature feature;
                             while ((feature = await cursor.NextFeature()) != null)
                             {
-                                if (feature[ColumnName("MANAGED_FILE")] == System.DBNull.Value) continue;
+                                if (feature[ColumnName("MANAGED_FILE")] == System.DBNull.Value)
+                                {
+                                    continue;
+                                }
+
                                 string file = feature[ColumnName("MANAGED_FILE")].ToString();
                                 try
                                 {
                                     FileInfo fi = new FileInfo(file);
-                                    if (fi.Exists) fi.Delete();
+                                    if (fi.Exists)
+                                    {
+                                        fi.Delete();
+                                    }
                                 }
                                 catch { }
                             }
@@ -1000,7 +1088,10 @@ namespace gView.DataSources.Fdb.MSAccess
 
             foreach (DataRow fcRow in FCs.Rows)
             {
-                if (!await DeleteFeatureClass(fcRow["Name"].ToString())) return false;
+                if (!await DeleteFeatureClass(fcRow["Name"].ToString()))
+                {
+                    return false;
+                }
             }
 
             if (!_conn.ExecuteNoneQuery("DELETE FROM " + TableName("FDB_Datasets") + " WHERE " + DbColName("ID") + "=" + dsID.ToString()))
@@ -1025,7 +1116,10 @@ namespace gView.DataSources.Fdb.MSAccess
                 return await CreateFeatureClass(dsname, fcname, geomDef, Fields);
             }
             if (!await DeleteFeatureClass(fcname, false))
+            {
                 return -1;
+            }
+
             return await CreateFeatureClass(dsname, fcname, geomDef, Fields, true);
         }
 
@@ -1033,7 +1127,11 @@ namespace gView.DataSources.Fdb.MSAccess
 
         virtual protected string FieldDataType(IField field)
         {
-            if (field == null) return "";
+            if (field == null)
+            {
+                return "";
+            }
+
             switch (field.type)
             {
                 case FieldType.biginteger:
@@ -1056,11 +1154,18 @@ namespace gView.DataSources.Fdb.MSAccess
                     return "TEXT(1)";
                 case FieldType.String:
                     if (field.size > 0 && field.size < 256)
+                    {
                         return "TEXT(" + field.size + ")";
+                    }
                     else if (field.size > 255)
+                    {
                         return "MEMO";
+                    }
                     else if (field.size <= 0)
+                    {
                         return "TEXT(255)";
+                    }
+
                     break;
                 case FieldType.guid:
                     return "GUID";
@@ -1086,7 +1191,10 @@ namespace gView.DataSources.Fdb.MSAccess
                 foreach (IField field in Fields.ToEnumerable())
                 {
                     //if( field.type==FieldType.ID ||
-                    if (field.type == FieldType.Shape) continue;
+                    if (field.type == FieldType.Shape)
+                    {
+                        continue;
+                    }
 
                     if (!first)
                     {
@@ -1141,11 +1249,18 @@ namespace gView.DataSources.Fdb.MSAccess
                             break;
                         case FieldType.String:
                             if (field.size > 0 && field.size < 256)
+                            {
                                 types.Append("TEXT(" + field.size + ")");
+                            }
                             else if (field.size > 255)
+                            {
                                 types.Append("MEMO");
+                            }
                             else if (field.size <= 0)
+                            {
                                 types.Append("TEXT(255)");
+                            }
+
                             break;
                         case FieldType.guid:
                             types.Append("GUID");
@@ -1246,9 +1361,14 @@ namespace gView.DataSources.Fdb.MSAccess
         async public virtual Task<bool> RenameFeatureClass(string FCName, string newFCName)
         {
             if (FCName.Contains("@"))
+            {
                 return false;
+            }
 
-            if (_conn == null) return false;
+            if (_conn == null)
+            {
+                return false;
+            }
 
             if (await IsNetworkSubFeatureclass(FCName))
             {
@@ -1323,7 +1443,11 @@ namespace gView.DataSources.Fdb.MSAccess
                 }
             }
 
-            if (FeatureClassRenamed != null) FeatureClassRenamed(FCName, newFCName);
+            if (FeatureClassRenamed != null)
+            {
+                FeatureClassRenamed(FCName, newFCName);
+            }
+
             return true;
         }
 
@@ -1332,7 +1456,10 @@ namespace gView.DataSources.Fdb.MSAccess
 
         async public virtual Task<bool> RenameDataset(string DSName, string newDSName)
         {
-            if (_conn == null) return false;
+            if (_conn == null)
+            {
+                return false;
+            }
 
             DataTable tab = await _conn.Select(DbColName("ID") + "," + DbColName("Name"), TableName("FDB_Datasets"), DbColName("Name") + "='" + newDSName + "'", "", false);
             if (tab == null)
@@ -1347,7 +1474,7 @@ namespace gView.DataSources.Fdb.MSAccess
             }
 
             var isImageDatasetResult = await IsImageDataset(DSName);
-            string imageSpace=isImageDatasetResult.imageSpace;
+            string imageSpace = isImageDatasetResult.imageSpace;
             if (isImageDatasetResult.isImageDataset)
             {
                 if (!_conn.RenameTable(DSName + "_IMAGE_DATA", newDSName + "_IMAGE_DATA"))
@@ -1387,7 +1514,11 @@ namespace gView.DataSources.Fdb.MSAccess
                 return false;
             }
 
-            if (DatasetRenamed != null) DatasetRenamed(DSName, newDSName);
+            if (DatasetRenamed != null)
+            {
+                DatasetRenamed(DSName, newDSName);
+            }
+
             return true;
         }
         #endregion
@@ -1419,7 +1550,11 @@ namespace gView.DataSources.Fdb.MSAccess
 
         public bool DropTable(string name)
         {
-            if (_conn == null) return false;
+            if (_conn == null)
+            {
+                return false;
+            }
+
             if (!_conn.dropTable(name))
             {
                 _errMsg = _conn.errorMessage;
@@ -1429,17 +1564,29 @@ namespace gView.DataSources.Fdb.MSAccess
         }
         protected bool DeleteAllFeatures(string fcname)
         {
-            if (_conn == null) return false;
+            if (_conn == null)
+            {
+                return false;
+            }
+
             return _conn.ExecuteNoneQuery("DELETE FROM " + FcTableName(fcname));
         }
         protected bool CompressDB()
         {
-            if (_conn  is CommonDbConnection) return false;
+            if (_conn is CommonDbConnection)
+            {
+                return false;
+            }
+
             return ((CommonDbConnection)_conn).CompactAccessDB();
         }
         public bool DropIndex(string name)
         {
-            if (_conn == null) return false;
+            if (_conn == null)
+            {
+                return false;
+            }
+
             if (!_conn.dropIndex(name))
             {
                 _errMsg = _conn.errorMessage;
@@ -1449,7 +1596,11 @@ namespace gView.DataSources.Fdb.MSAccess
         }
         public bool CreateIndex(string name, string table, string field, bool unique)
         {
-            if (_conn == null) return false;
+            if (_conn == null)
+            {
+                return false;
+            }
+
             if (!_conn.createIndex(name, table, field, unique))
             {
                 _errMsg = _conn.errorMessage;
@@ -1474,7 +1625,11 @@ namespace gView.DataSources.Fdb.MSAccess
         */
         async public Task<int> CountFeatures(string fcname)
         {
-            if (_conn == null) return 0;
+            if (_conn == null)
+            {
+                return 0;
+            }
+
             try
             {
                 int count = Convert.ToInt32(await _conn.QuerySingleField("SELECT COUNT(" + DbColName("FDB_OID") + ") AS " + ColumnName("COUNT_FEATURES") + " FROM " + FcTableName(fcname), ColumnName("COUNT_FEATURES")));
@@ -1490,11 +1645,15 @@ namespace gView.DataSources.Fdb.MSAccess
         virtual public IFields TableFields(string name)
         {
             if (_conn == null)
+            {
                 return null;
+            }
 
             DataTable schema = _conn.GetSchema2(name);
             if (schema == null)
+            {
                 return null;
+            }
 
             Fields fields = new Fields();
             foreach (DataRow row in schema.Rows)
@@ -1504,7 +1663,7 @@ namespace gView.DataSources.Fdb.MSAccess
             }
             return fields;
         }
-        
+
         #endregion
 
         #region SpatialIndex
@@ -1602,13 +1761,16 @@ namespace gView.DataSources.Fdb.MSAccess
             }
             return new gViewSpatialIndexDef();
         }
-        
+
         #endregion
 
         #region SpatialIndex2
         async virtual public Task<bool> SetSpatialIndexBounds(string FCName, string TreeType, IEnvelope Bounds, double SpatialRatio, int maxPerNode, int maxLevels)
         {
-            if (_conn == null || Bounds == null) return false;
+            if (_conn == null || Bounds == null)
+            {
+                return false;
+            }
 
             FCName = OriginFcName(FCName);
             DataTable tab = await _conn.Select("*", TableName("FDB_FeatureClasses"), DbColName("Name") + "='" + FCName + "'", "", true);
@@ -1629,7 +1791,11 @@ namespace gView.DataSources.Fdb.MSAccess
             tab.Rows[0]["SIMaxY"] = Bounds.maxy;
             tab.Rows[0]["SIRATIO"] = SpatialRatio;
             tab.Rows[0]["MaxPerNode"] = maxPerNode;
-            if (tab.Columns["MaxLevels"] != null) tab.Rows[0]["MaxLevels"] = maxLevels;
+            if (tab.Columns["MaxLevels"] != null)
+            {
+                tab.Rows[0]["MaxLevels"] = maxLevels;
+            }
+
             if (!_conn.Update(tab))
             {
                 _errMsg = _conn.errorMessage;
@@ -1639,7 +1805,11 @@ namespace gView.DataSources.Fdb.MSAccess
         }
         protected bool InitSpatialIndex2(string FCName)
         {
-            if (_conn == null) return false;
+            if (_conn == null)
+            {
+                return false;
+            }
+
             FCName = OriginFcName(FCName);
 
             string name_nodes = "FCSI_" + FCName;
@@ -1689,7 +1859,11 @@ namespace gView.DataSources.Fdb.MSAccess
         }
         async protected Task<bool> InsertSpatialIndexNodes2(string FCName, List<SpatialIndexNode> nodes)
         {
-            if (_conn == null) return false;
+            if (_conn == null)
+            {
+                return false;
+            }
+
             FCName = OriginFcName(FCName);
 
             string name_nodes = FcsiTableName(FCName);
@@ -1720,7 +1894,10 @@ namespace gView.DataSources.Fdb.MSAccess
 
         async public Task<string> SpatialIndexType(string FCName)
         {
-            if (_conn == null) return String.Empty;
+            if (_conn == null)
+            {
+                return String.Empty;
+            }
 
             FCName = OriginFcName(FCName);
             DataTable tab = await _conn.Select(DbColName("SI"), TableName("FDB_FeatureClasses"), DbColName("Name") + "='" + FCName + "'", "");
@@ -1739,7 +1916,10 @@ namespace gView.DataSources.Fdb.MSAccess
         }
         async public Task<ISearchTree> SpatialSearchTree(string FCName)
         {
-            if (_conn == null) return null;
+            if (_conn == null)
+            {
+                return null;
+            }
 
             FCName = OriginFcName(FCName);
             DataTable tab = await _conn.Select("*", TableName("FDB_FeatureClasses"), DbColName("Name") + "='" + FCName + "'", "");
@@ -1786,7 +1966,10 @@ namespace gView.DataSources.Fdb.MSAccess
             {
                 //System.Windows.Forms.MessageBox.Show("Before Distinct");
                 DataTable distinct = await _conn.Select("DISTINCT " + DbColName("NID"), FcsiTableName(FCName), "", DbColName("NID"));
-                if (distinct == null) return null;
+                if (distinct == null)
+                {
+                    return null;
+                }
                 //System.Windows.Forms.MessageBox.Show("After Distinct");
 
                 List<long> nodeNumbers = new List<long>();
@@ -1837,7 +2020,11 @@ namespace gView.DataSources.Fdb.MSAccess
 
         async private void SpatialIndexTree_TreeNodeAdded(object sender, long nid)
         {
-            if (_conn == null) return;
+            if (_conn == null)
+            {
+                return;
+            }
+
             try
             {
                 string fcName = "";
@@ -1849,7 +2036,10 @@ namespace gView.DataSources.Fdb.MSAccess
                         break;
                     }
                 }
-                if (fcName == "") return;
+                if (fcName == "")
+                {
+                    return;
+                }
 
                 await AddTreeNode(fcName, nid);
             }
@@ -1861,9 +2051,13 @@ namespace gView.DataSources.Fdb.MSAccess
         async virtual protected Task AddTreeNode(string fcName, long nid)
         {
             if (_conn.dbType == DBType.sql)
+            {
                 _conn.ExecuteNoneQuery("IF NOT EXISTS (SELECT NID FROM " + FcsiTableName(fcName) + " WHERE NID=" + nid.ToString() + ") INSERT INTO " + FcsiTableName(fcName) + " (NID) VALUES (" + nid.ToString() + ")");
+            }
             else
+            {
                 _conn.ExecuteNoneQuery("INSERT INTO " + FcsiTableName(fcName) + " (" + DbColName("NID") + ") VALUES (" + nid.ToString() + ")");
+            }
 
             await IncSpatialIndexVersion(fcName);
         }
@@ -1874,29 +2068,43 @@ namespace gView.DataSources.Fdb.MSAccess
         }
         async public Task CheckSpatialSearchTreeVersion(string FCName)
         {
-            if (_spatialSearchTrees == null) return;
+            if (_spatialSearchTrees == null)
+            {
+                return;
+            }
 
             FCName = OriginFcName(FCName);
             if (String.IsNullOrEmpty(FCName))
             {
                 DataTable tab = await _conn.Select(DbColName("Name") + "," + DbColName("SIVersion"), TableName("FDB_FeatureClasses"));
-                if (tab == null) return;
+                if (tab == null)
+                {
+                    return;
+                }
 
                 foreach (DataRow row in tab.Rows)
                 {
                     BinarySearchTree2 tree = CachedSpatialSearchTree(row["Name"].ToString()) as BinarySearchTree2;
-                    if (tree == null) continue;
+                    if (tree == null)
+                    {
+                        continue;
+                    }
 
                     int indexVersion = (row["SIVersion"] != null && row["SIVersion"] != System.DBNull.Value) ? Convert.ToInt32(row["SIVersion"]) : 0;
                     if (tree.IndexVersion < indexVersion)
+                    {
                         _spatialSearchTrees.Remove(row["Name"].ToString());
+                    }
                 }
             }
             else
             {
                 DateTime td = DateTime.Now;
                 BinarySearchTree2 tree = CachedSpatialSearchTree(FCName) as BinarySearchTree2;
-                if (tree == null) return;
+                if (tree == null)
+                {
+                    return;
+                }
 
                 int siVersion = 0;
                 object siVersionObject = await _conn.QuerySingleField("SELECT " + DbColName("SIVersion") + " FROM " + TableName("FDB_FeatureClasses") + " WHERE " + DbColName("Name") + "='" + FCName + "'", ColumnName("SIVersion"));
@@ -1906,14 +2114,20 @@ namespace gView.DataSources.Fdb.MSAccess
                 }
 
                 if (tree.IndexVersion < siVersion)
+                {
                     _spatialSearchTrees.Remove(FCName);
+                }
+
                 TimeSpan ts = DateTime.Now - td;
                 double ms = ts.TotalSeconds;
             }
         }
         async private Task IncSpatialIndexVersion(string fcName)
         {
-            if (_conn == null) return;
+            if (_conn == null)
+            {
+                return;
+            }
 
             fcName = OriginFcName(fcName);
             try
@@ -1948,13 +2162,20 @@ namespace gView.DataSources.Fdb.MSAccess
                 node.Page = (short)(Convert.ToInt32(row["Page"]));
                 InsertBinarySearchTreeNodes(node, tab);
 
-                if (parent.ChildNodes == null) parent.ChildNodes = new List<BinarySearchTreeNode>();
+                if (parent.ChildNodes == null)
+                {
+                    parent.ChildNodes = new List<BinarySearchTreeNode>();
+                }
+
                 parent.ChildNodes.Add(node);
             }
         }
         async private Task<List<int>> SpatialIndexNodeIDs2(string FCName, int NID)
         {
-            if (_conn == null) return null;
+            if (_conn == null)
+            {
+                return null;
+            }
 
             FCName = OriginFcName(FCName);
             DataTable oids = await _conn.Select(DbColName("FDB_OID"), FcTableName(FCName), DbColName("FDB_NID") + "=" + NID, DbColName("FDB_OID"));
@@ -1981,16 +2202,23 @@ namespace gView.DataSources.Fdb.MSAccess
             FCName = OriginFcName(FCName);
             List<SpatialIndexNode> nodes = new List<SpatialIndexNode>();
             BinarySearchTree tree = await SpatialSearchTree(FCName) as BinarySearchTree;
-            if (tree == null) return nodes;
+            if (tree == null)
+            {
+                return nodes;
+            }
 
             SpatialIndexNodes2(tree.Root, -1, nodes);
 
             foreach (SpatialIndexNode node in nodes)
             {
                 if (ignoreIDs)
+                {
                     node.IDs = null;
+                }
                 else
+                {
                     node.IDs = await SpatialIndexNodeIDs2(FCName, node.NID);
+                }
             }
 
             return nodes;
@@ -1998,14 +2226,20 @@ namespace gView.DataSources.Fdb.MSAccess
 
         private void SpatialIndexNodes2(BinarySearchTreeNode node, int PID, List<SpatialIndexNode> list)
         {
-            if (node == null) return;
+            if (node == null)
+            {
+                return;
+            }
 
             SpatialIndexNode snode = new SpatialIndexNode();
             snode.NID = node.NID;
             snode.PID = PID;
             snode.Page = node.Page;
             list.Add(snode);
-            if (node.ChildNodes == null) return;
+            if (node.ChildNodes == null)
+            {
+                return;
+            }
 
             foreach (BinarySearchTreeNode childnode in node.ChildNodes)
             {
@@ -2015,11 +2249,15 @@ namespace gView.DataSources.Fdb.MSAccess
 
         async public Task<ISpatialTreeInfo> SpatialTreeInfo(string FCName)
         {
-            if (_conn == null) return null;
+            if (_conn == null)
+            {
+                return null;
+            }
+
             FCName = OriginFcName(FCName);
 
             try
-            { 
+            {
                 DataTable tab = await _conn.Select("*", TableName("FDB_FeatureClasses"), DbColName("Name") + "='" + FCName + "'");
                 if (tab == null)
                 {
@@ -2051,8 +2289,15 @@ namespace gView.DataSources.Fdb.MSAccess
 
         async protected Task<bool> SetSpatialTreeInfo(string FCName, ISpatialTreeInfo info)
         {
-            if (_conn == null) return false;
-            if (info == null) return false;
+            if (_conn == null)
+            {
+                return false;
+            }
+
+            if (info == null)
+            {
+                return false;
+            }
 
             FCName = OriginFcName(FCName);
             try
@@ -2093,7 +2338,10 @@ namespace gView.DataSources.Fdb.MSAccess
         #region BinaryTree2
         async virtual public Task<bool> ShrinkSpatialIndex(string fcName)
         {
-            if (_conn == null) return false;
+            if (_conn == null)
+            {
+                return false;
+            }
 
             // Nur jetzt zum test Tabelle löschen und neu erzeugen
             // Grund: liegen noch von erstellen her in alter Structur vor!!
@@ -2118,7 +2366,10 @@ namespace gView.DataSources.Fdb.MSAccess
 
         async virtual public Task<bool> ShrinkSpatialIndex(string fcName, List<long> NIDs)
         {
-            if (NIDs == null || _conn == null) return false;
+            if (NIDs == null || _conn == null)
+            {
+                return false;
+            }
 
             NIDs.Sort();
 
@@ -2130,7 +2381,9 @@ namespace gView.DataSources.Fdb.MSAccess
             }
             //si.Rows.Clear();
             foreach (DataRow row in si.Rows)
+            {
                 row.Delete();
+            }
 
             foreach (long nid in NIDs)
             {
@@ -2150,7 +2403,11 @@ namespace gView.DataSources.Fdb.MSAccess
 
         async public Task<BinaryTreeDef> BinaryTreeDef(string fcName)
         {
-            if (_conn == null) return null;
+            if (_conn == null)
+            {
+                return null;
+            }
+
             try
             {
                 DataTable tab = await _conn.Select("*", TableName("FDB_FeatureClasses"), DbColName("Name") + "='" + fcName + "'", "");
@@ -2185,7 +2442,11 @@ namespace gView.DataSources.Fdb.MSAccess
         #region Rebuild Index
         async virtual public Task<bool> RebuildSpatialIndexDef(string fcName, BinaryTreeDef def, EventHandler callback)
         {
-            if (_conn == null) return false;
+            if (_conn == null)
+            {
+                return false;
+            }
+
             try
             {
                 int fcID = await GetFeatureClassID(fcName);
@@ -2217,7 +2478,9 @@ namespace gView.DataSources.Fdb.MSAccess
                 }
                 await IncSpatialIndexVersion(fcName);
                 if (callback != null)
+                {
                     callback(this, new UpdateSIDefEventArgs());
+                }
 
                 if (!await RecalcFeatureSpatialIndex(fcName, callback))
                 {
@@ -2411,7 +2674,10 @@ namespace gView.DataSources.Fdb.MSAccess
         async public Task<int> CreateImageDataset(string name, ISpatialReference sRef, ISpatialIndexDef sIndexDef, string imageSpace, IFields additionalFields)
         {
             int dsID = await this.CreateDataset(name, sRef, sIndexDef, true, imageSpace);
-            if (dsID == -1) return -1;
+            if (dsID == -1)
+            {
+                return -1;
+            }
 
             Fields fields = new Fields();
 
@@ -2429,7 +2695,9 @@ namespace gView.DataSources.Fdb.MSAccess
             if (additionalFields != null)
             {
                 foreach (IField field in additionalFields.ToEnumerable())
+                {
                     fields.Add(field);
+                }
             }
 
             int fcID = await this.CreateFeatureClass(name, name + "_IMAGE_POLYGONS", new GeometryDef(GeometryType.Polygon), fields);
@@ -2512,12 +2780,20 @@ namespace gView.DataSources.Fdb.MSAccess
         async public Task<(bool isImageDataset, string imageSpace)> IsImageDataset(string dsname)
         {
             string imageSpace = String.Empty;
-            if (_conn == null) return (false, imageSpace);
+            if (_conn == null)
+            {
+                return (false, imageSpace);
+            }
+
             object field = await _conn.QuerySingleField("SELECT " + DbColName("ImageDataset") + " FROM " + TableName("FDB_Datasets") + " WHERE " + DbColName("Name") + "='" + dsname + "'", ColumnName("ImageDataset"));
             if (field is bool)
             {
                 imageSpace = (string)await _conn.QuerySingleField("SELECT " + DbColName("ImageSpace") + " FROM " + TableName("FDB_Datasets") + " WHERE " + DbColName("Name") + "='" + dsname + "'", ColumnName("ImageSpace"));
-                if (imageSpace == null) imageSpace = String.Empty;
+                if (imageSpace == null)
+                {
+                    imageSpace = String.Empty;
+                }
+
                 return ((bool)field, imageSpace);
             }
             imageSpace = String.Empty;
@@ -2530,7 +2806,9 @@ namespace gView.DataSources.Fdb.MSAccess
         protected bool IsLinkedFeatureClass(DataRow row)
         {
             if (row["SI"] is string && row["SI"].ToString().ToLower() == "linked")
+            {
                 return true;
+            }
 
             return false;
         }
@@ -2538,7 +2816,9 @@ namespace gView.DataSources.Fdb.MSAccess
         protected int LinkedDatasetId(DataRow row)
         {
             if (!IsLinkedFeatureClass(row))
+            {
                 return 0;
+            }
 
             return Convert.ToInt32(row["SIVersion"]);
         }
@@ -2559,15 +2839,21 @@ namespace gView.DataSources.Fdb.MSAccess
                 string key = pluginId.ToString() + ":" + connectionString;
 
                 if (_cache.ContainsKey(key))
+                {
                     return _cache[key];
+                }
 
                 IDataset ds = PlugInManager.Create(pluginId) as IDataset;
                 if (ds == null)
+                {
                     return null;
+                }
 
                 await ds.SetConnectionString(connectionString);
                 if (open)
+                {
                     await ds.Open();
+                }
 
                 _cache.Add(key, ds);
                 return ds;
@@ -2625,17 +2911,30 @@ namespace gView.DataSources.Fdb.MSAccess
 
         async public Task RefreshClasses(IDataset dataset)
         {
-            if (dataset == null) return;
+            if (dataset == null)
+            {
+                return;
+            }
+
             List<IDatasetElement> elements = await DatasetLayers(dataset);
-            if (elements == null) return;
+            if (elements == null)
+            {
+                return;
+            }
 
             foreach (IDatasetElement element in elements)
             {
-                if (element == null || element.Class == null) continue;
+                if (element == null || element.Class == null)
+                {
+                    continue;
+                }
 
                 foreach (IDatasetElement orig in await dataset.Elements())
                 {
-                    if (orig == null || orig.Class == null) continue;
+                    if (orig == null || orig.Class == null)
+                    {
+                        continue;
+                    }
 
                     try
                     {
@@ -2645,22 +2944,35 @@ namespace gView.DataSources.Fdb.MSAccess
                     if (orig.Class.Name == element.Class.Name)
                     {
                         if (orig.Class is IRefreshable)
+                        {
                             ((IRefreshable)orig.Class).RefreshFrom(element.Class);
+                        }
                     }
                 }
             }
         }
         async public Task<int> CreateSpatialReference(ISpatialReference sRef)
         {
-            if (_conn == null) return -1;
-            if (sRef == null) return -1;
+            if (_conn == null)
+            {
+                return -1;
+            }
+
+            if (sRef == null)
+            {
+                return -1;
+            }
 
             string name = sRef.Name;
             string desc = sRef.Description;
             string parm = "";
             foreach (string p in sRef.Parameters)
             {
-                if (parm != "") parm += " ";
+                if (parm != "")
+                {
+                    parm += " ";
+                }
+
                 parm += p;
             }
             string datumName = (sRef.Datum != null) ? sRef.Datum.Name : "";
@@ -2707,7 +3019,10 @@ namespace gView.DataSources.Fdb.MSAccess
         }
         async public Task<bool> SetSpatialReferenceID(string dsname, int SpatialReferenceID)
         {
-            if (_conn == null) return false;
+            if (_conn == null)
+            {
+                return false;
+            }
 
             DataTable tab = await _conn.Select("*", TableName("FDB_Datasets"), DbColName("Name") + "='" + dsname + "'", "", true);
             if (tab == null)
@@ -2730,7 +3045,11 @@ namespace gView.DataSources.Fdb.MSAccess
         }
         protected bool Report(object report)
         {
-            if (reportProgress == null) return false;
+            if (reportProgress == null)
+            {
+                return false;
+            }
+
             reportProgress(report);
             return true;
         }
@@ -2768,12 +3087,19 @@ namespace gView.DataSources.Fdb.MSAccess
             int counter = 0;
             while ((feat = await cursor.NextFeature()) != null)
             {
-                if (feat.Shape == null || feat.Shape.Envelope == null) continue;
+                if (feat.Shape == null || feat.Shape.Envelope == null)
+                {
+                    continue;
+                }
 
                 if (envelope == null)
+                {
                     envelope = new Envelope(feat.Shape.Envelope);
+                }
                 else
+                {
                     envelope.Union(feat.Shape.Envelope);
+                }
 
                 if (counter > 99)
                 {
@@ -2887,7 +3213,10 @@ namespace gView.DataSources.Fdb.MSAccess
                 report.featurePos = 0;
 
                 IEnvelope Bounds = await this.QueryExtent(fc.Name);
-                if (Bounds == null) return false;
+                if (Bounds == null)
+                {
+                    return false;
+                }
 
                 if (reportProgress != null)
                 {
@@ -2912,7 +3241,10 @@ namespace gView.DataSources.Fdb.MSAccess
 
                 while ((feat = await cursor.NextFeature()) != null)
                 {
-                    if (feat.Shape == null) continue;
+                    if (feat.Shape == null)
+                    {
+                        continue;
+                    }
 
                     SHPObject shpObj = new SHPObject(feat.OID, feat.Shape.Envelope);
                     tree.AddShape(shpObj);
@@ -2931,7 +3263,10 @@ namespace gView.DataSources.Fdb.MSAccess
 
                 List<SpatialIndexNode> nodes = tree.Nodes;
 
-                if (nodes.Count == 0) return true;
+                if (nodes.Count == 0)
+                {
+                    return true;
+                }
 
                 if (!await this.SetSpatialIndexBounds(fc.Name, "BinaryTree", Bounds, 0.55, maxPerNode, maxLevels))
                 {
@@ -2963,11 +3298,17 @@ namespace gView.DataSources.Fdb.MSAccess
                 string[] viewNames = SpatialViewNames(FCName);
                 FCName = viewNames[0];
             }
-            if (_conn == null) return new GeometryDef(GeometryType.Unknown, null, false); ;
+            if (_conn == null)
+            {
+                return new GeometryDef(GeometryType.Unknown, null, false);
+            };
             string sql = "SELECT * FROM " + TableName("FDB_FeatureClasses") + " WHERE " + DbColName("Name") + "='" + FCName + "'";
 
             DataTable tab = await _conn.Select("*", TableName("FDB_FeatureClasses"), DbColName("Name") + "='" + FCName + "'");
-            if (tab == null || tab.Rows.Count == 0) return new GeometryDef(GeometryType.Unknown, null, false);
+            if (tab == null || tab.Rows.Count == 0)
+            {
+                return new GeometryDef(GeometryType.Unknown, null, false);
+            }
 
             DataRow row = tab.Rows[0];
 
@@ -2988,7 +3329,10 @@ namespace gView.DataSources.Fdb.MSAccess
         async public Task<List<IDataset>> Datasets()
         {
             _errMsg = "";
-            if (_conn == null) return null;
+            if (_conn == null)
+            {
+                return null;
+            }
 
             DataSet ds = new DataSet();
             if (!await _conn.SQLQuery(ds, "SELECT * FROM " + DbColName("FDB_Datasets"), "DS"))
@@ -3003,7 +3347,9 @@ namespace gView.DataSources.Fdb.MSAccess
                 AccessFDBDataset dataset = new AccessFDBDataset(this);
                 await dataset.SetConnectionString(_filename + ";" + row["Name"].ToString());
                 if (await dataset.Open())
+                {
                     datasets.Add(dataset);
+                }
             }
 
             ds.Dispose();
@@ -3016,41 +3362,63 @@ namespace gView.DataSources.Fdb.MSAccess
 
         async virtual public Task<IFeatureClass> GetFeatureclass(string fcName)
         {
-            if (_conn == null) return null;
+            if (_conn == null)
+            {
+                return null;
+            }
 
             int fcID = await this.GetFeatureClassID(fcName);
 
             DataTable featureclasses = await _conn.Select(DbColName("DatasetID"), TableName("FDB_FeatureClasses"), DbColName("ID") + "=" + fcID);
             if (featureclasses == null || featureclasses.Rows.Count != 1)
+            {
                 return null;
+            }
 
             DataTable datasets = await _conn.Select(DbColName("Name"), TableName("FDB_Datasets"), DbColName("ID") + "=" + featureclasses.Rows[0]["DatasetID"].ToString());
             if (datasets == null || datasets.Rows.Count != 1)
+            {
                 return null;
+            }
 
             return await GetFeatureclass(datasets.Rows[0]["Name"].ToString(), fcName);
         }
         abstract public Task<IFeatureClass> GetFeatureclass(string dsName, string fcName);
         async virtual public Task<IFeatureClass> GetFeatureclass(int fcId)
         {
-            if (_conn == null) return null;
+            if (_conn == null)
+            {
+                return null;
+            }
 
             DataTable featureclasses = await _conn.Select(DbColName("DatasetID") + "," + DbColName("Name"), TableName("FDB_FeatureClasses"), DbColName("ID") + "=" + fcId);
             if (featureclasses == null || featureclasses.Rows.Count != 1)
+            {
                 return null;
+            }
 
             DataTable datasets = await _conn.Select(DbColName("Name"), TableName("FDB_Datasets"), DbColName("ID") + "=" + featureclasses.Rows[0]["DatasetID"].ToString());
             if (datasets == null || datasets.Rows.Count != 1)
+            {
                 return null;
+            }
 
             return await GetFeatureclass(datasets.Rows[0]["Name"].ToString(), (string)featureclasses.Rows[0]["Name"]);
         }
 
         async protected Task<int> DatasetIDFromFeatureClassName(string fcName)
         {
-            if (_conn == null) return -1;
+            if (_conn == null)
+            {
+                return -1;
+            }
+
             object obj = await _conn.QuerySingleField("SELECT " + DbColName("DatasetID") + " FROM " + TableName("FDB_FeatureClasses") + " WHERE " + DbColName("Name") + "='" + fcName + "'", ColumnName("DatasetID"));
-            if (obj == null) return -1;
+            if (obj == null)
+            {
+                return -1;
+            }
+
             try
             {
                 return Convert.ToInt32(obj);
@@ -3062,12 +3430,23 @@ namespace gView.DataSources.Fdb.MSAccess
         }
         async protected Task<string> DatasetNameFromFeatureClassName(string fcName)
         {
-            if (_conn == null) return "";
+            if (_conn == null)
+            {
+                return "";
+            }
+
             int dsID = await DatasetIDFromFeatureClassName(fcName);
-            if (dsID == -1) return "";
+            if (dsID == -1)
+            {
+                return "";
+            }
 
             object obj = await _conn.QuerySingleField("SELECT " + DbColName("Name") + " FROM " + TableName("FDB_Datasets") + " WHERE " + DbColName("ID") + "=" + dsID, ColumnName("Name"));
-            if (obj == null) return "";
+            if (obj == null)
+            {
+                return "";
+            }
+
             try
             {
                 return (string)obj;
@@ -3080,9 +3459,16 @@ namespace gView.DataSources.Fdb.MSAccess
         async virtual public Task<IEnumerable<IField>> FeatureClassFields(int dsID, string fcname)
         {
             _errMsg = "";
-            if (dsID == -1) return null;
+            if (dsID == -1)
+            {
+                return null;
+            }
+
             int fcID = await this.FeatureClassID(dsID, fcname);
-            if (fcID == -1) return null;
+            if (fcID == -1)
+            {
+                return null;
+            }
 
             DataSet ds = new DataSet();
             if (!await _conn.SQLQuery(ds, "SELECT * FROM " + TableName("FDB_FeatureClassFields") + " WHERE " + DbColName("FClassID") + "=" + fcID, "FIELDS"))
@@ -3106,11 +3492,17 @@ namespace gView.DataSources.Fdb.MSAccess
             {
                 string indexType = await this.SpatialIndexType(fcname);
                 if (indexType != null && indexType.ToUpper() == "GEOMETRY")
+                {
                     field.type = FieldType.GEOMETRY;
+                }
                 else if (indexType != null && indexType.ToUpper() == "GEOGRAPHY")
+                {
                     field.type = FieldType.GEOGRAPHY;
+                }
                 else
+                {
                     field.type = FieldType.Shape;
+                }
             }
             else
             {
@@ -3139,7 +3531,10 @@ namespace gView.DataSources.Fdb.MSAccess
                     {
                         field = null;
                     }
-                    if (field == null) field = new Field();
+                    if (field == null)
+                    {
+                        field = new Field();
+                    }
                 }
                 else
                 {
@@ -3157,7 +3552,10 @@ namespace gView.DataSources.Fdb.MSAccess
                     try
                     {
                         DataRow[] srow = schema.Select("ColumnName='" + field.name + "'");
-                        if (srow.Length == 0) continue;
+                        if (srow.Length == 0)
+                        {
+                            continue;
+                        }
 
                         switch (field.type)
                         {
@@ -3196,7 +3594,10 @@ namespace gView.DataSources.Fdb.MSAccess
                     foreach (IField f in addFields.ToEnumerable())
                     {
                         if (fields.FindField(f.name) != null)
+                        {
                             continue;
+                        }
+
                         fields.Add(f);
                     }
                 }
@@ -3206,7 +3607,10 @@ namespace gView.DataSources.Fdb.MSAccess
         async virtual public Task<IEnumerable<IField>> FeatureClassFields(string dsname, string fcname)
         {
             _errMsg = "";
-            if (_conn == null) return null;
+            if (_conn == null)
+            {
+                return null;
+            }
 
             int dsID = await this.DatasetID(dsname);
             return await FeatureClassFields(dsID, fcname);
@@ -3214,7 +3618,11 @@ namespace gView.DataSources.Fdb.MSAccess
         async protected Task<IEnvelope> FeatureClassExtent(string FCname)
         {
             _errMsg = "";
-            if (_conn == null) return null;
+            if (_conn == null)
+            {
+                return null;
+            }
+
             FCname = OriginFcName(FCname);
 
             return await this.QueryExtent(FCname);
@@ -3222,13 +3630,20 @@ namespace gView.DataSources.Fdb.MSAccess
 
         protected int round(double x)
         {
-            if (x < 0) return Convert.ToInt32(Math.Round(x - 1.0, 0));
+            if (x < 0)
+            {
+                return Convert.ToInt32(Math.Round(x - 1.0, 0));
+            }
+
             return Convert.ToInt32(Math.Round(x + 1.0, 0));
         }
 
         async virtual public Task<DataTable> EmptyDatatable(string fcname, IQueryFilter filter)
         {
-            if (_conn == null) return null;
+            if (_conn == null)
+            {
+                return null;
+            }
 
             string subfields = "";
             if (filter != null)
@@ -3237,7 +3652,10 @@ namespace gView.DataSources.Fdb.MSAccess
                 filter.fieldPostfix = "]";
                 subfields = filter.SubFields.Replace(" ", ",");
             }
-            if (subfields == "") subfields = "*";
+            if (subfields == "")
+            {
+                subfields = "*";
+            }
 
             string sql = "SELECT " + subfields + " FROM " + FcTableName(fcname) + " WHERE " + DbColName("FDB_OID") + "=-1";
 
@@ -3261,9 +3679,21 @@ namespace gView.DataSources.Fdb.MSAccess
 
         public string ValidFieldName(string name)
         {
-            if (name == "USER") return "USER__";
-            if (name == "KEY") return "KEY__";
-            if (name == "TEXT") return "TEXT__";
+            if (name == "USER")
+            {
+                return "USER__";
+            }
+
+            if (name == "KEY")
+            {
+                return "KEY__";
+            }
+
+            if (name == "TEXT")
+            {
+                return "TEXT__";
+            }
+
             return name;
         }
 
@@ -3273,9 +3703,16 @@ namespace gView.DataSources.Fdb.MSAccess
         }
         async public Task<ISpatialReference> SpatialReference(int dsID)
         {
-            if (_conn == null) return null;
+            if (_conn == null)
+            {
+                return null;
+            }
+
             object sID = await _conn.QuerySingleField("SELECT " + DbColName("SpatialReferenceID") + " FROM " + TableName("FDB_Datasets") + " WHERE " + DbColName("ID") + "=" + dsID, ColumnName("SpatialReferenceID"));
-            if (sID == null) return null;
+            if (sID == null)
+            {
+                return null;
+            }
 
             DataSet ds = new DataSet();
             if (await _conn.SQLQuery(ds, "SELECT * FROM " + TableName("FDB_SpatialReference") + " WHERE " + DbColName("ID") + "=" + sID.ToString(), "SREF"))
@@ -3302,10 +3739,20 @@ namespace gView.DataSources.Fdb.MSAccess
 
         async public Task<bool> ProjectFeatureClass(IFeatureClass fc, ISpatialReference destSRef)
         {
-            if (_conn == null || fc == null) return false;
-            if (fc.SpatialReference == null || destSRef == null) return true;
+            if (_conn == null || fc == null)
+            {
+                return false;
+            }
 
-            if (fc.SpatialReference.Equals(destSRef)) return true;
+            if (fc.SpatialReference == null || destSRef == null)
+            {
+                return true;
+            }
+
+            if (fc.SpatialReference.Equals(destSRef))
+            {
+                return true;
+            }
 
             List<SpatialIndexNode> nodes = await this.SpatialIndexNodes2(fc.Name, true);
             if (nodes == null)
@@ -3391,7 +3838,10 @@ namespace gView.DataSources.Fdb.MSAccess
 
         public virtual bool TruncateTable(string table)
         {
-            if (_conn == null) return false;
+            if (_conn == null)
+            {
+                return false;
+            }
 
             if (!_conn.ExecuteNoneQuery("delete from " + FcTableName(table)))
             {
@@ -3416,7 +3866,10 @@ namespace gView.DataSources.Fdb.MSAccess
         {
             try
             {
-                if (_conn == null) return;
+                if (_conn == null)
+                {
+                    return;
+                }
 
                 DataTable tab = await _conn.Select("*", TableName("FDB_ReleaseInfo"));
                 if (tab != null && tab.Rows.Count == 1)
@@ -3512,12 +3965,22 @@ namespace gView.DataSources.Fdb.MSAccess
 
         async protected Task<bool> AlterFeatureclassField(int fcid, IField oldField, IField newField)
         {
-            if (oldField == null && newField == null) return true;
+            if (oldField == null && newField == null)
+            {
+                return true;
+            }
 
-            if (_conn == null) return false;
+            if (_conn == null)
+            {
+                return false;
+            }
+
             if (oldField != null)
             {
-                if (oldField.Equals(newField)) return true;
+                if (oldField.Equals(newField))
+                {
+                    return true;
+                }
 
                 if (newField != null)   // ALTER COLUMN
                 {
@@ -3533,9 +3996,14 @@ namespace gView.DataSources.Fdb.MSAccess
                         row["Aliasname"] = newField.aliasname;
                         row["FieldType"] = (int)newField.type;
                         if (newField.DefautValue == null || newField.DefautValue == DBNull.Value)
+                        {
                             row["DefaultValue"] = DBNull.Value;
+                        }
                         else
+                        {
                             row["DefaultValue"] = newField.DefautValue.ToString();
+                        }
+
                         row["IsRequired"] = newField.IsRequired;
                         row["IsEditable"] = newField.IsEditable;
                     }
@@ -3570,9 +4038,14 @@ namespace gView.DataSources.Fdb.MSAccess
             row2["Aliasname"] = newField.aliasname;
             row2["FieldType"] = (int)newField.type;
             if (newField.DefautValue == null || newField.DefautValue == DBNull.Value)
+            {
                 row2["DefaultValue"] = DBNull.Value;
+            }
             else
+            {
                 row2["DefaultValue"] = newField.DefautValue.ToString();
+            }
+
             row2["IsRequired"] = newField.IsRequired;
             row2["IsEditable"] = newField.IsEditable;
             tab2.Rows.Add(row2);
@@ -3587,8 +4060,15 @@ namespace gView.DataSources.Fdb.MSAccess
         }
         async protected virtual Task<bool> RenameField(string table, IField oldField, IField newField)
         {
-            if (oldField == null || newField == null || _conn == null) return false;
-            if (oldField.name == newField.name) return true;
+            if (oldField == null || newField == null || _conn == null)
+            {
+                return false;
+            }
+
+            if (oldField.name == newField.name)
+            {
+                return true;
+            }
 
             // ADOX vermeiden...
             // macht Versionsprobleme bei vista!
@@ -3648,14 +4128,21 @@ namespace gView.DataSources.Fdb.MSAccess
 
         async internal Task<DataTable> Select(string fields, string from, string where)
         {
-            if (_conn == null) return null;
+            if (_conn == null)
+            {
+                return null;
+            }
+
             return await _conn.Select(fields, from, where);
         }
 
         #region IAltertable
         async public virtual Task<bool> AlterTable(string table, IField oldField, IField newField)
         {
-            if (oldField == null && newField == null) return true;
+            if (oldField == null && newField == null)
+            {
+                return true;
+            }
 
             if (oldField != null && newField != null &&
                 oldField.name != newField.name &&
@@ -3667,7 +4154,11 @@ namespace gView.DataSources.Fdb.MSAccess
                 return false;
             }
 
-            if (_conn == null) return false;
+            if (_conn == null)
+            {
+                return false;
+            }
+
             int dsID = await DatasetIDFromFeatureClassName(table);
             string dsname = await DatasetNameFromFeatureClassName(table);
             if (dsname == "")
@@ -3682,7 +4173,10 @@ namespace gView.DataSources.Fdb.MSAccess
 
             IFeatureClass fc = await GetFeatureclass(dsname, table);
 
-            if (fc == null || fc.Fields == null) return false;
+            if (fc == null || fc.Fields == null)
+            {
+                return false;
+            }
 
             try
             {
@@ -3693,7 +4187,10 @@ namespace gView.DataSources.Fdb.MSAccess
                         _errMsg = "Featureclass " + table + " do not contain field '" + oldField.name + "'";
                         return false;
                     }
-                    if (oldField.Equals(newField)) return true;
+                    if (oldField.Equals(newField))
+                    {
+                        return true;
+                    }
 
                     if (newField != null)   // ALTER COLUMN
                     {
@@ -3760,7 +4257,10 @@ namespace gView.DataSources.Fdb.MSAccess
 
         protected void FireTableAltered(string table)
         {
-            if (TableAltered != null) TableAltered(table);
+            if (TableAltered != null)
+            {
+                TableAltered(table);
+            }
         }
 
         abstract protected Task<bool> TableExists(string tableName);
@@ -3779,7 +4279,10 @@ namespace gView.DataSources.Fdb.MSAccess
 
         async virtual public Task<bool> CreateIfNotExists(string tableName, IFields fields)
         {
-            if (await TableExists(tableName)) return true;
+            if (await TableExists(tableName))
+            {
+                return true;
+            }
 
             return CreateTable(tableName, fields, false);
         }
@@ -3794,7 +4297,10 @@ namespace gView.DataSources.Fdb.MSAccess
         }
         async virtual public Task<int> GetFeatureClassID(string fcName)
         {
-            if (_conn == null) return -1;
+            if (_conn == null)
+            {
+                return -1;
+            }
 
             try
             {
@@ -3808,7 +4314,10 @@ namespace gView.DataSources.Fdb.MSAccess
         }
         async virtual public Task<string> GetFeatureClassName(int fcID)
         {
-            if (_conn == null) return string.Empty;
+            if (_conn == null)
+            {
+                return string.Empty;
+            }
 
             try
             {
@@ -3831,7 +4340,9 @@ namespace gView.DataSources.Fdb.MSAccess
             get
             {
                 if (_conn != null)
+                {
                     return _conn.ConnectionString;
+                }
 
                 return null;
             }
@@ -3846,7 +4357,7 @@ namespace gView.DataSources.Fdb.MSAccess
         }
         virtual public void ModifyDbParameter(DbParameter parameter)
         {
-            
+
         }
 
         virtual public bool IsFilebaseDatabase
@@ -3860,9 +4371,14 @@ namespace gView.DataSources.Fdb.MSAccess
         {
             tableName = tableName.Trim();
             if (!tableName.StartsWith("["))
+            {
                 tableName = "[" + tableName;
+            }
+
             if (!tableName.EndsWith("]"))
+            {
                 tableName += "]";
+            }
 
             return tableName;
         }
@@ -3877,14 +4393,18 @@ namespace gView.DataSources.Fdb.MSAccess
         virtual protected string FcTableName(string fcName)
         {
             if (fcName.Contains("@"))
+            {
                 return "[" + SpatialViewNames(fcName)[1] + "]";
+            }
 
             return "[FC_" + fcName + "]";
         }
         virtual protected string FcsiTableName(string fcName)
         {
             if (fcName.Contains("@"))
+            {
                 return "[FCSI_" + SpatialViewNames(fcName)[0] + "]";
+            }
 
             return "[FCSI_" + fcName + "]";
         }
@@ -3911,7 +4431,9 @@ namespace gView.DataSources.Fdb.MSAccess
                 string nwname = fcname.Substring(0, fcname.LastIndexOf("_"));
                 IFeatureClass nw = await GetFeatureclass(nwname);
                 if (nw != null && nw.GeometryType == GeometryType.Network)
+                {
                     return true;
+                }
             }
             return false;
         }
@@ -3919,22 +4441,30 @@ namespace gView.DataSources.Fdb.MSAccess
         async public Task<GraphWeights> GraphWeights(string networkName)
         {
             if (_conn == null)
+            {
                 return null;
+            }
 
             int fcId = await GetFeatureClassID(networkName);
             if (fcId < 0)
+            {
                 return null;
+            }
 
             DataTable tab = await _conn.Select("*", TableName("FDB_NetworkWeights"), DbColName("NetworkId") + "=" + fcId);
             if (tab == null || tab.Rows.Count == 0)
+            {
                 return null;
+            }
 
             GraphWeights weights = new GraphWeights();
             foreach (DataRow row in tab.Rows)
             {
                 IGraphWeight weight = gView.Framework.Network.Build.NetworkObjectSerializer.DeserializeWeight((byte[])row["Properties"]);
                 if (weight != null)
+                {
                     weights.Add(weight);
+                }
             }
             return weights;
         }
@@ -3944,15 +4474,21 @@ namespace gView.DataSources.Fdb.MSAccess
             List<IFeatureClass> ret = new List<IFeatureClass>();
 
             if (_conn == null)
+            {
                 return ret;
+            }
 
             IFeatureClass networkFc = await GetFeatureclass(networkName);
             if (networkFc == null || networkFc.Dataset == null || !(networkFc is INetworkFeatureClass))
+            {
                 return ret;
+            }
 
             DataTable tab = await _conn.Select(DbColName("FCID"), TableName("FDB_NetworkClasses"), DbColName("NetworkId") + "=" + FeatureClassID(await DatasetID(networkFc.Dataset.DatasetName), networkName));
             if (tab == null)
+            {
                 return ret;
+            }
 
             foreach (DataRow row in tab.Rows)
             {
@@ -3961,7 +4497,9 @@ namespace gView.DataSources.Fdb.MSAccess
                     string fcname = (await _conn.QuerySingleField("SELECT " + DbColName("Name") + " FROM " + TableName("FDB_FeatureClasses") + " WHERE ID=" + row["FCID"].ToString(), ColumnName("Name")))?.ToString();
                     IFeatureClass fc = await GetFeatureclass(fcname);
                     if (fc != null)
+                    {
                         ret.Add(fc);
+                    }
                 }
                 catch { }
             }
@@ -3974,7 +4512,9 @@ namespace gView.DataSources.Fdb.MSAccess
         public string[] SpatialViewNames(string name)
         {
             if (!name.Contains("@"))
+            {
                 throw new Exception("Not a correct Spatial View Name: FC_Name@View_Name");
+            }
 
             int pos = name.IndexOf("@");
 
@@ -3984,7 +4524,9 @@ namespace gView.DataSources.Fdb.MSAccess
         public string OriginFcName(string name)
         {
             if (name.Contains("@"))
+            {
                 return name.Split('@')[0];
+            }
 
             return name;
         }

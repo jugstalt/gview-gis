@@ -143,7 +143,7 @@ namespace gView.DataSources.OGR
 
             _elements = new List<IDatasetElement>();
 
-            if (_state!= DatasetState.opened)
+            if (_state != DatasetState.opened)
             {
                 return Task.FromResult(_elements);
             }
@@ -280,18 +280,18 @@ namespace gView.DataSources.OGR
                         for (int i = 0; i < layerCount; i++)
                         {
                             string ogrLayerName = dataSourceV1.GetLayerByIndex(i)?.GetName();
-                            if(ogrLayerName==elementName)
+                            if (ogrLayerName == elementName)
                             {
                                 OSGeo_v1.OGR.Layer ogrLayerV1 = dataSourceV1.GetLayerByIndex(i);
                                 if (ogrLayerV1 != null)
                                 {
                                     _elements.Add(new DatasetElement(new FeatureClassV1(this, ogrLayerV1)));
-                                }  
+                                }
                             }
                         }
                     }
                 }
-                else if(OSGeo.Initializer.InstalledVersion == OSGeo.GdalVersion.V3)
+                else if (OSGeo.Initializer.InstalledVersion == OSGeo.GdalVersion.V3)
                 {
                     using (var dataSourceV3 = OSGeo_v3.OGR.Ogr.Open(_connectionString, 0))
                     {
@@ -302,7 +302,7 @@ namespace gView.DataSources.OGR
                             string ogrLayerName = dataSourceV3.GetLayerByIndex(i)?.GetName();
                             if (ogrLayerName == elementName)
                             {
-                                using (var ogrLayerV3 = dataSourceV3.GetLayerByIndex(i)) 
+                                using (var ogrLayerV3 = dataSourceV3.GetLayerByIndex(i))
                                 {
                                     if (ogrLayerV3 != null)
                                     {

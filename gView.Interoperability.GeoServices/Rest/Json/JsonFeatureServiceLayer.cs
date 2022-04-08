@@ -1,10 +1,6 @@
-﻿using gView.Framework.Geometry;
-using gView.Interoperability.GeoServices.Rest.Reflection;
+﻿using gView.Interoperability.GeoServices.Rest.Reflection;
 using Newtonsoft.Json;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace gView.Interoperability.GeoServices.Rest.Json
 {
@@ -80,7 +76,7 @@ namespace gView.Interoperability.GeoServices.Rest.Json
         public int MaxRecordCount { get; set; }
 
         [JsonProperty("standardMaxRecordCount")]
-        public int StandardMaxRecordCount {get;set;}
+        public int StandardMaxRecordCount { get; set; }
 
         [JsonProperty("maxRecordCountFactor")]
         public int MaxRecordCountFactor { get; set; }
@@ -95,7 +91,7 @@ namespace gView.Interoperability.GeoServices.Rest.Json
 
         public class ArchivingInfoClass
         {
-            
+
             public ArchivingInfoClass()
             {
                 this.SupportsQueryWithHistoricMoment = false;

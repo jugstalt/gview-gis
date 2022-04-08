@@ -1,8 +1,5 @@
 ﻿using gView.Interoperability.GeoServices.Rest.Json.DynamicLayers;
 using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace gView.Interoperability.GeoServices.Rest.Json.Request
 {
@@ -18,7 +15,7 @@ namespace gView.Interoperability.GeoServices.Rest.Json.Request
         public string DefinitionExpression { get; set; }
 
         [JsonProperty(PropertyName = "drawingInfo")]
-        public DynamicLayerDrawingInfo DrawingInfo {get;set;}
+        public DynamicLayerDrawingInfo DrawingInfo { get; set; }
 
         #region Classes
 

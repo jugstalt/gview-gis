@@ -1,11 +1,8 @@
-﻿using System;
+﻿using gView.Framework.system;
+using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using gView.Framework.system;
-using gView.Framework.Db;
 using System.Data;
-using gView.Framework.Carto;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace gView.Framework.Data
@@ -27,15 +24,21 @@ namespace gView.Framework.Data
             _fields = new Fields();
 
             foreach (IField field in _fc.Fields.ToEnumerable())
+            {
                 _fields.Add(field);
+            }
 
             if (_joins == null)
+            {
                 return;
+            }
 
             foreach (IFeatureLayerJoin join in _joins)
             {
                 if (join.JoinFields == null)
+                {
                     continue;
+                }
 
                 foreach (IField field in join.JoinFields.ToEnumerable())
                 {
@@ -44,9 +47,14 @@ namespace gView.Framework.Data
                     f.aliasname = join.JoinName + ":" + (String.IsNullOrEmpty(f.aliasname) ? f.name : f.aliasname);
 
                     if (f.type == FieldType.ID)
+                    {
                         f.type = FieldType.integer;
+                    }
+
                     if (f.type == FieldType.Shape)
+                    {
                         f.type = FieldType.binary;
+                    }
 
                     _fields.Add(f);
                 }
@@ -88,12 +96,18 @@ namespace gView.Framework.Data
         async public Task<IFeatureCursor> GetFeatures(IQueryFilter filter)
         {
             if (filter == null)
+            {
                 return null;
+            }
 
             if (filter is IBufferQueryFilter)
             {
                 ISpatialFilter sFilter = await BufferQueryFilter.ConvertToSpatialFilter(filter as IBufferQueryFilter);
-                if (sFilter == null) return null;
+                if (sFilter == null)
+                {
+                    return null;
+                }
+
                 return await GetFeatures(sFilter);
             }
 
@@ -103,7 +117,7 @@ namespace gView.Framework.Data
                 if (filter.SubFields.Contains(":"))
                 {
                     string[] fn = filter.SubFields.Split(':');
-                    
+
                     IFeatureLayerJoin join = _joins[fn[0]];
                     if (join != null)
                     {
@@ -165,7 +179,9 @@ namespace gView.Framework.Data
                 }
             }
             if ((!filter.SubFields.Contains(":") && !filter.SubFields.Contains("*") && hasInnerJoin == false && !filter.WhereClause.Contains(":")) || _joins == null || _joins.Count == 0)
+            {
                 return await _fc.GetFeatures(filter);
+            }
 
             Dictionary<string, UniqueList<string>> fieldNames = new Dictionary<string, UniqueList<string>>();
             fieldNames.Add(String.Empty, new UniqueList<string>());
@@ -196,7 +212,10 @@ namespace gView.Framework.Data
                         fieldNames[String.Empty].Add(join.Field);
 
                         if (!fieldNames.ContainsKey(fn[0]))
+                        {
                             fieldNames.Add(fn[0], new UniqueList<string>());
+                        }
+
                         fieldNames[fn[0]].Add(fn[1].Trim());
                     }
                 }
@@ -235,7 +254,10 @@ namespace gView.Framework.Data
                         {
                             isCrossTableQuery = true;
                             if (!fieldNames.ContainsKey(join.JoinName))
+                            {
                                 fieldNames.Add(join.JoinName, new UniqueList<string>());
+                            }
+
                             fieldNames[join.JoinName].Add(field.name.Split(':')[1].Trim());
                             filter.AddField(join.Field);
                             //filter.AddField(field.name);
@@ -267,7 +289,9 @@ namespace gView.Framework.Data
             #endregion
 
             if (fieldNames.Keys.Count <= 1)
+            {
                 fieldNames = null;
+            }
 
             try
             {
@@ -294,7 +318,10 @@ namespace gView.Framework.Data
 
             IFeatureCursor cursor = await this.GetFeatures(filter);
             if (cursor == null)
+            {
                 return null;
+            }
+
             IFeature feat;
 
             IDSelectionSet selSet = new IDSelectionSet();
@@ -315,12 +342,16 @@ namespace gView.Framework.Data
         public IField FindField(string name)
         {
             if (_fields == null)
+            {
                 return null;
+            }
 
             foreach (IField field in _fields.ToEnumerable())
             {
                 if (field.name == name)
+                {
                     return field;
+                }
             }
 
             return null;
@@ -402,7 +433,9 @@ namespace gView.Framework.Data
                     {
                         IFeatureLayerJoin join = _joins[joinName];
                         if (join != null)
+                        {
                             join.Init(_fieldNames[joinName].ToString(','));
+                        }
                     }
                 }
             }
@@ -418,35 +451,47 @@ namespace gView.Framework.Data
                         _features.Add(feature);
                     }
                     if (feature == null || _features.Count > 100)
+                    {
                         break;
+                    }
                 }
             }
 
             async private Task Join()
             {
                 if (_fieldNames == null || _joins == null)
+                {
                     return;
+                }
 
                 #region Collect values & perform cache query
-                
+
                 foreach (string joinName in _fieldNames.Keys)
                 {
                     if (String.IsNullOrEmpty(joinName))
+                    {
                         continue;
+                    }
 
                     IFeatureLayerJoin join = _joins[joinName];
                     if (join == null)
+                    {
                         continue;
+                    }
 
                     List<string> vals = new List<string>();
                     foreach (IFeature feature in _features)
                     {
                         object joinVal = feature[join.Field];
                         if (joinVal == null)
+                        {
                             continue;
+                        }
 
                         if (!vals.Contains(joinVal.ToString()))
+                        {
                             vals.Add(joinVal.ToString());
+                        }
                     }
                     await join.PerformCacheQuery(vals.ToArray());
                 }
@@ -461,14 +506,21 @@ namespace gView.Framework.Data
                         foreach (string joinName in _fieldNames.Keys)
                         {
                             if (String.IsNullOrEmpty(joinName))
+                            {
                                 continue;
+                            }
+
                             IFeatureLayerJoin join = _joins[joinName];
                             if (join == null)
+                            {
                                 continue;
+                            }
 
                             object joinVal = feature[join.Field];
                             if (joinVal == null)
+                            {
                                 continue;
+                            }
 
                             IRow row = await join.GetJoinedRow(joinVal.ToString());
                             if (row == null)
@@ -501,7 +553,9 @@ namespace gView.Framework.Data
                 }
 
                 foreach (IFeature feature in removeFeatures)
+                {
                     _features.Remove(feature);
+                }
             }
 
             #region IFeatureCursor Member
@@ -514,10 +568,15 @@ namespace gView.Framework.Data
 
                     await Collect();
                     if (_features.Count == 0)
+                    {
                         return null;
+                    }
+
                     await Join();
                     if (_features.Count == 0)
+                    {
                         return await NextFeature();
+                    }
                 }
 
                 IFeature feature = _features[_pos++];
@@ -537,7 +596,9 @@ namespace gView.Framework.Data
                     _cursor = null;
                 }
                 foreach (IFeatureLayerJoin join in _joins)
+                {
                     join.Dispose();
+                }
             }
 
             #endregion
@@ -565,7 +626,9 @@ namespace gView.Framework.Data
                 {
                     IRow row = await ((IRowCursor)_cursor).NextRow();
                     if (row == null)
+                    {
                         return null;
+                    }
 
                     Feature feature = new Feature(row);
                     return feature;

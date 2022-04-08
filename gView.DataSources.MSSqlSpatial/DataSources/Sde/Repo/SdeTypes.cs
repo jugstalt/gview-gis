@@ -1,9 +1,5 @@
 ﻿using gView.Framework.Data;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace gView.DataSources.MSSqlSpatial.DataSources.Sde.Repo
 {
@@ -34,11 +30,11 @@ namespace gView.DataSources.MSSqlSpatial.DataSources.Sde.Repo
 
         public enum SdeGeometryTppe
         {
-            unknown=0,
+            unknown = 0,
             point = 1,
             multipoint = -1,  // ??
             linestring = -2,  // ??
-            multilinestring = 9,  
+            multilinestring = 9,
             polygon = -3,     // ??
             multipolygon = 11
         }
@@ -47,9 +43,11 @@ namespace gView.DataSources.MSSqlSpatial.DataSources.Sde.Repo
         {
 
             if (((SdeFieldFlags)sdeColumn.Flags).HasFlag(SdeFieldFlags.IsId))
+            {
                 return Framework.Data.FieldType.ID;
+            }
 
-            switch(sdeColumn.SdeType)
+            switch (sdeColumn.SdeType)
             {
                 case SE_SMALLINT_TYPE:
                     return Framework.Data.FieldType.smallinteger;

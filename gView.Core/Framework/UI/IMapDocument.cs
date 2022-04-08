@@ -1,6 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using gView.Framework.Carto;
 using gView.Framework.Data;
-using gView.Framework.Carto;
+using System.Collections.Generic;
 
 namespace gView.Framework.UI
 {
@@ -37,5 +37,5 @@ namespace gView.Framework.UI
         ITableRelations TableRelations { get; }
     }
 
-    
+
 }

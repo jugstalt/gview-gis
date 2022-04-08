@@ -18,16 +18,18 @@ using System;
 namespace Proj4Net.Projection
 {
 
-public class PerspectiveConicProjection : SimpleConicProjection {
-
-	public PerspectiveConicProjection()
-        :base( ConicTypes.PerspectiveConic )
+    public class PerspectiveConicProjection : SimpleConicProjection
     {
-	}
 
-	public override String ToString() {
-		return "Perspective Conic";
-	}
+        public PerspectiveConicProjection()
+            : base(ConicTypes.PerspectiveConic)
+        {
+        }
 
-}
+        public override String ToString()
+        {
+            return "Perspective Conic";
+        }
+
+    }
 }

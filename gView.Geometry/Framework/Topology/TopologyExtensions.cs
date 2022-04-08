@@ -3,7 +3,6 @@ using gView.Framework.SpatialAlgorithms;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace gView.Geometry.Framework.Topology
 {
@@ -67,7 +66,9 @@ namespace gView.Geometry.Framework.Topology
                 });
 
             if (intersectionPoints.Count() == 0)
+            {
                 throw new Exception("Keine Schnittpunkte gefunden");
+            }
 
             #endregion
 
@@ -126,13 +127,19 @@ namespace gView.Geometry.Framework.Topology
             foreach (var newPolygon in polygonParts.Polygonize())  // aus Pfaden Polygone erzeugen
             {
                 if (polygon.Rings.Where(h => h.ToPolygon().Equals(newPolygon)).Count() == 0)  // Polygone, die sich nicht geändert haben hier noch nicht übernehmen -> könnten Löcher sein
+                {
                     resultPolygons.Add(newPolygon);
+                }
                 else
+                {
                     untouchedPolygons.Add(newPolygon);
+                }
             }
 
             if (resultPolygons.Count == 0)
+            {
                 throw new Exception("Der Verschnitt liefert kein Ergebnis");
+            }
 
             #region Unberührute Polygone dem nächstgelegen Schnittpolygon hinzufügen
 
@@ -148,7 +155,9 @@ namespace gView.Geometry.Framework.Topology
                     //
 
                     if (polygon.Holes.Where(h => h.ToPolygon().Equals(untouchedPolygon[r].ToPolygon())).FirstOrDefault() != null)
+                    {
                         continue;
+                    }
 
                     int resultIndex = 0;
                     double dist = double.MaxValue;
@@ -301,7 +310,9 @@ namespace gView.Geometry.Framework.Topology
                 {
                     // nur die Kombinatinen übernehmen, die noch nicht schon über eine andere Kante ermittelt wurden.
                     if (!combinations.Contains(edgeIndices))
+                    {
                         combinations.Add(edgeIndices);
+                    }
                 }
             }
 
@@ -327,7 +338,9 @@ namespace gView.Geometry.Framework.Topology
                                             .ToArray();
 
                 if (edgeRings.Length > 0 && edgeRings.Select(r => r.Area).Sum() > 0)
+                {
                     results.Add(new Polygon(edgeRings[0]));
+                }
             }
 
             #endregion
@@ -361,13 +374,17 @@ namespace gView.Geometry.Framework.Topology
                     var currentPolygonEdges = new List<Edge>(polygonEdges);
 
                     if (currentPolygonEdges.Contains(edge))
+                    {
                         continue;
+                    }
 
                     var nextNode = edge.ContainsNode(targetNodeIndex) ?
                         targetNodeIndex : edge.UnusedNode(currentPolygonEdges);
 
                     if (nextNode < 0)
+                    {
                         continue;
+                    }
 
                     currentPolygonEdges.Add(edge);
 
@@ -384,10 +401,14 @@ namespace gView.Geometry.Framework.Topology
         private static int UnusedNode(this Edge edge, IEnumerable<Edge> edges)
         {
             if (edges.Where(e => e.Node1 == edge.Node1 || e.Node2 == edge.Node1).FirstOrDefault() == null)
+            {
                 return edge.Node1;
+            }
 
             if (edges.Where(e => e.Node1 == edge.Node2 || e.Node2 == edge.Node2).FirstOrDefault() == null)
+            {
                 return edge.Node2;
+            }
 
             return -1;
         }
@@ -417,7 +438,9 @@ namespace gView.Geometry.Framework.Topology
             {
                 var path = paths[edgeIndex];
                 if (path.PointCount == 0)
+                {
                     continue;
+                }
 
                 if (result.PointCount == 0)
                 {
@@ -522,7 +545,9 @@ namespace gView.Geometry.Framework.Topology
             #endregion
 
             if (newPolylineParts.Count() == 0)
+            {
                 throw new Exception("Keine Änderungen festgestellt");
+            }
 
             var newPolylines = newPolylineParts.Select(p => new Polyline(p)).ToArray();
 
@@ -595,7 +620,9 @@ namespace gView.Geometry.Framework.Topology
                         if (resultType == LineSplitResultType.All ||
                             (resultType == LineSplitResultType.Even && counter % 2 == 1) ||
                             (resultType == LineSplitResultType.Odd && counter % 2 == 0))
+                        {
                             result.Add(clippedLine[0]);
+                        }
                     }
                 }
 
@@ -610,7 +637,9 @@ namespace gView.Geometry.Framework.Topology
                     if (resultType == LineSplitResultType.All ||
                         (resultType == LineSplitResultType.Even && counter % 2 == 1) ||
                         (resultType == LineSplitResultType.Odd && counter % 2 == 0))
+                    {
                         result.Add(clippedLine[0]);
+                    }
                 }
             }
 
@@ -625,13 +654,17 @@ namespace gView.Geometry.Framework.Topology
             List<PointM3> points = new List<PointM3>();
 
             if (path1 == null || path2 == null)
+            {
                 return points;
+            }
 
             int pointCount1 = path1.PointCount,
                 pointCount2 = path2.PointCount;
 
             if (pointCount1 == 0 || pointCount2 == 0)
+            {
                 return points;
+            }
 
             double stat1 = 0;
             for (int t1 = 0; t1 < pointCount1 - 1; t1++)
@@ -700,17 +733,23 @@ namespace gView.Geometry.Framework.Topology
             public override bool Equals(object obj)
             {
                 if (!(obj is EdgeIndices))
+                {
                     return false;
+                }
 
                 var indices = (EdgeIndices)obj;
 
                 if (indices.Count != this.Count)
+                {
                     return false;
+                }
 
                 foreach (var index in indices)
                 {
                     if (!this.Contains(index))
+                    {
                         return false;
+                    }
                 }
 
                 return true;

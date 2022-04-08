@@ -1,15 +1,10 @@
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Text;
-using System.Windows.Forms;
 using gView.Framework.Data;
 using gView.Framework.Symbology;
-using gView.Framework.Carto.UI;
 using gView.Framework.Symbology.UI;
 using gView.Win.Carto.Rendering.UI.Framework.Carto.Rendering.Extensions;
+using System;
+using System.Drawing;
+using System.Windows.Forms;
 
 namespace gView.Framework.Carto.Rendering.UI
 {
@@ -29,12 +24,16 @@ namespace gView.Framework.Carto.Rendering.UI
         {
             _renderer = renderer as DimensionRenderer;
             if (layer != null)
+            {
                 _featureClass = layer.FeatureClass;
+            }
 
             InitializeComponent();
 
             foreach (object e in Enum.GetValues(typeof(DimensionRenderer.lineCapType)))
+            {
                 cmbLineCap.Items.Add(e);
+            }
 
             if (_renderer != null)
             {
@@ -44,7 +43,9 @@ namespace gView.Framework.Carto.Rendering.UI
             else
             {
                 if (cmbLineCap.Items.Count > 0)
+                {
                     cmbLineCap.SelectedIndex = 0;
+                }
             }
             return panel1;
         }
@@ -54,21 +55,30 @@ namespace gView.Framework.Carto.Rendering.UI
         #region Symbology Events
         private void btnLineSymbol_Paint(object sender, PaintEventArgs e)
         {
-            if (_renderer == null) return;
+            if (_renderer == null)
+            {
+                return;
+            }
 
             e.Graphics.DrawSymbol(((DimensionRenderer)_renderer).LineSymbol, new Rectangle(5, 5, btnLineSymbol.Width - 10, btnLineSymbol.Height - 10));
         }
 
         private void btnTextSymbol_Paint(object sender, PaintEventArgs e)
         {
-            if (_renderer == null) return;
+            if (_renderer == null)
+            {
+                return;
+            }
 
             e.Graphics.DrawSymbol(((DimensionRenderer)_renderer).TextSymbol, new Rectangle(5, 5, btnTextSymbol.Width - 10, btnTextSymbol.Height - 10));
         }
 
         private void btnLineSymbol_Click(object sender, EventArgs e)
         {
-            if (_renderer == null) return;
+            if (_renderer == null)
+            {
+                return;
+            }
 
             FormSymbol dlg = new FormSymbol(((DimensionRenderer)_renderer).LineSymbol);
             if (dlg.ShowDialog() == DialogResult.OK &&
@@ -80,7 +90,10 @@ namespace gView.Framework.Carto.Rendering.UI
 
         private void btnTextSymbol_Click(object sender, EventArgs e)
         {
-            if (_renderer == null) return;
+            if (_renderer == null)
+            {
+                return;
+            }
 
             FormSymbol dlg = new FormSymbol(((DimensionRenderer)_renderer).TextSymbol);
             if (dlg.ShowDialog() == DialogResult.OK &&
@@ -94,7 +107,10 @@ namespace gView.Framework.Carto.Rendering.UI
         #region Design Events
         private void cmbLineCap_DrawItem(object sender, DrawItemEventArgs e)
         {
-            if (e.Index == -1) return;
+            if (e.Index == -1)
+            {
+                return;
+            }
 
             if ((e.State & DrawItemState.Focus) == DrawItemState.Focus)
             {
@@ -126,13 +142,17 @@ namespace gView.Framework.Carto.Rendering.UI
         private void cmbLineCap_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (_renderer != null)
+            {
                 _renderer.LineCapType = (DimensionRenderer.lineCapType)cmbLineCap.SelectedItem;
+            }
         }
 
         private void txtFormat_TextChanged(object sender, EventArgs e)
         {
             if (_renderer != null)
+            {
                 _renderer.LabelFormat = txtFormat.Text;
+            }
         }
         #endregion
 
@@ -165,9 +185,13 @@ namespace gView.Framework.Carto.Rendering.UI
 
             DrawArrow(g, bounds, left);
             if (left)
+            {
                 g.DrawLine(Pens.Black, x1, y1 - 7, x1, y1 + 7);
+            }
             else
+            {
                 g.DrawLine(Pens.Black, x2, y2 - 7, x2, y2 + 7);
+            }
         }
         private void DrawLine(System.Drawing.Graphics g, Rectangle bounds, bool left)
         {
@@ -208,6 +232,6 @@ namespace gView.Framework.Carto.Rendering.UI
             }
         }
         #endregion
-        
+
     }
 }

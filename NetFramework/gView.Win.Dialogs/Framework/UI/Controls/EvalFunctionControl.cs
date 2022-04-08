@@ -1,12 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Drawing;
-using System.Data;
-using System.Text;
-using System.Windows.Forms;
+﻿using gView.Framework.Data.Calc;
 using gView.Framework.system;
-using gView.Framework.Data.Calc;
+using System;
+using System.Windows.Forms;
 
 namespace gView.Framework.UI.Controls
 {
@@ -25,7 +20,9 @@ namespace gView.Framework.UI.Controls
         {
             _function = parameter as EvalFunction;
             if (_function != null)
+            {
                 txtFunction.Text = _function.Function;
+            }
         }
 
         #endregion
@@ -33,7 +30,9 @@ namespace gView.Framework.UI.Controls
         private void txtFunction_TextChanged(object sender, EventArgs e)
         {
             if (_function != null)
+            {
                 _function.Function = txtFunction.Text;
+            }
         }
 
         private void btnCheckSyntax_Click(object sender, EventArgs e)

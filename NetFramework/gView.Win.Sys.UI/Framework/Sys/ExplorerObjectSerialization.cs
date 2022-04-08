@@ -1,12 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Management;
-using System.Collections;
+﻿using gView.Framework.system;
 using gView.Framework.UI;
-using gView.Framework.system;
+using System;
+using System.Collections.Generic;
 
 namespace gView.Framework.Sys.UI
 {
@@ -23,7 +18,11 @@ namespace gView.Framework.Sys.UI
         }
         public ExplorerObjectSerialization(IExplorerObject exObject)
         {
-            if (!PlugInManager.IsPlugin(exObject)) return;
+            if (!PlugInManager.IsPlugin(exObject))
+            {
+                return;
+            }
+
             _guid = PlugInManager.PlugInID(exObject);
             _fullname = exObject.FullName;
         }

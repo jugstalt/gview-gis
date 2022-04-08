@@ -1,12 +1,10 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-using gView.Framework.UI;
-using System.Windows.Forms;
-using gView.Framework.Snapping.Core;
-using gView.Framework.IO;
 using gView.Framework.Globalisation;
+using gView.Framework.IO;
+using gView.Framework.Snapping.Core;
+using gView.Framework.UI;
+using System;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace gView.Plugins.Snapping
 {
@@ -114,7 +112,9 @@ namespace gView.Plugins.Snapping
             {
                 _doc = (IMapDocument)hook;
                 if (_doc.Application is IMapApplication)
+                {
                     _module = ((IMapApplication)_doc.Application).IMapApplicationModule(Globals.ModuleGuid) as Module;
+                }
 
                 RefreshGUI();
             }
@@ -142,16 +142,22 @@ namespace gView.Plugins.Snapping
         async void combo_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (_combo.SelectedItem is SnapSchemaItem)
+            {
                 _activeSnapSchema = ((SnapSchemaItem)_combo.SelectedItem).SnapSchema;
+            }
             else
+            {
                 _activeSnapSchema = null;
+            }
 
             if (_module != null && _module.MapDocument != null &&
                 _module.MapDocument.FocusMap != null && _module.MapDocument.FocusMap.Display != null)
+            {
                 await _module.LoadGeometry(
                     _module.MapDocument.FocusMap,
                     _activeSnapSchema,
                     _module.MapDocument.FocusMap.Display.Envelope);
+            }
         }
 
         public ISnapSchema ActiveSnapSchema
@@ -177,7 +183,11 @@ namespace gView.Plugins.Snapping
         private delegate void RefreshGUICallback();
         public void RefreshGUI()
         {
-            if (_combo.Owner == null) return;
+            if (_combo.Owner == null)
+            {
+                return;
+            }
+
             if (_combo.Owner.InvokeRequired)
             {
                 RefreshGUICallback d = new RefreshGUICallback(RefreshGUI);
@@ -187,7 +197,9 @@ namespace gView.Plugins.Snapping
             string activeName = String.Empty;
 
             if (_combo.SelectedItem != null)
+            {
                 activeName = _combo.SelectedItem.ToString();
+            }
 
             _combo.Items.Clear();
             _combo.Items.Add(new SnapSchemaItem(null));
@@ -197,18 +209,30 @@ namespace gView.Plugins.Snapping
             {
                 foreach (SnapSchema schema in _module[_module.MapDocument.FocusMap])
                 {
-                    if (schema == null) continue;
+                    if (schema == null)
+                    {
+                        continue;
+                    }
+
                     _combo.Items.Add(new SnapSchemaItem(schema));
                     if (!String.IsNullOrEmpty(activeName) &&
                         activeName == schema.Name)
+                    {
                         _combo.SelectedIndex = _combo.Items.Count - 1;
+                    }
                 }
             }
 
             if (_persistedSelIndex >= -0 && _persistedSelIndex < _combo.Items.Count)
+            {
                 _combo.SelectedIndex = _persistedSelIndex;
+            }
+
             if (_combo.SelectedIndex == -1)
+            {
                 _combo.SelectedIndex = 0;
+            }
+
             _persistedSelIndex = -1;
 
             using (System.Drawing.Bitmap bm = new System.Drawing.Bitmap(1, 1))
@@ -221,7 +245,9 @@ namespace gView.Plugins.Snapping
                         System.Drawing.SizeF size = gr.MeasureString(obj.ToString(), _combo.Font);
 
                         if (size.Width + 20 > _combo.DropDownWidth)
+                        {
                             _combo.DropDownWidth = (int)size.Width + 20;
+                        }
                     }
                 }
             }
@@ -244,8 +270,10 @@ namespace gView.Plugins.Snapping
 
             public override string ToString()
             {
-                if (_schema != null) 
+                if (_schema != null)
+                {
                     return _schema.Name;
+                }
 
                 return "None";
             }
@@ -349,7 +377,10 @@ namespace gView.Plugins.Snapping
         {
             _combo = new ToolStripComboBox();
             for (int i = 1; i < 100; i++)
+            {
                 _combo.Items.Add(new PixToleranceItem(i));
+            }
+
             _combo.SelectedIndexChanged += new EventHandler(_combo_SelectedIndexChanged);
             _combo.DropDownStyle = ComboBoxStyle.DropDownList;
             _combo.Size = new System.Drawing.Size(30, 25);
@@ -476,7 +507,10 @@ namespace gView.Plugins.Snapping
 
         public void Save(IPersistStream stream)
         {
-            if (_module == null) return;
+            if (_module == null)
+            {
+                return;
+            }
 
             stream.Save("SnapTol", _module.SnapTolerance);
         }

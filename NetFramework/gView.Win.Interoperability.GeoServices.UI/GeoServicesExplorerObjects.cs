@@ -510,7 +510,7 @@ namespace gView.Interoperability.GeoServices.Dataset
 
         async public Task<IExplorerObject> CreateInstanceByFullName(string fullName, ISerializableExplorerObjectCache cache)
         {
-            if (cache!=null && cache.Contains(fullName))
+            if (cache != null && cache.Contains(fullName))
             {
                 return cache[fullName];
             }
@@ -711,7 +711,7 @@ namespace gView.Interoperability.GeoServices.Dataset
                 folderName = name.Substring(0, name.LastIndexOf(@"\"));
                 name = name.Substring(name.LastIndexOf(@"\") + 1);
                 parentExObject = await new GeoServicesFolderExplorerObject(null, String.Empty, String.Empty).CreateInstanceByFullName($@"{ connectionExObject.FullName }\{ folderName }", null);
-            } 
+            }
             else
             {
                 parentExObject = connectionExObject;

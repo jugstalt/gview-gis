@@ -1,8 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using gView.Framework.system;
 using gView.Framework.UI;
-using gView.Framework.system;
+using System;
+using System.Collections.Generic;
 
 namespace gView.Plugins.Network
 {
@@ -58,12 +57,12 @@ namespace gView.Plugins.Network
 
         public void Load(gView.Framework.IO.IPersistStream stream)
         {
-            
+
         }
 
         public void Save(gView.Framework.IO.IPersistStream stream)
         {
-            
+
         }
 
         #endregion

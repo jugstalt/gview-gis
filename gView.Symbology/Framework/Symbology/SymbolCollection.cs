@@ -11,13 +11,13 @@ using System.Linq;
 namespace gView.Framework.Symbology
 {
     [gView.Framework.system.RegisterPlugIn("062AD1EA-A93C-4c3c-8690-830E65DC6D91")]
-    public sealed class SymbolCollection : LegendItem, 
-                                           ISymbolCollection, 
-                                           ISymbol, 
+    public sealed class SymbolCollection : LegendItem,
+                                           ISymbolCollection,
+                                           ISymbol,
                                            ILabel,
                                            ISymbolRotation,
                                            ITextSymbol,
-                                           IPenColor, 
+                                           IPenColor,
                                            IBrushColor,
                                            IFontColor,
                                            ISymbolCurrentGraphicsEngineDependent
@@ -508,7 +508,7 @@ namespace gView.Framework.Symbology
             return _symbols.Where(s => s?.Symbol != null && s.Symbol.RequireClone()).FirstOrDefault() != null;
         }
 
-        
+
 
         #endregion
 

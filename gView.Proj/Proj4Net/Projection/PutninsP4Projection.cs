@@ -1,6 +1,6 @@
-using System;
 using GeoAPI.Geometries;
 using Proj4Net.Utility;
+using System;
 
 /*
 Copyright 2006 Jerry Huxtable

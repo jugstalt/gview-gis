@@ -1,13 +1,8 @@
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
 using gView.Framework.Sys.UI.Extensions;
 using gView.Framework.UI;
+using System;
+using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace gView.Plugins.MapTools.Dialogs
 {
@@ -20,7 +15,7 @@ namespace gView.Plugins.MapTools.Dialogs
             InitializeComponent();
 
             _doc = mapDocument;
-            
+
             if (_doc.Application is IMapApplication)
             {
                 this.ShowInTaskbar = false;
@@ -36,7 +31,10 @@ namespace gView.Plugins.MapTools.Dialogs
 
         async public Task RefreshLegend()
         {
-            if (!this.Visible) return;
+            if (!this.Visible)
+            {
+                return;
+            }
 
             if (_doc != null && _doc.FocusMap != null && _doc.FocusMap.TOC != null)
             {

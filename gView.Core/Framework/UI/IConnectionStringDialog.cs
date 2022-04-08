@@ -5,5 +5,5 @@
         string ShowConnectionStringDialog(string initConnectionString);
     }
 
-    
+
 }

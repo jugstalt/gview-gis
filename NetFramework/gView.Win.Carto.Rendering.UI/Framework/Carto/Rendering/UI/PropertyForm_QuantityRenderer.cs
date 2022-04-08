@@ -1,14 +1,9 @@
-using System;
-using System.Drawing;
-using System.Collections;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Windows.Forms;
 using gView.Framework.Data;
-using gView.Framework.Carto;
-using gView.Framework.Symbology;
 using gView.Framework.Geometry;
-using gView.Framework.UI;
+using gView.Framework.Symbology;
+using System;
+using System.Collections.Generic;
+using System.Windows.Forms;
 
 namespace gView.Framework.Carto.Rendering.UI
 {
@@ -52,16 +47,24 @@ namespace gView.Framework.Carto.Rendering.UI
             string[] labels = new string[2];
             labels[0] = "0: all other values";
             if (_renderer.DefaultSymbol is ILegendItem)
+            {
                 labels[1] = ((ILegendItem)_renderer.DefaultSymbol).LegendLabel;
+            }
             else
+            {
                 labels[1] = "";
+            }
 
             symbolsListView1.addSymbol(_renderer.DefaultSymbol, labels);
 
             int i = 1;
             foreach (QuantityRenderer.QuantityClass qClass in _renderer.QuantityClasses)
             {
-                if (qClass == null) continue;
+                if (qClass == null)
+                {
+                    continue;
+                }
+
                 ISymbol symbol = qClass.Symbol;
                 if (symbol != null)
                 {
@@ -276,7 +279,11 @@ namespace gView.Framework.Carto.Rendering.UI
 
         private void symbolsListView1_OnSymbolChanged(string key, ISymbol symbol)
         {
-            if (_renderer == null) return;
+            if (_renderer == null)
+            {
+                return;
+            }
+
             if (key.Contains(":"))
             {
                 int pos = key.IndexOf(":");
@@ -285,23 +292,33 @@ namespace gView.Framework.Carto.Rendering.UI
                 {
                     ILegendItem legendItem = _renderer.LegendItem(index);
                     if (legendItem != null)
+                    {
                         _renderer.SetSymbol(legendItem, symbol);
+                    }
                 }
             }
         }
 
         private void symbolsListView1_OnLabelChanged(ISymbol symbol, int labelnr, string label)
         {
-            if (_renderer == null || labelnr != 1) return;
+            if (_renderer == null || labelnr != 1)
+            {
+                return;
+            }
 
-            if (!(symbol is ILegendItem)) return;
-
-            ((ILegendItem)symbol).LegendLabel = label;
+            if (!(symbol is ILegendItem))
+            {
+                return;
+            } ((ILegendItem)symbol).LegendLabel = label;
         }
 
         private void symbolsListView1_OnDeleteItem(string key)
         {
-            if (_renderer == null || _fc == null) return;
+            if (_renderer == null || _fc == null)
+            {
+                return;
+            }
+
             if (key.Contains(":"))
             {
                 int pos = key.IndexOf(":");
@@ -324,7 +341,10 @@ namespace gView.Framework.Carto.Rendering.UI
 
         private void btnRemoveAllValues_Click(object sender, EventArgs e)
         {
-            if (_renderer == null || _renderer.QuantityClasses.Count == 0) return;
+            if (_renderer == null || _renderer.QuantityClasses.Count == 0)
+            {
+                return;
+            }
 
             foreach (QuantityRenderer.QuantityClass qClass in _renderer.QuantityClasses)
             {
@@ -335,10 +355,16 @@ namespace gView.Framework.Carto.Rendering.UI
 
         private void btnInsertValue_Click(object sender, EventArgs e)
         {
-            if (_renderer == null || _fc == null) return;
+            if (_renderer == null || _fc == null)
+            {
+                return;
+            }
 
             IField field = _fc.FindField(_renderer.ValueField);
-            if (field == null) return;
+            if (field == null)
+            {
+                return;
+            }
 
             PropertyForm_QuantityRenderer_Dialog_InsertValue dlg = new PropertyForm_QuantityRenderer_Dialog_InsertValue(field);
             if (dlg.ShowDialog() == DialogResult.OK)
@@ -365,7 +391,10 @@ namespace gView.Framework.Carto.Rendering.UI
 
         private void btnWizard_Click(object sender, EventArgs e)
         {
-            if (_renderer == null || _fc == null) return;
+            if (_renderer == null || _fc == null)
+            {
+                return;
+            }
 
             PropertyForm_QuantityRenderer_Wizard dlg = new PropertyForm_QuantityRenderer_Wizard(_renderer, _fc);
 
@@ -377,7 +406,10 @@ namespace gView.Framework.Carto.Rendering.UI
 
         private void btnRotation_Click(object sender, EventArgs e)
         {
-            if (_renderer == null || _fc == null) return;
+            if (_renderer == null || _fc == null)
+            {
+                return;
+            }
 
             FormRotationType dlg = new FormRotationType(_renderer.SymbolRotation, _fc);
             dlg.ShowDialog();
@@ -388,10 +420,16 @@ namespace gView.Framework.Carto.Rendering.UI
         public object PropertyPanel(IFeatureRenderer renderer, IFeatureLayer layer)
         {
             if (layer != null)
+            {
                 _fc = layer.FeatureClass;
+            }
+
             _renderer = renderer as QuantityRenderer;
 
-            if (_fc == null || _renderer == null) return null;
+            if (_fc == null || _renderer == null)
+            {
+                return null;
+            }
 
             _renderer.GeometryType = layer.LayerGeometryType; //_fc.GeometryType;
 
@@ -433,7 +471,10 @@ namespace gView.Framework.Carto.Rendering.UI
         {
             if (_renderer == null || _renderer.QuantityClasses == null ||
                 _renderer.QuantityClasses.Count == 0 ||
-                args == null || args.ColorGradient == null) return;
+                args == null || args.ColorGradient == null)
+            {
+                return;
+            }
 
             try
             {
@@ -443,7 +484,10 @@ namespace gView.Framework.Carto.Rendering.UI
                 ColorGradient gradient = args.ColorGradient;
                 for (int i = 0; i < qClasses.Count; i++)
                 {
-                    if (qClasses[i] == null) return;
+                    if (qClasses[i] == null)
+                    {
+                        return;
+                    }
 
                     double fac = (span == 0.0) ?
                         0.0 :

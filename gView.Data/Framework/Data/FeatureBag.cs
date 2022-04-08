@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace gView.Framework.Data
 {
@@ -16,7 +15,9 @@ namespace gView.Framework.Data
         public IFeature GetFeature(int oid)
         {
             if (_features.TryGetValue(oid, out IFeature feature))
+            {
                 return feature;
+            }
 
             return null;
         }
@@ -29,7 +30,9 @@ namespace gView.Framework.Data
             {
                 var feature = GetFeature(oid);
                 if (feature != null)
+                {
                     features.Add(feature);
+                }
             }
 
             return features;

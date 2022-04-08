@@ -1,11 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using gView.Framework.Network;
-using gView.Framework.UI;
-using gView.Framework.Data;
+﻿using gView.Framework.Data;
 using gView.Framework.Geometry;
 using gView.Framework.Network.Algorthm;
+using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace gView.Framework.Network.Tracers
@@ -16,7 +13,10 @@ namespace gView.Framework.Network.Tracers
         {
             List<int> ids = new List<int>();
             foreach (Dijkstra.Node node in nodes)
+            {
                 ids.Add(node.Id);
+            }
+
             return ids;
         }
 
@@ -42,7 +42,9 @@ namespace gView.Framework.Network.Tracers
                         if (nodeFeature != null && nodeFeature.Shape is IPoint)
                         {
                             if (!fcNames.ContainsKey(fcId))
+                            {
                                 fcNames.Add(fcId, await network.NetworkClassName(fcId));
+                            }
 
                             string fcName = fcNames[fcId];
 

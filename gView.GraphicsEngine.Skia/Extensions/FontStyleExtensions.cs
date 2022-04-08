@@ -1,7 +1,4 @@
 ﻿using SkiaSharp;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace gView.GraphicsEngine.Skia.Extensions
 {
@@ -9,7 +6,7 @@ namespace gView.GraphicsEngine.Skia.Extensions
     {
         static public SKFontStyle ToSKFontStyle(this FontStyle fontStyle)
         {
-            switch(fontStyle)
+            switch (fontStyle)
             {
                 case FontStyle.Bold:
                     return SKFontStyle.Bold;

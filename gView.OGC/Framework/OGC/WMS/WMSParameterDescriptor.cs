@@ -1,14 +1,14 @@
-using System;
-using Color = System.Drawing.Color;
 using gView.Framework.Geometry;
+using gView.Framework.system;
+using gView.Framework.Web;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
-using gView.Framework.Web;
-using System.Text;
 using System.Linq;
-using gView.Framework.system;
+using System.Text;
+using Color = System.Drawing.Color;
 
 namespace gView.Framework.OGC.WMS
 {
@@ -105,7 +105,9 @@ namespace gView.Framework.OGC.WMS
                 if (request["EXCEPTIONS"] != "application/vnd.ogc.se_inimage" &&
                     request["EXCEPTIONS"] != "application/vnd.ogc.se_blank" &&
                     request["EXCEPTIONS"] != "application/vnd.ogc.se_xml")
+                {
                     WriteError("Invalid exception format " + request["EXCEPTIONS"] + " must be 'application/vnd.ogc.se_inimage', 'application/vnd.ogc.se_blank' or 'application/vnd.ogc.se_xml'.");
+                }
                 else
                 {
                     switch (request["EXCEPTIONS"])
@@ -116,11 +118,11 @@ namespace gView.Framework.OGC.WMS
                         case "application/vnd.ogc.se_blank":
                             this.Exceptions = WMSExceptionType.se_blank;
                             break;
-                        /* SE_XML is already the default value
-                    default: 
-                         * this.Exceptions = WMSExceptionType.SE_XML;
-                         * break;
-                         */
+                            /* SE_XML is already the default value
+                        default: 
+                             * this.Exceptions = WMSExceptionType.SE_XML;
+                             * break;
+                             */
 
                     }
                 }
@@ -158,21 +160,31 @@ namespace gView.Framework.OGC.WMS
                 this.Request = WMSRequestType.GenerateTiles;
             }
             else
+            {
                 WriteError("REQUEST parameter is either missing, erroneous, or not supported. Supported values are: 'GetMap', 'map', 'GetCapabilities','capabilities'");
+            }
+
             if (request["VERSION"] == null && request["WMTVER"] == null)
             {
                 if (this.Request != WMSRequestType.GetCapabilities)
+                {
                     WriteError("mandatory VERSION parameter is either missing or erronous. Must be: 'WMTVER=1.0.0' or 'VERSION=1.x.x'");
+                }
                 else
+                {
                     this.Version = "1.1.1";//default version
-
+                }
             }
             else
             {
                 if (request["WMTVER"] != null && request["VERSION"] == null)
+                {
                     this.Version = request["WMTVER"];
+                }
                 else if (request["WMTVER"] == null && request["VERSION"] != null)
+                {
                     this.Version = request["VERSION"];
+                }
             }
 
             #region Nicht Standard (für GenerateTiles Request: WMS2Tiles für Bing Map Controll!!)
@@ -181,7 +193,9 @@ namespace gView.Framework.OGC.WMS
                 if (request["BBOXSRS"] != null)
                 {
                     if (request["BBOXSRS"].IndexOf("EPSG:") == -1)
+                    {
                         WriteError("only EPSG based coordinate systems are supported!", "InvalidBBOXSRS");
+                    }
 
                     string[] srsid = request["BBOXSRS"].Split(':');
                     this.BBoxSRS = int.Parse(srsid[srsid.Length - 1]);
@@ -195,14 +209,22 @@ namespace gView.Framework.OGC.WMS
                     _requestKey = request["REQUESTKEY"];
                 }
                 if (request["TILEROW"] == null)
+                {
                     WriteError("mandatory TILEROW parameter is missing.");
+                }
                 else
+                {
                     this.TileRow = int.Parse(request["TILEROW"]);
+                }
 
                 if (request["TILECOL"] == null)
+                {
                     WriteError("mandatory TILECOL parameter is missing.");
+                }
                 else
+                {
                     this.TileCol = int.Parse(request["TILECOL"]);
+                }
             }
             #endregion
 
@@ -217,7 +239,9 @@ namespace gView.Framework.OGC.WMS
                     if (request["SRS"] != null)
                     {
                         if (request["SRS"].IndexOf("EPSG:") == -1)
+                        {
                             WriteError("only EPSG based coordinate systems are supported!", "InvalidSRS");
+                        }
 
                         string[] srsid = request["SRS"].Split(':');
                         this.SRS = int.Parse(srsid[srsid.Length - 1]);
@@ -225,7 +249,9 @@ namespace gView.Framework.OGC.WMS
                     else if (request["CRS"] != null)
                     {
                         if (request["CRS"].IndexOf("EPSG:") == -1)
+                        {
                             WriteError("only EPSG based coordinate systems are supported!", "InvalidCRS");
+                        }
 
                         string[] srsid = request["CRS"].Split(':');
                         this.SRS = int.Parse(srsid[srsid.Length - 1]);
@@ -269,36 +295,60 @@ namespace gView.Framework.OGC.WMS
                 if (this.Request == WMSRequestType.GetTile)
                 {
                     if (request["LAYER"] == null)
+                    {
                         WriteError("mandatory LAYER parameter is missing.");
+                    }
                     else
+                    {
                         this.Layer = request["LAYER"];
+                    }
 
                     if (request["STYLE"] == null)
+                    {
                         WriteError("mandatory STYLE parameter is missing.");
+                    }
                     else
+                    {
                         this.Style = request["STYLE"];
+                    }
 
                     if (request["SCALE"] == null)
+                    {
                         WriteError("mandatory SCALE parameter is missing.");
+                    }
                     else
+                    {
                         this.Scale = request["SCALE"].Replace(",", ".").ToDouble();
+                    }
 
                     if (request["TILEROW"] == null)
+                    {
                         WriteError("mandatory TILEROW parameter is missing.");
+                    }
                     else
+                    {
                         this.TileRow = int.Parse(request["TILEROW"]);
+                    }
 
                     if (request["TILECOL"] == null)
+                    {
                         WriteError("mandatory TILECOL parameter is missing.");
+                    }
                     else
+                    {
                         this.TileCol = int.Parse(request["TILECOL"]);
+                    }
                 }
-                else if(this.Request == WMSRequestType.GetLegendGraphic)
+                else if (this.Request == WMSRequestType.GetLegendGraphic)
                 {
                     if (request["LAYER"] == null)
+                    {
                         WriteError("mandatory LAYER parameter is missing.");
+                    }
                     else
+                    {
                         this.Layer = request["LAYER"];
+                    }
                 }
                 else if (this.Request == WMSRequestType.GetMap || this.Request == WMSRequestType.GetFeatureInfo)
                 {
@@ -307,13 +357,18 @@ namespace gView.Framework.OGC.WMS
                         WriteError("mandatory HEIGHT parameter is missing.");
                     }
                     else
+                    {
                         this.Height = int.Parse(request["HEIGHT"]);
+                    }
+
                     if (request["WIDTH"] == null)
                     {
                         WriteError("mandatory WIDTH parameter is missing.");
                     }
                     else
+                    {
                         this.Width = int.Parse(request["WIDTH"]);
+                    }
 
                     if (request["BBOX"] == null)
                     {
@@ -321,7 +376,9 @@ namespace gView.Framework.OGC.WMS
                     }
                     string[] bbox = request["BBOX"].Split(',');
                     if (bbox.Length != 4)
+                    {
                         WriteError("Invalid BBOX parameter. Must consist of 4 elements of type double or integer");
+                    }
 
                     double MinX = bbox[0].ToDouble();
                     double MinY = bbox[1].ToDouble();
@@ -330,11 +387,17 @@ namespace gView.Framework.OGC.WMS
                     Envelope box = new Envelope(MinX, MinY, MaxX, MaxY);
                     if (box.minx >= box.maxx ||
                         box.miny >= box.maxy)
+                    {
                         WriteError("Invalid BBOX parameter. MinX must not be greater than MaxX, and MinY must not be greater than MaxY");
+                    }
+
                     this.BBOX = box;
 
                     string LayerTag = "LAYERS";
-                    if (this.Request == WMSRequestType.GetFeatureInfo) LayerTag = "QUERY_LAYERS";
+                    if (this.Request == WMSRequestType.GetFeatureInfo)
+                    {
+                        LayerTag = "QUERY_LAYERS";
+                    }
 
                     if (request[LayerTag] == null)
                     {
@@ -344,9 +407,13 @@ namespace gView.Framework.OGC.WMS
                     {
                         String sLayers = request[LayerTag];
                         if (LayerTag == "LAYERS")
+                        {
                             this.Layers = sLayers.Split(",".ToCharArray());
+                        }
                         else if (LayerTag == "QUERY_LAYERS")
+                        {
                             this.QueryLayers = sLayers.Split(",".ToCharArray());
+                        }
                     }
                     if (request["TRANSPARENT"] != null && request["TRANSPARENT"].ToUpper() == "TRUE")
                     {
@@ -360,8 +427,12 @@ namespace gView.Framework.OGC.WMS
                     {
                         String[] styles = request["STYLES"].Split(",".ToCharArray());
                         for (int i = 0; i < styles.Length; i++)
+                        {
                             if (styles[i] != null && styles[i] != String.Empty)
+                            {
                                 WriteError("The monoGIS does not support named styles!.", "StyleNotDefined");
+                            }
+                        }
                     }
                     if (request["DPI"] != null)
                     {
@@ -372,7 +443,10 @@ namespace gView.Framework.OGC.WMS
                         if (request["SLD"] != null)
                         {
                             sldString = WebFunctions.DownloadXml(request["SLD"]);
-                            if (sldString == null) sldString = String.Empty;
+                            if (sldString == null)
+                            {
+                                sldString = String.Empty;
+                            }
                         }
                         else if (request["SLD_BODY"] != null)
                         {
@@ -401,7 +475,9 @@ namespace gView.Framework.OGC.WMS
                 {
                     this.FeatureInfoX = Convert.ToInt32(request["X"]);
                     if (this.FeatureInfoX > this.Width || this.FeatureInfoX < 0)
+                    {
                         WriteError("invalid X parameter, must be greater than 0 and lower than Width parameter.");
+                    }
                 }
                 if (request["Y"] == null)
                 {
@@ -411,26 +487,34 @@ namespace gView.Framework.OGC.WMS
                 {
                     this.FeatureInfoY = Convert.ToInt32(request["Y"]);
                     if (this.FeatureInfoY > this.Height || this.FeatureInfoY < 0)
+                    {
                         WriteError("invalid Y parameter, must be greater than 0 and lower than HEIGHT parameter.");
+                    }
                 }
                 if (request["FEATURECOUNT"] != null)
                 {
                     this.FeatureInfoMaxRows = Convert.ToInt32(request["FEATURECOUNT"]);
                     if (this.FeatureInfoMaxRows <= 0)
+                    {
                         WriteError("invalid FEATURECOUNT parameter, must be greater than 0.");
+                    }
                 }
                 if (request["INFOFORMAT"] != null)
                 {
                     switch (request["INFOFORMAT"].ToLower())
                     {
                         case "gml":
-                        case "application/vnd.ogc.gml": this.InfoFormat = WMSInfoFormat.gml;
+                        case "application/vnd.ogc.gml":
+                            this.InfoFormat = WMSInfoFormat.gml;
                             break;
-                        case "text/html": this.InfoFormat = WMSInfoFormat.html;
+                        case "text/html":
+                            this.InfoFormat = WMSInfoFormat.html;
                             break;
-                        case "text/xml": this.InfoFormat = WMSInfoFormat.xml;
+                        case "text/xml":
+                            this.InfoFormat = WMSInfoFormat.xml;
                             break;
-                        case "text/plain": this.InfoFormat = WMSInfoFormat.text;
+                        case "text/plain":
+                            this.InfoFormat = WMSInfoFormat.text;
                             break;
                         default:
                             if (request["INFOFORMAT"].ToLower().StartsWith("xsl/"))
@@ -450,13 +534,17 @@ namespace gView.Framework.OGC.WMS
                     switch (request["INFO_FORMAT"].ToLower())
                     {
                         case "gml":
-                        case "application/vnd.ogc.gml": this.InfoFormat = WMSInfoFormat.gml;
+                        case "application/vnd.ogc.gml":
+                            this.InfoFormat = WMSInfoFormat.gml;
                             break;
-                        case "text/html": this.InfoFormat = WMSInfoFormat.html;
+                        case "text/html":
+                            this.InfoFormat = WMSInfoFormat.html;
                             break;
-                        case "text/xml": this.InfoFormat = WMSInfoFormat.xml;
+                        case "text/xml":
+                            this.InfoFormat = WMSInfoFormat.xml;
                             break;
-                        case "text/plain": this.InfoFormat = WMSInfoFormat.text;
+                        case "text/plain":
+                            this.InfoFormat = WMSInfoFormat.text;
                             break;
                         case "application/json":
                         case "application/geojeon":
@@ -495,7 +583,10 @@ namespace gView.Framework.OGC.WMS
         private void WriteError(String msg, String code)
         {
             if (this.Format == WMSImageFormat.kml)
+            {
                 WriteKMLError(msg, code);
+            }
+
             if (this.Exceptions == WMSExceptionType.se_xml)
             {
                 String sMsg = @"<?xml version=""1.0"" encoding=""UTF-8"" standalone=""no"" ?>
@@ -520,7 +611,9 @@ namespace gView.Framework.OGC.WMS
                 Bitmap bt = new Bitmap(this.Width, this.Height, PixelFormat.Format32bppArgb);
                 Graphics g = Graphics.FromImage(bt);
                 if (!this.Transparent)
+                {
                     g.Clear(this.BgColor);
+                }
                 else
                 {
                     bt.MakeTransparent(this.BgColor);
@@ -532,7 +625,10 @@ namespace gView.Framework.OGC.WMS
                 g.DrawString(msg, f, new SolidBrush(Color.Black), rect);
                 g.Save();
                 if (this.Format == WMSImageFormat.gif)
+                {
                     bt = this.CreateTransparentGif(bt, bt.Palette);
+                }
+
                 MemoryStream oStr = new MemoryStream();
                 bt.Save(oStr, SystemDrawingGetImageFormat());
                 //Response.ContentType = this.MimeType;
@@ -545,7 +641,9 @@ namespace gView.Framework.OGC.WMS
                 Bitmap bt = new Bitmap(this.Width, this.Height, PixelFormat.Format32bppArgb);
                 Graphics g = Graphics.FromImage(bt);
                 if (!this.Transparent)
+                {
                     g.Clear(this.BgColor);
+                }
                 else
                 {
                     bt.MakeTransparent(this.BgColor);
@@ -553,7 +651,10 @@ namespace gView.Framework.OGC.WMS
                 }
                 g.Save();
                 if (this.Format == WMSImageFormat.gif)
+                {
                     bt = this.CreateTransparentGif(bt, bt.Palette);
+                }
+
                 MemoryStream oStr = new MemoryStream();
                 bt.Save(oStr, SystemDrawingGetImageFormat());
                 //Response.ContentType = this.MimeType;
@@ -605,7 +706,9 @@ namespace gView.Framework.OGC.WMS
                 //copy all the entries from the old palette removing any transparency
                 int n = 0;
                 foreach (Color c in cp.Entries)
+                {
                     ncp.Entries[n++] = Color.FromArgb(255, c);
+                }
                 //Set the second entry as transparent color
                 ncp.Entries[ncp.Entries.Length - 1] = Color.FromArgb(0, ncp.Entries[ncp.Entries.Length - 1]);
 
@@ -622,11 +725,13 @@ namespace gView.Framework.OGC.WMS
                 {
                     //steps through each pixel
                     for (int y = 0; y < gif.Height; y++)
+                    {
                         for (int x = 0; x < gif.Width; x++)
                         {
                             //transferring the bytes
                             ((byte*)dst.Scan0.ToPointer())[(dst.Stride * y) + x] = ((byte*)src.Scan0.ToPointer())[(src.Stride * y) + x];
                         }
+                    }
                 }
 
                 //all done, unlock the bitmaps
@@ -635,7 +740,9 @@ namespace gView.Framework.OGC.WMS
                 return bm;
             }
             else
+            {
                 return null;
+            }
         }
 
         public GraphicsEngine.ImageFormat GetImageFormat()
@@ -680,7 +787,7 @@ namespace gView.Framework.OGC.WMS
                     return "image/bmp";
                 case WMSImageFormat.jpeg:
                     return "image/jpg";
-                
+
                 case WMSImageFormat.png:
                 default:
                     return "image/png";
@@ -863,7 +970,10 @@ namespace gView.Framework.OGC.WMS
 
             public Parameters(string[] list)
             {
-                if (list == null) return;
+                if (list == null)
+                {
+                    return;
+                }
 
                 foreach (string l in list)
                 {
@@ -873,10 +983,17 @@ namespace gView.Framework.OGC.WMS
                     StringBuilder p2 = new StringBuilder();
                     for (int i = 1; i < p.Length; i++)
                     {
-                        if (p2.Length > 0) p2.Append("=");
+                        if (p2.Length > 0)
+                        {
+                            p2.Append("=");
+                        }
+
                         p2.Append(p[i]);
                     }
-                    if (_parameters.TryGetValue(p1, out pp)) continue;
+                    if (_parameters.TryGetValue(p1, out pp))
+                    {
+                        continue;
+                    }
 
                     _parameters.Add(p1, p2.ToString());
                 }
@@ -888,7 +1005,9 @@ namespace gView.Framework.OGC.WMS
                 {
                     string o;
                     if (!_parameters.TryGetValue(parameter.ToUpper(), out o))
+                    {
                         return null;
+                    }
 
                     return o;
                 }

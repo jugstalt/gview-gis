@@ -1,10 +1,5 @@
-using System;
-using System.Drawing;
-using System.Collections;
-using System.ComponentModel;
-using System.Windows.Forms;
 using gView.Framework.Data;
-using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace gView.DataSources.Shape.UI
 {
@@ -123,7 +118,10 @@ namespace gView.DataSources.Shape.UI
         {
             get
             {
-                if (_enumPos > 0) return null;
+                if (_enumPos > 0)
+                {
+                    return null;
+                }
 
                 IDataset dataset = new ShapeDataset();
                 dataset.SetConnectionString(txtShp.Text).Wait();
@@ -134,6 +132,6 @@ namespace gView.DataSources.Shape.UI
             }
         }
 
-		#endregion
-	}
+        #endregion
+    }
 }

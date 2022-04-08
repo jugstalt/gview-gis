@@ -1,19 +1,13 @@
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Text;
-using System.Windows.Forms;
-using gView.Framework.FDB;
-using gView.Framework.Db.UI;
-using gView.Framework.Db;
-using gView.Framework.IO;
 using gView.DataSources.Fdb.MSAccess;
 using gView.DataSources.Fdb.MSSql;
 using gView.DataSources.Fdb.PostgreSql;
 using gView.DataSources.Fdb.SQLite;
+using gView.Framework.Db;
+using gView.Framework.Db.UI;
+using gView.Framework.IO;
+using System;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace gView.DataSources.Fdb.UI.MSSql
 {
@@ -50,7 +44,9 @@ namespace gView.DataSources.Fdb.UI.MSSql
             }
 
             if (fdb == null)
+            {
                 return;
+            }
 
             if (!await fdb.Open(this.ConnectionString))
             {
@@ -58,7 +54,7 @@ namespace gView.DataSources.Fdb.UI.MSSql
                 return;
             }
 
-            string[] dsnames=await fdb.DatasetNames();
+            string[] dsnames = await fdb.DatasetNames();
             if (dsnames != null)
             {
                 foreach (string dsname in dsnames)
@@ -121,7 +117,9 @@ namespace gView.DataSources.Fdb.UI.MSSql
             }
 
             if (fdb == null)
+            {
                 return;
+            }
 
             await fdb.Open(_connectionString);
 
@@ -129,7 +127,7 @@ namespace gView.DataSources.Fdb.UI.MSSql
             dbConnStr.UseProviderInConnectionString = false;
             FormConnectionString dlg = (dbConnStr.TryFromConnectionString("mssql", fdb.ConnectionString) ?
                 new FormConnectionString(dbConnStr) : new FormConnectionString());
-            
+
             dlg.ProviderID = _providerId;
             dlg.UseProviderInConnectionString = false;
 

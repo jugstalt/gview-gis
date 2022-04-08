@@ -1,13 +1,7 @@
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Text;
-using System.Windows.Forms;
-using gView.Framework.UI;
-using gView.Explorer.UI;
 using gView.Framework.Globalisation;
+using System;
+using System.Drawing;
+using System.Windows.Forms;
 
 namespace gView.Framework.UI.Dialogs
 {
@@ -64,7 +58,10 @@ namespace gView.Framework.UI.Dialogs
 
             foreach (MyFavorites.Favorite fav in (new MyFavorites()).Favorites)
             {
-                if (fav == null) continue;
+                if (fav == null)
+                {
+                    continue;
+                }
 
                 FavoriteItem item = new FavoriteItem(fav);
                 if (fav.Image != null)
@@ -86,7 +83,7 @@ namespace gView.Framework.UI.Dialogs
             {
                 _fav = fav;
 
-                this.Text = fav.Name;     
+                this.Text = fav.Name;
             }
 
             public MyFavorites.Favorite Favorite
@@ -101,7 +98,10 @@ namespace gView.Framework.UI.Dialogs
         {
             _contextItem = null;
             ListViewItem item = lstFavorites.GetItemAt(e.X, e.Y);
-            if (item == null) return;
+            if (item == null)
+            {
+                return;
+            }
 
             if (e.Button == MouseButtons.Left)
             {
@@ -123,12 +123,18 @@ namespace gView.Framework.UI.Dialogs
         private void lstFavorites_MouseDoubleClick(object sender, MouseEventArgs e)
         {
             ListViewItem item = lstFavorites.GetItemAt(e.X, e.Y);
-            if (item == null) return;
+            if (item == null)
+            {
+                return;
+            }
 
             if (item.ImageIndex == 1 && _tree != null)
             {
                 IExplorerObject selected = _tree.SelectedExplorerObject;
-                if (selected == null) return;
+                if (selected == null)
+                {
+                    return;
+                }
 
                 FormAddToFavorites dlg = new FormAddToFavorites(selected.FullName, true);
                 if (dlg.ShowDialog() == DialogResult.OK)
@@ -151,6 +157,6 @@ namespace gView.Framework.UI.Dialogs
                     BuildList();
                 }
             }
-        }   
+        }
     }
 }

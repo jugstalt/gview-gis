@@ -1,17 +1,12 @@
-using System;
-using System.Collections;
-using System.ComponentModel;
-using System.Drawing;
-using System.Data;
-using System.Windows.Forms;
-using gView.Framework.Symbology;
-using gView.Framework.IO;
-using gView.Framework.Carto;
-using gView.Framework.Carto.UI;
 using gView.Framework.Carto.Rendering;
+using gView.Framework.Carto.UI;
+using gView.Framework.Symbology;
 using gView.Framework.Symbology.UI;
-using gView.GraphicsEngine;
 using gView.Framework.Sys.UI.Extensions;
+using gView.GraphicsEngine;
+using System;
+using System.Drawing;
+using System.Windows.Forms;
 
 namespace gView.Framework.UI.Controls
 {
@@ -83,7 +78,9 @@ namespace gView.Framework.UI.Controls
             get
             {
                 if (list.SelectedItems.Count != 1)
+                {
                     return null;
+                }
 
                 return ((SymbolListViewItem)list.SelectedItems[0]).UserObject;
             }
@@ -246,7 +243,10 @@ namespace gView.Framework.UI.Controls
         private void list_MouseDown(object sender, MouseEventArgs e)
         {
             ListViewItem item = list.GetItemAt(4, e.Y);
-            if (!(item is SymbolListViewItem)) return;
+            if (!(item is SymbolListViewItem))
+            {
+                return;
+            }
 
             if (e.X < imageList1.ImageSize.Width)
             {
@@ -280,14 +280,19 @@ namespace gView.Framework.UI.Controls
                             new SymbolPreview(null).Draw(canvas, new CanvasRectangle(0, 0, image.Width, image.Height), dlg.Symbol, true);
                             imageList1.Images[item.ImageIndex] = bitmap.CloneToGdiBitmap();
 
-                            if (OnSymbolChanged != null) OnSymbolChanged(item.Text, dlg.Symbol);
+                            if (OnSymbolChanged != null)
+                            {
+                                OnSymbolChanged(item.Text, dlg.Symbol);
+                            }
                         }
                         ((SymbolListViewItem)item).Symbol = dlg.Symbol;
                     }
                 }
 
                 if (_box.Visible)
+                {
                     HideBox();
+                }
             }
             else
             {
@@ -298,8 +303,15 @@ namespace gView.Framework.UI.Controls
                     w += col.Width;
                     if (e.X < w)
                     {
-                        if (col.Index == 0 && OnKeyChanged == null) break;
-                        if (col.Index > 0 && OnLabelChanged == null) break;
+                        if (col.Index == 0 && OnKeyChanged == null)
+                        {
+                            break;
+                        }
+
+                        if (col.Index > 0 && OnLabelChanged == null)
+                        {
+                            break;
+                        }
 
                         Rectangle rect = item.Bounds;
                         rect.X = 3 + w - col.Width + ((col.Index == 0) ? imageList1.ImageSize.Width : 0);
@@ -308,7 +320,9 @@ namespace gView.Framework.UI.Controls
                         rect.Height = _box.Height;
 
                         if (_box.Visible == true)
+                        {
                             HideBox();
+                        }
 
                         _box.Bounds = rect;
                         _box.Text = item.SubItems[col.Index].Text;
@@ -416,7 +430,9 @@ namespace gView.Framework.UI.Controls
             try
             {
                 if (dragData == null)
+                {
                     return;
+                }
 
                 ListViewItem[] sel = null;
                 if (e.Effect == DragDropEffects.Move &&
@@ -431,15 +447,23 @@ namespace gView.Framework.UI.Controls
                     }
                 }
 
-                if (sel == null) return;
+                if (sel == null)
+                {
+                    return;
+                }
 
                 int counter = 0;
                 foreach (ListViewItem selItem in sel)
                 {
-                    if (selItem == dragData.DragToItem) continue;
+                    if (selItem == dragData.DragToItem)
+                    {
+                        continue;
+                    }
 
                     if (list.Items.Contains(selItem))
+                    {
                         list.Items.Remove(selItem);
+                    }
 
                     int dragIndex = dragData.DragToItem.Index;
                     switch (dragData.Mode)
@@ -453,7 +477,9 @@ namespace gView.Framework.UI.Controls
                     }
                 }
                 if (AfterLegendOrdering != null)
+                {
                     AfterLegendOrdering(this, new EventArgs());
+                }
             }
             finally
             {
@@ -487,7 +513,10 @@ namespace gView.Framework.UI.Controls
 
         private void list_DragOver(object sender, DragEventArgs e)
         {
-            if (dragData == null) return;
+            if (dragData == null)
+            {
+                return;
+            }
 
             Point cp = list.PointToClient(new Point(e.X, e.Y));
             ListViewItem dragToItem = list.GetItemAt(10, cp.Y);
@@ -501,12 +530,18 @@ namespace gView.Framework.UI.Controls
                     DragEventData.DragEventTargetMode.insertAfter :
                     DragEventData.DragEventTargetMode.insertBefore);
             if (dragData.DragToItem == dragToItem &&
-                dragData.Mode == mode) return;
+                dragData.Mode == mode)
+            {
+                return;
+            }
 
             using (System.Drawing.Graphics gr = System.Drawing.Graphics.FromHwnd(list.Handle))
             {
                 if (dragData.DragToItem != null)
+                {
                     DragEventData.DrawMoveLine(gr, list.BackColor, dragData.DragToItem.Bounds, dragData.Mode);
+                }
+
                 DragEventData.DrawMoveLine(gr, Color.Red, dragToItem.Bounds, mode);
             }
             dragData.DragToItem = dragToItem;
@@ -560,7 +595,9 @@ namespace gView.Framework.UI.Controls
         private void list_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (SelectedIndexChanged != null)
+            {
                 SelectedIndexChanged(this, e);
+            }
         }
         public ListView.SelectedListViewItemCollection SelectedItems
         {

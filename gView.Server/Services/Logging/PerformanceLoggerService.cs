@@ -1,9 +1,6 @@
 ﻿using gView.Framework.Logging.ResourceLogging;
 using Microsoft.Extensions.Options;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace gView.Server.Services.Logging
 {
@@ -31,7 +28,7 @@ namespace gView.Server.Services.Logging
 
         public void Log(IPerformanceLoggerItem item)
         {
-            if(_resourceLogger!=null)
+            if (_resourceLogger != null)
             {
                 _resourceLogger.Log(item);  // run and forget
             }
@@ -39,7 +36,7 @@ namespace gView.Server.Services.Logging
 
         public void Flush()
         {
-            if(_resourceLogger!=null)
+            if (_resourceLogger != null)
             {
                 _resourceLogger.Flush();
             }

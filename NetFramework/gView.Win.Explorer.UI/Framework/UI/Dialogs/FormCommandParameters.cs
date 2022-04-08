@@ -1,13 +1,9 @@
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Xml;
-using System.Data;
 using System.Drawing;
 using System.Text;
-using System.IO;
 using System.Windows.Forms;
-using gView.Framework.UI;
+using System.Xml;
 
 namespace gView.Framework.UI.Dialogs
 {
@@ -23,16 +19,26 @@ namespace gView.Framework.UI.Dialogs
             InitializeComponent();
 
             _exObject = exObject;
-            if (_exObject == null) return;
+            if (_exObject == null)
+            {
+                return;
+            }
+
             _commandDef = commandDef;
-            if (_commandDef == null) return;
+            if (_commandDef == null)
+            {
+                return;
+            }
 
             MakeGUI();
         }
 
         private void MakeGUI()
         {
-            if (_commandDef == null) return;
+            if (_commandDef == null)
+            {
+                return;
+            }
 
             try
             {
@@ -51,7 +57,11 @@ namespace gView.Framework.UI.Dialogs
                     label.Size = new Size(100, 20);
                     label.Dock = DockStyle.Top;
                     label.TextAlign = ContentAlignment.MiddleRight;
-                    if (label.Text.IndexOf(":") == -1) label.Text += " :";
+                    if (label.Text.IndexOf(":") == -1)
+                    {
+                        label.Text += " :";
+                    }
+
                     tablePanel.Controls.Add(label, 0, row);
 
                     TextBox tb;
@@ -68,7 +78,11 @@ namespace gView.Framework.UI.Dialogs
                         case "file":
                             tb = new TextBox();
                             tb.Dock = DockStyle.Top;
-                            if (defParameter != "") tb.Text = defParameter;
+                            if (defParameter != "")
+                            {
+                                tb.Text = defParameter;
+                            }
+
                             tablePanel.Controls.Add(tb, 1, row);
                             btn = new Button();
                             btn.Text = "...";
@@ -79,11 +93,15 @@ namespace gView.Framework.UI.Dialogs
                             tablePanel.Controls.Add(btn, 2, row);
                             _controls.Add(tb);
                             break;
-                        
+
                         case "string":
                             tb = new TextBox();
                             tb.Dock = DockStyle.Top;
-                            if (defParameter != "") tb.Text = defParameter;
+                            if (defParameter != "")
+                            {
+                                tb.Text = defParameter;
+                            }
+
                             tablePanel.Controls.Add(tb, 1, row);
                             _controls.Add(tb);
                             break;
@@ -107,7 +125,11 @@ namespace gView.Framework.UI.Dialogs
                             {
                                 cmb.Items.Add(v);
                             }
-                            if (cmb.Items.Count > 0) cmb.SelectedIndex = 0;
+                            if (cmb.Items.Count > 0)
+                            {
+                                cmb.SelectedIndex = 0;
+                            }
+
                             tablePanel.Controls.Add(cmb, 1, row);
                             _controls.Add(cmb);
                             break;
@@ -124,11 +146,18 @@ namespace gView.Framework.UI.Dialogs
 
         void Button_Click(object sender, EventArgs e)
         {
-            if (_commandDef == null) return;
+            if (_commandDef == null)
+            {
+                return;
+            }
+
             try
             {
                 int row = 0;
-                if (!int.TryParse(((Button)sender).Name, out row)) return;
+                if (!int.TryParse(((Button)sender).Name, out row))
+                {
+                    return;
+                }
 
                 XmlNode parameter = _commandDef.SelectNodes("parameters/parameter")[row];
 
@@ -137,7 +166,10 @@ namespace gView.Framework.UI.Dialogs
                     case "open":
                         OpenFileDialog open = new OpenFileDialog();
                         open.Title = parameter.Attributes["name"].Value;
-                        if (parameter.Attributes["filter"] != null) open.Filter = parameter.Attributes["filter"].Value;
+                        if (parameter.Attributes["filter"] != null)
+                        {
+                            open.Filter = parameter.Attributes["filter"].Value;
+                        }
 
                         if (_controls[row].Text.Trim() != "")
                         {
@@ -151,7 +183,10 @@ namespace gView.Framework.UI.Dialogs
                     case "save":
                         SaveFileDialog save = new SaveFileDialog();
                         save.Title = parameter.Attributes["name"].Value;
-                        if (parameter.Attributes["filter"] != null) save.Filter = parameter.Attributes["filter"].Value;
+                        if (parameter.Attributes["filter"] != null)
+                        {
+                            save.Filter = parameter.Attributes["filter"].Value;
+                        }
 
                         if (_controls[row].Text.Trim() != "")
                         {
@@ -169,22 +204,32 @@ namespace gView.Framework.UI.Dialogs
 
         private void btnOK_Click(object sender, EventArgs e)
         {
-            if (_commandDef == null) return;
+            if (_commandDef == null)
+            {
+                return;
+            }
 
             StringBuilder sb = new StringBuilder();
             XmlNodeList exes = _commandDef.SelectNodes("exe[@call]");
             foreach (XmlNode exe in exes)
             {
                 string call = exe.Attributes["call"].Value;
-                for (int i = 0; i < _controls.Count;i++ )
+                for (int i = 0; i < _controls.Count; i++)
                 {
                     Control ctrl = _controls[i];
                     string txt = ctrl.Text;
-                    if (ctrl is NumericUpDown) txt = txt.Replace(",", ".");
+                    if (ctrl is NumericUpDown)
+                    {
+                        txt = txt.Replace(",", ".");
+                    }
 
                     call = call.Replace("{" + i + "}", ((txt.IndexOf(" ") == -1) ? txt : "\"" + txt + "\""));
                 }
-                if (sb.Length > 0) sb.Append("\r\n");
+                if (sb.Length > 0)
+                {
+                    sb.Append("\r\n");
+                }
+
                 sb.Append(call);
             }
 

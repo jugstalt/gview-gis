@@ -1,18 +1,14 @@
+using gView.Framework.Data;
+using gView.Framework.Symbology;
+using gView.Framework.Symbology.UI;
+using gView.Framework.system;
+using gView.Framework.UI;
+using gView.Win.Carto.Rendering.UI.Framework.Carto.Rendering.Extensions;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data;
 using System.Drawing;
-using System.Text;
 using System.Windows.Forms;
-using gView.Framework.Data;
-using gView.Framework.Carto;
-using gView.Framework.Symbology;
-using gView.Framework.system;
-using gView.Framework.UI;
-using gView.Framework.Carto.UI;
-using gView.Framework.Symbology.UI;
-using gView.Win.Carto.Rendering.UI.Framework.Carto.Rendering.Extensions;
 
 namespace gView.Framework.Carto.Rendering.UI
 {
@@ -33,10 +29,15 @@ namespace gView.Framework.Carto.Rendering.UI
             _renderer = renderer as ILabelGroupRenderer;
             _layer = layer;
 
-            if (_renderer == null || _layer == null) return null;
+            if (_renderer == null || _layer == null)
+            {
+                return null;
+            }
 
             if (_renderer is ScaleDependentLabelRenderer)
+            {
                 panelScale.Visible = true;
+            }
 
             BuildList();
 
@@ -52,16 +53,24 @@ namespace gView.Framework.Carto.Rendering.UI
             foreach (object item in RendererBox.Items)
             {
                 if (item is RendererItem)
+                {
                     items.Add((RendererItem)item);
+                }
             }
 
             RendererBox.Items.Clear();
 
-            if (_renderer == null) return;
+            if (_renderer == null)
+            {
+                return;
+            }
 
             foreach (ILabelRenderer renderer in ListOperations<ILabelRenderer>.Swap(this.RendererList()))
             {
-                if (renderer == null) continue;
+                if (renderer == null)
+                {
+                    continue;
+                }
 
                 bool found = false;
                 foreach (RendererItem item in items)
@@ -107,7 +116,9 @@ namespace gView.Framework.Carto.Rendering.UI
             public override string ToString()
             {
                 if (_renderer != null)
+                {
                     return _renderer.Name;
+                }
 
                 return "???";
             }
@@ -170,16 +181,26 @@ namespace gView.Framework.Carto.Rendering.UI
 
         private void ShowHideLegend(RendererItem item)
         {
-            if (_renderer == null) return;
+            if (_renderer == null)
+            {
+                return;
+            }
 
             int index = RendererBox.Items.IndexOf(item);
-            if (index == -1) return;
+            if (index == -1)
+            {
+                return;
+            }
 
             if (!item.ShowLegend)
             {
                 for (int i = index + 1; i < RendererBox.Items.Count; i++)
                 {
-                    if (RendererBox.Items[i] is RendererItem) break;
+                    if (RendererBox.Items[i] is RendererItem)
+                    {
+                        break;
+                    }
+
                     RendererBox.Items.RemoveAt(i);
                     i--;
                 }
@@ -200,10 +221,15 @@ namespace gView.Framework.Carto.Rendering.UI
         private List<ILabelRenderer> RendererList()
         {
             List<ILabelRenderer> renderers = new List<ILabelRenderer>();
-            if (_renderer == null || _renderer.Renderers == null) return renderers;
+            if (_renderer == null || _renderer.Renderers == null)
+            {
+                return renderers;
+            }
 
             foreach (ILabelRenderer renderer in _renderer.Renderers)
+            {
                 renderers.Add(renderer);
+            }
 
             return renderers;
         }
@@ -212,7 +238,10 @@ namespace gView.Framework.Carto.Rendering.UI
         #region RendererBox Events
         private void RendererBox_DrawItem(object sender, DrawItemEventArgs e)
         {
-            if (e.Index >= RendererBox.Items.Count || e.Index < 0) return;
+            if (e.Index >= RendererBox.Items.Count || e.Index < 0)
+            {
+                return;
+            }
 
             object item = RendererBox.Items[e.Index];
 
@@ -303,7 +332,10 @@ namespace gView.Framework.Carto.Rendering.UI
                     break;
                 }
             }
-            if (item == null) return;
+            if (item == null)
+            {
+                return;
+            }
 
             if (item is RendererItem)
             {
@@ -349,7 +381,10 @@ namespace gView.Framework.Carto.Rendering.UI
                     break;
                 }
             }
-            if (item == null) return;
+            if (item == null)
+            {
+                return;
+            }
 
             if (item is LegendItem && _renderer is ILegendGroup)
             {
@@ -375,7 +410,10 @@ namespace gView.Framework.Carto.Rendering.UI
         #region Toolbar Events
         private void btnAdd_Click(object sender, EventArgs e)
         {
-            if (_renderer == null) return;
+            if (_renderer == null)
+            {
+                return;
+            }
 
             FormFeatureRenderers dlg = new FormFeatureRenderers(_layer, FormFeatureRenderers.RendererType.labelRenderer);
 
@@ -388,33 +426,52 @@ namespace gView.Framework.Carto.Rendering.UI
 
         private void btnRemove_Click(object sender, EventArgs e)
         {
-            if (_selectedItem == null || _renderer == null) return;
+            if (_selectedItem == null || _renderer == null)
+            {
+                return;
+            }
 
             _renderer.Renderers.Remove(_selectedItem.LabelRenderer);
 
             int index2;
             int index = index2 = RendererBox.Items.IndexOf(_selectedItem);
-            if (index == -1) return;
+            if (index == -1)
+            {
+                return;
+            }
+
             for (int i = index + 1; i < RendererBox.Items.Count; i++)
             {
                 if (RendererBox.Items[i] is LegendItem)
+                {
                     index2 = i;
+                }
                 else
+                {
                     break;
+                }
             }
             for (int i = index2; i >= index; i--)
+            {
                 RendererBox.Items.RemoveAt(i);
+            }
         }
 
         private void btnUp_Click(object sender, EventArgs e)
         {
             if (_selectedItem == null ||
                 _selectedItem.LabelRenderer == null ||
-                _renderer == null) return;
+                _renderer == null)
+            {
+                return;
+            }
 
             ILabelRenderer selectedRenderer = _selectedItem.LabelRenderer;
             int index = _renderer.Renderers.IndexOf(_selectedItem.LabelRenderer);
-            if (index >= _renderer.Renderers.Count) return;
+            if (index >= _renderer.Renderers.Count)
+            {
+                return;
+            }
 
             _renderer.Renderers.Remove(_selectedItem.LabelRenderer);
             _renderer.Renderers.Insert(Math.Min(_renderer.Renderers.Count, index + 1), _selectedItem.LabelRenderer);
@@ -427,11 +484,17 @@ namespace gView.Framework.Carto.Rendering.UI
         {
             if (_selectedItem == null ||
                 _selectedItem.LabelRenderer == null ||
-                _renderer == null) return;
+                _renderer == null)
+            {
+                return;
+            }
 
             ILabelRenderer selectedRenderer = _selectedItem.LabelRenderer;
             int index = _renderer.Renderers.IndexOf(_selectedItem.LabelRenderer);
-            if (index <= 0) return;
+            if (index <= 0)
+            {
+                return;
+            }
 
             _renderer.Renderers.Remove(_selectedItem.LabelRenderer);
             _renderer.Renderers.Insert(Math.Max(0, index - 1), _selectedItem.LabelRenderer);
@@ -444,10 +507,17 @@ namespace gView.Framework.Carto.Rendering.UI
         {
             if (_selectedItem == null ||
                 _selectedItem.LabelRenderer == null ||
-                !(_selectedItem.LabelRenderer is IPropertyPage)) return;
+                !(_selectedItem.LabelRenderer is IPropertyPage))
+            {
+                return;
+            }
 
             ILabelRenderer clone = _selectedItem.LabelRenderer.Clone() as ILabelRenderer;
-            if (clone == null) return;
+            if (clone == null)
+            {
+                return;
+            }
+
             IPropertyPage page = clone as IPropertyPage;
 
             Control panel = page.PropertyPage(_layer) as Control;

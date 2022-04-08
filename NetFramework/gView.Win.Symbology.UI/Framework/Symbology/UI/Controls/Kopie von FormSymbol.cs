@@ -1,88 +1,82 @@
-using System;
-using System.Xml;
-using System.Drawing;
-using System.Collections;
-using System.ComponentModel;
-using System.Windows.Forms;
-using gView.Framework.UI;
-using gView.Framework.system;
-using gView.Framework.Symbology;
 using gView.Framework.Symbology.UI.Controls;
+using gView.Framework.system;
+using gView.Framework.UI;
+using System.Windows.Forms;
 
 namespace gView.Framework.Symbology.UI
 {
-	/// <summary>
-	/// Zusammenfassung für FormSymbol.
-	/// </summary>
-	internal class FormSymbol_old : System.Windows.Forms.Form
-	{
-		private System.Windows.Forms.Panel panel1;
-		private System.Windows.Forms.Label label1;
-		private System.Windows.Forms.ComboBox cmbSymbolTypes;
-		private System.Windows.Forms.Panel panel2;
-		private System.Windows.Forms.Button btnOk;
-		private System.Windows.Forms.Button btnCancel;
-		/// <summary>
-		/// Erforderliche Designervariable.
-		/// </summary>
-		private System.ComponentModel.Container components = null;
-		private System.Windows.Forms.Panel panelProperties;
-		private System.Windows.Forms.Splitter splitter1;
-		private System.Windows.Forms.Panel panel3;
-		private SymbolCollectionComposer symbolCollectionComposer;
-		private ISymbol _symbol=null;
+    /// <summary>
+    /// Zusammenfassung für FormSymbol.
+    /// </summary>
+    internal class FormSymbol_old : System.Windows.Forms.Form
+    {
+        private System.Windows.Forms.Panel panel1;
+        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.ComboBox cmbSymbolTypes;
+        private System.Windows.Forms.Panel panel2;
+        private System.Windows.Forms.Button btnOk;
+        private System.Windows.Forms.Button btnCancel;
+        /// <summary>
+        /// Erforderliche Designervariable.
+        /// </summary>
+        private System.ComponentModel.Container components = null;
+        private System.Windows.Forms.Panel panelProperties;
+        private System.Windows.Forms.Splitter splitter1;
+        private System.Windows.Forms.Panel panel3;
+        private SymbolCollectionComposer symbolCollectionComposer;
+        private ISymbol _symbol = null;
         private TextSymbolAlignment _txtSymbolAlignment = TextSymbolAlignment.Center;
 
-		public FormSymbol_old(ISymbol symbol)
-		{
-			if(symbol!=null) 
-			{
-				_symbol=(ISymbol)symbol.Clone();
+        public FormSymbol_old(ISymbol symbol)
+        {
+            if (symbol != null)
+            {
+                _symbol = (ISymbol)symbol.Clone();
                 if (_symbol is ILabel)
                 {
                     _txtSymbolAlignment = ((ILabel)_symbol).TextSymbolAlignment;
                     ((ILabel)_symbol).TextSymbolAlignment = TextSymbolAlignment.Center;
                 }
-			}
+            }
 
-			InitializeComponent();
-		}
+            InitializeComponent();
+        }
 
 
-		public ISymbol Symbol 
-		{
-			get 
-			{
+        public ISymbol Symbol
+        {
+            get
+            {
                 ISymbol symbol = symbolCollectionComposer.Symbol;
                 if (symbol is ILabel)
                 {
                     ((ILabel)symbol).TextSymbolAlignment = _txtSymbolAlignment;
                 }
                 return symbol;
-			}
-		}
-		/// <summary>
-		/// Die verwendeten Ressourcen bereinigen.
-		/// </summary>
-		protected override void Dispose( bool disposing )
-		{
-			if( disposing )
-			{
-				if(components != null)
-				{
-					components.Dispose();
-				}
-			}
-			base.Dispose( disposing );
-		}
+            }
+        }
+        /// <summary>
+        /// Die verwendeten Ressourcen bereinigen.
+        /// </summary>
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                if (components != null)
+                {
+                    components.Dispose();
+                }
+            }
+            base.Dispose(disposing);
+        }
 
-		#region Vom Windows Form-Designer generierter Code
-		/// <summary>
-		/// Erforderliche Methode für die Designerunterstützung. 
-		/// Der Inhalt der Methode darf nicht mit dem Code-Editor geändert werden.
-		/// </summary>
-		private void InitializeComponent()
-		{
+        #region Vom Windows Form-Designer generierter Code
+        /// <summary>
+        /// Erforderliche Methode für die Designerunterstützung. 
+        /// Der Inhalt der Methode darf nicht mit dem Code-Editor geändert werden.
+        /// </summary>
+        private void InitializeComponent()
+        {
             this.panel1 = new System.Windows.Forms.Panel();
             this.cmbSymbolTypes = new System.Windows.Forms.ComboBox();
             this.label1 = new System.Windows.Forms.Label();
@@ -211,53 +205,61 @@ namespace gView.Framework.Symbology.UI
             this.panel3.ResumeLayout(false);
             this.ResumeLayout(false);
 
-		}
-		#endregion
+        }
+        #endregion
 
-		private void FormSymbol_Load(object sender, System.EventArgs e)
-		{
-			if(_symbol==null) this.Close();
+        private void FormSymbol_Load(object sender, System.EventArgs e)
+        {
+            if (_symbol == null)
+            {
+                this.Close();
+            }
 
             if (_symbol is ITextSymbol)
             {
                 ((ITextSymbol)_symbol).Text = "Label";
             }
 
-			symbolCollectionComposer.AddSymbol(_symbol);
-			symbolCollectionComposer.Init();
-			//_symbol=(ISymbol)((SymbolCollectionItem)((SymbolCollection)symbolCollectionComposer.Symbol).Symbols[0]).Symbol;
-			
-			MakeGUI();
-		}
+            symbolCollectionComposer.AddSymbol(_symbol);
+            symbolCollectionComposer.Init();
+            //_symbol=(ISymbol)((SymbolCollectionItem)((SymbolCollection)symbolCollectionComposer.Symbol).Symbols[0]).Symbol;
 
-		private void MakeGUI() 
-		{
-			cmbSymbolTypes.Items.Clear();
+            MakeGUI();
+        }
 
-			if(PlugInManager.IsPlugin(_symbol)) 
-			{
-				PlugInManager compManager=new PlugInManager();
+        private void MakeGUI()
+        {
+            cmbSymbolTypes.Items.Clear();
 
-                foreach (var symbolType in compManager.GetPlugins(Plugins.Type.ISymbol)) 
-				{
-					ISymbol symbol=compManager.CreateInstance<ISymbol>(symbolType);
-                    if (symbol is SymbolCollection) continue;
+            if (PlugInManager.IsPlugin(_symbol))
+            {
+                PlugInManager compManager = new PlugInManager();
 
-                    if(_symbol.GetType().Equals(symbol.GetType()))
-					    symbol=_symbol;
+                foreach (var symbolType in compManager.GetPlugins(Plugins.Type.ISymbol))
+                {
+                    ISymbol symbol = compManager.CreateInstance<ISymbol>(symbolType);
+                    if (symbol is SymbolCollection)
+                    {
+                        continue;
+                    }
 
-					if(_symbol is IPointSymbol && symbol is IPointSymbol) 
-					{
-						cmbSymbolTypes.Items.Add(new SymbolItem(symbol));
-					}
-					if(_symbol is ILineSymbol && symbol is ILineSymbol) 
-					{ 
-						cmbSymbolTypes.Items.Add(new SymbolItem(symbol));
-					}
-					if(_symbol is IFillSymbol && symbol is IFillSymbol) 
-					{
-						cmbSymbolTypes.Items.Add(new SymbolItem(symbol));
-					}
+                    if (_symbol.GetType().Equals(symbol.GetType()))
+                    {
+                        symbol = _symbol;
+                    }
+
+                    if (_symbol is IPointSymbol && symbol is IPointSymbol)
+                    {
+                        cmbSymbolTypes.Items.Add(new SymbolItem(symbol));
+                    }
+                    if (_symbol is ILineSymbol && symbol is ILineSymbol)
+                    {
+                        cmbSymbolTypes.Items.Add(new SymbolItem(symbol));
+                    }
+                    if (_symbol is IFillSymbol && symbol is IFillSymbol)
+                    {
+                        cmbSymbolTypes.Items.Add(new SymbolItem(symbol));
+                    }
                     if (_symbol is ITextSymbol && symbol is ITextSymbol)
                     {
                         ((ITextSymbol)symbol).Text = "Label";
@@ -268,19 +270,22 @@ namespace gView.Framework.Symbology.UI
                     {
                         cmbSymbolTypes.SelectedItem = cmbSymbolTypes.Items[cmbSymbolTypes.Items.Count - 1];
                     }
-				}
-			}
-		}
-		private void cmbSymbolTypes_SelectedIndexChanged(object sender, System.EventArgs e)
-		{
-			panelProperties.Controls.Clear();
+                }
+            }
+        }
+        private void cmbSymbolTypes_SelectedIndexChanged(object sender, System.EventArgs e)
+        {
+            panelProperties.Controls.Clear();
 
-			if(cmbSymbolTypes.SelectedItem==null) return;
+            if (cmbSymbolTypes.SelectedItem == null)
+            {
+                return;
+            }
 
-			ISymbol symbol=((SymbolItem)cmbSymbolTypes.SelectedItem).Symbol;
+            ISymbol symbol = ((SymbolItem)cmbSymbolTypes.SelectedItem).Symbol;
 
-			if(symbol is IPropertyPage) 
-			{
+            if (symbol is IPropertyPage)
+            {
                 Control control = ((IPropertyPage)symbol).PropertyPage(symbol) as Control;
                 if (control != null)
                 {
@@ -295,41 +300,45 @@ namespace gView.Framework.Symbology.UI
                     }
                     panelProperties.Controls.Add(control);
                 }
-			}
+            }
 
-			symbolCollectionComposer.ReplaceSelectedSymbol(symbol);
-		}
+            symbolCollectionComposer.ReplaceSelectedSymbol(symbol);
+        }
 
-		private void PropertyChanged(object propertyObject) 
-		{
-			symbolCollectionComposer.Refresh();
-		}
+        private void PropertyChanged(object propertyObject)
+        {
+            symbolCollectionComposer.Refresh();
+        }
 
-		private void symbolCollectionComposer_SelectedSymbolChanged(gView.Framework.Symbology.ISymbol symbol)
-		{
-			if(symbol==null) return;
-			_symbol=symbol;
-			MakeGUI();
-		}
-	}
+        private void symbolCollectionComposer_SelectedSymbolChanged(gView.Framework.Symbology.ISymbol symbol)
+        {
+            if (symbol == null)
+            {
+                return;
+            }
 
-	internal class SymbolItem 
-	{
-		private ISymbol _sym;
-		
-		public SymbolItem(ISymbol sym) 
-		{
-			_sym=sym;
-		}
+            _symbol = symbol;
+            MakeGUI();
+        }
+    }
 
-		public override string ToString()
-		{
-			return _sym.Name;
-		}
+    internal class SymbolItem
+    {
+        private ISymbol _sym;
 
-		public ISymbol Symbol 
-		{
-			get { return _sym; }
-		}
-	}
+        public SymbolItem(ISymbol sym)
+        {
+            _sym = sym;
+        }
+
+        public override string ToString()
+        {
+            return _sym.Name;
+        }
+
+        public ISymbol Symbol
+        {
+            get { return _sym; }
+        }
+    }
 }

@@ -1,6 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using gView.Framework.Carto;
 using gView.Framework.Geometry;
-using gView.Framework.Carto;
+using System.Collections.Generic;
 
 namespace gView.Framework.Symbology
 {

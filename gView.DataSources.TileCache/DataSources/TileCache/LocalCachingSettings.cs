@@ -1,25 +1,26 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using gView.Framework.IO;
+﻿using gView.Framework.IO;
 using gView.Framework.system;
+using System;
 
 namespace gView.DataSources.TileCache
 {
     public class LocalCachingSettings
     {
         static private bool _loaded = false;
-        static private bool _use=false;
-        static private string _folder=String.Empty;
-        
+        static private bool _use = false;
+        static private string _folder = String.Empty;
+
         #region Properties
 
         static public bool UseLocalCaching
         {
             get
             {
-                if (!_loaded) Load();
+                if (!_loaded)
+                {
+                    Load();
+                }
+
                 return _use;
             }
             set
@@ -31,7 +32,11 @@ namespace gView.DataSources.TileCache
         {
             get
             {
-                if (!_loaded) Load();
+                if (!_loaded)
+                {
+                    Load();
+                }
+
                 return _folder;
             }
             set

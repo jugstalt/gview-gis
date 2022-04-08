@@ -1,13 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using gView.Framework.Data;
+using gView.Framework.IO;
 using gView.Framework.system.UI;
 using gView.Framework.UI;
-using gView.Framework.IO;
-using System.Windows.Forms;
-using gView.Framework.Data;
+using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace gView.DataSources.TileCache.UI
 {
@@ -54,8 +52,10 @@ namespace gView.DataSources.TileCache.UI
 
         public Task<IExplorerObject> CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache cache)
         {
-            if (cache.Contains(FullName)) 
+            if (cache.Contains(FullName))
+            {
                 return Task.FromResult<IExplorerObject>(cache[FullName]);
+            }
 
             if (this.FullName == FullName)
             {
@@ -170,7 +170,9 @@ namespace gView.DataSources.TileCache.UI
         public Task<IExplorerObject> CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache cache)
         {
             if (cache.Contains(FullName))
+            {
                 return Task.FromResult<IExplorerObject>(cache[FullName]);
+            }
 
             return Task.FromResult<IExplorerObject>(null);
         }
@@ -272,7 +274,9 @@ namespace gView.DataSources.TileCache.UI
         public Task<IExplorerObject> CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache cache)
         {
             if (cache.Contains(FullName))
+            {
                 return Task.FromResult<IExplorerObject>(cache[FullName]);
+            }
 
             return Task.FromResult<IExplorerObject>(null);
         }
@@ -286,7 +290,7 @@ namespace gView.DataSources.TileCache.UI
             return (parentExObject is TileCacheGroupExplorerObject);
         }
 
-        public Task< IExplorerObject> CreateExplorerObject(IExplorerObject parentExObject)
+        public Task<IExplorerObject> CreateExplorerObject(IExplorerObject parentExObject)
         {
             ExplorerObjectDoubleClick(null);
             return Task.FromResult<IExplorerObject>(null);
@@ -384,9 +388,11 @@ namespace gView.DataSources.TileCache.UI
             if (_dataset == null)
             {
                 _dataset = new Dataset();
-                
-                if (await _dataset.SetConnectionString(_connectionString)  && await _dataset.Open())
+
+                if (await _dataset.SetConnectionString(_connectionString) && await _dataset.Open())
+                {
                     return _dataset;
+                }
             }
 
             return null;
@@ -412,7 +418,9 @@ namespace gView.DataSources.TileCache.UI
                     foreach (IDatasetElement element in elements)
                     {
                         if (element.Class is IRasterClass)
+                        {
                             base.AddChildObject(new TileCacheLayerExplorerObject(this, element));
+                        }
                     }
                 }
 
@@ -431,11 +439,15 @@ namespace gView.DataSources.TileCache.UI
         async public Task<IExplorerObject> CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache cache)
         {
             if (cache.Contains(FullName))
+            {
                 return cache[FullName];
+            }
 
             TileCacheGroupExplorerObject group = new TileCacheGroupExplorerObject();
-            if (FullName.IndexOf(group.FullName) != 0 || FullName.Length < group.FullName.Length + 2) 
+            if (FullName.IndexOf(group.FullName) != 0 || FullName.Length < group.FullName.Length + 2)
+            {
                 return null;
+            }
 
             group = (TileCacheGroupExplorerObject)((cache.Contains(group.FullName)) ? cache[group.FullName] : group);
 
@@ -466,8 +478,10 @@ namespace gView.DataSources.TileCache.UI
             ConfigConnections stream = new ConfigConnections("TileCache", "b9d6ae5b-9ca1-4a52-890f-caa4009784d4");
             stream.Remove(_name);
 
-            if (ExplorerObjectDeleted != null) 
+            if (ExplorerObjectDeleted != null)
+            {
                 ExplorerObjectDeleted(this);
+            }
 
             return Task.FromResult(true);
         }
@@ -487,8 +501,10 @@ namespace gView.DataSources.TileCache.UI
             if (ret == true)
             {
                 _name = newName;
-                if (ExplorerObjectRenamed != null) 
+                if (ExplorerObjectRenamed != null)
+                {
                     ExplorerObjectRenamed(this);
+                }
             }
 
             return Task.FromResult(ret);
@@ -510,7 +526,7 @@ namespace gView.DataSources.TileCache.UI
     public class TileCacheLayerExplorerObject : ExplorerObjectCls, IExplorerSimpleObject, ISerializableExplorerObject
     {
         private string _fcname = "";
-        private IExplorerIcon _icon =new TileCacheDatasetIcon();
+        private IExplorerIcon _icon = new TileCacheDatasetIcon();
         private IRasterClass _rc = null;
         private TileCacheDatasetExplorerObject _parent = null;
 
@@ -518,7 +534,10 @@ namespace gView.DataSources.TileCache.UI
         public TileCacheLayerExplorerObject(TileCacheDatasetExplorerObject parent, IDatasetElement element)
             : base(parent, typeof(FeatureClass), 1)
         {
-            if (element == null) return;
+            if (element == null)
+            {
+                return;
+            }
 
             _parent = parent;
             _fcname = element.Title;
@@ -526,7 +545,7 @@ namespace gView.DataSources.TileCache.UI
             if (element.Class is IRasterClass)
             {
                 _rc = (IRasterClass)element.Class;
-                
+
             }
         }
 
@@ -568,24 +587,34 @@ namespace gView.DataSources.TileCache.UI
 
         #region ISerializableExplorerObject Member
 
-        async public Task< IExplorerObject> CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache cache)
+        async public Task<IExplorerObject> CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache cache)
         {
-            if (cache.Contains(FullName)) 
+            if (cache.Contains(FullName))
+            {
                 return cache[FullName];
+            }
 
             FullName = FullName.Replace("/", @"\");
             int lastIndex = FullName.LastIndexOf(@"\");
-            if (lastIndex == -1) return null;
+            if (lastIndex == -1)
+            {
+                return null;
+            }
 
             string[] parts = FullName.Split('\\');
-            if (parts.Length != 3) return null;
+            if (parts.Length != 3)
+            {
+                return null;
+            }
 
             TileCacheDatasetExplorerObject parent = new TileCacheDatasetExplorerObject();
 
             parent = await parent.CreateInstanceByFullName(parts[0] + @"\" + parts[1], cache) as TileCacheDatasetExplorerObject;
 
             if (parent == null)
+            {
                 return null;
+            }
 
             var childObjects = await parent.ChildObjects();
             if (childObjects != null)

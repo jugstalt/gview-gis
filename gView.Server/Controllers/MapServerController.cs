@@ -21,7 +21,7 @@ namespace gView.Server.Controllers
         private readonly LoginManager _loginMananger;
 
         public MapServerController(
-            MapServiceManager mapServiceMananger, 
+            MapServiceManager mapServiceMananger,
             MapServiceDeploymentManager mapServiceDeploymentManager,
             LoginManager loginMananger,
             EncryptionCertificateService encryptionCertificateService)

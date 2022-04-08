@@ -4,11 +4,11 @@
 /// </summary>
 namespace gView.Framework.system
 {
-    public interface ICancelTracker 
-	{
-		void Cancel();
+    public interface ICancelTracker
+    {
+        void Cancel();
         void Pause();
-		bool Continue { get; }
+        bool Continue { get; }
         bool Paused { get; }
-	}
+    }
 }

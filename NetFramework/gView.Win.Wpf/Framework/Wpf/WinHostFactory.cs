@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Windows.Forms.Integration;
-using gView.Framework.UI;
+﻿using System.Windows.Forms.Integration;
 
 namespace gView.Desktop.Wpf
 {

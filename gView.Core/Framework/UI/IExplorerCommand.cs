@@ -12,5 +12,5 @@
         global::System.Guid ExplorerObjectGUID { get; }
     }
 
-    
+
 }

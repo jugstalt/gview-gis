@@ -1,21 +1,18 @@
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Text;
-using System.Windows.Forms;
-using gView.Framework.Data;
 using gView.Framework.Carto;
+using gView.Framework.Data;
 using gView.Framework.Geometry;
 using gView.Framework.Globalisation;
 using gView.Framework.UI;
-using System.Security.Policy;
 using gView.Framework.UI.Dialogs;
+using System;
+using System.Collections.Generic;
+using System.Drawing;
+using System.Text;
+using System.Windows.Forms;
 
 namespace gView.Plugins.MapTools.Dialogs
 {
-    internal enum IdentifyMode { visible,selectable,all,topmost,layer }
+    internal enum IdentifyMode { visible, selectable, all, topmost, layer }
 
     internal partial class FormIdentify : UserControl, IDockableToolWindow
     {
@@ -69,15 +66,29 @@ namespace gView.Plugins.MapTools.Dialogs
         }
         public void AddFeature(IFeature feature, ISpatialReference sRef, IFeatureLayer layer, string Category, IFields fields, IField primaryDisplayField)
         {
-            if (feature == null) return;
+            if (feature == null)
+            {
+                return;
+            }
 
             if (layer != null)
             {
-                if (fields == null) fields = layer.Fields;
-                if (primaryDisplayField == null) primaryDisplayField = layer.Fields.PrimaryDisplayField;
+                if (fields == null)
+                {
+                    fields = layer.Fields;
+                }
+
+                if (primaryDisplayField == null)
+                {
+                    primaryDisplayField = layer.Fields.PrimaryDisplayField;
+                }
             }
 
-            if (Category == "") Category = "Results";
+            if (Category == "")
+            {
+                Category = "Results";
+            }
+
             CategoryTreeNode parent = null;
 
             foreach (CategoryTreeNode node in treeObjects.Nodes)
@@ -103,7 +114,11 @@ namespace gView.Plugins.MapTools.Dialogs
 
                 foreach (IField field in fields.ToEnumerable())
                 {
-                    if (!field.visible) continue;
+                    if (!field.visible)
+                    {
+                        continue;
+                    }
+
                     for (int i = 0; i < fvs.Count; i++)
                     {
                         if (fvs[i].Name == field.name)
@@ -132,7 +147,9 @@ namespace gView.Plugins.MapTools.Dialogs
                 //parent.ExpandAll();
                 parent.Expand();
                 if (parent.Nodes.Count > 0)
+                {
                     parent.Nodes[0].Expand();
+                }
             }
         }
         public void WriteFeatureCount()
@@ -179,7 +196,11 @@ namespace gView.Plugins.MapTools.Dialogs
                 listValues.Items.Clear();
                 IFeature feature = ((FeatureTreeNode)treeObjects.SelectedNode).Feature;
 
-                if (feature == null) return;
+                if (feature == null)
+                {
+                    return;
+                }
+
                 foreach (FieldValue fv in feature.Fields)
                 {
                     string[] value = new string[2];
@@ -201,10 +222,25 @@ namespace gView.Plugins.MapTools.Dialogs
 
         private void treeObjects_MouseClick(object sender, MouseEventArgs e)
         {
-            if (_doc == null) return;
-            if (_doc.FocusMap == null) return;
-            if (_doc.FocusMap.Display == null) return;
-            if (_doc.Application == null) return;
+            if (_doc == null)
+            {
+                return;
+            }
+
+            if (_doc.FocusMap == null)
+            {
+                return;
+            }
+
+            if (_doc.FocusMap.Display == null)
+            {
+                return;
+            }
+
+            if (_doc.Application == null)
+            {
+                return;
+            }
 
             TreeNode node = treeObjects.GetNodeAt(e.X, e.Y);
             if (node is FeatureTreeNode && e.Button == MouseButtons.Left)
@@ -232,7 +268,11 @@ namespace gView.Plugins.MapTools.Dialogs
                             IGeometry geom = GeometricTransformerFactory.Transform2D(envelope,
                                 sRef,
                                 _doc.FocusMap.Display.SpatialReference);
-                            if (geom == null) return;
+                            if (geom == null)
+                            {
+                                return;
+                            }
+
                             envelope = geom.Envelope;
                         }
                         _doc.FocusMap.Display.ZoomTo(envelope);
@@ -241,7 +281,9 @@ namespace gView.Plugins.MapTools.Dialogs
                             _doc.FocusMap.Display.mapScale = layer.MaximumZoomToFeatureScale;
                         }
                         if (_doc.Application is IMapApplication)
+                        {
                             ((IMapApplication)_doc.Application).RefreshActiveMap(DrawPhase.All);
+                        }
                     }
                 }
             }
@@ -266,7 +308,7 @@ namespace gView.Plugins.MapTools.Dialogs
 
                 try
                 {
-                   
+
                     rtn.Nodes.Clear();
                     FeatureTreeNode ftn = (FeatureTreeNode)rtn.Parent;
 
@@ -283,26 +325,33 @@ namespace gView.Plugins.MapTools.Dialogs
                         cursor = relation.GetLeftRows(TargetFields(target), ftn.Feature[relation.RightTableField]) as IFeatureCursor;
                     }
                     if (cursor == null || target == null)
+                    {
                         return;
+                    }
 
                     string primaryDisplayField = String.Empty;
-                    if(target is IFeatureLayer && ((IFeatureLayer)target).Fields.PrimaryDisplayField!=null)
-                        primaryDisplayField=((IFeatureLayer)target).Fields.PrimaryDisplayField.name;
+                    if (target is IFeatureLayer && ((IFeatureLayer)target).Fields.PrimaryDisplayField != null)
+                    {
+                        primaryDisplayField = ((IFeatureLayer)target).Fields.PrimaryDisplayField.name;
+                    }
 
                     IFeature feature = null;
                     while ((feature = await cursor.NextFeature()) != null)
                     {
-                        rtn.Nodes.Add(new FeatureTreeNode(_doc, feature, 
-                            _doc.FocusMap.Display.SpatialReference, 
-                            target, 
-                            (target is IFeatureLayer ? ((IFeatureLayer)target).Fields.PrimaryDisplayField.name : String.Empty), 
+                        rtn.Nodes.Add(new FeatureTreeNode(_doc, feature,
+                            _doc.FocusMap.Display.SpatialReference,
+                            target,
+                            (target is IFeatureLayer ? ((IFeatureLayer)target).Fields.PrimaryDisplayField.name : String.Empty),
                             1));
                     }
                 }
                 finally
                 {
                     if (cursor != null)
+                    {
                         cursor.Dispose();
+                    }
+
                     if (rtn.Nodes.Count == 0)
                     {
                         rtn.Nodes.Add(new TreeNode());
@@ -318,9 +367,16 @@ namespace gView.Plugins.MapTools.Dialogs
         {
             get
             {
-                if (_doc == null && !(_doc.Application is IGUIApplication)) return IdentifyMode.visible;
+                if (_doc == null && !(_doc.Application is IGUIApplication))
+                {
+                    return IdentifyMode.visible;
+                }
+
                 QueryThemeCombo queryCombo = ((IGUIApplication)_doc.Application).Tool(new Guid("51A2CF81-E343-4c58-9A42-9207C8DFBC01")) as QueryThemeCombo;
-                if (queryCombo == null) return IdentifyMode.visible;
+                if (queryCombo == null)
+                {
+                    return IdentifyMode.visible;
+                }
 
                 return queryCombo.Mode;
             }
@@ -329,9 +385,16 @@ namespace gView.Plugins.MapTools.Dialogs
         {
             get
             {
-                if (_doc == null && !(_doc.Application is IGUIApplication)) return new List<IDatasetElement>();
+                if (_doc == null && !(_doc.Application is IGUIApplication))
+                {
+                    return new List<IDatasetElement>();
+                }
+
                 QueryThemeCombo queryCombo = ((IGUIApplication)_doc.Application).Tool(new Guid("51A2CF81-E343-4c58-9A42-9207C8DFBC01")) as QueryThemeCombo;
-                if (queryCombo == null) return new List<IDatasetElement>();
+                if (queryCombo == null)
+                {
+                    return new List<IDatasetElement>();
+                }
 
                 return queryCombo.QueryableDatasetElements;
             }
@@ -399,7 +462,9 @@ namespace gView.Plugins.MapTools.Dialogs
             get
             {
                 if (webBrowserControl.Url == null)
+                {
                     return String.Empty;
+                }
 
                 return webBrowserControl.Url.AbsoluteUri;
             }
@@ -407,7 +472,10 @@ namespace gView.Plugins.MapTools.Dialogs
             {
                 try
                 {
-                    if (tabControl1.TabPages.Contains(tabPageHTML)) return;
+                    if (tabControl1.TabPages.Contains(tabPageHTML))
+                    {
+                        return;
+                    }
 
                     if (String.IsNullOrEmpty(value))
                     {
@@ -435,14 +503,20 @@ namespace gView.Plugins.MapTools.Dialogs
             if (treeObjects.Nodes.Count == 0)
             {
                 if (tabControl1.TabPages.Contains(tabPageText))
+                {
                     tabControl1.SelectedIndex = tabControl1.TabPages.IndexOf(tabPageText);
+                }
                 else if (tabControl1.TabPages.Contains(tabPageHTML))
+                {
                     tabControl1.SelectedIndex = tabControl1.TabPages.IndexOf(tabPageHTML);
+                }
             }
             else
             {
                 if (tabControl1.TabPages.Contains(tabPageFeatures))
+                {
                     tabControl1.SelectedIndex = tabControl1.TabPages.IndexOf(tabPageFeatures);
+                }
             }
         }
 
@@ -453,12 +527,23 @@ namespace gView.Plugins.MapTools.Dialogs
             {
                 foreach (IField field in ((IFeatureLayer)target).Fields.ToEnumerable())
                 {
-                    if (!field.visible) continue;
-                    if (fields.Length > 0) fields.Append(" ");
+                    if (!field.visible)
+                    {
+                        continue;
+                    }
+
+                    if (fields.Length > 0)
+                    {
+                        fields.Append(" ");
+                    }
+
                     fields.Append(field.name);
                 }
             }
-            if (fields.Length == 0) fields.Append("*");
+            if (fields.Length == 0)
+            {
+                fields.Append("*");
+            }
 
             return fields.ToString();
         }
@@ -472,15 +557,22 @@ namespace gView.Plugins.MapTools.Dialogs
 
         public FeatureTreeNode(IMapDocument mapDocument, IFeature feature, ISpatialReference sRef, ILayer layer, string primaryFieldName)
         {
-            if (feature == null) return;
+            if (feature == null)
+            {
+                return;
+            }
 
             if (primaryFieldName != "")
             {
                 object val = feature[primaryFieldName];
                 if (val == null)
+                {
                     base.Text = System.DBNull.Value.ToString();
+                }
                 else
+                {
                     base.Text = val.ToString();
+                }
             }
             else
             {
@@ -510,7 +602,7 @@ namespace gView.Plugins.MapTools.Dialogs
             _feature = feature;
             _layer = layer;
 
-            if (mapDocument != null && mapDocument.TableRelations!=null)
+            if (mapDocument != null && mapDocument.TableRelations != null)
             {
                 foreach (ITableRelation tableRelation in mapDocument.TableRelations.GetRelations(_layer))
                 {
@@ -563,7 +655,7 @@ namespace gView.Plugins.MapTools.Dialogs
         private readonly IMapDocument _mapDocument;
         private readonly IMap _map;
 
-        public CategoryTreeNode(string category, 
+        public CategoryTreeNode(string category,
                                 IMapDocument mapDocument,
                                 IFeatureLayer featureLayer)
         {
@@ -581,7 +673,7 @@ namespace gView.Plugins.MapTools.Dialogs
                     });
             }
         }
-        
+
         public string Category
         {
             get; private set;
@@ -595,7 +687,7 @@ namespace gView.Plugins.MapTools.Dialogs
                                               FeatureLayer.Class.Dataset,
                                               FeatureLayer);
 
-            if(dlg.ShowDialog() == DialogResult.OK)
+            if (dlg.ShowDialog() == DialogResult.OK)
             {
                 if (_mapDocument.Application is IMapApplication)
                 {

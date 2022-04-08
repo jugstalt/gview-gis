@@ -1,28 +1,31 @@
+using RTools.Util;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
-using RTools.Util;
 
 namespace Proj4Net.IO
 {
     public class Proj4FileReader
     {
         private static readonly Assembly _asm = Assembly.GetExecutingAssembly();
-        
+
         private static MemoryStream GetResource(string name)
         {
             var mrs = "Proj4Net.Resources." + name;
             var s = _asm.GetManifestResourceStream(mrs);
             if (s == null)
+            {
                 return new MemoryStream();
+            }
+
             using (var sr = new BinaryReader(s))
             {
-                return new MemoryStream(sr.ReadBytes((int) s.Length));
+                return new MemoryStream(sr.ReadBytes((int)s.Length));
             }
         }
-        
+
         public String[] ReadParametersFromFile(String file, String name)
         {
             // TODO: read comment preceding CS string as CS description
@@ -93,10 +96,15 @@ namespace Proj4Net.IO
                     comment += "\n" + ((nt is CommentToken)
                                            ? (nt.StringValue.Length > 1) ? nt.StringValue.Substring(2) : ""
                                            : "");
-                    if (!t.NextToken(out nt)) break;
+                    if (!t.NextToken(out nt))
+                    {
+                        break;
+                    }
                 }
                 if (comment.Length > 1)
+                {
                     comment = comment.Substring(1);
+                }
 
                 //              if (!t.NextToken(out nt)) 
                 //                  break;
@@ -105,20 +113,32 @@ namespace Proj4Net.IO
                 {
                     t.NextToken(out nt);
                     if (!(nt is WordToken))
+                    {
                         throw new IOException(nt.LineNumber + ": Word expected after '<'");
+                    }
+
                     var crsName = nt.StringValue;
                     t.NextToken(out nt);
                     if (!nt.Equals('>'))
+                    {
                         throw new IOException(nt.LineNumber + ": '>' expected");
+                    }
+
                     t.NextToken(out nt);
                     List<String> v = new List<String>();
 
                     while (!nt.Equals('<'))
                     {
                         if (nt.Equals('+'))
+                        {
                             t.NextToken(out nt);
+                        }
+
                         if (!(nt is WordToken))
+                        {
                             throw new IOException(nt.LineNumber + ": Word expected after '+'");
+                        }
+
                         String key = nt.StringValue;
                         t.NextToken(out nt);
 
@@ -142,7 +162,9 @@ namespace Proj4Net.IO
                     }
                     t.NextToken(out nt);
                     if (!nt.Equals('>'))
+                    {
                         throw new IOException(nt.LineNumber + ": '<>' expected");
+                    }
                     //t.NextToken(out nt);
 
                     // found requested CRS?
@@ -161,13 +183,18 @@ namespace Proj4Net.IO
         {
             String plusKey = key;
             if (!key.StartsWith("+"))
+            {
                 plusKey = "+" + key;
+            }
 
             if (value != null)
+            {
                 v.Add(plusKey + "=" + value);
+            }
             else
+            {
                 v.Add(plusKey);
-
+            }
         }
 
         /// <summary>

@@ -21,7 +21,10 @@ namespace gView.Win.Carto.Items
             _tool = tool;
             _contextObject = contextObject;
 
-            if (_tool == null || _tool.DropDownTools == null) return;
+            if (_tool == null || _tool.DropDownTools == null)
+            {
+                return;
+            }
 
             if (_tool != null && _tool.SelectedTool != null)
             {
@@ -39,7 +42,10 @@ namespace gView.Win.Carto.Items
 
         private void button_Click(object sender, EventArgs e)
         {
-            if (!(sender is DropDownToolButtonItem)) return;
+            if (!(sender is DropDownToolButtonItem))
+            {
+                return;
+            }
 
             _tool.SelectedTool = ((DropDownToolButtonItem)sender).Tool;
             base.Icon = base.LargeIcon = ImageFactory.FromBitmap(_tool.SelectedTool.Image as System.Drawing.Image);
@@ -76,9 +82,13 @@ namespace gView.Win.Carto.Items
         public void OnClick()
         {
             if (Click != null)
+            {
                 Click(this, new RoutedEventArgs());
+            }
             else if (_contextObject != null && _tool.SelectedTool != null)
+            {
                 _tool.SelectedTool.OnEvent(_contextObject);
+            }
         }
 
         #endregion Events

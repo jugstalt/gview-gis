@@ -432,7 +432,7 @@ namespace gView.Framework.Data
                     SplitNode(n, l);
                 }
             }
-            
+
             return true;
         }
 
@@ -1132,7 +1132,7 @@ namespace gView.Framework.Data
 
             List<long> ids = new List<long>();
             NodeNumbers nn = new NodeNumbers(_nodeNumbers);
-            
+
             // Query Envelope is outside bounds
             if (!envelope.Intersects(_bounds))
             {
@@ -1143,7 +1143,7 @@ namespace gView.Framework.Data
 
                 return ids;
             }
-            
+
             CollectPlus(0, 0, envelope, _bounds, nn, ids);
             return ids;
         }

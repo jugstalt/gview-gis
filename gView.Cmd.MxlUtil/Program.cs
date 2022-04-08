@@ -2,7 +2,6 @@
 using gView.MxlUtil.Lib.Abstraction;
 using gView.MxlUtil.Lib.Exceptions;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -25,7 +24,8 @@ namespace gView.Cmd.MxlUtil
                 var assembly = Assembly.LoadFrom(assemblyPath);
                 utilityInstance =
                     assembly.GetTypes()
-                        .Where(t => {
+                        .Where(t =>
+                        {
                             try
                             {
                                 return
@@ -34,10 +34,10 @@ namespace gView.Cmd.MxlUtil
                             }
                             catch { return false; }
                         })
-                        .Select(t=>Activator.CreateInstance(t) as IMxlUtility)
+                        .Select(t => Activator.CreateInstance(t) as IMxlUtility)
                         .FirstOrDefault();
 
-                if(utilityInstance == null)
+                if (utilityInstance == null)
                 {
                     var utilityInstances = assembly.GetTypes()
                         .Where(t =>
@@ -71,12 +71,12 @@ namespace gView.Cmd.MxlUtil
 
                 return 0;
             }
-            catch(IncompleteArgumentsException)
+            catch (IncompleteArgumentsException)
             {
                 Console.WriteLine(utilityInstance?.HelpText());
 
                 return 1;
-            } 
+            }
             catch (Exception ex)
             {
                 Console.WriteLine();
@@ -88,6 +88,6 @@ namespace gView.Cmd.MxlUtil
             }
         }
 
- 
+
     }
 }

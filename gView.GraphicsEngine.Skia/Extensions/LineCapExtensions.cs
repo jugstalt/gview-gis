@@ -1,7 +1,4 @@
 ﻿using SkiaSharp;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace gView.GraphicsEngine.Skia.Extensions
 {
@@ -9,7 +6,7 @@ namespace gView.GraphicsEngine.Skia.Extensions
     {
         static public SKStrokeCap ToSKStrokeCap(this LineCap lineCap)
         {
-            switch(lineCap)
+            switch (lineCap)
             {
                 case LineCap.Round:
                     return SKStrokeCap.Round;
@@ -22,7 +19,7 @@ namespace gView.GraphicsEngine.Skia.Extensions
 
         static public LineCap ToLineCap(this SKStrokeCap strokeCap)
         {
-            switch(strokeCap)
+            switch (strokeCap)
             {
                 case SKStrokeCap.Round:
                     return LineCap.Round;

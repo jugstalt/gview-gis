@@ -1,6 +1,3 @@
-using gView.Framework.Carto;
-using System.Threading;
-
 namespace gView.Framework.UI
 {
 

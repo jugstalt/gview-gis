@@ -3,7 +3,6 @@ using Microsoft.WindowsAzure.Storage.Table;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace gView.Framework.Azure.Storage
@@ -60,7 +59,9 @@ namespace gView.Framework.Azure.Storage
             where T : ITableEntity
         {
             if (entities == null || entities.Length == 0)
+            {
                 return true;
+            }
 
             CloudStorageAccount storageAccount = CloudStorageAccount.Parse(_connectionString);
 
@@ -76,7 +77,9 @@ namespace gView.Framework.Azure.Storage
                 foreach (string partitionKey in partitionKeys)
                 {
                     if (String.IsNullOrWhiteSpace(partitionKey))
+                    {
                         continue;
+                    }
 
                     // Create the batch operation.
                     TableBatchOperation batchOperation = new TableBatchOperation();
@@ -180,7 +183,9 @@ namespace gView.Framework.Azure.Storage
         private string QueryComp(QueryComparer[] whereComparer, int index)
         {
             if (whereComparer == null)
+            {
                 return QueryComparisons.Equal;
+            }
 
             switch (whereComparer[index])
             {

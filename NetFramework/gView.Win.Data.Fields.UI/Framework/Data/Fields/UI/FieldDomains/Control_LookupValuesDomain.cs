@@ -1,17 +1,12 @@
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Drawing;
-using System.Data;
-using System.Text;
-using System.Windows.Forms;
-using gView.Framework.system;
 using gView.Framework.Data.Fields.FieldDomains;
 using gView.Framework.Db.UI;
+using gView.Framework.system;
+using System;
+using System.Windows.Forms;
 
 namespace gView.Framework.Data.Fields.UI.FieldDomains
 {
-    public partial class Control_LookupValuesDomain : UserControl,IInitializeClass
+    public partial class Control_LookupValuesDomain : UserControl, IInitializeClass
     {
         private LookupValuesDomain _domain = null;
 
@@ -29,7 +24,10 @@ namespace gView.Framework.Data.Fields.UI.FieldDomains
             if (_domain != null)
             {
                 if (_domain.DbConnectionString != null)
+                {
                     txtConnection.Text = _domain.DbConnectionString.SchemaName;
+                }
+
                 txtSQL.Text = _domain.SqlStatement;
             }
         }
@@ -38,7 +36,10 @@ namespace gView.Framework.Data.Fields.UI.FieldDomains
 
         private void btnGetConnectionString_Click(object sender, EventArgs e)
         {
-            if (_domain == null) return;
+            if (_domain == null)
+            {
+                return;
+            }
 
             FormConnectionString dlg = new FormConnectionString(_domain.DbConnectionString);
             dlg.ProviderID = "mssql,oledb,oracle";
@@ -47,9 +48,13 @@ namespace gView.Framework.Data.Fields.UI.FieldDomains
             {
                 _domain.DbConnectionString = dlg.DbConnectionString;
                 if (_domain.DbConnectionString != null)
+                {
                     txtConnection.Text = _domain.DbConnectionString.SchemaName;
+                }
                 else
+                {
                     txtConnection.Text = String.Empty;
+                }
             }
         }
 
@@ -61,7 +66,9 @@ namespace gView.Framework.Data.Fields.UI.FieldDomains
         private void txtSQL_TextChanged(object sender, EventArgs e)
         {
             if (_domain != null)
+            {
                 _domain.SqlStatement = txtSQL.Text;
+            }
         }
     }
 }

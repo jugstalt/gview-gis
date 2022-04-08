@@ -1,7 +1,7 @@
 ﻿namespace gView.GraphicsEngine
 {
     public struct CanvasRectangle
-    { 
+    {
         public CanvasRectangle(int left, int top, int width, int height)
         {
             this.Left = left;

@@ -1,8 +1,3 @@
-using System;
-using System.Collections;
-using System.Drawing;
-using System.Collections.Generic;
-using gView.Framework.Geometry;
 using gView.Framework.Topology;
 
 namespace gView.Framework.SpatialAlgorithms
@@ -23,21 +18,31 @@ namespace gView.Framework.SpatialAlgorithms
             _edges = new Edges();
 
             DelaunayTriangulation triangulation = new DelaunayTriangulation();
-            if(Progress!=null)
+            if (Progress != null)
+            {
                 triangulation.Progress += new DelaunayTriangulation.ProgressEventHandler(triangulation_Progress);
+            }
+
             if (ProgressMessage != null)
+            {
                 ProgressMessage("Calculate Triangles");
+            }
+
             Triangles triangles = triangulation.Triangulate(nodes);
 
             int tCount = triangles.Count;
             int pos = 0;
             if (ProgressMessage != null)
+            {
                 ProgressMessage("Calculate Vertices");
+            }
             // Vertices
             foreach (Triangle triangle in triangles)
             {
                 if (Progress != null)
+                {
                     Progress(pos++, tCount);
+                }
 
                 _nodes.Add(Triangle.CircumCircleCenter(
                     nodes[triangle.p1], nodes[triangle.p2], nodes[triangle.p3]));
@@ -45,12 +50,16 @@ namespace gView.Framework.SpatialAlgorithms
 
             pos = 0;
             if (ProgressMessage != null)
+            {
                 ProgressMessage("Calculate Edges");
+            }
             // Edges
             for (int n = 0; n < tCount; n++)
             {
                 if (Progress != null)
-                    Progress( pos++, tCount);
+                {
+                    Progress(pos++, tCount);
+                }
 
                 Triangle triangle = triangles[n];
                 int n1 = NeigbourTriangle(n, new Edge(triangle.p1, triangle.p2), triangles);
@@ -58,18 +67,28 @@ namespace gView.Framework.SpatialAlgorithms
                 int n3 = NeigbourTriangle(n, new Edge(triangle.p2, triangle.p3), triangles);
 
                 if (n1 >= 0)
+                {
                     _edges.Add(new Edge(n, n1));
+                }
+
                 if (n2 >= 0)
+                {
                     _edges.Add(new Edge(n, n2));
+                }
+
                 if (n3 >= 0)
+                {
                     _edges.Add(new Edge(n, n3));
+                }
             }
         }
 
         void triangulation_Progress(int pos, int max)
         {
             if (Progress != null)
+            {
                 Progress(pos, max);
+            }
         }
 
         private int NeigbourTriangle(int canditate,
@@ -84,7 +103,10 @@ namespace gView.Framework.SpatialAlgorithms
                 Edge e2 = new Edge(triangle.p1, triangle.p3);
                 Edge e3 = new Edge(triangle.p2, triangle.p3);
 
-                if (e1.Equals(edge) || e2.Equals(edge) || e3.Equals(edge)) return n;
+                if (e1.Equals(edge) || e2.Equals(edge) || e3.Equals(edge))
+                {
+                    return n;
+                }
             }
 
             return -1;

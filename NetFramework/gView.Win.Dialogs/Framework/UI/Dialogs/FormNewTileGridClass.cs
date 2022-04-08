@@ -1,15 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Text;
-using System.Windows.Forms;
-using gView.Framework.UI.Dialogs;
-using gView.Framework.UI.Controls.Filter;
-using gView.Framework.Geometry;
-using gView.Framework.Data;
+﻿using gView.Framework.Data;
 using gView.Framework.FDB;
+using gView.Framework.Geometry;
+using gView.Framework.UI.Controls.Filter;
+using System;
+using System.Collections.Generic;
+using System.Windows.Forms;
 using System.Xml;
 
 namespace gView.Framework.UI.Dialogs
@@ -41,7 +36,10 @@ namespace gView.Framework.UI.Dialogs
                 foreach (IExplorerObject exObject in dlg.ExplorerObjects)
                 {
                     var instance = await exObject?.GetInstanceAsync();
-                    if (instance == null) continue;
+                    if (instance == null)
+                    {
+                        continue;
+                    }
 
                     _ds = instance as IRasterDataset;
                     if (_ds != null)
@@ -53,15 +51,21 @@ namespace gView.Framework.UI.Dialogs
                             if (element != null && element.Class is IFeatureClass)
                             {
                                 if (env == null)
+                                {
                                     env = new Envelope(((IFeatureClass)element.Class).Envelope);
+                                }
                                 else
+                                {
                                     env.Union(((IFeatureClass)element.Class).Envelope);
+                                }
                             }
                         }
                         spatialIndexControl1.Extent = env;
                     }
                     else
+                    {
                         txtGridDataset.Text = String.Empty;
+                    }
                 }
             }
         }
@@ -133,7 +137,9 @@ namespace gView.Framework.UI.Dialogs
             dlg.SelectedPath = txtCacheDirectory.Text;
 
             if (dlg.ShowDialog() == DialogResult.OK)
+            {
                 txtCacheDirectory.Text = dlg.SelectedPath;
+            }
         }
 
         private void btnImportFromGridDef_Click(object sender, EventArgs e)
@@ -150,7 +156,9 @@ namespace gView.Framework.UI.Dialogs
 
                     XmlNode envelopeNode = doc.SelectSingleNode("TileCacheDefinition/Envelope[@minx and @miny and  @maxx and @maxy]");
                     if (envelopeNode == null)
+                    {
                         throw new Exception("Corrupt Grid file: No Envelope Node defined");
+                    }
 
                     spatialIndexControl1.Extent = new gView.Framework.Geometry.Envelope(
                         double.Parse(envelopeNode.Attributes["minx"].Value, _nhi),
@@ -160,19 +168,28 @@ namespace gView.Framework.UI.Dialogs
 
                     XmlNode tileSizeNode = doc.SelectSingleNode("TileCacheDefinition/TileSize[@x and @y]");
                     if (tileSizeNode == null)
+                    {
                         throw new Exception("Corrupt Grid file: No TileSize Node defined");
+                    }
+
                     numTileSizeX.Value = (decimal)double.Parse(tileSizeNode.Attributes["x"].Value, _nhi);
                     numTileSizeY.Value = (decimal)double.Parse(tileSizeNode.Attributes["y"].Value, _nhi);
 
                     XmlNode resolutionNode = doc.SelectSingleNode("TileCacheDefinition/TileResolution[@x and @y]");
                     if (resolutionNode == null)
+                    {
                         throw new Exception("Corrupt Grid file: No TileResolution Node defined");
+                    }
+
                     numResolutionX.Value = (decimal)double.Parse(resolutionNode.Attributes["x"].Value, _nhi);
                     numResolutionY.Value = (decimal)double.Parse(resolutionNode.Attributes["y"].Value, _nhi);
 
                     XmlNode generalNode = doc.SelectSingleNode("TileCacheDefinition/General[@levels]");
                     if (generalNode == null)
+                    {
                         throw new Exception("Corrupt Grid file: No General Node defined");
+                    }
+
                     numLevels.Value = (decimal)int.Parse(generalNode.Attributes["levels"].Value);
                 }
             }
@@ -198,13 +215,17 @@ namespace gView.Framework.UI.Dialogs
         {
             int levels = (int)numLevels.Value;
             if (!_createLevels.Contains(levels))
+            {
                 _createLevels.Add(levels - 1);
+            }
 
             List<int> l = new List<int>();
             for (int i = 0; i < levels; i++)
             {
                 if (_createLevels.Contains(i))
+                {
                     l.Add(i);
+                }
             }
             _createLevels = l;
         }

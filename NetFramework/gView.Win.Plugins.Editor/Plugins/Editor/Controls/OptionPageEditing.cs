@@ -1,13 +1,8 @@
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Drawing;
-using System.Data;
-using System.Text;
-using System.Windows.Forms;
-using gView.Framework.UI;
-using gView.Framework.system;
 using gView.Framework.Editor.Core;
+using gView.Framework.system;
+using gView.Framework.UI;
+using System.Drawing;
+using System.Windows.Forms;
 
 namespace gView.Plugins.Editor.Controls
 {
@@ -35,13 +30,18 @@ namespace gView.Plugins.Editor.Controls
         {
             dgEditLayers.Rows.Clear();
             if (_module == null || _module.MapDocument == null ||
-                _module.MapDocument.FocusMap == null) return;
-
+                _module.MapDocument.FocusMap == null)
+            {
+                return;
+            }
 
             foreach (IEditLayer eLayer in _module.EditLayers)
             {
                 if (!(eLayer is EditLayer) ||
-                    _module.MapDocument.FocusMap[eLayer.FeatureLayer] == null) continue;
+                    _module.MapDocument.FocusMap[eLayer.FeatureLayer] == null)
+                {
+                    continue;
+                }
 
                 dgEditLayers.Rows.Add(new EditLayerRow((EditLayer)eLayer));
             }
@@ -49,7 +49,10 @@ namespace gView.Plugins.Editor.Controls
         public void Commit()
         {
             if (_module == null || _module.MapDocument == null ||
-                _module.MapDocument.FocusMap == null) return;
+                _module.MapDocument.FocusMap == null)
+            {
+                return;
+            }
 
             foreach (EditLayerRow row in dgEditLayers.Rows)
             {
@@ -73,7 +76,10 @@ namespace gView.Plugins.Editor.Controls
             public EditLayerRow(EditLayer eLayer)
             {
                 _eLayer = eLayer;
-                if (_eLayer == null) return;
+                if (_eLayer == null)
+                {
+                    return;
+                }
 
                 DataGridViewTextBoxCell cell = new DataGridViewTextBoxCell();
                 cell.Value = _eLayer.FeatureLayer.Title;
@@ -96,15 +102,27 @@ namespace gView.Plugins.Editor.Controls
             {
                 get
                 {
-                    if (_eLayer == null) return null;
+                    if (_eLayer == null)
+                    {
+                        return null;
+                    }
+
                     _eLayer.Statements = EditStatements.NONE;
 
                     if (this.Cells[1].Value.Equals(true))
+                    {
                         _eLayer.Statements |= EditStatements.INSERT;
+                    }
+
                     if (this.Cells[2].Value.Equals(true))
+                    {
                         _eLayer.Statements |= EditStatements.UPDATE;
+                    }
+
                     if (this.Cells[3].Value.Equals(true))
+                    {
                         _eLayer.Statements |= EditStatements.DELETE;
+                    }
 
                     return _eLayer;
                 }
@@ -123,14 +141,20 @@ namespace gView.Plugins.Editor.Controls
         public Panel OptionPage(IMapDocument document)
         {
             if (!IsAvailable(document))
+            {
                 return null;
+            }
 
             if (_page == null)
             {
                 if (document.Application is IMapApplication)
                 {
                     Module module = ((IMapApplication)document.Application).IMapApplicationModule(Globals.ModuleGuid) as Module;
-                    if (module == null) return null;
+                    if (module == null)
+                    {
+                        return null;
+                    }
+
                     _page = new OptionPageEditing(module);
                 }
             }
@@ -151,15 +175,23 @@ namespace gView.Plugins.Editor.Controls
         public void Commit()
         {
             if (_page != null)
+            {
                 _page.Commit();
+            }
         }
 
         public bool IsAvailable(IMapDocument document)
         {
-            if (document == null || document.Application == null) return false;
+            if (document == null || document.Application == null)
+            {
+                return false;
+            }
 
             if (document.Application is IMapApplication &&
-                ((IMapApplication)document.Application).ReadOnly == true) return false;
+                ((IMapApplication)document.Application).ReadOnly == true)
+            {
+                return false;
+            }
 
             return true;
         }

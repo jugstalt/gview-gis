@@ -13,9 +13,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-using System;
 using GeoAPI.Geometries;
 using Proj4Net.Utility;
+using System;
 
 namespace Proj4Net.Projection
 {
@@ -38,7 +38,9 @@ namespace Proj4Net.Projection
 
             theta = lpphi;
             if (Math.Abs(Math.Abs(lpphi) - ProjectionMath.PiHalf) < EPS)
+            {
                 coord.X = 0.0;
+            }
             else
             {
                 c = Math.Sin(theta) * Math.PI;
@@ -46,7 +48,10 @@ namespace Proj4Net.Projection
                 {
                     theta -= th1 = (theta + Math.Sin(theta) - c) /
                         (1.0 + Math.Cos(theta));
-                    if (Math.Abs(th1) < EPS) break;
+                    if (Math.Abs(th1) < EPS)
+                    {
+                        break;
+                    }
                 }
                 theta *= 0.5;
                 coord.X = FXC * lplam / (1.0 / Math.Cos(lpphi) + FXC2 / Math.Cos(theta));

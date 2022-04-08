@@ -1,10 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Management;
 using System.Collections;
+using System.Management;
 
 namespace gView.Framework.Sys.UI
 {
@@ -28,36 +24,56 @@ namespace gView.Framework.Sys.UI
         {
             //return GetSystemInfo2(SoftwareName);
             if (UseMashineName)
+            {
                 SoftwareName += MashineName;
+            }
 
             if (UseProcessorID == true)
+            {
                 SoftwareName += RunQuery("Processor", "ProcessorId");
+            }
 
             if (UseBaseBoardProduct == true)
+            {
                 SoftwareName += RunQuery("BaseBoard", "Product");
+            }
 
             if (UseBaseBoardManufacturer == true)
+            {
                 SoftwareName += RunQuery("BaseBoard", "Manufacturer");
+            }
 
             if (UseDiskDriveSignature == true)
+            {
                 SoftwareName += RunQuery("DiskDrive", "Signature");
+            }
 
             if (UseVideoControllerCaption == true)
+            {
                 SoftwareName += RunQuery("VideoController", "Caption");
+            }
 
             if (UsePhysicalMediaSerialNumber == true)
+            {
                 SoftwareName += RunQuery("PhysicalMedia", "SerialNumber");
+            }
 
             if (UseBiosVersion == true)
+            {
                 SoftwareName += RunQuery("BIOS", "Version");
+            }
 
             if (UseWindowsSerialNumber == true)
+            {
                 SoftwareName += RunQuery("OperatingSystem", "SerialNumber");
+            }
 
             SoftwareName = RemoveUseLess(SoftwareName);
 
             if (SoftwareName.Length < 25)
+            {
                 return GetSystemInfo(SoftwareName);
+            }
 
             return SoftwareName.Substring(0, 25).ToUpper();
         }
@@ -115,7 +131,11 @@ namespace gView.Framework.Sys.UI
         }
         private static string TrimString(string str)
         {
-            if (str == null) return "";
+            if (str == null)
+            {
+                return "";
+            }
+
             str = str.Trim();
             while (str.IndexOf("0") == 0)
             {
@@ -149,9 +169,13 @@ namespace gView.Framework.Sys.UI
 
                 // get the hardware serial no.
                 if (wmi_HD["SerialNumber"] == null)
+                {
                     hd.SerialNo = "None";
+                }
                 else
+                {
                     hd.SerialNo = wmi_HD["SerialNumber"].ToString();
+                }
 
                 ++i;
             }

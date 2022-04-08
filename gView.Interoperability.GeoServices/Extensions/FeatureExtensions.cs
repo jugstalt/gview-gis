@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace gView.Interoperability.GeoServices.Extensions
 {
@@ -12,9 +11,9 @@ namespace gView.Interoperability.GeoServices.Extensions
         {
             var dict = new Dictionary<string, object>();
 
-            if(row?.Fields!=null)
+            if (row?.Fields != null)
             {
-                foreach(var fieldValue in row.Fields)
+                foreach (var fieldValue in row.Fields)
                 {
                     dict[fieldValue.Name] = fieldValue.Value;
                 }
@@ -36,9 +35,9 @@ namespace gView.Interoperability.GeoServices.Extensions
             return false;
         }
 
-        static public Dictionary<string, object>  AppendRasterAttributes(this Dictionary<string, object> attributes)
+        static public Dictionary<string, object> AppendRasterAttributes(this Dictionary<string, object> attributes)
         {
-            if(attributes.IsGridResponse())
+            if (attributes.IsGridResponse())
             {
                 var result = new Dictionary<string, object>()
                 {
@@ -46,7 +45,7 @@ namespace gView.Interoperability.GeoServices.Extensions
                     { "Pixel Value", attributes["band1"] }
                 };
 
-                foreach(var key in attributes.Keys)
+                foreach (var key in attributes.Keys)
                 {
                     result[key] = attributes[key];
                 }

@@ -1,14 +1,9 @@
-using System;
-using System.Collections;
-using System.ComponentModel;
-using System.Drawing;
-using System.Data;
-using System.Windows.Forms;
-using gView.Framework.Symbology;
-using gView.Framework.system;
-using gView.Framework.Carto;
 using gView.Framework.Carto.UI;
 using gView.Framework.Sys.UI.Extensions;
+using gView.Framework.system;
+using System;
+using System.Drawing;
+using System.Windows.Forms;
 
 namespace gView.Framework.Symbology.UI.Controls
 {
@@ -72,9 +67,16 @@ namespace gView.Framework.Symbology.UI.Controls
         {
             get
             {
-                if (_symbol == null) return null;
+                if (_symbol == null)
+                {
+                    return null;
+                }
+
                 if (_symbol.Symbols.Count == 1)
+                {
                     return ((SymbolCollectionItem)_symbol.Symbols[0]).Symbol;
+                }
+
                 return _symbol;
             }
             set
@@ -84,15 +86,22 @@ namespace gView.Framework.Symbology.UI.Controls
                     _symbol.Release();
                 }
                 if (value is SymbolCollection)
+                {
                     _symbol = (SymbolCollection)value;
+                }
                 else if (value is ISymbol)
+                {
                     _symbol = new SymbolCollection(_symbol);
+                }
             }
         }
 
         public void AddSymbol(ISymbol symbol)
         {
-            if (_symbol == null) _symbol = new SymbolCollection();
+            if (_symbol == null)
+            {
+                _symbol = new SymbolCollection();
+            }
 
             _symbol.AddSymbol(symbol);
 
@@ -113,8 +122,15 @@ namespace gView.Framework.Symbology.UI.Controls
 
         private void RemoveSymbol(ISymbol symbol)
         {
-            if (symbol == null || _symbol == null) return;
-            if (_symbol.Symbols.Count < 2) return;
+            if (symbol == null || _symbol == null)
+            {
+                return;
+            }
+
+            if (_symbol.Symbols.Count < 2)
+            {
+                return;
+            }
 
             _symbol.RemoveSymbol(symbol);
             buildList();
@@ -123,9 +139,16 @@ namespace gView.Framework.Symbology.UI.Controls
 
         private void MoveUpSymbol(ISymbol symbol)
         {
-            if (symbol == null || _symbol == null) return;
+            if (symbol == null || _symbol == null)
+            {
+                return;
+            }
+
             int index = _symbol.IndexOf(symbol);
-            if (index < 1) return;
+            if (index < 1)
+            {
+                return;
+            }
 
             ISymbol prev = ((SymbolCollectionItem)_symbol.Symbols[index - 1]).Symbol;
             bool visible = _symbol.IsVisible(symbol);
@@ -135,9 +158,16 @@ namespace gView.Framework.Symbology.UI.Controls
 
         private void MoveDownSymbol(ISymbol symbol)
         {
-            if (symbol == null || _symbol == null) return;
+            if (symbol == null || _symbol == null)
+            {
+                return;
+            }
+
             int index = _symbol.IndexOf(symbol);
-            if (index == -1 || index >= _symbol.Symbols.Count - 1) return;
+            if (index == -1 || index >= _symbol.Symbols.Count - 1)
+            {
+                return;
+            }
 
             bool visible = _symbol.IsVisible(symbol);
             if (index < _symbol.Symbols.Count - 2)
@@ -155,7 +185,11 @@ namespace gView.Framework.Symbology.UI.Controls
 
         public ISymbol ReplaceSelectedSymbol(ISymbol newSymbol)
         {
-            if (_selectedSymbol == null) return null;
+            if (_selectedSymbol == null)
+            {
+                return null;
+            }
+
             _symbol.ReplaceSymbol(_selectedSymbol, newSymbol);
             ISymbol old = _selectedSymbol;
             _selectedSymbol = newSymbol;
@@ -497,7 +531,11 @@ namespace gView.Framework.Symbology.UI.Controls
 
         private void btnAdd_Click(object sender, System.EventArgs e)
         {
-            if (_selectedSymbol == null) return;
+            if (_selectedSymbol == null)
+            {
+                return;
+            }
+
             if (PlugInManager.IsPlugin(_selectedSymbol))
             {
                 PlugInManager comMan = new PlugInManager();
@@ -507,37 +545,67 @@ namespace gView.Framework.Symbology.UI.Controls
                 {
                     AddSymbol(newSymbol);
                 }
-                if (SelectedSymbolChanged != null) SelectedSymbolChanged(_selectedSymbol);
+                if (SelectedSymbolChanged != null)
+                {
+                    SelectedSymbolChanged(_selectedSymbol);
+                }
             }
         }
 
         private void btnRemove_Click(object sender, EventArgs e)
         {
-            if (_selectedSymbol == null) return;
+            if (_selectedSymbol == null)
+            {
+                return;
+            }
+
             this.RemoveSymbol(_selectedSymbol);
             lbSymbols.SelectedItem = lbSymbols.Items[0];
-            if (SelectedSymbolChanged != null) SelectedSymbolChanged(_selectedSymbol);
+            if (SelectedSymbolChanged != null)
+            {
+                SelectedSymbolChanged(_selectedSymbol);
+            }
         }
 
         private void btnMoveDown_Click(object sender, EventArgs e)
         {
-            if (_selectedSymbol == null) return;
+            if (_selectedSymbol == null)
+            {
+                return;
+            }
+
             this.MoveDownSymbol(_selectedSymbol);
-            if (SelectedSymbolChanged != null) SelectedSymbolChanged(_selectedSymbol);
+            if (SelectedSymbolChanged != null)
+            {
+                SelectedSymbolChanged(_selectedSymbol);
+            }
+
             buildList();
         }
 
         private void btnMoveUp_Click(object sender, EventArgs e)
         {
-            if (_selectedSymbol == null) return;
+            if (_selectedSymbol == null)
+            {
+                return;
+            }
+
             this.MoveUpSymbol(_selectedSymbol);
-            if (SelectedSymbolChanged != null) SelectedSymbolChanged(_selectedSymbol);
+            if (SelectedSymbolChanged != null)
+            {
+                SelectedSymbolChanged(_selectedSymbol);
+            }
+
             buildList();
         }
 
         private void lbSymbols_SelectedIndexChanged(object sender, System.EventArgs e)
         {
-            if (lbSymbols.SelectedItem == null) return;
+            if (lbSymbols.SelectedItem == null)
+            {
+                return;
+            }
+
             _selectedSymbol = ((SymbolCollectionItem)lbSymbols.SelectedItem).Symbol;
             toolStrip2.Visible = (_selectedSymbol is IPointSymbol) || (_selectedSymbol is ITextSymbol);
             if (toolStrip2.Visible)
@@ -551,7 +619,11 @@ namespace gView.Framework.Symbology.UI.Controls
             }
             lbSymbols.Refresh();
 
-            if (SelectedSymbolChanged != null) SelectedSymbolChanged(_selectedSymbol);
+            if (SelectedSymbolChanged != null)
+            {
+                SelectedSymbolChanged(_selectedSymbol);
+            }
+
             DrawPreview();
         }
 
@@ -568,7 +640,11 @@ namespace gView.Framework.Symbology.UI.Controls
                     break;
                 }
             }
-            if (item == null) return;
+            if (item == null)
+            {
+                return;
+            }
+
             _mouseDownItem = item;
 
             if (e.X < 20)
@@ -603,7 +679,10 @@ namespace gView.Framework.Symbology.UI.Controls
                         break;
                     }
                 }
-                if (item == null) return;
+                if (item == null)
+                {
+                    return;
+                }
 
                 _mouseOverItem = item;
 
@@ -758,9 +837,14 @@ namespace gView.Framework.Symbology.UI.Controls
                 if (_selectedSymbol is ISymbolTransformation)
                 {
                     if (txtXOffset.Text == "" || txtXOffset.Text == "-")
+                    {
                         ((ISymbolTransformation)_selectedSymbol).HorizontalOffset = 0;
+                    }
                     else
+                    {
                         ((ISymbolTransformation)_selectedSymbol).HorizontalOffset = (float)Convert.ToDouble(txtXOffset.Text);
+                    }
+
                     DrawPreview();
                 }
             }
@@ -777,9 +861,14 @@ namespace gView.Framework.Symbology.UI.Controls
                 if (_selectedSymbol is ISymbolTransformation)
                 {
                     if (txtYOffset.Text == "" || txtYOffset.Text == "-")
+                    {
                         ((ISymbolTransformation)_selectedSymbol).VerticalOffset = 0;
+                    }
                     else
+                    {
                         ((ISymbolTransformation)_selectedSymbol).VerticalOffset = (float)Convert.ToDouble(txtYOffset.Text);
+                    }
+
                     DrawPreview();
                 }
             }
@@ -796,9 +885,14 @@ namespace gView.Framework.Symbology.UI.Controls
                 if (_selectedSymbol is ISymbolTransformation)
                 {
                     if (txtRotation.Text == "" || txtRotation.Text == "-")
+                    {
                         ((ISymbolTransformation)_selectedSymbol).Angle = 0;
+                    }
                     else
+                    {
                         ((ISymbolTransformation)_selectedSymbol).Angle = (float)Convert.ToDouble(txtRotation.Text);
+                    }
+
                     DrawPreview();
                 }
             }

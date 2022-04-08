@@ -1,18 +1,18 @@
+using gView.Framework.Data;
+using gView.Framework.Geometry;
+using gView.Framework.system;
+using gView.Framework.Web;
 using System;
 using System.Collections.Generic;
 using System.Text;
-using gView.Framework.Data;
-using gView.Framework.Web;
-using System.Xml;
-using gView.Framework.system;
-using gView.Framework.Geometry;
 using System.Threading.Tasks;
+using System.Xml;
 
 namespace gView.Interoperability.OGC.Dataset.WMS
 {
     public interface IWMSStyle
     {
-        string Style { get; } 
+        string Style { get; }
     }
 
     class WMSStyle : IWMSStyle
@@ -30,7 +30,7 @@ namespace gView.Interoperability.OGC.Dataset.WMS
     {
         protected WMSDataset _dataset;
         protected string _name;
-        
+
         public WMSThemeClass(WMSDataset dataset, string name, string style, XmlNode layerNode)
         {
             _dataset = dataset;
@@ -71,7 +71,7 @@ namespace gView.Interoperability.OGC.Dataset.WMS
     class WMSQueryableThemeClass : WMSThemeClass, IPointIdentify
     {
         private static IFormatProvider _nhi = System.Globalization.CultureInfo.InvariantCulture.NumberFormat;
-        
+
         private WMSClass.GetFeatureInfo _getFeatureInfo;
         private WMSClass.SRS _srs;
         private WMSClass.WMSExceptions _exceptions;
@@ -89,7 +89,9 @@ namespace gView.Interoperability.OGC.Dataset.WMS
         public Task<ICursor> PointQuery(gView.Framework.Carto.IDisplay display, gView.Framework.Geometry.IPoint point, ISpatialReference sRef, IUserData userdata)
         {
             if (display == null || point == null)
+            {
                 return Task.FromResult<ICursor>(null);
+            }
 
             IEnvelope dispEnvelope = display.Envelope;
             if (sRef != null)
@@ -186,9 +188,11 @@ namespace gView.Interoperability.OGC.Dataset.WMS
                             XmlNode fieldValue = field.SelectSingleNode("gview_wms:FieldValue", ns);
 
                             if (fieldName != null && fieldValue != null)
+                            {
                                 row.Fields.Add(new FieldValue(
                                     fieldName.InnerText,
                                     fieldValue.InnerText));
+                            }
                         }
                         rows.Add(row);
                     }
@@ -202,7 +206,10 @@ namespace gView.Interoperability.OGC.Dataset.WMS
                         foreach (XmlNode field in feature.SelectNodes("FIELDS/FIELD"))
                         {
                             if (field.Attributes["name"] == null ||
-                                field.Attributes["value"] == null) continue;
+                                field.Attributes["value"] == null)
+                            {
+                                continue;
+                            }
 
                             row.Fields.Add(new FieldValue(
                                 field.Attributes["name"].Value,
@@ -225,7 +232,10 @@ namespace gView.Interoperability.OGC.Dataset.WMS
             {
                 XmlDocument doc = new XmlDocument();
                 doc.LoadXml(gml);
-                if (doc.ChildNodes.Count == 0) return null;
+                if (doc.ChildNodes.Count == 0)
+                {
+                    return null;
+                }
 
                 XmlNamespaceManager ns = new XmlNamespaceManager(doc.NameTable);
                 ns.AddNamespace("gml", "htpp://www.opengis.net/gml");
@@ -242,7 +252,10 @@ namespace gView.Interoperability.OGC.Dataset.WMS
                         Row row = new Row();
                         foreach (XmlNode attrNode in featureNode.ChildNodes)
                         {
-                            if (attrNode.NamespaceURI == "http://www.opengis.net/gml") continue;
+                            if (attrNode.NamespaceURI == "http://www.opengis.net/gml")
+                            {
+                                continue;
+                            }
                             //if (attrNode.ChildNodes.Count > 1) continue;
 
                             row.Fields.Add(new FieldValue(attrNode.Name, attrNode.InnerText));
@@ -269,7 +282,10 @@ namespace gView.Interoperability.OGC.Dataset.WMS
             public Task<IRow> NextRow()
             {
 
-                if (_rows == null || pos >= _rows.Count) return null;
+                if (_rows == null || pos >= _rows.Count)
+                {
+                    return null;
+                }
 
                 return Task.FromResult<IRow>(_rows[pos++]);
             }
@@ -280,7 +296,7 @@ namespace gView.Interoperability.OGC.Dataset.WMS
 
             public void Dispose()
             {
-                
+
             }
 
             #endregion

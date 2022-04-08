@@ -2,13 +2,11 @@
 using gView.Framework.FDB;
 using gView.Framework.Network;
 using gView.Framework.system;
-using gView.Framework.UI;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace gView.Framework.UI.Dialogs.Network
@@ -20,7 +18,7 @@ namespace gView.Framework.UI.Dialogs.Network
 
         private IFeatureDataset FeatureDataset
         {
-            get;set;
+            get; set;
         }
 
         private IFeatureDatabase3 FeatureDatabase { get; set; }
@@ -31,7 +29,9 @@ namespace gView.Framework.UI.Dialogs.Network
             foreach (var datasetElement in await this.FeatureDataset.Elements())
             {
                 if (datasetElement.Class is IFeatureClass && _serialized.FeatureClasses.EdgeFeatureclasses.Contains(datasetElement.Class.Name))
+                {
                     edges.Add((IFeatureClass)datasetElement.Class);
+                }
             }
             return edges;
         }
@@ -42,7 +42,9 @@ namespace gView.Framework.UI.Dialogs.Network
             foreach (var datasetElement in await this.FeatureDataset.Elements())
             {
                 if (datasetElement.Class is IFeatureClass && _serialized.FeatureClasses.NodeFeatureclasses.Contains(datasetElement.Class.Name))
+                {
                     edges.Add((IFeatureClass)datasetElement.Class);
+                }
             }
             return edges;
         }
@@ -99,10 +101,10 @@ namespace gView.Framework.UI.Dialogs.Network
 
         async public Task DeserializeObject(string config)
         {
-            _serialized= JsonConvert.DeserializeObject<FormNewNetworkclass.Serialized>(config);
+            _serialized = JsonConvert.DeserializeObject<FormNewNetworkclass.Serialized>(config);
         }
 
-        
+
 
         public string SerializeObject()
         {
@@ -112,16 +114,23 @@ namespace gView.Framework.UI.Dialogs.Network
         async public Task Execute(ProgressReporterEvent reporter)
         {
             if (_serialized == null)
+            {
                 throw new Exception("can't execute. No config!");
+            }
 
             #region Instance Creator
 
             var assembly = Assembly.LoadFrom(SystemVariables.ApplicationDirectory + @"\" + _serialized.NetworkCreatorAssembly);
             if (assembly == null)
+            {
                 throw new Exception("Assembly not found: " + _serialized.NetworkCreatorAssembly);
+            }
+
             var creator = assembly.CreateInstance(_serialized.NetworkCreatorType) as INetworkCreator;
             if (creator == null)
+            {
                 throw new Exception("Type " + _serialized.NetworkCreatorType + " is not a network creator");
+            }
 
             #endregion
 
@@ -129,7 +138,9 @@ namespace gView.Framework.UI.Dialogs.Network
 
             IFeatureDataset dataset = PlugInManager.Create(new Guid(_serialized.DatasetGuid)) as IFeatureDataset;
             if (dataset == null)
+            {
                 throw new Exception("Unable to crete dataset");
+            }
 
             await dataset.SetConnectionString(_serialized.ConnectionString);
             await dataset.Open();
@@ -137,7 +148,9 @@ namespace gView.Framework.UI.Dialogs.Network
             this.FeatureDataset = dataset;
             this.FeatureDatabase = dataset.Database as IFeatureDatabase3;
             if (this.FeatureDatabase == null)
+            {
                 throw new Exception("Featuredatabase no implements IFeatureDatabase3");
+            }
 
             #endregion
 

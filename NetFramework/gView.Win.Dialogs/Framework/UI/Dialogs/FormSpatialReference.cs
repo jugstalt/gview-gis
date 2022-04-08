@@ -1,28 +1,25 @@
-using System;
-using System.Drawing;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Windows.Forms;
-using gView.Framework;
-using gView.Framework.Geometry;
 using gView.Framework.Data;
-using gView.Framework.UI.Controls.Filter;
-using System.IO;
-using gView.Framework.UI.Dialogs.Properties;
+using gView.Framework.Geometry;
 using gView.Framework.Proj;
+using gView.Framework.UI.Controls.Filter;
+using gView.Framework.UI.Dialogs.Properties;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Windows.Forms;
 
 namespace gView.Framework.UI.Dialogs
 {
-	/// <summary>
-	/// Zusammenfassung für FormSpatialReference.
-	/// </summary>
-	public class FormSpatialReference : System.Windows.Forms.Form
+    /// <summary>
+    /// Zusammenfassung für FormSpatialReference.
+    /// </summary>
+    public class FormSpatialReference : System.Windows.Forms.Form
     {
-		private System.Windows.Forms.Panel panel2;
+        private System.Windows.Forms.Panel panel2;
         private System.Windows.Forms.Button btnOK;
-		/// <summary>
-		/// Erforderliche Designervariable.
-		/// </summary>
+        /// <summary>
+        /// Erforderliche Designervariable.
+        /// </summary>
         private System.ComponentModel.Container components = null;
         private GroupBox GroupBox1;
         private Button button1;
@@ -40,41 +37,41 @@ namespace gView.Framework.UI.Dialogs
         private Button btnImport;
         private Button btnExport;
         private SaveFileDialog exportDialog;
-		private ISpatialReference _sRef=null;
+        private ISpatialReference _sRef = null;
 
-		public FormSpatialReference(ISpatialReference sRef)
-		{
-			//
-			// Erforderlich für die Windows Form-Designerunterstützung
-			//
-			InitializeComponent();
+        public FormSpatialReference(ISpatialReference sRef)
+        {
+            //
+            // Erforderlich für die Windows Form-Designerunterstützung
+            //
+            InitializeComponent();
 
-			_sRef=sRef;
-			MakeGUI();
-		}
+            _sRef = sRef;
+            MakeGUI();
+        }
 
-		/// <summary>
-		/// Die verwendeten Ressourcen bereinigen.
-		/// </summary>
-		protected override void Dispose( bool disposing )
-		{
-			if( disposing )
-			{
-				if(components != null)
-				{
-					components.Dispose();
-				}
-			}
-			base.Dispose( disposing );
-		}
+        /// <summary>
+        /// Die verwendeten Ressourcen bereinigen.
+        /// </summary>
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                if (components != null)
+                {
+                    components.Dispose();
+                }
+            }
+            base.Dispose(disposing);
+        }
 
-		#region Vom Windows Form-Designer generierter Code
-		/// <summary>
-		/// Erforderliche Methode für die Designerunterstützung. 
-		/// Der Inhalt der Methode darf nicht mit dem Code-Editor geändert werden.
-		/// </summary>
-		private void InitializeComponent()
-		{
+        #region Vom Windows Form-Designer generierter Code
+        /// <summary>
+        /// Erforderliche Methode für die Designerunterstützung. 
+        /// Der Inhalt der Methode darf nicht mit dem Code-Editor geändert werden.
+        /// </summary>
+        private void InitializeComponent()
+        {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormSpatialReference));
             this.panel2 = new System.Windows.Forms.Panel();
             this.btnOK = new System.Windows.Forms.Button();
@@ -301,137 +298,167 @@ namespace gView.Framework.UI.Dialogs
             this.panelReferenceSystem.ResumeLayout(false);
             this.ResumeLayout(false);
 
-		}
-		#endregion
+        }
+        #endregion
 
-		public ISpatialReference SpatialReference  
-		{
-			get { return _sRef; }
-			set { _sRef=value; }
-		}
+        public ISpatialReference SpatialReference
+        {
+            get { return _sRef; }
+            set { _sRef = value; }
+        }
 
-		private void btnGetSys_Click(object sender, System.EventArgs e)
-		{
-			FormSpatialReferenceSystems dlg=new FormSpatialReferenceSystems(ProjDBTables.projs);
-			if(dlg.ShowDialog()==DialogResult.OK) 
-			{
-				if(dlg.SpatialRefererence!=null) 
-				{
-					IGeodeticDatum datum=null;
-					if(_sRef!=null) 
-					{
-						datum=_sRef.Datum;
-					}
-					_sRef=dlg.SpatialRefererence;
-					if(datum!=null) _sRef.Datum=datum;
+        private void btnGetSys_Click(object sender, System.EventArgs e)
+        {
+            FormSpatialReferenceSystems dlg = new FormSpatialReferenceSystems(ProjDBTables.projs);
+            if (dlg.ShowDialog() == DialogResult.OK)
+            {
+                if (dlg.SpatialRefererence != null)
+                {
+                    IGeodeticDatum datum = null;
+                    if (_sRef != null)
+                    {
+                        datum = _sRef.Datum;
+                    }
+                    _sRef = dlg.SpatialRefererence;
+                    if (datum != null)
+                    {
+                        _sRef.Datum = datum;
+                    }
 
-					MakeGUI();
-				}
-			}
-		}
+                    MakeGUI();
+                }
+            }
+        }
 
-		private void btnGetDatum_Click(object sender, System.EventArgs e)
-		{
-			if(_sRef==null) return; 
+        private void btnGetDatum_Click(object sender, System.EventArgs e)
+        {
+            if (_sRef == null)
+            {
+                return;
+            }
 
-			FormSpatialReferenceSystems dlg=new FormSpatialReferenceSystems(ProjDBTables.datums);
-			if(dlg.ShowDialog()==DialogResult.OK) 
-			{
-				if(dlg.GeodeticDatum!=null) 
-				{
-					_sRef.Datum=dlg.GeodeticDatum;
-				}
+            FormSpatialReferenceSystems dlg = new FormSpatialReferenceSystems(ProjDBTables.datums);
+            if (dlg.ShowDialog() == DialogResult.OK)
+            {
+                if (dlg.GeodeticDatum != null)
+                {
+                    _sRef.Datum = dlg.GeodeticDatum;
+                }
 
-				MakeGUI();
-			}
-		}
+                MakeGUI();
+            }
+        }
 
-		private void button1_Click(object sender, System.EventArgs e)
-		{
-			if(_sRef==null) return;
+        private void button1_Click(object sender, System.EventArgs e)
+        {
+            if (_sRef == null)
+            {
+                return;
+            }
 
-			FormPropertyGrid dlg=new FormPropertyGrid(
-				new SpatialReferenceProperties((gView.Framework.Geometry.SpatialReference)_sRef));
+            FormPropertyGrid dlg = new FormPropertyGrid(
+                new SpatialReferenceProperties((gView.Framework.Geometry.SpatialReference)_sRef));
 
-			if(dlg.ShowDialog()==DialogResult.OK) 
-			{
-				MakeGUI();
-			}
-		}
+            if (dlg.ShowDialog() == DialogResult.OK)
+            {
+                MakeGUI();
+            }
+        }
 
-		private void button2_Click(object sender, System.EventArgs e)
-		{
-			if(_sRef==null) return;
+        private void button2_Click(object sender, System.EventArgs e)
+        {
+            if (_sRef == null)
+            {
+                return;
+            }
 
-			FormPropertyGrid dlg=new FormPropertyGrid(
-				new GeodeticDatumProperties((GeodeticDatum)_sRef.Datum));
+            FormPropertyGrid dlg = new FormPropertyGrid(
+                new GeodeticDatumProperties((GeodeticDatum)_sRef.Datum));
 
-			if(dlg.ShowDialog()==DialogResult.OK) 
-			{
-				_sRef.Datum=(IGeodeticDatum)dlg.SelectedObject;
-				MakeGUI();
-			}
-		}
+            if (dlg.ShowDialog() == DialogResult.OK)
+            {
+                _sRef.Datum = (IGeodeticDatum)dlg.SelectedObject;
+                MakeGUI();
+            }
+        }
 
-		public bool canModify 
-		{
+        public bool canModify
+        {
             set
             {
                 btnGetSys.Enabled = btnGetDatum.Enabled =
                     button1.Enabled = button2.Enabled =
                     btnImport.Enabled = value;
             }
-		}
-		public void RefreshGUI() 
-		{
-			MakeGUI();
-		}
-		private void MakeGUI() 
-		{
-			if(_sRef!=null) 
-				txtID.Text=_sRef.Name;
-			else
-				txtID.Text="";
+        }
+        public void RefreshGUI()
+        {
+            MakeGUI();
+        }
+        private void MakeGUI()
+        {
+            if (_sRef != null)
+            {
+                txtID.Text = _sRef.Name;
+            }
+            else
+            {
+                txtID.Text = "";
+            }
 
-			txtDescription.Lines=this.referenceDescription;
-			txtDatumID.Lines=this.datumDescription;
-		}
+            txtDescription.Lines = this.referenceDescription;
+            txtDatumID.Lines = this.datumDescription;
+        }
 
-		private string [] datumDescription 
-		{
-			get 
-			{
-				if(_sRef==null) return "".Split(' ');
-				if(_sRef.Datum==null) return "".Split(' ');
+        private string[] datumDescription
+        {
+            get
+            {
+                if (_sRef == null)
+                {
+                    return "".Split(' ');
+                }
 
-				string descr=((GeodeticDatum)_sRef.Datum).Name+"|";
-				descr+="|X Axis: "+_sRef.Datum.X_Axis.ToString();
-				descr+="|Y Axis: "+_sRef.Datum.Y_Axis.ToString();
-				descr+="|Z Axis: "+_sRef.Datum.Z_Axis.ToString();
-				descr+="|X Rotation: "+_sRef.Datum.X_Rotation.ToString();
-				descr+="|Y Rotation: "+_sRef.Datum.Y_Rotation.ToString();
-				descr+="|Z Rotation: "+_sRef.Datum.Z_Rotation.ToString();
-				descr+="|Scale Difference: "+_sRef.Datum.Scale_Diff.ToString();
+                if (_sRef.Datum == null)
+                {
+                    return "".Split(' ');
+                }
 
-				return descr.Split('|');
-			}
-		}
+                string descr = ((GeodeticDatum)_sRef.Datum).Name + "|";
+                descr += "|X Axis: " + _sRef.Datum.X_Axis.ToString();
+                descr += "|Y Axis: " + _sRef.Datum.Y_Axis.ToString();
+                descr += "|Z Axis: " + _sRef.Datum.Z_Axis.ToString();
+                descr += "|X Rotation: " + _sRef.Datum.X_Rotation.ToString();
+                descr += "|Y Rotation: " + _sRef.Datum.Y_Rotation.ToString();
+                descr += "|Z Rotation: " + _sRef.Datum.Z_Rotation.ToString();
+                descr += "|Scale Difference: " + _sRef.Datum.Scale_Diff.ToString();
 
-		private string [] referenceDescription
-		{
-			get 
-			{
-				if(_sRef==null) return "".Split(' ');
-				if(_sRef.Parameters==null) return "".Split(' ');
+                return descr.Split('|');
+            }
+        }
 
-				string descr=_sRef.Description+"|";
-				foreach(string parameter in _sRef.Parameters) 
-				{
-					descr+="|"+parameter;
-				}
-				return descr.Split('|');
-			}
-		}
+        private string[] referenceDescription
+        {
+            get
+            {
+                if (_sRef == null)
+                {
+                    return "".Split(' ');
+                }
+
+                if (_sRef.Parameters == null)
+                {
+                    return "".Split(' ');
+                }
+
+                string descr = _sRef.Description + "|";
+                foreach (string parameter in _sRef.Parameters)
+                {
+                    descr += "|" + parameter;
+                }
+                return descr.Split('|');
+            }
+        }
 
         async private void btnImport_Click(object sender, EventArgs e)
         {
@@ -442,7 +469,7 @@ namespace gView.Framework.UI.Dialogs
             ExplorerDialog dlg = new ExplorerDialog("Import Spatial Reference", filters, true);
             dlg.MulitSelection = false;
 
-            if (dlg.ShowDialog() == DialogResult.OK && dlg.ExplorerObjects.Count==1)
+            if (dlg.ShowDialog() == DialogResult.OK && dlg.ExplorerObjects.Count == 1)
             {
                 IExplorerObject exObject = dlg.ExplorerObjects[0];
 
@@ -484,7 +511,10 @@ namespace gView.Framework.UI.Dialogs
 
         private void btnExport_Click(object sender, EventArgs e)
         {
-            if (SpatialReference == null) return;
+            if (SpatialReference == null)
+            {
+                return;
+            }
 
             if (exportDialog.ShowDialog() == DialogResult.OK)
             {
@@ -504,5 +534,5 @@ namespace gView.Framework.UI.Dialogs
                 sw.Close();
             }
         }
-	}
+    }
 }

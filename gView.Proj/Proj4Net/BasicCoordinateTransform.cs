@@ -1,7 +1,7 @@
-using System;
 using GeoAPI.Geometries;
 using Proj4Net.Datum;
 using Proj4Net.Projection;
+using System;
 //using ICoordinateReferenceSystem = GeoAPI.CoordinateSystems.ICoordinateSystem;
 
 namespace Proj4Net
@@ -59,10 +59,15 @@ namespace Proj4Net
           CoordinateReferenceSystem targetCRS)
         {
             if (sourceCRS == null)
+            {
                 throw new ArgumentNullException("sourceCRS");
+            }
+
             if (targetCRS == null)
+            {
                 throw new ArgumentNullException("targetCRS");
-            
+            }
+
             _sourceCRS = sourceCRS;
             _targetCRS = targetCRS;
 
@@ -74,18 +79,27 @@ namespace Proj4Net
             _doDatumTransform = _doInverseProjection && _doForwardProjection
               && !sourceCRS.Datum.Equals(targetCRS.Datum);
 
-            if (!_doDatumTransform) 
+            if (!_doDatumTransform)
+            {
                 return;
+            }
 
             var isEllipsoidEqual = sourceCRS.Datum.Ellipsoid.Equals(targetCRS.Datum.Ellipsoid);
             if (!isEllipsoidEqual)
+            {
                 _transformViaGeocentric = true;
-            if (sourceCRS.Datum.HasTransformToWGS84 || 
-                targetCRS.Datum.HasTransformToWGS84)
-                _transformViaGeocentric = true;
+            }
 
-            if (!_transformViaGeocentric) 
+            if (sourceCRS.Datum.HasTransformToWGS84 ||
+                targetCRS.Datum.HasTransformToWGS84)
+            {
+                _transformViaGeocentric = true;
+            }
+
+            if (!_transformViaGeocentric)
+            {
                 return;
+            }
 
             _sourceGeoConv = new GeocentricConverter(sourceCRS.Datum.Ellipsoid);
             _targetGeoConv = new GeocentricConverter(targetCRS.Datum.Ellipsoid);
@@ -126,7 +140,9 @@ namespace Proj4Net
             //Adjust source prime meridian if specified other than Greenwich
             var primeMeridian = _sourceCRS.Projection.PrimeMeridian;
             if (primeMeridian.Name != NamedMeridian.Greenwich)
+            {
                 primeMeridian.InverseAdjust(geoCoord);
+            }
 
             if (_doDatumTransform)
             {
@@ -136,7 +152,9 @@ namespace Proj4Net
             //Adjust target prime meridian if specified other than Greenwich
             primeMeridian = _targetCRS.Projection.PrimeMeridian;
             if (primeMeridian.Name != NamedMeridian.Greenwich)
+            {
                 primeMeridian.Adjust(geoCoord);
+            }
 
             if (_doForwardProjection)
             {
@@ -161,10 +179,12 @@ namespace Proj4Net
             /*      Short cut if the datums are identical.                          */
             /* -------------------------------------------------------------------- */
             if (_sourceCRS.Datum.Equals(_targetCRS.Datum))
+            {
                 return;
+            }
 
             /* -------------------------------------------------------------------- */
-            /*      Apply grid shift if required                                    */ 
+            /*      Apply grid shift if required                                    */
             /* -------------------------------------------------------------------- */
             if (_sourceCRS.Datum.TransformType == Datum.Datum.DatumTransformType.GridShift)
             {

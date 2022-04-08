@@ -1,9 +1,4 @@
 using System;
-using System.Data;
-using System.Collections;
-using gView.Framework.Data;
-using gView.Framework.Geometry;
-using gView.Framework.Symbology;
 
 /// <summary>
 /// The <c>gView.Framework</c> provides all interfaces to develope

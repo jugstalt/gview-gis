@@ -1,12 +1,11 @@
+using gView.Framework.IO;
+using gView.Framework.system;
 using System;
 using System.Collections.Generic;
-using System.Text;
-using gView.Framework.system;
-using gView.Framework.IO;
-using System.Xml;
 using System.IO;
-using System.Threading.Tasks;
 using System.Linq;
+using System.Text;
+using System.Xml;
 
 namespace gView.Framework.Db
 {
@@ -21,7 +20,7 @@ namespace gView.Framework.Db
             get { return _providerID; }
             set { _providerID = value; }
         }
-        
+
         public bool UseProviderInConnectionString
         {
             get { return _useProvider; }
@@ -44,17 +43,25 @@ namespace gView.Framework.Db
                     doc.Load(SystemVariables.ApplicationDirectory + @"/gview.db.ui.xml");
 
                     XmlNode providerNode = doc.SelectSingleNode("//connectionStrings/provider[@id='" + _providerID + "']");
-                    if (providerNode == null) return String.Empty;
+                    if (providerNode == null)
+                    {
+                        return String.Empty;
+                    }
 
                     XmlNode schemaNode = providerNode.SelectSingleNode("schema[@name='" + _schemaName + "']");
-                    if (schemaNode == null) return string.Empty;
+                    if (schemaNode == null)
+                    {
+                        return string.Empty;
+                    }
 
                     string connectionString = schemaNode.InnerText.Trim();
                     if (providerNode.Attributes["provider"] != null &&
                         !String.IsNullOrEmpty(providerNode.Attributes["provider"].Value))
                     {
                         if (_useProvider)
+                        {
                             connectionString = providerNode.Attributes["provider"].Value + ":" + connectionString;
+                        }
                     }
 
                     foreach (string key in this.UserDataTypes)
@@ -179,7 +186,7 @@ namespace gView.Framework.Db
         public void FromString(string connection)
         {
             XmlStream stream = new XmlStream("DbConnectionString");
-            StringReader sr=new StringReader(connection);
+            StringReader sr = new StringReader(connection);
             stream.ReadStream(sr);
 
             Load(stream);
@@ -190,12 +197,14 @@ namespace gView.Framework.Db
             try
             {
                 string appPath = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly().Location);
-                
+
                 XmlDocument doc = new XmlDocument();
                 doc.Load(appPath + @"/gview.db.ui.xml");
 
                 while (connectionString.EndsWith(";"))
+                {
                     connectionString = connectionString.Substring(0, connectionString.Length - 1).Trim();
+                }
 
                 Dictionary<string, string> connStrDic = ConfigTextStream.Extract(connectionString.Trim());
 
@@ -204,7 +213,9 @@ namespace gView.Framework.Db
                 {
                     string schema = schemaNode.InnerText.Trim();
                     while (schema.EndsWith(";"))
+                    {
                         schema = schema.Substring(0, schema.Length - 1).Trim();
+                    }
 
                     Dictionary<string, string> schemaDic = ConfigTextStream.Extract(schema);
 
@@ -229,7 +240,9 @@ namespace gView.Framework.Db
             Dictionary<string, string> schemaDic)
         {
             if (connStrDic.Count != schemaDic.Count)
+            {
                 return;
+            }
 
             for (int i = 0; i < schemaDic.Count; i++)
             {
@@ -251,7 +264,9 @@ namespace gView.Framework.Db
             Dictionary<string, string> schemaDic)
         {
             if (connStrDic.Count != schemaDic.Count)
+            {
                 return false;
+            }
 
             for (int i = 0; i < schemaDic.Count; i++)
             {
@@ -259,16 +274,23 @@ namespace gView.Framework.Db
                 string schemaKey = DictionaryKey(schemaDic, i);
 
                 if (connStrKey.ToLower() != schemaKey.ToLower())
+                {
                     return false;
+                }
 
                 string connStrValue = connStrDic[connStrKey].Trim();
                 string schemaValue = schemaDic[schemaKey].Trim();
 
                 if (schemaValue.StartsWith("[") &&
-                    schemaValue.EndsWith("]")) continue;
+                    schemaValue.EndsWith("]"))
+                {
+                    continue;
+                }
 
                 if (connStrValue.ToLower() != schemaValue.ToLower())
+                {
                     return false;
+                }
             }
             return true;
         }
@@ -278,7 +300,10 @@ namespace gView.Framework.Db
             foreach (string key in dic.Keys)
             {
                 if (i == index)
+                {
                     return key;
+                }
+
                 i++;
             }
             return String.Empty;
@@ -323,10 +348,10 @@ namespace gView.Framework.Db
                     if (knownKeywords.Contains(keyword))
                     {
                         string kp = keywordParameter;
-                        if(keywordTranslation.ContainsKey(keyword))
+                        if (keywordTranslation.ContainsKey(keyword))
                         {
                             kp = keywordTranslation[keyword] + keywordParameter.Substring(keywordParameter.IndexOf("="));
-                        } 
+                        }
 
                         sb.Append(kp);
                         sb.Append(";");

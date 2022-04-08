@@ -1,9 +1,7 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
 using gView.Framework.IO;
+using System;
+using System.Text;
 using System.Xml;
-using System.Threading.Tasks;
 
 namespace gView.Framework.XML
 {
@@ -14,7 +12,7 @@ namespace gView.Framework.XML
         {
             StringBuilder sb = new StringBuilder();
             sb.Append("<PROPERTIES>");
-            
+
             sb.Append("<FEATURECOORDSYS");
             sb.Append(" id=\"\"");
             sb.Append(" string=\"\"");
@@ -42,9 +40,16 @@ namespace gView.Framework.XML
         {
             get
             {
-                if (_doc == null) return "";
+                if (_doc == null)
+                {
+                    return "";
+                }
+
                 XmlNode propNode = _doc.SelectSingleNode("PROPERTIES");
-                if (propNode == null) return "";
+                if (propNode == null)
+                {
+                    return "";
+                }
 
                 StringBuilder sb = new StringBuilder();
                 foreach (XmlNode node in propNode.ChildNodes)
@@ -75,10 +80,13 @@ namespace gView.Framework.XML
             }
         }
 
-        public void Write(XmlWriter xWriter,string tag)
+        public void Write(XmlWriter xWriter, string tag)
         {
             XmlNodeList nodes = _doc.SelectNodes("PROPERTIES/" + tag);
-            if (nodes.Count == 0) return;
+            if (nodes.Count == 0)
+            {
+                return;
+            }
 
             foreach (XmlNode node in nodes)
             {
@@ -151,7 +159,7 @@ namespace gView.Framework.XML
 
     //    public void Load(IPersistStream stream)
     //    {
-            
+
     //    }
 
     //    public void Save(IPersistStream stream)

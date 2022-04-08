@@ -1,6 +1,5 @@
 ﻿using GeoJSON.Net.Feature;
 using gView.Data.Framework.Data.Abstraction;
-using gView.DataSources.VectorTileCache.Extensions;
 using gView.Framework.Carto;
 using gView.Framework.Geometry;
 using Mapbox.Vector.Tile;
@@ -9,12 +8,6 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Net;
-using System.Net.Http;
-using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace gView.DataSources.VectorTileCache
@@ -64,11 +57,13 @@ namespace gView.DataSources.VectorTileCache
         async public Task LoadAsync(int level, int col_from, int col_to, int row_from, int row_to)
         {
             if (_dataset.TileUrls == null || _dataset.TileUrls.Length == 0)
+            {
                 return;
+            }
 
             _features.Clear();
 
-            foreach(var dsElement in await _dataset.Elements())
+            foreach (var dsElement in await _dataset.Elements())
             {
                 _features.TryAdd(dsElement.Title, new ConcurrentBag<Feature>());
             }

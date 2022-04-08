@@ -1,6 +1,4 @@
-using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace gView.Framework.Data
@@ -20,7 +18,9 @@ namespace gView.Framework.Data
         public Task<IRow> NextRow()
         {
             if (_rows == null || _pos >= _rows.Count)
+            {
                 return Task.FromResult<IRow>(null);
+            }
 
             return Task.FromResult<IRow>(_rows[_pos++]);
         }
@@ -52,9 +52,11 @@ namespace gView.Framework.Data
         public Task<IFeature> NextFeature()
         {
             if (_features == null || _pos >= _features.Count)
+            {
                 return Task.FromResult<IFeature>(null);
+            }
 
-            return Task.FromResult<IFeature>( _features[_pos++]);
+            return Task.FromResult<IFeature>(_features[_pos++]);
         }
 
         #endregion
@@ -84,7 +86,9 @@ namespace gView.Framework.Data
         public Task<IRasterLayer> NextRasterLayer()
         {
             if (_layers == null || _pos >= _layers.Count)
+            {
                 return null;
+            }
 
             return Task.FromResult<IRasterLayer>(_layers[_pos++]);
         }
@@ -121,7 +125,9 @@ namespace gView.Framework.Data
                 foreach (T key in _fcs.Keys)
                 {
                     if (_filters.ContainsKey(key))
+                    {
                         _keys.Add(key);
+                    }
                 }
             }
         }
@@ -135,12 +141,16 @@ namespace gView.Framework.Data
                 if (_cursor == null)
                 {
                     if (index >= _keys.Count)
+                    {
                         return null;
+                    }
 
                     T key = _keys[index++];
                     _cursor = await _fcs[key].GetFeatures(_filters[key]);
                     if (_cursor == null)
+                    {
                         return await NextFeature();
+                    }
                 }
 
                 IFeature feature = await _cursor.NextFeature();
@@ -155,7 +165,9 @@ namespace gView.Framework.Data
                 {
                     var fc = _fcs[_keys[index - 1]];
                     if (fc != null)
+                    {
                         feature.Fields.Add(new FieldValue("_classname", fc.Name));
+                    }
                 }
 
                 if (_additionalFields != null)

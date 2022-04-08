@@ -1,12 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Drawing;
 using System.Data;
 using System.Linq;
-using System.Text;
-using System.Windows.Forms;
 using System.Reflection;
+using System.Windows.Forms;
 
 namespace gView.Framework.system.UI
 {
@@ -17,10 +13,10 @@ namespace gView.Framework.system.UI
             InitializeComponent();
 
             PlugInManager pm = new PlugInManager();
-            foreach (Type type in pm.GetPluginTypes.OrderBy(t=>t.ToString()))
+            foreach (Type type in pm.GetPluginTypes.OrderBy(t => t.ToString()))
             {
                 TypeNode node = new TypeNode(type);
- 
+
                 tvPlugins.Nodes.Add(node);
                 node.Nodes.Add(new TreeNode());
             }
@@ -36,7 +32,9 @@ namespace gView.Framework.system.UI
 
                 var plugins = pm.GetPluginInstances(((TypeNode)e.Node).InterfaceType);
                 if (plugins == null)
+                {
                     return;
+                }
 
                 foreach (object plugin in plugins)
                 {

@@ -11,7 +11,9 @@ namespace gView.Framework.Symbology
             foreach (IAnnotationPolygonCollision child in this)
             {
                 if (child.CheckCollision(poly))
+                {
                     return true;
+                }
             }
             return false;
         }
@@ -21,7 +23,9 @@ namespace gView.Framework.Symbology
             foreach (IAnnotationPolygonCollision child in this)
             {
                 if (child.Contains(x, y))
+                {
                     return true;
+                }
             }
             return false;
         }
@@ -31,7 +35,9 @@ namespace gView.Framework.Symbology
             get
             {
                 if (this.Count == 0)
+                {
                     return new AnnotationPolygonEnvelope(0, 0, 0, 0);
+                }
 
                 AnnotationPolygonEnvelope env = this[0].Envelope;
                 for (int i = 1; i < this.Count; i++)

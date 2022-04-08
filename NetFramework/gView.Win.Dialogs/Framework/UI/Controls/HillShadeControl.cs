@@ -1,12 +1,9 @@
+using gView.Framework.LinAlg;
 using System;
 using System.ComponentModel;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Text;
-using System.Windows.Forms;
 using System.Drawing;
-using gView.Framework.LinAlg;
 using System.Drawing.Drawing2D;
+using System.Windows.Forms;
 
 namespace gView.Framework.UI.Controls
 {
@@ -85,7 +82,7 @@ namespace gView.Framework.UI.Controls
 
             Color color;
 
-            double step=Math.PI / 50;
+            double step = Math.PI / 50;
             Vector3d o1 = new Vector3d(0, 0, 1);
             Vector3d sun = new Vector3d(_dx, _dy, _dz);
             sun.Normalize();
@@ -224,7 +221,7 @@ namespace gView.Framework.UI.Controls
                 _dz = Math.Max(Math.Min(1.0, _dz), 0.0);
 
                 panelCone.Refresh();
-                panelElevationSlider.Refresh();  
+                panelElevationSlider.Refresh();
             }
         }
 
@@ -250,7 +247,7 @@ namespace gView.Framework.UI.Controls
         }
         #endregion
 
-        
+
         private void HillShadeControl_Load(object sender, EventArgs e)
         {
             btnLight.BackColor = _light;

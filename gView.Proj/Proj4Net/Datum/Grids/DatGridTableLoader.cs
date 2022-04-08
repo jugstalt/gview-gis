@@ -5,7 +5,7 @@ namespace Proj4Net.Datum.Grids
 {
     public class DatGridTableLoader : GridTableLoader
     {
-        public DatGridTableLoader(Uri location) 
+        public DatGridTableLoader(Uri location)
             : base(location)
         {
         }
@@ -16,28 +16,30 @@ namespace Proj4Net.Datum.Grids
             {
                 var header = new byte[176];
                 if (stream.Read(header, 0, 176) != 176)
+                {
                     return false;
+                }
 
                 table.LowerLeft = new PhiLambda
-                    {
-                        Phi = GetBigEndianDouble(header, 24),
-                        Lambda = -GetBigEndianDouble(header, 72)
-                    };
+                {
+                    Phi = GetBigEndianDouble(header, 24),
+                    Lambda = -GetBigEndianDouble(header, 72)
+                };
 
                 table.UpperRight = new PhiLambda
-                    {
-                        Phi = GetBigEndianDouble(header, 40),
-                        Lambda = -GetBigEndianDouble(header, 56)
-                    };
+                {
+                    Phi = GetBigEndianDouble(header, 40),
+                    Lambda = -GetBigEndianDouble(header, 56)
+                };
 
                 table.SizeOfGridCell = new PhiLambda
-                    {
-                        Phi = GetBigEndianDouble(header, 88),
-                        Lambda = -GetBigEndianDouble(header, 104)
-                    };
+                {
+                    Phi = GetBigEndianDouble(header, 88),
+                    Lambda = -GetBigEndianDouble(header, 104)
+                };
 
                 var size = table.UpperRight - table.LowerLeft;
-                table.NumLambdas = (int) (Math.Abs(size.Lambda)/table.SizeOfGridCell.Lambda + 0.5) + 1;
+                table.NumLambdas = (int)(Math.Abs(size.Lambda) / table.SizeOfGridCell.Lambda + 0.5) + 1;
                 table.NumPhis = (int)(Math.Abs(size.Phi) / table.SizeOfGridCell.Phi + 0.5) + 1;
 
                 table.LowerLeft = PhiLambda.DegreesToRadians(table.LowerLeft);
@@ -61,10 +63,10 @@ namespace Proj4Net.Datum.Grids
                     // NTV order is flipped compared with a normal CVS table
                     for (var col = table.NumLambdas - 1; col >= 0; col--)
                     {
-                        const double degToArcSec = (Math.PI/180)/3600;
+                        const double degToArcSec = (Math.PI / 180) / 3600;
                         // shift values are given in "arc-seconds" and need to be converted to radians.
-                        coeffs[row][col].Phi = ReadBigEndianDouble(br)*degToArcSec;
-                        coeffs[row][col].Lambda = ReadBigEndianDouble(br)*degToArcSec;
+                        coeffs[row][col].Phi = ReadBigEndianDouble(br) * degToArcSec;
+                        coeffs[row][col].Lambda = ReadBigEndianDouble(br) * degToArcSec;
                     }
                 }
                 table.Coefficients = coeffs;

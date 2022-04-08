@@ -1,12 +1,4 @@
-﻿using gView.DataSources.Fdb.MSAccess;
-using gView.Framework.Data;
-using gView.Framework.FDB;
-using gView.Framework.Geometry;
-using gView.Framework.Offline;
-using gView.Framework.system;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
+﻿using System;
 
 namespace gView.Cmd.CopyFeatureclass
 {

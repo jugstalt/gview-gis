@@ -2,9 +2,7 @@
 using gView.Framework.Db;
 using gView.Framework.Geometry;
 using System;
-using System.Collections.Generic;
 using System.Data;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace gView.DataSources.EventTable
@@ -19,7 +17,7 @@ namespace gView.DataSources.EventTable
         private FeatureClass(Dataset dataset, EventTableConnection etconn)
         {
             _etcon = etconn;
-            _dataset = dataset;  
+            _dataset = dataset;
         }
 
         async static public Task<IFeatureClass> Create(Dataset dataset, EventTableConnection etconn)
@@ -34,7 +32,10 @@ namespace gView.DataSources.EventTable
                 {
                     fc._fields = new Fields(conn.schemaTable);
                     IField idfield = fc._fields.FindField(fc._etcon.IdFieldName);
-                    if (idfield is Field) ((Field)idfield).type = FieldType.ID;
+                    if (idfield is Field)
+                    {
+                        ((Field)idfield).type = FieldType.ID;
+                    }
                 }
                 DataTable tab = await conn.Select("MIN(" + fc._etcon.XFieldName + ") as minx,MAX(" + fc._etcon.XFieldName + ") as maxx,MIN(" + fc._etcon.YFieldName + ") as miny,MAX(" + fc._etcon.YFieldName + ") as maxy", fc._etcon.TableName);
                 if (tab != null && tab.Rows.Count == 1)
@@ -96,7 +97,9 @@ namespace gView.DataSources.EventTable
         async public Task<ISelectionSet> Select(IQueryFilter filter)
         {
             if (String.IsNullOrEmpty(this.IDFieldName) || filter == null)
+            {
                 return null;
+            }
 
             filter.SubFields = this.IDFieldName;
 
@@ -122,7 +125,10 @@ namespace gView.DataSources.EventTable
         public IField FindField(string name)
         {
             if (_fields != null)
+            {
                 return _fields.FindField(name);
+            }
+
             return null;
         }
 
@@ -131,7 +137,9 @@ namespace gView.DataSources.EventTable
             get
             {
                 if (_etcon != null)
+                {
                     return _etcon.IdFieldName;
+                }
 
                 return String.Empty;
             }
@@ -146,7 +154,9 @@ namespace gView.DataSources.EventTable
             get
             {
                 if (_etcon != null)
+                {
                     return _etcon.TableName;
+                }
 
                 return String.Empty;
             }
@@ -157,7 +167,9 @@ namespace gView.DataSources.EventTable
             get
             {
                 if (_etcon != null)
+                {
                     return _etcon.TableName;
+                }
 
                 return String.Empty;
             }
@@ -187,7 +199,10 @@ namespace gView.DataSources.EventTable
             get
             {
                 if (_etcon != null)
+                {
                     return _etcon.SpatialReference;
+                }
+
                 return null;
             }
             set

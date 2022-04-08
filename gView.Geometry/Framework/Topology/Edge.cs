@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace gView.Framework.Topology
 {
@@ -55,7 +54,9 @@ namespace gView.Framework.Topology
             foreach (Edge e in this)
             {
                 if (e.Equals(edge))
+                {
                     return true;
+                }
             }
             return false;
         }
@@ -73,7 +74,10 @@ namespace gView.Framework.Topology
             {
                 int ret = x.p1.CompareTo(y.p1);
                 if (ret == 0)
+                {
                     ret = x.p2.CompareTo(y.p2);
+                }
+
                 return ret;
             }
 

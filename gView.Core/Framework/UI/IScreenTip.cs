@@ -5,5 +5,5 @@
         string ScreenTip { get; }
     }
 
-    
+
 }

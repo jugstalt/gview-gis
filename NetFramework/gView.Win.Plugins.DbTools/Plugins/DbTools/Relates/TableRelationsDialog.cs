@@ -1,13 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Windows.Forms;
-using gView.Framework.Data;
+﻿using gView.Framework.Data;
 using gView.Framework.UI;
+using System;
+using System.Windows.Forms;
 
 namespace gView.Plugins.DbTools.Relates
 {
@@ -31,10 +25,12 @@ namespace gView.Plugins.DbTools.Relates
         {
             lstRelates.Items.Clear();
             if (_mapDocument.TableRelations != null)
+            {
                 foreach (ITableRelation relation in _mapDocument.TableRelations)
                 {
                     lstRelates.Items.Add(new TableRelationItem() { TableRelation = relation });
                 }
+            }
 
             btnEdit.Enabled = btnRemove.Enabled = false;
         }
@@ -64,7 +60,9 @@ namespace gView.Plugins.DbTools.Relates
         private void btnEdit_Click(object sender, EventArgs e)
         {
             if (!(lstRelates.SelectedItem is TableRelationItem))
+            {
                 return;
+            }
 
             ITableRelation relation = ((TableRelationItem)lstRelates.SelectedItem).TableRelation;
 
@@ -95,7 +93,9 @@ namespace gView.Plugins.DbTools.Relates
         private void btnRemove_Click(object sender, EventArgs e)
         {
             if (!(lstRelates.SelectedItem is TableRelationItem))
+            {
                 return;
+            }
 
             ITableRelation relation = ((TableRelationItem)lstRelates.SelectedItem).TableRelation;
 
@@ -103,9 +103,14 @@ namespace gView.Plugins.DbTools.Relates
             {
                 _mapDocument.TableRelations.Remove(relation);
                 if (relation.LeftTable != null)
+                {
                     relation.LeftTable.FirePropertyChanged();
+                }
+
                 if (relation.RightTable != null)
+                {
                     relation.RightTable.FirePropertyChanged();
+                }
             }
             FillList();
         }
@@ -126,7 +131,9 @@ namespace gView.Plugins.DbTools.Relates
             public override string ToString()
             {
                 if (TableRelation == null)
+                {
                     return base.ToString();
+                }
 
                 return TableRelation.RelationName;
             }

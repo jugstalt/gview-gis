@@ -76,13 +76,13 @@ namespace gView.Framework.Carto.LayerRenderers
                     // Exception "Objekt wird bereits an anderer Stelle verwendet" auftreten kann!
                     //labelRenderer = (ILabelRenderer)_layer.LabelRenderer.Clone(new CloneOptions(_map, maxLabelRefscaleFactor: _layer.MaxLabelRefScaleFactor));
 
-                    if(_layer.RequiresLabelRendererClone(_map))
+                    if (_layer.RequiresLabelRendererClone(_map))
                     {
                         labelRenderer = clonedLabelRenderer =
-                            (ILabelRenderer)_layer.LabelRenderer.Clone(new CloneOptions(_map, 
+                            (ILabelRenderer)_layer.LabelRenderer.Clone(new CloneOptions(_map,
                                                                                         _layer.UseLabelsWithRefScale(_map),
                                                                                         maxLabelRefscaleFactor: _layer.MaxLabelRefScaleFactor));
-                    } 
+                    }
                     else
                     {
                         labelRenderer = clonedLabelRenderer = (ILabelRenderer)_layer.LabelRenderer.Clone(null);

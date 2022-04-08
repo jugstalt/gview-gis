@@ -6,8 +6,6 @@ using gView.Framework.UI;
 using gView.Win.DataSources.VectorTileCache.UI.Explorer.Dialogs;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -104,7 +102,9 @@ namespace gView.Win.DataSources.VectorTileCache.UI.Explorer
                 _dataset = new Dataset();
 
                 if (await _dataset.SetConnectionString(_connectionString) && await _dataset.Open())
+                {
                     return _dataset;
+                }
             }
 
             return _dataset;
@@ -130,7 +130,9 @@ namespace gView.Win.DataSources.VectorTileCache.UI.Explorer
                     foreach (IDatasetElement element in elements)
                     {
                         if (element.Class is IFeatureClass)
+                        {
                             base.AddChildObject(new VectorTileCacheLayerExplorerObject(this, element));
+                        }
                     }
                 }
 
@@ -149,11 +151,15 @@ namespace gView.Win.DataSources.VectorTileCache.UI.Explorer
         async public Task<IExplorerObject> CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache cache)
         {
             if (cache.Contains(FullName))
+            {
                 return cache[FullName];
+            }
 
             VectorTileCacheGroupExplorerObject group = new VectorTileCacheGroupExplorerObject();
             if (FullName.IndexOf(group.FullName) != 0 || FullName.Length < group.FullName.Length + 2)
+            {
                 return null;
+            }
 
             group = (VectorTileCacheGroupExplorerObject)((cache.Contains(group.FullName)) ? cache[group.FullName] : group);
 
@@ -185,7 +191,9 @@ namespace gView.Win.DataSources.VectorTileCache.UI.Explorer
             stream.Remove(_name);
 
             if (ExplorerObjectDeleted != null)
+            {
                 ExplorerObjectDeleted(this);
+            }
 
             return Task.FromResult(true);
         }
@@ -206,7 +214,9 @@ namespace gView.Win.DataSources.VectorTileCache.UI.Explorer
             {
                 _name = newName;
                 if (ExplorerObjectRenamed != null)
+                {
                     ExplorerObjectRenamed(this);
+                }
             }
 
             return Task.FromResult(ret);

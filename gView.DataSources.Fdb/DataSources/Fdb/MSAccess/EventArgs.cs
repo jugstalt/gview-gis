@@ -1,6 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace gView.DataSources.Fdb.MSAccess
 {

@@ -8,5 +8,5 @@ namespace gView.Framework.UI
         ITool SelectedTool { get; set; }
     }
 
-    
+
 }

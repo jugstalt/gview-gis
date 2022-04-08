@@ -1,10 +1,7 @@
 using System;
 using System.ComponentModel;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Text;
-using System.Windows.Forms;
 using System.Drawing;
+using System.Windows.Forms;
 
 namespace gView.Framework.Symbology.UI.Controls
 {
@@ -12,7 +9,7 @@ namespace gView.Framework.Symbology.UI.Controls
     /// Represents  an office ComboBox control that holds Color Picker control to select color from.
     /// </summary>
     [ToolboxBitmap(typeof(ComboBoxColorPicker), "ComboBoxColorPicker"),
-     DefaultEvent("SelectedColorChanged"), DefaultProperty("Color"), 
+     DefaultEvent("SelectedColorChanged"), DefaultProperty("Color"),
     ToolboxItem(true), Description("Displays a list of colors in a drop down menu to select color from")]
     public partial class ComboBoxColorPicker : ComboBox
     {
@@ -23,9 +20,9 @@ namespace gView.Framework.Symbology.UI.Controls
         [Category("Behavior"), Description("Occurs when the value of the Color property changes.")]
         public event EventHandler SelectedColorChanged;
         #endregion
-        
+
         #region Properties
-               
+
         /// <summary>
         /// Gets or sets the selected color from the OfficeColorPicker
         /// </summary>
@@ -33,12 +30,20 @@ namespace gView.Framework.Symbology.UI.Controls
         {
             get
             {
-                if (_colorPicker != null) return _colorPicker.Color;
+                if (_colorPicker != null)
+                {
+                    return _colorPicker.Color;
+                }
+
                 return Color.Empty;
             }
             set
             {
-                if (_colorPicker != null) _colorPicker.Color = value;
+                if (_colorPicker != null)
+                {
+                    _colorPicker.Color = value;
+                }
+
                 Refresh();
             }
         }
@@ -50,7 +55,7 @@ namespace gView.Framework.Symbology.UI.Controls
         /// The OfficeColorPicker control that the combobox should hold
         /// </summary>
         OfficeColorPicker _colorPicker = new OfficeColorPicker();
-        
+
         #endregion
 
         #region Ctor
@@ -72,7 +77,7 @@ namespace gView.Framework.Symbology.UI.Controls
             _colorPicker.BorderStyle = BorderStyle.None;
             // Optimized painting using this settings
             SetStyle(ControlStyles.ResizeRedraw, true);
-            SetStyle(ControlStyles.OptimizedDoubleBuffer, true);            
+            SetStyle(ControlStyles.OptimizedDoubleBuffer, true);
         }
         /// <summary>
         /// Initialize a new instance of the 
@@ -95,7 +100,10 @@ namespace gView.Framework.Symbology.UI.Controls
         public void OnSelectedColorChanged(EventArgs e)
         {
             if (SelectedColorChanged != null)
+            {
                 SelectedColorChanged(this, e);
+            }
+
             this.Refresh();
         }
         #endregion
@@ -113,9 +121,9 @@ namespace gView.Framework.Symbology.UI.Controls
         /// <summary>
         /// Opens the drop down box with the OfficeColorPicker
         /// </summary>
-        private void ShowDropDown() 
-        {            
-            if (_colorPicker != null) 
+        private void ShowDropDown()
+        {
+            if (_colorPicker != null)
             {
                 _colorPicker.Show(this, 0, this.Height);
             }
@@ -131,14 +139,14 @@ namespace gView.Framework.Symbology.UI.Controls
                 // Paints the rectangle by the current color.
                 e.Graphics.FillRectangle(new SolidBrush(Color), e.Bounds);
                 Rectangle rec = new Rectangle(e.Bounds.X, e.Bounds.Y, e.Bounds.Width - 1, e.Bounds.Height - 1);
-                
+
                 if ((e.State & DrawItemState.Focus) == 0)
                 {
                     // Draw the border rectangle
                     using (Pen pen = new Pen(CustomColors.ButtonBorder))
                     {
                         e.Graphics.DrawRectangle(pen, rec);
-                    }                    
+                    }
                 }
                 else
                 {
@@ -164,17 +172,17 @@ namespace gView.Framework.Symbology.UI.Controls
                         WM_COMMAND = 0x0111,
                         CBN_DROPDOWN = 7;
 
-        public static int HIWORD(int n) 
+        public static int HIWORD(int n)
         {
-                return (n >> 16) & 0xffff;
+            return (n >> 16) & 0xffff;
         }
-        
-        protected override void WndProc(ref Message m) 
+
+        protected override void WndProc(ref Message m)
         {
-            if (m.Msg == ( WM_REFLECT + WM_COMMAND)) 
+            if (m.Msg == (WM_REFLECT + WM_COMMAND))
             {
-                if (HIWORD((int)m.WParam) == CBN_DROPDOWN) 
-                {  
+                if (HIWORD((int)m.WParam) == CBN_DROPDOWN)
+                {
                     ShowDropDown();
                     return;
                 }

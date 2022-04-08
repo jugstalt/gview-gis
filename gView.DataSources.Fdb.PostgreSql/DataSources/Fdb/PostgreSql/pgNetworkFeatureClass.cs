@@ -1,14 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using gView.Framework.Data;
+using gView.Framework.FDB;
 using gView.Framework.Geometry;
-using gView.Framework.Data;
 using gView.Framework.Network;
+using gView.Framework.Network.Algorthm;
+using gView.Framework.Network.Build;
+using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
-using gView.Framework.Network.Build;
-using gView.Framework.Network.Algorthm;
-using gView.Framework.FDB;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace gView.DataSources.Fdb.PostgreSql
@@ -42,7 +42,9 @@ namespace gView.DataSources.Fdb.PostgreSql
             fc._geomDef = (geomDef != null) ? geomDef : new GeometryDef();
 
             if (fc._geomDef != null && fc._geomDef.SpatialReference == null && dataset is IFeatureDataset)
+            {
                 fc._geomDef.SpatialReference = await ((IFeatureDataset)dataset).GetSpatialReference();
+            }
 
             fc._fields = new Fields();
 
@@ -50,11 +52,15 @@ namespace gView.DataSources.Fdb.PostgreSql
 
             IDatasetElement element = await fc._dataset.Element(fc._name + "_Nodes");
             if (element != null)
+            {
                 fc._nodeFc = element.Class as IFeatureClass;
+            }
 
             element = await fc._dataset.Element(fc._name + "_ComplexEdges");
             if (element != null && element.Class is IFeatureClass)
+            {
                 fc._edgeFcs.Add(-1, (IFeatureClass)element.Class);
+            }
 
             DataTable tab = await fc._fdb.Select("\"FCID\"", "\"FDB_NetworkClasses\"", "\"NetworkId\"=" + fc._fcid);
             if (tab != null && tab.Rows.Count > 0)
@@ -63,7 +69,11 @@ namespace gView.DataSources.Fdb.PostgreSql
                 where.Append("\"GeometryType\"=" + ((int)GeometryType.Polyline).ToString() + " AND \"ID\" in(");
                 for (int i = 0; i < tab.Rows.Count; i++)
                 {
-                    if (i > 0) where.Append(",");
+                    if (i > 0)
+                    {
+                        where.Append(",");
+                    }
+
                     where.Append(tab.Rows[i]["fcid"].ToString());
                 }
                 where.Append(")");
@@ -75,7 +85,9 @@ namespace gView.DataSources.Fdb.PostgreSql
                     {
                         element = await fc._dataset.Element(row["name"].ToString());
                         if (element != null && element.Class is IFeatureClass)
+                        {
                             fc._edgeFcs.Add((int)row["id"], element.Class as IFeatureClass);
+                        }
                     }
                 }
             }
@@ -90,7 +102,9 @@ namespace gView.DataSources.Fdb.PostgreSql
                 foreach (IGraphWeight weight in fc._weights)
                 {
                     if (weight == null)
+                    {
                         continue;
+                    }
 
                     weightTableNames.Add(weight.Guid, fc._fdb.TableName(fc._name + "_Weights_" + weight.Guid.ToString("N").ToLower()));
                     weightDataTypes.Add(weight.Guid, weight.DataType);
@@ -127,18 +141,26 @@ namespace gView.DataSources.Fdb.PostgreSql
                         if (edgeFc != null)
                         {
                             if (env == null)
+                            {
                                 env = new Envelope(edgeFc.Envelope);
+                            }
                             else
+                            {
                                 env.Union(edgeFc.Envelope);
+                            }
                         }
                     }
                 }
                 if (_nodeFc != null)
                 {
                     if (env == null)
+                    {
                         env = new Envelope(_nodeFc.Envelope);
+                    }
                     else
+                    {
                         env.Union(_nodeFc.Envelope);
+                    }
                 }
                 return (env != null) ? env : new Envelope();
             }
@@ -150,11 +172,18 @@ namespace gView.DataSources.Fdb.PostgreSql
             if (_edgeFcs != null)
             {
                 foreach (IFeatureClass edgeFc in _edgeFcs.Values)
+                {
                     if (edgeFc != null)
+                    {
                         c += await edgeFc.CountFeatures();
+                    }
+                }
             }
             if (_nodeFc != null)
+            {
                 c += await _nodeFc.CountFeatures();
+            }
+
             return c;
         }
 
@@ -164,7 +193,9 @@ namespace gView.DataSources.Fdb.PostgreSql
             if (_edgeFcs != null)
             {
                 foreach (IFeatureClass fc in _edgeFcs.Values)
+                {
                     edgeFcs.Add(fc);
+                }
             }
 
             return Task.FromResult<IFeatureCursor>(new NetworkFeatureCursor(_fdb, _name, edgeFcs, _nodeFc, filter));
@@ -288,9 +319,14 @@ namespace gView.DataSources.Fdb.PostgreSql
                     IFeatureClass fc = _edgeFcs[_edgeFcIndex++];
                     _fcid = await _fdb.FeatureClassID(await _fdb.DatasetID(fc.Dataset.DatasetName), fc.Name);
                     if (_fcid < 0)
+                    {
                         return await NextFeature();
+                    }
+
                     if (fc.Name == _networkName + "_ComplexEdges")
+                    {
                         _fcid = -1;
+                    }
 
                     IQueryFilter f = (IQueryFilter)_filter.Clone();
                     if (f.SubFields != "*")
@@ -301,7 +337,9 @@ namespace gView.DataSources.Fdb.PostgreSql
 
                     _edgeCursor = await fc.GetFeatures(f);
                     if (_edgeCursor == null)
+                    {
                         return await NextFeature();
+                    }
                 }
                 if (_edgeCursor != null)
                 {
@@ -321,7 +359,9 @@ namespace gView.DataSources.Fdb.PostgreSql
                     _nodeCursor = await _nodeFc.GetFeatures(_filter);
                 }
                 if (_nodeCursor != null)
+                {
                     return await _nodeCursor.NextFeature();
+                }
 
                 return null;
             }
@@ -374,15 +414,22 @@ namespace gView.DataSources.Fdb.PostgreSql
             public IGraphTableRow QueryN1ToN2(int n1, int n2)
             {
                 foreach (IGraphTableRow row in QueryN1(n1))
+                {
                     if (row.N2 == n2)
+                    {
                         return row;
+                    }
+                }
+
                 return null;
             }
 
             public IGraphEdge QueryEdge(int eid)
             {
                 if (_nfc != null && _nfc._pageManager != null)
+                {
                     return _nfc._pageManager.GetEdge(eid);
+                }
 
                 return null;
             }
@@ -390,7 +437,9 @@ namespace gView.DataSources.Fdb.PostgreSql
             public double QueryEdgeWeight(Guid weightGuid, int eid)
             {
                 if (_nfc != null && _nfc._pageManager != null)
+                {
                     return _nfc._pageManager.GetEdgeWeight(weightGuid, eid);
+                }
 
                 return 0.0;
             }
@@ -398,7 +447,9 @@ namespace gView.DataSources.Fdb.PostgreSql
             public bool SwitchState(int nid)
             {
                 if (_nfc != null && _nfc._pageManager != null)
+                {
                     return _nfc._pageManager.GetSwitchState(nid);
+                }
 
                 return false;
             }
@@ -406,7 +457,9 @@ namespace gView.DataSources.Fdb.PostgreSql
             public int GetNodeFcid(int nid)
             {
                 if (_nfc != null && _nfc._pageManager != null)
+                {
                     return _nfc._pageManager.GetNodeFcid(nid);
+                }
 
                 return -1;
             }
@@ -414,7 +467,9 @@ namespace gView.DataSources.Fdb.PostgreSql
             public NetworkNodeType GetNodeType(int nid)
             {
                 if (_nfc != null && _nfc._pageManager != null)
+                {
                     return _nfc._pageManager.GetNodeType(nid);
+                }
 
                 return NetworkNodeType.Unknown;
             }
@@ -425,7 +480,9 @@ namespace gView.DataSources.Fdb.PostgreSql
 
                 GraphTableRows rows = QueryN1(n1);
                 if (rows == null)
+                {
                     return features;
+                }
 
                 foreach (GraphTableRow row in rows)
                 {
@@ -446,7 +503,9 @@ namespace gView.DataSources.Fdb.PostgreSql
 
                 IFeature feature = await _nfc.GetNodeFeature(n1);
                 if (feature != null)
+                {
                     features.Add(feature);
+                }
 
                 return features;
             }
@@ -465,14 +524,19 @@ namespace gView.DataSources.Fdb.PostgreSql
         async public Task<IFeatureCursor> GetNodeFeatures(IQueryFilter filter)
         {
             if (_nodeFc != null)
+            {
                 return await _nodeFc.GetFeatures(filter);
+            }
+
             return null;
         }
 
         async public Task<IFeatureCursor> GetEdgeFeatures(IQueryFilter filter)
         {
             if (_edgeFcs.Count == 0)
+            {
                 return null;
+            }
 
             if (filter is SpatialFilter)
             {
@@ -480,7 +544,9 @@ namespace gView.DataSources.Fdb.PostgreSql
                 if (_edgeFcs != null)
                 {
                     foreach (IFeatureClass fc in _edgeFcs.Values)
+                    {
                         edgeFcs.Add(fc);
+                    }
                 }
                 return new NetworkFeatureCursor(_fdb, _name, edgeFcs, null, filter);
             }
@@ -495,7 +561,9 @@ namespace gView.DataSources.Fdb.PostgreSql
                 {
                     IGraphEdge edge = _pageManager.GetEdge(eid);
                     if (edge == null || _edgeFcs.ContainsKey(edge.FcId) == false)
+                    {
                         continue;
+                    }
 
                     if (!rfilters.ContainsKey(edge.FcId))
                     {
@@ -509,7 +577,7 @@ namespace gView.DataSources.Fdb.PostgreSql
                             shapeFieldName = fc.ShapeFieldName;
                         }
 
-                        RowIDFilter rfilter=new RowIDFilter(edge.FcId >= 0 ? idFieldName : "EID");
+                        RowIDFilter rfilter = new RowIDFilter(edge.FcId >= 0 ? idFieldName : "EID");
                         rfilter.fieldPostfix = rfilter.fieldPrefix = "\"";
                         rfilters.Add(edge.FcId, rfilter);
                         rfilters[edge.FcId].AddField(shapeFieldName);
@@ -526,9 +594,14 @@ namespace gView.DataSources.Fdb.PostgreSql
                             foreach (string field in filter.SubFields.Split(' '))
                             {
                                 if (field == shapeFieldName)
+                                {
                                     continue;
+                                }
+
                                 if (fc.Fields.FindField(field) != null)
+                                {
                                     rfilter.AddField(fc.Fields.FindField(field).name);
+                                }
                             }
                         }
                     }
@@ -563,7 +636,10 @@ namespace gView.DataSources.Fdb.PostgreSql
                 using (IFeatureCursor cursor = await GetNodeFeatures(filter))
                 {
                     if (cursor == null)
+                    {
                         return null;
+                    }
+
                     return await cursor.NextFeature();
                 }
             }
@@ -578,7 +654,9 @@ namespace gView.DataSources.Fdb.PostgreSql
 
             IFeatureCursor cursor = await GetEdgeFeatures(filter);
             if (cursor == null)
+            {
                 return null;
+            }
 
             IFeature feature = await cursor.NextFeature();
             cursor.Dispose();
@@ -617,17 +695,27 @@ namespace gView.DataSources.Fdb.PostgreSql
 
                 IFeature feature;
                 using (IFeatureCursor cursor = await GetNodeFeatures(filter))
+                {
                     feature = await cursor.NextFeature();
+                }
+
                 if (feature == null)
+                {
                     return null;
+                }
 
                 string fcName = await _fdb.GetFeatureClassName((int)feature["fcid"]);
                 IDatasetElement element = await _dataset.Element(fcName);
                 if (element == null)
+                {
                     return null;
+                }
+
                 IFeatureClass fc = element.Class as IFeatureClass;
                 if (fc == null)
+                {
                     return null;
+                }
 
                 filter = new QueryFilter();
                 if (fc is IDatabaseNames)
@@ -648,17 +736,25 @@ namespace gView.DataSources.Fdb.PostgreSql
                     foreach (string attribute in attributes)
                     {
                         if (attribute == "*")
+                        {
                             filter.AddField(attribute);
+                        }
                         else if (fc.FindField(attribute) != null)
+                        {
                             filter.AddField(attribute);
+                        }
                     }
                 }
 
                 using (IFeatureCursor cursor = await fc.GetFeatures(filter))
+                {
                     feature = await cursor.NextFeature();
+                }
 
                 if (feature != null)
+                {
                     feature.Fields.Add(new FieldValue("_classname", fc.Name));
+                }
 
                 return feature;
             }
@@ -731,7 +827,10 @@ namespace gView.DataSources.Fdb.PostgreSql
         async public Task<IGraphEdge> GetGraphEdge(IPoint point, double tolerance)
         {
             if (point == null)
+            {
                 return null;
+            }
+
             SpatialFilter filter = new SpatialFilter();
             filter.Geometry = new Envelope(point.X - tolerance, point.Y - tolerance,
                                            point.X + tolerance, point.Y + tolerance);
@@ -748,14 +847,18 @@ namespace gView.DataSources.Fdb.PostgreSql
                 {
                     if (!(feature.Shape is IPolyline) ||
                           feature.FindField("NETWORK#FCID") == null)
+                    {
                         continue;
+                    }
 
                     int fcid = (int)feature["NETWORK#FCID"];
 
                     double dist, stat;
                     IPoint spoint = gView.Framework.SpatialAlgorithms.Algorithm.Point2PolylineDistance((IPolyline)feature.Shape, point, out dist, out stat);
                     if (spoint == null)
+                    {
                         continue;
+                    }
 
                     if (selected == null || dist <= selectedDist)
                     {
@@ -771,7 +874,9 @@ namespace gView.DataSources.Fdb.PostgreSql
                                 using (IFeatureCursor complexEdgeCursor = await complexEdgeFc.GetFeatures(complexEdgeFilter))
                                 {
                                     if (await complexEdgeCursor.NextFeature() != null)
+                                    {
                                         continue;
+                                    }
                                 }
                             }
                             #endregion
@@ -783,7 +888,9 @@ namespace gView.DataSources.Fdb.PostgreSql
                     }
                 }
                 if (selected == null)
+                {
                     return null;
+                }
 
                 int eid = -1;
                 if (selectedFcId == -1)
@@ -791,14 +898,18 @@ namespace gView.DataSources.Fdb.PostgreSql
                     #region Complex Edge
                     object eidObj = await _fdb._conn.QuerySingleField("SELECT eid FROM " + _fdb.TableName("FC_" + _name + "_ComplexEdges") + " WHERE " + _fdb.DbColName("FDB_OID") + "=" + selected.OID, "eid");
                     if (eidObj != null)
+                    {
                         eid = (int)eidObj;
+                    }
                     #endregion
                 }
                 else
                 {
                     object eidObj = await _fdb._conn.QuerySingleField("SELECT eid FROM " + _fdb.TableName(_name + "_EdgeIndex") + " WHERE fcid=" + selectedFcId + " AND oid=" + selected.OID, "eid");
                     if (eidObj != null)
+                    {
                         eid = (int)eidObj;
+                    }
                 }
 
                 if (eid != -1)
@@ -816,7 +927,9 @@ namespace gView.DataSources.Fdb.PostgreSql
         async public Task<List<IFeatureClass>> NetworkClasses()
         {
             if (_fdb == null)
+            {
                 return new List<IFeatureClass>();
+            }
 
             return await _fdb.NetworkFeatureClasses(this.Name);
         }
@@ -824,7 +937,9 @@ namespace gView.DataSources.Fdb.PostgreSql
         async public Task<string> NetworkClassName(int fcid)
         {
             if (_fdb == null)
+            {
                 return String.Empty;
+            }
 
             return await _fdb.GetFeatureClassName(fcid);
         }
@@ -832,7 +947,10 @@ namespace gView.DataSources.Fdb.PostgreSql
         async public Task<int> NetworkClassId(string className)
         {
             if (_fdb == null || _dataset == null)
+            {
                 return -1;
+            }
+
             return await _fdb.FeatureClassID(await _fdb.DatasetID(_dataset.DatasetName), className);
         }
         #endregion

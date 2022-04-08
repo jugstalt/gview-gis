@@ -1,11 +1,8 @@
+using gView.Framework.Data;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
-using System.Text;
 using System.Windows.Forms;
-using gView.Framework.Data;
 
 namespace gView.Framework.UI.Dialogs
 {
@@ -13,7 +10,7 @@ namespace gView.Framework.UI.Dialogs
     {
         private List<GridColorClass> _classes = new List<GridColorClass>();
 
-        public FormGridWizard(double min,double max)
+        public FormGridWizard(double min, double max)
         {
             InitializeComponent();
 
@@ -33,7 +30,11 @@ namespace gView.Framework.UI.Dialogs
         {
             get
             {
-                if (_classes.Count == 0) return null;
+                if (_classes.Count == 0)
+                {
+                    return null;
+                }
+
                 return _classes.ToArray();
             }
         }
@@ -90,7 +91,7 @@ namespace gView.Framework.UI.Dialogs
                     GradientColor(h)));
             }
 
-            int legStep = (int)((numMaxValue.Value - numMinValue.Value) / Math.Max(numLabelEvery.Value,numLevelEvery.Value));
+            int legStep = (int)((numMaxValue.Value - numMinValue.Value) / Math.Max(numLabelEvery.Value, numLevelEvery.Value));
             for (int i = 0; i < _classes.Count; i += legStep)
             {
                 if (i == 0)
@@ -113,7 +114,10 @@ namespace gView.Framework.UI.Dialogs
 
         private void btnCol_Click(object sender, EventArgs e)
         {
-            if (!(sender is Button)) return;
+            if (!(sender is Button))
+            {
+                return;
+            }
 
             ColorDialog dlg = new ColorDialog();
             dlg.Color = ((Button)sender).BackColor;

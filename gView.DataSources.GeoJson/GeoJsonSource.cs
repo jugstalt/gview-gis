@@ -18,7 +18,7 @@ namespace gView.DataSources.GeoJson
         private IEnvelope _envelope = null;
         private DateTime _lastLoad = new DateTime(0);
         private List<IFeature> _features = null;
-        private bool _isInitialized=false;
+        private bool _isInitialized = false;
 
         private WebAuthorizationCredentials _webAuthorization;
 
@@ -51,7 +51,9 @@ namespace gView.DataSources.GeoJson
                         using (var httpClient = new HttpClient(clientHandler))
                         {
                             if (_webAuthorization != null)
+                            {
                                 await _webAuthorization.AddAuthorizationHeaders(httpClient);
+                            }
 
                             var httpResponseMessage = await httpClient.GetAsync(_target);
                             geoJsonString = await httpResponseMessage.Content.ReadAsStringAsync();
@@ -105,7 +107,7 @@ namespace gView.DataSources.GeoJson
 
                 _features = features;
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 this.LastException = ex;
             }
@@ -134,14 +136,14 @@ namespace gView.DataSources.GeoJson
 
             List<IFeature> features = _features == null ?
                 new List<IFeature>() :
-                new List<IFeature>(_features.Where(f => f?.Shape !=null && geometryInterfaceType.IsAssignableFrom(f.Shape.GetType())));
+                new List<IFeature>(_features.Where(f => f?.Shape != null && geometryInterfaceType.IsAssignableFrom(f.Shape.GetType())));
 
             return features;
         }
 
         public Task<IEnumerable<IFeature>> GetFeatures(GeometryType geometryType)
         {
-            switch(geometryType)
+            switch (geometryType)
             {
                 case GeometryType.Point:
                     return GetFeatures<IPoint>();

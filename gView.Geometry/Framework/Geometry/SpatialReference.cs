@@ -1,54 +1,52 @@
-using System;
-using System.Text;
-using System.ComponentModel;
-using gView.Framework.Geometry;
-using gView.Framework.IO;
 using gView.Framework.Carto;
 using gView.Framework.Geometry.SpatialRefTranslation;
-using System.Collections.Generic;
-using System.IO;
+using gView.Framework.IO;
 using gView.Framework.Proj;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
+using System.Text;
 
 namespace gView.Framework.Geometry
 {
-	/// <summary>
-	/// 
-	/// </summary>
+    /// <summary>
+    /// 
+    /// </summary>
 
-	public class GeodeticDatum : IGeodeticDatum
-	{
-		private double _X,_Y,_Z;
-		private double _rX,_rY,_rZ;
-		private double _scale;
-		private string _name;
+    public class GeodeticDatum : IGeodeticDatum
+    {
+        private double _X, _Y, _Z;
+        private double _rX, _rY, _rZ;
+        private double _scale;
+        private string _name;
 
         private static IFormatProvider _nhi = System.Globalization.CultureInfo.InvariantCulture.NumberFormat;
 
-		public GeodeticDatum() 
-		{
-			_X=_Y=_Z=_rX=_rY=_rZ=_scale=0.0;
-			_name="Unknown";
-		}
-		public GeodeticDatum(string name) 
-		{
-			ProjDB db=new ProjDB(ProjDBTables.datums);
-			Parameter=db.GetDatumParameters(name);
-			db.Dispose();
-			Name=name;
-		}
-		public GeodeticDatum(GeodeticDatum datum) 
-		{
-			_X=datum._X;
-			_Y=datum._Y;
-			_Z=datum._Z;
-			_rX=datum._rX;
-			_rY=datum._rY;
-			_rZ=datum._rZ;
-			_scale=datum._scale;
-			_name=datum._name;
-		}
+        public GeodeticDatum()
+        {
+            _X = _Y = _Z = _rX = _rY = _rZ = _scale = 0.0;
+            _name = "Unknown";
+        }
+        public GeodeticDatum(string name)
+        {
+            ProjDB db = new ProjDB(ProjDBTables.datums);
+            Parameter = db.GetDatumParameters(name);
+            db.Dispose();
+            Name = name;
+        }
+        public GeodeticDatum(GeodeticDatum datum)
+        {
+            _X = datum._X;
+            _Y = datum._Y;
+            _Z = datum._Z;
+            _rX = datum._rX;
+            _rY = datum._rY;
+            _rZ = datum._rZ;
+            _scale = datum._scale;
+            _name = datum._name;
+        }
         public GeodeticDatum(string name, double dx, double dy, double dz,
                                          double rx, double ry, double rz,
                                          double scale)
@@ -63,29 +61,32 @@ namespace gView.Framework.Geometry
             _scale = scale;
         }
 
-		public string Name 
-		{
-			get { return _name; }
-			set { _name=value; }
-		}
+        public string Name
+        {
+            get { return _name; }
+            set { _name = value; }
+        }
 
-		public string Parameter 
-		{
-			get 
-			{
-				return "+towgs84="+
-					_X.ToString().Replace(",",".")+","+
-					_Y.ToString().Replace(",",".")+","+
-					_Z.ToString().Replace(",",".")+","+
-					_rX.ToString().Replace(",",".")+","+
-					_rY.ToString().Replace(",",".")+","+
-					_rZ.ToString().Replace(",",".")+","+
-					_scale.ToString().Replace(",",".");
-			}
-			set 
-			{
-				string [] p=value.Replace("+towgs84=","").Split(',');
-				if(p.Length<7) return;
+        public string Parameter
+        {
+            get
+            {
+                return "+towgs84=" +
+                    _X.ToString().Replace(",", ".") + "," +
+                    _Y.ToString().Replace(",", ".") + "," +
+                    _Z.ToString().Replace(",", ".") + "," +
+                    _rX.ToString().Replace(",", ".") + "," +
+                    _rY.ToString().Replace(",", ".") + "," +
+                    _rZ.ToString().Replace(",", ".") + "," +
+                    _scale.ToString().Replace(",", ".");
+            }
+            set
+            {
+                string[] p = value.Replace("+towgs84=", "").Split(',');
+                if (p.Length < 7)
+                {
+                    return;
+                }
 
                 try
                 {
@@ -98,96 +99,96 @@ namespace gView.Framework.Geometry
                     _scale = Convert.ToDouble(p[6], _nhi);
                 }
                 catch { }
-			}
-		}
+            }
+        }
 
-		#region IGeodeticDatum Member
+        #region IGeodeticDatum Member
 
-		public double X_Axis
-		{
-			get
-			{
-				return _X;
-			}
-			set
-			{
-				_X=value;
-			}
-		}
+        public double X_Axis
+        {
+            get
+            {
+                return _X;
+            }
+            set
+            {
+                _X = value;
+            }
+        }
 
-		public double Y_Axis
-		{
-			get
-			{
-				return _Y;
-			}
-			set
-			{
-				_Y=value;
-			}
-		}
+        public double Y_Axis
+        {
+            get
+            {
+                return _Y;
+            }
+            set
+            {
+                _Y = value;
+            }
+        }
 
-		public double Z_Axis
-		{
-			get
-			{
-				return _Z;
-			}
-			set
-			{
-				_Z=value;
-			}
-		}
+        public double Z_Axis
+        {
+            get
+            {
+                return _Z;
+            }
+            set
+            {
+                _Z = value;
+            }
+        }
 
-		public double X_Rotation
-		{
-			get
-			{
-				return _rX; 
-			}
-			set
-			{
-				_rX=value;
-			}
-		}
+        public double X_Rotation
+        {
+            get
+            {
+                return _rX;
+            }
+            set
+            {
+                _rX = value;
+            }
+        }
 
-		public double Y_Rotation
-		{
-			get
-			{
-				return _rY;
-			}
-			set
-			{
-				_rY=value;
-			}
-		}
+        public double Y_Rotation
+        {
+            get
+            {
+                return _rY;
+            }
+            set
+            {
+                _rY = value;
+            }
+        }
 
-		public double Z_Rotation
-		{
-			get
-			{
-				return _rZ;
-			}
-			set
-			{
-				_rZ=value;
-			}
-		}
+        public double Z_Rotation
+        {
+            get
+            {
+                return _rZ;
+            }
+            set
+            {
+                _rZ = value;
+            }
+        }
 
-		public double Scale_Diff
-		{
-			get
-			{
-				return _scale;
-			}
-			set
-			{
-				_scale=value;
-			}
-		}
+        public double Scale_Diff
+        {
+            get
+            {
+                return _scale;
+            }
+            set
+            {
+                _scale = value;
+            }
+        }
 
-		#endregion
+        #endregion
 
         #region IPersistable Member
 
@@ -254,7 +255,7 @@ namespace gView.Framework.Geometry
         private bool _geographic = false;
         private double _lat_0 = 0.0, _lon_0 = 0.0, _x_0 = 0.0, _y_0 = 0.0;
 
-        internal void SetMembers(string [] Parameters)
+        internal void SetMembers(string[] Parameters)
         {
             _unit = GeoUnits.Unknown;
             _geographic = false;
@@ -266,7 +267,10 @@ namespace gView.Framework.Geometry
             foreach (string parameter in Parameters)
             {
                 string[] p = parameter.ToLower().Replace(" ", "").Split('=');
-                if (p.Length < 2) continue;
+                if (p.Length < 2)
+                {
+                    continue;
+                }
 
                 if (p[0] == "+units")
                 {
@@ -284,14 +288,33 @@ namespace gView.Framework.Geometry
                         case "longlat":
                         case "latlong":
                             _geographic = true;
-                            if (_unit == GeoUnits.Unknown) _unit = GeoUnits.DecimalDegrees;
+                            if (_unit == GeoUnits.Unknown)
+                            {
+                                _unit = GeoUnits.DecimalDegrees;
+                            }
+
                             break;
                     }
                 }
-                if (p[0] == "+lon_0") double.TryParse(p[1].Replace(".", ","), out _lon_0);
-                if (p[0] == "+lat_0") double.TryParse(p[1].Replace(".", ","), out _lat_0);
-                if (p[0] == "+x_0") double.TryParse(p[1].Replace(".", ","), out _x_0);
-                if (p[0] == "+y_0") double.TryParse(p[1].Replace(".", ","), out _y_0);
+                if (p[0] == "+lon_0")
+                {
+                    double.TryParse(p[1].Replace(".", ","), out _lon_0);
+                }
+
+                if (p[0] == "+lat_0")
+                {
+                    double.TryParse(p[1].Replace(".", ","), out _lat_0);
+                }
+
+                if (p[0] == "+x_0")
+                {
+                    double.TryParse(p[1].Replace(".", ","), out _x_0);
+                }
+
+                if (p[0] == "+y_0")
+                {
+                    double.TryParse(p[1].Replace(".", ","), out _y_0);
+                }
             }
         }
 
@@ -369,7 +392,10 @@ namespace gView.Framework.Geometry
             this.Parameters = db.GetParameters(_ID).Split(' ');
             _description = db.GetDescription(_ID);
             if (this.Datum != null)
+            {
                 this.Datum.Name = db.GetDatumName(_ID);
+            }
+
             db.Dispose();
 
             _sParams.SetMembers(this.Parameters);
@@ -391,14 +417,20 @@ namespace gView.Framework.Geometry
             _description = description;
             this.Parameters = param.Split(' ');
             if (datum != null)
+            {
                 _datum = datum;
+            }
 
             _sParams.SetMembers(this.Parameters);
         }
 
         public SpatialReference(SpatialReference sRef)
         {
-            if (sRef == null) return;
+            if (sRef == null)
+            {
+                return;
+            }
+
             _ID = sRef._ID;
             _params = sRef._params;
             _description = sRef._description;
@@ -449,7 +481,10 @@ namespace gView.Framework.Geometry
                 {
                     if (p.Trim().IndexOf("+towgs84=") == 0)
                     {
-                        if (_datum == null) _datum = new GeodeticDatum();
+                        if (_datum == null)
+                        {
+                            _datum = new GeodeticDatum();
+                        }
 
                         _datum.Name = "User defined";
                         _datum.Parameter = p;
@@ -460,7 +495,11 @@ namespace gView.Framework.Geometry
                     }
                     else
                     {
-                        if (_params.Length > 0) _params += " ";
+                        if (_params.Length > 0)
+                        {
+                            _params += " ";
+                        }
+
                         _params += p;
                     }
                 }
@@ -516,7 +555,10 @@ namespace gView.Framework.Geometry
 
         public bool Equals(ISpatialReference sRef)
         {
-            if (sRef == null) return true; // keine Projektion möglich/notwendig!!!
+            if (sRef == null)
+            {
+                return true; // keine Projektion möglich/notwendig!!!
+            }
 
             string[] parms1 = this.Parameters;
             string[] parms2 = sRef.Parameters;
@@ -536,12 +578,18 @@ namespace gView.Framework.Geometry
                         break;
                     }
                 }
-                if (!found) return false;
+                if (!found)
+                {
+                    return false;
+                }
             }
 
             if (this.Datum != null && sRef.Datum != null)
             {
-                if (this.Datum.Parameter != sRef.Datum.Parameter) return false;
+                if (this.Datum.Parameter != sRef.Datum.Parameter)
+                {
+                    return false;
+                }
             }
             return true;
         }
@@ -567,7 +615,10 @@ namespace gView.Framework.Geometry
             stream.Save("description", _description);
             stream.Save("params", _params);
 
-            if (_datum != null) stream.Save("GeodeticDatum", _datum);
+            if (_datum != null)
+            {
+                stream.Save("GeodeticDatum", _datum);
+            }
         }
 
         #endregion
@@ -586,14 +637,17 @@ namespace gView.Framework.Geometry
                 case "D":
                     return ((_datum != null) ? _datum.Parameter : string.Empty);
                 case "SD":
-                    return _params + ((_datum != null) ? " "+_datum.Parameter : "");
+                    return _params + ((_datum != null) ? " " + _datum.Parameter : "");
             }
             return String.Empty;
         }
 
         public static ISpatialReference FromID(string id)
         {
-            if (String.IsNullOrEmpty(id)) return null;
+            if (String.IsNullOrEmpty(id))
+            {
+                return null;
+            }
 
             return SpatialReferenceCache.FromID(id);
         }
@@ -622,7 +676,7 @@ namespace gView.Framework.Geometry
                     {
                         ret.Gml3AxisX = AxisDirection.North;
                         ret.Gml3AxisY = AxisDirection.East;
-                    } 
+                    }
                 }
                 else
                 {
@@ -663,7 +717,10 @@ namespace gView.Framework.Geometry
 
         public static void FromProj4(ISpatialReference sReference, string parameters)
         {
-            if (parameters == String.Empty || parameters == null) return;
+            if (parameters == String.Empty || parameters == null)
+            {
+                return;
+            }
 
             if (sReference is SpatialReference)
             {
@@ -672,12 +729,19 @@ namespace gView.Framework.Geometry
         }
         public static string ToProj4(ISpatialReference sReference)
         {
-            if (sReference == null) return "";
+            if (sReference == null)
+            {
+                return "";
+            }
 
             StringBuilder sb = new StringBuilder();
             foreach (string param in sReference.Parameters)
             {
-                if (sb.Length > 0) sb.Append(" ");
+                if (sb.Length > 0)
+                {
+                    sb.Append(" ");
+                }
+
                 sb.Append(param);
             }
             if (sReference.Datum != null)
@@ -697,7 +761,10 @@ namespace gView.Framework.Geometry
                 string name = "Unknown", datumName = "Unknown";
 
                 if (obj is AbstractInformation)
+                {
                     name = ((AbstractInformation)obj).Name;
+                }
+
                 if (obj is GeographicCoordinateSystem)
                 {
                     datumName = ((GeographicCoordinateSystem)obj).HorizontalDatum.Name;
@@ -711,7 +778,9 @@ namespace gView.Framework.Geometry
                     name, name, p4, null);
 
                 if (sRef.Datum != null)
+                {
                     sRef.Datum.Name = datumName;
+                }
 
                 return sRef;
             }
@@ -722,21 +791,34 @@ namespace gView.Framework.Geometry
         }
         public static string ToWKT(ISpatialReference sRef)
         {
-            if (sRef == null) return "";
+            if (sRef == null)
+            {
+                return "";
+            }
 
             object obj = Proj4CoordinateSystemReader.Create(ToProj4(sRef));
-            if (obj == null) return "";
+            if (obj == null)
+            {
+                return "";
+            }
 
             if (obj is AbstractInformation)
+            {
                 ((AbstractInformation)obj).Name = (sRef.Description != String.Empty) ? sRef.Description : sRef.Name;
+            }
 
             if (obj is ProjectedCoordinateSystem)
             {
                 ProjectedCoordinateSystem sys = obj as ProjectedCoordinateSystem;
                 if (sys.HorizontalDatum != null && sRef.Datum != null)
-                    sys.HorizontalDatum.Name=sRef.Datum.Name;
+                {
+                    sys.HorizontalDatum.Name = sRef.Datum.Name;
+                }
+
                 if (sys.GeographicCoordinateSystem != null && sRef.Datum != null)
+                {
                     sys.GeographicCoordinateSystem.Name = GeogrNameFromDatumName(sRef.Datum.Name);
+                }
             }
             return WktCoordinateSystemWriter.Write(obj);
         }
@@ -747,7 +829,9 @@ namespace gView.Framework.Geometry
             {
                 char c = descr[i];
                 if (c >= 'A' && c <= 'Z' || c >= '0' && c <= '9')
+                {
                     sb.Append(c.ToString());
+                }
                 else if (c == '(')
                 {
                     while (c != ')' && i < descr.Length - 1)
@@ -774,42 +858,68 @@ namespace gView.Framework.Geometry
         }
         internal static string ToESRIWKT_(ISpatialReference sRef)
         {
-            if (sRef == null) return "";
+            if (sRef == null)
+            {
+                return "";
+            }
 
             object obj = Proj4CoordinateSystemReader.Create(ToProj4(sRef));
-            if (obj == null) return "";
+            if (obj == null)
+            {
+                return "";
+            }
 
             if (obj is AbstractInformation)
+            {
                 ((AbstractInformation)obj).Name = (sRef.Description != String.Empty) ? sRef.Description : sRef.Name;
+            }
 
             if (obj is ProjectedCoordinateSystem)
             {
                 ProjectedCoordinateSystem sys = obj as ProjectedCoordinateSystem;
                 if (sys.HorizontalDatum != null && sRef.Datum != null)
+                {
                     sys.HorizontalDatum.Name = sRef.Datum.Name;
+                }
+
                 if (sys.GeographicCoordinateSystem != null && sRef.Datum != null)
+                {
                     sys.GeographicCoordinateSystem.Name = GeogrNameFromDatumName(sRef.Datum.Name);
+                }
             }
 
             return ESRIWktCoordinateSystemWriter.Write(obj);
         }
         public static string ToESRIGeotransWKT(ISpatialReference sRef)
         {
-            if (sRef == null || sRef.Datum == null) return "";
+            if (sRef == null || sRef.Datum == null)
+            {
+                return "";
+            }
 
             object obj = Proj4CoordinateSystemReader.Create(ToProj4(sRef));
-            if (obj == null) return "";
+            if (obj == null)
+            {
+                return "";
+            }
 
             if (obj is AbstractInformation)
+            {
                 ((AbstractInformation)obj).Name = (sRef.Description != String.Empty) ? sRef.Description : sRef.Name;
+            }
 
             if (obj is ProjectedCoordinateSystem)
             {
                 ProjectedCoordinateSystem sys = obj as ProjectedCoordinateSystem;
                 if (sys.HorizontalDatum != null && sRef.Datum != null)
+                {
                     sys.HorizontalDatum.Name = sRef.Datum.Name;
+                }
+
                 if (sys.GeographicCoordinateSystem != null && sRef.Datum != null)
+                {
                     sys.GeographicCoordinateSystem.Name = GeogrNameFromDatumName(sRef.Datum.Name);
+                }
             }
 
             return ESRIGeotransWktCoordinateWriter.Write(obj);
@@ -862,7 +972,10 @@ namespace gView.Framework.Geometry
         public void FromBase64String(string base64)
         {
             if (String.IsNullOrEmpty(base64))
+            {
                 return;
+            }
+
             byte[] bytes = System.Convert.FromBase64String(base64);
             string xmlString = System.Text.ASCIIEncoding.ASCII.GetString(bytes);
 
@@ -876,13 +989,13 @@ namespace gView.Framework.Geometry
     {
         private static List<ISpatialReference> _sRefs = new List<ISpatialReference>();
         private static Dictionary<string, string> _esriWTKs = new Dictionary<string, string>();
-        private static object lockThis=new object();
-       
+        private static object lockThis = new object();
+
         public SpatialReferenceCache()
         {
         }
 
-        public static void Clear() 
+        public static void Clear()
         {
             _sRefs.Clear();
         }
@@ -892,11 +1005,17 @@ namespace gView.Framework.Geometry
             {
                 foreach (ISpatialReference sRef in _sRefs)
                 {
-                    if (sRef.Name == id) return sRef;
+                    if (sRef.Name == id)
+                    {
+                        return sRef;
+                    }
                 }
 
                 ISpatialReference sr = SpatialReference.FromID_(id);
-                if (sr != null) _sRefs.Add(sr);
+                if (sr != null)
+                {
+                    _sRefs.Add(sr);
+                }
 
                 return sr;
             }
@@ -921,132 +1040,140 @@ namespace gView.Framework.Geometry
             }
         }
     }
-	public class IMSSpatialReference : ISpatialReference
-	{
-		protected string _id="",_string="",
-			_datumId="",_datumString="";
+    public class IMSSpatialReference : ISpatialReference
+    {
+        protected string _id = "", _string = "",
+            _datumId = "", _datumString = "";
         private ISpatialParameters _sParams = new SpatialParameters();
 
 
-		public IMSSpatialReference() 
-		{
-		}
-		#region IPersist Member
-		
-		[Browsable(false)]
-		public string PersistString
-		{
-			get
-			{
-				_id=_id.Trim();
-				_string=_string.Trim();
-				_datumId=_datumId.Trim();
-				_datumString=_datumString.Trim();
+        public IMSSpatialReference()
+        {
+        }
+        #region IPersist Member
 
-				return 
-					_id+";"+
-					_string+";"+
-					_datumId+";"+
-					_datumString;
-			}
-			set
-			{
-				string [] param=value.Split(';');
+        [Browsable(false)]
+        public string PersistString
+        {
+            get
+            {
+                _id = _id.Trim();
+                _string = _string.Trim();
+                _datumId = _datumId.Trim();
+                _datumString = _datumString.Trim();
 
-				if(param.Length==4) 
-				{
-					_id=param[0].Trim();
-					_string=param[1].Trim();
-					_datumId=param[2].Trim();
-					_datumString=param[3].Trim();
-				}
-			}
-		}
+                return
+                    _id + ";" +
+                    _string + ";" +
+                    _datumId + ";" +
+                    _datumString;
+            }
+            set
+            {
+                string[] param = value.Split(';');
 
-		#endregion
+                if (param.Length == 4)
+                {
+                    _id = param[0].Trim();
+                    _string = param[1].Trim();
+                    _datumId = param[2].Trim();
+                    _datumString = param[3].Trim();
+                }
+            }
+        }
 
-		[Category("Projection")]
-		public string ID 
-		{
-			get 
-			{
-				return _id;
-			}
-			set 
-			{
-				try 
-				{
-					if(value=="") _id="";
-					_id=Convert.ToInt32(value).ToString();
-				} 
-				catch 
-				{
-					_id="";
-				}
-			}
-		}
-		public string Description 
-		{
-			get { return ""; }
-		}
-		[Category("Projection")]
-		public string String 
-		{
-			get { return _string; }
-			set { _string=value; }
-		}
+        #endregion
 
-		[Category("Datum")]
-		public string datumID 
-		{
-			get { return _datumId; }
-			set 
-			{
-				try 
-				{
-					if(value=="") _datumId="";
-					_datumId=Convert.ToInt32(value).ToString();
-				} 
-				catch 
-				{
-					_datumId="";
-				}
-			}
-		}
-		[Category("Datum")]
-		public string datumString 
-		{
-			get { return _datumString; }
-			set { _datumString=value; }
-		}
-		#region ISpatialReference Member
+        [Category("Projection")]
+        public string ID
+        {
+            get
+            {
+                return _id;
+            }
+            set
+            {
+                try
+                {
+                    if (value == "")
+                    {
+                        _id = "";
+                    }
 
-		public gView.Framework.Geometry.IGeodeticDatum Datum
-		{
-			get
-			{
-				return null;
-			}
-			set
-			{
-			}
-		}
+                    _id = Convert.ToInt32(value).ToString();
+                }
+                catch
+                {
+                    _id = "";
+                }
+            }
+        }
+        public string Description
+        {
+            get { return ""; }
+        }
+        [Category("Projection")]
+        public string String
+        {
+            get { return _string; }
+            set { _string = value; }
+        }
 
-		public string Name
-		{
-			get
-			{
-				return null;
-			}
-		}
+        [Category("Datum")]
+        public string datumID
+        {
+            get { return _datumId; }
+            set
+            {
+                try
+                {
+                    if (value == "")
+                    {
+                        _datumId = "";
+                    }
 
-		public string[] Parameters
-		{
-			get
-			{
-				return null;
-			}
-		}
+                    _datumId = Convert.ToInt32(value).ToString();
+                }
+                catch
+                {
+                    _datumId = "";
+                }
+            }
+        }
+        [Category("Datum")]
+        public string datumString
+        {
+            get { return _datumString; }
+            set { _datumString = value; }
+        }
+        #region ISpatialReference Member
+
+        public gView.Framework.Geometry.IGeodeticDatum Datum
+        {
+            get
+            {
+                return null;
+            }
+            set
+            {
+            }
+        }
+
+        public string Name
+        {
+            get
+            {
+                return null;
+            }
+        }
+
+        public string[] Parameters
+        {
+            get
+            {
+                return null;
+            }
+        }
 
         public ISpatialParameters SpatialParameters
         {
@@ -1065,31 +1192,31 @@ namespace gView.Framework.Geometry
 
         public int EpsgCode { get { return 0; } }
 
-		public bool Equals(ISpatialReference sRef) 
-		{
-			return false;
-		}
-		#endregion
+        public bool Equals(ISpatialReference sRef)
+        {
+            return false;
+        }
+        #endregion
 
-		#region IPersistable Member
+        #region IPersistable Member
 
-		public string PersistID
-		{
-			get
-			{
-				return null;
-			}
-		}
-
-		public void Load(IPersistStream stream)
-		{
+        public string PersistID
+        {
+            get
+            {
+                return null;
+            }
         }
 
-		public void Save(IPersistStream stream)
-		{
+        public void Load(IPersistStream stream)
+        {
         }
 
-		#endregion
+        public void Save(IPersistStream stream)
+        {
+        }
+
+        #endregion
 
         #region IClone Member
 
@@ -1117,7 +1244,7 @@ namespace gView.Framework.Geometry
 
         public void FromXmlString(string xml)
         {
-            
+
         }
 
         #endregion

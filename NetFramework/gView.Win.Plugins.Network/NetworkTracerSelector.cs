@@ -1,13 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using gView.Framework.UI;
-using System.Windows.Forms;
-using gView.Framework.system;
+﻿using gView.Framework.Globalisation;
 using gView.Framework.Network;
-using System.Xml;
-using gView.Framework.Globalisation;
+using gView.Framework.system;
+using gView.Framework.UI;
+using System;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace gView.Plugins.Network
 {
@@ -31,12 +28,18 @@ namespace gView.Plugins.Network
             if (_module != null)
             {
                 if (_combo.SelectedItem is NetworkTracerItem)
+                {
                     _module.SelectedNetworkTracer = ((NetworkTracerItem)_combo.SelectedItem).NetworkTracer;
+                }
                 else
+                {
                     _module.SelectedNetworkTracer = null;
+                }
 
                 if (_doc != null && _doc.Application is IGUIApplication)
+                {
                     ((IGUIApplication)_doc.Application).ValidateUI();
+                }
             }
         }
 
@@ -79,12 +82,16 @@ namespace gView.Plugins.Network
                 {
                     INetworkTracer tracer = pluginMan.CreateInstance<INetworkTracer>(tracerType);
                     if (tracer == null)
+                    {
                         continue;
+                    }
 
                     _combo.Items.Add(new NetworkTracerItem(tracer));
                 }
                 if (_combo.Items.Count > 0)
+                {
                     _combo.SelectedIndex = 0;
+                }
             }
         }
 
@@ -123,7 +130,9 @@ namespace gView.Plugins.Network
             {
                 string ret = _tracer.Name;
                 if (ret.StartsWith("Trace "))
+                {
                     ret = ret.Substring(6, ret.Length - 6);
+                }
 
                 return ret;
             }

@@ -1,13 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Windows.Forms;
-using gView.Framework.Data;
+﻿using gView.Framework.Data;
 using gView.Framework.UI;
+using System;
+using System.Windows.Forms;
 
 namespace gView.Plugins.DbTools.Joins
 {
@@ -30,10 +24,12 @@ namespace gView.Plugins.DbTools.Joins
         {
             lstJoins.Items.Clear();
             if (_layer.Joins != null)
+            {
                 foreach (IFeatureLayerJoin join in _layer.Joins)
                 {
                     lstJoins.Items.Add(new FeatureLayerJoinItem() { FeatureLayerJoin = join });
                 }
+            }
 
             btnEdit.Enabled = btnRemove.Enabled = false;
         }
@@ -49,7 +45,10 @@ namespace gView.Plugins.DbTools.Joins
                 if (join != null)
                 {
                     if (_layer.Joins == null)
+                    {
                         _layer.Joins = new Framework.Data.FeatureLayerJoins();
+                    }
+
                     _layer.Joins.Add(join);
                     _layer.FirePropertyChanged();
 
@@ -61,7 +60,9 @@ namespace gView.Plugins.DbTools.Joins
         private void btnEdit_Click(object sender, EventArgs e)
         {
             if (!(lstJoins.SelectedItem is FeatureLayerJoinItem))
+            {
                 return;
+            }
 
             IFeatureLayerJoin join = ((FeatureLayerJoinItem)lstJoins.SelectedItem).FeatureLayerJoin;
 
@@ -84,7 +85,9 @@ namespace gView.Plugins.DbTools.Joins
         private void btnRemove_Click(object sender, EventArgs e)
         {
             if (!(lstJoins.SelectedItem is FeatureLayerJoinItem))
+            {
                 return;
+            }
 
             IFeatureLayerJoin join = ((FeatureLayerJoinItem)lstJoins.SelectedItem).FeatureLayerJoin;
 
@@ -92,7 +95,10 @@ namespace gView.Plugins.DbTools.Joins
             {
                 _layer.Joins.Remove(join);
                 if (_layer.Joins.Count == 0)
+                {
                     _layer.Joins = null;
+                }
+
                 _layer.FirePropertyChanged();
             }
             FillList();
@@ -113,7 +119,9 @@ namespace gView.Plugins.DbTools.Joins
             public override string ToString()
             {
                 if (FeatureLayerJoin == null)
+                {
                     return base.ToString();
+                }
 
                 return FeatureLayerJoin.JoinName;
             }

@@ -1,12 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
+﻿using System.Windows.Forms;
 
 namespace gView.system.UI.Framework.system.UI
 {
@@ -21,7 +13,7 @@ namespace gView.system.UI.Framework.system.UI
             txtMessage.Text = message;
         }
 
-        public static void Show(string header, string message, string title="Error")
+        public static void Show(string header, string message, string title = "Error")
         {
             new FormToolException(title, header, message).ShowDialog();
         }

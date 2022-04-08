@@ -1,9 +1,6 @@
-﻿using System;
+﻿using gView.Framework.Data;
 using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
-using gView.Framework.Data;
-using gView.Framework.Network;
 
 namespace gView.Framework.Network.Algorthm
 {
@@ -22,13 +19,17 @@ namespace gView.Framework.Network.Algorthm
 
             Dijkstra.Nodes nodes = dijkstra.DijkstraPathNodes(targetNode);
             if (nodes == null)
+            {
                 return items;
+            }
 
             foreach (Dijkstra.Node node in nodes)
             {
                 IFeature feature = await _nfc.GetEdgeFeatureAttributes(node.EId, new string[] { "*" });
                 if (feature == null)
+                {
                     continue;
+                }
 
                 items.Add(new Item(node.Id, node.EId, node.Dist, feature));
             }
@@ -77,12 +78,17 @@ namespace gView.Framework.Network.Algorthm
                     {
                         IFeature feature = item.Feature;
                         if (feature == null)
+                        {
                             continue;
+                        }
 
                         foreach (FieldValue fv in feature.Fields)
                         {
                             if (attributeNames.Contains(fv.Name))
+                            {
                                 continue;
+                            }
+
                             attributeNames.Add(fv.Name);
                         }
                     }

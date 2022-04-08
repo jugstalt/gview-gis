@@ -2,12 +2,12 @@
 using gView.Framework.Geometry;
 using gView.Framework.Geometry.Tiling;
 using gView.Framework.Metadata;
+using gView.Framework.system;
 using gView.Server.Connector;
 using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading;
-using gView.Framework.system;
 
 namespace gView.Cmd.RenderTileCache
 {
@@ -146,13 +146,19 @@ namespace gView.Cmd.RenderTileCache
                             //    return;
                         }
                         if (_orientation == GridOrientation.UpperLeft)
+                        {
                             thread.Start("tile:render/" + _cacheFormat + "/ul/" + _epsg + "/" + scale.ToDoubleString() + "/" + row + "/" + col + _imageFormat + boundingTiles);
+                        }
                         else
+                        {
                             thread.Start("tile:render/" + _cacheFormat + "/ll/" + _epsg + "/" + scale.ToDoubleString() + "/" + row + "/" + col + _imageFormat + boundingTiles);
+                        }
 
                         tilePos++;
                         if (tilePos % 5 == 0 || _cacheFormat == "compact")
+                        {
                             Console.Write($"...{ tilePos }");
+                        }
 
                         //if (!_cancelTracker.Continue)
                         //    return;

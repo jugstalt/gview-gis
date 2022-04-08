@@ -1,16 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Drawing;
-using System.Data;
-using System.Linq;
-using System.Text;
-using System.Windows.Forms;
-using gView.Framework.UI;
-using gView.Framework.Data;
+﻿using gView.Framework.Data;
 using gView.Framework.Geometry;
+using gView.Framework.UI;
 using gView.Plugins.MapTools.Dialogs;
 using gView.system.UI;
+using System;
+using System.Collections.Generic;
+using System.Drawing;
+using System.Windows.Forms;
 
 namespace gView.Plugins.MapTools.Controls
 {
@@ -143,9 +139,16 @@ namespace gView.Plugins.MapTools.Controls
         {
             get
             {
-                if (_doc == null && !(_doc.Application is IGUIApplication)) return new List<IDatasetElement>();
+                if (_doc == null && !(_doc.Application is IGUIApplication))
+                {
+                    return new List<IDatasetElement>();
+                }
+
                 QueryThemeCombo queryCombo = ((IGUIApplication)_doc.Application).Tool(new Guid("51A2CF81-E343-4c58-9A42-9207C8DFBC01")) as QueryThemeCombo;
-                if (queryCombo == null) return new List<IDatasetElement>();
+                if (queryCombo == null)
+                {
+                    return new List<IDatasetElement>();
+                }
 
                 return queryCombo.QueryableDatasetElements;
             }
@@ -155,9 +158,16 @@ namespace gView.Plugins.MapTools.Controls
         {
             get
             {
-                if (_doc == null && !(_doc.Application is IGUIApplication)) return IdentifyMode.visible;
+                if (_doc == null && !(_doc.Application is IGUIApplication))
+                {
+                    return IdentifyMode.visible;
+                }
+
                 QueryThemeCombo queryCombo = ((IGUIApplication)_doc.Application).Tool(new Guid("51A2CF81-E343-4c58-9A42-9207C8DFBC01")) as QueryThemeCombo;
-                if (queryCombo == null) return IdentifyMode.visible;
+                if (queryCombo == null)
+                {
+                    return IdentifyMode.visible;
+                }
 
                 return queryCombo.Mode;
             }
@@ -205,7 +215,9 @@ namespace gView.Plugins.MapTools.Controls
         public void ShowResult()
         {
             if (cmbFeatures.Items.Count > 0)
+            {
                 cmbFeatures.SelectedIndex = 0;
+            }
 
             //if (treeObjects.Nodes.Count == 0)
             //{

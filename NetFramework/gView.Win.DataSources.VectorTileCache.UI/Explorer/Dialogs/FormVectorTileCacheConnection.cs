@@ -1,13 +1,6 @@
 ﻿using gView.DataSources.VectorTileCache;
 using gView.Framework.IO;
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace gView.Win.DataSources.VectorTileCache.UI.Explorer.Dialogs
@@ -31,7 +24,7 @@ namespace gView.Win.DataSources.VectorTileCache.UI.Explorer.Dialogs
             set
             {
                 txtCapabilites.Text = ConfigTextStream.ExtractValue(value, "source");
-                txtName.Text= ConfigTextStream.ExtractValue(value, "name");
+                txtName.Text = ConfigTextStream.ExtractValue(value, "name");
             }
         }
 
@@ -47,11 +40,11 @@ namespace gView.Win.DataSources.VectorTileCache.UI.Explorer.Dialogs
 
         async private void btnConnect_Click(object sender, EventArgs e)
         {
-            if(!String.IsNullOrWhiteSpace(txtCapabilites.Text))
+            if (!String.IsNullOrWhiteSpace(txtCapabilites.Text))
             {
                 Dataset dataset = new Dataset();
                 await dataset.SetConnectionString(this.ConnectionString);
-                if(await dataset.Open())
+                if (await dataset.Open())
                 {
                     if (String.IsNullOrWhiteSpace(txtName.Text))
                     {

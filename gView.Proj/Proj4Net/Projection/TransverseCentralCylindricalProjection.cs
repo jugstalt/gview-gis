@@ -1,6 +1,6 @@
-using System;
 using GeoAPI.Geometries;
 using Proj4Net.Utility;
+using System;
 
 namespace Proj4Net.Projection
 {
@@ -35,7 +35,10 @@ namespace Proj4Net.Projection
 
             b = Math.Cos(lpphi) * Math.Sin(lplam);
             if ((bt = 1.0 - b * b) < EPS10)
+            {
                 throw new ProjectionException("F");
+            }
+
             xy.X = b / Math.Sqrt(bt);
             xy.Y = Math.Atan2(Math.Tan(lpphi), Math.Cos(lplam));
             return xy;

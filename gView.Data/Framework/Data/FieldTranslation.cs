@@ -1,7 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Text;
-using gView.Framework.Data;
 
 namespace gView.Framework.Data
 {
@@ -80,7 +78,10 @@ namespace gView.Framework.Data
         {
             foreach (IFieldValue fv in feature.Fields)
             {
-                if (!(fv is FieldValue)) continue;
+                if (!(fv is FieldValue))
+                {
+                    continue;
+                }
 
                 foreach (IField field in _fields.Keys)
                 {
@@ -118,9 +119,20 @@ namespace gView.Framework.Data
 
         static public string CheckName(string fieldname)
         {
-            if (fieldname.ToUpper() == "KEY") return "KEY_";
-            if (fieldname.ToUpper() == "USER") return "USER_";
-            if (fieldname.ToUpper() == "TEXT") return "TEXT_";
+            if (fieldname.ToUpper() == "KEY")
+            {
+                return "KEY_";
+            }
+
+            if (fieldname.ToUpper() == "USER")
+            {
+                return "USER_";
+            }
+
+            if (fieldname.ToUpper() == "TEXT")
+            {
+                return "TEXT_";
+            }
 
             return fieldname.Replace(" ", "");
         }
@@ -134,8 +146,10 @@ namespace gView.Framework.Data
         {
             foreach (IField f in fields.ToEnumerable())
             {
-                if (f.Equals(field)) 
+                if (f.Equals(field))
+                {
                     return fieldname.Substring(0, Math.Min(fieldname.Length, maxLength));
+                }
 
                 if (f.name.Substring(0, Math.Min(f.name.Length, maxLength)).ToLower() ==
                     fieldname.Substring(0, Math.Min(fieldname.Length, maxLength)).ToLower())

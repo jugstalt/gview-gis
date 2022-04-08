@@ -13,9 +13,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-using System;
 using GeoAPI.Geometries;
 using Proj4Net.Utility;
+using System;
 
 namespace Proj4Net.Projection
 {
@@ -43,19 +43,37 @@ namespace Proj4Net.Projection
             lp.Y = xyy / FYC;
             if (Math.Abs(lp.Y) >= 1.0)
             {
-                if (Math.Abs(lp.Y) > ONEEPS) throw new ProjectionException("I");
-                else lp.Y = (lp.Y < 0.0) ? -ProjectionMath.PiHalf : ProjectionMath.PiHalf;
+                if (Math.Abs(lp.Y) > ONEEPS)
+                {
+                    throw new ProjectionException("I");
+                }
+                else
+                {
+                    lp.Y = (lp.Y < 0.0) ? -ProjectionMath.PiHalf : ProjectionMath.PiHalf;
+                }
             }
             else
+            {
                 lp.Y = Math.Asin(lp.Y);
+            }
+
             lp.X = xyx / (FXC * (2.0 * Math.Cos(C23 * (lp.Y *= 3.0)) - 1.0));
             if (Math.Abs(lp.Y = Math.Sin(lp.Y) / CS) >= 1.0)
             {
-                if (Math.Abs(lp.Y) > ONEEPS) throw new ProjectionException("I");
-                else lp.Y = (lp.Y < 0.0) ? -ProjectionMath.PiHalf : ProjectionMath.PiHalf;
+                if (Math.Abs(lp.Y) > ONEEPS)
+                {
+                    throw new ProjectionException("I");
+                }
+                else
+                {
+                    lp.Y = (lp.Y < 0.0) ? -ProjectionMath.PiHalf : ProjectionMath.PiHalf;
+                }
             }
             else
+            {
                 lp.Y = Math.Asin(lp.Y);
+            }
+
             return lp;
         }
 

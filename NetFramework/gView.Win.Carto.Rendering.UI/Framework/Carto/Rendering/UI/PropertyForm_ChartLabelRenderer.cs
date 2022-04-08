@@ -1,15 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Windows.Forms;
-using gView.Framework.Data;
+﻿using gView.Framework.Data;
 using gView.Framework.Geometry;
 using gView.Framework.Symbology;
 using gView.Framework.Symbology.UI;
+using System;
+using System.Windows.Forms;
 
 namespace gView.Framework.Carto.Rendering.UI
 {
@@ -69,7 +63,9 @@ namespace gView.Framework.Carto.Rendering.UI
             _renderer = renderer as ChartLabelRenderer;
             _fc = layer.Class as IFeatureClass;
             if (_renderer == null || _fc == null)
+            {
                 return null;
+            }
 
             InitializeComponent();
 
@@ -104,7 +100,10 @@ namespace gView.Framework.Carto.Rendering.UI
                             break;
                         }
                     }
-                    if (has) continue;
+                    if (has)
+                    {
+                        continue;
+                    }
                 }
 
                 SimpleFillSymbol symbol = (SimpleFillSymbol)RendererFunctions.CreateStandardSymbol(GeometryType.Polygon);
@@ -170,7 +169,7 @@ namespace gView.Framework.Carto.Rendering.UI
             if (symbolsListView1.Items.Count > 0)
             {
                 string[] fieldNames = new string[symbolsListView1.Items.Count];
-                int i=0;
+                int i = 0;
                 foreach (ListViewItem item in symbolsListView1.Items)
                 {
                     fieldNames[i++] = item.Text;
@@ -188,13 +187,17 @@ namespace gView.Framework.Carto.Rendering.UI
             panelMaxValue.Enabled = btnValueOfEquatesToSize.Checked;
 
             if (btnValueOfEquatesToSize.Checked)
+            {
                 _renderer.SizeType = ChartLabelRenderer.sizeType.ValueOfEquatesToSize;
+            }
         }
 
         private void btnConstantSize_CheckedChanged(object sender, EventArgs e)
         {
             if (btnConstantSize.Checked)
+            {
                 _renderer.SizeType = ChartLabelRenderer.sizeType.ConstantSize;
+            }
         }
 
         private void symbolsListView1_OnSymbolChanged(string key, ISymbol symbol)
@@ -205,7 +208,9 @@ namespace gView.Framework.Carto.Rendering.UI
         private void symbolsListView1_OnLabelChanged(ISymbol symbol, int nr, string label)
         {
             if (symbol is ILegendItem)
+            {
                 ((ILegendItem)symbol).LegendLabel = label;
+            }
         }
 
         private void cmbLabelPriority_SelectedIndexChanged(object sender, EventArgs e)

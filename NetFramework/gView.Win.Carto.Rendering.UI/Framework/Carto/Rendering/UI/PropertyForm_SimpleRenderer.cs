@@ -1,15 +1,11 @@
-using System;
-using System.Drawing;
-using System.Collections;
-using System.ComponentModel;
-using System.Windows.Forms;
 using gView.Framework.Data;
-using gView.Framework.Symbology;
-using gView.Framework.UI;
 using gView.Framework.Geometry;
-using gView.Framework.Carto.UI;
+using gView.Framework.Symbology;
 using gView.Framework.Symbology.UI;
 using gView.Win.Carto.Rendering.UI.Framework.Carto.Rendering.Extensions;
+using System;
+using System.Drawing;
+using System.Windows.Forms;
 
 namespace gView.Framework.Carto.Rendering.UI
 {
@@ -170,7 +166,10 @@ namespace gView.Framework.Carto.Rendering.UI
 
         private void btnChooseSymbol_Click(object sender, System.EventArgs e)
         {
-            if (_renderer == null) return;
+            if (_renderer == null)
+            {
+                return;
+            }
 
             if (_renderer is IFeatureRenderer2)
             {
@@ -185,14 +184,20 @@ namespace gView.Framework.Carto.Rendering.UI
 
         private void btnChooseSymbol_Paint(object sender, System.Windows.Forms.PaintEventArgs e)
         {
-            if (_renderer == null) return;
+            if (_renderer == null)
+            {
+                return;
+            }
 
             e.Graphics.DrawSymbol(((IFeatureRenderer2)_renderer).Symbol, new Rectangle(5, 5, btnChooseSymbol.Width - 10, btnChooseSymbol.Height - 10));
         }
 
         private void btnRotation_Click(object sender, EventArgs e)
         {
-            if (_featureClass == null && !(_renderer is SimpleRenderer)) return;
+            if (_featureClass == null && !(_renderer is SimpleRenderer))
+            {
+                return;
+            }
 
             FormRotationType dlg = new FormRotationType(((SimpleRenderer)_renderer).SymbolRotation, _featureClass);
             if (dlg.ShowDialog() == DialogResult.OK)
@@ -228,8 +233,10 @@ namespace gView.Framework.Carto.Rendering.UI
         public object PropertyPanel(IFeatureRenderer renderer, IFeatureLayer layer)
         {
             _renderer = renderer;
-            if(layer!=null)
+            if (layer != null)
+            {
                 _featureClass = layer.FeatureClass;
+            }
 
             InitializeComponent();
 
@@ -238,7 +245,9 @@ namespace gView.Framework.Carto.Rendering.UI
             {
                 if (_featureClass.GeometryType == GeometryType.Point ||
                     _featureClass.GeometryType == GeometryType.Multipoint)
+                {
                     btnRotation.Enabled = true;
+                }
             }
 
             UpdateUI();
@@ -251,13 +260,17 @@ namespace gView.Framework.Carto.Rendering.UI
         private void btnCartoSimple_CheckedChanged(object sender, EventArgs e)
         {
             if (btnCartoSimple.Checked && _renderer is SimpleRenderer)
+            {
                 ((SimpleRenderer)_renderer).CartoMethod = SimpleRenderer.CartographicMethod.Simple;
+            }
         }
 
         private void btnCartoSymbolOrdering_CheckedChanged(object sender, EventArgs e)
         {
             if (btnCartoSymbolOrdering.Checked && _renderer is SimpleRenderer)
+            {
                 ((SimpleRenderer)_renderer).CartoMethod = SimpleRenderer.CartographicMethod.SymbolOrder;
+            }
         }
     }
 }

@@ -7,5 +7,5 @@ namespace gView.Framework.UI
         ICancelTracker CancelTracker { get; }
     }
 
-    
+
 }

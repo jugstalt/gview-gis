@@ -1,16 +1,14 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
+using gView.Framework.Carto.Rendering.UI;
+using gView.Framework.Data;
+using gView.Framework.Geometry;
+using gView.Framework.IO;
+using gView.Framework.Symbology;
 using gView.Framework.system;
 using gView.Framework.UI;
-using gView.Framework.Symbology;
-using gView.Framework.Geometry;
-using gView.Framework.Data;
-using System.Reflection;
-using gView.Framework.IO;
-using gView.Framework.Carto.Rendering.UI;
-using System.Threading.Tasks;
+using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 
 namespace gView.Framework.Carto.Rendering
 {
@@ -40,7 +38,11 @@ namespace gView.Framework.Carto.Rendering
             get { return _valueField; }
             set
             {
-                if (_valueField == value) return;
+                if (_valueField == value)
+                {
+                    return;
+                }
+
                 _valueField = value;
             }
         }
@@ -53,7 +55,10 @@ namespace gView.Framework.Carto.Rendering
                 _defaultSymbol = value;
                 if (_defaultSymbol is ILegendItem)
                 {
-                    if (((ILegendItem)_defaultSymbol).LegendLabel == "") ((ILegendItem)_defaultSymbol).LegendLabel = "all other values";
+                    if (((ILegendItem)_defaultSymbol).LegendLabel == "")
+                    {
+                        ((ILegendItem)_defaultSymbol).LegendLabel = "all other values";
+                    }
                 }
             }
         }
@@ -65,7 +70,10 @@ namespace gView.Framework.Carto.Rendering
 
         public bool AddClass(QuantityClass qClass)
         {
-            if (qClass == null || _quantityClasses.Contains(qClass)) return false;
+            if (qClass == null || _quantityClasses.Contains(qClass))
+            {
+                return false;
+            }
 
             for (int i = 0; i < _quantityClasses.Count; i++)
             {
@@ -85,7 +93,11 @@ namespace gView.Framework.Carto.Rendering
         }
         public bool RemoveClass(QuantityClass qClass)
         {
-            if (!_quantityClasses.Contains(qClass)) return false;
+            if (!_quantityClasses.Contains(qClass))
+            {
+                return false;
+            }
+
             _quantityClasses.Remove(qClass);
             return true;
         }
@@ -102,9 +114,13 @@ namespace gView.Framework.Carto.Rendering
             set
             {
                 if (value == null)
+                {
                     _symbolRotation.RotationFieldName = "";
+                }
                 else
+                {
                     _symbolRotation = value;
+                }
             }
         }
 
@@ -124,7 +140,11 @@ namespace gView.Framework.Carto.Rendering
 
                     foreach (QuantityClass qClass in _quantityClasses)
                     {
-                        if (qClass == null) continue;
+                        if (qClass == null)
+                        {
+                            continue;
+                        }
+
                         if (qClass.Min <= d && qClass.Max >= d)
                         {
                             symbol = qClass.Symbol;
@@ -137,9 +157,16 @@ namespace gView.Framework.Carto.Rendering
                 {
                 }
             }
-            if (found == false) symbol = _defaultSymbol;
+            if (found == false)
+            {
+                symbol = _defaultSymbol;
+            }
 
-            if (symbol == null) return;
+            if (symbol == null)
+            {
+                return;
+            }
+
             if (_symbolRotation.RotationFieldName != "")
             {
                 if (symbol is ISymbolRotation)
@@ -155,7 +182,10 @@ namespace gView.Framework.Carto.Rendering
                     }
                 }
             }
-            if (symbol != null) disp.Draw(symbol, feature.Shape);
+            if (symbol != null)
+            {
+                disp.Draw(symbol, feature.Shape);
+            }
         }
 
         public void StartDrawing(IDisplay display) { }
@@ -166,25 +196,43 @@ namespace gView.Framework.Carto.Rendering
 
         public void PrepareQueryFilter(gView.Framework.Data.IFeatureLayer layer, gView.Framework.Data.IQueryFilter filter)
         {
-            if (layer.FeatureClass == null) return;
+            if (layer.FeatureClass == null)
+            {
+                return;
+            }
 
             if (layer.FeatureClass.FindField(_valueField) != null)
+            {
                 filter.AddField(_valueField);
+            }
 
             if (layer.FeatureClass.FindField(_symbolRotation.RotationFieldName) != null)
+            {
                 filter.AddField(_symbolRotation.RotationFieldName);
+            }
         }
 
         public bool CanRender(gView.Framework.Data.IFeatureLayer layer, IMap map)
         {
-            if (layer == null) return false;
-            if (layer.FeatureClass == null) return false;
+            if (layer == null)
+            {
+                return false;
+            }
+
+            if (layer.FeatureClass == null)
+            {
+                return false;
+            }
             /*
-            if (layer.FeatureClass.GeometryType == geometryType.Unknown ||
-                layer.FeatureClass.GeometryType == geometryType.Network) return false;
-             * */
+if (layer.FeatureClass.GeometryType == geometryType.Unknown ||
+   layer.FeatureClass.GeometryType == geometryType.Network) return false;
+* */
             if (layer.LayerGeometryType == GeometryType.Unknown ||
-                layer.LayerGeometryType == GeometryType.Network) return false;
+                layer.LayerGeometryType == GeometryType.Network)
+            {
+                return false;
+            }
+
             return true;
         }
 
@@ -218,7 +266,9 @@ namespace gView.Framework.Carto.Rendering
         public bool RequireClone()
         {
             if (_defaultSymbol != null && _defaultSymbol.RequireClone())
+            {
                 return true;
+            }
 
             return _quantityClasses?.Where(q => q?.Symbol != null && q.Symbol.RequireClone()).FirstOrDefault() != null;
         }
@@ -251,7 +301,9 @@ namespace gView.Framework.Carto.Rendering
                 foreach (QuantityClass qClass in _quantityClasses)
                 {
                     if (qClass != null)
+                    {
                         stream.Save("qClass", qClass);
+                    }
                 }
             }
         }
@@ -265,11 +317,17 @@ namespace gView.Framework.Carto.Rendering
             QuantityRenderer renderer = new QuantityRenderer();
             renderer._valueField = _valueField;
             if (_defaultSymbol != null)
+            {
                 renderer._defaultSymbol = (ISymbol)_defaultSymbol.Clone(_useRefscale ? options : null);
+            }
 
             foreach (QuantityClass qClass in _quantityClasses)
             {
-                if (qClass == null) continue;
+                if (qClass == null)
+                {
+                    continue;
+                }
+
                 if (qClass.Symbol == null)
                 {
                     renderer._quantityClasses.Add(new QuantityClass(qClass.Min, qClass.Max, null));
@@ -292,7 +350,9 @@ namespace gView.Framework.Carto.Rendering
                 foreach (QuantityClass qClass in _quantityClasses)
                 {
                     if (qClass != null)
+                    {
                         qClass.Release();
+                    }
                 }
             }
             _quantityClasses.Clear();
@@ -313,10 +373,15 @@ namespace gView.Framework.Carto.Rendering
             if (initObject is IFeatureLayer)
             {
                 IFeatureLayer layer = (IFeatureLayer)initObject;
-                if (layer.FeatureClass == null) return null;
+                if (layer.FeatureClass == null)
+                {
+                    return null;
+                }
 
                 if (_defaultSymbol == null)
+                {
                     _defaultSymbol = RendererFunctions.CreateStandardSymbol(layer.LayerGeometryType/*layer.FeatureClass.GeometryType*/);
+                }
 
                 string appPath = System.IO.Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
                 Assembly uiAssembly = Assembly.LoadFrom(appPath + @"/gView.Win.Carto.Rendering.UI.dll");
@@ -350,7 +415,10 @@ namespace gView.Framework.Carto.Rendering
 
         public ILegendItem LegendItem(int index)
         {
-            if (index < 0 || index >= LegendItemCount) return null;
+            if (index < 0 || index >= LegendItemCount)
+            {
+                return null;
+            }
 
             if (index == 0)
             {
@@ -365,11 +433,18 @@ namespace gView.Framework.Carto.Rendering
 
         public void SetSymbol(ILegendItem item, ISymbol symbol)
         {
-            if (item == symbol || item == null) return;
+            if (item == symbol || item == null)
+            {
+                return;
+            }
 
             if (item == _defaultSymbol)
             {
-                if (_defaultSymbol != null) _defaultSymbol.Release();
+                if (_defaultSymbol != null)
+                {
+                    _defaultSymbol.Release();
+                }
+
                 _defaultSymbol = symbol;
             }
             else
@@ -423,9 +498,15 @@ namespace gView.Framework.Carto.Rendering
                 get { return _symbol; }
                 set
                 {
-                    if (_symbol == value) return;
+                    if (_symbol == value)
+                    {
+                        return;
+                    }
+
                     if (_symbol != null)
+                    {
                         _symbol.Release();
+                    }
 
                     _symbol = value;
                 }
@@ -454,7 +535,9 @@ namespace gView.Framework.Carto.Rendering
                 stream.Save("min", _min);
                 stream.Save("max", _max);
                 if (_symbol != null)
+                {
                     stream.Save("symbol", _symbol);
+                }
             }
 
             #endregion
@@ -467,14 +550,16 @@ namespace gView.Framework.Carto.Rendering
         {
             get
             {
-                List<ISymbol> symbols = new List<ISymbol>(new ISymbol[]{_defaultSymbol});
+                List<ISymbol> symbols = new List<ISymbol>(new ISymbol[] { _defaultSymbol });
 
                 if (_quantityClasses != null)
                 {
                     foreach (QuantityClass cls in _quantityClasses)
                     {
                         if (cls != null)
+                        {
                             symbols.Add(cls.Symbol);
+                        }
                     }
                 }
 

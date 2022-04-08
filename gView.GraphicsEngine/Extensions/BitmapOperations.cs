@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Runtime.CompilerServices;
-using System.Text;
 
 namespace gView.GraphicsEngine.Skia
 {
@@ -13,7 +11,7 @@ namespace gView.GraphicsEngine.Skia
             {
                 //var td = DateTime.Now;
 
-                if(bitmapPixelData.PixelFormat == PixelFormat.Gray8)
+                if (bitmapPixelData.PixelFormat == PixelFormat.Gray8)
                 {
                     byte* source = (byte*)bitmapPixelData.Scan0.ToPointer();
                     uint* target = (uint*)targetScan0.ToPointer();

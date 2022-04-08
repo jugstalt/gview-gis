@@ -1,10 +1,8 @@
 ﻿using gView.Framework.Data;
 using gView.Framework.Geometry;
 using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading.Tasks;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace gView.DataSources.VectorTileCache
 {
@@ -16,14 +14,18 @@ namespace gView.DataSources.VectorTileCache
             this.Name = name;
 
             if (dataset.Capabilities == null)
+            {
                 throw new ArgumentException("dataset is not intialized");
+            }
 
             var layer = dataset.Capabilities.VectorLayers
                     .Where(l => name.Equals(l.Id))
                     .FirstOrDefault();
 
             if (layer == null)
+            {
                 throw new Exception($"layer { name } is not included in tile cache capabilities");
+            }
 
             if (dataset.Capabilities.Bounds != null && dataset.Capabilities.Bounds.Length == 4)
             {
@@ -35,13 +37,13 @@ namespace gView.DataSources.VectorTileCache
             }
 
             this.Fields = new Fields();
-            if(layer.Fields!=null)
+            if (layer.Fields != null)
             {
-                foreach(var fieldName in layer.Fields.Keys)
+                foreach (var fieldName in layer.Fields.Keys)
                 {
                     var field = new Field() { name = fieldName };
 
-                    switch(layer.Fields[fieldName]?.ToLower())
+                    switch (layer.Fields[fieldName]?.ToLower())
                     {
                         case "number":
                             field.type = FieldType.Double;

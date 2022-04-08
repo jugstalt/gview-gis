@@ -13,10 +13,10 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-using System;
 using GeoAPI.Geometries;
 using Proj4Net.Datum;
 using Proj4Net.Utility;
+using System;
 
 namespace Proj4Net.Projection
 {
@@ -38,9 +38,9 @@ namespace Proj4Net.Projection
             Initialize();
         }
 
-       /**
-        * Set up a projection suitable for State Place Coordinates.
-        */
+        /**
+         * Set up a projection suitable for State Place Coordinates.
+         */
         public LambertConformalConicProjection(Ellipsoid ellipsoid, double lon_0, double lat_1, double lat_2, double lat_0, double x_0, double y_0)
         {
             Ellipsoid = ellipsoid;
@@ -58,7 +58,9 @@ namespace Proj4Net.Projection
         {
             double rho;
             if (Math.Abs(Math.Abs(y) - ProjectionMath.PiHalf) < 1e-10)
+            {
                 rho = 0.0;
+            }
             else
             {
                 rho = c * (Spherical ?
@@ -84,9 +86,14 @@ namespace Proj4Net.Projection
                     y = -y;
                 }
                 if (Spherical)
+                {
                     coord.Y = 2.0 * Math.Atan(Math.Pow(c / rho, 1.0 / n)) - ProjectionMath.PiHalf;
+                }
                 else
+                {
                     coord.Y = ProjectionMath.Phi2(Math.Pow(rho / c, 1.0 / n), Eccentricity);
+                }
+
                 coord.X = Math.Atan2(x, y) / n;
             }
             else
@@ -104,10 +111,15 @@ namespace Proj4Net.Projection
             Boolean secant;
 
             if (ProjectionLatitude1 == 0)
+            {
                 ProjectionLatitude1 = ProjectionLatitude2 = ProjectionLatitude;
+            }
 
             if (Math.Abs(ProjectionLatitude1 + ProjectionLatitude2) < 1e-10)
+            {
                 throw new ProjectionException();
+            }
+
             n = sinphi = Math.Sin(ProjectionLatitude1);
             cosphi = Math.Cos(ProjectionLatitude1);
             secant = Math.Abs(ProjectionLatitude1 - ProjectionLatitude2) >= 1e-10;
@@ -131,9 +143,12 @@ namespace Proj4Net.Projection
             else
             {
                 if (secant)
+                {
                     n = Math.Log(cosphi / Math.Cos(ProjectionLatitude2)) /
                        Math.Log(Math.Tan(ProjectionMath.PiFourth + .5 * ProjectionLatitude2) /
                        Math.Tan(ProjectionMath.PiFourth + .5 * ProjectionLatitude1));
+                }
+
                 c = cosphi * Math.Pow(Math.Tan(ProjectionMath.PiFourth + .5 * ProjectionLatitude1), n) / n;
                 rho0 = (Math.Abs(Math.Abs(ProjectionLatitude) - ProjectionMath.PiHalf) < 1e-10) ? 0.0 :
                     c * Math.Pow(Math.Tan(ProjectionMath.PiFourth + .5 * ProjectionLatitude), -n);

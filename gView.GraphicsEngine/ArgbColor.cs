@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace gView.GraphicsEngine
 {
@@ -39,7 +37,7 @@ namespace gView.GraphicsEngine
                 B = baseColor.B
             };
         }
-        
+
         public static ArgbColor FromArgb(int red, int green, int blue)
         {
             return new ArgbColor()
@@ -50,7 +48,7 @@ namespace gView.GraphicsEngine
                 B = (byte)blue
             };
         }
-        
+
         public static ArgbColor FromArgb(int alpha, int red, int green, int blue)
         {
             return new ArgbColor()
@@ -72,7 +70,7 @@ namespace gView.GraphicsEngine
 
         public override bool Equals(object obj)
         {
-           if(obj is ArgbColor)
+            if (obj is ArgbColor)
             {
                 return ((ArgbColor)obj).ToArgb() == this.ToArgb();
             }

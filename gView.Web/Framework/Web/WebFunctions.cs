@@ -1,5 +1,7 @@
 using gView.Framework.IO;
 using gView.Framework.system;
+using gView.GraphicsEngine;
+using gView.GraphicsEngine.Abstraction;
 using Newtonsoft.Json;
 using System;
 using System.IO;
@@ -8,9 +10,6 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml;
-using System.Net.Http;
-using gView.GraphicsEngine.Abstraction;
-using gView.GraphicsEngine;
 
 namespace gView.Framework.Web
 {
@@ -103,7 +102,7 @@ namespace gView.Framework.Web
         {
             return DownloadImage(imageUrl, proxy, credentials, String.Empty, String.Empty);
         }
-        public static IBitmap DownloadImage(string imageUrl, IWebProxy proxy, ICredentials credentials, string usr,string pwd)
+        public static IBitmap DownloadImage(string imageUrl, IWebProxy proxy, ICredentials credentials, string usr, string pwd)
         {
             try
             {
@@ -314,9 +313,9 @@ namespace gView.Framework.Web
         {
             return DownloadRaw(url, null, null, null, String.Empty, String.Empty);
         }
-        public static byte[] DownloadRaw(string url,string usr,string pwd)
+        public static byte[] DownloadRaw(string url, string usr, string pwd)
         {
-            return DownloadRaw(url, null, null, null, usr,pwd);
+            return DownloadRaw(url, null, null, null, usr, pwd);
         }
         public static byte[] DownloadRaw(string url, byte[] postBytes, string usr, string pwd)
         {
@@ -500,11 +499,11 @@ namespace gView.Framework.Web
         {
             return HttpSendRequest(url, methode, postBytes, "", "");
         }
-        public static string HttpSendRequest(string url, string methode, byte[] postBytes, string user, string password, int timeout=0)
+        public static string HttpSendRequest(string url, string methode, byte[] postBytes, string user, string password, int timeout = 0)
         {
             return HttpSendRequest(url, methode, postBytes, user, password, Encoding.Default, timeout);
         }
-        public static string HttpSendRequest(string url, string methode, byte[] postBytes, string user, string password, Encoding encoding, int timeout=0)
+        public static string HttpSendRequest(string url, string methode, byte[] postBytes, string user, string password, Encoding encoding, int timeout = 0)
         {
             HttpWebResponse httpResponse;
             int trys = 0;
@@ -886,7 +885,7 @@ namespace gView.Framework.Web
                 _domain = (string)stream.Load("domain", "");
                 _user = (string)stream.Load("user", "");
                 _password = (string)stream.Load("password", "");
-                
+
                 ProxySettings.LoadProxy();
             }
             catch (Exception ex)

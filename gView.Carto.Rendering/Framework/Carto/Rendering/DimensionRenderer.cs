@@ -1,15 +1,12 @@
+using gView.Framework.Carto.Rendering.UI;
+using gView.Framework.Data;
+using gView.Framework.Geometry;
+using gView.Framework.Symbology;
+using gView.Framework.system;
+using gView.Framework.UI;
 using System;
 using System.Collections.Generic;
-using System.Text;
-using gView.Framework.Carto.Rendering;
-using gView.Framework.Geometry;
-using gView.Framework.system;
-using gView.Framework.Symbology;
-using gView.Framework.UI;
-using gView.Framework.Data;
-using gView.Framework.Carto.Rendering.UI;
 using System.Reflection;
-using System.Threading.Tasks;
 
 namespace gView.Framework.Carto.Rendering
 {
@@ -21,7 +18,7 @@ namespace gView.Framework.Carto.Rendering
         private ITextSymbol _textSymbol = null;
         private ILineSymbol _lineSymbol = null;
         private bool _useRefScale = true;
-        private lineCapType _capType=lineCapType.ArrowLine;
+        private lineCapType _capType = lineCapType.ArrowLine;
         private string _format = "0.00";
 
         public DimensionRenderer()
@@ -33,7 +30,11 @@ namespace gView.Framework.Carto.Rendering
 
         internal DimensionRenderer(IDisplay display, DimensionRenderer renderer)
         {
-            if (renderer == null) return;
+            if (renderer == null)
+            {
+                return;
+            }
+
             _useRefScale = renderer._useRefScale;
             _capType = renderer._capType;
 
@@ -56,7 +57,11 @@ namespace gView.Framework.Carto.Rendering
             {
                 if (_textSymbol != value)
                 {
-                    if (_textSymbol != null) _textSymbol.Release();
+                    if (_textSymbol != null)
+                    {
+                        _textSymbol.Release();
+                    }
+
                     _textSymbol = value;
                 }
             }
@@ -69,7 +74,11 @@ namespace gView.Framework.Carto.Rendering
             {
                 if (_lineSymbol != value)
                 {
-                    if (_lineSymbol != null) _lineSymbol.Release();
+                    if (_lineSymbol != null)
+                    {
+                        _lineSymbol.Release();
+                    }
+
                     _lineSymbol = value;
                 }
             }
@@ -92,7 +101,10 @@ namespace gView.Framework.Carto.Rendering
         public void Draw(IDisplay disp, gView.Framework.Data.IFeature feature)
         {
             if (disp == null || disp.mapScale < 1.0 ||
-                feature == null || !(feature.Shape is IPolyline)) return;
+                feature == null || !(feature.Shape is IPolyline))
+            {
+                return;
+            }
 
             IPolyline fpLine = feature.Shape as IPolyline;
 
@@ -104,12 +116,17 @@ namespace gView.Framework.Carto.Rendering
             pLine.AddPath(path);
             double l = 7.0 * disp.mapScale / (disp.dpm);  // [m]
             if (disp.refScale >= 1.0)
+            {
                 l *= disp.refScale / disp.mapScale;
+            }
 
             for (int i = 0; i < fpLine.PathCount; i++)
             {
                 IPath fPath = fpLine[i];
-                if (fPath == null || fPath.PointCount < 2) continue;
+                if (fPath == null || fPath.PointCount < 2)
+                {
+                    continue;
+                }
 
                 path[0].X = fPath[0].X;
                 path[0].Y = fPath[0].Y;
@@ -123,9 +140,13 @@ namespace gView.Framework.Carto.Rendering
 
                     al1 = Math.Atan2(path[1].Y - path[0].Y, path[1].X - path[0].X);
                     if (p < fPath.PointCount - 1)
+                    {
                         al2 = Math.Atan2(fPath[p + 1].Y - path[1].Y, fPath[p + 1].X - path[1].X);
+                    }
                     else
+                    {
                         al2 = al1;
+                    }
 
                     #region LineCapStyle
                     if (_capType == lineCapType.Arrow ||
@@ -145,11 +166,16 @@ namespace gView.Framework.Carto.Rendering
                         if (p == 1 || p != fPath.PointCount - 1)
                         {
                             if (p == 1)
+                            {
                                 disp.Draw(_lineSymbol, CapLine(path[0], l, al1));
+                            }
+
                             disp.Draw(_lineSymbol, CapLine(path[1], l, (al1 + al2) / 2.0));
                         }
                         if (p == fPath.PointCount - 1)
+                        {
                             disp.Draw(_lineSymbol, CapLine(path[1], l, al2));
+                        }
                         #endregion
                     }
 
@@ -159,11 +185,16 @@ namespace gView.Framework.Carto.Rendering
                         if (p == 1 || p != fPath.PointCount - 1)
                         {
                             if (p == 1)
+                            {
                                 disp.Draw(_lineSymbol, CapLine(path[0], l * 0.8, al1 - Math.PI / 4.0));
+                            }
+
                             disp.Draw(_lineSymbol, CapLine(path[1], l * 0.8, (al1 + al2) / 2.0 - Math.PI / 4.0));
                         }
                         if (p == fPath.PointCount - 1)
+                        {
                             disp.Draw(_lineSymbol, CapLine(path[1], l * 0.8, al2 - Math.PI / 4.0));
+                        }
                         #endregion
                     }
 
@@ -171,7 +202,10 @@ namespace gView.Framework.Carto.Rendering
                     {
                         #region Circle
                         if (p == fPath.PointCount - 1)
+                        {
                             disp.Draw(_lineSymbol, Circle(path[1], l * 0.8));
+                        }
+
                         disp.Draw(_lineSymbol, Circle(path[0], l * 0.8));
                         #endregion
                     }
@@ -197,7 +231,7 @@ namespace gView.Framework.Carto.Rendering
 
         public void PrepareQueryFilter(gView.Framework.Data.IFeatureLayer layer, gView.Framework.Data.IQueryFilter filter)
         {
-            
+
         }
 
         public bool CanRender(gView.Framework.Data.IFeatureLayer layer, IMap map)
@@ -277,9 +311,14 @@ namespace gView.Framework.Carto.Rendering
         public void Release()
         {
             if (_lineSymbol != null)
+            {
                 _lineSymbol.Release();
+            }
+
             if (_textSymbol != null)
+            {
                 _textSymbol.Release();
+            }
 
             _lineSymbol = null;
             _textSymbol = null;
@@ -298,7 +337,10 @@ namespace gView.Framework.Carto.Rendering
         {
             if (initObject is IFeatureLayer)
             {
-                if (((IFeatureLayer)initObject).FeatureClass == null) return null;
+                if (((IFeatureLayer)initObject).FeatureClass == null)
+                {
+                    return null;
+                }
 
                 string appPath = System.IO.Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
                 Assembly uiAssembly = Assembly.LoadFrom(appPath + @"/gView.Win.Carto.Rendering.UI.dll");
@@ -345,9 +387,12 @@ namespace gView.Framework.Carto.Rendering
             Path p = new Path();
             pLine.AddPath(p);
 
-            double m=2.0*Math.PI,st=Math.PI/8;
+            double m = 2.0 * Math.PI, st = Math.PI / 8;
             for (double w = 0.0; w < m; w += st)
+            {
                 p.AddPoint(new Point(s.X + l * Math.Cos(w), s.Y + l * Math.Sin(w)));
+            }
+
             p.AddPoint(new Point(p[0]));
 
             return pLine;

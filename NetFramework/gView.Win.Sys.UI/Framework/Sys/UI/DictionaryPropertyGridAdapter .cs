@@ -1,10 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using gView.Framework.Data;
+using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.ComponentModel;
-using gView.Framework.Data;
 
 namespace gView.system.UI
 {
@@ -29,7 +27,9 @@ namespace gView.system.UI
             foreach (FieldValue fv in feature.Fields)
             {
                 if (fields != null && fields.FindField(fv.Name) == null)
+                {
                     continue;
+                }
 
                 _dictionary.Add(fv.Name, feature[fv.Name]);
             }

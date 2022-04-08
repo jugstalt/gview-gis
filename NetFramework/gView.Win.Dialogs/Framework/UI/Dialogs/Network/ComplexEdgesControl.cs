@@ -1,11 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using System.Windows.Forms;
-using gView.Framework.Data;
+﻿using gView.Framework.Data;
 using gView.Framework.FDB;
 using gView.Framework.UI.Controls.Wizard;
 using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace gView.Framework.UI.Dialogs.Network
 {
@@ -19,7 +19,9 @@ namespace gView.Framework.UI.Dialogs.Network
             InitializeComponent();
 
             if (dataset != null)
+            {
                 _database = dataset.Database as IFeatureDatabase3;
+            }
 
             //if (_database == null)
             //    throw new ArgumentException();
@@ -46,7 +48,9 @@ namespace gView.Framework.UI.Dialogs.Network
                     SelectFeatureclassesControl.FcListViewItem item = new SelectFeatureclassesControl.FcListViewItem(fc);
                     int fcId = await _database.GetFeatureClassID(fc.Name);
                     if (fcIds.Contains(fcId))
+                    {
                         item.Checked = true;
+                    }
 
                     lstEdges.Items.Add(item);
                 }
@@ -98,19 +102,25 @@ namespace gView.Framework.UI.Dialogs.Network
             set
             {
                 if (value == null)
+                {
                     return;
+                }
 
                 chkCreateComplexEdges.Checked = value.UserComplexEdges;
 
                 foreach (SelectFeatureclassesControl.FcListViewItem item in lstEdges.Items)
+                {
                     item.Checked = false;
+                }
 
                 foreach (var name in value.ComplexEdgeNames)
                 {
                     foreach (SelectFeatureclassesControl.FcListViewItem item in lstEdges.Items)
                     {
                         if (item.Featureclass.Name == name)
+                        {
                             item.Checked = true;
+                        }
                     }
                 }
             }

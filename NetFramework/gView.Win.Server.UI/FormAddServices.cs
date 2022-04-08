@@ -1,12 +1,8 @@
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Text;
-using System.Windows.Forms;
 using gView.Framework.Carto;
 using gView.Framework.UI.Dialogs;
+using System;
+using System.Collections.Generic;
+using System.Windows.Forms;
 
 namespace gView.MapServer.Lib.UI
 {

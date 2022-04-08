@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace gView.Framework.Azure.Storage
+﻿namespace gView.Framework.Azure.Storage
 {
     public enum QueryComparer
     {

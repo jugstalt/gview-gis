@@ -1,12 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using gView.Framework.Network;
-using gView.Framework.UI;
+﻿using gView.Framework.Data;
+using gView.Framework.Geometry;
 using gView.Framework.Network.Algorthm;
 using gView.Framework.system;
-using gView.Framework.Data;
-using gView.Framework.Geometry;
+using gView.Framework.UI;
+using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace gView.Framework.Network.Tracers
@@ -26,7 +24,9 @@ namespace gView.Framework.Network.Tracers
         public bool CanTrace(NetworkTracerInputCollection input)
         {
             if (input == null)
+            {
                 return false;
+            }
 
             return input.Collect(NetworkTracerInputType.SourceNode).Count == 1;
         }
@@ -34,7 +34,9 @@ namespace gView.Framework.Network.Tracers
         async public Task<NetworkTracerOutputCollection> Trace(INetworkFeatureClass network, NetworkTracerInputCollection input, gView.Framework.system.ICancelTracker cancelTraker)
         {
             if (network == null || !CanTrace(input))
+            {
                 return null;
+            }
 
             GraphTable gt = new GraphTable(network.GraphTableAdapter());
             NetworkSourceInput source = input.Collect(NetworkTracerInputType.SourceNode)[0] as NetworkSourceInput;
@@ -62,17 +64,23 @@ namespace gView.Framework.Network.Tracers
             #region Knoten/Kanten <= Distance
             Dijkstra.Nodes dijkstraNodes = dijkstra.DijkstraNodesWithMaxDistance(_properties.Distance);
             if (dijkstraNodes == null)
+            {
                 return null;
+            }
 
             List<int> edgeIds = new List<int>();
             foreach (Dijkstra.Node dijkstraNode in dijkstraNodes)
             {
                 if (dijkstraNode.EId < 0)
+                {
                     continue;
+                }
 
                 int index = edgeIds.BinarySearch(dijkstraNode.EId);
                 if (index < 0)
+                {
                     edgeIds.Insert(~index, dijkstraNode.EId);
+                }
 
                 if (Math.Abs(dijkstraNode.Dist - _properties.Distance) < double.Epsilon)
                 {
@@ -89,21 +97,29 @@ namespace gView.Framework.Network.Tracers
             {
                 Dijkstra.Node node = dijkstra.DijkstraNodes.ById(cnode.Pre);
                 if (node == null)
+                {
                     continue;
+                }
 
                 IGraphEdge graphEdge = gt.QueryEdge(cnode.EId);
                 if (graphEdge == null)
+                {
                     continue;
+                }
 
                 RowIDFilter filter = new RowIDFilter(String.Empty);
                 filter.IDs.Add(graphEdge.Eid);
                 IFeatureCursor cursor = await network.GetEdgeFeatures(filter);
                 if (cursor == null)
+                {
                     continue;
+                }
 
                 IFeature feature = await cursor.NextFeature();
                 if (feature == null)
+                {
                     continue;
+                }
 
                 IPath path = null;
                 if (cnode.Id != graphEdge.N2 && cnode.Id == graphEdge.N1)

@@ -1,11 +1,10 @@
+using gView.Framework.system;
+using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.IO;
+using System.Text;
 using System.Xml;
-using Microsoft.Win32;
-using System.Reflection;
-using gView.Framework.system;
 
 namespace gView.Framework.Sys.UI
 {
@@ -84,7 +83,9 @@ namespace gView.Framework.Sys.UI
                     if (_Password == license.Attributes["pwd"].Value)
                     {
                         if (license.Attributes["lic"] != null)
+                        {
                             _licName = license.Attributes["lic"].Value;
+                        }
 
                         foreach (XmlNode comp in doc.SelectNodes("License/Components/comp[@name]"))
                         {
@@ -133,7 +134,10 @@ namespace gView.Framework.Sys.UI
                     {
                         foreach (string compName in compNames)
                         {
-                            if (comp == compName) return LicenseTypes.Licensed;
+                            if (comp == compName)
+                            {
+                                return LicenseTypes.Licensed;
+                            }
                         }
                     }
                     return LicenseTypes.Unknown;
@@ -144,7 +148,7 @@ namespace gView.Framework.Sys.UI
                 }
             }
         }
-       
+
         public string BaseString
         {
             get
@@ -295,8 +299,16 @@ namespace gView.Framework.Sys.UI
             for (int i = 0; i < str.Length; i += blocklen)
             {
                 string s = str.Substring(i, Math.Min(str.Length - i, blocklen));
-                if (s.Length == 0) break;
-                if (sb.Length > 0) sb.Append("-");
+                if (s.Length == 0)
+                {
+                    break;
+                }
+
+                if (sb.Length > 0)
+                {
+                    sb.Append("-");
+                }
+
                 sb.Append(s);
             }
             return sb.ToString();
@@ -360,7 +372,10 @@ namespace gView.Framework.Sys.UI
         static public bool OldBaseStringInstalled(bool IfTrueDelete)
         {
             String regBaseString = LoadBaseStringFromRegistry();
-            if (regBaseString == String.Empty) return false;
+            if (regBaseString == String.Empty)
+            {
+                return false;
+            }
 
             if (regBaseString.Equals(MakeBaseString_old("gView")))
             {
@@ -369,7 +384,9 @@ namespace gView.Framework.Sys.UI
                     DeleteLicInfoFromRegistry();
                     FileInfo fi = new FileInfo(SystemVariables.ApplicationDirectory + @"/gView.lic");
                     if (fi.Exists)
+                    {
                         fi.MoveTo(SystemVariables.ApplicationDirectory + @"/gView_old_" + regBaseString + ".lic");
+                    }
                 }
                 return true;
             }
@@ -382,13 +399,18 @@ namespace gView.Framework.Sys.UI
                 string guid = new Guid("7CB0A712-FCC7-478e-A7DB-0C7A9AC3F8CB").ToString();
                 RegistryKey key = Registry.ClassesRoot.OpenSubKey(@"licenses/" + guid, false);
 
-                if (key == null || key.GetValue("m") == null) return true;  // ???
+                if (key == null || key.GetValue("m") == null)
+                {
+                    return true;  // ???
+                }
 
                 string m = (string)key.GetValue("m");
                 key.Close();
 
                 if (m.Equals(Identity.HashPassword(SystemInfo.MashineName)))
+                {
                     return true;
+                }
 
                 if (IfDifferentCreateNew)
                 {
@@ -470,7 +492,9 @@ namespace gView.Framework.Sys.UI
         public bool GenerateFreeCompanyReaderLicense()
         {
             if (!_hasCompanyLicense)
+            {
                 return false;
+            }
 
             MemoryStream ms = new MemoryStream();
             XmlTextWriter xw = new XmlTextWriter(ms, Encoding.ASCII);

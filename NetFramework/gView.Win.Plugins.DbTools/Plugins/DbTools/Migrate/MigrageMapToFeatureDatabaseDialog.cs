@@ -285,7 +285,7 @@ namespace gView.Plugins.DbTools.Migrate
                     if (source != null)
                     {
                         reporter._report.featureMax = await source.CountFeatures();
-                    } 
+                    }
                     ((FDBImport)import).ReportAction += new FDBImport.ReportActionEvent(reporter.FeatureClassImportProgressReporter_ReportAction);
                     ((FDBImport)import).ReportProgress += new FDBImport.ReportProgressEvent(reporter.FeatureClassImportProgressReporter_ReportProgress);
                     ((FDBImport)import).ReportRequest += new FDBImport.ReportRequestEvent(reporter.FeatureClassImportProgressReporter_ReportRequest);
@@ -297,7 +297,7 @@ namespace gView.Plugins.DbTools.Migrate
                     if (source != null)
                     {
                         reporter._report.featureMax = await source.CountFeatures();
-                    } 
+                    }
                     ((FeatureImport)import).ReportAction += new FeatureImport.ReportActionEvent(reporter.import_ReportAction);
                     ((FeatureImport)import).ReportProgress += new FeatureImport.ReportProgressEvent(reporter.import_ReportProgress);
                     ((FeatureImport)import).ReportRequest += new FeatureImport.ReportRequestEvent(reporter.import_ReportRequest);

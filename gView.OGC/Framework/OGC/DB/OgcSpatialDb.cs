@@ -1010,8 +1010,8 @@ namespace gView.Framework.OGC.DB
         }
         virtual protected string AddGeometryColumn(string schemaName, string tableName, string colunName, IGeometryDef geomDef, string geomTypeString)
         {
-            string srid = geomDef.SpatialReference != null && geomDef.SpatialReference.EpsgCode > 0 ? 
-                geomDef.SpatialReference.EpsgCode.ToString() : 
+            string srid = geomDef.SpatialReference != null && geomDef.SpatialReference.EpsgCode > 0 ?
+                geomDef.SpatialReference.EpsgCode.ToString() :
                 "-1";
 
             return "SELECT " + DbSchemaPrefix + "AddGeometryColumn ('" + schemaName + "','" + tableName + "','" + colunName + "','" + srid + "','" + geomTypeString + "','2')";
@@ -1175,8 +1175,8 @@ namespace gView.Framework.OGC.DB
             //    where += " AND ";
             //}
 
-            where = String.IsNullOrWhiteSpace(where) ? 
-                filterWhereClause : 
+            where = String.IsNullOrWhiteSpace(where) ?
+                filterWhereClause :
                 where + (String.IsNullOrWhiteSpace(filterWhereClause) ? "" : $" AND ({ filterWhereClause })");
 
             StringBuilder fieldNames = new StringBuilder();

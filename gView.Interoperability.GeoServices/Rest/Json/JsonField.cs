@@ -1,9 +1,6 @@
 ﻿using gView.Framework.Data;
 using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace gView.Interoperability.GeoServices.Rest.Json
 {
@@ -23,7 +20,7 @@ namespace gView.Interoperability.GeoServices.Rest.Json
 
         public FieldType GetFieldType()
         {
-            switch(Type)
+            switch (Type)
             {
                 case "esriFieldTypeOID":
                     return FieldType.ID;
@@ -54,7 +51,7 @@ namespace gView.Interoperability.GeoServices.Rest.Json
 
         static public EsriFieldType ToType(FieldType fieldType)
         {
-            switch(fieldType)
+            switch (fieldType)
             {
                 case FieldType.ID:
                     return EsriFieldType.esriFieldTypeOID;
@@ -112,7 +109,7 @@ namespace gView.Interoperability.GeoServices.Rest.Json
                 {
                     return EsriFieldType.esriFieldTypeDate;
                 }
-                if(type == typeof(byte[]))
+                if (type == typeof(byte[]))
                 {
                     return EsriFieldType.esriFieldTypeBlob;
                 }

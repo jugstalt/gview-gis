@@ -1,11 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-using gView.Framework.Data;
-using System.Reflection;
-using gView.Framework.UI;
-using System.Threading.Tasks;
-
 namespace gView.Interoperability.ArcXML.Dataset
 {
     //[gView.Framework.system.RegisterPlugIn("D7B6835C-2C42-42ca-8E10-8DEA6B03D8E5")]

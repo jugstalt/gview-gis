@@ -1,15 +1,11 @@
-using System;
-using System.IO;
-using System.Collections;
-using System.Collections.Generic;
-using System.Threading;
 using gView.Framework.Data;
-using gView.Framework.Carto;
 using gView.Framework.Geometry;
-using gView.Framework.Symbology;
-using gView.Framework.system;
 using gView.Framework.IO;
+using gView.Framework.system;
 using gView.Framework.UI;
+using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
 
 namespace gView.DataSources.Shape
@@ -20,7 +16,7 @@ namespace gView.DataSources.Shape
         private DualTree _tree;
         private IEnvelope _bounds;
 
-        public CreateSpatialIndexTree(SHPFile file, DualTree tree,IEnvelope bounds)
+        public CreateSpatialIndexTree(SHPFile file, DualTree tree, IEnvelope bounds)
         {
             _file = file;
             _tree = tree;
@@ -50,29 +46,29 @@ namespace gView.DataSources.Shape
         }
     }
 
-	/// <summary>
-	/// Zusammenfassung für ShapeDataset.
-	/// </summary>
+    /// <summary>
+    /// Zusammenfassung für ShapeDataset.
+    /// </summary>
     [UseDatasetNameCase(DatasetNameCase.fieldNamesUpper)]
     [MaximumFieldnameLength(10)]
     [gView.Framework.system.RegisterPlugIn("80F48262-D412-41fb-BF43-2D611A2ABF42")]
     public class ShapeDataset : DatasetMetadata, IFeatureDataset
-	{
-		private string _connectionString="",_errMsg="";
-		private IntPtr _hTree=(IntPtr)null;
-		private double _minX=0.0,_minY=0.0,_maxX=0.0,_maxY=0.0;
-		private List<IDatasetElement> _elements;
+    {
+        private string _connectionString = "", _errMsg = "";
+        private IntPtr _hTree = (IntPtr)null;
+        private double _minX = 0.0, _minY = 0.0, _maxX = 0.0, _maxY = 0.0;
+        private List<IDatasetElement> _elements;
         private bool _useGUI = gView.Framework.system.gViewEnvironment.UserInteractive;
         private DatasetState _state = DatasetState.unknown;
         ShapeDatabase _database = new ShapeDatabase();
 
-		public ShapeDataset()
-		{
-			_elements=new List<IDatasetElement>();
-		}
+        public ShapeDataset()
+        {
+            _elements = new List<IDatasetElement>();
+        }
 
-		public void Dispose() 
-		{
+        public void Dispose()
+        {
             foreach (IDatasetElement element in _elements)
             {
                 if (element.Class is IDisposable)
@@ -81,7 +77,7 @@ namespace gView.DataSources.Shape
                 }
             }
             _elements.Clear();
-		}
+        }
 
         public bool useGUI
         {
@@ -89,28 +85,28 @@ namespace gView.DataSources.Shape
             get { return _useGUI; }
         }
 
-		#region IFeatureDataset Member
+        #region IFeatureDataset Member
 
-		public bool renderImage(gView.Framework.Carto.IDisplay display)
-		{
-			return false;
-		}
+        public bool renderImage(gView.Framework.Carto.IDisplay display)
+        {
+            return false;
+        }
 
-		public System.Drawing.Image Bitmap
-		{
-			get
-			{
-				return null;
-			}
-		}
+        public System.Drawing.Image Bitmap
+        {
+            get
+            {
+                return null;
+            }
+        }
 
-		public bool canRenderImage
-		{
-			get
-			{
-				return false;
-			}
-		}
+        public bool canRenderImage
+        {
+            get
+            {
+                return false;
+            }
+        }
 
         public Task<IEnvelope> Envelope()
         {
@@ -118,54 +114,54 @@ namespace gView.DataSources.Shape
             return Task.FromResult<IEnvelope>(new Envelope(_minX, _minY, _maxX, _maxY));
         }
 
-		public bool renderLayer(gView.Framework.Carto.IDisplay display, ILayer layer)
-		{
-			return false;
-		}
+        public bool renderLayer(gView.Framework.Carto.IDisplay display, ILayer layer)
+        {
+            return false;
+        }
 
-		public Task<ISpatialReference> GetSpatialReference()
-		{
+        public Task<ISpatialReference> GetSpatialReference()
+        {
             return Task.FromResult<ISpatialReference>(null);
-		}
+        }
         public void SetSpatialReference(ISpatialReference sRef) { }
 
-		#endregion
+        #endregion
 
-		#region IDataset Member
+        #region IDataset Member
 
-		public string Query_FieldPostfix
-		{
-			get
-			{
-				return "";
-			}
-		}
+        public string Query_FieldPostfix
+        {
+            get
+            {
+                return "";
+            }
+        }
 
-		public string Query_FieldPrefix
-		{
-			get
-			{
-				return "";
-			}
-		}
+        public string Query_FieldPrefix
+        {
+            get
+            {
+                return "";
+            }
+        }
 
-		public IDatasetEnum DatasetEnum
-		{
-			get
-			{
-				return /*new FormAddShapefile()*/ null;
-			}
-		}
+        public IDatasetEnum DatasetEnum
+        {
+            get
+            {
+                return /*new FormAddShapefile()*/ null;
+            }
+        }
 
-		public string DatasetName
-		{
-			get
-			{
-				return "ESRI Shapefile";
-			}
-		}
+        public string DatasetName
+        {
+            get
+            {
+                return "ESRI Shapefile";
+            }
+        }
 
-		public string ConnectionString
+        public string ConnectionString
         {
             get
             {
@@ -179,7 +175,7 @@ namespace gView.DataSources.Shape
 
             return Task.FromResult(true);
         }
-		
+
 
         /*
         public bool DeleteSpatialIndex()
@@ -203,8 +199,8 @@ namespace gView.DataSources.Shape
             get { return _state; }
         }
 
-		public Task<bool> Open()
-		{
+        public Task<bool> Open()
+        {
             /*
 			_file=new SHPFile(_connectionString);
             
@@ -258,15 +254,15 @@ namespace gView.DataSources.Shape
             */
 
             _state = DatasetState.opened;
-			return Task.FromResult(true);
-		}
+            return Task.FromResult(true);
+        }
 
-		public string LastErrorMessage
-		{
-			get
-			{
-				return _errMsg;
-			}
+        public string LastErrorMessage
+        {
+            get
+            {
+                return _errMsg;
+            }
             set { _errMsg = value; }
         }
 
@@ -274,23 +270,23 @@ namespace gView.DataSources.Shape
         {
             return Task.FromResult(_elements);
         }
-		
 
-		public string DatasetGroupName
-		{
-			get
-			{
-				return "Shape";
-			}
-		}
 
-		public string ProviderName
-		{
-			get
-			{
-				return "Shapefile";
-			}
-		}
+        public string DatasetGroupName
+        {
+            get
+            {
+                return "Shape";
+            }
+        }
+
+        public string ProviderName
+        {
+            get
+            {
+                return "Shapefile";
+            }
+        }
 
         public gView.Framework.FDB.IDatabase Database
         {
@@ -304,9 +300,15 @@ namespace gView.DataSources.Shape
         {
             foreach (IDatasetElement element in _elements)
             {
-                if (element == null) continue;
+                if (element == null)
+                {
+                    continue;
+                }
+
                 if (element.Title == title)
+                {
                     return element;
+                }
             }
             try
             {
@@ -340,7 +342,9 @@ namespace gView.DataSources.Shape
                             progress.ShowProgressDialog(tree, creator.Create());
                         }
                         else
+                        {
                             await creator.Create();
+                        }
                     }
                     else
                     {
@@ -368,7 +372,7 @@ namespace gView.DataSources.Shape
         async public Task RefreshClasses()
         {
         }
-		#endregion
+        #endregion
 
         #region IPersistableLoadAsync Member
 

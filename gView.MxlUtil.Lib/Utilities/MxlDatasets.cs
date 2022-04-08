@@ -112,7 +112,7 @@ Optional arguments:
 
             var map = doc.Maps.FirstOrDefault() as Map;
 
-            if(map.HasErrorMessages)
+            if (map.HasErrorMessages)
             {
                 throw new Exception($"Can't load source mxl { inFile }:{ Environment.NewLine }{ String.Join('\n', map.ErrorMessages) }");
             }
@@ -132,7 +132,7 @@ Optional arguments:
                     throw new Exception($"Unkown command: { command }");
             }
 
-            if(saveOutput)
+            if (saveOutput)
             {
                 stream = new XmlStream("");
                 stream.Save("MapDocument", doc);
@@ -166,7 +166,7 @@ Optional arguments:
                     Console.WriteLine($"{ key }={ ConfigTextStream.SecureConfigValue(key, connectionParameters[key]) }");
                 }
 
-                if(!String.IsNullOrEmpty(dataset.LastErrorMessage))
+                if (!String.IsNullOrEmpty(dataset.LastErrorMessage))
                 {
                     Console.WriteLine(Environment.NewLine);
                     Console.WriteLine("Errors:");

@@ -1,18 +1,14 @@
+using gView.Framework.Data;
+using gView.Framework.FDB;
+using gView.Framework.Geometry;
+using gView.Framework.system;
+using gView.Framework.UI;
+using gView.Framework.UI.Controls.Filter;
+using gView.Framework.UI.Dialogs;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Drawing;
-using System.Data;
-using System.Text;
-using System.Windows.Forms;
-using gView.Framework.UI;
-using gView.Framework.Data;
-using gView.Framework.Geometry;
-using gView.Framework.UI.Dialogs;
-using gView.Framework.FDB;
-using gView.Framework.system;
-using gView.Framework.UI.Controls.Filter;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace gView.DataSources.Fdb.UI
 {
@@ -35,7 +31,7 @@ namespace gView.DataSources.Fdb.UI
 
         public void OnCreate(object hook)
         {
-            
+
         }
 
         async public Task<bool> OnShow()
@@ -45,12 +41,16 @@ namespace gView.DataSources.Fdb.UI
             var instance = await _exObject.GetInstanceAsync();
 
             if (!(instance is IFeatureClass))
+            {
                 return false;
+            }
 
             IFeatureClass fc = (IFeatureClass)instance;
 
             if (fc.Fields == null)
+            {
                 return false;
+            }
 
             foreach (IField field in fc.Fields.ToEnumerable())
             {
@@ -85,7 +85,7 @@ namespace gView.DataSources.Fdb.UI
 
         public void OnHide()
         {
-            
+
         }
 
         public IExplorerObject GetExplorerObject()
@@ -107,7 +107,9 @@ namespace gView.DataSources.Fdb.UI
         public Task<bool> ShowWith(IExplorerObject exObject)
         {
             if (exObject == null)
+            {
                 return Task.FromResult(false);
+            }
             //return exObject.Object is IFeatureClass;
             return Task.FromResult(TypeHelper.Match(exObject.ObjectType, typeof(IFeatureClass)));
         }
@@ -136,20 +138,27 @@ namespace gView.DataSources.Fdb.UI
         ListViewItem _contextItem = null;
         private void listView1_Click(object sender, EventArgs e)
         {
-            ShowContextMenu();   
+            ShowContextMenu();
         }
 
         private void listView1_MouseDown(object sender, MouseEventArgs e)
         {
             _button = e.Button;
-            if (listView1.GetItemAt(_mx, _my) != null) return;
+            if (listView1.GetItemAt(_mx, _my) != null)
+            {
+                return;
+            }
 
             ShowContextMenu();
         }
 
         private void ShowContextMenu()
         {
-            if (_button != MouseButtons.Right) return;
+            if (_button != MouseButtons.Right)
+            {
+                return;
+            }
+
             _contextItem = listView1.GetItemAt(_mx, _my);
 
             contextItem_AddField.Visible =
@@ -206,11 +215,14 @@ namespace gView.DataSources.Fdb.UI
             }
 
             var tableClass = await _exObject?.GetInstanceAsync() as ITableClass;
-            if (tableClass==null) return;
+            if (tableClass == null)
+            {
+                return;
+            }
 
-            List<ExplorerDialogFilter> filters=new List<ExplorerDialogFilter>();
+            List<ExplorerDialogFilter> filters = new List<ExplorerDialogFilter>();
             filters.Add(new OpenFeatureclassFilter());
-            
+
             ExplorerDialog dlg = new ExplorerDialog("Open Featureclass", filters, true);
             dlg.MulitSelection = false;
 
@@ -252,7 +264,11 @@ namespace gView.DataSources.Fdb.UI
 
             foreach (ListViewItem item in listView1.SelectedItems)
             {
-                if (!(item is FieldListViewItem)) continue;
+                if (!(item is FieldListViewItem))
+                {
+                    continue;
+                }
+
                 Field oField = ((FieldListViewItem)item).Field;
 
                 if (!await alterTable.AlterTable(_exObject.Name, oField, null))
@@ -266,10 +282,10 @@ namespace gView.DataSources.Fdb.UI
 
         async private void contextItem_Properties_Click(object sender, EventArgs e)
         {
-            
+
             if (_contextItem is FieldListViewItem)
             {
-                Field oField=((FieldListViewItem)_contextItem).Field;
+                Field oField = ((FieldListViewItem)_contextItem).Field;
                 FormPropertyGrid dlg = new FormPropertyGrid(
                     new Field(oField));
 
@@ -300,11 +316,20 @@ namespace gView.DataSources.Fdb.UI
         async private Task<gView.Framework.FDB.IAltertable> GetAlterTable()
         {
             var tc = await _exObject?.GetInstanceAsync() as ITableClass;
-            if (_exObject == null) return null;
-            if (tc==null)
+            if (_exObject == null)
+            {
                 return null;
+            }
 
-            if (tc.Dataset == null || tc.Dataset.Database == null) return null;
+            if (tc == null)
+            {
+                return null;
+            }
+
+            if (tc.Dataset == null || tc.Dataset.Database == null)
+            {
+                return null;
+            }
 
             return tc.Dataset.Database as gView.Framework.FDB.IAltertable;
         }
@@ -314,10 +339,13 @@ namespace gView.DataSources.Fdb.UI
     {
         private Field _field;
 
-        public FieldListViewItem(Field field,int iIndex) 
+        public FieldListViewItem(Field field, int iIndex)
         {
             _field = field;
-            if (_field == null) return;
+            if (_field == null)
+            {
+                return;
+            }
 
             this.Text = field.name;
             this.SubItems.Add(field.aliasname);

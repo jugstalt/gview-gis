@@ -1,11 +1,6 @@
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Text;
-using System.Windows.Forms;
 using gView.Framework.Data;
+using System.Collections.Generic;
+using System.Windows.Forms;
 
 namespace gView.DataSources.Fdb.UI
 {
@@ -15,12 +10,19 @@ namespace gView.DataSources.Fdb.UI
         {
             InitializeComponent();
 
-            if (fields == null) return;
+            if (fields == null)
+            {
+                return;
+            }
 
             foreach (IField field in fields)
             {
-                if (field == null || 
-                    field.type==FieldType.ID ||field.type==FieldType.Shape) continue;
+                if (field == null ||
+                    field.type == FieldType.ID || field.type == FieldType.Shape)
+                {
+                    continue;
+                }
+
                 lstBox.Items.Add(new FieldItem(field), true);
             }
         }
@@ -29,14 +31,21 @@ namespace gView.DataSources.Fdb.UI
         {
             InitializeComponent();
 
-            if (tcFrom == null || tcTo == null || 
-                tcFrom.Fields == null || tcTo.Fields == null) return;
+            if (tcFrom == null || tcTo == null ||
+                tcFrom.Fields == null || tcTo.Fields == null)
+            {
+                return;
+            }
 
             foreach (IField field in tcFrom.Fields.ToEnumerable())
             {
                 if (field == null ||
                     field.type == FieldType.ID || field.type == FieldType.Shape ||
-                    tcTo.FindField(field.name) != null) continue;
+                    tcTo.FindField(field.name) != null)
+                {
+                    continue;
+                }
+
                 lstBox.Items.Add(new FieldItem(field), true);
             }
         }
@@ -55,7 +64,7 @@ namespace gView.DataSources.Fdb.UI
         }
         private class FieldItem
         {
-            private IField _field=null;
+            private IField _field = null;
             public FieldItem(IField field)
             {
                 _field = field;

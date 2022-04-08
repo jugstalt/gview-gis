@@ -14,9 +14,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-using System;
 using GeoAPI.Geometries;
 using Proj4Net.Utility;
+using System;
 
 namespace Proj4Net.Projection
 {
@@ -48,36 +48,36 @@ namespace Proj4Net.Projection
 
             phi0 = _projectionLatitude;
 
-            hlf_e = 0.5*_e;
+            hlf_e = 0.5 * _e;
             cp = Math.Cos(phi0);
             cp *= cp;
-            c = Math.Sqrt(1 + _es*cp*cp*_roneEs);
+            c = Math.Sqrt(1 + _es * cp * cp * _roneEs);
             sp = Math.Sin(phi0);
-            cosp0 = Math.Cos(phip0 = Math.Asin(sinp0 = sp/c));
+            cosp0 = Math.Cos(phip0 = Math.Asin(sinp0 = sp / c));
             sp *= _e;
-            K = Math.Log(Math.Tan(ProjectionMath.PiFourth + 0.5*phip0)) - c*(
+            K = Math.Log(Math.Tan(ProjectionMath.PiFourth + 0.5 * phip0)) - c * (
                                                                                 Math.Log(
                                                                                     Math.Tan(ProjectionMath.PiFourth +
-                                                                                             0.5*phi0)) - hlf_e*
-                                                                                Math.Log((1.0 + sp)/(1.0 - sp)));
-            kR = _scaleFactor*Math.Sqrt(_oneEs)/(1.0 - sp*sp);
+                                                                                             0.5 * phi0)) - hlf_e *
+                                                                                Math.Log((1.0 + sp) / (1.0 - sp)));
+            kR = _scaleFactor * Math.Sqrt(_oneEs) / (1.0 - sp * sp);
         }
 
         public override Coordinate Project(double lplam, double lpphi, Coordinate xy)
         {
             double phip, lamp, phipp, lampp, sp, cp;
 
-            sp = _e*Math.Sin(lpphi);
-            phip = 2.0*Math.Atan(Math.Exp(c*(
-                                                Math.Log(Math.Tan(ProjectionMath.PiFourth + 0.5*lpphi)) -
-                                                hlf_e*Math.Log((1.0 + sp)/(1.0 - sp)))
+            sp = _e * Math.Sin(lpphi);
+            phip = 2.0 * Math.Atan(Math.Exp(c * (
+                                                Math.Log(Math.Tan(ProjectionMath.PiFourth + 0.5 * lpphi)) -
+                                                hlf_e * Math.Log((1.0 + sp) / (1.0 - sp)))
                                           + K)) - ProjectionMath.PiHalf;
-            lamp = c*lplam;
+            lamp = c * lplam;
             cp = Math.Cos(phip);
-            phipp = Math.Asin(cosp0*Math.Sin(phip) - sinp0*cp*Math.Cos(lamp));
-            lampp = Math.Asin(cp*Math.Sin(lamp)/Math.Cos(phipp));
-            xy.X = kR*lampp;
-            xy.Y = kR*Math.Log(Math.Tan(ProjectionMath.PiFourth + 0.5*phipp));
+            phipp = Math.Asin(cosp0 * Math.Sin(phip) - sinp0 * cp * Math.Cos(lamp));
+            lampp = Math.Asin(cp * Math.Sin(lamp) / Math.Cos(phipp));
+            xy.X = kR * lampp;
+            xy.Y = kR * Math.Log(Math.Tan(ProjectionMath.PiFourth + 0.5 * phipp));
             return xy;
         }
 
@@ -87,26 +87,28 @@ namespace Proj4Net.Projection
             int i;
             double lplam, lpphi;
 
-            phipp = 2.0*(Math.Atan(Math.Exp(xyy/kR)) - ProjectionMath.PiFourth);
-            lampp = xyx/kR;
+            phipp = 2.0 * (Math.Atan(Math.Exp(xyy / kR)) - ProjectionMath.PiFourth);
+            lampp = xyx / kR;
             cp = Math.Cos(phipp);
-            phip = Math.Asin(cosp0*Math.Sin(phipp) + sinp0*cp*Math.Cos(lampp));
-            lamp = Math.Asin(cp*Math.Sin(lampp)/Math.Cos(phip));
-            con = (K - Math.Log(Math.Tan(ProjectionMath.PiFourth + 0.5*phip)))/c;
+            phip = Math.Asin(cosp0 * Math.Sin(phipp) + sinp0 * cp * Math.Cos(lampp));
+            lamp = Math.Asin(cp * Math.Sin(lampp) / Math.Cos(phip));
+            con = (K - Math.Log(Math.Tan(ProjectionMath.PiFourth + 0.5 * phip))) / c;
             for (i = NITER; i != 0; --i)
             {
-                esp = _e*Math.Sin(phip);
-                delp = (con + Math.Log(Math.Tan(ProjectionMath.PiFourth + 0.5*phip)) - hlf_e*
-                        Math.Log((1.0 + esp)/(1.0 - esp)))*
-                       (1.0 - esp*esp)*Math.Cos(phip)*_roneEs;
+                esp = _e * Math.Sin(phip);
+                delp = (con + Math.Log(Math.Tan(ProjectionMath.PiFourth + 0.5 * phip)) - hlf_e *
+                        Math.Log((1.0 + esp) / (1.0 - esp))) *
+                       (1.0 - esp * esp) * Math.Cos(phip) * _roneEs;
                 phip -= delp;
                 if (Math.Abs(delp) < ProjectionMath.EPS10)
+                {
                     break;
+                }
             }
             if (i != 0)
             {
                 lpphi = phip;
-                lplam = lamp/c;
+                lplam = lamp / c;
             }
             else
             {

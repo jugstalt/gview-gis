@@ -1,14 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Text;
-using System.Windows.Forms;
-using gView.Framework.UI;
+﻿using gView.Framework.Network;
 using gView.Framework.Network.Algorthm;
-using gView.Framework.Network;
+using gView.Framework.UI;
+using System;
+using System.Collections.Generic;
+using System.Drawing;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace gView.Plugins.Network
 {
@@ -64,7 +61,9 @@ namespace gView.Plugins.Network
             foreach (RoadBook.Item item in items)
             {
                 if (item.Feature == null)
+                {
                     continue;
+                }
 
                 List<string> tags = new List<string>();
                 tags.Add(Math.Round(item.Distance, 2).ToString());
@@ -73,9 +72,13 @@ namespace gView.Plugins.Network
                 {
                     object obj = item.Feature[lstItems.Columns[i].Text];
                     if (obj == null)
+                    {
                         tags.Add(String.Empty);
+                    }
                     else
+                    {
                         tags.Add(obj.ToString());
+                    }
                 }
                 lstItems.Items.Add(new ListViewItem(tags.ToArray()));
             }

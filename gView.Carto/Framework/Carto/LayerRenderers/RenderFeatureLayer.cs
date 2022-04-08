@@ -18,7 +18,7 @@ namespace gView.Framework.Carto.LayerRenderers
         private FeatureCounter _counter;
         private bool _isServiceMap = false;
 
-        public RenderFeatureLayer(Map map, IDatasetCachingContext datasetCachingContext , IFeatureLayer layer, ICancelTracker cancelTracker, FeatureCounter counter)
+        public RenderFeatureLayer(Map map, IDatasetCachingContext datasetCachingContext, IFeatureLayer layer, ICancelTracker cancelTracker, FeatureCounter counter)
         {
             _map = map;
             _datasetCachingContext = datasetCachingContext;
@@ -106,7 +106,7 @@ namespace gView.Framework.Carto.LayerRenderers
             ILabelRenderer clonedLabelRenderer = null;
 
             GraphicsEngine.Abstraction.IBitmap compositionModeCopyBitmap = null;
-            GraphicsEngine.Abstraction.ICanvas compositionModeCopyCanvas= null, originalCanvas = null;
+            GraphicsEngine.Abstraction.ICanvas compositionModeCopyCanvas = null, originalCanvas = null;
 
             try
             {

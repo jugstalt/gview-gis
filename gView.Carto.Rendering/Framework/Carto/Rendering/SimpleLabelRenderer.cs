@@ -8,7 +8,6 @@ using gView.GraphicsEngine.Abstraction;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
-using System.Text;
 
 namespace gView.Framework.Carto.Rendering
 {
@@ -260,7 +259,7 @@ namespace gView.Framework.Carto.Rendering
             }
             if (_useExpression)
             {
-                if(SimpleScriptInterpreter.IsSimpleScript(expr))
+                if (SimpleScriptInterpreter.IsSimpleScript(expr))
                 {
                     expr = new SimpleScriptInterpreter(expr).Interpret();
                 }
@@ -519,7 +518,7 @@ namespace gView.Framework.Carto.Rendering
                                 found = true;
                                 break;
                             default:
-                                for (int iPoint = 0, iPointTo= path.PointCount-1; iPoint < iPointTo; iPoint++)
+                                for (int iPoint = 0, iPointTo = path.PointCount - 1; iPoint < iPointTo; iPoint++)
                                 {
                                     IPoint p1 = path[iPoint];
                                     IPoint p2 = path[iPoint + 1];
@@ -541,7 +540,7 @@ namespace gView.Framework.Carto.Rendering
                                 break;
                         }
 
-                        if(found)
+                        if (found)
                         {
                             break;
                         }
@@ -573,7 +572,7 @@ namespace gView.Framework.Carto.Rendering
 
         #endregion
 
-        private const int MaxPolygonTotalPointCount= 10000;  // Labelling is too expensive for complex polygons
+        private const int MaxPolygonTotalPointCount = 10000;  // Labelling is too expensive for complex polygons
         private bool LabelPolygon(IDisplay disp, IPolygon polygon)
         {
             //var center = new MultiPoint();
@@ -591,8 +590,8 @@ namespace gView.Framework.Carto.Rendering
                     // Wichtig bei Flächen mit sehr vielen Vertices... Bundesländer, Länder Thema kann sonst beim Clippen abstürzen
                     //if (polygon.TotalPointCount > MaxPolygonTotalPointCount)
                     //{
-                        //polygon = SpatialAlgorithms.Algorithm.SnapOutsidePointsToEnvelope(polygon, env);
-                        //polygon = (IPolygon)SpatialAlgorithms.Algorithm.Generalize(polygon, tolerance);
+                    //polygon = SpatialAlgorithms.Algorithm.SnapOutsidePointsToEnvelope(polygon, env);
+                    //polygon = (IPolygon)SpatialAlgorithms.Algorithm.Generalize(polygon, tolerance);
                     //}
                     // For testing polygons with many vertices an clipping
                     // polygon = (IPolygon)SpatialAlgorithms.Algorithm.InterpolatePoints(polygon, 2, true);

@@ -1,8 +1,6 @@
 ﻿using gView.Framework.Data;
 using gView.Framework.FDB;
 using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace gView.DataSources.Fdb
@@ -40,7 +38,9 @@ namespace gView.DataSources.Fdb
         async public Task<IFeatureCursor> GetFeatures(IQueryFilter filter)
         {
             if (_fc == null)
+            {
                 return null;
+            }
 
             return await _fc.GetFeatures(filter);
         }
@@ -52,7 +52,9 @@ namespace gView.DataSources.Fdb
         async public Task<ICursor> Search(IQueryFilter filter)
         {
             if (_fc == null)
+            {
                 return null;
+            }
 
             return await _fc.Search(filter);
         }
@@ -60,7 +62,9 @@ namespace gView.DataSources.Fdb
         async public Task<ISelectionSet> Select(IQueryFilter filter)
         {
             if (_fc == null)
+            {
                 return null;
+            }
 
             return await Select(filter);
         }
@@ -133,7 +137,9 @@ namespace gView.DataSources.Fdb
         public string TableName(string tableName)
         {
             if (_fc == null || _fc.Dataset == null || !(_fc.Dataset.Database is IDatabaseNames))
+            {
                 return tableName;
+            }
 
             return ((IDatabaseNames)_fc.Dataset.Database).TableName(tableName);
         }
@@ -141,7 +147,9 @@ namespace gView.DataSources.Fdb
         public string DbColName(string fieldName)
         {
             if (_fc == null || _fc.Dataset == null || !(_fc.Dataset.Database is IDatabaseNames))
+            {
                 return fieldName;
+            }
 
             return ((IDatabaseNames)_fc.Dataset.Database).DbColName(fieldName);
         }

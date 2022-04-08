@@ -106,7 +106,9 @@ namespace gView.Server.AppCode
             var environmentVariables = Environment.GetEnvironmentVariables();
 
             if (environmentVariables.Contains(name) && !String.IsNullOrWhiteSpace(environmentVariables[name]?.ToString()))
+            {
                 return environmentVariables[name]?.ToString();
+            }
 
             return null;
         }

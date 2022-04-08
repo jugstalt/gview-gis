@@ -1,8 +1,8 @@
-﻿using System;
+﻿using gView.Core.Framework.Exceptions;
 using gView.Framework.Carto;
 using gView.Framework.IO;
+using System;
 using System.Threading.Tasks;
-using gView.Core.Framework.Exceptions;
 
 namespace gView.MapServer
 {
@@ -27,7 +27,9 @@ namespace gView.MapServer
             {
                 var mapService = mapServer?.GetMapService(request?.Service, request?.Folder);
                 if (mapService == null)
+                {
                     throw new MapServerException("Unknown service");
+                }
 
                 await mapService.CheckAccess(context);
             }
@@ -55,7 +57,7 @@ namespace gView.MapServer
         async public Task<IServiceMap> CreateServiceMapInstance()
         {
             var serviceMap = await _mapServer?.GetServiceMapAsync(this);
-            if(serviceMap == null)
+            if (serviceMap == null)
             {
                 throw new MapServerException($"Unable to load service { _request.Folder }/{ _request.Service }: Check error log for details");
             }

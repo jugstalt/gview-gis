@@ -1,14 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace gView.GraphicsEngine.GdiPlus.Extensions
+﻿namespace gView.GraphicsEngine.GdiPlus.Extensions
 {
     static class SmothingModeExtensions
     {
         public static System.Drawing.Drawing2D.SmoothingMode ToGdiSmoothingMode(this SmoothingMode mode)
         {
-            switch(mode)
+            switch (mode)
             {
                 case SmoothingMode.AntiAlias:
                     return System.Drawing.Drawing2D.SmoothingMode.AntiAlias;

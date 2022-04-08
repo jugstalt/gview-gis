@@ -3,9 +3,7 @@ using gView.Framework.Data;
 using gView.Framework.IO;
 using gView.Framework.UI;
 using System;
-using System.Data;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace gView.Framework.system
@@ -42,10 +40,14 @@ namespace gView.Framework.system
         static public void AddConnectionStringParameter(this StringBuilder sb, string parameter, string value)
         {
             if (String.IsNullOrEmpty(parameter) || String.IsNullOrEmpty(value))
+            {
                 return;
+            }
 
             if (sb.Length > 0)
+            {
                 sb.Append(";");
+            }
 
             sb.Append($"{ parameter.Trim() }={ value?.Trim() }");
         }
@@ -192,7 +194,7 @@ namespace gView.Framework.system
 
         static public void TemporaryRestore(this IMapDocument doc)
         {
-            if(doc is IPersistableTemporaryRestore)
+            if (doc is IPersistableTemporaryRestore)
             {
                 ((IPersistableTemporaryRestore)doc).TemporaryRestore();
             }
@@ -204,7 +206,7 @@ namespace gView.Framework.system
 
         static public DateTime ToUTC(this DateTime dt)
         {
-            switch(dt.Kind)
+            switch (dt.Kind)
             {
                 case DateTimeKind.Unspecified:
                     dt = new DateTime(dt.Ticks, DateTimeKind.Local);
@@ -238,7 +240,7 @@ namespace gView.Framework.system
                 return date1.IsEqual(date2, toleranceSeconds, DateTimeKind.Local) ||
                        date1.IsEqual(date2, toleranceSeconds, DateTimeKind.Utc);
             }
-            
+
             if (date2.Kind == DateTimeKind.Unspecified)
             {
                 return date1.IsEqual(date2, toleranceSeconds, DateTimeKind.Local) ||
@@ -251,7 +253,9 @@ namespace gView.Framework.system
         static public double SpanSeconds2(this DateTime date1, DateTime date2)
         {
             if (date1.IsEqual2(date2))
+            {
                 return 0;
+            }
 
             return Math.Abs((date1 - date2).TotalSeconds);
         }
@@ -265,10 +269,12 @@ namespace gView.Framework.system
             StringBuilder sb = new StringBuilder();
 
             int depth = 0;
-            while(ex!=null)
+            while (ex != null)
             {
                 if (sb.Length >= 0)
+                {
                     sb.Append(Environment.NewLine);
+                }
 
                 sb.Append(ex.Message);
 
@@ -276,7 +282,9 @@ namespace gView.Framework.system
 
                 depth++;
                 if (depth >= maxDepth)
+                {
                     break;
+                }
             }
 
             return sb.ToString();

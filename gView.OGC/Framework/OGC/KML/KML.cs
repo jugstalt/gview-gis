@@ -1,12 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using gView.Framework.Data;
+﻿using gView.Framework.Data;
 using gView.Framework.Geometry;
+using System;
+using System.Collections.Generic;
 using System.IO;
-using System.Xml.Serialization;
+using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Serialization;
 
 namespace gView.Framework.OGC.KML
 {
@@ -22,7 +21,7 @@ namespace gView.Framework.OGC.KML
         {
             KmlType kml = new KmlType();
 
-            DocumentType document=new DocumentType();
+            DocumentType document = new DocumentType();
             kml.Item = document;
 
             int counter = 0;
@@ -31,7 +30,9 @@ namespace gView.Framework.OGC.KML
             while ((feature = await cursor.NextFeature()) != null)
             {
                 if (feature.Shape == null)
+                {
                     continue;
+                }
 
                 PlacemarkType placemark = new PlacemarkType();
                 placemark.Item_ = ToKml(feature.Shape);
@@ -39,7 +40,9 @@ namespace gView.Framework.OGC.KML
                 placemarks.Add(placemark);
                 counter++;
                 if (counter >= maxFeatures)
+                {
                     break;
+                }
             }
 
             document.Items_ = placemarks.ToArray();
@@ -76,7 +79,7 @@ namespace gView.Framework.OGC.KML
             }
             else if (geometry is IMultiPoint)
             {
-                
+
             }
             else if (geometry is IPolyline)
             {
@@ -113,10 +116,14 @@ namespace gView.Framework.OGC.KML
         {
             StringBuilder sb = new StringBuilder();
 
-            for(int i=0,to=points.PointCount;i<to;i++)
+            for (int i = 0, to = points.PointCount; i < to; i++)
             {
                 IPoint point = points[i];
-                if (sb.Length > 0) sb.Append(" ");
+                if (sb.Length > 0)
+                {
+                    sb.Append(" ");
+                }
+
                 sb.Append(point.X.ToString(_nhi));
                 sb.Append(",");
                 sb.Append(point.Y.ToString(_nhi));

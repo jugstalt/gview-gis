@@ -1,7 +1,7 @@
 using System;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Windows.Forms;
-using System.Runtime.InteropServices;
 
 
 namespace gView.DataSources.Fdb.UI
@@ -82,7 +82,7 @@ namespace gView.DataSources.Fdb.UI
             {
                 //Throw away any error if we are not in debug mode
 #if (DEBUG)
-				MessageBox.Show(ex.Message,"Acquire SQL Servier List Error");
+                MessageBox.Show(ex.Message, "Acquire SQL Servier List Error");
 #endif
                 txt = string.Empty;
             }

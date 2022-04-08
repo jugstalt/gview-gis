@@ -20,8 +20,8 @@ namespace gView.Plugins.Editor
     [gView.Framework.system.RegisterPlugIn(Globals.ModuleGuidString, PluginUsage.Desktop)]
     public class Module : IMapApplicationModule, IModule, IPersistable
     {
-        public enum EditTask { None=0, CreateNewFeature = 1, ModifyFeature = 2 }
-        
+        public enum EditTask { None = 0, CreateNewFeature = 1, ModifyFeature = 2 }
+
         public delegate void OnChangeSelectedFeatureEventHandler(Module sender, IFeature feature);
         public event OnChangeSelectedFeatureEventHandler OnChangeSelectedFeature = null;
 
@@ -29,7 +29,7 @@ namespace gView.Plugins.Editor
         public event OnChangeEditTaskEventHandler OnChangeEditTask = null;
 
         public delegate void OnCreateStandardFeatureEventHandler(Module sender, IFeature feature);
-        public event OnCreateStandardFeatureEventHandler OnCreateStandardFeature=null;
+        public event OnCreateStandardFeatureEventHandler OnCreateStandardFeature = null;
 
         private IMapDocument _doc = null;
         private string _lastMsg = String.Empty;
@@ -99,7 +99,7 @@ namespace gView.Plugins.Editor
                 _doc.LayerRemoved += new LayerRemovedEvent(_doc_LayerRemoved);
                 _doc.MapAdded += new MapAddedEvent(_doc_MapAdded);
                 _doc.MapDeleted += new MapDeletedEvent(_doc_MapDeleted);
-                if(_doc.Application is IMapApplication)
+                if (_doc.Application is IMapApplication)
                 {
                     ((IMapApplication)_doc.Application).AfterLoadMapDocument += new AfterLoadMapDocumentEvent(Module_AfterLoadMapDocument);
                 }
@@ -441,7 +441,7 @@ namespace gView.Plugins.Editor
             }
             set
             {
-                if (_doc == null || _doc.FocusMap == null || 
+                if (_doc == null || _doc.FocusMap == null ||
                     _doc.FocusMap.Display == null || _doc.FocusMap.Display.GraphicsContainer == null)
                 {
                     return;
@@ -463,7 +463,7 @@ namespace gView.Plugins.Editor
                     }
                 }
 
-                EditSketch sketch = null;  
+                EditSketch sketch = null;
                 if (_sketchContainer.Elements.Count == 1)
                 {
                     sketch = _sketchContainer.Elements[0] as EditSketch;
@@ -489,7 +489,7 @@ namespace gView.Plugins.Editor
 
                 // neu zeichnen, wenn nicht gerade Afterloadmap läuft
                 // und Sketch sich geändert hat;
-                if (_doc.Application is IMapApplication && 
+                if (_doc.Application is IMapApplication &&
                     !_afterLoadMapDocument)
                 {
                     ((IMapApplication)_doc.Application).RefreshActiveMap(DrawPhase.Graphics);
@@ -680,7 +680,7 @@ namespace gView.Plugins.Editor
 
             public void Save(IPersistStream stream)
             {
-                if (stream == null || 
+                if (stream == null ||
                     _module == null ||
                     _module.MapDocument == null ||
                     _map == null)
@@ -844,7 +844,7 @@ namespace gView.Plugins.Editor
 
         void _doc_MapAdded(IMap map)
         {
-            
+
         }
 
         void _doc_LayerRemoved(IMap sender, ILayer layer)
@@ -958,7 +958,7 @@ namespace gView.Plugins.Editor
             persistClassName = String.Empty;
         }
 
-        public EditLayer(IFeatureLayer layer,EditStatements statements)
+        public EditLayer(IFeatureLayer layer, EditStatements statements)
         {
             _layer = layer;
             _statements = statements;

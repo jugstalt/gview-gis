@@ -154,7 +154,7 @@ namespace gView.DataSources.TileCache.UI
                     }
 
                     var instance = await exObject.GetInstanceAsync();
-                    if(instance == null)
+                    if (instance == null)
                     {
                         continue;
                     }

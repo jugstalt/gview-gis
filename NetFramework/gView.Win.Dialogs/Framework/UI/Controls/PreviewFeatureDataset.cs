@@ -1,17 +1,14 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Windows.Forms;
+using gView.Framework.Carto;
 using gView.Framework.Data;
 using gView.Framework.Geometry;
-using gView.Framework.Carto;
-using gView.Framework.UI;
-using gView.Framework.system;
-using gView.Framework.Symbology;
-using gView.Framework.system.UI;
-using System.Threading.Tasks;
-using gView.Framework.Sys.UI;
 using gView.Framework.IO;
+using gView.Framework.Symbology;
+using gView.Framework.Sys.UI;
+using gView.Framework.system;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace gView.Framework.UI.Controls
 {
@@ -23,7 +20,11 @@ namespace gView.Framework.UI.Controls
 
         public PreviewFeatureDataset(IFeatureClass fc)
         {
-            if (fc == null) return;
+            if (fc == null)
+            {
+                return;
+            }
+
             _envelope = fc.Envelope;
             _sRef = fc.SpatialReference;
 
@@ -31,7 +32,11 @@ namespace gView.Framework.UI.Controls
         }
         public PreviewFeatureDataset(IRasterLayer rasterLayer)
         {
-            if (rasterLayer == null || rasterLayer.RasterClass != null || rasterLayer.RasterClass.Polygon == null) return;
+            if (rasterLayer == null || rasterLayer.RasterClass != null || rasterLayer.RasterClass.Polygon == null)
+            {
+                return;
+            }
+
             _envelope = rasterLayer.RasterClass.Polygon.Envelope;
             _sRef = rasterLayer.RasterClass.SpatialReference;
 
@@ -53,7 +58,7 @@ namespace gView.Framework.UI.Controls
         {
             _sRef = value;
         }
-        
+
         #endregion
 
         #region IDataset Members
@@ -74,7 +79,7 @@ namespace gView.Framework.UI.Controls
         {
             return Task.FromResult(true);
         }
-        
+
 
         public string DatasetGroupName
         {
@@ -151,9 +156,15 @@ namespace gView.Framework.UI.Controls
         public Task<IDatasetElement> Element(string title)
         {
 
-            if (_layer == null) return null;
+            if (_layer == null)
+            {
+                return null;
+            }
+
             if (_layer.Title == title)
+            {
                 return Task.FromResult<IDatasetElement>(_layer);
+            }
 
             return Task.FromResult<IDatasetElement>(null); ;
         }
@@ -186,7 +197,10 @@ namespace gView.Framework.UI.Controls
         public PreviewFeatureLayer(IFeatureClass fc)
         {
             _fc = fc;
-            if (_fc == null) return;
+            if (_fc == null)
+            {
+                return;
+            }
 
             this.Title = fc.Name;
             this.Visible = true;
@@ -297,7 +311,7 @@ namespace gView.Framework.UI.Controls
             }
             set
             {
-                
+
             }
         }
 
@@ -369,7 +383,9 @@ namespace gView.Framework.UI.Controls
         public void SaveMapDocument(string filename, bool performEncryption)
         {
             if (_application is IMapApplication)
+            {
                 ((IMapApplication)_application).SaveMapDocument(filename, performEncryption);
+            }
         }
 
         public string DocumentFilename
@@ -387,7 +403,9 @@ namespace gView.Framework.UI.Controls
         public void SaveMapDocument()
         {
             if (_application is IMapApplication)
+            {
                 ((IMapApplication)_application).SaveMapDocument();
+            }
         }
 
         public IDocumentWindow DocumentWindow
@@ -395,7 +413,9 @@ namespace gView.Framework.UI.Controls
             get
             {
                 if (_application is IMapApplication)
+                {
                     return ((IMapApplication)_application).DocumentWindow;
+                }
 
                 return null;
             }
@@ -418,19 +438,29 @@ namespace gView.Framework.UI.Controls
 
         public void AddDockableWindow(IDockableWindow window, string ParentDockableWindowName)
         {
-            if (_application != null) _application.AddDockableWindow(window, ParentDockableWindowName);
+            if (_application != null)
+            {
+                _application.AddDockableWindow(window, ParentDockableWindowName);
+            }
         }
 
         public void AddDockableWindow(IDockableWindow window, DockWindowState state)
         {
-            if (_application != null) _application.AddDockableWindow(window, state);
+            if (_application != null)
+            {
+                _application.AddDockableWindow(window, state);
+            }
         }
 
         public IGUIAppWindow ApplicationWindow
         {
             get
             {
-                if (_application == null) return null;
+                if (_application == null)
+                {
+                    return null;
+                }
+
                 return _application.ApplicationWindow;
             }
         }
@@ -441,7 +471,11 @@ namespace gView.Framework.UI.Controls
         {
             get
             {
-                if (_application == null) return new List<IDockableWindow>();
+                if (_application == null)
+                {
+                    return new List<IDockableWindow>();
+                }
+
                 return _application.DockableWindows;
             }
         }
@@ -450,7 +484,10 @@ namespace gView.Framework.UI.Controls
 
         public void ShowDockableWindow(IDockableWindow window)
         {
-            if (_application != null) _application.ShowDockableWindow(window);
+            if (_application != null)
+            {
+                _application.ShowDockableWindow(window);
+            }
         }
 
         public void SetCursor(object cursor)
@@ -468,7 +505,11 @@ namespace gView.Framework.UI.Controls
 
         public ITool Tool(Guid guid)
         {
-            if (_control != null) return _control.Tool(guid);
+            if (_control != null)
+            {
+                return _control.Tool(guid);
+            }
+
             return null;
         }
         public List<ITool> Tools
@@ -493,7 +534,10 @@ namespace gView.Framework.UI.Controls
         }
         public void ValidateUI()
         {
-            if (_application != null) _application.ValidateUI();
+            if (_application != null)
+            {
+                _application.ValidateUI();
+            }
         }
 
         public IStatusBar StatusBar
@@ -514,19 +558,29 @@ namespace gView.Framework.UI.Controls
 
         public void Exit()
         {
-            if (_application != null) _application.Exit();
+            if (_application != null)
+            {
+                _application.Exit();
+            }
         }
 
         public string Title
         {
             get
             {
-                if (_application == null) return "";
+                if (_application == null)
+                {
+                    return "";
+                }
+
                 return _application.Title;
             }
             set
             {
-                if (_application != null) _application.Title = value;
+                if (_application != null)
+                {
+                    _application.Title = value;
+                }
             }
         }
 

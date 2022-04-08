@@ -50,7 +50,7 @@ namespace gView.DataSources.MSSqlSpatial.DataSources.Sde.Repo
 
 
                 command.CommandText = "select * from " + sdeSchemaName + ".sde_table_registry";
-                using(var reader=await command.ExecuteReaderAsync())
+                using (var reader = await command.ExecuteReaderAsync())
                 {
                     while (await reader.ReadAsync())
                     {

@@ -1,14 +1,8 @@
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Text;
-using System.Windows.Forms;
 using gView.Framework.Data;
-using System.Xml;
 using gView.Framework.system;
 using gView.Framework.UI;
+using System;
+using System.Windows.Forms;
 
 namespace gView.Plugins.Editor.Dialogs
 {
@@ -25,7 +19,7 @@ namespace gView.Plugins.Editor.Dialogs
 
         private void FormDomains_Load(object sender, EventArgs e)
         {
-            PlugInManager compMan=new PlugInManager();
+            PlugInManager compMan = new PlugInManager();
 
             cmbDomains.Items.Add(new DomainItem(null));
             cmbDomains.SelectedIndex = 0;
@@ -33,7 +27,10 @@ namespace gView.Plugins.Editor.Dialogs
             foreach (var domainType in compMan.GetPlugins(gView.Framework.system.Plugins.Type.IFieldDomain))
             {
                 IFieldDomain fDomain = compMan.CreateInstance<IFieldDomain>(domainType);
-                if (fDomain == null) continue;
+                if (fDomain == null)
+                {
+                    continue;
+                }
 
                 if (_domain != null && fDomain.GetType().Equals(_domain.GetType()))
                 {
@@ -70,7 +67,9 @@ namespace gView.Plugins.Editor.Dialogs
             public override string ToString()
             {
                 if (_domain == null)
+                {
                     return "none";
+                }
 
                 return _domain.Name;
             }
@@ -82,7 +81,10 @@ namespace gView.Plugins.Editor.Dialogs
             groupBoxControl.Controls.Clear();
 
             DomainItem item = cmbDomains.SelectedItem as DomainItem;
-            if (item == null) return;
+            if (item == null)
+            {
+                return;
+            }
 
             if (item.FieldDomain != null &&
                 item.FieldDomain is IPropertyPage)

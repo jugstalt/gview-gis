@@ -1,12 +1,5 @@
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
-using System.Text;
 using System.Windows.Forms;
-using gView.Framework.UI;
-using gView.Explorer.UI;
 
 namespace gView.Framework.UI.Dialogs
 {
@@ -33,7 +26,7 @@ namespace gView.Framework.UI.Dialogs
             }
             set
             {
-                _dockState=value;
+                _dockState = value;
             }
         }
 
@@ -51,7 +44,7 @@ namespace gView.Framework.UI.Dialogs
             if (txtOutput.InvokeRequired)
             {
                 Append2StandardOutputCallback d = new Append2StandardOutputCallback(Append2StandardOutput);
-                this.BeginInvoke(d,new object [] { text });
+                this.BeginInvoke(d, new object[] { text });
             }
             else
             {

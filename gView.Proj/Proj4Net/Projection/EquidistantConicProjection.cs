@@ -13,9 +13,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-using System;
 using GeoAPI.Geometries;
 using Proj4Net.Utility;
+using System;
 
 namespace Proj4Net.Projection
 {
@@ -73,7 +73,10 @@ namespace Proj4Net.Projection
             temp = input.X * input.X + (_rho0 - input.Y) * (_rho0 - input.Y);
             rho = Math.Sqrt(temp);
             if (_n < 0)
+            {
                 rho = -rho;
+            }
+
             t = Math.Pow((rho / (_radius * _f)), 1.0 / _n);
             tphi = ProjectionMath.PiHalf - 2.0 * Math.Atan(t);
             delta = 1.0;
@@ -109,9 +112,13 @@ namespace Proj4Net.Projection
                 (1.0 + _eccentricity * Math.Sin(rlat0)), 0.5 * _eccentricity);
 
             if (standardLatitude1 != standardLatitude2)
+            {
                 _n = (Math.Log(m_standardLatitude1) - Math.Log(m_standardLatitude2)) / (Math.Log(t_standardLatitude1) - Math.Log(t_standardLatitude2));
+            }
             else
+            {
                 _n = Math.Sin(standardLatitude1);
+            }
 
             _f = m_standardLatitude1 / (_n * Math.Pow(t_standardLatitude1, _n));
             ProjectionLongitude = rlong0;

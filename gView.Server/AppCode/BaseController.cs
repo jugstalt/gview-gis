@@ -1,14 +1,13 @@
 ﻿using gView.Core.Framework.Exceptions;
 using gView.Framework.system;
+using gView.Server.Extensions;
+using gView.Server.Services.MapServer;
 using gView.Server.Services.Security;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using System;
-using gView.Server.Extensions;
-using System.Linq;
 using System.Threading.Tasks;
-using gView.Server.Services.MapServer;
 
 namespace gView.Server.AppCode
 {
@@ -20,7 +19,7 @@ namespace gView.Server.AppCode
 
         public BaseController(
             MapServiceManager mapServerService,
-            LoginManager loginManagerService, 
+            LoginManager loginManagerService,
             EncryptionCertificateService encryptionCertificate)
         {
             _mapServerService = mapServerService;
@@ -65,7 +64,7 @@ namespace gView.Server.AppCode
                 #region From Token
 
                 string token = request.Query["token"];
-                if(String.IsNullOrWhiteSpace(token) && request.HasFormContentType)
+                if (String.IsNullOrWhiteSpace(token) && request.HasFormContentType)
                 {
                     try
                     {
@@ -97,8 +96,10 @@ namespace gView.Server.AppCode
             }
             finally
             {
-                if (authToken==null || authToken.IsExpired)
+                if (authToken == null || authToken.IsExpired)
+                {
                     throw new InvalidTokenException();
+                }
             }
         }
 
@@ -125,13 +126,17 @@ namespace gView.Server.AppCode
             try
             {
                 if (HasIfNonMatch == false)
+                {
                     return false;
+                }
 
                 var etag = long.Parse(this.Request.Headers["If-None-Match"]);
 
                 DateTime etagTime = new DateTime(etag, DateTimeKind.Utc);
                 if (DateTime.UtcNow > etagTime)
+                {
                     return false;
+                }
 
                 return true;
             }

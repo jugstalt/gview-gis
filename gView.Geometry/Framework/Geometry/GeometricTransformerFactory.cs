@@ -1,9 +1,4 @@
-﻿using gView.Framework.Geometry;
-using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace gView.Framework.Geometry
+﻿namespace gView.Framework.Geometry
 {
     public enum GeoTranformerType
     {

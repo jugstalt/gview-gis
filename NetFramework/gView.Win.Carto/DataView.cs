@@ -24,7 +24,11 @@ namespace gView.Desktop.Wpf.Carto
         {
             get
             {
-                if (_dv == null) return "Null";
+                if (_dv == null)
+                {
+                    return "Null";
+                }
+
                 return _dv.Name;
             }
         }
@@ -33,7 +37,11 @@ namespace gView.Desktop.Wpf.Carto
         {
             get
             {
-                if (_dv == null) return null;
+                if (_dv == null)
+                {
+                    return null;
+                }
+
                 return _dv.TabPage;
             }
         }
@@ -91,7 +99,11 @@ namespace gView.Desktop.Wpf.Carto
                 {
                     _mapView.Map = (Map)value;
                 }
-                if (_map == null) return;
+                if (_map == null)
+                {
+                    return;
+                }
+
                 if (_map.Display != null)
                 {
                     //_envelope = _map.Display.Envelope;
@@ -103,7 +115,9 @@ namespace gView.Desktop.Wpf.Carto
         private void _map_MapRenamed(object sender, EventArgs e)
         {
             if (DataViewRenamed != null)
+            {
                 DataViewRenamed(this, e);
+            }
         }
 
         #endregion IDataView Members
@@ -148,7 +162,9 @@ namespace gView.Desktop.Wpf.Carto
             {
                 _displayRotation = value;
                 if (_map != null)
+                {
                     _map.Display.DisplayTransformation.DisplayRotation = _displayRotation;
+                }
             }
         }
 
@@ -191,14 +207,22 @@ namespace gView.Desktop.Wpf.Carto
                 TOC objInst = new TOC(this.Map);
                 objInst.Modifier = TOCModifier.Private;
                 _toc = (TOC)stream.Load("ITOC", null, objInst);
-                if (_toc == null) objInst.Dispose();
+                if (_toc == null)
+                {
+                    objInst.Dispose();
+                }
+
                 _displayRotation = (double)stream.Load("DisplayRotation", (double)0.0);
             }
         }
 
         public void Save(IPersistStream stream)
         {
-            if (_map != null) stream.Save("map", _map.Name);
+            if (_map != null)
+            {
+                stream.Save("map", _map.Name);
+            }
+
             if (_envelope != null)
             {
                 stream.Save("minx", _envelope.minx);
@@ -207,9 +231,15 @@ namespace gView.Desktop.Wpf.Carto
                 stream.Save("maxy", _envelope.maxy);
             }
 
-            if (_toc != null) stream.Save("ITOC", _toc);
+            if (_toc != null)
+            {
+                stream.Save("ITOC", _toc);
+            }
+
             if (_displayRotation != 0.0)
+            {
                 stream.Save("DisplayRotation", _displayRotation);
+            }
         }
 
         #endregion IPersistable Members

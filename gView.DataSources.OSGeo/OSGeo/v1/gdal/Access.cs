@@ -9,9 +9,10 @@
 namespace OSGeo_v1.GDAL
 {
 
-public enum Access {
-  GA_ReadOnly = 0,
-  GA_Update = 1
-}
+    public enum Access
+    {
+        GA_ReadOnly = 0,
+        GA_Update = 1
+    }
 
 }

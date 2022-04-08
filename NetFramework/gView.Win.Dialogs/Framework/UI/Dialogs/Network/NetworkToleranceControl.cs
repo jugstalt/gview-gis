@@ -1,11 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Drawing;
-using System.Data;
-using System.Text;
+﻿using Newtonsoft.Json;
 using System.Windows.Forms;
-using Newtonsoft.Json;
 
 namespace gView.Framework.UI.Dialogs.Network
 {
@@ -23,7 +17,9 @@ namespace gView.Framework.UI.Dialogs.Network
             get
             {
                 if (chkUseSnapTolerance.Checked)
+                {
                     return (double)numSnapTolerance.Value;
+                }
 
                 return double.Epsilon;
             }
@@ -45,7 +41,7 @@ namespace gView.Framework.UI.Dialogs.Network
             }
             set
             {
-                if(value!=null)
+                if (value != null)
                 {
                     this.chkUseSnapTolerance.Checked = value.UseTolerance;
                     this.Tolerance = value.Tolerance;

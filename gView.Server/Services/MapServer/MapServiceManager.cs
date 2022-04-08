@@ -1,16 +1,15 @@
-﻿using gView.Framework.system;
+﻿using gView.Framework.IO;
+using gView.Framework.system;
 using gView.MapServer;
 using gView.Server.AppCode;
+using gView.Server.Services.Logging;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
-using gView.Framework.IO;
+using System.Collections.Concurrent;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
-using System.Collections.Concurrent;
-using Microsoft.Extensions.Logging;
 using System.Threading;
-using gView.Server.Services.Logging;
 
 namespace gView.Server.Services.MapServer
 {
@@ -21,7 +20,7 @@ namespace gView.Server.Services.MapServer
 
         public MapServiceManager(
             IServiceProvider serviceProvider,
-            IOptionsMonitor<MapServerManagerOptions> optionsMonitor, 
+            IOptionsMonitor<MapServerManagerOptions> optionsMonitor,
             ILogger<MapServiceManager> logger = null)
         {
             _serviceProvider = serviceProvider;

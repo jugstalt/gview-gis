@@ -1,27 +1,25 @@
+using gView.Framework.IO;
+using gView.Framework.system;
 using System;
 using System.ComponentModel;
-using gView.Framework.IO;
-using gView.Framework.Data;
-using gView.Framework.system;
 using System.Data;
-using System.Threading.Tasks;
 
 namespace gView.Framework.Data
 {
-	public class Field : FieldMetadata, IField,IPersistable,IPriority
-	{
-		protected string m_name,m_aliasname="";
-		protected FieldType m_type;
-		protected int m_precision,m_size;
+    public class Field : FieldMetadata, IField, IPersistable, IPriority
+    {
+        protected string m_name, m_aliasname = "";
+        protected FieldType m_type;
+        protected int m_precision, m_size;
         protected bool m_visible = true, m_isRequired = false, m_isEditable = true, _save_type = false;
         protected object m_defaultValue = null;
         protected IFieldDomain _domain = null;
         protected int _priority = -1;
 
-		public Field()
-		{
-			type=FieldType.unknown;
-		}
+        public Field()
+        {
+            type = FieldType.unknown;
+        }
         public Field(string name) : this()
         {
             m_name = name;
@@ -57,40 +55,68 @@ namespace gView.Framework.Data
             m_defaultValue = field.DefautValue;
             _domain = field.Domain;
             if (field is Field)
+            {
                 _save_type = ((Field)field).SaveType;
+            }
         }
 
         public Field(DataRow schemaRow)
         {
-            if (schemaRow == null) return;
+            if (schemaRow == null)
+            {
+                return;
+            }
 
             this.name = schemaRow["ColumnName"].ToString();
 
             if (schemaRow["DataType"].GetType() == typeof(Type))
             {
                 if ((Type)schemaRow["DataType"] == typeof(System.Int32))
+                {
                     this.type = FieldType.integer;
+                }
                 else if ((Type)schemaRow["DataType"] == typeof(System.Int16))
+                {
                     this.type = FieldType.smallinteger;
+                }
                 else if ((Type)schemaRow["DataType"] == typeof(System.Int64))
+                {
                     this.type = FieldType.biginteger;
+                }
                 else if ((Type)schemaRow["DataType"] == typeof(System.DateTime))
+                {
                     this.type = FieldType.Date;
+                }
                 else if ((Type)schemaRow["DataType"] == typeof(System.Double))
+                {
                     this.type = FieldType.Double;
+                }
                 else if ((Type)schemaRow["DataType"] == typeof(System.Single))
+                {
                     this.type = FieldType.Float;
+                }
                 else if ((Type)schemaRow["DataType"] == typeof(System.Boolean))
+                {
                     this.type = FieldType.boolean;
+                }
                 else if ((Type)schemaRow["DataType"] == typeof(System.Char))
+                {
                     this.type = FieldType.character;
+                }
                 else if ((Type)schemaRow["DataType"] == typeof(System.String))
+                {
                     this.type = FieldType.String;
+                }
                 else if ((Type)schemaRow["DataType"] == typeof(System.Byte[]))
+                {
                     this.type = FieldType.binary;
+                }
                 else
+                {
                     this.type = FieldType.unknown;
-            } else
+                }
+            }
+            else
             {
                 this.type = FieldType.unknown;
             }
@@ -107,34 +133,41 @@ namespace gView.Framework.Data
             set { _save_type = value; }
         }
 
-		public string name
-		{
-			get
-			{
-				return m_name;
-			}
-			set
-			{
-				m_name=value;
-			}
-		}
-		public string aliasname 
-		{
-			get 
-			{
-				if(m_aliasname=="") return name;
-				return m_aliasname;
-			}
-			set 
-			{
-				m_aliasname=value;
-			}
-		}
-		public int precision 
-		{
+        public string name
+        {
             get
             {
-                if (m_precision != null) return m_precision;
+                return m_name;
+            }
+            set
+            {
+                m_name = value;
+            }
+        }
+        public string aliasname
+        {
+            get
+            {
+                if (m_aliasname == "")
+                {
+                    return name;
+                }
+
+                return m_aliasname;
+            }
+            set
+            {
+                m_aliasname = value;
+            }
+        }
+        public int precision
+        {
+            get
+            {
+                if (m_precision != null)
+                {
+                    return m_precision;
+                }
 
                 switch (type)
                 {
@@ -144,13 +177,17 @@ namespace gView.Framework.Data
                 }
                 return 0;
             }
-			set { m_precision=value; }
-		}
-		public int size 
-		{
+            set { m_precision = value; }
+        }
+        public int size
+        {
             get
             {
-                if (m_size != null) return m_size;
+                if (m_size != null)
+                {
+                    return m_size;
+                }
+
                 switch (type)
                 {
                     case FieldType.biginteger:
@@ -178,17 +215,20 @@ namespace gView.Framework.Data
                 }
                 return 0;
             }
-			set { m_size=value; }
-		}
-		public FieldType type
-		{
-            get {return m_type; }
-			set 
-            { 
-                m_type=value;
-                if (m_type == FieldType.String && m_size == 0) m_size = 50;
+            set { m_size = value; }
+        }
+        public FieldType type
+        {
+            get { return m_type; }
+            set
+            {
+                m_type = value;
+                if (m_type == FieldType.String && m_size == 0)
+                {
+                    m_size = 50;
+                }
             }
-		}
+        }
 
         [Browsable(false)]
         public bool IsRequired
@@ -224,14 +264,14 @@ namespace gView.Framework.Data
             set { _domain = value; }
         }
 
-		#region IPersistable Member
+        #region IPersistable Member
 
-		public void Load(IPersistStream stream)
-		{
+        public void Load(IPersistStream stream)
+        {
             m_name = (string)stream.Load("Name", "");
             m_aliasname = (string)stream.Load("Alias", "");
             m_type = (FieldType)stream.Load("Type", (int)FieldType.unknown);
-            
+
             //m_precision = (int)stream.Load("Precision", 0);
             //m_size = (int)stream.Load("Size", 0);
 
@@ -248,7 +288,9 @@ namespace gView.Framework.Data
             stream.Save("Name", m_name);
             stream.Save("Alias", m_aliasname);
             if (_save_type)
+            {
                 stream.Save("Type", (int)m_type);
+            }
             //stream.Save("Precision", m_precision);
             //stream.Save("Size", m_size);
 
@@ -264,11 +306,14 @@ namespace gView.Framework.Data
             stream.Save("Priority", _priority);
         }
 
-		#endregion
+        #endregion
 
         public override bool Equals(object obj)
         {
-            if (!(obj is IField)) return false;
+            if (!(obj is IField))
+            {
+                return false;
+            }
 
             IField field = obj as IField;
             return this.type == field.type &&
@@ -294,7 +339,11 @@ namespace gView.Framework.Data
                 {
                     fieldnames[i] = fieldnames[i].Substring(pos + 1, fieldnames[i].Length - pos - 1);
                 }
-                if (fieldname != "") fieldname += ";";
+                if (fieldname != "")
+                {
+                    fieldname += ";";
+                }
+
                 fieldname += fieldnames[i];
             }
 
@@ -316,9 +365,14 @@ namespace gView.Framework.Data
             if (fieldName.Contains(":"))  // Joined Field
             {
                 if (!fieldName.StartsWith("["))
+                {
                     fieldName = "[" + fieldName;
+                }
+
                 if (!fieldName.EndsWith("]"))
+                {
                     fieldName += "]";
+                }
             }
 
             return fieldName;

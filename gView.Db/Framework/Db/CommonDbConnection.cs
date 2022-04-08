@@ -1,12 +1,12 @@
+using Oracle.ManagedDataAccess.Client;
 using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
 using System.Data.SqlClient;
-using System.Xml;
 using System.Text;
-using System.Collections.Generic;
-using Oracle.ManagedDataAccess.Client;
 using System.Threading.Tasks;
+using System.Xml;
 
 namespace gView.Framework.Db
 {
@@ -52,7 +52,11 @@ namespace gView.Framework.Db
         {
             if (_sqlConnection != null)
             {
-                if (_sqlConnection.State != ConnectionState.Closed) _sqlConnection.Close();
+                if (_sqlConnection.State != ConnectionState.Closed)
+                {
+                    _sqlConnection.Close();
+                }
+
                 _sqlConnection.Dispose();
                 _sqlConnection = null;
             }
@@ -87,7 +91,9 @@ namespace gView.Framework.Db
             set
             {
                 if (value != null)
+                {
                     this.ConnectionString2 = value.ConnectionString;
+                }
             }
         }
         public string ConnectionString2
@@ -164,11 +170,14 @@ namespace gView.Framework.Db
 
         async public Task<bool> SQLQuery(DataSet ds, string sql, string table, bool writeable)
         {
-            if (!writeable) return await SQLQuery(ds, sql, table);
+            if (!writeable)
+            {
+                return await SQLQuery(ds, sql, table);
+            }
 
             if (_updateAdapter != null)
             {
-                _updateAdapter.Dispose(); 
+                _updateAdapter.Dispose();
                 _updateAdapter = null;
             }
             try
@@ -207,7 +216,7 @@ namespace gView.Framework.Db
                             _updateAdapter.SelectCommand.CommandText = sql;
                             _updateAdapter.SelectCommand.Connection = dbfactory.CreateConnection();
                             _updateAdapter.SelectCommand.Connection.ConnectionString = _connectionString;
-                             
+
                             break;
                         }
                         break;
@@ -318,7 +327,11 @@ namespace gView.Framework.Db
             }
             catch (Exception e)
             {
-                if (adapter != null) adapter.Dispose();
+                if (adapter != null)
+                {
+                    adapter.Dispose();
+                }
+
                 m_errMsg = "QUERY (" + sql + "): " + e.Message;
                 _lastException = e;
                 return false;
@@ -350,18 +363,33 @@ namespace gView.Framework.Db
             while (field != "")
             {
                 string val = getFieldValue(feature, field);
-                if (val == "") return false;
+                if (val == "")
+                {
+                    return false;
+                }
+
                 sql = sql.Replace("[" + field + "]", val);
                 field = getFieldPlacehoder(sql);
             }
 
             DataSet ds = new DataSet();
-            if (!await SQLQuery(ds, sql, "JOIN")) return false;
-            if (ds.Tables["JOIN"].Rows.Count == 0) return false;
+            if (!await SQLQuery(ds, sql, "JOIN"))
+            {
+                return false;
+            }
+
+            if (ds.Tables["JOIN"].Rows.Count == 0)
+            {
+                return false;
+            }
+
             DataRow row = ds.Tables["JOIN"].Rows[0];
 
             XmlNodeList fields = feature.SelectNodes("FIELDS");
-            if (fields.Count == 0) return false;
+            if (fields.Count == 0)
+            {
+                return false;
+            }
 
             int rowCount = ds.Tables["JOIN"].Rows.Count;
             XmlAttribute attr;
@@ -386,11 +414,20 @@ namespace gView.Framework.Db
                     foreach (DataRow row2 in ds.Tables["JOIN"].Rows)
                     {
                         if (count < rowCount)
+                        {
                             sb.Append("<tr><td nowrap style='border-bottom: gray 1px solid'>");
+                        }
                         else
+                        {
                             sb.Append("<tr><td nowrap>");
+                        }
+
                         string val = row2[col.ColumnName].ToString().Trim();
-                        if (val == "") val = "&nbsp;";
+                        if (val == "")
+                        {
+                            val = "&nbsp;";
+                        }
+
                         sb.Append(val + "</td></tr>");
                         count++;
                     }
@@ -433,15 +470,22 @@ namespace gView.Framework.Db
                         dbcommand.CommandText = sql;
                         dbcommand.Connection = connection;
                         await connection.OpenAsync();
-                        return (await dbcommand.ExecuteReaderAsync(),connection);
+                        return (await dbcommand.ExecuteReaderAsync(), connection);
                 }
 
                 return (null, null);
             }
             catch (Exception e)
             {
-                if (connection != null) connection.Dispose();
-                if (reader != null) reader.Dispose();
+                if (connection != null)
+                {
+                    connection.Dispose();
+                }
+
+                if (reader != null)
+                {
+                    reader.Dispose();
+                }
 
                 connection = null;
                 m_errMsg = "QUERY (" + sql + "): " + e.Message;
@@ -473,9 +517,16 @@ namespace gView.Framework.Db
         protected string getFieldPlacehoder(string str)
         {
             int pos = str.IndexOf("[");
-            if (pos == -1) return "";
+            if (pos == -1)
+            {
+                return "";
+            }
+
             int pos2 = str.IndexOf("]");
-            if (pos2 == -1) return "";
+            if (pos2 == -1)
+            {
+                return "";
+            }
 
             return str.Substring(pos + 1, pos2 - pos - 1);
         }
@@ -525,11 +576,15 @@ namespace gView.Framework.Db
             return false;
         }
 
-       
+
 
         private bool createIndexSql(string name, string table, string field, bool unique, bool grouped)
         {
-            if (_dbtype != DBType.sql) return false;
+            if (_dbtype != DBType.sql)
+            {
+                return false;
+            }
+
             SqlConnection connection = null;
             SqlCommand command = null;
             try
@@ -547,7 +602,11 @@ namespace gView.Framework.Db
             }
             catch (Exception e)
             {
-                if (command != null) command.Dispose();
+                if (command != null)
+                {
+                    command.Dispose();
+                }
+
                 if (connection != null)
                 {
                     connection.Close();
@@ -565,7 +624,11 @@ namespace gView.Framework.Db
             // CREATE INDEX fc_waterways_nid ON fc_waterways (fdb_nid);
             // CREATE UNIQUE INDEX fc_waterways_id ON fc_waterways (fdb_oid);
             // ALTER TABLE fc_waterways CLUSTER ON fc_waterways_id;
-            if (_dbtype != DBType.npgsql) return false;
+            if (_dbtype != DBType.npgsql)
+            {
+                return false;
+            }
+
             try
             {
                 DbProviderFactory factory = DataProvider.PostgresProvider;
@@ -630,7 +693,11 @@ namespace gView.Framework.Db
         }
         private bool ExecuteNoneQuerySql(string sql)
         {
-            if (_dbtype != DBType.sql) return false;
+            if (_dbtype != DBType.sql)
+            {
+                return false;
+            }
+
             SqlConnection connection = null;
             SqlCommand command = null;
             try
@@ -643,7 +710,10 @@ namespace gView.Framework.Db
                 else
                 {
                     connection = _sqlConnection;
-                    if (connection.State != ConnectionState.Open) connection.Open();
+                    if (connection.State != ConnectionState.Open)
+                    {
+                        connection.Open();
+                    }
                 }
 
                 command = new SqlCommand(sql, connection);
@@ -659,7 +729,11 @@ namespace gView.Framework.Db
             }
             catch (Exception e)
             {
-                if (command != null) command.Dispose();
+                if (command != null)
+                {
+                    command.Dispose();
+                }
+
                 if (connection != null)
                 {
                     connection.Close();
@@ -673,7 +747,11 @@ namespace gView.Framework.Db
         }
         private bool ExecuteNoneQueryNpqsql(string sql)
         {
-            if (_dbtype != DBType.npgsql) return false;
+            if (_dbtype != DBType.npgsql)
+            {
+                return false;
+            }
+
             try
             {
                 DbProviderFactory factory = DataProvider.PostgresProvider;
@@ -703,9 +781,17 @@ namespace gView.Framework.Db
                 case DBType.sql:
                     return ExecuteNoneQuerySql("sp_rename '" + name + "','" + newName + "'");
                 case DBType.npgsql:
-                    if (!name.Contains("\"")) name = "\"" + name + "\"";
-                    if (!newName.Contains("\"")) newName = "\"" + newName + "\"";
-                    return ExecuteNoneQueryNpqsql("ALTER TABLE "+name+" RENAME TO "+newName);
+                    if (!name.Contains("\""))
+                    {
+                        name = "\"" + name + "\"";
+                    }
+
+                    if (!newName.Contains("\""))
+                    {
+                        newName = "\"" + newName + "\"";
+                    }
+
+                    return ExecuteNoneQueryNpqsql("ALTER TABLE " + name + " RENAME TO " + newName);
             }
             m_errMsg = "Not Implemented...";
             return false;
@@ -720,10 +806,14 @@ namespace gView.Framework.Db
             m_errMsg = "Not Implemented...";
             return false;
         }
-        
+
         private bool dropIndexSql(string name)
         {
-            if (_dbtype != DBType.sql) return false;
+            if (_dbtype != DBType.sql)
+            {
+                return false;
+            }
+
             SqlConnection connection = null;
             SqlCommand command = null;
             try
@@ -741,7 +831,11 @@ namespace gView.Framework.Db
             }
             catch (Exception e)
             {
-                if (command != null) command.Dispose();
+                if (command != null)
+                {
+                    command.Dispose();
+                }
+
                 if (connection != null)
                 {
                     connection.Close();
@@ -756,7 +850,11 @@ namespace gView.Framework.Db
 
         private bool createTableSql(string name, string[] fields, string[] dataTypes)
         {
-            if (_dbtype != DBType.sql) return false;
+            if (_dbtype != DBType.sql)
+            {
+                return false;
+            }
+
             SqlConnection connection = null;
             SqlCommand command = null;
             try
@@ -768,15 +866,33 @@ namespace gView.Framework.Db
                 for (int i = 0; i < fields.Length; i++)
                 {
                     string field = fields[i];
-                    if (field == "KEY") field = "KEY_";
-                    if (field == "USER") field = "USER_";
-                    if (field == "TEXT") field = "TEXT_";
+                    if (field == "KEY")
+                    {
+                        field = "KEY_";
+                    }
+
+                    if (field == "USER")
+                    {
+                        field = "USER_";
+                    }
+
+                    if (field == "TEXT")
+                    {
+                        field = "TEXT_";
+                    }
 
                     sql += "[" + field + "] " + dataTypes[i];
-                    if (i < (fields.Length - 1)) sql += ",";
+                    if (i < (fields.Length - 1))
+                    {
+                        sql += ",";
+                    }
                 }
                 sql += ") ON [PRIMARY]";
-                if (sql.IndexOf("[image]") != -1) sql += " TEXTIMAGE_ON [PRIMARY]";
+                if (sql.IndexOf("[image]") != -1)
+                {
+                    sql += " TEXTIMAGE_ON [PRIMARY]";
+                }
+
                 sql += ";";
 
                 command = new SqlCommand(sql, connection);
@@ -787,7 +903,11 @@ namespace gView.Framework.Db
             }
             catch (Exception e)
             {
-                if (command != null) command.Dispose();
+                if (command != null)
+                {
+                    command.Dispose();
+                }
+
                 if (connection != null)
                 {
                     connection.Close();
@@ -802,7 +922,11 @@ namespace gView.Framework.Db
 
         private bool createTableNpgsql(string name, string[] fields, string[] dataTypes)
         {
-            if (_dbtype != DBType.npgsql) return false;
+            if (_dbtype != DBType.npgsql)
+            {
+                return false;
+            }
+
             try
             {
                 DbProviderFactory factory = DataProvider.PostgresProvider;
@@ -815,7 +939,10 @@ namespace gView.Framework.Db
                         string field = fields[i];
 
                         sql += "\"" + field + "\" " + dataTypes[i];
-                        if (i < (fields.Length - 1)) sql += ",";
+                        if (i < (fields.Length - 1))
+                        {
+                            sql += ",";
+                        }
                     }
                     sql += ") WITHOUT OIDS;";
 
@@ -868,7 +995,11 @@ namespace gView.Framework.Db
             }
             catch (Exception e)
             {
-                if (command != null) command.Dispose();
+                if (command != null)
+                {
+                    command.Dispose();
+                }
+
                 if (connection != null)
                 {
                     connection.Close();
@@ -954,8 +1085,12 @@ namespace gView.Framework.Db
                             {
                                 DbCommand dbcomm = dbfactory.CreateCommand();
                                 dbcomm.Connection = dbconn;
-                                if (!name.Contains("\"")) name = "\"" + name + "\"";
-                                dbcomm.CommandText = "select * from " + name+" limit 0";
+                                if (!name.Contains("\""))
+                                {
+                                    name = "\"" + name + "\"";
+                                }
+
+                                dbcomm.CommandText = "select * from " + name + " limit 0";
                                 DbDataReader dbreader = dbcomm.ExecuteReader(CommandBehavior.SchemaOnly);
                                 _schemaTable = dbreader.GetSchemaTable();
                             }
@@ -1022,7 +1157,11 @@ namespace gView.Framework.Db
                             {
                                 DbCommand dbcomm = dbfactory.CreateCommand();
                                 dbcomm.Connection = dbconn;
-                                if (!name.Contains("\"")) name = "\"" + name + "\"";
+                                if (!name.Contains("\""))
+                                {
+                                    name = "\"" + name + "\"";
+                                }
+
                                 dbcomm.CommandText = "select * from " + name + " limit 0";
                                 DbDataReader dbreader = dbcomm.ExecuteReader(CommandBehavior.SchemaOnly);
                                 schema = dbreader.GetSchemaTable();
@@ -1062,7 +1201,9 @@ namespace gView.Framework.Db
                         dataTypes += "INTEGER";
                     }
                     else
+                    {
                         dataTypes += "TEXT(50) WITH COMPRESSION";
+                    }
                 }
 
                 if (createTable(tab.TableName, fields.Split(';'), dataTypes.Split(';')))
@@ -1082,7 +1223,10 @@ namespace gView.Framework.Db
                                 }
                                 ds.Tables[0].Rows.Add(newRow);
                             }
-                            if (!this.UpdateData(ref ds, tab.TableName)) return false;
+                            if (!this.UpdateData(ref ds, tab.TableName))
+                            {
+                                return false;
+                            }
                         }
                         else
                         {
@@ -1107,10 +1251,21 @@ namespace gView.Framework.Db
 
         public dataType getFieldType(string fieldname)
         {
-            if (_schemaTable == null) return dataType.unknown;
+            if (_schemaTable == null)
+            {
+                return dataType.unknown;
+            }
+
             DataRow[] row = _schemaTable.Select("ColumnName='" + fieldname + "'");
-            if (row.Length == 0) return dataType.unknown;
-            if (row[0]["ProviderType"] == null) return dataType.unknown;
+            if (row.Length == 0)
+            {
+                return dataType.unknown;
+            }
+
+            if (row[0]["ProviderType"] == null)
+            {
+                return dataType.unknown;
+            }
 
             int type = Convert.ToInt32(row[0]["ProviderType"]);
             switch (Convert.ToInt32(row[0]["ProviderType"]))
@@ -1128,10 +1283,21 @@ namespace gView.Framework.Db
         }
         public int getFieldSize(string fieldname)
         {
-            if (_schemaTable == null) return 0;
+            if (_schemaTable == null)
+            {
+                return 0;
+            }
+
             DataRow[] row = _schemaTable.Select("ColumnName='" + fieldname + "'");
-            if (row.Length == 0) return 0;
-            if (row[0]["ColumnSize"] == null) return 0;
+            if (row.Length == 0)
+            {
+                return 0;
+            }
+
+            if (row[0]["ColumnSize"] == null)
+            {
+                return 0;
+            }
 
             int len = Convert.ToInt32(row[0]["ColumnSize"]);
             return len;
@@ -1141,7 +1307,11 @@ namespace gView.Framework.Db
         {
             get
             {
-                if (_schemaTable == null) return "";
+                if (_schemaTable == null)
+                {
+                    return "";
+                }
+
                 DataRow[] rows = _schemaTable.Select();
                 string ret = "";
                 foreach (DataRow row in rows)
@@ -1170,11 +1340,22 @@ namespace gView.Framework.Db
         {
             get
             {
-                if (_dbtype != DBType.oledb) return "";
+                if (_dbtype != DBType.oledb)
+                {
+                    return "";
+                }
+
                 int pos1 = _connectionString.IndexOf("Data Source=");
-                if (pos1 == -1) return "";
+                if (pos1 == -1)
+                {
+                    return "";
+                }
+
                 int pos2 = _connectionString.IndexOf(";", pos1);
-                if (pos2 == -1) pos2 = _connectionString.Length - 1;
+                if (pos2 == -1)
+                {
+                    pos2 = _connectionString.Length - 1;
+                }
 
                 return _connectionString.Substring(pos1 + 12, pos2 - pos1 - 11);
             }
@@ -1252,8 +1433,8 @@ namespace gView.Framework.Db
 
         public (string top, string limit) LimitResults(Data.IQueryFilter filter, Data.IFeatureClass fc)
         {
-            string top=String.Empty, limit = String.Empty;
-            switch(dbType)
+            string top = String.Empty, limit = String.Empty;
+            switch (dbType)
             {
                 case DBType.sql:
                     if (filter.Limit > 0)
@@ -1276,18 +1457,20 @@ namespace gView.Framework.Db
                 case DBType.npgsql:
                     if (filter.Limit > 0)
                     {
-                        if(String.IsNullOrWhiteSpace(filter.OrderBy) && !String.IsNullOrWhiteSpace(fc.IDFieldName))
+                        if (String.IsNullOrWhiteSpace(filter.OrderBy) && !String.IsNullOrWhiteSpace(fc.IDFieldName))
                         {
                             limit += " order by " + filter.fieldPrefix + fc.IDFieldName + filter.fieldPostfix;
                         }
                         limit += " limit " + filter.Limit;
                         if (filter.BeginRecord > 1)  // Default in QueryFilter is one!!!
+                        {
                             limit += " offset " + Math.Max(0, filter.BeginRecord - 1);
+                        }
                     }
                     break;
             }
 
             return (top: top, limit: limit);
-        } 
+        }
     }
 }

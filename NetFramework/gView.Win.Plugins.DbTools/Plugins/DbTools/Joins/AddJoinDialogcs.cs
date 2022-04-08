@@ -1,17 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Windows.Forms;
-using gView.Framework.Db;
-using gView.Framework.Db.UI;
-using gView.Framework.Data;
-using gView.Framework.UI;
-using gView.Framework.Data.Joins;
+﻿using gView.Framework.Data;
 using gView.Framework.system;
+using gView.Framework.UI;
+using System;
+using System.Windows.Forms;
 
 namespace gView.Plugins.DbTools.Joins
 {
@@ -33,7 +24,11 @@ namespace gView.Plugins.DbTools.Joins
             PlugInManager pm = new PlugInManager();
             foreach (IFeatureLayerJoin join in pm.GetPluginInstances(typeof(IFeatureLayerJoin)))
             {
-                if (join == null) continue;
+                if (join == null)
+                {
+                    continue;
+                }
+
                 cmbJoinClasses.Items.Add(new FeatureLayerJoinItem() { FeatureLayerJoin = join });
             }
             cmbJoinClasses.SelectedIndex = 0;
@@ -49,7 +44,9 @@ namespace gView.Plugins.DbTools.Joins
         {
             panelJoinTypeUI.Controls.Clear();
             if (!(cmbJoinClasses.SelectedItem is FeatureLayerJoinItem))
+            {
                 return;
+            }
 
             IFeatureLayerJoin join = ((FeatureLayerJoinItem)cmbJoinClasses.SelectedItem).FeatureLayerJoin;
             if (join is IPropertyPage)
@@ -189,7 +186,9 @@ namespace gView.Plugins.DbTools.Joins
             public override string ToString()
             {
                 if (FeatureLayerJoin == null)
+                {
                     return base.ToString();
+                }
 
                 return FeatureLayerJoin.Name;
             }

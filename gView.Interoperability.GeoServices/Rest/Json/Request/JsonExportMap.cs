@@ -4,9 +4,6 @@ using gView.Framework.Geometry;
 using gView.Framework.system;
 using gView.Interoperability.GeoServices.Rest.Reflection;
 using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace gView.Interoperability.GeoServices.Rest.Json.Request
 {
@@ -29,7 +26,7 @@ namespace gView.Interoperability.GeoServices.Rest.Json.Request
 
                     foreach (var layer in map.MapElements)
                     {
-                        IEnvelope envelope = null; 
+                        IEnvelope envelope = null;
                         if (layer.Class is IFeatureClass && ((IFeatureClass)layer.Class).Envelope != null)
                         {
                             envelope = ((IFeatureClass)layer.Class).Envelope;
@@ -39,7 +36,7 @@ namespace gView.Interoperability.GeoServices.Rest.Json.Request
                             envelope = ((IRasterClass)layer.Class).Polygon.Envelope;
                         }
 
-                        if(envelope!=null)
+                        if (envelope != null)
                         {
                             if (fullExtent == null)
                             {
@@ -125,7 +122,7 @@ namespace gView.Interoperability.GeoServices.Rest.Json.Request
         public long HistoricMoment { get; set; }
 
         [JsonProperty(PropertyName = "f")]
-        [FormInput(Values = new string[] { "json","pjson","image" })]
+        [FormInput(Values = new string[] { "json", "pjson", "image" })]
         public string OutputFormat { get; set; }
 
         public string GetContentType()

@@ -9,10 +9,11 @@
 namespace OSGeo_v1.OGR
 {
 
-public enum Justification {
-  OJUndefined = 0,
-  OJLeft = 1,
-  OJRight = 2
-}
+    public enum Justification
+    {
+        OJUndefined = 0,
+        OJLeft = 1,
+        OJRight = 2
+    }
 
 }

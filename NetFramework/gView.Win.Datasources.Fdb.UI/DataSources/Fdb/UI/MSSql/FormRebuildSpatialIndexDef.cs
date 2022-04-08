@@ -1,13 +1,8 @@
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Text;
-using System.Windows.Forms;
-using gView.Framework.Data;
 using gView.DataSources.Fdb.MSAccess;
+using gView.Framework.Data;
+using System;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace gView.DataSources.Fdb.UI.MSSql
 {
@@ -15,7 +10,7 @@ namespace gView.DataSources.Fdb.UI.MSSql
     {
         private gView.DataSources.Fdb.MSAccess.AccessFDB _fdb;
         private IFeatureClass _fc;
-        
+
         private FormRebuildSpatialIndexDef()
         {
             InitializeComponent();

@@ -2,7 +2,6 @@
 using gView.Framework.Geometry;
 using gView.Framework.system;
 using System;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace gView.DataSources.GeoJson
@@ -15,7 +14,7 @@ namespace gView.DataSources.GeoJson
         {
             _dataset = dataset;
 
-            
+
         }
 
         async public static Task<GeoJsonServiceFeatureClass> CreateInstance(GeoJsonServiceDataset dataset, GeometryType geometryType)
@@ -42,9 +41,9 @@ namespace gView.DataSources.GeoJson
 
                 foreach (var feature in features)
                 {
-                    foreach(var fieldValue in feature.Fields)
+                    foreach (var fieldValue in feature.Fields)
                     {
-                        if(fields.FindField(fieldValue.Name) == null)
+                        if (fields.FindField(fieldValue.Name) == null)
                         {
                             var val = fieldValue.Value;
                             if (fieldValue.Name == "id" && idIsInterger)
@@ -97,7 +96,7 @@ namespace gView.DataSources.GeoJson
 
         public ISpatialReference SpatialReference { get; internal set; }
 
-        public GeometryType GeometryType { get; private set;  }
+        public GeometryType GeometryType { get; private set; }
 
         public Task<int> CountFeatures()
         {

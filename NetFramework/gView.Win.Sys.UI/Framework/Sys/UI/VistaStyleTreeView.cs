@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Windows.Forms;
 using System.Drawing;
+using System.Windows.Forms;
 
 namespace gView.Framework.system.UI
 {
@@ -23,19 +20,25 @@ namespace gView.Framework.system.UI
 
             TreeView tv = (TreeView)sender;
             if (e.Node.IsVisible == false)
+            {
                 return;
+            }
 
             int indent = tv.Indent;
             int depth = e.Node.Level + 1;
             int selectedDepth = 1;
             if (e.Node.TreeView.SelectedNode != null)
+            {
                 selectedDepth = e.Node.TreeView.SelectedNode.Level + 1;
+            }
 
             int nodeIndent = indent * depth;
 
             Font font = tv.Font;
             if (e.Node.NodeFont != null)
+            {
                 font = e.Node.NodeFont;
+            }
 
             Brush fgBrush = Brushes.Black;
             Brush bgBrush = Brushes.White;
@@ -47,7 +50,9 @@ namespace gView.Framework.system.UI
             g.FillRectangle(bgBrush, e.Bounds);
             int imageWidth = 0;
             if (tv.ImageList != null)
+            {
                 imageWidth = tv.ImageList.ImageSize.Width;
+            }
 
             if (e.Node.IsSelected || e.State == TreeNodeStates.Marked)
             {
@@ -99,7 +104,9 @@ namespace gView.Framework.system.UI
                 Image img = null;
                 int imageIndex = tv.ImageIndex;
                 if (e.Node.ImageIndex != -1)
+                {
                     imageIndex = e.Node.ImageIndex;
+                }
 
                 img = this.UIImageList[imageIndex];
                 g.DrawImageUnscaled(img, e.Bounds.Left + nodeIndent, e.Bounds.Top + e.Bounds.Height / 2 - img.Height / 2);
@@ -130,7 +137,9 @@ namespace gView.Framework.system.UI
             // half the width, or height (whichever is shorter) 
             // then return a capsule instead of a lozenge 
             if (radius >= (Math.Min(baseRect.Width, baseRect.Height)) / 2.0)
+            {
                 return GetCapsule(baseRect);
+            }
 
             // create the arc for the rectangle sides and declare 
             // a graphics path object for the drawing 

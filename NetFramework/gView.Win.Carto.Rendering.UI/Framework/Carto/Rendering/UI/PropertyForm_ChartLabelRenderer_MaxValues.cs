@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
+﻿using gView.Framework.Data;
+using System;
 using System.Windows.Forms;
-using gView.Framework.Data;
 
 namespace gView.Framework.Carto.Rendering.UI
 {
@@ -24,13 +18,15 @@ namespace gView.Framework.Carto.Rendering.UI
 
         private void PropertyForm_ChartLabelRenderer_MaxValues_Load(object sender, EventArgs e)
         {
-            if (_fc != null && _fieldNames!=null)
+            if (_fc != null && _fieldNames != null)
             {
                 double sum = 0D;
                 foreach (string fieldName in _fieldNames)
                 {
                     if (_fc.FindField(fieldName) == null)
+                    {
                         continue;
+                    }
 
                     object minObj = FunctionFilter.QueryScalar(
                         _fc,

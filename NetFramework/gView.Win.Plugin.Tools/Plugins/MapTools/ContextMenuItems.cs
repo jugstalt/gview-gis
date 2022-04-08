@@ -119,17 +119,17 @@ namespace gView.Plugins.MapTools
                     {
                         dest.MinimumScale = source.MinimumScale;
                         dest.MaximumScale = source.MaximumScale;
-                        if(dlg2.FeatureRenderer)
+                        if (dlg2.FeatureRenderer)
                         {
                             dest.MaxRefScaleFactor = source.MaxRefScaleFactor;
                         }
                     }
 
-                    if(dlg2.LabelScales)
+                    if (dlg2.LabelScales)
                     {
                         dest.MinimumLabelScale = source.MinimumLabelScale;
                         dest.MaximumLabelScale = source.MaximumLabelScale;
-                        if(dlg2.LabelRenderer)
+                        if (dlg2.LabelRenderer)
                         {
                             dest.MaxLabelRefScaleFactor = source.MaxLabelRefScaleFactor;
                         }

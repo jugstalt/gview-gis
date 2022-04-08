@@ -1,6 +1,6 @@
-﻿using System;
-using gView.Framework.IO;
+﻿using gView.Framework.IO;
 using gView.Framework.system;
+using System;
 
 namespace gView.Framework.Symbology
 {
@@ -51,7 +51,11 @@ namespace gView.Framework.Symbology
                     break;
             }
 
-            if (rotation < 0.0) rotation += 360.0;
+            if (rotation < 0.0)
+            {
+                rotation += 360.0;
+            }
+
             return rotation;
         }
 
@@ -72,7 +76,9 @@ namespace gView.Framework.Symbology
         public void Save(IPersistStream stream)
         {
             if (_rotationFieldName == "")
+            {
                 return;
+            }
 
             stream.Save("RotationFieldname", _rotationFieldName);
             stream.Save("RotationType", (int)_rotType);

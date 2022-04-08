@@ -9,7 +9,7 @@ namespace gView.Framework.Symbology.UI.Controls
     /// Specifies the display options for the ToolStripColorPicker such as
     /// image, text and underline.
     /// </summary>
-    public enum ToolStripColorPickerDisplayType 
+    public enum ToolStripColorPickerDisplayType
     {
         // <summary>
         /// Specifies that only a normal image is to be rendered for this ToolStripColorPicker
@@ -42,19 +42,19 @@ namespace gView.Framework.Symbology.UI.Controls
         /// <summary>
         /// Specifies that only text is to be rendered for this ToolStripColorPicker            
         /// </summary>
-        Text          
+        Text
     }
 
     /// <summary>
     /// Represents a ToolStripButtonItem that contains Color Picker control.
     /// </summary>
-    [DefaultEvent("SelectedColorChanged"), DefaultProperty("Color"), 
+    [DefaultEvent("SelectedColorChanged"), DefaultProperty("Color"),
     Description("ToolStripItem that allows selecting a color from a color picker control."),
     ToolboxItem(false),
     ToolboxBitmap(typeof(ToolStripColorPicker), "ToolStripColorPicker")]
     public class ToolStripColorPicker : ToolStripDropDownButton
     {
-        private Control _parentControl=null;
+        private Control _parentControl = null;
 
         #region Events
         /// <summary>
@@ -65,14 +65,14 @@ namespace gView.Framework.Symbology.UI.Controls
         #endregion
 
         #region Properties
-  
+
         private ToolStripColorPickerDisplayType _buttonDisplayStyle = ToolStripColorPickerDisplayType.UnderLineAndImage;
         /// <summary>
         /// Gets or sets the ToolStripColorPickerDisplayType in order to
         /// specified the display style of the button - image, text, underline etc.
         /// </summary>
         [Category("Appearance"), Description("Specifies whether to display the image, text and underline on the button.")
-        ,DefaultValue(typeof(ToolStripColorPickerDisplayType), "ToolStripColorPickerDisplayType.UnderLineAndImage")]                     
+        , DefaultValue(typeof(ToolStripColorPickerDisplayType), "ToolStripColorPickerDisplayType.UnderLineAndImage")]
         public ToolStripColorPickerDisplayType ButtonDisplayStyle
         {
             get { return _buttonDisplayStyle; }
@@ -87,24 +87,24 @@ namespace gView.Framework.Symbology.UI.Controls
         /// Overrides, Gets or sets the ToolStripItem.DisplayStyle property, use
         /// the ButtonDisplayStyle instead.
         /// </summary>
-        [Browsable(false)]        
+        [Browsable(false)]
         public override ToolStripItemDisplayStyle DisplayStyle
         {
             get { return base.DisplayStyle; }
             set { base.DisplayStyle = value; }
         }
-       
+
         /// <summary>
         /// Gets or sets the color assign to the color picker control.
         /// </summary>
-        [Category("Data"), 
+        [Category("Data"),
         Description("Gets or sets the color assign to the color picker control."),
         DefaultValue(typeof(Color), "Color.Black")]
         public Color Color
         {
             get { return _colorPicker.Color; }
-            set 
-            { 
+            set
+            {
                 _colorPicker.Color = value;
                 Refresh();
                 OnSelectedColorChanged(EventArgs.Empty);
@@ -115,7 +115,7 @@ namespace gView.Framework.Symbology.UI.Controls
         /// <summary>
         /// Gets or sets value indicating whether to render the color name to the tool tip text.
         /// </summary>
-        [DefaultValue(true), 
+        [DefaultValue(true),
         Category("Behavior"), Description("Value indicating whether to render the color name to the tool tip text.")]
         public bool AddColorNameToToolTip
         {
@@ -132,13 +132,13 @@ namespace gView.Framework.Symbology.UI.Controls
         new public string ToolTipText
         {
             get { return _originalToolTipText; }
-            set 
+            set
             {
                 _originalToolTipText = value;
                 if (_addColorNameToToolTip)
                 {
-                    base.ToolTipText = _originalToolTipText + 
-                        " (" + _colorPicker.ColorName  + ")";
+                    base.ToolTipText = _originalToolTipText +
+                        " (" + _colorPicker.ColorName + ")";
                 }
                 else
                 {
@@ -186,7 +186,7 @@ namespace gView.Framework.Symbology.UI.Controls
         {
             InitControl();
         }
-       
+
         /// <summary>
         /// Initializes a new instance of the ToolStripColorPicker that holds
         /// OfficeColorPicker control inside a ToolStripItem to add to ToolStrip containers.
@@ -231,7 +231,7 @@ namespace gView.Framework.Symbology.UI.Controls
         {
             _colorPicker.SelectedColorChanged += new EventHandler(HandleSelectedColorChanged);
             this.AutoSize = false;
-            this.Width = 30;            
+            this.Width = 30;
         }
         /// <summary>
         /// Set the painting properties by the _buttonDisplayStyle property.
@@ -293,7 +293,7 @@ namespace gView.Framework.Symbology.UI.Controls
             }
             Refresh();
         }
-        
+
         #endregion
 
         #region Overrides (event handlers)
@@ -344,7 +344,7 @@ namespace gView.Framework.Symbology.UI.Controls
                 }
                 else
                 {
-                    _colorPicker.Show(new Point(startPoint.X,startPoint.Y));
+                    _colorPicker.Show(new Point(startPoint.X, startPoint.Y));
                 }
             }
 
@@ -373,7 +373,7 @@ namespace gView.Framework.Symbology.UI.Controls
             }
             return this.Owner.PointToScreen(new Point(x, 0));
         }
-      
+
         /// <summary>
         /// Fires the SelectedColorChanged event.
         /// </summary>
@@ -421,7 +421,7 @@ namespace gView.Framework.Symbology.UI.Controls
             // Paint the line down on the button
             using (Brush brush = new SolidBrush(Color))
             {
-                _colorRectangle =new Rectangle(2, this.Height - 6,
+                _colorRectangle = new Rectangle(2, this.Height - 6,
                     this.Width - 16, 4);
                 g.FillRectangle(brush, _colorRectangle);
             }
@@ -471,10 +471,10 @@ namespace gView.Framework.Symbology.UI.Controls
         protected override void OnPaint(PaintEventArgs e)
         {
             if (_showColorUnderLine)
-            {                
+            {
                 base.OnPaint(e);
                 Size imageSize = new Size(0, 0);
-                 PaintUnderLine(e.Graphics);               
+                PaintUnderLine(e.Graphics);
                 if (this.Image != null && _showUnderLineImage)
                 {
                     imageSize = PaintUnderLineImage(e.Graphics);
@@ -488,9 +488,9 @@ namespace gView.Framework.Symbology.UI.Controls
             {
                 base.OnPaint(e);
             }
-        }       
+        }
         #endregion
 
-       
+
     }
 }

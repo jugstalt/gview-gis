@@ -345,7 +345,7 @@ namespace gView.Framework.OGC
         private static Point CreatePoint(BinaryReader reader, WkbByteOrder byteOrder, bool hasZ, bool hasM)
         {
             // Create and return the point.
-            Point p= new Point(ReadDouble(reader, byteOrder), ReadDouble(reader, byteOrder));
+            Point p = new Point(ReadDouble(reader, byteOrder), ReadDouble(reader, byteOrder));
 
             if (hasZ == true && hasM == true)
             {
@@ -384,7 +384,7 @@ namespace gView.Framework.OGC
             for (int i = 0; i < numPoints; i++)
             {
                 // Add the coordinate.
-                Point p=new Point(ReadDouble(reader, byteOrder), ReadDouble(reader, byteOrder));
+                Point p = new Point(ReadDouble(reader, byteOrder), ReadDouble(reader, byteOrder));
                 pColl.AddPoint(p);
 
                 if (hasZ == true && hasM == true)
@@ -443,7 +443,7 @@ namespace gView.Framework.OGC
             WritePointCollection(mpoint, writer, byteOrder);
         }
 
-        private static Polyline CreateLineString(BinaryReader reader, WkbByteOrder byteOrder, bool hasZ,bool hasM)
+        private static Polyline CreateLineString(BinaryReader reader, WkbByteOrder byteOrder, bool hasZ, bool hasM)
         {
             Polyline pline = new Polyline();
             gView.Framework.Geometry.Path path = new gView.Framework.Geometry.Path();
@@ -724,7 +724,7 @@ namespace gView.Framework.OGC
             {
                 ret = Convert.ToDouble(number, gView.Framework.OGC.OGC.numberFormat_EnUS);
             }
-            catch(OverflowException)
+            catch (OverflowException)
             {
                 if (number.Trim().StartsWith("-"))
                 {

@@ -3,7 +3,6 @@ using gView.Framework.Geometry;
 using gView.Framework.IO;
 using gView.Framework.system;
 using gView.GraphicsEngine;
-using gView.GraphicsEngine.Abstraction;
 using System;
 using System.Collections.Generic;
 using System.IO;

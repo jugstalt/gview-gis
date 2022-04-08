@@ -1,7 +1,5 @@
 ﻿using gView.GraphicsEngine;
 using System;
-using System.Collections.Generic;
-using System.Text;
 using static gView.Framework.Symbology.SimplePointSymbol;
 
 namespace gView.Interoperability.GeoServices.Rest.Json
@@ -16,11 +14,19 @@ namespace gView.Interoperability.GeoServices.Rest.Json
         static public ArgbColor ToColor(this int[] col)
         {
             if (col == null)
+            {
                 return ArgbColor.Transparent;
+            }
+
             if (col.Length == 3)
+            {
                 return ArgbColor.FromArgb(col[0], col[1], col[2]);
+            }
+
             if (col.Length == 4)
+            {
                 return ArgbColor.FromArgb(col[3], col[0], col[1], col[2]);
+            }
 
             throw new Exception("Invalid symbol color: [" + String.Join(",", col) + "]");
         }
@@ -49,7 +55,7 @@ namespace gView.Interoperability.GeoServices.Rest.Json
 
         static public string FromMarkerType(this MarkerType markerType)
         {
-            switch(markerType)
+            switch (markerType)
             {
                 case MarkerType.Circle:
                     return "esriSMSCircle";
@@ -68,7 +74,7 @@ namespace gView.Interoperability.GeoServices.Rest.Json
 
         static public LineDashStyle ToDashStyle(this string style)
         {
-            switch(style)
+            switch (style)
             {
                 case "esriSLSDash":
                     return LineDashStyle.Dash;
@@ -88,7 +94,7 @@ namespace gView.Interoperability.GeoServices.Rest.Json
 
         static public string FromDashStyle(this LineDashStyle dashStyle)
         {
-            switch(dashStyle)
+            switch (dashStyle)
             {
                 case LineDashStyle.Solid:
                     return "esriSLSSolid";

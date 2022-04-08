@@ -1,11 +1,6 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-using gView.Framework.Data;
-using gView.Framework.UI;
 using gView.Framework.system;
+using gView.Framework.UI;
 using System.Reflection;
-using System.Threading.Tasks;
 
 namespace gView.Framework.Data.Fields.FieldDomains
 {

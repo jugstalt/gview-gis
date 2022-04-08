@@ -3,15 +3,13 @@ using gView.Framework.Carto;
 using gView.Framework.Data;
 using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace gView.Data.Framework.Data
 {
     public class DatasetCachingContext : IDatasetCachingContext
     {
-        private ConcurrentBag<IDatasetCache> _caches; 
+        private ConcurrentBag<IDatasetCache> _caches;
 
         public DatasetCachingContext(IMap map)
         {
@@ -24,7 +22,9 @@ namespace gView.Data.Framework.Data
         public void AddCache(IDatasetCache datasetCache)
         {
             if (_caches == null)
+            {
                 throw new Exception("DatasetCachcontext already disposed");
+            }
 
             if (datasetCache != null)
             {
@@ -41,7 +41,7 @@ namespace gView.Data.Framework.Data
 
         public void Dispose()
         {
-            foreach(var cache in _caches)
+            foreach (var cache in _caches)
             {
                 try
                 {

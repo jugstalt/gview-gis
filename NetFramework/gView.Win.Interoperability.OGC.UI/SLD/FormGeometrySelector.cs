@@ -1,11 +1,5 @@
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Text;
-using System.Windows.Forms;
 using gView.Framework.Geometry;
+using System.Windows.Forms;
 
 namespace gView.Interoperability.OGC.UI.SLD
 {
@@ -21,11 +15,19 @@ namespace gView.Interoperability.OGC.UI.SLD
             get
             {
                 if (radioPoint.Checked)
+                {
                     return GeometryType.Point;
+                }
+
                 if (radioLine.Checked)
+                {
                     return GeometryType.Polyline;
+                }
+
                 if (radioPolygon.Checked)
+                {
                     return GeometryType.Polygon;
+                }
 
                 return GeometryType.Unknown;
             }

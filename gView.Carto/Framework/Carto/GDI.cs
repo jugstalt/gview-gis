@@ -1,6 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace gView.Framework.Carto
 {
@@ -17,7 +15,7 @@ namespace gView.Framework.Carto
         [System.Runtime.InteropServices.DllImportAttribute("gdi32.dll")]
         public static extern int SetPixel(
             IntPtr hdc,
-            int x,int y,
+            int x, int y,
             long color
             );
 

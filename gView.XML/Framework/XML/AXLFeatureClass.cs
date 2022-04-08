@@ -1,11 +1,10 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml;
 using gView.Framework.Data;
 using gView.Framework.Geometry;
 using gView.Framework.system;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using System.Xml;
 
 namespace gView.Framework.XML
 {
@@ -57,10 +56,12 @@ namespace gView.Framework.XML
 
         async public Task<ICursor> Search(IQueryFilter filter)
         {
-            filter= await WrapFilter2ArcXML(filter);
+            filter = await WrapFilter2ArcXML(filter);
 
             if (BeforeQuery != null)
+            {
                 BeforeQuery(this, ref filter);
+            }
 
             return new AXLFeatureCursor(this, filter);
         }
@@ -68,7 +69,9 @@ namespace gView.Framework.XML
         async public Task<ISelectionSet> Select(IQueryFilter filter)
         {
             if (BeforeQuery != null)
+            {
                 BeforeQuery(this, ref filter);
+            }
 
             if (this.IDFieldName != String.Empty && this.FindField(this.IDFieldName) != null)
             {
@@ -81,9 +84,13 @@ namespace gView.Framework.XML
                 while ((feat = await cursor.NextFeature()) != null)
                 {
                     if (feat is IGlobalFeature)
+                    {
                         selSet.AddID(((IGlobalFeature)feat).GlobalOID);
+                    }
                     else
+                    {
                         selSet.AddID(feat.OID);
+                    }
                 }
                 return selSet;
             }
@@ -169,7 +176,9 @@ namespace gView.Framework.XML
             filter = await WrapFilter2ArcXML(filter);
 
             if (BeforeQuery != null)
+            {
                 BeforeQuery(this, ref filter);
+            }
 
             return new AXLFeatureCursor(this, filter);
         }
@@ -189,11 +198,17 @@ namespace gView.Framework.XML
 
         public IField FindField(string name)
         {
-            if (_fields == null) return null;
+            if (_fields == null)
+            {
+                return null;
+            }
 
             foreach (IField field in _fields.ToEnumerable())
             {
-                if (field.name == name) return field;
+                if (field.name == name)
+                {
+                    return field;
+                }
             }
             return null;
         }
@@ -266,7 +281,11 @@ namespace gView.Framework.XML
 
                     foreach (XmlNode field in doc.SelectNodes("//FIELD"))
                     {
-                        if (field.Attributes["name"] == null) continue;
+                        if (field.Attributes["name"] == null)
+                        {
+                            continue;
+                        }
+
                         Field f = new Field();
                         f.name = ArcXMLGeometry.shortName(field.Attributes["name"].Value);
 
@@ -313,9 +332,14 @@ namespace gView.Framework.XML
                         }
 
                         if (field.Attributes["precision"] != null)
+                        {
                             f.precision = Convert.ToInt32(field.Attributes["precision"].Value);
+                        }
+
                         if (field.Attributes["size"] != null)
+                        {
                             f.size = Convert.ToInt32(field.Attributes["size"].Value);
+                        }
 
                         _fields.Add(f);
                     }
@@ -424,13 +448,19 @@ namespace gView.Framework.XML
         async private Task<IQueryFilter> WrapFilter2ArcXML(IQueryFilter filter)
         {
             if (filter is ArcXMLQueryFilter ||
-                filter is ArcXMLSpatialFilter) return filter;
+                filter is ArcXMLSpatialFilter)
+            {
+                return filter;
+            }
 
             if (filter is ArcXMLBufferQueryFilter)
             {
                 ArcXMLBufferQueryFilter bFilter = filter as ArcXMLBufferQueryFilter;
                 filter = await BufferQueryFilter.ConvertToSpatialFilter(bFilter);
-                if (filter == null) return null;
+                if (filter == null)
+                {
+                    return null;
+                }
 
                 ArcXMLSpatialFilter aFilter = new ArcXMLSpatialFilter(filter as ISpatialFilter);
                 aFilter.BeginRecord = bFilter.BeginRecord;
@@ -455,7 +485,11 @@ namespace gView.Framework.XML
             if (filter is IBufferQueryFilter)
             {
                 filter = await BufferQueryFilter.ConvertToSpatialFilter(filter as IBufferQueryFilter);
-                if (filter == null) return null;
+                if (filter == null)
+                {
+                    return null;
+                }
+
                 ArcXMLSpatialFilter sFilter = new ArcXMLSpatialFilter(filter as ISpatialFilter);
                 sFilter.outputmode = OutputMode.newxml;
                 return sFilter;
@@ -499,8 +533,11 @@ namespace gView.Framework.XML
             }
             else
             {
-                if(filter!=null)
+                if (filter != null)
+                {
                     axl.WriteAttribute("beginrecord", filter.BeginRecord.ToString());
+                }
+
                 axl.WriteAttribute("outputmode", "newxml");
             }
             axl.WriteStartElement("LAYER");
@@ -509,7 +546,9 @@ namespace gView.Framework.XML
 
             axl.WriteStartElement("QUERY");
             if (filter.SubFields == "" || filter.SubFields == "*")
+            {
                 axl.WriteAttribute("subfields", "#ALL#");
+            }
             else
             {
                 filter.AddField(this.IDFieldName);
@@ -517,19 +556,27 @@ namespace gView.Framework.XML
             }
             string where = String.Empty;
             if (filter is IGlobalRowIDFilter)
+            {
                 where = ((IGlobalRowIDFilter)filter).RowIDWhereClause;
+            }
             else if (filter is IRowIDFilter)
+            {
                 where = ((IRowIDFilter)filter).RowIDWhereClause;
+            }
             else
-                where=filter.WhereClause;
-            
+            {
+                where = filter.WhereClause;
+            }
+
             if (!String.IsNullOrEmpty(where))
             {
                 axl.WriteAttribute("where", where);
             }
 
             if (attributes != null && attributes.BufferNode != null)
+            {
                 WriteBufferNode(axl, attributes.BufferNode, filter);
+            }
 
             if (filter.FeatureSpatialReference != null)
             {
@@ -592,7 +639,10 @@ namespace gView.Framework.XML
             else
             {
                 if (filter != null)
+                {
                     axl.WriteAttribute("beginrecord", filter.BeginRecord.ToString());
+                }
+
                 axl.WriteAttribute("outputmode", "newxml");
             }
 
@@ -605,14 +655,19 @@ namespace gView.Framework.XML
             if (filter.SubFields != "#ALL#" && filter.SubFields != "*")
             {
                 filter.AddField(this.IDFieldName);
-                if (attributes != null && attributes.geometry) filter.AddField(this.ShapeFieldName);
+                if (attributes != null && attributes.geometry)
+                {
+                    filter.AddField(this.ShapeFieldName);
+                }
             }
 
             string where = (filter is IRowIDFilter) ? ((IRowIDFilter)filter).RowIDWhereClause : filter.WhereClause;
             if (where != "")
             {
                 if (filter.SubFields == "" || filter.SubFields == "*")
+                {
                     axl.WriteAttribute("subfields", "#ALL#");
+                }
                 else
                 {
                     filter.AddField(this.IDFieldName);
@@ -626,7 +681,9 @@ namespace gView.Framework.XML
             }
 
             if (attributes != null && attributes.BufferNode != null)
+            {
                 WriteBufferNode(axl, attributes.BufferNode, filter);
+            }
 
             if (filter.FilterSpatialReference != null || filter.FeatureSpatialReference != null)
             {
@@ -705,7 +762,10 @@ namespace gView.Framework.XML
 
         private void WriteBufferNode(AXLWriter axl, XmlNode bufferNode, IQueryFilter filter)
         {
-            if (bufferNode == null || axl == null) return;
+            if (bufferNode == null || axl == null)
+            {
+                return;
+            }
 
             //if (bufferNode.Attributes["project"] == null)
             //{
@@ -793,12 +853,19 @@ namespace gView.Framework.XML
             if (filter is IBufferQueryFilter)
             {
                 filter = await BufferQueryFilter.ConvertToSpatialFilter(filter as IBufferQueryFilter);
-                if (filter == null) return "";
+                if (filter == null)
+                {
+                    return "";
+                }
             }
             if (filter is ISpatialFilter)
+            {
                 return await AXLSpatialQuery((ISpatialFilter)filter);
+            }
             else
+            {
                 return await AXLQuery(filter);
+            }
         }
 
         #region IGeometryDef Member
@@ -860,7 +927,9 @@ namespace gView.Framework.XML
         public void FireBeforeQureyEvent(ref IQueryFilter filter)
         {
             if (BeforeQuery != null)
+            {
                 BeforeQuery(this, ref filter);
+            }
         }
 
         #endregion
@@ -917,7 +986,9 @@ namespace gView.Framework.XML
             _attributes = _filter as IArcXmlGET_FEATURES_Attributes;
 
             if (_attributes == null)
+            {
                 _filter.BeginRecord = 1;
+            }
         }
 
         private XmlDocument _doc;
@@ -936,7 +1007,10 @@ namespace gView.Framework.XML
                     ((QueryFilter)_filter).HasMore =
                         Convert.ToBoolean(featureCount.Attributes["hasmore"].Value);
                 }
-                if (_filter.HasMore) _filter.BeginRecord += _filter.LastQueryFeatureCount;
+                if (_filter.HasMore)
+                {
+                    _filter.BeginRecord += _filter.LastQueryFeatureCount;
+                }
 
                 _features = null; // _doc.SelectNodes("//FEATURE");
 
@@ -956,7 +1030,11 @@ namespace gView.Framework.XML
         {
             get
             {
-                if (_doc == null) return "";
+                if (_doc == null)
+                {
+                    return "";
+                }
+
                 return _doc.OuterXml;
             }
         }
@@ -989,7 +1067,9 @@ namespace gView.Framework.XML
                 if (_doc == null)
                 {
                     if (!await PerformQuery())
+                    {
                         return null;
+                    }
                 }
 
                 _features = _doc.SelectNodes("//FEATURE");
@@ -997,7 +1077,10 @@ namespace gView.Framework.XML
 
             if (_fc == null && _filter == null)
             {
-                if (_pos >= _features.Count) return null;
+                if (_pos >= _features.Count)
+                {
+                    return null;
+                }
 
                 IFeature feature = AXLFeatureClass.ConvertAXLNode2Feature(_features[_pos++], _fc, _attributes);
                 Transform(feature);
@@ -1021,7 +1104,10 @@ namespace gView.Framework.XML
 
                             return await this.NextFeature();
                         }
-                        else return null;
+                        else
+                        {
+                            return null;
+                        }
                     }
                 }
                 IFeature feature = AXLFeatureClass.ConvertAXLNode2Feature(_features[_pos++], _fc, _attributes);
@@ -1049,7 +1135,7 @@ namespace gView.Framework.XML
             _id = id;
         }
 
-        
+
         #region IClass Member
 
         public string Name { get { return _name; } set { _name = value; } }
@@ -1075,7 +1161,7 @@ namespace gView.Framework.XML
     public class AXLQueryableRasterClass : AXLRasterClass, IPointIdentify, IBeforePointIdentifyEventHandler
     {
         public AXLQueryableRasterClass(IDataset dataset, string id)
-            : base(dataset,id)
+            : base(dataset, id)
         {
         }
 
@@ -1084,7 +1170,9 @@ namespace gView.Framework.XML
         async public Task<ICursor> PointQuery(gView.Framework.Carto.IDisplay display, IPoint point, ISpatialReference sRef, IUserData userdata)
         {
             if (point == null)
+            {
                 return null;
+            }
 
             FireBeforePointIdentify(display, ref point, ref sRef, userdata);
 
@@ -1101,7 +1189,9 @@ namespace gView.Framework.XML
                     axl.WriteStartElement("COORDSYS");
                     axl.WriteAttribute("string", gView.Framework.Geometry.SpatialReference.ToESRIWKT(sRef));
                     if (sRef.Datum != null)
+                    {
                         axl.WriteAttribute("datumtransformstring", gView.Framework.Geometry.SpatialReference.ToESRIGeotransWKT(sRef));
+                    }
 
                     axl.WriteEndElement(); // COORDSYS
                 }
@@ -1111,8 +1201,11 @@ namespace gView.Framework.XML
                     axl.WriteAttribute("iwidth", display.iWidth.ToString());
                     axl.WriteAttribute("iheight", display.iHeight.ToString());
                     if (display.Envelope != null)
+                    {
                         axl.WriteEnvelope(display.Envelope.minx, display.Envelope.miny,
                                           display.Envelope.maxx, display.Envelope.maxy);
+                    }
+
                     axl.WriteEndElement(); // gv_display
                 }
                 string req = axl.Request;
@@ -1122,7 +1215,10 @@ namespace gView.Framework.XML
                 doc.LoadXml(resp);
 
                 XmlNode respNode = doc.SelectSingleNode("//RESPONSE");
-                if (respNode == null || respNode.ChildNodes.Count==0) return null;
+                if (respNode == null || respNode.ChildNodes.Count == 0)
+                {
+                    return null;
+                }
 
                 XmlNode infoNode = respNode.ChildNodes[0];
                 switch (respNode.ChildNodes[0].Name)
@@ -1131,11 +1227,17 @@ namespace gView.Framework.XML
                         return new AXLRasterInfoRowCursor(respNode.SelectNodes("RASTER_INFO"));
                     case "gv_url_info":
                         if (infoNode.Attributes["url"] != null)
+                        {
                             return new AXLUrlCursor(infoNode.Attributes["url"].Value);
+                        }
+
                         break;
                     case "gv_text_info":
                         if (infoNode.Attributes["text"] != null)
+                        {
                             return new AXLTextCursur(infoNode.Attributes["text"].Value.Replace("\\n", "\n"));
+                        }
+
                         break;
                 }
             }
@@ -1157,7 +1259,9 @@ namespace gView.Framework.XML
         public void FireBeforePointIdentify(gView.Framework.Carto.IDisplay display, ref IPoint point, ref ISpatialReference sRef, IUserData userdata)
         {
             if (BeforePointIdentify != null)
+            {
                 BeforePointIdentify(this, display, ref point, ref sRef, userdata);
+            }
         }
 
         #endregion
@@ -1185,7 +1289,7 @@ namespace gView.Framework.XML
 
         public void Dispose()
         {
-            
+
         }
 
         #endregion
@@ -1212,7 +1316,7 @@ namespace gView.Framework.XML
 
         public void Dispose()
         {
-           
+
         }
 
         #endregion
@@ -1230,10 +1334,16 @@ namespace gView.Framework.XML
 
         async public Task<IRow> NextRow()
         {
-            if (_raster_infos == null || _pos >= _raster_infos.Count) return null;
+            if (_raster_infos == null || _pos >= _raster_infos.Count)
+            {
+                return null;
+            }
 
             XmlNode raster_info = _raster_infos[_pos++];
-            if (raster_info == null) return await NextRow();
+            if (raster_info == null)
+            {
+                return await NextRow();
+            }
 
             Row row = new Row();
 
@@ -1245,7 +1355,10 @@ namespace gView.Framework.XML
                 foreach (XmlNode band in bands.SelectNodes("BAND"))
                 {
                     if (band.Attributes["number"] == null ||
-                        band.Attributes["value"] == null) continue;
+                        band.Attributes["value"] == null)
+                    {
+                        continue;
+                    }
 
                     string fieldName = "Band " + band.Attributes["number"].Value;
                     if (raster_info.SelectNodes("BANDS").Count > 1 &&
@@ -1259,7 +1372,10 @@ namespace gView.Framework.XML
                 foreach (XmlNode attribute in bands.SelectNodes("attribute"))
                 {
                     if (attribute.Attributes["name"] == null ||
-                        attribute.Attributes["value"] == null) continue;
+                        attribute.Attributes["value"] == null)
+                    {
+                        continue;
+                    }
 
                     string fieldName = attribute.Attributes["name"].Value;
                     if (raster_info.SelectNodes("BANDS").Count > 1 &&
@@ -1272,9 +1388,14 @@ namespace gView.Framework.XML
             }
 
             if (raster_info.Attributes["x"] != null)
+            {
                 row.Fields.Add(new FieldValue("x", raster_info.Attributes["x"].Value));
+            }
+
             if (raster_info.Attributes["y"] != null)
+            {
                 row.Fields.Add(new FieldValue("y", raster_info.Attributes["y"].Value));
+            }
 
             return row;
 
@@ -1286,26 +1407,26 @@ namespace gView.Framework.XML
 
         public void Dispose()
         {
-            
+
         }
 
         #endregion
     }
 
     public enum OutputMode { binary = 0, xml = 1, newxml = 2 }
-    public interface IArcXmlGET_FEATURES_Attributes 
+    public interface IArcXmlGET_FEATURES_Attributes
     {
-     //   attributes ="true | false"  [true] 
-     //   beginrecord ="integer"  [0] 
-     //   checkesc ="true | false"  [false] 
-     //   compact ="true | false"  [false] 
-     //   dataframe ="string" 
-     //   envelope ="true | false"  [false] 
-     //   featurelimit ="integer"  [all features] 
-     //   geometry ="true | false"  [true] 
-     //   globalenvelope ="true | false"  [false] 
-     //   outputmode ="binary | xml | newxml"  [binary] 
-     //   skipfeatures ="true | false"  [false] 
+        //   attributes ="true | false"  [true] 
+        //   beginrecord ="integer"  [0] 
+        //   checkesc ="true | false"  [false] 
+        //   compact ="true | false"  [false] 
+        //   dataframe ="string" 
+        //   envelope ="true | false"  [false] 
+        //   featurelimit ="integer"  [all features] 
+        //   geometry ="true | false"  [true] 
+        //   globalenvelope ="true | false"  [false] 
+        //   outputmode ="binary | xml | newxml"  [binary] 
+        //   skipfeatures ="true | false"  [false] 
 
         bool attributes { get; set; }
         int beginrecord { get; set; }
@@ -1345,7 +1466,10 @@ namespace gView.Framework.XML
 
         private void CopyFrom(IArcXMLQueryFilter filter)
         {
-            if (filter == null) return;
+            if (filter == null)
+            {
+                return;
+            }
 
             attributes = filter.attributes;
             beginrecord = filter.beginrecord;
@@ -1442,7 +1566,10 @@ namespace gView.Framework.XML
 
         public void WriteAttributes(XmlWriter writer)
         {
-            if (writer == null) return;
+            if (writer == null)
+            {
+                return;
+            }
 
             writer.WriteAttributeString("beginrecord", beginrecord.ToString());
             writer.WriteAttributeString("featurelimit", featurelimit.ToString());
@@ -1450,19 +1577,39 @@ namespace gView.Framework.XML
             writer.WriteAttributeString("envelope", envelope.ToString().ToLower());
 
             if (attributes == false)
+            {
                 writer.WriteAttributeString("attributes", "false");
+            }
+
             if (checkesc == true)
+            {
                 writer.WriteAttributeString("checkesc", "true");
+            }
+
             if (compact == true)
+            {
                 writer.WriteAttributeString("compact", "true");
+            }
+
             if (dataframe != "")
+            {
                 writer.WriteAttributeString("dataframe", dataframe);
+            }
+
             if (globalenvelope == true)
+            {
                 writer.WriteAttributeString("globalenvelope", "true");
+            }
+
             if (skipfeatures == true)
+            {
                 writer.WriteAttributeString("skipfeatures", "true");
+            }
+
             if (outputmode != OutputMode.binary)
+            {
                 writer.WriteAttributeString("outputmode", outputmode.ToString());
+            }
         }
 
         private ArcXMLProperties _properties = null;
@@ -1662,7 +1809,10 @@ namespace gView.Framework.XML
 
         private void CopyFrom(IArcXMLQueryFilter filter)
         {
-            if (filter == null) return;
+            if (filter == null)
+            {
+                return;
+            }
 
             attributes = filter.attributes;
             beginrecord = filter.beginrecord;
@@ -1758,7 +1908,10 @@ namespace gView.Framework.XML
 
         public void WriteAttributes(XmlWriter writer)
         {
-            if (writer == null) return;
+            if (writer == null)
+            {
+                return;
+            }
 
             writer.WriteAttributeString("beginrecord", beginrecord.ToString());
             writer.WriteAttributeString("featurelimit", featurelimit.ToString());
@@ -1766,19 +1919,39 @@ namespace gView.Framework.XML
             writer.WriteAttributeString("envelope", envelope.ToString().ToLower());
 
             if (attributes == false)
+            {
                 writer.WriteAttributeString("attributes", "false");
+            }
+
             if (checkesc == true)
+            {
                 writer.WriteAttributeString("checkesc", "true");
+            }
+
             if (compact == true)
+            {
                 writer.WriteAttributeString("compact", "true");
+            }
+
             if (dataframe != "")
+            {
                 writer.WriteAttributeString("dataframe", dataframe);
+            }
+
             if (globalenvelope == true)
+            {
                 writer.WriteAttributeString("globalenvelope", "true");
+            }
+
             if (skipfeatures == true)
+            {
                 writer.WriteAttributeString("skipfeatures", "true");
+            }
+
             if (outputmode != OutputMode.binary)
+            {
                 writer.WriteAttributeString("outputmode", outputmode.ToString() /*"binary"*/);
+            }
         }
 
         private ArcXMLProperties _properties = null;
@@ -1831,7 +2004,10 @@ namespace gView.Framework.XML
 
         private void CopyFrom(IArcXMLQueryFilter filter)
         {
-            if (filter == null) return;
+            if (filter == null)
+            {
+                return;
+            }
 
             attributes = filter.attributes;
             beginrecord = filter.beginrecord;
@@ -1928,7 +2104,10 @@ namespace gView.Framework.XML
 
         public void WriteAttributes(XmlWriter writer)
         {
-            if (writer == null) return;
+            if (writer == null)
+            {
+                return;
+            }
 
             writer.WriteAttributeString("beginrecord", beginrecord.ToString());
             writer.WriteAttributeString("featurelimit", featurelimit.ToString());
@@ -1936,19 +2115,39 @@ namespace gView.Framework.XML
             writer.WriteAttributeString("envelope", envelope.ToString().ToLower());
 
             if (attributes == false)
+            {
                 writer.WriteAttributeString("attributes", "false");
+            }
+
             if (checkesc == true)
+            {
                 writer.WriteAttributeString("checkesc", "true");
+            }
+
             if (compact == true)
+            {
                 writer.WriteAttributeString("compact", "true");
+            }
+
             if (dataframe != "")
+            {
                 writer.WriteAttributeString("dataframe", dataframe);
+            }
+
             if (globalenvelope == true)
+            {
                 writer.WriteAttributeString("globalenvelope", "true");
+            }
+
             if (skipfeatures == true)
+            {
                 writer.WriteAttributeString("skipfeatures", "true");
+            }
+
             if (outputmode != OutputMode.binary)
+            {
                 writer.WriteAttributeString("outputmode", outputmode.ToString());
+            }
         }
 
         private ArcXMLProperties _properties = null;
@@ -1983,14 +2182,20 @@ namespace gView.Framework.XML
 
         public void ConvertAXL(XmlNode feature, IFeatureClass fc, IArcXmlGET_FEATURES_Attributes attributes)
         {
-            if (feature == null) return;
+            if (feature == null)
+            {
+                return;
+            }
 
             GlobalFeature feat = this;
             List<FieldValue> fields = feat.Fields;
 
             foreach (XmlNode field in feature.SelectNodes("FIELDS/FIELD"))
             {
-                if (field.Attributes["name"] == null || field.Attributes["value"] == null) continue;
+                if (field.Attributes["name"] == null || field.Attributes["value"] == null)
+                {
+                    continue;
+                }
 
                 FieldValue fVal = new FieldValue(ArcXMLGeometry.shortName(field.Attributes["name"].Value));
 
@@ -2038,13 +2243,22 @@ namespace gView.Framework.XML
             }
 
             XmlNode envelope = feature.SelectSingleNode("ENVELOPE");
-            if (envelope != null) feature.RemoveChild(envelope);
+            if (envelope != null)
+            {
+                feature.RemoveChild(envelope);
+            }
+
             if (attributes != null)
             {
                 if (attributes.envelope && envelope != null)
+                {
                     this.Envelope = ArcXMLGeometry.AXL2Geometry(envelope.OuterXml) as IEnvelope;
+                }
+
                 if (attributes.geometry)
+                {
                     this.Shape = ArcXMLGeometry.AXL2Geometry(feature.InnerXml);
+                }
             }
             else
             {

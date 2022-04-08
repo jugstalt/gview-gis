@@ -120,7 +120,7 @@ namespace gView.Cmd.FillLuceneServer
 
                     var importConfig = JsonConvert.DeserializeObject<ImportConfig>(File.ReadAllText(jsonFile));
 
-                    if(importConfig?.Connection==null)
+                    if (importConfig?.Connection == null)
                     {
                         throw new Exception("Invalid config. No connection defined");
                     }

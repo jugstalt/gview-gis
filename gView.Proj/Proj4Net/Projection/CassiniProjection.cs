@@ -13,9 +13,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-using System;
 using GeoAPI.Geometries;
 using Proj4Net.Utility;
+using System;
 
 namespace Proj4Net.Projection
 {
@@ -107,7 +107,10 @@ namespace Proj4Net.Projection
             if (!_spherical)
             {
                 if ((_en = ProjectionMath.enfn(_es)) == null)
+                {
                     throw new ProjectionException();
+                }
+
                 _m0 = ProjectionMath.mlfn(ProjectionLatitude, Math.Sin(ProjectionLatitude), Math.Cos(ProjectionLatitude), _en);
             }
         }

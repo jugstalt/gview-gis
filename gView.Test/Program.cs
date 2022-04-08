@@ -227,7 +227,7 @@ namespace gView.Test
                 client.Proxy = null;
                 client.UseDefaultCredentials = true;
                 var response = client.DownloadString(new Uri(url));
-                
+
                 //var exportResponse= JsonConvert.DeserializeObject<ExportResponse>(response);
                 //Console.WriteLine(exportResponse.href);
             }
@@ -308,7 +308,7 @@ namespace gView.Test
                 canvas.SmoothingMode = SmoothingMode.AntiAlias;
                 canvas.Clear(ArgbColor.White);
 
-                using(var path = Current.Engine.CreateGraphicsPath())
+                using (var path = Current.Engine.CreateGraphicsPath())
                 {
                     path.StartFigure();
                     if (path.PathBuildPerferences == GraphicsPathBuildPerferences.AddPointsPreferred)
@@ -329,7 +329,7 @@ namespace gView.Test
                         path.AddPoint(300, 50);
                         path.AddPoint(300, 300);
                         path.AddPoint(50, 300);
-                    } 
+                    }
                     else
                     {
                         path.AddLine(10, 10, 400, 10);

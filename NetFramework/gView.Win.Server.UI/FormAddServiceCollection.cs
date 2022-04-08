@@ -1,15 +1,10 @@
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Text;
-using System.Windows.Forms;
-using gView.Server.Connector;
 using gView.Framework.IO;
 using gView.Framework.system;
+using gView.Server.Connector;
+using System;
+using System.Collections.Generic;
+using System.Windows.Forms;
 using System.Xml;
-using gView.MapServer;
 
 namespace gView.MapServer.Lib.UI
 {
@@ -30,7 +25,10 @@ namespace gView.MapServer.Lib.UI
                 ConfigTextStream.ExtractValue(_connectionString, "user"),
                 Identity.HashPassword(ConfigTextStream.ExtractValue(_connectionString, "pwd")));
 
-            if (axl == "") return;
+            if (axl == "")
+            {
+                return;
+            }
 
             XmlDocument doc = new XmlDocument();
             doc.LoadXml(axl);
@@ -60,7 +58,10 @@ namespace gView.MapServer.Lib.UI
 
         private void btnAdd_Click(object sender, EventArgs e)
         {
-            if (lstAvailServices.SelectedItems == null) return;
+            if (lstAvailServices.SelectedItems == null)
+            {
+                return;
+            }
 
             foreach (ListViewItem item in lstAvailServices.SelectedItems)
             {
@@ -74,13 +75,18 @@ namespace gView.MapServer.Lib.UI
                     }
                 }
                 if (!found)
+                {
                     lstServices.Items.Add(new ListViewItem(item.Text, item.ImageIndex));
+                }
             }
         }
 
         private void btnRemove_Click(object sender, EventArgs e)
         {
-            if (lstServices.SelectedItems == null) return;
+            if (lstServices.SelectedItems == null)
+            {
+                return;
+            }
 
             List<ListViewItem> items = new List<ListViewItem>();
             foreach (ListViewItem item in lstServices.SelectedItems)
@@ -108,7 +114,10 @@ namespace gView.MapServer.Lib.UI
                 {
                     services.Add(item.Text);
                 }
-                if (services.Count == 0) return null;
+                if (services.Count == 0)
+                {
+                    return null;
+                }
 
                 return services.ToArray();
             }

@@ -1,6 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace gView.Framework.Geometry
 {
@@ -35,7 +33,11 @@ namespace gView.Framework.Geometry
         public void Normalize()
         {
             double len = Length;
-            if (len == 0.0 || len == 1.0) return;
+            if (len == 0.0 || len == 1.0)
+            {
+                return;
+            }
+
             _x /= len;
             _y /= len;
         }

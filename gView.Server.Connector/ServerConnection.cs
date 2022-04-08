@@ -1,11 +1,10 @@
+using gView.Framework.system;
+using gView.Framework.Web;
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Security.Cryptography;
+using System.Text;
 using System.Xml;
-using gView.Framework.MapServer;
-using gView.Framework.Web;
-using gView.Framework.system;
 
 
 // wsdl /namespace:gView.MapServer.Connector /protocol:soap /out:MapServerProxy.cs /language:cs http://localhost:8001/MapServer?wsdl
@@ -19,7 +18,9 @@ namespace gView.Server.Connector
         {
             _url = url;
             if (!_url.ToLower().StartsWith("http://") && !_url.ToLower().StartsWith("https://"))
+            {
                 _url = "http://" + _url;
+            }
 
             this.Timeout = 0;
         }
@@ -28,7 +29,7 @@ namespace gView.Server.Connector
 
         static public string ServerUrl(string server, int port)
         {
-            if(port>0 && port!=80 && port!=443)
+            if (port > 0 && port != 80 && port != 443)
             {
                 server += ":" + port;
             }
@@ -51,7 +52,7 @@ namespace gView.Server.Connector
 
             return Encoding.UTF8.GetString(Encoding.Default.GetBytes(ret));
         }
-        
+
         public List<MapService> Services(string user, string password)
         {
             List<MapService> services = new List<MapService>();
@@ -64,7 +65,10 @@ namespace gView.Server.Connector
             TimeSpan ts = DateTime.Now - td;
             int millisec = ts.Milliseconds;
 
-            if (axl == "") return services;
+            if (axl == "")
+            {
+                return services;
+            }
 
             XmlDocument doc = new XmlDocument();
             doc.LoadXml(axl);
@@ -152,7 +156,10 @@ namespace gView.Server.Connector
         #region PasswordHash
         private string HashPassword(string password)
         {
-            if (String.IsNullOrEmpty(password)) return String.Empty;
+            if (String.IsNullOrEmpty(password))
+            {
+                return String.Empty;
+            }
 
             MD5CryptoServiceProvider md5 = new MD5CryptoServiceProvider();
             byte[] byteValue = UTF8Encoding.UTF8.GetBytes(password);
@@ -165,7 +172,7 @@ namespace gView.Server.Connector
 
         public class MapService
         {
-            public enum MapServiceType { MXL=0, SVC=1, GDI=2 }
+            public enum MapServiceType { MXL = 0, SVC = 1, GDI = 2 }
             private string _name;
             private MapServiceType _type;
 

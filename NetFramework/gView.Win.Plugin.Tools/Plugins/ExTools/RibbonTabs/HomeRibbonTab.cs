@@ -1,8 +1,6 @@
-﻿using System;
+﻿using gView.Framework.UI;
+using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using gView.Framework.UI;
 
 namespace gView.Plugins.ExTools.RibbonTabs
 {

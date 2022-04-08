@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace gView.GraphicsEngine
+﻿namespace gView.GraphicsEngine
 {
     //public enum PixelFormat
     //{
@@ -133,9 +131,9 @@ namespace gView.GraphicsEngine
         Vertical = 1,
         ForwardDiagonal = 2,
         BackwardDiagonal = 3,
-        
+
         DiagonalCross = 5,
-      
+
         LightDownwardDiagonal = 18,
         LightUpwardDiagonal = 19,
         DarkDownwardDiagonal = 20,

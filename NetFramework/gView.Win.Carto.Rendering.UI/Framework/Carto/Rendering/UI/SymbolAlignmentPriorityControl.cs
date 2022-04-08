@@ -1,13 +1,8 @@
-﻿using System;
+﻿using gView.Framework.Symbology;
+using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Drawing;
-using System.Data;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
-using gView.Framework.Symbology;
 
 namespace gView.Win.Carto.Rendering.UI.Framework.Carto.Rendering.UI
 {
@@ -26,13 +21,14 @@ namespace gView.Win.Carto.Rendering.UI.Framework.Carto.Rendering.UI
             get { return _primaryAlignment; }
             set
             {
-                foreach(PriorityButton button in panelContent.Controls)
+                foreach (PriorityButton button in panelContent.Controls)
                 {
-                    if(button.SymbolAlignment==value)
+                    if (button.SymbolAlignment == value)
                     {
                         button.Text = "1";
                         button.BackColor = Color.LightPink;
-                    } else
+                    }
+                    else
                     {
                         button.Text = "0";
                         button.BackColor = Color.White;
@@ -158,9 +154,9 @@ namespace gView.Win.Carto.Rendering.UI.Framework.Carto.Rendering.UI
                     button.Text = "0";
                     button.BackColor = Color.White;
 
-                    foreach(PriorityButton pButton in panelContent.Controls)
+                    foreach (PriorityButton pButton in panelContent.Controls)
                     {
-                        if(int.Parse(pButton.Text)>priority)
+                        if (int.Parse(pButton.Text) > priority)
                         {
                             pButton.Text = (int.Parse(pButton.Text) - 1).ToString();
                         }
@@ -188,7 +184,7 @@ namespace gView.Win.Carto.Rendering.UI.Framework.Carto.Rendering.UI
 
         private TextSymbolAlignment GetAlignment(int counter)
         {
-            switch(counter % 9)
+            switch (counter % 9)
             {
                 case 0:
                     return TextSymbolAlignment.rightAlignOver;
@@ -216,7 +212,7 @@ namespace gView.Win.Carto.Rendering.UI.Framework.Carto.Rendering.UI
         private int GetMaxPriorty()
         {
             int max = 0;
-            foreach(Button button in panelContent.Controls)
+            foreach (Button button in panelContent.Controls)
             {
                 max = Math.Max(max, int.Parse(button.Text));
             }
@@ -226,9 +222,9 @@ namespace gView.Win.Carto.Rendering.UI.Framework.Carto.Rendering.UI
 
         private PriorityButton GetPriorityButton(TextSymbolAlignment symbolAlignment)
         {
-            foreach(PriorityButton button in panelContent.Controls)
+            foreach (PriorityButton button in panelContent.Controls)
             {
-                if(button.SymbolAlignment==symbolAlignment)
+                if (button.SymbolAlignment == symbolAlignment)
                 {
                     return button;
                 }

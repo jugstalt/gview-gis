@@ -1,13 +1,13 @@
+using gView.Framework.Carto;
+using gView.Framework.Carto.Rendering;
+using gView.Framework.Data;
+using gView.Framework.Symbology;
+using gView.GraphicsEngine;
 using System;
 using System.Collections.Generic;
-using System.Text;
-using gView.Framework.Carto;
 using System.IO;
-using gView.Framework.Symbology;
-using gView.Framework.Data;
+using System.Text;
 using System.Xml;
-using gView.Framework.Carto.Rendering;
-using gView.GraphicsEngine;
 
 namespace gView.Interoperability.OGC.SLD
 {
@@ -33,12 +33,17 @@ namespace gView.Interoperability.OGC.SLD
             _writeDocument = WriteDocument;
 
             if (_writeDocument)
+            {
                 WriteBeginDocument();
+            }
         }
 
         public void WriteNamedLayer(string layername, IFeatureRenderer Renderer)
         {
-            if (_closed) return;
+            if (_closed)
+            {
+                return;
+            }
 
             if (Renderer is SLDRenderer)
             {
@@ -103,7 +108,9 @@ namespace gView.Interoperability.OGC.SLD
         private void WriteSimpleRenderer(SimpleRenderer renderer)
         {
             if (renderer != null && renderer.Symbol != null)
+            {
                 WriteSymbol(renderer.Symbol);
+            }
         }
         #endregion
 
@@ -111,20 +118,32 @@ namespace gView.Interoperability.OGC.SLD
 
         public void WriteSymbol(ISymbol symbol)
         {
-            if (symbol == null) return;
+            if (symbol == null)
+            {
+                return;
+            }
 
             if (symbol is IFillSymbol)
+            {
                 WriteSimpleFillSymbol(symbol as IFillSymbol);
+            }
             else if (symbol is ILineSymbol)
+            {
                 WriteSimpleLineSymbol(symbol as ILineSymbol);
+            }
             else if (symbol is IPointSymbol)
+            {
                 WritePointSymbol(symbol as IPointSymbol);
+            }
             else if (symbol is ISymbolCollection)
             {
                 ISymbolCollection symCol = (ISymbolCollection)symbol;
                 foreach (ISymbolCollectionItem symItem in symCol.Symbols)
                 {
-                    if (symItem == null || symItem.Visible == false) continue;
+                    if (symItem == null || symItem.Visible == false)
+                    {
+                        continue;
+                    }
 
                     WriteSymbol(symItem.Symbol);
                 }
@@ -146,7 +165,10 @@ namespace gView.Interoperability.OGC.SLD
             //</PolygonSymbolizer>
             #endregion
 
-            if (symbol == null) return;
+            if (symbol == null)
+            {
+                return;
+            }
 
             _sw.WriteLine("<PolygonSymbolizer>");
             _sw.WriteLine("<Geometry>");
@@ -188,7 +210,10 @@ namespace gView.Interoperability.OGC.SLD
             //</LineSymbolizer>
             #endregion
 
-            if (symbol == null) return;
+            if (symbol == null)
+            {
+                return;
+            }
 
             _sw.WriteLine("<LineSymbolizer>");
             _sw.WriteLine("<Geometry>");
@@ -225,7 +250,10 @@ namespace gView.Interoperability.OGC.SLD
             //</PointSymbolizer>
             #endregion
 
-            if (symbol == null) return;
+            if (symbol == null)
+            {
+                return;
+            }
 
             _sw.WriteLine("<PointSymbolizer>");
             _sw.WriteLine("<Geometry>");
@@ -261,7 +289,11 @@ namespace gView.Interoperability.OGC.SLD
 
         private void WriteBrushColor(IBrushColor symbol)
         {
-            if (symbol == null) return;
+            if (symbol == null)
+            {
+                return;
+            }
+
             WriteFillColor(symbol.FillColor);
         }
         private void WriteFillColor(ArgbColor col)
@@ -274,7 +306,11 @@ namespace gView.Interoperability.OGC.SLD
         }
         private void WritePenColor(IPenColor symbol)
         {
-            if (symbol == null) return;
+            if (symbol == null)
+            {
+                return;
+            }
+
             _sw.WriteLine(@"<CssParameter name=""stroke"">" + System.Drawing.ColorTranslator.ToHtml(System.Drawing.Color.FromArgb(symbol.PenColor.ToArgb())) + "</CssParameter>");
             if (symbol.PenColor.A != 255)
             {
@@ -283,7 +319,11 @@ namespace gView.Interoperability.OGC.SLD
         }
         private void WritePenWidth(IPenWidth symbol)
         {
-            if (symbol == null) return;
+            if (symbol == null)
+            {
+                return;
+            }
+
             _sw.WriteLine(@"<CssParameter name=""stroke-width"">" + symbol.PenWidth.ToString(_nhi) + "</CssParameter>");
         }
         private void WriteLineCap(LineCap style)
@@ -303,7 +343,10 @@ namespace gView.Interoperability.OGC.SLD
         }
         private void WriteDashStyle(IPenDashStyle symbol)
         {
-            if (symbol == null) return;
+            if (symbol == null)
+            {
+                return;
+            }
 
             string sequence = String.Empty;
             switch (symbol.PenDashStyle)
@@ -332,7 +375,9 @@ namespace gView.Interoperability.OGC.SLD
             if (!_closed)
             {
                 if (_writeDocument)
+                {
                     WriteEndDocument();
+                }
 
                 _sw.Flush();
                 _ms.Position = 0;
@@ -351,7 +396,9 @@ namespace gView.Interoperability.OGC.SLD
             StringReader sr = new StringReader(this.ToString());
             string line;
             while ((line = sr.ReadLine()) != null)
+            {
                 sb.Append(line.Trim());
+            }
 
             return sb.ToString();
         }
@@ -378,7 +425,10 @@ namespace gView.Interoperability.OGC.SLD
                 foreach (XmlNode node in _doc.SelectNodes("StyledLayerDescriptor/NamedLayer"))
                 {
                     IFeatureLayer fLayer = ReadLayer(node);
-                    if (fLayer == null) continue;
+                    if (fLayer == null)
+                    {
+                        continue;
+                    }
 
                     fLayers.Add(fLayer);
                 }
@@ -392,9 +442,16 @@ namespace gView.Interoperability.OGC.SLD
         private IFeatureLayer ReadLayer(XmlNode node)
         {
             XmlNode nameNode = node.SelectSingleNode("Name");
-            if (nameNode == null) return null;
+            if (nameNode == null)
+            {
+                return null;
+            }
+
             XmlNode userStyleNode = node.SelectSingleNode("UserStyle");
-            if (userStyleNode == null) return null;
+            if (userStyleNode == null)
+            {
+                return null;
+            }
 
             FeatureLayer fLayer = new FeatureLayer();
             fLayer.Title = nameNode.InnerText;
@@ -421,7 +478,10 @@ namespace gView.Interoperability.OGC.SLD
         #region Symbology
         public ISymbol ReadSymbol(XmlNode ruleNode)
         {
-            if (ruleNode == null) return null;
+            if (ruleNode == null)
+            {
+                return null;
+            }
 
             SymbolCollection symColl = new SymbolCollection();
             foreach (XmlNode child in ruleNode.ChildNodes)
@@ -441,16 +501,23 @@ namespace gView.Interoperability.OGC.SLD
             }
 
             if (symColl.Symbols.Count == 0)
+            {
                 return null;
+            }
             else if (symColl.Symbols.Count == 1)
+            {
                 return symColl.Symbols[0].Symbol;
+            }
 
             return symColl;
         }
 
         private ISymbol ReadPolygonSymbol(XmlNode node)
         {
-            if (node == null) return null;
+            if (node == null)
+            {
+                return null;
+            }
 
             SimpleFillSymbol symbol = new SimpleFillSymbol();
             XmlNode fillNode = node.SelectSingleNode("Fill");
@@ -479,7 +546,10 @@ namespace gView.Interoperability.OGC.SLD
         }
         private ISymbol ReadLineSymbol(XmlNode node)
         {
-            if (node == null) return null;
+            if (node == null)
+            {
+                return null;
+            }
 
             SimpleLineSymbol symbol = new SimpleLineSymbol();
             XmlNode strokeNode = node.SelectSingleNode("Stroke");
@@ -508,7 +578,10 @@ namespace gView.Interoperability.OGC.SLD
         }
         private ISymbol ReadPointSymbol(XmlNode node)
         {
-            if (node == null) return null;
+            if (node == null)
+            {
+                return null;
+            }
 
             SimplePointSymbol symbol = new SimplePointSymbol();
             symbol.Color = ReadColor(node.SelectSingleNode("Graphic/Mark/Fill/CssParameter[@name='fill']"));
@@ -546,7 +619,11 @@ namespace gView.Interoperability.OGC.SLD
         }
         private ArgbColor ReadColor(XmlNode cssParameter, XmlNode cssParameter2)
         {
-            if (cssParameter == null) return ArgbColor.Transparent;
+            if (cssParameter == null)
+            {
+                return ArgbColor.Transparent;
+            }
+
             try
             {
                 var col = System.Drawing.ColorTranslator.FromHtml(cssParameter.InnerText);
@@ -555,13 +632,17 @@ namespace gView.Interoperability.OGC.SLD
                     int alpha = (int)(ReadFloat(cssParameter2) * 255f);
                     col = System.Drawing.Color.FromArgb(alpha, col);
                 }
-                return ArgbColor.FromArgb( col.ToArgb());
+                return ArgbColor.FromArgb(col.ToArgb());
             }
             catch { return ArgbColor.Transparent; }
         }
         private float ReadFloat(XmlNode cssParameter)
         {
-            if (cssParameter == null) return 0f;
+            if (cssParameter == null)
+            {
+                return 0f;
+            }
+
             try
             {
                 float res;
@@ -572,12 +653,19 @@ namespace gView.Interoperability.OGC.SLD
         }
         private string ReadString(XmlNode cssParameter)
         {
-            if (cssParameter == null) return String.Empty;
+            if (cssParameter == null)
+            {
+                return String.Empty;
+            }
+
             return cssParameter.InnerText;
         }
         private LineDashStyle ReadDashStyle(XmlNode cssParameter)
         {
-            if (cssParameter == null) return LineDashStyle.Solid;
+            if (cssParameter == null)
+            {
+                return LineDashStyle.Solid;
+            }
 
             return LineDashStyle.Solid;
         }

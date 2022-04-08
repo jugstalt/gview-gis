@@ -1,10 +1,5 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-using gView.Framework.UI;
 using gView.Framework.Carto;
 using gView.Framework.Globalisation;
-using gView.Framework.system;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -26,10 +21,16 @@ namespace gView.Framework.UI.Tools
         {
             get
             {
-                if (_doc == null || _doc.Application == null) return false;
+                if (_doc == null || _doc.Application == null)
+                {
+                    return false;
+                }
 
                 if (_doc.Application is IMapApplication &&
-                    ((IMapApplication)_doc.Application).ReadOnly == true) return false;
+                    ((IMapApplication)_doc.Application).ReadOnly == true)
+                {
+                    return false;
+                }
 
                 //LicenseTypes lt = _doc.Application.ComponentLicenseType("gview.desktop;gview.map");
                 //return (lt == LicenseTypes.Licensed || lt == LicenseTypes.Express);
@@ -55,13 +56,17 @@ namespace gView.Framework.UI.Tools
         public void OnCreate(object hook)
         {
             if (hook is IMapDocument)
+            {
                 _doc = (IMapDocument)hook;
+            }
         }
 
         public Task<bool> OnEvent(object MapEvent)
         {
             if (_doc == null)
+            {
                 return Task.FromResult(true);
+            }
 
             IMap map = new Map();
             map.Name = "Map" + (_doc.Maps.Count() + 1).ToString();

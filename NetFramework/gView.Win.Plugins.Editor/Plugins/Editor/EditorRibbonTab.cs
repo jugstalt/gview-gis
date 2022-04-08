@@ -1,14 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using gView.Framework.UI;
-using gView.Framework.Data;
-using gView.Framework.FDB;
-using System.Windows;
+﻿using gView.Framework.Data;
 using gView.Framework.Editor.Core;
-using gView.Plugins.Editor.Dialogs;
+using gView.Framework.FDB;
 using gView.Framework.system.UI;
+using gView.Framework.UI;
+using gView.Plugins.Editor.Dialogs;
+using System;
+using System.Collections.Generic;
+using System.Windows;
 
 namespace gView.Plugins.Editor.Editor
 {
@@ -33,16 +31,16 @@ namespace gView.Plugins.Editor.Editor
                         new RibbonItem[]{
                             new RibbonItem(new Guid("91392106-2C28-429c-8100-1E4E927D521C")),
                             new RibbonItem(new Guid("3B64107F-00C8-4f4a-B781-163FE9DA2D4B"),"Middle"),
-                            new RibbonItem(new Guid("FD340DE3-0BC1-4b3e-99D2-E8DCD55A46F2"),"Middle"),  
-                            new RibbonItem(new Guid("B576D3F9-F7C9-46d5-8A8C-16B3974F1BD7"),"Middle") 
+                            new RibbonItem(new Guid("FD340DE3-0BC1-4b3e-99D2-E8DCD55A46F2"),"Middle"),
+                            new RibbonItem(new Guid("B576D3F9-F7C9-46d5-8A8C-16B3974F1BD7"),"Middle")
                         }
                         ),
-                    new RibbonGroupBox(String.Empty, 
+                    new RibbonGroupBox(String.Empty,
                         new RibbonItem[]{
                             new RibbonItem(new Guid("96099E8C-163E-46ec-BA33-41696BFAE4D5")),
                             new RibbonItem(new Guid("AC4620D4-3DE4-49ea-A902-0B267BA46BBF")),
                             new RibbonItem(new Guid("11DEE52F-F241-406e-BB40-9F247532E43D"))
-                            
+
                         }
                         )
                 }
@@ -69,12 +67,16 @@ namespace gView.Plugins.Editor.Editor
         public bool IsVisible(IMapDocument mapDocument)
         {
             if (mapDocument == null || mapDocument.FocusMap == null)
+            {
                 return false;
+            }
 
             foreach (IDataset dataset in mapDocument.FocusMap.Datasets)
             {
                 if (dataset.Database is IFeatureUpdater)
+                {
                     return true;
+                }
             }
 
             return false;
@@ -90,7 +92,7 @@ namespace gView.Plugins.Editor.Editor
                 IMapApplication mapApplication = mapDocument.Application as IMapApplication;
                 if (mapApplication != null)
                 {
-                    Module module=mapApplication.IMapApplicationModule(Globals.ModuleGuid) as Module;
+                    Module module = mapApplication.IMapApplicationModule(Globals.ModuleGuid) as Module;
 
                     if (!AppUIGlobals.IsAppReadOnly(mapDocument.Application))
                     {

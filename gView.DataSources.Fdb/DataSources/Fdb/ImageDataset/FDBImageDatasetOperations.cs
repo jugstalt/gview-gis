@@ -217,7 +217,7 @@ namespace gView.DataSources.Fdb.ImageDataset
             if (!bitmapOnly)
             {
                 row.Delete();
-                if(!_conn.ExecuteNoneQuery($"DELETE FROM { DataProvider.ToDbTableName(_conn.dbTypeString, $"FC_{ _dsname }_IMAGE_POLYGONS") } WHERE { DataProvider.ToDbFieldName(_conn.dbTypeString, "FDB_OID") }={ image_id }"))
+                if (!_conn.ExecuteNoneQuery($"DELETE FROM { DataProvider.ToDbTableName(_conn.dbTypeString, $"FC_{ _dsname }_IMAGE_POLYGONS") } WHERE { DataProvider.ToDbFieldName(_conn.dbTypeString, "FDB_OID") }={ image_id }"))
                 //if (!_conn.Update(tab))
                 {
                     _errMsg = _conn.errorMessage;

@@ -1,13 +1,7 @@
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Drawing;
-using System.Data;
-using System.Text;
-using System.Windows.Forms;
-using gView.Framework.system;
 using gView.Framework.Data.Fields.FieldDomains;
-using System.Threading.Tasks;
+using gView.Framework.system;
+using System;
+using System.Windows.Forms;
 
 namespace gView.Framework.Data.Fields.UI.FieldDomains
 {
@@ -30,10 +24,16 @@ namespace gView.Framework.Data.Fields.UI.FieldDomains
             {
                 foreach (object val in await _domain.ValuesAsync())
                 {
-                    if (val == null) continue;
+                    if (val == null)
+                    {
+                        continue;
+                    }
 
                     if (!String.IsNullOrEmpty(txtValues.Text))
+                    {
                         txtValues.Text += "\r\n";
+                    }
+
                     txtValues.Text += val.ToString();
                 }
             }
@@ -43,7 +43,10 @@ namespace gView.Framework.Data.Fields.UI.FieldDomains
 
         private void txtValues_TextChanged(object sender, EventArgs e)
         {
-            if (_domain == null) return;
+            if (_domain == null)
+            {
+                return;
+            }
 
             string txt = txtValues.Text.Replace("\n", "");
             _domain.SetValues(txt.Split('\r'));

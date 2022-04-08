@@ -100,7 +100,7 @@ namespace gView.Framework.Carto.Rendering.UI
                 }
             }
         }
-        
+
         private void btnChooseSimpeSwitchSymbol_Click(object sender, EventArgs e)
         {
             if (_renderer == null)

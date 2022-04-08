@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace gView.GraphicsEngine.GdiPlus.Extensions
+﻿namespace gView.GraphicsEngine.GdiPlus.Extensions
 {
     static class CompositionModeExtensions
     {

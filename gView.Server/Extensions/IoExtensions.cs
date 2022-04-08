@@ -69,7 +69,9 @@ namespace gView.Server.Extensions
             {
                 var fi = new FileInfo(filePath);
                 if (fi.Exists)
+                {
                     fi.Delete();
+                }
             }
             catch (Exception ex)
             {

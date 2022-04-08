@@ -25,7 +25,7 @@ namespace gView.Interoperability.GeoServices.Extensions
                     Y = coords[1].ToDouble()
                 };
             }
-            else if(coords.Length == 4)
+            else if (coords.Length == 4)
             {
                 return new JsonGeometry()
                 {

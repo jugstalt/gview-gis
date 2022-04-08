@@ -13,9 +13,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-using System;
 using GeoAPI.Geometries;
 using Proj4Net.Utility;
+using System;
 
 namespace Proj4Net.Projection
 {
@@ -37,9 +37,16 @@ namespace Proj4Net.Projection
             double al, al2, g, g2, p2;
 
             p2 = Math.Abs(lpphi / ProjectionMath.PiHalf);
-            if ((p2 - TOL) > 1.0) throw new ProjectionException("F");
+            if ((p2 - TOL) > 1.0)
+            {
+                throw new ProjectionException("F");
+            }
+
             if (p2 > 1.0)
+            {
                 p2 = 1.0;
+            }
+
             if (Math.Abs(lpphi) <= TOL)
             {
                 xy.X = lplam;
@@ -49,7 +56,10 @@ namespace Proj4Net.Projection
             {
                 xy.X = 0.0;
                 xy.Y = Math.PI * Math.Tan(.5 * Math.Asin(p2));
-                if (lpphi < 0.0) xy.Y = -xy.Y;
+                if (lpphi < 0.0)
+                {
+                    xy.Y = -xy.Y;
+                }
             }
             else
             {
@@ -62,14 +72,26 @@ namespace Proj4Net.Projection
                 p2 = p2 * p2;
                 xy.X = g - p2; g = p2 + al2;
                 xy.X = Math.PI * (al * xy.X + Math.Sqrt(al2 * xy.X * xy.X - g * (g2 - p2))) / g;
-                if (lplam < 0.0) xy.X = -xy.X;
+                if (lplam < 0.0)
+                {
+                    xy.X = -xy.X;
+                }
+
                 xy.Y = Math.Abs(xy.X / Math.PI);
                 xy.Y = 1.0 - xy.Y * (xy.Y + 2.0 * al);
-                if (xy.Y < -TOL) throw new ProjectionException("F");
+                if (xy.Y < -TOL)
+                {
+                    throw new ProjectionException("F");
+                }
+
                 if (xy.Y < 0.0)
+                {
                     xy.Y = 0.0;
+                }
                 else
+                {
                     xy.Y = Math.Sqrt(xy.Y) * (lpphi < 0.0 ? -Math.PI : Math.PI);
+                }
             }
             return xy;
         }
@@ -101,13 +123,20 @@ namespace Proj4Net.Projection
             {
                 d = t > 1.0 ? (d > 0.0 ? 0.0 : Math.PI) : Math.Acos(d);
                 lp.Y = Math.PI * (m * Math.Cos(d * THIRD + PI4_3) - THIRD * c2);
-                if (xyy < 0.0) lp.Y = -lp.Y;
+                if (xyy < 0.0)
+                {
+                    lp.Y = -lp.Y;
+                }
+
                 t = r2 + TPISQ * (x2 - y2 + HPISQ);
                 lp.X = Math.Abs(xyx) <= TOL ? 0.0 :
                    .5 * (r - PISQ + (t <= 0.0 ? 0.0 : Math.Sqrt(t))) / xyx;
             }
             else
+            {
                 throw new ProjectionException("I");
+            }
+
             return lp;
         }
 

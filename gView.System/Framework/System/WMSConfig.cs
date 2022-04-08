@@ -1,9 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Text;
-using Microsoft.Win32;
-using System.Xml;
-using gView.MapServer;
 
 namespace gView.Framework.system
 {
@@ -49,7 +44,11 @@ namespace gView.Framework.system
         {
             get
             {
-                if (!_loaded) Load();
+                if (!_loaded)
+                {
+                    Load();
+                }
+
                 return _onlineResource;
             }
             set { _onlineResource = value; }
@@ -58,7 +57,11 @@ namespace gView.Framework.system
         {
             get
             {
-                if (!_loaded) Load();
+                if (!_loaded)
+                {
+                    Load();
+                }
+
                 return _srs;
             }
             set { _srs = value; }
@@ -67,7 +70,11 @@ namespace gView.Framework.system
         {
             get
             {
-                if (!_loaded) Load();
+                if (!_loaded)
+                {
+                    Load();
+                }
+
                 return _imageFormat;
             }
             set { _imageFormat = value; }
@@ -76,7 +83,11 @@ namespace gView.Framework.system
         {
             get
             {
-                if (!_loaded) Load();
+                if (!_loaded)
+                {
+                    Load();
+                }
+
                 return _getFeatureInfoFormat;
             }
             set { _getFeatureInfoFormat = value; }
@@ -84,12 +95,15 @@ namespace gView.Framework.system
 
         static public void Commit()
         {
-            if (!_loaded) Load();
+            if (!_loaded)
+            {
+                Load();
+            }
 
             try
             {
                 //RegistryKey key = Registry.LocalMachine.OpenSubKey(@"Software\gViewGisOS\WMS", true);
-                
+
                 //key.SetValue("OnlineResource", OnlineResource);
                 //key.SetValue("SRS", SRS);
                 //key.SetValue("ImageFormats", ImageFormats);

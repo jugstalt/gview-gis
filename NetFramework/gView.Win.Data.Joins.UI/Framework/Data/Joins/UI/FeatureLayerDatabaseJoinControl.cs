@@ -1,14 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Drawing;
-using System.Data;
-using System.Linq;
-using System.Text;
-using System.Windows.Forms;
-using gView.Framework.Db;
+﻿using gView.Framework.Db;
 using gView.Framework.Db.UI;
 using gView.Framework.UI;
+using System;
+using System.Collections.Generic;
+using System.Windows.Forms;
 
 namespace gView.Framework.Data.Joins.UI
 {
@@ -35,7 +30,9 @@ namespace gView.Framework.Data.Joins.UI
             set
             {
                 if (value != null)
+                {
                     txtConnectionString.Text = value.ToString();
+                }
             }
         }
 
@@ -127,7 +124,9 @@ namespace gView.Framework.Data.Joins.UI
             lstJoinTableFields.Items.Clear();
 
             if (String.IsNullOrEmpty(cmbTable.Text))
+            {
                 return;
+            }
 
             _fields = FilterFields(FieldType.unknown);
             if (_fields != null)
@@ -147,7 +146,11 @@ namespace gView.Framework.Data.Joins.UI
             try
             {
                 DbConnectionString dbConnStr = this.JoinDbConnectionString;
-                if (dbConnStr == null) return null;
+                if (dbConnStr == null)
+                {
+                    return null;
+                }
+
                 dbConnStr.UseProviderInConnectionString = true;
 
                 DataProvider provider = new DataProvider();
@@ -188,7 +191,10 @@ namespace gView.Framework.Data.Joins.UI
             try
             {
                 DbConnectionString dbConnStr = this.JoinDbConnectionString;
-                if (dbConnStr == null) return null;
+                if (dbConnStr == null)
+                {
+                    return null;
+                }
 
                 CommonDbConnection conn = new CommonDbConnection();
                 conn.ConnectionString2 = dbConnStr.ConnectionString;
@@ -203,8 +209,8 @@ namespace gView.Framework.Data.Joins.UI
                 return null;
             }
         }
-        #endregion 
-    
+        #endregion
+
         #region IJoinPropertyPanel Member
 
         public object PropertyPanel(IFeatureLayerJoin join, Framework.UI.IMapDocument mapDocument)
@@ -244,6 +250,6 @@ namespace gView.Framework.Data.Joins.UI
 
         #endregion
 
-        
+
     }
 }

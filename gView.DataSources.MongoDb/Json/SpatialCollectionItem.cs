@@ -2,8 +2,6 @@
 using gView.Framework.Geometry;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
-using MongoDB.Driver.GeoJsonObjectModel;
-using Newtonsoft.Json;
 using System.Collections.Generic;
 
 namespace gView.DataSources.MongoDb.Json

@@ -2,7 +2,6 @@ using gView.Framework.Globalisation;
 using gView.Framework.Sys.UI.Extensions;
 using System;
 using System.Drawing;
-using System.Drawing.Drawing2D;
 using System.Windows.Forms;
 
 namespace gView.Framework.Symbology.UI.Controls
@@ -149,7 +148,7 @@ namespace gView.Framework.Symbology.UI.Controls
             }
         }
         #endregion
-    }   
+    }
 
     public class GradientSelectedEventArgs : EventArgs
     {
@@ -166,5 +165,5 @@ namespace gView.Framework.Symbology.UI.Controls
         }
     }
 
-    public delegate void GradientSelectedEventHandler(object sender,GradientSelectedEventArgs args);
+    public delegate void GradientSelectedEventHandler(object sender, GradientSelectedEventArgs args);
 }

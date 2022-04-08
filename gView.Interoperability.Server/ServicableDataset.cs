@@ -1,9 +1,8 @@
+using gView.Framework.Data;
+using gView.Framework.UI;
 using System;
 using System.Collections.Generic;
-using System.Text;
-using gView.Framework.Data;
 using System.Reflection;
-using gView.Framework.UI;
 
 namespace gView.Interoperability.Server
 {
@@ -73,7 +72,10 @@ namespace gView.Interoperability.Server
 
         public void Save(gView.Framework.IO.IPersistStream stream)
         {
-            if (_dataset == null) return;
+            if (_dataset == null)
+            {
+                return;
+            }
 
             stream.Save("ConnectionString", _dataset.ConnectionString);
         }

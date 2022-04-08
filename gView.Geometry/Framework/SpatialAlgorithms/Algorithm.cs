@@ -491,7 +491,7 @@ namespace gView.Framework.SpatialAlgorithms
             return result;
         }
 
-        
+
 
         public static int IsParallel(double x1, double y1, double x2, double y2, double epsi = 1e-7)
         {
@@ -1766,7 +1766,7 @@ namespace gView.Framework.SpatialAlgorithms
         }
         static public IPointCollection InterpolatePoints(IPointCollection pColl, int stepPoints)
         {
-            if(pColl==null || pColl.PointCount==1)
+            if (pColl == null || pColl.PointCount == 1)
             {
                 return pColl;
             }
@@ -1781,11 +1781,11 @@ namespace gView.Framework.SpatialAlgorithms
                 result.AddPoint(p1);
 
                 var dist = p1.Distance2D(p2);
-                if(dist>0)
+                if (dist > 0)
                 {
                     double dx = (p2.X - p1.X) / (stepPoints + 1), dy = (p2.Y - p1.Y) / (stepPoints + 1);
 
-                    for(int s=0;s<stepPoints;s++)
+                    for (int s = 0; s < stepPoints; s++)
                     {
                         result.AddPoint(new Point(p1.X + dx * s, p1.Y + dy * s));
                     }
@@ -2701,7 +2701,9 @@ namespace gView.Framework.SpatialAlgorithms
         {
             sign = 1;
             if (shape == null || point == null)
+            {
                 return double.MaxValue;
+            }
 
             if (shape is Point)
             {
@@ -2717,7 +2719,9 @@ namespace gView.Framework.SpatialAlgorithms
             {
                 var polygon = (Polygon)shape;
                 if (Jordan(polygon, point.X, point.Y))
+                {
                     return 0D;
+                }
 
                 double dist = double.MaxValue;
                 foreach (var ring in polygon.Rings)
@@ -2736,7 +2740,9 @@ namespace gView.Framework.SpatialAlgorithms
                     IPoint p = ((IPointCollection)shape)[i];
                     double dist = p.Distance2D(point);
                     if (dist < ret)
+                    {
                         ret = dist;
+                    }
                 }
                 return ret;
             }

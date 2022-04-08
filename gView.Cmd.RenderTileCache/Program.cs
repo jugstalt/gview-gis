@@ -49,17 +49,17 @@ namespace gView.Cmd.RenderTileCache
                     {
                         action = Action.Render;
                     }
-                    if(args[i] == "-compact")
+                    if (args[i] == "-compact")
                     {
                         cacheFormat = "compact";
                     }
-                    if(args[i] == "-epsg")
+                    if (args[i] == "-epsg")
                     {
                         epsg = int.Parse(args[++i]);
                     }
-                    if(args[i] == "-orientation")
+                    if (args[i] == "-orientation")
                     {
-                        switch(args[++i].ToLower())
+                        switch (args[++i].ToLower())
                         {
                             case "ul":
                             case "upperleft":
@@ -71,15 +71,15 @@ namespace gView.Cmd.RenderTileCache
                                 break;
                         }
                     }
-                    if(args[i] == "-bbox")
+                    if (args[i] == "-bbox")
                     {
                         bbox = Envelope.FromBBox(args[++i]);
                     }
-                    if(args[i]=="-scales")
+                    if (args[i] == "-scales")
                     {
                         scales.AddRange(args[++i].Split(',').Select(v => int.Parse(v)));
                     }
-                    if(args[i] == "-threads")
+                    if (args[i] == "-threads")
                     {
                         maxParallelRequests = int.Parse(args[++i]);
                     }
@@ -191,7 +191,7 @@ namespace gView.Cmd.RenderTileCache
                     List<double> preRenderScales = new List<double>();
                     if (scales.Count > 0)
                     {
-                        preRenderScales.AddRange(scales.Where(s => metadata.Scales.Contains(s)).Select(s=>(double)s));
+                        preRenderScales.AddRange(scales.Where(s => metadata.Scales.Contains(s)).Select(s => (double)s));
                     }
 
                     var tileRender = new TileRenderer(metadata,
@@ -199,7 +199,7 @@ namespace gView.Cmd.RenderTileCache
                                                       cacheFormat: cacheFormat,
                                                       orientation: orientation,
                                                       bbox: bbox,
-                                                      preRenderScales: preRenderScales.Count>0 ? preRenderScales : null,
+                                                      preRenderScales: preRenderScales.Count > 0 ? preRenderScales : null,
                                                       maxParallelRequests: maxParallelRequests);
 
                     tileRender.Renderer(server, service);

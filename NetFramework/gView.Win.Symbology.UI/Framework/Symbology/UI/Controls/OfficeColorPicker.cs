@@ -1,8 +1,5 @@
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data;
-using System.Text;
 using System.Drawing;
 using System.Windows.Forms;
 using System.Windows.Forms.Design;
@@ -12,10 +9,10 @@ namespace gView.Framework.Symbology.UI.Controls
     /// <summary>
     /// Provides color picker control that could be used in a model or non-model form.
     /// </summary
-    [DefaultEvent("SelectedColorChanged"), DefaultProperty("Color"), 
-    ToolboxItem(true) ,
+    [DefaultEvent("SelectedColorChanged"), DefaultProperty("Color"),
+    ToolboxItem(true),
     ToolboxBitmap(typeof(OfficeColorPicker), "OfficeColorPicker"),
-    Description("Provides color picker control that could be used in a model or non-model form.")]       
+    Description("Provides color picker control that could be used in a model or non-model form.")]
     public partial class OfficeColorPicker : UserControl
     {
         #region Static Methods
@@ -48,13 +45,13 @@ namespace gView.Framework.Symbology.UI.Controls
         public Color Color
         {
             get { return _color; }
-            set 
-            { 
+            set
+            {
                 _color = value;
                 // Set Selected Color in the GUI
                 SetColor(value);
                 // Fires the SelectedColorChanged event.
-                OnSelectedColorChanged(EventArgs.Empty);                
+                OnSelectedColorChanged(EventArgs.Empty);
             }
         }
         /// <summary>
@@ -153,7 +150,7 @@ namespace gView.Framework.Symbology.UI.Controls
             _wfes = wfes;
         }
         #endregion
-        
+
         #region Public Methods
         /// <summary>
         /// Opens the control inside a context menu in the specified location
@@ -163,7 +160,7 @@ namespace gView.Framework.Symbology.UI.Controls
         /// <param name="top">Parent control coordinates top location of the control</param>
         /// <param name="parent">Parent control to place the control at</param>
         public void Show(Control parent, int left, int top)
-        {            
+        {
             Show(parent, new Point(left, top));
         }
         /// <summary>
@@ -210,7 +207,9 @@ namespace gView.Framework.Symbology.UI.Controls
         {
             Refresh();
             if (SelectedColorChanged != null)
+            {
                 SelectedColorChanged(this, e);
+            }
         }
 
         #endregion
@@ -262,9 +261,13 @@ namespace gView.Framework.Symbology.UI.Controls
                 {
                     _currentHotTrack = recIndex;
                     if (CustomColors.SelectableColorsNames.Length > recIndex)
+                    {
                         colorToolTip.SetToolTip(this, CustomColors.SelectableColorsNames[recIndex]);
+                    }
                     else
+                    {
                         colorToolTip.SetToolTip(this, "");
+                    }
                 }
             }
             this.Refresh();
@@ -301,9 +304,15 @@ namespace gView.Framework.Symbology.UI.Controls
                         colorToolTip.SetToolTip(this, CustomColors.SelectableColorsNames[recIndex]);
                     }
                     if (_contextForm != null)
+                    {
                         _contextForm.Hide();
+                    }
+
                     _contextForm = null;
-                    if (_wfes != null) _wfes.CloseDropDown();
+                    if (_wfes != null)
+                    {
+                        _wfes.CloseDropDown();
+                    }
                 }
             }
             this.Refresh();
@@ -315,7 +324,7 @@ namespace gView.Framework.Symbology.UI.Controls
         private Color OpenMoreColorsDialog()
         {
             colorDialog.Color = Color;
-           
+
             Form parentForm = this.FindForm();
             ContextMenuForm contextFrm = parentForm as ContextMenuForm;
             if (contextFrm != null)
@@ -327,7 +336,7 @@ namespace gView.Framework.Symbology.UI.Controls
                 if (_parentControl != null)
                 {
                     _parentControl.FindForm().BringToFront();
-                }               
+                }
                 // Active lost focus events on owner context menu form
                 contextFrm.Locked = false;
             }
@@ -340,7 +349,7 @@ namespace gView.Framework.Symbology.UI.Controls
         private Color OpenTransparencyDialog()
         {
             gView.Framework.Symbology.UI.FormColorTransparency dlg = new gView.Framework.Symbology.UI.FormColorTransparency(Color);
-            
+
             Form parentForm = this.FindForm();
             ContextMenuForm contextFrm = parentForm as ContextMenuForm;
             if (contextFrm != null)
@@ -360,7 +369,7 @@ namespace gView.Framework.Symbology.UI.Controls
             {
                 dlg.ShowDialog(this);
             }
-            
+
             return dlg.Color;
         }
         protected override void OnMouseLeave(EventArgs e)
@@ -375,12 +384,12 @@ namespace gView.Framework.Symbology.UI.Controls
         /// <param name="e"></param>
         protected override void OnPaintBackground(PaintEventArgs pevent)
         {
-            using(Brush brush = new SolidBrush(CustomColors.ColorPickerBackgroundDocked))
+            using (Brush brush = new SolidBrush(CustomColors.ColorPickerBackgroundDocked))
             {
                 pevent.Graphics.FillRectangle(brush, pevent.ClipRectangle);
             }
         }
-        
+
         /// <summary>
         /// Overrides, paint all buttons
         /// </summary>
@@ -438,7 +447,7 @@ namespace gView.Framework.Symbology.UI.Controls
             Font buttonFont = new Font("Arial", 8);
             bool selected = _currentSelected == 40;
             bool hotTrack = _currentHotTrack == 40;
-           
+
             // Paints the button with the selected, hot track settings if needed
             using (Brush hotTrackBrush = new SolidBrush(CustomColors.ButtonHoverLight))
             using (Brush selectedBrush = new SolidBrush(CustomColors.ButtonHoverDark))
@@ -460,7 +469,7 @@ namespace gView.Framework.Symbology.UI.Controls
             graphics.DrawString("More Colors...", buttonFont, Brushes.Black, buttonRec, format);
             format.Dispose();
             buttonFont.Dispose();
-            buttons[40] = buttonRec;         
+            buttons[40] = buttonRec;
         }
         protected void PaintTransparencyButton(System.Drawing.Graphics graphics, int x, int y)
         {
@@ -536,7 +545,7 @@ namespace gView.Framework.Symbology.UI.Controls
         }
         protected void PaintSeperator(System.Drawing.Graphics graphics, int x, int y)
         {
-            using(Pen pen=new Pen(CustomColors.BlueGray))
+            using (Pen pen = new Pen(CustomColors.BlueGray))
             {
                 graphics.DrawLine(pen, 1, y, 8 * 18 - 2, y);
             }
@@ -553,7 +562,7 @@ namespace gView.Framework.Symbology.UI.Controls
         /// <param name="y"></param>
         /// <returns></returns>
         private Rectangle PaintColor(System.Drawing.Graphics graphics, Color color, bool hotTrack, bool selected, int x, int y)
-        {            
+        {
             // Button inside rectangle
             Rectangle mainRec = new Rectangle(x + 3, y + 3, 11, 11);
             // Button border rectangle 
@@ -594,4 +603,4 @@ namespace gView.Framework.Symbology.UI.Controls
         }
         #endregion
     }
-  }
+}

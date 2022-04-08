@@ -1,15 +1,11 @@
-using System;
-using System.Text;
-using System.Collections;
-using System.Collections.Generic;
-using System.Data;
-using gView.Framework;
-using gView.Framework.Geometry;
-using gView.Framework.Data;
 using gView.Framework.Carto;
-using gView.Framework.IO;
+using gView.Framework.Data;
 using gView.Framework.FDB;
+using gView.Framework.Geometry;
+using gView.Framework.IO;
 using gView.Framework.system;
+using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace gView.DataSources.Fdb.MSAccess
@@ -56,7 +52,9 @@ namespace gView.DataSources.Fdb.MSAccess
         async public Task<List<IDatasetElement>> Elements()
         {
             if (_fdb == null)
+            {
                 return new List<IDatasetElement>();
+            }
 
             if (_layers == null || _layers.Count == 0)
             {
@@ -70,17 +68,23 @@ namespace gView.DataSources.Fdb.MSAccess
                         if (element is IFeatureLayer)
                         {
                             if (_addedLayers.Contains(((IFeatureLayer)element).FeatureClass.Name))
+                            {
                                 list.Add(element);
+                            }
                         }
                         else if (element is IRasterLayer)
                         {
                             if (_addedLayers.Contains(((IRasterLayer)element).Title))
+                            {
                                 list.Add(element);
+                            }
                         }
                         else
                         {
                             if (_addedLayers.Contains(element.Title))
+                            {
                                 list.Add(element);
+                            }
                         }
                     }
                     _layers = list;
@@ -89,7 +93,10 @@ namespace gView.DataSources.Fdb.MSAccess
             }
 
             if (_layers == null)
+            {
                 return new List<IDatasetElement>();
+            }
+
             return _layers;
         }
 
@@ -112,19 +119,30 @@ namespace gView.DataSources.Fdb.MSAccess
         async public Task<IEnvelope> Envelope()
         {
             if (_layers == null)
+            {
                 return null;
+            }
 
             bool first = true;
             IEnvelope env = null;
 
             foreach (IDatasetElement layer in _layers)
             {
-                if (!(layer.Class is IFeatureClass)) continue;
+                if (!(layer.Class is IFeatureClass))
+                {
+                    continue;
+                }
+
                 IEnvelope envelope = ((IFeatureClass)layer.Class).Envelope;
                 if (envelope.Width > 1e10 && await ((IFeatureClass)layer.Class).CountFeatures() == 0)
+                {
                     envelope = null;
+                }
 
-                if (gView.Framework.Geometry.Envelope.IsNull(envelope)) continue;
+                if (gView.Framework.Geometry.Envelope.IsNull(envelope))
+                {
+                    continue;
+                }
 
                 if (first)
                 {
@@ -215,7 +233,9 @@ namespace gView.DataSources.Fdb.MSAccess
                     "dsname=" + ConfigTextStream.ExtractValue(_connString, "dsname") + ";";
 
                 while (c.IndexOf(";;") != -1)
+                {
                     c = c.Replace(";;", ";");
+                }
 
                 /*
                 if (_layers != null && _layers.Count > 0)
@@ -240,22 +260,36 @@ namespace gView.DataSources.Fdb.MSAccess
         {
             _connString = value;
             if (value == null)
+            {
                 return false;
+            }
 
             while (_connString.IndexOf(";;") != -1)
+            {
                 _connString = _connString.Replace(";;", ";");
+            }
 
             _dsname = ConfigTextStream.ExtractValue(value, "dsname");
             _addedLayers.Clear();
             foreach (string layername in ConfigTextStream.ExtractValue(value, "layers").Split('@'))
             {
-                if (layername == "") continue;
-                if (_addedLayers.IndexOf(layername) != -1) continue;
+                if (layername == "")
+                {
+                    continue;
+                }
+
+                if (_addedLayers.IndexOf(layername) != -1)
+                {
+                    continue;
+                }
+
                 _addedLayers.Add(layername);
             }
 
             if (_fdb == null)
+            {
                 throw new NullReferenceException("_fdb==null");
+            }
 
             _fdb.DatasetRenamed += new AccessFDB.DatasetRenamedEventHandler(AccessFDB_DatasetRenamed);
             _fdb.FeatureClassRenamed += new AccessFDB.FeatureClassRenamedEventHandler(AccessFDB_FeatureClassRenamed);
@@ -264,7 +298,7 @@ namespace gView.DataSources.Fdb.MSAccess
 
             return true;
         }
-        
+
 
         public DatasetState State
         {
@@ -275,11 +309,15 @@ namespace gView.DataSources.Fdb.MSAccess
         {
             if (_connString == null || _connString == "" ||
                 _dsname == null || _dsname == "" || _fdb == null)
+            {
                 return false;
+            }
 
             _dsID = await _fdb.DatasetID(_dsname);
             if (_dsID == -1)
+            {
                 return false;
+            }
 
             _sRef = await _fdb.SpatialReference(_dsname);
             _sIndexDef = await _fdb.SpatialIndexDef(_dsID);
@@ -327,13 +365,18 @@ namespace gView.DataSources.Fdb.MSAccess
         async public Task RefreshClasses()
         {
             if (_fdb != null)
+            {
                 await _fdb.RefreshClasses(this);
+            }
         }
         #endregion
 
         void AccessFDB_FeatureClassRenamed(string oldName, string newName)
         {
-            if (_layers == null) return;
+            if (_layers == null)
+            {
+                return;
+            }
 
             foreach (IDatasetElement element in _layers)
             {
@@ -347,7 +390,10 @@ namespace gView.DataSources.Fdb.MSAccess
 
         async void SqlFDB_TableAltered(string table)
         {
-            if (_layers == null) return;
+            if (_layers == null)
+            {
+                return;
+            }
 
             foreach (IDatasetElement element in _layers)
             {
@@ -370,13 +416,17 @@ namespace gView.DataSources.Fdb.MSAccess
         void AccessFDB_DatasetRenamed(string oldName, string newName)
         {
             if (_dsname == oldName)
+            {
                 _dsname = newName;
+            }
         }
 
         async public Task<IDatasetElement> Element(string DatasetElementTitle)
         {
             if (_fdb == null)
+            {
                 return null;
+            }
 
             IDatasetElement element = await _fdb.DatasetElement(this, DatasetElementTitle);
 
@@ -436,17 +486,29 @@ namespace gView.DataSources.Fdb.MSAccess
 
         async public Task AppendElement(string elementName)
         {
-            if (_fdb == null) return;
+            if (_fdb == null)
+            {
+                return;
+            }
 
-            if (_layers == null) _layers = new List<IDatasetElement>();
+            if (_layers == null)
+            {
+                _layers = new List<IDatasetElement>();
+            }
 
             foreach (IDatasetElement e in _layers)
             {
-                if (e.Title == elementName) return;
+                if (e.Title == elementName)
+                {
+                    return;
+                }
             }
 
             IDatasetElement element = await _fdb.DatasetElement(this, elementName);
-            if (element != null) _layers.Add(element);
+            if (element != null)
+            {
+                _layers.Add(element);
+            }
         }
 
         #endregion
@@ -497,12 +559,19 @@ namespace gView.DataSources.Fdb.MSAccess
 
         async public Task<int> CountFeatures()
         {
-                if (_fdb == null) return -1;
-                return await _fdb.CountFeatures(_name);
+            if (_fdb == null)
+            {
+                return -1;
+            }
+
+            return await _fdb.CountFeatures(_name);
         }
         async public Task<IFeatureCursor> GetFeatures(IQueryFilter filter/*, gView.Framework.Data.getFeatureQueryType type*/)
         {
-            if (_fdb == null) return null;
+            if (_fdb == null)
+            {
+                return null;
+            }
 
             if (filter != null)
             {
@@ -619,11 +688,17 @@ namespace gView.DataSources.Fdb.MSAccess
 
         public IField FindField(string name)
         {
-            if (m_fields == null) return null;
+            if (m_fields == null)
+            {
+                return null;
+            }
 
             foreach (IField field in m_fields.ToEnumerable())
             {
-                if (field.name == name) return field;
+                if (field.name == name)
+                {
+                    return field;
+                }
             }
             return null;
         }
@@ -660,7 +735,11 @@ namespace gView.DataSources.Fdb.MSAccess
 
         public void AddDelegate(object Delegate)
         {
-            if (_fdb == null) return;
+            if (_fdb == null)
+            {
+                return;
+            }
+
             _fdb.reportProgress += (AccessFDB.ProgressEvent)Delegate;
         }
 
@@ -668,7 +747,11 @@ namespace gView.DataSources.Fdb.MSAccess
 
         public void SetSpatialTreeInfo(gView.Framework.FDB.ISpatialTreeInfo info)
         {
-            if (info == null) return;
+            if (info == null)
+            {
+                return;
+            }
+
             try
             {
                 _si_type = info.type;
@@ -719,7 +802,11 @@ namespace gView.DataSources.Fdb.MSAccess
 
         async public Task<List<SpatialIndexNode>> SpatialIndexNodes()
         {
-            if (_fdb == null) return null;
+            if (_fdb == null)
+            {
+                return null;
+            }
+
             return await _fdb.SpatialIndexNodes2(_name);
         }
 
@@ -768,10 +855,16 @@ namespace gView.DataSources.Fdb.MSAccess
 
         public void RefreshFrom(object obj)
         {
-            if (!(obj is AccessFDBFeatureClass)) return;
+            if (!(obj is AccessFDBFeatureClass))
+            {
+                return;
+            }
 
             AccessFDBFeatureClass fc = (AccessFDBFeatureClass)obj;
-            if (fc.Name != this.Name) return;
+            if (fc.Name != this.Name)
+            {
+                return;
+            }
 
             this.Envelope = fc.Envelope;
             this.SpatialReference = fc.SpatialReference;

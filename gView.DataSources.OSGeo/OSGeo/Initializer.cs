@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Reflection;
-using System.Text;
 
 namespace gView.DataSources.OSGeo
 {
@@ -30,7 +29,7 @@ namespace gView.DataSources.OSGeo
                     OSGeo_v3.GDAL.Gdal.AllRegister();
                     OSGeo_v3.OGR.Ogr.RegisterAll();
 
-                    OSGeo_v3.OSR.Osr.SetPROJSearchPaths(new[] { $"{ System.IO.Path.GetDirectoryName( Assembly.GetEntryAssembly().Location) }/gdalproj" });
+                    OSGeo_v3.OSR.Osr.SetPROJSearchPaths(new[] { $"{ System.IO.Path.GetDirectoryName(Assembly.GetEntryAssembly().Location) }/gdalproj" });
 
                     InstalledVersion = GdalVersion.V3;
                 }

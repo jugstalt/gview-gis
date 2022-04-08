@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-
 namespace gView.Framework.OGC.XML
 {
     public class Globals
@@ -22,11 +18,14 @@ namespace gView.Framework.OGC.XML
         {
             if (id.Contains("."))
             {
-                id= id.Substring(id.LastIndexOf(".") + 1, id.Length - id.LastIndexOf(".") - 1);
+                id = id.Substring(id.LastIndexOf(".") + 1, id.Length - id.LastIndexOf(".") - 1);
             }
             int ID;
             if (!int.TryParse(id, out ID))
+            {
                 ID = -1;
+            }
+
             return ID;
         }
     }

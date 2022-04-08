@@ -1,11 +1,9 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-using gView.Framework.Data;
-using System.IO;
-using System.Xml;
 using gView.Framework.system;
+using System;
+using System.IO;
+using System.Text;
 using System.Threading.Tasks;
+using System.Xml;
 
 namespace gView.Framework.Data
 {
@@ -36,7 +34,9 @@ namespace gView.Framework.Data
             else if (filter is IQueryFilter)
             {
                 if (filter.WhereClause.ToLower().Contains(" in ("))
+                {
                     ParseInWhereClause(filter.WhereClause, sw);
+                }
                 else
                 {
                     ParseWhereClause(filter.WhereClause, sw);
@@ -82,7 +82,11 @@ namespace gView.Framework.Data
             IQueryFilter newFilter = null;
             ParseWFSFilter(fc, filter, "", ns, whereClause, ref newFilter);
 
-            if (newFilter == null) newFilter = new QueryFilter();
+            if (newFilter == null)
+            {
+                newFilter = new QueryFilter();
+            }
+
             newFilter.WhereClause = RemoveOuterBrackets(whereClause.ToString());
 
             return newFilter;
@@ -93,7 +97,10 @@ namespace gView.Framework.Data
         #region ToWFS
         private static void CreateRowIDFilter(ITableClass fc, IRowIDFilter filter, StreamWriter sw)
         {
-            if (fc == null || filter == null || sw == null) return;
+            if (fc == null || filter == null || sw == null)
+            {
+                return;
+            }
 
             string fcName = fc.Name;
             foreach (int id in filter.IDs)
@@ -113,9 +120,16 @@ namespace gView.Framework.Data
 
         static void tokenizer_OnTransformToken(ref string text)
         {
-            if (text == String.Empty) return;
+            if (text == String.Empty)
+            {
+                return;
+            }
+
             if (text.LastIndexOf("[") == 0 &&
-                text.IndexOf("]") == text.Length - 1) return;
+                text.IndexOf("]") == text.Length - 1)
+            {
+                return;
+            }
 
             text = ParseFlatWhereClause(text);
         }
@@ -123,7 +137,10 @@ namespace gView.Framework.Data
         private static string ParseFlatWhereClause(string whereClause)
         {
             StringBuilder sb = new StringBuilder();
-            if (whereClause == String.Empty) return String.Empty;
+            if (whereClause == String.Empty)
+            {
+                return String.Empty;
+            }
 
             if (whereClause.Contains("(") || whereClause.Contains(")"))
             {
@@ -145,18 +162,35 @@ namespace gView.Framework.Data
             }
 
             string op = String.Empty;
-            if (useAND) op = "And";
-            if (useOR) op = "Or";
-            if (useNOT) op = "Not";
+            if (useAND)
+            {
+                op = "And";
+            }
+
+            if (useOR)
+            {
+                op = "Or";
+            }
+
+            if (useNOT)
+            {
+                op = "Not";
+            }
 
             string[] properties = SplitByString(whereClause, " " + op + " ");
 
             if (op != String.Empty)
+            {
                 sb.Append("<" + op + ">");
+            }
 
             foreach (string property in properties)
             {
-                if (property == String.Empty) continue;
+                if (property == String.Empty)
+                {
+                    continue;
+                }
+
                 if (property[0] == '[' && property[property.Length - 1] == ']')
                 {
                     sb.Append(property);
@@ -202,7 +236,9 @@ namespace gView.Framework.Data
                 sb.Append(@"</" + operatorName + ">");
             }
             if (op != String.Empty)
+            {
                 sb.Append("</" + op + ">");
+            }
 
             return sb.ToString();
         }
@@ -210,13 +246,20 @@ namespace gView.Framework.Data
         private static void ParseInWhereClause(string whereClause, StreamWriter sw)
         {
             while (whereClause.IndexOf(" ,") != -1)
+            {
                 whereClause = whereClause.Replace(" ,", ",");
+            }
+
             while (whereClause.IndexOf(", ") != -1)
+            {
                 whereClause = whereClause.Replace(", ", ",");
+            }
 
             string[] parts = whereClause.Trim().Split(' ');
             if (parts.Length != 3)
+            {
                 throw (new Exception("Whereclause to complex..."));
+            }
 
             string field = parts[0];
             string[] ids = parts[2].Substring(1, parts[2].Length - 2).Split(',');
@@ -224,7 +267,11 @@ namespace gView.Framework.Data
             StringBuilder sb = new StringBuilder();
             foreach (string id in ids)
             {
-                if (sb.Length > 0) sb.Append(" OR ");
+                if (sb.Length > 0)
+                {
+                    sb.Append(" OR ");
+                }
+
                 sb.Append(field + "=" + id);
             }
 
@@ -239,7 +286,10 @@ namespace gView.Framework.Data
 
             foreach (string part in parts)
             {
-                if (part == op) return true;
+                if (part == op)
+                {
+                    return true;
+                }
             }
             return false;
         }
@@ -248,7 +298,9 @@ namespace gView.Framework.Data
         {
             clause = clause.Trim();
             while (clause.IndexOf("  ") != -1)
+            {
                 clause = clause.Replace("  ", " ");
+            }
 
             return clause;
         }
@@ -360,7 +412,10 @@ namespace gView.Framework.Data
         #region FromWFS
         private static void ParseWFSFilter(ITableClass fc, XmlNode parentNode, string LogicalOperator, XmlNamespaceManager ns, StringBuilder sb, ref IQueryFilter newFilter)
         {
-            if (parentNode == null) return;
+            if (parentNode == null)
+            {
+                return;
+            }
 
             foreach (XmlNode child in parentNode.ChildNodes)
             {
@@ -388,28 +443,40 @@ namespace gView.Framework.Data
                         break;
                     case "BBOX":
                         if (newFilter != null)
+                        {
                             throw new Exception("Invalid or corrupt Filter!!!");
+                        }
+
                         newFilter = new SpatialFilter();
                         ((ISpatialFilter)newFilter).SpatialRelation = spatialRelation.SpatialRelationEnvelopeIntersects;
                         gmlNode = (ns != null) ? child.SelectSingleNode("GML:*", ns) : child.ChildNodes[0];
                         break;
                     case "Intersects":
                         if (newFilter != null)
+                        {
                             throw new Exception("Invalid or corrupt Filter!!!");
+                        }
+
                         newFilter = new SpatialFilter();
                         ((ISpatialFilter)newFilter).SpatialRelation = spatialRelation.SpatialRelationIntersects;
                         gmlNode = (ns != null) ? child.SelectSingleNode("GML:*", ns) : child.ChildNodes[0];
                         break;
                     case "Within":
                         if (newFilter != null)
+                        {
                             throw new Exception("Invalid or corrupt Filter!!!");
+                        }
+
                         newFilter = new SpatialFilter();
                         ((ISpatialFilter)newFilter).SpatialRelation = spatialRelation.SpatialRelationContains;
                         gmlNode = (ns != null) ? child.SelectSingleNode("GML:*", ns) : child.ChildNodes[0];
                         break;
                     case "Contains":
                         if (newFilter != null)
+                        {
                             throw new Exception("Invalid or corrupt Filter!!!");
+                        }
+
                         newFilter = new SpatialFilter();
                         ((ISpatialFilter)newFilter).SpatialRelation = spatialRelation.SpatialRelationContains;
                         gmlNode = (ns != null) ? child.SelectSingleNode("GML:*", ns) : child.ChildNodes[0];
@@ -436,7 +503,10 @@ namespace gView.Framework.Data
         {
             //if(fc==null) 
             //    throw new ArgumentException("ParseWFSFilterNode: FeatureClass is null...");
-            if (node == null) return String.Empty;
+            if (node == null)
+            {
+                return String.Empty;
+            }
 
             string op = String.Empty;
             switch (node.Name)
@@ -512,28 +582,46 @@ namespace gView.Framework.Data
 
         private static void AppendClause(string op, string clause, StringBuilder sb)
         {
-            if (clause == String.Empty) return;
+            if (clause == String.Empty)
+            {
+                return;
+            }
 
             if (sb.Length > 0)
+            {
                 sb.Append(" " + op + " ");
+            }
+
             sb.Append(clause);
         }
 
         private static string RemoveOuterBrackets(string sql)
         {
-            if (sql == null || sql == String.Empty) return String.Empty;
+            if (sql == null || sql == String.Empty)
+            {
+                return String.Empty;
+            }
 
             byte[] c = new byte[sql.Length];
             int pos = 0;
             for (int i = 0; i < sql.Length; i++)
             {
                 if (sql[i] == '(')
+                {
                     c[i] = (byte)++pos;
+                }
+
                 if (sql[i] == ')')
+                {
                     c[i] = (byte)pos--;
+                }
             }
 
-            if (c[0] != 1 || c[c.Length - 1] != 1) return sql;
+            if (c[0] != 1 || c[c.Length - 1] != 1)
+            {
+                return sql;
+            }
+
             if (CountValues(c, 1) == 2)
             {
                 return RemoveOuterBrackets(sql.Substring(1, sql.Length - 2));
@@ -547,8 +635,12 @@ namespace gView.Framework.Data
         {
             int counter = 0;
             for (int i = 0; i < array.Length; i++)
+            {
                 if (array[i] == val)
+                {
                     counter++;
+                }
+            }
 
             return counter;
         }

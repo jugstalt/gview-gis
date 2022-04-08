@@ -13,9 +13,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-using System;
 using GeoAPI.Geometries;
 using Proj4Net.Utility;
+using System;
 
 namespace Proj4Net.Projection
 {
@@ -37,36 +37,57 @@ namespace Proj4Net.Projection
                 lamtp, cl, sd, sp, fac, sav, tanphi;
 
             if (lpphi > ProjectionMath.PiHalf)
+            {
                 lpphi = ProjectionMath.PiHalf;
+            }
             else if (lpphi < -ProjectionMath.PiHalf)
+            {
                 lpphi = -ProjectionMath.PiHalf;
+            }
+
             lampp = lpphi >= 0.0 ? ProjectionMath.PiHalf : PI_HALFPI;
             tanphi = Math.Tan(lpphi);
-            for (nn = 0; ; )
+            for (nn = 0; ;)
             {
                 sav = lampp;
                 lamtp = lplam + p22 * lampp;
                 cl = Math.Cos(lamtp);
                 if (Math.Abs(cl) < Tolerance)
+                {
                     lamtp -= Tolerance;
+                }
+
                 fac = lampp - Math.Sin(lampp) * (cl < 0.0 ? -ProjectionMath.PiHalf : ProjectionMath.PiHalf);
                 for (l = 50; l > 0; --l)
                 {
                     lamt = lplam + p22 * sav;
                     if (Math.Abs(c = Math.Cos(lamt)) < Tolerance)
+                    {
                         lamt -= Tolerance;
+                    }
+
                     xlam = (_oneEs * tanphi * sa + Math.Sin(lamt) * ca) / c;
                     lamdp = Math.Atan(xlam) + fac;
                     if (Math.Abs(Math.Abs(sav) - Math.Abs(lamdp)) < Tolerance)
+                    {
                         break;
+                    }
+
                     sav = lamdp;
                 }
                 if (l == 0 || ++nn >= 3 || (lamdp > rlm && lamdp < rlm2))
+                {
                     break;
+                }
+
                 if (lamdp <= rlm)
+                {
                     lampp = TWOPI_HALFPI;
+                }
                 else if (lamdp >= rlm2)
+                {
                     lampp = ProjectionMath.PiHalf;
+                }
             }
             if (l != 0)
             {
@@ -84,7 +105,10 @@ namespace Proj4Net.Projection
                 xy.Y = c1 * sd + c3 * Math.Sin(lamdp * 3.0) + tanph * xj / d;
             }
             else
+            {
                 xy.X = xy.Y = Double.PositiveInfinity;
+            }
+
             return xy;
         }
 
@@ -162,11 +186,16 @@ namespace Proj4Net.Projection
             //FIXME		land = pj_param(params, "ilsat").i;
             land = 1;
             if (land <= 0 || land > 5)
+            {
                 throw new ProjectionException("-28");
+            }
             //FIXME		path = pj_param(params, "ipath").i;
             path = 120;
             if (path <= 0 || path > (land <= 3 ? 251 : 233))
+            {
                 throw new ProjectionException("-29");
+            }
+
             if (land <= 3)
             {
                 ProjectionLongitude = DTR * 128.87 - ProjectionMath.TwoPI / 251.0 * path;
@@ -183,7 +212,10 @@ namespace Proj4Net.Projection
             sa = Math.Sin(alf);
             ca = Math.Cos(alf);
             if (Math.Abs(ca) < 1e-9)
+            {
                 ca = 1e-9;
+            }
+
             esc = EccentricitySquared * ca * ca;
             ess = EccentricitySquared * sa * sa;
             w = (1.0 - esc) * _roneEs;
@@ -197,9 +229,15 @@ namespace Proj4Net.Projection
             a2 = a4 = b = c1 = c3 = 0.0;
             seraz0(0.0, 1.0);
             for (lam = 9.0; lam <= 81.0001; lam += 18.0)
+            {
                 seraz0(lam, 4.0);
+            }
+
             for (lam = 18; lam <= 72.0001; lam += 18.0)
+            {
                 seraz0(lam, 2.0);
+            }
+
             seraz0(90.0, 1.0);
             a2 /= 30.0;
             a4 /= 60.0;

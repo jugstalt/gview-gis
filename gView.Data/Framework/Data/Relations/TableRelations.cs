@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using gView.Framework.IO;
+﻿using gView.Framework.IO;
 using gView.Framework.UI;
+using System.Collections.Generic;
 
 namespace gView.Framework.Data.Relations
 {
@@ -26,7 +22,9 @@ namespace gView.Framework.Data.Relations
                 foreach (ITableRelation relation in this)
                 {
                     if (relation.RelationName == relationName)
+                    {
                         return relation;
+                    }
                 }
                 return null;
             }
@@ -34,11 +32,13 @@ namespace gView.Framework.Data.Relations
 
         public IEnumerable<ITableRelation> GetRelations(IDatasetElement element)
         {
-            List<ITableRelation> relations=new List<ITableRelation>();
+            List<ITableRelation> relations = new List<ITableRelation>();
             foreach (ITableRelation tableRelation in this)
             {
                 if (tableRelation.LeftTable == element || tableRelation.RightTable == element)
+                {
                     relations.Add(tableRelation);
+                }
             }
             return relations;
         }

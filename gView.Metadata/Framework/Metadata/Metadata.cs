@@ -1,10 +1,8 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
 using gView.Framework.IO;
-using gView.Framework.UI;
-using System.Reflection;
 using gView.Framework.system;
+using gView.Framework.UI;
+using System;
+using System.Reflection;
 using System.Threading.Tasks;
 
 namespace gView.Framework.Metadata
@@ -115,7 +113,9 @@ namespace gView.Framework.Metadata
 
             IPlugInParameter p = uiAssembly.CreateInstance("gView.Framework.Metadata.UI.GeneralMetadataControl") as IPlugInParameter;
             if (p != null)
+            {
                 p.Parameter = this;
+            }
 
             return p;
         }
@@ -151,12 +151,12 @@ namespace gView.Framework.Metadata
 
     //    public void Load(IPersistStream stream)
     //    {
-            
+
     //    }
 
     //    public void Save(IPersistStream stream)
     //    {
-            
+
     //    }
 
     //    #endregion

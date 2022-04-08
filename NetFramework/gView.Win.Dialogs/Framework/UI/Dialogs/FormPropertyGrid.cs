@@ -1,70 +1,71 @@
-using System;
-using System.Drawing;
-using System.Collections;
-using System.ComponentModel;
-using System.Windows.Forms;
-using gView.Framework;
 using gView.Framework.system;
 
 namespace gView.Framework.UI.Dialogs
 {
-	/// <summary>
-	/// Zusammenfassung für FromPropertyGrid.
-	/// </summary>
-	public class FormPropertyGrid : System.Windows.Forms.Form
-	{
-		private System.Windows.Forms.PropertyGrid propertyGrid1;
-		private System.Windows.Forms.Panel panel1;
-		private System.Windows.Forms.Button btnOK;
-		private System.Windows.Forms.Panel panel2;
-		/// <summary>
-		/// Erforderliche Designervariable.
-		/// </summary>
-		private System.ComponentModel.Container components = null;
+    /// <summary>
+    /// Zusammenfassung für FromPropertyGrid.
+    /// </summary>
+    public class FormPropertyGrid : System.Windows.Forms.Form
+    {
+        private System.Windows.Forms.PropertyGrid propertyGrid1;
+        private System.Windows.Forms.Panel panel1;
+        private System.Windows.Forms.Button btnOK;
+        private System.Windows.Forms.Panel panel2;
+        /// <summary>
+        /// Erforderliche Designervariable.
+        /// </summary>
+        private System.ComponentModel.Container components = null;
 
-		public FormPropertyGrid(object selectedObj)
-		{
-			//
-			// Erforderlich für die Windows Form-Designerunterstützung
-			//
-			InitializeComponent();
+        public FormPropertyGrid(object selectedObj)
+        {
+            //
+            // Erforderlich für die Windows Form-Designerunterstützung
+            //
+            InitializeComponent();
 
-			propertyGrid1.SelectedObject=selectedObj;
-			this.Text=selectedObj.ToString();
-		}
+            propertyGrid1.SelectedObject = selectedObj;
+            this.Text = selectedObj.ToString();
+        }
 
-		/// <summary>
-		/// Die verwendeten Ressourcen bereinigen.
-		/// </summary>
-		protected override void Dispose( bool disposing )
-		{
-			if( disposing )
-			{
-				if(components != null)
-				{
-					components.Dispose();
-				}
-			}
-			base.Dispose( disposing );
-		}
+        /// <summary>
+        /// Die verwendeten Ressourcen bereinigen.
+        /// </summary>
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                if (components != null)
+                {
+                    components.Dispose();
+                }
+            }
+            base.Dispose(disposing);
+        }
 
-		public object SelectedObject 
-		{
-			get 
-			{ 
-				if(propertyGrid1.SelectedObject==null) return null;
-				if(!(propertyGrid1.SelectedObject is IProperties)) return propertyGrid1.SelectedObject;
+        public object SelectedObject
+        {
+            get
+            {
+                if (propertyGrid1.SelectedObject == null)
+                {
+                    return null;
+                }
 
-				return ((IProperties)propertyGrid1.SelectedObject).SelectedObject; 
-			}
-		}
-		#region Vom Windows Form-Designer generierter Code
-		/// <summary>
-		/// Erforderliche Methode für die Designerunterstützung. 
-		/// Der Inhalt der Methode darf nicht mit dem Code-Editor geändert werden.
-		/// </summary>
-		private void InitializeComponent()
-		{
+                if (!(propertyGrid1.SelectedObject is IProperties))
+                {
+                    return propertyGrid1.SelectedObject;
+                }
+
+                return ((IProperties)propertyGrid1.SelectedObject).SelectedObject;
+            }
+        }
+        #region Vom Windows Form-Designer generierter Code
+        /// <summary>
+        /// Erforderliche Methode für die Designerunterstützung. 
+        /// Der Inhalt der Methode darf nicht mit dem Code-Editor geändert werden.
+        /// </summary>
+        private void InitializeComponent()
+        {
             this.propertyGrid1 = new System.Windows.Forms.PropertyGrid();
             this.panel1 = new System.Windows.Forms.Panel();
             this.panel2 = new System.Windows.Forms.Panel();
@@ -123,7 +124,7 @@ namespace gView.Framework.UI.Dialogs
             this.panel2.ResumeLayout(false);
             this.ResumeLayout(false);
 
-		}
-		#endregion
-	}
+        }
+        #endregion
+    }
 }

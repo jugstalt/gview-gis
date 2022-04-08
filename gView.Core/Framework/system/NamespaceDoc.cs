@@ -8,7 +8,7 @@ namespace gView.Framework.system
     /// In the <c>gView.Framework</c> namespace all interfaces are defined. If you want to develope your own extensions use this interfaces.
     /// Extensions can be made with any interfaces that implement <see cref="gView.Framework.IgViewExtension"/> 
     /// </summary>
-    internal class NamespaceDoc 
-	{
-	}
+    internal class NamespaceDoc
+    {
+    }
 }

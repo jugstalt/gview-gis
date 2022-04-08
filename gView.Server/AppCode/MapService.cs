@@ -472,13 +472,17 @@ namespace gView.Server.AppCode
                 if (_folderSettings.AccessRules != null && _folderSettings.AccessRules.Length > 0)
                 {
                     if (_folderSettings.AccessRules.Where(r => r.Username == identity.UserName && r.ServiceTypes.Contains("publish")).Count() > 0)
+                    {
                         return true;
+                    }
                 }
 
                 if (_type == MapServiceType.Folder && _settings.AccessRules != null && _settings.AccessRules.Length > 0)
                 {
                     if (_settings.AccessRules.Where(r => r.Username == identity.UserName && r.ServiceTypes.Contains("publish")).Count() > 0)
+                    {
                         return true;
+                    }
                 }
             }
 

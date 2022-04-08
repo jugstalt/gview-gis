@@ -17,10 +17,10 @@ limitations under the License.
 /*
  * This file was semi-automatically converted from the public-domain USGS PROJ source.
  */
-using System;
 using GeoAPI.Geometries;
 using Proj4Net.Datum;
 using Proj4Net.Utility;
+using System;
 
 namespace Proj4Net.Projection
 {
@@ -74,7 +74,10 @@ namespace Proj4Net.Projection
         {
             TransverseMercatorProjection p = (TransverseMercatorProjection)base.Clone();
             if (_en != null)
+            {
                 p._en = (double[])_en.Clone();
+            }
+
             return p;
         }
 
@@ -103,9 +106,15 @@ namespace Proj4Net.Projection
         {
             int degrees = (int)ProjectionMath.RadiansToDegreesFn(ProjectionMath.NormalizeLatitude(latitude));
             if (degrees < -80 || degrees > 84)
+            {
                 return 0;
+            }
+
             if (degrees > 80)
+            {
                 return 24;
+            }
+
             return (degrees + 80) / 8 + 3;
         }
 
@@ -113,9 +122,14 @@ namespace Proj4Net.Projection
         {
             int zone = (int)Math.Floor((ProjectionMath.NormalizeLongitude(longitude) + Math.PI) * 30.0 / Math.PI) + 1;
             if (zone < 1)
+            {
                 zone = 1;
+            }
             else if (zone > 60)
+            {
                 zone = 60;
+            }
+
             return zone;
         }
 
@@ -145,7 +159,10 @@ namespace Proj4Net.Projection
                 double ty = cosphi * Math.Cos(lplam) / Math.Sqrt(1.0 - b * b);
                 ty = ProjectionMath.Acos(ty);
                 if (lpphi < 0.0)
+                {
                     ty = -ty;
+                }
+
                 xy.Y = _esp * (ty - _projectionLatitude);
             }
             else
@@ -183,7 +200,10 @@ namespace Proj4Net.Projection
                 h = Math.Cos(_projectionLatitude + y / _scaleFactor);
                 coord.Y = ProjectionMath.Asin(Math.Sqrt((1.0 - h * h) / (1.0 + g * g)));
                 if (y < 0)
+                {
                     coord.Y = -coord.Y;
+                }
+
                 coord.X = Math.Atan2(g, h);
             }
             else
@@ -230,7 +250,10 @@ namespace Proj4Net.Projection
         public override String ToString()
         {
             if (_utmZone >= 0)
+            {
                 return "Universal Tranverse Mercator";
+            }
+
             return "Transverse Mercator";
         }
 

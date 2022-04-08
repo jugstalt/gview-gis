@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using gView.Framework.Data;
+using System;
 using System.Data;
-using gView.Framework.Data;
-using gView.Framework.Network;
 using System.Threading.Tasks;
 
 namespace gView.Framework.Network.Algorthm
@@ -31,34 +28,48 @@ namespace gView.Framework.Network.Algorthm
         public GraphTableRows QueryN1(int n1)
         {
             if (_adapter != null)
+            {
                 return _adapter.QueryN1(n1);
+            }
+
             return null;
         }
 
         public IGraphTableRow QueryN1ToN2(int n1, int n2)
         {
             if (_adapter != null)
+            {
                 return _adapter.QueryN1ToN2(n1, n2);
+            }
+
             return null;
         }
         public IGraphEdge QueryEdge(int eid)
         {
             if (_adapter != null)
+            {
                 return _adapter.QueryEdge(eid);
+            }
+
             return null;
         }
 
         public double QueryEdgeWeight(Guid weightGuid, int eid)
         {
             if (_adapter != null)
+            {
                 return _adapter.QueryEdgeWeight(weightGuid, eid);
+            }
+
             return 0.0;
         }
 
         public bool SwitchState(int nid)
         {
             if (_adapter != null)
+            {
                 return _adapter.SwitchState(nid);
+            }
 
             return false;
         }
@@ -66,7 +77,9 @@ namespace gView.Framework.Network.Algorthm
         public int GetNodeFcid(int nid)
         {
             if (_adapter != null)
+            {
                 return _adapter.GetNodeFcid(nid);
+            }
 
             return -1;
         }
@@ -74,7 +87,9 @@ namespace gView.Framework.Network.Algorthm
         public NetworkNodeType GetNodeType(int nid)
         {
             if (_adapter != null)
+            {
                 return _adapter.GetNodeType(nid);
+            }
 
             return NetworkNodeType.Unknown;
         }
@@ -82,13 +97,19 @@ namespace gView.Framework.Network.Algorthm
         async public Task<Features> QueryNodeEdgeFeatures(int n1)
         {
             if (_adapter == null)
+            {
                 return new Features();
+            }
+
             return await _adapter.QueryNodeEdgeFeatures(n1);
         }
         async public Task<Features> QueryNodeFeatures(int n1)
         {
             if (_adapter == null)
+            {
                 return new Features();
+            }
+
             return await _adapter.QueryNodeFeatures(n1);
         }
     }

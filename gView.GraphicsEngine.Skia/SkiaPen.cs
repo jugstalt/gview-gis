@@ -2,8 +2,6 @@
 using gView.GraphicsEngine.Skia.Extensions;
 using SkiaSharp;
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace gView.GraphicsEngine.Skia
 {
@@ -12,7 +10,7 @@ namespace gView.GraphicsEngine.Skia
         private SKPaint _skPaint;
         private LineDashStyle _dashStyle;
         private LineCap _startCap, _endCap;
-   
+
         public SkiaPen(ArgbColor color, float width)
         {
             _skPaint = new SKPaint()
@@ -71,7 +69,7 @@ namespace gView.GraphicsEngine.Skia
             }
         }
 
-        public LineCap StartCap 
+        public LineCap StartCap
         {
             get
             {
@@ -81,7 +79,7 @@ namespace gView.GraphicsEngine.Skia
             {
                 _startCap = _endCap = value;
                 _skPaint.StrokeCap = value.ToSKStrokeCap();
-                
+
                 this.DashStyle = _dashStyle;   // restet DashPickerArray
             }
         }

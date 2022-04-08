@@ -1,13 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Windows.Forms;
-using gView.Framework.Carto;
+﻿using gView.Framework.Carto;
 using gView.Framework.Data;
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Linq;
+using System.Windows.Forms;
 
 namespace gView.Plugins.MapTools.Dialogs
 {
@@ -40,11 +37,13 @@ namespace gView.Plugins.MapTools.Dialogs
                 root.Nodes.Add(datasetNode);
 
                 if (btnRemoveUnusedDatasets.Enabled == false)
-                    btnRemoveUnusedDatasets.Enabled = count == 0;
-
-                if(count>0)
                 {
-                    foreach(var layer in _map.MapElements.Where(l=>l.DatasetID==i-1))
+                    btnRemoveUnusedDatasets.Enabled = count == 0;
+                }
+
+                if (count > 0)
+                {
+                    foreach (var layer in _map.MapElements.Where(l => l.DatasetID == i - 1))
                     {
                         datasetNode.Nodes.Add(new LayerTreeNode(layer));
                     }

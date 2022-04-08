@@ -1,8 +1,4 @@
 ﻿using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace gView.Interoperability.GeoServices.Rest.Json.Features.Geometry
 {
@@ -14,11 +10,11 @@ namespace gView.Interoperability.GeoServices.Rest.Json.Features.Geometry
 
         // POLY LINE
         [JsonProperty("paths", NullValueHandling = NullValueHandling.Ignore)]
-        public double?[][,] Paths { get; set; } 
+        public double?[][,] Paths { get; set; }
 
         // SINGLE POINT
         [JsonProperty("x", NullValueHandling = NullValueHandling.Ignore)]
-        public double? X { get; set; } 
+        public double? X { get; set; }
         [JsonProperty("y", NullValueHandling = NullValueHandling.Ignore)]
         public double? Y { get; set; }
 

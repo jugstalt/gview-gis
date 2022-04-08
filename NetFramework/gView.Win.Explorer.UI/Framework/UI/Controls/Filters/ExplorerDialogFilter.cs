@@ -1,15 +1,11 @@
+using gView.Framework.Carto;
+using gView.Framework.Data;
+using gView.Framework.FDB;
+using gView.Framework.Geometry;
+using gView.Framework.GeoProcessing;
+using gView.Framework.system;
 using System;
 using System.Collections.Generic;
-using System.Text;
-using gView.Framework.Data;
-using gView.Framework.UI;
-using gView.Framework.Geometry;
-using gView.Framework.system;
-using gView.Framework.Carto;
-using System.Xml;
-using gView.Framework.FDB;
-using gView.Explorer.UI;
-using gView.Framework.GeoProcessing;
 using System.Threading.Tasks;
 
 namespace gView.Framework.UI.Controls.Filter
@@ -41,7 +37,10 @@ namespace gView.Framework.UI.Controls.Filter
 
         public virtual Task<bool> Match(IExplorerObject exObject)
         {
-            if (exObject == null) return Task.FromResult(false);
+            if (exObject == null)
+            {
+                return Task.FromResult(false);
+            }
 
             bool found = false;
             foreach (Guid guid in ExplorerObjectGUIDs)
@@ -68,16 +67,19 @@ namespace gView.Framework.UI.Controls.Filter
         {
         }
         private List<Type> _types = new List<Type>();
-        
+
         public List<Type> ObjectTypes { get { return _types; } }
 
         async public override Task<bool> Match(IExplorerObject exObject)
         {
             Type objType = exObject.ObjectType;
-            if (exObject == null) return false;
+            if (exObject == null)
+            {
+                return false;
+            }
 
             //object obj = exObject.Object;
-            
+
             bool found = false;
             if (objType != null)
             {
@@ -96,10 +98,17 @@ namespace gView.Framework.UI.Controls.Filter
                             break;
                         }
                     }
-                    if (found) break;
+                    if (found)
+                    {
+                        break;
+                    }
                 }
             }
-            if (!found) found = await base.Match(exObject);
+            if (!found)
+            {
+                found = await base.Match(exObject);
+            }
+
             return found;
         }
     }
@@ -132,9 +141,9 @@ namespace gView.Framework.UI.Controls.Filter
     //    }
     //}
 
-    public class OpenFeatureDatasetFilter : ExplorerOpenDialogFilter 
+    public class OpenFeatureDatasetFilter : ExplorerOpenDialogFilter
     {
-        public OpenFeatureDatasetFilter() : base ("Feature Dataset")
+        public OpenFeatureDatasetFilter() : base("Feature Dataset")
         {
             this.ObjectTypes.Add(typeof(IFeatureDataset));
         }
@@ -148,7 +157,7 @@ namespace gView.Framework.UI.Controls.Filter
             this.ObjectTypes.Add(typeof(IFeatureDataset));
             this.ExplorerObjectGUIDs.Add(new Guid("458E62A0-4A93-45cf-B14D-2F958D67E522"));
             //this.ExplorerObjectGUIDs.Add(new Guid("A610B342-E911-4c52-8E35-72A69B52440A"));
-        } 
+        }
     }
 
     public class OpenImageDatasetFiler : ExplorerOpenDialogFilter
@@ -183,7 +192,7 @@ namespace gView.Framework.UI.Controls.Filter
         public OpenShapeFilter()
             : base("Shapefile")
         {
-            this.ExplorerObjectGUIDs.Add(new Guid("665E0CD5-B3DF-436c-91B4-D4C0B3ECA5B9"));  
+            this.ExplorerObjectGUIDs.Add(new Guid("665E0CD5-B3DF-436c-91B4-D4C0B3ECA5B9"));
         }
     }
 
@@ -268,11 +277,11 @@ namespace gView.Framework.UI.Controls.Filter
             bool match = await base.Match(exObject);
 
             var instatnce = await exObject.GetInstanceAsync();
-            if (match && _geomType!=GeometryType.Unknown && instatnce is IFeatureLayer && ((IFeatureLayer)instatnce).FeatureClass != null)
+            if (match && _geomType != GeometryType.Unknown && instatnce is IFeatureLayer && ((IFeatureLayer)instatnce).FeatureClass != null)
             {
                 return ((IFeatureLayer)instatnce).FeatureClass.GeometryType == _geomType;
             }
-            
+
             return match;
         }
     }
@@ -307,7 +316,7 @@ namespace gView.Framework.UI.Controls.Filter
             : base("Spatialreference")
         {
             this.ObjectTypes.Add(typeof(ISpatialReference));
-            
+
             this.BrowseAll = true;
         }
     }
@@ -318,7 +327,7 @@ namespace gView.Framework.UI.Controls.Filter
             : base("Map")
         {
             this.ObjectTypes.Add(typeof(IMap));
-            
+
             this.BrowseAll = true;
         }
     }
@@ -336,12 +345,15 @@ namespace gView.Framework.UI.Controls.Filter
                 foreach (var dsType in compMan.GetPlugins(Plugins.Type.IDataset))
                 {
                     var ds = compMan.CreateInstance<IDataset>(dsType);
-                    if (ds == null || 
-                        ds.Database == null) continue;
+                    if (ds == null ||
+                        ds.Database == null)
+                    {
+                        continue;
+                    }
 
                     if (ds.Database is IFileFeatureDatabase)
                     {
-                        filters.Add(new SaveFileFeatureClass(ds));   
+                        filters.Add(new SaveFileFeatureClass(ds));
                     }
                     else if (ds is IFeatureUpdater)
                     {
@@ -369,7 +381,10 @@ namespace gView.Framework.UI.Controls.Filter
                 {
                     var ds = compMan.CreateInstance<IDataset>(dsType);
                     if (ds == null ||
-                        ds.Database == null) continue;
+                        ds.Database == null)
+                    {
+                        continue;
+                    }
 
                     if (ds.Database is IFileFeatureDatabase)
                     {
@@ -398,12 +413,17 @@ namespace gView.Framework.UI.Controls.Filter
 
             async public override Task<bool> Match(IExplorerObject exObject)
             {
-                if (exObject == null) return false;
+                if (exObject == null)
+                {
+                    return false;
+                }
 
                 var instance = await exObject.GetInstanceAsync();
                 if (instance is IDataset &&
                    ((IDataset)instance).Database is IFeatureUpdater)
+                {
                     return true;
+                }
 
                 return false;
             }
@@ -433,7 +453,7 @@ namespace gView.Framework.UI.Controls.Filter
         }
     }
 
-    public class OpenActivityDataFilter : ExplorerOpenDialogFilter 
+    public class OpenActivityDataFilter : ExplorerOpenDialogFilter
     {
         private IActivityData _aData;
 
@@ -445,11 +465,16 @@ namespace gView.Framework.UI.Controls.Filter
 
         async public override Task<bool> Match(IExplorerObject exObject)
         {
-            if (exObject == null) return false;
+            if (exObject == null)
+            {
+                return false;
+            }
 
             var instatnce = await exObject.GetInstanceAsync();
             if (instatnce is IDatasetElement)
+            {
                 return _aData.ProcessAble((IDatasetElement)instatnce);
+            }
 
             if (instatnce is IClass)
             {

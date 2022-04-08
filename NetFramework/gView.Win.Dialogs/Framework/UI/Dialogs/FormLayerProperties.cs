@@ -8,7 +8,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
-using System.Runtime.CompilerServices;
 using System.Windows.Forms;
 
 namespace gView.Framework.UI.Dialogs
@@ -166,9 +165,9 @@ namespace gView.Framework.UI.Dialogs
 
             cmbApplyRefScale.Items.Add(new ReferenceScaleItem(-1f, "Do not apply reference scale"));
             cmbApplyRefScale.Items.Add(new ReferenceScaleItem(0f, "Apply reference scale"));
-            for(int i=0;i<=200;i+=10)
+            for (int i = 0; i <= 200; i += 10)
             {
-                cmbApplyRefScale.Items.Add(new ReferenceScaleItem((float)(i+100) / 100f, $"Apply reference scale (max scale up {i}%)"));
+                cmbApplyRefScale.Items.Add(new ReferenceScaleItem((float)(i + 100) / 100f, $"Apply reference scale (max scale up {i}%)"));
             }
 
             cmbApplyLabelRefScale.Items.Add(new ReferenceScaleItem(-1f, "Do not apply reference scale for labels"));
@@ -178,7 +177,7 @@ namespace gView.Framework.UI.Dialogs
                 cmbApplyLabelRefScale.Items.Add(new ReferenceScaleItem((float)(i + 100) / 100f, $"Apply reference scale for labels (max scale up {i}%)"));
             }
 
-            foreach(MapServerGrouplayerStyle grouplayerStyle in Enum.GetValues(typeof(MapServerGrouplayerStyle)))
+            foreach (MapServerGrouplayerStyle grouplayerStyle in Enum.GetValues(typeof(MapServerGrouplayerStyle)))
             {
                 cmbMapServerGrouplayerStyle.Items.Add(grouplayerStyle);
             }
@@ -234,7 +233,7 @@ namespace gView.Framework.UI.Dialogs
             }
             if (layer is IGroupLayer)
             {
-                if(!tabControl1.TabPages.Contains(tabMapService))
+                if (!tabControl1.TabPages.Contains(tabMapService))
                 {
                     tabControl1.TabPages.Add(tabMapService);
                 }
@@ -269,11 +268,11 @@ namespace gView.Framework.UI.Dialogs
             {
                 tabControl1.TabPages.Add(tabCompostionMode);
 
-                foreach(FeatureLayerCompositionMode compostionMode in Enum.GetValues(typeof(FeatureLayerCompositionMode)))
+                foreach (FeatureLayerCompositionMode compostionMode in Enum.GetValues(typeof(FeatureLayerCompositionMode)))
                 {
                     cmbCompositionMode.Items.Add(new CompositionModeItem(compostionMode));
 
-                    if(((IFeatureLayerComposition)layer).CompositionMode == compostionMode)
+                    if (((IFeatureLayerComposition)layer).CompositionMode == compostionMode)
                     {
                         cmbCompositionMode.SelectedIndex = cmbCompositionMode.Items.Count - 1;
                     }
@@ -1975,7 +1974,7 @@ namespace gView.Framework.UI.Dialogs
                     ((IGridClass)_layer.Class).IgnoreDataValue = (double)numNoDataValue.Value;
                 }
             }
-            if(_layer is IGroupLayer)
+            if (_layer is IGroupLayer)
             {
                 ((IGroupLayer)_layer).MapServerStyle = (MapServerGrouplayerStyle)cmbMapServerGrouplayerStyle.SelectedItem;
             }
@@ -1993,7 +1992,7 @@ namespace gView.Framework.UI.Dialogs
                     }
                 }
             }
-            if(_layer is IFeatureLayerComposition)
+            if (_layer is IFeatureLayerComposition)
             {
                 if (cmbCompositionMode.SelectedItem is CompositionModeItem)
                 {
@@ -2222,5 +2221,5 @@ namespace gView.Framework.UI.Dialogs
         }
     }
 
-    
+
 }

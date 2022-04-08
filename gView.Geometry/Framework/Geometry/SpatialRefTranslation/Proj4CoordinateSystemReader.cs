@@ -1,24 +1,26 @@
+using gView.Framework.Proj;
 using System;
 using System.Collections.Generic;
-using System.Text;
-using gView.Framework.Geometry;
 using System.Globalization;
-using gView.Framework.Proj;
 
 namespace gView.Framework.Geometry.SpatialRefTranslation
 {
     internal class Proj4CoordinateSystemReader
     {
         private static IFormatProvider _nhi = System.Globalization.CultureInfo.InvariantCulture.NumberFormat;
-        
+
         public static object Create(string Proj4Parameters)
         {
-            if (Proj4Parameters == null) 
+            if (Proj4Parameters == null)
+            {
                 throw new ArgumentException();
+            }
 
             Proj4Parameters = Proj4Parameters.Trim();
             while (Proj4Parameters.IndexOf("  ") != -1)
+            {
                 Proj4Parameters = Proj4Parameters.Replace("  ", " ");
+            }
 
             string[] parameters = Proj4Parameters.Split(' ');
 
@@ -37,14 +39,18 @@ namespace gView.Framework.Geometry.SpatialRefTranslation
             }
         }
 
-        public static string ParameterValue(string [] parameters, string parameter)
+        public static string ParameterValue(string[] parameters, string parameter)
         {
             foreach (string param in parameters)
             {
                 string[] pv = param.Split('=');
                 if (pv[0] == parameter)
                 {
-                    if (pv.Length > 1) return pv[1];
+                    if (pv.Length > 1)
+                    {
+                        return pv[1];
+                    }
+
                     return "";
                 }
             }
@@ -55,9 +61,13 @@ namespace gView.Framework.Geometry.SpatialRefTranslation
         {
             string[] pv = p4param.Split('=');
             if (pv.Length > 1)
+            {
                 val = pv[1];
+            }
             else
+            {
                 val = "";
+            }
 
             return pv[0];
         }
@@ -78,7 +88,7 @@ namespace gView.Framework.Geometry.SpatialRefTranslation
             GeographicCoordinateSystem geogrCoordSystem =
                 new GeographicCoordinateSystem(
                     "Unknown",
-                    new AngularUnit(Math.PI / 180.0,String.Empty,String.Empty,String.Empty,"degree",String.Empty,String.Empty),
+                    new AngularUnit(Math.PI / 180.0, String.Empty, String.Empty, String.Empty, "degree", String.Empty, String.Empty),
                     datum,
                     ReadPrimeMeridian(parameters),
                     new AxisInfo("Geodetic latitude", AxisOrientation.North),
@@ -106,7 +116,10 @@ namespace gView.Framework.Geometry.SpatialRefTranslation
                 string p4 = Parameter(p4param, out val);
 
                 double v;
-                if (!double.TryParse(val,NumberStyles.Number, _nhi, out v)) continue;
+                if (!double.TryParse(val, NumberStyles.Number, _nhi, out v))
+                {
+                    continue;
+                }
 
                 switch (p4)
                 {
@@ -143,8 +156,8 @@ namespace gView.Framework.Geometry.SpatialRefTranslation
 
             Projection proj = new Projection(projName, projParameters.ToArray(), "", "", "", "");
             GeographicCoordinateSystem geogrCoordSystem = ReadGeographicCoordinateSystem(parameters);
-            
-            AxisInfo[] axis={
+
+            AxisInfo[] axis ={
                     new AxisInfo("Easting", AxisOrientation.East),
                     new AxisInfo("Northing", AxisOrientation.North)
                     };
@@ -162,7 +175,7 @@ namespace gView.Framework.Geometry.SpatialRefTranslation
         private static WGS84ConversionInfo ReadWGS84ConversionInfo(string towgs84)
         {
             WGS84ConversionInfo wgs84ConversionInfo = new WGS84ConversionInfo();
-            
+
             if (towgs84 != null)
             {
                 string[] w = towgs84.Split(',');
@@ -179,15 +192,17 @@ namespace gView.Framework.Geometry.SpatialRefTranslation
                     wgs84ConversionInfo.Ez = double.Parse(w[5], _nhi);
                 }
                 if (w.Length > 6)
+                {
                     wgs84ConversionInfo.Ppm = double.Parse(w[6], _nhi);
+                }
             }
 
             return wgs84ConversionInfo;
         }
 
-        private static Ellipsoid ReadEllipsoid(string [] parameters, LinearUnit unit)
+        private static Ellipsoid ReadEllipsoid(string[] parameters, LinearUnit unit)
         {
-            string ellps=ParameterValue(parameters,"+ellps");
+            string ellps = ParameterValue(parameters, "+ellps");
 
             if (ellps != null)
             {
@@ -201,14 +216,26 @@ namespace gView.Framework.Geometry.SpatialRefTranslation
 
                 string a = ParameterValue(parameters, "+a");
                 string b = ParameterValue(parameters, "+b");
-                if (a != null) majorAxis = double.Parse(a);
-                if (b != null) minorAxis = double.Parse(b);
+                if (a != null)
+                {
+                    majorAxis = double.Parse(a);
+                }
+
+                if (b != null)
+                {
+                    minorAxis = double.Parse(b);
+                }
+
                 if (a != null && b != null)
                 {
-                    if (majorAxis == minorAxis) 
+                    if (majorAxis == minorAxis)
+                    {
                         invFlattening = 0;
-                    else 
+                    }
+                    else
+                    {
                         invFlattening = minorAxis / (majorAxis - minorAxis);
+                    }
                 }
 
                 return new Ellipsoid(majorAxis, minorAxis, invFlattening, true,
@@ -235,7 +262,11 @@ namespace gView.Framework.Geometry.SpatialRefTranslation
         {
             string pm = ParameterValue(parameters, "+pm");
 
-            if (pm == null) pm = "";
+            if (pm == null)
+            {
+                pm = "";
+            }
+
             double longitude;
             string name = ProjDB.PrimeMeridianByP4(pm, out longitude);
 

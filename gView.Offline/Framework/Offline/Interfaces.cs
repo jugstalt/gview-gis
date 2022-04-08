@@ -1,9 +1,8 @@
+using gView.Framework.Data;
+using gView.Framework.FDB;
 using System;
 using System.Collections.Generic;
-using System.Text;
-using gView.Framework.Data;
 using System.Data.Common;
-using gView.Framework.FDB;
 using System.Threading.Tasks;
 
 namespace gView.Framework.Offline
@@ -16,7 +15,7 @@ namespace gView.Framework.Offline
         Task<string> GetFeatureClassName(int fcID);
 
         bool InsertRow(string table, IRow row, IReplicationTransaction replTrans);
-        bool InsertRows(string table, List<IRow> rows, IReplicationTransaction replTrans); 
+        bool InsertRows(string table, List<IRow> rows, IReplicationTransaction replTrans);
         bool UpdateRow(string table, IRow row, string IDField, IReplicationTransaction replTrans);
         bool DeleteRows(string table, string where, IReplicationTransaction replTrans);
 

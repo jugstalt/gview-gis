@@ -1,58 +1,49 @@
-using System;
-using System.Drawing;
-using System.Collections;
-using System.ComponentModel;
-using System.Windows.Forms;
-using System.Drawing;
-using System.Drawing.Drawing2D;
-using gView.Framework;
-using gView.Framework.Symbology;
 using gView.Framework.UI;
 
 namespace gView.Framework.Symbology.UI
 {
-	/// <summary>
-	/// Zusammenfassung für PropertyForm_SimpleLineSymbol.
-	/// </summary>
-	internal class PropertyForm_SimpleLineSymbol : System.Windows.Forms.Form,IPropertyPageUI,gView.Framework.Symbology.UI.IPropertyPanel
-	{
-		/// <summary>
-		/// Erforderliche Designervariable.
-		/// </summary>
-		private System.ComponentModel.Container components = null;
-		private System.Windows.Forms.TabControl tabControl1;
-		private System.Windows.Forms.TabPage tabPage1;
-		private System.Windows.Forms.PropertyGrid propertyGrid;
-		public System.Windows.Forms.Panel panelLineSymbol;
-		private SimpleLineSymbol _symbol;
+    /// <summary>
+    /// Zusammenfassung für PropertyForm_SimpleLineSymbol.
+    /// </summary>
+    internal class PropertyForm_SimpleLineSymbol : System.Windows.Forms.Form, IPropertyPageUI, gView.Framework.Symbology.UI.IPropertyPanel
+    {
+        /// <summary>
+        /// Erforderliche Designervariable.
+        /// </summary>
+        private System.ComponentModel.Container components = null;
+        private System.Windows.Forms.TabControl tabControl1;
+        private System.Windows.Forms.TabPage tabPage1;
+        private System.Windows.Forms.PropertyGrid propertyGrid;
+        public System.Windows.Forms.Panel panelLineSymbol;
+        private SimpleLineSymbol _symbol;
 
-		public PropertyForm_SimpleLineSymbol()
-		{
-			InitializeComponent();
-		}
+        public PropertyForm_SimpleLineSymbol()
+        {
+            InitializeComponent();
+        }
 
-		/// <summary>
-		/// Die verwendeten Ressourcen bereinigen.
-		/// </summary>
-		protected override void Dispose( bool disposing )
-		{
-			if( disposing )
-			{
-				if(components != null)
-				{
-					components.Dispose();
-				}
-			}
-			base.Dispose( disposing );
-		}
+        /// <summary>
+        /// Die verwendeten Ressourcen bereinigen.
+        /// </summary>
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                if (components != null)
+                {
+                    components.Dispose();
+                }
+            }
+            base.Dispose(disposing);
+        }
 
-		#region Vom Windows Form-Designer generierter Code
-		/// <summary>
-		/// Erforderliche Methode für die Designerunterstützung. 
-		/// Der Inhalt der Methode darf nicht mit dem Code-Editor geändert werden.
-		/// </summary>
-		private void InitializeComponent()
-		{
+        #region Vom Windows Form-Designer generierter Code
+        /// <summary>
+        /// Erforderliche Methode für die Designerunterstützung. 
+        /// Der Inhalt der Methode darf nicht mit dem Code-Editor geändert werden.
+        /// </summary>
+        private void InitializeComponent()
+        {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(PropertyForm_SimpleLineSymbol));
             this.panelLineSymbol = new System.Windows.Forms.Panel();
             this.tabControl1 = new System.Windows.Forms.TabControl();
@@ -124,22 +115,25 @@ namespace gView.Framework.Symbology.UI
             this.tabPage1.ResumeLayout(false);
             this.ResumeLayout(false);
 
-		}
-		#endregion
+        }
+        #endregion
 
-		private void PropertyForm_SimpleLineSymbol_Load(object sender, System.EventArgs e)
-		{
-			
-		}
+        private void PropertyForm_SimpleLineSymbol_Load(object sender, System.EventArgs e)
+        {
 
-		private void propertyGrid_PropertyValueChanged(object s, System.Windows.Forms.PropertyValueChangedEventArgs e)
-		{
-			if(PropertyChanged!=null) PropertyChanged(_symbol);
-		}
+        }
 
-		#region IPropertryPageUI
-		public event PropertyChangedEvent PropertyChanged=null;
-		#endregion
+        private void propertyGrid_PropertyValueChanged(object s, System.Windows.Forms.PropertyValueChangedEventArgs e)
+        {
+            if (PropertyChanged != null)
+            {
+                PropertyChanged(_symbol);
+            }
+        }
+
+        #region IPropertryPageUI
+        public event PropertyChangedEvent PropertyChanged = null;
+        #endregion
 
         #region IPropertyPanel Member
 
@@ -150,7 +144,11 @@ namespace gView.Framework.Symbology.UI
                 _symbol = (SimpleLineSymbol)symbol;
             }
 
-            if (_symbol == null) return null;
+            if (_symbol == null)
+            {
+                return null;
+            }
+
             propertyGrid.SelectedObject = new CustomClass(_symbol);
 
             return panelLineSymbol;
@@ -159,21 +157,21 @@ namespace gView.Framework.Symbology.UI
         #endregion
     }
 
-	internal class comboItem 
-	{
-		public int Value=0;
-		public string Text="";
+    internal class comboItem
+    {
+        public int Value = 0;
+        public string Text = "";
 
-		public comboItem(int val,string text) 
-		{
-			Value=val;
-			Text=text;
-		}
+        public comboItem(int val, string text)
+        {
+            Value = val;
+            Text = text;
+        }
 
-		public override string ToString()
-		{
-			return Text;
-		}
+        public override string ToString()
+        {
+            return Text;
+        }
 
-	}
+    }
 }

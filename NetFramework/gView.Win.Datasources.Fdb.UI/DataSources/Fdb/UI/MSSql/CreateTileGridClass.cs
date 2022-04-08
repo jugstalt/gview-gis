@@ -1,17 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using gView.DataSources.Fdb.MSSql;
+using gView.Framework.Carto;
 using gView.Framework.Data;
 using gView.Framework.FDB;
-using System.Windows.Forms;
-using gView.Framework.UI;
 using gView.Framework.Geometry;
-using System.Threading;
 using gView.Framework.system;
+using gView.Framework.UI;
+using System;
+using System.Collections.Generic;
 using System.IO;
-using gView.Framework.Carto;
-using gView.DataSources.Fdb.MSSql;
+using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace gView.DataSources.Fdb.UI.MSSql
 {
@@ -59,7 +58,9 @@ namespace gView.DataSources.Fdb.UI.MSSql
 
             _createLevels = new List<int>();
             for (int i = 0; i < _levels; i++)
+            {
                 _createLevels.Add(i);
+            }
         }
 
         public bool CreateTiles
@@ -82,7 +83,9 @@ namespace gView.DataSources.Fdb.UI.MSSql
         async private Task Run()
         {
             if (_targetDataset == null || _fdb == null || _sourceDataset == null)
+            {
                 return;
+            }
 
             //if (_targetDataset[_name] != null)
             //{
@@ -101,7 +104,9 @@ namespace gView.DataSources.Fdb.UI.MSSql
                 {
                     DirectoryInfo di = new DirectoryInfo(_cacheDirectory);
                     if (!di.Exists)
+                    {
                         di.Create();
+                    }
 
                     StringBuilder sb = new StringBuilder();
                     sb.Append("<TileCacheDefinition>\r\n");
@@ -119,7 +124,9 @@ namespace gView.DataSources.Fdb.UI.MSSql
 
                 int datasetId = await _fdb.DatasetID(_targetDataset.DatasetName);
                 if (datasetId == -1)
+                {
                     return;
+                }
 
                 IClass cls = null;
                 try
@@ -129,7 +136,10 @@ namespace gView.DataSources.Fdb.UI.MSSql
                 catch { cls = null; }
                 IMultiGridIdentify gridClass = cls as IMultiGridIdentify;
                 if (_gridType == TileGridType.binary_float && gridClass == null)
+                {
                     return;
+                }
+
                 IFeatureClass sourceFc = cls as IFeatureClass;
 
                 Map map = null;
@@ -159,7 +169,9 @@ namespace gView.DataSources.Fdb.UI.MSSql
                             "Warning",
                             MessageBoxButtons.YesNo,
                             MessageBoxIcon.Question, MessageBoxDefaultButton.Button1) != DialogResult.Yes)
+                        {
                             return;
+                        }
                     }
                     else
                     {
@@ -181,7 +193,10 @@ namespace gView.DataSources.Fdb.UI.MSSql
                         fields);
                     element = await _targetDataset.Element(_name);
                     if (element == null || !(element.Class is IFeatureClass))
+                    {
                         return;
+                    }
+
                     await _fdb.SetSpatialIndexBounds(_name, "BinaryTree2", iBounds, _spatialIndexDef.SplitRatio, _spatialIndexDef.MaxPerNode, _spatialIndexDef.Levels);
                     fc = (IFeatureClass)element.Class;
                 }
@@ -199,8 +214,12 @@ namespace gView.DataSources.Fdb.UI.MSSql
                         if (_createLevels.Contains(i))
                         {
                             for (double y = bounds.miny; y < bounds.maxy; y += ty)
+                            {
                                 for (double x = bounds.minx; x < bounds.maxx; x += tx)
+                                {
                                     report.featureMax++;
+                                }
+                            }
                         }
                         if (_levelType == TileLevelType.ConstantImagesize)
                         {
@@ -229,7 +248,10 @@ namespace gView.DataSources.Fdb.UI.MSSql
                         for (double y = bounds.miny; y < bounds.maxy; y += _tileSizeY)
                         {
                             DirectoryInfo di = new DirectoryInfo(_cacheDirectory + @"/" + level + @"/" + row);
-                            if (!di.Exists) di.Create();
+                            if (!di.Exists)
+                            {
+                                di.Create();
+                            }
 
                             int column = 0;
                             for (double x = bounds.minx; x < bounds.maxx; x += _tileSizeX)
@@ -258,7 +280,10 @@ namespace gView.DataSources.Fdb.UI.MSSql
                                             column++;
                                             report.featurePos++;
                                             if (ReportProgress != null && report.featurePos % reportInterval == 0)
+                                            {
                                                 ReportProgress(report);
+                                            }
+
                                             continue;
                                         }
                                     }
@@ -281,7 +306,10 @@ namespace gView.DataSources.Fdb.UI.MSSql
                                             column++;
                                             report.featurePos++;
                                             if (ReportProgress != null && report.featurePos % reportInterval == 0)
+                                            {
                                                 ReportProgress(report);
+                                            }
+
                                             continue;
                                         }
                                         StoreFloatArray(filename + ".bin", x, y, _resX, _resY, vals);
@@ -291,9 +319,13 @@ namespace gView.DataSources.Fdb.UI.MSSql
                                         map.ZoomTo(new Envelope(x, y, x + _tileSizeX, y + _tileSizeY));
                                         await map.RefreshMap(DrawPhase.All, _cancelTracker);
                                         if (_gridType == TileGridType.image_png)
+                                        {
                                             map.Bitmap.Save(filename + ".png", GraphicsEngine.ImageFormat.Png);
+                                        }
                                         else if (_gridType == TileGridType.image_jpg)
+                                        {
                                             map.Bitmap.Save(filename + ".jpg", GraphicsEngine.ImageFormat.Jpeg);
+                                        }
                                     }
                                 }
 
@@ -309,7 +341,11 @@ namespace gView.DataSources.Fdb.UI.MSSql
                                 report.featurePos++;
                                 if (features.Count >= reportInterval)
                                 {
-                                    if (ReportProgress != null) ReportProgress(report);
+                                    if (ReportProgress != null)
+                                    {
+                                        ReportProgress(report);
+                                    }
+
                                     if (!await _fdb.Insert(fc, features))
                                     {
                                         MessageBox.Show(_fdb.LastErrorMessage, "DB Insert Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -337,7 +373,11 @@ namespace gView.DataSources.Fdb.UI.MSSql
                 }
                 if (features.Count > 0)
                 {
-                    if (ReportProgress != null) ReportProgress(report);
+                    if (ReportProgress != null)
+                    {
+                        ReportProgress(report);
+                    }
+
                     await _fdb.Insert(fc, features);
                 }
                 await _fdb.CalculateExtent(fc);
@@ -385,7 +425,9 @@ namespace gView.DataSources.Fdb.UI.MSSql
             bw.Write(resX);
             bw.Write(resY);
             foreach (float v in f)
+            {
                 bw.Write(v);
+            }
 
             sw.Close();
 
@@ -396,8 +438,12 @@ namespace gView.DataSources.Fdb.UI.MSSql
             float nodata = float.MinValue;
 
             for (int i = 2; i < f.Length; i++) // 0 und 1 sind die GridSize
+            {
                 if (f[i] != nodata)
+                {
                     return true;
+                }
+            }
 
             return false;
         }

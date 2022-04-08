@@ -13,9 +13,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-using System;
 using GeoAPI.Geometries;
 using Proj4Net.Utility;
+using System;
 
 namespace Proj4Net.Projection
 {
@@ -103,7 +103,11 @@ namespace Proj4Net.Projection
                                  0.5 * (lpphi * lpphi + B) * tp) /
                             ((lpphi - xyy) / tp - 1.0));
                     } while (Math.Abs(dphi) > CONV && --i > 0);
-                    if (i == 0) throw new ProjectionException("I");
+                    if (i == 0)
+                    {
+                        throw new ProjectionException("I");
+                    }
+
                     lp.X = Math.Asin(xyx * Math.Tan(lpphi)) / Math.Sin(lpphi);
                     lp.Y = lpphi;
                 }
@@ -123,7 +127,10 @@ namespace Proj4Net.Projection
                         sp = Math.Sin(lpphi);
                         s2ph = sp * (cp = Math.Cos(lpphi));
                         if (Math.Abs(cp) < ITOL)
+                        {
                             throw new ProjectionException("I");
+                        }
+
                         c = sp * (mlp = Math.Sqrt(1.0 - EccentricitySquared * sp * sp)) / cp;
                         ml = ProjectionMath.mlfn(lpphi, sp, cp, _en);
                         mlb = ml * ml + r;
@@ -133,10 +140,15 @@ namespace Proj4Net.Projection
                             EccentricitySquared * s2ph * (mlb - 2.0 * xyy * ml) / c +
                             2.0 * (xyy - ml) * (c * mlp - 1.0 / s2ph) - mlp - mlp));
                         if (Math.Abs(dPhi) <= ITOL)
+                        {
                             break;
+                        }
                     }
                     if (i == 0)
+                    {
                         throw new ProjectionException("I");
+                    }
+
                     c = Math.Sin(lpphi);
                     lp.X = Math.Asin(xyx * Math.Tan(lpphi) * Math.Sqrt(1.0 - EccentricitySquared * c * c)) / Math.Sin(lpphi);
                     lp.Y = lpphi;
@@ -158,7 +170,10 @@ namespace Proj4Net.Projection
             {
                 _en = ProjectionMath.enfn(EccentricitySquared);
                 if (_en == null)
+                {
                     throw new ProjectionException("E");
+                }
+
                 _ml0 = ProjectionMath.mlfn(ProjectionLatitude, Math.Sin(ProjectionLatitude), Math.Cos(ProjectionLatitude), _en);
             }
             else

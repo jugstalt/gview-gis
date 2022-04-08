@@ -1,10 +1,6 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading.Tasks;
-using gView.Framework.Data;
 using gView.Framework.FDB;
 using gView.Framework.Geometry;
+using System.Threading.Tasks;
 
 namespace gView.Framework.Data.Fields.AutoFields
 {
@@ -46,7 +42,10 @@ namespace gView.Framework.Data.Fields.AutoFields
 
         public Task<bool> OnUpdate(IFeatureClass fc, IFeature feature)
         {
-            if (feature.Shape == null) return Task.FromResult<bool>(true);
+            if (feature.Shape == null)
+            {
+                return Task.FromResult<bool>(true);
+            }
 
             return Task.FromResult<bool>(Calc(feature));
         }
@@ -55,20 +54,26 @@ namespace gView.Framework.Data.Fields.AutoFields
 
         private bool Calc(IFeature feature)
         {
-            if (feature == null || feature.Shape == null) return false;
+            if (feature == null || feature.Shape == null)
+            {
+                return false;
+            }
 
             double area = 0.0;
 
             if (feature.Shape is Polygon)
             {
                 area = ((Polygon)feature.Shape).CalcArea();
-            } 
+            }
             else if (feature.Shape is IPolygon)
             {
                 for (int i = 0; i < ((IPolygon)feature.Shape).RingCount; i++)
                 {
                     IRing ring = ((IPolygon)feature.Shape)[i];
-                    if (ring == null) continue;
+                    if (ring == null)
+                    {
+                        continue;
+                    }
 
                     if (ring is IHole)
                     {
@@ -83,9 +88,13 @@ namespace gView.Framework.Data.Fields.AutoFields
             }
 
             if (feature[this.name] != null)
+            {
                 feature[this.name] = area;
+            }
             else
+            {
                 feature.Fields.Add(new FieldValue(this.name, area));
+            }
 
             return true;
         }

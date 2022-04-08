@@ -13,9 +13,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-using System;
 using GeoAPI.Geometries;
 using Proj4Net.Utility;
+using System;
 
 namespace Proj4Net.Projection
 {
@@ -58,7 +58,10 @@ namespace Proj4Net.Projection
 
             Phi = Math.Asin(0.5 * qs);
             if (Te < Epsilon)
+            {
                 return (Phi);
+            }
+
             i = NumIterations;
             do
             {
@@ -78,7 +81,10 @@ namespace Proj4Net.Projection
         {
             double rho;
             if ((rho = _c - (!_spherical ? _n * ProjectionMath.Qsfn(Math.Sin(lpphi), _e, _oneEs) : _n2 * Math.Sin(lpphi))) < 0.0)
+            {
                 throw new ProjectionException("F");
+            }
+
             rho = _dd * Math.Sqrt(rho);
             coord.X = rho * Math.Sin(lplam *= _n);
             coord.Y = _rho0 - rho * Math.Cos(lplam);
@@ -104,15 +110,24 @@ namespace Proj4Net.Projection
                     if (Math.Abs(_ec - Math.Abs(lpphi)) > Tolerance7)
                     {
                         if ((lpphi = phi1_(lpphi, _e, _oneEs)) == Double.MaxValue)
+                        {
                             throw new ProjectionException("I");
+                        }
                     }
                     else
+                    {
                         lpphi = lpphi < 0.0 ? -ProjectionMath.PiHalf : ProjectionMath.PiHalf;
+                    }
                 }
                 else if (Math.Abs(coord.Y = (_c - lpphi * lpphi) / _n2) <= 1.0)
+                {
                     lpphi = Math.Asin(lpphi);
+                }
                 else
+                {
                     lpphi = lpphi < 0.0 ? -ProjectionMath.PiHalf : ProjectionMath.PiHalf;
+                }
+
                 lplam = Math.Atan2(xyx, xyy) / _n;
                 coord.X = lplam;
                 coord.Y = lpphi;
@@ -135,7 +150,10 @@ namespace Proj4Net.Projection
             _phi2 = ProjectionLatitude2;
 
             if (Math.Abs(_phi1 + _phi2) < EPS10)
+            {
                 throw new ProjectionException("-21");
+            }
+
             _n = sinphi = Math.Sin(_phi1);
             cosphi = Math.Cos(_phi1);
             secant = Math.Abs(_phi1 - _phi2) >= EPS10;
@@ -145,7 +163,10 @@ namespace Proj4Net.Projection
                 double ml1, m1;
 
                 if ((_en = ProjectionMath.enfn(_es)) == null)
+                {
                     throw new ProjectionException("0");
+                }
+
                 m1 = ProjectionMath.msfn(sinphi, cosphi, _es);
                 ml1 = ProjectionMath.Qsfn(sinphi, _e, _oneEs);
                 if (secant)
@@ -168,7 +189,11 @@ namespace Proj4Net.Projection
             }
             else
             {
-                if (secant) _n = .5 * (_n + Math.Sin(_phi2));
+                if (secant)
+                {
+                    _n = .5 * (_n + Math.Sin(_phi2));
+                }
+
                 _n2 = _n + _n;
                 _c = cosphi * cosphi + _n2 * sinphi;
                 _dd = 1.0 / _n;

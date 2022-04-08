@@ -1,9 +1,9 @@
-﻿using System;
+﻿using GeoAPI.Geometries;
+using Proj4Net.Utility;
+using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Collections.Generic;
-using GeoAPI.Geometries;
-using Proj4Net.Utility;
 
 namespace Proj4Net.Datum.Grids
 {
@@ -11,12 +11,12 @@ namespace Proj4Net.Datum.Grids
     {
         private static readonly object GridTablesLock = new object();
         private static readonly Dictionary<Uri, GridTable> GridTables =
-            new Dictionary<Uri, GridTable>(); 
-        
+            new Dictionary<Uri, GridTable>();
+
         private const double HugeValue = double.MaxValue;
         private const int MaxIterations = 9;
         private const double Tolerance = 1E-12;
-        
+
         /// <summary>
         /// Factory method to load a grid table
         /// </summary>
@@ -69,9 +69,9 @@ namespace Proj4Net.Datum.Grids
         internal PhiLambda LowerLeft;
         internal PhiLambda UpperRight;
         internal PhiLambda SizeOfGridCell;
-        
+
         internal int NumPhis { get; set; }
-        internal int NumLambdas{ get; set; }
+        internal int NumLambdas { get; set; }
 
         private readonly List<GridTable> _subGridTables = new List<GridTable>();
         private readonly object _lockReadData = new object();
@@ -93,13 +93,18 @@ namespace Proj4Net.Datum.Grids
             foreach (var subGridTable in _subGridTables)
             {
                 if (subGridTable.Applies(location, out table))
+                {
                     return true;
+                }
             }
 
-            if (location.Lambda < LowerLeft.Lambda || 
+            if (location.Lambda < LowerLeft.Lambda ||
                 location.Lambda > UpperRight.Lambda ||
                 location.Phi < LowerLeft.Phi ||
-                location.Phi > UpperRight.Phi) return false;
+                location.Phi > UpperRight.Phi)
+            {
+                return false;
+            }
 
             table = this;
             return true;
@@ -107,22 +112,27 @@ namespace Proj4Net.Datum.Grids
 
         internal Coordinate Apply(Coordinate geoCoord, bool inverse)
         {
-            var input = new PhiLambda {Lambda = geoCoord.X, Phi = geoCoord.Y};
+            var input = new PhiLambda { Lambda = geoCoord.X, Phi = geoCoord.Y };
             if (input.Lambda == HugeValue)
+            {
                 return geoCoord;
+            }
 
             if (!_fullyLoaded)
             {
-                lock(_lockReadData)
+                lock (_lockReadData)
                 {
                     if (!_fullyLoaded)
+                    {
                         _loader.ReadData(this);
+                    }
+
                     _fullyLoaded = true;
                 }
             }
 
             var output = Convert(input, inverse);
-            
+
             geoCoord.X = output.Lambda;
             geoCoord.Y = output.Phi;
 
@@ -135,13 +145,17 @@ namespace Proj4Net.Datum.Grids
             tb.Lambda -= LowerLeft.Lambda;
             tb.Phi -= LowerLeft.Phi;
             tb.Lambda = ProjectionMath.NormalizeLongitude(tb.Lambda - Math.PI) + Math.PI;
-            
+
             var t = InterpolateGrid(tb);
             if (inverse)
             {
                 PhiLambda dif;
                 int i = MaxIterations;
-                if (t.Lambda == HugeValue) return t;
+                if (t.Lambda == HugeValue)
+                {
+                    return t;
+                }
+
                 t.Lambda = tb.Lambda + t.Lambda;
                 t.Phi = tb.Phi - t.Phi;
                 do
@@ -187,13 +201,13 @@ namespace Proj4Net.Datum.Grids
             }
             return input;
         }
-        
+
         private PhiLambda InterpolateGrid(PhiLambda t)
         {
             PhiLambda result, remainder;
             result.Phi = HugeValue;
             result.Lambda = HugeValue;
-            
+
             // find indices and normalize by the cell size (so fractions range from 0 to 1)
             var iLam = (int)Math.Floor(t.Lambda /= SizeOfGridCell.Lambda);
             var iPhi = (int)Math.Floor(t.Phi /= SizeOfGridCell.Phi);
@@ -292,10 +306,26 @@ namespace Proj4Net.Datum.Grids
         /// <returns>A PhiLam that has the shift coefficeints.</returns>
         private PhiLambda GetValue(int iPhi, int iLam)
         {
-            if (iPhi < 0) iPhi = 0;
-            if (iPhi >= NumPhis) iPhi = NumPhis - 1;
-            if (iLam < 0) iLam = 0;
-            if (iLam >= NumLambdas) iLam = NumPhis - 1;
+            if (iPhi < 0)
+            {
+                iPhi = 0;
+            }
+
+            if (iPhi >= NumPhis)
+            {
+                iPhi = NumPhis - 1;
+            }
+
+            if (iLam < 0)
+            {
+                iLam = 0;
+            }
+
+            if (iLam >= NumLambdas)
+            {
+                iLam = NumPhis - 1;
+            }
+
             return Coefficients[iPhi][iLam];
         }
 

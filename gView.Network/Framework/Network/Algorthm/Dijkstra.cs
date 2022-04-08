@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using gView.Framework.system;
+﻿using gView.Framework.system;
 using gView.Framework.UI;
-using gView.Framework.Network;
+using System.Collections.Generic;
 
 namespace gView.Framework.Network.Algorthm
 {
@@ -44,7 +41,9 @@ namespace gView.Framework.Network.Algorthm
                 _dNodes.Sort(new Nodes.NodeIdComparer());
             }
             else
+            {
                 Init();
+            }
         }
         public Dijkstra(Nodes initialNodes, ICancelTracker cancelTracker)
             : this(initialNodes)
@@ -68,10 +67,14 @@ namespace gView.Framework.Network.Algorthm
             //_dNodes.Add(new Node(fromNode, 0.0));
             Node startNode = _dNodes.ByIdOrAdd(fromNode);
             if (double.IsNaN(startNode.Dist))
+            {
                 startNode.Dist = 0.0;
+            }
 
             if (_barrierNodeIds != null && _barrierNodeIds.BinarySearch(fromNode) >= 0)
+            {
                 return true;
+            }
 
             bool found = false;
             int nodeId = fromNode;
@@ -90,7 +93,10 @@ namespace gView.Framework.Network.Algorthm
                 //Node minDistNode = _dNodes.MinDistNode();
                 Node minDistNode = distStack.Pop();
                 if (minDistNode == null)  // Keine Knoten mehr -> Ziel ist nicht ereichbar!
+                {
                     break;
+                }
+
                 if (minDistNode.Id == toNode) // Ziel mit kürzesten Weg erreicht!
                 {
                     found = true;
@@ -98,14 +104,18 @@ namespace gView.Framework.Network.Algorthm
                 }
                 minDistNode.Used = true;
                 if (minDistNode.Dist >= _maxDistance)
+                {
                     continue;
+                }
 
                 GraphTableRows graphRows = graph.QueryN1(minDistNode.Id);
 
                 foreach (GraphTableRow graphRow in graphRows)
                 {
                     if (_applySwitchState && graph.SwitchState(graphRow.N1) == false)
+                    {
                         continue;
+                    }
 
                     if (_targetNodeFcIds != null && graphRow.N1 != fromNode &&
                         _targetNodeFcIds.Contains(graph.GetNodeFcid(graphRow.N1)))
@@ -125,15 +135,29 @@ namespace gView.Framework.Network.Algorthm
                     }
 
                     if (_allowedNodeIds != null && _allowedNodeIds.BinarySearch(graphRow.N2) < 0)
+                    {
                         continue;
+                    }
+
                     if (_forbiddenTargetNodeIds != null && _forbiddenTargetNodeIds.BinarySearch(graphRow.N2) >= 0)
+                    {
                         continue;
+                    }
+
                     if (_forbiddenEdgeIds != null && _forbiddenEdgeIds.BinarySearch(graphRow.EID) >= 0)
+                    {
                         continue;
+                    }
+
                     if (_forbiddenStartNodeEdgeIds != null && graphRow.N1 == fromNode && _forbiddenStartNodeEdgeIds.BinarySearch(graphRow.EID) >= 0)
+                    {
                         continue;
+                    }
+
                     if (_barrierNodeIds != null && _barrierNodeIds.BinarySearch(graphRow.N2) >= 0)
+                    {
                         continue;
+                    }
 
                     Node n = _dNodes.ByIdOrAdd(graphRow.N2);
 
@@ -157,7 +181,9 @@ namespace gView.Framework.Network.Algorthm
                     if (double.IsNaN(n.Dist) || n.Dist > dist)
                     {
                         if (!double.IsNaN(n.Dist))
+                        {
                             distStack.Remove(n);
+                        }
 
                         n.Dist = dist;
                         n.GeoDist = geodist;
@@ -170,14 +196,19 @@ namespace gView.Framework.Network.Algorthm
                 }
 
                 if (_cancelTracker != null && _cancelTracker.Continue == false)
+                {
                     return false;
+                }
 
                 if (reportProgress != null && _dNodes.Count % 20 == 0)
                 {
                     report.featurePos += 20;
                     if (report.featurePos > report.featureMax)
+                    {
                         //    report.featurePos = 0;
                         report.featureMax += 1000;
+                    }
+
                     reportProgress(report);
                 }
             }
@@ -197,7 +228,9 @@ namespace gView.Framework.Network.Algorthm
             foreach (Node node in _dNodes)
             {
                 if (node.Dist > distance)
+                {
                     nodes.Add(node);
+                }
             }
             return nodes;
         }
@@ -207,7 +240,9 @@ namespace gView.Framework.Network.Algorthm
             foreach (Node node in _dNodes)
             {
                 if (node.Dist <= distance)
+                {
                     nodes.Add(node);
+                }
             }
             return nodes;
         }
@@ -236,7 +271,9 @@ namespace gView.Framework.Network.Algorthm
                 foreach (Node node in _dNodes)
                 {
                     if (node.IsEndNode)
+                    {
                         nodes.Add(node);
+                    }
                 }
                 return nodes;
             }
@@ -245,20 +282,26 @@ namespace gView.Framework.Network.Algorthm
         private void CalcEndNodes()
         {
             foreach (Node node in _dNodes)
+            {
                 node.IsEndNode = true;
+            }
 
             foreach (Node node in _dNodes)
             {
                 Node pre = _dNodes.ById(node.Pre);
                 if (pre != null)
+                {
                     pre.IsEndNode = false;
+                }
             }
         }
         public double DijkstraNodeDistance(int nodeId)
         {
             Node node = _dNodes.ById(nodeId);
             if (node == null)
+            {
                 return double.NaN;
+            }
 
             return node.Dist;
         }
@@ -267,15 +310,23 @@ namespace gView.Framework.Network.Algorthm
         {
             NetworkPath path = new NetworkPath();
             if (_dNodes == null)
+            {
                 return path;
+            }
+
             Node endNode = _dNodes.ById(endNodeId);
             if (endNode == null)
+            {
                 return path;
+            }
 
             while (endNode != null)
             {
                 if (endNode.EId > 0)
+                {
                     path.Insert(0, new NetworkPathEdge(endNode.EId));
+                }
+
                 endNode = _dNodes.ById(endNode.Pre);
             }
 
@@ -286,7 +337,9 @@ namespace gView.Framework.Network.Algorthm
         {
             NetworkPath path = new NetworkPath(true);
             if (nodes == null || _dNodes == null)
+            {
                 return path;
+            }
 
             foreach (Node node in nodes)
             {
@@ -295,7 +348,10 @@ namespace gView.Framework.Network.Algorthm
                 while (endNode != null)
                 {
                     if (endNode.EId > 0)
+                    {
                         path.Insert(0, new NetworkPathEdge(endNode.EId));
+                    }
+
                     endNode = _dNodes.ById(endNode.Pre);
                 }
             }
@@ -305,10 +361,15 @@ namespace gView.Framework.Network.Algorthm
         {
             Nodes nodes = new Nodes();
             if (_dNodes == null)
+            {
                 return nodes;
+            }
+
             Node endNode = _dNodes.ById(endNodeId);
             if (endNode == null)
+            {
                 return nodes;
+            }
 
             while (endNode != null)
             {
@@ -330,7 +391,9 @@ namespace gView.Framework.Network.Algorthm
                 {
                     _allowedNodeIds = value;
                     if (_allowedNodeIds != null)
+                    {
                         _allowedNodeIds.Sort();
+                    }
                 }
             }
         }
@@ -343,7 +406,9 @@ namespace gView.Framework.Network.Algorthm
                 {
                     _forbiddenTargetNodeIds = value;
                     if (_forbiddenTargetNodeIds != null)
+                    {
                         _forbiddenTargetNodeIds.Sort();
+                    }
                 }
             }
         }
@@ -356,7 +421,9 @@ namespace gView.Framework.Network.Algorthm
                 {
                     _forbiddenStartNodeEdgeIds = value;
                     if (_forbiddenStartNodeEdgeIds != null)
+                    {
                         _forbiddenStartNodeEdgeIds.Sort();
+                    }
                 }
             }
         }
@@ -369,7 +436,9 @@ namespace gView.Framework.Network.Algorthm
                 {
                     _forbiddenEdgeIds = value;
                     if (_forbiddenEdgeIds != null)
+                    {
                         _forbiddenEdgeIds.Sort();
+                    }
                 }
             }
         }
@@ -383,7 +452,9 @@ namespace gView.Framework.Network.Algorthm
             {
                 _barrierNodeIds = value;
                 if (_barrierNodeIds != null)
+                {
                     _barrierNodeIds.Sort();
+                }
             }
         }
         public double MaxDistance
@@ -485,7 +556,10 @@ namespace gView.Framework.Network.Algorthm
                 _compNode.Id = id;
                 int index = this.BinarySearch(_compNode, _idComparer);
                 if (index < 0)
+                {
                     return null;
+                }
+
                 return this[index];
                 //if (id == -1)
                 //    return null;
@@ -502,7 +576,10 @@ namespace gView.Framework.Network.Algorthm
             {
                 List<int> ids = new List<int>();
                 foreach (Node node in this)
+                {
                     ids.Add(node.Id);
+                }
+
                 return ids;
             }
 
@@ -524,9 +601,14 @@ namespace gView.Framework.Network.Algorthm
                 public int Compare(Node x, Node y)
                 {
                     if (x.Id < y.Id)
+                    {
                         return -1;
+                    }
                     else if (x.Id > y.Id)
+                    {
                         return 1;
+                    }
+
                     return 0;
                 }
 
@@ -566,32 +648,44 @@ namespace gView.Framework.Network.Algorthm
             new public void Add(NetworkPathEdge edge)
             {
                 if (edge == null)
+                {
                     return;
+                }
 
                 if (_unique == true)
                 {
                     if (Contains(edge.EId))
+                    {
                         return;
+                    }
                 }
                 base.Add(edge);
             }
             new public void Insert(int index, NetworkPathEdge edge)
             {
                 if (edge == null)
+                {
                     return;
+                }
 
                 if (_unique == true)
                 {
                     if (Contains(edge.EId))
+                    {
                         return;
+                    }
                 }
                 base.Insert(index, edge);
             }
             public bool Contains(int edgeId)
             {
                 foreach (NetworkPathEdge edge in this)
+                {
                     if (edge.EId == edgeId)
+                    {
                         return true;
+                    }
+                }
 
                 return false;
             }
@@ -607,7 +701,9 @@ namespace gView.Framework.Network.Algorthm
                 if (index >= 0)
                 {
                     if (this[index].Id != node.Id)
+                    {
                         this.Insert(index, node);
+                    }
                 }
                 else
                 {
@@ -618,7 +714,9 @@ namespace gView.Framework.Network.Algorthm
             public Node Pop()
             {
                 if (this.Count == 0)
+                {
                     return null;
+                }
 
                 Node n = this[this.Count - 1];
                 this.RemoveAt(this.Count - 1);
@@ -633,9 +731,14 @@ namespace gView.Framework.Network.Algorthm
                 public int Compare(Node x, Node y)
                 {
                     if (x.Dist < y.Dist)
+                    {
                         return 1;
+                    }
                     else if (x.Dist > y.Dist)
+                    {
                         return -1;
+                    }
+
                     return 0;
                 }
 
@@ -648,32 +751,43 @@ namespace gView.Framework.Network.Algorthm
         public static void ApplyInputIds(Dijkstra dijkstra, NetworkTracerInputCollection inputCollection)
         {
             if (dijkstra == null || inputCollection == null)
+            {
                 return;
+            }
 
             foreach (INetworkTracerInput input in inputCollection)
             {
                 if (input is NetworkInputAllowedNodeIds)
+                {
                     dijkstra.AllowedNodeIds = ((NetworkInputAllowedNodeIds)input).Ids;
-
+                }
                 else if (input is NetworkInputForbiddenTargetNodeIds)
+                {
                     dijkstra.ForbiddenTargetNodeIds = ((NetworkInputForbiddenTargetNodeIds)input).Ids;
-
+                }
                 else if (input is NetworkInputForbiddenStartNodeEdgeIds)
+                {
                     dijkstra.ForbiddenStartNodeEdgeIds = ((NetworkInputForbiddenStartNodeEdgeIds)input).Ids;
-
+                }
                 else if (input is NetworkInputForbiddenEdgeIds)
+                {
                     dijkstra.ForbiddenEdgeIds = ((NetworkInputForbiddenEdgeIds)input).Ids;
-
+                }
                 else if (input is NetworkBarrierNodeInput)
                 {
                     if (dijkstra._barrierNodeIds == null)
+                    {
                         dijkstra._barrierNodeIds = new List<int>();
+                    }
+
                     dijkstra.BarrierNodeIds.Add(((NetworkBarrierNodeInput)input).NodeId);
                 }
             }
 
             if (dijkstra._barrierNodeIds != null)
+            {
                 dijkstra._barrierNodeIds.Sort();
+            }
         }
     }
 }

@@ -1,14 +1,11 @@
+using gView.Framework.Data;
+using gView.Framework.Symbology;
+using gView.Framework.Sys.UI.Extensions;
+using gView.Framework.UI.Dialogs;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Drawing;
-using System.Data;
-using System.Text;
 using System.Windows.Forms;
-using gView.Framework.Symbology;
-using gView.Framework.Data;
-using gView.Framework.UI.Dialogs;
-using gView.Framework.Sys.UI.Extensions;
 
 namespace gView.Framework.UI.Controls
 {
@@ -54,7 +51,10 @@ namespace gView.Framework.UI.Controls
         private void btnEditColorClass_Click(object sender, EventArgs e)
         {
             GridColorClass cc = symbolsListView1.UserObject as GridColorClass;
-            if (cc == null) return;
+            if (cc == null)
+            {
+                return;
+            }
 
             FormGridColorClass dlg = new FormGridColorClass();
             dlg.ColorClass = cc;
@@ -76,7 +76,10 @@ namespace gView.Framework.UI.Controls
         private void btnRemoveColorClass_Click(object sender, EventArgs e)
         {
             GridColorClass cc = symbolsListView1.UserObject as GridColorClass;
-            if (cc == null) return;
+            if (cc == null)
+            {
+                return;
+            }
 
             _classes.Remove(cc);
             symbolsListView1.RemoveSelected();
@@ -88,14 +91,21 @@ namespace gView.Framework.UI.Controls
         {
             get
             {
-                if (_classes.Count == 0) return null;
+                if (_classes.Count == 0)
+                {
+                    return null;
+                }
+
                 return _classes.ToArray();
             }
             set
             {
                 symbolsListView1.Clear();
                 _classes.Clear();
-                if (value == null) return;
+                if (value == null)
+                {
+                    return;
+                }
 
                 foreach (GridColorClass cc in value)
                 {
@@ -135,7 +145,9 @@ namespace gView.Framework.UI.Controls
             set
             {
                 if (value != null && value.Length == 3)
+                {
                     value.CopyTo(_hillShadeVector, 0);
+                }
             }
         }
         public double MinValue
@@ -151,9 +163,16 @@ namespace gView.Framework.UI.Controls
 
         void symbolsListView1_OnSymbolClicked(ISymbol symbol)
         {
-            if (!(symbol is SimpleFillSymbol)) return;
+            if (!(symbol is SimpleFillSymbol))
+            {
+                return;
+            }
+
             GridColorClass cc = symbolsListView1.UserObject as GridColorClass;
-            if (cc == null) return;
+            if (cc == null)
+            {
+                return;
+            }
 
             ColorDialog dlg = new ColorDialog();
             dlg.Color = cc.Color.ToGdiColor();
@@ -203,7 +222,10 @@ namespace gView.Framework.UI.Controls
         private void panelGrid_Paint(object sender, PaintEventArgs e)
         {
             int height = panelGrid.Height - 20;
-            if (height <= 0 || _max - _min <= 0) return;
+            if (height <= 0 || _max - _min <= 0)
+            {
+                return;
+            }
 
             GridColorClass[] classes = this.GridColorClasses;
             for (int y = 0; y < height; y++)
@@ -221,7 +243,10 @@ namespace gView.Framework.UI.Controls
                 {
                     foreach (GridColorClass cc in _classes)
                     {
-                        if (String.IsNullOrEmpty(cc.Legend)) continue;
+                        if (String.IsNullOrEmpty(cc.Legend))
+                        {
+                            continue;
+                        }
 
                         double h = cc.MaxValue * 0.5 + cc.MinValue * 0.5;
                         int y = (int)((_max - h) * (double)height / (_max - _min));
@@ -232,6 +257,6 @@ namespace gView.Framework.UI.Controls
             }
         }
 
-        
+
     }
 }

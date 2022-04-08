@@ -1,11 +1,9 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-using gView.Framework.UI;
-using System.Windows.Forms;
 using gView.Framework.Globalisation;
 using gView.Framework.IO;
+using gView.Framework.UI;
+using System;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace gView.Plugins.ExTools
 {
@@ -39,13 +37,17 @@ namespace gView.Plugins.ExTools
         public void OnCreate(object hook)
         {
             if (hook is IExplorerApplication)
+            {
                 _exapp = hook as IExplorerApplication;
+            }
         }
 
         public Task<bool> OnEvent(object MapEvent)
         {
             if (_exapp != null)
+            {
                 _exapp.RefreshContents();
+            }
 
             return Task.FromResult(true);
         }
@@ -115,7 +117,9 @@ namespace gView.Plugins.ExTools
         public void OnCreate(object hook)
         {
             if (hook is IExplorerApplication)
+            {
                 _exapp = hook as IExplorerApplication;
+            }
         }
 
         public Task<bool> OnEvent(object MapEvent)

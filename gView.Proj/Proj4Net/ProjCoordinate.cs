@@ -1,8 +1,8 @@
-﻿using System;
+﻿using GeoAPI.Geometries;
+using Proj4Net.Utility;
+using System;
 using System.Globalization;
 using System.Text;
-using GeoAPI.Geometries;
-using Proj4Net.Utility;
 
 namespace Proj4Net
 {
@@ -92,7 +92,7 @@ namespace Proj4Net
         /// is automatically set to Double.NaN. 
         /// </summary>
         public ProjCoordinate(double argX, double argY)
-            :base(argX, argY)
+            : base(argX, argY)
         {
         }
 
@@ -177,7 +177,9 @@ namespace Proj4Net
         public double Distance(ProjCoordinate p)
         {
             if (p == null)
+            {
                 throw new ArgumentNullException("p");
+            }
 
             var tmpP = (p is ProjCoordinate)
                             ? p as ProjCoordinate
@@ -190,15 +192,21 @@ namespace Proj4Net
                 dy = Y - p.Y;
             }
             else
+            {
                 throw new Proj4NetException();
+            }
 
             if (HasValidZOrdinate && tmpP.HasValidZOrdinate)
+            {
                 dz = Z - tmpP.Z;
+            }
 
             if (HasValidZOrdinate != tmpP.HasValidZOrdinate)
+            {
                 throw new Proj4NetException();
+            }
 
-            return Math.Sqrt(dx*dx + dy*dy + dz*dz);
+            return Math.Sqrt(dx * dx + dy * dy + dz * dz);
         }
 
         public bool Equals2D(ProjCoordinate other)
@@ -210,31 +218,43 @@ namespace Proj4Net
         public bool Equals3D(ProjCoordinate other)
         {
             if (!Equals2D(other))
+            {
                 return false;
+            }
+
             return CoordinateChecker.AreZOrdinatesEqual(this, other, 0);
         }
 
         public int CompareTo(ProjCoordinate other)
         {
             if (Equals(other))
+            {
                 return 0;
+            }
 
             if (!CoordinateChecker.AreXOrdinatesEqual(this, other, 0))
             {
                 return X < other.X ? -1 : 1;
             }
             if (!CoordinateChecker.AreYOrdinatesEqual(this, other, 0))
+            {
                 return Y < other.Y ? -1 : 1;
+            }
 
             if (CoordinateChecker.HasValidZOrdinate(this))
             {
                 if (!CoordinateChecker.HasValidZOrdinate(other))
+                {
                     return -1;
+                }
+
                 return Z < other.Z ? -1 : 1;
             }
 
             if (CoordinateChecker.HasValidZOrdinate(other))
+            {
                 return Z < other.Z ? -1 : 1;
+            }
 
             return 0;
         }
@@ -272,7 +292,7 @@ namespace Proj4Net
             builder.Append("]");
 
             return builder.ToString();
-            
+
             //return "ProjCoordinate" + ToShortString();
         }
 

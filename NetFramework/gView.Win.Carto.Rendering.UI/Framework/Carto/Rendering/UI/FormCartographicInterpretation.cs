@@ -1,12 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Windows.Forms;
-using gView.Framework.Carto;
+﻿using System.Windows.Forms;
 
 namespace gView.Framework.Carto.Rendering.UI
 {
@@ -35,10 +27,14 @@ namespace gView.Framework.Carto.Rendering.UI
             get
             {
                 if (btnCartoLegendOrdering.Checked)
+                {
                     return LegendGroupCartographicMethod.LegendOrdering;
+                }
 
                 if (btnCartoLegendAndSymbolOrdering.Checked)
+                {
                     return LegendGroupCartographicMethod.LegendAndSymbolOrdering;
+                }
 
                 return LegendGroupCartographicMethod.Simple;
             }

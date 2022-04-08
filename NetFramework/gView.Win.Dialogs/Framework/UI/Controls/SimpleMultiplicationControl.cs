@@ -1,12 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Drawing;
-using System.Data;
-using System.Text;
-using System.Windows.Forms;
+﻿using gView.Framework.Data.Calc;
 using gView.Framework.system;
-using gView.Framework.Data.Calc;
+using System;
+using System.Windows.Forms;
 
 namespace gView.Framework.UI.Controls
 {
@@ -25,7 +20,9 @@ namespace gView.Framework.UI.Controls
         {
             _multiplication = parameter as SimpleMultiplication;
             if (_multiplication != null)
+            {
                 numericUpDown1.Value = (decimal)_multiplication.Multiplicator;
+            }
         }
 
         #endregion
@@ -33,7 +30,9 @@ namespace gView.Framework.UI.Controls
         private void numericUpDown1_ValueChanged(object sender, EventArgs e)
         {
             if (_multiplication != null)
+            {
                 _multiplication.Multiplicator = (double)numericUpDown1.Value;
+            }
         }
     }
 }

@@ -1,16 +1,13 @@
+using gView.Framework.Carto;
+using gView.Framework.Data;
+using gView.Framework.Globalisation;
+using gView.Framework.Snapping.Core;
+using gView.Framework.system;
+using gView.Framework.UI;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Drawing;
-using System.Data;
-using System.Text;
 using System.Windows.Forms;
-using gView.Framework.UI;
-using gView.Framework.Snapping.Core;
-using gView.Framework.Data;
-using gView.Framework.system;
-using gView.Framework.Carto;
-using gView.Framework.Globalisation;
 
 namespace gView.Plugins.Snapping
 {
@@ -23,7 +20,7 @@ namespace gView.Plugins.Snapping
             InitializeComponent();
         }
         public OptionPageSnapping(Module module)
-            :this()
+            : this()
         {
             _module = module;
             panelPage.Dock = DockStyle.Fill;
@@ -40,26 +37,42 @@ namespace gView.Plugins.Snapping
             dgSchemas.Rows.Clear();
             cmbSchemas.Items.Clear();
 
-            if (_module == null || _module.MapDocument == null) return;
+            if (_module == null || _module.MapDocument == null)
+            {
+                return;
+            }
+
             List<ISnapSchema> schemas = _module[_module.MapDocument.FocusMap];
-            if (schemas == null) return;
+            if (schemas == null)
+            {
+                return;
+            }
 
             foreach (ISnapSchema schema in schemas)
             {
-                if (schema == null) return;
+                if (schema == null)
+                {
+                    return;
+                }
+
                 cmbSchemas.Items.Add(new SnapSchemaItem(_module.MapDocument.FocusMap, schema));
             }
             cmbSchemas.Enabled = (cmbSchemas.Items.Count != 0);
             if (cmbSchemas.Items.Count > 0)
+            {
                 cmbSchemas.SelectedIndex = 0;
+            }
         }
 
         private void cmbSchemas_SelectedIndexChanged(object sender, EventArgs e)
         {
             dgSchemas.Rows.Clear();
-            if (_module == null || _module.MapDocument == null || 
+            if (_module == null || _module.MapDocument == null ||
                 _module.MapDocument.FocusMap == null ||
-                !(cmbSchemas.SelectedItem is SnapSchemaItem)) return;
+                !(cmbSchemas.SelectedItem is SnapSchemaItem))
+            {
+                return;
+            }
 
             numScale.Value = (decimal)((SnapSchemaItem)cmbSchemas.SelectedItem).SnapSchema.MaxScale;
 
@@ -72,13 +85,16 @@ namespace gView.Plugins.Snapping
         private void btnAdd_Click(object sender, EventArgs e)
         {
             if (_module == null || _module.MapDocument == null ||
-                _module[_module.MapDocument.FocusMap] == null) return;
+                _module[_module.MapDocument.FocusMap] == null)
+            {
+                return;
+            }
 
             FormNewSchema dlg = new FormNewSchema("New Schema");
 
             if (dlg.ShowDialog() == DialogResult.OK)
             {
-                SnapSchema schema=new SnapSchema(dlg.SnapSchemaName);
+                SnapSchema schema = new SnapSchema(dlg.SnapSchemaName);
                 //_module[_module.MapDocument.FocusMap].Add(schema);
                 cmbSchemas.Items.Add(new SnapSchemaItem(_module.MapDocument.FocusMap, schema));
 
@@ -89,10 +105,13 @@ namespace gView.Plugins.Snapping
         private void toolRemoveSchema_Click(object sender, EventArgs e)
         {
             if (_module == null || _module.MapDocument == null ||
-                _module[_module.MapDocument.FocusMap] == null) return;
+                _module[_module.MapDocument.FocusMap] == null)
+            {
+                return;
+            }
 
             if (cmbSchemas.SelectedItem is SnapSchemaItem)
-            { 
+            {
                 cmbSchemas.Items.Remove(cmbSchemas.SelectedItem);
             }
         }
@@ -104,7 +123,10 @@ namespace gView.Plugins.Snapping
                 SnapSchemaItem item = (SnapSchemaItem)cmbSchemas.SelectedItem;
 
                 int index = cmbSchemas.Items.IndexOf(item);
-                if (index <= 0) return;
+                if (index <= 0)
+                {
+                    return;
+                }
 
                 cmbSchemas.Items.Remove(item);
                 cmbSchemas.Items.Insert(index - 1, item);
@@ -119,23 +141,32 @@ namespace gView.Plugins.Snapping
                 SnapSchemaItem item = (SnapSchemaItem)cmbSchemas.SelectedItem;
 
                 int index = cmbSchemas.Items.IndexOf(item);
-                if (index < 0 || index >= cmbSchemas.Items.Count - 1) return;
+                if (index < 0 || index >= cmbSchemas.Items.Count - 1)
+                {
+                    return;
+                }
 
                 cmbSchemas.Items.Remove(item);
-                cmbSchemas.Items.Insert(index+1, item);
-                cmbSchemas.SelectedIndex = index+1;
+                cmbSchemas.Items.Insert(index + 1, item);
+                cmbSchemas.SelectedIndex = index + 1;
             }
         }
 
         private void toolRenameSchema_Click(object sender, EventArgs e)
         {
             if (_module == null || _module.MapDocument == null ||
-                _module[_module.MapDocument.FocusMap] == null) return;
+                _module[_module.MapDocument.FocusMap] == null)
+            {
+                return;
+            }
 
             if (cmbSchemas.SelectedItem is SnapSchemaItem)
             {
                 SnapSchemaItem item = (SnapSchemaItem)cmbSchemas.SelectedItem;
-                if (!(item.SnapSchema is SnapSchema)) return;
+                if (!(item.SnapSchema is SnapSchema))
+                {
+                    return;
+                }
 
                 FormNewSchema dlg = new FormNewSchema(item.SnapSchema.Name);
                 if (dlg.ShowDialog() == DialogResult.OK)
@@ -143,7 +174,10 @@ namespace gView.Plugins.Snapping
                     ((SnapSchema)item.SnapSchema).Name = dlg.SnapSchemaName;
 
                     int index = cmbSchemas.Items.IndexOf(item);
-                    if (index < 0) return;
+                    if (index < 0)
+                    {
+                        return;
+                    }
 
                     // Refresh List
                     cmbSchemas.Items.Remove(item);
@@ -162,17 +196,27 @@ namespace gView.Plugins.Snapping
             public SnapSchemaItem(IMap map, ISnapSchema schema)
             {
                 _schema = schema;
-                if (_schema == null) return;
+                if (_schema == null)
+                {
+                    return;
+                }
 
                 foreach (ISnapLayer sLayer in schema)
                 {
-                    if (!(sLayer is SnapLayer)) continue;
+                    if (!(sLayer is SnapLayer))
+                    {
+                        continue;
+                    }
+
                     _rows.Add(new SnapLayerRow(sLayer as SnapLayer));
                 }
                 foreach (IDatasetElement element in map.MapElements)
                 {
                     if (!(element is IFeatureLayer) ||
-                        HasFeatureLayer(element as IFeatureLayer)) continue;
+                        HasFeatureLayer(element as IFeatureLayer))
+                    {
+                        continue;
+                    }
 
                     SnapLayer sLayer = new SnapLayer(element as IFeatureLayer, SnapMethode.None);
                     _rows.Add(new SnapLayerRow(sLayer));
@@ -185,7 +229,11 @@ namespace gView.Plugins.Snapping
             }
             public override string ToString()
             {
-                if (_schema == null) return "???";
+                if (_schema == null)
+                {
+                    return "???";
+                }
+
                 return _schema.Name;
             }
             public List<SnapLayerRow> SnapLayerRows
@@ -196,8 +244,12 @@ namespace gView.Plugins.Snapping
             private bool HasFeatureLayer(IFeatureLayer layer)
             {
                 foreach (SnapLayerRow row in _rows)
+                {
                     if (row.SnapLayer.FeatureLayer == layer)
+                    {
                         return true;
+                    }
+                }
 
                 return false;
             }
@@ -209,14 +261,17 @@ namespace gView.Plugins.Snapping
             public SnapLayerRow(SnapLayer sLayer)
             {
                 _sLayer = sLayer;
-                if (_sLayer == null) return;
+                if (_sLayer == null)
+                {
+                    return;
+                }
 
                 DataGridViewTextBoxCell cell = new DataGridViewTextBoxCell();
                 cell.Value = _sLayer.FeatureLayer.Title;
                 this.Cells.Add(cell);
 
                 DataGridViewCheckBoxCell c = new DataGridViewCheckBoxCell();
-                c.Value=Bit.Has(_sLayer.Methode, SnapMethode.Vertex);
+                c.Value = Bit.Has(_sLayer.Methode, SnapMethode.Vertex);
                 this.Cells.Add(c);
 
                 c = new DataGridViewCheckBoxCell();
@@ -232,15 +287,27 @@ namespace gView.Plugins.Snapping
             {
                 get
                 {
-                    if (_sLayer == null) return null;
+                    if (_sLayer == null)
+                    {
+                        return null;
+                    }
+
                     _sLayer.Methode = SnapMethode.None;
 
-                    if(this.Cells[1].Value.Equals(true))
+                    if (this.Cells[1].Value.Equals(true))
+                    {
                         _sLayer.Methode |= SnapMethode.Vertex;
+                    }
+
                     if (this.Cells[2].Value.Equals(true))
+                    {
                         _sLayer.Methode |= SnapMethode.Edge;
+                    }
+
                     if (this.Cells[3].Value.Equals(true))
+                    {
                         _sLayer.Methode |= SnapMethode.EndPoint;
+                    }
 
                     return _sLayer;
                 }
@@ -250,13 +317,16 @@ namespace gView.Plugins.Snapping
 
         private void dgSchemas_CellValueChanged(object sender, DataGridViewCellEventArgs e)
         {
-            
+
         }
 
         public void Commit()
         {
             if (_module == null || _module.MapDocument == null ||
-                _module[_module.MapDocument.FocusMap] == null) return;
+                _module[_module.MapDocument.FocusMap] == null)
+            {
+                return;
+            }
 
             numScale_ValueChanged(numScale, new EventArgs());
             List<ISnapSchema> schemas = _module[_module.MapDocument.FocusMap];
@@ -268,7 +338,9 @@ namespace gView.Plugins.Snapping
                 foreach (SnapLayerRow row in item.SnapLayerRows)
                 {
                     if (row.SnapLayer.Methode != SnapMethode.None)
+                    {
                         schema.Add(row.SnapLayer);
+                    }
                 }
                 schema.MaxScale = item.SnapSchema.MaxScale;
                 schemas.Add(schema);
@@ -298,14 +370,20 @@ namespace gView.Plugins.Snapping
         public Panel OptionPage(IMapDocument document)
         {
             if (!IsAvailable(document))
+            {
                 return null;
+            }
 
             if (_page == null)
             {
                 if (document.Application is IMapApplication)
                 {
                     Module module = ((IMapApplication)document.Application).IMapApplicationModule(gView.Framework.Snapping.Core.Globals.ModuleGuid) as Module;
-                    if (module == null) return null;
+                    if (module == null)
+                    {
+                        return null;
+                    }
+
                     _page = new OptionPageSnapping(module);
                 }
             }
@@ -326,15 +404,23 @@ namespace gView.Plugins.Snapping
         public void Commit()
         {
             if (_page != null)
+            {
                 _page.Commit();
+            }
         }
 
         public bool IsAvailable(IMapDocument document)
         {
-            if (document == null || document.Application == null) return false;
+            if (document == null || document.Application == null)
+            {
+                return false;
+            }
 
             if (document.Application is IMapApplication &&
-                ((IMapApplication)document.Application).ReadOnly == true) return false;
+                ((IMapApplication)document.Application).ReadOnly == true)
+            {
+                return false;
+            }
 
             return true;
         }

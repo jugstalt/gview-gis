@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data.Common;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace gView.DataSources.MSSqlSpatial.DataSources.Sde.Repo
 {
@@ -34,10 +31,10 @@ namespace gView.DataSources.MSSqlSpatial.DataSources.Sde.Repo
             this.MinM = reader["minm"] != DBNull.Value && reader["minm"] != null ? (double?)Convert.ToDouble(reader["minm"]) : null;
             this.MaxM = reader["maxm"] != DBNull.Value && reader["maxm"] != null ? (double?)Convert.ToDouble(reader["maxm"]) : null;
 
-            if(multiversionedViewnames!=null)
+            if (multiversionedViewnames != null)
             {
                 var mv_tab_name = (this.Owner + "." + this.TableName).ToLower();
-                if(multiversionedViewnames.ContainsKey(mv_tab_name))
+                if (multiversionedViewnames.ContainsKey(mv_tab_name))
                 {
                     this.MultiVersionedViewName = multiversionedViewnames[mv_tab_name];
                 }

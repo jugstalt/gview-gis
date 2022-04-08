@@ -1,10 +1,7 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading.Tasks;
-using gView.Framework.Carto;
 using gView.Framework.IO;
 using gView.Framework.system;
+using System;
+using System.Collections.Generic;
 
 namespace gView.Framework.Carto
 {
@@ -23,7 +20,10 @@ namespace gView.Framework.Carto
 
         void selectedelements_SelectionChanged(object sender, EventArgs e)
         {
-            if (SelectionChanged != null) SelectionChanged(this, new EventArgs());
+            if (SelectionChanged != null)
+            {
+                SelectionChanged(this, new EventArgs());
+            }
         }
 
         #region IGraphicsContainer Members
@@ -99,29 +99,40 @@ namespace gView.Framework.Carto
 
             #region IGraphicElementList Member
 
-            public void Add(IGraphicElement element) 
+            public void Add(IGraphicElement element)
             {
                 _elements.Add(element);
-                if (SelectionChanged != null) SelectionChanged(this, new EventArgs());
+                if (SelectionChanged != null)
+                {
+                    SelectionChanged(this, new EventArgs());
+                }
             }
 
             public void Clear()
             {
                 _elements.Clear();
-                if (SelectionChanged != null) SelectionChanged(this, new EventArgs());
+                if (SelectionChanged != null)
+                {
+                    SelectionChanged(this, new EventArgs());
+                }
             }
 
             public void Remove(IGraphicElement element)
             {
                 _elements.Remove(element);
-                if (SelectionChanged != null) SelectionChanged(this, new EventArgs());
+                if (SelectionChanged != null)
+                {
+                    SelectionChanged(this, new EventArgs());
+                }
             }
 
             public void Insert(int i, IGraphicElement element)
             {
                 _elements.Insert(i, element);
-                if (SelectionChanged != null) SelectionChanged(this, new EventArgs());
-
+                if (SelectionChanged != null)
+                {
+                    SelectionChanged(this, new EventArgs());
+                }
             }
 
             public bool Contains(IGraphicElement element)

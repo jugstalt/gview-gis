@@ -14,7 +14,7 @@ namespace gView.Framework.Data
         {
             if (!String.IsNullOrWhiteSpace(where))
             {
-                if(WhereClauseWhiteList.Contains(where))
+                if (WhereClauseWhiteList.Contains(where))
                 {
                     return;
                 }

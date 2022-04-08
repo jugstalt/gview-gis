@@ -1,8 +1,6 @@
 ﻿using gView.GraphicsEngine.Abstraction;
 using System;
-using System.Collections.Generic;
 using System.Drawing;
-using System.Text;
 
 namespace gView.GraphicsEngine.GdiPlus
 {
@@ -22,7 +20,9 @@ namespace gView.GraphicsEngine.GdiPlus
 
                 CharacterRange[] ranges = new CharacterRange[t.Length];
                 for (int i = 0; i < t.Length; i++)
+                {
                     ranges[i] = new CharacterRange(i, 1);
+                }
 
                 format.SetMeasurableCharacterRanges(ranges);
 
@@ -52,7 +52,10 @@ namespace gView.GraphicsEngine.GdiPlus
             {
                 float w = 0f;
                 for (int i = 0; i < _rectF.Length; i++)
+                {
                     w += _rectF[i].Width;
+                }
+
                 return w;
             }
         }

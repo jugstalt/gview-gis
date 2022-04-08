@@ -1,7 +1,4 @@
 ﻿using SkiaSharp;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace gView.GraphicsEngine.Skia.Extensions
 {
@@ -9,7 +6,7 @@ namespace gView.GraphicsEngine.Skia.Extensions
     {
         static public SKTextAlign ToSkTextAlign(this StringAlignment align)
         {
-            switch(align)
+            switch (align)
             {
                 case StringAlignment.Near:
                     return SKTextAlign.Left;

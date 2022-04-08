@@ -2,7 +2,6 @@
 using gView.Framework.Geometry;
 using gView.Framework.system;
 using System;
-using System.Collections.Generic;
 using System.Text;
 
 namespace gView.Interoperability.GeoServices.Rest
@@ -43,9 +42,9 @@ namespace gView.Interoperability.GeoServices.Rest
             return FieldType.unknown;
         }
 
-        public static string ConvertGeometryToJson(IGeometry geometry, 
-                                                   int spatialReferenceId, 
-                                                   bool hasZ = false, 
+        public static string ConvertGeometryToJson(IGeometry geometry,
+                                                   int spatialReferenceId,
+                                                   bool hasZ = false,
                                                    bool hasM = false)
         {
             string geometryType = GetGeometryTypeString(geometry);

@@ -1,10 +1,7 @@
-﻿using gView.Framework.Data;
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading.Tasks;
+﻿using gView.DataSources.VectorTileCache.Extensions;
+using gView.Framework.Data;
 using System.Linq;
-using gView.DataSources.VectorTileCache.Extensions;
+using System.Threading.Tasks;
 
 namespace gView.DataSources.VectorTileCache
 {
@@ -17,7 +14,7 @@ namespace gView.DataSources.VectorTileCache
         private int _pos = 0;
 
         public FeatureCursor(FeatureClass fc, IQueryFilter filter)
-            :base(fc?.SpatialReference, filter?.FeatureSpatialReference)
+            : base(fc?.SpatialReference, filter?.FeatureSpatialReference)
         {
             _fc = fc;
             _filter = filter;
@@ -30,13 +27,15 @@ namespace gView.DataSources.VectorTileCache
 
         public override void Dispose()
         {
-            
+
         }
 
         public override Task<IFeature> NextFeature()
         {
             if (_geoJsonFeatures == null || _geoJsonFeatures.Length <= _pos)
+            {
                 return Task.FromResult<IFeature>(null);
+            }
 
             var geoJsonFeature = _geoJsonFeatures[_pos++];
 
@@ -50,12 +49,12 @@ namespace gView.DataSources.VectorTileCache
                 }
             }
 
-            if(geoJsonFeature.Geometry != null)
+            if (geoJsonFeature.Geometry != null)
             {
                 feature.Shape = geoJsonFeature.Geometry.ToGeometry();
             }
 
-            
+
 
             // ToDo: Check filter...
 

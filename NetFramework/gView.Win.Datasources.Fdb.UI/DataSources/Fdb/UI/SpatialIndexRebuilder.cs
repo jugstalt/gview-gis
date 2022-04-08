@@ -4,7 +4,6 @@ using gView.Framework.system;
 using gView.Framework.UI;
 using gView.Framework.UI.Dialogs;
 using System.Collections.Generic;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 

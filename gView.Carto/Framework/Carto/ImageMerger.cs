@@ -3,8 +3,6 @@ using gView.Framework.Data;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Drawing;
-using System.Drawing.Imaging;
 
 namespace gView.Framework.Carto
 {
@@ -360,9 +358,9 @@ namespace gView.Framework.Carto
             }
         }
 
-        public static void Resample(GraphicsEngine.Abstraction.IBitmap dest, 
+        public static void Resample(GraphicsEngine.Abstraction.IBitmap dest,
                                     IDisplay destDisplay,
-                                    GraphicsEngine.Abstraction.IBitmap source, 
+                                    GraphicsEngine.Abstraction.IBitmap source,
                                     IDisplay sourceDisplay)
         {
             GraphicsEngine.BitmapPixelData destData = null, sourceData = null;

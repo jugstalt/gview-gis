@@ -1,10 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using gView.Framework.Carto;
-using gView.Framework.Symbology;
+﻿using gView.Framework.Carto;
 using gView.Framework.Geometry;
+using gView.Framework.Symbology;
 using gView.GraphicsEngine;
+using System;
 
 namespace gView.Plugins.Network.Graphic
 {
@@ -35,7 +33,9 @@ namespace gView.Plugins.Network.Graphic
         public void Draw(IDisplay display)
         {
             if (display == null || _point == null)
+            {
                 return;
+            }
 
             Point p1 = new Point(_point.X, _point.Y + (20 * display.mapScale / (96 / 0.0254)));
             Path path = new Path();

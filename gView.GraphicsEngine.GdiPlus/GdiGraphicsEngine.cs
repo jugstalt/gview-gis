@@ -1,6 +1,5 @@
 ﻿using gView.GraphicsEngine.Abstraction;
 using System;
-using System.Drawing;
 using System.IO;
 
 namespace gView.GraphicsEngine.GdiPlus

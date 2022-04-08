@@ -1,6 +1,6 @@
-﻿using System.Collections.Generic;
-using gView.Framework.Carto;
+﻿using gView.Framework.Carto;
 using gView.Framework.system;
+using System.Collections.Generic;
 
 namespace gView.Framework.UI
 {
@@ -9,5 +9,5 @@ namespace gView.Framework.UI
         IEnumerable<IMapApplicationModule> GetMapModules(IMap map);
     }
 
-    
+
 }

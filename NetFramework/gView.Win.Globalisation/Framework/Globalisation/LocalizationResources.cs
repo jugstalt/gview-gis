@@ -1,8 +1,5 @@
 using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Resources;
-using System.Reflection;
 using System.Windows.Forms;
 
 namespace gView.Framework.Globalisation
@@ -29,7 +26,9 @@ namespace gView.Framework.Globalisation
 
                 string ret = _resMan.GetString(name);
                 if (ret == null)
+                {
                     return defString;
+                }
 
                 if (!String.IsNullOrEmpty(arg))
                 {
@@ -47,7 +46,10 @@ namespace gView.Framework.Globalisation
         #region Forms
         static public void GlobalizeMenuItem(ToolStripMenuItem item)
         {
-            if (item == null) return;
+            if (item == null)
+            {
+                return;
+            }
 
             if (item.DropDownItems.Count > 0)
             {
@@ -59,26 +61,38 @@ namespace gView.Framework.Globalisation
             }
 
             for (int i = 0; i < item.DropDownItems.Count; i++)
+            {
                 GlobalizeMenuItem(item.DropDownItems[i] as ToolStripMenuItem);
+            }
         }
         static public void GlobalizeMenuItem(ToolStripDropDownButton item)
         {
             for (int i = 0; i < item.DropDownItems.Count; i++)
+            {
                 GlobalizeMenuItem(item.DropDownItems[i] as ToolStripMenuItem);
+            }
         }
         static public void GlobalizeMenuItem(ContextMenuStrip item)
         {
-            if (item == null) return;
+            if (item == null)
+            {
+                return;
+            }
 
             for (int i = 0; i < item.Items.Count; i++)
+            {
                 GlobalizeMenuItem(item.Items[i] as ToolStripMenuItem);
+            }
         }
         #endregion
 
         #region Wpf
         static public void GlobalizeWpfMenuItem(System.Windows.Controls.MenuItem item)
         {
-            if (item == null) return;
+            if (item == null)
+            {
+                return;
+            }
 
             if (item.Header is string)
             {
@@ -93,7 +107,9 @@ namespace gView.Framework.Globalisation
             }
 
             for (int i = 0; i < item.Items.Count; i++)
+            {
                 GlobalizeWpfMenuItem(item.Items[i] as System.Windows.Controls.MenuItem);
+            }
         }
         #endregion
 

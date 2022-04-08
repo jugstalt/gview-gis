@@ -1,7 +1,6 @@
 using gView.DataSources.Fdb.MSAccess;
 using gView.Framework.Data;
 using System;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -27,7 +26,7 @@ namespace gView.DataSources.Fdb.UI.MSSql
 
         private void FormRebuildSpatialIndexProgess_Load(object sender, EventArgs e)
         {
-            
+
         }
 
         private void FormRebuildSpatialIndexProgess_Shown(object sender, EventArgs e)

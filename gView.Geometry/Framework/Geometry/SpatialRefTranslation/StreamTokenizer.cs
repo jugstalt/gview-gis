@@ -1,7 +1,6 @@
 using System;
-using System.Collections.Generic;
-using System.Text;
 using System.IO;
+using System.Text;
 
 namespace gView.Framework.Geometry.SpatialRefTranslation
 {
@@ -38,7 +37,9 @@ namespace gView.Framework.Geometry.SpatialRefTranslation
         public StreamTokenizer(TextReader reader, bool ignoreWhitespace)
         {
             if (reader == null)
+            {
                 throw new ArgumentNullException("reader");
+            }
 
             _reader = reader;
             _ignoreWhitespace = ignoreWhitespace;
@@ -64,9 +65,11 @@ namespace gView.Framework.Geometry.SpatialRefTranslation
         {
             string number = this.GetStringValue();
             if (this.GetTokenType() == TokenType.Number)
+            {
                 ////added by monoGIS team, parse double with invariant culture
                 //return double.Parse(number);
                 return double.Parse(number, _nhi);
+            }
             //end added by monoGIS team
             throw new ParseException(String.Format("The token '{0}' is not a number at line {1} column {2}.", number, this.LineNumber, this.Column)); ;
 
@@ -86,8 +89,14 @@ namespace gView.Framework.Geometry.SpatialRefTranslation
         {
             TokenType nextTokenType;
             if (ignoreWhitespace)
+            {
                 nextTokenType = NextNonWhitespaceToken();
-            else nextTokenType = NextTokenAny();
+            }
+            else
+            {
+                nextTokenType = NextTokenAny();
+            }
+
             return nextTokenType;
         }
 
@@ -123,10 +132,14 @@ namespace gView.Framework.Geometry.SpatialRefTranslation
 
                 // handling of words with _
                 if (isWord && currentCharacter == '_')
+                {
                     _currentTokenType = TokenType.Word;
+                }
                 // handing of words ending in numbers
                 if (isWord && _currentTokenType == TokenType.Number)
+                {
                     _currentTokenType = TokenType.Word;
+                }
 
                 if (_currentTokenType == TokenType.Word && nextCharacter == '_')
                 {
@@ -150,7 +163,10 @@ namespace gView.Framework.Geometry.SpatialRefTranslation
 
                 // this handles numbers with a decimal point
                 if (isNumber && nextTokenType == TokenType.Number && currentCharacter == '.')
+                {
                     _currentTokenType = TokenType.Number;
+                }
+
                 if (_currentTokenType == TokenType.Number && nextCharacter == '.' && isNumber == false)
                 {
                     nextTokenType = TokenType.Number;
@@ -166,10 +182,17 @@ namespace gView.Framework.Geometry.SpatialRefTranslation
 
                 _currentToken = _currentToken + currentCharacter;
                 if (_currentTokenType != nextTokenType)
+                {
                     finished = 0;
+                }
                 else if (_currentTokenType == TokenType.Symbol && currentCharacter != '-')
+                {
                     finished = 0;
-                else finished = _reader.Read(chars, 0, 1);
+                }
+                else
+                {
+                    finished = _reader.Read(chars, 0, 1);
+                }
             }
             return _currentTokenType;
         }
@@ -177,15 +200,25 @@ namespace gView.Framework.Geometry.SpatialRefTranslation
         private TokenType GetType(char character)
         {
             if (Char.IsDigit(character))
+            {
                 return TokenType.Number;
+            }
             else if (Char.IsLetter(character))
+            {
                 return TokenType.Word;
+            }
             else if (character == '\n')
+            {
                 return TokenType.Eol;
+            }
             else if (Char.IsWhiteSpace(character) || Char.IsControl(character))
+            {
                 return TokenType.Whitespace;
+            }
             else // (Char.IsSymbol(character))
+            {
                 return TokenType.Symbol;
+            }
         }
 
         private TokenType NextNonWhitespaceToken()
@@ -193,7 +226,10 @@ namespace gView.Framework.Geometry.SpatialRefTranslation
 
             TokenType tokentype = this.NextTokenAny();
             while (tokentype == TokenType.Whitespace || tokentype == TokenType.Eol)
+            {
                 tokentype = this.NextTokenAny();
+            }
+
             return tokentype;
         }
     }

@@ -1,16 +1,13 @@
-using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Drawing.Printing;
-using System.Text;
-using System.Windows.Forms;
 using gView.Framework.Carto;
-using gView.Framework.UI.Events;
 using gView.Framework.Geometry;
 using gView.Framework.Globalisation;
 using gView.Framework.UI;
+using gView.Framework.UI.Events;
 using gView.Plugins.MapTools.Dialogs;
+using System;
+using System.Drawing.Printing;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace gView.Plugins.MapTools
 {
@@ -20,7 +17,7 @@ namespace gView.Plugins.MapTools
         private PrinterMap _map = null;
         private IEnvelope _envelope = null;
 
-        public PrinterPage(PrinterMap map,IEnvelope env)
+        public PrinterPage(PrinterMap map, IEnvelope env)
         {
             Release();
 
@@ -131,7 +128,7 @@ namespace gView.Plugins.MapTools
 
         public void OnCreate(object hook)
         {
-            
+
         }
 
         public Task<bool> OnEvent(object MapEvent)
@@ -185,7 +182,7 @@ namespace gView.Plugins.MapTools
 
         public void OnCreate(object hook)
         {
-            
+
         }
 
         public Task<bool> OnEvent(object MapEvent)
@@ -194,9 +191,9 @@ namespace gView.Plugins.MapTools
             //PrintPreviewDialog dlg = new PrintPreviewDialog();
             dlg.Document = PrinterPage.Document;
 
-            PrinterMap map=new PrinterMap((Map)((MapEvent)MapEvent).Map);
+            PrinterMap map = new PrinterMap((Map)((MapEvent)MapEvent).Map);
 
-            PrinterPage page = new PrinterPage(map,((MapEvent)MapEvent).Map.Display.Envelope);
+            PrinterPage page = new PrinterPage(map, ((MapEvent)MapEvent).Map.Display.Envelope);
             //dlg.ShowDialog();
             page.Release();
 
@@ -255,7 +252,7 @@ namespace gView.Plugins.MapTools
 
         public void OnCreate(object hook)
         {
-            
+
         }
 
         public Task<bool> OnEvent(object MapEvent)

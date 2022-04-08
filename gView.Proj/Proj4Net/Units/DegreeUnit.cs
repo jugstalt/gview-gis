@@ -5,7 +5,7 @@ namespace Proj4Net.Units
         public DegreeUnit() //string name, string plural, string abbrev, double value)
             : base("Degree", "Degrees", "\xb0", 1d)
         {
-            
+
         }
     }
 }

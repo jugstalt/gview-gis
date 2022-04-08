@@ -1,13 +1,7 @@
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Text;
-using System.Windows.Forms;
-using gView.Framework.Symbology;
-using System.Drawing.Drawing2D;
 using gView.Framework.Sys.UI.Extensions;
+using System;
+using System.Drawing;
+using System.Windows.Forms;
 
 namespace gView.Framework.Symbology.UI.Controls
 {
@@ -25,7 +19,7 @@ namespace gView.Framework.Symbology.UI.Controls
 
         private void FormColorGradient_Load(object sender, EventArgs e)
         {
-            
+
         }
 
         public ColorGradient ColorGradient
@@ -41,7 +35,10 @@ namespace gView.Framework.Symbology.UI.Controls
             }
             set
             {
-                if (value == null) return;
+                if (value == null)
+                {
+                    return;
+                }
 
                 btnColor1.BackColor = value.Color1.ToGdiColor();
                 btnColor2.BackColor = value.Color2.ToGdiColor();

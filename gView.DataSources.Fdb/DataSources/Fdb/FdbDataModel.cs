@@ -2,10 +2,6 @@
 using gView.Framework.Data;
 using gView.Framework.Db;
 using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace gView.DataSources.Fdb
@@ -21,7 +17,7 @@ namespace gView.DataSources.Fdb
                 if (conn != null)
                 {
                     #region Add Column "LinkedFcId" to "FDB_FetaureClasses"
-                    
+
                     //System.Data.DataTable schema = conn.GetSchema2("FDB_FeatureClasses");
                     //bool hasColumn = schema.Select("ColumnName='LinkedFcId'").Length > 0;
 
@@ -46,7 +42,9 @@ namespace gView.DataSources.Fdb
                     fields.Add(new Field("Connection", FieldType.String, 4000));
 
                     if (!await fdb.CreateIfNotExists("FDB_LinkedConnections", fields))
+                    {
                         throw new Exception("Can't create 'FDB_LinkedConnections':" + fdb.LastErrorMessage);
+                    }
                     #endregion
                 }
 

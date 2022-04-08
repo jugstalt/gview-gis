@@ -32,5 +32,5 @@ namespace gView.Framework.UI
         object Image { get; }
     }
 
-    
+
 }

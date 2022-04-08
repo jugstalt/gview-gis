@@ -1,15 +1,9 @@
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Drawing;
-using System.Data;
-using System.Text;
-using System.Windows.Forms;
-using gView.Framework.system;
-using System.Xml;
-using gView.Framework.FDB;
 using gView.Framework.Data;
+using gView.Framework.FDB;
+using gView.Framework.system;
+using System;
 using System.Linq;
+using System.Windows.Forms;
 
 namespace gView.Framework.UI.Controls
 {
@@ -32,7 +26,10 @@ namespace gView.Framework.UI.Controls
                 foreach (var compType in autoFields)
                 {
                     IAutoField aField = compMan.CreateInstance<IAutoField>(compType);
-                    if (aField == null) continue;
+                    if (aField == null)
+                    {
+                        continue;
+                    }
 
                     TextBox box = new TextBox();
                     AutoFieldCheckBox checkBox = new AutoFieldCheckBox(aField, box);
@@ -49,10 +46,15 @@ namespace gView.Framework.UI.Controls
         {
             foreach (Control control in tablePanel.Controls)
             {
-                if(control is CheckBox)
+                if (control is CheckBox)
+                {
                     control.Width = tablePanel.Width - 120;
+                }
+
                 if (control is TextBox)
+                {
                     control.Width = 120;
+                }
             }
         }
 
@@ -60,11 +62,13 @@ namespace gView.Framework.UI.Controls
         {
             get
             {
-                Fields fields=new Fields();
+                Fields fields = new Fields();
                 foreach (Control control in tablePanel.Controls)
                 {
                     if (control is AutoFieldCheckBox && ((AutoFieldCheckBox)control).Checked)
+                    {
                         fields.Add(((AutoFieldCheckBox)control).AutoField);
+                    }
                 }
 
                 return fields;
@@ -79,7 +83,10 @@ namespace gView.Framework.UI.Controls
 
         public AutoFieldCheckBox(IAutoField field, TextBox nameBox)
         {
-            if (field == null || nameBox == null) return;
+            if (field == null || nameBox == null)
+            {
+                return;
+            }
 
             _field = field;
             _nameBox = nameBox;
@@ -87,7 +94,9 @@ namespace gView.Framework.UI.Controls
             this.Text = _field.AutoFieldName;
 
             if (_field.AutoFieldDescription != String.Empty)
+            {
                 this.Text += (": " + _field.AutoFieldDescription);
+            }
 
             _nameBox.TextChanged += new EventHandler(nameBox_TextChanged);
         }
@@ -95,7 +104,9 @@ namespace gView.Framework.UI.Controls
         void nameBox_TextChanged(object sender, EventArgs e)
         {
             if (_field is Field)
+            {
                 ((Field)_field).name = _nameBox.Text;
+            }
         }
 
         public IAutoField AutoField

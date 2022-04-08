@@ -1,7 +1,6 @@
 using System;
-using System.Collections.Generic;
-using System.Text;
 using System.IO;
+using System.Text;
 
 namespace gView.Framework.system
 {
@@ -11,7 +10,11 @@ namespace gView.Framework.system
         {
             StreamWriter sr = new StreamWriter(@"C:\args.xxx");
 
-            if (args == null) return;
+            if (args == null)
+            {
+                return;
+            }
+
             for (int i = 0; i < args.Length; i++)
             {
                 StringBuilder arg = new StringBuilder();
@@ -49,16 +52,16 @@ namespace gView.Framework.system
                     Encoding.Unicode,
                     Encoding.UTF8,
                     UnicodeEncoding.Unicode.GetBytes(args[i]));
-               
+
                 for (int b = 0; b < bytes.Length; b++)
                 {
-                    sr.Write((char)bytes[b] + ":" + bytes[b].ToString()+" ");
+                    sr.Write((char)bytes[b] + ":" + bytes[b].ToString() + " ");
                 }
                 sr.WriteLine();
                 //args[i] = System.Text.ASCIIEncoding.UTF8.GetString(bytes);
 
                 sr.WriteLine(args[i]);
-                
+
                 Console.WriteLine(args[i]);
             }
             sr.Close();

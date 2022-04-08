@@ -1,8 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using gView.Framework.Geometry;
+﻿using gView.Framework.Geometry;
 using Newtonsoft.Json.Linq;
+using System;
+using System.Collections.Generic;
 
 namespace gView.DataSources.CosmoDb
 {
@@ -10,38 +9,39 @@ namespace gView.DataSources.CosmoDb
     {
         static public Microsoft.Azure.Documents.Spatial.Geometry ToAzureGeometry(this IGeometry shape)
         {
-            if(shape is IPoint)
+            if (shape is IPoint)
             {
                 var point = (IPoint)shape;
                 return new Microsoft.Azure.Documents.Spatial.Point(point.X, point.Y);
             }
-            if(shape is IMultiPoint)
+            if (shape is IMultiPoint)
             {
                 var mPoint = (IMultiPoint)shape;
-                if(mPoint.PointCount!=1)
+                if (mPoint.PointCount != 1)
                 {
                     throw new Exception("Can't convert Multipoints to Azure GeoJson");
                 }
 
                 return new Microsoft.Azure.Documents.Spatial.Point(mPoint[0].X, mPoint[1].Y);
             }
-            if(shape is IPolyline)
+            if (shape is IPolyline)
             {
                 var polyline = (IPolyline)shape;
-                if(polyline.PathCount!=1)
+                if (polyline.PathCount != 1)
                 {
                     throw new Exception($"Can't convert Polylines with {polyline.PathCount} to Azure GeoJson");
                 }
 
                 List<Microsoft.Azure.Documents.Spatial.Position> positions = new List<Microsoft.Azure.Documents.Spatial.Position>();
-                for (int p=0,p_to=polyline[0].PointCount; p < p_to;p++) {
+                for (int p = 0, p_to = polyline[0].PointCount; p < p_to; p++)
+                {
                     positions.Add(new Microsoft.Azure.Documents.Spatial.Position(polyline[0][p].X, polyline[0][p].Y));
                 }
 
                 var azureLinestring = new Microsoft.Azure.Documents.Spatial.LineString(positions);
                 return azureLinestring;
             }
-            if(shape is IPolygon)
+            if (shape is IPolygon)
             {
                 var polygon = (IPolygon)shape;
 
@@ -63,7 +63,7 @@ namespace gView.DataSources.CosmoDb
                 var azurePolygon = new Microsoft.Azure.Documents.Spatial.Polygon(azureRings);
                 return azurePolygon;
             }
-            
+
             return null;
         }
 
@@ -72,7 +72,8 @@ namespace gView.DataSources.CosmoDb
             if (jObject != null)
             {
                 var type = jObject["type"].Value<string>()?.ToLower();
-                if (type == "point") {
+                if (type == "point")
+                {
                     var coordinates = (JArray)jObject["coordinates"];
                     return new Point(
                         coordinates[0].Value<double>(),
@@ -83,10 +84,10 @@ namespace gView.DataSources.CosmoDb
                     var polygon = new Polygon();
 
                     var jsonRings = (JArray)jObject["coordinates"];
-                    foreach(JArray jsonRing in jsonRings)
+                    foreach (JArray jsonRing in jsonRings)
                     {
                         var ring = new Ring();
-                        foreach(JArray jsonPoint in jsonRing)
+                        foreach (JArray jsonPoint in jsonRing)
                         {
                             ring.AddPoint(new Point(
                                 jsonPoint[0].Value<double>(),

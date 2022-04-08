@@ -10,7 +10,7 @@ namespace gView.Cmd.FillElasticSearch
         private ElasticClient _client;
         private string _defalutIndex = String.Empty;
 
-        public ElasticSearchContext(string url = "http://localhost:9200", string defaultIndex = "", 
+        public ElasticSearchContext(string url = "http://localhost:9200", string defaultIndex = "",
                                     string proxyUri = "", string proxyUsername = "", string proxyPassword = "",
                                     string basicAuthUser = "", string basicAuthPassword = "")
         {
@@ -45,7 +45,7 @@ namespace gView.Cmd.FillElasticSearch
         #region Create/Delete Index
 
         public bool CreateIndex<T>(string indexName = "")
-            where T: class
+            where T : class
         {
             indexName = CurrentIndexName(indexName);
             if (String.IsNullOrWhiteSpace(indexName))
@@ -66,7 +66,7 @@ namespace gView.Cmd.FillElasticSearch
             return createIndexResult.IsValid;
         }
 
-        public bool Map<T>(string indexName="")
+        public bool Map<T>(string indexName = "")
             where T : class
         {
             indexName = CurrentIndexName(indexName);
@@ -87,7 +87,7 @@ namespace gView.Cmd.FillElasticSearch
             return mapResult.IsValid;
         }
 
-        public bool DeleteIndex(string indexName="")
+        public bool DeleteIndex(string indexName = "")
         {
             indexName = CurrentIndexName(indexName);
             if (String.IsNullOrWhiteSpace(indexName))
@@ -147,14 +147,14 @@ namespace gView.Cmd.FillElasticSearch
             return response.IsValid;
         }
 
-        public bool IndexManyPro<T>(T[] documents, string indexName = "", int maxTries=5)
+        public bool IndexManyPro<T>(T[] documents, string indexName = "", int maxTries = 5)
             where T : class
         {
             int tries = 0;
 
-            while(true)
+            while (true)
             {
-                if(IndexMany<T>(documents, indexName))
+                if (IndexMany<T>(documents, indexName))
                 {
                     return true;
                 }
@@ -190,7 +190,7 @@ namespace gView.Cmd.FillElasticSearch
             return response.IsValid;
         }
 
-        public bool RemoveMany<T>(IEnumerable<T> objects, string indexName="")
+        public bool RemoveMany<T>(IEnumerable<T> objects, string indexName = "")
             where T : class, new()
         {
             indexName = CurrentIndexName(indexName);

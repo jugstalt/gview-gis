@@ -9,7 +9,7 @@ namespace gView.Framework.UI
 
         public void Dispose()
         {
-            if(Image != null)
+            if (Image != null)
             {
                 Image.Dispose();
                 Image = null;
@@ -17,5 +17,5 @@ namespace gView.Framework.UI
         }
     }
 
-    
+
 }

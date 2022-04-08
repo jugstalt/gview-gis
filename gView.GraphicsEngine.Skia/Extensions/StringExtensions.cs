@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Runtime.CompilerServices;
-using System.Text;
+﻿using System.Runtime.CompilerServices;
 
 namespace gView.GraphicsEngine.Skia.Extensions
 {
@@ -11,7 +8,9 @@ namespace gView.GraphicsEngine.Skia.Extensions
         static public string RemoveReturns(this string txt)
         {
             if (txt.Contains("\r"))
+            {
                 return txt.Replace("\r", "");
+            }
 
             return txt;
         }

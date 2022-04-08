@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
-namespace gView.Server.Services.Logging
+﻿namespace gView.Server.Services.Logging
 {
     public class PerformanceLoggerServiceOptions
     {

@@ -50,7 +50,7 @@ namespace gView.Framework.Carto
             _screen = new DisplayScreen();
             _screen.RefreshSettings();
 
-            this.dpi= GraphicsEngine.Current.Engine.ScreenDpi;
+            this.dpi = GraphicsEngine.Current.Engine.ScreenDpi;
         }
 
         internal Display(IMap map, bool createLabelEngine)

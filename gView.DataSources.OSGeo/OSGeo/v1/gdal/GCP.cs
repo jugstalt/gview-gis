@@ -9,154 +9,237 @@
 namespace OSGeo_v1.GDAL
 {
 
-using System;
-using System.Runtime.InteropServices;
+    using System;
+    using System.Runtime.InteropServices;
 
-public class GCP : IDisposable {
-  private HandleRef swigCPtr;
-  protected bool swigCMemOwn;
-  protected object swigParentRef;
-  
-  protected static object ThisOwn_true() { return null; }
-  protected object ThisOwn_false() { return this; }
-
-  public GCP(IntPtr cPtr, bool cMemoryOwn, object parent) {
-    swigCMemOwn = cMemoryOwn;
-    swigParentRef = parent;
-    swigCPtr = new HandleRef(this, cPtr);
-  }
-
-  public static HandleRef getCPtr(GCP obj) {
-    return (obj == null) ? new HandleRef(null, IntPtr.Zero) : obj.swigCPtr;
-  }
-  public static HandleRef getCPtrAndDisown(GCP obj, object parent) {
-    if (obj != null)
+    public class GCP : IDisposable
     {
-      obj.swigCMemOwn = false;
-      obj.swigParentRef = parent;
-      return obj.swigCPtr;
+        private HandleRef swigCPtr;
+        protected bool swigCMemOwn;
+        protected object swigParentRef;
+
+        protected static object ThisOwn_true() { return null; }
+        protected object ThisOwn_false() { return this; }
+
+        public GCP(IntPtr cPtr, bool cMemoryOwn, object parent)
+        {
+            swigCMemOwn = cMemoryOwn;
+            swigParentRef = parent;
+            swigCPtr = new HandleRef(this, cPtr);
+        }
+
+        public static HandleRef getCPtr(GCP obj)
+        {
+            return (obj == null) ? new HandleRef(null, IntPtr.Zero) : obj.swigCPtr;
+        }
+        public static HandleRef getCPtrAndDisown(GCP obj, object parent)
+        {
+            if (obj != null)
+            {
+                obj.swigCMemOwn = false;
+                obj.swigParentRef = parent;
+                return obj.swigCPtr;
+            }
+            else
+            {
+                return new HandleRef(null, IntPtr.Zero);
+            }
+        }
+        public static HandleRef getCPtrAndSetReference(GCP obj, object parent)
+        {
+            if (obj != null)
+            {
+                obj.swigParentRef = parent;
+                return obj.swigCPtr;
+            }
+            else
+            {
+                return new HandleRef(null, IntPtr.Zero);
+            }
+        }
+
+        ~GCP()
+        {
+            Dispose();
+        }
+
+        public virtual void Dispose()
+        {
+            lock (this)
+            {
+                if (swigCPtr.Handle != IntPtr.Zero && swigCMemOwn)
+                {
+                    swigCMemOwn = false;
+                    GdalPINVOKE.delete_GCP(swigCPtr);
+                }
+                swigCPtr = new HandleRef(null, IntPtr.Zero);
+                swigParentRef = null;
+                GC.SuppressFinalize(this);
+            }
+        }
+
+        public double GCPX
+        {
+            set
+            {
+                GdalPINVOKE.GCP_GCPX_set(swigCPtr, value);
+                if (GdalPINVOKE.SWIGPendingException.Pending)
+                {
+                    throw GdalPINVOKE.SWIGPendingException.Retrieve();
+                }
+            }
+            get
+            {
+                double ret = GdalPINVOKE.GCP_GCPX_get(swigCPtr);
+                if (GdalPINVOKE.SWIGPendingException.Pending)
+                {
+                    throw GdalPINVOKE.SWIGPendingException.Retrieve();
+                }
+
+                return ret;
+            }
+        }
+
+        public double GCPY
+        {
+            set
+            {
+                GdalPINVOKE.GCP_GCPY_set(swigCPtr, value);
+                if (GdalPINVOKE.SWIGPendingException.Pending)
+                {
+                    throw GdalPINVOKE.SWIGPendingException.Retrieve();
+                }
+            }
+            get
+            {
+                double ret = GdalPINVOKE.GCP_GCPY_get(swigCPtr);
+                if (GdalPINVOKE.SWIGPendingException.Pending)
+                {
+                    throw GdalPINVOKE.SWIGPendingException.Retrieve();
+                }
+
+                return ret;
+            }
+        }
+
+        public double GCPZ
+        {
+            set
+            {
+                GdalPINVOKE.GCP_GCPZ_set(swigCPtr, value);
+                if (GdalPINVOKE.SWIGPendingException.Pending)
+                {
+                    throw GdalPINVOKE.SWIGPendingException.Retrieve();
+                }
+            }
+            get
+            {
+                double ret = GdalPINVOKE.GCP_GCPZ_get(swigCPtr);
+                if (GdalPINVOKE.SWIGPendingException.Pending)
+                {
+                    throw GdalPINVOKE.SWIGPendingException.Retrieve();
+                }
+
+                return ret;
+            }
+        }
+
+        public double GCPPixel
+        {
+            set
+            {
+                GdalPINVOKE.GCP_GCPPixel_set(swigCPtr, value);
+                if (GdalPINVOKE.SWIGPendingException.Pending)
+                {
+                    throw GdalPINVOKE.SWIGPendingException.Retrieve();
+                }
+            }
+            get
+            {
+                double ret = GdalPINVOKE.GCP_GCPPixel_get(swigCPtr);
+                if (GdalPINVOKE.SWIGPendingException.Pending)
+                {
+                    throw GdalPINVOKE.SWIGPendingException.Retrieve();
+                }
+
+                return ret;
+            }
+        }
+
+        public double GCPLine
+        {
+            set
+            {
+                GdalPINVOKE.GCP_GCPLine_set(swigCPtr, value);
+                if (GdalPINVOKE.SWIGPendingException.Pending)
+                {
+                    throw GdalPINVOKE.SWIGPendingException.Retrieve();
+                }
+            }
+            get
+            {
+                double ret = GdalPINVOKE.GCP_GCPLine_get(swigCPtr);
+                if (GdalPINVOKE.SWIGPendingException.Pending)
+                {
+                    throw GdalPINVOKE.SWIGPendingException.Retrieve();
+                }
+
+                return ret;
+            }
+        }
+
+        public string Info
+        {
+            set
+            {
+                GdalPINVOKE.GCP_Info_set(swigCPtr, value);
+                if (GdalPINVOKE.SWIGPendingException.Pending)
+                {
+                    throw GdalPINVOKE.SWIGPendingException.Retrieve();
+                }
+            }
+            get
+            {
+                string ret = GdalPINVOKE.GCP_Info_get(swigCPtr);
+                if (GdalPINVOKE.SWIGPendingException.Pending)
+                {
+                    throw GdalPINVOKE.SWIGPendingException.Retrieve();
+                }
+
+                return ret;
+            }
+        }
+
+        public string Id
+        {
+            set
+            {
+                GdalPINVOKE.GCP_Id_set(swigCPtr, value);
+                if (GdalPINVOKE.SWIGPendingException.Pending)
+                {
+                    throw GdalPINVOKE.SWIGPendingException.Retrieve();
+                }
+            }
+            get
+            {
+                string ret = GdalPINVOKE.GCP_Id_get(swigCPtr);
+                if (GdalPINVOKE.SWIGPendingException.Pending)
+                {
+                    throw GdalPINVOKE.SWIGPendingException.Retrieve();
+                }
+
+                return ret;
+            }
+        }
+
+        public GCP(double x, double y, double z, double pixel, double line, string info, string id) : this(GdalPINVOKE.new_GCP(x, y, z, pixel, line, info, id), true, null)
+        {
+            if (GdalPINVOKE.SWIGPendingException.Pending)
+            {
+                throw GdalPINVOKE.SWIGPendingException.Retrieve();
+            }
+        }
+
     }
-    else
-    {
-      return new HandleRef(null, IntPtr.Zero);
-    }
-  }
-  public static HandleRef getCPtrAndSetReference(GCP obj, object parent) {
-    if (obj != null)
-    {
-      obj.swigParentRef = parent;
-      return obj.swigCPtr;
-    }
-    else
-    {
-      return new HandleRef(null, IntPtr.Zero);
-    }
-  }
-
-  ~GCP() {
-    Dispose();
-  }
-
-  public virtual void Dispose() {
-  lock(this) {
-      if(swigCPtr.Handle != IntPtr.Zero && swigCMemOwn) {
-        swigCMemOwn = false;
-        GdalPINVOKE.delete_GCP(swigCPtr);
-      }
-      swigCPtr = new HandleRef(null, IntPtr.Zero);
-      swigParentRef = null;
-      GC.SuppressFinalize(this);
-    }
-  }
-
-  public double GCPX {
-    set {
-      GdalPINVOKE.GCP_GCPX_set(swigCPtr, value);
-      if (GdalPINVOKE.SWIGPendingException.Pending) throw GdalPINVOKE.SWIGPendingException.Retrieve();
-    } 
-    get {
-      double ret = GdalPINVOKE.GCP_GCPX_get(swigCPtr);
-      if (GdalPINVOKE.SWIGPendingException.Pending) throw GdalPINVOKE.SWIGPendingException.Retrieve();
-      return ret;
-    } 
-  }
-
-  public double GCPY {
-    set {
-      GdalPINVOKE.GCP_GCPY_set(swigCPtr, value);
-      if (GdalPINVOKE.SWIGPendingException.Pending) throw GdalPINVOKE.SWIGPendingException.Retrieve();
-    } 
-    get {
-      double ret = GdalPINVOKE.GCP_GCPY_get(swigCPtr);
-      if (GdalPINVOKE.SWIGPendingException.Pending) throw GdalPINVOKE.SWIGPendingException.Retrieve();
-      return ret;
-    } 
-  }
-
-  public double GCPZ {
-    set {
-      GdalPINVOKE.GCP_GCPZ_set(swigCPtr, value);
-      if (GdalPINVOKE.SWIGPendingException.Pending) throw GdalPINVOKE.SWIGPendingException.Retrieve();
-    } 
-    get {
-      double ret = GdalPINVOKE.GCP_GCPZ_get(swigCPtr);
-      if (GdalPINVOKE.SWIGPendingException.Pending) throw GdalPINVOKE.SWIGPendingException.Retrieve();
-      return ret;
-    } 
-  }
-
-  public double GCPPixel {
-    set {
-      GdalPINVOKE.GCP_GCPPixel_set(swigCPtr, value);
-      if (GdalPINVOKE.SWIGPendingException.Pending) throw GdalPINVOKE.SWIGPendingException.Retrieve();
-    } 
-    get {
-      double ret = GdalPINVOKE.GCP_GCPPixel_get(swigCPtr);
-      if (GdalPINVOKE.SWIGPendingException.Pending) throw GdalPINVOKE.SWIGPendingException.Retrieve();
-      return ret;
-    } 
-  }
-
-  public double GCPLine {
-    set {
-      GdalPINVOKE.GCP_GCPLine_set(swigCPtr, value);
-      if (GdalPINVOKE.SWIGPendingException.Pending) throw GdalPINVOKE.SWIGPendingException.Retrieve();
-    } 
-    get {
-      double ret = GdalPINVOKE.GCP_GCPLine_get(swigCPtr);
-      if (GdalPINVOKE.SWIGPendingException.Pending) throw GdalPINVOKE.SWIGPendingException.Retrieve();
-      return ret;
-    } 
-  }
-
-  public string Info {
-    set {
-      GdalPINVOKE.GCP_Info_set(swigCPtr, value);
-      if (GdalPINVOKE.SWIGPendingException.Pending) throw GdalPINVOKE.SWIGPendingException.Retrieve();
-    } 
-    get {
-      string ret = GdalPINVOKE.GCP_Info_get(swigCPtr);
-      if (GdalPINVOKE.SWIGPendingException.Pending) throw GdalPINVOKE.SWIGPendingException.Retrieve();
-      return ret;
-    } 
-  }
-
-  public string Id {
-    set {
-      GdalPINVOKE.GCP_Id_set(swigCPtr, value);
-      if (GdalPINVOKE.SWIGPendingException.Pending) throw GdalPINVOKE.SWIGPendingException.Retrieve();
-    } 
-    get {
-      string ret = GdalPINVOKE.GCP_Id_get(swigCPtr);
-      if (GdalPINVOKE.SWIGPendingException.Pending) throw GdalPINVOKE.SWIGPendingException.Retrieve();
-      return ret;
-    } 
-  }
-
-  public GCP(double x, double y, double z, double pixel, double line, string info, string id) : this(GdalPINVOKE.new_GCP(x, y, z, pixel, line, info, id), true, null) {
-    if (GdalPINVOKE.SWIGPendingException.Pending) throw GdalPINVOKE.SWIGPendingException.Retrieve();
-  }
-
-}
 
 }

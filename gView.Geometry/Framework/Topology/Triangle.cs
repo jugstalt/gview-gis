@@ -1,7 +1,5 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
 using gView.Framework.Geometry;
+using System.Collections.Generic;
 
 namespace gView.Framework.Topology
 {

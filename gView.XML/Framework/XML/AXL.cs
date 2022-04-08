@@ -1,16 +1,10 @@
+using gView.Framework.Geometry;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
 using System.Text;
 using System.Xml;
-using System.IO;
-using gView.Framework.UI;
-using gView.Framework.Carto;
-using gView.Framework.Symbology;
-using gView.Framework.system;
-using gView.Framework.Data;
-using gView.Framework.Geometry;
-using gView.MapServer;
-using System.Globalization;
 
 namespace gView.Framework.XML
 {
@@ -598,7 +592,10 @@ namespace gView.Framework.XML
         static private void AddSrs(XmlNode node, IGeometry geometry)
         {
             if (node == null || node.Attributes["srs"] == null)
+            {
                 return;
+            }
+
             int srs;
             if (int.TryParse(node.Attributes["srs"].Value, out srs) && srs > 0)
             {
@@ -622,7 +619,11 @@ namespace gView.Framework.XML
                     switch (node.Name)
                     {
                         case "BUFFER":
-                            if (!ignoreBuffer) bufferNode = node;
+                            if (!ignoreBuffer)
+                            {
+                                bufferNode = node;
+                            }
+
                             break;
                         case "POINT":
                             point = PointFromAxl(node);
@@ -638,7 +639,10 @@ namespace gView.Framework.XML
                                 mpoint.AddPoint(point);
                             }
                             if (mpoint.PointCount == 0)
+                            {
                                 PointsFromCoords(mpoint, node.SelectSingleNode("COORDS"));
+                            }
+
                             aGeom.AddGeometry(mpoint);
                             break;
                         case "ENVELOPE":
@@ -720,7 +724,9 @@ namespace gView.Framework.XML
                 }
 
                 if (aGeom.GeometryCount == 0)
+                {
                     return null;
+                }
 
                 if (!ignoreBuffer &&
                     bufferNode != null && bufferNode.Attributes["distance"] != null)
@@ -735,7 +741,9 @@ namespace gView.Framework.XML
                 }
 
                 if (aGeom.GeometryCount == 1)
+                {
                     return aGeom[0];
+                }
 
                 return aGeom;
             }
@@ -748,13 +756,19 @@ namespace gView.Framework.XML
         static private string SrsAttribute(IGeometry geom)
         {
             if (geom == null || geom.Srs == null || geom.Srs <= 0)
+            {
                 return String.Empty;
+            }
 
             return " srs=\"" + geom.Srs.ToString() + "\" ";
         }
         static public string Geometry2AXL(IGeometry geom)
         {
-            if (geom == null) return "";
+            if (geom == null)
+            {
+                return "";
+            }
+
             StringBuilder axl = new StringBuilder();
 
             if (geom is IEnvelope)
@@ -861,7 +875,10 @@ namespace gView.Framework.XML
         }
         private static void PointsFromCoords(IPointCollection pColl, XmlNode node)
         {
-            if (pColl == null || node == null) return;
+            if (pColl == null || node == null)
+            {
+                return;
+            }
 
             string[] coords = node.InnerText.Split(';');
             foreach (string coord in coords)
@@ -881,7 +898,9 @@ namespace gView.Framework.XML
         private static string RemoveDoubleSpaces(string str)
         {
             while (str.Contains("  "))
+            {
                 str = str.Replace("  ", " ");
+            }
 
             return str;
         }
@@ -897,7 +916,11 @@ namespace gView.Framework.XML
                 {
                     fieldnames[i] = fieldnames[i].Substring(pos + 1, fieldnames[i].Length - pos - 1);
                 }
-                if (fieldname != "") fieldname += ";";
+                if (fieldname != "")
+                {
+                    fieldname += ";";
+                }
+
                 fieldname += fieldnames[i];
             }
 
@@ -937,22 +960,34 @@ namespace gView.Framework.XML
                     if (sRef != null && coordSysNode.Attributes["datumtransformid"] != null)
                     {
                         GeodeticDatum datum = Const.FromID(coordSysNode.Attributes["datumtransformid"].Value);
-                        if (datum != null) sRef.Datum = datum;
+                        if (datum != null)
+                        {
+                            sRef.Datum = datum;
+                        }
                     }
                     else if (sRef != null && coordSysNode.Attributes["datumid"] != null)
                     {
                         GeodeticDatum datum = Const.FromID(coordSysNode.Attributes["datumid"].Value);
-                        if (datum != null) sRef.Datum = datum;
+                        if (datum != null)
+                        {
+                            sRef.Datum = datum;
+                        }
                     }
                     else if (sRef != null && coordSysNode.Attributes["datumtransformstring"] != null)
                     {
                         GeodeticDatum datum = GeodeticDatum.FromESRIWKT(coordSysNode.Attributes["datumtransformstring"].Value);
-                        if (datum != null) sRef.Datum = datum;
+                        if (datum != null)
+                        {
+                            sRef.Datum = datum;
+                        }
                     }
                     else if (sRef != null && coordSysNode.Attributes["datumstring"] != null)
                     {
                         GeodeticDatum datum = GeodeticDatum.FromESRIWKT(coordSysNode.Attributes["datumstring"].Value);
-                        if (datum != null) sRef.Datum = datum;
+                        if (datum != null)
+                        {
+                            sRef.Datum = datum;
+                        }
                     }
                 }
                 catch { }
@@ -967,7 +1002,10 @@ namespace gView.Framework.XML
         {
             // Test Header
             if (cbf.Length < 4 ||
-                (cbf[0] != 0x05 || cbf[1] != 0x18 || cbf[2] != 0x01 || cbf[3] != 0x0)) return cbf;
+                (cbf[0] != 0x05 || cbf[1] != 0x18 || cbf[2] != 0x01 || cbf[3] != 0x0))
+            {
+                return cbf;
+            }
 
             FileStream fs = new FileStream(@"C:\binaryStream.hex", FileMode.Create);
             BinaryWriter bw = new BinaryWriter(fs);
@@ -990,7 +1028,9 @@ namespace gView.Framework.XML
             {
                 AttributeFieldDescription field = new AttributeFieldDescription();
                 if (!field.Read(br) || field.name == String.Empty)
+                {
                     break;
+                }
 
                 fields.Add(field);
             }
@@ -1058,13 +1098,19 @@ namespace gView.Framework.XML
                         break;
                     }
                 }
-                if (isfooter) return false;
+                if (isfooter)
+                {
+                    return false;
+                }
+
                 br.BaseStream.Position = position;
 
                 type = CBF.SwapShort(br.ReadInt16());
                 precision = br.ReadByte();
                 if (type != -99 && type != -98 && type != 0)
+                {
                     size = CBF.SwapShort(br.ReadInt16());
+                }
 
                 name = String.Empty;
                 byte b;

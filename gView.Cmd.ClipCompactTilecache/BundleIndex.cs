@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Text;
 
 namespace gView.Cmd.ClipCompactTilecache
 {
@@ -25,7 +23,9 @@ namespace gView.Cmd.ClipCompactTilecache
         public int TilePosition(int row, int col, out int tileLength)
         {
             if (row < 0 || row > 128 || col < 0 || col > 128)
+            {
                 throw new ArgumentException("Compact Tile Index out of range");
+            }
 
             int indexPosition = ((row * 128) + col) * 8;
 

@@ -15,11 +15,14 @@ namespace gView.DataSources.OGR
             _dataSource = OSGeo_v3.OGR.Ogr.Open(dataset.ConnectionString, 0);
             _layer = _dataSource.GetLayerByName(layerName);
 
-            if (_layer == null) return;
+            if (_layer == null)
+            {
+                return;
+            }
 
             if (filter is ISpatialFilter)
             {
-                IEnvelope env=((ISpatialFilter)filter).Geometry.Envelope;
+                IEnvelope env = ((ISpatialFilter)filter).Geometry.Envelope;
                 _layer.SetSpatialFilterRect(env.minx, env.miny, env.maxx, env.maxy);
                 if (!String.IsNullOrEmpty(filter.WhereClause))
                 {
@@ -108,7 +111,7 @@ namespace gView.DataSources.OGR
                     _layer.Dispose();
                     _layer = null;
                 }
-                if(_dataSource!=null)
+                if (_dataSource != null)
                 {
                     _dataSource.Dispose();
                     _dataSource = null;

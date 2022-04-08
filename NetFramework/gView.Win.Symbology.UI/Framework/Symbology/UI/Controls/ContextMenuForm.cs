@@ -1,9 +1,5 @@
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
-using System.Text;
 using System.Windows.Forms;
 
 namespace gView.Framework.Symbology.UI.Controls
@@ -24,9 +20,9 @@ namespace gView.Framework.Symbology.UI.Controls
         public bool Locked
         {
             get { return _locked; }
-            set 
+            set
             {
-                _locked = value; 
+                _locked = value;
             }
         }
 
@@ -38,7 +34,7 @@ namespace gView.Framework.Symbology.UI.Controls
         public ContextMenuForm()
         {
             InitializeComponent();
-        }       
+        }
         /// <summary>
         /// Shows the form on the specifies parent in the specifies location.
         /// </summary>
@@ -49,7 +45,7 @@ namespace gView.Framework.Symbology.UI.Controls
         {
             _parentControl = parent;
             Point location = parent != null ? parent.PointToScreen(startLocation) : new Point(startLocation.X, startLocation.Y + 60);
-            this.Location = location;            
+            this.Location = location;
             this.Width = width;
             this.Show();
         }
@@ -72,7 +68,7 @@ namespace gView.Framework.Symbology.UI.Controls
         {
             if (!Locked)
             {
-                Hide();                
+                Hide();
             }
         }
 

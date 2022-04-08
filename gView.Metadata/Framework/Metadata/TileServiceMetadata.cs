@@ -1,14 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using gView.Framework.Carto;
+using gView.Framework.Geometry;
+using gView.Framework.Geometry.Tiling;
 using gView.Framework.IO;
 using gView.Framework.system;
 using gView.Framework.UI;
+using System;
+using System.Collections.Generic;
 using System.Reflection;
-using gView.Framework.Geometry;
-using gView.Framework.Geometry.Tiling;
 using System.Threading.Tasks;
-using gView.Framework.Carto;
 
 namespace gView.Framework.Metadata
 {
@@ -48,56 +47,80 @@ namespace gView.Framework.Metadata
         public IEnvelope GetEPSGEnvelope(int epsg)
         {
             if (!_extents.ContainsKey(epsg))
+            {
                 return null;
+            }
 
             return _extents[epsg];
         }
         public void SetEPSGEnvelope(int epsg, IEnvelope envelope)
         {
             if (envelope == null)
+            {
                 envelope = new Envelope();
+            }
 
             if (_extents.ContainsKey(epsg))
+            {
                 _extents[epsg] = envelope;
+            }
             else
+            {
                 _extents.Add(epsg, envelope);
+            }
         }
 
         public IPoint GetOriginUpperLeft(int epsg)
         {
             if (_originsUL.ContainsKey(epsg))
+            {
                 return _originsUL[epsg];
+            }
 
             var envelope = GetEPSGEnvelope(epsg);
             if (envelope != null)
+            {
                 return new Point(envelope.minx, envelope.maxy);
+            }
 
             return null;
         }
         public IPoint GetOriginLowerLeft(int epsg)
         {
             if (_originsLL.ContainsKey(epsg))
+            {
                 return _originsLL[epsg];
+            }
 
             var envelope = GetEPSGEnvelope(epsg);
             if (envelope != null)
+            {
                 return new Point(envelope.minx, envelope.miny);
+            }
 
             return null;
         }
         public void SetOriginUpperLeft(int epsg, IPoint upperLeft)
         {
             if (_originsUL.ContainsKey(epsg))
+            {
                 _originsUL[epsg] = upperLeft;
+            }
             else
+            {
                 _originsUL.Add(epsg, upperLeft);
+            }
         }
         public void SetOriginLowerLeft(int epsg, IPoint lowerLeft)
         {
             if (_originsLL.ContainsKey(epsg))
+            {
                 _originsLL[epsg] = lowerLeft;
+            }
             else
+            {
                 _originsLL.Add(epsg, lowerLeft);
+            }
         }
 
         public double Dpi
@@ -125,7 +148,9 @@ namespace gView.Framework.Metadata
                 {
                     _scales = value;
                     if (_scales != null)
+                    {
                         _scales.Order();
+                    }
                 }
 
             }
@@ -185,7 +210,9 @@ namespace gView.Framework.Metadata
         public Task<bool> ApplyTo(object Object)
         {
             if (Object == null)
+            {
                 return Task.FromResult(false);
+            }
 
             return Task.FromResult(Object is IMap);
             //return Task.FromResult(Object.GetType().ToString() == "gView.Server.AppCode.ServiceMap");
@@ -226,7 +253,10 @@ namespace gView.Framework.Metadata
             {
                 double scale = Convert.ToDouble(stream.Load("scale" + i, 0.0));
                 if (scale <= 0.0)
+                {
                     continue;
+                }
+
                 _scales.Add(scale);
             }
 
@@ -239,7 +269,10 @@ namespace gView.Framework.Metadata
             {
                 int epsg = (int)stream.Load("epsg" + i, 0);
                 if (epsg == 0 || _extents.ContainsKey(epsg))
+                {
                     continue;
+                }
+
                 _epsgs.Add((int)stream.Load("epsg" + i, epsg));
                 _extents.Add(epsg,
                              new Envelope(
@@ -286,7 +319,9 @@ namespace gView.Framework.Metadata
             foreach (double scale in _scales)
             {
                 if (scale <= 0.0)
+                {
                     continue;
+                }
 
                 stream.Save("scale" + counter, scale);
                 counter++;
@@ -298,7 +333,9 @@ namespace gView.Framework.Metadata
             {
                 int epsg = _epsgs[i];
                 if (epsg <= 0)
+                {
                     continue;
+                }
 
                 stream.Save("epsg" + counter, epsg);
 
@@ -308,7 +345,7 @@ namespace gView.Framework.Metadata
                 stream.Save("extent_maxx" + counter, extent.maxx);
                 stream.Save("extent_maxy" + counter, extent.maxy);
 
-                IPoint ul = GetOriginUpperLeft(epsg)!=null ? GetOriginUpperLeft(epsg) : new Point();
+                IPoint ul = GetOriginUpperLeft(epsg) != null ? GetOriginUpperLeft(epsg) : new Point();
                 stream.Save("origin_ul_x" + counter, ul.X);
                 stream.Save("origin_ul_y" + counter, ul.Y);
 
@@ -331,7 +368,9 @@ namespace gView.Framework.Metadata
 
             IPlugInParameter p = uiAssembly.CreateInstance("gView.Framework.Metadata.UI.TileServiceMetadataControl") as IPlugInParameter;
             if (p != null)
+            {
                 p.Parameter = this;
+            }
 
             return p;
         }
@@ -380,7 +419,9 @@ namespace gView.Framework.Metadata
                 {
                     if (Math.Round(s) == scaleR ||
                         Math.Floor(s) == scaleF)
+                    {
                         return true;
+                    }
                 }
                 return false;
             }
@@ -394,7 +435,9 @@ namespace gView.Framework.Metadata
                 {
                     if (Math.Round(s) == scaleR ||
                         Math.Floor(s) == scaleF)
+                    {
                         return s;
+                    }
                 }
                 return -1.0;
             }

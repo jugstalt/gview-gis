@@ -1,10 +1,7 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
 using gView.Framework.Data;
 using gView.Framework.Geometry;
-using System.Xml;
 using System.Threading.Tasks;
+using System.Xml;
 
 namespace gView.Interoperability.OGC.Dataset.GML
 {
@@ -51,7 +48,7 @@ namespace gView.Interoperability.OGC.Dataset.GML
 
         public Task<int> CountFeatures()
         {
-            return Task.FromResult(0); 
+            return Task.FromResult(0);
         }
 
         public Task<IFeatureCursor> GetFeatures(IQueryFilter filter)
@@ -95,11 +92,16 @@ namespace gView.Interoperability.OGC.Dataset.GML
         public IField FindField(string name)
         {
             foreach (IField field in _fields.ToEnumerable())
-                if (field.name == name) return field;
+            {
+                if (field.name == name)
+                {
+                    return field;
+                }
+            }
 
             return null;
         }
-  
+
         public string IDFieldName
         {
             get { return _idField; }

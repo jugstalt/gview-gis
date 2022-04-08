@@ -1,9 +1,5 @@
-﻿using gView.Core.Framework.system;
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Configuration;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace gView.Server.AppCode.Configuration
 {

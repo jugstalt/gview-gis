@@ -1,13 +1,10 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-using gView.Framework.UI;
-using gView.Framework.Data;
-using gView.Framework.system;
-using System.Windows.Forms;
 using gView.Framework.Carto;
+using gView.Framework.Data;
 using gView.Framework.Globalisation;
+using gView.Framework.system;
+using gView.Framework.UI;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace gView.Plugins.DbTools.Export
 {
@@ -25,10 +22,16 @@ namespace gView.Plugins.DbTools.Export
 
         public bool Enable(object element)
         {
-            if (_doc == null || _doc.Application == null || !(element is IDatasetElement)) return false;
+            if (_doc == null || _doc.Application == null || !(element is IDatasetElement))
+            {
+                return false;
+            }
 
             if (_doc.Application is IMapApplication &&
-                    ((IMapApplication)_doc.Application).ReadOnly == true) return false;
+                    ((IMapApplication)_doc.Application).ReadOnly == true)
+            {
+                return false;
+            }
 
             return (((IDatasetElement)element).Class is IFeatureClass);
         }
@@ -49,7 +52,9 @@ namespace gView.Plugins.DbTools.Export
         async public Task<bool> OnEvent(object element, object dataset)
         {
             if (!(element is IFeatureLayer) || !(((IFeatureLayer)element).Class is IFeatureClass))
+            {
                 return false;
+            }
 
             ExportFeatureClassDialog dlg = new ExportFeatureClassDialog(
                 ((_doc != null && _doc.FocusMap != null) ? _doc.FocusMap.Display : null),

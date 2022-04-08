@@ -4,8 +4,6 @@ using gView.Framework.Geometry;
 using gView.Framework.system;
 using gView.MapServer;
 using System;
-using System.Drawing;
-using System.Drawing.Imaging;
 using System.IO;
 using System.Threading.Tasks;
 
@@ -347,7 +345,7 @@ namespace gView.DataSources.Raster.File
 
                 bitmap = GraphicsEngine.Current.Engine.CreateBitmap(totalWidth, totalHeight, GraphicsEngine.PixelFormat.Rgb24);
                 bitmapData = bitmap.LockBitmapPixelData(GraphicsEngine.BitmapLockMode.WriteOnly, GraphicsEngine.PixelFormat.Rgb24);
-                
+
                 MrSidWrapper.ReadBandData(bufferData, bitmapData.Scan0, 3, (uint)bitmapData.Stride);
 
                 return new RasterPaintContext(bitmap);

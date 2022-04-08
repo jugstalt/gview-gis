@@ -1,10 +1,10 @@
+using gView.GraphicsEngine.GdiPlus;
+using gView.GraphicsEngine.Skia;
 using System;
 using System.Globalization;
 using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
-using gView.GraphicsEngine.Skia;
-using gView.GraphicsEngine.GdiPlus;
 
 namespace gView.Framework.system
 {
@@ -53,7 +53,7 @@ namespace gView.Framework.system
             for (int i = st.Length - 1; i >= 0; i--)
             {
                 ch = char.ToUpper(st[i]);
-                
+
                 if ((ch < 'A' || ch > 'Z') &&
                     (ch < '0' || ch > '9'))
                 {

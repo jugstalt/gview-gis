@@ -4,7 +4,6 @@ using gView.Framework.IO;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace gView.DataSources.EventTable
@@ -22,7 +21,9 @@ namespace gView.DataSources.EventTable
         public Task<IEnvelope> Envelope()
         {
             if (_fc != null)
+            {
                 return Task.FromResult(_fc.Envelope);
+            }
 
             return Task.FromResult<IEnvelope>(null);
         }
@@ -30,14 +31,18 @@ namespace gView.DataSources.EventTable
         public Task<ISpatialReference> GetSpatialReference()
         {
             if (_etcon != null)
+            {
                 return Task.FromResult(_etcon.SpatialReference);
+            }
 
             return Task.FromResult<ISpatialReference>(null);
         }
         public void SetSpatialReference(ISpatialReference sRef)
         {
             if (_etcon != null)
+            {
                 _etcon.SpatialReference = sRef;
+            }
         }
 
         #endregion
@@ -49,7 +54,9 @@ namespace gView.DataSources.EventTable
             get
             {
                 if (_etcon != null)
+                {
                     return _etcon.ToXmlString();
+                }
 
                 return String.Empty;
             }
@@ -57,7 +64,9 @@ namespace gView.DataSources.EventTable
         public Task<bool> SetConnectionString(string value)
         {
             if (value == String.Empty)
+            {
                 _etcon = null;
+            }
             else
             {
                 _etcon = new EventTableConnection();
@@ -78,7 +87,9 @@ namespace gView.DataSources.EventTable
             get
             {
                 if (_fc != null)
+                {
                     return _fc.Name;
+                }
 
                 return "???";
             }
@@ -184,7 +195,9 @@ namespace gView.DataSources.EventTable
 
             gView.Framework.UI.IConnectionStringDialog p = uiAssembly.CreateInstance("gView.Datasources.EventTable.UI.FormEventTableConnection") as gView.Framework.UI.IConnectionStringDialog;
             if (p != null)
+            {
                 return p.ShowConnectionStringDialog(initConnectionString);
+            }
 
             return null;
         }

@@ -1,17 +1,11 @@
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Text;
-using System.Windows.Forms;
 using gView.Framework.Data;
-using gView.Framework.Carto;
 using gView.Framework.Symbology;
-using gView.Framework.UI.Controls;
-using gView.Framework.Carto.UI;
 using gView.Framework.Symbology.UI;
+using gView.Framework.UI.Controls;
 using gView.Win.Carto.Rendering.UI.Framework.Carto.Rendering.Extensions;
+using System;
+using System.Drawing;
+using System.Windows.Forms;
 
 namespace gView.Framework.Carto.Rendering.UI
 {
@@ -34,20 +28,27 @@ namespace gView.Framework.Carto.Rendering.UI
         private void PropertyForm_QuantityRenderer_Wizard_Load(object sender, EventArgs e)
         {
             if (_fc == null || _renderer == null ||
-                String.IsNullOrEmpty(_renderer.ValueField)) return;
+                String.IsNullOrEmpty(_renderer.ValueField))
+            {
+                return;
+            }
 
             _minSymbol = RendererFunctions.CreateStandardSymbol(_fc.GeometryType);
             //_midSymbol = RendererFunctions.CreateStandardSymbol(_fc.GeometryType);
             _maxSymbol = RendererFunctions.CreateStandardSymbol(_fc.GeometryType);
 
             IField field = _fc.FindField(_renderer.ValueField);
-            if (field == null) return;
+            if (field == null)
+            {
+                return;
+            }
+
             switch (field.type)
             {
                 case FieldType.ID:
                 case FieldType.integer:
-                    numMin.DataType = numMax.DataType = 
-                    numStepWidth.DataType=NumericTextBox.NumericDataType.intType;
+                    numMin.DataType = numMax.DataType =
+                    numStepWidth.DataType = NumericTextBox.NumericDataType.intType;
                     break;
                 case FieldType.smallinteger:
                     numMin.DataType = numMax.DataType =
@@ -77,9 +78,14 @@ namespace gView.Framework.Carto.Rendering.UI
                 "fieldMax");
 
             if (minObj != null)
-                numMin.Double= Convert.ToDouble(minObj);
+            {
+                numMin.Double = Convert.ToDouble(minObj);
+            }
+
             if (maxObj != null)
+            {
                 numMax.Double = Convert.ToDouble(maxObj);
+            }
 
             btnFixStepCount.Checked = true;
             numStepCount.Double = 10;
@@ -125,16 +131,26 @@ namespace gView.Framework.Carto.Rendering.UI
 
         private void btnOK_Click(object sender, EventArgs e)
         {
-            if (Math.Abs(numMin.Double - numMax.Double) < 1e-10) return;
+            if (Math.Abs(numMin.Double - numMax.Double) < 1e-10)
+            {
+                return;
+            }
 
-            if (_renderer == null) return;
+            if (_renderer == null)
+            {
+                return;
+            }
 
             foreach (QuantityRenderer.QuantityClass qC in _renderer.QuantityClasses)
+            {
                 _renderer.RemoveClass(qC);
+            }
 
             double stepWidth = numStepWidth.Double;
             if (btnFixStepCount.Checked)
+            {
                 stepWidth = (numMax.Double - numMin.Double) / Math.Max(numStepCount.Double, 1);
+            }
 
             double x;
             ISymbol symbol;
@@ -142,7 +158,10 @@ namespace gView.Framework.Carto.Rendering.UI
             for (x = numMin.Double; x < numMax.Double - stepWidth; x += stepWidth)
             {
                 symbol = AlternateSymbol(_minSymbol, _maxSymbol, (x - numMin.Double) / (numMax.Double - numMin.Double));
-                if (symbol == null) continue;
+                if (symbol == null)
+                {
+                    continue;
+                }
 
                 if (symbol is ILegendItem)
                 {
@@ -183,13 +202,20 @@ namespace gView.Framework.Carto.Rendering.UI
         internal ISymbol AlternateSymbol(ISymbol from, ISymbol to, double fac)
         {
             if (fac >= 1.0)
+            {
                 return to.Clone() as ISymbol;
-
+            }
 
             ISymbol symbol = from.Clone() as ISymbol;
-            if (symbol == null) return null;
+            if (symbol == null)
+            {
+                return null;
+            }
 
-            if (fac == 0.0) return symbol;
+            if (fac == 0.0)
+            {
+                return symbol;
+            }
 
             if (symbol is IPenColor &&
                 from is IPenColor && to is IPenColor)

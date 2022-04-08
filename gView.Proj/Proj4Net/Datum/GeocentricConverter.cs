@@ -1,6 +1,6 @@
-using System;
 using GeoAPI.Geometries;
 using Proj4Net.Utility;
+using System;
 
 namespace Proj4Net.Datum
 {
@@ -49,9 +49,9 @@ namespace Proj4Net.Datum
         readonly double _e2;
         double _ep2;
 
-        public GeocentricConverter(Ellipsoid ellipsoid):this(ellipsoid.A, ellipsoid.B)
+        public GeocentricConverter(Ellipsoid ellipsoid) : this(ellipsoid.A, ellipsoid.B)
         {
-            
+
         }
         public GeocentricConverter(double a, double b)
         {
@@ -111,7 +111,11 @@ namespace Proj4Net.Datum
                 throw new ArgumentException("Latitude is out of range: " + latitude, "p.Y");
             }
 
-            if (longitude > ProjectionMath.Pi) longitude -= (2 * ProjectionMath.Pi);
+            if (longitude > ProjectionMath.Pi)
+            {
+                longitude -= (2 * ProjectionMath.Pi);
+            }
+
             Sin_Lat = Math.Sin(latitude);
             Cos_Lat = Math.Cos(latitude);
             Sin2_Lat = Sin_Lat * Sin_Lat;

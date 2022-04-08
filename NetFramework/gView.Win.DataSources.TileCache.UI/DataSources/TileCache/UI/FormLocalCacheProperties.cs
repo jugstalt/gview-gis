@@ -1,12 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Windows.Forms;
 using System.IO;
+using System.Windows.Forms;
 
 namespace gView.DataSources.TileCache.UI
 {
@@ -25,7 +19,7 @@ namespace gView.DataSources.TileCache.UI
         public void FillList()
         {
             lstCaches.Items.Clear();
-            
+
             DirectoryInfo di = new DirectoryInfo(LocalCachingSettings.LocalCachingFolder);
             if (di.Exists)
             {
@@ -34,7 +28,7 @@ namespace gView.DataSources.TileCache.UI
                     double size;
                     int count = CountFiles(sub.FullName, out size);
 
-                    lstCaches.Items.Add(new ListViewItem(new string[] { sub.Name, 
+                    lstCaches.Items.Add(new ListViewItem(new string[] { sub.Name,
                         (count>=1000 ? ">" : "")+count.ToString(),
                         (count>=1000 ? ">" : "")+Math.Round(size, 2).ToString() }));
                 }
@@ -107,7 +101,9 @@ namespace gView.DataSources.TileCache.UI
                 size += (double)fi.Length / 1024D / 1024D;
                 counter++;
                 if (counter > 1000)
+                {
                     break;
+                }
             }
 
             return counter;

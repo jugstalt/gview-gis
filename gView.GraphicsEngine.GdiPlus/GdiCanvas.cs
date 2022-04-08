@@ -190,7 +190,8 @@ namespace gView.GraphicsEngine.GdiPlus
                     source.Left, source.Top, source.Width, source.Height,
                     System.Drawing.GraphicsUnit.Pixel,
                     imageAttrs: imageAttributes);
-            } else
+            }
+            else
             {
                 _graphics.DrawImage((Bitmap)bitmap.EngineElement,
                     dest.ToGdiRectangle(),
@@ -369,7 +370,7 @@ namespace gView.GraphicsEngine.GdiPlus
         {
             CheckUsability();
 
-            foreach(var brush in brushCollection.Brushes)
+            foreach (var brush in brushCollection.Brushes)
             {
                 _graphics.FillPath((Brush)brush.EngineElement, (System.Drawing.Drawing2D.GraphicsPath)path.EngineElement);
             }

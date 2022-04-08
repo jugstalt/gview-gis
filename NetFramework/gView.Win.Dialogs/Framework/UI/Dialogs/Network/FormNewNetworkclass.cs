@@ -1,18 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Text;
-using System.Windows.Forms;
-using gView.Framework.Data;
-using gView.Framework.Geometry;
+﻿using gView.Framework.Data;
 using gView.Framework.Network;
-using Newtonsoft.Json;
 using gView.Framework.system;
+using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace gView.Framework.UI.Dialogs.Network
 {
@@ -46,7 +41,9 @@ namespace gView.Framework.UI.Dialogs.Network
         private void Init()
         {
             if (this.FeatureDataset != null)
+            {
                 wizardControl1.Init();
+            }
         }
 
         #region Properties
@@ -60,7 +57,10 @@ namespace gView.Framework.UI.Dialogs.Network
             set
             {
                 if (_dataset != null)
+                {
                     throw new Exception("Dataset already set...");
+                }
+
                 if (value != null)
                 {
                     _dataset = value;
@@ -149,13 +149,18 @@ namespace gView.Framework.UI.Dialogs.Network
         async public Task SetSerialize(Serialized value)
         {
             if (value == null)
+            {
                 return;
+            }
 
             if (this.FeatureDataset == null)
             {
                 IFeatureDataset dataset = PlugInManager.Create(new Guid(value.DatasetGuid)) as IFeatureDataset;
                 if (dataset == null)
+                {
                     throw new Exception("Unable to crete dataset");
+                }
+
                 await dataset.SetConnectionString(value.ConnectionString);
 
                 this.FeatureDataset = dataset;
@@ -172,7 +177,7 @@ namespace gView.Framework.UI.Dialogs.Network
             var assembly = Assembly.LoadFrom(SystemVariables.ApplicationDirectory + @"\" + value.NetworkCreatorAssembly);
             _networkCreatorType = (assembly.CreateInstance(value.NetworkCreatorType) as INetworkCreator)?.GetType();
         }
-        
+
 
         #region Serialze Class
 

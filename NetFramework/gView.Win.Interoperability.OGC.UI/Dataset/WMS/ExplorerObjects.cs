@@ -1,14 +1,12 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Linq;
-using gView.Framework.UI;
-using gView.Framework.system.UI;
-using gView.Framework.IO;
-using gView.Framework.system;
-using gView.Interoperability.OGC.Dataset.WMS;
 using gView.Framework.Globalisation;
+using gView.Framework.IO;
 using gView.Framework.OGC.UI;
+using gView.Framework.system;
+using gView.Framework.system.UI;
+using gView.Framework.UI;
+using gView.Interoperability.OGC.Dataset.WMS;
+using System;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace gView.Interoperability.OGC.UI.Dataset.WMS
@@ -83,7 +81,9 @@ namespace gView.Interoperability.OGC.UI.Dataset.WMS
         public Task<IExplorerObject> CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache cache)
         {
             if (cache.Contains(FullName))
+            {
                 return Task.FromResult(cache[FullName]);
+            }
 
             if (FullName == this.FullName)
             {
@@ -161,7 +161,10 @@ namespace gView.Interoperability.OGC.UI.Dataset.WMS
             if (dlg.ShowDialog() == System.Windows.Forms.DialogResult.OK)
             {
                 string connStr = dlg.ConnectionString;
-                if (connStr == String.Empty) return;
+                if (connStr == String.Empty)
+                {
+                    return;
+                }
 
                 string id = String.Empty;
                 switch (ConfigTextStream.ExtractValue(connStr, "service").ToUpper())
@@ -177,7 +180,9 @@ namespace gView.Interoperability.OGC.UI.Dataset.WMS
                         return;
                 }
                 if (dlg.ServiceName != String.Empty)
+                {
                     id = dlg.ServiceName + "@" + id;
+                }
 
                 ConfigTextStream stream = new ConfigTextStream("ogc_connections", true, true);
                 stream.Write(connStr, ref id);
@@ -194,7 +199,9 @@ namespace gView.Interoperability.OGC.UI.Dataset.WMS
         public Task<IExplorerObject> CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache cache)
         {
             if (cache.Contains(FullName))
+            {
                 return Task.FromResult<IExplorerObject>(cache[FullName]);
+            }
 
             return Task.FromResult<IExplorerObject>(null);
         }
@@ -264,7 +271,11 @@ namespace gView.Interoperability.OGC.UI.Dataset.WMS
         {
             get
             {
-                if (!(_parent is IExplorerObject)) return "";
+                if (!(_parent is IExplorerObject))
+                {
+                    return "";
+                }
+
                 return ((IExplorerObject)_parent).FullName + @"\" + _name;
             }
         }
@@ -321,18 +332,27 @@ namespace gView.Interoperability.OGC.UI.Dataset.WMS
 
         async public Task<IExplorerObject> CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache cache)
         {
-            if (cache.Contains(FullName)) return cache[FullName];
+            if (cache.Contains(FullName))
+            {
+                return cache[FullName];
+            }
 
             FullName = FullName.Replace("/", @"\");
             int lastIndex = FullName.LastIndexOf(@"\");
-            if (lastIndex == -1) return null;
+            if (lastIndex == -1)
+            {
+                return null;
+            }
 
             string cnName = FullName.Substring(0, lastIndex);
             string svName = FullName.Substring(lastIndex + 1, FullName.Length - lastIndex - 1);
 
             WMSExplorerObject cnObject = new WMSExplorerObject(this);
             cnObject = await cnObject.CreateInstanceByFullName(cnName, cache) as WMSExplorerObject;
-            if (cnObject == null || await cnObject.ChildObjects() == null) return null;
+            if (cnObject == null || await cnObject.ChildObjects() == null)
+            {
+                return null;
+            }
 
             foreach (IExplorerObject exObject in await cnObject.ChildObjects())
             {
@@ -356,7 +376,11 @@ namespace gView.Interoperability.OGC.UI.Dataset.WMS
             ConfigTextStream stream = new ConfigTextStream("ogc_connections", true, true);
             stream.Remove(this.Name, _connectionString);
             stream.Close();
-            if (ExplorerObjectDeleted != null) ExplorerObjectDeleted(this);
+            if (ExplorerObjectDeleted != null)
+            {
+                ExplorerObjectDeleted(this);
+            }
+
             return Task.FromResult(true);
         }
 
@@ -376,7 +400,10 @@ namespace gView.Interoperability.OGC.UI.Dataset.WMS
             if (ret == true)
             {
                 _name = newName;
-                if (ExplorerObjectRenamed != null) ExplorerObjectRenamed(this);
+                if (ExplorerObjectRenamed != null)
+                {
+                    ExplorerObjectRenamed(this);
+                }
             }
             return Task.FromResult(ret);
         }

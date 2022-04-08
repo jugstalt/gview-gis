@@ -1,14 +1,14 @@
-using System;
-using System.Reflection;
-using System.Collections.Generic;
-using System.Text;
-using gView.Framework.UI;
-using gView.Framework.Data;
 using gView.Framework.Carto;
-using gView.Framework.Symbology;
-using gView.MapServer;
+using gView.Framework.Data;
 using gView.Framework.FDB;
 using gView.Framework.IO;
+using gView.Framework.Symbology;
+using gView.Framework.UI;
+using gView.MapServer;
+using System;
+using System.Collections.Generic;
+using System.Reflection;
+using System.Text;
 
 namespace gView.Framework.system.UI
 {
@@ -79,10 +79,16 @@ namespace gView.Framework.system.UI
                 {
                     foreach (Type type in module.GetTypes())
                     {
-                        if (type.IsAbstract || type.IsInterface) continue;
+                        if (type.IsAbstract || type.IsInterface)
+                        {
+                            continue;
+                        }
 
                         RegisterPlugInAttribute plugin = (RegisterPlugInAttribute)Attribute.GetCustomAttribute(type, typeof(RegisterPlugInAttribute));
-                        if (plugin == null) continue;
+                        if (plugin == null)
+                        {
+                            continue;
+                        }
 
                         try
                         {
@@ -100,7 +106,9 @@ namespace gView.Framework.system.UI
                                 try
                                 {
                                     if (((IPlugInDependencies)wObject).HasUnsolvedDependencies() == true)
+                                    {
                                         continue;
+                                    }
                                 }
                                 catch (Exception dependenciesEx)
                                 {
@@ -287,7 +295,7 @@ namespace gView.Framework.system.UI
                              * */
                             #endregion
                         }
-                        catch(Exception ex) 
+                        catch (Exception ex)
                         {
                             if (AddPluginException != null)
                             {
@@ -315,7 +323,7 @@ namespace gView.Framework.system.UI
 
         private string ToAssemblyPath(string path)
         {
-            if(SystemVariables.IsPortable)
+            if (SystemVariables.IsPortable)
             {
                 path = path.Replace(SystemVariables.ApplicationDirectory, "{APP_PATH}");
             }

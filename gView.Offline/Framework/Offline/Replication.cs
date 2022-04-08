@@ -1,13 +1,13 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
 using gView.Framework.Data;
 using gView.Framework.FDB;
-using System.Data.Common;
-using System.Data;
-using gView.Framework.system;
-using System.Reflection;
 using gView.Framework.Geometry;
+using gView.Framework.system;
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Data.Common;
+using System.Reflection;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace gView.Framework.Offline
@@ -113,7 +113,9 @@ namespace gView.Framework.Offline
             {
                 int fc_id = await db.GetFeatureClassID(fc.Name);
                 if (!await CreateRelicationModel(db))
+                {
                     return (false, errMsg);
+                }
 
                 if (!await db.CreateObjectGuidColumn(fc.Name, fieldName))
                 {
@@ -144,7 +146,7 @@ namespace gView.Framework.Offline
 
                                     features.Add(feature);
                                 }
-                             
+
                             }
                         }
 
@@ -156,7 +158,7 @@ namespace gView.Framework.Offline
                             features2.Add(feature);
                             if (features2.Count >= 100)
                             {
-                                if (! await db.Update(fc, features2))
+                                if (!await db.Update(fc, features2))
                                 {
                                     errMsg = db.LastErrorMessage;
                                     return (false, errMsg);
@@ -164,7 +166,9 @@ namespace gView.Framework.Offline
                                 features2.Clear();
 
                                 if (ReplicationGuidsAppended != null)
+                                {
                                     ReplicationGuidsAppended(this, counter);
+                                }
                             }
                         }
                         if (features2.Count > 0)
@@ -176,7 +180,9 @@ namespace gView.Framework.Offline
                             }
 
                             if (ReplicationGuidsAppended != null)
+                            {
                                 ReplicationGuidsAppended(this, counter);
+                            }
                         }
                     }
                     else
@@ -204,7 +210,9 @@ namespace gView.Framework.Offline
                                     features.Clear();
 
                                     if (ReplicationGuidsAppended != null)
+                                    {
                                         ReplicationGuidsAppended(this, counter);
+                                    }
                                 }
                             }
 
@@ -217,7 +225,9 @@ namespace gView.Framework.Offline
                                 }
 
                                 if (ReplicationGuidsAppended != null)
+                                {
                                     ReplicationGuidsAppended(this, counter);
+                                }
                             }
                         }
                     }
@@ -247,7 +257,10 @@ namespace gView.Framework.Offline
         {
             if (fc == null ||
                 fc.Dataset == null ||
-                !(fc.Dataset.Database is IFeatureDatabaseReplication)) return false;
+                !(fc.Dataset.Database is IFeatureDatabaseReplication))
+            {
+                return false;
+            }
 
             if (await FeatureClassHasReplications(fc))
             {
@@ -257,7 +270,10 @@ namespace gView.Framework.Offline
 
             IFeatureDatabaseReplication db = fc.Dataset.Database as IFeatureDatabaseReplication;
             int fc_id = await db.GetFeatureClassID(fc.Name);
-            if (fc_id < 0) return false;
+            if (fc_id < 0)
+            {
+                return false;
+            }
 
             return db.DeleteRows("GV_CHECKOUT_OBJECT_GUID", db.DbColName("FC_ID") + "=" + fc_id.ToString(), null);
         }
@@ -278,12 +294,16 @@ namespace gView.Framework.Offline
             if (sourceFC == null ||
                 sourceFC.Dataset == null ||
                 !(sourceFC.Dataset.Database is IFeatureDatabaseReplication))
+            {
                 return false;
+            }
 
             if (destFC == null ||
                 destFC.Dataset == null ||
                 !(destFC.Dataset.Database is IFeatureDatabaseReplication))
+            {
                 return false;
+            }
 
             IFeatureDatabaseReplication sourceDB = sourceFC.Dataset.Database as IFeatureDatabaseReplication;
             IFeatureDatabaseReplication destDB = destFC.Dataset.Database as IFeatureDatabaseReplication;
@@ -295,9 +315,14 @@ namespace gView.Framework.Offline
             }
 
             if (!await CreateRelicationModel(sourceDB))
+            {
                 return false;
+            }
+
             if (!await CreateRelicationModel(destDB))
+            {
                 return false;
+            }
 
             int sourceFc_id = await sourceDB.GetFeatureClassID(sourceFC.Name);
             int destFc_id = await destDB.GetFeatureClassID(destFC.Name);
@@ -370,7 +395,10 @@ namespace gView.Framework.Offline
         {
             if (fc == null ||
                 fc.Dataset == null ||
-                !(fc.Dataset.Database is IFeatureDatabaseReplication)) return false;
+                !(fc.Dataset.Database is IFeatureDatabaseReplication))
+            {
+                return false;
+            }
 
             IFeatureDatabaseReplication db = fc.Dataset.Database as IFeatureDatabaseReplication;
             if (!await CreateRelicationModel(db))
@@ -379,7 +407,10 @@ namespace gView.Framework.Offline
             }
 
             int fc_id = await db.GetFeatureClassID(fc.Name);
-            if (fc_id < 0) return false;
+            if (fc_id < 0)
+            {
+                return false;
+            }
 
             Row row = new Row();
             row.Fields.Add(new FieldValue("FC_ID", fc_id));
@@ -399,12 +430,16 @@ namespace gView.Framework.Offline
                 if (sourceFC == null ||
                     sourceFC.Dataset == null ||
                     !(sourceFC.Dataset.Database is IFeatureDatabaseReplication))
+                {
                     return false;
+                }
 
                 if (destFC == null ||
                     destFC.Dataset == null ||
                     !(destFC.Dataset.Database is IFeatureDatabaseReplication))
+                {
                     return false;
+                }
 
                 IFeatureDatabaseReplication sourceDB = sourceFC.Dataset.Database as IFeatureDatabaseReplication;
                 IFeatureDatabaseReplication destDB = destFC.Dataset.Database as IFeatureDatabaseReplication;
@@ -416,9 +451,14 @@ namespace gView.Framework.Offline
                 }
 
                 if (!await CreateRelicationModel(sourceDB))
+                {
                     return false;
+                }
+
                 if (!await CreateRelicationModel(destDB))
+                {
                     return false;
+                }
 
                 int sourceFc_id = await sourceDB.GetFeatureClassID(sourceFC.Name);
                 int destFc_id = await destDB.GetFeatureClassID(destFC.Name);
@@ -434,7 +474,7 @@ namespace gView.Framework.Offline
 
                 DataTable conf_table = new DataTable("CONFLICTS");
                 DbAccess.GetReplConflicts(sourceDB, sourceFc_id, conf_table);
-                
+
                 List<Guid> locks = new List<Guid>();
                 foreach (DataRow conf_row in conf_table.Rows)
                 {
@@ -442,9 +482,14 @@ namespace gView.Framework.Offline
                     Guid conflictObjectGuid = conf_row["CONFLICT_OBJECT_GUID"] is Guid ? (Guid)conf_row["CONFLICT_OBJECT_GUID"] : new Guid(conf_row["CONFLICT_OBJECT_GUID"].ToString());
 
                     if (!locks.Contains(prarentObjectGuid))
+                    {
                         locks.Add(prarentObjectGuid);
+                    }
+
                     if (!locks.Contains(conflictObjectGuid))
+                    {
                         locks.Add(conflictObjectGuid);
+                    }
                 }
 
                 // Bestehende Locks entfernen (IMMER nur aktuelle Locks abspeichern...) 
@@ -475,11 +520,17 @@ namespace gView.Framework.Offline
         {
             if (fc == null ||
                 fc.Dataset == null ||
-                !(fc.Dataset.Database is IFeatureDatabaseReplication)) return false;
+                !(fc.Dataset.Database is IFeatureDatabaseReplication))
+            {
+                return false;
+            }
 
             IFeatureDatabaseReplication db = fc.Dataset.Database as IFeatureDatabaseReplication;
             int fc_id = await db.GetFeatureClassID(fc.Name);
-            if (fc_id < 0) return false;
+            if (fc_id < 0)
+            {
+                return false;
+            }
 
             try
             {
@@ -494,11 +545,17 @@ namespace gView.Framework.Offline
         {
             if (fc == null ||
                 fc.Dataset == null ||
-                !(fc.Dataset.Database is IFeatureDatabaseReplication)) return null;
+                !(fc.Dataset.Database is IFeatureDatabaseReplication))
+            {
+                return null;
+            }
 
             IFeatureDatabaseReplication db = fc.Dataset.Database as IFeatureDatabaseReplication;
             int fc_id = await db.GetFeatureClassID(fc.Name);
-            if (fc_id < 0) return null;
+            if (fc_id < 0)
+            {
+                return null;
+            }
 
             try
             {
@@ -513,7 +570,9 @@ namespace gView.Framework.Offline
                     object obj = command.ExecuteScalar();
 
                     if (obj != null)
+                    {
                         return obj.ToString();
+                    }
 
                     return null;
                 }
@@ -529,9 +588,15 @@ namespace gView.Framework.Offline
 
             if (fc == null ||
                 fc.Dataset == null ||
-                !(fc.Dataset.Database is IFeatureDatabaseReplication)) return (true, replFieldName);
+                !(fc.Dataset.Database is IFeatureDatabaseReplication))
+            {
+                return (true, replFieldName);
+            }
 
-            if (!await FeatureClassHasRelicationID(fc)) return (true, replFieldName);
+            if (!await FeatureClassHasRelicationID(fc))
+            {
+                return (true, replFieldName);
+            }
 
             IFeatureDatabaseReplication db = fc.Dataset.Database as IFeatureDatabaseReplication;
             int fc_id = await db.GetFeatureClassID(fc.Name);
@@ -554,7 +619,11 @@ namespace gView.Framework.Offline
                     DataTable tab = new DataTable("TAB");
                     adapter.Fill(tab);
 
-                    if (tab.Rows.Count == 0) return (true, replFieldName);
+                    if (tab.Rows.Count == 0)
+                    {
+                        return (true, replFieldName);
+                    }
+
                     replFieldName = (string)tab.Rows[0]["OBJECT_GUID_FIELDNAME"];
 
                     if (tab.Rows[0]["PARENT_SESSION_GUID"] == DBNull.Value ||
@@ -566,7 +635,9 @@ namespace gView.Framework.Offline
                     Guid parentSessionGuid = Convert2Guid(tab.Rows[0]["PARENT_SESSION_GUID"]);
                     command.CommandText = "SELECT " + db.DbColName("ID") + " FROM " + db.TableName("GV_CHECKOUT_SESSIONS") + " WHERE " + db.DbColName("CHECKOUT_GUID") + "=" + db.GuidToSql(parentSessionGuid);
                     if (connection.State != ConnectionState.Open)
+                    {
                         connection.Open();
+                    }
 
                     object obj = command.ExecuteScalar();
                     return ((obj != null && obj.GetType() == typeof(int)), replFieldName);
@@ -574,7 +645,7 @@ namespace gView.Framework.Offline
             }
             catch
             {
-                return (false, replFieldName); 
+                return (false, replFieldName);
             }
         }
 
@@ -582,11 +653,17 @@ namespace gView.Framework.Offline
         {
             if (fc == null ||
                 fc.Dataset == null ||
-                !(fc.Dataset.Database is IFeatureDatabaseReplication)) return -1;
+                !(fc.Dataset.Database is IFeatureDatabaseReplication))
+            {
+                return -1;
+            }
 
             IFeatureDatabaseReplication db = fc.Dataset.Database as IFeatureDatabaseReplication;
             int fc_id = await db.GetFeatureClassID(fc.Name);
-            if (fc_id < 0) return -1;
+            if (fc_id < 0)
+            {
+                return -1;
+            }
 
             try
             {
@@ -600,8 +677,10 @@ namespace gView.Framework.Offline
                     connection.Open();
                     object obj = command.ExecuteScalar();
 
-                    if (obj != null && (obj.GetType() == typeof(int) || obj.GetType()==typeof(long)))
+                    if (obj != null && (obj.GetType() == typeof(int) || obj.GetType() == typeof(long)))
+                    {
                         return Convert.ToInt32(obj);
+                    }
 
                     return -1;
                 }
@@ -615,11 +694,17 @@ namespace gView.Framework.Offline
         {
             if (fc == null ||
                 fc.Dataset == null ||
-                !(fc.Dataset.Database is IFeatureDatabaseReplication)) return false;
+                !(fc.Dataset.Database is IFeatureDatabaseReplication))
+            {
+                return false;
+            }
 
             IFeatureDatabaseReplication db = fc.Dataset.Database as IFeatureDatabaseReplication;
             int fc_id = await db.GetFeatureClassID(fc.Name);
-            if (fc_id < 0) return false;
+            if (fc_id < 0)
+            {
+                return false;
+            }
 
             try
             {
@@ -643,15 +728,24 @@ namespace gView.Framework.Offline
         }
         async public static Task<bool> FeatureClassCanReplicate(IFeatureClass fc)
         {
-            if (!await FeatureClassHasRelicationID(fc)) return false;
+            if (!await FeatureClassHasRelicationID(fc))
+            {
+                return false;
+            }
 
             if (fc == null ||
                 fc.Dataset == null ||
-                !(fc.Dataset.Database is IFeatureDatabaseReplication)) return false;
+                !(fc.Dataset.Database is IFeatureDatabaseReplication))
+            {
+                return false;
+            }
 
             IFeatureDatabaseReplication db = fc.Dataset.Database as IFeatureDatabaseReplication;
             int fc_id = await db.GetFeatureClassID(fc.Name);
-            if (fc_id < 0) return false;
+            if (fc_id < 0)
+            {
+                return false;
+            }
 
             try
             {
@@ -675,15 +769,24 @@ namespace gView.Framework.Offline
         }
         async public static Task<int> FeatureClassGeneration(IFeatureClass fc)
         {
-            if (!await FeatureClassHasRelicationID(fc)) return -1;
+            if (!await FeatureClassHasRelicationID(fc))
+            {
+                return -1;
+            }
 
             if (fc == null ||
                 fc.Dataset == null ||
-                !(fc.Dataset.Database is IFeatureDatabaseReplication)) return -1;
+                !(fc.Dataset.Database is IFeatureDatabaseReplication))
+            {
+                return -1;
+            }
 
             IFeatureDatabaseReplication db = fc.Dataset.Database as IFeatureDatabaseReplication;
             int fc_id = await db.GetFeatureClassID(fc.Name);
-            if (fc_id < 0) return -1;
+            if (fc_id < 0)
+            {
+                return -1;
+            }
 
             try
             {
@@ -698,7 +801,9 @@ namespace gView.Framework.Offline
                     object obj = command.ExecuteScalar();
 
                     if (obj == null || obj == DBNull.Value)
+                    {
                         return 0;
+                    }
 
                     return Convert.ToInt32(obj);
                 }
@@ -712,15 +817,24 @@ namespace gView.Framework.Offline
         // gibt NULL zurück, wenn keine Sessions vorhanden...
         async public static Task<List<Guid>> FeatureClassSessions(IFeatureClass fc)
         {
-            if (!await FeatureClassHasRelicationID(fc)) return null;
+            if (!await FeatureClassHasRelicationID(fc))
+            {
+                return null;
+            }
 
             if (fc == null ||
                 fc.Dataset == null ||
-                !(fc.Dataset.Database is IFeatureDatabaseReplication)) return null;
+                !(fc.Dataset.Database is IFeatureDatabaseReplication))
+            {
+                return null;
+            }
 
             IFeatureDatabaseReplication db = fc.Dataset.Database as IFeatureDatabaseReplication;
             int fc_id = await db.GetFeatureClassID(fc.Name);
-            if (fc_id < 0) return null;
+            if (fc_id < 0)
+            {
+                return null;
+            }
 
             try
             {
@@ -759,7 +873,10 @@ namespace gView.Framework.Offline
         }
         public static string SessionName(IFeatureDatabaseReplication db, Guid guid)
         {
-            if (db == null) return String.Empty;
+            if (db == null)
+            {
+                return String.Empty;
+            }
 
             try
             {
@@ -774,7 +891,9 @@ namespace gView.Framework.Offline
                     object obj = command.ExecuteScalar();
 
                     if (obj == null || obj == DBNull.Value)
+                    {
                         return String.Empty;
+                    }
 
                     return obj.ToString();
                 }
@@ -786,7 +905,10 @@ namespace gView.Framework.Offline
         }
         private static VersionRights SessionParentRights(IFeatureDatabaseReplication db, Guid sessionGuid)
         {
-            if (db == null) return VersionRights.NONE;
+            if (db == null)
+            {
+                return VersionRights.NONE;
+            }
 
             try
             {
@@ -801,7 +923,9 @@ namespace gView.Framework.Offline
                     object obj = command.ExecuteScalar();
 
                     if (obj == null || obj == DBNull.Value)
+                    {
                         return VersionRights.NONE;
+                    }
 
                     return (VersionRights)Convert.ToInt32(obj);
                 }
@@ -814,7 +938,10 @@ namespace gView.Framework.Offline
         }
         private static VersionRights SessionChildRights(IFeatureDatabaseReplication db, Guid sessionGuid)
         {
-            if (db == null) return VersionRights.NONE;
+            if (db == null)
+            {
+                return VersionRights.NONE;
+            }
 
             try
             {
@@ -829,7 +956,9 @@ namespace gView.Framework.Offline
                     object obj = command.ExecuteScalar();
 
                     if (obj == null || obj == DBNull.Value)
+                    {
                         return VersionRights.NONE;
+                    }
 
                     return (VersionRights)Convert.ToInt32(obj);
                 }
@@ -842,7 +971,10 @@ namespace gView.Framework.Offline
         }
         private static ConflictHandling SessionConflictHandling(IFeatureDatabaseReplication db, Guid sessionGuid)
         {
-            if (db == null) return ConflictHandling.NORMAL;
+            if (db == null)
+            {
+                return ConflictHandling.NORMAL;
+            }
 
             try
             {
@@ -857,7 +989,9 @@ namespace gView.Framework.Offline
                     object obj = command.ExecuteScalar();
 
                     if (obj == null || obj == DBNull.Value)
+                    {
                         return ConflictHandling.NORMAL;
+                    }
 
                     return (ConflictHandling)Convert.ToInt32(obj);
                 }
@@ -871,15 +1005,24 @@ namespace gView.Framework.Offline
 
         async public static Task<bool> FeatureClassHasConflicts(IFeatureClass fc)
         {
-            if (!await FeatureClassHasRelicationID(fc)) return false;
+            if (!await FeatureClassHasRelicationID(fc))
+            {
+                return false;
+            }
 
             if (fc == null ||
                 fc.Dataset == null ||
-                !(fc.Dataset.Database is IFeatureDatabaseReplication)) return false;
+                !(fc.Dataset.Database is IFeatureDatabaseReplication))
+            {
+                return false;
+            }
 
             IFeatureDatabaseReplication db = fc.Dataset.Database as IFeatureDatabaseReplication;
             int fc_id = await db.GetFeatureClassID(fc.Name);
-            if (fc_id < 0) return false;
+            if (fc_id < 0)
+            {
+                return false;
+            }
 
             try
             {
@@ -894,7 +1037,9 @@ namespace gView.Framework.Offline
                     object obj = command.ExecuteScalar();
 
                     if (obj == null || obj == DBNull.Value)
+                    {
                         return false;
+                    }
 
                     return true;
                 }
@@ -907,15 +1052,24 @@ namespace gView.Framework.Offline
         }
         async public static Task<List<Guid>> FeatureClassConflictsParentGuids(IFeatureClass fc)
         {
-            if (!await FeatureClassHasRelicationID(fc)) return null;
+            if (!await FeatureClassHasRelicationID(fc))
+            {
+                return null;
+            }
 
             if (fc == null ||
                 fc.Dataset == null ||
-                !(fc.Dataset.Database is IFeatureDatabaseReplication)) return null;
+                !(fc.Dataset.Database is IFeatureDatabaseReplication))
+            {
+                return null;
+            }
 
             IFeatureDatabaseReplication db = fc.Dataset.Database as IFeatureDatabaseReplication;
             int fc_id = await db.GetFeatureClassID(fc.Name);
-            if (fc_id < 0) return null;
+            if (fc_id < 0)
+            {
+                return null;
+            }
 
             try
             {
@@ -947,15 +1101,24 @@ namespace gView.Framework.Offline
         }
         async public static Task<Conflict> FeatureClassConflict(IFeatureClass fc, Guid objectGuid)
         {
-            if (!await FeatureClassHasRelicationID(fc)) return null;
+            if (!await FeatureClassHasRelicationID(fc))
+            {
+                return null;
+            }
 
             if (fc == null ||
                 fc.Dataset == null ||
-                !(fc.Dataset.Database is IFeatureDatabaseReplication)) return null;
+                !(fc.Dataset.Database is IFeatureDatabaseReplication))
+            {
+                return null;
+            }
 
             IFeatureDatabaseReplication db = fc.Dataset.Database as IFeatureDatabaseReplication;
             int fc_id = await db.GetFeatureClassID(fc.Name);
-            if (fc_id < 0) return null;
+            if (fc_id < 0)
+            {
+                return null;
+            }
 
             try
             {
@@ -969,7 +1132,10 @@ namespace gView.Framework.Offline
                     adapter.SelectCommand = command;
 
                     DataTable tab = new DataTable("GUIDS");
-                    if (adapter.Fill(tab) == 0) return null;
+                    if (adapter.Fill(tab) == 0)
+                    {
+                        return null;
+                    }
 
                     DataRow row1 = tab.Rows[0];
                     Conflict conflict = new Conflict(
@@ -1016,10 +1182,16 @@ namespace gView.Framework.Offline
             try
             {
                 string repl_field_name = await FeatureClassReplicationIDFieldname(fc);
-                if (String.IsNullOrEmpty(repl_field_name)) return null;
+                if (String.IsNullOrEmpty(repl_field_name))
+                {
+                    return null;
+                }
 
                 IFeatureDatabaseReplication db = fc.Dataset.Database as IFeatureDatabaseReplication;
-                if (db == null) return null;
+                if (db == null)
+                {
+                    return null;
+                }
 
                 QueryFilter filter = new QueryFilter();
                 filter.AddField("*");
@@ -1038,17 +1210,30 @@ namespace gView.Framework.Offline
 
         async public static Task<string> FeatureClassCheckoutName(IFeatureClass fc)
         {
-            if (!await FeatureClassHasRelicationID(fc)) return string.Empty;
+            if (!await FeatureClassHasRelicationID(fc))
+            {
+                return string.Empty;
+            }
+
             int generation = await FeatureClassGeneration(fc);
-            if (generation < 0) return String.Empty;
+            if (generation < 0)
+            {
+                return String.Empty;
+            }
 
             if (fc == null ||
                 fc.Dataset == null ||
-                !(fc.Dataset.Database is IFeatureDatabaseReplication)) return String.Empty;
+                !(fc.Dataset.Database is IFeatureDatabaseReplication))
+            {
+                return String.Empty;
+            }
 
             IFeatureDatabaseReplication db = fc.Dataset.Database as IFeatureDatabaseReplication;
             int fc_id = await db.GetFeatureClassID(fc.Name);
-            if (fc_id < 0) return String.Empty;
+            if (fc_id < 0)
+            {
+                return String.Empty;
+            }
 
             try
             {
@@ -1063,7 +1248,9 @@ namespace gView.Framework.Offline
                     object obj = command.ExecuteScalar();
 
                     if (obj == null || obj == DBNull.Value)
+                    {
                         return string.Empty;
+                    }
 
                     return obj.ToString();
                 }
@@ -1076,11 +1263,17 @@ namespace gView.Framework.Offline
         }
         async public static Task<IFeatureDatabaseReplication> FeatureClassDb(IFeatureClass fc)
         {
-            if (!await FeatureClassHasRelicationID(fc)) return null;
+            if (!await FeatureClassHasRelicationID(fc))
+            {
+                return null;
+            }
 
             if (fc == null ||
                 fc.Dataset == null ||
-                !(fc.Dataset.Database is IFeatureDatabaseReplication)) return null;
+                !(fc.Dataset.Database is IFeatureDatabaseReplication))
+            {
+                return null;
+            }
 
             IFeatureDatabaseReplication db = fc.Dataset.Database as IFeatureDatabaseReplication;
             return db;
@@ -1196,7 +1389,9 @@ namespace gView.Framework.Offline
             }
 
             if (!foundReplField)
+            {
                 feature.Fields.Add(new FieldValue(replicationFieldName));
+            }
 
             // neue GUID nur vergeben, wenn noch keine vorhanden ist...
             object objectGuid = feature[replicationFieldName];
@@ -1206,11 +1401,13 @@ namespace gView.Framework.Offline
             }
 
             if (!(feature[replicationFieldName] is Guid))
+            {
                 feature[replicationFieldName] = new Guid(feature[replicationFieldName].ToString());
+            }
         }
         async public static Task<Guid> FeatureObjectGuid(IFeatureClass fc, IFeature feature, string replicationFieldName)
         {
-            IDatabaseNames dn = (fc!=null && fc.Dataset!=null) ? fc.Dataset.Database as IDatabaseNames : null;
+            IDatabaseNames dn = (fc != null && fc.Dataset != null) ? fc.Dataset.Database as IDatabaseNames : null;
 
             QueryFilter filter = new QueryFilter();
             filter.AddField(replicationFieldName);
@@ -1237,11 +1434,17 @@ namespace gView.Framework.Offline
         {
             if (fc == null ||
                 fc.Dataset == null ||
-                !(fc.Dataset.Database is IFeatureDatabaseReplication)) return false;
+                !(fc.Dataset.Database is IFeatureDatabaseReplication))
+            {
+                return false;
+            }
 
             IFeatureDatabaseReplication db = fc.Dataset.Database as IFeatureDatabaseReplication;
             int fc_id = await db.GetFeatureClassID(fc.Name);
-            if (fc_id < 0) return false;
+            if (fc_id < 0)
+            {
+                return false;
+            }
 
             try
             {
@@ -1265,13 +1468,17 @@ namespace gView.Framework.Offline
                         if (fc is FeatureClassDiffLocks)
                         {
                             if (checkout_guid.Equals(((FeatureClassDiffLocks)fc).SessionGUID))
+                            {
                                 continue;
+                            }
                         }
                         if (fc is FeatureClassDifferenceDateTime)
                         {
                             if (checkout_guid.Equals(((FeatureClassDifferenceDateTime)fc).SessionGUID) &&
                                 ((FeatureClassDifferenceDateTime)fc).ReplicationState >= 0)
+                            {
                                 repl_state = ((FeatureClassDifferenceDateTime)fc).ReplicationState;
+                            }
 
                             runningReplicationGuid = ((FeatureClassDifferenceDateTime)fc).SessionGUID;
                         }
@@ -1589,7 +1796,10 @@ namespace gView.Framework.Offline
         private enum LockFeatureType { None = 0, ConflictFeatureLock = 1, CheckinReconileLock = 2, PrivateCheckinReconcileLock = 3 }
         private static LockFeatureType HasLocksOrConflicts(IFeatureDatabaseReplication db, int fc_id, Guid object_guid, Guid runningReplicationSessionGuid)
         {
-            if (db == null) return LockFeatureType.None;
+            if (db == null)
+            {
+                return LockFeatureType.None;
+            }
 
             using (DbConnection connection = db.ProviderFactory.CreateConnection())
             {
@@ -1630,7 +1840,10 @@ namespace gView.Framework.Offline
                     }
                 }
                 reader.Close();
-                if (lType != LockFeatureType.None) return lType;
+                if (lType != LockFeatureType.None)
+                {
+                    return lType;
+                }
 
                 // Conflict!
                 command.CommandText = "SELECT MAX(" + db.DbColName("FC_ID") + ") AS max_id FROM " + db.TableName("GV_CHECKOUT_CONFLICTS") + " WHERE " + db.DbColName("FC_ID") + "=" + fc_id + " AND (" + db.DbColName("PARENT_OBJECT_GUID") + "=" + db.GuidToSql(object_guid) + " OR " + db.DbColName("CONFLICT_OBJECT_GUID") + "=" + db.GuidToSql(object_guid) + ")";
@@ -1653,8 +1866,15 @@ namespace gView.Framework.Offline
             {
                 string name = fv.Name;
 
-                if (fields.Length != 0) fields.Append(",");
-                if (parameters.Length != 0) parameters.Append(",");
+                if (fields.Length != 0)
+                {
+                    fields.Append(",");
+                }
+
+                if (parameters.Length != 0)
+                {
+                    parameters.Append(",");
+                }
 
                 DbParameter parameter = db.ProviderFactory.CreateParameter();
                 parameter.ParameterName = "@param_" + Guid.NewGuid().ToString("N"); ;
@@ -1700,21 +1920,32 @@ namespace gView.Framework.Offline
             try
             {
                 if (!await c.Init(this, parentFc, childFc, true))
+                {
                     return (false, "Unknown Error");
+                }
 
-            
                 if (!await CheckForLockedFeatureclassSessions(parentFc, c.checkout_guid, 60))
+                {
                     return (false, "Unknown Error");
+                }
+
                 if (!await CheckForLockedFeatureclassSessions(childFc, c.checkout_guid, 60))
+                {
                     return (false, "Unknown Error");
+                }
 
                 await LockReplicationSession(parentFc, c.checkout_guid, LockState.Hardlock);
                 await LockReplicationSession(childFc, c.checkout_guid, LockState.Hardlock);
 
                 if (!await CheckForLockedFeatureclassSessions(parentFc, c.checkout_guid))
+                {
                     return (false, "Unknown Error");
+                }
+
                 if (!await CheckForLockedFeatureclassSessions(childFc, c.checkout_guid))
+                {
                     return (false, "Unknown Error");
+                }
 
                 await IncReplicationState(parentFc, c.checkout_guid);
                 await IncReplicationState(childFc, c.checkout_guid);
@@ -1724,9 +1955,14 @@ namespace gView.Framework.Offline
 
                 #region Thin Difference Tables
                 if (!ThinDifferencesTable(c.childDb, c.checkout_guid, c.childReplicationState, out errMsg))
+                {
                     return (false, "Unknown Error");
+                }
+
                 if (!ThinDifferencesTable(c.parentDb, c.checkout_guid, c.parentReplactionState, out errMsg))
+                {
                     return (false, "Unknown Error");
+                }
                 #endregion
 
                 #region WriteChildLocks
@@ -2093,13 +2329,19 @@ SELECT " + c.parentFc_id + @"," + c.parentDb.DbColName("OBJECT_GUID") + ",0," + 
         async private Task<(bool success, string errMsg)> CheckIn(IFeatureClass parentFc, IFeatureClass childFc, CheckinConst c)
         {
             if (CheckIn_BeginCheckIn != null)
+            {
                 CheckIn_BeginCheckIn(this);
+            }
+
             return await CheckIn(parentFc, childFc, true, c);
         }
         async private Task<(bool success, string errMsg)> Post(IFeatureClass parentFc, IFeatureClass childFc, CheckinConst c)
         {
             if (CheckIn_BeginPost != null)
+            {
                 CheckIn_BeginPost(this);
+            }
+
             return await CheckIn(childFc, parentFc, false, c);
         }
 
@@ -2203,11 +2445,17 @@ SELECT " + c.parentFc_id + @"," + c.parentDb.DbColName("OBJECT_GUID") + ",0," + 
         {
             if (fc == null ||
                 fc.Dataset == null ||
-                !(fc.Dataset.Database is IFeatureDatabaseReplication)) return false;
+                !(fc.Dataset.Database is IFeatureDatabaseReplication))
+            {
+                return false;
+            }
 
             IFeatureDatabaseReplication db = fc.Dataset.Database as IFeatureDatabaseReplication;
             int fc_id = await db.GetFeatureClassID(fc.Name);
-            if (fc_id < 0) return false;
+            if (fc_id < 0)
+            {
+                return false;
+            }
 
             try
             {
@@ -2232,7 +2480,10 @@ SELECT " + c.parentFc_id + @"," + c.parentDb.DbColName("OBJECT_GUID") + ",0," + 
         async private Task<(bool success, string errMsg)> CheckIn(IFeatureClass parentFc, IFeatureClass childFc, bool checkin, CheckinConst c)
         {
             string errMsg = String.Empty;
-            if (parentFc == null || childFc == null || c == null) return (false, errMsg);
+            if (parentFc == null || childFc == null || c == null)
+            {
+                return (false, errMsg);
+            }
 
             if (!await CheckForLockedFeatureclassSessions(parentFc, c.checkout_guid))
             {
@@ -2302,7 +2553,11 @@ SELECT " + c.parentFc_id + @"," + c.parentDb.DbColName("OBJECT_GUID") + ",0," + 
                         case SqlStatement.INSERT:
                             if (!Bit.Has(c.versionRights, VersionRights.INSERT))
                             {
-                                if (CheckIn_IgnoredSqlStatement != null) CheckIn_IgnoredSqlStatement(this, ++count_ignored, SqlStatement.INSERT);
+                                if (CheckIn_IgnoredSqlStatement != null)
+                                {
+                                    CheckIn_IgnoredSqlStatement(this, ++count_ignored, SqlStatement.INSERT);
+                                }
+
                                 break;
                             }
 
@@ -2318,13 +2573,21 @@ SELECT " + c.parentFc_id + @"," + c.parentDb.DbColName("OBJECT_GUID") + ",0," + 
                                 errMsg = "Error on INSERT Feature:\n" + c.parentDb.LastErrorMessage;
                                 return (false, errMsg);
                             }
-                            if (CheckIn_FeatureInserted != null) CheckIn_FeatureInserted(this, ++count_inserted);
+                            if (CheckIn_FeatureInserted != null)
+                            {
+                                CheckIn_FeatureInserted(this, ++count_inserted);
+                            }
+
                             break;
-                            #endregion
+                        #endregion
                         case SqlStatement.UPDATE:
                             if (!Bit.Has(c.versionRights, VersionRights.UPDATE))
                             {
-                                if (CheckIn_IgnoredSqlStatement != null) CheckIn_IgnoredSqlStatement(this, ++count_ignored, SqlStatement.UPDATE);
+                                if (CheckIn_IgnoredSqlStatement != null)
+                                {
+                                    CheckIn_IgnoredSqlStatement(this, ++count_ignored, SqlStatement.UPDATE);
+                                }
+
                                 break;
                             }
 
@@ -2348,23 +2611,37 @@ SELECT " + c.parentFc_id + @"," + c.parentDb.DbColName("OBJECT_GUID") + ",0," + 
                                         errMsg = "Error on INSERT Feature:\n" + c.parentDb.LastErrorMessage;
                                         return (false, errMsg);
                                     }
-                                    if (CheckIn_FeatureInserted != null) CheckIn_FeatureInserted(this, ++count_inserted);
+                                    if (CheckIn_FeatureInserted != null)
+                                    {
+                                        CheckIn_FeatureInserted(this, ++count_inserted);
+                                    }
+
                                     break;
                                 }
                                 else if (c.conflictHandling == ConflictHandling.NORMAL)
                                 {
                                     child_feature[c.child_repl_id_fieldname] = null;
                                     if (c.parentDb is IFeatureDatabaseCloudReplication)
+                                    {
                                         AllocateNewObjectGuid(child_feature, c.child_repl_id_fieldname);
+                                    }
+
                                     if (!await c.parentDb.Insert(parentFc_diff, child_feature))
                                     {
                                         errMsg = "Error on INSERT Feature:\n" + c.parentDb.LastErrorMessage;
                                         return (false, errMsg);
                                     }
-                                    if (CheckIn_FeatureInserted != null) CheckIn_FeatureInserted(this, ++count_inserted);
+                                    if (CheckIn_FeatureInserted != null)
+                                    {
+                                        CheckIn_FeatureInserted(this, ++count_inserted);
+                                    }
 
                                     WriteConflict(c.parentDb, c.parentFc_id, c.checkout_name, diff, childDiffRow, Convert2Guid(child_feature[c.child_repl_id_fieldname]));
-                                    if (CheckIn_ConflictDetected != null) CheckIn_ConflictDetected(this, ++count_conflicts);
+                                    if (CheckIn_ConflictDetected != null)
+                                    {
+                                        CheckIn_ConflictDetected(this, ++count_conflicts);
+                                    }
+
                                     break;
                                 }
                                 else if (c.conflictHandling == ConflictHandling.PARENT_WINS)
@@ -2412,7 +2689,11 @@ SELECT " + c.parentFc_id + @"," + c.parentDb.DbColName("OBJECT_GUID") + ",0," + 
                                         errMsg = "Error on INSERT Feature:\n" + c.parentDb.LastErrorMessage;
                                         return (false, errMsg);
                                     }
-                                    if (CheckIn_FeatureInserted != null) CheckIn_FeatureInserted(this, ++count_inserted);
+                                    if (CheckIn_FeatureInserted != null)
+                                    {
+                                        CheckIn_FeatureInserted(this, ++count_inserted);
+                                    }
+
                                     break;
                                 }
                             }
@@ -2422,13 +2703,21 @@ SELECT " + c.parentFc_id + @"," + c.parentDb.DbColName("OBJECT_GUID") + ",0," + 
                                 errMsg = "Error on UPDATE Feature:\n" + c.parentDb.LastErrorMessage;
                                 return (false, errMsg);
                             }
-                            if (CheckIn_FeatureUpdated != null) CheckIn_FeatureUpdated(this, ++count_updated);
+                            if (CheckIn_FeatureUpdated != null)
+                            {
+                                CheckIn_FeatureUpdated(this, ++count_updated);
+                            }
+
                             break;
-                            #endregion
+                        #endregion
                         case SqlStatement.DELETE:
                             if (!Bit.Has(c.versionRights, VersionRights.DELETE))
                             {
-                                if (CheckIn_IgnoredSqlStatement != null) CheckIn_IgnoredSqlStatement(this, ++count_ignored, SqlStatement.DELETE);
+                                if (CheckIn_IgnoredSqlStatement != null)
+                                {
+                                    CheckIn_IgnoredSqlStatement(this, ++count_ignored, SqlStatement.DELETE);
+                                }
+
                                 break;
                             }
 
@@ -2449,7 +2738,10 @@ SELECT " + c.parentFc_id + @"," + c.parentDb.DbColName("OBJECT_GUID") + ",0," + 
                                     if ((SqlStatement)diff2["SQL_STATEMENT"] != SqlStatement.DELETE)
                                     {
                                         WriteConflict(c.parentDb, c.parentFc_id, c.checkout_name, diff2, childDiffRow, object_guid);
-                                        if (CheckIn_ConflictDetected != null) CheckIn_ConflictDetected(this, ++count_conflicts);
+                                        if (CheckIn_ConflictDetected != null)
+                                        {
+                                            CheckIn_ConflictDetected(this, ++count_conflicts);
+                                        }
                                     }
                                     break;
                                 }
@@ -2493,7 +2785,11 @@ SELECT " + c.parentFc_id + @"," + c.parentDb.DbColName("OBJECT_GUID") + ",0," + 
                                 errMsg = "Error on DELETE Feature:\n" + c.parentDb.LastErrorMessage;
                                 return (false, errMsg);
                             }
-                            if (CheckIn_FeatureDeleted != null) CheckIn_FeatureDeleted(this, ++count_deleted);
+                            if (CheckIn_FeatureDeleted != null)
+                            {
+                                CheckIn_FeatureDeleted(this, ++count_deleted);
+                            }
+
                             break;
                             #endregion
                     }
@@ -2525,7 +2821,11 @@ SELECT " + c.parentFc_id + @"," + c.parentDb.DbColName("OBJECT_GUID") + ",0," + 
 
             using (IFeatureCursor cursor = await fc.GetFeatures(filter))
             {
-                if (cursor == null) return null;
+                if (cursor == null)
+                {
+                    return null;
+                }
+
                 return await cursor.NextFeature();
             }
         }
@@ -2540,7 +2840,7 @@ SELECT " + c.parentFc_id + @"," + c.parentDb.DbColName("OBJECT_GUID") + ",0," + 
                     return diffs[0];
                 default:
                     return diffs[diffs.Length - 1];
-                //throw new Exception("Difference table is inkonsistent!");
+                    //throw new Exception("Difference table is inkonsistent!");
             }
         }
         private bool WriteConflict(IFeatureDatabaseReplication db, int fc_id, string checkout_name, DataRow parentDiff, DataRow childDiff, Guid newObjectGuid)
@@ -2613,7 +2913,9 @@ SELECT " + c.parentFc_id + @"," + c.parentDb.DbColName("OBJECT_GUID") + ",0," + 
                         int lastID = Convert.ToInt32(diffs.Rows[diffs.Rows.Count - 1]["ID"]);
 
                         if (connection.State != ConnectionState.Open)
+                        {
                             connection.Open();
+                        }
 
                         if (first == SqlStatement.INSERT && last == SqlStatement.UPDATE)
                         {
@@ -2651,9 +2953,16 @@ SELECT " + c.parentFc_id + @"," + c.parentDb.DbColName("OBJECT_GUID") + ",0," + 
         {
             IFeatureDatabaseReplication db = await FeatureClassDb(fc);
             if (db == null)
+            {
                 return false;
+            }
+
             int fc_id = await db.GetFeatureClassID(fc.Name);
-            if (fc_id < 0) return false;
+            if (fc_id < 0)
+            {
+                return false;
+            }
+
             try
             {
                 using (DbConnection connection = db.ProviderFactory.CreateConnection())
@@ -2667,7 +2976,10 @@ SELECT " + c.parentFc_id + @"," + c.parentDb.DbColName("OBJECT_GUID") + ",0," + 
                     command.ExecuteNonQuery();
                 }
                 if (CheckIn_ChangeSessionLockState != null)
+                {
                     CheckIn_ChangeSessionLockState(this, fc.Name, session_guid, lockState);
+                }
+
                 return true;
             }
             catch { return false; }
@@ -2676,9 +2988,15 @@ SELECT " + c.parentFc_id + @"," + c.parentDb.DbColName("OBJECT_GUID") + ",0," + 
         {
             IFeatureDatabaseReplication db = await FeatureClassDb(fc);
             if (db == null)
+            {
                 return LockState.Error;
+            }
+
             int fc_id = await db.GetFeatureClassID(fc.Name);
-            if (fc_id < 0) return LockState.Error;
+            if (fc_id < 0)
+            {
+                return LockState.Error;
+            }
 
             try
             {
@@ -2693,8 +3011,10 @@ SELECT " + c.parentFc_id + @"," + c.parentDb.DbColName("OBJECT_GUID") + ",0," + 
                     command.Connection = connection;
 
                     object obj = command.ExecuteScalar();
-                    if (obj != null && (obj.GetType() == typeof(int) || obj.GetType()==typeof(long)))
+                    if (obj != null && (obj.GetType() == typeof(int) || obj.GetType() == typeof(long)))
+                    {
                         return (LockState)(Convert.ToInt32(obj));
+                    }
 
                     return LockState.Error;
                 }
@@ -2709,7 +3029,9 @@ SELECT " + c.parentFc_id + @"," + c.parentDb.DbColName("OBJECT_GUID") + ",0," + 
         {
             IFeatureDatabaseReplication db = await FeatureClassDb(fc);
             if (db == null)
+            {
                 return -1;
+            }
 
             try
             {
@@ -2722,8 +3044,10 @@ SELECT " + c.parentFc_id + @"," + c.parentDb.DbColName("OBJECT_GUID") + ",0," + 
                     connection.Open();
 
                     object obj = command.ExecuteScalar();
-                    if (obj != null && (obj.GetType() == typeof(int) || obj.GetType()==typeof(long)))
+                    if (obj != null && (obj.GetType() == typeof(int) || obj.GetType() == typeof(long)))
+                    {
                         return Convert.ToInt32(obj);
+                    }
 
                     return -1;
                 }
@@ -2733,11 +3057,16 @@ SELECT " + c.parentFc_id + @"," + c.parentDb.DbColName("OBJECT_GUID") + ",0," + 
         async public Task<bool> IncReplicationState(IFeatureClass fc, Guid session_guid)
         {
             int replState = await GetReplicationState(fc, session_guid);
-            if (replState == -1) return false;
+            if (replState == -1)
+            {
+                return false;
+            }
 
             IFeatureDatabaseReplication db = await FeatureClassDb(fc);
             if (db == null)
+            {
                 return false;
+            }
 
             try
             {
@@ -2761,9 +3090,15 @@ SELECT " + c.parentFc_id + @"," + c.parentDb.DbColName("OBJECT_GUID") + ",0," + 
         {
             IFeatureDatabaseReplication db = await FeatureClassDb(fc);
             if (db == null)
+            {
                 return null;
+            }
+
             int fc_id = await db.GetFeatureClassID(fc.Name);
-            if (fc_id < 0) return null;
+            if (fc_id < 0)
+            {
+                return null;
+            }
 
             try
             {
@@ -2802,7 +3137,9 @@ SELECT " + c.parentFc_id + @"," + c.parentDb.DbColName("OBJECT_GUID") + ",0," + 
             foreach (DataRow row in tab.Rows)
             {
                 if (row["CHECKOUT_GUID"] == null || row["CHECKOUT_GUID"] == DBNull.Value)
+                {
                     continue;
+                }
 
                 // SQLite Guids are strings...
                 if (!checkout_guid.Equals(Convert2Guid(row["CHECKOUT_GUID"])))
@@ -2811,7 +3148,7 @@ SELECT " + c.parentFc_id + @"," + c.parentDb.DbColName("OBJECT_GUID") + ",0," + 
                     sb.Append(row["CHECKOUT_GUID"].ToString() + " -> " + row["CHECKOUT_NAME"] + "\n");
                 }
             }
-            
+
             if (found)
             {
                 sb.Append("Try checkin later again...");
@@ -2827,13 +3164,20 @@ SELECT " + c.parentFc_id + @"," + c.parentDb.DbColName("OBJECT_GUID") + ",0," + 
             while (true)
             {
                 if (await CheckForLockedFeatureclassSessions(fc, checkout_guid))
+                {
                     return true;
+                }
 
                 TimeSpan ts = DateTime.Now - td;
-                if (ts.TotalSeconds > waitSeconds) break;
+                if (ts.TotalSeconds > waitSeconds)
+                {
+                    break;
+                }
 
                 if (CheckIn_Message != null)
+                {
                     CheckIn_Message(this, "Featureclass is locked. Try again in 3 seconds...");
+                }
 
                 System.Threading.Thread.Sleep(3000);
             }
@@ -2867,7 +3211,10 @@ SELECT " + c.parentFc_id + @"," + c.parentDb.DbColName("OBJECT_GUID") + ",0," + 
 
             async internal Task Init()
             {
-                if (FeatureClass == null || FeatureClass.Fields == null) return;
+                if (FeatureClass == null || FeatureClass.Fields == null)
+                {
+                    return;
+                }
 
                 string repl_field_name = await Replication.FeatureClassReplicationIDFieldname(FeatureClass);
 
@@ -2877,7 +3224,10 @@ SELECT " + c.parentFc_id + @"," + c.parentDb.DbColName("OBJECT_GUID") + ",0," + 
                     if (field == null ||
                         field.type == FieldType.ID ||
                         field.type == FieldType.Shape ||
-                        field.name == repl_field_name) continue;
+                        field.name == repl_field_name)
+                    {
+                        continue;
+                    }
 
                     FieldConflicts.Add(new FieldConflict(this, field.name));
                 }
@@ -2891,7 +3241,9 @@ SELECT " + c.parentFc_id + @"," + c.parentDb.DbColName("OBJECT_GUID") + ",0," + 
                     foreach (FieldConflict field in FieldConflicts)
                     {
                         if (field.ConflictTable != null)
+                        {
                             fields.Add(field);
+                        }
                     }
                     return fields;
                 }
@@ -2904,7 +3256,9 @@ SELECT " + c.parentFc_id + @"," + c.parentDb.DbColName("OBJECT_GUID") + ",0," + 
                     foreach (FieldConflict field in FieldConflicts)
                     {
                         if (field.ConflictTable == null)
+                        {
                             fields.Add(field);
+                        }
                     }
                     return fields;
                 }
@@ -2914,7 +3268,10 @@ SELECT " + c.parentFc_id + @"," + c.parentDb.DbColName("OBJECT_GUID") + ",0," + 
             {
                 get
                 {
-                    if (FeatureClass == null) return null;
+                    if (FeatureClass == null)
+                    {
+                        return null;
+                    }
 
                     Feature feature = new Feature();
                     feature.OID = (Feature != null) ? Feature.OID : -1;
@@ -2925,7 +3282,11 @@ SELECT " + c.parentFc_id + @"," + c.parentDb.DbColName("OBJECT_GUID") + ",0," + 
 
                         if (cField.FieldName == FeatureClass.ShapeFieldName)
                         {
-                            if (f == null) return null;
+                            if (f == null)
+                            {
+                                return null;
+                            }
+
                             feature.Shape = f.Shape;
                         }
                         else if (f != null)
@@ -2944,9 +3305,13 @@ SELECT " + c.parentFc_id + @"," + c.parentDb.DbColName("OBJECT_GUID") + ",0," + 
             private IFeature GetFeatureByIndex(int index)
             {
                 if (index == 0)
+                {
                     return Feature;
+                }
                 else if (index > 0 && index <= ConflictFeatures.Count)
+                {
                     return ConflictFeatures[index - 1].Feature;
+                }
 
                 return null;
             }
@@ -3035,9 +3400,13 @@ SELECT " + c.parentFc_id + @"," + c.parentDb.DbColName("OBJECT_GUID") + ",0," + 
                         {
                             {
                                 if (conflict.Feature[FieldName] != null)
+                                {
                                     row["Value"] = conflict.Feature[FieldName].ToString();
+                                }
                                 else
+                                {
                                     row["Value"] = "NULL";
+                                }
                             }
 
                             row["CheckoutName"] = "Parent";
@@ -3063,9 +3432,13 @@ SELECT " + c.parentFc_id + @"," + c.parentDb.DbColName("OBJECT_GUID") + ",0," + 
                             else if (cFeature.Feature != null)
                             {
                                 if (cFeature.Feature[FieldName] != null)
+                                {
                                     row["Value"] = cFeature.Feature[FieldName].ToString();
+                                }
                                 else
+                                {
                                     row["Value"] = "NULL";
+                                }
 
                                 row["CheckoutName"] = cFeature.CheckoutName;
                                 row["Statement"] = cFeature.SqlStatement.ToString();
@@ -3107,10 +3480,15 @@ SELECT " + c.parentFc_id + @"," + c.parentDb.DbColName("OBJECT_GUID") + ",0," + 
                     get { return _valueIndex; }
                     set
                     {
-                        if (this.ConflictTable == null) return;
+                        if (this.ConflictTable == null)
+                        {
+                            return;
+                        }
 
                         if (this.ConflictTable.Rows.Count <= value)
+                        {
                             return;
+                        }
 
                         _valueIndex = value;
                     }
@@ -3120,14 +3498,21 @@ SELECT " + c.parentFc_id + @"," + c.parentDb.DbColName("OBJECT_GUID") + ",0," + 
             async public Task<bool> RemoveConflict()
             {
                 IFeatureDatabaseReplication db = await Replication.FeatureClassDb(FeatureClass);
-                if (db == null) return false;
+                if (db == null)
+                {
+                    return false;
+                }
 
                 try
                 {
                     StringBuilder sb = new StringBuilder();
                     foreach (int id in rowIDs)
                     {
-                        if (sb.Length > 0) sb.Append(",");
+                        if (sb.Length > 0)
+                        {
+                            sb.Append(",");
+                        }
+
                         sb.Append(id.ToString());
                     }
                     using (DbConnection connection = db.ProviderFactory.CreateConnection())
@@ -3151,10 +3536,15 @@ SELECT " + c.parentFc_id + @"," + c.parentDb.DbColName("OBJECT_GUID") + ",0," + 
             {
                 string errMsg = String.Empty;
                 if (!await RemoveConflict())
+                {
                     return (false, errMsg);
+                }
 
                 IFeatureDatabaseReplication db = await Replication.FeatureClassDb(FeatureClass);
-                if (db == null) return (false, errMsg);
+                if (db == null)
+                {
+                    return (false, errMsg);
+                }
 
                 IFeature sFeature = this.SolvedFeature;
                 if (sFeature == null)
@@ -3194,7 +3584,11 @@ SELECT " + c.parentFc_id + @"," + c.parentDb.DbColName("OBJECT_GUID") + ",0," + 
                 }
                 foreach (ConflictFeature cFeature in ConflictFeatures)
                 {
-                    if (cFeature == null || cFeature.Feature == null) continue;
+                    if (cFeature == null || cFeature.Feature == null)
+                    {
+                        continue;
+                    }
+
                     if (!await db.Delete(FeatureClass, cFeature.Feature.OID))
                     {
                         errMsg = "SolveConflict -> " + db.LastErrorMessage;
@@ -3389,7 +3783,9 @@ SELECT " + c.parentFc_id + @"," + c.parentDb.DbColName("OBJECT_GUID") + ",0," + 
                 : base(fc, sessionGUID, -1)
             {
                 if (fc == null)
+                {
                     throw new ArgumentException();
+                }
             }
 
         }
@@ -3398,8 +3794,15 @@ SELECT " + c.parentFc_id + @"," + c.parentDb.DbColName("OBJECT_GUID") + ",0," + 
         static private Guid Convert2Guid(object obj)
         {
             if (obj == null)
+            {
                 return new Guid();
-            if (obj is Guid) return (Guid)obj;
+            }
+
+            if (obj is Guid)
+            {
+                return (Guid)obj;
+            }
+
             return new Guid(obj.ToString());
         }
     }
@@ -3458,9 +3861,14 @@ SELECT " + c.parentFc_id + @"," + c.parentDb.DbColName("OBJECT_GUID") + ",0," + 
         public int ExecuteNonQuery(DbCommand command)
         {
             if (command == null)
+            {
                 throw new ArgumentException("Command is null!");
+            }
+
             if (!IsValid)
+            {
                 throw new ArgumentException("ReplicationTransaction is not valid for ExecuteNonQuery");
+            }
 
             command.Connection = _connection;
             command.Transaction = _transasction;
@@ -3471,9 +3879,14 @@ SELECT " + c.parentFc_id + @"," + c.parentDb.DbColName("OBJECT_GUID") + ",0," + 
         public object ExecuteScalar(DbCommand command)
         {
             if (command == null)
+            {
                 throw new ArgumentException("Command is null!");
+            }
+
             if (!IsValid)
+            {
                 throw new ArgumentException("ReplicationTransaction is not valid for ExecuteNonQuery");
+            }
 
             command.Connection = _connection;
             command.Transaction = _transasction;

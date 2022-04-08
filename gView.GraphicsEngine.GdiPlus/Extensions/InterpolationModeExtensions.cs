@@ -1,14 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace gView.GraphicsEngine.GdiPlus.Extensions
+﻿namespace gView.GraphicsEngine.GdiPlus.Extensions
 {
     static public class InterpolationModeExtensions
     {
         static public System.Drawing.Drawing2D.InterpolationMode ToGdiInterpolationMode(this InterpolationMode mode)
         {
-            switch(mode)
+            switch (mode)
             {
                 case InterpolationMode.Low:
                     return System.Drawing.Drawing2D.InterpolationMode.Low;

@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace gView.GraphicsEngine.Generics
+﻿namespace gView.GraphicsEngine.Generics
 {
     public class CanvasRectangleGeneric<T>
     {

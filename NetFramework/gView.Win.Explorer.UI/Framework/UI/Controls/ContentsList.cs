@@ -1,24 +1,18 @@
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Drawing;
-using System.Data;
-using System.Text;
-using System.Xml;
-using System.Windows.Forms;
-using gView.Framework.UI;
 using gView.Framework.Data;
-using gView.Framework.system;
-using gView.Explorer.UI;
-using gView.Framework.IO;
-using gView.Framework.Globalisation;
-using gView.Framework.Offline;
 using gView.Framework.FDB;
-using System.Threading;
+using gView.Framework.Globalisation;
+using gView.Framework.IO;
+using gView.Framework.Offline;
+using gView.Framework.Sys.UI;
+using gView.Framework.system;
 using gView.Framework.system.UI;
 using gView.Framework.UI.Dialogs;
-using gView.Framework.Sys.UI;
+using System;
+using System.Collections.Generic;
+using System.Drawing;
+using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace gView.Framework.UI.Controls
 {
@@ -179,7 +173,9 @@ namespace gView.Framework.UI.Controls
             {
 
                 if (!(_exObject is IExplorerParentObject))
+                {
                     return false;
+                }
 
                 Cursor = Cursors.WaitCursor;
                 await ((IExplorerParentObject)_exObject).Refresh();
@@ -198,10 +194,17 @@ namespace gView.Framework.UI.Controls
         }
         async public Task SetExplorerObjectAsync(IExplorerObject value)
         {
-            if (_exObject == value) return;
+            if (_exObject == value)
+            {
+                return;
+            }
+
             listView.Items.Clear();
             _exObject = value;
-            if (_exObject == null) return;
+            if (_exObject == null)
+            {
+                return;
+            }
 
             await BuildList();
         }
@@ -240,13 +243,24 @@ namespace gView.Framework.UI.Controls
                 {
                     IStatusBar statusbar = (_app != null) ? _app.StatusBar : null;
                     List<IExplorerObject> childObjects = await ((IExplorerParentObject)_exObject).ChildObjects();
-                    if (childObjects == null) return;
+                    if (childObjects == null)
+                    {
+                        return;
+                    }
+
                     int pos = 0, count = childObjects.Count;
-                    if (statusbar != null) statusbar.ProgressVisible = true;
+                    if (statusbar != null)
+                    {
+                        statusbar.ProgressVisible = true;
+                    }
 
                     foreach (IExplorerObject exObject in childObjects)
                     {
-                        if (exObject == null) continue;
+                        if (exObject == null)
+                        {
+                            continue;
+                        }
+
                         if (statusbar != null)
                         {
                             statusbar.ProgressValue = (int)(((double)pos++ / (double)count) * 100.0);
@@ -264,15 +278,27 @@ namespace gView.Framework.UI.Controls
                             !(exObject is IExplorerObjectDoubleClick) &&
                             _open)
                         {
-                            if (!await _filter.Match(exObject)) continue;
+                            if (!await _filter.Match(exObject))
+                            {
+                                continue;
+                            }
                         }
                         int imageIndex = gView.Explorer.UI.Framework.UI.ExplorerIcons.ImageIndex(exObject);
-                        if (imageIndex == -1) continue;
+                        if (imageIndex == -1)
+                        {
+                            continue;
+                        }
+
                         string[] texts = null;
                         if (exObject is IExporerOjectSchema)
+                        {
                             texts = new string[] { exObject.Name, exObject.Type, ((IExporerOjectSchema)exObject).Schema };
+                        }
                         else
+                        {
                             texts = new string[] { exObject.Name, exObject.Type };
+                        }
+
                         ListViewItem item = new ExplorerObjectListViewItem(texts, exObject);
                         item.ImageIndex = imageIndex;
 
@@ -283,9 +309,14 @@ namespace gView.Framework.UI.Controls
                         }
 
                         if (exObject is IExplorerObjectDeletable)
+                        {
                             ((IExplorerObjectDeletable)exObject).ExplorerObjectDeleted += new ExplorerObjectDeletedEvent(ContentsList_ExplorerObjectDeleted);
+                        }
+
                         if (exObject is IExplorerObjectRenamable)
+                        {
                             ((IExplorerObjectRenamable)exObject).ExplorerObjectRenamed += new ExplorerObjectRenamedEvent(ContentsList_ExplorerObjectRenamed);
+                        }
                     }
 
                     if (statusbar != null)
@@ -326,22 +357,29 @@ namespace gView.Framework.UI.Controls
             {
                 //listView.Items.Add(item);
                 int index = listView.Items.Count, count = listView.Items.Count;
-                if (item is ExplorerObjectListViewItem) {
+                if (item is ExplorerObjectListViewItem)
+                {
                     var exObject = ((ExplorerObjectListViewItem)item).ExplorerObject;
-                    if (exObject != null) {
+                    if (exObject != null)
+                    {
                         for (index = 0; index < count; index++)
                         {
                             ListViewItem listItem = listView.Items[index];
-                            if(listItem is ExplorerObjectListViewItem)
+                            if (listItem is ExplorerObjectListViewItem)
                             {
                                 var listExObject = ((ExplorerObjectListViewItem)listItem).ExplorerObject;
-                                if(listExObject!=null)
+                                if (listExObject != null)
                                 {
                                     if (exObject.Priority < listExObject.Priority)
+                                    {
                                         break;
+                                    }
+
                                     if (exObject.Priority == listExObject.Priority &&
                                         exObject.Name.ToLower().CompareTo(listExObject.Name.ToLower()) < 0)
+                                    {
                                         break;
+                                    }
                                 }
                             }
                         }
@@ -362,7 +400,9 @@ namespace gView.Framework.UI.Controls
             //else
             {
                 if (!_tree.HasChildNode(exObject))
+                {
                     await _tree.AddChildNode(exObject);
+                }
             }
         }
         #endregion
@@ -370,24 +410,35 @@ namespace gView.Framework.UI.Controls
         private void ContentsList_ExplorerObjectRenamed(IExplorerObject exObject)
         {
             ListViewItem item = FindItem(exObject);
-            if (item != null) item.Text = exObject.Name;
+            if (item != null)
+            {
+                item.Text = exObject.Name;
+            }
         }
 
         private void ContentsList_ExplorerObjectDeleted(IExplorerObject exObject)
         {
             ListViewItem item = FindItem(exObject);
-            if (item != null) listView.Items.Remove(item);
+            if (item != null)
+            {
+                listView.Items.Remove(item);
+            }
             //_tree.RemoveChildNode(exObject);
         }
 
         private ListViewItem FindItem(IExplorerObject exObject)
         {
-            if (exObject == null) return null;
+            if (exObject == null)
+            {
+                return null;
+            }
 
             foreach (ListViewItem item in listView.Items)
             {
                 if (item is ExplorerObjectListViewItem && ((ExplorerObjectListViewItem)item).ExplorerObject == exObject)
+                {
                     return item;
+                }
             }
             return null;
         }
@@ -471,7 +522,10 @@ namespace gView.Framework.UI.Controls
         async private void listView_MouseDown(object sender, MouseEventArgs e)
         {
             _button = e.Button;
-            if (listView.GetItemAt(_mX, _mY) != null) return;
+            if (listView.GetItemAt(_mX, _mY) != null)
+            {
+                return;
+            }
 
             await ShowContextMenu();
         }
@@ -481,7 +535,10 @@ namespace gView.Framework.UI.Controls
         ContextMenuStrip _strip = null;
         async private Task ShowContextMenu()
         {
-            if (!_allowContextMenu) return;
+            if (!_allowContextMenu)
+            {
+                return;
+            }
 
             ListViewItem item = listView.GetItemAt(_mX, _mY);
             IExplorerObject exObject;
@@ -493,7 +550,10 @@ namespace gView.Framework.UI.Controls
             {
                 exObject = _exObject;
             }
-            if (exObject == null) return;
+            if (exObject == null)
+            {
+                return;
+            }
 
             Cursor = Cursors.WaitCursor;
 
@@ -504,9 +564,13 @@ namespace gView.Framework.UI.Controls
                 if (strip != null && strip.Items.Count > 0)
                 {
                     if (item == null)
+                    {
                         _contextObject = null;
+                    }
                     else
+                    {
                         _contextObject = ((ExplorerObjectListViewItem)item).ExplorerObject;
+                    }
 
                     _strip.Show(listView, new Point(_mX, _mY));
                 }
@@ -541,7 +605,11 @@ namespace gView.Framework.UI.Controls
                 IExplorerObject ex = compMan.CreateInstance<IExplorerObject>(compType);
                 if (ex is IExplorerObjectCreatable)
                 {
-                    if (!((IExplorerObjectCreatable)ex).CanCreate(_exObject)) continue;
+                    if (!((IExplorerObjectCreatable)ex).CanCreate(_exObject))
+                    {
+                        continue;
+                    }
+
                     ToolStripItem createNewItem = new CreateNewToolStripItem(ex);
                     createNewItem.Click += new EventHandler(createNewItem_Click);
                     toolStripMenuItemNew.DropDownItems.Add(createNewItem);
@@ -630,7 +698,10 @@ namespace gView.Framework.UI.Controls
 
         async public void createNewItem_Click(object sender, EventArgs e)
         {
-            if (!(sender is CreateNewToolStripItem)) return;
+            if (!(sender is CreateNewToolStripItem))
+            {
+                return;
+            }
 
             IExplorerObject exObject = ((CreateNewToolStripItem)sender).ExplorerObject;
             await CreateNewItem(exObject);
@@ -638,13 +709,21 @@ namespace gView.Framework.UI.Controls
 
         async public Task CreateNewItem(IExplorerObject exObject)
         {
-            if (!(exObject is IExplorerObjectCreatable)) return;
+            if (!(exObject is IExplorerObjectCreatable))
+            {
+                return;
+            }
 
             IExplorerObject newExObj = await ((IExplorerObjectCreatable)exObject).CreateExplorerObject(_exObject);
-            if (newExObj == null) return;
+            if (newExObj == null)
+            {
+                return;
+            }
 
             if (_tree != null)
+            {
                 newExObj = await _tree.AddChildNode(newExObj);
+            }
 
             int imageIndex = gView.Explorer.UI.Framework.UI.ExplorerIcons.ImageIndex(newExObj);
             string[] texts = { newExObj.Name, newExObj.Type };
@@ -652,9 +731,14 @@ namespace gView.Framework.UI.Controls
             item.ImageIndex = imageIndex;
 
             if (newExObj is IExplorerObjectDeletable)
+            {
                 ((IExplorerObjectDeletable)newExObj).ExplorerObjectDeleted += new ExplorerObjectDeletedEvent(ContentsList_ExplorerObjectDeleted);
+            }
+
             if (newExObj is IExplorerObjectRenamable)
+            {
                 ((IExplorerObjectRenamable)newExObj).ExplorerObjectRenamed += new ExplorerObjectRenamedEvent(ContentsList_ExplorerObjectRenamed);
+            }
 
             listView.Items.Add(item);
         }
@@ -675,11 +759,17 @@ namespace gView.Framework.UI.Controls
 
             if (_tree != null)
             {
-                if (!(item is ExplorerObjectListViewItem)) return;
+                if (!(item is ExplorerObjectListViewItem))
+                {
+                    return;
+                }
 
                 _tree.SelectChildNode(((ExplorerObjectListViewItem)item).ExplorerObject);
             }
-            if (ItemDoubleClicked != null) ItemDoubleClicked(item);
+            if (ItemDoubleClicked != null)
+            {
+                ItemDoubleClicked(item);
+            }
         }
 
         async private Task CheckExplorerObjectEventArgs(ExplorerObjectEventArgs args)
@@ -692,7 +782,10 @@ namespace gView.Framework.UI.Controls
                 item.ImageIndex = imageIndex;
 
                 listView.Items.Add(item);
-                if (_tree != null) await _tree.AddChildNode(args.NewExplorerObject);
+                if (_tree != null)
+                {
+                    await _tree.AddChildNode(args.NewExplorerObject);
+                }
             }
         }
 
@@ -705,7 +798,10 @@ namespace gView.Framework.UI.Controls
                 if (MessageBox.Show("Do you realy want to delete the selected item (" + _contextObject.Name + ") ?",
                     "Warning",
                     MessageBoxButtons.YesNo,
-                    MessageBoxIcon.Question) != DialogResult.Yes) return;
+                    MessageBoxIcon.Question) != DialogResult.Yes)
+                {
+                    return;
+                }
 
                 if (exObject is IExplorerObjectDeletable)
                 {
@@ -731,18 +827,31 @@ namespace gView.Framework.UI.Controls
                     }
                 }
                 _contextObject = null;
-                if (!found) return;
+                if (!found)
+                {
+                    return;
+                }
 
                 if (MessageBox.Show("Do you realy want to delete the " + listView.SelectedItems.Count + " selected items?",
                     "Warning",
                     MessageBoxButtons.YesNo,
-                    MessageBoxIcon.Question) != DialogResult.Yes) return;
+                    MessageBoxIcon.Question) != DialogResult.Yes)
+                {
+                    return;
+                }
 
                 foreach (ListViewItem item in listView.SelectedItems)
                 {
-                    if (!(item is ExplorerObjectListViewItem)) continue;
+                    if (!(item is ExplorerObjectListViewItem))
+                    {
+                        continue;
+                    }
+
                     IExplorerObject exObject = ((ExplorerObjectListViewItem)item).ExplorerObject;
-                    if (!(exObject is IExplorerObjectDeletable)) continue;
+                    if (!(exObject is IExplorerObjectDeletable))
+                    {
+                        continue;
+                    }
 
                     ExplorerObjectEventArgs args = new ExplorerObjectEventArgs();
                     ((IExplorerObjectDeletable)exObject).DeleteExplorerObject(args);
@@ -866,7 +975,11 @@ namespace gView.Framework.UI.Controls
                     if (i is ExplorerObjectListViewItem && ((ExplorerObjectListViewItem)i).ExplorerObject != null)
                     {
                         IExplorerObjectSerialization ser = ExplorerObjectManager.SerializeExplorerObject(((ExplorerObjectListViewItem)i).ExplorerObject);
-                        if (ser == null) continue;
+                        if (ser == null)
+                        {
+                            continue;
+                        }
+
                         exObjects.Add(ser);
                     }
                 }
@@ -889,16 +1002,19 @@ namespace gView.Framework.UI.Controls
 
         private void listView_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if (ItemSelected != null) ItemSelected(this.SelectedExplorerObjects);
-            /*
-            if (listView.SelectedItems.Count == 0)
+            if (ItemSelected != null)
             {
-                
+                ItemSelected(this.SelectedExplorerObjects);
             }
-            if (ItemSelected!=null) ItemSelected(
-                listView.SelectedItemslistView.SelectedItems[0]
-                );
-             * */
+            /*
+if (listView.SelectedItems.Count == 0)
+{
+
+}
+if (ItemSelected!=null) ItemSelected(
+   listView.SelectedItemslistView.SelectedItems[0]
+   );
+* */
         }
 
         public bool MultiSelection
@@ -947,14 +1063,19 @@ namespace gView.Framework.UI.Controls
 
             void RenameTextBox_KeyDown(object sender, KeyEventArgs e)
             {
-                if (!(sender is RenameTextBox)) return;
+                if (!(sender is RenameTextBox))
+                {
+                    return;
+                }
 
                 if (e.KeyCode == Keys.Enter)
                 {
                     this.LostFocus -= new EventHandler(RenameTextBox_LostFocus);
 
                     if (this.Parent != null)
+                    {
                         this.Parent.Controls.Remove(sender as RenameTextBox);
+                    }
 
                     RenameObject();
                 }
@@ -962,10 +1083,15 @@ namespace gView.Framework.UI.Controls
 
             void RenameTextBox_LostFocus(object sender, EventArgs e)
             {
-                if (!(sender is RenameTextBox)) return;
+                if (!(sender is RenameTextBox))
+                {
+                    return;
+                }
 
                 if (this.Parent != null)
+                {
                     this.Parent.Controls.Remove(sender as RenameTextBox);
+                }
 
                 RenameObject();
             }
@@ -992,7 +1118,10 @@ namespace gView.Framework.UI.Controls
         }
         private void BeginRename(ExplorerObjectListViewItem item)
         {
-            if (item == null || !(item.ExplorerObject is IExplorerObjectRenamable)) return;
+            if (item == null || !(item.ExplorerObject is IExplorerObjectRenamable))
+            {
+                return;
+            }
 
             RenameTextBox box = new RenameTextBox(item.ExplorerObject as IExplorerObjectRenamable);
             box.Bounds = new Rectangle(16, item.Bounds.Y, item.Bounds.Width - 16, item.Bounds.Height);
@@ -1010,10 +1139,16 @@ namespace gView.Framework.UI.Controls
         {
             foreach (ListViewItem item in listView.Items)
             {
-                if (!(item is ExplorerObjectListViewItem)) continue;
+                if (!(item is ExplorerObjectListViewItem))
+                {
+                    continue;
+                }
 
                 IExplorerObject exObject = ((ExplorerObjectListViewItem)item).ExplorerObject;
-                if (exObject == null) continue;
+                if (exObject == null)
+                {
+                    continue;
+                }
 
                 if (exObject.FullName == path ||
                     exObject.FullName == path + @"\")
@@ -1052,12 +1187,18 @@ namespace gView.Framework.UI.Controls
             string name = String.IsNullOrEmpty(_exObject.Name) ? _exObject.Type : _exObject.Name;
 
             if (!name.Contains("..."))
+            {
                 base.Text = LocalizedResources.GetResString("ArgString.Create", "Create " + name, name);
+            }
             else
+            {
                 base.Text = name;
+            }
 
             if (_exObject.Icon != null && _exObject.Icon.Image != null)
+            {
                 base.Image = _exObject.Icon.Image;
+            }
         }
 
         public IExplorerObject ExplorerObject

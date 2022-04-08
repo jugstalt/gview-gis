@@ -33,7 +33,11 @@ namespace gView.Win.Carto.Items
         {
             get
             {
-                if (_tool != null) return _tool.Enabled;
+                if (_tool != null)
+                {
+                    return _tool.Enabled;
+                }
+
                 return base.IsEnabled;
             }
             set

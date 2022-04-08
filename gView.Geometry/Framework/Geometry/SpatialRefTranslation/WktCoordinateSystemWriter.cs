@@ -1,9 +1,7 @@
 using System;
-using System.Collections.Generic;
-using System.Text;
-using System.IO;
-using System.Runtime.InteropServices;
 using System.CodeDom.Compiler;
+using System.IO;
+using System.Text;
 
 namespace gView.Framework.Geometry.SpatialRefTranslation
 {
@@ -23,14 +21,20 @@ namespace gView.Framework.Geometry.SpatialRefTranslation
 
         public override void Write(string s)
         {
-            if (_nl) base.WriteLine();
+            if (_nl)
+            {
+                base.WriteLine();
+            }
+
             _nl = false;
             base.Write(s);
         }
         public override void WriteLine(string s)
         {
             if (s != String.Empty)
+            {
                 _first = s[0];
+            }
 
             if (!_start)
             {
@@ -51,7 +55,9 @@ namespace gView.Framework.Geometry.SpatialRefTranslation
             }
 
             if (s != String.Empty)
+            {
                 _last = s[s.Length - 1];
+            }
 
             base.Write(s);
             _nl = true;
@@ -61,14 +67,17 @@ namespace gView.Framework.Geometry.SpatialRefTranslation
     internal class WktCoordinateSystemWriter
     {
         private static IFormatProvider _nhi = System.Globalization.CultureInfo.InvariantCulture.NumberFormat;
-        
+
         public static string Write(object obj)
         {
-            return Write(obj, false);   
+            return Write(obj, false);
         }
         internal static string Write(object obj, bool esri)
         {
-            if (obj == null) return "";
+            if (obj == null)
+            {
+                return "";
+            }
 
             TextWriter textwriter = new StringWriter();
             IndentedTextWriter indentedWriter = new IndentedTokenWriter(textwriter);
@@ -78,11 +87,17 @@ namespace gView.Framework.Geometry.SpatialRefTranslation
         private static void Write(object obj, bool esri, IndentedTextWriter writer)
         {
             if (obj is CoordinateSystem)
+            {
                 WriteCoordinateSystem(obj as CoordinateSystem, esri, writer);
+            }
             else if (obj is Datum)
+            {
                 WriteDatum(obj as Datum, esri, writer);
+            }
             else if (obj is Ellipsoid)
+            {
                 WriteEllipsoid(obj as Ellipsoid, esri, writer);
+            }
             else if (obj is AxisInfo)
             {
                 AxisInfo info = (AxisInfo)obj;
@@ -94,50 +109,90 @@ namespace gView.Framework.Geometry.SpatialRefTranslation
                 WriteWGS84ConversionInfo(info, esri, writer);
             }
             else if (obj is Unit)
+            {
                 WriteUnit(obj as Unit, esri, writer);
+            }
             else if (obj is PrimeMeridian)
+            {
                 WritePrimeMeridian(obj as PrimeMeridian, esri, writer);
-            else throw new NotImplementedException(String.Format("Cannot convert {0} to WKT.", obj.GetType().FullName));
+            }
+            else
+            {
+                throw new NotImplementedException(String.Format("Cannot convert {0} to WKT.", obj.GetType().FullName));
+            }
         }
 
         private static void WriteCoordinateSystem(CoordinateSystem coordinateSystem, bool esri, IndentedTextWriter writer)
         {
             if (coordinateSystem is CompoundCoordinateSystem)
+            {
                 WriteCompoundCoordinateSystem(coordinateSystem as CompoundCoordinateSystem, esri, writer);
+            }
             else if (coordinateSystem is GeographicCoordinateSystem)
+            {
                 WriteGeographicCoordinateSystem(coordinateSystem as GeographicCoordinateSystem, esri, writer);
+            }
             else if (coordinateSystem is ProjectedCoordinateSystem)
+            {
                 WriteProjectedCoordinateSystem(coordinateSystem as ProjectedCoordinateSystem, esri, writer);
+            }
             else if (coordinateSystem is LocalCoordinateSystem)
+            {
                 WriteLocalCoordinateSystem(coordinateSystem as LocalCoordinateSystem, esri, writer);
+            }
             else if (coordinateSystem is FittedCoordinateSystem)
+            {
                 WriteFittedCoordinateSystem(coordinateSystem as FittedCoordinateSystem, esri, writer);
+            }
             else if (coordinateSystem is GeocentricCoordinateSystem)
+            {
                 WriteGeocentricCoordinateSystem(coordinateSystem as GeocentricCoordinateSystem, esri, writer);
+            }
             else if (coordinateSystem is VerticalCoordinateSystem)
+            {
                 WriteVerticalCoordinateSystem(coordinateSystem as VerticalCoordinateSystem, esri, writer);
+            }
             else if (coordinateSystem is HorizontalCoordinateSystem)
+            {
                 WriteHorizontalCoordinateSystem(coordinateSystem as HorizontalCoordinateSystem, esri, writer);
-            else throw new InvalidOperationException("this coordinate system is recongized");
+            }
+            else
+            {
+                throw new InvalidOperationException("this coordinate system is recongized");
+            }
         }
 
         private static void WriteUnit(Unit unit, bool esri, IndentedTextWriter writer)
         {
             if (unit is AngularUnit)
-                WriteAngularUnit(unit as AngularUnit,esri, writer);
+            {
+                WriteAngularUnit(unit as AngularUnit, esri, writer);
+            }
             else if (unit is LinearUnit)
-                WriteLinearUnit(unit as LinearUnit,esri, writer);
-            else throw new InvalidOperationException("this unit is not recognized");
+            {
+                WriteLinearUnit(unit as LinearUnit, esri, writer);
+            }
+            else
+            {
+                throw new InvalidOperationException("this unit is not recognized");
+            }
         }
 
         private static void WriteAuthority(AbstractInformation authority, bool esri, IndentedTextWriter writer)
         {
-            if (esri) return;
+            if (esri)
+            {
+                return;
+            }
 
             if (authority == null ||
-                (authority.AuthorityCode == String.Empty && authority.Authority == String.Empty)) return;
+                (authority.AuthorityCode == String.Empty && authority.Authority == String.Empty))
+            {
+                return;
+            }
+
             writer.WriteLine(String.Format("AUTHORITY[\"{0}\",\"{1}\"]", authority.Authority, authority.AuthorityCode));
-            
+
         }
 
         private static void WriteAngularUnit(AngularUnit angularUnit, bool esri, IndentedTextWriter writer)
@@ -146,7 +201,7 @@ namespace gView.Framework.Geometry.SpatialRefTranslation
             writer.Indent = writer.Indent + 1;
             writer.WriteLine(String.Format("\"{0}\",{1}", angularUnit.Name, angularUnit.RadiansPerUnit.ToString(_nhi)));
             //writer.WriteLine(String.Format("AUTHORITY[\"{0}\",\"{1}\"]", angularUnit.Authority, angularUnit.AuthorityCode));
-            WriteAuthority(angularUnit,esri, writer);
+            WriteAuthority(angularUnit, esri, writer);
             writer.Indent = writer.Indent - 1;
             writer.WriteLine("]");
         }
@@ -156,12 +211,12 @@ namespace gView.Framework.Geometry.SpatialRefTranslation
             writer.WriteLine("COMPD_CS[");
             writer.Indent = writer.Indent + 1;
             writer.WriteLine(String.Format("\"{0}\",", compoundCoordinateSystem.Name));
-            WriteCoordinateSystem(compoundCoordinateSystem.HeadCS,esri, writer);
+            WriteCoordinateSystem(compoundCoordinateSystem.HeadCS, esri, writer);
             writer.WriteLine(",");
-            WriteCoordinateSystem(compoundCoordinateSystem.TailCS,esri, writer);
+            WriteCoordinateSystem(compoundCoordinateSystem.TailCS, esri, writer);
             writer.WriteLine(",");
             //writer.WriteLine(String.Format("AUTHORITY[\"{0}\",\"{1}\"]", compoundCoordinateSystem.Authority, compoundCoordinateSystem.AuthorityCode));
-            WriteAuthority(compoundCoordinateSystem,esri, writer);
+            WriteAuthority(compoundCoordinateSystem, esri, writer);
             writer.Indent = writer.Indent - 1;
             writer.WriteLine("]");
         }
@@ -171,14 +226,16 @@ namespace gView.Framework.Geometry.SpatialRefTranslation
             writer.WriteLine("GEOGCS[");
             writer.Indent = writer.Indent + 1;
             writer.WriteLine(String.Format("\"{0}\",", geographicCoordinateSystem.Name));
-            WriteHorizontalDatum(geographicCoordinateSystem.HorizontalDatum,esri, writer);
-            WritePrimeMeridian(geographicCoordinateSystem.PrimeMeridian,esri, writer);
-            WriteAngularUnit(geographicCoordinateSystem.AngularUnit,esri, writer);
-            
+            WriteHorizontalDatum(geographicCoordinateSystem.HorizontalDatum, esri, writer);
+            WritePrimeMeridian(geographicCoordinateSystem.PrimeMeridian, esri, writer);
+            WriteAngularUnit(geographicCoordinateSystem.AngularUnit, esri, writer);
+
             for (int dimension = 0; dimension < geographicCoordinateSystem.Dimension; dimension++)
+            {
                 WriteAxis(geographicCoordinateSystem.GetAxis(dimension), esri, writer);
+            }
             //writer.WriteLine(String.Format("AUTHORITY[\"{0}\",\"{1}\"]", geographicCoordinateSystem.Authority, geographicCoordinateSystem.AuthorityCode));
-            WriteAuthority(geographicCoordinateSystem,esri, writer);
+            WriteAuthority(geographicCoordinateSystem, esri, writer);
             writer.Indent = writer.Indent - 1;
             writer.Write("]");
         }
@@ -188,14 +245,16 @@ namespace gView.Framework.Geometry.SpatialRefTranslation
             writer.WriteLine("PROJCS[");
             writer.Indent = writer.Indent + 1;
             writer.WriteLine(String.Format("\"{0}\",", projectedCoordinateSystem.Name));
-            WriteGeographicCoordinateSystem(projectedCoordinateSystem.GeographicCoordinateSystem, esri,writer);
+            WriteGeographicCoordinateSystem(projectedCoordinateSystem.GeographicCoordinateSystem, esri, writer);
             //writer.WriteLine(",");
             WriteProjection(projectedCoordinateSystem.Projection, writer);
-            WriteLinearUnit(projectedCoordinateSystem.LinearUnit,esri, writer);
+            WriteLinearUnit(projectedCoordinateSystem.LinearUnit, esri, writer);
             for (int dimension = 0; dimension < projectedCoordinateSystem.Dimension; dimension++)
+            {
                 WriteAxis(projectedCoordinateSystem.GetAxis(dimension), esri, writer);
+            }
             //writer.WriteLine(String.Format("AUTHORITY[\"{0}\",\"{1}\"]", projectedCoordinateSystem.Authority, projectedCoordinateSystem.AuthorityCode));
-            WriteAuthority(projectedCoordinateSystem,esri, writer);
+            WriteAuthority(projectedCoordinateSystem, esri, writer);
             writer.Indent = writer.Indent - 1;
             writer.WriteLine("]");
         }
@@ -203,10 +262,17 @@ namespace gView.Framework.Geometry.SpatialRefTranslation
         private static void WriteDatum(Datum datum, bool esri, IndentedTextWriter writer)
         {
             if (datum is VerticalDatum)
-                WriteVerticalDatum(datum as VerticalDatum, esri,writer);
+            {
+                WriteVerticalDatum(datum as VerticalDatum, esri, writer);
+            }
             else if (datum is HorizontalDatum)
-                WriteHorizontalDatum(datum as HorizontalDatum, esri,writer);
-            else throw new NotImplementedException("This datum is not supported.");
+            {
+                WriteHorizontalDatum(datum as HorizontalDatum, esri, writer);
+            }
+            else
+            {
+                throw new NotImplementedException("This datum is not supported.");
+            }
         }
 
         private static void WriteHorizontalDatum(HorizontalDatum horizontalDatum, bool esri, IndentedTextWriter writer)
@@ -215,7 +281,7 @@ namespace gView.Framework.Geometry.SpatialRefTranslation
             writer.Indent = writer.Indent + 1;
             writer.WriteLine(String.Format("\"{0}\",", horizontalDatum.Name));
             WriteEllipsoid(horizontalDatum.Ellipsoid, esri, writer);
-            WriteWGS84ConversionInfo(horizontalDatum.WGS84Parameters,esri, writer);
+            WriteWGS84ConversionInfo(horizontalDatum.WGS84Parameters, esri, writer);
             //writer.WriteLine(String.Format("AUTHORITY[\"{0}\",\"{1}\"]", horizontalDatum.Authority, horizontalDatum.AuthorityCode));
             WriteAuthority(horizontalDatum, esri, writer);
             writer.Indent = writer.Indent - 1;
@@ -235,9 +301,15 @@ namespace gView.Framework.Geometry.SpatialRefTranslation
 
         private static void WriteAxis(AxisInfo axis, bool esri, IndentedTextWriter writer)
         {
-            if (esri) return;
+            if (esri)
+            {
+                return;
+            }
 
-            if (axis == null) return;
+            if (axis == null)
+            {
+                return;
+            }
 
             string axisOrientation = String.Empty;
             switch (axis.Orientation)
@@ -271,7 +343,10 @@ namespace gView.Framework.Geometry.SpatialRefTranslation
 
         private static void WriteWGS84ConversionInfo(WGS84ConversionInfo conversionInfo, bool esri, IndentedTextWriter writer)
         {
-            if (esri) return;
+            if (esri)
+            {
+                return;
+            }
 
             writer.WriteLine(String.Format("TOWGS84[{0},{1},{2},{3},{4},{5},{6}]",
                     conversionInfo.Dx.ToString(_nhi), conversionInfo.Dy.ToString(_nhi), conversionInfo.Dz.ToString(_nhi),
@@ -373,7 +448,10 @@ namespace gView.Framework.Geometry.SpatialRefTranslation
         public static string Write(object obj)
         {
             string ret = WktCoordinateSystemWriter.Write(obj, true);
-            if (ret == String.Empty) return String.Empty;
+            if (ret == String.Empty)
+            {
+                return String.Empty;
+            }
 
             StringBuilder sb = new StringBuilder();
             StringReader reader = new StringReader(ret);
@@ -404,7 +482,10 @@ namespace gView.Framework.Geometry.SpatialRefTranslation
             {
                 geocoordsys = obj as GeographicCoordinateSystem;
             }
-            if (geocoordsys == null) return String.Empty;
+            if (geocoordsys == null)
+            {
+                return String.Empty;
+            }
 
             wgsinfo = geocoordsys.HorizontalDatum.WGS84Parameters;
 

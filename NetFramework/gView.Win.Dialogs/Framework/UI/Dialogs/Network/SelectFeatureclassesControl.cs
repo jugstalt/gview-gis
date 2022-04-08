@@ -1,10 +1,10 @@
-﻿using System;
+﻿using gView.Framework.Data;
+using gView.Framework.Geometry;
+using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
-using gView.Framework.Data;
-using gView.Framework.Geometry;
-using Newtonsoft.Json;
 
 namespace gView.Framework.UI.Dialogs.Network
 {
@@ -26,7 +26,9 @@ namespace gView.Framework.UI.Dialogs.Network
                 foreach (IDatasetElement element in await _dataset.Elements())
                 {
                     if (element == null || !(element.Class is IFeatureClass))
+                    {
                         continue;
+                    }
 
                     IFeatureClass fc = (IFeatureClass)element.Class;
                     if (fc.GeometryType == GeometryType.Polyline)
@@ -88,11 +90,16 @@ namespace gView.Framework.UI.Dialogs.Network
             set
             {
                 if (value == null)
+                {
                     return;
+                }
 
                 this.NetworkName = value.NetworkName;
                 foreach (FcListViewItem item in lstEdges.Items)
+                {
                     item.Checked = false;
+                }
+
                 if (value.EdgeFeatureclasses != null)
                 {
                     foreach (var fcName in value.EdgeFeatureclasses)
@@ -100,12 +107,17 @@ namespace gView.Framework.UI.Dialogs.Network
                         foreach (FcListViewItem item in lstEdges.Items)
                         {
                             if (item.Featureclass.Name == fcName)
+                            {
                                 item.Checked = true;
+                            }
                         }
                     }
                 }
                 foreach (FcListViewItem item in lstNodes.Items)
+                {
                     item.Checked = false;
+                }
+
                 if (value.NodeFeatureclasses != null)
                 {
                     foreach (var fcName in value.NodeFeatureclasses)
@@ -113,7 +125,9 @@ namespace gView.Framework.UI.Dialogs.Network
                         foreach (FcListViewItem item in lstNodes.Items)
                         {
                             if (item.Featureclass.Name == fcName)
+                            {
                                 item.Checked = true;
+                            }
                         }
                     }
                 }

@@ -13,9 +13,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-using System;
 using GeoAPI.Geometries;
 using Proj4Net.Utility;
+using System;
 
 namespace Proj4Net.Projection
 {
@@ -30,9 +30,14 @@ namespace Proj4Net.Projection
         public override Coordinate Project(double lplam, double lpphi, Coordinate coord)
         {
             if ((coord.Y = 1.0 - Math.Sin(lpphi)) <= 0.0)
+            {
                 coord.Y = 0.0;
+            }
             else
+            {
                 coord.Y = Math.Sqrt(coord.Y);
+            }
+
             coord.X = FXC * lplam * coord.Y;
             coord.Y = FYC * (1.0 - coord.Y);
             return coord;
@@ -42,13 +47,27 @@ namespace Proj4Net.Projection
         {
             double lpphi = xyy / FYC - 1.0;
             if (Math.Abs(coord.Y = 1.0 - lpphi * lpphi) < 1.0)
+            {
                 coord.Y = Math.Asin(lpphi);
-            else if (Math.Abs(lpphi) > ONEEPS) throw new ProjectionException("I");
-            else coord.Y = lpphi < 0.0 ? -ProjectionMath.PiHalf : ProjectionMath.PiHalf;
-            if ((coord.X = 1.0 - Math.Sin(lpphi)) <= 0.0)
-                coord.X = 0.0;
+            }
+            else if (Math.Abs(lpphi) > ONEEPS)
+            {
+                throw new ProjectionException("I");
+            }
             else
+            {
+                coord.Y = lpphi < 0.0 ? -ProjectionMath.PiHalf : ProjectionMath.PiHalf;
+            }
+
+            if ((coord.X = 1.0 - Math.Sin(lpphi)) <= 0.0)
+            {
+                coord.X = 0.0;
+            }
+            else
+            {
                 coord.X = xyx / (FXC * Math.Sqrt(coord.X));
+            }
+
             coord.Y = lpphi;
             return coord;
         }

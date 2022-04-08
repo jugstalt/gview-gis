@@ -1,11 +1,9 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.IO;
 using gView.DataSources.Raster.File;
 using gView.Framework.Data;
-using gView.Framework.UI;
 using gView.Framework.system.UI;
+using gView.Framework.UI;
+using System;
+using System.IO;
 using System.Threading.Tasks;
 
 namespace gView.DataSources.Raster.UI
@@ -113,7 +111,9 @@ namespace gView.DataSources.Raster.UI
             try
             {
                 if (!(new FileInfo(filename)).Exists)
+                {
                     return Task.FromResult<IExplorerFileObject>(null);
+                }
             }
             catch
             {
@@ -129,7 +129,9 @@ namespace gView.DataSources.Raster.UI
         public Task<IExplorerObject> CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache cache)
         {
             if (cache.Contains(FullName))
+            {
                 return Task.FromResult<IExplorerObject>(cache[FullName]);
+            }
 
             return Task.FromResult<IExplorerObject>(null);
         }

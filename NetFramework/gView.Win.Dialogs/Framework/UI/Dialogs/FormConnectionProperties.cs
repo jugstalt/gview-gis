@@ -1,14 +1,10 @@
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Text;
-using System.Windows.Forms;
+using gView.Framework.Carto;
 using gView.Framework.Data;
 using gView.Framework.IO;
-using gView.Framework.UI;
-using gView.Framework.Carto;
+using System;
+using System.Collections.Generic;
+using System.Text;
+using System.Windows.Forms;
 
 namespace gView.Framework.UI.Dialogs
 {
@@ -26,7 +22,9 @@ namespace gView.Framework.UI.Dialogs
             _dataset = dataset;
             btnChange.Enabled = _dataset is IConnectionStringDialog;
             if (_dataset != null)
+            {
                 _dsConnectionString = _dataset.ConnectionString;
+            }
         }
 
         #region Events
@@ -47,22 +45,35 @@ namespace gView.Framework.UI.Dialogs
                 while ((ds = _map[dsIndex]) != null)
                 {
                     if (ds == _dataset)
+                    {
                         break;
+                    }
+
                     dsIndex++;
                 }
-                if (ds == null) return;
+                if (ds == null)
+                {
+                    return;
+                }
 
                 foreach (IDatasetElement element in _map.MapElements)
                 {
-                    if (!(element is DatasetElement)) continue;
+                    if (!(element is DatasetElement))
+                    {
+                        continue;
+                    }
 
                     if (element.DatasetID == dsIndex)
                     {
                         IDatasetElement el = await _dataset.Element(element.Title);
                         if (el == null)
+                        {
                             ((DatasetElement)element).Class2 = null;
+                        }
                         else
+                        {
                             ((DatasetElement)element).Class2 = el.Class;
+                        }
                     }
                 }
             }
@@ -85,7 +96,9 @@ namespace gView.Framework.UI.Dialogs
             foreach (string key in dic.Keys)
             {
                 if (String.IsNullOrEmpty(dic[key]))
+                {
                     sb.Append(key);
+                }
                 else
                 {
                     switch (key.ToLower())

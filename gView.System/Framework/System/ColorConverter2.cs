@@ -1,7 +1,4 @@
 using gView.GraphicsEngine;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace gView.Framework.system
 {
@@ -17,7 +14,7 @@ namespace gView.Framework.system
                 {
                     colString = colString.Substring(1);
                     string r, g, b;
-                    if(colString.Length==3)
+                    if (colString.Length == 3)
                     {
                         r = colString[0].ToString() + colString[0].ToString();
                         g = colString[0].ToString() + colString[0].ToString();

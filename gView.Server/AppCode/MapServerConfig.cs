@@ -1,8 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
-using Newtonsoft.Json;
-using System;
-using System.Reflection;
-using System.Web;
+﻿using Newtonsoft.Json;
 
 namespace gView.Server.AppCode
 {
@@ -28,7 +24,7 @@ namespace gView.Server.AppCode
         public TaskQueueConfig TaskQueue { get; set; }
 
         [JsonProperty("external-auth-authority")]
-        public ExtAuthAuthority ExternalAuthAuthority {get;set;}
+        public ExtAuthAuthority ExternalAuthAuthority { get; set; }
 
         [JsonProperty("allowFormsLogin", NullValueHandling = NullValueHandling.Ignore)]
         public bool? AllowFormsLogin { get; set; }
@@ -56,7 +52,7 @@ namespace gView.Server.AppCode
         {
             [JsonProperty("url")]
             public string Url { get; set; }
-            
+
             [JsonProperty("allow-access-token")]
             public bool AllowAccessToken { get; set; }
         }

@@ -1,9 +1,8 @@
 using System;
-using System.Collections.Generic;
-using System.Text;
 using System.IO;
-using System.Security.Cryptography;
 using System.Linq;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace gView.Framework.system
 {
@@ -13,14 +12,16 @@ namespace gView.Framework.system
         public static byte[] key = { 21, 10, 64, 10, 100, 40, 200, 4,
                     21, 54, 65, 246, 5, 62, 1, 54,
                     54, 6, 8, 9, 65, 4, 65, 9};
-                    
+
         private static byte[] iv = { 0, 0, 0, 0, 0, 0, 0, 0 };
 
         public static string ReadFile(string FilePath)
         {
             FileInfo fi = new FileInfo(FilePath);
             if (fi.Exists == false)
+            {
                 return string.Empty;
+            }
 
             FileStream fin = new FileStream(FilePath, FileMode.Open, FileAccess.Read);
             TripleDES tdes = new TripleDESCryptoServiceProvider();
@@ -32,7 +33,10 @@ namespace gView.Framework.system
             {
                 ch = cs.ReadByte();
                 if (ch == 0)
+                {
                     break;
+                }
+
                 SB.Append(Convert.ToChar(ch));
             }
 
@@ -46,7 +50,7 @@ namespace gView.Framework.system
             FileStream fout = new FileStream(FilePath, FileMode.OpenOrCreate, FileAccess.Write);
             TripleDES tdes = new TripleDESCryptoServiceProvider();
             CryptoStream cs = new CryptoStream(fout, tdes.CreateEncryptor(key, iv), CryptoStreamMode.Write);
-            
+
             byte[] d = Encoding.ASCII.GetBytes(Data);
             cs.Write(d, 0, d.Length);
             cs.WriteByte(0);
@@ -87,7 +91,7 @@ namespace gView.Framework.system
         //    //cs.Write(d, 0, d.Length);
         //    //cs.WriteByte(0);
         //    //cs.Flush();
-            
+
         //    //byte[] buffer = new byte[ms.Length];
         //    //ms.Position = 0;
         //    //ms.Read(buffer, 0, buffer.Length);
@@ -109,30 +113,30 @@ namespace gView.Framework.system
         //}
         //static public string Read(string str, byte[] rgbKey, byte[] rgbIV)
         //{
-            //MemoryStream ms = new MemoryStream();
-            //byte[] data = Convert.FromBase64String(str);
-            //ms.Write(data, 0, data.Length);
-            //ms.Position = 0;
+        //MemoryStream ms = new MemoryStream();
+        //byte[] data = Convert.FromBase64String(str);
+        //ms.Write(data, 0, data.Length);
+        //ms.Position = 0;
 
-            //TripleDES tdes = new TripleDESCryptoServiceProvider();
-            //CryptoStream cs = new CryptoStream(ms, tdes.CreateDecryptor(rgbKey, rgbIV), CryptoStreamMode.Read);
+        //TripleDES tdes = new TripleDESCryptoServiceProvider();
+        //CryptoStream cs = new CryptoStream(ms, tdes.CreateDecryptor(rgbKey, rgbIV), CryptoStreamMode.Read);
 
-            //StringBuilder SB = new StringBuilder();
-            //int ch;
-            //for (int i = 0; i < ms.Length; i++)
-            //{
-            //    ch = cs.ReadByte();
-            //    if (ch == 0)
-            //        break;
-            //    SB.Append(Convert.ToChar(ch));
-            //}
+        //StringBuilder SB = new StringBuilder();
+        //int ch;
+        //for (int i = 0; i < ms.Length; i++)
+        //{
+        //    ch = cs.ReadByte();
+        //    if (ch == 0)
+        //        break;
+        //    SB.Append(Convert.ToChar(ch));
+        //}
 
-            //cs.Close();
-            //ms.Close();
+        //cs.Close();
+        //ms.Close();
 
-            //return ms.ToString();
+        //return ms.ToString();
 
-            //return Encoding.ASCII.GetString(Convert.FromBase64String(str));
+        //return Encoding.ASCII.GetString(Convert.FromBase64String(str));
         //}
 
         // Encrypt a byte array into a byte array using a key and an IV 
@@ -219,8 +223,9 @@ namespace gView.Framework.system
         public static string Encrypt(string clearText, string Password, ResultType resultType = ResultType.Base64)
         {
             if (String.IsNullOrEmpty(clearText))
+            {
                 return String.Empty;
-
+            }
 
             byte[] clearBytes = global::System.Text.Encoding.Unicode.GetBytes(clearText);
 
@@ -436,7 +441,9 @@ namespace gView.Framework.system
         public static string Decrypt(string cipherText, string Password)
         {
             if (String.IsNullOrEmpty(cipherText))
+            {
                 return String.Empty;
+            }
 
             // First we need to turn the input string into a byte array. 
 
@@ -630,19 +637,26 @@ namespace gView.Framework.system
         static private byte[] StringToByteArray(String hex)
         {
             if (hex.StartsWith("0x"))
+            {
                 hex = hex.Substring(2, hex.Length - 2);
+            }
 
             int NumberChars = hex.Length;
             byte[] bytes = new byte[NumberChars / 2];
             for (int i = 0; i < NumberChars; i += 2)
+            {
                 bytes[i / 2] = Convert.ToByte(hex.Substring(i, 2), 16);
+            }
+
             return bytes;
         }
 
         static private bool IsHexString(string hex)
         {
             if (hex.StartsWith("0x"))
+            {
                 hex = hex.Substring(2, hex.Length - 2);
+            }
 
             bool isHex;
             foreach (var c in hex)
@@ -652,7 +666,9 @@ namespace gView.Framework.system
                          (c >= 'A' && c <= 'F'));
 
                 if (!isHex)
+                {
                     return false;
+                }
             }
             return true;
         }

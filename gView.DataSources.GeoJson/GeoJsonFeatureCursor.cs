@@ -1,8 +1,6 @@
 ﻿using gView.Framework.Data;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace gView.DataSources.GeoJson
@@ -26,18 +24,20 @@ namespace gView.DataSources.GeoJson
 
         override public void Dispose()
         {
-            
+
         }
 
         override public Task<IFeature> NextFeature()
         {
             if (_features == null || _features.Length <= pos)
+            {
                 return Task.FromResult<IFeature>(null);
+            }
 
             var feature = _features[pos++];
 
             // ToDO: Check Filter WHERE
-            if(_spatialFilter!=null)
+            if (_spatialFilter != null)
             {
                 if (!gView.Framework.Geometry.SpatialRelation.Check(_spatialFilter, feature?.Shape))
                 {

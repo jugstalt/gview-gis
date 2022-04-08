@@ -19,7 +19,7 @@ namespace gView.Framework.Carto.UI
         private static IGeometry GeometryFromSymbol(ISymbol symbol, IEnvelope env)
         {
             IGeometry geometry = null;
-            
+
             if (symbol is ISymbolCollection)
             {
                 if (((ISymbolCollection)symbol).Symbols.Count > 0)

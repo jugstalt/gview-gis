@@ -1,6 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace gView.Framework.LinAlg
 {
@@ -11,7 +9,11 @@ namespace gView.Framework.LinAlg
         public Vector3d() { }
         public Vector3d(double[] v)
         {
-            if (v == null) return;
+            if (v == null)
+            {
+                return;
+            }
+
             for (int i = 0; i < Math.Min(v.Length, 3); i++)
             {
                 _v[i] = v[i];
@@ -29,7 +31,10 @@ namespace gView.Framework.LinAlg
             get
             {
                 double nn = _v[0] * _v[0] + _v[1] * _v[1] + _v[2] * _v[2];
-                if (nn == 0.0) return 0.0;
+                if (nn == 0.0)
+                {
+                    return 0.0;
+                }
 
                 return Math.Sqrt(nn);
             }
@@ -39,12 +44,20 @@ namespace gView.Framework.LinAlg
         {
             get
             {
-                if (index < 0 || index > 2) return 0.0;
+                if (index < 0 || index > 2)
+                {
+                    return 0.0;
+                }
+
                 return _v[index];
             }
             set
             {
-                if (index < 0 || index > 2) return;
+                if (index < 0 || index > 2)
+                {
+                    return;
+                }
+
                 _v[index] = value;
             }
         }
@@ -52,7 +65,10 @@ namespace gView.Framework.LinAlg
         public void Normalize()
         {
             double n = this.VectorNorm;
-            if (n == 0.0) return;
+            if (n == 0.0)
+            {
+                return;
+            }
 
             _v[0] /= n;
             _v[1] /= n;
@@ -61,7 +77,10 @@ namespace gView.Framework.LinAlg
 
         public Vector3d Product(Vector3d vec)
         {
-            if (vec == null) return null;
+            if (vec == null)
+            {
+                return null;
+            }
 
             Vector3d x = new Vector3d();
 
@@ -73,7 +92,10 @@ namespace gView.Framework.LinAlg
 
         public static double operator *(Vector3d v1, Vector3d v2)
         {
-            if (v1 == null || v2 == null) return 0.0;
+            if (v1 == null || v2 == null)
+            {
+                return 0.0;
+            }
 
             return v1._v[0] * v2._v[0] +
                    v1._v[1] * v2._v[1] +
@@ -82,15 +104,25 @@ namespace gView.Framework.LinAlg
 
         public static Vector3d operator *(double f, Vector3d v1)
         {
-            if (v1 == null) return null;
+            if (v1 == null)
+            {
+                return null;
+            }
 
             return new Vector3d(v1._v[0] * f, v1._v[1] * f, v1._v[2] * f);
         }
 
         public static Vector3d operator +(Vector3d v1, Vector3d v2)
         {
-            if (v1 == null) return v2;
-            if (v2 == null) return v1;
+            if (v1 == null)
+            {
+                return v2;
+            }
+
+            if (v2 == null)
+            {
+                return v1;
+            }
 
             return new Vector3d(
                 v1._v[0] + v2._v[0],
@@ -100,8 +132,15 @@ namespace gView.Framework.LinAlg
 
         public static Vector3d operator -(Vector3d v1, Vector3d v2)
         {
-            if (v1 == null) return v2;
-            if (v2 == null) return v1;
+            if (v1 == null)
+            {
+                return v2;
+            }
+
+            if (v2 == null)
+            {
+                return v1;
+            }
 
             return new Vector3d(
                 v1._v[0] - v2._v[0],
@@ -110,7 +149,11 @@ namespace gView.Framework.LinAlg
         }
         public static Vector3d operator %(Vector3d v1, Vector3d v2)
         {
-            if (v1 == null) return null;
+            if (v1 == null)
+            {
+                return null;
+            }
+
             return v1.Product(v2);
         }
 
@@ -127,7 +170,11 @@ namespace gView.Framework.LinAlg
         public Vector2d() { }
         public Vector2d(double[] v)
         {
-            if (v == null) return;
+            if (v == null)
+            {
+                return;
+            }
+
             for (int i = 0; i < Math.Min(v.Length, 2); i++)
             {
                 _v[i] = v[i];
@@ -144,7 +191,10 @@ namespace gView.Framework.LinAlg
             get
             {
                 double nn = _v[0] * _v[0] + _v[1] * _v[1];
-                if (nn == 0.0) return 0.0;
+                if (nn == 0.0)
+                {
+                    return 0.0;
+                }
 
                 return Math.Sqrt(nn);
             }
@@ -154,12 +204,20 @@ namespace gView.Framework.LinAlg
         {
             get
             {
-                if (index < 0 || index > 1) return 0.0;
+                if (index < 0 || index > 1)
+                {
+                    return 0.0;
+                }
+
                 return _v[index];
             }
             set
             {
-                if (index < 0 || index > 1) return;
+                if (index < 0 || index > 1)
+                {
+                    return;
+                }
+
                 _v[index] = value;
             }
         }
@@ -167,7 +225,10 @@ namespace gView.Framework.LinAlg
         public void Normalize()
         {
             double n = this.VectorNorm;
-            if (n == 0.0) return;
+            if (n == 0.0)
+            {
+                return;
+            }
 
             _v[0] /= n;
             _v[1] /= n;
@@ -178,7 +239,10 @@ namespace gView.Framework.LinAlg
             get
             {
                 double angle = Math.Atan2(_v[1], _v[0]);
-                if (angle < 0.0) angle += 2.0 * Math.PI;
+                if (angle < 0.0)
+                {
+                    angle += 2.0 * Math.PI;
+                }
 
                 return angle;
             }
@@ -186,7 +250,10 @@ namespace gView.Framework.LinAlg
 
         public static Vector2d operator *(double f, Vector2d v1)
         {
-            if (v1 == null) return null;
+            if (v1 == null)
+            {
+                return null;
+            }
 
             return new Vector2d(v1._v[0] * f, v1._v[1] * f);
         }
@@ -205,8 +272,15 @@ namespace gView.Framework.LinAlg
 
         public static Vector2d operator +(Vector2d v1, Vector2d v2)
         {
-            if (v1 == null) return v2;
-            if (v2 == null) return v1;
+            if (v1 == null)
+            {
+                return v2;
+            }
+
+            if (v2 == null)
+            {
+                return v1;
+            }
 
             return new Vector2d(
                 v1._v[0] + v2._v[0],
@@ -215,8 +289,15 @@ namespace gView.Framework.LinAlg
 
         public static Vector2d operator -(Vector2d v1, Vector2d v2)
         {
-            if (v1 == null) return v2;
-            if (v2 == null) return v1;
+            if (v1 == null)
+            {
+                return v2;
+            }
+
+            if (v2 == null)
+            {
+                return v1;
+            }
 
             return new Vector2d(
                 v1._v[0] - v2._v[0],

@@ -6,8 +6,6 @@ using gView.Framework.system.UI;
 using gView.Framework.UI;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -21,7 +19,7 @@ namespace gView.Win.DataSources.GeoJson.UI.ExplorerObjects
         private IFeatureDataset _dataset;
         private ToolStripItem[] _contextItems = null;
 
-        public GeoJsonServiceExplorerObject() 
+        public GeoJsonServiceExplorerObject()
             : base(null, typeof(IFeatureDataset), 1) { }
 
         public GeoJsonServiceExplorerObject(IExplorerObject parent, string name, string connectionString)

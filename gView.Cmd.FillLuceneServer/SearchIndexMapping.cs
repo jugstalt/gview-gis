@@ -1,8 +1,5 @@
 ﻿using LuceneServerNET.Core.Models.Mapping;
 using LuceneServerNET.Core.Phonetics;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace gView.Cmd.FillLuceneServer
 {

@@ -13,9 +13,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-using System;
 using GeoAPI.Geometries;
 using Proj4Net.Utility;
+using System;
 
 namespace Proj4Net.Projection
 {
@@ -45,10 +45,15 @@ namespace Proj4Net.Projection
                 xy.Y -= V = (lpphi + s * (c - 1.0) - p) /
                     (1.0 + c * (c - 1.0) - s * s);
                 if (Math.Abs(V) < EPS10)
+                {
                     break;
+                }
             }
             if (i == 0)
+            {
                 xy.Y = lpphi < 0 ? -PI_DIV_3 : PI_DIV_3;
+            }
+
             xy.X = C_x * lplam * (Math.Cos(lpphi) - 0.5);
             xy.Y = C_y * Math.Sin(lpphi);
             return xy;

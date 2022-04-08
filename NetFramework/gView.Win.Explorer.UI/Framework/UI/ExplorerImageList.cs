@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Drawing;
 using System.Windows.Forms;
-using System.Drawing;
 
 namespace gView.Framework.UI
 {
@@ -32,13 +28,19 @@ namespace gView.Framework.UI
             get
             {
                 lock (lockThis)
+                {
                     return _imageList.Images.Count;
+                }
             }
         }
 
         public void AddImage(Image image)
         {
-            if (image == null) return;
+            if (image == null)
+            {
+                return;
+            }
+
             lock (lockThis)
             {
                 Bitmap bm = new Bitmap(16, 16, System.Drawing.Imaging.PixelFormat.Format32bppArgb);

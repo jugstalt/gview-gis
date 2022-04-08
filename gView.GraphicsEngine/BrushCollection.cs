@@ -1,8 +1,6 @@
 ﻿using gView.GraphicsEngine.Abstraction;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace gView.GraphicsEngine
 {
@@ -19,7 +17,7 @@ namespace gView.GraphicsEngine
 
         public void Dispose()
         {
-            foreach(var brush in _brushes)
+            foreach (var brush in _brushes)
             {
                 brush.Dispose();
             }

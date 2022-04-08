@@ -1,21 +1,15 @@
+using gView.Framework.Data;
+using gView.Framework.FDB;
+using gView.Framework.IO;
+using gView.Framework.Sys.UI;
+using gView.Framework.system;
+using gView.Framework.system.UI;
+using gView.Framework.UI.Dialogs;
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.IO;
-using System.Xml;
-using System.Management;
-using gView.Framework.system;
-using gView.Framework.UI;
-using gView.Framework.system.UI;
-using System.Windows.Forms;
-using gView.Framework.FDB;
-using gView.Framework.Data;
-using gView.Framework.UI.Dialogs;
-using System.Threading;
-using gView.Framework.Geometry;
-using gView.Framework.IO;
 using System.Threading.Tasks;
-using gView.Framework.Sys.UI;
+using System.Windows.Forms;
 
 namespace gView.Framework.UI
 {
@@ -80,7 +74,10 @@ namespace gView.Framework.UI
         {
             try
             {
-                if (!(new DirectoryInfo(FullName)).Exists) return null;
+                if (!(new DirectoryInfo(FullName)).Exists)
+                {
+                    return null;
+                }
             }
             catch { return null; }
             return new DirectoryObject(this, FullName);
@@ -110,7 +107,9 @@ namespace gView.Framework.UI
             await base.Refresh();
             List<IExplorerObject> childs = await DirectoryObject.Refresh(this, this.FullName);
             if (childs == null)
+            {
                 return false;
+            }
 
             foreach (IExplorerObject child in childs)
             {
@@ -145,7 +144,10 @@ namespace gView.Framework.UI
             foreach (var exObjectType in manager.GetPlugins(Plugins.Type.IExplorerObject))
             {
                 var exObj = manager.CreateInstance<IExplorerObject>(exObjectType);
-                if (!(exObj is IExplorerFileObject)) continue;
+                if (!(exObj is IExplorerFileObject))
+                {
+                    continue;
+                }
 
                 foreach (string filter in ((IExplorerFileObject)exObj).Filter.Split('|'))
                 {
@@ -153,7 +155,10 @@ namespace gView.Framework.UI
                     {
                         FileInfo fi = new FileInfo(file);
                         IExplorerFileObject obj = await ((IExplorerFileObject)exObj).CreateInstance(parent, fi.FullName);
-                        if (obj == null) continue;
+                        if (obj == null)
+                        {
+                            continue;
+                        }
 
                         childs.Add(obj);
                     }
@@ -168,12 +173,17 @@ namespace gView.Framework.UI
         public Task<IExplorerObject> CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache cache)
         {
             if (cache.Contains(FullName))
+            {
                 return Task.FromResult<IExplorerObject>(cache[FullName]);
+            }
 
             try
             {
                 DirectoryInfo di = new DirectoryInfo(FullName);
-                if (!di.Exists) return null;
+                if (!di.Exists)
+                {
+                    return null;
+                }
 
                 DirectoryObject dObject = new DirectoryObject(this, FullName);
                 cache.Append(dObject);
@@ -197,7 +207,11 @@ namespace gView.Framework.UI
             {
                 DirectoryInfo di = new DirectoryInfo(_path);
                 di.Delete();
-                if (ExplorerObjectDeleted != null) ExplorerObjectDeleted(this);
+                if (ExplorerObjectDeleted != null)
+                {
+                    ExplorerObjectDeleted(this);
+                }
+
                 return Task.FromResult(true);
             }
             catch (Exception ex)
@@ -223,7 +237,11 @@ namespace gView.Framework.UI
                     _path, newPath);
                 _path = newPath;
 
-                if (ExplorerObjectRenamed != null) ExplorerObjectRenamed(this);
+                if (ExplorerObjectRenamed != null)
+                {
+                    ExplorerObjectRenamed(this);
+                }
+
                 return Task.FromResult(true);
             }
             catch (Exception ex)
@@ -241,7 +259,10 @@ namespace gView.Framework.UI
         public bool CanCreate(IExplorerObject parentExObject)
         {
             if (parentExObject is DirectoryObject ||
-                parentExObject is DriveObject) return true;
+                parentExObject is DriveObject)
+            {
+                return true;
+            }
 
             return false;
         }
@@ -249,14 +270,17 @@ namespace gView.Framework.UI
         public Task<IExplorerObject> CreateExplorerObject(IExplorerObject parentExObject)
         {
             string newName = Microsoft.VisualBasic.Interaction.InputBox("New Directory", "Create", "New Directory", 200, 300);
-            if (newName.Trim().Equals(String.Empty)) return null;
+            if (newName.Trim().Equals(String.Empty))
+            {
+                return null;
+            }
 
             try
             {
                 DirectoryInfo di = new DirectoryInfo(parentExObject.FullName + @"\" + newName);
                 di.Create();
 
-                return Task.FromResult<IExplorerObject>( new DirectoryObject(parentExObject, di.FullName));
+                return Task.FromResult<IExplorerObject>(new DirectoryObject(parentExObject, di.FullName));
             }
             catch (Exception ex)
             {
@@ -310,11 +334,17 @@ namespace gView.Framework.UI
             foreach (var dbType in compMan.GetPlugins(Plugins.Type.IFileFeatureDatabase))
             {
                 var db = compMan.CreateInstance<IFileFeatureDatabase>(dbType);
-                if (db == null) continue;
+                if (db == null)
+                {
+                    continue;
+                }
 
                 databases.Add(db);
             }
-            if (databases.Count == 0) return;
+            if (databases.Count == 0)
+            {
+                return;
+            }
 
             bool schemaOnly = false;
             if (userdata != null &&
@@ -332,23 +362,42 @@ namespace gView.Framework.UI
                     ExplorerObjectManager exObjectManager = new ExplorerObjectManager();
 
                     List<IExplorerObject> exObjects = new List<IExplorerObject>(await exObjectManager.DeserializeExplorerObject((IEnumerable<IExplorerObjectSerialization>)ob));
-                    if (exObjects == null) return;
+                    if (exObjects == null)
+                    {
+                        return;
+                    }
 
                     foreach (IExplorerObject exObject in ListOperations<IExplorerObject>.Clone(exObjects))
                     {
                         IFeatureClass fc = await exObject.GetInstanceAsync() as IFeatureClass;
-                        if (fc == null) continue;
+                        if (fc == null)
+                        {
+                            continue;
+                        }
                     }
-                    if (exObjects.Count == 0) return;
+                    if (exObjects.Count == 0)
+                    {
+                        return;
+                    }
 
                     FormFeatureclassCopy dlg = await FormFeatureclassCopy.Create(exObjects, databases, this.FullName);
                     dlg.SchemaOnly = schemaOnly;
-                    if (dlg.ShowDialog() != DialogResult.OK) continue;
+                    if (dlg.ShowDialog() != DialogResult.OK)
+                    {
+                        continue;
+                    }
 
-                    if (dlg.SelectedFeatureDatabase == null) return;
+                    if (dlg.SelectedFeatureDatabase == null)
+                    {
+                        return;
+                    }
+
                     IFileFeatureDatabase fileDB = dlg.SelectedFeatureDatabase;
                     _dataset = await fileDB.GetDataset(this.FullName);
-                    if (_dataset == null) return;
+                    if (_dataset == null)
+                    {
+                        return;
+                    }
 
                     //_dataset = new ImportFeatureDataset(dlg.SelectedFeatureDatabase);
 
@@ -369,11 +418,17 @@ namespace gView.Framework.UI
             foreach (var dbType in compMan.GetPlugins(Plugins.Type.IFileFeatureDatabase))
             {
                 IFileFeatureDatabase db = compMan.CreateInstance(dbType) as IFileFeatureDatabase;
-                if (db == null) continue;
+                if (db == null)
+                {
+                    continue;
+                }
 
                 found = true;
             }
-            if (!found) return;
+            if (!found)
+            {
+                return;
+            }
 
             foreach (string format in e.Data.GetFormats())
             {
@@ -436,7 +491,9 @@ namespace gView.Framework.UI
             if (datasetObject is IFeatureClass)
             {
                 if (_import == null)
+                {
                     _import = new FeatureImport();
+                }
                 else
                 {
                     MessageBox.Show("ERROR: Import already runnung");
@@ -454,7 +511,9 @@ namespace gView.Framework.UI
             if (datasetObject is FeatureClassListViewItem)
             {
                 if (_import == null)
+                {
                     _import = new FeatureImport();
+                }
                 else
                 {
                     MessageBox.Show("ERROR: Import already runnung");
@@ -473,7 +532,10 @@ namespace gView.Framework.UI
 
         async private Task ImportAsync(object element)
         {
-            if (_import == null) return;
+            if (_import == null)
+            {
+                return;
+            }
 
             if (element is IFeatureClass)
             {
@@ -490,7 +552,10 @@ namespace gView.Framework.UI
             else if (element is FeatureClassListViewItem)
             {
                 FeatureClassListViewItem item = element as FeatureClassListViewItem;
-                if (item.FeatureClass == null) return;
+                if (item.FeatureClass == null)
+                {
+                    return;
+                }
 
                 if (!await _import.ImportToNewFeatureclass(
                     _dataset,
@@ -516,11 +581,17 @@ namespace gView.Framework.UI
                 var reporter = new FeatureClassImportProgressReporter();
 
                 if (import == null)
+                {
                     return reporter;
+                }
 
                 reporter._cancelTracker = import.CancelTracker;
 
-                if (source != null) reporter._report.featureMax = await source.CountFeatures();
+                if (source != null)
+                {
+                    reporter._report.featureMax = await source.CountFeatures();
+                }
+
                 import.ReportAction += new FeatureImport.ReportActionEvent(reporter.import_ReportAction);
                 import.ReportProgress += new FeatureImport.ReportProgressEvent(reporter.import_ReportProgress);
                 import.ReportRequest += new FeatureImport.ReportRequestEvent(reporter.import_ReportRequest);
@@ -539,7 +610,10 @@ namespace gView.Framework.UI
 
             void import_ReportProgress(FeatureImport sender, int progress)
             {
-                if (ReportProgress == null) return;
+                if (ReportProgress == null)
+                {
+                    return;
+                }
 
                 _report.featureMax = Math.Max(_report.featureMax, progress);
                 _report.featurePos = progress;
@@ -549,7 +623,10 @@ namespace gView.Framework.UI
 
             void import_ReportAction(FeatureImport sender, string action)
             {
-                if (ReportProgress == null) return;
+                if (ReportProgress == null)
+                {
+                    return;
+                }
 
                 _report.featurePos = 0;
                 _report.Message = action;
@@ -603,19 +680,24 @@ namespace gView.Framework.UI
             _drive = drive;
             switch (type)
             {
-                case 2: _imageIndex = 7;
+                case 2:
+                    _imageIndex = 7;
                     _type = "Floppy Disk (" + _drive + ")";
                     break;
-                case 5: _imageIndex = 4;
+                case 5:
+                    _imageIndex = 4;
                     _type = "CD-ROM Drive (" + _drive + ")";
                     break;
-                case 4: _imageIndex = 5;
+                case 4:
+                    _imageIndex = 5;
                     _type = "Mapped Drive (" + _drive + ")";
                     break;
-                case 999: _imageIndex = 5;
+                case 999:
+                    _imageIndex = 5;
                     _type = drive;
                     break;
-                default: _imageIndex = 6;
+                default:
+                    _imageIndex = 6;
                     _type = "Local Drive (" + _drive + ")";
                     break;
             }
@@ -675,7 +757,9 @@ namespace gView.Framework.UI
             await base.Refresh();
             List<IExplorerObject> childs = await DirectoryObject.Refresh(this, this.FullName);
             if (childs == null)
+            {
                 return false;
+            }
 
             foreach (IExplorerObject child in childs)
             {
@@ -692,7 +776,9 @@ namespace gView.Framework.UI
         public Task<IExplorerObject> CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache cache)
         {
             if (cache.Contains(FullName))
+            {
                 return Task.FromResult<IExplorerObject>(cache[FullName]);
+            }
 
             return Task.FromResult<IExplorerObject>(null);
         }
@@ -716,7 +802,9 @@ namespace gView.Framework.UI
             configStream.Remove(this.Name);
 
             if (ExplorerObjectDeleted != null)
+            {
                 ExplorerObjectDeleted(this);
+            }
 
             return Task.FromResult(true);
         }
@@ -743,7 +831,11 @@ namespace gView.Framework.UI
             get
             {
                 System.Windows.Forms.ImageList imageList = (new Icons()).imageList1;
-                if (_imageIndex >= imageList.Images.Count) return null;
+                if (_imageIndex >= imageList.Images.Count)
+                {
+                    return null;
+                }
+
                 return imageList.Images[_imageIndex];
                 //return FormExplorer.globalImageList.Images[_imageIndex];
             }
@@ -796,14 +888,16 @@ namespace gView.Framework.UI
         public Task<IExplorerObject> CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache cache)
         {
             if (FullName == String.Empty)
+            {
                 return Task.FromResult<IExplorerObject>(new ComputerObject(_application));
+            }
 
             return Task.FromResult<IExplorerObject>(null);
         }
 
         #endregion
 
-      #region IExplorerParentObject Member
+        #region IExplorerParentObject Member
 
         async public override Task<bool> Refresh()
         {
@@ -834,7 +928,10 @@ namespace gView.Framework.UI
             foreach (var exObjectType in compMan.GetPlugins(Plugins.Type.IExplorerObject))
             {
                 var exObject = compMan.CreateInstance<IExplorerObject>(exObjectType);
-                if (!(exObject is IExplorerGroupObject)) continue;
+                if (!(exObject is IExplorerGroupObject))
+                {
+                    continue;
+                }
 
                 base.AddChildObject(exObject);
             }

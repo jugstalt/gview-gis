@@ -5,7 +5,6 @@ using gView.Framework.Geometry.Tiling;
 using gView.Framework.IO;
 using gView.Framework.system;
 using gView.GraphicsEngine;
-using gView.GraphicsEngine.Abstraction;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -30,7 +29,7 @@ namespace gView.DataSources.TileCache
             _level = level;
             _row = row;
             _col = col;
-            _resolution=resolution;
+            _resolution = resolution;
 
             double tileWidth = grid.TileWidth(resolution), tileHeight = grid.TileHeight(resolution);
             _poly = new Polygon(new Ring());
@@ -96,7 +95,7 @@ namespace gView.DataSources.TileCache
             }
             set
             {
-                
+
             }
         }
 
@@ -141,7 +140,7 @@ namespace gView.DataSources.TileCache
             }
             set
             {
-                
+
             }
         }
 
@@ -153,7 +152,7 @@ namespace gView.DataSources.TileCache
             }
             set
             {
-                
+
             }
         }
 
@@ -165,13 +164,14 @@ namespace gView.DataSources.TileCache
             }
             set
             {
-                
+
             }
         }
 
-        public GraphicsEngine.Filters.FilterImplementations FilterImplementation { 
-            get { return GraphicsEngine.Filters.FilterImplementations.Default;  }
-            set { } 
+        public GraphicsEngine.Filters.FilterImplementations FilterImplementation
+        {
+            get { return GraphicsEngine.Filters.FilterImplementations.Default; }
+            set { }
         }
 
         public IRasterClass RasterClass
@@ -403,7 +403,7 @@ namespace gView.DataSources.TileCache
             }
             try
             {
-                string url = _dataset.TileUrl, quadkey=String.Empty;
+                string url = _dataset.TileUrl, quadkey = String.Empty;
                 if (url.Contains("\n"))
                 {
                     url = url.Replace("\r", String.Empty);
@@ -451,7 +451,7 @@ namespace gView.DataSources.TileCache
 
                             return new RasterPaintContext(bitmap);
                         }
-                        catch(Exception ex)
+                        catch (Exception ex)
                         {
                             bitmap?.Dispose();
                             throw ex;

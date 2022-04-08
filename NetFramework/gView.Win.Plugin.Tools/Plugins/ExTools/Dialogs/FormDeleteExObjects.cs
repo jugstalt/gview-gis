@@ -1,11 +1,6 @@
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Text;
-using System.Windows.Forms;
 using gView.Framework.UI;
+using System.Collections.Generic;
+using System.Windows.Forms;
 
 namespace gView.Plugins.ExTools.Dialogs
 {
@@ -15,7 +10,11 @@ namespace gView.Plugins.ExTools.Dialogs
         {
             InitializeComponent();
 
-            if (exObjects == null) return;
+            if (exObjects == null)
+            {
+                return;
+            }
+
             foreach (IExplorerObject exObject in exObjects)
             {
                 if (exObject is IExplorerObjectDeletable)
@@ -37,11 +36,13 @@ namespace gView.Plugins.ExTools.Dialogs
         {
             get
             {
-                List<IExplorerObject> list=new List<IExplorerObject>();
+                List<IExplorerObject> list = new List<IExplorerObject>();
                 foreach (ExplorerObjectListViewItem item in lstObjects.Items)
                 {
                     if (item.Checked)
+                    {
                         list.Add(item.ExplorerObject);
+                    }
                 }
                 return list;
             }
@@ -53,7 +54,11 @@ namespace gView.Plugins.ExTools.Dialogs
         IExplorerObject _exObject = null;
         public ExplorerObjectListViewItem(IExplorerObject exObject, int imageIndex)
         {
-            if (exObject == null) return;
+            if (exObject == null)
+            {
+                return;
+            }
+
             base.Text = exObject.FullName;
             base.ImageIndex = imageIndex;
             base.Checked = true;

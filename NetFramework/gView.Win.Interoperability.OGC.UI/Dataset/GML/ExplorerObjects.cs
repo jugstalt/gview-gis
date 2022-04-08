@@ -1,11 +1,8 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-using gView.Framework.UI;
-using System.IO;
-using gView.Interoperability.OGC.Dataset.GML;
 using gView.Framework.Data;
 using gView.Framework.system.UI;
+using gView.Framework.UI;
+using System;
+using System.IO;
 using System.Threading.Tasks;
 
 namespace gView.Interoperability.OGC.UI.Dataset.GML
@@ -19,7 +16,7 @@ namespace gView.Interoperability.OGC.UI.Dataset.GML
 
         public GMLExplorerObject() : base(null, typeof(OGC.Dataset.GML.Dataset), 2) { }
         public GMLExplorerObject(IExplorerObject parent, string filename)
-            : base(parent, typeof(OGC.Dataset.GML.Dataset),2)
+            : base(parent, typeof(OGC.Dataset.GML.Dataset), 2)
         {
             _filename = filename;
 
@@ -89,7 +86,7 @@ namespace gView.Interoperability.OGC.UI.Dataset.GML
             await _dataset.SetConnectionString(_filename);
             await _dataset.Open();
 
-            return _dataset; 
+            return _dataset;
         }
 
         #endregion
@@ -108,7 +105,9 @@ namespace gView.Interoperability.OGC.UI.Dataset.GML
         async public Task<IExplorerObject> CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache cache)
         {
             if (cache.Contains(FullName))
+            {
                 return cache[FullName];
+            }
 
             try
             {
@@ -135,7 +134,9 @@ namespace gView.Interoperability.OGC.UI.Dataset.GML
             await base.Refresh();
 
             if (_dataset == null)
+            {
                 return false;
+            }
 
             foreach (IDatasetElement element in await _dataset.Elements())
             {
@@ -157,7 +158,11 @@ namespace gView.Interoperability.OGC.UI.Dataset.GML
             {
                 if (_dataset.Delete())
                 {
-                    if (ExplorerObjectDeleted != null) ExplorerObjectDeleted(this);
+                    if (ExplorerObjectDeleted != null)
+                    {
+                        ExplorerObjectDeleted(this);
+                    }
+
                     return Task.FromResult(true);
                 }
             }
@@ -180,14 +185,16 @@ namespace gView.Interoperability.OGC.UI.Dataset.GML
             _parent = parent;
             _fcName = fcName;
 
-            
+
         }
 
         async private Task<gView.Interoperability.OGC.Dataset.GML.Dataset> Dataset()
         {
             var instance = await _parent.GetInstanceAsync();
             if (_parent == null || !(instance is gView.Interoperability.OGC.Dataset.GML.Dataset))
+            {
                 return null;
+            }
 
             return instance as gView.Interoperability.OGC.Dataset.GML.Dataset;
         }
@@ -217,17 +224,21 @@ namespace gView.Interoperability.OGC.UI.Dataset.GML
         async public Task<object> GetInstanceAsync()
         {
             if (_fc != null)
+            {
                 return _fc;
+            }
 
             var datdaset = await this.Dataset();
             if (this.Dataset() != null)
             {
                 IDatasetElement element = await datdaset.Element(_fcName);
                 if (element != null)
+                {
                     _fc = element.Class as IFeatureClass;
+                }
             }
 
-            return _fc; 
+            return _fc;
         }
 
         #endregion

@@ -1,14 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.IO;
-using gView.Framework.Data;
-using gView.Framework.Network.Algorthm;
-using System.Data.Common;
-using gView.Framework.Network;
-using gView.Framework.IO;
-using System.Data;
+﻿using gView.Framework.Data;
 using gView.Framework.FDB;
+using gView.Framework.IO;
+using gView.Framework.Network.Algorthm;
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Data.Common;
+using System.IO;
+using System.Text;
 
 namespace gView.Framework.Network.Build
 {
@@ -68,7 +67,10 @@ namespace gView.Framework.Network.Build
                 int eid = r.ReadInt32();
                 int fcid = r.ReadInt32(), oid = -1;
                 if (fcid >= 0)
+                {
                     oid = r.ReadInt32();
+                }
+
                 int n1 = r.ReadInt32();
                 int n2 = r.ReadInt32();
 
@@ -91,8 +93,12 @@ namespace gView.Framework.Network.Build
             public IGraphEdge GetEdge(int eid)
             {
                 foreach (IGraphEdge edge in _edges)
+                {
                     if (edge.Eid == eid)
+                    {
                         return edge;
+                    }
+                }
 
                 return null;
             }
@@ -154,7 +160,9 @@ namespace gView.Framework.Network.Build
                 foreach (GraphTableRow row in _rows)
                 {
                     if (row.N1 == n1)
+                    {
                         rows.Add(row);
+                    }
                 }
                 return rows;
             }
@@ -210,7 +218,10 @@ namespace gView.Framework.Network.Build
         public static byte[] GetBuffer(BinaryWriter writer)
         {
             if (writer.BaseStream is MemoryStream)
+            {
                 return ((MemoryStream)writer.BaseStream).GetBuffer();
+            }
+
             return null;
         }
 
@@ -225,10 +236,14 @@ namespace gView.Framework.Network.Build
             public double GetWeight(int index)
             {
                 if (_weights == null)
+                {
                     return 0.0;
+                }
 
                 if (index >= 0 && index < _weights.Length)
+                {
                     return _weights[index];
+                }
 
                 return 0.0;
             }
@@ -244,7 +259,9 @@ namespace gView.Framework.Network.Build
                 BinaryReader br = new BinaryReader(new MemoryStream(data));
                 _weights = new double[data.Length / sizeof(double)];
                 for (int i = 0; i < _weights.Length; i++)
+                {
                     _weights[i] = br.ReadDouble();
+                }
             }
         }
         private class IntWeightPage : IWeightPage
@@ -254,10 +271,14 @@ namespace gView.Framework.Network.Build
             public double GetWeight(int index)
             {
                 if (_weights == null)
+                {
                     return 0.0;
+                }
 
                 if (index >= 0 && index < _weights.Length)
+                {
                     return _weights[index];
+                }
 
                 return 0.0;
             }
@@ -273,7 +294,9 @@ namespace gView.Framework.Network.Build
                 BinaryReader br = new BinaryReader(new MemoryStream(data));
                 _weights = new int[data.Length / sizeof(int)];
                 for (int i = 0; i < _weights.Length; i++)
+                {
                     _weights[i] = br.ReadInt32();
+                }
             }
         }
         #endregion
@@ -298,11 +321,17 @@ namespace gView.Framework.Network.Build
             {
                 int index = _nodeIds.BinarySearch(nodeId);
                 if (index < 0)  // Node is not a switch!
+                {
                     return true;
+                }
 
                 foreach (ISwitch s in _switches)
+                {
                     if (s.NodeId == nodeId)
+                    {
                         return s.SwitchState;
+                    }
+                }
 
                 return false;
             }
@@ -329,7 +358,9 @@ namespace gView.Framework.Network.Build
             {
                 int index = _nodeIds.BinarySearch(nodeId);
                 if (index < 0)  // Node is not Fc Node!
+                {
                     return -1;
+                }
 
                 return _fcIds[index];
             }
@@ -345,7 +376,9 @@ namespace gView.Framework.Network.Build
             public void Add(int nodeId, NetworkNodeType nodeType)
             {
                 if (nodeType == NetworkNodeType.Unknown)
+                {
                     return;
+                }
 
                 int index = _nodeIds.BinarySearch(nodeId);
                 if (index < 0)
@@ -359,7 +392,9 @@ namespace gView.Framework.Network.Build
             {
                 int index = _nodeIds.BinarySearch(nodeId);
                 if (index < 0)  // Normal Node!
+                {
                     return NetworkNodeType.Unknown;
+                }
 
                 return _types[nodeId];
             }
@@ -543,7 +578,9 @@ namespace gView.Framework.Network.Build
             {
                 GraphPage page = LoadGraphPage(NetworkObjectSerializer.Page(n1));
                 if (page == null)
+                {
                     return new GraphTableRows();
+                }
 
                 return page.QueryN1(n1);
             }
@@ -553,7 +590,9 @@ namespace gView.Framework.Network.Build
                 lock (_thisLock)
                 {
                     if (_graphPages.ContainsKey(page))
+                    {
                         return _graphPages[page];
+                    }
 
                     if (_dbfactory != null)
                     {
@@ -593,7 +632,9 @@ namespace gView.Framework.Network.Build
             {
                 EdgePage page = LoadEdgePage(NetworkObjectSerializer.Page(eid));
                 if (page == null)
+                {
                     return null;
+                }
 
                 return page.GetEdge(eid);
             }
@@ -603,7 +644,9 @@ namespace gView.Framework.Network.Build
                 lock (_thisLock)
                 {
                     if (_edgePages.ContainsKey(page))
+                    {
                         return _edgePages[page];
+                    }
 
                     if (_dbfactory != null)
                     {
@@ -645,7 +688,9 @@ namespace gView.Framework.Network.Build
                 int pageIndex = NetworkObjectSerializer.Page(eid);
                 IWeightPage page = LoadWeightPage(guid, pageIndex);
                 if (page == null)
+                {
                     return 0.0;
+                }
 
 
                 // Page 0: Edge   1...512: weightIndex:   0..511 auf Page 1
@@ -668,15 +713,21 @@ namespace gView.Framework.Network.Build
                 lock (_thisLock)
                 {
                     if (!_weightPagesDict.ContainsKey(guid))
+                    {
                         _weightPagesDict.Add(guid, new Dictionary<int, IWeightPage>());
+                    }
 
                     Dictionary<int, IWeightPage> weightPages = _weightPagesDict[guid];
                     if (weightPages.ContainsKey(page))
+                    {
                         return weightPages[page];
+                    }
 
                     if (!_weightDataTypes.ContainsKey(guid) ||
                        !_weightTableNames.ContainsKey(guid))
+                    {
                         return null;
+                    }
 
                     if (_dbfactory != null)
                     {
@@ -726,7 +777,9 @@ namespace gView.Framework.Network.Build
             {
                 SwitchPage page = LoadSwitchPage(NetworkObjectSerializer.Page(nodeId));
                 if (page == null)
+                {
                     return false;
+                }
 
                 return page.GetSwitchState(nodeId);
             }
@@ -735,7 +788,9 @@ namespace gView.Framework.Network.Build
                 lock (_thisLock)
                 {
                     if (_switchPages.ContainsKey(page))
+                    {
                         return _switchPages[page];
+                    }
 
                     if (_dbfactory != null)
                     {
@@ -779,7 +834,9 @@ namespace gView.Framework.Network.Build
             {
                 NodeFcIdsPage page = LoadNodeFcIdPage(NetworkObjectSerializer.Page(nodeId));
                 if (page == null)
+                {
                     return -1;
+                }
 
                 return page.GetNodeFcId(nodeId);
             }
@@ -788,7 +845,9 @@ namespace gView.Framework.Network.Build
                 lock (_thisLock)
                 {
                     if (_nodeFcIdsPages.ContainsKey(page))
+                    {
                         return _nodeFcIdsPages[page];
+                    }
 
                     if (_dbfactory != null)
                     {
@@ -833,7 +892,9 @@ namespace gView.Framework.Network.Build
             {
                 NodeTypesPage page = LoadNodeTypePage(NetworkObjectSerializer.Page(nodeId));
                 if (page == null)
+                {
                     return NetworkNodeType.Unknown;
+                }
 
                 return page.GetNodeType(nodeId);
             }
@@ -842,7 +903,9 @@ namespace gView.Framework.Network.Build
                 lock (_thisLock)
                 {
                     if (_nodeTypePages.ContainsKey(page))
+                    {
                         return _nodeTypePages[page];
+                    }
 
                     if (_dbfactory != null)
                     {
@@ -906,7 +969,9 @@ namespace gView.Framework.Network.Build
             {
                 int length = reader.ReadInt32();
                 if (length <= 0)
+                {
                     return String.Empty;
+                }
 
                 byte[] bytes = new byte[length];
                 for (int i = 0; i < length; i++)

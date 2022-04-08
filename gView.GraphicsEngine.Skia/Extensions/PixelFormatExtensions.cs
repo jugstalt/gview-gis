@@ -1,7 +1,5 @@
 ﻿using SkiaSharp;
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace gView.GraphicsEngine.Skia.Extensions
 {
@@ -24,11 +22,11 @@ namespace gView.GraphicsEngine.Skia.Extensions
 
         static public PixelFormat ToPixelFormat(this SKColorType colorType)
         {
-            switch(colorType)
+            switch (colorType)
             {
                 case SKColorType.Bgra8888:
                 case SKColorType.Rgba8888:
-                    return PixelFormat.Rgba32; 
+                    return PixelFormat.Rgba32;
                 case SKColorType.Gray8:
                     return PixelFormat.Gray8;
                 default:

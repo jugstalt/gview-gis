@@ -13,9 +13,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-using System;
 using GeoAPI.Geometries;
 using Proj4Net.Utility;
+using System;
 
 namespace Proj4Net.Projection
 {
@@ -79,12 +79,20 @@ namespace Proj4Net.Projection
                 if ((t = Math.Abs(y *= ScaleFactor)) - EPS10 <= 1.0)
                 {
                     if (t >= 1.0)
+                    {
                         lp.Y = y < 0.0 ? -ProjectionMath.PiHalf : ProjectionMath.PiHalf;
+                    }
                     else
+                    {
                         lp.Y = Math.Asin(y);
+                    }
+
                     lp.X = x / ScaleFactor;
                 }
-                else throw new ProjectionException();
+                else
+                {
+                    throw new ProjectionException();
+                }
             }
             else
             {

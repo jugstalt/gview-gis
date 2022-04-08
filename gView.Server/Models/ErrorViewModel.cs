@@ -1,5 +1,3 @@
-using System;
-
 namespace gView.Server.Models
 {
     public class ErrorViewModel

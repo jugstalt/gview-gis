@@ -1,11 +1,8 @@
+using gView.Framework.Carto;
+using gView.Framework.Geometry;
 using System;
 using System.Collections.Generic;
-using System.Text;
-using gView.Framework.Data;
 using System.Threading;
-using gView.Framework.system;
-using gView.Framework.Geometry;
-using gView.Framework.Carto;
 using System.Threading.Tasks;
 
 namespace gView.Framework.Data
@@ -53,7 +50,7 @@ namespace gView.Framework.Data
         }
         static public void RemoveFeatureCollection(ICachedFeatureCollection collection)
         {
-            Guid guid=new Guid();
+            Guid guid = new Guid();
             bool found = false;
             foreach (Guid g in _collections.Keys)
             {
@@ -63,12 +60,18 @@ namespace gView.Framework.Data
                     found = true;
                 }
             }
-            if (found) RemoveFeatureCollection(guid);
+            if (found)
+            {
+                RemoveFeatureCollection(guid);
+            }
         }
         static public ICachedFeatureCollection GetUsableFeatureCollection(Guid guid, IQueryFilter filter)
         {
             CachedFeatureCollection collection = GetCachedFeatureCollection(guid) as CachedFeatureCollection;
-            if (collection == null || !collection.UsableWith(filter)) return null;
+            if (collection == null || !collection.UsableWith(filter))
+            {
+                return null;
+            }
 
             if (collection.Released)
             {
@@ -85,7 +88,10 @@ namespace gView.Framework.Data
                     ManualResetEvent resetEvent = new ManualResetEvent(false);
                     collection._resetEvents.Add(resetEvent);
                     resetEvent.WaitOne(10000, false);
-                    if (collection.Released) return collection;
+                    if (collection.Released)
+                    {
+                        return collection;
+                    }
                 }
                 else
                 {
@@ -98,7 +104,9 @@ namespace gView.Framework.Data
         {
             CachedFeatureCollection collection = cachedFeatureColledion as CachedFeatureCollection;
             if (collection != null)
+            {
                 collection.Released = true;
+            }
         }
 
         static public bool UseCachingForDataset(Guid datasetGUID)
@@ -106,7 +114,9 @@ namespace gView.Framework.Data
             // für WMS/WFS und ArcXML Feature Queries
             if (datasetGUID == new Guid("538F0731-31FE-493a-B063-10A2D37D6E6D") ||
                 datasetGUID == new Guid("3B26682C-BF6E-4fe8-BE80-762260ABA581"))
+            {
                 return true;
+            }
 
             return false;
         }
@@ -116,7 +126,7 @@ namespace gView.Framework.Data
         {
             private Guid _guid;
             private IQueryFilter _filter;
-            
+
             private Dictionary<long, List<IFeature>> _features;
             private BinarySearchTree2 _tree = null;
 
@@ -158,11 +168,17 @@ namespace gView.Framework.Data
 
             public void AddFeature(IFeature feature)
             {
-                if(feature==null) return;
+                if (feature == null)
+                {
+                    return;
+                }
 
                 long NID = (feature.Shape != null && _tree != null) ?
                     _tree.InsertSINode(feature.Shape.Envelope) : 0;
-                if(_tree!=null) _tree.AddNodeNumber(NID);
+                if (_tree != null)
+                {
+                    _tree.AddNodeNumber(NID);
+                }
 
                 List<IFeature> features;
                 if (!_features.TryGetValue(NID, out features))
@@ -185,20 +201,31 @@ namespace gView.Framework.Data
 
             public bool UsableWith(IQueryFilter filter)
             {
-                if (_filter == null || filter == null) return false;
+                if (_filter == null || filter == null)
+                {
+                    return false;
+                }
 
                 // Type überprüfen
-                if (_filter.GetType() != filter.GetType()) return false;
+                if (_filter.GetType() != filter.GetType())
+                {
+                    return false;
+                }
 
                 #region WhereClause
                 if (_filter.WhereClause != filter.WhereClause)
+                {
                     return false;
+                }
                 #endregion
 
                 #region Subfields
                 if (_filter.SubFields != "*")
                 {
-                    if (filter.SubFields == "*") return false;
+                    if (filter.SubFields == "*")
+                    {
+                        return false;
+                    }
 
                     string[] subFields_o = _filter.SubFields.Split(' ');
                     string[] subFields_n = filter.SubFields.Split(' ');
@@ -206,7 +233,7 @@ namespace gView.Framework.Data
                     foreach (string fn in subFields_n)
                     {
                         string shortNameN = Field.shortName(fn);
-                        bool found=false;
+                        bool found = false;
                         foreach (string fo in subFields_o)
                         {
                             if (Field.shortName(fo) == shortNameN)
@@ -215,7 +242,10 @@ namespace gView.Framework.Data
                                 break;
                             }
                         }
-                        if (!found) return false;
+                        if (!found)
+                        {
+                            return false;
+                        }
                     }
                 }
                 #endregion
@@ -226,7 +256,10 @@ namespace gView.Framework.Data
                     IGeometry geomN = ((ISpatialFilter)filter).Geometry;
                     IGeometry geomO = ((ISpatialFilter)_filter).Geometry;
 
-                    if (geomN == null || geomO == null) return false;
+                    if (geomN == null || geomO == null)
+                    {
+                        return false;
+                    }
 
                     if (((ISpatialFilter)_filter).SpatialRelation == spatialRelation.SpatialRelationMapEnvelopeIntersects &&
                         ((ISpatialFilter)filter).SpatialRelation == spatialRelation.SpatialRelationMapEnvelopeIntersects)
@@ -260,7 +293,9 @@ namespace gView.Framework.Data
                 List<IFeature> features = new List<IFeature>();
 
                 foreach (long nid in _features.Keys)
+                {
                     features.AddRange(_features[nid]);
+                }
 
                 return features;
             }
@@ -295,7 +330,7 @@ namespace gView.Framework.Data
         class CachedFeatureCursor : IFeatureCursor
         {
             private List<IFeature> _features;
-            private int _pos=0;
+            private int _pos = 0;
             private IQueryFilter _filter;
 
             public CachedFeatureCursor(List<IFeature> features, IQueryFilter filter)
@@ -310,15 +345,23 @@ namespace gView.Framework.Data
             {
                 while (true)
                 {
-                    if (_features == null || _features.Count <= _pos) return null;
+                    if (_features == null || _features.Count <= _pos)
+                    {
+                        return null;
+                    }
 
                     IFeature feature = _features[_pos++];
-                    if (feature == null) return null;
+                    if (feature == null)
+                    {
+                        return null;
+                    }
 
                     if (_filter is ISpatialFilter)
                     {
                         if (!gView.Framework.Geometry.SpatialRelation.Check(_filter as ISpatialFilter, feature.Shape))
+                        {
                             continue;
+                        }
                     }
 
                     return Task.FromResult<IFeature>(feature);
@@ -415,11 +458,16 @@ namespace gView.Framework.Data
                 int count = 0;
                 using (IFeatureCursor cursor = await this.GetFeatures(_selectionGUID, filter))
                 {
-                    if (cursor == null) return null;
+                    if (cursor == null)
+                    {
+                        return null;
+                    }
 
                     IFeature feature;
                     while ((feature = await cursor.NextFeature()) != null)
+                    {
                         count++;
+                    }
                 }
                 return new QueryFilteredSelectionSet(filter, count);
             }
@@ -443,7 +491,10 @@ namespace gView.Framework.Data
         public IFeatureCursor GetSelectedFeatures(IDisplay display)
         {
             ICachedFeatureCollection collection = FeatureCache.GetCachedFeatureCollection(this._selectionGUID);
-            if (collection == null) return null;
+            if (collection == null)
+            {
+                return null;
+            }
 
             if (display != null)
             {
@@ -479,7 +530,10 @@ namespace gView.Framework.Data
 
         async public Task<IFeature> NextFeature()
         {
-            if (_cursor == null) return null;
+            if (_cursor == null)
+            {
+                return null;
+            }
 
             IFeature feature = await _cursor.NextFeature();
             if (_cfCollection != null)
@@ -510,7 +564,9 @@ namespace gView.Framework.Data
                 _cursor = null;
 
                 if (!_released)
+                {
                     FeatureCache.RemoveFeatureCollection(_cfCollection);
+                }
             }
         }
 

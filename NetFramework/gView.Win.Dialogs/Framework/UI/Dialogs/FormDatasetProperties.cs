@@ -1,13 +1,9 @@
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
 using gView.Framework.Carto;
 using gView.Framework.Data;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace gView.Framework.UI.Dialogs
 {
@@ -45,7 +41,10 @@ namespace gView.Framework.UI.Dialogs
 
         async private Task AddDataset(IDataset dataset)
         {
-            if (dataset == null || await dataset.Elements() == null) return;
+            if (dataset == null || await dataset.Elements() == null)
+            {
+                return;
+            }
 
             if (dataset.State != DatasetState.opened)
             {
@@ -58,7 +57,11 @@ namespace gView.Framework.UI.Dialogs
 
             foreach (IDatasetElement element in await dataset.Elements())
             {
-                if (element == null) continue;
+                if (element == null)
+                {
+                    continue;
+                }
+
                 ILayer layer = LayerFactory.Create(element.Class);
 
                 dgLayers.Rows.Add(new object[] { true, element.Title, true });
@@ -68,8 +71,15 @@ namespace gView.Framework.UI.Dialogs
 
         private void dgLayers_CellClick(object sender, DataGridViewCellEventArgs e)
         {
-            if (_elements == null) return;
-            if (_elements.Count <= e.RowIndex || e.RowIndex < 0) return;
+            if (_elements == null)
+            {
+                return;
+            }
+
+            if (_elements.Count <= e.RowIndex || e.RowIndex < 0)
+            {
+                return;
+            }
 
             if (e.ColumnIndex == 3)
             {
@@ -80,8 +90,15 @@ namespace gView.Framework.UI.Dialogs
 
         private void dgLayers_CellValueChanged(object sender, DataGridViewCellEventArgs e)
         {
-            if (_elements == null) return;
-            if (_elements.Count <= e.RowIndex || e.RowIndex < 0) return;
+            if (_elements == null)
+            {
+                return;
+            }
+
+            if (_elements.Count <= e.RowIndex || e.RowIndex < 0)
+            {
+                return;
+            }
 
             if (e.ColumnIndex == 2)
             {
@@ -92,7 +109,10 @@ namespace gView.Framework.UI.Dialogs
 
         async private void btnOK_Click(object sender, EventArgs e)
         {
-            if (_elements == null) return;
+            if (_elements == null)
+            {
+                return;
+            }
 
             for (int i = 0; i < dgLayers.Rows.Count; i++)
             {

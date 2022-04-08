@@ -330,7 +330,7 @@ namespace gView.GraphicsEngine.Skia
             var skPaint = GetSKPaint(font, brush);
             text = text.RemoveReturns();
 
-            if(format!=null)
+            if (format != null)
             {
                 var skAlignment = (SKPaint)format.EngineElement;
 
@@ -377,9 +377,9 @@ namespace gView.GraphicsEngine.Skia
         {
             if (text.Contains("\n"))
             {
-                String[] lines = text.Replace("\r","").Split('\n');
+                String[] lines = text.Replace("\r", "").Split('\n');
 
-                foreach(var line in lines)
+                foreach (var line in lines)
                 {
                     _canvas?.DrawText(line, point, paint);
 
@@ -470,4 +470,3 @@ namespace gView.GraphicsEngine.Skia
         #endregion
     }
 }
- 

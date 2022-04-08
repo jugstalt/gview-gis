@@ -1,9 +1,7 @@
 ﻿using gView.Server.Services.MapServer;
 using Microsoft.AspNetCore.Mvc;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace gView.Server.Controllers
@@ -20,9 +18,11 @@ namespace gView.Server.Controllers
         async public Task<IActionResult> Index(string id)
         {
             if (String.IsNullOrEmpty(_mapServerService.Options.OutputPath))
+            {
                 return null;
+            }
 
-            if(id.Contains("/") ||
+            if (id.Contains("/") ||
                id.Contains("..") ||
                id.Contains("\\"))
             {
@@ -31,7 +31,7 @@ namespace gView.Server.Controllers
 
             var fileInfo = new FileInfo($"{ _mapServerService.Options.OutputPath }/{ id }");
             string contentType;
-            switch(fileInfo.Extension.ToLower())
+            switch (fileInfo.Extension.ToLower())
             {
                 case ".png":
                     contentType = "image/png";
@@ -55,7 +55,9 @@ namespace gView.Server.Controllers
             }
 
             if (!fileInfo.Exists)
+            {
                 return StatusCode(404);
+            }
 
             return File(await System.IO.File.ReadAllBytesAsync(fileInfo.FullName), contentType);
         }

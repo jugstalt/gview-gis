@@ -344,7 +344,7 @@ namespace gView.DataSources.GDAL
             }
             finally
             {
-               
+
             }
         }
 

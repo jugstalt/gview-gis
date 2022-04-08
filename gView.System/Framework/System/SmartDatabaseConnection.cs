@@ -1,6 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading;
 
 namespace gView.Framework.system
@@ -13,10 +11,10 @@ namespace gView.Framework.system
         private bool _locked = false, _disposed = false;
         private object _lockThis = new object();
         private DateTime _lastAccess;
-        
+
         public SmartDatabaseConnection()
         {
-           
+
         }
 
         private void StartTimer()
@@ -47,7 +45,7 @@ namespace gView.Framework.system
                         return;
                     }
                     CloseConnection(_connection);
-                    _connection = null;  
+                    _connection = null;
                 }
             }
             else
@@ -60,18 +58,24 @@ namespace gView.Framework.system
         {
             lock (_lockThis)
             {
-                if (_disposed) return null;
+                if (_disposed)
+                {
+                    return null;
+                }
 
                 _lastAccess = DateTime.Now;
 
-                if (_locked) return null; // Sollte eigentlich nicht vorkommen
-                                          // Aufrufende Routinen sollen nicht parallel aufrufen
+                if (_locked)
+                {
+                    return null; // Sollte eigentlich nicht vorkommen
+                }
+                // Aufrufende Routinen sollen nicht parallel aufrufen
 
                 if (_connection == null)
                 {
                     _connection = OpenConnection(dataset);
                     if (_connection != null)
-                    {   
+                    {
                         //
                         // erst beim wieder Freigeben starten...
                         //

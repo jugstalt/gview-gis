@@ -1,57 +1,52 @@
-using System;
-using System.Drawing;
-using System.Collections;
-using System.ComponentModel;
-using System.Windows.Forms;
-using System.Runtime.CompilerServices;
 using gView.Framework.IO;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace gView.DataSources.PostGIS.UI
 {
-	/// <summary>
-	/// Zusammenfassung für FormAddSqlFDBDataset.
-	/// </summary>
-	internal class FormAddPostGISConnection : System.Windows.Forms.Form
-	{
-		/// <summary>
-		/// Erforderliche Designervariable.
-		/// </summary>
-		private System.ComponentModel.Container components = null;
+    /// <summary>
+    /// Zusammenfassung für FormAddSqlFDBDataset.
+    /// </summary>
+    internal class FormAddPostGISConnection : System.Windows.Forms.Form
+    {
+        /// <summary>
+        /// Erforderliche Designervariable.
+        /// </summary>
+        private System.ComponentModel.Container components = null;
         private TextBox txtPort;
         private Label label5;
-		private string _connStr="";
+        private string _connStr = "";
 
         public FormAddPostGISConnection()
-		{
-			//
-			// Erforderlich für die Windows Form-Designerunterstützung
-			//
-			InitializeComponent();
-		}
+        {
+            //
+            // Erforderlich für die Windows Form-Designerunterstützung
+            //
+            InitializeComponent();
+        }
 
-		/// <summary>
-		/// Die verwendeten Ressourcen bereinigen.
-		/// </summary>
-		protected override void Dispose( bool disposing )
-		{
-			if( disposing )
-			{
-				if(components != null)
-				{
-					components.Dispose();
-				}
-			}
-			base.Dispose( disposing );
-		}
+        /// <summary>
+        /// Die verwendeten Ressourcen bereinigen.
+        /// </summary>
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                if (components != null)
+                {
+                    components.Dispose();
+                }
+            }
+            base.Dispose(disposing);
+        }
 
-		#region Vom Windows Form-Designer generierter Code
-		/// <summary>
-		/// Erforderliche Methode für die Designerunterstützung. 
-		/// Der Inhalt der Methode darf nicht mit dem Code-Editor geändert werden.
-		/// </summary>
-		private void InitializeComponent()
-		{
+        #region Vom Windows Form-Designer generierter Code
+        /// <summary>
+        /// Erforderliche Methode für die Designerunterstützung. 
+        /// Der Inhalt der Methode darf nicht mit dem Code-Editor geändert werden.
+        /// </summary>
+        private void InitializeComponent()
+        {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormAddPostGISConnection));
             this.label1 = new System.Windows.Forms.Label();
             this.txtServer = new System.Windows.Forms.TextBox();
@@ -155,35 +150,35 @@ namespace gView.DataSources.PostGIS.UI
             this.ResumeLayout(false);
             this.PerformLayout();
 
-		}
-		#endregion
+        }
+        #endregion
 
-		private System.Windows.Forms.Label label1;
-		private System.Windows.Forms.TextBox txtServer;
-		private System.Windows.Forms.TextBox txtDataset;
-		private System.Windows.Forms.Label label2;
-		private System.Windows.Forms.TextBox txtUser;
-		private System.Windows.Forms.Label label3;
-		private System.Windows.Forms.TextBox txtPwd;
-		private System.Windows.Forms.Label label4;
-		private System.Windows.Forms.Button button1;
-		private System.Windows.Forms.Button button2;
+        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.TextBox txtServer;
+        private System.Windows.Forms.TextBox txtDataset;
+        private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.TextBox txtUser;
+        private System.Windows.Forms.Label label3;
+        private System.Windows.Forms.TextBox txtPwd;
+        private System.Windows.Forms.Label label4;
+        private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.Button button2;
 
-		#region IDatasetEnum Member
+        #region IDatasetEnum Member
 
-		int _pos=0;
-		public void Reset()
-		{
-			int _pos=0;
-		}
+        int _pos = 0;
+        public void Reset()
+        {
+            int _pos = 0;
+        }
 
-		private void button1_Click(object sender, System.EventArgs e)
-		{
-			_connStr="Server="+txtServer.Text+";Port="+txtPort.Text+";User Id="+txtUser.Text+";Password="+txtPwd.Text+";Database="+txtDataset.Text;
-		}
+        private void button1_Click(object sender, System.EventArgs e)
+        {
+            _connStr = "Server=" + txtServer.Text + ";Port=" + txtPort.Text + ";User Id=" + txtUser.Text + ";Password=" + txtPwd.Text + ";Database=" + txtDataset.Text;
+        }
 
 
-		private gView.Framework.Data.IDataset _dataset=null;
+        private gView.Framework.Data.IDataset _dataset = null;
         async public Task<gView.Framework.Data.IDataset> Next()
         {
             if (_pos == 0)
@@ -205,23 +200,23 @@ namespace gView.DataSources.PostGIS.UI
             return null;
         }
 
-		#endregion
+        #endregion
 
-		public string ConnectionString 
-		{
-			get 
-			{
-				return _connStr;
-			}
-			set 
-			{
-				_connStr=value;
-				txtServer.Text =ConfigTextStream.ExtractValue(value,"server");
-				txtDataset.Text=ConfigTextStream.ExtractValue(value,"database");
-				txtUser.Text   =ConfigTextStream.ExtractValue(value,"uid");
-				txtPwd.Text    =ConfigTextStream.ExtractValue(value,"pwd");
-			}
-		}
+        public string ConnectionString
+        {
+            get
+            {
+                return _connStr;
+            }
+            set
+            {
+                _connStr = value;
+                txtServer.Text = ConfigTextStream.ExtractValue(value, "server");
+                txtDataset.Text = ConfigTextStream.ExtractValue(value, "database");
+                txtUser.Text = ConfigTextStream.ExtractValue(value, "uid");
+                txtPwd.Text = ConfigTextStream.ExtractValue(value, "pwd");
+            }
+        }
 
-	}
+    }
 }

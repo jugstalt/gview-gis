@@ -4,8 +4,6 @@ using gView.Framework.Symbology;
 using gView.GraphicsEngine;
 using System;
 using System.Collections.Generic;
-using System.Drawing;
-using System.Drawing.Drawing2D;
 using System.IO;
 using System.Windows.Forms;
 
@@ -55,7 +53,7 @@ namespace gView.Plugins.Editor
                 return;
             }
 
-            if (_geometry is IPoint && _actPartNr==0)
+            if (_geometry is IPoint && _actPartNr == 0)
             {
                 ((IPoint)_geometry).X = point.X;
                 ((IPoint)_geometry).Y = point.Y;
@@ -233,7 +231,7 @@ namespace gView.Plugins.Editor
                 return;
             }
 
-            IPointCollection pColl=gView.Framework.SpatialAlgorithms.Algorithm.GeometryPoints(_geometry, false);
+            IPointCollection pColl = gView.Framework.SpatialAlgorithms.Algorithm.GeometryPoints(_geometry, false);
             if (pColl == null || pColl.PointCount == 0)
             {
                 return;
@@ -281,17 +279,17 @@ namespace gView.Plugins.Editor
 
         public void Scale(double scaleX, double scaleY)
         {
-            
+
         }
 
         public void ScaleX(double scale)
         {
-            
+
         }
 
         public void ScaleY(double scale)
         {
-            
+
         }
 
         #endregion
@@ -306,7 +304,7 @@ namespace gView.Plugins.Editor
             }
             set
             {
-                
+
             }
         }
 
@@ -391,7 +389,7 @@ namespace gView.Plugins.Editor
                 return;
             }
 
-            if (hit.HitID>=0 && hit.HitID < pColl.PointCount)
+            if (hit.HitID >= 0 && hit.HitID < pColl.PointCount)
             {
                 pColl[hit.HitID].X = dx;
                 pColl[hit.HitID].Y = dy;
@@ -591,8 +589,8 @@ namespace gView.Plugins.Editor
             }
 
             EditSketch sketch = (EditSketch)obj;
-            
-            if (_geometry!=null && !_geometry.Equals(sketch._geometry))
+
+            if (_geometry != null && !_geometry.Equals(sketch._geometry))
             {
                 return false;
             }

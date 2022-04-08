@@ -1,12 +1,8 @@
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Drawing;
-using System.Data;
-using System.Text;
-using System.Windows.Forms;
 using gView.Framework.LinAlg;
+using System;
+using System.Drawing;
 using System.Drawing.Drawing2D;
+using System.Windows.Forms;
 
 namespace gView.Framework.Symbology.UI.Controls
 {
@@ -46,7 +42,10 @@ namespace gView.Framework.Symbology.UI.Controls
             get
             {
                 double angle = Math.Atan2(_dy, _dx);
-                if (angle < 0.0) angle += 2.0 * Math.PI;
+                if (angle < 0.0)
+                {
+                    angle += 2.0 * Math.PI;
+                }
 
                 return angle * 180.0 / Math.PI;
             }
@@ -157,7 +156,9 @@ namespace gView.Framework.Symbology.UI.Controls
                 numAngle.ValueChanged += new EventHandler(numAngle_ValueChanged);
 
                 if (ValueChanged != null)
+                {
                     ValueChanged(this, new EventArgs());
+                }
             }
         }
 
@@ -166,7 +167,9 @@ namespace gView.Framework.Symbology.UI.Controls
             _coneButtonDown = false;
 
             if (ValueChanged != null)
+            {
                 ValueChanged(this, new EventArgs());
+            }
         }
         #endregion
 
@@ -190,7 +193,9 @@ namespace gView.Framework.Symbology.UI.Controls
             panelCone.Refresh();
 
             if (ValueChanged != null)
+            {
                 ValueChanged(this, new EventArgs());
+            }
         }
     }
 }

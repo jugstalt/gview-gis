@@ -1,8 +1,6 @@
-﻿using System;
+﻿using gView.Framework.Data;
 using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
-using gView.Framework.Data;
 
 namespace gView.Framework.Network
 {

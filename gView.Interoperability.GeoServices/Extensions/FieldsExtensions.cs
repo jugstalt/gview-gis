@@ -16,11 +16,11 @@ namespace gView.Interoperability.GeoServices.Extensions
 
         static public IEnumerable<string> CheckAllowedFunctions(this IEnumerable<string> fieldNames, ITableClass tableClass)
         {
-            foreach(var fieldName in fieldNames)
+            foreach (var fieldName in fieldNames)
             {
-                if(fieldName.IsFieldFunction())
+                if (fieldName.IsFieldFunction())
                 {
-                    if(tableClass.Fields.FindField(fieldName) == null)
+                    if (tableClass.Fields.FindField(fieldName) == null)
                     {
                         throw new Exception($"Forbidden field function detected: { fieldName }");
                     }

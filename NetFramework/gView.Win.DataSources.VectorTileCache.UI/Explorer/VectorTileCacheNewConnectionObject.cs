@@ -2,10 +2,6 @@
 using gView.Framework.system.UI;
 using gView.Framework.UI;
 using gView.Win.DataSources.VectorTileCache.UI.Explorer.Dialogs;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace gView.Win.DataSources.VectorTileCache.UI.Explorer
@@ -88,7 +84,9 @@ namespace gView.Win.DataSources.VectorTileCache.UI.Explorer
         public Task<IExplorerObject> CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache cache)
         {
             if (cache.Contains(FullName))
+            {
                 return Task.FromResult<IExplorerObject>(cache[FullName]);
+            }
 
             return Task.FromResult<IExplorerObject>(null);
         }

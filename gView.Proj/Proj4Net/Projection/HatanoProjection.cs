@@ -13,9 +13,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-using System;
 using GeoAPI.Geometries;
 using Proj4Net.Utility;
+using System;
 
 namespace Proj4Net.Projection
 {
@@ -46,7 +46,10 @@ namespace Proj4Net.Projection
             for (i = NITER; i > 0; --i)
             {
                 lpphi -= th1 = (lpphi + Math.Sin(lpphi) - c) / (1.0 + Math.Cos(lpphi));
-                if (Math.Abs(th1) < EPS) break;
+                if (Math.Abs(th1) < EPS)
+                {
+                    break;
+                }
             }
             xy.X = FXC * lplam * Math.Cos(lpphi *= .5);
             xy.Y = Math.Sin(lpphi) * (lpphi < 0.0 ? FYCS : FYCN);
@@ -59,18 +62,40 @@ namespace Proj4Net.Projection
 
             th = xyy * (xyy < 0.0 ? RYCS : RYCN);
             if (Math.Abs(th) > 1.0)
-                if (Math.Abs(th) > ONETOL) throw new ProjectionException("I");
-                else th = th > 0.0 ? ProjectionMath.PiHalf : -ProjectionMath.PiHalf;
+            {
+                if (Math.Abs(th) > ONETOL)
+                {
+                    throw new ProjectionException("I");
+                }
+                else
+                {
+                    th = th > 0.0 ? ProjectionMath.PiHalf : -ProjectionMath.PiHalf;
+                }
+            }
             else
+            {
                 th = Math.Asin(th);
+            }
+
             lp.X = RXC * xyx / Math.Cos(th);
             th += th;
             lp.Y = (th + Math.Sin(th)) * (xyy < 0.0 ? RCS : RCN);
             if (Math.Abs(lp.Y) > 1.0)
-                if (Math.Abs(lp.Y) > ONETOL) throw new ProjectionException("I");
-                else lp.Y = lp.Y > 0.0 ? ProjectionMath.PiHalf : -ProjectionMath.PiHalf;
+            {
+                if (Math.Abs(lp.Y) > ONETOL)
+                {
+                    throw new ProjectionException("I");
+                }
+                else
+                {
+                    lp.Y = lp.Y > 0.0 ? ProjectionMath.PiHalf : -ProjectionMath.PiHalf;
+                }
+            }
             else
+            {
                 lp.Y = Math.Asin(lp.Y);
+            }
+
             return lp;
         }
 

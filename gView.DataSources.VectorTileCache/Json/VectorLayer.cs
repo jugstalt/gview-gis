@@ -1,7 +1,5 @@
 ﻿using Newtonsoft.Json;
-using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace gView.DataSources.VectorTileCache.Json
 {
@@ -9,7 +7,7 @@ namespace gView.DataSources.VectorTileCache.Json
     {
         [JsonProperty("id")]
         public string Id { get; set; }
-        
+
         [JsonProperty("description")]
         public string Description { get; set; }
 
@@ -20,6 +18,6 @@ namespace gView.DataSources.VectorTileCache.Json
         public int MaxZoom { get; set; }
 
         [JsonProperty("fields")]
-        public Dictionary<string,string> Fields { get; set; }
+        public Dictionary<string, string> Fields { get; set; }
     }
 }

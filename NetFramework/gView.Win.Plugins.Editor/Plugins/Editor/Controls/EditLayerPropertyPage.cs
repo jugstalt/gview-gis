@@ -1,14 +1,8 @@
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Drawing;
-using System.Data;
-using System.Text;
-using System.Windows.Forms;
-using gView.Framework.UI;
 using gView.Framework.Data;
-using gView.Plugins.Editor.Dialogs;
 using gView.Framework.Editor.Core;
+using gView.Framework.UI;
+using gView.Plugins.Editor.Dialogs;
+using System.Windows.Forms;
 
 namespace gView.Plugins.Editor.Controls
 {
@@ -26,14 +20,20 @@ namespace gView.Plugins.Editor.Controls
 
         public Panel PropertyPage(gView.Framework.Data.IDataset dataset, gView.Framework.Data.ILayer layer)
         {
-            if (!ShowWith(dataset, layer)) return null;
+            if (!ShowWith(dataset, layer))
+            {
+                return null;
+            }
 
             _fLayer = (IFeatureLayer)layer;
             foreach (IField field in _fLayer.Fields.ToEnumerable())
             {
                 if (field.type == FieldType.Shape ||
                     field.type == FieldType.ID ||
-                    field.type == FieldType.binary) continue;
+                    field.type == FieldType.binary)
+                {
+                    continue;
+                }
 
                 dgFields.Rows.Add(
                     new object[] {
@@ -60,12 +60,18 @@ namespace gView.Plugins.Editor.Controls
 
         public void Commit()
         {
-            if (_fLayer == null) return;
+            if (_fLayer == null)
+            {
+                return;
+            }
 
             foreach (DataGridViewRow row in dgFields.Rows)
             {
                 Field field = _fLayer.Fields.FindField(row.Cells[2].Value.ToString()) as Field;
-                if (field == null) continue;
+                if (field == null)
+                {
+                    continue;
+                }
 
                 field.IsEditable = (bool)row.Cells[0].Value;
                 field.IsRequired = (bool)row.Cells[3].Value;
@@ -77,11 +83,14 @@ namespace gView.Plugins.Editor.Controls
 
         private void dgFields_CellClick(object sender, DataGridViewCellEventArgs e)
         {
-            if (_fLayer == null) return;
+            if (_fLayer == null)
+            {
+                return;
+            }
 
             if (e.ColumnIndex == 5) // Domain
             {
-                Field field=_fLayer.Fields.FindField(dgFields.Rows[e.RowIndex].Cells[2].Value.ToString()) as Field;
+                Field field = _fLayer.Fields.FindField(dgFields.Rows[e.RowIndex].Cells[2].Value.ToString()) as Field;
 
                 if (field != null)
                 {

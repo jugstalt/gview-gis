@@ -1,15 +1,14 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-using gView.Interoperability.OGC.Dataset.WMS;
 using gView.Framework.Data;
 using gView.Framework.Geometry;
-using System.Xml;
-using gView.Framework.Web;
 using gView.Framework.OGC.WFS;
+using gView.Framework.Web;
 using gView.Interoperability.OGC.Dataset.GML;
+using gView.Interoperability.OGC.Dataset.WMS;
+using System;
 using System.IO;
+using System.Text;
 using System.Threading.Tasks;
+using System.Xml;
 
 namespace gView.Interoperability.OGC.Dataset.WFS
 {
@@ -18,7 +17,7 @@ namespace gView.Interoperability.OGC.Dataset.WFS
         private WFSDataset _dataset;
         private WMSClass.SRS _srs;
         private string _name, _shapefieldName = "wsGeometry", _idFieldname = String.Empty, _targetNamespace = "";
-        private Fields _fields=new Fields();
+        private Fields _fields = new Fields();
         private GeometryType _geomtype = GeometryType.Unknown;
         private ISpatialReference _sRef = null;
 
@@ -38,7 +37,9 @@ namespace gView.Interoperability.OGC.Dataset.WFS
                 string param = "VERSION=1.0.0&REQUEST=DescribeFeatureType&TYPENAME=" + _name;
                 if (_dataset._decribeFeatureType.Get_OnlineResource.IndexOf("&SERVICE=") == -1 &&
                     _dataset._decribeFeatureType.Get_OnlineResource.IndexOf("?SERVICE=") == -1)
+                {
                     param = "SERVICE=WFS&" + param;
+                }
 
                 string url = WMSDataset.Append2Url(_dataset._decribeFeatureType.Get_OnlineResource, param);
                 string response = WebFunctions.HttpSendRequest(url, "GET", null);
@@ -48,7 +49,10 @@ namespace gView.Interoperability.OGC.Dataset.WFS
                 schema.LoadXml(response);
                 XmlSchemaReader schemaReader = new XmlSchemaReader(schema);
                 _targetNamespace = schemaReader.TargetNamespaceURI;
-                if (_targetNamespace == String.Empty) return;
+                if (_targetNamespace == String.Empty)
+                {
+                    return;
+                }
 
                 _fields = schemaReader.ElementFields(name, out _shapefieldName, out _geomtype);
 
@@ -126,7 +130,10 @@ namespace gView.Interoperability.OGC.Dataset.WFS
         {
             foreach (IField field in _fields.ToEnumerable())
             {
-                if (field.name == name) return field;
+                if (field.name == name)
+                {
+                    return field;
+                }
             }
             return null;
         }
@@ -217,7 +224,9 @@ namespace gView.Interoperability.OGC.Dataset.WFS
                 string param = "VERSION=1.0.0&REQUEST=GetFeature&TYPENAME=" + this.Name + "&MAXFEATURES=10&FILTER=";
                 if (_dataset._getCapabilities.Get_OnlineResource.IndexOf("&SERVICE=") == -1 &&
                     _dataset._getCapabilities.Get_OnlineResource.IndexOf("?SERVICE=") == -1)
+                {
                     param = "SERVICE=WFS&" + param;
+                }
 
                 string wfsFilter = await Filter.ToWFS(this, filter, _dataset._filter_capabilites, _dataset._gmlVersion);
                 string url = _dataset._getFeature.Get_OnlineResource;
@@ -229,14 +238,19 @@ namespace gView.Interoperability.OGC.Dataset.WFS
                 string url = _dataset._getFeature.Post_OnlineResource;
                 if (_dataset._getCapabilities.Get_OnlineResource.IndexOf("&SERVICE=") == -1 &&
                     _dataset._getCapabilities.Get_OnlineResource.IndexOf("?SERVICE=") == -1)
+                {
                     url = WMSDataset.Append2Url(url, "SERVICE=WFS");
+                }
 
                 string wfsFilter = GetFeatureRequest.Create(this, this.Name, filter, srsName, _dataset._filter_capabilites, _dataset._gmlVersion);
 
                 response = WebFunctions.HttpSendRequest(url, "POST",
                     Encoding.UTF8.GetBytes(wfsFilter));
             }
-            if (response == String.Empty) return null;
+            if (response == String.Empty)
+            {
+                return null;
+            }
 
             try
             {

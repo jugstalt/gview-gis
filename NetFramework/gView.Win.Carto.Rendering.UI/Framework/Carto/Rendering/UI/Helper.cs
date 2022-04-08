@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
 using gView.Framework.Symbology;
 using gView.GraphicsEngine;
 
@@ -13,17 +10,32 @@ namespace gView.Framework.Carto.Rendering.UI
             ArgbColor col = AlterColor(from, to, fac);
 
             if (symbol is IBrushColor)
+            {
                 ((IBrushColor)symbol).FillColor = col;
+            }
+
             if (symbol is IFontColor)
+            {
                 ((IFontColor)symbol).FontColor = col;
+            }
+
             if (symbol is IPenColor)
+            {
                 ((IPenColor)symbol).PenColor = col;
+            }
         }
 
         static public ArgbColor AlterColor(ArgbColor from, ArgbColor to, double fac)
         {
-            if (fac < 0.0) return from;
-            if (fac > 1.0) return to;
+            if (fac < 0.0)
+            {
+                return from;
+            }
+
+            if (fac > 1.0)
+            {
+                return to;
+            }
 
             try
             {

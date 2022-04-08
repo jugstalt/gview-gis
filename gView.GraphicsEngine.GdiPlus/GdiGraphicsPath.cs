@@ -1,7 +1,5 @@
 ﻿using gView.GraphicsEngine.Abstraction;
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace gView.GraphicsEngine.GdiPlus
 {
@@ -55,7 +53,7 @@ namespace gView.GraphicsEngine.GdiPlus
 
         public void Dispose()
         {
-            if(_path!=null)
+            if (_path != null)
             {
                 _path.Dispose();
                 _path = null;

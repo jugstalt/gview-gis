@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Windows.Controls;
 using System.IO;
+using System.Windows.Controls;
 using System.Windows.Media.Imaging;
 
 namespace gView.Desktop.Wpf.Controls
@@ -38,7 +35,9 @@ namespace gView.Desktop.Wpf.Controls
             Button button = new Button();
             AppendToolButtonProperties(button, image, text, click);
             if (button.Content == null)
+            {
                 return;
+            }
 
             toolbar.Items.Add(button);
         }
@@ -58,7 +57,10 @@ namespace gView.Desktop.Wpf.Controls
                 content = new StackPanel();
                 ((StackPanel)content).Orientation = Orientation.Horizontal;
                 if (image != null)
+                {
                     ((StackPanel)content).Children.Add(image);
+                }
+
                 var textBlock = new TextBlock();
                 textBlock.Text = text;
                 textBlock.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromArgb(255, 47, 21, 62));
@@ -69,10 +71,15 @@ namespace gView.Desktop.Wpf.Controls
                 button.Width = 24;
             }
             if (content != null)
+            {
                 button.Content = content;
+            }
 
             if (click != null)
+            {
                 button.Click += click;
+            }
+
             button.Height = 24;
         }
     }
@@ -82,7 +89,9 @@ namespace gView.Desktop.Wpf.Controls
         static public Image FromBitmap(System.Drawing.Image bm)
         {
             if (bm == null)
+            {
                 return null;
+            }
 
             Image image = new Image();
 
@@ -102,4 +111,3 @@ namespace gView.Desktop.Wpf.Controls
         }
     }
 }
- 

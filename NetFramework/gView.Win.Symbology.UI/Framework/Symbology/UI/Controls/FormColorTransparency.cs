@@ -1,60 +1,56 @@
-using System;
 using System.Drawing;
-using System.Collections;
-using System.ComponentModel;
-using System.Windows.Forms;
 
 namespace gView.Framework.Symbology.UI
 {
-	/// <summary>
-	/// Zusammenfassung für FormColorTransparency.
-	/// </summary>
-	public class FormColorTransparency : System.Windows.Forms.Form
-	{
-		private System.Windows.Forms.Panel panelPreview;
-		private System.Windows.Forms.TrackBar trackBar1;
-		private System.Windows.Forms.Button btnOk;
-		private System.Windows.Forms.Button btnCancel;
-		/// <summary>
-		/// Erforderliche Designervariable.
-		/// </summary>
-		private System.ComponentModel.Container components = null;
-		private Color _color;
+    /// <summary>
+    /// Zusammenfassung für FormColorTransparency.
+    /// </summary>
+    public class FormColorTransparency : System.Windows.Forms.Form
+    {
+        private System.Windows.Forms.Panel panelPreview;
+        private System.Windows.Forms.TrackBar trackBar1;
+        private System.Windows.Forms.Button btnOk;
+        private System.Windows.Forms.Button btnCancel;
+        /// <summary>
+        /// Erforderliche Designervariable.
+        /// </summary>
+        private System.ComponentModel.Container components = null;
+        private Color _color;
 
-		public FormColorTransparency(Color color)
-		{
-			InitializeComponent();
+        public FormColorTransparency(Color color)
+        {
+            InitializeComponent();
 
-			_color=color;
-			trackBar1.Value=_color.A;
-		}
+            _color = color;
+            trackBar1.Value = _color.A;
+        }
 
-		public Color Color 
-		{
-			get { return _color; }
-		}
-		/// <summary>
-		/// Die verwendeten Ressourcen bereinigen.
-		/// </summary>
-		protected override void Dispose( bool disposing )
-		{
-			if( disposing )
-			{
-				if(components != null)
-				{
-					components.Dispose();
-				}
-			}
-			base.Dispose( disposing );
-		}
+        public Color Color
+        {
+            get { return _color; }
+        }
+        /// <summary>
+        /// Die verwendeten Ressourcen bereinigen.
+        /// </summary>
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                if (components != null)
+                {
+                    components.Dispose();
+                }
+            }
+            base.Dispose(disposing);
+        }
 
-		#region Vom Windows Form-Designer generierter Code
-		/// <summary>
-		/// Erforderliche Methode für die Designerunterstützung. 
-		/// Der Inhalt der Methode darf nicht mit dem Code-Editor geändert werden.
-		/// </summary>
-		private void InitializeComponent()
-		{
+        #region Vom Windows Form-Designer generierter Code
+        /// <summary>
+        /// Erforderliche Methode für die Designerunterstützung. 
+        /// Der Inhalt der Methode darf nicht mit dem Code-Editor geändert werden.
+        /// </summary>
+        private void InitializeComponent()
+        {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormColorTransparency));
             this.panelPreview = new System.Windows.Forms.Panel();
             this.trackBar1 = new System.Windows.Forms.TrackBar();
@@ -123,36 +119,36 @@ namespace gView.Framework.Symbology.UI
             this.ResumeLayout(false);
             this.PerformLayout();
 
-		}
-		#endregion
+        }
+        #endregion
 
-		private void panelPreview_Paint(object sender, System.Windows.Forms.PaintEventArgs e)
-		{
-			Rectangle rect=new Rectangle(20,20,panelPreview.Width-40,panelPreview.Height-40);
+        private void panelPreview_Paint(object sender, System.Windows.Forms.PaintEventArgs e)
+        {
+            Rectangle rect = new Rectangle(20, 20, panelPreview.Width - 40, panelPreview.Height - 40);
 
-			using(SolidBrush brush=new SolidBrush(Color.White)) 
-			{
-				e.Graphics.FillRectangle(brush,0,0,panelPreview.Width,panelPreview.Height);
-			}
-			using(Pen pen=new Pen(Color.Black,3)) 
-			{
-				e.Graphics.DrawLine(pen,0,0,panelPreview.Width,panelPreview.Height);
-				e.Graphics.DrawLine(pen,panelPreview.Width,0,0,panelPreview.Height);
-			}
-			using(SolidBrush brush=new SolidBrush(_color)) 
-			{
-				e.Graphics.FillRectangle(brush,rect);
-			}
-			using(Pen pen=new Pen(Color.Black)) 
-			{
-				e.Graphics.DrawRectangle(pen,rect);
-			}
-		}
+            using (SolidBrush brush = new SolidBrush(Color.White))
+            {
+                e.Graphics.FillRectangle(brush, 0, 0, panelPreview.Width, panelPreview.Height);
+            }
+            using (Pen pen = new Pen(Color.Black, 3))
+            {
+                e.Graphics.DrawLine(pen, 0, 0, panelPreview.Width, panelPreview.Height);
+                e.Graphics.DrawLine(pen, panelPreview.Width, 0, 0, panelPreview.Height);
+            }
+            using (SolidBrush brush = new SolidBrush(_color))
+            {
+                e.Graphics.FillRectangle(brush, rect);
+            }
+            using (Pen pen = new Pen(Color.Black))
+            {
+                e.Graphics.DrawRectangle(pen, rect);
+            }
+        }
 
-		private void trackBar1_Scroll(object sender, System.EventArgs e)
-		{
-			_color=Color.FromArgb(trackBar1.Value,_color.R,_color.G,_color.B);
-			panelPreview.Refresh();
-		}
-	}
+        private void trackBar1_Scroll(object sender, System.EventArgs e)
+        {
+            _color = Color.FromArgb(trackBar1.Value, _color.R, _color.G, _color.B);
+            panelPreview.Refresh();
+        }
+    }
 }

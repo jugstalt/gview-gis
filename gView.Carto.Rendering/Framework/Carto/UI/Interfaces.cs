@@ -1,8 +1,5 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-using gView.Framework.Carto.Rendering;
 using gView.Framework.Data;
+using System.Collections.Generic;
 
 namespace gView.Framework.Carto.Rendering.UI
 {

@@ -1,17 +1,13 @@
+using gView.Framework.Data;
+using gView.Framework.UI;
+using gView.Interoperability.ArcXML.Dataset;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Text;
 using System.Windows.Forms;
-using gView.Interoperability.ArcXML.Dataset;
-using gView.Framework.UI;
-using gView.Framework.Data;
 
 namespace gView.Interoperability.ArcXML.UI
 {
-    public partial class FormSelectService : Form,IModalDialog,IConnectionString
+    public partial class FormSelectService : Form, IModalDialog, IConnectionString
     {
         public FormSelectService()
         {
@@ -32,10 +28,10 @@ namespace gView.Interoperability.ArcXML.UI
 
                 foreach (string service in services)
                 {
-                    lstServices.Items.Add(service,0);
+                    lstServices.Items.Add(service, 0);
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 Cursor = Cursors.Default;
 
@@ -52,7 +48,9 @@ namespace gView.Interoperability.ArcXML.UI
         public bool OpenModal()
         {
             if (this.ShowDialog() == DialogResult.OK)
+            {
                 return true;
+            }
 
             return false;
         }
@@ -79,11 +77,18 @@ namespace gView.Interoperability.ArcXML.UI
         private void btnOK_Click(object sender, EventArgs e)
         {
             string username = txtUser.Text;
-            if (chkRouteThroughUser.Checked) username = "$";
-            if (chkRouteThroughRole.Checked) username = "#";
+            if (chkRouteThroughUser.Checked)
+            {
+                username = "$";
+            }
 
-            _connectionString = "server=" + txtServer.Text + 
-                ";user=" + username + 
+            if (chkRouteThroughRole.Checked)
+            {
+                username = "#";
+            }
+
+            _connectionString = "server=" + txtServer.Text +
+                ";user=" + username +
                 ";pwd=" + txtPwd.Text + ";service=" + lstServices.SelectedItems[0].Text;
         }
 

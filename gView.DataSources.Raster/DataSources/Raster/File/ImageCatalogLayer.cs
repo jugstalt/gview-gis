@@ -1,11 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.IO;
-using gView.Framework.IO;
-using gView.Framework.Geometry;
-using gView.Framework.Data;
-
 namespace gView.DataSources.Raster.File
 {
     /*

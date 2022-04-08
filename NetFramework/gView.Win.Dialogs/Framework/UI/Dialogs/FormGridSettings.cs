@@ -1,13 +1,6 @@
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Text;
-using System.Windows.Forms;
-using gView.Framework.UI;
 using gView.Framework.Data;
 using gView.Framework.system;
+using System.Windows.Forms;
 
 namespace gView.Framework.UI.Dialogs
 {
@@ -26,7 +19,11 @@ namespace gView.Framework.UI.Dialogs
 
         public Panel PropertyPage(gView.Framework.Data.IDataset dataset, gView.Framework.Data.ILayer layer)
         {
-            if (layer == null) return null;
+            if (layer == null)
+            {
+                return null;
+            }
+
             _class = layer.Class as IGridClass;
 
             panel1.Dock = DockStyle.Fill;
@@ -53,7 +50,10 @@ namespace gView.Framework.UI.Dialogs
 
         public void Commit()
         {
-            if (_class == null) return;
+            if (_class == null)
+            {
+                return;
+            }
 
             _class.HillShadeVector = gridControl1.HillShadeVector;
 
@@ -68,12 +68,17 @@ namespace gView.Framework.UI.Dialogs
 
         private void MakeGUI()
         {
-            if (_class == null) return;
+            if (_class == null)
+            {
+                return;
+            }
 
             _hillShadeVector = new double[3];
             if (_class.HillShadeVector != null &&
                 _class.HillShadeVector.Length == 3)
+            {
                 _class.HillShadeVector.CopyTo(_hillShadeVector, 0);
+            }
 
             gridControl1.UseHillShade = _class.UseHillShade;
             gridControl1.HillShadeVector = _hillShadeVector;

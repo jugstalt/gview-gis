@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Windows.Forms;
 //using WeifenLuo.WinFormsUI.Docking;
 
 //namespace gView.Framework.system.UI

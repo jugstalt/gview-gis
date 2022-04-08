@@ -1,15 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Windows.Forms;
-using gView.Framework.UI;
+﻿using gView.Framework.Carto;
 using gView.Framework.Data;
 using gView.Framework.Data.Relations;
-using gView.Framework.Carto;
+using gView.Framework.UI;
+using System;
+using System.Windows.Forms;
 
 namespace gView.Plugins.DbTools.Relates
 {
@@ -27,7 +21,10 @@ namespace gView.Plugins.DbTools.Relates
             {
                 foreach (IDatasetElement element in map.MapElements)
                 {
-                    if (element == null || !(element.Class is ITableClass)) continue;
+                    if (element == null || !(element.Class is ITableClass))
+                    {
+                        continue;
+                    }
 
                     cmbLeftTable.Items.Add(new DatasetElementItem() { Map = map, DatasetElement = element });
                     cmbRightTable.Items.Add(new DatasetElementItem() { Map = map, DatasetElement = element });
@@ -53,7 +50,11 @@ namespace gView.Plugins.DbTools.Relates
         {
             get
             {
-                if (cmbLeftTable.SelectedItem == null) return null;
+                if (cmbLeftTable.SelectedItem == null)
+                {
+                    return null;
+                }
+
                 return ((DatasetElementItem)cmbLeftTable.SelectedItem).DatasetElement;
             }
             set
@@ -74,7 +75,11 @@ namespace gView.Plugins.DbTools.Relates
         {
             get
             {
-                if (cmbRightTable.SelectedItem == null) return null;
+                if (cmbRightTable.SelectedItem == null)
+                {
+                    return null;
+                }
+
                 return ((DatasetElementItem)cmbRightTable.SelectedItem).DatasetElement;
             }
             set
@@ -189,8 +194,11 @@ namespace gView.Plugins.DbTools.Relates
         private void cmbLeftTable_SelectedIndexChanged(object sender, EventArgs e)
         {
             cmbLeftTableField.Items.Clear();
-            if (cmbLeftTable.SelectedItem == null) return;
-            
+            if (cmbLeftTable.SelectedItem == null)
+            {
+                return;
+            }
+
             IDatasetElement element = ((DatasetElementItem)cmbLeftTable.SelectedItem).DatasetElement;
 
             foreach (IField field in ((ITableClass)element.Class).Fields.ToEnumerable())
@@ -203,7 +211,10 @@ namespace gView.Plugins.DbTools.Relates
         private void cmbRightTable_SelectedIndexChanged(object sender, EventArgs e)
         {
             cmbRightTableField.Items.Clear();
-            if (cmbRightTable.SelectedItem == null) return;
+            if (cmbRightTable.SelectedItem == null)
+            {
+                return;
+            }
 
             IDatasetElement element = ((DatasetElementItem)cmbRightTable.SelectedItem).DatasetElement;
 

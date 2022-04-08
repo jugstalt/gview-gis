@@ -1,15 +1,9 @@
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Text;
-using System.Windows.Forms;
-using gView.Framework.UI;
-using gView.Framework.system;
 using gView.Framework.Data;
-using gView.Interoperability.OGC.Dataset.WMS;
 using gView.Framework.Geometry;
+using gView.Framework.system;
+using gView.Framework.UI;
+using gView.Interoperability.OGC.Dataset.WMS;
+using System.Windows.Forms;
 
 namespace gView.Interoperability.OGC.UI.Dataset.WMS
 {
@@ -59,7 +53,10 @@ namespace gView.Interoperability.OGC.UI.Dataset.WMS
 
         public void Commit()
         {
-            if (_class == null) return;
+            if (_class == null)
+            {
+                return;
+            }
 
             _class.SRSCode = ((SrsItem)cmbCoordSystem.SelectedItem).Code;
             _class.GetMapFormat = cmbGetMapFormat.SelectedItem.ToString();
@@ -71,7 +68,10 @@ namespace gView.Interoperability.OGC.UI.Dataset.WMS
 
         private void BuildGUI()
         {
-            if (_class == null || _class.Dataset == null) return;
+            if (_class == null || _class.Dataset == null)
+            {
+                return;
+            }
 
             if (_class.SRSCodes != null)
             {
@@ -80,7 +80,9 @@ namespace gView.Interoperability.OGC.UI.Dataset.WMS
                 {
                     cmbCoordSystem.Items.Add(new SrsItem(code, _class.SRSCodes.Length < 100));
                     if (code == selected)
+                    {
                         cmbCoordSystem.SelectedIndex = cmbCoordSystem.Items.Count - 1;
+                    }
                 }
             }
 
@@ -91,7 +93,9 @@ namespace gView.Interoperability.OGC.UI.Dataset.WMS
                 {
                     cmbGetMapFormat.Items.Add(format);
                     if (format == selected)
+                    {
                         cmbGetMapFormat.SelectedIndex = cmbGetMapFormat.Items.Count - 1;
+                    }
                 }
             }
 
@@ -102,7 +106,9 @@ namespace gView.Interoperability.OGC.UI.Dataset.WMS
                 {
                     cmbInfoFormat.Items.Add(format);
                     if (format == selected)
+                    {
                         cmbInfoFormat.SelectedIndex = cmbInfoFormat.Items.Count - 1;
+                    }
                 }
             }
 
@@ -122,7 +128,10 @@ namespace gView.Interoperability.OGC.UI.Dataset.WMS
                 if (getDescription)
                 {
                     ISpatialReference sRef = SpatialReference.FromID(_code);
-                    if (sRef != null) _name = sRef.Description;
+                    if (sRef != null)
+                    {
+                        _name = sRef.Description;
+                    }
                 }
             }
 

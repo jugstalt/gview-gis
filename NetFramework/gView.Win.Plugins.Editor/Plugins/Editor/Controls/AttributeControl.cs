@@ -1,17 +1,15 @@
+using gView.Framework.Data;
+using gView.Framework.system;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
-using System.Data;
-using System.Text;
-using System.Windows.Forms;
-using gView.Framework.Data;
-using gView.Framework.system;
 using System.Globalization;
+using System.Windows.Forms;
 
 namespace gView.Plugins.Editor.Controls
 {
-    internal partial class AttributeControl : UserControl,IErrorMessage
+    internal partial class AttributeControl : UserControl, IErrorMessage
     {
         private Module _module = null;
         private IFeatureClass _fc = null;
@@ -52,20 +50,31 @@ namespace gView.Plugins.Editor.Controls
                 _fc = _module.FeatureClass;
 
                 IFeatureLayer layer = _module.GetFeatureClassLayer(_fc);
-                if (layer == null || layer.Fields == null) return;
+                if (layer == null || layer.Fields == null)
+                {
+                    return;
+                }
 
                 List<IField> fields = new List<IField>();
 
                 foreach (IField f in layer.Fields.ToEnumerable())
+                {
                     fields.Add(f);
+                }
 
                 int height = 20;
                 foreach (IField field in ListOperations<IField>.Swap(fields))
                 {
-                    if (!field.IsEditable) continue;
+                    if (!field.IsEditable)
+                    {
+                        continue;
+                    }
 
                     if (field.type == FieldType.Shape ||
-                        field.type == FieldType.binary) continue;
+                        field.type == FieldType.binary)
+                    {
+                        continue;
+                    }
 
                     #region Label
                     Panel p1 = new Panel();
@@ -141,10 +150,18 @@ namespace gView.Plugins.Editor.Controls
         }
         private bool CommitValues(Control parent)
         {
-            if (parent == null) return false;
+            if (parent == null)
+            {
+                return false;
+            }
+
             foreach (Control child in parent.Controls)
             {
-                if (child == null) continue;
+                if (child == null)
+                {
+                    continue;
+                }
+
                 if (child is IFieldControl)
                 {
                     if (!((IFieldControl)child).Commit())
@@ -155,8 +172,10 @@ namespace gView.Plugins.Editor.Controls
                     }
                 }
                 else
-                    if(!CommitValues(child)) 
-                        return false;
+                    if (!CommitValues(child))
+                {
+                    return false;
+                }
             }
 
             return true;
@@ -164,14 +183,26 @@ namespace gView.Plugins.Editor.Controls
 
         private void SetFeatureValues(Control parent)
         {
-            if (parent == null) return;
+            if (parent == null)
+            {
+                return;
+            }
+
             foreach (Control child in parent.Controls)
             {
-                if (child == null) continue;
+                if (child == null)
+                {
+                    continue;
+                }
+
                 if (child is IFieldControl)
+                {
                     ((IFieldControl)child).Feature = _module.Feature;
+                }
                 else
+                {
                     SetFeatureValues(child);
+                }
             }
         }
 
@@ -187,7 +218,7 @@ namespace gView.Plugins.Editor.Controls
             protected IFeature _feature = null;
             protected IField _field;
             private String _origValue = null, _errMsg = String.Empty;
-            
+
             public TextControl(IFeature feature, IField field)
             {
                 _field = field;
@@ -276,16 +307,24 @@ namespace gView.Plugins.Editor.Controls
                     if (_origValue != null)
                     {
                         if (_origValue.Equals(this.Text))
+                        {
                             base.BackColor = Color.White;
+                        }
                         else
+                        {
                             base.BackColor = Color.Yellow;
+                        }
                     }
                     else
                     {
                         if (_feature[_field.name] == null)
+                        {
                             base.BackColor = Color.White;
+                        }
                         else
+                        {
                             base.BackColor = Color.Yellow;
+                        }
                     }
 
                     if (_field.IsRequired && String.IsNullOrEmpty(this.Text))
@@ -412,7 +451,10 @@ namespace gView.Plugins.Editor.Controls
 
             public bool Commit()
             {
-                if (_feature == null) return false;
+                if (_feature == null)
+                {
+                    return false;
+                }
 
                 switch (_field.type)
                 {
@@ -440,17 +482,25 @@ namespace gView.Plugins.Editor.Controls
 
                 if (_origValue != null)
                 {
-                    if (CompareValues(_origValue,_feature[_field.name]))
+                    if (CompareValues(_origValue, _feature[_field.name]))
+                    {
                         base.BackColor = Color.White;
+                    }
                     else
+                    {
                         base.BackColor = Color.Yellow;
+                    }
                 }
                 else
                 {
                     if (_feature[_field.name] == null)
+                    {
                         base.BackColor = Color.White;
+                    }
                     else
+                    {
                         base.BackColor = Color.Yellow;
+                    }
                 }
 
                 return true;
@@ -459,9 +509,15 @@ namespace gView.Plugins.Editor.Controls
 
             private bool CompareValues(object var1, object var2)
             {
-                if (var1 == null && var2 == null) return true;
+                if (var1 == null && var2 == null)
+                {
+                    return true;
+                }
 
-                if (var1 != null && var1.Equals(var2)) return true;
+                if (var1 != null && var1.Equals(var2))
+                {
+                    return true;
+                }
 
                 try
                 {
@@ -492,15 +548,22 @@ namespace gView.Plugins.Editor.Controls
             private object _origValue = null;
             private string _errMsg = String.Empty;
 
-            public ComboControl(IFeature feature, IField field, object [] values)
+            public ComboControl(IFeature feature, IField field, object[] values)
             {
                 this.DropDownStyle = ComboBoxStyle.DropDownList;
 
-                if (values == null) return;
+                if (values == null)
+                {
+                    return;
+                }
 
                 foreach (object v in values)
                 {
-                    if (v == null) continue;
+                    if (v == null)
+                    {
+                        continue;
+                    }
+
                     this.Items.Add(v);
                 }
                 _field = field;
@@ -520,7 +583,10 @@ namespace gView.Plugins.Editor.Controls
                 }
 
                 object item = base.Items[e.Index];
-                if (item == null) return;
+                if (item == null)
+                {
+                    return;
+                }
 
                 RectangleF rect = new RectangleF(e.Bounds.X, e.Bounds.Y, e.Bounds.Width, e.Bounds.Height);
 
@@ -546,7 +612,7 @@ namespace gView.Plugins.Editor.Controls
                 //switch (e.State)
                 //{   
                 //    case DrawItemState.Selected:
-                        
+
                 //        e.Graphics.DrawString(
                 //            item.ToString(),
                 //            e.Font,
@@ -554,7 +620,7 @@ namespace gView.Plugins.Editor.Controls
                 //            rect);
                 //        break;
                 //    default:
-                        
+
                 //        break;
                 //}
             }
@@ -562,19 +628,31 @@ namespace gView.Plugins.Editor.Controls
             void ComboControl_SelectedIndexChanged(object sender, EventArgs e)
             {
                 if (CompareValues(base.SelectedItem, _origValue))
+                {
                     base.BackColor = Color.White;
+                }
                 else
+                {
                     base.BackColor = Color.Yellow;
+                }
             }
 
             private bool CompareValues(object var1, object var2)
             {
-                if (var1 == null && var2 == null) return true;
+                if (var1 == null && var2 == null)
+                {
+                    return true;
+                }
 
-                if (var1 != null && var2 != null && var1.ToString() == var2.ToString()) return true;
+                if (var1 != null && var2 != null && var1.ToString() == var2.ToString())
+                {
+                    return true;
+                }
 
                 if (var1 != null)
+                {
                     return var1.Equals(var2);
+                }
 
                 return false;
             }
@@ -598,9 +676,14 @@ namespace gView.Plugins.Editor.Controls
                         {
                             _origValue = _feature[_field.name];
                             if (_origValue == null)
+                            {
                                 base.SelectedIndex = -1;
+                            }
                             else
+                            {
                                 base.SelectedItem = _origValue.ToString();
+                            }
+
                             base.Enabled = true;
                         }
                         else
@@ -608,7 +691,7 @@ namespace gView.Plugins.Editor.Controls
                             _origValue = null;
                             base.SelectedIndex = -1;
                             base.Enabled = false;
-                        }     
+                        }
                     }
                 }
             }
@@ -705,12 +788,12 @@ namespace gView.Plugins.Editor.Controls
             public MaskedTextBox(IFeature feature, IField field)
                 : base(feature, field)
             {
-                
+
                 // This call is required by the Windows.Forms Form Designer.
                 InitializeComponent();
 
                 // TODO: Add any initialization after the InitForm call
-                
+
             }
 
             protected override void Dispose(bool disposing)
@@ -718,7 +801,9 @@ namespace gView.Plugins.Editor.Controls
                 if (disposing)
                 {
                     if (components != null)
+                    {
                         components.Dispose();
+                    }
                 }
                 base.Dispose(disposing);
             }
@@ -746,17 +831,34 @@ namespace gView.Plugins.Editor.Controls
             {
                 MaskedTextBox sd = (MaskedTextBox)sender;
                 if (sd.m_IPAddrOnly)
+                {
                     sd.MaskIpAddr(e);
+                }
+
                 if (sd.m_digitOnly)
+                {
                     sd.MaskDigit(e);
+                }
+
                 if (sd.m_ssn)
+                {
                     sd.MaskPhoneSSN(e, 3, 2);
+                }
+
                 if (sd.m_phoneOnly)
+                {
                     sd.MaskPhoneSSN(e, 3, 3);
+                }
+
                 if (sd.m_dateOnly)
+                {
                     sd.MaskDate(e);
+                }
+
                 if (sd.m_decimalOnly)
+                {
                     sd.MaskDecimal(e);
+                }
             }
             private void MaskDigit(KeyPressEventArgs e)
             {
@@ -846,9 +948,14 @@ namespace gView.Plugins.Editor.Controls
                         if (e.KeyChar != '/')
                         {
                             if (indx > 0)
+                            {
                                 digitPos = len - indx;
+                            }
                             else
+                            {
                                 digitPos++;
+                            }
+
                             if (digitPos == 3 && DelimitNumber < 2)
                             {
                                 if (e.KeyChar != '/')
@@ -863,13 +970,21 @@ namespace gView.Plugins.Editor.Controls
                             {
                                 string tmp2;
                                 if (indx == -1)
+                                {
                                     tmp2 = e.KeyChar.ToString();
+                                }
                                 else
+                                {
                                     tmp2 = this.Text.Substring(indx + 1) + e.KeyChar.ToString();
+                                }
 
                                 if (DelimitNumber < 2)
                                 {
-                                    if (digitPos == 1) this.AppendText("0");
+                                    if (digitPos == 1)
+                                    {
+                                        this.AppendText("0");
+                                    }
+
                                     this.AppendText(e.KeyChar.ToString());
                                     if (indx < 0)
                                     {
@@ -903,7 +1018,9 @@ namespace gView.Plugins.Editor.Controls
                                         {
                                             int m = Int32.Parse(this.Text.Substring(0, indx));
                                             if (!CheckDayOfMonth(m, Int32.Parse(tmp2)))
+                                            {
                                                 errorProvider1.SetError(this, "Make sure this month have the day");
+                                            }
                                             else
                                             {
                                                 this.AppendText("/");
@@ -916,7 +1033,11 @@ namespace gView.Plugins.Editor.Controls
                             }
                             else if (digitPos == 1 && Int32.Parse(e.KeyChar.ToString()) > 3 && DelimitNumber < 2)
                             {
-                                if (digitPos == 1) this.AppendText("0");
+                                if (digitPos == 1)
+                                {
+                                    this.AppendText("0");
+                                }
+
                                 this.AppendText(e.KeyChar.ToString());
                                 this.AppendText("/");
                                 DelimitNumber++;
@@ -925,7 +1046,9 @@ namespace gView.Plugins.Editor.Controls
                             else
                             {
                                 if (digitPos == 1 && DelimitNumber == 2 && e.KeyChar > '2')
+                                {
                                     errorProvider1.SetError(this, "The year should start with 1 or 2");
+                                }
                             }
                         }
                         else
@@ -933,9 +1056,14 @@ namespace gView.Plugins.Editor.Controls
                             DelimitNumber++;
                             string tmp3;
                             if (indx == -1)
+                            {
                                 tmp3 = this.Text.Substring(indx + 1);
+                            }
                             else
+                            {
                                 tmp3 = this.Text;
+                            }
+
                             if (digitPos == 1)
                             {
                                 this.Text = tmp3.Insert(indx + 1, "0"); ;
@@ -951,16 +1079,24 @@ namespace gView.Plugins.Editor.Controls
                         {
                             DelimitNumber--;
                             if (indx > -1)
+                            {
                                 digitPos = 2;
+                            }
                             else
+                            {
                                 digitPos--;
+                            }
                         }
                         else
                         {
                             if (indx > -1)
+                            {
                                 digitPos = len - indx - 1;
+                            }
                             else
+                            {
                                 digitPos = len - 1;
+                            }
                         }
                     }
                 }
@@ -990,9 +1126,13 @@ namespace gView.Plugins.Editor.Controls
                         if (e.KeyChar != '-')
                         {
                             if (indx > 0)
+                            {
                                 digitPos = len - indx;
+                            }
                             else
+                            {
                                 digitPos++;
+                            }
                         }
                         if (indx > -1 && digitPos == pos2 && DelimitNumber == 1)
                         {
@@ -1022,16 +1162,24 @@ namespace gView.Plugins.Editor.Controls
                         {
                             DelimitNumber--;
                             if ((indx) > -1)
+                            {
                                 digitPos = len - indx;
+                            }
                             else
+                            {
                                 digitPos--;
+                            }
                         }
                         else
                         {
                             if (indx > -1)
+                            {
                                 digitPos = len - indx - 1;
+                            }
                             else
+                            {
                                 digitPos = len - 1;
+                            }
                         }
                     }
                 }
@@ -1061,15 +1209,21 @@ namespace gView.Plugins.Editor.Controls
                         if (e.KeyChar != '.')
                         {
                             if (indx > 0)
+                            {
                                 digitPos = len - indx;
+                            }
                             else
+                            {
                                 digitPos++;
+                            }
                         }
                         if (digitPos == 3 && e.KeyChar != '.')
                         {
                             string tmp2 = this.Text.Substring(indx + 1) + e.KeyChar;
                             if (Int32.Parse(tmp2) > 255) // check validation
+                            {
                                 errorProvider1.SetError(this, "The number can't be bigger than 255");
+                            }
                             else
                             {
                                 if (DelimitNumber < 3)
@@ -1082,7 +1236,9 @@ namespace gView.Plugins.Editor.Controls
                             }
                         }
                         else if (digitPos == 4 && DelimitNumber < 3)
+                        {
                             this.AppendText(".");
+                        }
                     }
                     else
                     {
@@ -1095,14 +1251,20 @@ namespace gView.Plugins.Editor.Controls
                                 digitPos = len - indx;
                             }
                             else
+                            {
                                 digitPos--;
+                            }
                         }
                         else
                         {
                             if (indx > -1)
+                            {
                                 digitPos = len - indx - 1;
+                            }
                             else
+                            {
                                 digitPos = len - 1;
+                            }
                         }
                     }
                 }
@@ -1115,56 +1277,96 @@ namespace gView.Plugins.Editor.Controls
             private bool CheckDayOfMonth(int mon, int day)
             {
                 bool ret = true;
-                if (day == 0) ret = false;
+                if (day == 0)
+                {
+                    ret = false;
+                }
+
                 switch (mon)
                 {
                     case 1:
                         if (day > 31)
+                        {
                             ret = false;
+                        }
+
                         break;
                     case 2:
                         if (day > 28)
+                        {
                             ret = false;
+                        }
+
                         break;
                     case 3:
                         if (day > 31)
+                        {
                             ret = false;
+                        }
+
                         break;
                     case 4:
                         if (day > 30)
+                        {
                             ret = false;
+                        }
+
                         break;
                     case 5:
                         if (day > 31)
+                        {
                             ret = false;
+                        }
+
                         break;
                     case 6:
                         if (day > 30)
+                        {
                             ret = false;
+                        }
+
                         break;
                     case 7:
                         if (day > 31)
+                        {
                             ret = false;
+                        }
+
                         break;
                     case 8:
                         if (day > 31)
+                        {
                             ret = false;
+                        }
+
                         break;
                     case 9:
                         if (day > 30)
+                        {
                             ret = false;
+                        }
+
                         break;
                     case 10:
                         if (day > 31)
+                        {
                             ret = false;
+                        }
+
                         break;
                     case 11:
                         if (day > 30)
+                        {
                             ret = false;
+                        }
+
                         break;
                     case 12:
                         if (day > 31)
+                        {
                             ret = false;
+                        }
+
                         break;
                     default:
                         ret = false;
@@ -1180,7 +1382,10 @@ namespace gView.Plugins.Editor.Controls
                 if (base.SelectionStart == text.Length)
                 {
                     if (e.KeyChar == 8) // BackSpace
+                    {
                         return text.Substring(0, text.Length - 1);
+                    }
+
                     return text + e.KeyChar;
                 }
                 else
@@ -1192,9 +1397,13 @@ namespace gView.Plugins.Editor.Controls
                     if (e.KeyChar == 8)
                     {
                         if (base.SelectionLength == 0)
+                        {
                             return t1 + t2;
+                        }
                         else
+                        {
                             return t1.Substring(0, t1.Length - 1) + t2;
+                        }
                     }
                     return t1 + e.KeyChar + t2;
                 }
@@ -1203,11 +1412,13 @@ namespace gView.Plugins.Editor.Controls
             public override bool Commit()
             {
                 if (!base.Commit())
+                {
                     return false;
+                }
 
                 if (String.IsNullOrEmpty(base.Text) && _field.IsRequired == false)
                 {
-                    Module.SetValueOrAppendFieldValueIfNotExist(Feature, _field.name, System.DBNull.Value);                
+                    Module.SetValueOrAppendFieldValueIfNotExist(Feature, _field.name, System.DBNull.Value);
                     return true;
                 }
                 try
@@ -1266,7 +1477,10 @@ namespace gView.Plugins.Editor.Controls
                 else
                 {
                     if (m.Msg == 256 && nKey == 46)
+                    {
                         return base.ProcessKeyPreview(ref m);
+                    }
+
                     if (m.Msg == 258)
                     {
                         MessageBeep(0);
@@ -1283,7 +1497,10 @@ namespace gView.Plugins.Editor.Controls
                     bool charOk = (keyChar > 47 && keyChar < 58) ||
                     keyChar == 8 ||
                     keyChar == 3 || keyChar == 22 || keyChar == 24;
-                    if (!charOk) return;
+                    if (!charOk)
+                    {
+                        return;
+                    }
                 }
                 if (m.Msg == WM_PASTE)
                 {
@@ -1292,7 +1509,10 @@ namespace gView.Plugins.Editor.Controls
                     {
                         string str;
                         str = (String)iData.GetData(DataFormats.Text);
-                        if (!System.Text.RegularExpressions.Regex.IsMatch(str, @"^(\d{1,})$")) return;
+                        if (!System.Text.RegularExpressions.Regex.IsMatch(str, @"^(\d{1,})$"))
+                        {
+                            return;
+                        }
                     }
                 }
                 base.WndProc(ref m);

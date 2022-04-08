@@ -39,7 +39,7 @@ namespace gView.Server.Controllers
             _loginManagerService = loginManagerService;
         }
 
-        async public Task<IActionResult> Index(string folder, string serviceName="", string errorMessage="")
+        async public Task<IActionResult> Index(string folder, string serviceName = "", string errorMessage = "")
         {
             folder = folder ?? String.Empty;
 
@@ -47,7 +47,7 @@ namespace gView.Server.Controllers
             {
                 try
                 {
-                     _mapServerService.ReloadServices(folder, true);
+                    _mapServerService.ReloadServices(folder, true);
                 }
                 catch  // Folder not exists
                 {
@@ -73,7 +73,7 @@ namespace gView.Server.Controllers
                         return RedirectToAction("Index");
                     }
 
-                    isPublisher |= (await folderService.HasPublishAccess(identity)) ;
+                    isPublisher |= (await folderService.HasPublishAccess(identity));
                 }
 
                 List<string> folders = new List<string>();
@@ -197,7 +197,7 @@ namespace gView.Server.Controllers
             {
                 try
                 {
-                    if(!service.IsValidServiceName())
+                    if (!service.IsValidServiceName())
                     {
                         throw new MapServerException("service name is invalid");
                     }
@@ -208,7 +208,7 @@ namespace gView.Server.Controllers
                         service = folder + "/" + service;
                     }
 
-                    if(Request.Form.Files.Count==0)
+                    if (Request.Form.Files.Count == 0)
                     {
                         throw new MapServerException("No file uploaded");
                     }
@@ -232,7 +232,7 @@ namespace gView.Server.Controllers
                             string xml = encoding.GetString(buffer);
 
                             int index = xml.IndexOf("<");
-                            if(index<0)
+                            if (index < 0)
                             {
                                 continue;
                             }
@@ -247,7 +247,7 @@ namespace gView.Server.Controllers
                             mapXml = mapDocumentNode.OuterXml;
                             break;
                         }
-                        catch(Exception ex)
+                        catch (Exception ex)
                         {
                             string xmlError = ex.Message;
                         }
@@ -259,12 +259,12 @@ namespace gView.Server.Controllers
                     }
 
                     bool ret = await _mapServerDeployService.AddMap(service, mapXml, identity);
-                    if(ret==false)
+                    if (ret == false)
                     {
                         throw new Exception("unable to add service");
                     }
-                    
-                    if(UseJsonResponse())
+
+                    if (UseJsonResponse())
                     {
                         return Json(new AdminMapServerResponse());
                     }
@@ -309,13 +309,13 @@ namespace gView.Server.Controllers
                     {
                         throw new MapServerException("Not allowed");
                     }
-                    if(!newFolder.IsValidFolderName())
+                    if (!newFolder.IsValidFolderName())
                     {
                         throw new MapServerException($"Foldername { newFolder } is invalid");
                     }
 
                     var di = new DirectoryInfo($"{ _mapServerService.Options.ServicesPath }/{ newFolder.ToLower() }");
-                    if(di.Exists)
+                    if (di.Exists)
                     {
                         throw new MapServerException($"Folder { newFolder } already exists");
                     }

@@ -1,8 +1,4 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Resources;
-using gView.Framework.Globalisation;
 
 namespace gView.Plugins.Editor
 {
@@ -27,7 +23,9 @@ namespace gView.Plugins.Editor
 
                 string ret = _resMan.GetString(name);
                 if (ret == null)
+                {
                     return defString;
+                }
 
                 return ret;
             }

@@ -1,6 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace gView.DataSources.Raster
 {
@@ -40,14 +38,20 @@ namespace gView.DataSources.Raster
                 _bm.UnlockBits(_bmdata);
                 _bmdata = null;
             }
-            if (disposeBitmap && _bm != null) _bm.Dispose();
+            if (disposeBitmap && _bm != null)
+            {
+                _bm.Dispose();
+            }
         }
 
         public byte ReadPixel(int x, int y)
         {
             unsafe
             {
-                if (x >= _iWidth || y >= _iHeight || x < 0 || y < 0) return 0;
+                if (x >= _iWidth || y >= _iHeight || x < 0 || y < 0)
+                {
+                    return 0;
+                }
 
                 byte* ptr = (byte*)(void*)_bmdata.Scan0;
                 ptr += y * _stride + (x >> _move);
@@ -63,13 +67,20 @@ namespace gView.DataSources.Raster
         {
             unsafe
             {
-                if (x >= _iWidth || y >= _iHeight || x < 0 || y < 0) return;
+                if (x >= _iWidth || y >= _iHeight || x < 0 || y < 0)
+                {
+                    return;
+                }
 
                 byte* ptr = (byte*)(void*)_bmdata.Scan0;
                 ptr += y * _stride + (x >> _move);
                 if (_move == 3)
                 {
-                    if (val == 0) return;
+                    if (val == 0)
+                    {
+                        return;
+                    }
+
                     *ptr = (byte)((int)*ptr | _bit[7 - (x % 8)]);
                     return;
                 }
@@ -79,17 +90,28 @@ namespace gView.DataSources.Raster
 
         public void DrawImage(Bitmap8pbbIndexed source, System.Drawing.Rectangle destrect, System.Drawing.Rectangle sourcerect)
         {
-            if (destrect.X > _iWidth || destrect.Y > _iHeight) return;
+            if (destrect.X > _iWidth || destrect.Y > _iHeight)
+            {
+                return;
+            }
 
             if (sourcerect.X > source._iWidth ||
                 sourcerect.Y > source._iHeight ||
                 source._iWidth == 0 ||
-                source._iHeight == 0) return;
+                source._iHeight == 0)
+            {
+                return;
+            }
 
             if (sourcerect.X + sourcerect.Width > source._iWidth)
+            {
                 sourcerect.Width = source._iWidth - sourcerect.X;
+            }
+
             if (sourcerect.Y + sourcerect.Height > source._iHeight)
+            {
                 sourcerect.Height = source._iHeight - sourcerect.Y;
+            }
 
             int minx = Math.Max(0, destrect.X);
             int miny = Math.Max(0, destrect.Y);
@@ -112,7 +134,7 @@ namespace gView.DataSources.Raster
                 {
                     for (x = minx, X = sourcerect.X; x < maxx; x++, X += stepX)
                     {
-                        this.WritePixel(x,y,source.ReadPixel((int)X,(int)Y));
+                        this.WritePixel(x, y, source.ReadPixel((int)X, (int)Y));
                         //*(ptr + y * _stride + (x >> _move)) = source.ReadPixel((int)X, (int)Y);
                     }
                 }

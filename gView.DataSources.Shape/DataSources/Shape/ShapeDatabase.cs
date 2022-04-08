@@ -1,10 +1,9 @@
+using gView.Framework.Data;
+using gView.Framework.FDB;
+using gView.Framework.Geometry;
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.IO;
-using gView.Framework.FDB;
-using gView.Framework.Data;
-using gView.Framework.Geometry;
 using System.Threading.Tasks;
 
 namespace gView.DataSources.Shape
@@ -15,7 +14,7 @@ namespace gView.DataSources.Shape
         private string _errMsg = "";
         private string _name = "";
         private string _directoryName = String.Empty;
-        
+
         internal string DirectoryName
         {
             set { _directoryName = value; }
@@ -30,16 +29,23 @@ namespace gView.DataSources.Shape
 
         public Task<int> CreateFeatureClass(string dsname, string fcname, IGeometryDef geomDef, IFields fields)
         {
-            if (geomDef == null || fields == null) return Task.FromResult(-1);
+            if (geomDef == null || fields == null)
+            {
+                return Task.FromResult(-1);
+            }
 
             string filename = _directoryName + @"/" + fcname;
             Fields f = new Fields();
 
             foreach (IField field in fields.ToEnumerable())
+            {
                 f.Add(field);
+            }
 
             if (!SHPFile.Create(filename, geomDef, f))
+            {
                 return Task.FromResult(-1);
+            }
 
             return Task.FromResult(0);
         }
@@ -75,7 +81,10 @@ namespace gView.DataSources.Shape
             try
             {
                 DirectoryInfo di = new DirectoryInfo(dsName);
-                if (!di.Exists) di.Delete();
+                if (!di.Exists)
+                {
+                    di.Delete();
+                }
 
                 return Task.FromResult<bool>(true);
             }
@@ -88,8 +97,10 @@ namespace gView.DataSources.Shape
 
         public Task<bool> DeleteFeatureClass(string fcName)
         {
-            if(_name=="")
+            if (_name == "")
+            {
                 return Task.FromResult(false);
+            }
 
             SHPFile file = new SHPFile(_name + @"/" + fcName + ".shp");
             return Task.FromResult(file.Delete());
@@ -118,7 +129,10 @@ namespace gView.DataSources.Shape
             try
             {
                 DirectoryInfo di = new DirectoryInfo(name);
-                if (!di.Exists) di.Create();
+                if (!di.Exists)
+                {
+                    di.Create();
+                }
 
                 return true;
             }
@@ -146,7 +160,7 @@ namespace gView.DataSources.Shape
                     return Task.FromResult(false);
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 _errMsg = ex.Message;
                 _name = "";
@@ -168,7 +182,7 @@ namespace gView.DataSources.Shape
 
         public void Dispose()
         {
-            
+
         }
 
         #endregion
@@ -177,7 +191,10 @@ namespace gView.DataSources.Shape
 
         public Task<bool> Insert(IFeatureClass fClass, IFeature feature)
         {
-            if (fClass == null || feature == null) return Task.FromResult<bool>(false);
+            if (fClass == null || feature == null)
+            {
+                return Task.FromResult<bool>(false);
+            }
 
             List<IFeature> features = new List<IFeature>();
             features.Add(feature);
@@ -187,17 +204,23 @@ namespace gView.DataSources.Shape
         public Task<bool> Insert(IFeatureClass fClass, List<IFeature> features)
         {
             if (fClass == null || !(fClass.Dataset is ShapeDataset) || features == null)
+            {
                 return Task.FromResult<bool>(false);
+            }
 
             if (features.Count == 0)
+            {
                 return Task.FromResult<bool>(true);
+            }
 
             SHPFile shpFile = new SHPFile(fClass.Dataset.ConnectionString + @"/" + fClass.Name + ".shp");
 
             foreach (IFeature feature in features)
             {
                 if (!shpFile.WriteShape(feature))
+                {
                     return Task.FromResult<bool>(false);
+                }
             }
 
             return Task.FromResult<bool>(true);
@@ -250,6 +273,6 @@ namespace gView.DataSources.Shape
         #endregion
 
 
-        
+
     }
 }

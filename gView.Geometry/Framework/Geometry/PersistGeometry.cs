@@ -1,9 +1,5 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
 using gView.Framework.IO;
-using gView.Framework.Geometry;
-using System.Threading.Tasks;
+using System;
 
 namespace gView.Framework.Geometry
 {
@@ -74,20 +70,34 @@ namespace gView.Framework.Geometry
         public void Save(IPersistStream stream)
         {
             if (_geometry == null || stream == null)
+            {
                 return;
+            }
 
             if (_geometry is IPoint)
+            {
                 stream.Save("Point", new PersistablePoint(_geometry as IPoint));
+            }
             else if (_geometry is IMultiPoint)
+            {
                 stream.Save("Multipoint", new PersistablePointCollection(_geometry as IMultiPoint));
+            }
             else if (_geometry is IPolyline)
+            {
                 stream.Save("Polyline", new PersistablePolyline(_geometry as IPolyline));
+            }
             else if (_geometry is Polygon)
+            {
                 stream.Save("Polygon", new PersistablePolygon(_geometry as IPolygon));
+            }
             else if (_geometry is IEnvelope)
+            {
                 stream.Save("Envelope", new PersistableEnvelope(_geometry as IEnvelope));
+            }
             else if (_geometry is IAggregateGeometry)
+            {
                 stream.Save("AggregateGeometry", new PersistableAggregateGeometry(_geometry as IAggregateGeometry));
+            }
         }
 
         #endregion
@@ -111,8 +121,10 @@ namespace gView.Framework.Geometry
 
         public void Load(IPersistStream stream)
         {
-            if (_point==null || stream == null)
+            if (_point == null || stream == null)
+            {
                 return;
+            }
 
             _point.X = (double)stream.Load("x", 0.0);
             _point.Y = (double)stream.Load("y", 0.0);
@@ -121,7 +133,9 @@ namespace gView.Framework.Geometry
         public void Save(IPersistStream stream)
         {
             if (_point == null)
+            {
                 return;
+            }
 
             stream.Save("x", _point.X);
             stream.Save("y", _point.Y);
@@ -148,8 +162,10 @@ namespace gView.Framework.Geometry
 
         public void Load(IPersistStream stream)
         {
-            if (_pColl==null || stream == null)
+            if (_pColl == null || stream == null)
+            {
                 return;
+            }
 
             PersistablePoint p;
             while ((p = stream.Load("v", null, new PersistablePoint(new Point())) as PersistablePoint) != null)
@@ -161,10 +177,14 @@ namespace gView.Framework.Geometry
         public void Save(IPersistStream stream)
         {
             if (_pColl == null)
+            {
                 return;
+            }
 
             for (int i = 0; i < _pColl.PointCount; i++)
+            {
                 stream.Save("v", new PersistablePoint(_pColl[i]));
+            }
         }
 
         #endregion
@@ -189,7 +209,9 @@ namespace gView.Framework.Geometry
         public void Load(IPersistStream stream)
         {
             if (_polyline == null || stream == null)
+            {
                 return;
+            }
 
             PersistablePointCollection p;
             while ((p = stream.Load("Path", null, new PersistablePointCollection(new Path())) as PersistablePointCollection) != null)
@@ -201,10 +223,14 @@ namespace gView.Framework.Geometry
         public void Save(IPersistStream stream)
         {
             if (_polyline == null || stream == null)
+            {
                 return;
+            }
 
             for (int i = 0; i < _polyline.PathCount; i++)
+            {
                 stream.Save("Path", new PersistablePointCollection(_polyline[i]));
+            }
         }
 
         #endregion
@@ -229,7 +255,9 @@ namespace gView.Framework.Geometry
         public void Load(IPersistStream stream)
         {
             if (_polygon == null || stream == null)
+            {
                 return;
+            }
 
             PersistablePointCollection p;
             while ((p = stream.Load("Ring", null, new PersistablePointCollection(new Ring())) as PersistablePointCollection) != null)
@@ -241,10 +269,14 @@ namespace gView.Framework.Geometry
         public void Save(IPersistStream stream)
         {
             if (_polygon == null || stream == null)
+            {
                 return;
+            }
 
             for (int i = 0; i < _polygon.RingCount; i++)
+            {
                 stream.Save("Ring", new PersistablePointCollection(_polygon[i]));
+            }
         }
 
         #endregion
@@ -269,7 +301,9 @@ namespace gView.Framework.Geometry
         public void Load(IPersistStream stream)
         {
             if (_ageometry == null || stream == null)
+            {
                 return;
+            }
 
             PersistableGeometry p;
             while ((p = stream.Load("Geometry", null, new PersistableGeometry()) as PersistableGeometry) != null)
@@ -281,10 +315,14 @@ namespace gView.Framework.Geometry
         public void Save(IPersistStream stream)
         {
             if (_ageometry == null || stream == null)
+            {
                 return;
+            }
 
             for (int i = 0; i < _ageometry.GeometryCount; i++)
-                stream.Save("Geometry", new PersistableGeometry(_ageometry[i]));;
+            {
+                stream.Save("Geometry", new PersistableGeometry(_ageometry[i]));
+            };
         }
 
         #endregion
@@ -309,7 +347,9 @@ namespace gView.Framework.Geometry
         public void Load(IPersistStream stream)
         {
             if (stream == null || _envelope == null)
+            {
                 return;
+            }
 
             PersistablePoint lowerleft = (PersistablePoint)stream.Load("lowerleft", new PersistablePoint(new Point()), new PersistablePoint(new Point()));
             PersistablePoint upperright = (PersistablePoint)stream.Load("upperright", new PersistablePoint(new Point()), new PersistablePoint(new Point()));
@@ -323,7 +363,9 @@ namespace gView.Framework.Geometry
         public void Save(IPersistStream stream)
         {
             if (stream == null || _envelope == null)
+            {
                 return;
+            }
 
             stream.Save("lowerleft", new PersistablePoint(_envelope.LowerLeft));
             stream.Save("upperright", new PersistablePoint(_envelope.UpperRight));

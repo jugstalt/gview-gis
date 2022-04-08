@@ -19,20 +19,22 @@ using System;
 namespace Proj4Net.Projection
 {
 
-/*
- * This file was semi-automatically converted from the public-domain USGS PROJ source.
- */
+    /*
+     * This file was semi-automatically converted from the public-domain USGS PROJ source.
+     */
 
-public class McBrydeThomasFlatPolarSine1Projection : SineTangentSeriesProjection 
-{
-
-	public McBrydeThomasFlatPolarSine1Projection() 
-        :base(1.48875, 1.36509, false)
+    public class McBrydeThomasFlatPolarSine1Projection : SineTangentSeriesProjection
     {
-	}
-	
-	public override String ToString() {
-		return "McBryde-Thomas Flat-Polar Sine (No. 1)";
-	}
 
-}}
+        public McBrydeThomasFlatPolarSine1Projection()
+            : base(1.48875, 1.36509, false)
+        {
+        }
+
+        public override String ToString()
+        {
+            return "McBryde-Thomas Flat-Polar Sine (No. 1)";
+        }
+
+    }
+}

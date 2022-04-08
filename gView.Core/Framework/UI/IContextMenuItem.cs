@@ -5,5 +5,5 @@
         bool ShowWith(object context);
     }
 
-    
+
 }

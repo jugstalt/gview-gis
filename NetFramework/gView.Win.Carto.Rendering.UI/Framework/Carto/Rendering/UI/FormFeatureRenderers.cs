@@ -1,13 +1,6 @@
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Text;
-using System.Windows.Forms;
-using gView.Framework.system;
-using System.Xml;
 using gView.Framework.Data;
+using gView.Framework.system;
+using System.Windows.Forms;
 
 namespace gView.Framework.Carto.Rendering.UI
 {
@@ -46,7 +39,10 @@ namespace gView.Framework.Carto.Rendering.UI
                 foreach (var pluginType in compManager.GetPlugins(Plugins.Type.IFeatureRenderer))
                 {
                     IFeatureRenderer renderer = compManager.CreateInstance<IFeatureRenderer>(pluginType);
-                    if (renderer == null || !renderer.CanRender(_layer, null)) continue;
+                    if (renderer == null || !renderer.CanRender(_layer, null))
+                    {
+                        continue;
+                    }
 
                     TreeNode parent = null;
                     foreach (TreeNode cat in tvRenderer.Nodes)
@@ -73,7 +69,10 @@ namespace gView.Framework.Carto.Rendering.UI
                 foreach (var pluginType in compManager.GetPlugins(Plugins.Type.ILabelRenderer))
                 {
                     ILabelRenderer renderer = compManager.CreateInstance<ILabelRenderer>(pluginType);
-                    if (renderer == null || !renderer.CanRender(_layer, null)) continue;
+                    if (renderer == null || !renderer.CanRender(_layer, null))
+                    {
+                        continue;
+                    }
 
                     parent.Nodes.Add(new LabelRendererNode(renderer));
                 }
@@ -81,7 +80,9 @@ namespace gView.Framework.Carto.Rendering.UI
             }
 
             foreach (TreeNode parent in tvRenderer.Nodes)
+            {
                 parent.Expand();
+            }
         }
 
         private class RendererNode : TreeNode

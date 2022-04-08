@@ -88,7 +88,9 @@ namespace Proj4Net.Units
         {
             double val;
             if (Double.TryParse(s, NumberStyles.Float, _format, out val))
+            {
                 return val;
+            }
 
             throw new Exception();
         }
@@ -101,14 +103,20 @@ namespace Proj4Net.Units
         public String Format(double n, Boolean abbrev)
         {
             if (abbrev)
+            {
                 return String.Format(_format, "{0} {1}", n, _abbreviation);
+            }
+
             return String.Format(_format, "{0}", n);
         }
 
         public String Format(double x, double y, Boolean abbrev)
         {
             if (abbrev)
+            {
                 return String.Format(_format, "{0}/{1} {2}", x, y, _abbreviation);
+            }
+
             return String.Format(_format, "{0}/{1}", x, y);
         }
 

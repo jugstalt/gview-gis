@@ -9,13 +9,11 @@ using gView.Framework.UI;
 using gView.Framework.UI.Dialogs;
 using gView.Framework.UI.Events;
 using gView.Plugins.MapTools.Dialogs;
-using gView.system.UI.Framework.system.UI;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Data;
 using System.IO;
-using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -177,13 +175,13 @@ namespace gView.Plugins.MapTools
                         msg.Append(Environment.NewLine);
                         msg.Append("Do you want to load the 'restore' file instead of the project?");
 
-                        if(MessageBox.Show(msg.ToString(), "Load restore file?", MessageBoxButtons.YesNo, MessageBoxIcon.Information)== DialogResult.Yes)
+                        if (MessageBox.Show(msg.ToString(), "Load restore file?", MessageBoxButtons.YesNo, MessageBoxIcon.Information) == DialogResult.Yes)
                         {
                             await ((IMapApplication)_doc.Application).LoadMapDocument(restoreFi.FullName);
                             return true;
                         }
                     }
-                        
+
                     await ((IMapApplication)_doc.Application).LoadMapDocument(dlg.FileName);
                 }
             }

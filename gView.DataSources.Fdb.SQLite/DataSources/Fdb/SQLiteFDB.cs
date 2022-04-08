@@ -2135,7 +2135,7 @@ namespace gView.DataSources.Fdb.SQLite
             #endregion
         }
 
-        
+
 
         internal class SQLiteFDBDatasetElement : gView.Framework.Data.DatasetElement, IFeatureSelection
         {

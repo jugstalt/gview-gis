@@ -1,11 +1,7 @@
-﻿using System;
+﻿using gView.Framework.Data;
+using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Text;
 using System.Windows.Forms;
-using gView.Framework.Data;
 
 namespace gView.Framework.UI.Dialogs
 {
@@ -64,7 +60,9 @@ namespace gView.Framework.UI.Dialogs
                 {
                     ListViewItem item = lstLevels.Items[i];
                     if (item.Checked)
+                    {
                         selected.Add(i);
+                    }
                 }
                 return selected;
             }

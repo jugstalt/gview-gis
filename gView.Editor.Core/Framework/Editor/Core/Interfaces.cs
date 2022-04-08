@@ -1,8 +1,6 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
 using gView.Framework.Data;
 using gView.Framework.Geometry;
+using System;
 
 namespace gView.Framework.Editor.Core
 {

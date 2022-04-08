@@ -3,7 +3,6 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
@@ -22,7 +21,7 @@ namespace gView.Web.Framework.Web.Authorization
             string username,
             string password,
             AuthorizationType authType = AuthorizationType.Basic,
-            string accessTokenServiceUrl = "", 
+            string accessTokenServiceUrl = "",
             string grantType = "",
             string scope = "")
         {
@@ -45,7 +44,8 @@ namespace gView.Web.Framework.Web.Authorization
                 connectionString.ExtractConnectionStringParameter("wa-authtype"), out AuthorizationType authType))
             {
                 this.AuthType = authType;
-            } else
+            }
+            else
             {
                 this.AuthType = AuthorizationType.Basic;
             }
@@ -111,7 +111,9 @@ namespace gView.Web.Framework.Web.Authorization
         async public Task AddAuthorizationHeaders(HttpClient httpClient)
         {
             if (String.IsNullOrEmpty(this.Username))
+            {
                 return;
+            }
 
             try
             {
@@ -212,16 +214,17 @@ namespace gView.Web.Framework.Web.Authorization
 
         private string RemoveSecrets(string msg)
         {
-            if(!String.IsNullOrEmpty(Username))
+            if (!String.IsNullOrEmpty(Username))
             {
                 msg = msg.Replace(Username, $"{ Username.Substring(0, Math.Min(Username.Length, 2)) }******");
             }
 
-            if (!String.IsNullOrEmpty(Password)) {
+            if (!String.IsNullOrEmpty(Password))
+            {
                 msg = msg.Replace(Username, $"********");
             }
 
-            if(!String.IsNullOrEmpty(AccessTokenTokenServiceUrl))
+            if (!String.IsNullOrEmpty(AccessTokenTokenServiceUrl))
             {
                 msg = msg.Replace(AccessTokenTokenServiceUrl, $"{ AccessTokenTokenServiceUrl.Substring(0, Math.Min(AccessTokenTokenServiceUrl.Length, 24)) }******");
             }

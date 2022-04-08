@@ -1,11 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using gView.Framework.UI;
 using gView.Plugins.MapTools.Controls;
-using System.Windows;
-using gView.Framework.UI;
+using System;
 using System.Threading.Tasks;
+using System.Windows;
 
 namespace gView.Plugins.Tools.MapTools
 {
@@ -29,7 +26,7 @@ namespace gView.Plugins.Tools.MapTools
 
         public string ToolTip
         {
-            get { return String.Empty;  }
+            get { return String.Empty; }
         }
 
         public ToolType toolType
@@ -54,7 +51,7 @@ namespace gView.Plugins.Tools.MapTools
         void OnMapStart_OnApplicationStart(object sender, EventArgs e)
         {
             _dialog = new Window();
-            NewToolControl control=new NewToolControl(_doc);
+            NewToolControl control = new NewToolControl(_doc);
             _dialog.Content = control;
             _dialog.Width = 500;
             _dialog.Height = 400;
@@ -69,7 +66,9 @@ namespace gView.Plugins.Tools.MapTools
         void control_OnButtonClick(object sender, EventArgs e)
         {
             if (_dialog != null)
+            {
                 _dialog.Close();
+            }
         }
 
         public Task<bool> OnEvent(object MapEvent)

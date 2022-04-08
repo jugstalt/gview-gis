@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Text;
-using System.Windows.Forms;
+﻿using System.Windows.Forms;
 
 namespace gView.Plugins.MapTools.Dialogs
 {
@@ -29,7 +23,7 @@ namespace gView.Plugins.MapTools.Dialogs
         {
             get
             {
-                switch(cmbServerVersion.SelectedItem?.ToString())
+                switch (cmbServerVersion.SelectedItem?.ToString())
                 {
                     case "4.x":
                         return ServerVersion.gViewServer4;

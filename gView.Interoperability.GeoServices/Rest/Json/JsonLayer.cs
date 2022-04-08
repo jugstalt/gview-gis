@@ -1,10 +1,6 @@
 ﻿using gView.Framework.Geometry;
 using gView.Interoperability.GeoServices.Rest.Reflection;
 using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace gView.Interoperability.GeoServices.Rest.Json
 {
@@ -97,7 +93,7 @@ namespace gView.Interoperability.GeoServices.Rest.Json
 
         public GeometryType GetGeometryType()
         {
-            switch(GeometryType)
+            switch (GeometryType)
             {
                 case "esriGeometryPoint":
                     return Framework.Geometry.GeometryType.Point;

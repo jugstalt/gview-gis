@@ -1,19 +1,17 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
 using gView.Framework.Data;
 using gView.Framework.IO;
-using System.Xml;
 using gView.Framework.system;
 using gView.MapServer;
+using System;
 using System.Threading.Tasks;
+using System.Xml;
 
 namespace gView.Interoperability.ArcXML.Dataset
 {
     internal class ArcIMSThemeFeatureClass : gView.Framework.XML.AXLFeatureClass
     {
         private ArcIMSThemeFeatureClass(IDataset dataset, string id)
-         :base(dataset, id)
+         : base(dataset, id)
         { }
 
         async static public Task<ArcIMSThemeFeatureClass> CreateAsync(IDataset dataset, string id)
@@ -31,7 +29,11 @@ namespace gView.Interoperability.ArcXML.Dataset
 
         async protected override Task<string> SendRequest(IUserData userData, string axlRequest)
         {
-            if (!(_dataset is ArcIMSDataset)) return "";
+            if (!(_dataset is ArcIMSDataset))
+            {
+                return "";
+            }
+
             string server = ConfigTextStream.ExtractValue(_dataset.ConnectionString, "server");
             string service = ConfigTextStream.ExtractValue(_dataset.ConnectionString, "service");
             string user = ConfigTextStream.ExtractValue(_dataset.ConnectionString, "user");
@@ -56,7 +58,9 @@ namespace gView.Interoperability.ArcXML.Dataset
 
             dotNETConnector connector = new dotNETConnector();
             if (!String.IsNullOrEmpty(user) || !String.IsNullOrEmpty(pwd))
+            {
                 connector.setAuthentification(user, pwd);
+            }
 
             string resp = String.Empty;
             await ArcIMSClass.LogAsync(context, "GetFeature Request", server, service, axlRequest);
@@ -122,7 +126,11 @@ namespace gView.Interoperability.ArcXML.Dataset
 
         async protected override Task<string> SendRequest(IUserData userData, string axlRequest)
         {
-            if (!(_dataset is ArcIMSDataset)) return "";
+            if (!(_dataset is ArcIMSDataset))
+            {
+                return "";
+            }
+
             string server = ConfigTextStream.ExtractValue(_dataset.ConnectionString, "server");
             string service = ConfigTextStream.ExtractValue(_dataset.ConnectionString, "service");
             string user = ConfigTextStream.ExtractValue(_dataset.ConnectionString, "user");
@@ -147,7 +155,9 @@ namespace gView.Interoperability.ArcXML.Dataset
 
             dotNETConnector connector = new dotNETConnector();
             if (!String.IsNullOrEmpty(user) || !String.IsNullOrEmpty(pwd))
+            {
                 connector.setAuthentification(user, pwd);
+            }
 
             string resp = String.Empty;
             await ArcIMSClass.LogAsync(context, "GetRasterInfo Request", server, service, axlRequest);

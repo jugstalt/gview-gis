@@ -1,34 +1,28 @@
-using System;
-using System.Drawing;
-using System.Collections;
-using System.ComponentModel;
-using System.Windows.Forms;
 using gView.Framework.Data;
-using gView.Framework.Carto;
-using gView.Framework.Symbology;
 using gView.Framework.Geometry;
-using gView.Framework.UI;
-using System.Collections.Generic;
+using gView.Framework.Symbology;
+using System;
+using System.Windows.Forms;
 
 namespace gView.Framework.Carto.Rendering.UI
 {
-	/// <summary>
-	/// Zusammenfassung für PropertyPage_ValueMapRenderer.
-	/// </summary>
-	internal class PropertyPage_ValueMapRenderer : System.Windows.Forms.Form,IPropertyPanel
-	{
-		public System.Windows.Forms.Panel panel1;
-		private System.Windows.Forms.GroupBox groupBox1;
-		private System.Windows.Forms.Panel panel2;
-		private System.Windows.Forms.ComboBox cmbFields;
-		/// <summary>
-		/// Erforderliche Designervariable.
-		/// </summary>
-		private System.ComponentModel.Container components = null;
-		private IFeatureClass _fc;
-		private System.Windows.Forms.Panel panel3;
-		private gView.Framework.UI.Controls.SymbolsListView symbolsListView1;
-		private System.Windows.Forms.Button btnAllValues;
+    /// <summary>
+    /// Zusammenfassung für PropertyPage_ValueMapRenderer.
+    /// </summary>
+    internal class PropertyPage_ValueMapRenderer : System.Windows.Forms.Form, IPropertyPanel
+    {
+        public System.Windows.Forms.Panel panel1;
+        private System.Windows.Forms.GroupBox groupBox1;
+        private System.Windows.Forms.Panel panel2;
+        private System.Windows.Forms.ComboBox cmbFields;
+        /// <summary>
+        /// Erforderliche Designervariable.
+        /// </summary>
+        private System.ComponentModel.Container components = null;
+        private IFeatureClass _fc;
+        private System.Windows.Forms.Panel panel3;
+        private gView.Framework.UI.Controls.SymbolsListView symbolsListView1;
+        private System.Windows.Forms.Button btnAllValues;
         private Button btnInsertValue;
         private Button btnRemoveAllValues;
         private Button btnRotation;
@@ -36,17 +30,17 @@ namespace gView.Framework.Carto.Rendering.UI
         private gView.Framework.Symbology.UI.Controls.ColorGradientComboBox cmbGradient;
         private Button btnCarography;
         private Button btnInsertAllOthers;
-		private ValueMapRenderer _renderer;
+        private ValueMapRenderer _renderer;
 
-		public PropertyPage_ValueMapRenderer()
-		{
-			//
-			// Erforderlich für die Windows Form-Designerunterstützung
-			//
-			InitializeComponent();
+        public PropertyPage_ValueMapRenderer()
+        {
+            //
+            // Erforderlich für die Windows Form-Designerunterstützung
+            //
+            InitializeComponent();
 
             cmbGradient.InsertStandardItems();
-		}
+        }
 
         public void BuildList()
         {
@@ -73,28 +67,28 @@ namespace gView.Framework.Carto.Rendering.UI
                 }
             }
         }
-		/// <summary>
-		/// Die verwendeten Ressourcen bereinigen.
-		/// </summary>
-		protected override void Dispose( bool disposing )
-		{
-			if( disposing )
-			{
-				if(components != null)
-				{
-					components.Dispose();
-				}
-			}
-			base.Dispose( disposing );
-		}
+        /// <summary>
+        /// Die verwendeten Ressourcen bereinigen.
+        /// </summary>
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                if (components != null)
+                {
+                    components.Dispose();
+                }
+            }
+            base.Dispose(disposing);
+        }
 
-		#region Vom Windows Form-Designer generierter Code
-		/// <summary>
-		/// Erforderliche Methode für die Designerunterstützung. 
-		/// Der Inhalt der Methode darf nicht mit dem Code-Editor geändert werden.
-		/// </summary>
-		private void InitializeComponent()
-		{
+        #region Vom Windows Form-Designer generierter Code
+        /// <summary>
+        /// Erforderliche Methode für die Designerunterstützung. 
+        /// Der Inhalt der Methode darf nicht mit dem Code-Editor geändert werden.
+        /// </summary>
+        private void InitializeComponent()
+        {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(PropertyPage_ValueMapRenderer));
             this.panel1 = new System.Windows.Forms.Panel();
             this.symbolsListView1 = new gView.Framework.UI.Controls.SymbolsListView();
@@ -239,28 +233,28 @@ namespace gView.Framework.Carto.Rendering.UI
             this.groupBox1.ResumeLayout(false);
             this.ResumeLayout(false);
 
-		}
-		#endregion
+        }
+        #endregion
 
-		private void cmbFields_SelectedIndexChanged(object sender, System.EventArgs e)
-		{
-			_renderer.ValueField=cmbFields.SelectedItem.ToString();
-		}
+        private void cmbFields_SelectedIndexChanged(object sender, System.EventArgs e)
+        {
+            _renderer.ValueField = cmbFields.SelectedItem.ToString();
+        }
 
-		private void PropertyPage_ValueMapRenderer_Load(object sender, System.EventArgs e)
-		{
-			
-		}
+        private void PropertyPage_ValueMapRenderer_Load(object sender, System.EventArgs e)
+        {
 
-		async private void btnAllValues_Click(object sender, System.EventArgs e)
-		{
-			try 
-			{
+        }
+
+        async private void btnAllValues_Click(object sender, System.EventArgs e)
+        {
+            try
+            {
                 DistinctFilter filter = new DistinctFilter(cmbFields.SelectedItem.ToString());
                 //QueryFilter filter=new QueryFilter();
-				//filter.AddField("DISTINCT("+cmbFields.SelectedItem.ToString()+")");
+                //filter.AddField("DISTINCT("+cmbFields.SelectedItem.ToString()+")");
                 //filter.AddField(cmbFields.SelectedItem.ToString());
-                filter.OrderBy=cmbFields.SelectedItem.ToString();
+                filter.OrderBy = cmbFields.SelectedItem.ToString();
 
                 Array array = Array.CreateInstance(typeof(string), _renderer.Keys.Count);
                 _renderer.Keys.CopyTo(array, 0);
@@ -269,28 +263,28 @@ namespace gView.Framework.Carto.Rendering.UI
                     _renderer.RemoveSymbol(key);
                 }
 
-				IFeatureCursor cursor=(IFeatureCursor)await _fc.Search(filter);
+                IFeatureCursor cursor = (IFeatureCursor)await _fc.Search(filter);
 
-				string [] labels=new string[2];
-				IFeature feature;
-				while((feature=await cursor.NextFeature())!=null) 
-				{
-					labels[0]=((FieldValue)feature.Fields[0]).Value.ToString();
-					if(_renderer[labels[0]]==null) 
-					{
-						_renderer[labels[0]]=null;  // neues Symbol erzeugen...
-					}
-					//symbolsListView1.addSymbol(_renderer[labels[0]],labels); 
-					int i=0;
-				}
+                string[] labels = new string[2];
+                IFeature feature;
+                while ((feature = await cursor.NextFeature()) != null)
+                {
+                    labels[0] = ((FieldValue)feature.Fields[0]).Value.ToString();
+                    if (_renderer[labels[0]] == null)
+                    {
+                        _renderer[labels[0]] = null;  // neues Symbol erzeugen...
+                    }
+                    //symbolsListView1.addSymbol(_renderer[labels[0]],labels); 
+                    int i = 0;
+                }
 
                 BuildList();
-			} 
-			catch(Exception ex) 
-			{
-				MessageBox.Show(ex.Message);
-			}
-		}
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+        }
 
         private void symbolsListView1_OnSymbolChanged(string key, ISymbol symbol)
         {
@@ -300,16 +294,23 @@ namespace gView.Framework.Carto.Rendering.UI
 
         private void symbolsListView1_OnLabelChanged(ISymbol symbol, int labelnr, string label)
         {
-            if (_renderer == null || labelnr != 1) return;
+            if (_renderer == null || labelnr != 1)
+            {
+                return;
+            }
 
-            if (!(symbol is ILegendItem)) return;
-
-            ((ILegendItem)symbol).LegendLabel = label;
+            if (!(symbol is ILegendItem))
+            {
+                return;
+            } ((ILegendItem)symbol).LegendLabel = label;
         }
 
         private void symbolsListView1_OnDeleteItem(string key)
         {
-            if (_renderer == null) return;
+            if (_renderer == null)
+            {
+                return;
+            }
 
             _renderer.RemoveSymbol(key);
         }
@@ -323,10 +324,13 @@ namespace gView.Framework.Carto.Rendering.UI
 
         private void btnRemoveAllValues_Click(object sender, EventArgs e)
         {
-            if (_renderer.Keys.Count == 0) return;
+            if (_renderer.Keys.Count == 0)
+            {
+                return;
+            }
 
             Array array = Array.CreateInstance(typeof(string), _renderer.Keys.Count);
-            _renderer.Keys.CopyTo(array,0);
+            _renderer.Keys.CopyTo(array, 0);
             foreach (string key in array)
             {
                 _renderer.RemoveSymbol(key);
@@ -337,17 +341,25 @@ namespace gView.Framework.Carto.Rendering.UI
 
         private void btnInsertValue_Click(object sender, EventArgs e)
         {
-            if (_renderer == null) return;
+            if (_renderer == null)
+            {
+                return;
+            }
 
             PropertyForm_ValueMapRenderer_Dialog_InsertValue dlg = new PropertyForm_ValueMapRenderer_Dialog_InsertValue();
             if (dlg.ShowDialog() == DialogResult.OK)
             {
                 _renderer[dlg.Key] = null;  // Creates new Symbol
                 ISymbol symbol = _renderer[dlg.Key];
-                if (symbol == null) return;
+                if (symbol == null)
+                {
+                    return;
+                }
 
                 if (symbol is ILegendItem)
+                {
                     ((ILegendItem)symbol).LegendLabel = dlg.Label;
+                }
 
                 string[] labels = new string[2];
                 labels[0] = dlg.Key;
@@ -359,15 +371,27 @@ namespace gView.Framework.Carto.Rendering.UI
 
         private void btnInsertAllOthers_Click(object sender, EventArgs e)
         {
-            if (_renderer == null) return;
-            if (_renderer[null] != null) return;
+            if (_renderer == null)
+            {
+                return;
+            }
+
+            if (_renderer[null] != null)
+            {
+                return;
+            }
 
             _renderer[null] = null;  // Creates new Symbol
             ISymbol symbol = _renderer[null];
-            if (symbol == null) return;
+            if (symbol == null)
+            {
+                return;
+            }
 
             if (symbol is ILegendItem)
+            {
                 ((ILegendItem)symbol).LegendLabel = "All other values";
+            }
 
             string[] labels = new string[2];
             labels[0] = "__gview_all_other_values__";
@@ -378,7 +402,10 @@ namespace gView.Framework.Carto.Rendering.UI
 
         private void btnRotation_Click(object sender, EventArgs e)
         {
-            if (_renderer == null || _fc==null) return;
+            if (_renderer == null || _fc == null)
+            {
+                return;
+            }
 
             FormRotationType dlg = new FormRotationType(_renderer.SymbolRotation, _fc);
             dlg.ShowDialog();
@@ -388,17 +415,26 @@ namespace gView.Framework.Carto.Rendering.UI
 
         public object PropertyPanel(IFeatureRenderer renderer, IFeatureLayer layer)
         {
-            if(layer!=null)
+            if (layer != null)
+            {
                 _fc = layer.FeatureClass;
+            }
+
             _renderer = renderer as ValueMapRenderer;
 
-            if (_fc == null || _renderer == null) return null;
+            if (_fc == null || _renderer == null)
+            {
+                return null;
+            }
 
             _renderer.GeometryType = layer.LayerGeometryType; // _fc.GeometryType;
 
             foreach (IField field in _fc.Fields.ToEnumerable())
             {
-                if (field.type == FieldType.binary || field.type == FieldType.Shape) continue;
+                if (field.type == FieldType.binary || field.type == FieldType.Shape)
+                {
+                    continue;
+                }
 
                 cmbFields.Items.Add(field.name);
                 if (field.name == _renderer.ValueField)
@@ -426,9 +462,12 @@ namespace gView.Framework.Carto.Rendering.UI
 
         private void cmbGradient_GradientSelected(object sender, gView.Framework.Symbology.UI.Controls.GradientSelectedEventArgs args)
         {
-            if (_renderer == null || _renderer.Keys==null ||
+            if (_renderer == null || _renderer.Keys == null ||
                 _renderer.Keys.Count == 0 ||
-                args == null || args.ColorGradient == null) return;
+                args == null || args.ColorGradient == null)
+            {
+                return;
+            }
 
             try
             {
@@ -458,11 +497,15 @@ namespace gView.Framework.Carto.Rendering.UI
         private void btnCarography_Click(object sender, EventArgs e)
         {
             if (_renderer == null)
+            {
                 return;
+            }
 
             FormCartographicInterpretation dlg = new FormCartographicInterpretation(_renderer.CartoMethod);
             if (dlg.ShowDialog() == DialogResult.OK)
+            {
                 _renderer.CartoMethod = dlg.CartographicMethod;
+            }
         }
 
         private void btnRemoveSelected_Click(object sender, EventArgs e)
@@ -470,6 +513,6 @@ namespace gView.Framework.Carto.Rendering.UI
             symbolsListView1.RemoveSelected();
         }
 
-        
+
     }
 }

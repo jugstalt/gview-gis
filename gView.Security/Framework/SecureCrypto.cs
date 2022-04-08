@@ -54,7 +54,7 @@ namespace gView.Framework.Security
 
         private const int _saltSize = 4; //, _iterations = 1000;
 
-        static private byte[] AES_Encrypt(byte[] bytesToBeEncrypted, byte[] passwordBytes, int keySize = 128, bool useRandomSalt = true, byte[] salt=null, byte[] g1=null)
+        static private byte[] AES_Encrypt(byte[] bytesToBeEncrypted, byte[] passwordBytes, int keySize = 128, bool useRandomSalt = true, byte[] salt = null, byte[] g1 = null)
         {
             byte[] encryptedBytes = null;
 
@@ -184,7 +184,7 @@ namespace gView.Framework.Security
 
 
         public static string DecryptToken(X509CertificateWrapper cert, string cipherText)
-        { 
+        {
             byte[] cipherBytes = null;
             if (IsHexString(cipherText))
             {
@@ -215,7 +215,9 @@ namespace gView.Framework.Security
         public static bool VerifyPassword(string cleanPassword, string hash, string username = "")
         {
             if (Hash64(cleanPassword + username?.Trim().ToLower()) == hash)
+            {
                 return true;
+            }
 
             return false;
         }
@@ -233,11 +235,14 @@ namespace gView.Framework.Security
                 int NumberChars = input.Length;
                 byte[] bytes = new byte[NumberChars / 2];
                 for (int i = 0; i < NumberChars; i += 2)
+                {
                     bytes[i / 2] = Convert.ToByte(input.Substring(i, 2), 16);
+                }
+
                 return bytes;
             }
             else if (input.StartsWith("_"))  // Base 62
-            {  
+            {
                 input = input.Substring(1);
 
                 return input.FromBase62();
@@ -260,11 +265,13 @@ namespace gView.Framework.Security
                              (c >= 'A' && c <= 'F'));
 
                     if (!isHex)
+                    {
                         return false;
+                    }
                 }
                 return true;
             }
-            else if(hex.StartsWith("_"))
+            else if (hex.StartsWith("_"))
             {
                 hex = hex.Substring(1);
 
@@ -276,7 +283,9 @@ namespace gView.Framework.Security
                              (c >= 'A' && c <= 'Z'));
 
                     if (!isHex)
+                    {
                         return false;
+                    }
                 }
                 return true;
             }

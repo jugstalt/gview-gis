@@ -5,5 +5,5 @@
         object Control { get; }
     }
 
-    
+
 }

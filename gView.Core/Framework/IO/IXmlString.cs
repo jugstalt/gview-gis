@@ -3,6 +3,6 @@
     public interface IXmlString
     {
         string ToXmlString();
-        void FromXmlString(string xml); 
+        void FromXmlString(string xml);
     }
 }

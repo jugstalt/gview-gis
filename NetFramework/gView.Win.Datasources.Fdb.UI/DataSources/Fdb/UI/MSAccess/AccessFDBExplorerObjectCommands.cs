@@ -1,10 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Xml;
-using gView.Framework.UI;
-using gView.Framework.system;
-
 namespace gView.DataSources.Fdb.UI.MSAccess
 {
     /*

@@ -1,9 +1,6 @@
 ﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace gView.Cmd.FillLuceneServer
 {
@@ -50,7 +47,7 @@ namespace gView.Cmd.FillLuceneServer
             {
                 get
                 {
-                    if(!String.IsNullOrEmpty(this.EncodeCharactersString))
+                    if (!String.IsNullOrEmpty(this.EncodeCharactersString))
                     {
                         return this.EncodeCharactersString.Trim().ToCharArray();
                     }
@@ -65,7 +62,9 @@ namespace gView.Cmd.FillLuceneServer
                 get
                 {
                     if (String.IsNullOrEmpty(this.PhoneticAlgorithmString))
+                    {
                         return LuceneServerNET.Core.Phonetics.Algorithm.None;
+                    }
 
                     return Enum.Parse<LuceneServerNET.Core.Phonetics.Algorithm>(this.PhoneticAlgorithmString, true);
                 }

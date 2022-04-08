@@ -1,8 +1,8 @@
-using System;
-using System.Text.RegularExpressions;
 using GeoAPI.Geometries;
 using Proj4Net.IO;
 using Proj4Net.Parser;
+using System;
+using System.Text.RegularExpressions;
 
 namespace Proj4Net
 {
@@ -66,7 +66,10 @@ namespace Proj4Net
         {
             String[] parameters = CRSReader.GetParameters(name);
             if (parameters == null)
+            {
                 throw new UnknownAuthorityCodeException(name);
+            }
+
             return CreateFromParameters(name, parameters);
         }
 
@@ -103,7 +106,9 @@ namespace Proj4Net
         public CoordinateReferenceSystem CreateFromParameters(String name, String[] parameters)
         {
             if (parameters == null)
+            {
                 return null;
+            }
 
             var parser = new Proj4Parser(Registry);
             return parser.Parse(name, parameters);
@@ -111,7 +116,7 @@ namespace Proj4Net
 
         private static String[] SplitParameters(String paramStr)
         {
-            var regex = new Regex("\\s+" 
+            var regex = new Regex("\\s+"
 #if !SILVERLIGHT
             , RegexOptions.Compiled);
 #else

@@ -274,7 +274,7 @@ namespace gView.DataSources.MongoDb
 
             var geometries = new IGeometry[Resolutions.Length];
 
-            if(generalizationLevel < 0)
+            if (generalizationLevel < 0)
             {
                 return geometries;
             }

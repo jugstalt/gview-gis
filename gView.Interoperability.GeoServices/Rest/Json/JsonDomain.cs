@@ -1,8 +1,4 @@
 ﻿using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace gView.Interoperability.GeoServices.Rest.Json
 {
@@ -16,11 +12,11 @@ namespace gView.Interoperability.GeoServices.Rest.Json
         public JsonCodedValues[] CodedValues { get; set; }
     }
 
-            public class JsonCodedValues
-            {
-                [JsonProperty("name")]
-                public string Name { get; set; }
-                [JsonProperty("code")]
-                public string Code { get; set; }
-            }
+    public class JsonCodedValues
+    {
+        [JsonProperty("name")]
+        public string Name { get; set; }
+        [JsonProperty("code")]
+        public string Code { get; set; }
+    }
 }

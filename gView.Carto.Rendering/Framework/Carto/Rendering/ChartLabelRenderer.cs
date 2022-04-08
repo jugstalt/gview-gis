@@ -1,15 +1,13 @@
-﻿using System;
+﻿using gView.Framework.Carto.Rendering.UI;
+using gView.Framework.Data;
+using gView.Framework.Geometry;
+using gView.Framework.Symbology;
+using gView.Framework.system;
+using gView.Framework.UI;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using gView.Framework.system;
-using gView.Framework.Data;
-using gView.Framework.UI;
 using System.Reflection;
-using gView.Framework.Carto.Rendering.UI;
-using gView.Framework.Symbology;
-using gView.Framework.Geometry;
-using System.Threading.Tasks;
 
 namespace gView.Framework.Carto.Rendering
 {
@@ -17,7 +15,7 @@ namespace gView.Framework.Carto.Rendering
     public class ChartLabelRenderer : Cloner, ILabelRenderer, IPriority, IPropertyPage, ILegendGroup
     {
         public enum chartType { Pie = 0, Bars = 1, Stack = 2 }
-        public enum sizeType { ConstantSize=0, ValueOfEquatesToSize = 1 }
+        public enum sizeType { ConstantSize = 0, ValueOfEquatesToSize = 1 }
 
         private chartType _type = chartType.Pie;
         private sizeType _sizeType = sizeType.ConstantSize;
@@ -38,7 +36,9 @@ namespace gView.Framework.Carto.Rendering
             if (symbol == null)
             {
                 if (_symbolTable.ContainsKey(fieldName))
+                {
                     _symbolTable.Remove(fieldName);
+                }
             }
             else
             {
@@ -56,7 +56,7 @@ namespace gView.Framework.Carto.Rendering
 
         public ISymbol GetSymbol(string fieldName)
         {
-            if(_symbolTable.ContainsKey(fieldName))
+            if (_symbolTable.ContainsKey(fieldName))
             {
                 return _symbolTable[fieldName];
             }
@@ -80,7 +80,7 @@ namespace gView.Framework.Carto.Rendering
         public double Size
         {
             get { return _size; }
-            set { _size = Math.Max(value,1D); }
+            set { _size = Math.Max(value, 1D); }
         }
 
         public double ValueEquatesToSize
@@ -119,11 +119,18 @@ namespace gView.Framework.Carto.Rendering
 
         public void PrepareQueryFilter(IDisplay display, IFeatureLayer layer, Data.IQueryFilter filter)
         {
-            if (layer.FeatureClass == null) return;
+            if (layer.FeatureClass == null)
+            {
+                return;
+            }
 
             foreach (string fieldName in _symbolTable.Keys)
             {
-                if (layer.FeatureClass.Fields.FindField(fieldName) == null) continue;
+                if (layer.FeatureClass.Fields.FindField(fieldName) == null)
+                {
+                    continue;
+                }
+
                 filter.AddField(fieldName);
             }
             _clipEnvelope = new Envelope(display.DisplayTransformation.TransformedBounds(display));
@@ -131,7 +138,10 @@ namespace gView.Framework.Carto.Rendering
 
         public bool CanRender(IFeatureLayer layer, IMap map)
         {
-            if (layer.FeatureClass == null) return false;
+            if (layer.FeatureClass == null)
+            {
+                return false;
+            }
 
             int count = 0;
             foreach (IField field in layer.FeatureClass.Fields.ToEnumerable())
@@ -167,7 +177,9 @@ namespace gView.Framework.Carto.Rendering
         {
             #region Check Values
             if (_symbolTable.Keys.Count == 0)
+            {
                 return;
+            }
 
             double[] values = new double[_symbolTable.Keys.Count];
             double valSum = 0.0, valMax = double.MinValue, valMin = double.MaxValue;
@@ -177,7 +189,9 @@ namespace gView.Framework.Carto.Rendering
             {
                 object val = feature[fieldname];
                 if (val == null || val == System.DBNull.Value)
+                {
                     return;
+                }
 
                 try
                 {
@@ -210,7 +224,10 @@ namespace gView.Framework.Carto.Rendering
                 IEnvelope dispEnv = _clipEnvelope;
                 IPolyline pLine = (IPolyline)gView.Framework.SpatialAlgorithms.Clip.PerformClip(dispEnv, feature.Shape);
 
-                if (pLine == null) return;
+                if (pLine == null)
+                {
+                    return;
+                }
 
                 for (int iPath = 0; iPath < pLine.PathCount; iPath++)
                 {
@@ -254,19 +271,30 @@ namespace gView.Framework.Carto.Rendering
                 IGeometry g;
                 ((ITopologicalOperation)polygon).Clip(env, out g);
                 if (g == null)
+                {
                     return false;
+                }
+
                 if (g is IPolygon)
+                {
                     polygon = (IPolygon)g;
+                }
             }
-            if (polygon == null) return false;
+            if (polygon == null)
+            {
+                return false;
+            }
 
             IMultiPoint pColl = gView.Framework.SpatialAlgorithms.Algorithm.PolygonLabelPoints(polygon);
             return LabelPointCollection(disp, polygon, pColl, values, valSum, valMin, valMax);
         }
 
-        private bool LabelPointCollection(IDisplay disp, IPolygon polygon, IMultiPoint pColl,double[] values, double valSum, double valMin, double valMax)
+        private bool LabelPointCollection(IDisplay disp, IPolygon polygon, IMultiPoint pColl, double[] values, double valSum, double valMin, double valMax)
         {
-            if (pColl == null) return false;
+            if (pColl == null)
+            {
+                return false;
+            }
 
             for (int i = 0; i < pColl.PointCount; i++)
             {
@@ -296,9 +324,11 @@ namespace gView.Framework.Carto.Rendering
             if (_type == chartType.Pie)
             {
                 #region Measure Pie
-                
+
                 if (valSum == 0.0)
+                {
                     return null;
+                }
 
                 double r = disp.mapScale / disp.dpm * _size / 2D;
                 switch (_sizeType)
@@ -324,16 +354,20 @@ namespace gView.Framework.Carto.Rendering
                 switch (_sizeType)
                 {
                     case sizeType.ConstantSize:
-                        if (valSum == 0.0) return null;
+                        if (valSum == 0.0)
+                        {
+                            return null;
+                        }
+
                         height *= _valueEquatesToSize / valSum;
                         break;
                 }
 
                 double left = -(_symbolTable.Keys.Count * width / 2.0) - (_symbolTable.Keys.Count - 1) * (disp.mapScale / disp.dpm) / 2.0;
 
-                chartEnvelope = new Envelope(point.X + left, 
+                chartEnvelope = new Envelope(point.X + left,
                     point.Y,
-                    point.X + left + (width + (disp.mapScale / disp.dpm)) * _symbolTable.Keys.Count, 
+                    point.X + left + (width + (disp.mapScale / disp.dpm)) * _symbolTable.Keys.Count,
                     point.Y + height * (valMax / heightVal));
 
                 #endregion
@@ -351,7 +385,11 @@ namespace gView.Framework.Carto.Rendering
                 switch (_sizeType)
                 {
                     case sizeType.ConstantSize:
-                        if (valSum == 0.0) return null;
+                        if (valSum == 0.0)
+                        {
+                            return null;
+                        }
+
                         height *= _valueEquatesToSize / valSum;
                         break;
                 }
@@ -383,7 +421,9 @@ namespace gView.Framework.Carto.Rendering
         private void DrawChart(IDisplay disp, IPoint point, double[] values, double valSum, double valMin, double valMax)
         {
             if (!(disp is Display) || disp.LabelEngine.LabelCanvas == null)
+            {
                 return;
+            }
 
             var originalCanvas = disp.Canvas;
             try
@@ -391,7 +431,9 @@ namespace gView.Framework.Carto.Rendering
                 ((Display)disp).Canvas = disp.LabelEngine.LabelCanvas;
 
                 if (_symbolTable.Keys.Count == 0)
+                {
                     return;
+                }
 
                 int i = 0;
                 if (_type == chartType.Pie)
@@ -399,7 +441,9 @@ namespace gView.Framework.Carto.Rendering
                     #region Draw Pie
 
                     if (valSum == 0.0)
+                    {
                         return;
+                    }
 
                     double r = disp.mapScale / disp.dpm * _size / 2D;
                     switch (_sizeType)
@@ -459,7 +503,11 @@ namespace gView.Framework.Carto.Rendering
                     switch (_sizeType)
                     {
                         case sizeType.ConstantSize:
-                            if (valSum == 0.0) return;
+                            if (valSum == 0.0)
+                            {
+                                return;
+                            }
+
                             height *= _valueEquatesToSize / valSum;
                             break;
                     }
@@ -471,7 +519,10 @@ namespace gView.Framework.Carto.Rendering
                         ISymbol symbol = _symbolTable[fieldname];
 
                         double h = height * (values[i++] / heightVal);
-                        if (Math.Abs(h) < disp.mapScale / disp.dpm) h = disp.mapScale / disp.dpm;
+                        if (Math.Abs(h) < disp.mapScale / disp.dpm)
+                        {
+                            h = disp.mapScale / disp.dpm;
+                        }
 
                         Polygon poly = new Polygon();
                         Ring ring = new Ring();
@@ -505,7 +556,11 @@ namespace gView.Framework.Carto.Rendering
                     switch (_sizeType)
                     {
                         case sizeType.ConstantSize:
-                            if (valSum == 0.0) return;
+                            if (valSum == 0.0)
+                            {
+                                return;
+                            }
+
                             height *= _valueEquatesToSize / valSum;
                             break;
                     }
@@ -517,7 +572,10 @@ namespace gView.Framework.Carto.Rendering
                         ISymbol symbol = _symbolTable[fieldname];
 
                         double h = height * (values[i++] / heightVal);
-                        if (Math.Abs(h) < disp.mapScale / disp.dpm) h = disp.mapScale / disp.dpm;
+                        if (Math.Abs(h) < disp.mapScale / disp.dpm)
+                        {
+                            h = disp.mapScale / disp.dpm;
+                        }
 
                         Polygon poly = new Polygon();
                         Ring ring = new Ring();
@@ -604,7 +662,9 @@ namespace gView.Framework.Carto.Rendering
                 stream.Save("ChartSymbol", sym);
             }
             if (_outlineSymbol != null)
+            {
                 stream.Save("Outline", _outlineSymbol);
+            }
         }
 
         #endregion
@@ -613,12 +673,16 @@ namespace gView.Framework.Carto.Rendering
 
         public object Clone(CloneOptions options)
         {
-            ChartLabelRenderer clone= new ChartLabelRenderer();
+            ChartLabelRenderer clone = new ChartLabelRenderer();
 
             foreach (string key in _symbolTable.Keys)
             {
                 ISymbol symbol = (ISymbol)_symbolTable[key];
-                if (symbol != null) symbol = (ISymbol)symbol.Clone(options);
+                if (symbol != null)
+                {
+                    symbol = (ISymbol)symbol.Clone(options);
+                }
+
                 clone._symbolTable.Add(key, symbol);
             }
             clone._labelPriority = _labelPriority;
@@ -630,9 +694,11 @@ namespace gView.Framework.Carto.Rendering
             var display = options?.Display;
 
             if (display != null && display.refScale > 1)
+            {
                 fac = display.refScale / Math.Max(display.mapScale, 1D);
+            }
 
-            clone._size = Math.Max(_size * fac,1D);
+            clone._size = Math.Max(_size * fac, 1D);
             clone._valueEquatesToSize = _valueEquatesToSize;
             clone._sizeType = _sizeType;
             clone._clipEnvelope = new Envelope(_clipEnvelope);
@@ -644,7 +710,11 @@ namespace gView.Framework.Carto.Rendering
             foreach (string key in _symbolTable.Keys)
             {
                 ISymbol symbol = (ISymbol)_symbolTable[key];
-                if (symbol == null) continue;
+                if (symbol == null)
+                {
+                    continue;
+                }
+
                 symbol.Release();
             }
             _symbolTable.Clear();
@@ -682,7 +752,10 @@ namespace gView.Framework.Carto.Rendering
             if (initObject is IFeatureLayer)
             {
                 IFeatureLayer layer = (IFeatureLayer)initObject;
-                if (layer.FeatureClass == null) return null;
+                if (layer.FeatureClass == null)
+                {
+                    return null;
+                }
 
                 string appPath = System.IO.Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
                 Assembly uiAssembly = Assembly.LoadFrom(appPath + @"/gView.Win.Carto.Rendering.UI.dll");
@@ -713,13 +786,21 @@ namespace gView.Framework.Carto.Rendering
 
         public ILegendItem LegendItem(int index)
         {
-            if (index < 0) return null;
+            if (index < 0)
+            {
+                return null;
+            }
+
             if (index <= _symbolTable.Count)
             {
                 int count = 0;
                 foreach (object lItem in _symbolTable.Values)
                 {
-                    if (count == index && lItem is ILegendItem) return (LegendItem)lItem;
+                    if (count == index && lItem is ILegendItem)
+                    {
+                        return (LegendItem)lItem;
+                    }
+
                     count++;
                 }
             }
@@ -728,16 +809,24 @@ namespace gView.Framework.Carto.Rendering
 
         public void SetSymbol(ILegendItem item, ISymbol symbol)
         {
-            if (item == symbol) return;
+            if (item == symbol)
+            {
+                return;
+            }
 
             foreach (string key in _symbolTable.Keys)
             {
-                if (!(_symbolTable[key] is ILegendItem)) continue;
+                if (!(_symbolTable[key] is ILegendItem))
+                {
+                    continue;
+                }
 
                 if (_symbolTable[key] == item)
                 {
                     if (symbol is ILegendItem)
+                    {
                         ((ILegendItem)symbol).LegendLabel = item.LegendLabel;
+                    }
 
                     _symbolTable[key] = symbol;
                     return;

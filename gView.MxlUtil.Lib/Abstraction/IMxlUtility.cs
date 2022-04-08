@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 
 namespace gView.MxlUtil.Lib.Abstraction
 {
@@ -10,7 +7,7 @@ namespace gView.MxlUtil.Lib.Abstraction
         string Name { get; }
 
         Task Run(string[] args);
-        
+
         string Description();
         string HelpText();
     }

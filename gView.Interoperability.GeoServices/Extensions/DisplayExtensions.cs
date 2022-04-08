@@ -1,8 +1,5 @@
 ﻿using gView.Framework.Carto;
 using gView.Framework.Geometry;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace gView.Interoperability.GeoServices.Extensions
 {
@@ -26,7 +23,7 @@ namespace gView.Interoperability.GeoServices.Extensions
             else
             {
                 var pointCollection = gView.Framework.SpatialAlgorithms.Algorithm.GeometryPoints(geometry, false);
-                for(int i=0,to = pointCollection.PointCount;i<to;i++)
+                for (int i = 0, to = pointCollection.PointCount; i < to; i++)
                 {
                     var point = pointCollection[i];
 

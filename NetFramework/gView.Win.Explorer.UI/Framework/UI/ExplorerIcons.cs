@@ -1,8 +1,6 @@
 ﻿using gView.Framework.UI;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace gView.Explorer.UI.Framework.UI
 {

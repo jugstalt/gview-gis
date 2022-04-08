@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Drawing;
 
 namespace gView.Framework.Symbology.UI.Controls
@@ -9,13 +6,13 @@ namespace gView.Framework.Symbology.UI.Controls
     /// Provides custom colors members to use in the OfficeColorPicker.
     /// </summary>
     class CustomColors
-    {      
+    {
         internal static Color ButtonHoverLight = Color.FromArgb(255, 240, 207);
 
         internal static Color ButtonHoverDark = Color.FromArgb(249, 179, 48);
 
         internal static Color SelectedAndHover = Color.FromArgb(254, 128, 62);
-     
+
         internal static Color ButtonBorder = Color.FromArgb(172, 168, 153);
 
         internal static Color FocusDashedBorder = Color.FromArgb(83, 87, 102);
@@ -65,7 +62,7 @@ namespace gView.Framework.Symbology.UI.Controls
         internal static Color Turquoise = Color.FromArgb(0, 255, 255);
         internal static Color SkyBlue = Color.FromArgb(0, 204, 255);
         internal static Color Plum = Color.FromArgb(153, 51, 102);
-        internal static Color Gray25 = Color.FromArgb(192, 192, 192);     
+        internal static Color Gray25 = Color.FromArgb(192, 192, 192);
         // ----------------- Fifth Row ------------------------------
         internal static Color Rose = Color.FromArgb(255, 153, 204);
         internal static Color Tan = Color.FromArgb(255, 204, 153);
@@ -80,19 +77,19 @@ namespace gView.Framework.Symbology.UI.Controls
 
         internal static Color[] SelectableColors =
             {
-                CustomColors.Black, CustomColors.Brown, CustomColors.OliveGreen, CustomColors.DarkGreen, 
-                CustomColors.DarkTeal, CustomColors.DarkBlue, CustomColors.Indigo, CustomColors.Gray80, 
+                CustomColors.Black, CustomColors.Brown, CustomColors.OliveGreen, CustomColors.DarkGreen,
+                CustomColors.DarkTeal, CustomColors.DarkBlue, CustomColors.Indigo, CustomColors.Gray80,
 
                 CustomColors.DarkRed, CustomColors.Orange, CustomColors.DarkYellow, CustomColors.Green,
                 CustomColors.Teal, CustomColors.Blue, CustomColors.BlueGray, CustomColors.Gray50,
 
-                CustomColors.Red, CustomColors.LightOrange, CustomColors.Lime, CustomColors.SeaGreen, 
+                CustomColors.Red, CustomColors.LightOrange, CustomColors.Lime, CustomColors.SeaGreen,
                 CustomColors.Aqua, CustomColors.LightBlue, CustomColors.Violet, CustomColors.Gray40,
 
-                CustomColors.Pink, CustomColors.Gold, CustomColors.Yellow, CustomColors.BrightGreen, 
+                CustomColors.Pink, CustomColors.Gold, CustomColors.Yellow, CustomColors.BrightGreen,
                 CustomColors.Turquoise, CustomColors.SkyBlue, CustomColors.Plum, CustomColors.Gray25,
 
-                CustomColors.Rose, CustomColors.Tan, CustomColors.LightYellow, CustomColors.LightGreen, 
+                CustomColors.Rose, CustomColors.Tan, CustomColors.LightYellow, CustomColors.LightGreen,
                 CustomColors.LightTurquoise, CustomColors.PaleBlue, CustomColors.Lavender, CustomColors.White,
             };
 
@@ -101,28 +98,28 @@ namespace gView.Framework.Symbology.UI.Controls
         /// </summary>
         internal static string[] SelectableColorsNames =
             {
-                "Black", "Brown" , "Olive Green" , "Dark Green", 
-                "Dark Teal" , "Dark Blue" , "Indigo" , "Gray-80%", 
+                "Black", "Brown" , "Olive Green" , "Dark Green",
+                "Dark Teal" , "Dark Blue" , "Indigo" , "Gray-80%",
 
                 "Dark Red", "Orange", "Dark Yellow", "Green",
                 "Teal", "Blue", "Blue-Gray", "Gray-50%",
 
-                "Red", "Light Orange", "Lime", "Sea Green", 
+                "Red", "Light Orange", "Lime", "Sea Green",
                 "Aqua", "Light Blue", "Violet", "Gray-40%",
 
-                "Pink", "Gold", "Yellow", "Bright Green", 
+                "Pink", "Gold", "Yellow", "Bright Green",
                 "Turquoise", "Sky Blue", "Plum", "Gray-25%",
 
-                "Rose", "Tan", "Light Yellow", "Light Green", 
+                "Rose", "Tan", "Light Yellow", "Light Green",
                 "Light Turquoise", "Pale Blue", "Lavender", "White",
-                 
+
                 "More Colors"
 
             };
 
 
-        #endregion 
-        
+        #endregion
+
         /// <summary>
         /// Compare 2 colors by their RGB properties.
         /// </summary>
@@ -131,7 +128,7 @@ namespace gView.Framework.Symbology.UI.Controls
         /// <returns>True when R,G and B properties of both colors are equals</returns>
         internal static bool ColorEquals(Color color1, Color color2)
         {
-            return 
+            return
                 color1.R == color2.R && color1.G == color2.G && color1.B == color2.B;
         }
     }

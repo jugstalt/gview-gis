@@ -214,8 +214,8 @@ namespace gView.Framework.Symbology
 
                     if (level < 0 || level == 1)
                     {
-                        display.Canvas.TextRenderingHint = (this.Smoothingmode == SymbolSmoothing.None) ? 
-                            TextRenderingHint.SystemDefault : 
+                        display.Canvas.TextRenderingHint = (this.Smoothingmode == SymbolSmoothing.None) ?
+                            TextRenderingHint.SystemDefault :
                             TextRenderingHint.AntiAlias;
 
                         DrawString(display.Canvas, text, _font, _brush, (float)_xOffset, (float)_yOffset, format);

@@ -1,15 +1,10 @@
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Text;
-using System.Windows.Forms;
-using gView.Framework.Geometry;
 using gView.Framework.Data;
-using gView.Framework.UI.Controls;
 using gView.Framework.FDB;
+using gView.Framework.Geometry;
+using System;
+using System.Data;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace gView.Framework.UI.Dialogs
 {
@@ -22,13 +17,19 @@ namespace gView.Framework.UI.Dialogs
             InitializeComponent();
 
             tabControl1.TabPages.Remove(tabGeometry);
-            if (fc == null) return;
+            if (fc == null)
+            {
+                return;
+            }
 
             foreach (FieldType fieldType in Enum.GetValues(typeof(FieldType)))
             {
                 if (fieldType == FieldType.unknown ||
                     fieldType == FieldType.ID ||
-                    fieldType == FieldType.Shape) continue;
+                    fieldType == FieldType.Shape)
+                {
+                    continue;
+                }
 
                 colFieldtype.Items.Add(fieldType);
             }
@@ -39,7 +40,9 @@ namespace gView.Framework.UI.Dialogs
 
             this.IndexTypeIsEditable = false;
             if (fc.Dataset is IFDBDataset)
+            {
                 this.SpatialIndexDef = ((IFDBDataset)fc.Dataset).SpatialIndexDef;
+            }
         }
 
         private FormNewFeatureclass()
@@ -52,7 +55,9 @@ namespace gView.Framework.UI.Dialogs
             var dlg = new FormNewFeatureclass();
 
             if (dataset == null)
+            {
                 return dlg;
+            }
 
             dlg.cmbGeometry.SelectedIndex = 0;
             dlg.spatialIndexControl.SpatialReference = await dataset.GetSpatialReference();
@@ -61,7 +66,10 @@ namespace gView.Framework.UI.Dialogs
             {
                 if (fieldType == FieldType.unknown ||
                     fieldType == FieldType.ID ||
-                    fieldType == FieldType.Shape) continue;
+                    fieldType == FieldType.Shape)
+                {
+                    continue;
+                }
 
                 dlg.colFieldtype.Items.Add(fieldType);
             }
@@ -70,7 +78,9 @@ namespace gView.Framework.UI.Dialogs
 
             dlg.IndexTypeIsEditable = false;
             if (dataset is IFDBDataset)
+            {
                 dlg.SpatialIndexDef = ((IFDBDataset)dataset).SpatialIndexDef;
+            }
 
             return dlg;
         }
@@ -101,7 +111,7 @@ namespace gView.Framework.UI.Dialogs
                 }
 
                 GeometryDef geomDef = new GeometryDef(gType, null, chkHasZ.Checked);
-                
+
                 return geomDef;
             }
         }
@@ -143,18 +153,26 @@ namespace gView.Framework.UI.Dialogs
                 foreach (DataRow row in dsFields.Tables[0].Rows)
                 {
                     if (row["FieldField"] is IField)
+                    {
                         fields.Add(row["FieldField"] as IField);
+                    }
                 }
                 return fields;
             }
             set
             {
-                if (value == null) return;
+                if (value == null)
+                {
+                    return;
+                }
 
                 foreach (IField field in value.ToEnumerable())
                 {
                     if (field.type == FieldType.ID ||
-                        field.type == FieldType.Shape) continue;
+                        field.type == FieldType.Shape)
+                    {
+                        continue;
+                    }
 
                     Field f = new Field(field);
 
@@ -197,19 +215,24 @@ namespace gView.Framework.UI.Dialogs
 
         private void SetFieldProperties(int index)
         {
-            if (index >= dsFields.Tables[0].Rows.Count) return;
+            if (index >= dsFields.Tables[0].Rows.Count)
+            {
+                return;
+            }
 
             DataRow row = dsFields.Tables[0].Rows[index];
 
             if (row["FieldField"] == null || row["FieldField"] == DBNull.Value)
+            {
                 row["FieldField"] = new Field();
-
-            ((Field)row["FieldField"]).name = (string)dataGridView1[0, index].Value;
+            } ((Field)row["FieldField"]).name = (string)dataGridView1[0, index].Value;
             ((Field)row["FieldField"]).type = (FieldType)dataGridView1[1, index].Value;
 
             if (((Field)row["FieldField"]).type == FieldType.String &&
                 ((Field)row["FieldField"]).size <= 0)
+            {
                 ((Field)row["FieldField"]).size = 100;
+            }
 
             pgField.SelectedObject =
                 ((Field)row["FieldField"]).type == FieldType.String ?

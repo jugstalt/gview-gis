@@ -5,5 +5,5 @@
         bool Checked { get; }
     }
 
-    
+
 }

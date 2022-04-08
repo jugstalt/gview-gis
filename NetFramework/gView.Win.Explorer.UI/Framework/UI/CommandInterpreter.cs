@@ -1,15 +1,13 @@
-using System;
-using System.Collections.Generic;
-using System.Xml;
-using System.Text;
-using System.Windows.Forms;
-using System.IO;
-using System.Threading;
-using System.Diagnostics;
 using gView.Framework.system;
-using gView.Framework.UI;
 using gView.Framework.UI.Dialogs;
+using System;
+using System.Diagnostics;
+using System.IO;
+using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Forms;
+using System.Xml;
 
 namespace gView.Framework.UI
 {
@@ -36,13 +34,19 @@ namespace gView.Framework.UI
 
         static public void AppendMenuItems(ContextMenuStrip strip, IExplorerObject ExplorerObject)
         {
-            if (ExplorerObject == null) return;
+            if (ExplorerObject == null)
+            {
+                return;
+            }
 
             Guid ExplorerObjectGUID = PlugInManager.PlugInID(ExplorerObject);
             PlugInManager compManager = new PlugInManager();
 
             var commands = compManager.GetPlugins(Plugins.Type.IExplorerCommand);
-            if (commands == null) return;
+            if (commands == null)
+            {
+                return;
+            }
 
             foreach (var commandType in commands)
             {
@@ -50,17 +54,25 @@ namespace gView.Framework.UI
                 {
                     IExplorerCommand command = compManager.CreateInstance<IExplorerCommand>(commandType);
                     if (command == null ||
-                        (command.ExplorerObjectGUID != ExplorerObjectGUID && command.ExplorerObjectGUID != KnownExplorerObjectIDs.Any)) continue;
+                        (command.ExplorerObjectGUID != ExplorerObjectGUID && command.ExplorerObjectGUID != KnownExplorerObjectIDs.Any))
+                    {
+                        continue;
+                    }
 
                     foreach (XmlNode node in command.CommandDefs)
                     {
-                        if (node.Attributes["name"] == null) continue;
+                        if (node.Attributes["name"] == null)
+                        {
+                            continue;
+                        }
 
                         ToolStripItem item = new CommandToolStripItem(ExplorerObject, node);
                         item.Click += new EventHandler(CommandItem_Click);
 
                         if (strip.Items.Count == 0)
+                        {
                             strip.Items.Add(new ToolStripSeparator());
+                        }
 
                         strip.Items.Add(item);
                     }
@@ -73,9 +85,15 @@ namespace gView.Framework.UI
 
         async static private void CommandItem_Click(object sender, EventArgs e)
         {
-            if (_proc != null) return;
+            if (_proc != null)
+            {
+                return;
+            }
 
-            if (!(sender is CommandToolStripItem) || ((CommandToolStripItem)sender).CommandDef == null) return;
+            if (!(sender is CommandToolStripItem) || ((CommandToolStripItem)sender).CommandDef == null)
+            {
+                return;
+            }
 
             IExplorerObject exObject = ((CommandToolStripItem)sender).ExplorerObject;
             XmlNode commandDef = ((CommandToolStripItem)sender).CommandDef;
@@ -94,7 +112,10 @@ namespace gView.Framework.UI
 
             string path = SystemVariables.MyApplicationConfigPath + @"\explorer\tmp";
             DirectoryInfo di = new DirectoryInfo(path);
-            if (!di.Exists) di.Create();
+            if (!di.Exists)
+            {
+                di.Create();
+            }
 
             string filename = di.FullName + @"\bat_" + Guid.NewGuid().ToString("N") + ".bat";
             StreamWriter sw = new StreamWriter(filename);
@@ -125,7 +146,7 @@ namespace gView.Framework.UI
             fi.Delete();
 
             _proc = null;
-            
+
             if (callback != null)
             {
                 var task = callback.Invoke();
@@ -135,17 +156,21 @@ namespace gView.Framework.UI
 
         static private void ReadProcessStandardOutput()
         {
-            if (_proc == null) return;
+            if (_proc == null)
+            {
+                return;
+            }
+
             StreamReader sr = _proc.StandardOutput;
-           
-            char [] buffer=new char[128];
-            int count=0;
+
+            char[] buffer = new char[128];
+            int count = 0;
             ASCIIEncoding encoder = new ASCIIEncoding();
-            while ((count=sr.Read(buffer,0,128))!=0)
+            while ((count = sr.Read(buffer, 0, 128)) != 0)
             {
                 StringBuilder sb = new StringBuilder();
                 sb.Append(buffer, 0, count);
-                
+
                 if (Standardoutput != null)
                 {
                     lock (Standardoutput)
@@ -158,7 +183,11 @@ namespace gView.Framework.UI
         }
         static private void ReadProccessStandardError()
         {
-            if (_proc == null) return;
+            if (_proc == null)
+            {
+                return;
+            }
+
             StreamReader sr = _proc.StandardError;
             string line;
             while ((line = sr.ReadLine()) != null)
@@ -174,7 +203,7 @@ namespace gView.Framework.UI
             sr.Close();
         }
 
-        static private bool String2DOS(Stream stream,string str)
+        static private bool String2DOS(Stream stream, string str)
         {
             Encoding encoding = null;
             foreach (EncodingInfo ei in Encoding.GetEncodings())
@@ -185,7 +214,10 @@ namespace gView.Framework.UI
                 }
             }
 
-            if (encoding == null) return false;
+            if (encoding == null)
+            {
+                return false;
+            }
 
             byte[] bytes = encoding.GetBytes(str);
             BinaryWriter bw = new BinaryWriter(stream);
@@ -199,8 +231,8 @@ namespace gView.Framework.UI
     {
         XmlNode _commandNode;
         IExplorerObject _exObject;
- 
-        public CommandToolStripItem(IExplorerObject exObject,XmlNode commandNode)
+
+        public CommandToolStripItem(IExplorerObject exObject, XmlNode commandNode)
         {
             _commandNode = commandNode;
             _exObject = exObject;

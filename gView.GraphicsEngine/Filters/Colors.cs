@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace gView.GraphicsEngine.Filters
 {
@@ -117,9 +115,14 @@ namespace gView.GraphicsEngine.Filters
                 }
 
                 if (hue < 0)
+                {
                     hue += 1;
+                }
+
                 if (hue > 1)
+                {
                     hue -= 1;
+                }
 
                 hsl.Hue = (int)(hue * 360);
             }
@@ -168,15 +171,30 @@ namespace gView.GraphicsEngine.Filters
         private static float Hue_2_RGB(float v1, float v2, float vH)
         {
             if (vH < 0)
+            {
                 vH += 1;
+            }
+
             if (vH > 1)
+            {
                 vH -= 1;
+            }
+
             if ((6 * vH) < 1)
+            {
                 return (v1 + (v2 - v1) * 6 * vH);
+            }
+
             if ((2 * vH) < 1)
+            {
                 return v2;
+            }
+
             if ((3 * vH) < 2)
+            {
                 return (v1 + (v2 - v1) * ((2.0f / 3) - vH) * 6);
+            }
+
             return v1;
         }
         #endregion

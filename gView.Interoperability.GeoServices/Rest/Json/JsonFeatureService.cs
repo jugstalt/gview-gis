@@ -1,9 +1,6 @@
-﻿using gView.Framework.system;
-using gView.Interoperability.GeoServices.Rest.Reflection;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using System.Text;
 using static gView.Interoperability.GeoServices.Rest.Json.JsonMapService;
 
 namespace gView.Interoperability.GeoServices.Rest.Json
@@ -72,7 +69,7 @@ namespace gView.Interoperability.GeoServices.Rest.Json
         public JsonMapService.DatumTransformationsClass[] DatumTransformations { get; set; }
 
         [JsonProperty(PropertyName = "supportsDatumTransformation")]
-        public bool SupportsDatumTransformation{get;set;}
+        public bool SupportsDatumTransformation { get; set; }
 
         [JsonProperty(PropertyName = "maxRecordCount")]
         public int MaxRecordCount { get; set; }

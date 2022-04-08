@@ -1,5 +1,5 @@
-﻿using System;
-using gView.Framework.Carto;
+﻿using gView.Framework.Carto;
+using System;
 
 /// <summary>
 /// The <c>gView.Framework</c> provides all interfaces to develope
@@ -9,9 +9,9 @@ namespace gView.Framework.system
 {
     public class CloneOptions
     {
-        public CloneOptions(IDisplay display, 
+        public CloneOptions(IDisplay display,
                             bool applyRefScale,
-                            float maxRefScaleFactor = 0f, 
+                            float maxRefScaleFactor = 0f,
                             float maxLabelRefscaleFactor = 0f)
         {
             this.Display = display;

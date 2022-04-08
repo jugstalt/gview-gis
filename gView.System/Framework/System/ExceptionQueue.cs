@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 
 namespace gView.Framework.system
@@ -25,7 +24,9 @@ namespace gView.Framework.system
                 {
                     Exception ex = _exceptions[i];
                     if (ex == null)
+                    {
                         continue;
+                    }
 
                     sb.Append("Exption Type: " + ex.GetType().ToString() + "\r\n");
                     AppendExceptionMessage(ex, sb);

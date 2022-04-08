@@ -1,7 +1,5 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
 using gView.Framework.Geometry;
+using System.Collections.Generic;
 
 namespace gView.Framework.XML
 {
@@ -14,7 +12,11 @@ namespace gView.Framework.XML
         {
             lock (lockThis)
             {
-                if (_datums.Count != 0) return;
+                if (_datums.Count != 0)
+                {
+                    return;
+                }
+
                 _datums.Clear();
                 _datums.Add(1097, new GeodeticDatum("Dealul_Piscului_1970_To_WGS_1984_2", 28, -121, -77, 0, 0, 0, 0));
                 _datums.Add(1099, new GeodeticDatum("IGM_1995_To_WGS_1984_1", 0, 0, 0, 0, 0, 0, 0));
@@ -730,12 +732,16 @@ namespace gView.Framework.XML
             try
             {
                 if (_datums.Count == 0)
+                {
                     FillDatumList();
+                }
 
                 int id = int.Parse(ID);
                 GeodeticDatum datum;
                 if (_datums.TryGetValue(id, out datum))
+                {
                     return datum;
+                }
             }
             catch { }
             return null;

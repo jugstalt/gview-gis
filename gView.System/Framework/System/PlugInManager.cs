@@ -1,5 +1,4 @@
 using gView.Framework.UI;
-using gView.GraphicsEngine.Skia;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -113,7 +112,7 @@ namespace gView.Framework.system
 
                             OnAddPluginType?.Invoke(pluginType.ToString());
 
-                            if(InitSilent==false)
+                            if (InitSilent == false)
                             {
                                 Console.WriteLine($"added {pluginType.ToString()}");
                             }

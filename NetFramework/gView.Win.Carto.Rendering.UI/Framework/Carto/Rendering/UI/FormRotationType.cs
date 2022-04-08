@@ -1,47 +1,44 @@
-using System;
-using System.Drawing;
-using System.Collections;
-using System.ComponentModel;
-using System.Windows.Forms;
 using gView.Framework.Data;
 using gView.Framework.Symbology;
+using System.Drawing;
+using System.Windows.Forms;
 
 namespace gView.Framework.Carto.Rendering.UI
 {
-	/// <summary>
-	/// Zusammenfassung für FromRotationType.
-	/// </summary>
-	internal class FormRotationType : System.Windows.Forms.Form
-	{
-		private System.Windows.Forms.Panel picGeographic;
-		private System.Windows.Forms.Panel panelAritmetic;
-		private System.Windows.Forms.RadioButton radioButton1;
-		private System.Windows.Forms.RadioButton radioButton2;
-		private System.Windows.Forms.Label label1;
-		private System.Windows.Forms.ComboBox cmbUnit;
-		/// <summary>
-		/// Erforderliche Designervariable.
-		/// </summary>
-		private System.ComponentModel.Container components = null;
-		
-		protected string str1,str2,str3,str4;
-		protected int m_mode=0,m_unit=0;
+    /// <summary>
+    /// Zusammenfassung für FromRotationType.
+    /// </summary>
+    internal class FormRotationType : System.Windows.Forms.Form
+    {
+        private System.Windows.Forms.Panel picGeographic;
+        private System.Windows.Forms.Panel panelAritmetic;
+        private System.Windows.Forms.RadioButton radioButton1;
+        private System.Windows.Forms.RadioButton radioButton2;
+        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.ComboBox cmbUnit;
+        /// <summary>
+        /// Erforderliche Designervariable.
+        /// </summary>
+        private System.ComponentModel.Container components = null;
 
-		private System.Windows.Forms.Button btnOK;
+        protected string str1, str2, str3, str4;
+        protected int m_mode = 0, m_unit = 0;
+
+        private System.Windows.Forms.Button btnOK;
         private ComboBox cmbFields;
         private Label label2;
-		private System.Windows.Forms.Button btnCancel;
+        private System.Windows.Forms.Button btnCancel;
         private SymbolRotation _symbolRotation;
 
-		public FormRotationType(SymbolRotation symbolRotation,ITableClass tableClass)
-		{
-			//
-			// Erforderlich für die Windows Form-Designerunterstützung
-			//
-			InitializeComponent();
+        public FormRotationType(SymbolRotation symbolRotation, ITableClass tableClass)
+        {
+            //
+            // Erforderlich für die Windows Form-Designerunterstützung
+            //
+            InitializeComponent();
 
             _symbolRotation = symbolRotation;
-            string fieldname="";
+            string fieldname = "";
 
             if (_symbolRotation != null)
             {
@@ -81,41 +78,46 @@ namespace gView.Framework.Carto.Rendering.UI
                     {
                         FieldItem item = new FieldItem(field);
                         cmbFields.Items.Add(item);
-                        if (field.name == fieldname) cmbFields.SelectedItem = item;
+                        if (field.name == fieldname)
+                        {
+                            cmbFields.SelectedItem = item;
+                        }
                     }
                 }
 
                 if (cmbFields.SelectedItem == null)
+                {
                     cmbFields.SelectedItem = cmbFields.Items[0];
+                }
             }
             else
             {
                 cmbFields.Visible = false;
             }
-		}
+        }
 
-		/// <summary>
-		/// Die verwendeten Ressourcen bereinigen.
-		/// </summary>
-		protected override void Dispose( bool disposing )
-		{
-			if( disposing )
-			{
-				if(components != null)
-				{
-					components.Dispose();
-				}
-			}
-			base.Dispose( disposing );
-		}
+        /// <summary>
+        /// Die verwendeten Ressourcen bereinigen.
+        /// </summary>
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                if (components != null)
+                {
+                    components.Dispose();
+                }
+            }
+            base.Dispose(disposing);
+        }
 
-		#region Vom Windows Form-Designer generierter Code
-		/// <summary>
-		/// Erforderliche Methode für die Designerunterstützung. 
-		/// Der Inhalt der Methode darf nicht mit dem Code-Editor geändert werden.
-		/// </summary>
-		private void InitializeComponent()
-		{
+        #region Vom Windows Form-Designer generierter Code
+        /// <summary>
+        /// Erforderliche Methode für die Designerunterstützung. 
+        /// Der Inhalt der Methode darf nicht mit dem Code-Editor geändert werden.
+        /// </summary>
+        private void InitializeComponent()
+        {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormRotationType));
             this.picGeographic = new System.Windows.Forms.Panel();
             this.panelAritmetic = new System.Windows.Forms.Panel();
@@ -252,15 +254,22 @@ namespace gView.Framework.Carto.Rendering.UI
             this.Load += new System.EventHandler(this.FromRotationType_Load);
             this.ResumeLayout(false);
 
-		}
-		#endregion
+        }
+        #endregion
 
         public string FieldName
         {
             get
             {
-                if (cmbFields.SelectedItem == null) return "";
-                if (((FieldItem)cmbFields.SelectedItem).Field == null) return "";
+                if (cmbFields.SelectedItem == null)
+                {
+                    return "";
+                }
+
+                if (((FieldItem)cmbFields.SelectedItem).Field == null)
+                {
+                    return "";
+                }
 
                 return ((FieldItem)cmbFields.SelectedItem).Field.name;
             }
@@ -273,7 +282,7 @@ namespace gView.Framework.Carto.Rendering.UI
                         cmbFields.SelectedItem = item;
                         break;
                     }
-                    else if(item.Field.name==value)
+                    else if (item.Field.name == value)
                     {
                         cmbFields.SelectedItem = item;
                         break;
@@ -282,113 +291,125 @@ namespace gView.Framework.Carto.Rendering.UI
             }
         }
 
-		public int Mode 
-		{
-			get { return m_mode; }
-			set { m_mode=value; }
-		}
-		public int Unit
-		{
-			get { return m_unit; }
-			set 
-			{
-				if(value>2) value=2;
-				m_unit=value; 
-			}
-		}
-		private void picGeographic_Paint(object sender, System.Windows.Forms.PaintEventArgs e)
-		{
-			System.Drawing.Graphics gr=e.Graphics;
-			System.Drawing.SolidBrush brush=new System.Drawing.SolidBrush(Color.White);
-			System.Drawing.Pen pen=new System.Drawing.Pen(Color.Black);
-			System.Drawing.Font font=new Font("Arial",7);
+        public int Mode
+        {
+            get { return m_mode; }
+            set { m_mode = value; }
+        }
+        public int Unit
+        {
+            get { return m_unit; }
+            set
+            {
+                if (value > 2)
+                {
+                    value = 2;
+                }
 
-			int width=picGeographic.Width,height=picGeographic.Height;
-			gr.FillRectangle(brush,0,0,width,height);
-			gr.DrawLine(pen,width/2,10,width/2,height-10);
-			gr.DrawLine(pen,10,height/2,width-10,height/2);
+                m_unit = value;
+            }
+        }
+        private void picGeographic_Paint(object sender, System.Windows.Forms.PaintEventArgs e)
+        {
+            System.Drawing.Graphics gr = e.Graphics;
+            System.Drawing.SolidBrush brush = new System.Drawing.SolidBrush(Color.White);
+            System.Drawing.Pen pen = new System.Drawing.Pen(Color.Black);
+            System.Drawing.Font font = new Font("Arial", 7);
 
-			brush.Color=Color.Black;
-			gr.DrawString(str1,font,brush,width/2+2,7);
-			gr.DrawString(str2,font,brush,width-10-gr.MeasureString(str2,font).Width,height/2-10);
-			gr.DrawString(str3,font,brush,width/2+2,height-18);
-			gr.DrawString(str4,font,brush,10,height/2-10);
+            int width = picGeographic.Width, height = picGeographic.Height;
+            gr.FillRectangle(brush, 0, 0, width, height);
+            gr.DrawLine(pen, width / 2, 10, width / 2, height - 10);
+            gr.DrawLine(pen, 10, height / 2, width - 10, height / 2);
 
-			font.Dispose();
-			pen.Dispose();
-			brush.Dispose();
-		}
+            brush.Color = Color.Black;
+            gr.DrawString(str1, font, brush, width / 2 + 2, 7);
+            gr.DrawString(str2, font, brush, width - 10 - gr.MeasureString(str2, font).Width, height / 2 - 10);
+            gr.DrawString(str3, font, brush, width / 2 + 2, height - 18);
+            gr.DrawString(str4, font, brush, 10, height / 2 - 10);
 
-		private void panelAritmetic_Paint(object sender, System.Windows.Forms.PaintEventArgs e)
-		{
-			System.Drawing.Graphics gr=e.Graphics;
-			System.Drawing.SolidBrush brush=new System.Drawing.SolidBrush(Color.White);
-			System.Drawing.Pen pen=new System.Drawing.Pen(Color.Black);
-			System.Drawing.Font font=new Font("Arial",7);
+            font.Dispose();
+            pen.Dispose();
+            brush.Dispose();
+        }
 
-			int width=panelAritmetic.Width,height=panelAritmetic.Height;
-			gr.FillRectangle(brush,0,0,width,height);
-			gr.DrawLine(pen,width/2,10,width/2,height-10);
-			gr.DrawLine(pen,10,height/2,width-10,height/2);
+        private void panelAritmetic_Paint(object sender, System.Windows.Forms.PaintEventArgs e)
+        {
+            System.Drawing.Graphics gr = e.Graphics;
+            System.Drawing.SolidBrush brush = new System.Drawing.SolidBrush(Color.White);
+            System.Drawing.Pen pen = new System.Drawing.Pen(Color.Black);
+            System.Drawing.Font font = new Font("Arial", 7);
 
-			brush.Color=Color.Black;
-			gr.DrawString(str2,font,brush,width/2+2,7);
-			gr.DrawString(str1,font,brush,width-10-gr.MeasureString(str1,font).Width,height/2-10);
-			gr.DrawString(str4,font,brush,width/2+2,height-18);
-			gr.DrawString(str3,font,brush,10,height/2-10);
+            int width = panelAritmetic.Width, height = panelAritmetic.Height;
+            gr.FillRectangle(brush, 0, 0, width, height);
+            gr.DrawLine(pen, width / 2, 10, width / 2, height - 10);
+            gr.DrawLine(pen, 10, height / 2, width - 10, height / 2);
 
-			font.Dispose();
-			pen.Dispose();
-			brush.Dispose();
-		}
+            brush.Color = Color.Black;
+            gr.DrawString(str2, font, brush, width / 2 + 2, 7);
+            gr.DrawString(str1, font, brush, width - 10 - gr.MeasureString(str1, font).Width, height / 2 - 10);
+            gr.DrawString(str4, font, brush, width / 2 + 2, height - 18);
+            gr.DrawString(str3, font, brush, 10, height / 2 - 10);
 
-		private void cmbUnit_SelectedIndexChanged(object sender, System.EventArgs e)
-		{
-			switch(cmbUnit.SelectedItem.ToString().ToLower()) 
-			{
-				case "rad":
-					str1="0";
-					str2="0.5*PI";
-					str3="PI";
-					str4="1.5*PI";
-					break;
-				case "deg":
-					str1="0";
-					str2="90";
-					str3="180";
-					str4="270";
-					break;
-				case "gon":
-					str1="0";
-					str2="100";
-					str3="200";
-					str4="300";
-					break;
-			}
-			picGeographic.Refresh();
-			panelAritmetic.Refresh();
-		}
+            font.Dispose();
+            pen.Dispose();
+            brush.Dispose();
+        }
 
-		private void FromRotationType_Load(object sender, System.EventArgs e)
-		{
-		}
+        private void cmbUnit_SelectedIndexChanged(object sender, System.EventArgs e)
+        {
+            switch (cmbUnit.SelectedItem.ToString().ToLower())
+            {
+                case "rad":
+                    str1 = "0";
+                    str2 = "0.5*PI";
+                    str3 = "PI";
+                    str4 = "1.5*PI";
+                    break;
+                case "deg":
+                    str1 = "0";
+                    str2 = "90";
+                    str3 = "180";
+                    str4 = "270";
+                    break;
+                case "gon":
+                    str1 = "0";
+                    str2 = "100";
+                    str3 = "200";
+                    str4 = "300";
+                    break;
+            }
+            picGeographic.Refresh();
+            panelAritmetic.Refresh();
+        }
 
-		private void btnOK_Click(object sender, System.EventArgs e)
-		{
-			Unit=cmbUnit.SelectedIndex;
-			if(radioButton1.Checked)
-				Mode=0;
-			else
-				Mode=1;
+        private void FromRotationType_Load(object sender, System.EventArgs e)
+        {
+        }
+
+        private void btnOK_Click(object sender, System.EventArgs e)
+        {
+            Unit = cmbUnit.SelectedIndex;
+            if (radioButton1.Checked)
+            {
+                Mode = 0;
+            }
+            else
+            {
+                Mode = 1;
+            }
 
             if (_symbolRotation != null)
             {
                 if (((FieldItem)cmbFields.SelectedItem).Field == null)
+                {
                     _symbolRotation.RotationFieldName = "";
+                }
                 else
+                {
                     _symbolRotation.RotationFieldName = ((FieldItem)cmbFields.SelectedItem).Field.name;
+                }
 
-                switch(Unit) 
+                switch (Unit)
                 {
                     case 0:
                         _symbolRotation.RotationUnit = RotationUnit.rad;
@@ -410,9 +431,9 @@ namespace gView.Framework.Carto.Rendering.UI
                         break;
                 }
             }
-		}
-		
-	}
+        }
+
+    }
 
     internal class FieldItem
     {
@@ -430,7 +451,11 @@ namespace gView.Framework.Carto.Rendering.UI
 
         public override string ToString()
         {
-            if (_field == null) return "none";
+            if (_field == null)
+            {
+                return "none";
+            }
+
             return _field.aliasname;
         }
     }

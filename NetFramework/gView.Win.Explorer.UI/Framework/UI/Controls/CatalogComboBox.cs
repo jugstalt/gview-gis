@@ -1,17 +1,8 @@
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Drawing;
-using System.Data;
-using System.Text;
-using System.Xml;
-using System.Windows.Forms;
-using System.Management;
-using gView.Framework.system;
-using gView.Framework.UI;
-using gView.Explorer.UI;
-using gView.Framework.UI.Dialogs;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace gView.Framework.UI.Controls
 {
@@ -89,7 +80,10 @@ namespace gView.Framework.UI.Controls
         public void AddChildNode(IExplorerObject exObject)
         {
             int index = cmbCatalog.SelectedIndex;
-            if (index == -1) return;
+            if (index == -1)
+            {
+                return;
+            }
 
             int level = ((CatalogComboItem)cmbCatalog.SelectedItem).Level;
             if (exObject is DirectoryObject)
@@ -105,14 +99,23 @@ namespace gView.Framework.UI.Controls
 
         public void MoveUp()
         {
-            if (cmbCatalog.SelectedIndex < 1) return;
-            if (cmbCatalog.SelectedItem is DriveComboItem) return;
+            if (cmbCatalog.SelectedIndex < 1)
+            {
+                return;
+            }
+
+            if (cmbCatalog.SelectedItem is DriveComboItem)
+            {
+                return;
+            }
 
             if (cmbCatalog.SelectedItem is CatalogComboItem)
             {
                 CatalogComboItem item = (CatalogComboItem)cmbCatalog.SelectedItem;
                 if (item.Level > 0)
+                {
                     cmbCatalog.SelectedIndex--;
+                }
             }
         }
 
@@ -129,8 +132,15 @@ namespace gView.Framework.UI.Controls
         }
         private void cmbCatalog_DrawItem(object sender, DrawItemEventArgs e)
         {
-            if (e.Index < 0 || e.Index >= cmbCatalog.Items.Count) return;
-            if (!(cmbCatalog.Items[e.Index] is CatalogComboItem)) return;
+            if (e.Index < 0 || e.Index >= cmbCatalog.Items.Count)
+            {
+                return;
+            }
+
+            if (!(cmbCatalog.Items[e.Index] is CatalogComboItem))
+            {
+                return;
+            }
 
             //DrawItemState.
             CatalogComboItem item = (CatalogComboItem)cmbCatalog.Items[e.Index];
@@ -139,7 +149,7 @@ namespace gView.Framework.UI.Controls
             {
                 level = 0;
             }
-            
+
             using (SolidBrush brush = new SolidBrush(Color.Black))
             {
                 Rectangle rect = new Rectangle(e.Bounds.X + level * 11 + 18, e.Bounds.Y, e.Bounds.Width, e.Bounds.Height);
@@ -162,7 +172,7 @@ namespace gView.Framework.UI.Controls
                     e.Graphics.DrawImage(image, e.Bounds.X + level * 11 + 3, e.Bounds.Y);
                 }
                 catch { }
-                e.Graphics.DrawString(item.ToString(), cmbCatalog.Font, brush, e.Bounds.X + level * 11 + 20, e.Bounds.Y+2);
+                e.Graphics.DrawString(item.ToString(), cmbCatalog.Font, brush, e.Bounds.X + level * 11 + 20, e.Bounds.Y + 2);
             }
         }
 
@@ -174,18 +184,32 @@ namespace gView.Framework.UI.Controls
                 List<CatalogComboItem> delete = new List<CatalogComboItem>();
                 foreach (CatalogComboItem i in cmbCatalog.Items)
                 {
-                    if (i is DriveComboItem) continue;
+                    if (i is DriveComboItem)
+                    {
+                        continue;
+                    }
+
                     if (i.Level > item.Level)
+                    {
                         delete.Add(i);
+                    }
                 }
                 foreach (CatalogComboItem i in delete)
+                {
                     cmbCatalog.Items.Remove(i);
+                }
 
-                if (SelectedItemChanged != null) SelectedItemChanged((CatalogComboItem)cmbCatalog.SelectedItem);
+                if (SelectedItemChanged != null)
+                {
+                    SelectedItemChanged((CatalogComboItem)cmbCatalog.SelectedItem);
+                }
             }
             else
             {
-                if (SelectedItemChanged != null) SelectedItemChanged(null);
+                if (SelectedItemChanged != null)
+                {
+                    SelectedItemChanged(null);
+                }
             }
         }
     }
@@ -228,7 +252,7 @@ namespace gView.Framework.UI.Controls
     internal class DriveComboItem : CatalogComboItem
     {
         public DriveComboItem(string text, int level, int imageIndex, IExplorerObject exObject)
-            : base(text, level, imageIndex,exObject)
+            : base(text, level, imageIndex, exObject)
         {
         }
     }

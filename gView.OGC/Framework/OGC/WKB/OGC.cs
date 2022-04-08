@@ -1,9 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.IO;
-using gView.Framework.Geometry;
-
 namespace gView.Framework.OGC.WKB
 {
     /*

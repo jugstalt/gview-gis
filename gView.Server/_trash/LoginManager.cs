@@ -118,10 +118,10 @@
 //            var hashedPassword = SecureCrypto.Hash64(newPassword, username);
 //            File.WriteAllText(fi.FullName, hashedPassword);
 //        }
- 
+
 //        public IEnumerable<string> GetTokenUsernames()
 //        {
-           
+
 //            var di = new DirectoryInfo(LoginRootPath + "/token");
 //            return di.GetFiles("*.lgn").Select(f => f.Name.Substring(0, f.Name.Length - f.Extension.Length));
 //        }

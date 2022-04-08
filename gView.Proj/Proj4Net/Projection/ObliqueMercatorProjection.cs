@@ -14,10 +14,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-using System;
 using GeoAPI.Geometries;
 using Proj4Net.Datum;
 using Proj4Net.Utility;
+using System;
 
 namespace Proj4Net.Projection
 {
@@ -76,7 +76,9 @@ namespace Proj4Net.Projection
                 if (Math.Abs(Alpha) <= Tolerance ||
                     Math.Abs(Math.Abs(ProjectionLatitude) - ProjectionMath.PiHalf) <= Tolerance ||
                     Math.Abs(Math.Abs(Alpha) - ProjectionMath.PiHalf) <= Tolerance)
+                {
                     throw new ProjectionException("Obl 1");
+                }
             }
             else
             {
@@ -84,7 +86,10 @@ namespace Proj4Net.Projection
                     (con = Math.Abs(phi1)) <= Tolerance ||
                     Math.Abs(con - ProjectionMath.PiHalf) <= Tolerance ||
                     Math.Abs(Math.Abs(ProjectionLatitude) - ProjectionMath.PiHalf) <= Tolerance ||
-                    Math.Abs(Math.Abs(phi2) - ProjectionMath.PiHalf) <= Tolerance) throw new ProjectionException("Obl 2");
+                    Math.Abs(Math.Abs(phi2) - ProjectionMath.PiHalf) <= Tolerance)
+                {
+                    throw new ProjectionException("Obl 2");
+                }
             }
             com = (_spherical = (EccentricitySquared == 0.0)) ? 1 : Math.Sqrt(_oneEs);
             if (Math.Abs(ProjectionLatitude) > EPS10)
@@ -106,18 +111,26 @@ namespace Proj4Net.Projection
                     d = 1.0 / cosphi0;
                 }
                 if ((f = d * d - 1.0) <= 0.0)
+                {
                     f = 0.0;
+                }
                 else
                 {
                     f = Math.Sqrt(f);
                     if (ProjectionLatitude < 0.0)
+                    {
                         f = -f;
+                    }
                 }
                 el = f += d;
                 if (!Spherical)
+                {
                     el *= Math.Pow(ProjectionMath.tsfn(ProjectionLatitude, sinphi0, Eccentricity), bl);
+                }
                 else
+                {
                     el *= Math.Tan(.5 * (ProjectionMath.PiHalf - ProjectionLatitude));
+                }
             }
             else
             {
@@ -148,9 +161,14 @@ namespace Proj4Net.Projection
                 j = el * el;
                 j = (j - l * h) / (j + l * h);
                 if ((con = lam1 - lam2) < -Math.PI)
+                {
                     lam2 -= ProjectionMath.TwoPI;
+                }
                 else if (con > Math.PI)
+                {
                     lam2 += ProjectionMath.TwoPI;
+                }
+
                 ProjectionLongitude = ProjectionMath.NormalizeLongitude(.5 * (lam1 + lam2) - Math.Atan(
                    j * Math.Tan(.5 * bl * (lam1 - lam2)) / p) / bl);
                 Gamma = Math.Atan(2.0 * Math.Sin(bl * ProjectionMath.NormalizeLongitude(lam1 - ProjectionLongitude)) /
@@ -167,7 +185,9 @@ namespace Proj4Net.Projection
             u_0 = false ? 0.0 ://FIXME
                 Math.Abs(al * Math.Atan(Math.Sqrt(d * d - 1.0) / cosrot) / bl);
             if (ProjectionLatitude < 0.0)
+            {
                 u_0 = -u_0;
+            }
         }
 
         public override Coordinate Project(double lam, double phi, Coordinate xy)
@@ -191,12 +211,20 @@ namespace Proj4Net.Projection
                 {
                     us = al * Math.Atan((s * cosgam + vl * singam) / con) / bl;
                     if (con < 0.0)
+                    {
                         us += Math.PI * al / bl;
+                    }
                 }
                 else
+                {
                     us = al * bl * lam;
+                }
             }
-            if (Math.Abs(Math.Abs(ul) - 1.0) <= EPS10) throw new ProjectionException("Obl 3");
+            if (Math.Abs(Math.Abs(ul) - 1.0) <= EPS10)
+            {
+                throw new ProjectionException("Obl 3");
+            }
+
             vs = .5 * al * Math.Log((1.0 - ul) / (1.0 + ul)) / bl;
             us -= u_0;
             if (!rot)
@@ -244,7 +272,10 @@ namespace Proj4Net.Projection
                     lp.Y = ProjectionMath.Phi2(Math.Pow(lp.Y, 1.0 / bl), Eccentricity);
                 }
                 else
+                {
                     lp.Y = ProjectionMath.PiHalf - 2.0 * Math.Atan(lp.Y);
+                }
+
                 lp.X = -Math.Atan2((s * cosgam -
                     vl * singam), Math.Cos(bl * us / al)) / bl;
             }

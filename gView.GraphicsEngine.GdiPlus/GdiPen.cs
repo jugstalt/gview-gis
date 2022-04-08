@@ -1,9 +1,6 @@
 ﻿using gView.GraphicsEngine.Abstraction;
 using gView.GraphicsEngine.GdiPlus.Extensions;
-using System;
-using System.Collections.Generic;
 using System.Drawing;
-using System.Text;
 
 namespace gView.GraphicsEngine.GdiPlus
 {
@@ -28,7 +25,7 @@ namespace gView.GraphicsEngine.GdiPlus
             {
                 _pen.Color = value.ToGdiColor();
             }
-        } 
+        }
         public float Width
         {
             get { return _pen.Width; }

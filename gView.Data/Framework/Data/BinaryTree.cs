@@ -1,9 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-using gView.Framework.FDB;
-using gView.Framework.Geometry;
-
 namespace gView.Framework.Data
 {
     /*

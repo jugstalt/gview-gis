@@ -1,9 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Text;
 using System.Windows.Forms;
 
 namespace gView.Plugins.Editor.Dialogs
@@ -24,8 +19,15 @@ namespace gView.Plugins.Editor.Dialogs
             set
             {
                 double v = value * 180.0 / Math.PI;
-                while (v < -360.0) v += 360.0;
-                while (v > 360.0) v -= 360.0;
+                while (v < -360.0)
+                {
+                    v += 360.0;
+                }
+
+                while (v > 360.0)
+                {
+                    v -= 360.0;
+                }
 
                 numDirection.Value = (decimal)v;
             }

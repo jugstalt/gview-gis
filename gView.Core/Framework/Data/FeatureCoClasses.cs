@@ -1,8 +1,5 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using gView.Framework.Geometry;
 using gView.Framework.FDB;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace gView.Framework.Data
@@ -36,7 +33,10 @@ namespace gView.Framework.Data
                 {
                     foreach (FieldValue fv in _fields)
                     {
-                        if (fv.Name == fieldName) return fv.Value;
+                        if (fv.Name == fieldName)
+                        {
+                            return fv.Value;
+                        }
                     }
                 }
                 else
@@ -44,7 +44,10 @@ namespace gView.Framework.Data
                     fieldName = fieldName.ToLower();
                     foreach (FieldValue fv in _fields)
                     {
-                        if (fv.Name.ToLower() == fieldName) return fv.Value;
+                        if (fv.Name.ToLower() == fieldName)
+                        {
+                            return fv.Value;
+                        }
                     }
                 }
                 return null;
@@ -79,12 +82,20 @@ namespace gView.Framework.Data
         {
             get
             {
-                if (fieldIndex < 0 || fieldIndex >= _fields.Count) return null;
+                if (fieldIndex < 0 || fieldIndex >= _fields.Count)
+                {
+                    return null;
+                }
+
                 return _fields[fieldIndex].Value;
             }
             set
             {
-                if (fieldIndex < 0 || fieldIndex >= _fields.Count) return;
+                if (fieldIndex < 0 || fieldIndex >= _fields.Count)
+                {
+                    return;
+                }
+
                 _fields[fieldIndex].Value = value;
             }
         }
@@ -96,7 +107,9 @@ namespace gView.Framework.Data
                 foreach (FieldValue field in this.Fields)
                 {
                     if (field.Name == name)
+                    {
                         return field;
+                    }
                 }
             }
             else
@@ -105,7 +118,9 @@ namespace gView.Framework.Data
                 foreach (FieldValue field in this.Fields)
                 {
                     if (field.Name.ToLower() == name)
+                    {
                         return field;
+                    }
                 }
             }
             return null;
@@ -122,14 +137,20 @@ namespace gView.Framework.Data
 
         async public Task<bool> BeforeInsert(ITableClass tClass)
         {
-            if (!(tClass is IFeatureClass)) return false;
+            if (!(tClass is IFeatureClass))
+            {
+                return false;
+            }
 
             IFeatureClass fc = (IFeatureClass)tClass;
             foreach (IField field in fc.Fields.ToEnumerable())
             {
                 if (field is IAutoField)
                 {
-                    if (!await ((IAutoField)field).OnInsert(fc, this as IFeature)) return false;
+                    if (!await ((IAutoField)field).OnInsert(fc, this as IFeature))
+                    {
+                        return false;
+                    }
                 }
             }
 
@@ -138,14 +159,20 @@ namespace gView.Framework.Data
 
         async public Task<bool> BeforeUpdate(ITableClass tClass)
         {
-            if (!(tClass is IFeatureClass)) return false;
+            if (!(tClass is IFeatureClass))
+            {
+                return false;
+            }
 
             IFeatureClass fc = (IFeatureClass)tClass;
             foreach (IField field in fc.Fields.ToEnumerable())
             {
                 if (field is IAutoField)
                 {
-                    if (!await ((IAutoField)field).OnUpdate(fc, this as IFeature)) return false;
+                    if (!await ((IAutoField)field).OnUpdate(fc, this as IFeature))
+                    {
+                        return false;
+                    }
                 }
             }
 
@@ -213,44 +240,50 @@ namespace gView.Framework.Data
         #endregion
     }
 
-	public class Feature : Row, IFeature
-	{
-		private gView.Framework.Geometry.IGeometry _geometry;
+    public class Feature : Row, IFeature
+    {
+        private gView.Framework.Geometry.IGeometry _geometry;
 
-		public Feature()
+        public Feature()
             : base()
-		{
-            
-		}
+        {
+
+        }
 
         public Feature(IRow row)
             : base()
         {
-            if (row == null) return;
+            if (row == null)
+            {
+                return;
+            }
 
             _oid = row.OID;
             _fields = row.Fields;
         }
 
-		#region IFeature Member
+        #region IFeature Member
 
-		public gView.Framework.Geometry.IGeometry Shape
-		{
-			get
-			{
-				return _geometry;
-			}
-			set
-			{
-				_geometry=value;
-			}
-		}
+        public gView.Framework.Geometry.IGeometry Shape
+        {
+            get
+            {
+                return _geometry;
+            }
+            set
+            {
+                _geometry = value;
+            }
+        }
 
-		#endregion
+        #endregion
 
         public static void CopyFrom(IFeature original, IFeature feature)
         {
-            if (feature == null || original == null) return;
+            if (feature == null || original == null)
+            {
+                return;
+            }
 
             original.Shape = feature.Shape;
             if (feature.Fields != null)
@@ -273,14 +306,17 @@ namespace gView.Framework.Data
 
         public GlobalFeature()
             : base()
-		{
-            
-		}
+        {
+
+        }
 
         public GlobalFeature(IGlobalRow row)
             : base()
         {
-            if (row == null) return;
+            if (row == null)
+            {
+                return;
+            }
 
             _oid = row.GlobalOID;
             _fields = row.Fields;
@@ -311,47 +347,47 @@ namespace gView.Framework.Data
         #endregion
     }
 
-	public class FieldValue : gView.Framework.Data.IFieldValue
-	{
-		private string _name;
-		private object _value;
+    public class FieldValue : gView.Framework.Data.IFieldValue
+    {
+        private string _name;
+        private object _value;
 
-		public FieldValue(string name) 
-		{
-			_name=name;
-		}
-		public FieldValue(string name,object val) 
-		{
-			_name=name;
-			_value=val;
-		}
+        public FieldValue(string name)
+        {
+            _name = name;
+        }
+        public FieldValue(string name, object val)
+        {
+            _name = name;
+            _value = val;
+        }
 
         public void Rename(string newName)
         {
             _name = newName;
         }
-		#region IFieldValue Member
+        #region IFieldValue Member
 
-		public string Name
-		{
-			get
-			{
-				return _name;
-			}
-		}
+        public string Name
+        {
+            get
+            {
+                return _name;
+            }
+        }
 
-		public object Value
-		{
-			get
-			{
-				return _value;
-			}
-			set
-			{
-				_value=value;
-			}
-		}
+        public object Value
+        {
+            get
+            {
+                return _value;
+            }
+            set
+            {
+                _value = value;
+            }
+        }
 
-		#endregion
-	}
+        #endregion
+    }
 }

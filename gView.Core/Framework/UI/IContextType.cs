@@ -10,5 +10,5 @@ namespace gView.Framework.UI
         object ContextObject { get; }
     }
 
-    
+
 }

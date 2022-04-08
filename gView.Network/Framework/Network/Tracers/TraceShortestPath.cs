@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using gView.Framework.Network;
-using gView.Framework.Network.Algorthm;
+﻿using gView.Framework.Network.Algorthm;
 using gView.Framework.system;
 using gView.Framework.UI;
-using gView.Framework.Data;
-using gView.Framework.Geometry;
 using System.Threading.Tasks;
 
 namespace gView.Framework.Network.Tracers
@@ -24,7 +18,9 @@ namespace gView.Framework.Network.Tracers
         public bool CanTrace(NetworkTracerInputCollection input)
         {
             if (input == null)
+            {
                 return false;
+            }
 
             return input.Collect(NetworkTracerInputType.SourceNode).Count == 1 &&
                    input.Collect(NetworkTracerInputType.SinkNode).Count == 1;
@@ -33,7 +29,9 @@ namespace gView.Framework.Network.Tracers
         async public Task<NetworkTracerOutputCollection> Trace(INetworkFeatureClass network, NetworkTracerInputCollection input, gView.Framework.system.ICancelTracker cancelTraker)
         {
             if (network == null || !CanTrace(input))
+            {
                 return null;
+            }
 
             GraphTable gt = new GraphTable(network.GraphTableAdapter());
             NetworkSourceInput source = input.Collect(NetworkTracerInputType.SourceNode)[0] as NetworkSourceInput;
@@ -57,7 +55,9 @@ namespace gView.Framework.Network.Tracers
             dijkstra.Calculate(gt, source.NodeId, sink.NodeId);
             Dijkstra.NetworkPath networkPath = dijkstra.DijkstraPath(sink.NodeId);
             if (networkPath == null)
+            {
                 return null;
+            }
 
             NetworkTracerOutputCollection output = new NetworkTracerOutputCollection();
 

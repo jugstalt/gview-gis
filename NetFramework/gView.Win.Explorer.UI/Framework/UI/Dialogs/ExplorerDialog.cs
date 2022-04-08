@@ -1,15 +1,10 @@
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Text;
-using System.Windows.Forms;
-using gView.Framework.UI;
 using gView.Framework.Data;
-using gView.Framework.UI.Controls.Filter;
 using gView.Framework.UI.Controls;
+using gView.Framework.UI.Controls.Filter;
+using System.Collections.Generic;
+using System.Drawing;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace gView.Framework.UI.Dialogs
 {
@@ -17,7 +12,7 @@ namespace gView.Framework.UI.Dialogs
     {
         private bool _open;
 
-        public ExplorerDialog(string title,List<ExplorerDialogFilter> filters,bool open)
+        public ExplorerDialog(string title, List<ExplorerDialogFilter> filters, bool open)
         {
             InitializeComponent();
 
@@ -79,8 +74,15 @@ namespace gView.Framework.UI.Dialogs
 
             foreach (IExplorerObject exObject in ExplorerObjects)
             {
-                if (exObject == null) continue;
-                if (usedObjects.Contains(exObject)) continue;
+                if (exObject == null)
+                {
+                    continue;
+                }
+
+                if (usedObjects.Contains(exObject))
+                {
+                    continue;
+                }
 
                 var instance = await exObject.GetInstanceAsync();
                 if (instance is IDataset)
@@ -92,11 +94,17 @@ namespace gView.Framework.UI.Dialogs
                 {
                     IDataset2 dataset = (IDataset2)((IFeatureClass)instance).Dataset;
                     IDataset2 datasetClone = await dataset.EmptyCopy();
-                    if (datasetClone == null) continue;
+                    if (datasetClone == null)
+                    {
+                        continue;
+                    }
 
                     foreach (IExplorerObject exObject2 in ExplorerObjects)
                     {
-                        if (exObject2 == null) continue;
+                        if (exObject2 == null)
+                        {
+                            continue;
+                        }
 
                         var instance2 = await exObject2.GetInstanceAsync();
                         if (instance2 is IFeatureClass && ((IFeatureClass)instance2).Dataset == dataset)
@@ -112,11 +120,17 @@ namespace gView.Framework.UI.Dialogs
                 {
                     IDataset2 dataset = (IDataset2)((IRasterClass)instance).Dataset;
                     IDataset2 datasetClone = await dataset.EmptyCopy();
-                    if (datasetClone == null) continue;
+                    if (datasetClone == null)
+                    {
+                        continue;
+                    }
 
                     foreach (IExplorerObject exObject2 in ExplorerObjects)
                     {
-                        if (exObject2 == null) continue;
+                        if (exObject2 == null)
+                        {
+                            continue;
+                        }
 
                         var instance2 = await exObject2.GetInstanceAsync();
                         if (instance2 is IRasterClass && ((IRasterClass)instance2).Dataset == dataset)

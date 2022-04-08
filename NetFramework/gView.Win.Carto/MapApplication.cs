@@ -663,7 +663,7 @@ namespace gView.Win.Carto
 
             IsDirty = false;
 
-            if(fi.Extension.ToLower()==".restore")
+            if (fi.Extension.ToLower() == ".restore")
             {
                 IsDirty = true;
                 fi = new FileInfo(fi.FullName.Substring(0, fi.FullName.Length - ".restore".Length));
@@ -673,9 +673,9 @@ namespace gView.Win.Carto
             _appWindow.Title = "gView.Carto " + fi.Name;
             _readonly = (fi.Extension.ToLower() == ".rdm");
 
-            foreach(var map in _doc.Maps)
+            foreach (var map in _doc.Maps)
             {
-                if(map.HasErrorMessages)
+                if (map.HasErrorMessages)
                 {
                     FormToolException.Show($"Loading Map '{ map.Name }'", String.Join(Environment.NewLine, map.ErrorMessages));
                 }
@@ -708,9 +708,9 @@ namespace gView.Win.Carto
                 }
             }
 
-            foreach(var map in _doc.Maps)
+            foreach (var map in _doc.Maps)
             {
-                if(map is Map && ((Map)map).HasErrorMessages)
+                if (map is Map && ((Map)map).HasErrorMessages)
                 {
                     MessageBox.Show("A map with errors can't be saved. Solve errors in MXL File (e.g. with a Texteditor) and reopen?", "gView.Carto", MessageBoxButtons.OK);
                     return;

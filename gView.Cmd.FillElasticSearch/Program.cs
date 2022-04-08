@@ -75,7 +75,7 @@ namespace gView.Cmd.FillElasticSearch
 
                 #region Basic Authentication
 
-                if(args[i] == "-basic-auth-user")
+                if (args[i] == "-basic-auth-user")
                 {
                     basicAuthUser = args[i + 1];
                 }
@@ -125,7 +125,7 @@ namespace gView.Cmd.FillElasticSearch
 
                     var importConfig = JsonConvert.DeserializeObject<ImportConfig>(File.ReadAllText(jsonFile));
 
-                    var searchContext = new ElasticSearchContext(importConfig.Connection.Url, 
+                    var searchContext = new ElasticSearchContext(importConfig.Connection.Url,
                                                                  importConfig.Connection.DefaultIndex,
                                                                  proxyUri: proxyUrl, proxyUsername: proxyUser, proxyPassword: proxyPassword,
                                                                  basicAuthUser: basicAuthUser, basicAuthPassword: basicAuthPassword);
@@ -297,7 +297,7 @@ namespace gView.Cmd.FillElasticSearch
 
         static private bool RemoveCategory(string indexUrl, string indexName, string category, string proxyUrl, string proxyUser, string proxyPassword, string basicAuthUser, string basicAuthPassword)
         {
-            var searchContext = new ElasticSearchContext(indexUrl, 
+            var searchContext = new ElasticSearchContext(indexUrl,
                                                          indexName,
                                                          proxyUri: proxyUrl, proxyUsername: proxyUser, proxyPassword: proxyPassword,
                                                          basicAuthUser: basicAuthUser, basicAuthPassword: basicAuthPassword);

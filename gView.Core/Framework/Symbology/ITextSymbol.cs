@@ -1,5 +1,5 @@
-﻿using gView.Framework.Geometry;
-using gView.Framework.Carto;
+﻿using gView.Framework.Carto;
+using gView.Framework.Geometry;
 
 namespace gView.Framework.Symbology
 {

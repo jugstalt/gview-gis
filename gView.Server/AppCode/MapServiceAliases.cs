@@ -1,10 +1,4 @@
-﻿using gView.MapServer;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
-namespace gView.Server.AppCode
+﻿namespace gView.Server.AppCode
 {
     class MapServiceAlias : MapService
     {

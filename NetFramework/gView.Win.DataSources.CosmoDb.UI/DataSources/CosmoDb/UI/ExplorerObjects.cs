@@ -8,8 +8,6 @@ using gView.Framework.system.UI;
 using gView.Framework.UI;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -59,7 +57,9 @@ namespace gView.DataSources.CosmoDb.UI
         public Task<IExplorerObject> CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache cache)
         {
             if (cache.Contains(FullName))
+            {
                 return Task.FromResult<IExplorerObject>(cache[FullName]);
+            }
 
             if (this.FullName == FullName)
             {
@@ -85,7 +85,7 @@ namespace gView.DataSources.CosmoDb.UI
             Dictionary<string, string> DbConnectionStrings = conStream.Connections;
             foreach (string name in DbConnectionStrings.Keys)
             {
-                var connectionString=DbConnectionStrings[name];
+                var connectionString = DbConnectionStrings[name];
                 base.AddChildObject(new CosmoDbExplorerObject(this, name, connectionString));
             }
 
@@ -177,7 +177,9 @@ namespace gView.DataSources.CosmoDb.UI
         public Task<IExplorerObject> CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache cache)
         {
             if (cache.Contains(FullName))
+            {
                 return Task.FromResult<IExplorerObject>(cache[FullName]);
+            }
 
             return Task.FromResult<IExplorerObject>(null);
         }
@@ -226,7 +228,10 @@ namespace gView.DataSources.CosmoDb.UI
 
         void ConnectionProperties_Click(object sender, EventArgs e)
         {
-            if (_connectionString == null) return;
+            if (_connectionString == null)
+            {
+                return;
+            }
 
             FormCosmoDbConnection dlg = new FormCosmoDbConnection();
 
@@ -283,7 +288,9 @@ namespace gView.DataSources.CosmoDb.UI
         async public Task<object> GetInstanceAsync()
         {
             if (_dataset != null)
+            {
                 _dataset.Dispose();
+            }
 
             _dataset = new CosmoDbDataset();
             await _dataset.SetConnectionString(_connectionString);
@@ -299,7 +306,9 @@ namespace gView.DataSources.CosmoDb.UI
         {
             await base.Refresh();
             if (_connectionString == null)
+            {
                 return false;
+            }
 
             var dataset = new CosmoDbDataset();
             await dataset.SetConnectionString(_connectionString);
@@ -308,7 +317,9 @@ namespace gView.DataSources.CosmoDb.UI
             List<IDatasetElement> elements = await dataset.Elements();
 
             if (elements == null)
+            {
                 return false;
+            }
 
             foreach (IDatasetElement element in elements)
             {
@@ -327,10 +338,16 @@ namespace gView.DataSources.CosmoDb.UI
 
         async public Task<IExplorerObject> CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache cache)
         {
-            if (cache.Contains(FullName)) return cache[FullName];
+            if (cache.Contains(FullName))
+            {
+                return cache[FullName];
+            }
 
             CosmoDbGroupObject group = new CosmoDbGroupObject();
-            if (FullName.IndexOf(group.FullName) != 0 || FullName.Length < group.FullName.Length + 2) return null;
+            if (FullName.IndexOf(group.FullName) != 0 || FullName.Length < group.FullName.Length + 2)
+            {
+                return null;
+            }
 
             group = (CosmoDbGroupObject)((cache.Contains(group.FullName)) ? cache[group.FullName] : group);
 
@@ -366,7 +383,11 @@ namespace gView.DataSources.CosmoDb.UI
                 ret = stream.Remove(_name);
             }
 
-            if (ret && ExplorerObjectDeleted != null) ExplorerObjectDeleted(this);
+            if (ret && ExplorerObjectDeleted != null)
+            {
+                ExplorerObjectDeleted(this);
+            }
+
             return Task.FromResult(ret);
         }
 
@@ -399,7 +420,10 @@ namespace gView.DataSources.CosmoDb.UI
             if (ret == true)
             {
                 _name = newName;
-                if (ExplorerObjectRenamed != null) ExplorerObjectRenamed(this);
+                if (ExplorerObjectRenamed != null)
+                {
+                    ExplorerObjectRenamed(this);
+                }
             }
             return Task.FromResult(ret);
         }
@@ -428,7 +452,10 @@ namespace gView.DataSources.CosmoDb.UI
         public PostGISFeatureClassExplorerObject(CosmoDbExplorerObject parent, IDatasetElement element)
             : base(parent, typeof(IFeatureClass), 1)
         {
-            if (element == null || !(element.Class is IFeatureClass)) return;
+            if (element == null || !(element.Class is IFeatureClass))
+            {
+                return;
+            }
 
             _parent = parent;
             _fcname = element.Title;
@@ -460,7 +487,11 @@ namespace gView.DataSources.CosmoDb.UI
         {
             get
             {
-                if (_parent == null) return "";
+                if (_parent == null)
+                {
+                    return "";
+                }
+
                 return _parent.ConnectionString;
             }
         }
@@ -476,7 +507,11 @@ namespace gView.DataSources.CosmoDb.UI
         {
             get
             {
-                if (_parent == null) return "";
+                if (_parent == null)
+                {
+                    return "";
+                }
+
                 return _parent.FullName + @"\" + this.Name;
             }
         }
@@ -508,11 +543,16 @@ namespace gView.DataSources.CosmoDb.UI
         async public Task<IExplorerObject> CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache cache)
         {
             if (cache.Contains(FullName))
+            {
                 return cache[FullName];
+            }
 
             FullName = FullName.Replace("/", @"\");
             int lastIndex = FullName.LastIndexOf(@"\");
-            if (lastIndex == -1) return null;
+            if (lastIndex == -1)
+            {
+                return null;
+            }
 
             string dsName = FullName.Substring(0, lastIndex);
             string fcName = FullName.Substring(lastIndex + 1, FullName.Length - lastIndex - 1);
@@ -522,7 +562,9 @@ namespace gView.DataSources.CosmoDb.UI
 
             var childObjects = await dsObject?.ChildObjects();
             if (childObjects == null)
+            {
                 return null;
+            }
 
             foreach (IExplorerObject exObject in childObjects)
             {
@@ -548,7 +590,11 @@ namespace gView.DataSources.CosmoDb.UI
             {
                 if (await ((IFeatureDatabase)instance).DeleteFeatureClass(this.Name))
                 {
-                    if (ExplorerObjectDeleted != null) ExplorerObjectDeleted(this);
+                    if (ExplorerObjectDeleted != null)
+                    {
+                        ExplorerObjectDeleted(this);
+                    }
+
                     return true;
                 }
                 else
@@ -587,7 +633,7 @@ namespace gView.DataSources.CosmoDb.UI
 
         #endregion
     }
-    
+
     class EventTableNewConnectionIcon : IExplorerIcon
     {
         #region IExplorerIcon Members

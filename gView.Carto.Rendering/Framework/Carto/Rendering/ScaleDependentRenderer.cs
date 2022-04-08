@@ -1,15 +1,13 @@
+using gView.Framework.Carto.Rendering.UI;
+using gView.Framework.Data;
+using gView.Framework.IO;
+using gView.Framework.Symbology;
+using gView.Framework.system;
+using gView.Framework.UI;
 using System;
 using System.Collections.Generic;
-using System.Text;
-using gView.Framework.system;
-using gView.Framework.IO;
-using gView.Framework.UI;
-using gView.Framework.Data;
-using System.Reflection;
-using gView.Framework.Symbology;
-using gView.Framework.Carto.Rendering.UI;
-using System.Threading.Tasks;
 using System.Linq;
+using System.Reflection;
 
 namespace gView.Framework.Carto.Rendering
 {
@@ -38,7 +36,11 @@ namespace gView.Framework.Carto.Rendering
         {
             foreach (IFeatureRenderer renderer in _renderers)
             {
-                if (renderer == null) continue;
+                if (renderer == null)
+                {
+                    continue;
+                }
+
                 renderer.Draw(disp, feature);
             }
         }
@@ -50,7 +52,9 @@ namespace gView.Framework.Carto.Rendering
             foreach (IFeatureRenderer renderer in _renderers)
             {
                 if (renderer != null)
+                {
                     renderer.FinishDrawing(disp, cancelTracker);
+                }
             }
         }
 
@@ -58,7 +62,10 @@ namespace gView.Framework.Carto.Rendering
         {
             foreach (IFeatureRenderer renderer in _renderers)
             {
-                if (renderer == null) continue;
+                if (renderer == null)
+                {
+                    continue;
+                }
 
                 renderer.PrepareQueryFilter(layer, filter);
             }
@@ -71,11 +78,22 @@ namespace gView.Framework.Carto.Rendering
 
         public bool HasEffect(gView.Framework.Data.IFeatureLayer layer, IMap map)
         {
-            if (_renderers == null) return false;
+            if (_renderers == null)
+            {
+                return false;
+            }
+
             foreach (IFeatureRenderer renderer in _renderers)
             {
-                if (renderer == null) continue;
-                if (renderer.HasEffect(layer, map)) return true;
+                if (renderer == null)
+                {
+                    continue;
+                }
+
+                if (renderer.HasEffect(layer, map))
+                {
+                    return true;
+                }
             }
             return false;
         }
@@ -91,7 +109,10 @@ namespace gView.Framework.Carto.Rendering
                 _useRefScale = value;
                 foreach (IFeatureRenderer renderer in _renderers)
                 {
-                    if (renderer == null) continue;
+                    if (renderer == null)
+                    {
+                        continue;
+                    }
 
                     renderer.UseReferenceScale = _useRefScale;
                 }
@@ -110,7 +131,7 @@ namespace gView.Framework.Carto.Rendering
 
         public bool RequireClone()
         {
-            return _renderers?.Where(r=>r!=null && r.RequireClone()).FirstOrDefault() != null;
+            return _renderers?.Where(r => r != null && r.RequireClone()).FirstOrDefault() != null;
         }
 
         #endregion
@@ -134,7 +155,11 @@ namespace gView.Framework.Carto.Rendering
 
             foreach (IFeatureRenderer renderer in _renderers)
             {
-                if (renderer == null) continue;
+                if (renderer == null)
+                {
+                    continue;
+                }
+
                 stream.Save("ScaleRenderer", new ScaleRendererPersist(renderer as ScaleRenderer));
             }
         }
@@ -145,7 +170,10 @@ namespace gView.Framework.Carto.Rendering
 
         public object PropertyPage(object initObject)
         {
-            if (!(initObject is IFeatureLayer)) return null;
+            if (!(initObject is IFeatureLayer))
+            {
+                return null;
+            }
 
             try
             {
@@ -179,7 +207,11 @@ namespace gView.Framework.Carto.Rendering
             ScaleDependentRenderer scaledependentRenderer = new ScaleDependentRenderer();
             foreach (IFeatureRenderer renderer in _renderers)
             {
-                if (renderer == null) continue;
+                if (renderer == null)
+                {
+                    continue;
+                }
+
                 scaledependentRenderer._renderers.Add(renderer.Clone(options) as IFeatureRenderer);
             }
 
@@ -191,7 +223,11 @@ namespace gView.Framework.Carto.Rendering
         {
             foreach (IFeatureRenderer renderer in _renderers)
             {
-                if (renderer == null) continue;
+                if (renderer == null)
+                {
+                    continue;
+                }
+
                 renderer.Release();
             }
             _renderers.Clear();
@@ -208,7 +244,11 @@ namespace gView.Framework.Carto.Rendering
                 int count = 0;
                 foreach (IFeatureRenderer renderer in _renderers)
                 {
-                    if (!(renderer is ILegendGroup)) continue;
+                    if (!(renderer is ILegendGroup))
+                    {
+                        continue;
+                    }
+
                     count += ((ILegendGroup)renderer).LegendItemCount;
                 }
                 return count;
@@ -220,7 +260,11 @@ namespace gView.Framework.Carto.Rendering
             int count = 0;
             foreach (IFeatureRenderer renderer in _renderers)
             {
-                if (!(renderer is ILegendGroup)) continue;
+                if (!(renderer is ILegendGroup))
+                {
+                    continue;
+                }
+
                 if (count + ((ILegendGroup)renderer).LegendItemCount > index)
                 {
                     return ((ILegendGroup)renderer).LegendItem(index - count);
@@ -234,7 +278,10 @@ namespace gView.Framework.Carto.Rendering
         {
             foreach (IFeatureRenderer renderer in _renderers)
             {
-                if (!(renderer is ILegendGroup)) continue;
+                if (!(renderer is ILegendGroup))
+                {
+                    continue;
+                }
 
                 int count = ((ILegendGroup)renderer).LegendItemCount;
                 for (int i = 0; i < count; i++)
@@ -307,10 +354,20 @@ namespace gView.Framework.Carto.Rendering
 
             public void Draw(IDisplay disp, gView.Framework.Data.IFeature feature)
             {
-                if (_renderer == null) return;
+                if (_renderer == null)
+                {
+                    return;
+                }
 
-                if (this.MinimumScale > 1 && this.MinimumScale > disp.mapScale) return;
-                if (this.MaximumScale > 1 && this.MaximumScale < disp.mapScale) return;
+                if (this.MinimumScale > 1 && this.MinimumScale > disp.mapScale)
+                {
+                    return;
+                }
+
+                if (this.MaximumScale > 1 && this.MaximumScale < disp.mapScale)
+                {
+                    return;
+                }
 
                 _renderer.Draw(disp, feature);
             }
@@ -320,29 +377,47 @@ namespace gView.Framework.Carto.Rendering
             public void FinishDrawing(IDisplay disp, ICancelTracker cancelTracker)
             {
                 if (_renderer != null)
+                {
                     _renderer.FinishDrawing(disp, cancelTracker);
+                }
             }
 
             public void PrepareQueryFilter(gView.Framework.Data.IFeatureLayer layer, gView.Framework.Data.IQueryFilter filter)
             {
-                if (_renderer == null) return;
+                if (_renderer == null)
+                {
+                    return;
+                }
 
                 _renderer.PrepareQueryFilter(layer, filter);
             }
 
             public bool CanRender(gView.Framework.Data.IFeatureLayer layer, IMap map)
             {
-                if (_renderer == null) return false;
+                if (_renderer == null)
+                {
+                    return false;
+                }
 
                 return _renderer.CanRender(layer, map);
             }
 
             public bool HasEffect(gView.Framework.Data.IFeatureLayer layer, IMap map)
             {
-                if (_renderer == null || map == null || map.Display == null) return false;
+                if (_renderer == null || map == null || map.Display == null)
+                {
+                    return false;
+                }
 
-                if (this.MinimumScale > 1 && this.MinimumScale > map.Display.mapScale) return false;
-                if (this.MaximumScale > 1 && this.MaximumScale < map.Display.mapScale) return false;
+                if (this.MinimumScale > 1 && this.MinimumScale > map.Display.mapScale)
+                {
+                    return false;
+                }
+
+                if (this.MaximumScale > 1 && this.MaximumScale < map.Display.mapScale)
+                {
+                    return false;
+                }
 
                 return _renderer.HasEffect(layer, map);
             }
@@ -351,12 +426,20 @@ namespace gView.Framework.Carto.Rendering
             {
                 get
                 {
-                    if (_renderer == null) return false;
+                    if (_renderer == null)
+                    {
+                        return false;
+                    }
+
                     return _renderer.UseReferenceScale;
                 }
                 set
                 {
-                    if (_renderer == null) return;
+                    if (_renderer == null)
+                    {
+                        return;
+                    }
+
                     _renderer.UseReferenceScale = value;
                 }
             }
@@ -365,7 +448,11 @@ namespace gView.Framework.Carto.Rendering
             {
                 get
                 {
-                    if (_renderer == null) return "";
+                    if (_renderer == null)
+                    {
+                        return "";
+                    }
+
                     return _renderer.Name;
                 }
             }
@@ -374,7 +461,11 @@ namespace gView.Framework.Carto.Rendering
             {
                 get
                 {
-                    if (_renderer == null) return "";
+                    if (_renderer == null)
+                    {
+                        return "";
+                    }
+
                     return _renderer.Category;
                 }
             }
@@ -420,9 +511,16 @@ namespace gView.Framework.Carto.Rendering
 
             public object Clone(CloneOptions options)
             {
-                if (_renderer == null) return null;
+                if (_renderer == null)
+                {
+                    return null;
+                }
+
                 IFeatureRenderer renderer = _renderer.Clone(options) as IFeatureRenderer;
-                if (renderer == null) return null;
+                if (renderer == null)
+                {
+                    return null;
+                }
 
                 ScaleRenderer scaleRenderer = new ScaleRenderer(renderer);
                 scaleRenderer._minScale = _minScale;
@@ -434,7 +532,9 @@ namespace gView.Framework.Carto.Rendering
             public void Release()
             {
                 if (_renderer != null)
+                {
                     _renderer.Release();
+                }
             }
 
             #endregion
@@ -444,7 +544,9 @@ namespace gView.Framework.Carto.Rendering
             public object PropertyPage(object initObject)
             {
                 if (_renderer is IPropertyPage)
+                {
                     return ((IPropertyPage)_renderer).PropertyPage(initObject);
+                }
 
                 return null;
             }
@@ -452,7 +554,9 @@ namespace gView.Framework.Carto.Rendering
             public object PropertyPageObject()
             {
                 if (_renderer is IPropertyPage)
+                {
                     return ((IPropertyPage)_renderer).PropertyPageObject();
+                }
 
                 return null;
             }
@@ -466,7 +570,9 @@ namespace gView.Framework.Carto.Rendering
                 get
                 {
                     if (_renderer is ILegendGroup)
+                    {
                         return ((ILegendGroup)_renderer).LegendItemCount;
+                    }
 
                     return 0;
                 }
@@ -475,7 +581,9 @@ namespace gView.Framework.Carto.Rendering
             public ILegendItem LegendItem(int index)
             {
                 if (_renderer is ILegendGroup)
+                {
                     return ((ILegendGroup)_renderer).LegendItem(index);
+                }
 
                 return null;
             }
@@ -483,7 +591,9 @@ namespace gView.Framework.Carto.Rendering
             public void SetSymbol(ILegendItem item, ISymbol symbol)
             {
                 if (_renderer is ILegendGroup)
+                {
                     ((ILegendGroup)_renderer).SetSymbol(item, symbol);
+                }
             }
 
             #endregion
@@ -509,7 +619,9 @@ namespace gView.Framework.Carto.Rendering
                 get
                 {
                     if (_renderer != null)
+                    {
                         return _renderer.Symbols;
+                    }
 
                     return new List<ISymbol>();
                 }
@@ -522,7 +634,9 @@ namespace gView.Framework.Carto.Rendering
             public void Simplify()
             {
                 if (_renderer is ISimplify)
+                {
                     ((ISimplify)_renderer).Simplify();
+                }
             }
 
             #endregion
@@ -530,7 +644,9 @@ namespace gView.Framework.Carto.Rendering
             public bool Combine(IRenderer cand)
             {
                 if (_renderer == null)
+                {
                     return false;
+                }
 
                 if (cand is ScaleRenderer && cand != this &&
                     ((ScaleRenderer)cand).MinimumScale == this.MinimumScale &&
@@ -561,7 +677,9 @@ namespace gView.Framework.Carto.Rendering
             public void Load(IPersistStream stream)
             {
                 if (_renderer == null)
+                {
                     return;
+                }
 
                 _renderer.MinimumScale = (double)stream.Load("MinScale", 0.0);
                 _renderer.MaximumScale = (double)stream.Load("MaxScale", 0.0);
@@ -572,7 +690,9 @@ namespace gView.Framework.Carto.Rendering
             public void Save(IPersistStream stream)
             {
                 if (_renderer == null)
+                {
                     return;
+                }
 
                 stream.Save("MinScale", _renderer.MinimumScale);
                 stream.Save("MaxScale", _renderer.MaximumScale);
@@ -587,7 +707,10 @@ namespace gView.Framework.Carto.Rendering
         {
             public new void Add(IFeatureRenderer renderer)
             {
-                if (renderer == null) return;
+                if (renderer == null)
+                {
+                    return;
+                }
 
                 if (renderer is ScaleRenderer)
                 {
@@ -612,7 +735,11 @@ namespace gView.Framework.Carto.Rendering
                 {
                     foreach (IRenderer renderer in _renderers)
                     {
-                        if (renderer == null) continue;
+                        if (renderer == null)
+                        {
+                            continue;
+                        }
+
                         symbols.AddRange(renderer.Symbols);
                     }
                 }
@@ -624,7 +751,9 @@ namespace gView.Framework.Carto.Rendering
         public bool Combine(IRenderer renderer)
         {
             if (this == renderer)
+            {
                 return false;
+            }
 
             if (renderer is ScaleDependentRenderer)
             {
@@ -654,12 +783,16 @@ namespace gView.Framework.Carto.Rendering
         public void Simplify()
         {
             if (_renderers == null)
+            {
                 return;
+            }
 
             foreach (IFeatureRenderer renderer in _renderers)
             {
                 if (renderer is ISimplify)
+                {
                     ((ISimplify)renderer).Simplify();
+                }
             }
 
             #region SimpleRenderer zusammenfassen
@@ -682,7 +815,9 @@ namespace gView.Framework.Carto.Rendering
                     foreach (IRenderer sRenderer in _renderers)
                     {
                         if (((SimpleRenderer)((ScaleRenderer)sRenderer).Renderer).Symbol != null)
+                        {
                             symCol.AddSymbol(((SimpleRenderer)((ScaleRenderer)sRenderer).Renderer).Symbol);
+                        }
                     }
                     ((SimpleRenderer)((ScaleRenderer)renderer).Renderer).Symbol = (ISymbol)symCol;
                     _renderers.Clear();
@@ -691,7 +826,7 @@ namespace gView.Framework.Carto.Rendering
             }
             #endregion
 
-            ShrinkScaleRenderes(); 
+            ShrinkScaleRenderes();
         }
 
         #endregion
@@ -699,7 +834,9 @@ namespace gView.Framework.Carto.Rendering
         public void ShrinkScaleRenderes()
         {
             if (_renderers == null)
+            {
                 return;
+            }
 
             for (int i = 0; i < _renderers.Count; i++)
             {

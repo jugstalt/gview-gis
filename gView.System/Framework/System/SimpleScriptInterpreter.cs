@@ -32,12 +32,12 @@ namespace gView.Framework.system
                         interpret = true;
                         result = sb.ToString();
                     }
-                    else if(expr_line.StartsWith("@@if(")) 
+                    else if (expr_line.StartsWith("@@if("))
                     {
                         var commandResult = GetCommand(expr_line);
                         useLine = CheckCondition(commandResult.arguments);
                     }
-                    else if(expr_line == "@@endif")
+                    else if (expr_line == "@@endif")
                     {
                         useLine = true;
                     }
@@ -100,9 +100,9 @@ namespace gView.Framework.system
             {
                 return args[0] == args[1];
             }
-            else if(args.Length == 3)
+            else if (args.Length == 3)
             {
-                switch(args[1]?.ToLower())
+                switch (args[1]?.ToLower())
                 {
                     case "eq":
                         return args[0] == args[2];

@@ -1,7 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Text;
-using gView.Framework.Geometry;
 
 namespace gView.Framework.Geometry.SpatialRefTranslation
 {
@@ -221,7 +218,8 @@ namespace gView.Framework.Geometry.SpatialRefTranslation
         internal Ellipsoid(double semiMajorAxis, double semiMinorAxis, double inverseFlattening, bool isIvfDefinitive, LinearUnit linearUnit)
             :
             this(semiMajorAxis, semiMinorAxis, inverseFlattening, isIvfDefinitive, linearUnit,
-                String.Empty, String.Empty, String.Empty, String.Empty, String.Empty, String.Empty) { }
+                String.Empty, String.Empty, String.Empty, String.Empty, String.Empty, String.Empty)
+        { }
 
         internal Ellipsoid(double semiMajorAxis, double semiMinorAxis, double inverseFlattening, bool isIvfDefinitive, LinearUnit linearUnit,
             string remarks, string authority, string authorityCode, string name, string alias, string abbreviation)
@@ -229,7 +227,9 @@ namespace gView.Framework.Geometry.SpatialRefTranslation
                 base(remarks, authority, authorityCode, name, alias, abbreviation)
         {
             if (linearUnit == null)
+            {
                 throw new ArgumentNullException("linearUnit");
+            }
 
             _name = name;
             _linearUnit = linearUnit;
@@ -240,9 +240,13 @@ namespace gView.Framework.Geometry.SpatialRefTranslation
             {
                 _inverseFlattening = inverseFlattening;
                 if (_inverseFlattening == 0.0)
+                {
                     _semiMinorAxis = semiMajorAxis;
+                }
                 else
+                {
                     _semiMinorAxis = (1.0 - (1.0 / _inverseFlattening)) * semiMajorAxis;
+                }
             }
             else
             {
@@ -474,11 +478,13 @@ namespace gView.Framework.Geometry.SpatialRefTranslation
 
         internal Datum(string name, DatumType datumType)
             :
-            this(datumType, String.Empty, String.Empty, String.Empty, name, String.Empty, String.Empty) { }
+            this(datumType, String.Empty, String.Empty, String.Empty, name, String.Empty, String.Empty)
+        { }
 
         internal Datum(DatumType datumType)
             :
-            this(datumType, String.Empty, String.Empty, String.Empty, String.Empty, String.Empty, String.Empty) { }
+            this(datumType, String.Empty, String.Empty, String.Empty, String.Empty, String.Empty, String.Empty)
+        { }
 
         public Datum(DatumType datumType, string remarks, string authorityCode, string authority, string name, string alias, string abbreviation)
             :
@@ -512,7 +518,10 @@ namespace gView.Framework.Geometry.SpatialRefTranslation
             : base(horizontalDatumType, remarks, authority, authorityCode, name, alias, abbreviation)
         {
             if (ellipsoid == null)
+            {
                 throw new ArgumentNullException("ellipsoid");
+            }
+
             _ellipsoid = ellipsoid;
             _wgs84ConversionInfo = toWGS84;
         }
@@ -530,7 +539,7 @@ namespace gView.Framework.Geometry.SpatialRefTranslation
             }
         }
         #endregion
-        
+
         public WGS84ConversionInfo WGS84Parameters
         {
             get
@@ -682,7 +691,10 @@ namespace gView.Framework.Geometry.SpatialRefTranslation
         public virtual Unit GetUnits(int dimension)
         {
             if (dimension >= 0 && dimension < this.Dimension)
+            {
                 return _unit;
+            }
+
             throw new ArgumentOutOfRangeException(String.Format("Dimension must be between 0 and {0}", this.Dimension));
         }
 
@@ -739,7 +751,7 @@ namespace gView.Framework.Geometry.SpatialRefTranslation
             _axisInfo = new AxisInfo[] { axis0, axis1 };
 
             // define the envelope.
-            _defaultEnvelope = new Envelope(-180,-90,180,90);
+            _defaultEnvelope = new Envelope(-180, -90, 180, 90);
         }
 
         #region Implementation of IGeographicCoordinateSystem
@@ -964,10 +976,14 @@ namespace gView.Framework.Geometry.SpatialRefTranslation
             : base(remarks, authority, authorityCode, name, alias, abbreviation)
         {
             if (headCRS == null)
+            {
                 throw new ArgumentNullException("headCRS");
+            }
 
             if (tailCRS == null)
+            {
                 throw new ArgumentNullException("tailCRS");
+            }
 
             _headCRS = headCRS;
             _tailCRS = tailCRS;
@@ -976,11 +992,15 @@ namespace gView.Framework.Geometry.SpatialRefTranslation
 
             // copy axis information
             for (int i = 0; i < headCRS.Dimension; i++)
+            {
                 _axisInfo[i] = _headCRS.GetAxis(i);
+            }
 
             int offset = headCRS.Dimension;
             for (int i = 0; i < tailCRS.Dimension; i++)
+            {
                 _axisInfo[i + offset] = _tailCRS.GetAxis(i);
+            }
         }
 
         public override AxisInfo GetAxis(int dimension)
@@ -1175,7 +1195,7 @@ namespace gView.Framework.Geometry.SpatialRefTranslation
         Projection _projection;
         LinearUnit _linearUnit;
 
-        
+
         internal ProjectedCoordinateSystem(
             HorizontalDatum horizontalDatum,
             AxisInfo[] axisInfoArray,
@@ -1325,7 +1345,7 @@ namespace gView.Framework.Geometry.SpatialRefTranslation
 
         #region Constructors
 
-        internal Geotransformation(string name, string method, GeographicCoordinateSystem geoCoordSys1,GeographicCoordinateSystem geoCoordSys2, ParameterList Parameters, string classification, string remarks, string authority, string authorityCode)
+        internal Geotransformation(string name, string method, GeographicCoordinateSystem geoCoordSys1, GeographicCoordinateSystem geoCoordSys2, ParameterList Parameters, string classification, string remarks, string authority, string authorityCode)
             : base(remarks, authority, authorityCode, name, String.Empty, String.Empty)
         {
             _parameters = Parameters;
@@ -1348,11 +1368,14 @@ namespace gView.Framework.Geometry.SpatialRefTranslation
         {
             GeodeticDatum datum = new GeodeticDatum(this.Name);
 
-            switch(_method.ToLower()) 
+            switch (_method.ToLower())
             {
                 case "geocentric_translation":
                     if (_parameters.Count != 3)
+                    {
                         throw new Exception("Wrong number of parameters");
+                    }
+
                     datum.X_Axis = _parameters.GetDouble("x_axis_translation");
                     datum.Y_Axis = _parameters.GetDouble("y_axis_translation");
                     datum.Z_Axis = _parameters.GetDouble("z_axis_translation");
@@ -1360,7 +1383,10 @@ namespace gView.Framework.Geometry.SpatialRefTranslation
                 case "coordinate_frame":
                 case "position_vector":
                     if (_parameters.Count != 7)
+                    {
                         throw new Exception("Wrong number of parameters");
+                    }
+
                     datum.X_Axis = _parameters.GetDouble("x_axis_translation");
                     datum.Y_Axis = _parameters.GetDouble("y_axis_translation");
                     datum.Z_Axis = _parameters.GetDouble("z_axis_translation");

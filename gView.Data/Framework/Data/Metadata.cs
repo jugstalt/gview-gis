@@ -1,13 +1,11 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-using gView.Framework.IO;
 using gView.Framework.Carto;
+using gView.Framework.IO;
 using gView.Framework.system;
-using System.Xml;
-using System.Threading.Tasks;
-using System.Linq;
+using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace gView.Framework.Data
 {
@@ -67,7 +65,10 @@ namespace gView.Framework.Data
             {
                 foreach (IMetadataProvider provider in _providers)
                 {
-                    if (provider == null) continue;
+                    if (provider == null)
+                    {
+                        continue;
+                    }
 
                     // mit ApplyTo noch einmal das this Objekt auf den Provider 
                     // setzen, damit beim speichern immer das aktuelle Object gesetzt wird...
@@ -83,12 +84,17 @@ namespace gView.Framework.Data
             foreach (Type providerType in plugins.GetPlugins(typeof(IMetadataProvider)))
             {
                 IMetadataProvider provider = plugins.CreateInstance(providerType) as IMetadataProvider;
-                if (provider == null) continue;
+                if (provider == null)
+                {
+                    continue;
+                }
 
                 // nach bereits vorhanden suchen...
                 IMetadataProvider provider2 = this.MetadataProvider(PlugInManager.PlugInID(provider));
                 if (provider2 != null)
+                {
                     continue;
+                }
 
                 if (await provider.ApplyTo(this))
                 {
@@ -100,12 +106,17 @@ namespace gView.Framework.Data
 
         public IMetadataProvider MetadataProvider(Guid guid)
         {
-            if (_providers == null) return null;
+            if (_providers == null)
+            {
+                return null;
+            }
 
             foreach (IMetadataProvider provider in _providers)
             {
                 if (PlugInManager.PlugInID(provider).Equals(guid))
+                {
                     return provider;
+                }
             }
             return null;
         }
@@ -113,7 +124,9 @@ namespace gView.Framework.Data
         public Task<IEnumerable<IMetadataProvider>> GetMetadataProviders()
         {
             if (_providers == null)
+            {
                 return Task.FromResult<IEnumerable<IMetadataProvider>>(new IMetadataProvider[0]);
+            }
 
             return Task.FromResult<IEnumerable<IMetadataProvider>>(new ConcurrentBag<IMetadataProvider>(_providers));
         }
@@ -153,7 +166,7 @@ namespace gView.Framework.Data
                 }
             }
         }
-        
+
         #endregion
     }
 
@@ -161,7 +174,11 @@ namespace gView.Framework.Data
     {
         public override void ReadMetadata(IPersistStream stream)
         {
-            if (!(this is IMap)) return;
+            if (!(this is IMap))
+            {
+                return;
+            }
+
             IMap map = (IMap)this;
 
             base.ReadMetadata(stream);
@@ -174,7 +191,11 @@ namespace gView.Framework.Data
 
         async public override Task WriteMetadata(IPersistStream stream)
         {
-            if (!(this is IMap)) return;
+            if (!(this is IMap))
+            {
+                return;
+            }
+
             IMap map = (IMap)this;
 
             await base.WriteMetadata(stream);
@@ -188,7 +209,7 @@ namespace gView.Framework.Data
             //    IPersistableDictionary dictionary = PlugInManager.Create(KnownObjects.Persistable_Dictionary) as IPersistableDictionary;
             //    IPersistable metaPersist = PlugInManager.Create(KnownObjects.Persistable_Metadata, dataset) as IPersistable;
             //    if (dictionary == null || metaPersist == null) break;
-                
+
             //    dictionary["ConnectionString"] = dataset.ConnectionString;
             //    dictionary["DatasetID"] = index - 1;
             //    dictionary["Metadata"] = metaPersist;
@@ -211,7 +232,10 @@ namespace gView.Framework.Data
             while (true)
             {
                 IDataset dataset = map[index++];
-                if (dataset == null) break;
+                if (dataset == null)
+                {
+                    break;
+                }
 
                 datasets.Add(dataset);
             }
@@ -233,9 +257,11 @@ namespace gView.Framework.Data
             public void Load(IPersistStream stream)
             {
                 if (_datasets == null)
-                    return; 
+                {
+                    return;
+                }
 
-                string ConnectionString = (string)stream.Load("ConnectionString","");
+                string ConnectionString = (string)stream.Load("ConnectionString", "");
                 int datasetID = (int)stream.Load("DatasetID", -1);
 
                 if (datasetID >= 0 && datasetID < _datasets.Count &&
@@ -270,7 +296,9 @@ namespace gView.Framework.Data
             public void Save(IPersistStream stream)
             {
                 if (_dataset == null)
-                    return; 
+                {
+                    return;
+                }
 
                 stream.Save("ConnectionString", _dataset.ConnectionString);
                 stream.Save("DatasetID", _datasetID);

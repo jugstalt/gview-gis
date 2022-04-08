@@ -1,21 +1,15 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading;
-using System.Windows.Forms;
-using System.Runtime.Remoting;
-using System.Runtime.Remoting.Proxies;
-using System.Runtime.Remoting.Messaging;
+using gView.DataSources.Fdb.MSAccess;
 using gView.Framework.Data;
-using gView.Framework.UI;
+using gView.Framework.FDB;
+using gView.Framework.Sys.UI;
 using gView.Framework.system;
 using gView.Framework.system.UI;
+using gView.Framework.UI;
 using gView.Framework.UI.Dialogs;
-using gView.Framework.FDB;
-using gView.DataSources.Fdb.MSAccess;
-using gView.DataSources.Fdb.MSSql;
+using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
-using gView.Framework.Sys.UI;
+using System.Windows.Forms;
 
 namespace gView.DataSources.Fdb.UI
 {
@@ -69,7 +63,10 @@ namespace gView.DataSources.Fdb.UI
 
         async public void Content_DragDrop(DragEventArgs e, IUserData userdata)
         {
-            if (_fdb == null) return;
+            if (_fdb == null)
+            {
+                return;
+            }
 
             bool schemaOnly = false;
             if (userdata != null &&
@@ -92,12 +89,18 @@ namespace gView.DataSources.Fdb.UI
                         ExplorerObjectManager exObjectManager = new ExplorerObjectManager();
 
                         List<IExplorerObject> exObjects = new List<IExplorerObject>(await exObjectManager.DeserializeExplorerObject((IEnumerable<IExplorerObjectSerialization>)ob));
-                        if (exObjects == null) return;
+                        if (exObjects == null)
+                        {
+                            return;
+                        }
 
                         foreach (IExplorerObject exObject in ListOperations<IExplorerObject>.Clone(exObjects))
                         {
                             IFeatureClass fc = await exObject?.GetInstanceAsync() as IFeatureClass;
-                            if (fc == null) continue;
+                            if (fc == null)
+                            {
+                                continue;
+                            }
 
                             if (fc.Dataset != null && fc.Dataset.DatasetName == _dsname &&
                                 _fdb != null &&
@@ -108,11 +111,17 @@ namespace gView.DataSources.Fdb.UI
                                 exObjects.Remove(exObject);
                             }
                         }
-                        if (exObjects.Count == 0) return;
+                        if (exObjects.Count == 0)
+                        {
+                            return;
+                        }
 
                         FormFeatureclassCopy dlg = await FormFeatureclassCopy.Create(exObjects, _dataset);
                         dlg.SchemaOnly = schemaOnly;
-                        if (dlg.ShowDialog() != DialogResult.OK) continue;
+                        if (dlg.ShowDialog() != DialogResult.OK)
+                        {
+                            continue;
+                        }
 
                         foreach (FeatureClassListViewItem fcItem in dlg.FeatureClassItems)
                         {
@@ -134,7 +143,10 @@ namespace gView.DataSources.Fdb.UI
 
         public void Content_DragEnter(DragEventArgs e, IUserData userdata)
         {
-            if (_fdb == null) return;
+            if (_fdb == null)
+            {
+                return;
+            }
 
             if (e.Data.GetDataPresent(DataFormats.FileDrop))
             {
@@ -231,7 +243,9 @@ namespace gView.DataSources.Fdb.UI
             if (datasetObject is IFeatureClass)
             {
                 if (_import == null)
+                {
                     _import = new FDBImport();
+                }
                 else
                 {
                     MessageBox.Show("ERROR: Import already runnung");
@@ -248,7 +262,9 @@ namespace gView.DataSources.Fdb.UI
             if (datasetObject is FeatureClassListViewItem)
             {
                 if (_import == null)
+                {
                     _import = new FDBImport();
+                }
                 else
                 {
                     MessageBox.Show("ERROR: Import already runnung");
@@ -266,7 +282,10 @@ namespace gView.DataSources.Fdb.UI
 
         async private Task ImportAsync(object element)
         {
-            if (_fdb == null || _import == null) return;
+            if (_fdb == null || _import == null)
+            {
+                return;
+            }
 
             ISpatialIndexDef sIndexDef = null;
             if (_fdb is AccessFDB)
@@ -292,7 +311,10 @@ namespace gView.DataSources.Fdb.UI
             else if (element is FeatureClassListViewItem)
             {
                 FeatureClassListViewItem item = element as FeatureClassListViewItem;
-                if (item.FeatureClass == null) return;
+                if (item.FeatureClass == null)
+                {
+                    return;
+                }
 
                 MSSpatialIndex msIndex = new MSSpatialIndex();
                 msIndex.GeometryType = GeometryFieldType.MsGeometry;
@@ -317,20 +339,27 @@ namespace gView.DataSources.Fdb.UI
 
     class FeatureClassImportProgressReporter : IProgressReporter
     {
-        private ProgressReport _report=new ProgressReport();
+        private ProgressReport _report = new ProgressReport();
         private ICancelTracker _cancelTracker = null;
 
         private FeatureClassImportProgressReporter() { }
 
-        async static public Task<FeatureClassImportProgressReporter> Create(FDBImport import,IFeatureClass source)
+        async static public Task<FeatureClassImportProgressReporter> Create(FDBImport import, IFeatureClass source)
         {
             var reporter = new FeatureClassImportProgressReporter();
 
             if (import == null)
+            {
                 return reporter;
+            }
+
             reporter._cancelTracker = import.CancelTracker;
 
-            if (source != null) reporter._report.featureMax = await source.CountFeatures();
+            if (source != null)
+            {
+                reporter._report.featureMax = await source.CountFeatures();
+            }
+
             import.ReportAction += new FDBImport.ReportActionEvent(reporter.import_ReportAction);
             import.ReportProgress += new FDBImport.ReportProgressEvent(reporter.import_ReportProgress);
             import.ReportRequest += new FDBImport.ReportRequestEvent(reporter.import_ReportRequest);
@@ -349,17 +378,23 @@ namespace gView.DataSources.Fdb.UI
 
         void import_ReportProgress(FDBImport sender, int progress)
         {
-            if (ReportProgress == null) return;
+            if (ReportProgress == null)
+            {
+                return;
+            }
 
             _report.featureMax = Math.Max(_report.featureMax, progress);
             _report.featurePos = progress;
-            
+
             ReportProgress(_report);
         }
 
         void import_ReportAction(FDBImport sender, string action)
         {
-            if (ReportProgress == null) return;
+            if (ReportProgress == null)
+            {
+                return;
+            }
 
             _report.featurePos = 0;
             _report.Message = action;

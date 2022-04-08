@@ -210,7 +210,7 @@ namespace gView.Framework.Symbology
             }
 
             cloneSym.LegendLabel = _legendLabel;
-            
+
             cloneSym.RotateStartSymbol = this.RotateStartSymbol;
             cloneSym.RotateEndSymbol = this.RotateEndSymbol;
 

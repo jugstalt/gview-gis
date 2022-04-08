@@ -1,8 +1,7 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-using gView.Framework.Geometry;
 using gView.Framework.FDB;
+using gView.Framework.Geometry;
+using System;
+using System.Text;
 
 namespace gView.Framework.Data
 {
@@ -20,15 +19,23 @@ namespace gView.Framework.Data
         public gViewSpatialIndexDef(IEnvelope bounds, int levels)
         {
             if (bounds != null)
+            {
                 _bounds = bounds;
+            }
+
             if (_levels > 0 && _levels < 62)
+            {
                 _levels = levels;
+            }
         }
         public gViewSpatialIndexDef(IEnvelope bounds, int levels, int maxPerNode, double spatialRatio)
             : this(bounds, levels)
         {
             if (_maxPerNode > 0)
+            {
                 _maxPerNode = maxPerNode;
+            }
+
             _spatialRatio = spatialRatio;
         }
 
@@ -70,7 +77,10 @@ namespace gView.Framework.Data
         }
         public bool ProjectTo(ISpatialReference sRef)
         {
-            if (_bounds == null) return false;
+            if (_bounds == null)
+            {
+                return false;
+            }
 
             if (_sRef != null && !_sRef.Equals(sRef))
             {
@@ -186,7 +196,9 @@ namespace gView.Framework.Data
             {
                 if (value == GeometryFieldType.MsGeography ||
                     value == GeometryFieldType.MsGeometry)
+                {
                     _fieldType = value;
+                }
             }
         }
 
@@ -232,8 +244,11 @@ namespace gView.Framework.Data
         }
         public bool ProjectTo(ISpatialReference sRef)
         {
-            if (_extent == null) return false;
-            
+            if (_extent == null)
+            {
+                return false;
+            }
+
             if (_sRef != null && !_sRef.Equals(sRef))
             {
                 IGeometry result = GeometricTransformerFactory.Transform2D(_extent, _sRef, sRef);

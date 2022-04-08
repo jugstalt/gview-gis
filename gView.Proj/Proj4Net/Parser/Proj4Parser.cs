@@ -1,9 +1,9 @@
-using System;
-using System.Collections.Generic;
-using System.Globalization;
 using Proj4Net.Datum;
 using Proj4Net.Projection;
 using Proj4Net.Units;
+using System;
+using System.Collections.Generic;
+using System.Globalization;
 
 namespace Proj4Net.Parser
 {
@@ -12,7 +12,7 @@ namespace Proj4Net.Parser
         /* SECONDS_TO_RAD = Pi/180/3600 */
         private const double SecondsToRad = 4.84813681109535993589914102357e-6;
         private const double Million = 1000000.0;
-        
+
         private Registry registry;
 
         public Proj4Parser(Registry registry)
@@ -23,7 +23,9 @@ namespace Proj4Net.Parser
         public CoordinateReferenceSystem Parse(String name, String[] args)
         {
             if (args == null)
+            {
                 return null;
+            }
 
             IDictionary<String, String> parameters = CreateParameterMap(args);
             Proj4Keyword.CheckUnsupported(parameters.Keys);
@@ -65,7 +67,9 @@ namespace Proj4Net.Parser
             }
 
             if (projection == null)
+            {
                 throw new ArgumentException("Unknown projection: " + s);
+            }
 
             projection.Ellipsoid = ellipsoid;
 
@@ -91,36 +95,62 @@ namespace Proj4Net.Parser
             //   projection.ProjectionLatitude1Degrees = 0;
             //   projection.ProjectionLatitude2Degrees = 0;
             if (parameters.TryGetValue(Proj4Keyword.alpha, out s))
+            {
                 projection.AlphaDegrees = Double.Parse(s, CultureInfo.InvariantCulture);
+            }
 
             if (parameters.TryGetValue(Proj4Keyword.lonc, out s))
+            {
                 projection.LonCDegrees = Double.Parse(s, CultureInfo.InvariantCulture);
+            }
 
             if (parameters.TryGetValue(Proj4Keyword.lat_0, out s))
+            {
                 projection.ProjectionLatitudeDegrees = ParseAngle(s);
+            }
 
             if (parameters.TryGetValue(Proj4Keyword.lon_0, out s))
+            {
                 projection.ProjectionLongitudeDegrees = ParseAngle(s);
+            }
 
             if (parameters.TryGetValue(Proj4Keyword.lat_1, out s))
+            {
                 projection.ProjectionLatitude1Degrees = ParseAngle(s);
+            }
 
             if (parameters.TryGetValue(Proj4Keyword.lat_2, out s))
+            {
                 projection.ProjectionLatitude2Degrees = ParseAngle(s);
+            }
 
             if (parameters.TryGetValue(Proj4Keyword.lat_ts, out s))
+            {
                 projection.TrueScaleLatitudeDegrees = ParseAngle(s);
+            }
 
             if (parameters.TryGetValue(Proj4Keyword.x_0, out s))
+            {
                 projection.FalseEasting = Double.Parse(s, CultureInfo.InvariantCulture);
+            }
 
             if (parameters.TryGetValue(Proj4Keyword.y_0, out s))
+            {
                 projection.FalseNorthing = Double.Parse(s, CultureInfo.InvariantCulture);
+            }
 
             if (!parameters.TryGetValue(Proj4Keyword.k_0, out s))
-                if (!parameters.TryGetValue(Proj4Keyword.k, out s)) s = null;
+            {
+                if (!parameters.TryGetValue(Proj4Keyword.k, out s))
+                {
+                    s = null;
+                }
+            }
+
             if (s != null)
+            {
                 projection.ScaleFactor = Double.Parse(s, CultureInfo.InvariantCulture);
+            }
 
             if (parameters.TryGetValue(Proj4Keyword.units, out s))
             {
@@ -134,16 +164,20 @@ namespace Proj4Net.Parser
             }
 
             if (parameters.TryGetValue(Proj4Keyword.to_meter, out s))
+            {
                 projection.FromMetres = (1.0 / Double.Parse(s, CultureInfo.InvariantCulture));
+            }
 
             if (parameters.ContainsKey(Proj4Keyword.south))
+            {
                 projection.SouthernHemisphere = true;
+            }
 
             if (parameters.TryGetValue(Proj4Keyword.pm, out s))
             {
                 double pm;
-                projection.PrimeMeridian = double.TryParse(s, out pm) 
-                    ? Meridian.CreateByDegree(pm) 
+                projection.PrimeMeridian = double.TryParse(s, out pm)
+                    ? Meridian.CreateByDegree(pm)
                     : Meridian.CreateByName(s);
             }
 
@@ -153,7 +187,9 @@ namespace Proj4Net.Parser
             if (projection is TransverseMercatorProjection)
             {
                 if (parameters.TryGetValue("zone", out s))
+                {
                     ((TransverseMercatorProjection)projection).UTMZone = int.Parse(s);
+                }
             }
 
             projection.Initialize();
@@ -175,13 +211,18 @@ namespace Proj4Net.Parser
             {
                 Datum.Datum datum = registry.GetDatum(code);
                 if (datum == null)
+                {
                     throw new ArgumentException("Unknown datum: " + code);
+                }
+
                 datumParam.Datum = datum;
             }
 
             string grids;
             if (parameters.TryGetValue(Proj4Keyword.nadgrids, out grids))
+            {
                 datumParam.SetNadGrids(grids);
+            }
         }
 
         private static double[] ParseToWGS84(String paramList)
@@ -197,17 +238,20 @@ namespace Proj4Net.Parser
             {
                 Double val;
                 if (!Double.TryParse(numStr[i], NumberStyles.Any, CultureInfo.InvariantCulture, out val))
+                {
                     throw new ArgumentException("Cannot parse '" + numStr[i] + "' to double.");
+                }
+
                 param[i] = val;
             }
 
             // optimization to detect 3-parameter transform
-            if (param[3] == 0.0 && param[4] == 0.0 && 
-                param[5] == 0.0 && param[6] == 0.0 )
+            if (param[3] == 0.0 && param[4] == 0.0 &&
+                param[5] == 0.0 && param[6] == 0.0)
             {
-                param = new [] { param[0], param[1], param[2] };
+                param = new[] { param[0], param[1], param[2] };
             }
-   
+
 
             /**
              * PROJ4 towgs84 7-parameter transform uses 
@@ -241,7 +285,10 @@ namespace Proj4Net.Parser
             {
                 Ellipsoid ellipsoid = registry.GetEllipsoid(code);
                 if (ellipsoid == null)
+                {
                     throw new ArgumentException("Unknown ellipsoid: " + code);
+                }
+
                 datumParam.Ellipsoid = ellipsoid;
             }
 
@@ -349,7 +396,9 @@ namespace Proj4Net.Parser
                         // parameters of form +ppppp
                         String key = arg.Substring(1);
                         if (!parameters.ContainsKey(key))
-                        parameters.Add(key, null);
+                        {
+                            parameters.Add(key, null);
+                        }
                     }
                 }
             }

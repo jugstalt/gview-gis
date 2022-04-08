@@ -1,16 +1,14 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Windows.Forms;
-using gView.Framework.Data;
-using gView.Framework.FDB;
-using gView.Framework.system;
-using gView.Framework.Geometry;
-using gView.Framework.UI.Dialogs;
+using gView.DataSources.Fdb.MSAccess;
 using gView.DataSources.Fdb.MSSql;
 using gView.DataSources.Fdb.PostgreSql;
-using gView.DataSources.Fdb.MSAccess;
+using gView.Framework.Data;
+using gView.Framework.FDB;
+using gView.Framework.Geometry;
+using gView.Framework.system;
+using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace gView.DataSources.Fdb.UI
 {
@@ -70,7 +68,10 @@ namespace gView.DataSources.Fdb.UI
         }
         async public Task<bool> ImportToNewFeatureclass(IFeatureDatabase fdb, string dsname, string fcname, IFeatureClass sourceFC, FieldTranslation fieldTranslation, bool project, List<IQueryFilter> filters, ISpatialIndexDef sIndexDef, GeometryType? sourceGeometryType = null)
         {
-            if (!_cancelTracker.Continue) return true;
+            if (!_cancelTracker.Continue)
+            {
+                return true;
+            }
 
             if (fdb is AccessFDB)
             {
@@ -85,7 +86,10 @@ namespace gView.DataSources.Fdb.UI
                     return false;
                 }
             }
-            if (sIndexDef == null) sIndexDef = new gViewSpatialIndexDef();
+            if (sIndexDef == null)
+            {
+                sIndexDef = new gViewSpatialIndexDef();
+            }
 
             bool msSpatial = false;
             if (fdb is SqlFDB &&
@@ -143,7 +147,9 @@ namespace gView.DataSources.Fdb.UI
 
                 GeometryDef geomDef = new GeometryDef(sourceFC);
                 if (geomDef.GeometryType == GeometryType.Unknown && sourceGeometryType != null)
+                {
                     geomDef.GeometryType = sourceGeometryType.Value;
+                }
 
                 int fcID = -1;
                 if (destLayer != null)
@@ -226,7 +232,10 @@ namespace gView.DataSources.Fdb.UI
                     if (_treeVersion == TreeVersion.BinaryTree)
                     {
                         tree = await SpatialIndex(sourceFC, sIndexDef.MaxPerNode, filters);
-                        if (tree == null) return false;
+                        if (tree == null)
+                        {
+                            return false;
+                        }
                     }
                     else if (_treeVersion == TreeVersion.BinaryTree2)
                     {
@@ -238,7 +247,10 @@ namespace gView.DataSources.Fdb.UI
                         else
                         {
                             tree2 = await SpatialIndex2(fdb, sourceFC, sIndexDef, filters);
-                            if (tree2 == null) return false;
+                            if (tree2 == null)
+                            {
+                                return false;
+                            }
                         }
                     }
 
@@ -246,7 +258,11 @@ namespace gView.DataSources.Fdb.UI
                     // ein aufzubauender Layer geviewt werden kann
                     if (_treeVersion == TreeVersion.BinaryTree2 && fdb is AccessFDB)
                     {
-                        if (ReportAction != null) ReportAction(this, "Insert spatial index nodes");
+                        if (ReportAction != null)
+                        {
+                            ReportAction(this, "Insert spatial index nodes");
+                        }
+
                         List<long> nids = new List<long>();
                         foreach (BinaryTree2BuilderNode node in tree2.Nodes)
                         {
@@ -254,7 +270,10 @@ namespace gView.DataSources.Fdb.UI
                         }
                         await ((AccessFDB)fdb).ShrinkSpatialIndex(fcname, nids);
 
-                        if (ReportAction != null) ReportAction(this, "Set spatial index bounds");
+                        if (ReportAction != null)
+                        {
+                            ReportAction(this, "Set spatial index bounds");
+                        }
                         //((AccessFDB)fdb).SetSpatialIndexBounds(fcname, "BinaryTree2", tree2.Bounds, sIndexDef.SplitRatio, sIndexDef.MaxPerNode, tree2.maxLevels);
                         await ((AccessFDB)fdb).SetSpatialIndexBounds(fcname, "BinaryTree2", tree2.Bounds, tree2.SplitRatio, tree2.MaxPerNode, tree2.maxLevels);
                         await ((AccessFDB)fdb).SetFeatureclassExtent(fcname, tree2.Bounds);
@@ -272,16 +291,24 @@ namespace gView.DataSources.Fdb.UI
                         else if (_treeVersion == TreeVersion.BinaryTree)
                         {
                             if (String.IsNullOrEmpty(sourceFC.IDFieldName)) // SDE Views haben keine ID -> Tree enthält keine Features
+                            {
                                 result = await CopyFeatures(sourceFC, fdb, destFC, fieldTranslation, filters);
+                            }
                             else
+                            {
                                 result = await CopyFeatures(sourceFC, fdb, destFC, fieldTranslation, tree);
+                            }
                         }
                         else if (_treeVersion == TreeVersion.BinaryTree2)
                         {
                             if (String.IsNullOrEmpty(sourceFC.IDFieldName)) // SDE Views haben keine ID -> Tree enthält keine Features
+                            {
                                 result = await CopyFeatures(sourceFC, fdb, destFC, fieldTranslation, filters);
+                            }
                             else
+                            {
                                 result = await CopyFeatures2(sourceFC, fdb, destFC, fieldTranslation, tree2);
+                            }
                         }
                         if (!result)
                         {
@@ -296,17 +323,29 @@ namespace gView.DataSources.Fdb.UI
 
                 if (_cancelTracker.Continue && fdb is AccessFDB)
                 {
-                    if (ReportAction != null) ReportAction(this, "Calculate extent");
+                    if (ReportAction != null)
+                    {
+                        ReportAction(this, "Calculate extent");
+                    }
+
                     await ((AccessFDB)fdb).CalculateExtent(destFC);
 
                     if (msSpatial == false)
                     {
                         if (_treeVersion == TreeVersion.BinaryTree)
                         {
-                            if (ReportAction != null) ReportAction(this, "Set spatial index bounds");
+                            if (ReportAction != null)
+                            {
+                                ReportAction(this, "Set spatial index bounds");
+                            }
+
                             await ((AccessFDB)fdb).SetSpatialIndexBounds(fcname, "BinaryTree", tree.Bounds, sIndexDef.SplitRatio, sIndexDef.MaxPerNode, 0);
 
-                            if (ReportAction != null) ReportAction(this, "Insert spatial index nodes");
+                            if (ReportAction != null)
+                            {
+                                ReportAction(this, "Insert spatial index nodes");
+                            }
+
                             await ((AccessFDB)fdb).__intInsertSpatialIndexNodes2(fcname, tree.Nodes);
                         }
                     }
@@ -331,7 +370,10 @@ namespace gView.DataSources.Fdb.UI
 
         async private Task<DualTree> SpatialIndex(IFeatureClass fc, int maxPerNode, List<IQueryFilter> filters)
         {
-            if (fc == null || fc.Envelope == null) return null;
+            if (fc == null || fc.Envelope == null)
+            {
+                return null;
+            }
 
             if (filters == null)
             {
@@ -352,7 +394,11 @@ namespace gView.DataSources.Fdb.UI
                     return null;
                 }
 
-                if (ReportAction != null) ReportAction(this, "Calculate spatial index");
+                if (ReportAction != null)
+                {
+                    ReportAction(this, "Calculate spatial index");
+                }
+
                 IEnvelope fcEnvelope = fc.Envelope;
                 if (_transformer != null)
                 {
@@ -370,7 +416,10 @@ namespace gView.DataSources.Fdb.UI
                 IFeature feat;
                 while ((feat = await fCursor.NextFeature()) != null)
                 {
-                    if (!_cancelTracker.Continue) break;
+                    if (!_cancelTracker.Continue)
+                    {
+                        break;
+                    }
 
                     SHPObject shpObj;
 
@@ -381,9 +430,13 @@ namespace gView.DataSources.Fdb.UI
                     }
 
                     if (shape != null)
+                    {
                         shpObj = new SHPObject((int)((uint)feat.OID), shape.Envelope);
+                    }
                     else
+                    {
                         shpObj = new SHPObject((int)((uint)feat.OID), null);
+                    }
 
                     dualTree.AddShape(shpObj);
                     if ((counter % 1000) == 0 && ReportProgress != null)
@@ -405,19 +458,33 @@ namespace gView.DataSources.Fdb.UI
 
         async private Task<BinaryTree2Builder> SpatialIndex2(IFeatureDatabase fdb, IFeatureClass fc, ISpatialIndexDef def, List<IQueryFilter> filters)
         {
-            if (fc == null) return null;
+            if (fc == null)
+            {
+                return null;
+            }
 
             IEnvelope bounds = null;
             if (fc.Envelope != null)
+            {
                 bounds = fc.Envelope;
+            }
             else if (fc.Dataset is IFeatureDataset && await ((IFeatureDataset)fc.Dataset).Envelope() != null)
+            {
                 bounds = await ((IFeatureDataset)fc.Dataset).Envelope();
-            if (bounds == null) return null;
+            }
+
+            if (bounds == null)
+            {
+                return null;
+            }
+
             if (_transformer != null)
             {
                 IGeometry transBounds = _transformer.Transform2D(bounds) as IGeometry;
                 if (transBounds != null)
+                {
                     bounds = transBounds.Envelope;
+                }
             }
             int maxAllowedLevel = ((fdb is SqlFDB) ? 62 : 30);
             BinaryTree2Builder treeBuilder =
@@ -445,7 +512,10 @@ namespace gView.DataSources.Fdb.UI
                         return null;
                     }
 
-                    if (ReportAction != null) ReportAction(this, "Calculate spatial index");
+                    if (ReportAction != null)
+                    {
+                        ReportAction(this, "Calculate spatial index");
+                    }
 
                     IEnvelope fcEnvelope = bounds;
                     if (_transformer != null)
@@ -464,7 +534,10 @@ namespace gView.DataSources.Fdb.UI
                     IFeature feat;
                     while ((feat = await fCursor.NextFeature()) != null)
                     {
-                        if (!_cancelTracker.Continue) break;
+                        if (!_cancelTracker.Continue)
+                        {
+                            break;
+                        }
 
                         IGeometry shape = feat.Shape;
                         if (_transformer != null)
@@ -504,7 +577,10 @@ namespace gView.DataSources.Fdb.UI
             int featcounter = 0;
             foreach (SpatialIndexNode node in tree.Nodes)
             {
-                if (!_cancelTracker.Continue) break;
+                if (!_cancelTracker.Continue)
+                {
+                    break;
+                }
 
                 RowIDFilter filter = new RowIDFilter(source.IDFieldName);
                 filter.IDs = node.IDs;
@@ -519,7 +595,7 @@ namespace gView.DataSources.Fdb.UI
                     }
 
                     int copycounter = await CopyFeatures(fCursor, node.NID, fdb, dest, fTrans, featcounter);
-                    if (copycounter<0)
+                    if (copycounter < 0)
                     {
                         fCursor.Dispose();
                         return false;
@@ -553,7 +629,10 @@ namespace gView.DataSources.Fdb.UI
             int featcounter = 0;
             foreach (BinaryTree2BuilderNode node in nodes)
             {
-                if (!_cancelTracker.Continue) break;
+                if (!_cancelTracker.Continue)
+                {
+                    break;
+                }
 
                 RowIDFilter filter = new RowIDFilter(source.IDFieldName);
                 filter.IDs = node.OIDs;
@@ -568,7 +647,7 @@ namespace gView.DataSources.Fdb.UI
                     }
 
                     int copycounter = await CopyFeatures(fCursor, node.Number, fdb, dest, fTrans, featcounter);
-                    if (copycounter<0)
+                    if (copycounter < 0)
                     {
                         fCursor.Dispose();
                         return false;
@@ -593,7 +672,10 @@ namespace gView.DataSources.Fdb.UI
 
             while ((feat = await fCursor.NextFeature()) != null)
             {
-                if (!_cancelTracker.Continue) break;
+                if (!_cancelTracker.Continue)
+                {
+                    break;
+                }
 
                 feat.Fields.Add(new FieldValue("$FDB_NID", NID));
 
@@ -602,7 +684,11 @@ namespace gView.DataSources.Fdb.UI
                     feat.Shape = _transformer.Transform2D(feat.Shape) as IGeometry;
                 }
 
-                if (fTrans != null) fTrans.RenameFields(feat);
+                if (fTrans != null)
+                {
+                    fTrans.RenameFields(feat);
+                }
+
                 features.Add(feat);
                 if (features.Count >= this.FeatureBufferSize)
                 {
@@ -657,14 +743,21 @@ namespace gView.DataSources.Fdb.UI
                     IFeature feature;
                     while ((feature = await fCursor.NextFeature()) != null)
                     {
-                        if (!_cancelTracker.Continue) break;
+                        if (!_cancelTracker.Continue)
+                        {
+                            break;
+                        }
 
                         if (_transformer != null)
                         {
                             feature.Shape = _transformer.Transform2D(feature.Shape) as IGeometry;
                         }
 
-                        if (fTrans != null) fTrans.RenameFields(feature);
+                        if (fTrans != null)
+                        {
+                            fTrans.RenameFields(feature);
+                        }
+
                         features.Add(feature);
                         if (features.Count >= this.FeatureBufferSize)
                         {

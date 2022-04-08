@@ -50,14 +50,21 @@ namespace gView.Framework.system
             get
             {
                 if (IsPortable)
+                {
                     return PortableRootDirectory + @"\AppData";
+                }
 
                 if (!String.IsNullOrEmpty(CustomMyApplicationData))
+                {
                     return CustomMyApplicationData;
+                }
 
                 string path = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"/gView";
                 DirectoryInfo di = new DirectoryInfo(path);
-                if (!di.Exists) di.Create();
+                if (!di.Exists)
+                {
+                    di.Create();
+                }
 
                 return di.FullName;
             }
@@ -69,14 +76,21 @@ namespace gView.Framework.system
             get
             {
                 if (IsPortable)
+                {
                     return PortableRootDirectory + @"/AppData";
+                }
 
                 if (!String.IsNullOrEmpty(CustomMyCommonApplicationData))
+                {
                     return CustomMyCommonApplicationData;
+                }
 
                 string path = Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData) + @"/gView";
                 DirectoryInfo di = new DirectoryInfo(path);
-                if (!di.Exists) di.Create();
+                if (!di.Exists)
+                {
+                    di.Create();
+                }
 
                 return di.FullName;
             }
@@ -88,14 +102,21 @@ namespace gView.Framework.system
             get
             {
                 if (IsPortable)
+                {
                     return PortableRootDirectory + @"/AppData";
+                }
 
                 if (!String.IsNullOrEmpty(CustomCommonApplicationData))
+                {
                     return CustomCommonApplicationData;
+                }
 
                 string path = Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData) + @"/gView";
                 DirectoryInfo di = new DirectoryInfo(path);
-                if (!di.Exists) di.Create();
+                if (!di.Exists)
+                {
+                    di.Create();
+                }
 
                 return di.FullName;
             }
@@ -106,7 +127,10 @@ namespace gView.Framework.system
             {
                 string path = MyApplicationData + @"/config";
                 DirectoryInfo di = new DirectoryInfo(path);
-                if (!di.Exists) di.Create();
+                if (!di.Exists)
+                {
+                    di.Create();
+                }
 
                 return di.FullName;
             }
@@ -138,7 +162,9 @@ namespace gView.Framework.system
         static public float PrimaryScreenDPI(bool forceRefresh = false)
         {
             if (_primaryScreenDPI != -1 && forceRefresh == false)
+            {
                 return _primaryScreenDPI;
+            }
 
             try
             {
@@ -178,7 +204,10 @@ namespace gView.Framework.system
     {
         virtual public object Clone()
         {
-            if (!(this is IPersistable)) return null;
+            if (!(this is IPersistable))
+            {
+                return null;
+            }
 
             try
             {
@@ -193,7 +222,10 @@ namespace gView.Framework.system
                     global::System.Reflection.Assembly assembly = global::System.Reflection.Assembly.GetAssembly(this.GetType());
                     clone = assembly.CreateInstance(this.GetType().ToString());
                 }
-                if (clone == null) return null;
+                if (clone == null)
+                {
+                    return null;
+                }
 
                 XmlStream stream = new XmlStream("root");
                 ((IPersistable)this).Save(stream);
@@ -239,9 +271,13 @@ namespace gView.Framework.system
             {
                 object dummy;
                 if (_dic.TryGetValue(type, out dummy))
+                {
                     _dic[type] = val;
+                }
                 else
+                {
                     _dic.Add(type, val);
+                }
             }
             catch { }
         }
@@ -258,7 +294,9 @@ namespace gView.Framework.system
         {
             object val;
             if (_dic.TryGetValue(type, out val))
+            {
                 return val;
+            }
 
             return null;
         }
@@ -279,7 +317,10 @@ namespace gView.Framework.system
 
         public void CopyUserDataTo(IUserData userData)
         {
-            if (userData == null) return;
+            if (userData == null)
+            {
+                return;
+            }
 
             foreach (string key in _dic.Keys)
             {

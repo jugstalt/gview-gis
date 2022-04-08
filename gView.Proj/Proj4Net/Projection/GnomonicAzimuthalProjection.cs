@@ -13,9 +13,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-using System;
 using GeoAPI.Geometries;
 using Proj4Net.Utility;
+using System;
 
 namespace Proj4Net.Projection
 {
@@ -63,7 +63,10 @@ namespace Proj4Net.Projection
                     break;
             }
             if (Math.Abs(xy.Y) <= EPS10)
+            {
                 throw new ProjectionException();
+            }
+
             xy.X = (xy.Y = 1.0 / xy.Y) * cosphi * Math.Sin(lam);
 
             switch (Mode)
@@ -76,7 +79,11 @@ namespace Proj4Net.Projection
                     break;
                 case AzimuthalMode.NorthPole:
                 case AzimuthalMode.SouthPole:
-                    if (Mode == AzimuthalMode.NorthPole) coslam = -coslam;
+                    if (Mode == AzimuthalMode.NorthPole)
+                    {
+                        coslam = -coslam;
+                    }
+
                     xy.Y *= cosphi * coslam;
                     break;
             }
@@ -102,18 +109,28 @@ namespace Proj4Net.Projection
                     case AzimuthalMode.Oblique:
                         lp.Y = cosz * _sinphi0 + y * sinz * _cosphi0 / rh;
                         if (Math.Abs(lp.Y) >= 1.0)
+                        {
                             lp.Y = lp.Y > 0.0 ? ProjectionMath.PiHalf : -ProjectionMath.PiHalf;
+                        }
                         else
+                        {
                             lp.Y = Math.Asin(lp.Y);
+                        }
+
                         y = (cosz - _sinphi0 * Math.Sin(lp.Y)) * rh;
                         x *= sinz * _cosphi0;
                         break;
                     case AzimuthalMode.Equator:
                         lp.Y = y * sinz / rh;
                         if (Math.Abs(lp.Y) >= 1.0)
+                        {
                             lp.Y = lp.Y > 0.0 ? ProjectionMath.PiHalf : -ProjectionMath.PiHalf;
+                        }
                         else
+                        {
                             lp.Y = Math.Asin(lp.Y);
+                        }
+
                         y = cosz * rh;
                         x *= sinz;
                         break;

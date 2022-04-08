@@ -1,68 +1,59 @@
-using System;
-using System.Xml;
-using System.Drawing;
-using System.Collections;
-using System.ComponentModel;
-using System.Windows.Forms;
-using gView.Framework.UI;
-using gView.Framework.system;
-using gView.Framework.Symbology;
 using gView.Framework.Symbology.UI.Controls;
 
 namespace gView.Framework.Symbology.UI
 {
-	/// <summary>
-	/// Zusammenfassung für FormSymbol.
-	/// </summary>
-	public class FormSymbol : System.Windows.Forms.Form
+    /// <summary>
+    /// Zusammenfassung für FormSymbol.
+    /// </summary>
+    public class FormSymbol : System.Windows.Forms.Form
     {
-		private System.Windows.Forms.Panel panel2;
-		private System.Windows.Forms.Button btnOk;
-		private System.Windows.Forms.Button btnCancel;
-		/// <summary>
-		/// Erforderliche Designervariable.
-		/// </summary>
+        private System.Windows.Forms.Panel panel2;
+        private System.Windows.Forms.Button btnOk;
+        private System.Windows.Forms.Button btnCancel;
+        /// <summary>
+        /// Erforderliche Designervariable.
+        /// </summary>
         private System.ComponentModel.Container components = null;
         private System.Windows.Forms.Panel panel3;
         private SymbolControl symbolControl1;
-        
-		public FormSymbol(ISymbol symbol)
-		{
-			InitializeComponent();
+
+        public FormSymbol(ISymbol symbol)
+        {
+            InitializeComponent();
 
             symbolControl1.Symbol = symbol;
-		}
+        }
 
 
-		public ISymbol Symbol 
-		{
-			get 
-			{
+        public ISymbol Symbol
+        {
+            get
+            {
                 return symbolControl1.Symbol;
-			}
-		}
-		/// <summary>
-		/// Die verwendeten Ressourcen bereinigen.
-		/// </summary>
-		protected override void Dispose( bool disposing )
-		{
-			if( disposing )
-			{
-				if(components != null)
-				{
-					components.Dispose();
-				}
-			}
-			base.Dispose( disposing );
-		}
+            }
+        }
+        /// <summary>
+        /// Die verwendeten Ressourcen bereinigen.
+        /// </summary>
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                if (components != null)
+                {
+                    components.Dispose();
+                }
+            }
+            base.Dispose(disposing);
+        }
 
-		#region Vom Windows Form-Designer generierter Code
-		/// <summary>
-		/// Erforderliche Methode für die Designerunterstützung. 
-		/// Der Inhalt der Methode darf nicht mit dem Code-Editor geändert werden.
-		/// </summary>
-		private void InitializeComponent()
-		{
+        #region Vom Windows Form-Designer generierter Code
+        /// <summary>
+        /// Erforderliche Methode für die Designerunterstützung. 
+        /// Der Inhalt der Methode darf nicht mit dem Code-Editor geändert werden.
+        /// </summary>
+        private void InitializeComponent()
+        {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormSymbol));
             this.panel2 = new System.Windows.Forms.Panel();
             this.btnCancel = new System.Windows.Forms.Button();
@@ -141,11 +132,11 @@ namespace gView.Framework.Symbology.UI
             this.panel3.ResumeLayout(false);
             this.ResumeLayout(false);
 
-		}
-		#endregion
+        }
+        #endregion
 
-		private void FormSymbol_Load(object sender, System.EventArgs e)
-		{
-		}
-	}
+        private void FormSymbol_Load(object sender, System.EventArgs e)
+        {
+        }
+    }
 }

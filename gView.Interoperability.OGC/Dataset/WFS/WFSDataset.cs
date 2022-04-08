@@ -1,12 +1,11 @@
+using gView.Framework.Data;
+using gView.Framework.Geometry;
+using gView.Framework.OGC.WFS;
+using gView.Framework.Web;
+using gView.Interoperability.OGC.Dataset.WMS;
 using System;
 using System.Collections.Generic;
-using System.Text;
-using gView.Framework.Data;
-using gView.Interoperability.OGC.Dataset.WMS;
-using gView.Framework.Web;
 using System.Xml;
-using gView.Framework.OGC.WFS;
-using gView.Framework.Geometry;
 
 namespace gView.Interoperability.OGC.Dataset.WFS
 {
@@ -65,13 +64,20 @@ namespace gView.Interoperability.OGC.Dataset.WFS
 
                     WMSClass.SRS srs = new WMSClass.SRS(featureTypeNode, ns, "WFS");
 
-                    name = title=nameNode.InnerText;
-                    if (titleNode != null) title = titleNode.InnerText;
+                    name = title = nameNode.InnerText;
+                    if (titleNode != null)
+                    {
+                        title = titleNode.InnerText;
+                    }
 
                     WFSFeatureClass featureClass = new WFSFeatureClass(this, name, srs);
                     //DatasetElement dselement = new DatasetElement(featureClass);
                     ILayer dselement = LayerFactory.Create(featureClass);
-                    if (dselement == null) continue;
+                    if (dselement == null)
+                    {
+                        continue;
+                    }
+
                     dselement.Title = name;
 
                     _elements.Add(dselement);
@@ -96,12 +102,22 @@ namespace gView.Interoperability.OGC.Dataset.WFS
         {
             get
             {
-                if (_elements == null) return null;
+                if (_elements == null)
+                {
+                    return null;
+                }
 
                 foreach (IDatasetElement element in _elements)
                 {
-                    if (element == null || element.Class == null) continue;
-                    if (element.Class.Name == name) return element;
+                    if (element == null || element.Class == null)
+                    {
+                        continue;
+                    }
+
+                    if (element.Class.Name == name)
+                    {
+                        return element;
+                    }
                 }
                 return null;
             }
@@ -116,15 +132,22 @@ namespace gView.Interoperability.OGC.Dataset.WFS
 
             public GetRequest(XmlNode node, XmlNamespaceManager ns)
             {
-                if (node == null) return;
+                if (node == null)
+                {
+                    return;
+                }
 
                 XmlNode onlineResource = node.SelectSingleNode("WFS:DCPType/WFS:HTTP/WFS:Get", ns);
                 if (onlineResource != null && onlineResource.Attributes["onlineResource"] != null)
+                {
                     Get_OnlineResource = onlineResource.Attributes["onlineResource"].Value;
+                }
 
                 onlineResource = node.SelectSingleNode("WFS:DCPType/WFS:HTTP/WFS:Post", ns);
                 if (onlineResource != null && onlineResource.Attributes["onlineResource"] != null)
+                {
                     Post_OnlineResource = onlineResource.Attributes["onlineResource"].Value;
+                }
 
 
                 // TODO:
@@ -160,7 +183,10 @@ namespace gView.Interoperability.OGC.Dataset.WFS
 
             public Operations(XmlNode node)
             {
-                if (node == null) return;
+                if (node == null)
+                {
+                    return;
+                }
 
                 foreach (XmlNode c in node.ChildNodes)
                 {
@@ -172,7 +198,10 @@ namespace gView.Interoperability.OGC.Dataset.WFS
             {
                 foreach (string operation in SupportedOperations)
                 {
-                    if (operation.ToLower() == op.ToLower()) return true;
+                    if (operation.ToLower() == op.ToLower())
+                    {
+                        return true;
+                    }
                 }
                 return false;
             }

@@ -214,7 +214,7 @@ if (layer.FeatureClass.GeometryType == geometryType.Unknown ||
 
         public void StartDrawing(IDisplay display)
         {
-            
+
         }
 
         public void FinishDrawing(IDisplay disp, ICancelTracker cancelTracker)

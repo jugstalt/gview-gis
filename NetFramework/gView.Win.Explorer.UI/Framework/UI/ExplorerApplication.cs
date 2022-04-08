@@ -1,22 +1,17 @@
+using gView.Explorer.UI.Framework.UI;
+using gView.Framework.Sys.UI;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Text;
-using System.Threading;
-using System.Windows.Forms;
-using gView.Framework.UI;
-using gView.Framework.system;
-using gView.Framework.UI.Dialogs;
-using gView.Explorer.UI.Framework.UI;
-using gView.Framework.Sys.UI;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace gView.Framework.UI
 {
     public class ExplorerApplication : License, IExplorerApplication
     {
         private gView.Explorer.UI.Framework.UI.IFormExplorer _appWindow = null;
-        private IStatusBar _statusBar=null;
+        private IStatusBar _statusBar = null;
 
         public event EventHandler OnApplicationStart;
 
@@ -75,7 +70,10 @@ namespace gView.Framework.UI
                 window.DockableWindowState = state;
                 _dockWindows.Add(window);
             }
-            if (DockWindowAdded != null) DockWindowAdded(window, "");
+            if (DockWindowAdded != null)
+            {
+                DockWindowAdded(window, "");
+            }
         }
 
         virtual public void AddDockableWindow(IDockableWindow window, string parentDockableWindowName)
@@ -108,7 +106,10 @@ namespace gView.Framework.UI
                 }
                 _dockWindows.Add(window);
             }
-            if (DockWindowAdded != null) DockWindowAdded(window, parentDockableWindowName);
+            if (DockWindowAdded != null)
+            {
+                DockWindowAdded(window, parentDockableWindowName);
+            }
         }
 
         virtual public void ShowDockableWindow(IDockableWindow window)
@@ -117,7 +118,10 @@ namespace gView.Framework.UI
             {
                 ((Form)window).Visible = true;
             }
-            if (OnShowDockableWindow != null) OnShowDockableWindow(window);
+            if (OnShowDockableWindow != null)
+            {
+                OnShowDockableWindow(window);
+            }
         }
 
         public List<object> ToolStrips
@@ -136,7 +140,7 @@ namespace gView.Framework.UI
         public IToolbar Toolbar(Guid guid)
         {
             return null;
-        } 
+        }
         public List<IToolbar> Toolbars
         {
             get
@@ -156,7 +160,10 @@ namespace gView.Framework.UI
 
         public void ValidateUI()
         {
-            if (_appWindow != null) _appWindow.ValidateButtons();
+            if (_appWindow != null)
+            {
+                _appWindow.ValidateButtons();
+            }
         }
 
         public IStatusBar StatusBar
@@ -170,13 +177,17 @@ namespace gView.Framework.UI
         public void AppendContextMenuItems(ContextMenuStrip strip, object context)
         {
             if (_appWindow != null)
+            {
                 _appWindow.AppendContextMenuItems(strip, context);
+            }
         }
 
         public void SetCursor(object cursor)
         {
             if (_appWindow != null)
+            {
                 _appWindow.SetCursor(cursor);
+            }
         }
 
         #endregion
@@ -187,18 +198,23 @@ namespace gView.Framework.UI
         {
             get
             {
-                return (_appWindow!=null) ? _appWindow.Text : "";
+                return (_appWindow != null) ? _appWindow.Text : "";
             }
             set
             {
-                if (_appWindow != null) _appWindow.Text = value;
+                if (_appWindow != null)
+                {
+                    _appWindow.Text = value;
+                }
             }
         }
 
         public void Exit()
         {
             if (_appWindow != null)
+            {
                 _appWindow.Close();
+            }
         }
 
         #endregion
@@ -217,14 +233,21 @@ namespace gView.Framework.UI
         {
             get
             {
-                if (_appWindow == null) return new List<IExplorerObject>();
+                if (_appWindow == null)
+                {
+                    return new List<IExplorerObject>();
+                }
+
                 return _appWindow.SelectedObjects;
             }
         }
 
         public void RefreshContents()
         {
-            if (_appWindow != null) _appWindow.RefreshContents();
+            if (_appWindow != null)
+            {
+                _appWindow.RefreshContents();
+            }
         }
         #endregion
 
@@ -295,7 +318,11 @@ namespace gView.Framework.UI
             }
             set
             {
-                if (value < 0 || value > 100) return;
+                if (value < 0 || value > 100)
+                {
+                    return;
+                }
+
                 if (_appWin != null && _progressValue != value)
                 {
                     _progressValue = value;
@@ -307,7 +334,9 @@ namespace gView.Framework.UI
         public void Refresh()
         {
             if (_appWin != null)
+            {
                 _appWin.RefreshStatusbar();
+            }
         }
         #endregion
     }

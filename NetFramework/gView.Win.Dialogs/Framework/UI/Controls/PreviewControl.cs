@@ -163,7 +163,7 @@ namespace gView.Framework.UI.Controls
         private void InvokeDoRefreshMapView()
         {
             mapView1.MakeMapViewRefresh();
-            
+
         }
 
         private void InvokeNewBitmapCreated(IBitmap image)
@@ -417,5 +417,5 @@ namespace gView.Framework.UI.Controls
         }
     }
 
-    
+
 }

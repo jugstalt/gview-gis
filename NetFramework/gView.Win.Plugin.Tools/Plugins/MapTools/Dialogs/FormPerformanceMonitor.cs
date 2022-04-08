@@ -46,10 +46,10 @@ namespace gView.Plugins.MapTools.Dialogs
             else
             {
                 lstEvents.Items.Add(new ListViewItem(
-                    new string[] { 
-                            timeEvent.Name, 
+                    new string[] {
+                            timeEvent.Name,
                             ((int)timeEvent.Duration.TotalMilliseconds).ToString(),
-                            timeEvent.Counter.ToString() 
+                            timeEvent.Counter.ToString()
                         },
                         0));
             }
@@ -214,7 +214,7 @@ namespace gView.Plugins.MapTools.Dialogs
 
                 if (int.TryParse(textX, out int intX) && int.TryParse(textY, out int intY))
                 {
-                    compareResult = intX.CompareTo(intY); 
+                    compareResult = intX.CompareTo(intY);
                 }
                 else
                 {
@@ -273,6 +273,6 @@ namespace gView.Plugins.MapTools.Dialogs
 
         #endregion
 
-        
+
     }
 }

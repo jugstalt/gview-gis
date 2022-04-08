@@ -1,12 +1,7 @@
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Drawing;
-using System.Data;
-using System.Text;
-using System.Windows.Forms;
 using gView.Framework.system;
 using gView.Interoperability.OGC.Dataset.WMS;
+using System;
+using System.Windows.Forms;
 
 namespace gView.Interoperability.OGC.UI.Dataset.WMS
 {
@@ -36,7 +31,10 @@ namespace gView.Interoperability.OGC.UI.Dataset.WMS
 
         private void Metadata_WMS_Load(object sender, EventArgs e)
         {
-            if (_metadata == null) return;
+            if (_metadata == null)
+            {
+                return;
+            }
 
             if (_metadata.SRSCodes != null)
             {
@@ -44,10 +42,14 @@ namespace gView.Interoperability.OGC.UI.Dataset.WMS
                 {
                     cmbCoordSystem.Items.Add(srsCode);
                     if (srsCode == _metadata.SRSCode)
+                    {
                         cmbCoordSystem.SelectedIndex = cmbCoordSystem.Items.Count - 1;
+                    }
                 }
                 if (cmbCoordSystem.SelectedIndex == -1 && cmbCoordSystem.Items.Count > 0)
+                {
                     cmbCoordSystem.SelectedIndex = 0;
+                }
             }
 
             if (_metadata.FeatureInfoFormats != null)
@@ -56,10 +58,14 @@ namespace gView.Interoperability.OGC.UI.Dataset.WMS
                 {
                     cmbInfoFormat.Items.Add(featureInfo);
                     if (featureInfo == _metadata.FeatureInfoFormat)
+                    {
                         cmbInfoFormat.SelectedIndex = cmbInfoFormat.Items.Count - 1;
+                    }
                 }
                 if (cmbInfoFormat.SelectedIndex == -1 && cmbInfoFormat.Items.Count > 0)
+                {
                     cmbInfoFormat.SelectedIndex = 0;
+                }
             }
 
             if (_metadata.GetMapFormats != null)
@@ -68,29 +74,39 @@ namespace gView.Interoperability.OGC.UI.Dataset.WMS
                 {
                     cmbGetMapFormat.Items.Add(getMapInfo);
                     if (getMapInfo == _metadata.GetMapFormat)
+                    {
                         cmbGetMapFormat.SelectedIndex = cmbGetMapFormat.Items.Count - 1;
+                    }
                 }
                 if (cmbGetMapFormat.SelectedIndex == -1 && cmbGetMapFormat.Items.Count > 0)
+                {
                     cmbGetMapFormat.SelectedIndex = 0;
+                }
             }
         }
 
         private void cmbCoordSystem_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (_metadata != null)
+            {
                 _metadata.SRSCode = cmbCoordSystem.SelectedItem.ToString();
+            }
         }
 
         private void cmbGetMapFormat_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (_metadata != null)
+            {
                 _metadata.GetMapFormat = cmbGetMapFormat.SelectedItem.ToString();
+            }
         }
 
         private void cmbInfoFormat_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (_metadata != null)
+            {
                 _metadata.FeatureInfoFormat = cmbInfoFormat.SelectedItem.ToString();
+            }
         }
     }
 }

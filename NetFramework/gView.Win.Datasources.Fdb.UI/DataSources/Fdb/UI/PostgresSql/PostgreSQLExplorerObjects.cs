@@ -1,25 +1,24 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using gView.Framework.system.UI;
-using gView.Framework.UI;
-using gView.Framework.IO;
-using gView.Framework.Db;
-using gView.Framework.Globalisation;
-using gView.Framework.Db.UI;
-using System.Windows.Forms;
-using gView.Framework.UI.Dialogs;
-using gView.Framework.Data;
-using gView.Framework.FDB;
-using gView.Framework.Geometry;
-using gView.Framework.UI.Dialogs.Network;
+﻿using gView.DataSources.Fdb.MSAccess;
 using gView.DataSources.Fdb.MSSql;
 using gView.DataSources.Fdb.PostgreSql;
-using gView.DataSources.Fdb.UI.MSSql;
 using gView.DataSources.Fdb.UI.MSAccess;
-using gView.DataSources.Fdb.MSAccess;
+using gView.DataSources.Fdb.UI.MSSql;
+using gView.Framework.Data;
+using gView.Framework.Db;
+using gView.Framework.Db.UI;
+using gView.Framework.FDB;
+using gView.Framework.Geometry;
+using gView.Framework.Globalisation;
+using gView.Framework.IO;
+using gView.Framework.system.UI;
+using gView.Framework.UI;
 using gView.Framework.UI.Controls.Filter;
+using gView.Framework.UI.Dialogs;
+using gView.Framework.UI.Dialogs.Network;
+using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace gView.DataSources.Fdb.UI.PostgreSql
 {
@@ -102,7 +101,9 @@ namespace gView.DataSources.Fdb.UI.PostgreSql
         public Task<IExplorerObject> CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache cache)
         {
             if (cache.Contains(FullName))
+            {
                 return Task.FromResult<IExplorerObject>(cache[FullName]);
+            }
 
             if (this.FullName == FullName)
             {
@@ -183,7 +184,9 @@ namespace gView.DataSources.Fdb.UI.PostgreSql
         public Task<IExplorerObject> CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache cache)
         {
             if (cache.Contains(FullName))
+            {
                 return Task.FromResult<IExplorerObject>(cache[FullName]);
+            }
 
             return Task.FromResult<IExplorerObject>(null);
         }
@@ -256,7 +259,11 @@ namespace gView.DataSources.Fdb.UI.PostgreSql
                 string connectionString = dbConnStr.ConnectionString;
                 string id = ConfigTextStream.ExtractValue(connectionString, "database");
                 id += "@" + ConfigTextStream.ExtractValue(connectionString, "server");
-                if (id == "@") id = "PostgreFDB Connection";
+                if (id == "@")
+                {
+                    id = "PostgreFDB Connection";
+                }
+
                 id = connStream.GetName(id);
 
                 connStream.Add(id, dbConnStr.ToString());
@@ -271,7 +278,9 @@ namespace gView.DataSources.Fdb.UI.PostgreSql
         public Task<IExplorerObject> CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache cache)
         {
             if (cache.Contains(FullName))
+            {
                 return Task.FromResult<IExplorerObject>(cache[FullName]);
+            }
 
             return Task.FromResult<IExplorerObject>(null);
         }
@@ -322,7 +331,9 @@ namespace gView.DataSources.Fdb.UI.PostgreSql
             if (_contextItems != null)
             {
                 foreach (ToolStripMenuItem i in _contextItems)
+                {
                     items.Add(i);
+                }
             }
 
             ToolStripMenuItem item = new ToolStripMenuItem(LocalizedResources.GetResString("Menu.ConnectionProperties", "Connection Properties..."));
@@ -334,7 +345,10 @@ namespace gView.DataSources.Fdb.UI.PostgreSql
 
         void ConnectionProperties_Click(object sender, EventArgs e)
         {
-            if (_dbConnectionString == null) return;
+            if (_dbConnectionString == null)
+            {
+                return;
+            }
 
             FormConnectionString dlg = new FormConnectionString(_dbConnectionString);
             dlg.ProviderID = "postgre";
@@ -427,7 +441,11 @@ namespace gView.DataSources.Fdb.UI.PostgreSql
                         dsMod[i++] = dsname;
                     }
                 }
-                if (ds == null) _errMsg = fdb.LastErrorMessage;
+                if (ds == null)
+                {
+                    _errMsg = fdb.LastErrorMessage;
+                }
+
                 fdb.Dispose();
 
                 return dsMod;
@@ -453,7 +471,11 @@ namespace gView.DataSources.Fdb.UI.PostgreSql
             {
                 foreach (string dsname in ds)
                 {
-                    if (dsname == String.Empty) continue;
+                    if (dsname == String.Empty)
+                    {
+                        continue;
+                    }
+
                     base.AddChildObject(new DatasetExplorerObject(this, dsname));
                 }
             }
@@ -480,10 +502,16 @@ namespace gView.DataSources.Fdb.UI.PostgreSql
 
         async public Task<IExplorerObject> CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache cache)
         {
-            if (cache.Contains(FullName)) return cache[FullName];
+            if (cache.Contains(FullName))
+            {
+                return cache[FullName];
+            }
 
             ExplorerGroupObject group = new ExplorerGroupObject();
-            if (FullName.IndexOf(group.FullName) != 0 || FullName.Length < group.FullName.Length + 2) return null;
+            if (FullName.IndexOf(group.FullName) != 0 || FullName.Length < group.FullName.Length + 2)
+            {
+                return null;
+            }
 
             group = (ExplorerGroupObject)((cache.Contains(group.FullName)) ? cache[group.FullName] : group);
 
@@ -517,7 +545,11 @@ namespace gView.DataSources.Fdb.UI.PostgreSql
                 stream.Remove(this.Name, _connectionString);
                 stream.Close();
             }
-            if (ExplorerObjectDeleted != null) ExplorerObjectDeleted(this);
+            if (ExplorerObjectDeleted != null)
+            {
+                ExplorerObjectDeleted(this);
+            }
+
             return Task.FromResult(true);
         }
 
@@ -544,7 +576,10 @@ namespace gView.DataSources.Fdb.UI.PostgreSql
             if (ret == true)
             {
                 _server = newName;
-                if (ExplorerObjectRenamed != null) ExplorerObjectRenamed(this);
+                if (ExplorerObjectRenamed != null)
+                {
+                    ExplorerObjectRenamed(this);
+                }
             }
             return Task.FromResult(ret);
         }
@@ -592,7 +627,7 @@ namespace gView.DataSources.Fdb.UI.PostgreSql
 
             _dsname = dsname;
 
-            
+
 
             _contextItems = new ToolStripItem[2];
             _contextItems[0] = new ToolStripMenuItem("Spatial Reference...");
@@ -634,12 +669,19 @@ namespace gView.DataSources.Fdb.UI.PostgreSql
 
         async void ShrinkSpatialIndices_Click(object sender, EventArgs e)
         {
-            if (_dataset == null) return;
+            if (_dataset == null)
+            {
+                return;
+            }
 
             List<IClass> classes = new List<IClass>();
             foreach (IDatasetElement element in await _dataset.Elements())
             {
-                if (element == null || element.Class == null) continue;
+                if (element == null || element.Class == null)
+                {
+                    continue;
+                }
+
                 classes.Add(element.Class);
             }
 
@@ -651,7 +693,11 @@ namespace gView.DataSources.Fdb.UI.PostgreSql
         {
             get
             {
-                if (_parent == null) return String.Empty;
+                if (_parent == null)
+                {
+                    return String.Empty;
+                }
+
                 return _parent.ConnectionString;
             }
         }
@@ -672,7 +718,11 @@ namespace gView.DataSources.Fdb.UI.PostgreSql
         {
             get
             {
-                if (_parent == null) return String.Empty;
+                if (_parent == null)
+                {
+                    return String.Empty;
+                }
+
                 return _parent.FullName + @"/" + this.Name;
             }
         }
@@ -685,7 +735,10 @@ namespace gView.DataSources.Fdb.UI.PostgreSql
             get
             {
                 if (_icon == null)
+                {
                     return new gView.DataSources.Fdb.UI.MSAccess.AccessFDBDatasetIcon();
+                }
+
                 return _icon;
             }
         }
@@ -702,7 +755,7 @@ namespace gView.DataSources.Fdb.UI.PostgreSql
         }
         async public Task<object> GetInstanceAsync()
         {
-            if(_dataset==null)
+            if (_dataset == null)
             {
                 _dataset = new pgDataset();
                 await _dataset.SetConnectionString(this.ConnectionString + ";dsname=" + _dsname);
@@ -740,7 +793,10 @@ namespace gView.DataSources.Fdb.UI.PostgreSql
 
         async internal Task<bool> DeleteFeatureClass(string name)
         {
-            if (_dataset == null || !(_dataset.Database is IFeatureDatabase)) return false;
+            if (_dataset == null || !(_dataset.Database is IFeatureDatabase))
+            {
+                return false;
+            }
 
             if (!await ((IFeatureDatabase)_dataset.Database).DeleteFeatureClass(name))
             {
@@ -752,7 +808,10 @@ namespace gView.DataSources.Fdb.UI.PostgreSql
 
         async internal Task<bool> DeleteDataset(string dsname)
         {
-            if (_dataset == null || !(_dataset.Database is IFeatureDatabase)) return false;
+            if (_dataset == null || !(_dataset.Database is IFeatureDatabase))
+            {
+                return false;
+            }
 
             if (!await ((IFeatureDatabase)_dataset.Database).DeleteDataset(dsname))
             {
@@ -766,18 +825,27 @@ namespace gView.DataSources.Fdb.UI.PostgreSql
 
         async public Task<IExplorerObject> CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache cache)
         {
-            if (cache.Contains(FullName)) return cache[FullName];
+            if (cache.Contains(FullName))
+            {
+                return cache[FullName];
+            }
 
             FullName = FullName.Replace(@"\", @"/");
             int lastIndex = FullName.LastIndexOf(@"/");
-            if (lastIndex == -1) return null;
+            if (lastIndex == -1)
+            {
+                return null;
+            }
 
             string fdbName = FullName.Substring(0, lastIndex);
             string dsName = FullName.Substring(lastIndex + 1, FullName.Length - lastIndex - 1);
 
             ExplorerObject fdbObject = new ExplorerObject(1);
             fdbObject = (ExplorerObject)await fdbObject.CreateInstanceByFullName(fdbName, cache);
-            if (fdbObject == null || await fdbObject.ChildObjects() == null) return null;
+            if (fdbObject == null || await fdbObject.ChildObjects() == null)
+            {
+                return null;
+            }
 
             foreach (IExplorerObject exObject in await fdbObject.ChildObjects())
             {
@@ -796,23 +864,34 @@ namespace gView.DataSources.Fdb.UI.PostgreSql
 
         public bool CanCreate(IExplorerObject parentExObject)
         {
-            if (parentExObject is ExplorerObject) return true;
+            if (parentExObject is ExplorerObject)
+            {
+                return true;
+            }
 
             return false;
         }
 
         async public Task<IExplorerObject> CreateExplorerObject(IExplorerObject parentExObject)
         {
-            if (!CanCreate(parentExObject)) return null;
+            if (!CanCreate(parentExObject))
+            {
+                return null;
+            }
 
             pgFDB fdb = new pgFDB();
             await fdb.Open(((ExplorerObject)parentExObject).ConnectionString);
 
             FormNewDataset dlg = new FormNewDataset();
             if (fdb.FdbVersion >= new Version(1, 2, 0))
+            {
                 dlg.ShowSpatialIndexTab = true;
+            }
 
-            if (dlg.ShowDialog() != DialogResult.OK) return null;
+            if (dlg.ShowDialog() != DialogResult.OK)
+            {
+                return null;
+            }
 
             ISpatialReference sRef = dlg.SpatialReferene;
             ISpatialIndexDef sIndexDef = dlg.SpatialIndexDef;
@@ -820,7 +899,9 @@ namespace gView.DataSources.Fdb.UI.PostgreSql
             if (fdb.FdbVersion >= new Version(1, 2, 0) &&
                 sIndexDef is MSSpatialIndex &&
                 ((MSSpatialIndex)sIndexDef).GeometryType == GeometryFieldType.MsGeography)
+            {
                 sRef = SpatialReference.FromID("epsg:4326");
+            }
 
             int dsID = -1;
 
@@ -867,7 +948,11 @@ namespace gView.DataSources.Fdb.UI.PostgreSql
         {
             if (await DeleteDataset(_dsname))
             {
-                if (ExplorerObjectDeleted != null) ExplorerObjectDeleted(this);
+                if (ExplorerObjectDeleted != null)
+                {
+                    ExplorerObjectDeleted(this);
+                }
+
                 return true;
             }
             return false;
@@ -881,7 +966,10 @@ namespace gView.DataSources.Fdb.UI.PostgreSql
 
         async public Task<bool> RenameExplorerObject(string newName)
         {
-            if (newName == this.Name) return false;
+            if (newName == this.Name)
+            {
+                return false;
+            }
 
             if (_dataset == null || !(_dataset.Database is pgFDB))
             {
@@ -896,7 +984,11 @@ namespace gView.DataSources.Fdb.UI.PostgreSql
 
             _dsname = newName;
 
-            if (ExplorerObjectRenamed != null) ExplorerObjectRenamed(this);
+            if (ExplorerObjectRenamed != null)
+            {
+                ExplorerObjectRenamed(this);
+            }
+
             return true;
         }
 
@@ -930,7 +1022,10 @@ namespace gView.DataSources.Fdb.UI.PostgreSql
         public FeatureClassExplorerObject(DatasetExplorerObject parent, string dsname, IDatasetElement element)
             : base(parent, typeof(pgFeatureClass), 1)
         {
-            if (element == null) return;
+            if (element == null)
+            {
+                return;
+            }
 
             _parent = parent;
             _dsname = dsname;
@@ -964,24 +1059,39 @@ namespace gView.DataSources.Fdb.UI.PostgreSql
                     case GeometryType.Envelope:
                     case GeometryType.Polygon:
                         if (isLinked)
+                        {
                             _icon = new AccessFDBLinkedPolygonIcon();
+                        }
                         else
+                        {
                             _icon = new AccessFDBPolygonIcon();
+                        }
+
                         _type = typePrefix + "Polygon Featureclass";
                         break;
                     case GeometryType.Multipoint:
                     case GeometryType.Point:
                         if (isLinked)
+                        {
                             _icon = new AccessFDBLinkedPointIcon();
+                        }
                         else
+                        {
                             _icon = new AccessFDBPointIcon();
+                        }
+
                         _type = typePrefix + "Point Featureclass";
                         break;
                     case GeometryType.Polyline:
                         if (isLinked)
+                        {
                             _icon = new AccessFDBLinkedLineIcon();
+                        }
                         else
+                        {
                             _icon = new AccessFDBLineIcon();
+                        }
+
                         _type = typePrefix + "Polyline Featureclass";
                         break;
                     case GeometryType.Network:
@@ -1022,7 +1132,11 @@ namespace gView.DataSources.Fdb.UI.PostgreSql
         {
             get
             {
-                if (_parent == null) return String.Empty;
+                if (_parent == null)
+                {
+                    return String.Empty;
+                }
+
                 return _parent.ConnectionString;
             }
         }
@@ -1038,7 +1152,11 @@ namespace gView.DataSources.Fdb.UI.PostgreSql
         {
             get
             {
-                if (_parent == null) return String.Empty;
+                if (_parent == null)
+                {
+                    return String.Empty;
+                }
+
                 return _parent.FullName + @"/" + this.Name;
             }
         }
@@ -1052,7 +1170,10 @@ namespace gView.DataSources.Fdb.UI.PostgreSql
             get
             {
                 if (_icon == null)
+                {
                     return new gView.DataSources.Fdb.UI.MSAccess.AccessFDBPolygonIcon();
+                }
+
                 return _icon;
             }
         }
@@ -1070,9 +1191,14 @@ namespace gView.DataSources.Fdb.UI.PostgreSql
         public Task<object> GetInstanceAsync()
         {
             if (_fc != null)
+            {
                 return Task.FromResult<object>(_fc);
+            }
+
             if (_rc != null)
+            {
                 return Task.FromResult<object>(_rc);
+            }
 
             return Task.FromResult<object>(null);
         }
@@ -1083,18 +1209,27 @@ namespace gView.DataSources.Fdb.UI.PostgreSql
 
         async public Task<IExplorerObject> CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache cache)
         {
-            if (cache.Contains(FullName)) return cache[FullName];
+            if (cache.Contains(FullName))
+            {
+                return cache[FullName];
+            }
 
             FullName = FullName.Replace("/", @"\");
             int lastIndex = FullName.LastIndexOf(@"\");
-            if (lastIndex == -1) return null;
+            if (lastIndex == -1)
+            {
+                return null;
+            }
 
             string dsName = FullName.Substring(0, lastIndex);
             string fcName = FullName.Substring(lastIndex + 1, FullName.Length - lastIndex - 1);
 
             DatasetExplorerObject dsObject = new DatasetExplorerObject();
             dsObject = (DatasetExplorerObject)await dsObject.CreateInstanceByFullName(dsName, cache);
-            if (dsObject == null || await dsObject.ChildObjects() == null) return null;
+            if (dsObject == null || await dsObject.ChildObjects() == null)
+            {
+                return null;
+            }
 
             foreach (IExplorerObject exObject in await dsObject.ChildObjects())
             {
@@ -1187,10 +1322,18 @@ namespace gView.DataSources.Fdb.UI.PostgreSql
 
         async public Task<bool> DeleteExplorerObject(ExplorerObjectEventArgs e)
         {
-            if (_parent == null) return false;
+            if (_parent == null)
+            {
+                return false;
+            }
+
             if (await _parent.DeleteFeatureClass(_fcname))
             {
-                if (ExplorerObjectDeleted != null) ExplorerObjectDeleted(this);
+                if (ExplorerObjectDeleted != null)
+                {
+                    ExplorerObjectDeleted(this);
+                }
+
                 return true;
             }
             return false;
@@ -1218,7 +1361,11 @@ namespace gView.DataSources.Fdb.UI.PostgreSql
 
             _fcname = newName;
 
-            if (ExplorerObjectRenamed != null) ExplorerObjectRenamed(this);
+            if (ExplorerObjectRenamed != null)
+            {
+                ExplorerObjectRenamed(this);
+            }
+
             return true;
         }
 
@@ -1229,13 +1376,20 @@ namespace gView.DataSources.Fdb.UI.PostgreSql
         public bool CanCreate(IExplorerObject parentExObject)
         {
             if (parentExObject is DatasetExplorerObject &&
-                !((DatasetExplorerObject)parentExObject).IsImageDataset) return true;
+                !((DatasetExplorerObject)parentExObject).IsImageDataset)
+            {
+                return true;
+            }
+
             return false;
         }
 
         async public Task<IExplorerObject> CreateExplorerObject(IExplorerObject parentExObject)
         {
-            if (!CanCreate(parentExObject)) return null;
+            if (!CanCreate(parentExObject))
+            {
+                return null;
+            }
 
             var instance = await parentExObject.GetInstanceAsync();
             if (!(instance is IFeatureDataset) || !(((IDataset)instance).Database is pgFDB))
@@ -1245,7 +1399,10 @@ namespace gView.DataSources.Fdb.UI.PostgreSql
             pgFDB fdb = ((IDataset)instance).Database as pgFDB;
 
             FormNewFeatureclass dlg = await FormNewFeatureclass.Create(instance as IFeatureDataset);
-            if (dlg.ShowDialog() != DialogResult.OK) return null;
+            if (dlg.ShowDialog() != DialogResult.OK)
+            {
+                return null;
+            }
 
             IGeometryDef gDef = dlg.GeometryDef;
 
@@ -1280,7 +1437,9 @@ namespace gView.DataSources.Fdb.UI.PostgreSql
             get
             {
                 if (_fc is pgFeatureClass)
+                {
                     return ((pgFeatureClass)_fc).DbSchema;
+                }
 
                 return String.Empty;
             }
@@ -1348,23 +1507,32 @@ namespace gView.DataSources.Fdb.UI.PostgreSql
 
         public bool CanCreate(IExplorerObject parentExObject)
         {
-            if (parentExObject is DatasetExplorerObject) return true;
+            if (parentExObject is DatasetExplorerObject)
+            {
+                return true;
+            }
+
             return false;
         }
 
         async public Task<IExplorerObject> CreateExplorerObject(IExplorerObject parentExObject)
         {
             if (!(parentExObject is DatasetExplorerObject))
+            {
                 return null;
-
+            }
 
             IFeatureDataset dataset = await ((DatasetExplorerObject)parentExObject).GetInstanceAsync() as IFeatureDataset;
             if (dataset == null || !(dataset.Database is pgFDB))
+            {
                 return null;
+            }
 
             FormNewNetworkclass dlg = new FormNewNetworkclass(dataset, typeof(CreateFDBNetworkFeatureclass));
             if (dlg.ShowDialog() != DialogResult.OK)
+            {
                 return null;
+            }
 
             CreateFDBNetworkFeatureclass creator = new CreateFDBNetworkFeatureclass(
                 dataset, dlg.NetworkName,
@@ -1405,11 +1573,15 @@ namespace gView.DataSources.Fdb.UI.PostgreSql
 
             IFeatureDataset dataset = await parent.GetInstanceAsync() as IFeatureDataset;
             if (dataset == null)
+            {
                 return null;
+            }
 
             AccessFDB fdb = dataset.Database as AccessFDB;
             if (fdb == null)
+            {
                 return null;
+            }
 
             FormRegisterGeographicView dlg = await FormRegisterGeographicView.CreateAsync(dataset);
             if (dlg.ShowDialog() == DialogResult.OK)
@@ -1421,7 +1593,7 @@ namespace gView.DataSources.Fdb.UI.PostgreSql
                     parentExObject as DatasetExplorerObject,
                     parentExObject.Name,
                     element);
-            } 
+            }
             return null;
         }
 
@@ -1503,11 +1675,15 @@ namespace gView.DataSources.Fdb.UI.PostgreSql
 
             IFeatureDataset dataset = await parent.GetInstanceAsync() as IFeatureDataset;
             if (dataset == null)
+            {
                 return null;
+            }
 
             AccessFDB fdb = dataset.Database as AccessFDB;
             if (fdb == null)
+            {
                 return null;
+            }
 
             List<ExplorerDialogFilter> filters = new List<ExplorerDialogFilter>();
             filters.Add(new OpenFeatureclassFilter());
@@ -1665,22 +1841,32 @@ namespace gView.DataSources.Fdb.UI.PostgreSql
 
         public bool CanCreate(IExplorerObject parentExObject)
         {
-            if (parentExObject is DatasetExplorerObject) return true;
+            if (parentExObject is DatasetExplorerObject)
+            {
+                return true;
+            }
+
             return false;
         }
 
         async public Task<IExplorerObject> CreateExplorerObject(IExplorerObject parentExObject)
         {
             if (!(parentExObject is DatasetExplorerObject))
+            {
                 return null;
+            }
 
             IFeatureDataset dataset = await ((DatasetExplorerObject)parentExObject).GetInstanceAsync() as IFeatureDataset;
             if (dataset == null || !(dataset.Database is SqlFDB))
+            {
                 return null;
+            }
 
             FormNewTileGridClass dlg = new FormNewTileGridClass();
             if (dlg.ShowDialog() != DialogResult.OK)
+            {
                 return null;
+            }
 
             CreateTileGridClass creator = new CreateTileGridClass(
                 dlg.GridName,

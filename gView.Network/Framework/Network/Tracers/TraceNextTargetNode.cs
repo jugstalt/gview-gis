@@ -1,13 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using gView.Framework.system;
-using gView.Framework.Network;
-using gView.Framework.UI;
-using gView.Framework.Network.Algorthm;
-using System.ComponentModel;
-using gView.Framework.Data;
+﻿using gView.Framework.Data;
 using gView.Framework.Geometry;
+using gView.Framework.Network.Algorthm;
+using gView.Framework.system;
+using gView.Framework.UI;
+using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace gView.Framework.Network.Tracers
@@ -26,7 +23,9 @@ namespace gView.Framework.Network.Tracers
         public bool CanTrace(NetworkTracerInputCollection input)
         {
             if (input == null)
+            {
                 return false;
+            }
 
             return input.Collect(NetworkTracerInputType.SourceNode).Count == 1 ||
                    input.Collect(NetworkTracerInputType.SoruceEdge).Count == 1;
@@ -35,17 +34,25 @@ namespace gView.Framework.Network.Tracers
         async public Task<NetworkTracerOutputCollection> Trace(INetworkFeatureClass network, NetworkTracerInputCollection input, ICancelTracker cancelTraker)
         {
             if (network == null || !CanTrace(input))
+            {
                 return null;
+            }
 
             GraphTable gt = new GraphTable(network.GraphTableAdapter());
             NetworkSourceInput sourceNode = null;
             NetworkSourceEdgeInput sourceEdge = null;
             if (input.Collect(NetworkTracerInputType.SourceNode).Count == 1)
+            {
                 sourceNode = input.Collect(NetworkTracerInputType.SourceNode)[0] as NetworkSourceInput;
+            }
             else if (input.Collect(NetworkTracerInputType.SoruceEdge).Count == 1)
+            {
                 sourceEdge = input.Collect(NetworkTracerInputType.SoruceEdge)[0] as NetworkSourceEdgeInput;
+            }
             else
+            {
                 return null;
+            }
 
             input.Collect(NetworkTracerInputType.BarrierNodes);
 
@@ -59,7 +66,9 @@ namespace gView.Framework.Network.Tracers
             foreach (var networkClass in await network.NetworkClasses())
             {
                 if (networkClass.GeometryType != GeometryType.Point)
+                {
                     continue;
+                }
 
                 int fcid = await network.NetworkClassId(networkClass.Name);
 
@@ -86,13 +95,17 @@ namespace gView.Framework.Network.Tracers
             {
                 IGraphEdge graphEdge = gt.QueryEdge(sourceEdge.EdgeId);
                 if (graphEdge == null)
+                {
                     return null;
+                }
 
                 bool n1_2_n2 = gt.QueryN1ToN2(graphEdge.N1, graphEdge.N2) != null;
                 bool n2_2_n1 = gt.QueryN1ToN2(graphEdge.N2, graphEdge.N1) != null;
                 if (n1_2_n2 == false &&
                     n2_2_n1 == false)
+                {
                     return null;
+                }
 
                 bool n1switchState = dijkstra.ApplySwitchState ? gt.SwitchState(graphEdge.N1) : true;
                 bool n2switchState = dijkstra.ApplySwitchState ? gt.SwitchState(graphEdge.N2) : true;
@@ -147,7 +160,9 @@ namespace gView.Framework.Network.Tracers
 
             #region Create Output
             if (dijkstraEndNodes == null)
+            {
                 return null;
+            }
 
             ProgressReport report = (ReportProgress != null ? new ProgressReport() : null);
 
@@ -201,13 +216,18 @@ namespace gView.Framework.Network.Tracers
             {
                 Dijkstra.NetworkPath networkPath = dijkstra.DijkstraPath(dijkstraEndNode.Id);
                 if (networkPath == null)
+                {
                     continue;
+                }
 
                 foreach (Dijkstra.NetworkPathEdge pathEdge in networkPath)
                 {
                     int index = edgeIds.BinarySearch(pathEdge.EId);
                     if (index >= 0)
+                    {
                         continue;
+                    }
+
                     edgeIds.Insert(~index, pathEdge.EId);
 
                     pathOutput.Add(new NetworkEdgeOutput(pathEdge.EId));
@@ -220,7 +240,9 @@ namespace gView.Framework.Network.Tracers
                 }
             }
             if (pathOutput.Count > 0)
+            {
                 outputCollection.Add(pathOutput);
+            }
             #endregion
             #endregion
 

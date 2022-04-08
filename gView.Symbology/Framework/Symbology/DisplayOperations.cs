@@ -215,7 +215,7 @@ namespace gView.Framework.Symbology
 
             return gp;
         }
-        
+
         private static IGraphicsPath ConvertPolyline(IDisplay display, IPolyline polyline, IGraphicsPath gp)
         {
             //if (polyline == null || polyline.PathCount == 0)

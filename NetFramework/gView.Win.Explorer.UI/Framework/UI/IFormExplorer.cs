@@ -1,10 +1,8 @@
-﻿using System;
+﻿using gView.Framework.UI;
+using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using gView.Framework.UI;
 
 namespace gView.Explorer.UI.Framework.UI
 {

@@ -1,10 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
 using System.Windows.Forms;
 
 namespace gView.Framework.UI.Dialogs
@@ -22,7 +16,9 @@ namespace gView.Framework.UI.Dialogs
             dlg.SelectedPath = txtPath.Text;
 
             if (dlg.ShowDialog() == DialogResult.OK)
+            {
                 txtPath.Text = dlg.SelectedPath;
+            }
         }
 
         public string Path

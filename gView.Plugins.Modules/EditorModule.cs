@@ -5,7 +5,6 @@ using gView.Framework.system;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace gView.Plugins.Modules
 {
@@ -35,7 +34,7 @@ namespace gView.Plugins.Modules
 
         public void OnCreate(object hook)
         {
-            if(hook is IMap)
+            if (hook is IMap)
             {
                 Map = (IMap)hook;
             }
@@ -49,7 +48,9 @@ namespace gView.Plugins.Modules
         {
             _editLayers.Clear();
             if (stream == null)
+            {
                 return;
+            }
 
             MapEditLayerPersist mapEditLayers;
             while ((mapEditLayers = (MapEditLayerPersist)stream.Load("MapEditLayers", null, new MapEditLayerPersist(this))) != null)
@@ -83,7 +84,9 @@ namespace gView.Plugins.Modules
             {
                 if (stream == null ||
                     _module == null)
+                {
                     return;
+                }
 
                 EditLayer eLayer;
                 while ((eLayer = (EditLayer)stream.Load("EditLayer", null, new EditLayer())) != null)
@@ -96,14 +99,20 @@ namespace gView.Plugins.Modules
             {
                 if (stream == null ||
                     _module?.Map == null)
+                {
                     return;
+                }
 
                 stream.Save("index", 0);
                 stream.Save("name", _module.Map.Name);
 
                 foreach (IEditLayer editLayer in _module.EditLayers)
                 {
-                    if (editLayer == null) continue;
+                    if (editLayer == null)
+                    {
+                        continue;
+                    }
+
                     stream.Save("EditLayer", editLayer);
                 }
             }

@@ -1,8 +1,6 @@
-﻿using System;
+﻿using gView.Framework.UI;
+using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using gView.Framework.UI;
 
 namespace gView.Plugins.Tools.RibbonTabs
 {
@@ -17,25 +15,25 @@ namespace gView.Plugins.Tools.RibbonTabs
                 new RibbonGroupBox[]{
                     new RibbonGroupBox("Draw",
                         new RibbonItem[] {
-                            new RibbonItem(new Guid("895B7C49-6612-45ca-998A-1B897696799C")),  
-                            new RibbonItem(new Guid("FEEEE362-116B-406b-8D94-D817A9BAC121")),  
-                            new RibbonItem(new Guid("21D26293-3994-49ba-90F1-A27048F23011")), 
+                            new RibbonItem(new Guid("895B7C49-6612-45ca-998A-1B897696799C")),
+                            new RibbonItem(new Guid("FEEEE362-116B-406b-8D94-D817A9BAC121")),
+                            new RibbonItem(new Guid("21D26293-3994-49ba-90F1-A27048F23011")),
                             new RibbonItem(new Guid("4FFEB659-3AF4-4aa0-99FD-69A847E0F37A"))
                         }
                         ),
                     new RibbonGroupBox("Shape Styles",
                         new RibbonItem[]{
-                            new RibbonItem(new Guid("681FEEC3-5714-45eb-9C86-39F5948783D8")),  
-                            new RibbonItem(new Guid("03095F5A-527B-4dd6-93EF-11E7A75A7B86")),  
-                            new RibbonItem(new Guid("77886897-7288-4488-AF76-4A874B555039")),  
-                            new RibbonItem(new Guid("BEAABECF-3019-4b88-849E-9EA69E4EA0E5")) 
+                            new RibbonItem(new Guid("681FEEC3-5714-45eb-9C86-39F5948783D8")),
+                            new RibbonItem(new Guid("03095F5A-527B-4dd6-93EF-11E7A75A7B86")),
+                            new RibbonItem(new Guid("77886897-7288-4488-AF76-4A874B555039")),
+                            new RibbonItem(new Guid("BEAABECF-3019-4b88-849E-9EA69E4EA0E5"))
                         }
                         ),
-                    new RibbonGroupBox("Text Styles", 
+                    new RibbonGroupBox("Text Styles",
                         new RibbonItem[]{
                             new RibbonItem(new Guid("F3E5AF88-2BCE-44a5-AABF-E6ABF2EE1D42")),
                             new RibbonItem(new Guid("39758B9D-4163-442e-A43C-F8293BC2D630")),
-                            new RibbonItem(new Guid("F87966B0-07E9-41a7-97E0-E97A659B8DA0"))  
+                            new RibbonItem(new Guid("F87966B0-07E9-41a7-97E0-E97A659B8DA0"))
                         }
                         ),
                     new RibbonGroupBox("Clipboard",
@@ -66,7 +64,7 @@ namespace gView.Plugins.Tools.RibbonTabs
             get { return 100; }
         }
 
-        
+
         public bool IsVisible(IMapDocument mapDocument)
         {
             return mapDocument != null && mapDocument.FocusMap != null;

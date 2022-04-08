@@ -1,14 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using gView.Framework.UI;
-using System.Windows.Controls;
-using gView.Desktop.Wpf.Controls;
-using System.Windows;
-using gView.Framework.Globalisation;
+﻿using gView.Desktop.Wpf.Controls;
 using gView.Framework.Carto;
-using gView.Framework.Data;
+using gView.Framework.Globalisation;
+using gView.Framework.UI;
+using System.Windows;
 
 namespace gView.Win.DataExplorer.Items
 {
@@ -44,11 +38,14 @@ namespace gView.Win.DataExplorer.Items
 
         void ContextMenuButton_Click(object sender, RoutedEventArgs e)
         {
-            if (_doc == null || Tool == null || _contextType == null) return;
+            if (_doc == null || Tool == null || _contextType == null)
+            {
+                return;
+            }
 
             if (_contextType.ContextObject is IMap)
             {
-                Tool.OnEvent(_contextType.ContextObject, _doc);   
+                Tool.OnEvent(_contextType.ContextObject, _doc);
             }
             else if (_contextType.ContextObject is ITOCElement && ((ITOCElement)_contextType.ContextObject).Layers != null)
             {
@@ -57,7 +54,9 @@ namespace gView.Win.DataExplorer.Items
                 foreach (var layer in tocElement.Layers)
                 {
                     if (layer.Class == null || layer.Class.Dataset == null)
+                    {
                         continue;
+                    }
 
                     Tool.OnEvent(layer, layer.Class.Dataset);
                 }

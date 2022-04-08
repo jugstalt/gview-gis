@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace gView.DataSources.MongoDb
+﻿namespace gView.DataSources.MongoDb
 {
     static public class Extensions
     {

@@ -1,8 +1,7 @@
-using System;
-using System.IO;
-using System.Collections.Generic;
 using gView.Framework.Data;
 using gView.Framework.Geometry;
+using System;
+using System.IO;
 
 namespace gView.DataSources.Shape
 {
@@ -82,7 +81,10 @@ namespace gView.DataSources.Shape
             try
             {
                 FileInfo fi = new FileInfo(filename);
-                if (!fi.Exists) return;
+                if (!fi.Exists)
+                {
+                    return;
+                }
 
                 _file_SHP = fi.FullName.Substring(0, fi.FullName.Length - fi.Extension.Length) + ".shp";
                 _file_SHX = fi.FullName.Substring(0, fi.FullName.Length - fi.Extension.Length) + ".shx";
@@ -92,9 +94,16 @@ namespace gView.DataSources.Shape
                 _file_PRJ = fi.FullName.Substring(0, fi.FullName.Length - fi.Extension.Length) + ".prj";
 
                 fi = new FileInfo(_file_SHP);
-                if (!fi.Exists) return;
+                if (!fi.Exists)
+                {
+                    return;
+                }
+
                 fi = new FileInfo(_file_SHX);
-                if (!fi.Exists) return;
+                if (!fi.Exists)
+                {
+                    return;
+                }
 
                 _entities = (fi.Length - 100) / 8;
                 _title = fi.Name.Substring(0, fi.Name.Length - 4);
@@ -104,7 +113,10 @@ namespace gView.DataSources.Shape
                 ReadHeader();
 
                 fi = new FileInfo(_file_DBF);
-                if (fi.Exists) _dbfFile = new DBFFile(_file_DBF);
+                if (fi.Exists)
+                {
+                    _dbfFile = new DBFFile(_file_DBF);
+                }
             }
             catch
             {
@@ -122,9 +134,16 @@ namespace gView.DataSources.Shape
                 _file_DBF = file._file_DBF;
 
                 FileInfo fi = new FileInfo(_file_SHP);
-                if (!fi.Exists) return;
+                if (!fi.Exists)
+                {
+                    return;
+                }
+
                 fi = new FileInfo(_file_SHX);
-                if (!fi.Exists) return;
+                if (!fi.Exists)
+                {
+                    return;
+                }
 
                 _entities = (fi.Length - 100) / 8;
                 _title = fi.Name.Substring(0, fi.Name.Length - 4);
@@ -134,7 +153,10 @@ namespace gView.DataSources.Shape
                 ReadHeader();
 
                 fi = new FileInfo(_file_DBF);
-                if (fi.Exists) _dbfFile = new DBFFile(_file_DBF);
+                if (fi.Exists)
+                {
+                    _dbfFile = new DBFFile(_file_DBF);
+                }
             }
             catch
             {
@@ -155,7 +177,11 @@ namespace gView.DataSources.Shape
                     FileInfo fi = new FileInfo(IDX_Filename);
                     if (fi.Exists)
                     {
-                        if (fi.Length < 8) return false;
+                        if (fi.Length < 8)
+                        {
+                            return false;
+                        }
+
                         return true;
                     }
                     return false;
@@ -216,9 +242,17 @@ namespace gView.DataSources.Shape
 
         public void Close()
         {
-            if (_shp != null) _shp.Close();
+            if (_shp != null)
+            {
+                _shp.Close();
+            }
+
             _shp = null;
-            if (_shx != null) _shx.Close();
+            if (_shx != null)
+            {
+                _shx.Close();
+            }
+
             _shx = null;
         }
 
@@ -232,11 +266,17 @@ namespace gView.DataSources.Shape
                 string filter = fi.Name.Substring(0, fi.Name.Length - fi.Extension.Length) + ".*";
 
                 fi = new FileInfo(fi.Directory + @"/" + newName + ".shp");
-                if (fi.Exists) return false;
+                if (fi.Exists)
+                {
+                    return false;
+                }
 
                 FileInfo newFi = new FileInfo(fi.Directory.FullName + @"/" + newName);
                 if (newFi.Extension.ToLower() != ".shp")
+                {
                     newFi = new FileInfo(newFi.FullName + ".shp");
+                }
+
                 string name = newFi.Name.Substring(0, newFi.Name.Length - newFi.Extension.Length);
 
                 foreach (FileInfo f in fi.Directory.GetFiles(filter))
@@ -314,10 +354,16 @@ namespace gView.DataSources.Shape
             {
                 DateTime t = new DateTime(0);
                 FileInfo fi = new FileInfo(_file_SHX);
-                if (fi.Exists) t = fi.LastWriteTime;
+                if (fi.Exists)
+                {
+                    t = fi.LastWriteTime;
+                }
 
                 fi = new FileInfo(_file_SHP);
-                if (fi.Exists && t < fi.LastWriteTime) t = fi.LastWriteTime;
+                if (fi.Exists && t < fi.LastWriteTime)
+                {
+                    t = fi.LastWriteTime;
+                }
 
                 return t;
             }
@@ -334,7 +380,10 @@ namespace gView.DataSources.Shape
 
         private void ReadHeader()
         {
-            if (_shp == null) return;
+            if (_shp == null)
+            {
+                return;
+            }
 
             _shp.BaseStream.Position = 0;
             _header.FileCode = (int)SwapWord((uint)_shp.ReadInt32());
@@ -405,7 +454,11 @@ namespace gView.DataSources.Shape
 
         public IEnvelope ReadEnvelope(uint index)
         {
-            if (_shx == null) return null;
+            if (_shx == null)
+            {
+                return null;
+            }
+
             try
             {
                 _shx.BaseStream.Position = 100 + index * 8;
@@ -449,7 +502,11 @@ namespace gView.DataSources.Shape
 
         public IFeature ReadShape(uint index)
         {
-            if (_shx == null) return null;
+            if (_shx == null)
+            {
+                return null;
+            }
+
             try
             {
                 _shx.BaseStream.Position = 100 + index * 8;
@@ -474,7 +531,11 @@ namespace gView.DataSources.Shape
 
         public IFeature ReadShape(uint index, Envelope envelope)
         {
-            if (_shx == null) return null;
+            if (_shx == null)
+            {
+                return null;
+            }
+
             try
             {
                 _shx.BaseStream.Position = 100 + index * 8;
@@ -556,13 +617,17 @@ namespace gView.DataSources.Shape
                     {
                         ReadZRange();
                         for (int i = 0; i < polyline.PathCount; i++)
+                        {
                             ReadZ(polyline[i]);
+                        }
                     }
                     if (sType == ShapeType.PolyLineM /* || sType == ShapeType.PolyLineZ*/)
                     {
                         ReadMRange();
                         for (int i = 0; i < polyline.PathCount; i++)
+                        {
                             ReadM(polyline[i]);
+                        }
                     }
                     geometry = polyline;
                     break;
@@ -585,13 +650,17 @@ namespace gView.DataSources.Shape
                     {
                         ReadZRange();
                         for (int i = 0; i < polygon.RingCount; i++)
+                        {
                             ReadZ(polygon[i]);
+                        }
                     }
                     if (sType == ShapeType.PolygonM || sType == ShapeType.PolygonZ)
                     {
                         ReadMRange();
                         for (int i = 0; i < polygon.RingCount; i++)
+                        {
                             ReadM(polygon[i]);
+                        }
                     }
                     geometry = polygon;
                     break;
@@ -609,7 +678,10 @@ namespace gView.DataSources.Shape
                 _shp.BaseStream.Position = offset * 2;  // 16-bit Word
                 uint rec = SwapWord((uint)_shp.ReadInt32());
 
-                if (rec == recNumber) return recNumber - 1;
+                if (rec == recNumber)
+                {
+                    return recNumber - 1;
+                }
 
                 for (uint index = 0; index < this.Entities; index++)
                 {
@@ -620,7 +692,10 @@ namespace gView.DataSources.Shape
                     _shp.BaseStream.Position = offset * 2;  // 16-bit Word
                     rec = SwapWord((uint)_shp.ReadInt32());
 
-                    if (rec == recNumber) return index;
+                    if (rec == recNumber)
+                    {
+                        return index;
+                    }
                 }
                 return (uint)this.Entities + 1;
             }
@@ -633,7 +708,10 @@ namespace gView.DataSources.Shape
         #region Write
         public static bool Create(string filename, IGeometryDef geomDef, Fields fields)
         {
-            if (geomDef == null || fields == null) return false;
+            if (geomDef == null || fields == null)
+            {
+                return false;
+            }
 
             try
             {
@@ -647,13 +725,26 @@ namespace gView.DataSources.Shape
                 FileInfo fi_SHX = new FileInfo(file_SHX);
                 FileInfo fi_DBF = new FileInfo(file_DBF);
 
-                if (fi_SHP.Exists) fi_SHP.Delete();
-                if (fi_SHX.Exists) fi_SHX.Delete();
-                if (fi_DBF.Exists) fi_DBF.Delete();
+                if (fi_SHP.Exists)
+                {
+                    fi_SHP.Delete();
+                }
+
+                if (fi_SHX.Exists)
+                {
+                    fi_SHX.Delete();
+                }
+
+                if (fi_DBF.Exists)
+                {
+                    fi_DBF.Delete();
+                }
 
                 #region DBF
                 if (!DBFFile.Create(file_DBF, fields))
+                {
                     return false;
+                }
                 #endregion
 
                 #region SHP
@@ -662,19 +753,35 @@ namespace gView.DataSources.Shape
                 {
                     case GeometryType.Point:
                         type = ShapeType.Point;
-                        if (geomDef.HasZ) type = ShapeType.PointZ;
+                        if (geomDef.HasZ)
+                        {
+                            type = ShapeType.PointZ;
+                        }
+
                         break;
                     case GeometryType.Multipoint:
                         type = ShapeType.MultiPoint;
-                        if (geomDef.HasZ) type = ShapeType.MultiPointZ;
+                        if (geomDef.HasZ)
+                        {
+                            type = ShapeType.MultiPointZ;
+                        }
+
                         break;
                     case GeometryType.Polyline:
                         type = ShapeType.PolyLine;
-                        if (geomDef.HasZ) type = ShapeType.PolyLineZ;
+                        if (geomDef.HasZ)
+                        {
+                            type = ShapeType.PolyLineZ;
+                        }
+
                         break;
                     case GeometryType.Polygon:
                         type = ShapeType.Polygon;
-                        if (geomDef.HasZ) type = ShapeType.PolygonZ;
+                        if (geomDef.HasZ)
+                        {
+                            type = ShapeType.PolygonZ;
+                        }
+
                         break;
                 }
 
@@ -741,7 +848,10 @@ namespace gView.DataSources.Shape
 
         internal bool WriteShape(IFeature feature)
         {
-            if (feature == null) return false;
+            if (feature == null)
+            {
+                return false;
+            }
 
             StreamWriter sw_shx = null;
             StreamWriter sw_shp = null;
@@ -774,13 +884,18 @@ namespace gView.DataSources.Shape
                     case ShapeType.PointM:
                     case ShapeType.PointZ:
                     case ShapeType.Point:
-                        if (!(feature.Shape is IPoint)) return false;
+                        if (!(feature.Shape is IPoint))
+                        {
+                            return false;
+                        }
 
                         IPoint p = (IPoint)feature.Shape;
                         he.minx = he.maxx = p.X;
                         he.miny = he.maxy = p.Y;
                         if (_header.ShapeType == ShapeType.PointZ)
+                        {
                             he.minz = he.maxz = p.Z;
+                        }
 
                         contentsLenthPos = WriteFeatureHeader(bw_shp, recNumber);
                         WritePoint(bw_shp, (IPoint)feature.Shape);
@@ -839,7 +954,11 @@ namespace gView.DataSources.Shape
                     case ShapeType.PolyLineM:
                     case ShapeType.PolyLineZ:
                     case ShapeType.PolyLine:
-                        if (!(feature.Shape is IPolyline)) return false;
+                        if (!(feature.Shape is IPolyline))
+                        {
+                            return false;
+                        }
+
                         IPolyline pline = (IPolyline)feature.Shape;
 
                         contentsLenthPos = WriteFeatureHeader(bw_shp, recNumber);
@@ -850,7 +969,9 @@ namespace gView.DataSources.Shape
                         WriteParts(bw_shp, pline);
 
                         for (int i = 0; i < pline.PathCount; i++)
+                        {
                             WritePoints(bw_shp, pline[i]);
+                        }
 
                         if (_header.ShapeType == ShapeType.PolyLineM || _header.ShapeType == ShapeType.PolyLineZ)
                         {
@@ -868,7 +989,11 @@ namespace gView.DataSources.Shape
                     case ShapeType.PolygonM:
                     case ShapeType.PolygonZ:
                     case ShapeType.Polygon:
-                        if (!(feature.Shape is IPolygon)) return false;
+                        if (!(feature.Shape is IPolygon))
+                        {
+                            return false;
+                        }
+
                         IPolygon poly = (IPolygon)feature.Shape;
 
                         contentsLenthPos = WriteFeatureHeader(bw_shp, recNumber);
@@ -879,7 +1004,9 @@ namespace gView.DataSources.Shape
                         WriteParts(bw_shp, poly);
 
                         for (int i = 0; i < poly.RingCount; i++)
+                        {
                             WritePoints(bw_shp, poly[i]);
+                        }
 
                         if (_header.ShapeType == ShapeType.PolygonM || _header.ShapeType == ShapeType.PolygonZ)
                         {
@@ -939,10 +1066,25 @@ namespace gView.DataSources.Shape
             }
             finally
             {
-                if (sw_shx != null) sw_shx.Close();
-                if (sw_shp != null) sw_shp.Close();
-                if (fs_shp != null) fs_shp.Close();
-                if (fs_shx != null) fs_shx.Close();
+                if (sw_shx != null)
+                {
+                    sw_shx.Close();
+                }
+
+                if (sw_shp != null)
+                {
+                    sw_shp.Close();
+                }
+
+                if (fs_shp != null)
+                {
+                    fs_shp.Close();
+                }
+
+                if (fs_shx != null)
+                {
+                    fs_shx.Close();
+                }
             }
         }
 
@@ -1022,7 +1164,9 @@ namespace gView.DataSources.Shape
         private void WritePoints(BinaryWriter bw, IPointCollection pColl)
         {
             for (int i = 0; i < pColl.PointCount; i++)
+            {
                 WritePoint(bw, pColl[i]);
+            }
         }
         private void WritePointsMRange(BinaryWriter bw, IPointCollection pColl)
         {
@@ -1191,7 +1335,10 @@ namespace gView.DataSources.Shape
                     int* p = (int*)v;
                     int[] parts = new int[numParts];
                     for (int i = 0; i < numParts; i++)
+                    {
                         parts[i] = *p++;
+                    }
+
                     return parts;
                 }
             }
@@ -1201,9 +1348,14 @@ namespace gView.DataSources.Shape
             partNr++;
             int num = 0;
             if (partNr >= parts.Length)
+            {
                 num = numPoints - parts[partNr - 1];
+            }
             else
+            {
                 num = parts[partNr] - parts[partNr - 1];
+            }
+
             ReadPoints(num, pointCol);
         }
 
@@ -1229,7 +1381,11 @@ namespace gView.DataSources.Shape
             try
             {
                 FileInfo fi = new FileInfo(_file_IDX);
-                if (fi.Exists) fi.Delete();
+                if (fi.Exists)
+                {
+                    fi.Delete();
+                }
+
                 return true;
             }
             catch

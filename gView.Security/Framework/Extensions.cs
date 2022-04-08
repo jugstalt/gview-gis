@@ -1,7 +1,4 @@
 ﻿using gView.Core.Framework.Exceptions;
-using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Text.RegularExpressions;
 
 namespace gView.Security.Framework
@@ -13,22 +10,28 @@ namespace gView.Security.Framework
             // ^([a-zA-Z0-9](?(?!__|--)[a-zA-Z0-9_\-])+[a-zA-Z0-9])$
 
             if (!Regex.IsMatch(username, @"^([a-zA-Z0-9](?(?!__|--)[a-zA-Z0-9_\-])+[a-zA-Z0-9])$") || username.Length < 4)
+            {
                 throw new MapServerException("Invalid username: lowercase chars, numbers, - and _ allowed (min length=4)");
+            }
         }
 
         static public void ValidatePassword(this string password)
         {
             // Forbidden Chars
-            foreach(char c in " ".ToCharArray())
+            foreach (char c in " ".ToCharArray())
             {
                 if (password.Contains(c.ToString()))
+                {
                     throw new MapServerException("Invalid password char: '" + c.ToString() + "'");
+                }
             }
 
             var result = Zxcvbn.Zxcvbn.MatchPassword(password);
 
             if (result.Score < 2)
+            {
                 throw new MapServerException("Password is not strong enough: Score=" + result.Score);
+            }
         }
     }
 }

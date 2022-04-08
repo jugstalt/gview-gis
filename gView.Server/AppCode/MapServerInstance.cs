@@ -262,7 +262,7 @@ namespace gView.Server.AppCode
         {
             get
             {
-                return _mapServiceMananger.Options.OutputUrl;;
+                return _mapServiceMananger.Options.OutputUrl; ;
             }
         }
 
@@ -456,7 +456,7 @@ namespace gView.Server.AppCode
             }
 
             return false;
-        } 
+        }
 
         async private Task<Map> FindMap(string name, IServiceRequestContext context)
         {

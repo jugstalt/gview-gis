@@ -5,5 +5,5 @@
         int SortOrder { get; }
     }
 
-    
+
 }

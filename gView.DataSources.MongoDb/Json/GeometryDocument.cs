@@ -1,10 +1,7 @@
 ﻿using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 using MongoDB.Driver.GeoJsonObjectModel;
-using System;
 using System.Collections.Generic;
-using System.Dynamic;
-using System.Text;
 
 namespace gView.DataSources.MongoDb.Json
 {
@@ -12,7 +9,7 @@ namespace gView.DataSources.MongoDb.Json
     {
         [BsonId]
         public ObjectId Id { get; set; }
-        
+
         [BsonElement("_shape")]
         public GeoJsonGeometry<GeoJson2DGeographicCoordinates> Shape { get; set; }
 
@@ -51,7 +48,7 @@ namespace gView.DataSources.MongoDb.Json
         public byte[] ShapeGeneralized14 { get; set; }
 
         [BsonElement("properties")]
-        public Dictionary<string,object> Properties { get; set; }
+        public Dictionary<string, object> Properties { get; set; }
     }
 
     //public class PointDocument : BsonDocument

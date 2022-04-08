@@ -120,7 +120,7 @@ namespace gView.Framework.Data
 
         public int Limit { get; set; }
 
-        public virtual void AddField(string fieldname, bool caseSensitive=true)
+        public virtual void AddField(string fieldname, bool caseSensitive = true)
         {
             if (String.IsNullOrEmpty(fieldname))
             {
@@ -186,7 +186,7 @@ namespace gView.Framework.Data
             return m_fields.IndexOf(fieldname) != -1;
         }
 
-        public IEnumerable<string> QuerySubFields => m_fields?.Select(f=>f.ToSubFieldName(m_fieldPrefix, m_fieldPostfix)).ToArray() ?? new string[0];
+        public IEnumerable<string> QuerySubFields => m_fields?.Select(f => f.ToSubFieldName(m_fieldPrefix, m_fieldPostfix)).ToArray() ?? new string[0];
 
         public string SubFields
         {
@@ -210,7 +210,7 @@ namespace gView.Framework.Data
 
                 if (value != null)
                 {
-                    if(!value.ToLower().Contains(" as "))
+                    if (!value.ToLower().Contains(" as "))
                     {
                         value = value.Replace(" ", ",");
                     }
@@ -446,7 +446,7 @@ namespace gView.Framework.Data
     public class DistinctFilter : QueryFilter, IDistinctFilter
     {
         private DistinctFilter()
-            :base()
+            : base()
         {
         }
         public DistinctFilter(string field)
@@ -627,21 +627,21 @@ namespace gView.Framework.Data
                     switch (filter._function.ToLower())
                     {
                         case "min":
-                            ret=double.MaxValue;
+                            ret = double.MaxValue;
                             break;
                         case "max":
-                            ret=double.MinValue;
+                            ret = double.MinValue;
                             break;
                         default:
-                            ret=0D;
+                            ret = 0D;
                             break;
                     }
-                    
+
                     #endregion
 
                     IFeature feature = null;
                     string subField = filter.SubFields.Split(' ')[0];
-                    bool hasFeature=false;
+                    bool hasFeature = false;
                     while ((feature = await cursor.NextFeature()) != null)
                     {
                         hasFeature = true;

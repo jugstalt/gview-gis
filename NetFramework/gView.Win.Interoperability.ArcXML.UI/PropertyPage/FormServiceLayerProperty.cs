@@ -1,22 +1,17 @@
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Text;
-using System.Windows.Forms;
-using gView.Framework.UI;
 using gView.Framework.Data;
+using gView.Framework.UI;
 using gView.Interoperability.ArcXML.Dataset;
+using System;
+using System.Windows.Forms;
 using System.Xml;
 
 namespace gView.Interoperability.ArcXML.UI.PropertyPage
 {
     [gView.Framework.system.RegisterPlugIn("ED40997C-94EE-499f-8092-72667C1DB4AB")]
-    public partial class FormServiceLayerProperty : Form,ILayerPropertyPage
+    public partial class FormServiceLayerProperty : Form, ILayerPropertyPage
     {
         private XmlDocument _properties = null;
-        
+
         public FormServiceLayerProperty()
         {
             InitializeComponent();
@@ -27,23 +22,33 @@ namespace gView.Interoperability.ArcXML.UI.PropertyPage
         {
             tvProperties.Nodes.Clear();
 
-            if (_properties == null) return;
+            if (_properties == null)
+            {
+                return;
+            }
 
             foreach (XmlNode childNode in _properties.ChildNodes)
             {
                 AppendNode(null, childNode);
             }
-            
+
         }
         private void AppendNode(TreeNode parent, XmlNode xmlNode)
         {
-            if (xmlNode == null) return;
+            if (xmlNode == null)
+            {
+                return;
+            }
 
             TreeNode node = new TreeNode(xmlNode.Name, 0, 0);
             if (parent == null)
+            {
                 tvProperties.Nodes.Add(node);
+            }
             else
+            {
                 parent.Nodes.Add(node);
+            }
 
             foreach (XmlNode childNode in xmlNode.ChildNodes)
             {
@@ -57,20 +62,26 @@ namespace gView.Interoperability.ArcXML.UI.PropertyPage
 
         private string XPath(TreeNode node)
         {
-            if (node == null) return "";
-            return XPath(node.Parent) + ((node.Parent!=null) ? "/" : "") + node.Text;
+            if (node == null)
+            {
+                return "";
+            }
+
+            return XPath(node.Parent) + ((node.Parent != null) ? "/" : "") + node.Text;
         }
 
         private XmlAttribute _selectedAttribute = null;
         private void tvProperties_AfterSelect(object sender, TreeViewEventArgs e)
         {
-            _selectedAttribute=null;
+            _selectedAttribute = null;
             if (e.Node.ImageIndex == 1)
             {
                 string path = XPath(e.Node.Parent);
                 XmlNode xmlNode = _properties.SelectSingleNode(path);
                 if (xmlNode != null)
+                {
                     _selectedAttribute = xmlNode.Attributes[e.Node.Text];
+                }
             }
 
             if (_selectedAttribute != null)
@@ -121,7 +132,7 @@ namespace gView.Interoperability.ArcXML.UI.PropertyPage
 
         public void Commit()
         {
-            
+
         }
 
         #endregion
@@ -129,7 +140,9 @@ namespace gView.Interoperability.ArcXML.UI.PropertyPage
         private void txtAttributeText_TextChanged(object sender, EventArgs e)
         {
             if (_selectedAttribute != null)
+            {
                 _selectedAttribute.Value = txtAttributeText.Text;
+            }
         }
     }
 }

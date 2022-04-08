@@ -7,7 +7,6 @@ using gView.Web.Framework.Web.Authorization;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace gView.DataSources.GeoJson
@@ -52,13 +51,15 @@ namespace gView.DataSources.GeoJson
 
         public void Dispose()
         {
-            
+
         }
 
         async public Task<IDatasetElement> Element(string title)
         {
             if (_layers.Count == 0)
+            {
                 await Elements();
+            }
 
             return _layers.Where(l => l.Class.Name == title).FirstOrDefault();
         }

@@ -1,14 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace gView.GraphicsEngine.GdiPlus.Extensions
+﻿namespace gView.GraphicsEngine.GdiPlus.Extensions
 {
     static class FontStyleExtensions
     {
         static public System.Drawing.FontStyle ToGdiFontStyle(this FontStyle fontStyle)
         {
-            switch(fontStyle)
+            switch (fontStyle)
             {
                 case FontStyle.Regular:
                     return System.Drawing.FontStyle.Regular;

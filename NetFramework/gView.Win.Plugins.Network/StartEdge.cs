@@ -1,14 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using gView.Framework.Carto;
+using gView.Framework.Geometry;
+using gView.Framework.Network;
+using gView.Framework.system;
 using gView.Framework.UI;
 using gView.Framework.UI.Events;
-using gView.Framework.Geometry;
-using gView.Framework.Data;
-using gView.Framework.Carto;
 using gView.Plugins.Network.Graphic;
-using gView.Framework.system;
-using gView.Framework.Network;
 using System.Threading.Tasks;
 
 namespace gView.Plugins.Network
@@ -31,7 +27,10 @@ namespace gView.Plugins.Network
             get
             {
                 if (_module == null || _module.SelectedNetworkFeatureClass == null)
+                {
                     return false;
+                }
+
                 return true;
             }
         }
@@ -68,7 +67,9 @@ namespace gView.Plugins.Network
             if (_module == null ||
                 _module.SelectedNetworkFeatureClass == null ||
                 !(MapEvent is MapEventClick))
+            {
                 return false;
+            }
 
             MapEventClick ev = (MapEventClick)MapEvent;
             Point p = new Point(ev.x, ev.y);

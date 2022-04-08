@@ -1,12 +1,9 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-using gView.Framework.UI;
 using gView.Framework.Data;
-using System.IO;
-using gView.DataSources.GDAL;
 using gView.Framework.system;
 using gView.Framework.system.UI;
+using gView.Framework.UI;
+using System;
+using System.IO;
 using System.Threading.Tasks;
 
 namespace gView.DataSources.GDAL.UI
@@ -110,10 +107,14 @@ namespace gView.DataSources.GDAL.UI
         {
             try
             {
-                if (!(new FileInfo(filename)).Exists) return null;
+                if (!(new FileInfo(filename)).Exists)
+                {
+                    return null;
+                }
             }
-            catch {
-                return Task.FromResult<IExplorerFileObject>( null);
+            catch
+            {
+                return Task.FromResult<IExplorerFileObject>(null);
             }
             return Task.FromResult<IExplorerFileObject>(new GDALRasterFileExplorerObject(parent, filename));
         }
@@ -124,12 +125,17 @@ namespace gView.DataSources.GDAL.UI
         async public Task<IExplorerObject> CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache cache)
         {
             if (cache.Contains(FullName))
+            {
                 return cache[FullName];
+            }
 
             try
             {
                 FileInfo fi = new FileInfo(FullName);
-                if (!fi.Exists) return null;
+                if (!fi.Exists)
+                {
+                    return null;
+                }
 
                 GDALRasterFileExplorerObject rObject = new GDALRasterFileExplorerObject(null, FullName);
                 if (await rObject.GetInstanceAsync() is IRasterClass)

@@ -392,7 +392,7 @@ namespace gView.Framework.Carto
 
                         if (cancelTracker.Continue)
                         {
-                            if(webServices!=null && webServices.Count!=0)
+                            if (webServices != null && webServices.Count != 0)
                             {
                                 DrawingLayer?.BeginInvoke("...Waiting for WebServices...", new AsyncCallback(AsyncInvoke.RunAndForget), null);
                             }

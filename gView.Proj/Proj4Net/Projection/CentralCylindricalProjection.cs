@@ -13,9 +13,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-using System;
 using GeoAPI.Geometries;
 using Proj4Net.Utility;
+using System;
 
 namespace Proj4Net.Projection
 {
@@ -36,7 +36,10 @@ namespace Proj4Net.Projection
         public override Coordinate Project(double lplam, double lpphi, Coordinate coord)
         {
             if (Math.Abs(Math.Abs(lpphi) - ProjectionMath.PiHalf) <= EPS10)
+            {
                 throw new ProjectionException("F");
+            }
+
             coord.X = lplam;
             coord.Y = Math.Tan(lpphi);
             return coord;

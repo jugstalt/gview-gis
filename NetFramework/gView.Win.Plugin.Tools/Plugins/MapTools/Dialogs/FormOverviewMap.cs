@@ -1,19 +1,14 @@
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Text;
-using System.Windows.Forms;
-using gView.Framework.UI;
 using gView.Framework.Carto;
 using gView.Framework.Geometry;
-using gView.Framework.system;
 using gView.Framework.Symbology;
+using gView.Framework.system;
+using gView.Framework.UI;
 using gView.Framework.UI.Events;
+using gView.GraphicsEngine;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
-using gView.GraphicsEngine;
+using System.Windows.Forms;
 
 namespace gView.Plugins.MapTools.Dialogs
 {
@@ -57,7 +52,10 @@ namespace gView.Plugins.MapTools.Dialogs
 
         public void RefreshOverviewMap()
         {
-            if (_doc == null || _doc.FocusMap == null) return;
+            if (_doc == null || _doc.FocusMap == null)
+            {
+                return;
+            }
 
             _ovmap = new Map(_doc.FocusMap as Map, false);
             mapView1.Map = _ovmap;
@@ -89,7 +87,10 @@ namespace gView.Plugins.MapTools.Dialogs
         private void InsertMapExtent(IDisplay display)
         {
             if (_ovmap == null || display == null ||
-                _ovmap.Display == null) return;
+                _ovmap.Display == null)
+            {
+                return;
+            }
 
             IGeometry mapEnv = display.Envelope;
             _ovmap.Display.GraphicsContainer.Elements.Clear();
@@ -125,11 +126,15 @@ namespace gView.Plugins.MapTools.Dialogs
                 _symbol = PlugInManager.Create(KnownObjects.Symbology_SimpleFillSymbol) as ISymbol;
 
                 if (_symbol is IBrushColor)
+                {
                     ((IBrushColor)_symbol).FillColor = ArgbColor.FromArgb(155, ArgbColor.White);
+                }
 
                 _symbol2 = PlugInManager.Create(KnownObjects.Symbology_SimpleLineSymbol) as ISymbol;
                 if (_symbol2 is IPenColor)
+                {
                     ((IPenColor)_symbol2).PenColor = ArgbColor.Blue;
+                }
             }
 
             public IGeometry Geometry
@@ -170,13 +175,19 @@ namespace gView.Plugins.MapTools.Dialogs
             public void Draw(IDisplay display)
             {
                 if (_geometry != null && _symbol != null)
+                {
                     display.Draw(_symbol, _geometry);
+                }
 
                 if (_cross != null && _symbol2 != null)
+                {
                     display.Draw(_symbol2, _cross);
+                }
 
                 if (_geometry != null && _symbol2 != null)
+                {
                     display.Draw(_symbol2, _geometry);
+                }
             }
 
             #endregion
@@ -208,13 +219,18 @@ namespace gView.Plugins.MapTools.Dialogs
                 _contextMenu.Items.Add(item);
 
                 if (RefreshOverviewMap != null)
+                {
                     RefreshOverviewMap();
+                }
             }
 
             void zoom2actual_Click(object sender, EventArgs e)
             {
                 if (_doc == null || _doc.FocusMap == null || _doc.FocusMap.Display == null ||
-                    _ovmap == null || _ovmap.Display == null) return;
+                    _ovmap == null || _ovmap.Display == null)
+                {
+                    return;
+                }
 
                 IEnvelope extent = _doc.FocusMap.Display.Envelope;
                 if (_doc.FocusMap.Display.SpatialReference != null &&
@@ -229,12 +245,17 @@ namespace gView.Plugins.MapTools.Dialogs
                 _ovmap.Display.ZoomTo(extent);
 
                 if (RefreshOverviewMap != null)
+                {
                     RefreshOverviewMap();
+                }
             }
             void zoom2max_Click(object sender, EventArgs e)
             {
                 if (_doc == null || _doc.FocusMap == null || _doc.FocusMap.Display == null ||
-                    _ovmap == null || _ovmap.Display == null) return;
+                    _ovmap == null || _ovmap.Display == null)
+                {
+                    return;
+                }
 
                 IEnvelope extent = _doc.FocusMap.Display.Limit;
                 if (_doc.FocusMap.Display.SpatialReference != null &&
@@ -249,7 +270,9 @@ namespace gView.Plugins.MapTools.Dialogs
                 _ovmap.Display.ZoomTo(extent);
 
                 if (RefreshOverviewMap != null)
+                {
                     RefreshOverviewMap();
+                }
             }
 
             public IMap OvMap
@@ -287,22 +310,34 @@ namespace gView.Plugins.MapTools.Dialogs
             public void OnCreate(object hook)
             {
                 if (hook is IMapDocument)
+                {
                     _doc = (IMapDocument)hook;
+                }
             }
 
             public Task<bool> OnEvent(object MapEvent)
             {
                 if (_doc == null || _doc.FocusMap == null || _doc.FocusMap.Display == null)
+                {
                     return Task.FromResult(true);
+                }
+
                 if (!(MapEvent is MapEventRubberband))
+                {
                     return Task.FromResult(true);
+                }
 
                 MapEventRubberband ev = (MapEventRubberband)MapEvent;
                 if (ev.Map == null)
+                {
                     return Task.FromResult(true);
+                }
 
                 if (!(ev.Map.Display is Display))
+                {
                     return Task.FromResult(true);
+                }
+
                 Display nav = (Display)ev.Map.Display;
 
                 IEnvelope extent = new Envelope(ev.minX, ev.minY, ev.maxX, ev.maxY);
@@ -323,7 +358,7 @@ namespace gView.Plugins.MapTools.Dialogs
                 }
                 else
                 {
-                    _doc.FocusMap.Display.ZoomTo(extent); 
+                    _doc.FocusMap.Display.ZoomTo(extent);
                 }
 
                 if (_doc.Application is IMapApplication)
@@ -373,7 +408,9 @@ namespace gView.Plugins.MapTools.Dialogs
         private void FormOverviewMap_MouseLeave(object sender, EventArgs e)
         {
             if (this.Owner != null)
+            {
                 this.Owner.Activate();
+            }
         }
     }
 }

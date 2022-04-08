@@ -1,21 +1,19 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Xml;
-using System.Windows.Forms;
-using gView.Framework.UI;
 using gView.Framework.Carto;
-using gView.Framework.Symbology;
 using gView.Framework.Geometry;
-using gView.Framework.system;
-using gView.Framework.UI.Events;
-using gView.Framework.IO;
 using gView.Framework.Globalisation;
+using gView.Framework.IO;
+using gView.Framework.Symbology;
 using gView.Framework.Symbology.UI;
 using gView.Framework.Symbology.UI.Controls;
-using System.Threading.Tasks;
-using gView.GraphicsEngine;
 using gView.Framework.Sys.UI.Extensions;
+using gView.Framework.system;
+using gView.Framework.UI;
+using gView.Framework.UI.Events;
+using gView.GraphicsEngine;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace gView.Plugins.MapTools.Graphics
 {
@@ -97,12 +95,12 @@ namespace gView.Plugins.MapTools.Graphics
     {
         private IMapDocument _doc = null;
         private ToolStripDropDownButton _menuItem;
-        private ToolStripMenuItem _removeItem,_removeSelected,_removeAll;
-        
+        private ToolStripMenuItem _removeItem, _removeSelected, _removeAll;
+
         public DrawingMenu()
         {
             _menuItem = new ToolStripDropDownButton("Drawing");
-            
+
             _removeItem = new ToolStripMenuItem("Remove");
             _removeSelected = new ToolStripMenuItem("Selected");
             _removeSelected.Click += new EventHandler(removeSelected_Click);
@@ -117,7 +115,10 @@ namespace gView.Plugins.MapTools.Graphics
             foreach (var grType in compMan.GetPlugins(gView.Framework.system.Plugins.Type.IGraphicElement2))
             {
                 IGraphicElement2 element2 = compMan.CreateInstance<IGraphicElement2>(grType);
-                if (element2 == null) continue;
+                if (element2 == null)
+                {
+                    continue;
+                }
 
                 GraphicElement2MenuItem item = new GraphicElement2MenuItem(element2);
                 item.Click += new EventHandler(removeGraphicElement_Click);
@@ -128,39 +129,59 @@ namespace gView.Plugins.MapTools.Graphics
 
         void removeGraphicElement_Click(object sender, EventArgs e)
         {
-            if (_doc == null || _doc.FocusMap == null || _doc.FocusMap.Display == null || _doc.FocusMap.Display.GraphicsContainer == null) return;
+            if (_doc == null || _doc.FocusMap == null || _doc.FocusMap.Display == null || _doc.FocusMap.Display.GraphicsContainer == null)
+            {
+                return;
+            }
 
             GraphicElement2MenuItem item = sender as GraphicElement2MenuItem;
-            if (item == null) return;
+            if (item == null)
+            {
+                return;
+            }
 
             foreach (IGraphicElement element in _doc.FocusMap.Display.GraphicsContainer.SelectedElements.Clone())
             {
                 if (element.GetType().Equals(item.ElementType))
+                {
                     _doc.FocusMap.Display.GraphicsContainer.SelectedElements.Remove(element);
+                }
             }
             foreach (IGraphicElement element in _doc.FocusMap.Display.GraphicsContainer.Elements.Clone())
             {
                 if (element.GetType().Equals(item.ElementType))
+                {
                     _doc.FocusMap.Display.GraphicsContainer.Elements.Remove(element);
+                }
             }
-            if(_doc.Application is IMapApplication)
+            if (_doc.Application is IMapApplication)
+            {
                 ((IMapApplication)_doc.Application).RefreshActiveMap(DrawPhase.Graphics);
+            }
         }
 
         void removeAll_Click(object sender, EventArgs e)
         {
-            if (_doc == null || _doc.FocusMap == null || _doc.FocusMap.Display == null || _doc.FocusMap.Display.GraphicsContainer == null) return;
+            if (_doc == null || _doc.FocusMap == null || _doc.FocusMap.Display == null || _doc.FocusMap.Display.GraphicsContainer == null)
+            {
+                return;
+            }
 
             _doc.FocusMap.Display.GraphicsContainer.SelectedElements.Clear();
             _doc.FocusMap.Display.GraphicsContainer.Elements.Clear();
 
             if (_doc.Application is IMapApplication)
+            {
                 ((IMapApplication)_doc.Application).RefreshActiveMap(DrawPhase.Graphics);
+            }
         }
 
         void removeSelected_Click(object sender, EventArgs e)
         {
-            if (_doc == null || _doc.FocusMap == null || _doc.FocusMap.Display == null || _doc.FocusMap.Display.GraphicsContainer == null) return;
+            if (_doc == null || _doc.FocusMap == null || _doc.FocusMap.Display == null || _doc.FocusMap.Display.GraphicsContainer == null)
+            {
+                return;
+            }
 
             foreach (IGraphicElement element in _doc.FocusMap.Display.GraphicsContainer.SelectedElements)
             {
@@ -169,7 +190,9 @@ namespace gView.Plugins.MapTools.Graphics
             _doc.FocusMap.Display.GraphicsContainer.SelectedElements.Clear();
 
             if (_doc.Application is IMapApplication)
+            {
                 ((IMapApplication)_doc.Application).RefreshActiveMap(DrawPhase.Graphics);
+            }
         }
 
         #region ITool Member
@@ -202,7 +225,9 @@ namespace gView.Plugins.MapTools.Graphics
         public void OnCreate(object hook)
         {
             if (hook is IMapDocument)
+            {
                 _doc = hook as IMapDocument;
+            }
         }
 
         public Task<bool> OnEvent(object MapEvent)
@@ -228,7 +253,10 @@ namespace gView.Plugins.MapTools.Graphics
 
         public GraphicElement2MenuItem(IGraphicElement2 element)
         {
-            if (element == null) return;
+            if (element == null)
+            {
+                return;
+            }
 
             base.Image = element.Icon;
             base.Text = element.Name;
@@ -276,7 +304,10 @@ namespace gView.Plugins.MapTools.Graphics
 
         public void Draw(IDisplay display)
         {
-            if (display == null) return;
+            if (display == null)
+            {
+                return;
+            }
             //display.Draw(_fillSymbol, _envelope);
             display.Draw(_lineSymbol, _envelope);
         }
@@ -285,7 +316,7 @@ namespace gView.Plugins.MapTools.Graphics
     }
 
     [gView.Framework.system.RegisterPlugIn("FEEEE362-116B-406b-8D94-D817A9BAC121")]
-    public class Pointer : ITool,IToolMouseActions,IToolKeyActions
+    public class Pointer : ITool, IToolMouseActions, IToolKeyActions
     {
         Rubberband _rubberband;
         IGraphicsContainer _container, _ghostContainer;
@@ -347,11 +378,15 @@ namespace gView.Plugins.MapTools.Graphics
         public Task<bool> OnEvent(object MapEvent)
         {
             if (!(MapEvent is MapEvent))
+            {
                 return Task.FromResult(true);
+            }
 
             IMap map = ((MapEvent)MapEvent).Map;
             if (map == null || map.Display == null || map.Display.GraphicsContainer == null)
+            {
                 return Task.FromResult(true);
+            }
 
             map.Display.GraphicsContainer.EditMode = GrabberMode.Pointer;
             ((MapEvent)MapEvent).drawPhase = DrawPhase.Graphics;
@@ -380,7 +415,9 @@ namespace gView.Plugins.MapTools.Graphics
             _rubberband.SetEnvelope(x1, y1, x1, y1);
 
             if (_hitElement is IToolMouseActions)
+            {
                 ((IToolMouseActions)_hitElement).MouseDown(display, e, world);
+            }
         }
 
         public void MouseUp(gView.Framework.Carto.IDisplay display, System.Windows.Forms.MouseEventArgs e, IPoint world)
@@ -395,8 +432,10 @@ namespace gView.Plugins.MapTools.Graphics
                 display.Image2World(ref x2, ref y2);
 
                 _hitElement.Design(display, _hit, x2 - x1, y2 - y1);
-                if(_doc.Application is IMapApplication)
+                if (_doc.Application is IMapApplication)
+                {
                     ((IMapApplication)_doc.Application).RefreshActiveMap(DrawPhase.Graphics);
+                }
             }
             else
             {
@@ -429,24 +468,35 @@ namespace gView.Plugins.MapTools.Graphics
                 {
                     if (grElement is IGraphicElement2)
                     {
-                        if (display.GraphicsContainer.SelectedElements.Contains(grElement)) continue;
+                        if (display.GraphicsContainer.SelectedElements.Contains(grElement))
+                        {
+                            continue;
+                        }
+
                         if ((point != null) ? ((IGraphicElement2)grElement).TrySelect(display, point) : ((IGraphicElement2)grElement).TrySelect(display, _rubberband.Envelope))
                         {
                             display.GraphicsContainer.SelectedElements.Add(grElement);
                             redraw = true;
-                            if (point != null) break; // bei Punktselektion nur ersten selektieren...
+                            if (point != null)
+                            {
+                                break; // bei Punktselektion nur ersten selektieren...
+                            }
                         }
                     }
                 }
                 if (redraw)
                 {
                     if (_doc.Application is IMapApplication)
+                    {
                         ((IMapApplication)_doc.Application).RefreshActiveMap(DrawPhase.Graphics);
+                    }
                 }
             }
 
             if (_hitElement is IToolMouseActions)
+            {
                 ((IToolMouseActions)_hitElement).MouseUp(display, e, world);
+            }
 
             _hit = null;
             _hitElement = null;
@@ -455,19 +505,26 @@ namespace gView.Plugins.MapTools.Graphics
         public void MouseClick(gView.Framework.Carto.IDisplay display, System.Windows.Forms.MouseEventArgs e, IPoint world)
         {
             if (_hitElement is IToolMouseActions)
+            {
                 ((IToolMouseActions)_hitElement).MouseClick(display, e, world);
+            }
         }
 
         public void MouseDoubleClick(gView.Framework.Carto.IDisplay display, System.Windows.Forms.MouseEventArgs e, IPoint world)
         {
             if (_hitElement is IToolMouseActions)
+            {
                 ((IToolMouseActions)_hitElement).MouseDoubleClick(display, e, world);
+            }
         }
 
-        
+
         public void MouseMove(gView.Framework.Carto.IDisplay display, System.Windows.Forms.MouseEventArgs e, IPoint world)
         {
-            if (display == null) return;
+            if (display == null)
+            {
+                return;
+            }
 
             if (_mousePressed)
             {
@@ -503,27 +560,39 @@ namespace gView.Plugins.MapTools.Graphics
                         if (_hit != null && _doc.Application is IMapApplication)
                         {
                             if (_doc.Application is IGUIApplication)
+                            {
                                 ((IGUIApplication)_doc.Application).SetCursor(_hit.Cursor as Cursor);
+                            }
 
                             found = true;
                             _hitElement = grElement as IGraphicElement2;
-                            if (_hitElement.Ghost != null) _ghostContainer.Elements.Add(_hitElement.Ghost);
+                            if (_hitElement.Ghost != null)
+                            {
+                                _ghostContainer.Elements.Add(_hitElement.Ghost);
+                            }
+
                             break;
                         }
                     }
                 }
                 if (!found && _doc.Application is IGUIApplication)
+                {
                     ((IGUIApplication)_doc.Application).SetCursor(Cursors.Default);
+                }
             }
 
             if (_hitElement is IToolMouseActions)
+            {
                 ((IToolMouseActions)_hitElement).MouseMove(display, e, world);
+            }
         }
 
         public void MouseWheel(gView.Framework.Carto.IDisplay display, System.Windows.Forms.MouseEventArgs e, IPoint world)
         {
             if (_hitElement is IToolMouseActions)
+            {
                 ((IToolMouseActions)_hitElement).MouseWheel(display, e, world);
+            }
         }
 
         #endregion
@@ -533,11 +602,14 @@ namespace gView.Plugins.MapTools.Graphics
 
         public void KeyDown(IDisplay display, KeyEventArgs e)
         {
-            if (display == null || display.GraphicsContainer == null) return;
-            
+            if (display == null || display.GraphicsContainer == null)
+            {
+                return;
+            }
+
             _key = e.KeyCode;
             bool redraw = false;
-            
+
             if (e.Shift == false && e.Control == false && e.Alt == false)
             {
                 if (e.KeyCode == Keys.Escape) // ESC
@@ -558,13 +630,15 @@ namespace gView.Plugins.MapTools.Graphics
             if (redraw && _doc != null && _doc.Application != null)
             {
                 if (_doc.Application is IMapApplication)
+                {
                     ((IMapApplication)_doc.Application).RefreshActiveMap(DrawPhase.Graphics);
+                }
             }
         }
 
         public void KeyPress(IDisplay display, KeyPressEventArgs e)
         {
-            
+
         }
 
         public void KeyUp(IDisplay display, KeyEventArgs e)
@@ -576,7 +650,7 @@ namespace gView.Plugins.MapTools.Graphics
     }
 
     [gView.Framework.system.RegisterPlugIn("21D26293-3994-49ba-90F1-A27048F23011")]
-    public class EditVertices : ITool,IToolMouseActions,IToolContextMenu
+    public class EditVertices : ITool, IToolMouseActions, IToolContextMenu
     {
         private IMapDocument _doc = null;
         private IGraphicsContainer _ghostContainer;
@@ -609,12 +683,17 @@ namespace gView.Plugins.MapTools.Graphics
         {
             get
             {
-                if (_doc == null || _doc.FocusMap == null || _doc.FocusMap.Display == null || _doc.FocusMap.Display.GraphicsContainer == null) return false;
+                if (_doc == null || _doc.FocusMap == null || _doc.FocusMap.Display == null || _doc.FocusMap.Display.GraphicsContainer == null)
+                {
+                    return false;
+                }
 
                 foreach (IGraphicElement element in _doc.FocusMap.Display.GraphicsContainer.SelectedElements)
                 {
                     if (element is IConstructable && ((IConstructable)element).hasVertices)
+                    {
                         return true;
+                    }
                 }
 
                 return false;
@@ -639,17 +718,23 @@ namespace gView.Plugins.MapTools.Graphics
         public void OnCreate(object hook)
         {
             if (hook is IMapDocument)
+            {
                 _doc = hook as IMapDocument;
+            }
         }
 
         public Task<bool> OnEvent(object MapEvent)
         {
             if (!(MapEvent is MapEvent))
+            {
                 return Task.FromResult(true);
+            }
 
             IMap map = ((MapEvent)MapEvent).Map;
             if (map == null || map.Display == null || map.Display.GraphicsContainer == null)
+            {
                 return Task.FromResult(true);
+            }
 
             map.Display.GraphicsContainer.EditMode = GrabberMode.Vertex;
             ((MapEvent)MapEvent).drawPhase = DrawPhase.Graphics;
@@ -673,7 +758,11 @@ namespace gView.Plugins.MapTools.Graphics
 
         public void MouseUp(IDisplay display, MouseEventArgs e, IPoint world)
         {
-            if (!_mousePressed) return;
+            if (!_mousePressed)
+            {
+                return;
+            }
+
             _mousePressed = false;
 
             if (_hit != null && _hitElement != null)
@@ -683,11 +772,15 @@ namespace gView.Plugins.MapTools.Graphics
 
                 _hitElement.Design(display, _hit, x2, y2);
                 if (_doc.Application is IMapApplication)
+                {
                     ((IMapApplication)_doc.Application).RefreshActiveMap(DrawPhase.Graphics);
+                }
             }
 
             if (_hitElement is IToolMouseActions)
+            {
                 ((IToolMouseActions)_hitElement).MouseUp(display, e, world);
+            }
 
             _hit = null;
             _hitElement = null;
@@ -695,17 +788,20 @@ namespace gView.Plugins.MapTools.Graphics
 
         public void MouseClick(IDisplay display, MouseEventArgs e, IPoint world)
         {
-            
+
         }
 
         public void MouseDoubleClick(IDisplay display, MouseEventArgs e, IPoint world)
         {
-            
+
         }
 
         public void MouseMove(IDisplay display, MouseEventArgs e, IPoint world)
         {
-            if (display == null || e.Button == MouseButtons.Right) return;
+            if (display == null || e.Button == MouseButtons.Right)
+            {
+                return;
+            }
 
             if (_mousePressed)
             {
@@ -737,8 +833,10 @@ namespace gView.Plugins.MapTools.Graphics
                         _hit = ((IGraphicElement2)grElement).HitTest(display, p);
                         if (_hit != null && _doc.Application is IMapApplication)
                         {
-                            if(_doc.Application is IGUIApplication)
+                            if (_doc.Application is IGUIApplication)
+                            {
                                 ((IGUIApplication)_doc.Application).SetCursor(_hit.Cursor as Cursor);
+                            }
 
                             if (_hit.Cursor.Equals(HitCursors.VertexCursor))
                             {
@@ -754,7 +852,11 @@ namespace gView.Plugins.MapTools.Graphics
                             }
                             found = true;
                             _hitElement = grElement as IGraphicElement2;
-                            if (_hitElement.Ghost != null) _ghostContainer.Elements.Add(_hitElement.Ghost);
+                            if (_hitElement.Ghost != null)
+                            {
+                                _ghostContainer.Elements.Add(_hitElement.Ghost);
+                            }
+
                             break;
                         }
                         else
@@ -764,16 +866,20 @@ namespace gView.Plugins.MapTools.Graphics
                     }
                 }
                 if (!found && _doc.Application is IGUIApplication)
+                {
                     ((IGUIApplication)_doc.Application).SetCursor(Cursors.Default);
+                }
             }
 
             if (_hitElement is IToolMouseActions)
+            {
                 ((IToolMouseActions)_hitElement).MouseMove(display, e, world);
+            }
         }
 
         public void MouseWheel(IDisplay display, MouseEventArgs e, IPoint world)
         {
-            
+
         }
 
         #endregion
@@ -791,24 +897,34 @@ namespace gView.Plugins.MapTools.Graphics
         {
             if (_doc == null || _doc.FocusMap == null ||
                 _hit == null || _hitElement == null ||
-                !_hit.Cursor.Equals(HitCursors.VertexCursor)) return;
+                !_hit.Cursor.Equals(HitCursors.VertexCursor))
+            {
+                return;
+            }
 
             _hitElement.RemoveVertex(_doc.FocusMap.Display, _hit.HitID);
 
             if (_doc.Application is IMapApplication)
+            {
                 ((IMapApplication)_doc.Application).RefreshActiveMap(DrawPhase.Graphics);
+            }
         }
 
         void addvertex_Click(object sender, EventArgs e)
         {
             if (_doc == null || _doc.FocusMap == null ||
-                _hit == null || _hitElement == null) return;
+                _hit == null || _hitElement == null)
+            {
+                return;
+            }
 
             _hitElement.AddVertex(_doc.FocusMap.Display,
                 new Point(_displayPoint.X, _displayPoint.Y));
 
             if (_doc.Application is IMapApplication)
+            {
                 ((IMapApplication)_doc.Application).RefreshActiveMap(DrawPhase.Graphics);
+            }
         }
     }
 
@@ -826,10 +942,16 @@ namespace gView.Plugins.MapTools.Graphics
             foreach (var elementType in compMan.GetPlugins(gView.Framework.system.Plugins.Type.IGraphicElement2))
             {
                 IGraphicElement2 element = compMan.CreateInstance<IGraphicElement2>(elementType);
-                if (element == null) continue;
+                if (element == null)
+                {
+                    continue;
+                }
 
                 _tools.Add(new GraphicElementTool(element));
-                if (_selectedTool == null) _selectedTool = _tools[0];
+                if (_selectedTool == null)
+                {
+                    _selectedTool = _tools[0];
+                }
             }
         }
 
@@ -848,7 +970,10 @@ namespace gView.Plugins.MapTools.Graphics
             }
             set
             {
-                if (_tools.IndexOf(value) != -1) _selectedTool = value;
+                if (_tools.IndexOf(value) != -1)
+                {
+                    _selectedTool = value;
+                }
             }
         }
 
@@ -878,7 +1003,7 @@ namespace gView.Plugins.MapTools.Graphics
 
         public object Image
         {
-            get { return _selectedTool != null ? _selectedTool.Image : null;}
+            get { return _selectedTool != null ? _selectedTool.Image : null; }
         }
 
         public void OnCreate(object hook)
@@ -905,7 +1030,11 @@ namespace gView.Plugins.MapTools.Graphics
 
         public GraphicElementTool(IGraphicElement2 element)
         {
-            if (element == null) return;
+            if (element == null)
+            {
+                return;
+            }
+
             _element = element;
         }
 
@@ -933,13 +1062,15 @@ namespace gView.Plugins.MapTools.Graphics
 
         public object Image
         {
-            get { return _element!=null ? _element.Icon : null; }
+            get { return _element != null ? _element.Icon : null; }
         }
 
         public void OnCreate(object hook)
         {
             if (hook is IMapDocument)
+            {
                 _doc = hook as IMapDocument;
+            }
         }
 
         public Task<bool> OnEvent(object MapEvent)
@@ -956,7 +1087,10 @@ namespace gView.Plugins.MapTools.Graphics
 
         public void MouseDown(IDisplay display, MouseEventArgs e, IPoint world)
         {
-            if (_element == null) return;
+            if (_element == null)
+            {
+                return;
+            }
 
             if (_element is IConstructable)
             {
@@ -966,7 +1100,10 @@ namespace gView.Plugins.MapTools.Graphics
 
             PlugInManager compMan = new PlugInManager();
             IGraphicElement2 element = compMan.CreateInstance(PlugInManager.PlugInID(_element)) as IGraphicElement2;
-            if (element == null) return;
+            if (element == null)
+            {
+                return;
+            }
 
             _addContainer = new GraphicsContainer();
             _addContainer.Elements.Add(element);
@@ -1015,7 +1152,10 @@ namespace gView.Plugins.MapTools.Graphics
                 return;
             }
 
-            if (_addContainer == null) return;
+            if (_addContainer == null)
+            {
+                return;
+            }
         }
 
         public void MouseDoubleClick(IDisplay display, MouseEventArgs e, IPoint world)
@@ -1026,7 +1166,10 @@ namespace gView.Plugins.MapTools.Graphics
                 return;
             }
 
-            if (_addContainer == null) return;
+            if (_addContainer == null)
+            {
+                return;
+            }
         }
 
         public void MouseMove(IDisplay display, MouseEventArgs e, IPoint world)
@@ -1036,7 +1179,7 @@ namespace gView.Plugins.MapTools.Graphics
                 ((IConstructable)_element).ConstructMouseMove(_doc, e);
                 return;
             }
-            
+
             if (_mousePressed)
             {
                 double x1 = _oX, y1 = _oY;
@@ -1065,31 +1208,40 @@ namespace gView.Plugins.MapTools.Graphics
                 return;
             }
 
-            if (_addContainer == null) return;
+            if (_addContainer == null)
+            {
+                return;
+            }
         }
 
         #endregion
     }
 
     [gView.Framework.system.RegisterPlugIn("681FEEC3-5714-45eb-9C86-39F5948783D8")]
-    public class FillColor : ITool,IToolItem
+    public class FillColor : ITool, IToolItem
     {
         gView.Framework.Symbology.UI.Controls.ToolStripColorPicker _picker;
         private IMapDocument _doc = null;
 
         public FillColor()
         {
-            
+
         }
 
         void picker_MouseDown(object sender, MouseEventArgs e)
         {
-            if (e.X < 18) picker_SelectedColor(sender, e);
+            if (e.X < 18)
+            {
+                picker_SelectedColor(sender, e);
+            }
         }
 
         void picker_SelectedColor(object sender, EventArgs e)
         {
-            if (_doc == null || _doc.FocusMap == null || _doc.FocusMap.Display == null || _doc.FocusMap.Display.GraphicsContainer == null) return;
+            if (_doc == null || _doc.FocusMap == null || _doc.FocusMap.Display == null || _doc.FocusMap.Display.GraphicsContainer == null)
+            {
+                return;
+            }
 
             foreach (IGraphicElement grElement in _doc.FocusMap.Display.GraphicsContainer.SelectedElements)
             {
@@ -1099,7 +1251,9 @@ namespace gView.Plugins.MapTools.Graphics
                 }
             }
             if (_doc.Application is IMapApplication)
+            {
                 ((IMapApplication)_doc.Application).RefreshActiveMap(DrawPhase.Graphics);
+            }
         }
 
         public System.Drawing.Color Color
@@ -1178,17 +1332,23 @@ namespace gView.Plugins.MapTools.Graphics
 
         public PenColor()
         {
-            
+
         }
 
         void picker_MouseDown(object sender, MouseEventArgs e)
         {
-            if (e.X < 18) picker_SelectedColor(sender, e);
+            if (e.X < 18)
+            {
+                picker_SelectedColor(sender, e);
+            }
         }
 
         void picker_SelectedColor(object sender, EventArgs e)
         {
-            if (_doc == null || _doc.FocusMap == null || _doc.FocusMap.Display == null || _doc.FocusMap.Display.GraphicsContainer == null) return;
+            if (_doc == null || _doc.FocusMap == null || _doc.FocusMap.Display == null || _doc.FocusMap.Display.GraphicsContainer == null)
+            {
+                return;
+            }
 
             foreach (IGraphicElement grElement in _doc.FocusMap.Display.GraphicsContainer.SelectedElements)
             {
@@ -1198,7 +1358,9 @@ namespace gView.Plugins.MapTools.Graphics
                 }
             }
             if (_doc.Application is IMapApplication)
+            {
                 ((IMapApplication)_doc.Application).RefreshActiveMap(DrawPhase.Graphics);
+            }
         }
 
         public System.Drawing.Color Color
@@ -1239,7 +1401,7 @@ namespace gView.Plugins.MapTools.Graphics
             {
                 _doc = hook as IMapDocument;
 
-                _picker = new gView.Framework.Symbology.UI.Controls.ToolStripColorPicker(System.Drawing.Color.Blue, 
+                _picker = new gView.Framework.Symbology.UI.Controls.ToolStripColorPicker(System.Drawing.Color.Blue,
                     ((IMapApplication)_doc.Application).ApplicationWindow as Form);
                 _picker.Image = gView.Win.Plugin.Tools.Properties.Resources.PenDraw;
                 _picker.ImageTransparentColor = System.Drawing.Color.Magenta;
@@ -1277,17 +1439,23 @@ namespace gView.Plugins.MapTools.Graphics
 
         public FontColor()
         {
-            
+
         }
 
         void picker_MouseDown(object sender, MouseEventArgs e)
         {
-            if(e.X<18) picker_SelectedColor(sender, e);
+            if (e.X < 18)
+            {
+                picker_SelectedColor(sender, e);
+            }
         }
 
         void picker_SelectedColor(object sender, EventArgs e)
         {
-            if (_doc == null || _doc.FocusMap == null || _doc.FocusMap.Display == null || _doc.FocusMap.Display.GraphicsContainer == null) return;
+            if (_doc == null || _doc.FocusMap == null || _doc.FocusMap.Display == null || _doc.FocusMap.Display.GraphicsContainer == null)
+            {
+                return;
+            }
 
             foreach (IGraphicElement grElement in _doc.FocusMap.Display.GraphicsContainer.SelectedElements)
             {
@@ -1297,7 +1465,9 @@ namespace gView.Plugins.MapTools.Graphics
                 }
             }
             if (_doc.Application is IMapApplication)
+            {
                 ((IMapApplication)_doc.Application).RefreshActiveMap(DrawPhase.Graphics);
+            }
         }
 
         public System.Drawing.Color Color
@@ -1431,9 +1601,15 @@ namespace gView.Plugins.MapTools.Graphics
 
         void picker_PenWidthSelected(object sender, EventArgs e)
         {
-            if (_picker == null) return;
+            if (_picker == null)
+            {
+                return;
+            }
 
-            if (_doc == null || _doc.FocusMap == null || _doc.FocusMap.Display == null || _doc.FocusMap.Display.GraphicsContainer == null) return;
+            if (_doc == null || _doc.FocusMap == null || _doc.FocusMap.Display == null || _doc.FocusMap.Display.GraphicsContainer == null)
+            {
+                return;
+            }
 
             foreach (IGraphicElement grElement in _doc.FocusMap.Display.GraphicsContainer.SelectedElements)
             {
@@ -1443,12 +1619,14 @@ namespace gView.Plugins.MapTools.Graphics
                 }
             }
             if (_doc.Application is IMapApplication)
+            {
                 ((IMapApplication)_doc.Application).RefreshActiveMap(DrawPhase.Graphics);
+            }
         }
     }
 
     [gView.Framework.system.RegisterPlugIn("BEAABECF-3019-4b88-849E-9EA69E4EA0E5")]
-    public class DashStyle : ITool,IToolItem
+    public class DashStyle : ITool, IToolItem
     {
         ToolStripDashStylePicker _picker;
         private IMapDocument _doc = null;
@@ -1511,9 +1689,15 @@ namespace gView.Plugins.MapTools.Graphics
 
         void picker_DashStyleSelected(object sender, EventArgs e)
         {
-            if (_picker == null) return;
+            if (_picker == null)
+            {
+                return;
+            }
 
-            if (_doc == null || _doc.FocusMap == null || _doc.FocusMap.Display == null || _doc.FocusMap.Display.GraphicsContainer == null) return;
+            if (_doc == null || _doc.FocusMap == null || _doc.FocusMap.Display == null || _doc.FocusMap.Display.GraphicsContainer == null)
+            {
+                return;
+            }
 
             foreach (IGraphicElement grElement in _doc.FocusMap.Display.GraphicsContainer.SelectedElements)
             {
@@ -1523,12 +1707,14 @@ namespace gView.Plugins.MapTools.Graphics
                 }
             }
             if (_doc.Application is IMapApplication)
+            {
                 ((IMapApplication)_doc.Application).RefreshActiveMap(DrawPhase.Graphics);
+            }
         }
     }
 
     [gView.Framework.system.RegisterPlugIn("39758B9D-4163-442e-A43C-F8293BC2D630")]
-    public class FontName : ITool,IToolItem
+    public class FontName : ITool, IToolItem
     {
         private IMapDocument _doc = null;
         private ToolStripComboBox _combo;
@@ -1541,9 +1727,16 @@ namespace gView.Plugins.MapTools.Graphics
             foreach (System.Drawing.FontFamily family in System.Drawing.FontFamily.Families)
             {
                 _combo.Items.Add(family.Name);
-                if (family.Name == "Arial") _combo.SelectedIndex = _combo.Items.Count - 1;
+                if (family.Name == "Arial")
+                {
+                    _combo.SelectedIndex = _combo.Items.Count - 1;
+                }
             }
-            if (_combo.SelectedIndex == -1) _combo.SelectedIndex = 0;
+            if (_combo.SelectedIndex == -1)
+            {
+                _combo.SelectedIndex = 0;
+            }
+
             _combo.Size = new System.Drawing.Size(90, 20);
             _combo.SelectedIndexChanged += new EventHandler(combo_SelectedIndexChanged);
 
@@ -1557,7 +1750,9 @@ namespace gView.Plugins.MapTools.Graphics
                         System.Drawing.SizeF size = gr.MeasureString(obj.ToString(), _combo.Font);
 
                         if (size.Width + 20 > _combo.DropDownWidth)
+                        {
                             _combo.DropDownWidth = (int)size.Width + 20;
+                        }
                     }
                 }
             }
@@ -1593,7 +1788,9 @@ namespace gView.Plugins.MapTools.Graphics
         public void OnCreate(object hook)
         {
             if (hook is IMapDocument)
+            {
                 _doc = hook as IMapDocument;
+            }
         }
 
         public Task<bool> OnEvent(object MapEvent)
@@ -1614,7 +1811,10 @@ namespace gView.Plugins.MapTools.Graphics
 
         void combo_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if (_doc == null || _doc.FocusMap == null || _doc.FocusMap.Display == null || _doc.FocusMap.Display.GraphicsContainer == null) return;
+            if (_doc == null || _doc.FocusMap == null || _doc.FocusMap.Display == null || _doc.FocusMap.Display.GraphicsContainer == null)
+            {
+                return;
+            }
 
             foreach (IGraphicElement grElement in _doc.FocusMap.Display.GraphicsContainer.SelectedElements)
             {
@@ -1625,7 +1825,9 @@ namespace gView.Plugins.MapTools.Graphics
                 }
             }
             if (_doc.Application is IMapApplication)
+            {
                 ((IMapApplication)_doc.Application).RefreshActiveMap(DrawPhase.Graphics);
+            }
         }
     }
 
@@ -1641,13 +1843,19 @@ namespace gView.Plugins.MapTools.Graphics
             _combo.DropDownStyle = ComboBoxStyle.DropDownList;
 
             for (int i = 3; i <= 100; i++)
+            {
                 _combo.Items.Add(i.ToString());
+            }
 
             for (int i = 105; i <= 300; i += 5)
+            {
                 _combo.Items.Add(i.ToString());
+            }
 
             for (int i = 310; i <= 500; i += 10)
+            {
                 _combo.Items.Add(i.ToString());
+            }
 
             _combo.SelectedIndex = 7;
             _combo.Size = new System.Drawing.Size(40, 20);
@@ -1684,7 +1892,9 @@ namespace gView.Plugins.MapTools.Graphics
         public void OnCreate(object hook)
         {
             if (hook is IMapDocument)
+            {
                 _doc = hook as IMapDocument;
+            }
         }
 
         public Task<bool> OnEvent(object MapEvent)
@@ -1705,7 +1915,10 @@ namespace gView.Plugins.MapTools.Graphics
 
         void combo_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if (_doc == null || _doc.FocusMap == null || _doc.FocusMap.Display == null || _doc.FocusMap.Display.GraphicsContainer == null) return;
+            if (_doc == null || _doc.FocusMap == null || _doc.FocusMap.Display == null || _doc.FocusMap.Display.GraphicsContainer == null)
+            {
+                return;
+            }
 
             foreach (IGraphicElement grElement in _doc.FocusMap.Display.GraphicsContainer.SelectedElements)
             {
@@ -1716,7 +1929,9 @@ namespace gView.Plugins.MapTools.Graphics
                 }
             }
             if (_doc.Application is IMapApplication)
+            {
                 ((IMapApplication)_doc.Application).RefreshActiveMap(DrawPhase.Graphics);
+            }
         }
     }
 }

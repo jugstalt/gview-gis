@@ -1,8 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using gView.Framework.Data;
-using gView.Framework.system;
+﻿using gView.Framework.Data;
 using gView.Framework.IO;
+using gView.Framework.system;
+using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace gView.Framework.UI
@@ -47,5 +47,5 @@ namespace gView.Framework.UI
         Task<TocLegendItems> LegendSymbol(ITOCElement element);
     }
 
-    
+
 }

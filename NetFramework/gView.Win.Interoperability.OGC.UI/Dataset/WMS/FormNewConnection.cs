@@ -1,14 +1,9 @@
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Text;
-using System.Windows.Forms;
-using gView.Interoperability.OGC.Dataset.WMS;
-using gView.Framework.UI;
 using gView.Framework.Data;
+using gView.Framework.UI;
 using gView.Framework.Web;
+using gView.Interoperability.OGC.Dataset.WMS;
+using System;
+using System.Windows.Forms;
 using System.Xml;
 
 namespace gView.Interoperability.OGC.UI.Dataset.WMS
@@ -60,10 +55,15 @@ namespace gView.Interoperability.OGC.UI.Dataset.WMS
             get
             {
                 string url = PrepareUrl(txtWMSUrl.Text.Trim());
-                if (url == String.Empty) return String.Empty;
+                if (url == String.Empty)
+                {
+                    return String.Empty;
+                }
 
                 if (txtServiceName.Text.Trim() != String.Empty)
+                {
                     url += "ServiceName=" + txtServiceName.Text.Trim();
+                }
 
                 return url;
             }
@@ -74,10 +74,15 @@ namespace gView.Interoperability.OGC.UI.Dataset.WMS
             get
             {
                 string url = PrepareUrl(txtWFSUrl.Text.Trim());
-                if (url == String.Empty) return String.Empty;
+                if (url == String.Empty)
+                {
+                    return String.Empty;
+                }
 
                 if (txtServiceName.Text.Trim() != String.Empty)
+                {
                     url += "ServiceName=" + txtServiceName.Text.Trim();
+                }
 
                 return url;
             }
@@ -85,7 +90,11 @@ namespace gView.Interoperability.OGC.UI.Dataset.WMS
 
         private string PrepareUrl(string url)
         {
-            if (url == String.Empty) return String.Empty;
+            if (url == String.Empty)
+            {
+                return String.Empty;
+            }
+
             if (url.EndsWith("?") ||
                 url.EndsWith("&"))
             {
@@ -113,7 +122,9 @@ namespace gView.Interoperability.OGC.UI.Dataset.WMS
         public bool OpenModal()
         {
             if (this.ShowDialog() == DialogResult.OK)
+            {
                 return true;
+            }
 
             return false;
         }

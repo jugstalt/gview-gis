@@ -1,9 +1,5 @@
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
 using System.Drawing;
-using System.Data;
-using System.Text;
 using System.Windows.Forms;
 using System.Windows.Forms.Design;
 
@@ -84,8 +80,8 @@ namespace gView.Framework.Symbology.UI.Controls
                 int x = 0, y = 0;
                 for (int i = 0; i < _maxWidth; i++)
                 {
-                    pen.Width = i+1;
-                    
+                    pen.Width = i + 1;
+
                     if (_selectedIndex == i)
                     {
                         Rectangle buttonRec = new Rectangle(x, y, PreferredWidth, 22);
@@ -108,13 +104,22 @@ namespace gView.Framework.Symbology.UI.Controls
             _clicked = true;
             if (_selectedIndex != -1)
             {
-                if (PenWidthSelected != null) PenWidthSelected(this, EventArgs.Empty);
+                if (PenWidthSelected != null)
+                {
+                    PenWidthSelected(this, EventArgs.Empty);
+                }
             }
             if (_contextForm != null)
+            {
                 _contextForm.Hide();
+            }
+
             _contextForm = null;
 
-            if (_wfes != null) _wfes.CloseDropDown();
+            if (_wfes != null)
+            {
+                _wfes.CloseDropDown();
+            }
         }
         protected override void OnMouseLeave(EventArgs e)
         {

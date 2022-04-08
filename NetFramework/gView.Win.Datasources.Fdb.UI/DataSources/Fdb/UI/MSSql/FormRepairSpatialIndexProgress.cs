@@ -28,7 +28,7 @@ namespace gView.DataSources.Fdb.UI.MSSql
 
         private void FormRepairSpatialIndexProgress_Load(object sender, EventArgs e)
         {
-            
+
         }
 
         private void FormRepairSpatialIndexProgress_Shown(object sender, EventArgs e)
@@ -79,7 +79,7 @@ namespace gView.DataSources.Fdb.UI.MSSql
                 }
                 else if (e is RepairSICheckNodes)
                 {
-                    if(((RepairSICheckNodes)e).Pos == 1)
+                    if (((RepairSICheckNodes)e).Pos == 1)
                     {
                         this.Refresh();
                     }

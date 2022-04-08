@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using gView.Framework.system;
+using System;
 using System.Data;
-using gView.Framework.Network;
-using gView.Framework.system;
-using System.Threading.Tasks;
 
 namespace gView.Framework.Network.Algorthm
 {
@@ -252,7 +248,9 @@ namespace gView.Framework.Network.Algorthm
             stream.Save("fcid", _fcId);
             stream.Save("fieldname", _fieldName);
             if (_calc != null)
+            {
                 stream.Save("calc", _calc);
+            }
         }
 
         #endregion

@@ -1,14 +1,12 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-using gView.Framework.IO;
 using gView.Framework.Carto;
-using gView.MapServer;
 using gView.Framework.Data;
-using gView.Framework.UI;
-using System.Reflection;
-using gView.Framework.system;
 using gView.Framework.Geometry;
+using gView.Framework.IO;
+using gView.Framework.system;
+using gView.Framework.UI;
+using gView.MapServer;
+using System;
+using System.Reflection;
 using System.Threading.Tasks;
 
 namespace gView.Interoperability.OGC.Dataset.WMS
@@ -18,7 +16,7 @@ namespace gView.Interoperability.OGC.Dataset.WMS
     {
         #region Declarations
         private IServiceMap _map;
-        private string _srsCode = String.Empty, _getFeatureInfo = String.Empty,_getMapInfo=String.Empty;
+        private string _srsCode = String.Empty, _getFeatureInfo = String.Empty, _getMapInfo = String.Empty;
         private string[] _srsCodes;
         private string[] _getFeatureInfos;
         private string[] _getMapInfos;
@@ -75,7 +73,7 @@ namespace gView.Interoperability.OGC.Dataset.WMS
                         }
                     }
                 }
-                
+
                 _map = null;
                 return false;
             }
@@ -87,21 +85,32 @@ namespace gView.Interoperability.OGC.Dataset.WMS
                     if (element.Class is WMSClass)
                     {
                         WMSClass wmsClass = (WMSClass)element.Class;
-                        if(!String.IsNullOrEmpty(_srsCode))
+                        if (!String.IsNullOrEmpty(_srsCode))
+                        {
                             wmsClass.SRSCode = _srsCode;
+                        }
+
                         if (!String.IsNullOrEmpty(_getMapInfo))
+                        {
                             wmsClass.SRSCode = _getMapInfo;
+                        }
+
                         if (!String.IsNullOrEmpty(_getFeatureInfo))
+                        {
                             wmsClass.FeatureInfoFormat = _getFeatureInfo;
+                        }
 
                         // SpatialReference gleich auf Karte übernehmen...
                         ISpatialReference sRef = wmsClass.SpatialReference;
                         if (sRef != null)
+                        {
                             ((IMap)Object).Display.SpatialReference = sRef;
+                        }
+
                         break;
                     }
                 }
-                _map=null;
+                _map = null;
                 return true;
             }
             return false;
@@ -124,11 +133,22 @@ namespace gView.Interoperability.OGC.Dataset.WMS
 
             XmlStreamStringArray arr;
             arr = (XmlStreamStringArray)stream.Load("SrsCodes", null, new XmlStreamStringArray());
-            if (arr != null) _srsCodes = (string[])arr.Value;
+            if (arr != null)
+            {
+                _srsCodes = (string[])arr.Value;
+            }
+
             arr = (XmlStreamStringArray)stream.Load("GetMapFormats", null, new XmlStreamStringArray());
-            if (arr != null) _getMapInfos = (string[])arr.Value;
+            if (arr != null)
+            {
+                _getMapInfos = (string[])arr.Value;
+            }
+
             arr = (XmlStreamStringArray)stream.Load("GetFeatureInfoFormat", null, new XmlStreamStringArray());
-            if (arr != null) _getFeatureInfos = (string[])arr.Value;
+            if (arr != null)
+            {
+                _getFeatureInfos = (string[])arr.Value;
+            }
         }
 
         public void Save(IPersistStream stream)
@@ -147,13 +167,22 @@ namespace gView.Interoperability.OGC.Dataset.WMS
         #region Helper
         async private Task<bool> ServiceMapIsSVC(IMapServer server, IServiceMap map)
         {
-            if (server == null || map == null) return false;
+            if (server == null || map == null)
+            {
+                return false;
+            }
 
             foreach (IMapService service in await server.Maps(null))
             {
-                if (service == null) continue;
+                if (service == null)
+                {
+                    continue;
+                }
+
                 if (service.Name == map.Name && service.Type == MapServiceType.SVC)
+                {
                     return true;
+                }
             }
             return false;
         }
@@ -168,7 +197,9 @@ namespace gView.Interoperability.OGC.Dataset.WMS
 
             IPlugInParameter p = uiAssembly.CreateInstance("gView.Interoperability.OGC.UI.Dataset.WMS.Metadata_WMS") as IPlugInParameter;
             if (p != null)
+            {
                 p.Parameter = this;
+            }
 
             return p;
         }

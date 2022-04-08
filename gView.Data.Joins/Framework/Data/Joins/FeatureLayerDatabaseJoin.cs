@@ -1,12 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using gView.Framework.Db;
 using gView.Framework.system;
-using gView.Framework.Db;
-using System.Data;
 using gView.Framework.UI;
+using System;
+using System.Collections.Generic;
+using System.Data;
 using System.Reflection;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace gView.Framework.Data.Joins
@@ -69,7 +68,9 @@ namespace gView.Framework.Data.Joins
                     foreach (IField field in _fields.ToEnumerable())
                     {
                         if (field is Field)
+                        {
                             ((Field)field).SaveType = true;
+                        }
                     }
                 }
             }
@@ -78,15 +79,21 @@ namespace gView.Framework.Data.Joins
         public Task<IRow> GetJoinedRow(string val)
         {
             if (_rows.ContainsKey(val))
+            {
                 return Task.FromResult<IRow>(_rows[val]);
+            }
 
             if (_provider == null)
+            {
                 return null;
+            }
 
             IField field = _fields.FindField(this.JoinField);
             DataTable tab = _provider.ExecuteQuery("select " + _selectFieldNames + " from " + _provider.ToTableName(this.JoinTable) + " where " + _provider.ToFieldName(this.JoinField) + "=" + QueryValue(field, val));
             if (tab == null || tab.Rows.Count == 0)
+            {
                 return null;
+            }
 
             Row row = new Row();
             foreach (DataColumn col in tab.Columns)
@@ -104,26 +111,48 @@ namespace gView.Framework.Data.Joins
             StringBuilder where = new StringBuilder();
             foreach (string val in vals)
             {
-                if (_rows.ContainsKey(val)) continue;
+                if (_rows.ContainsKey(val))
+                {
+                    continue;
+                }
+
                 _rows.Add(val, null);
-                if (where.Length > 0) where.Append(",");
+                if (where.Length > 0)
+                {
+                    where.Append(",");
+                }
+
                 where.Append(QueryValue(field, val));
             }
-            if (where.Length == 0) return;
+            if (where.Length == 0)
+            {
+                return;
+            }
 
             string fields = _selectFieldNames;
-            if (_selectFieldNames != "*") fields += "," + _provider.ToFieldName(this.JoinField);
+            if (_selectFieldNames != "*")
+            {
+                fields += "," + _provider.ToFieldName(this.JoinField);
+            }
+
             DataTable tab = _provider.ExecuteQuery("select " + fields + " from " + _provider.ToTableName(this.JoinTable) + " where " + _provider.ToFieldName(this.JoinField) + " in (" + where.ToString() + ")");
             if (tab == null || tab.Rows.Count == 0)
+            {
                 return;
+            }
 
             foreach (DataRow tableRow in tab.Rows)
             {
-                if (tableRow[this.JoinField] == null) 
+                if (tableRow[this.JoinField] == null)
+                {
                     continue;
+                }
+
                 string key = tableRow[this.JoinField].ToString();
                 if (_rows[key] != null)
+                {
                     continue;
+                }
 
                 Row row = new Row();
                 foreach (DataColumn col in tab.Columns)
@@ -136,15 +165,24 @@ namespace gView.Framework.Data.Joins
 
         public Task<ICursor> PerformQuery(IQueryFilter filter)
         {
-            if (_provider == null || filter==null)
+            if (_provider == null || filter == null)
+            {
                 return null;
+            }
 
             filter.fieldPrefix = _provider.FieldPrefix;
             filter.fieldPostfix = _provider.FieldPostfix;
 
             string sql = "select " + filter.SubFieldsAndAlias + " from " + _provider.ToTableName(this.JoinTable);
-            if (!String.IsNullOrEmpty(filter.WhereClause)) sql += " where " + _provider.ToWhereClause(filter.WhereClause);
-            if (!String.IsNullOrEmpty(filter.OrderBy)) sql += " order by " + _provider.ToFieldNames(filter.OrderBy);
+            if (!String.IsNullOrEmpty(filter.WhereClause))
+            {
+                sql += " where " + _provider.ToWhereClause(filter.WhereClause);
+            }
+
+            if (!String.IsNullOrEmpty(filter.OrderBy))
+            {
+                sql += " order by " + _provider.ToFieldNames(filter.OrderBy);
+            }
 
             return Task.FromResult<ICursor>(new RowCursor(_provider.ExecuteQuery(sql)));
         }
@@ -202,7 +240,10 @@ namespace gView.Framework.Data.Joins
             stream.Save("jointable", this.JoinTable);
             stream.Save("joinfield", this.JoinField);
             if (_fields != null)
+            {
                 stream.Save("Fields", _fields);
+            }
+
             stream.Save("jointype", (int)_joinType);
         }
 
@@ -276,7 +317,9 @@ namespace gView.Framework.Data.Joins
         private string QueryValue(IField field, string val)
         {
             if (field == null)
+            {
                 return val;
+            }
 
             switch (field.type)
             {
@@ -312,7 +355,9 @@ namespace gView.Framework.Data.Joins
             public Task<IRow> NextRow()
             {
                 if (_tab == null || _pos >= _tab.Rows.Count)
+                {
                     return null;
+                }
 
                 DataRow tabRow = _tab.Rows[_pos++];
 
@@ -331,7 +376,7 @@ namespace gView.Framework.Data.Joins
 
             public void Dispose()
             {
-                
+
             }
 
             #endregion

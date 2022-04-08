@@ -90,9 +90,9 @@ namespace gView.GraphicsEngine.Filters
                 case FilterImplementations.Channel_Blue:
                     filter = ExtractChannel.B;
                     break;
-                //case FilterImplementations.Channel_Alpha:
-                //    filter = ExtractChannel.A;
-                //    break;
+                    //case FilterImplementations.Channel_Alpha:
+                    //    filter = ExtractChannel.A;
+                    //    break;
             }
 
             return filter;
@@ -121,7 +121,7 @@ namespace gView.GraphicsEngine.Filters
             using (var iBitmap = Current.Engine.CreateBitmap(new MemoryStream(imageBytes)))
             {
                 using (var filteredBitmap = filter.Apply(iBitmap))
-                using(var ms = new MemoryStream())
+                using (var ms = new MemoryStream())
                 {
                     filteredBitmap.Save(ms, format);
                     return ms.ToArray();

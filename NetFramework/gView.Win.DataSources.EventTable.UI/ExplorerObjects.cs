@@ -1,16 +1,12 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-using gView.Framework.system.UI;
-using gView.Framework.UI;
-using gView.Framework.Db;
-using gView.Framework.IO;
-using System.Windows.Forms;
-using gView.DataSources.EventTable;
 using gView.Framework.Data;
 using gView.Framework.Globalisation;
-using gView.DataSources.Fdb.UI.PostgreSql;
+using gView.Framework.IO;
+using gView.Framework.system.UI;
+using gView.Framework.UI;
+using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace gView.DataSources.EventTable.UI
 {
@@ -58,7 +54,9 @@ namespace gView.DataSources.EventTable.UI
         public Task<IExplorerObject> CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache cache)
         {
             if (cache.Contains(FullName))
+            {
                 return Task.FromResult<IExplorerObject>(cache[FullName]);
+            }
 
             if (this.FullName == FullName)
             {
@@ -180,7 +178,9 @@ namespace gView.DataSources.EventTable.UI
         public Task<IExplorerObject> CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache cache)
         {
             if (cache.Contains(FullName))
+            {
                 return Task.FromResult<IExplorerObject>(cache[FullName]);
+            }
 
             return Task.FromResult<IExplorerObject>(null);
         }
@@ -230,7 +230,10 @@ namespace gView.DataSources.EventTable.UI
 
         void ConnectionProperties_Click(object sender, EventArgs e)
         {
-            if (_etconn == null) return;
+            if (_etconn == null)
+            {
+                return;
+            }
 
             FormEventTableConnection dlg = new FormEventTableConnection();
             dlg.DbConnectionString = _etconn.DbConnectionString;
@@ -261,7 +264,10 @@ namespace gView.DataSources.EventTable.UI
             get
             {
                 if (_etconn == null)
+                {
                     return "???";
+                }
+
                 return _name;
             }
         }
@@ -271,7 +277,10 @@ namespace gView.DataSources.EventTable.UI
             get
             {
                 if (_etconn == null)
+                {
                     return "???";
+                }
+
                 return @"EventTableConnections\" + _name;
             }
         }
@@ -289,7 +298,9 @@ namespace gView.DataSources.EventTable.UI
         async public Task<object> GetInstanceAsync()
         {
             if (_fc != null)
+            {
                 return _fc;
+            }
 
             if (_etconn != null)
             {
@@ -303,7 +314,7 @@ namespace gView.DataSources.EventTable.UI
                 }
                 catch
                 {
-                    _fc = null;  
+                    _fc = null;
                 }
             }
 
@@ -326,7 +337,9 @@ namespace gView.DataSources.EventTable.UI
         async public Task<IExplorerObject> CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache cache)
         {
             if (cache.Contains(FullName))
+            {
                 return cache[FullName];
+            }
 
             EventTableGroupObject group = new EventTableGroupObject();
             if (FullName.StartsWith(group.FullName))
@@ -367,7 +380,9 @@ namespace gView.DataSources.EventTable.UI
             if (ret)
             {
                 if (ExplorerObjectDeleted != null)
+                {
                     ExplorerObjectDeleted(this);
+                }
             }
             return Task.FromResult(ret);
         }
@@ -386,7 +401,10 @@ namespace gView.DataSources.EventTable.UI
             if (ret == true)
             {
                 _name = newName;
-                if (ExplorerObjectRenamed != null) ExplorerObjectRenamed(this);
+                if (ExplorerObjectRenamed != null)
+                {
+                    ExplorerObjectRenamed(this);
+                }
             }
             return Task.FromResult(ret);
         }

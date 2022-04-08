@@ -203,7 +203,8 @@ namespace gView.Cmd.RasterDataset.Util
                     return 1;
                 }
                 ds = dataset;
-            } else
+            }
+            else
             {
                 Console.WriteLine("Unknown fdb type");
                 return 1;
@@ -228,14 +229,18 @@ namespace gView.Cmd.RasterDataset.Util
 
                     int pos = format.LastIndexOf(".");
                     if (pos > 0)
+                    {
                         extension = format.Substring(pos, format.Length - pos);
+                    }
 
                     providers.Add(extension, PlugInManager.PlugInID(rds));
                     Console.WriteLine("Provider " + extension + ": " + rds.ToString() + " {" + PlugInManager.PlugInID(rds).ToString() + "}");
                 }
             }
             if (providers.Count == 0)
+            {
                 providers = null;
+            }
 
             switch (job)
             {
@@ -252,7 +257,9 @@ namespace gView.Cmd.RasterDataset.Util
                         if (!await ImportFiles(ds, fileName.Split(';'), providers))
                         {
                             if (!continueOnError)
+                            {
                                 return 1;
+                            }
                         }
                     }
                     else if (rootPath != String.Empty && Filters != String.Empty)
@@ -260,7 +267,9 @@ namespace gView.Cmd.RasterDataset.Util
                         if (!await ImportDirectory(ds, new DirectoryInfo(rootPath), Filters.Split(';'), providers))
                         {
                             if (!continueOnError)
+                            {
                                 return 1;
+                            }
                         }
                     }
                     await CalculateExtent(ds);
@@ -304,7 +313,7 @@ namespace gView.Cmd.RasterDataset.Util
             {
                 ProgressCounter++;
 
-                if(ProgressCounter%100 == 0)
+                if (ProgressCounter % 100 == 0)
                 {
                     Console.WriteLine($"... { ProgressCounter }");
                 }
@@ -317,7 +326,9 @@ namespace gView.Cmd.RasterDataset.Util
                 {
                     Console.WriteLine("Error: " + import.lastErrorMessage);
                     if (!continueOnError)
+                    {
                         return false;
+                    }
                 }
             }
             return true;
@@ -345,7 +356,9 @@ namespace gView.Cmd.RasterDataset.Util
                     if (!await ImportFiles(ds, filenames.ToArray(), providers))
                     {
                         if (!continueOnError)
+                        {
                             return false;
+                        }
                     }
                 }
             }
@@ -355,7 +368,9 @@ namespace gView.Cmd.RasterDataset.Util
                 if (!await ImportDirectory(ds, sub, filters, providers))
                 {
                     if (!continueOnError)
+                    {
                         return false;
+                    }
                 }
             }
             return true;

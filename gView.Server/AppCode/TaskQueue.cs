@@ -1,7 +1,4 @@
-﻿using gView.MapServer;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System;
 using System.Threading.Tasks;
 
 namespace gView.Server.AppCode
@@ -38,7 +35,7 @@ namespace gView.Server.AppCode
 
         private bool IsReadyToRumble(long currentProcessId)
         {
-            lock(locker)
+            lock (locker)
             {
                 return currentProcessId - ProcessedTasks <= MaxParallelTasks;
             }
@@ -50,10 +47,12 @@ namespace gView.Server.AppCode
             {
                 long currentProcessId = NextProcessId();
 
-                while(true)
+                while (true)
                 {
                     if (IsReadyToRumble(currentProcessId))
+                    {
                         break;
+                    }
 
                     await Task.Delay(10);
                     //return false;

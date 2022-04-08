@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using gView.Desktop.Wpf.Controls;
+﻿using gView.Desktop.Wpf.Controls;
 using gView.Framework.UI;
 
 namespace gView.Desktop.Wpf.Items
@@ -36,7 +32,11 @@ namespace gView.Desktop.Wpf.Items
         {
             get
             {
-                if (_tool != null) return _tool.Enabled;
+                if (_tool != null)
+                {
+                    return _tool.Enabled;
+                }
+
                 return base.IsEnabled;
             }
             set

@@ -1,13 +1,7 @@
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Text;
-using System.Windows.Forms;
-using gView.Framework.UI;
 using gView.Framework.Carto;
 using gView.Framework.Data;
+using System;
+using System.Windows.Forms;
 
 namespace gView.Framework.UI.Dialogs
 {
@@ -18,21 +12,34 @@ namespace gView.Framework.UI.Dialogs
         public FormSelectLayer(IMapDocument doc)
         {
             _doc = doc;
-            if (_doc == null) return;
+            if (_doc == null)
+            {
+                return;
+            }
 
             InitializeComponent();
         }
 
         private void FormSelectLayer_Load(object sender, EventArgs e)
         {
-            if (_doc == null || _doc.Maps == null) return;
+            if (_doc == null || _doc.Maps == null)
+            {
+                return;
+            }
 
             foreach (IMap map in _doc.Maps)
             {
-                if (map == null) continue;
+                if (map == null)
+                {
+                    continue;
+                }
+
                 cmbMaps.Items.Add(new MapItem(map));
 
-                if (map == _doc.FocusMap) cmbMaps.SelectedIndex = cmbMaps.Items.Count - 1;
+                if (map == _doc.FocusMap)
+                {
+                    cmbMaps.SelectedIndex = cmbMaps.Items.Count - 1;
+                }
             }
         }
 
@@ -41,14 +48,24 @@ namespace gView.Framework.UI.Dialogs
             MapItem item = cmbMaps.SelectedItem as MapItem;
             cmbLayers.Items.Clear();
 
-            if (item == null || item.Map == null || item.Map.MapElements==null) return;
+            if (item == null || item.Map == null || item.Map.MapElements == null)
+            {
+                return;
+            }
 
             foreach (IDatasetElement element in item.Map.MapElements)
             {
-                if (!(element is IFeatureLayer)) continue;
+                if (!(element is IFeatureLayer))
+                {
+                    continue;
+                }
+
                 cmbLayers.Items.Add(new LayerItem(item.Map, element as ILayer));
             }
-            if (cmbLayers.Items.Count > 0) cmbLayers.SelectedIndex = 0;
+            if (cmbLayers.Items.Count > 0)
+            {
+                cmbLayers.SelectedIndex = 0;
+            }
         }
 
         public ILayer SelectedLayer
@@ -56,7 +73,10 @@ namespace gView.Framework.UI.Dialogs
             get
             {
                 LayerItem item = cmbLayers.SelectedItem as LayerItem;
-                if (item == null) return null;
+                if (item == null)
+                {
+                    return null;
+                }
 
                 return item.Layer;
             }
@@ -67,7 +87,10 @@ namespace gView.Framework.UI.Dialogs
             get
             {
                 LayerItem item = cmbLayers.SelectedItem as LayerItem;
-                if (item == null) return "";
+                if (item == null)
+                {
+                    return "";
+                }
 
                 return item.ToString();
             }
@@ -90,7 +113,11 @@ namespace gView.Framework.UI.Dialogs
 
         public override string ToString()
         {
-            if (_map == null) return "???";
+            if (_map == null)
+            {
+                return "???";
+            }
+
             return _map.Name;
         }
     }
@@ -103,7 +130,11 @@ namespace gView.Framework.UI.Dialogs
         public LayerItem(IMap map, ILayer layer)
         {
             _layer = layer;
-            if(_layer==null) return;
+            if (_layer == null)
+            {
+                return;
+            }
+
             _text = _layer.Title;
 
             if (map != null && map.TOC != null)

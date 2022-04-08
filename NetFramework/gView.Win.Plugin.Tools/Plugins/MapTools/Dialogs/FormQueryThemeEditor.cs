@@ -1,16 +1,12 @@
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Text;
-using System.Windows.Forms;
-using gView.Framework.UI;
 using gView.Framework.Carto;
 using gView.Framework.Data;
 using gView.Framework.IO;
+using gView.Framework.UI;
 using gView.Framework.UI.Dialogs;
-using System.Threading.Tasks;
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Windows.Forms;
 
 namespace gView.Plugins.MapTools.Dialogs
 {
@@ -20,7 +16,11 @@ namespace gView.Plugins.MapTools.Dialogs
 
         public FormQueryThemeEditor(IMapDocument doc)
         {
-            if (doc == null) return;
+            if (doc == null)
+            {
+                return;
+            }
+
             _doc = doc;
 
             InitializeComponent();
@@ -44,11 +44,16 @@ namespace gView.Plugins.MapTools.Dialogs
         private QueryThemeTable _actTableNode = null;
         private void StoreFieldDefs()
         {
-            if (_actTableNode == null) return;
+            if (_actTableNode == null)
+            {
+                return;
+            }
 
             QueryTheme theme = _actTableNode.Parent as QueryTheme;
-            if (theme == null || theme.PromptDef == null) return;
-
+            if (theme == null || theme.PromptDef == null)
+            {
+                return;
+            }
 
             DataTable table = _actTableNode.QueryFieldDef;
             table.Rows.Clear();
@@ -58,7 +63,10 @@ namespace gView.Plugins.MapTools.Dialogs
                 DataGridViewRow dgRow = dgLayers.Rows[i];
 
                 DataRow[] rows = theme.PromptDef.Select("Prompt='" + dgRow.Cells[1].Value + "'");
-                if (rows.Length == 0) continue;
+                if (rows.Length == 0)
+                {
+                    continue;
+                }
 
                 table.Rows.Add(
                     new object[] { dgRow.Cells[0].Value, rows[0]["ID"], dgRow.Cells[2].Value });
@@ -122,7 +130,10 @@ namespace gView.Plugins.MapTools.Dialogs
                     }
                 }
                 QueryTheme theme = node.Parent as QueryTheme;
-                if (theme == null && theme.PromptDef == null) return;
+                if (theme == null && theme.PromptDef == null)
+                {
+                    return;
+                }
 
                 colPrompt.Items.Clear();
                 foreach (DataRow row in theme.PromptDef.Select())
@@ -138,10 +149,21 @@ namespace gView.Plugins.MapTools.Dialogs
                         string op = row["Operator"].ToString();
                         int promptID = (int)row["Prompt"];
 
-                        if (colField.Items.IndexOf(field) == -1) field = "";
-                        if (colOperator.Items.IndexOf(op) == -1) op = "";
+                        if (colField.Items.IndexOf(field) == -1)
+                        {
+                            field = "";
+                        }
+
+                        if (colOperator.Items.IndexOf(op) == -1)
+                        {
+                            op = "";
+                        }
+
                         DataRow[] rows = theme.PromptDef.Select("ID=" + promptID);
-                        if (rows.Length == 0) continue;
+                        if (rows.Length == 0)
+                        {
+                            continue;
+                        }
 
                         dgLayers.Rows.Add(
                             new object[] { field, rows[0]["Prompt"], op });
@@ -151,7 +173,7 @@ namespace gView.Plugins.MapTools.Dialogs
                 #endregion
 
                 #region Visible Fields
-                if (((QueryThemeTable)node).VisibleFieldDef != null && layer != null && layer.Fields!=null)
+                if (((QueryThemeTable)node).VisibleFieldDef != null && layer != null && layer.Fields != null)
                 {
                     QueryThemeVisibleFieldDef visFields = ((QueryThemeTable)node).VisibleFieldDef;
 
@@ -165,7 +187,7 @@ namespace gView.Plugins.MapTools.Dialogs
                         cmbPrimaryField.Items.Add(field.name);
                         if (field.name == visFields.PrimaryDisplayField ||
                             (visFields.PrimaryDisplayField == "" &&
-                            layer.Fields.PrimaryDisplayField!=null &&
+                            layer.Fields.PrimaryDisplayField != null &&
                             field.name == layer.Fields.PrimaryDisplayField.name))
                         {
                             cmbPrimaryField.SelectedIndex = cmbPrimaryField.Items.Count - 1;
@@ -192,12 +214,18 @@ namespace gView.Plugins.MapTools.Dialogs
         private void btnAddTable_Click(object sender, EventArgs e)
         {
             QueryTheme parent = treeQueries.SelectedNode as QueryTheme;
-            if (parent == null) return;
+            if (parent == null)
+            {
+                return;
+            }
 
             FormSelectLayer selLayer = new FormSelectLayer(_doc);
             if (selLayer.ShowDialog() == DialogResult.OK)
             {
-                if (selLayer.SelectedLayer == null) return;
+                if (selLayer.SelectedLayer == null)
+                {
+                    return;
+                }
 
                 QueryThemeTable node = new QueryThemeTable(selLayer.SelectedLayer, selLayer.SelectedLayerAlias);
                 parent.Nodes.Add(node);
@@ -218,11 +246,17 @@ namespace gView.Plugins.MapTools.Dialogs
         private void btnMoveUp_Click(object sender, EventArgs e)
         {
             TreeNode node = treeQueries.SelectedNode;
-            if (node == null) return;
+            if (node == null)
+            {
+                return;
+            }
 
             TreeNodeCollection collection = (node.Parent != null) ? node.Parent.Nodes : treeQueries.Nodes;
             int index = collection.IndexOf(node);
-            if (index < 1) return;
+            if (index < 1)
+            {
+                return;
+            }
 
             collection.Remove(node);
             collection.Insert(index - 1, node);
@@ -232,11 +266,17 @@ namespace gView.Plugins.MapTools.Dialogs
         private void btnMoveDown_Click(object sender, EventArgs e)
         {
             TreeNode node = treeQueries.SelectedNode;
-            if (node == null) return;
+            if (node == null)
+            {
+                return;
+            }
 
             TreeNodeCollection collection = (node.Parent != null) ? node.Parent.Nodes : treeQueries.Nodes;
             int index = collection.IndexOf(node);
-            if (index < 0 || index >= collection.Count - 1) return;
+            if (index < 0 || index >= collection.Count - 1)
+            {
+                return;
+            }
 
             collection.Remove(node);
             collection.Insert(index + 1, node);
@@ -246,7 +286,10 @@ namespace gView.Plugins.MapTools.Dialogs
         private void btnRemove_Click(object sender, EventArgs e)
         {
             TreeNode node = treeQueries.SelectedNode;
-            if (node == null) return;
+            if (node == null)
+            {
+                return;
+            }
 
             TreeNodeCollection collection = (node.Parent != null) ? node.Parent.Nodes : treeQueries.Nodes;
 
@@ -266,7 +309,10 @@ namespace gView.Plugins.MapTools.Dialogs
             set
             {
                 treeQueries.Nodes.Clear();
-                if (value == null) return;
+                if (value == null)
+                {
+                    return;
+                }
 
                 foreach (QueryTheme query in value.Queries)
                 {
@@ -302,16 +348,23 @@ namespace gView.Plugins.MapTools.Dialogs
         public QueryThemes()
         {
             _queries = new List<QueryTheme>();
-            
+
         }
         public QueryThemes(TreeNodeCollection collection)
             : this()
         {
-            if (collection == null) return;
+            if (collection == null)
+            {
+                return;
+            }
 
             foreach (TreeNode node in collection)
             {
-                if (!(node is QueryTheme)) continue;
+                if (!(node is QueryTheme))
+                {
+                    continue;
+                }
+
                 _queries.Add(node as QueryTheme);
             }
         }
@@ -328,13 +381,19 @@ namespace gView.Plugins.MapTools.Dialogs
 
         public void Load(IPersistStream stream)
         {
-            if (_queries == null) _queries = new List<QueryTheme>();
+            if (_queries == null)
+            {
+                _queries = new List<QueryTheme>();
+            }
 
             _queries.Clear();
             while (true)
             {
                 QueryTheme theme = stream.Load("Query", null, new QueryTheme()) as QueryTheme;
-                if (theme == null) break;
+                if (theme == null)
+                {
+                    break;
+                }
 
                 _queries.Add(theme);
             }
@@ -343,7 +402,9 @@ namespace gView.Plugins.MapTools.Dialogs
         public void Save(IPersistStream stream)
         {
             if (_queries == null)
+            {
                 return;
+            }
 
             foreach (QueryTheme theme in _queries)
             {
@@ -356,7 +417,7 @@ namespace gView.Plugins.MapTools.Dialogs
 
     internal class QueryTheme : TreeNode, IPersistable
     {
-        public enum NodeType { query=0, seperator=1 }
+        public enum NodeType { query = 0, seperator = 1 }
         private NodeType _type;
         QueryThemePromptDef _table;
 
@@ -396,13 +457,19 @@ namespace gView.Plugins.MapTools.Dialogs
                 base.Text = (string)stream.Load("Name", "");
 
                 _table = stream.Load("PromptDefs", null, new QueryThemePromptDef()) as QueryThemePromptDef;
-                if (_table == null) _table = new QueryThemePromptDef();
+                if (_table == null)
+                {
+                    _table = new QueryThemePromptDef();
+                }
 
                 base.ImageIndex = base.SelectedImageIndex = 0;
                 while (true)
                 {
                     QueryThemeTable tabNode = stream.Load("Table", null, new QueryThemeTable()) as QueryThemeTable;
-                    if (tabNode == null) break;
+                    if (tabNode == null)
+                    {
+                        break;
+                    }
 
                     Nodes.Add(tabNode);
                 }
@@ -425,7 +492,11 @@ namespace gView.Plugins.MapTools.Dialogs
 
                 foreach (TreeNode node in Nodes)
                 {
-                    if (!(node is QueryThemeTable)) continue;
+                    if (!(node is QueryThemeTable))
+                    {
+                        continue;
+                    }
+
                     stream.Save("Table", node);
                 }
             }
@@ -456,7 +527,10 @@ namespace gView.Plugins.MapTools.Dialogs
             {
                 DataRow row = NewRow();
                 QueryThemeTableRowPersist per = stream.Load("PromptDef", null, new QueryThemeTableRowPersist(row)) as QueryThemeTableRowPersist;
-                if (per == null) break;
+                if (per == null)
+                {
+                    break;
+                }
 
                 Rows.Add(row);
             }
@@ -474,20 +548,23 @@ namespace gView.Plugins.MapTools.Dialogs
         #endregion
     }
 
-    internal class QueryThemeTable : TreeNode,IPersistable
+    internal class QueryThemeTable : TreeNode, IPersistable
     {
         int _layerID = -1;
         int _datasetID = -1;
         QueryThemeQueryFieldDef _queryFields;
         QueryThemeVisibleFieldDef _visFields;
- 
+
         internal QueryThemeTable()
         {
             base.ImageIndex = base.SelectedImageIndex = 2;
         }
         public QueryThemeTable(ILayer layer, string name) : this()
         {
-            if (layer == null) return;
+            if (layer == null)
+            {
+                return;
+            }
 
             base.Text = name;
 
@@ -511,14 +588,19 @@ namespace gView.Plugins.MapTools.Dialogs
 
         public ILayer GetLayer(IMapDocument doc)
         {
-            if (doc == null) return null;
+            if (doc == null)
+            {
+                return null;
+            }
 
             foreach (IMap map in doc.Maps)
             {
                 foreach (IDatasetElement element in map.MapElements)
                 {
                     if (element is ILayer && element.ID == _layerID && element.DatasetID == _datasetID)
+                    {
                         return element as ILayer;
+                    }
                 }
             }
             return null;
@@ -537,14 +619,21 @@ namespace gView.Plugins.MapTools.Dialogs
 
         public void Load(IPersistStream stream)
         {
-            base.Text = (string)stream.Load("Text","");
+            base.Text = (string)stream.Load("Text", "");
             _layerID = (int)stream.Load("LayerID", -1);
             _datasetID = (int)stream.Load("DatasetID", -1);
 
             _queryFields = stream.Load("FieldDefs", null, new QueryThemeQueryFieldDef()) as QueryThemeQueryFieldDef;
-            if (_queryFields == null) _queryFields = new QueryThemeQueryFieldDef();
+            if (_queryFields == null)
+            {
+                _queryFields = new QueryThemeQueryFieldDef();
+            }
+
             _visFields = stream.Load("VisibleFieldDefs", null, new QueryThemeVisibleFieldDef()) as QueryThemeVisibleFieldDef;
-            if (_visFields == null) _visFields = new QueryThemeVisibleFieldDef();
+            if (_visFields == null)
+            {
+                _visFields = new QueryThemeVisibleFieldDef();
+            }
         }
 
         public void Save(IPersistStream stream)
@@ -580,7 +669,10 @@ namespace gView.Plugins.MapTools.Dialogs
             {
                 DataRow row = NewRow();
                 QueryThemeTableRowPersist per = stream.Load("FieldDef", null, new QueryThemeTableRowPersist(row)) as QueryThemeTableRowPersist;
-                if (per == null) break;
+                if (per == null)
+                {
+                    break;
+                }
 
                 Rows.Add(row);
             }
@@ -598,7 +690,7 @@ namespace gView.Plugins.MapTools.Dialogs
         #endregion
     }
 
-    internal class QueryThemeVisibleFieldDef : DataTable,IPersistable
+    internal class QueryThemeVisibleFieldDef : DataTable, IPersistable
     {
         private string _primaryField = "";
         private bool _useDefault = true;
@@ -633,7 +725,10 @@ namespace gView.Plugins.MapTools.Dialogs
             {
                 DataRow row = NewRow();
                 QueryThemeTableRowPersist per = stream.Load("FieldDef", null, new QueryThemeTableRowPersist(row)) as QueryThemeTableRowPersist;
-                if (per == null) break;
+                if (per == null)
+                {
+                    break;
+                }
 
                 Rows.Add(row);
             }
@@ -666,7 +761,9 @@ namespace gView.Plugins.MapTools.Dialogs
         public void Load(IPersistStream stream)
         {
             if (_row == null || _row.Table == null || _row.Table.Columns == null)
+            {
                 return;
+            }
 
             foreach (DataColumn col in _row.Table.Columns)
             {
@@ -681,7 +778,9 @@ namespace gView.Plugins.MapTools.Dialogs
         public void Save(IPersistStream stream)
         {
             if (_row == null || _row.Table == null || _row.Table.Columns == null)
+            {
                 return;
+            }
 
             foreach (DataColumn col in _row.Table.Columns)
             {

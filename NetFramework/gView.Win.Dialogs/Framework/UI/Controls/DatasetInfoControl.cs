@@ -1,13 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Drawing;
-using System.Data;
-using System.Linq;
-using System.Text;
-using System.Windows.Forms;
-using gView.Framework.Data;
+﻿using gView.Framework.Data;
 using gView.Framework.IO;
+using System.Windows.Forms;
 
 namespace gView.Framework.UI.Controls
 {
@@ -43,7 +36,7 @@ namespace gView.Framework.UI.Controls
                 txtProvider.Text = _dataset.ProviderName;
 
                 txtConnectionString.Text = ConfigTextStream.SecureConfig(_dataset.ConnectionString);
-            } 
+            }
         }
     }
 }

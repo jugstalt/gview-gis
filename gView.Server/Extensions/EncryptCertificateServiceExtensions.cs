@@ -2,9 +2,6 @@
 using gView.Server.AppCode;
 using gView.Server.Services.Security;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using static gView.Server.AppCode.AuthToken;
 
 namespace gView.Server.Extensions

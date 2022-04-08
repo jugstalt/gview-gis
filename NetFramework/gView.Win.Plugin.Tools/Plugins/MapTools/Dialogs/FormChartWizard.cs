@@ -1,22 +1,17 @@
-﻿using System;
+﻿using gView.Framework.Carto;
+using gView.Framework.Carto.Rendering;
+using gView.Framework.Data;
+using gView.Framework.Geometry;
+using gView.Framework.Symbology;
+using gView.Framework.Sys.UI.Extensions;
+using gView.Framework.UI.Controls;
+using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Data;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Windows.Forms;
-using System.Windows.Forms.DataVisualization;
-using System.Windows.Forms.DataVisualization.Charting;
-using gView.Framework.Data;
-using gView.Framework.UI;
-using gView.Framework.Carto;
-using gView.Framework.Symbology;
-using gView.Framework.Geometry;
-using gView.Framework.Carto.Rendering;
-using gView.Framework.UI.Controls;
 using System.Threading.Tasks;
-using gView.Framework.Sys.UI.Extensions;
+using System.Windows.Forms;
+using System.Windows.Forms.DataVisualization.Charting;
 
 namespace gView.Plugins.MapTools.Dialogs
 {
@@ -98,7 +93,9 @@ namespace gView.Plugins.MapTools.Dialogs
                 }
             }
             if (cmbDataFields.Items.Count > 0)
+            {
                 cmbDataFields.SelectedIndex = 0;
+            }
 
             #region Filter
             //All Features
@@ -147,7 +144,9 @@ namespace gView.Plugins.MapTools.Dialogs
             }
 
             if (cmbFeatures.SelectedIndex == -1)
+            {
                 cmbFeatures.SelectedIndex = 0;
+            }
 
             #endregion
 
@@ -224,9 +223,11 @@ namespace gView.Plugins.MapTools.Dialogs
 
                 _gvChart.ChartType = chartType;
                 if (panelDisplayMode.Visible == true)
+                {
                     _gvChart.ChartDisplayMode = (gvChart.DisplayMode)cmbDisplayMode.SelectedIndex;
+                }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 MessageBox.Show(ex.Message);
             }
@@ -254,7 +255,10 @@ namespace gView.Plugins.MapTools.Dialogs
                             break;
                         }
                     }
-                    if (has) continue;
+                    if (has)
+                    {
+                        continue;
+                    }
                 }
 
                 SimpleFillSymbol symbol = (SimpleFillSymbol)RendererFunctions.CreateStandardSymbol(GeometryType.Polygon);
@@ -279,7 +283,9 @@ namespace gView.Plugins.MapTools.Dialogs
         private void seriesListView_OnLabelChanged(ISymbol symbol, int nr, string label)
         {
             if (symbol is ILegendItem)
+            {
                 ((ILegendItem)symbol).LegendLabel = label;
+            }
         }
 
         private void btnRemove_Click(object sender, EventArgs e)
@@ -316,10 +322,13 @@ namespace gView.Plugins.MapTools.Dialogs
                 while ((row = await NextRow(cursor)) != null)
                 {
                     object dataValue = row[dataField.name];
-                    if (dataValue == System.DBNull.Value) continue;
+                    if (dataValue == System.DBNull.Value)
+                    {
+                        continue;
+                    }
 
                     DataRow dataRow = GetDataRow(tab, dataValue);
-                    for(int i=1,to=tab.Columns.Count;i<to;i++)
+                    for (int i = 1, to = tab.Columns.Count; i < to; i++)
                     {
                         double val = Convert.ToDouble((row[tab.Columns[i].ColumnName] == System.DBNull.Value ? 0D : row[tab.Columns[i].ColumnName]));
                         dataRow[tab.Columns[i].ColumnName] = Convert.ToDouble(dataRow[tab.Columns[i].ColumnName]) + val;
@@ -357,7 +366,9 @@ namespace gView.Plugins.MapTools.Dialogs
         private void btnNext_Click(object sender, EventArgs e)
         {
             if (tabWizard.SelectedIndex < tabWizard.TabPages.Count - 1)
+            {
                 tabWizard.SelectedIndex++;
+            }
 
             btnBack.Enabled = tabWizard.SelectedIndex > 0;
             btnNext.Enabled = tabWizard.SelectedIndex < tabWizard.TabPages.Count - 1;
@@ -366,7 +377,9 @@ namespace gView.Plugins.MapTools.Dialogs
         private void btnBack_Click(object sender, EventArgs e)
         {
             if (tabWizard.SelectedIndex > 0)
+            {
                 tabWizard.SelectedIndex--;
+            }
 
             btnBack.Enabled = tabWizard.SelectedIndex > 0;
             btnNext.Enabled = tabWizard.SelectedIndex < tabWizard.TabPages.Count - 1;
@@ -405,7 +418,9 @@ namespace gView.Plugins.MapTools.Dialogs
             foreach (DataColumn col in tab.Columns)
             {
                 if (col is DataFieldColumn)
+                {
                     return (DataFieldColumn)col;
+                }
             }
             return null;
         }
@@ -417,7 +432,9 @@ namespace gView.Plugins.MapTools.Dialogs
             foreach (DataColumn col in tab.Columns)
             {
                 if (col is SeriesDataColumn)
+                {
                     ret.Add((SeriesDataColumn)col);
+                }
             }
 
             return ret.Count > 0 ? ret : null;
@@ -426,10 +443,14 @@ namespace gView.Plugins.MapTools.Dialogs
         async private Task<IRow> NextRow(ICursor cursor)
         {
             if (cursor is IFeatureCursor)
+            {
                 return await ((IFeatureCursor)cursor).NextFeature();
+            }
 
             if (cursor is IRowCursor)
+            {
                 return await ((IRowCursor)cursor).NextRow();
+            }
 
             return null;
         }
@@ -439,14 +460,19 @@ namespace gView.Plugins.MapTools.Dialogs
             foreach (DataRow row in tab.Rows)
             {
                 if (row[0].Equals(dataValue))
+                {
                     return row;
+                }
             }
 
             DataRow newRow = tab.NewRow();
             newRow[0] = dataValue;
             tab.Rows.Add(newRow);
             for (int i = 1; i < tab.Columns.Count; i++)
+            {
                 newRow[i] = 0D;
+            }
+
             return newRow;
         }
 

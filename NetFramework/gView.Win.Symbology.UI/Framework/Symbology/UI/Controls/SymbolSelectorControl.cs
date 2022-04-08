@@ -1,10 +1,9 @@
 ﻿using gView.Framework.Carto.UI;
+using gView.Framework.Sys.UI.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
-using System.Linq;
-using gView.Framework.Sys.UI.Extensions;
 
 namespace gView.Framework.Symbology.UI.Controls
 {
@@ -101,7 +100,7 @@ namespace gView.Framework.Symbology.UI.Controls
 
         static SymbolSelectorControl()
         {
-            if(GraphicsEngine.Current.Engine!=null)
+            if (GraphicsEngine.Current.Engine != null)
             {
                 SymbolDict = new Dictionary<Type, List<ISymbol>>()
                 {

@@ -309,9 +309,13 @@ namespace gView.Framework.Symbology
             {
                 float pix = (float)(display.mapScale / (display.dpi / 0.0254));
                 if (pix == 0f)
+                {
                     fac = 0;
+                }
                 else
+                {
                     fac = 1f / pix;
+                }
             }
 
             SimpleLineSymbol clone = new SimpleLineSymbol(_color, ReferenceScaleHelper.PenWidth(_pen.Width * fac, this, display));

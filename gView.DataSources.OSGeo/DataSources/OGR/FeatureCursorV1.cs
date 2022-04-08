@@ -20,7 +20,7 @@ namespace gView.DataSources.OGR
 
             if (filter is ISpatialFilter)
             {
-                IEnvelope env=((ISpatialFilter)filter).Geometry.Envelope;
+                IEnvelope env = ((ISpatialFilter)filter).Geometry.Envelope;
                 _layer.SetSpatialFilterRect(env.minx, env.miny, env.maxx, env.maxy);
                 if (String.IsNullOrEmpty(filter.WhereClause))
                 {

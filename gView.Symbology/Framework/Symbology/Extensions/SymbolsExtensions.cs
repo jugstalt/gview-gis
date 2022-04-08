@@ -1,9 +1,7 @@
 ﻿using gView.Framework.Geometry;
 using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Linq;
-using System.Text;
 
 namespace gView.Symbology.Framework.Symbology.Extensions
 {
@@ -12,7 +10,9 @@ namespace gView.Symbology.Framework.Symbology.Extensions
         static public bool IntersectsOne(this IEnvelope envelope, IEnumerable<IEnvelope> envelopes)
         {
             if (envelope == null || envelopes == null)
+            {
                 return false;
+            }
 
             return envelopes.Where(r => r.Intersects(envelope))
                              .FirstOrDefault() != null;

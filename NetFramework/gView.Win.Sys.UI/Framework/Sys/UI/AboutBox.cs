@@ -1,14 +1,8 @@
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Text;
-using System.IO;
-using System.Xml;
-using System.Windows.Forms;
 using System.Diagnostics;
-using gView.Framework.system;
+using System.Drawing;
+using System.Windows.Forms;
+using System.Xml;
 
 namespace gView.Framework.system.UI
 {
@@ -43,7 +37,10 @@ namespace gView.Framework.system.UI
 
         private void MakeCredits()
         {
-            if (!_showCredits) return;
+            if (!_showCredits)
+            {
+                return;
+            }
 
             try
             {

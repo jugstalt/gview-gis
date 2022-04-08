@@ -1,11 +1,5 @@
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Text;
-using System.Windows.Forms;
 using gView.Framework.Geometry;
+using System.Windows.Forms;
 
 namespace gView.Plugins.Editor.Dialogs
 {
@@ -27,11 +21,19 @@ namespace gView.Plugins.Editor.Dialogs
             get
             {
                 if (chkPoint.Checked)
+                {
                     return GeometryType.Point;
+                }
+
                 if (chkLine.Checked)
+                {
                     return GeometryType.Polyline;
+                }
+
                 if (chkPolygon.Checked)
+                {
                     return GeometryType.Polygon;
+                }
 
                 return GeometryType.Unknown;
             }
@@ -41,7 +43,7 @@ namespace gView.Plugins.Editor.Dialogs
                 {
                     case GeometryType.Point:
                     case GeometryType.Multipoint:
-                        chkPoint.Checked=true;
+                        chkPoint.Checked = true;
                         break;
                     case GeometryType.Polyline:
                         chkLine.Checked = true;

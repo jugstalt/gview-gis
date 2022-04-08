@@ -1,23 +1,21 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
 using gView.Framework.Carto;
-using gView.Interoperability.OGC.Dataset.WMS;
-using gView.Interoperability.OGC.Dataset.WFS;
+using gView.Framework.Carto.Rendering;
 using gView.Framework.Data;
-using gView.Framework.Symbology;
+using gView.Framework.Geometry;
 using gView.Framework.IO;
+using gView.Framework.Symbology;
 using gView.Framework.system;
 using gView.Framework.UI;
-using System.Reflection;
-using System.IO;
-using System.Xml;
-using gView.Framework.Geometry;
 using gView.Framework.Xml;
 using gView.Framework.XML;
-using gView.Framework.Carto.Rendering;
-using System.Threading.Tasks;
+using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Reflection;
+using System.Text;
+using System.Threading.Tasks;
+using System.Xml;
 
 namespace gView.Interoperability.OGC.SLD
 {
@@ -61,7 +59,9 @@ namespace gView.Interoperability.OGC.SLD
             var renderer = new SLDRenderer();
 
             if (featureLayer == null)
+            {
                 return renderer;
+            }
 
             if (featureLayer.FeatureRenderer is SimpleRenderer)
             {
@@ -93,13 +93,18 @@ namespace gView.Interoperability.OGC.SLD
         }
         private void FromXmlNodes(XmlNodeList rules, XmlNamespaceManager ns)
         {
-            if (rules == null || rules.Count == 0) return;
+            if (rules == null || rules.Count == 0)
+            {
+                return;
+            }
 
             foreach (XmlNode ruleNode in rules)
             {
                 Rule rule = new Rule(ruleNode, ns);
                 if (rule.Symbol != null)
+                {
                     _rules.Add(rule);
+                }
             }
         }
 
@@ -113,10 +118,13 @@ namespace gView.Interoperability.OGC.SLD
             StreamWriter sw = new StreamWriter(ms, Encoding.UTF8);
 
             if (useNamespace)
+            {
                 sw.WriteLine("<NamedLayer xmlns=\"http://www.opengis.net/sld\" >");
+            }
             else
+            {
                 sw.WriteLine("<NamedLayer>");
-
+            }
 
             sw.WriteLine("<Name>" + layerName + "</Name>");
             sw.WriteLine("<UserStyle>");
@@ -124,7 +132,9 @@ namespace gView.Interoperability.OGC.SLD
             sw.WriteLine("<FeatureTypeStyle>");
 
             foreach (Rule rule in _rules)
+            {
                 rule.XmlString(sw, useNamespace);
+            }
 
             sw.WriteLine("</FeatureTypeStyle>");
             sw.WriteLine("</UserStyle>");
@@ -145,7 +155,9 @@ namespace gView.Interoperability.OGC.SLD
             foreach (Rule rule in _rules)
             {
                 if (rule != null && rule.Filter != null)
+                {
                     rule.Filter.SetDefaultSrsName(srsName);
+                }
             }
         }
 
@@ -157,10 +169,16 @@ namespace gView.Interoperability.OGC.SLD
             foreach (Rule rule in _rules)
             {
                 if (rule.Symbol == null ||
-                    !rule.RenderFeature(disp, feature, _featureSRef)) continue;
+                    !rule.RenderFeature(disp, feature, _featureSRef))
+                {
+                    continue;
+                }
 
                 if (rule.filterType == Rule.FilterType.ElseFilter &&
-                    rendered) continue;
+                    rendered)
+                {
+                    continue;
+                }
 
                 disp.Draw(rule.Symbol, feature.Shape);
                 rendered = true;
@@ -182,17 +200,26 @@ namespace gView.Interoperability.OGC.SLD
             List<string> propertyNames = new List<string>();
             foreach (Rule rule in _rules)
             {
-                if (rule == null || rule.Filter == null) continue;
+                if (rule == null || rule.Filter == null)
+                {
+                    continue;
+                }
 
                 foreach (string pname in rule.Filter.PropertyNames)
                 {
-                    if (propertyNames.Contains(pname)) continue;
+                    if (propertyNames.Contains(pname))
+                    {
+                        continue;
+                    }
+
                     propertyNames.Add(pname);
                 }
             }
 
             foreach (string propertyName in propertyNames)
+            {
                 filter.AddField(propertyName);
+            }
 
             if (layer != null && layer.FeatureClass != null)
             {
@@ -210,7 +237,10 @@ namespace gView.Interoperability.OGC.SLD
             //    (layer.Class is WMSThemeClass ||
             //    layer.Class is WFSFeatureClass)) return true;
             if (layer == null && layer.FeatureClass == null &&
-                layer.FeatureClass.GeometryType == GeometryType.Network) return false;
+                layer.FeatureClass.GeometryType == GeometryType.Network)
+            {
+                return false;
+            }
 
             return true;
         }
@@ -286,7 +316,11 @@ namespace gView.Interoperability.OGC.SLD
             clone._featureSRef = _featureSRef;
             foreach (Rule rule in _rules)
             {
-                if (rule == null) continue;
+                if (rule == null)
+                {
+                    continue;
+                }
+
                 clone._rules.Add(rule.Clone(options) as Rule);
             }
             return clone;
@@ -296,7 +330,10 @@ namespace gView.Interoperability.OGC.SLD
         {
             foreach (Rule rule in _rules)
             {
-                if (rule == null) continue;
+                if (rule == null)
+                {
+                    continue;
+                }
 
                 rule.Release();
             }
@@ -309,7 +346,10 @@ namespace gView.Interoperability.OGC.SLD
 
         public object PropertyPage(object initObject)
         {
-            if (!(initObject is IFeatureLayer)) return null;
+            if (!(initObject is IFeatureLayer))
+            {
+                return null;
+            }
 
             try
             {
@@ -449,13 +489,22 @@ namespace gView.Interoperability.OGC.SLD
 
             public bool RenderFeature(IDisplay display, IFeature feature, ISpatialReference featureSRef)
             {
-                if (this.MaxScale > 1 && this.MaxScale > display.mapScale + 0.5) return false;
-                if (this.MinScale > 1 && this.MinScale < display.mapScale - 0.5) return false;
+                if (this.MaxScale > 1 && this.MaxScale > display.mapScale + 0.5)
+                {
+                    return false;
+                }
+
+                if (this.MinScale > 1 && this.MinScale < display.mapScale - 0.5)
+                {
+                    return false;
+                }
 
                 if (_filter != null && _filterType == FilterType.OgcFilter)
                 {
                     if (!_filter.Check(feature, featureSRef))
+                    {
                         return false;
+                    }
                 }
                 return true;
             }
@@ -485,9 +534,13 @@ namespace gView.Interoperability.OGC.SLD
             internal void XmlString(StreamWriter sw, bool useNameSpace)
             {
                 if (useNameSpace)
+                {
                     sw.WriteLine("<Rule xmlns=\"http://www.opengis.net/sld\" >");
+                }
                 else
+                {
                     sw.WriteLine("<Rule>");
+                }
 
                 if (_filter != null && _filterType == FilterType.OgcFilter)
                 {
@@ -501,9 +554,14 @@ namespace gView.Interoperability.OGC.SLD
                 double scaleFac = 1.33488; // UMN ???
 
                 if (_maxScale > 1)
+                {
                     sw.WriteLine("<MinScaleDenominator>" + (_maxScale / scaleFac).ToString(_nhi) + "</MinScaleDenominator>");
+                }
+
                 if (_minScale > 1)
+                {
                     sw.WriteLine("<MaxScaleDenominator>" + (_minScale / scaleFac).ToString(_nhi) + "</MaxScaleDenominator>");
+                }
 
                 if (_symbol != null)
                 {
@@ -533,15 +591,22 @@ namespace gView.Interoperability.OGC.SLD
             public void Save(IPersistStream stream)
             {
                 if (_minScale != 0.0)
+                {
                     stream.Save("MinScale", _minScale);
+                }
+
                 if (_maxScale != 0.0)
+                {
                     stream.Save("MaxScale", _maxScale);
+                }
 
                 stream.Save("Symbol", _symbol);
 
                 stream.Save("FilterType", (int)_filterType);
                 if (_filter != null)
+                {
                     stream.Save("Filter", _filter);
+                }
             }
 
             #endregion
@@ -552,7 +617,10 @@ namespace gView.Interoperability.OGC.SLD
             {
                 Rule clone = new Rule();
                 if (_symbol != null)
+                {
                     clone.Symbol = _symbol.Clone(options) as ISymbol;
+                }
+
                 clone.Filter = _filter;
                 clone.filterType = _filterType;
                 clone.MinScale = _minScale;
@@ -564,7 +632,9 @@ namespace gView.Interoperability.OGC.SLD
             public void Release()
             {
                 if (_symbol != null)
+                {
                     _symbol.Release();
+                }
             }
 
             #endregion
@@ -604,7 +674,9 @@ namespace gView.Interoperability.OGC.SLD
                         legendText += " ElseFilter";
                     }
                     if (legendText.Trim() != String.Empty)
+                    {
                         lItem.LegendLabel = "Rule: " + legendText.Trim();
+                    }
                 }
             }
 
@@ -622,7 +694,7 @@ namespace gView.Interoperability.OGC.SLD
                         XmlDocument doc = new XmlDocument();
                         doc.LoadXml(xml);
 
-                        IQueryFilter queryFilter = gView.Framework.OGC.WFS.Filter.FromWFS(doc.SelectSingleNode("Filter"),_gmlVersion);
+                        IQueryFilter queryFilter = gView.Framework.OGC.WFS.Filter.FromWFS(doc.SelectSingleNode("Filter"), _gmlVersion);
                         filterAxl = AXLFromObjectFactory.Query(queryFilter);
                     }
 
@@ -652,7 +724,10 @@ namespace gView.Interoperability.OGC.SLD
         public ILegendItem LegendItem(int index)
         {
             if (index < 0 || index >= _rules.Count ||
-                _rules[index] == null) return null;
+                _rules[index] == null)
+            {
+                return null;
+            }
 
             return _rules[index].Symbol as ILegendItem;
         }
@@ -661,9 +736,15 @@ namespace gView.Interoperability.OGC.SLD
         {
             foreach (Rule rule in _rules)
             {
-                if (rule == null) continue;
+                if (rule == null)
+                {
+                    continue;
+                }
+
                 if (rule.Symbol == item)
+                {
                     rule.Symbol = symbol;
+                }
             }
         }
 
@@ -676,7 +757,9 @@ namespace gView.Interoperability.OGC.SLD
             get
             {
                 if (_rules.Count == 1)
+                {
                     return _rules[0].ArcXml;
+                }
 
                 return String.Empty;
             }

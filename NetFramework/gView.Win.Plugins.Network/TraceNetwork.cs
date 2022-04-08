@@ -1,16 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using gView.Framework.UI;
-using gView.Framework.system;
-using gView.Framework.Network;
+﻿using gView.Framework.Carto;
 using gView.Framework.Data;
 using gView.Framework.Geometry;
-using gView.Plugins.Network.Graphic;
-using gView.Framework.Carto;
-using gView.Framework.UI.Events;
-using System.Threading;
+using gView.Framework.Network;
+using gView.Framework.system;
+using gView.Framework.UI;
 using gView.Framework.UI.Dialogs;
+using gView.Framework.UI.Events;
+using gView.Plugins.Network.Graphic;
 using System.Threading.Tasks;
 
 namespace gView.Plugins.Network
@@ -74,7 +70,9 @@ namespace gView.Plugins.Network
                     FormTracerProperties dlg = new FormTracerProperties(
                         await ((INetworkTracerProperties)_module.SelectedNetworkTracer).NetworkTracerProperties(_module.SelectedNetworkFeatureClass, TracerInput()));
                     if (dlg.ShowDialog() != System.Windows.Forms.DialogResult.OK)
+                    {
                         return false;
+                    }
                 }
                 if (_module.SelectedNetworkTracer is IProgressReporterEvent)
                 {
@@ -100,11 +98,14 @@ namespace gView.Plugins.Network
         {
             NetworkProgressReporter reporter = arg as NetworkProgressReporter;
             if (_doc == null || _module == null)
+            {
                 return;
+            }
 
             if (reporter != null && _module.SelectedNetworkTracer is IProgressReporterEvent)
+            {
                 ((IProgressReporterEvent)_module.SelectedNetworkTracer).ReportProgress += reporter.FireProgressReporter;
-
+            }
 
             NetworkTracerOutputCollection outputCollection = await _module.SelectedNetworkTracer.Trace(
                                  _module.SelectedNetworkFeatureClass,
@@ -122,12 +123,18 @@ namespace gView.Plugins.Network
                     {
                         IFeatureCursor cursor = await _module.NetworkPathEdges((NetworkEdgeCollectionOutput)output);
                         if (cursor == null)
+                        {
                             return;
+                        }
+
                         IFeature feature;
                         while ((feature = await cursor.NextFeature()) != null)
                         {
                             if (!(feature.Shape is IPolyline))
+                            {
                                 continue;
+                            }
+
                             display.GraphicsContainer.Elements.Add(new GraphicNetworkPathEdge((IPolyline)feature.Shape));
                         }
                     }
@@ -148,17 +155,30 @@ namespace gView.Plugins.Network
         private NetworkTracerInputCollection TracerInput()
         {
             if (_module == null)
+            {
                 return null;
+            }
 
             NetworkTracerInputCollection input = new NetworkTracerInputCollection();
             if (_module.StartNodeIndex >= 0)
+            {
                 input.Add(new NetworkSourceInput(_module.StartNodeIndex));
+            }
+
             if (_module.EndNodeIndex >= 0)
+            {
                 input.Add(new NetworkSinkInput(_module.EndNodeIndex));
+            }
+
             if (_module.GraphWeight != null)
+            {
                 input.Add(new NetworkWeighInput(_module.GraphWeight, _module.WeightApplying));
+            }
+
             if (_module.StartEdgeIndex >= 0)
+            {
                 input.Add(new NetworkSourceEdgeInput(_module.StartEdgeIndex, _module.StartPoint));
+            }
 
             return input;
         }

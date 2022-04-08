@@ -1,58 +1,51 @@
-using System;
-using System.Drawing;
-using System.Collections;
-using System.ComponentModel;
-using System.Windows.Forms;
-using gView.Framework;
-using gView.Framework.Symbology;
 using gView.Framework.UI;
 
 namespace gView.Framework.Symbology.UI
 {
-	/// <summary>
-	/// Zusammenfassung für PropertyForm_SimpleFillSymbol.
-	/// </summary>
+    /// <summary>
+    /// Zusammenfassung für PropertyForm_SimpleFillSymbol.
+    /// </summary>
     internal class PropertyForm_SymbolDotedLineSymbol : System.Windows.Forms.Form, IPropertyPageUI, gView.Framework.Symbology.UI.IPropertyPanel
-	{
-		private System.Windows.Forms.ColorDialog colorDialog1;
-		/// <summary>
-		/// Erforderliche Designervariable.
-		/// </summary>
-		private System.ComponentModel.Container components = null;
-		public System.Windows.Forms.Panel panelLineSymbol;
-		private System.Windows.Forms.TabControl tabControl1;
-		private System.Windows.Forms.TabPage tabPage1;
-		private System.Windows.Forms.PropertyGrid propertyGrid;
-		public System.Windows.Forms.Panel panelFillSymbol;
-		private ILineSymbol _symbol=null;
+    {
+        private System.Windows.Forms.ColorDialog colorDialog1;
+        /// <summary>
+        /// Erforderliche Designervariable.
+        /// </summary>
+        private System.ComponentModel.Container components = null;
+        public System.Windows.Forms.Panel panelLineSymbol;
+        private System.Windows.Forms.TabControl tabControl1;
+        private System.Windows.Forms.TabPage tabPage1;
+        private System.Windows.Forms.PropertyGrid propertyGrid;
+        public System.Windows.Forms.Panel panelFillSymbol;
+        private ILineSymbol _symbol = null;
 
-		public PropertyForm_SymbolDotedLineSymbol()
-		{
-			InitializeComponent();
-		}
+        public PropertyForm_SymbolDotedLineSymbol()
+        {
+            InitializeComponent();
+        }
 
-		/// <summary>
-		/// Die verwendeten Ressourcen bereinigen.
-		/// </summary>
-		protected override void Dispose( bool disposing )
-		{
-			if( disposing )
-			{
-				if(components != null)
-				{
-					components.Dispose();
-				}
-			}
-			base.Dispose( disposing );
-		}
+        /// <summary>
+        /// Die verwendeten Ressourcen bereinigen.
+        /// </summary>
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                if (components != null)
+                {
+                    components.Dispose();
+                }
+            }
+            base.Dispose(disposing);
+        }
 
-		#region Vom Windows Form-Designer generierter Code
-		/// <summary>
-		/// Erforderliche Methode für die Designerunterstützung. 
-		/// Der Inhalt der Methode darf nicht mit dem Code-Editor geändert werden.
-		/// </summary>
-		private void InitializeComponent()
-		{
+        #region Vom Windows Form-Designer generierter Code
+        /// <summary>
+        /// Erforderliche Methode für die Designerunterstützung. 
+        /// Der Inhalt der Methode darf nicht mit dem Code-Editor geändert werden.
+        /// </summary>
+        private void InitializeComponent()
+        {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(PropertyForm_SymbolDotedLineSymbol));
             this.colorDialog1 = new System.Windows.Forms.ColorDialog();
             this.panelLineSymbol = new System.Windows.Forms.Panel();
@@ -113,22 +106,25 @@ namespace gView.Framework.Symbology.UI
             this.panelFillSymbol.ResumeLayout(false);
             this.ResumeLayout(false);
 
-		}
-		#endregion
+        }
+        #endregion
 
-		private void PropertyForm_SimpleFillSymbol_Load(object sender, System.EventArgs e)
-		{
+        private void PropertyForm_SimpleFillSymbol_Load(object sender, System.EventArgs e)
+        {
 
-		}
+        }
 
-		private void propertyGrid_PropertyValueChanged(object s, System.Windows.Forms.PropertyValueChangedEventArgs e)
-		{
-			if(PropertyChanged!=null) PropertyChanged(_symbol);
-		}
+        private void propertyGrid_PropertyValueChanged(object s, System.Windows.Forms.PropertyValueChangedEventArgs e)
+        {
+            if (PropertyChanged != null)
+            {
+                PropertyChanged(_symbol);
+            }
+        }
 
-		#region IPropertryPageUI
-		public event PropertyChangedEvent PropertyChanged=null;
-		#endregion
+        #region IPropertryPageUI
+        public event PropertyChangedEvent PropertyChanged = null;
+        #endregion
 
         #region PropertyPanel Member
 
@@ -139,7 +135,11 @@ namespace gView.Framework.Symbology.UI
                 _symbol = (ILineSymbol)symbol;
             }
 
-            if (_symbol == null) return null;
+            if (_symbol == null)
+            {
+                return null;
+            }
+
             propertyGrid.SelectedObject = new CustomClass(_symbol);
 
             return panelFillSymbol;

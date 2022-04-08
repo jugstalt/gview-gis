@@ -25,7 +25,7 @@ namespace gView.GraphicsEngine.GdiPlus
         public GdiBitmap(int width, int height, PixelFormat format)
         {
             _bitmap = new Bitmap(width, height, format.ToGdiPixelFormat());
-            if(format == PixelFormat.Gray8)
+            if (format == PixelFormat.Gray8)
             {
                 _bitmap.SetGrayscalePalette();
             }
@@ -58,7 +58,7 @@ namespace gView.GraphicsEngine.GdiPlus
 
         public void SetResolution(float dpiX, float dpiY)
         {
-            if(_bitmap!=null)
+            if (_bitmap != null)
             {
                 _bitmap.SetResolution(dpiX, DpiY);
             }
@@ -90,7 +90,7 @@ namespace gView.GraphicsEngine.GdiPlus
         }
 
         public IBitmap Clone(PixelFormat format) =>
-            _bitmap == null ? 
+            _bitmap == null ?
                 null :
                 new GdiBitmap(_bitmap.Clone(new System.Drawing.Rectangle(0, 0, _bitmap.Width, _bitmap.Height), format.ToGdiPixelFormat()));
 
@@ -115,7 +115,7 @@ namespace gView.GraphicsEngine.GdiPlus
         }
         public BitmapPixelData LockBitmapPixelData(BitmapLockMode lockMode, PixelFormat pixelFormat)
         {
-            var bitmapData =_bitmap.LockBits(new Rectangle(0, 0, _bitmap.Width, _bitmap.Height),
+            var bitmapData = _bitmap.LockBits(new Rectangle(0, 0, _bitmap.Width, _bitmap.Height),
                                              lockMode.ToGidImageLockMode(),
                                              pixelFormat.ToGdiPixelFormat());
 
@@ -124,7 +124,7 @@ namespace gView.GraphicsEngine.GdiPlus
 
         public void UnlockBitmapPixelData(BitmapPixelData bitmapPixelData)
         {
-            if(bitmapPixelData is GdiBitmapPixelData)
+            if (bitmapPixelData is GdiBitmapPixelData)
             {
                 _bitmap.UnlockBits(((GdiBitmapPixelData)bitmapPixelData).BitmapData);
             }

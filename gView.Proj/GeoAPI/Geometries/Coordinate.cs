@@ -168,9 +168,15 @@ namespace GeoAPI.Geometries
         public bool Equals2D(Coordinate c, double tolerance)
         {
             if (!EqualsWithTolerance(X, c.X, tolerance))
+            {
                 return false;
+            }
+
             if (!EqualsWithTolerance(Y, c.Y, tolerance))
+            {
                 return false;
+            }
+
             return true;
         }
 
@@ -188,13 +194,21 @@ namespace GeoAPI.Geometries
         public override bool Equals(object other)
         {
             if (other == null)
+            {
                 return false;
+            }
+
             var otherC = other as Coordinate;
             if (otherC != null)
+            {
                 return Equals(otherC);
-#pragma warning disable 612,618
+            }
+#pragma warning disable 612, 618
             if (!(other is ICoordinate))
+            {
                 return false;
+            }
+
             return ((ICoordinate)this).Equals((ICoordinate)other);
 #pragma warning restore 612,618
         }
@@ -266,11 +280,20 @@ namespace GeoAPI.Geometries
         public int CompareTo(Coordinate other)
         {
             if (X < other.X)
+            {
                 return -1;
+            }
+
             if (X > other.X)
+            {
                 return 1;
+            }
+
             if (Y < other.Y)
+            {
                 return -1;
+            }
+
             return Y > other.Y ? 1 : 0;
         }
 
@@ -513,11 +536,20 @@ namespace GeoAPI.Geometries
         int IComparable<ICoordinate>.CompareTo(ICoordinate other)
         {
             if (X < other.X)
+            {
                 return -1;
+            }
+
             if (X > other.X)
+            {
                 return 1;
+            }
+
             if (Y < other.Y)
+            {
                 return -1;
+            }
+
             return Y > other.Y ? 1 : 0;
         }
 

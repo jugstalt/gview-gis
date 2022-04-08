@@ -1,17 +1,15 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-using gView.Framework.UI;
 using gView.Framework.Carto;
 using gView.Framework.Geometry;
 using gView.Framework.IO;
 using gView.Framework.system;
-using System.Threading.Tasks;
+using gView.Framework.UI;
+using System;
+using System.Collections.Generic;
 
 namespace gView.Framework.Symbology.UI
 {
     [Serializable]
-    public abstract class GraphicShape : Cloner, IClone, IGraphicElement2, IGraphicsElementScaling, IGraphicsElementRotation, IIGraphicsElementTranslation,IGraphicsElementDesigning,IBrushColor,IPenColor,IFontColor,IPenWidth,IPenDashStyle,IFontSymbol,IPersistable,IToolMouseActions
+    public abstract class GraphicShape : Cloner, IClone, IGraphicElement2, IGraphicsElementScaling, IGraphicsElementRotation, IIGraphicsElementTranslation, IGraphicsElementDesigning, IBrushColor, IPenColor, IFontColor, IPenWidth, IPenDashStyle, IFontSymbol, IPersistable, IToolMouseActions
     {
         private IGeometry _template = null;
         private IPoint _origin = new Point(0, 0), _rotationCenter = new Point(0.5, 0.5);
@@ -29,21 +27,30 @@ namespace gView.Framework.Symbology.UI
             _scaleX = scaleX;
             _scaleY = scaleY;
 
-            if (Ghost != null) Ghost.Scale(scaleX, scaleY);
+            if (Ghost != null)
+            {
+                Ghost.Scale(scaleX, scaleY);
+            }
         }
 
         virtual public void ScaleX(double scale)
         {
             _scaleX = scale;
 
-            if (Ghost != null) Ghost.ScaleX(scale);
+            if (Ghost != null)
+            {
+                Ghost.ScaleX(scale);
+            }
         }
 
         virtual public void ScaleY(double scale)
         {
             _scaleY = scale;
 
-            if (Ghost != null) Ghost.ScaleY(scale);
+            if (Ghost != null)
+            {
+                Ghost.ScaleY(scale);
+            }
         }
 
         #endregion
@@ -60,7 +67,10 @@ namespace gView.Framework.Symbology.UI
             {
                 _angle = value * Math.PI / 180.0;
 
-                if (Ghost != null) Ghost.Rotation = _angle;
+                if (Ghost != null)
+                {
+                    Ghost.Rotation = _angle;
+                }
             }
         }
 
@@ -73,7 +83,10 @@ namespace gView.Framework.Symbology.UI
             _xOffset = x;
             _yOffset = y;
 
-            if (Ghost != null) Ghost.Translation(x, y);
+            if (Ghost != null)
+            {
+                Ghost.Translation(x, y);
+            }
         }
 
         #endregion
@@ -101,9 +114,16 @@ namespace gView.Framework.Symbology.UI
                 else
                 {
                     IEnvelope env = value.Envelope;
-                    if (env.Width == 0 || env.Height == 0) return;
+                    if (env.Width == 0 || env.Height == 0)
+                    {
+                        return;
+                    }
+
                     _template = value.Clone() as IGeometry;
-                    if (_template == null) return;
+                    if (_template == null)
+                    {
+                        return;
+                    }
 
                     TranslateGeometry(_template, -env.LowerLeft.X, -env.LowerLeft.Y);
                     ScaleGeometry(_template, 1.0 / env.Width, 1.0 / env.Height);
@@ -138,7 +158,11 @@ namespace gView.Framework.Symbology.UI
 
         protected void RemoveGrabber(GrabberIDs id)
         {
-            if (!UseGrabber(id)) return;
+            if (!UseGrabber(id))
+            {
+                return;
+            }
+
             _grabberMask -= (int)Math.Pow(2, (int)id);
         }
 
@@ -155,7 +179,10 @@ namespace gView.Framework.Symbology.UI
         #region Scaling
         private void ScaleGeometry(IGeometry geometry, double scaleX, double scaleY)
         {
-            if (geometry == null || _origin==null) return;
+            if (geometry == null || _origin == null)
+            {
+                return;
+            }
 
             if (geometry is IPoint)
             {
@@ -200,14 +227,21 @@ namespace gView.Framework.Symbology.UI
 
         private void ScalePoint(IPoint point, double scaleX, double scaleY)
         {
-            if (point == null || _origin == null) return;
+            if (point == null || _origin == null)
+            {
+                return;
+            }
+
             point.X = (point.X - _origin.X) * scaleX + _origin.X;
-            point.Y = (point.Y - _origin.Y) * scaleY + _origin.Y;    
+            point.Y = (point.Y - _origin.Y) * scaleY + _origin.Y;
         }
 
         private void ScalePoints(IPointCollection points, double scaleX, double scaleY)
         {
-            if (points == null || _origin == null) return;
+            if (points == null || _origin == null)
+            {
+                return;
+            }
 
             for (int i = 0; i < points.PointCount; i++)
             {
@@ -219,7 +253,10 @@ namespace gView.Framework.Symbology.UI
         #region Rotation
         private void RotateGeometry(IGeometry geometry, double cosA, double sinA)
         {
-            if (geometry == null || _origin == null) return;
+            if (geometry == null || _origin == null)
+            {
+                return;
+            }
 
             if (geometry is IPoint)
             {
@@ -264,10 +301,13 @@ namespace gView.Framework.Symbology.UI
 
         private void RotatePoint(IPoint point, double cosA, double sinA)
         {
-            if (point == null || _rotationCenter == null || _angle == 0.0) return;
+            if (point == null || _rotationCenter == null || _angle == 0.0)
+            {
+                return;
+            }
 
             Point rotCenter = new Point(_rotationCenter.X * _scaleX, _rotationCenter.Y * _scaleY);
-            
+
             double x0 = point.X - rotCenter.X;
             double y0 = point.Y - rotCenter.Y;
 
@@ -277,7 +317,10 @@ namespace gView.Framework.Symbology.UI
 
         private void RotatePoints(IPointCollection points, double cosA, double sinA)
         {
-            if (points == null || _origin == null) return;
+            if (points == null || _origin == null)
+            {
+                return;
+            }
 
             for (int i = 0; i < points.PointCount; i++)
             {
@@ -289,7 +332,10 @@ namespace gView.Framework.Symbology.UI
         #region Translation
         private void TranslateGeometry(IGeometry geometry, double X, double Y)
         {
-            if (geometry == null || _origin == null) return;
+            if (geometry == null || _origin == null)
+            {
+                return;
+            }
 
             if (geometry is IPoint)
             {
@@ -334,14 +380,21 @@ namespace gView.Framework.Symbology.UI
 
         private void TranslatePoint(IPoint point, double X, double Y)
         {
-            if (point == null) return;
+            if (point == null)
+            {
+                return;
+            }
+
             point.X += X;
             point.Y += Y;
         }
 
         private void TranslatePoints(IPointCollection points, double X, double Y)
         {
-            if (points == null) return;
+            if (points == null)
+            {
+                return;
+            }
 
             for (int i = 0; i < points.PointCount; i++)
             {
@@ -370,16 +423,27 @@ namespace gView.Framework.Symbology.UI
             }
             set
             {
-                if (_symbol == value) return;
-                if (_symbol != null) _symbol.Release();
+                if (_symbol == value)
+                {
+                    return;
+                }
+
+                if (_symbol != null)
+                {
+                    _symbol.Release();
+                }
+
                 _symbol = value;
             }
         }
 
         virtual public void DrawGrabbers(IDisplay display)
         {
-            IMultiPoint grabbers = Grabbers(display,true);
-            if (grabbers == null) return;
+            IMultiPoint grabbers = Grabbers(display, true);
+            if (grabbers == null)
+            {
+                return;
+            }
 
             var smode = display.Canvas.SmoothingMode;
             display.Canvas.SmoothingMode = GraphicsEngine.SmoothingMode.AntiAlias;
@@ -393,7 +457,7 @@ namespace gView.Framework.Symbology.UI
             if (display.GraphicsContainer.EditMode == GrabberMode.Pointer)
             {
                 Ring ring = new Ring();
-                for (int i = 0; i < Math.Min(grabbers.PointCount,4); i++)
+                for (int i = 0; i < Math.Min(grabbers.PointCount, 4); i++)
                 {
                     ring.AddPoint(grabbers[i]);
                 }
@@ -408,7 +472,10 @@ namespace gView.Framework.Symbology.UI
 
                 for (int i = 0; i < grabbers.PointCount; i++)
                 {
-                    if (!UseGrabber((GrabberIDs)i)) continue;
+                    if (!UseGrabber((GrabberIDs)i))
+                    {
+                        continue;
+                    }
 
                     if (i > 7 && pointSymbol.Color.Equals(GraphicsEngine.ArgbColor.White))
                     {
@@ -443,7 +510,10 @@ namespace gView.Framework.Symbology.UI
 
         private void DrawRotationGrabberline(IDisplay display)
         {
-            if (display == null || display.Canvas == null) return;
+            if (display == null || display.Canvas == null)
+            {
+                return;
+            }
 
             Envelope env = new Envelope(0, 0, 1, 1);
 
@@ -479,7 +549,10 @@ namespace gView.Framework.Symbology.UI
         virtual protected IMultiPoint Grabbers(IDisplay display, bool transform)
         {
             MultiPoint coll = new MultiPoint();
-            if (display == null || display.GraphicsContainer == null) return coll;
+            if (display == null || display.GraphicsContainer == null)
+            {
+                return coll;
+            }
 
             if (display.GraphicsContainer.EditMode == GrabberMode.Pointer)
             {
@@ -503,9 +576,13 @@ namespace gView.Framework.Symbology.UI
                 }
 
                 if (_scaleY > 0)
+                {
                     coll.AddPoint(new Point(env.UpperLeft.X + env.Width / 2, env.UpperLeft.Y + tol / _scaleY));
+                }
                 else
+                {
                     coll.AddPoint(new Point(env.LowerLeft.X + env.Width / 2, env.LowerLeft.Y + tol / _scaleY));
+                }
             }
             else if (display.GraphicsContainer.EditMode == GrabberMode.Vertex &&
                 this is IConstructable && ((IConstructable)this).hasVertices)
@@ -514,7 +591,9 @@ namespace gView.Framework.Symbology.UI
                 if (pColl != null)
                 {
                     for (int i = 0; i < pColl.PointCount; i++)
+                    {
                         coll.AddPoint(pColl[i]);
+                    }
                 }
             }
 
@@ -536,8 +615,11 @@ namespace gView.Framework.Symbology.UI
         }
         private void Vertices(IGeometry geometry, IPointCollection pColl, int removeAt)
         {
-            if (geometry == null || pColl == null) return;
-            
+            if (geometry == null || pColl == null)
+            {
+                return;
+            }
+
             if (geometry is IPoint)
             {
                 Vertices(geometry as IPoint, pColl, removeAt);
@@ -570,17 +652,27 @@ namespace gView.Framework.Symbology.UI
         }
         private void Vertices(IPoint p, IPointCollection vertices, int removeAt)
         {
-            if (p == null || vertices == null) return;
+            if (p == null || vertices == null)
+            {
+                return;
+            }
+
             vertices.AddPoint(p);
         }
         private void Vertices(IPointCollection pColl, IPointCollection vertices, int removeAt)
         {
-            if (pColl == null || vertices == null) return;
+            if (pColl == null || vertices == null)
+            {
+                return;
+            }
 
             for (int i = 0; i < pColl.PointCount; i++)
             {
                 if (vertices.PointCount == removeAt)
+                {
                     pColl.RemovePoint(i);
+                }
+
                 vertices.AddPoint(pColl[i]);
             }
         }
@@ -588,7 +680,10 @@ namespace gView.Framework.Symbology.UI
         protected IGeometry TransformGeometry()
         {
             IGeometry geometry = _template.Clone() as IGeometry;
-            if (geometry == null) return null;
+            if (geometry == null)
+            {
+                return null;
+            }
 
             ScaleGeometry(geometry, _scaleX, _scaleY);
             RotateGeometry(geometry, Math.Cos(_angle), Math.Sin(_angle));
@@ -599,10 +694,16 @@ namespace gView.Framework.Symbology.UI
 
         private void TemplateFromTransformedGeomety(IGeometry geometry)
         {
-            if (geometry == null) return;
+            if (geometry == null)
+            {
+                return;
+            }
 
             _template = geometry.Clone() as IGeometry;
-            if (_template == null) return;
+            if (_template == null)
+            {
+                return;
+            }
 
             TranslateGeometry(_template, -_xOffset, -_yOffset);
             RotateGeometry(_template, Math.Cos(-_angle), Math.Sin(-_angle));
@@ -633,10 +734,16 @@ namespace gView.Framework.Symbology.UI
 
         virtual public void Draw(IDisplay display)
         {
-            if (_template == null || _symbol == null || display == null) return;
+            if (_template == null || _symbol == null || display == null)
+            {
+                return;
+            }
 
             IGeometry geometry = TransformGeometry();
-            if (geometry == null) return;
+            if (geometry == null)
+            {
+                return;
+            }
 
             if (display.refScale > 1 && !(this is Ghost))
             {
@@ -668,7 +775,10 @@ namespace gView.Framework.Symbology.UI
         virtual public IHitPositions HitTest(IDisplay display, IPoint point)
         {
             IMultiPoint coll = Grabbers(display, true);
-            if (coll == null) return null;
+            if (coll == null)
+            {
+                return null;
+            }
 
             double tol = 5.0 * display.mapScale / (display.dpi / 0.0254);  // [m]
             if (display.SpatialReference != null &&
@@ -681,7 +791,10 @@ namespace gView.Framework.Symbology.UI
             {
                 if (display.GraphicsContainer.EditMode == GrabberMode.Pointer)
                 {
-                    if (!UseGrabber((GrabberIDs)i)) continue;
+                    if (!UseGrabber((GrabberIDs)i))
+                    {
+                        continue;
+                    }
                 }
 
                 IPoint p = coll[i];
@@ -708,7 +821,10 @@ namespace gView.Framework.Symbology.UI
 
                 List<IPath> paths = SpatialAlgorithms.Algorithm.GeometryPaths(geometry);
                 if (paths == null || paths.Count == 0)
+                {
                     return null;
+                }
+
                 Polyline pLine = new Polyline(paths);
 
                 if (SpatialAlgorithms.Algorithm.IntersectBox(pLine, new Envelope(
@@ -745,12 +861,18 @@ namespace gView.Framework.Symbology.UI
             return null;
         }
 
-        virtual public bool TrySelect(IDisplay display,IEnvelope envelope)
+        virtual public bool TrySelect(IDisplay display, IEnvelope envelope)
         {
-            if (_template == null) return false;
+            if (_template == null)
+            {
+                return false;
+            }
 
             IGeometry geometry = _template.Clone() as IGeometry;
-            if (geometry == null) return false ;
+            if (geometry == null)
+            {
+                return false;
+            }
 
             ScaleGeometry(geometry, _scaleX, _scaleY);
             RotateGeometry(geometry, Math.Cos(_angle), Math.Sin(_angle));
@@ -761,10 +883,16 @@ namespace gView.Framework.Symbology.UI
 
         virtual public bool TrySelect(IDisplay display, IPoint point)
         {
-            if (_template == null) return false;
+            if (_template == null)
+            {
+                return false;
+            }
 
             IGeometry geometry = _template.Clone() as IGeometry;
-            if (geometry == null) return false;
+            if (geometry == null)
+            {
+                return false;
+            }
 
             ScaleGeometry(geometry, _scaleX, _scaleY);
             RotateGeometry(geometry, Math.Cos(_angle), Math.Sin(_angle));
@@ -784,11 +912,14 @@ namespace gView.Framework.Symbology.UI
         private double _oldScaleX, _oldScaleY;
         private double _oldXOffset, _oldYOffset;
         private double _oldAngle;
-        private IPoint _oldAnglePoint,_fixPoint,_oldFixPoint;
+        private IPoint _oldAnglePoint, _fixPoint, _oldFixPoint;
         private IHitPositions _hit = null;
         virtual public void Design(IDisplay display, IHitPositions hit, double dx, double dy)
         {
-            if (display == null || display.GraphicsContainer == null || hit == null) return;
+            if (display == null || display.GraphicsContainer == null || hit == null)
+            {
+                return;
+            }
 
             switch (display.GraphicsContainer.EditMode)
             {
@@ -807,7 +938,7 @@ namespace gView.Framework.Symbology.UI
 
             if (_ghost != null)
             {
-                _ghost.RemoveVertex(display, index);         
+                _ghost.RemoveVertex(display, index);
             }
 
             return true;
@@ -889,7 +1020,10 @@ namespace gView.Framework.Symbology.UI
                     TranslateGeometry(_oldFixPoint, _xOffset, _yOffset);
                 }
             }
-            if (hit.HitID < 0 || hit.HitID > 9) return;
+            if (hit.HitID < 0 || hit.HitID > 9)
+            {
+                return;
+            }
 
             if ((GrabberIDs)hit.HitID != GrabberIDs.move && (GrabberIDs)hit.HitID != GrabberIDs.rotation)
             {
@@ -1003,7 +1137,11 @@ namespace gView.Framework.Symbology.UI
 
         private void SnapToFixPoint()
         {
-            if (_fixPoint == null || _oldFixPoint == null) return;
+            if (_fixPoint == null || _oldFixPoint == null)
+            {
+                return;
+            }
+
             Point f2 = new Point(_fixPoint.X, _fixPoint.Y);
 
             ScaleGeometry(f2, _scaleX, _scaleY);
@@ -1153,7 +1291,7 @@ namespace gView.Framework.Symbology.UI
                 {
                     return ((IFontSymbol)_symbol).Font;
                 }
-                return GraphicsEngine.Current.Engine.CreateFont("Arial",10);
+                return GraphicsEngine.Current.Engine.CreateFont("Arial", 10);
             }
             set
             {
@@ -1180,7 +1318,9 @@ namespace gView.Framework.Symbology.UI
             {
                 PersistableGeometry pGeometry = stream.Load("Geometry", null, new PersistableGeometry()) as PersistableGeometry;
                 if (pGeometry != null && pGeometry.Geometry != null)
+                {
                     TemplateFromTransformedGeomety(pGeometry.Geometry);
+                }
             }
 
             if (Ghost != null)
@@ -1194,7 +1334,7 @@ namespace gView.Framework.Symbology.UI
 
         virtual public void Save(IPersistStream stream)
         {
-            if (this is IConstructable && ((IConstructable)this).hasVertices && _template!=null)
+            if (this is IConstructable && ((IConstructable)this).hasVertices && _template != null)
             {
                 IGeometry geometry = TransformGeometry();
                 if (geometry != null)
@@ -1217,17 +1357,17 @@ namespace gView.Framework.Symbology.UI
 
         virtual public void MouseDown(IDisplay display, System.Windows.Forms.MouseEventArgs e, IPoint world)
         {
-            
+
         }
 
         virtual public void MouseUp(IDisplay display, System.Windows.Forms.MouseEventArgs e, IPoint world)
         {
-            
+
         }
 
         virtual public void MouseClick(IDisplay display, System.Windows.Forms.MouseEventArgs e, IPoint world)
         {
-            
+
         }
 
         virtual public void MouseDoubleClick(IDisplay display, System.Windows.Forms.MouseEventArgs e, IPoint world)
@@ -1241,26 +1381,33 @@ namespace gView.Framework.Symbology.UI
 
         virtual public void MouseMove(IDisplay display, System.Windows.Forms.MouseEventArgs e, IPoint world)
         {
-            
+
         }
 
         public void MouseWheel(IDisplay display, System.Windows.Forms.MouseEventArgs e, IPoint world)
         {
-            
+
         }
 
         #endregion
 
         static public void AddElementsToContainer(IMapDocument doc, IGraphicElementList elements)
         {
-            if (ActiveDisplay(doc) == null || elements == null) return;
+            if (ActiveDisplay(doc) == null || elements == null)
+            {
+                return;
+            }
+
             IDisplay display = ActiveDisplay(doc);
 
             display.GraphicsContainer.SelectedElements.Clear();
             foreach (IGraphicElement element in elements)
             {
                 if (!display.GraphicsContainer.Elements.Contains(element))
+                {
                     display.GraphicsContainer.Elements.Add(element);
+                }
+
                 display.GraphicsContainer.SelectedElements.Add(element);
             }
             if (doc.Application is IMapApplication)
@@ -1271,7 +1418,10 @@ namespace gView.Framework.Symbology.UI
         }
         static public void AddElementToContainer(IMapDocument doc, IGraphicElement element)
         {
-            if (ActiveDisplay(doc) == null) return;
+            if (ActiveDisplay(doc) == null)
+            {
+                return;
+            }
 
             ActiveDisplay(doc).GraphicsContainer.Elements.Add(element);
             ActiveDisplay(doc).GraphicsContainer.SelectedElements.Clear();
@@ -1289,7 +1439,10 @@ namespace gView.Framework.Symbology.UI
 
         static private IDisplay ActiveDisplay(IMapDocument doc)
         {
-            if (doc == null || doc.FocusMap == null) return null;
+            if (doc == null || doc.FocusMap == null)
+            {
+                return null;
+            }
 
             return doc.FocusMap.Display;
         }
@@ -1315,9 +1468,9 @@ namespace gView.Framework.Symbology.UI
         lower = 6,
         left = 7,
         rotation = 8,
-        move=9,
-        vertex=10,
-        path=11
+        move = 9,
+        vertex = 10,
+        path = 11
     }
 
     public class HitCursors

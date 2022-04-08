@@ -1,19 +1,17 @@
+using gView.Framework.Carto;
+using gView.Framework.Data;
+using gView.Framework.Editor.Core;
+using gView.Framework.Geometry;
+using gView.Framework.Globalisation;
+using gView.Framework.IO;
+using gView.Framework.LinAlg;
+using gView.Framework.system;
+using gView.Framework.UI;
 using System;
 using System.Collections.Generic;
-using System.Text;
-using System.Windows.Forms;
-using gView.Framework.UI;
-using gView.Framework.Data;
-using gView.Framework.FDB;
-using gView.Framework.Carto;
-using gView.Framework.Geometry;
-using gView.Framework.system;
-using gView.Framework.IO;
-using gView.Framework.Globalisation;
-using gView.Framework.LinAlg;
 using System.Threading;
-using gView.Framework.Editor.Core;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace gView.Plugins.Editor
 {
@@ -191,8 +189,9 @@ namespace gView.Plugins.Editor
             {
                 _doc = (IMapDocument)hook;
                 if (_doc.Application is IMapApplication)
+                {
                     _module = ((IMapApplication)_doc.Application).IMapApplicationModule(Globals.ModuleGuid) as Module;
-
+                }
 
                 if (_module != null)
                 {
@@ -222,37 +221,57 @@ namespace gView.Plugins.Editor
 
         void combo_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if (_module == null || !(_combo.SelectedItem is ItemClass)) return;
+            if (_module == null || !(_combo.SelectedItem is ItemClass))
+            {
+                return;
+            }
 
             _module.ActiveEditTask = ((ItemClass)_combo.SelectedItem).Task;
 
             if (_doc != null && _doc.Application is IGUIApplication)
+            {
                 ((IGUIApplication)_doc.Application).ValidateUI();
+            }
         }
 
         void _module_OnChangeSelectedFeature(Module sender, IFeature feature)
         {
-            if (sender == null) return;
+            if (sender == null)
+            {
+                return;
+            }
+
             Module.EditTask aktive = sender.ActiveEditTask;
 
             _combo.Items.Clear();
-            if (sender.SelectedEditLayer == null) return;
+            if (sender.SelectedEditLayer == null)
+            {
+                return;
+            }
 
             if (Bit.Has(sender.SelectedEditLayer.Statements, EditStatements.INSERT))
+            {
                 _combo.Items.Add(new ItemClass(Module.EditTask.CreateNewFeature));
+            }
 
             if (Bit.Has(sender.SelectedEditLayer.Statements, EditStatements.UPDATE) ||
                 Bit.Has(sender.SelectedEditLayer.Statements, EditStatements.DELETE))
+            {
                 _combo.Items.Add(new ItemClass(Module.EditTask.ModifyFeature));
+            }
 
             foreach (ItemClass item in _combo.Items)
             {
                 if (item.Task == aktive)
+                {
                     _combo.SelectedItem = item;
+                }
             }
 
             if (_combo.SelectedIndex == -1 && _combo.Items.Count > 0)
+            {
                 _combo.SelectedIndex = 0;
+            }
         }
 
         #region ItemClasses
@@ -477,7 +496,11 @@ namespace gView.Plugins.Editor
         public void FillCombo()
         {
             //return;
-            if (_combo == null || _combo.Owner == null) return;
+            if (_combo == null || _combo.Owner == null)
+            {
+                return;
+            }
+
             if (_combo.Owner.InvokeRequired)
             {
                 FillComboCallback d = new FillComboCallback(FillCombo);
@@ -503,31 +526,50 @@ namespace gView.Plugins.Editor
                 if (editLayer == null ||
                     editLayer.FeatureLayer == null ||
                     editLayer.FeatureLayer.FeatureClass == null ||
-                    editLayer.Statements == EditStatements.NONE) continue;
+                    editLayer.Statements == EditStatements.NONE)
+                {
+                    continue;
+                }
 
-                if (map[editLayer.FeatureLayer] == null) continue;
+                if (map[editLayer.FeatureLayer] == null)
+                {
+                    continue;
+                }
                 // Besser layer als layer.Class verwendenden, weil Class von mehrerenen Layern
                 // verwendet werden kann zB bei gesplitteten Layern...
                 //ITOCElement tocElement = map.TOC.GetTOCElement(editLayer.FeatureLayer.FeatureClass);
                 ITOCElement tocElement = map.TOC.GetTOCElement(editLayer.FeatureLayer);
-                if (tocElement == null) continue;
+                if (tocElement == null)
+                {
+                    continue;
+                }
 
                 _combo.Items.Add(new FeatureClassesItem(
                     editLayer,
                     tocElement.Name));
                 if (tocElement.Name == selectedName)
+                {
                     _combo.SelectedIndex = _combo.Items.Count - 1;
+                }
             }
             _combo.SelectedIndexChanged += new EventHandler(combo_SelectedIndexChanged);
 
             if (_persistedSelIndex >= -0 && _persistedSelIndex < _combo.Items.Count)
+            {
                 _combo.SelectedIndex = _persistedSelIndex;
+            }
+
             if (_combo.SelectedIndex == -1 && _combo.Items.Count > 0)
+            {
                 _combo.SelectedIndex = 0;
+            }
+
             _persistedSelIndex = -1;
 
             if (_combo.SelectedIndex == -1 && _module != null)
+            {
                 _module.SelectedEditLayer = null;
+            }
 
             using (System.Drawing.Bitmap bm = new System.Drawing.Bitmap(1, 1))
             {
@@ -539,7 +581,9 @@ namespace gView.Plugins.Editor
                         System.Drawing.SizeF size = gr.MeasureString(obj.ToString(), _combo.Font);
 
                         if (size.Width + 20 > _combo.DropDownWidth)
+                        {
                             _combo.DropDownWidth = (int)size.Width + 20;
+                        }
                     }
                 }
             }
@@ -593,7 +637,9 @@ namespace gView.Plugins.Editor
         {
             _persistedSelIndex = (int)stream.Load("selectedIndex", 0);
             if (_persistedSelIndex < _combo.Items.Count)
+            {
                 _combo.SelectedIndex = _persistedSelIndex;
+            }
         }
 
         public void Save(IPersistStream stream)
@@ -660,14 +706,21 @@ namespace gView.Plugins.Editor
         {
             get
             {
-                if (_module == null) return false;
+                if (_module == null)
+                {
+                    return false;
+                }
+
                 switch (_module.ActiveEditTask)
                 {
                     case Module.EditTask.None:
                         return false;
                     case Module.EditTask.CreateNewFeature:
                         if (_module.Sketch != null)
+                        {
                             return true;
+                        }
+
                         break;
                     case Module.EditTask.ModifyFeature:
                         return true;
@@ -723,7 +776,10 @@ namespace gView.Plugins.Editor
             get
             {
                 if (_module != null)
+                {
                     return _module.AttributeEditorWindow;
+                }
+
                 return null;
             }
         }
@@ -737,8 +793,15 @@ namespace gView.Plugins.Editor
 
         public void MouseDown(gView.Framework.Carto.IDisplay display, MouseEventArgs e, IPoint world)
         {
-            if (_module == null || _doc == null || _doc.FocusMap == null || !(_doc.Application is IMapApplication)) return;
-            if (e.Button != MouseButtons.Left) return;
+            if (_module == null || _doc == null || _doc.FocusMap == null || !(_doc.Application is IMapApplication))
+            {
+                return;
+            }
+
+            if (e.Button != MouseButtons.Left)
+            {
+                return;
+            }
 
             _mousePressed = true;
 
@@ -761,7 +824,10 @@ namespace gView.Plugins.Editor
                 #region Query Feature
                 if (_module.SelectedEditLayer == null ||
                     _module.SelectedEditLayer.FeatureLayer == null ||
-                    _module.SelectedEditLayer.FeatureLayer.FeatureClass == null) return;
+                    _module.SelectedEditLayer.FeatureLayer.FeatureClass == null)
+                {
+                    return;
+                }
 
                 IFeatureClass fc = _module.SelectedEditLayer.FeatureLayer.FeatureClass;
 
@@ -786,7 +852,11 @@ namespace gView.Plugins.Editor
                 IFeature feature = null;
                 using (IFeatureCursor cursor = fc.GetFeatures(filter).Result)
                 {
-                    if (cursor == null) return;
+                    if (cursor == null)
+                    {
+                        return;
+                    }
+
                     feature = cursor.NextFeature().Result;
                     if (feature != null)
                     {
@@ -824,7 +894,10 @@ namespace gView.Plugins.Editor
 
         public void MouseMove(gView.Framework.Carto.IDisplay display, MouseEventArgs e, IPoint world)
         {
-            if (_module == null || _doc == null || _doc.FocusMap == null) return;
+            if (_module == null || _doc == null || _doc.FocusMap == null)
+            {
+                return;
+            }
 
             double x1 = world.X, y1 = world.Y;
             _displayPoint = new Point(x1, y1);
@@ -835,8 +908,10 @@ namespace gView.Plugins.Editor
                 _hit = _module.Sketch.HitTest(_doc.FocusMap.Display, _displayPoint);
                 if (_hit != null)
                 {
-                    if(_doc.Application is IGUIApplication)
-                                ((IGUIApplication)_doc.Application).SetCursor(_hit.Cursor as Cursor);
+                    if (_doc.Application is IGUIApplication)
+                    {
+                        ((IGUIApplication)_doc.Application).SetCursor(_hit.Cursor as Cursor);
+                    }
 
                     if (_hit.Cursor == gView.Plugins.Editor.EditSketch.HitPosition.VertexCursor)
                     {
@@ -850,13 +925,18 @@ namespace gView.Plugins.Editor
                 else
                 {
                     if (_doc.Application is IGUIApplication)
+                    {
                         ((IGUIApplication)_doc.Application).SetCursor(Cursors.Default);
+                    }
                 }
             }
             else if (_mousePressed && _hit != null)
             {
                 if (_module.Sketch != null)
+                {
                     _module.Sketch.Design(display, _hit, world.X, world.Y);
+                }
+
                 _module.RedrawhSketch();
             }
         }
@@ -890,7 +970,10 @@ namespace gView.Plugins.Editor
         #region Helper
         private void RemoveSketch()
         {
-            if (_module == null || _doc == null || _doc.FocusMap == null || _doc.FocusMap.Display == null || _doc.FocusMap.Display.GraphicsContainer == null) return;
+            if (_module == null || _doc == null || _doc.FocusMap == null || _doc.FocusMap.Display == null || _doc.FocusMap.Display.GraphicsContainer == null)
+            {
+                return;
+            }
 
             _module.Feature = null;
         }
@@ -899,7 +982,9 @@ namespace gView.Plugins.Editor
         public override void Snap(ref double X, ref double Y)
         {
             if (_hit != null && _mousePressed)
+            {
                 base.Snap(ref X, ref Y);
+            }
         }
 
         public override bool ShowSnapMarker
@@ -907,7 +992,10 @@ namespace gView.Plugins.Editor
             get
             {
                 if (_hit != null && _mousePressed)
+                {
                     return true;
+                }
+
                 return false;
             }
         }
@@ -925,25 +1013,35 @@ namespace gView.Plugins.Editor
         {
             if (_doc == null || _doc.FocusMap == null ||
                 _hit == null || _module.Sketch == null ||
-                !_hit.Cursor.Equals(gView.Plugins.Editor.EditSketch.HitPosition.VertexCursor)) return;
+                !_hit.Cursor.Equals(gView.Plugins.Editor.EditSketch.HitPosition.VertexCursor))
+            {
+                return;
+            }
 
             _module.Sketch.RemoveVertex(_doc.FocusMap.Display, _hit.HitID);
 
             if (_doc.Application is IMapApplication)
+            {
                 ((IMapApplication)_doc.Application).RefreshActiveMap(DrawPhase.Graphics);
+            }
         }
         private IPoint _displayPoint = null;
         void addvertex_Click(object sender, EventArgs e)
         {
             if (_doc == null || _doc.FocusMap == null ||
                 _hit == null || _module.Sketch == null ||
-                _displayPoint == null) return;
+                _displayPoint == null)
+            {
+                return;
+            }
 
             _module.Sketch.AddVertex(_doc.FocusMap.Display,
                 new Point(_displayPoint.X, _displayPoint.Y));
 
             if (_doc.Application is IMapApplication)
+            {
                 ((IMapApplication)_doc.Application).RefreshActiveMap(DrawPhase.Graphics);
+            }
         }
     }
 
@@ -974,7 +1072,11 @@ namespace gView.Plugins.Editor
         {
             get
             {
-                if (_module == null) return false;
+                if (_module == null)
+                {
+                    return false;
+                }
+
                 switch (_module.ActiveEditTask)
                 {
                     case Module.EditTask.None:
@@ -983,7 +1085,11 @@ namespace gView.Plugins.Editor
                         return true;
                     case Module.EditTask.ModifyFeature:
                         if (_module.Feature != null &&
-                            _module.Feature.OID > 0) return true;
+                            _module.Feature.OID > 0)
+                        {
+                            return true;
+                        }
+
                         break;
                 }
                 return false;
@@ -1018,8 +1124,9 @@ namespace gView.Plugins.Editor
                 {
                     _module = ((IMapApplication)_doc.Application).IMapApplicationModule(Globals.ModuleGuid) as Module;
                     if (_module != null)
+                    {
                         _module.OnChangeSelectedFeature += new Module.OnChangeSelectedFeatureEventHandler(Module_OnChangeSelectedFeature);
-                    ((IMapApplication)_doc.Application).ActiveMapToolChanged += new ActiveMapToolChangedEvent(EditNew_ActiveMapToolChanged);
+                    } ((IMapApplication)_doc.Application).ActiveMapToolChanged += new ActiveMapToolChangedEvent(EditNew_ActiveMapToolChanged);
 
                     _penToolItem.OnCreate(_module);
                 }
@@ -1040,9 +1147,16 @@ namespace gView.Plugins.Editor
 
         virtual public void MouseDown(IDisplay display, MouseEventArgs e, IPoint world)
         {
-            if (_doc == null || _doc.FocusMap == null || _doc.FocusMap.Display == null || _module == null || _module.FeatureClass == null) return;
+            if (_doc == null || _doc.FocusMap == null || _doc.FocusMap.Display == null || _module == null || _module.FeatureClass == null)
+            {
+                return;
+            }
 
-            if (e.Button != MouseButtons.Left) return;
+            if (e.Button != MouseButtons.Left)
+            {
+                return;
+            }
+
             _mousePressed = true;
 
             if (_module.Feature == null ||
@@ -1051,7 +1165,10 @@ namespace gView.Plugins.Editor
                 _module.CreateStandardFeature();
                 _finished = false;
             }
-            if (_finished || _module.Sketch == null) return;
+            if (_finished || _module.Sketch == null)
+            {
+                return;
+            }
 
             CalcXY(e.X, e.Y, world);
             if (!double.IsNaN(_X) && !double.IsNaN(_Y))
@@ -1070,7 +1187,11 @@ namespace gView.Plugins.Editor
 
         virtual public void MouseUp(IDisplay display, MouseEventArgs e, IPoint world)
         {
-            if (!_mousePressed) return;
+            if (!_mousePressed)
+            {
+                return;
+            }
+
             _mousePressed = false;
         }
 
@@ -1086,9 +1207,15 @@ namespace gView.Plugins.Editor
 
         virtual public void MouseMove(IDisplay display, MouseEventArgs e, IPoint world)
         {
-            if (_doc == null || _doc.FocusMap == null || _doc.FocusMap.Display == null || _module == null) return;
+            if (_doc == null || _doc.FocusMap == null || _doc.FocusMap.Display == null || _module == null)
+            {
+                return;
+            }
 
-            if (_finished) return;
+            if (_finished)
+            {
+                return;
+            }
 
             CalcXY(e.X, e.Y, world);
             DrawMover();
@@ -1151,7 +1278,10 @@ namespace gView.Plugins.Editor
         #region Events Handler
         void Module_OnChangeSelectedFeature(Module sender, IFeature feature)
         {
-            if (_module == null || _doc == null || _doc.FocusMap == null || _doc.FocusMap.Display == null || _doc.FocusMap.Display.GraphicsContainer == null) return;
+            if (_module == null || _doc == null || _doc.FocusMap == null || _doc.FocusMap.Display == null || _doc.FocusMap.Display.GraphicsContainer == null)
+            {
+                return;
+            }
 
             if (_doc.Application is IMapApplication &&
                ((IMapApplication)_doc.Application).ActiveTool == this)
@@ -1179,7 +1309,9 @@ namespace gView.Plugins.Editor
             if (OldTool == this && NewTool != this)
             {
                 if (_doc != null && _doc.Application is IMapApplication)
+                {
                     ((IMapApplication)_doc.Application).RefreshActiveMap(DrawPhase.Graphics);
+                }
             }
         }
         #endregion
@@ -1199,13 +1331,17 @@ namespace gView.Plugins.Editor
                 base.Click += new EventHandler(EditPartNumberMenuItem_Click);
 
                 if (sketch.ActivePartNumber == partNr)
+                {
                     base.Checked = true;
+                }
             }
 
             void EditPartNumberMenuItem_Click(object sender, EventArgs e)
             {
                 if (_sketch != null)
+                {
                     _sketch.ActivePartNumber = _partNr;
+                }
             }
         }
         #endregion
@@ -1279,14 +1415,19 @@ namespace gView.Plugins.Editor
             if (_penToolItem.DrawMover)
             {
                 if (!double.IsNaN(_X) && !double.IsNaN(_Y))
+                {
                     _module.Mover = new Point(_X, _Y);
+                }
             }
         }
 
         void penToolItem_SelectedPenToolChanged(object sender, IPenTool penTool)
         {
             if (_doc == null || !(_doc.Application is IMapApplication) ||
-                ((IMapApplication)_doc.Application).StatusBar == null) return;
+                ((IMapApplication)_doc.Application).StatusBar == null)
+            {
+                return;
+            }
 
             if (penTool != null && penTool.Image is System.Drawing.Image)
             {
@@ -1303,7 +1444,9 @@ namespace gView.Plugins.Editor
         void closePart_Click(object sender, EventArgs e)
         {
             if (_module != null && _module.Sketch != null)
+            {
                 _module.Sketch.ClosePart();
+            }
 
             if (_doc != null && _doc.Application is IMapApplication)
             {
@@ -1336,7 +1479,10 @@ namespace gView.Plugins.Editor
 
         protected override void CalcXY(int mouseX, int mouseY, IPoint world)
         {
-            if (_module == null) return;
+            if (_module == null)
+            {
+                return;
+            }
 
             EditSketch sketch = _module.Sketch;
             IPointCollection part = (sketch != null) ? sketch.Part : null;
@@ -1436,7 +1582,9 @@ namespace gView.Plugins.Editor
             get
             {
                 if (_module != null && _module.Feature != null)
+                {
                     return true;
+                }
 
                 return false;
             }
@@ -1463,8 +1611,9 @@ namespace gView.Plugins.Editor
             {
                 _doc = (IMapDocument)hook;
                 if (_doc.Application is IMapApplication)
+                {
                     _module = ((IMapApplication)_doc.Application).IMapApplicationModule(Globals.ModuleGuid) as Module;
-
+                }
             }
         }
 
@@ -1483,8 +1632,9 @@ namespace gView.Plugins.Editor
                     }
                 }
                 if (!found)
+                {
                     ((IMapApplication)_doc.Application).AddDockableWindow(_module.AttributeEditorWindow, "");
-                ((IMapApplication)_doc.Application).ShowDockableWindow(_module.AttributeEditorWindow);
+                } ((IMapApplication)_doc.Application).ShowDockableWindow(_module.AttributeEditorWindow);
             }
 
             return Task.FromResult(true);
@@ -1513,15 +1663,21 @@ namespace gView.Plugins.Editor
                 if (_module == null ||
                     _module.SelectedEditLayer == null ||
                     _module.Feature == null)
+                {
                     return false;
+                }
 
                 if (_module.Feature.OID > 0 &&
                     !Bit.Has(_module.SelectedEditLayer.Statements, EditStatements.UPDATE))
+                {
                     return false;
+                }
 
                 if (_module.Feature.OID <= 0 &&
                     !Bit.Has(_module.SelectedEditLayer.Statements, EditStatements.INSERT))
+                {
                     return false;
+                }
 
                 return true;
             }
@@ -1548,26 +1704,35 @@ namespace gView.Plugins.Editor
             {
                 _doc = (IMapDocument)hook;
                 if (_doc.Application is IMapApplication)
+                {
                     _module = ((IMapApplication)_doc.Application).IMapApplicationModule(Globals.ModuleGuid) as Module;
-
+                }
             }
         }
 
         async public Task<bool> OnEvent(object MapEvent)
         {
             if (_module == null || _module.FeatureClass == null || _module.Feature == null)
+            {
                 return false;
+            }
 
             bool ret = false;
             if (_module.Feature.OID > 0)
+            {
                 ret = await _module.PerformUpdateFeature(_module.FeatureClass, _module.Feature);
+            }
             else
+            {
                 ret = await _module.PerformInsertFeature(_module.FeatureClass, _module.Feature);
+            }
 
             if (!ret)
             {
                 if (!String.IsNullOrEmpty(_module.LastMessage))
+                {
                     MessageBox.Show(_module.LastMessage, "Message");
+                }
             }
             else
             {
@@ -1602,8 +1767,9 @@ namespace gView.Plugins.Editor
                     _module.Feature == null ||
                     _module.Feature.OID <= 0 ||
                     !Bit.Has(_module.SelectedEditLayer.Statements, EditStatements.DELETE))
+                {
                     return false;
-
+                }
 
                 return true;
             }
@@ -1630,15 +1796,18 @@ namespace gView.Plugins.Editor
             {
                 _doc = (IMapDocument)hook;
                 if (_doc.Application is IMapApplication)
+                {
                     _module = ((IMapApplication)_doc.Application).IMapApplicationModule(Globals.ModuleGuid) as Module;
-
+                }
             }
         }
 
         async public Task<bool> OnEvent(object MapEvent)
         {
             if (_module == null || _module.FeatureClass == null || _module.Feature == null)
+            {
                 return false;
+            }
 
             bool ret = false;
             if (_module.Feature.OID > 0)
@@ -1653,7 +1822,9 @@ namespace gView.Plugins.Editor
             if (!ret)
             {
                 if (!String.IsNullOrEmpty(_module.LastMessage))
+                {
                     MessageBox.Show(_module.LastMessage, "Message");
+                }
             }
             else
             {
@@ -1687,11 +1858,15 @@ namespace gView.Plugins.Editor
                 if (_doc == null || _doc.FocusMap == null || _doc.FocusMap.TOC == null ||
                     _module == null || _module.SelectedEditLayer == null ||
                     _module.SelectedEditLayer.FeatureLayer == null)
+                {
                     return false;
+                }
 
                 IFeatureSelection fSel = _module.SelectedEditLayer.FeatureLayer as IFeatureSelection;
                 if (fSel == null || fSel.SelectionSet == null)
+                {
                     return false;
+                }
 
                 return fSel.SelectionSet.Count > 0;
             }
@@ -1718,8 +1893,9 @@ namespace gView.Plugins.Editor
             {
                 _doc = (IMapDocument)hook;
                 if (_doc.Application is IMapApplication)
+                {
                     _module = ((IMapApplication)_doc.Application).IMapApplicationModule(Globals.ModuleGuid) as Module;
-
+                }
             }
         }
 
@@ -1728,20 +1904,28 @@ namespace gView.Plugins.Editor
             if (_doc == null || _doc.FocusMap == null || _doc.FocusMap.TOC == null ||
                     _module == null || _module.SelectedEditLayer == null ||
                     _module.SelectedEditLayer.FeatureLayer == null)
+            {
                 return false;
+            }
 
             IFeatureClass fClass = _module.SelectedEditLayer.FeatureLayer.FeatureClass;
             if (fClass == null)
+            {
                 return false;
+            }
 
             IFeatureSelection fSel = _module.SelectedEditLayer.FeatureLayer as IFeatureSelection;
             if (fSel == null || fSel.SelectionSet == null)
+            {
                 return false;
+            }
 
             ISelectionSet selectionSet = fSel.SelectionSet;
 
             if (selectionSet.Count == 0)
+            {
                 return false;
+            }
 
             IQueryFilter filter = null;
             //List<int> IDs=new List<int>();  // Sollte nicht null sein...
@@ -1771,7 +1955,9 @@ namespace gView.Plugins.Editor
             }
 
             if (filter == null)
+            {
                 return false;
+            }
 
             List<IFeature> features = new List<IFeature>();
             using (IFeatureCursor fCursor = await fClass.GetFeatures(filter))
@@ -1797,13 +1983,17 @@ namespace gView.Plugins.Editor
                     if (!ret)
                     {
                         if (!String.IsNullOrEmpty(_module.LastMessage))
+                        {
                             MessageBox.Show(_module.LastMessage, "Message");
+                        }
                     }
                 }
             }
 
             if (_doc.Application is IMapApplication)
+            {
                 await ((IMapApplication)_doc.Application).RefreshActiveMap(DrawPhase.All);
+            }
 
             return true;
         }
@@ -1830,7 +2020,10 @@ namespace gView.Plugins.Editor
             {
                 if (_module == null || _module.FeatureClass == null || _module.Feature == null ||
                     _module.Sketch == null)
+                {
                     return false;
+                }
+
                 return true;
             }
         }
@@ -1856,15 +2049,18 @@ namespace gView.Plugins.Editor
             {
                 _doc = (IMapDocument)hook;
                 if (_doc.Application is IMapApplication)
+                {
                     _module = ((IMapApplication)_doc.Application).IMapApplicationModule(Globals.ModuleGuid) as Module;
-
+                }
             }
         }
 
         public Task<bool> OnEvent(object MapEvent)
         {
             if (_module == null || _module.Sketch == null)
+            {
                 return Task.FromResult(false);
+            }
 
             _module.Feature = null;
             //((IMapApplication)_doc.Application).RefreshActiveMap(DrawPhase.Graphics);

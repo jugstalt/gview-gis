@@ -1,8 +1,4 @@
 ﻿using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace gView.Interoperability.GeoServices.Rest.Json.Renderers.SimpleRenderers
 {
@@ -20,7 +16,7 @@ namespace gView.Interoperability.GeoServices.Rest.Json.Renderers.SimpleRenderers
         public string Style { get; set; }
 
         [JsonProperty("color")]
-        public int [] Color { get; set; }
+        public int[] Color { get; set; }
 
         [JsonProperty("size")]
         public float Size { get; set; }

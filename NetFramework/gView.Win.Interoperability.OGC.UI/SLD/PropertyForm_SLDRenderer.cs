@@ -1,19 +1,13 @@
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Text;
-using System.Windows.Forms;
-using gView.Interoperability.OGC.SLD;
 using gView.Framework.Data;
 using gView.Framework.Geometry;
 using gView.Framework.Symbology;
-using gView.Framework.Carto;
-using System.IO;
-using gView.Framework.Carto.UI;
 using gView.Framework.Symbology.UI;
+using gView.Interoperability.OGC.SLD;
 using gView.Win.Carto.Rendering.UI.Framework.Carto.Rendering.Extensions;
+using System;
+using System.Drawing;
+using System.IO;
+using System.Windows.Forms;
 
 namespace gView.Interoperability.OGC.UI.SLD
 {
@@ -91,7 +85,9 @@ namespace gView.Interoperability.OGC.UI.SLD
                 {
                     string legendLabel = ((ILegendItem)_rule.Symbol).LegendLabel;
                     if (legendLabel.Trim() != String.Empty)
+                    {
                         ret = legendLabel.Trim();
+                    }
                 }
                 return ret;
             }
@@ -127,7 +123,10 @@ namespace gView.Interoperability.OGC.UI.SLD
             {
                 FormGeometrySelector geomSel = new FormGeometrySelector();
                 if (geomSel.ShowDialog() != DialogResult.OK ||
-                    geomSel.GeometryType == GeometryType.Unknown) return;
+                    geomSel.GeometryType == GeometryType.Unknown)
+                {
+                    return;
+                }
 
                 geomType = geomSel.GeometryType;
             }
@@ -158,33 +157,52 @@ namespace gView.Interoperability.OGC.UI.SLD
 
         private void btnRemove_Click(object sender, EventArgs e)
         {
-            if (_selectedItem == null || _renderer == null) return;
+            if (_selectedItem == null || _renderer == null)
+            {
+                return;
+            }
 
             _renderer.Rules.Remove(_selectedItem.Rule);
 
             int index2;
             int index = index2 = RendererBox.Items.IndexOf(_selectedItem);
-            if (index == -1) return;
+            if (index == -1)
+            {
+                return;
+            }
+
             for (int i = index + 1; i < RendererBox.Items.Count; i++)
             {
                 if (RendererBox.Items[i] is LegendItem)
+                {
                     index2 = i;
+                }
                 else
+                {
                     break;
+                }
             }
             for (int i = index2; i >= index; i--)
+            {
                 RendererBox.Items.RemoveAt(i);
+            }
         }
 
         private void btnDown_Click(object sender, EventArgs e)
         {
             if (_selectedItem == null ||
                 _selectedItem.Rule == null ||
-                _renderer == null) return;
+                _renderer == null)
+            {
+                return;
+            }
 
             SLDRenderer.Rule selectedRenderer = _selectedItem.Rule;
             int index = _renderer.Rules.IndexOf(_selectedItem.Rule);
-            if (index >= _renderer.Rules.Count) return;
+            if (index >= _renderer.Rules.Count)
+            {
+                return;
+            }
 
             _renderer.Rules.Remove(_selectedItem.Rule);
             _renderer.Rules.Insert(Math.Min(_renderer.Rules.Count, index + 1), _selectedItem.Rule);
@@ -197,11 +215,17 @@ namespace gView.Interoperability.OGC.UI.SLD
         {
             if (_selectedItem == null ||
                 _selectedItem.Rule == null ||
-                _renderer == null) return;
+                _renderer == null)
+            {
+                return;
+            }
 
             SLDRenderer.Rule selectedRenderer = _selectedItem.Rule;
             int index = _renderer.Rules.IndexOf(_selectedItem.Rule);
-            if (index <= 0) return;
+            if (index <= 0)
+            {
+                return;
+            }
 
             _renderer.Rules.Remove(_selectedItem.Rule);
             _renderer.Rules.Insert(Math.Max(0, index - 1), _selectedItem.Rule);
@@ -213,7 +237,10 @@ namespace gView.Interoperability.OGC.UI.SLD
         private void btnProperties_Click(object sender, EventArgs e)
         {
             if (_selectedItem == null ||
-                _selectedItem.Rule == null) return;
+                _selectedItem.Rule == null)
+            {
+                return;
+            }
 
             SLDRenderer.Rule rule = _selectedItem.Rule;
             FormNewSLDRule dlg = new FormNewSLDRule(_layer, rule);
@@ -226,7 +253,9 @@ namespace gView.Interoperability.OGC.UI.SLD
         private void btnSaveSLD_Click(object sender, EventArgs e)
         {
             if (_renderer == null || _layer == null || _layer.Class == null)
+            {
                 return;
+            }
 
             if (saveFileDialog1.ShowDialog() == DialogResult.OK)
             {
@@ -251,7 +280,10 @@ namespace gView.Interoperability.OGC.UI.SLD
         #region RendererBox Events
         private void RendererBox_DrawItem(object sender, DrawItemEventArgs e)
         {
-            if (e.Index >= RendererBox.Items.Count || e.Index < 0) return;
+            if (e.Index >= RendererBox.Items.Count || e.Index < 0)
+            {
+                return;
+            }
 
             object item = RendererBox.Items[e.Index];
 
@@ -358,7 +390,10 @@ namespace gView.Interoperability.OGC.UI.SLD
                     break;
                 }
             }
-            if (item == null) return;
+            if (item == null)
+            {
+                return;
+            }
 
             if (item is RuleItem)
             {
@@ -382,7 +417,10 @@ namespace gView.Interoperability.OGC.UI.SLD
                     break;
                 }
             }
-            if (item == null) return;
+            if (item == null)
+            {
+                return;
+            }
 
             if (item is LegendItem)
             {
@@ -394,7 +432,7 @@ namespace gView.Interoperability.OGC.UI.SLD
                         FormSymbol dlg = new FormSymbol(symbol);
                         if (dlg.ShowDialog() == DialogResult.OK)
                         {
-                            int index=RendererBox.Items.IndexOf(item);
+                            int index = RendererBox.Items.IndexOf(item);
                             RuleItem ritem = RendererBox.Items[index - 1] as RuleItem;
                             if (ritem != null)
                             {
@@ -412,16 +450,26 @@ namespace gView.Interoperability.OGC.UI.SLD
         #region Helper
         private void ShowHideLegend(RuleItem item)
         {
-            if (_renderer == null) return;
+            if (_renderer == null)
+            {
+                return;
+            }
 
             int index = RendererBox.Items.IndexOf(item);
-            if (index == -1) return;
+            if (index == -1)
+            {
+                return;
+            }
 
             if (!item.ShowLegend)
             {
                 for (int i = index + 1; i < RendererBox.Items.Count; i++)
                 {
-                    if (RendererBox.Items[i] is RuleItem) break;
+                    if (RendererBox.Items[i] is RuleItem)
+                    {
+                        break;
+                    }
+
                     RendererBox.Items.RemoveAt(i);
                     i--;
                 }
@@ -444,6 +492,6 @@ namespace gView.Interoperability.OGC.UI.SLD
             }
         }
         #endregion
- 
+
     }
 }

@@ -1,20 +1,16 @@
+using gView.Framework.Data;
+using gView.Framework.Db.UI;
+using gView.Framework.FDB;
+using gView.Framework.Geometry;
+using gView.Framework.Globalisation;
+using gView.Framework.IO;
+using gView.Framework.OGC.UI;
+using gView.Framework.system.UI;
+using gView.Framework.UI;
 using System;
 using System.Collections.Generic;
-using System.Text;
-using System.Threading;
-using gView.Framework.UI;
-using gView.Framework.system;
-using gView.Framework.IO;
-using gView.Framework.Data;
-using gView.Framework.Geometry;
-using gView.Framework.system.UI;
-using gView.Framework.FDB;
-using gView.OGC;
-using gView.Framework.Db.UI;
-using gView.Framework.OGC.UI;
-using gView.Framework.Globalisation;
-using System.Windows.Forms;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace gView.DataSources.MSSqlSpatial.UI
 {
@@ -90,7 +86,9 @@ namespace gView.DataSources.MSSqlSpatial.UI
         public Task<IExplorerObject> CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache cache)
         {
             if (cache.Contains(FullName))
+            {
                 return Task.FromResult<IExplorerObject>(cache[FullName]);
+            }
 
             if (this.FullName == FullName)
             {
@@ -176,7 +174,11 @@ namespace gView.DataSources.MSSqlSpatial.UI
                 ConfigTextStream stream = new ConfigTextStream("MsSql2008Spatial_connections", true, true);
                 string id = ConfigTextStream.ExtractValue(connStr, "Database");
                 id += "@" + ConfigTextStream.ExtractValue(connStr, "Server");
-                if (id == "@") id = "MsSql 2008 Spatial Connection";
+                if (id == "@")
+                {
+                    id = "MsSql 2008 Spatial Connection";
+                }
+
                 stream.Write(connStr, ref id);
                 stream.Close();
 
@@ -191,7 +193,9 @@ namespace gView.DataSources.MSSqlSpatial.UI
         public Task<IExplorerObject> CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache cache)
         {
             if (cache.Contains(FullName))
+            {
                 return Task.FromResult<IExplorerObject>(cache[FullName]);
+            }
 
             return Task.FromResult<IExplorerObject>(null);
         }
@@ -222,9 +226,9 @@ namespace gView.DataSources.MSSqlSpatial.UI
         private string _server = "", _connectionString = "", _errMsg = "";
         private IFeatureDataset _dataset;
 
-        public MsSql2008SpatialExplorerObject() : base(null,typeof(IFeatureDataset)) { }
+        public MsSql2008SpatialExplorerObject() : base(null, typeof(IFeatureDataset)) { }
         public MsSql2008SpatialExplorerObject(IExplorerObject parent, string server, string connectionString)
-            : base(parent,typeof(IFeatureDataset))
+            : base(parent, typeof(IFeatureDataset))
         {
             _server = server;
             _connectionString = connectionString;
@@ -295,7 +299,9 @@ namespace gView.DataSources.MSSqlSpatial.UI
             List<IDatasetElement> elements = await dataset.Elements();
 
             if (elements == null)
+            {
                 return false;
+            }
 
             foreach (IDatasetElement element in elements)
             {
@@ -314,10 +320,16 @@ namespace gView.DataSources.MSSqlSpatial.UI
 
         async public Task<IExplorerObject> CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache cache)
         {
-            if (cache.Contains(FullName)) return cache[FullName];
+            if (cache.Contains(FullName))
+            {
+                return cache[FullName];
+            }
 
             MsSql2008SpatialExplorerGroupObject group = new MsSql2008SpatialExplorerGroupObject();
-            if (FullName.IndexOf(group.FullName) != 0 || FullName.Length < group.FullName.Length + 2) return null;
+            if (FullName.IndexOf(group.FullName) != 0 || FullName.Length < group.FullName.Length + 2)
+            {
+                return null;
+            }
 
             group = (MsSql2008SpatialExplorerGroupObject)((cache.Contains(group.FullName)) ? cache[group.FullName] : group);
 
@@ -344,7 +356,9 @@ namespace gView.DataSources.MSSqlSpatial.UI
             stream.Remove(this.Name, _connectionString);
             stream.Close();
             if (ExplorerObjectDeleted != null)
+            {
                 ExplorerObjectDeleted(this);
+            }
 
             return Task.FromResult(true);
         }
@@ -365,7 +379,10 @@ namespace gView.DataSources.MSSqlSpatial.UI
             if (ret == true)
             {
                 _server = newName;
-                if (ExplorerObjectRenamed != null) ExplorerObjectRenamed(this);
+                if (ExplorerObjectRenamed != null)
+                {
+                    ExplorerObjectRenamed(this);
+                }
             }
             return Task.FromResult(ret);
         }
@@ -381,11 +398,14 @@ namespace gView.DataSources.MSSqlSpatial.UI
         private IFeatureClass _fc = null;
         private MsSql2008SpatialExplorerObject _parent = null;
 
-        public MsSql2008SpatialFeatureClassExplorerObject() : base(null,typeof(IFeatureClass), 1) { }
+        public MsSql2008SpatialFeatureClassExplorerObject() : base(null, typeof(IFeatureClass), 1) { }
         public MsSql2008SpatialFeatureClassExplorerObject(MsSql2008SpatialExplorerObject parent, IDatasetElement element)
-            : base(parent,typeof(IFeatureClass), 1)
+            : base(parent, typeof(IFeatureClass), 1)
         {
-            if (element == null || !(element.Class is IFeatureClass)) return;
+            if (element == null || !(element.Class is IFeatureClass))
+            {
+                return;
+            }
 
             _parent = parent;
             _fcname = element.Title;
@@ -421,7 +441,11 @@ namespace gView.DataSources.MSSqlSpatial.UI
         {
             get
             {
-                if (_parent == null) return "";
+                if (_parent == null)
+                {
+                    return "";
+                }
+
                 return _parent.ConnectionString;
             }
         }
@@ -437,7 +461,11 @@ namespace gView.DataSources.MSSqlSpatial.UI
         {
             get
             {
-                if (_parent == null) return "";
+                if (_parent == null)
+                {
+                    return "";
+                }
+
                 return _parent.FullName + @"\" + this.Name;
             }
         }
@@ -468,18 +496,27 @@ namespace gView.DataSources.MSSqlSpatial.UI
 
         async public Task<IExplorerObject> CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache cache)
         {
-            if (cache.Contains(FullName)) return cache[FullName];
+            if (cache.Contains(FullName))
+            {
+                return cache[FullName];
+            }
 
             FullName = FullName.Replace("/", @"\");
             int lastIndex = FullName.LastIndexOf(@"\");
-            if (lastIndex == -1) return null;
+            if (lastIndex == -1)
+            {
+                return null;
+            }
 
             string dsName = FullName.Substring(0, lastIndex);
             string fcName = FullName.Substring(lastIndex + 1, FullName.Length - lastIndex - 1);
 
             MsSql2008SpatialExplorerObject dsObject = new MsSql2008SpatialExplorerObject();
             dsObject = await dsObject.CreateInstanceByFullName(dsName, cache) as MsSql2008SpatialExplorerObject;
-            if (dsObject == null || await dsObject.ChildObjects() == null) return null;
+            if (dsObject == null || await dsObject.ChildObjects() == null)
+            {
+                return null;
+            }
 
             foreach (IExplorerObject exObject in await dsObject.ChildObjects())
             {
@@ -505,7 +542,11 @@ namespace gView.DataSources.MSSqlSpatial.UI
             {
                 if (await ((IFeatureDatabase)instance).DeleteFeatureClass(this.Name))
                 {
-                    if (ExplorerObjectDeleted != null) ExplorerObjectDeleted(this);
+                    if (ExplorerObjectDeleted != null)
+                    {
+                        ExplorerObjectDeleted(this);
+                    }
+
                     return true;
                 }
                 else

@@ -1,12 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using gView.Framework.Globalisation;
+using gView.Framework.Network;
 using gView.Framework.system;
 using gView.Framework.UI;
-using System.Windows.Forms;
-using gView.Framework.Globalisation;
-using gView.Framework.Network;
+using System;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace gView.Plugins.Network
 {
@@ -131,9 +129,13 @@ namespace gView.Plugins.Network
             {
                 _weight = weight;
                 if (_weight == null)
+                {
                     base.Text = LocalizedResources.GetResString("String.none", "none");
+                }
                 else
+                {
                     base.Text = _weight.Name;
+                }
             }
             public WeightToolStripMenuItem(IGraphWeight weight, bool check)
                 : this(weight)
@@ -155,7 +157,9 @@ namespace gView.Plugins.Network
             _multiWeight.Checked = false;
 
             if (_module != null)
+            {
                 _module.WeightApplying = WeightApplying.ActualCosts;
+            }
         }
 
         void _multiWeight_Click(object sender, EventArgs e)
@@ -164,7 +168,9 @@ namespace gView.Plugins.Network
             _trueCost.Checked = false;
 
             if (_module != null)
+            {
                 _module.WeightApplying = WeightApplying.Weight;
+            }
         }
 
         void _module_OnSelectedNetorkFeatureClassChanged(object sender, EventArgs e)
@@ -174,11 +180,15 @@ namespace gView.Plugins.Network
 
         void item_Click(object sender, EventArgs e)
         {
-            if(!(sender is WeightToolStripMenuItem))
+            if (!(sender is WeightToolStripMenuItem))
+            {
                 return;
+            }
+
             foreach (WeightToolStripMenuItem item in _weights.DropDownItems)
+            {
                 item.Checked = false;
-            ((WeightToolStripMenuItem)sender).Checked = true;
+            } ((WeightToolStripMenuItem)sender).Checked = true;
 
             if (_module != null)
             {

@@ -1,9 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using gView.Framework.Data;
 using gView.Framework.Geometry;
-using gView.Framework.Data;
 using System.Collections;
+using System.Collections.Generic;
 
 namespace gView.Framework.Network.Build
 {
@@ -40,7 +38,10 @@ namespace gView.Framework.Network.Build
             get
             {
                 if (_path == null)
+                {
                     return null;
+                }
+
                 return _path[0];
             }
         }
@@ -50,7 +51,10 @@ namespace gView.Framework.Network.Build
             get
             {
                 if (_path == null)
+                {
                     return null;
+                }
+
                 return _path[_path.PointCount - 1];
             }
         }
@@ -121,7 +125,9 @@ namespace gView.Framework.Network.Build
             {
                 _useWithComplexEdges = value;
                 if (value == true && _path != null)
+                {
                     _bounds = _path.Envelope;
+                }
             }
         }
 
@@ -160,18 +166,24 @@ namespace gView.Framework.Network.Build
         public NetworkEdges(IPolyline polyline)
         {
             if (polyline == null || polyline.PathCount == 0)
+            {
                 return;
+            }
 
             bool isComplex = polyline.PathCount > 1;
             for (int i = 0; i < polyline.PathCount; i++)
             {
                 IPath path = polyline[i];
                 if (path == null || path.PointCount < 2)
+                {
                     continue;
+                }
 
                 double geolength = path.Length;
                 if (geolength == 0.0)
+                {
                     continue;
+                }
 
                 NetworkEdge edge = new NetworkEdge();
                 edge.Path = path;
@@ -179,7 +191,9 @@ namespace gView.Framework.Network.Build
                 edge.IsComplex = isComplex;
 
                 if (edge.FromPoint == null || edge.ToPoint == null)
+                {
                     continue;
+                }
 
                 this.Add(edge);
             }
@@ -203,7 +217,9 @@ namespace gView.Framework.Network.Build
             foreach (NetworkEdge edge in this)
             {
                 if (edge.FromNodeIndex == fromNodeIndex)
+                {
                     edges.Add(edge);
+                }
             }
             edges.Sort(new SortToNodeIndex());
             return edges;
@@ -214,7 +230,9 @@ namespace gView.Framework.Network.Build
             foreach (NetworkEdge edge in this)
             {
                 if (edge.ToNodeIndex == toNodeIndex)
+                {
                     edges.Add(edge);
+                }
             }
             edges.Sort(new SortFromNodeIndex());
             return edges;
@@ -242,9 +260,14 @@ namespace gView.Framework.Network.Build
             public int Compare(NetworkEdge x, NetworkEdge y)
             {
                 if (x.ToNodeIndex < y.ToNodeIndex)
+                {
                     return -1;
+                }
                 else if (x.ToNodeIndex > y.ToNodeIndex)
+                {
                     return 1;
+                }
+
                 return 0;
             }
 
@@ -257,9 +280,14 @@ namespace gView.Framework.Network.Build
             public int Compare(NetworkEdge x, NetworkEdge y)
             {
                 if (x.FromNodeIndex < y.FromNodeIndex)
+                {
                     return -1;
+                }
                 else if (x.FromNodeIndex > y.FromNodeIndex)
+                {
                     return 1;
+                }
+
                 return 0;
             }
 

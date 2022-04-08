@@ -5,5 +5,5 @@
         event PropertyChangedEvent PropertyChanged;
     }
 
-    
+
 }

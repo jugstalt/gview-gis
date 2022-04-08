@@ -1,61 +1,58 @@
-using System;
-using System.Drawing;
-using System.Collections;
 using System.ComponentModel;
 using System.Windows.Forms;
 
 namespace gView.Framework.UI.Dialogs
 {
-	/// <summary>
-	/// Zusammenfassung für Buttons.
-	/// </summary>
-	internal class Buttons : System.Windows.Forms.Form
-	{
-		public System.Windows.Forms.PictureBox picZoomin;
-		public System.Windows.Forms.PictureBox picZoomout;
-		public System.Windows.Forms.PictureBox picPan;
-		public System.Windows.Forms.PictureBox picSelect;
-		public System.Windows.Forms.PictureBox picAddDataset;
-		public System.Windows.Forms.PictureBox picZoom2Select;
-		public System.Windows.Forms.PictureBox picClearSelect;
-		public System.Windows.Forms.PictureBox picSave;
+    /// <summary>
+    /// Zusammenfassung für Buttons.
+    /// </summary>
+    internal class Buttons : System.Windows.Forms.Form
+    {
+        public System.Windows.Forms.PictureBox picZoomin;
+        public System.Windows.Forms.PictureBox picZoomout;
+        public System.Windows.Forms.PictureBox picPan;
+        public System.Windows.Forms.PictureBox picSelect;
+        public System.Windows.Forms.PictureBox picAddDataset;
+        public System.Windows.Forms.PictureBox picZoom2Select;
+        public System.Windows.Forms.PictureBox picClearSelect;
+        public System.Windows.Forms.PictureBox picSave;
         public System.Windows.Forms.PictureBox picLoad;
         public ImageList imageList1;
         public ImageList imageListPrint;
         public ImageList imageList2;
         private IContainer components;
 
-		public Buttons()
-		{
-			//
-			// Erforderlich für die Windows Form-Designerunterstützung
-			//
-			InitializeComponent();
+        public Buttons()
+        {
+            //
+            // Erforderlich für die Windows Form-Designerunterstützung
+            //
+            InitializeComponent();
 
-		}
+        }
 
-		/// <summary>
-		/// Die verwendeten Ressourcen bereinigen.
-		/// </summary>
-		protected override void Dispose( bool disposing )
-		{
-			if( disposing )
-			{
-				if(components != null)
-				{
-					components.Dispose();
-				}
-			}
-			base.Dispose( disposing );
-		}
+        /// <summary>
+        /// Die verwendeten Ressourcen bereinigen.
+        /// </summary>
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                if (components != null)
+                {
+                    components.Dispose();
+                }
+            }
+            base.Dispose(disposing);
+        }
 
-		#region Vom Windows Form-Designer generierter Code
-		/// <summary>
-		/// Erforderliche Methode für die Designerunterstützung. 
-		/// Der Inhalt der Methode darf nicht mit dem Code-Editor geändert werden.
-		/// </summary>
-		private void InitializeComponent()
-		{
+        #region Vom Windows Form-Designer generierter Code
+        /// <summary>
+        /// Erforderliche Methode für die Designerunterstützung. 
+        /// Der Inhalt der Methode darf nicht mit dem Code-Editor geändert werden.
+        /// </summary>
+        private void InitializeComponent()
+        {
             this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Buttons));
             this.picZoomin = new System.Windows.Forms.PictureBox();
@@ -227,7 +224,7 @@ namespace gView.Framework.UI.Dialogs
             ((System.ComponentModel.ISupportInitialize)(this.picLoad)).EndInit();
             this.ResumeLayout(false);
 
-		}
-		#endregion
-	}
+        }
+        #endregion
+    }
 }

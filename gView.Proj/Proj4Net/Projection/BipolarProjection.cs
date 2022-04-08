@@ -1,6 +1,6 @@
-using System;
 using GeoAPI.Geometries;
 using Proj4Net.Utility;
+using System;
 
 namespace Proj4Net.Projection
 {
@@ -85,13 +85,24 @@ namespace Proj4Net.Projection
                 if (Math.Abs(z) > 1.0)
                 {
                     if (Math.Abs(z) > ONEEPS)
+                    {
                         throw new ProjectionException("F");
-                    else z = z < 0.0 ? -1.0 : 1.0;
+                    }
+                    else
+                    {
+                        z = z < 0.0 ? -1.0 : 1.0;
+                    }
                 }
                 else
+                {
                     z = Math.Acos(z);
+                }
+
                 if (tphi != Double.MaxValue)
+                {
                     Az = Math.Atan2(sdlam, (C20 * tphi - S20 * cdlam));
+                }
+
                 Av = Azab;
                 coord.Y = rhoc;
             }
@@ -101,29 +112,55 @@ namespace Proj4Net.Projection
                 if (Math.Abs(z) > 1.0)
                 {
                     if (Math.Abs(z) > ONEEPS)
+                    {
                         throw new ProjectionException("F");
-                    else z = z < 0.0 ? -1.0 : 1.0;
+                    }
+                    else
+                    {
+                        z = z < 0.0 ? -1.0 : 1.0;
+                    }
                 }
                 else
+                {
                     z = Math.Acos(z);
+                }
+
                 Av = Azba;
                 coord.Y = -rhoc;
             }
-            if (z < 0.0) throw new ProjectionException("F");
+            if (z < 0.0)
+            {
+                throw new ProjectionException("F");
+            }
+
             r = F * (t = Math.Pow(Math.Tan(.5 * z), n));
             if ((al = .5 * (R104 - z)) < 0.0)
+            {
                 throw new ProjectionException("F");
+            }
+
             al = (t + Math.Pow(al, n)) / T;
             if (Math.Abs(al) > 1.0)
             {
                 if (Math.Abs(al) > ONEEPS)
+                {
                     throw new ProjectionException("F");
-                else al = al < 0.0 ? -1.0 : 1.0;
+                }
+                else
+                {
+                    al = al < 0.0 ? -1.0 : 1.0;
+                }
             }
             else
+            {
                 al = Math.Acos(al);
+            }
+
             if (Math.Abs(t = n * (Av - Az)) < al)
+            {
                 r /= Math.Cos(al + (tag ? t : -t));
+            }
+
             coord.X = r * Math.Sin(t);
             coord.Y += (tag ? -r : r) * Math.Cos(t);
             if (noskew)
@@ -169,19 +206,34 @@ namespace Proj4Net.Projection
                 al = Math.Acos((Math.Pow(Math.Tan(.5 * z), n) +
                    Math.Pow(Math.Tan(.5 * (R104 - z)), n)) / T);
                 if (fAz < al)
+                {
                     r = rp * Math.Cos(al + (neg ? Az : -Az));
+                }
+
                 if (Math.Abs(rl - r) < EPS)
+                {
                     break;
+                }
+
                 rl = r;
             }
-            if (i == 0) throw new ProjectionException("I");
+            if (i == 0)
+            {
+                throw new ProjectionException("I");
+            }
+
             Az = Av - Az / n;
             coord.Y = Math.Asin(s * Math.Cos(z) + c * Math.Sin(z) * Math.Cos(Az));
             coord.X = Math.Atan2(Math.Sin(Az), c / Math.Tan(z) - s * Math.Cos(Az));
             if (neg)
+            {
                 coord.X -= R110;
+            }
             else
+            {
                 coord.X = lamB - coord.X;
+            }
+
             return coord;
         }
 

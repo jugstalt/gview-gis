@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using gView.Framework.Geometry;
 
 namespace gView.Framework.Geometry.Tiling
 {
@@ -61,7 +60,9 @@ namespace gView.Framework.Geometry.Tiling
             get
             {
                 if (_levels.Count == 0)
+                {
                     return -1;
+                }
 
                 double min = _levels[0].Resolution;
                 int l = _levels[0].Level;
@@ -84,7 +85,9 @@ namespace gView.Framework.Geometry.Tiling
             get
             {
                 if (_levels.Count == 0)
+                {
                     return -1;
+                }
 
                 double max = _levels[0].Resolution;
                 int l = _levels[0].Level;
@@ -126,9 +129,14 @@ namespace gView.Framework.Geometry.Tiling
             IPoint center = quad.Center;
 
             if (tileCenterPoint.X > center.X)
+            {
                 key += 1;
+            }
+
             if (tileCenterPoint.Y < center.Y)
+            {
                 key += 2;
+            }
 
             return key;
         }
@@ -138,7 +146,7 @@ namespace gView.Framework.Geometry.Tiling
             switch (key)
             {
                 case 0:
-                    return new Envelope(quad.minx, quad.miny + quad.Height / 2.0, 
+                    return new Envelope(quad.minx, quad.miny + quad.Height / 2.0,
                                         quad.minx + quad.Width / 2.0, quad.maxy);
                 case 1:
                     return new Envelope(quad.minx + quad.Width / 2.0, quad.miny + quad.Height / 2.0,
@@ -170,7 +178,9 @@ namespace gView.Framework.Geometry.Tiling
         public int GetBestLevel(double mapResolution)
         {
             if (_levels.Count == 0)
+            {
                 return -1;
+            }
 
             double res = double.MinValue;
             int l = -1;
@@ -191,7 +201,9 @@ namespace gView.Framework.Geometry.Tiling
         public int GetBestLevel(double mapResolution, double percent)
         {
             if (_levels.Count == 0)
+            {
                 return -1;
+            }
 
             for (int i = 0; i < _levels.Count - 1; i++)
             {
@@ -208,7 +220,9 @@ namespace gView.Framework.Geometry.Tiling
         public int GetNextLowerLevel(int level)
         {
             if (level < 0)
+            {
                 return -1;
+            }
 
             int ret = -1;
             double levelRes = GetLevelResolution(level), res = double.MaxValue;
@@ -229,7 +243,9 @@ namespace gView.Framework.Geometry.Tiling
             foreach (GridLevel l in _levels)
             {
                 if (l.Level == level)
+                {
                     return l.Resolution;
+                }
             }
 
             return double.MinValue;
@@ -261,9 +277,13 @@ namespace gView.Framework.Geometry.Tiling
             double x = _origin.X + col * TileWidth(res);
             double y = 0.0;
             if (_orientation == GridOrientation.UpperLeft)
+            {
                 y = _origin.Y - row * TileHeight(res);
+            }
             else
+            {
                 y = _origin.Y + (row + 1) * TileHeight(res);
+            }
 
             return new Point(x, y);
         }

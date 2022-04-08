@@ -2,7 +2,6 @@
 using gView.Framework.Db;
 using gView.Framework.Geometry;
 using System;
-using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
 using System.Text;
@@ -27,7 +26,7 @@ namespace gView.DataSources.EventTable
                     (etconn != null ? etconn.SpatialReference : null),
                     (filter != null ? filter.FeatureSpatialReference : null))
         {
-            
+
         }
 
         async static public Task<FeatureCursor> Create(EventTableConnection etconn, IQueryFilter filter, IFeatureClass fc)
@@ -65,9 +64,13 @@ namespace gView.DataSources.EventTable
 
                 string where = (filter != null) ? filter.WhereClause : String.Empty;
                 if (!String.IsNullOrEmpty(where))
+                {
                     where += (String.IsNullOrEmpty(appendWhere) ? String.Empty : " AND (" + appendWhere + ")");
+                }
                 else
+                {
                     where = appendWhere;
+                }
 
                 StringBuilder sb = new StringBuilder();
                 sb.Append(filter.SubFieldsAndAlias);
@@ -75,13 +78,18 @@ namespace gView.DataSources.EventTable
                 {
                     if (fieldname == "#SHAPE#")
                     {
-                        if (sb.Length > 0) sb.Append(",");
+                        if (sb.Length > 0)
+                        {
+                            sb.Append(",");
+                        }
 
                         sb.Append(cursor._etcon.XFieldName + "," + cursor._etcon.YFieldName);
                         cursor._addShape = true;
                     }
                     if (fieldname == "*")
+                    {
                         cursor._addShape = true;
+                    }
                 }
 
                 string fields = sb.ToString().Replace(",#SHAPE#", "").Replace("#SHAPE#,", "").Replace("#SHAPE#", "");
@@ -105,13 +113,18 @@ namespace gView.DataSources.EventTable
         async public override Task<IFeature> NextFeature()
         {
             if (_dbReader == null)
+            {
                 return null;
+            }
+
             try
             {
                 while (true)
                 {
                     if (!await _dbReader.ReadAsync())
+                    {
                         return null;
+                    }
 
                     Feature feature = new Feature();
                     double x = 0.0, y = 0.0;
@@ -120,9 +133,13 @@ namespace gView.DataSources.EventTable
                         string name = _dbReader.GetName(i);
                         object obj = _dbReader.GetValue(i);
                         if (name == _etcon.XFieldName && obj != DBNull.Value)
+                        {
                             x = Convert.ToDouble(obj);
+                        }
                         else if (name == _etcon.YFieldName && obj != DBNull.Value)
+                        {
                             y = Convert.ToDouble(obj);
+                        }
                         else if (name == _etcon.IdFieldName && obj != DBNull.Value)
                         {
                             try
@@ -174,7 +191,11 @@ namespace gView.DataSources.EventTable
             }
             if (_dbConnection != null)
             {
-                if (_dbConnection.State == ConnectionState.Open) _dbConnection.Close();
+                if (_dbConnection.State == ConnectionState.Open)
+                {
+                    _dbConnection.Close();
+                }
+
                 _dbConnection.Dispose();
                 _dbConnection = null;
             }

@@ -1,18 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using gView.Framework.Data;
-using gView.Framework.system;
-using System.IO;
-using gView.Framework.Geometry;
-using System.Data;
+﻿using gView.Framework.Data;
 using gView.Framework.Db;
-using System.Data.Common;
-using gView.Framework.FDB;
-using gView.Framework.Offline;
-using System.Threading.Tasks;
-using System.Linq;
 using gView.Framework.Db.Extensions;
+using gView.Framework.FDB;
+using gView.Framework.Geometry;
+using gView.Framework.Offline;
+using gView.Framework.system;
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Data.Common;
+using System.IO;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace gView.DataSources.Fdb.PostgreSql
 {
@@ -30,7 +30,11 @@ namespace gView.DataSources.Fdb.PostgreSql
 
         override public void Dispose()
         {
-            if (_conn != null) _conn.Dispose();
+            if (_conn != null)
+            {
+                _conn.Dispose();
+            }
+
             _conn = null;
 
             base.Dispose();
@@ -61,7 +65,10 @@ namespace gView.DataSources.Fdb.PostgreSql
                     bool execute = true;
 
                     if (sql.ToString().ToLower().IndexOf("create database") == 0 && false.Equals(parameters.GetUserData("CreateDatabase")))
+                    {
                         execute = false;
+                    }
+
                     if (execute)
                     {
                         if (!_conn.ExecuteNoneQuery(sql.ToString().Replace("#fdb#", name).Replace("\t", " ").Replace(";", String.Empty)))
@@ -72,7 +79,11 @@ namespace gView.DataSources.Fdb.PostgreSql
                             return false;
                         }
                     }
-                    if (sql.ToString().ToLower().IndexOf("create database") == 0) _conn.ConnectionString += ";database=" + name;
+                    if (sql.ToString().ToLower().IndexOf("create database") == 0)
+                    {
+                        _conn.ConnectionString += ";database=" + name;
+                    }
+
                     sql = new StringBuilder();
                 }
                 else
@@ -102,7 +113,11 @@ namespace gView.DataSources.Fdb.PostgreSql
             {
                 connString = DbConnectionString.ParseNpgsqlConnectionString(connString);
 
-                if (_conn != null) _conn.Dispose();
+                if (_conn != null)
+                {
+                    _conn.Dispose();
+                }
+
                 _conn = new CommonDbConnection(connString);
 
                 if (connString.ToLower().StartsWith("npgsql:"))
@@ -128,7 +143,11 @@ namespace gView.DataSources.Fdb.PostgreSql
         {
             get
             {
-                if (_conn == null) return "";
+                if (_conn == null)
+                {
+                    return "";
+                }
+
                 return _conn.ConnectionString;
             }
         }
@@ -149,7 +168,11 @@ namespace gView.DataSources.Fdb.PostgreSql
                 {
                     continue;
                 }
-                if (sb.Length > 0) sb.Append(";");
+                if (sb.Length > 0)
+                {
+                    sb.Append(";");
+                }
+
                 sb.Append(p);
             }
             return sb.ToString();
@@ -161,14 +184,16 @@ namespace gView.DataSources.Fdb.PostgreSql
         {
             pgDataset pgDataset = dataset as pgDataset;
             if (pgDataset == null)
+            {
                 throw new Exception("datasset is null or not an PostgresDataset");
+            }
 
             ISpatialReference sRef = await this.SpatialReference(pgDataset.DatasetName);
 
             if (pgDataset.DatasetName == elementName)
             {
                 var isImageDatasetResult = await IsImageDataset(pgDataset.DatasetName);
-                string imageSpace=isImageDatasetResult.imageSpace;
+                string imageSpace = isImageDatasetResult.imageSpace;
                 if (isImageDatasetResult.isImageDataset)
                 {
                     IDatasetElement fLayer = (await DatasetElement(pgDataset, elementName + "_IMAGE_POLYGONS")) as IDatasetElement;
@@ -204,7 +229,10 @@ namespace gView.DataSources.Fdb.PostgreSql
             {
                 IDataset linkedDs = await LinkedDataset(LinkedDatasetCacheInstance, LinkedDatasetId(row));
                 if (linkedDs == null)
+                {
                     return null;
+                }
+
                 IDatasetElement linkedElement = await linkedDs.Element((string)row["Name"]);
 
                 LinkedFeatureClass fc = new LinkedFeatureClass(pgDataset,
@@ -219,10 +247,16 @@ namespace gView.DataSources.Fdb.PostgreSql
             {
                 string[] viewNames = row["Name"].ToString().Split('@');
                 if (viewNames.Length != 2)
+                {
                     return null;
+                }
+
                 DataTable tab2 = await _conn.Select("*", TableName("FDB_FeatureClasses"), DbColName("DatasetID") + "=" + pgDataset._dsID + " AND " + DbColName("Name") + "='" + viewNames[0] + "'");
                 if (tab2 == null || tab2.Rows.Count != 1)
+                {
                     return null;
+                }
+
                 fcRow = tab2.Rows[0];
             }
 
@@ -288,7 +322,11 @@ namespace gView.DataSources.Fdb.PostgreSql
 
         async internal Task<DataTable> Select(string fields, string from, string where)
         {
-            if (_conn == null) return null;
+            if (_conn == null)
+            {
+                return null;
+            }
+
             return await _conn.Select(fields, from, where);
         }
         #endregion
@@ -365,9 +403,14 @@ namespace gView.DataSources.Fdb.PostgreSql
                         case FieldType.String:
                         case FieldType.NString:
                             if (field.size > 0)
+                            {
                                 types.Append("varchar(" + Math.Min(field.size, 4000) + ")");
+                            }
                             else if (field.size <= 0)
+                            {
                                 types.Append("varchar(255) NULL");
+                            }
+
                             break;
                         case FieldType.guid:
                             //types.Append("varchar(40) NULL");
@@ -401,12 +444,17 @@ namespace gView.DataSources.Fdb.PostgreSql
 
         async protected override Task<bool> TableExists(string tableName)
         {
-            if (_conn == null) return false;
+            if (_conn == null)
+            {
+                return false;
+            }
 
             try
             {
                 if (tableName.Contains("."))  // Ohne Schema abfragen...
+                {
                     tableName = tableName.Split('.')[1];
+                }
 
                 /* string sql =
 @"SELECT count(a.attname) as ""colcount"" 
@@ -438,7 +486,10 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
 
         async public override Task<List<string>> DatabaseTables()
         {
-            if (_conn == null) return new List<string>();
+            if (_conn == null)
+            {
+                return new List<string>();
+            }
 
             try
             {
@@ -449,7 +500,10 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
                     foreach (DataRow row in tab.Rows)
                     {
                         if (row["relname"].ToString().StartsWith("pg_"))
+                        {
                             continue;
+                        }
+
                         tables.Add(row["relname"].ToString());
                     }
                     return tables;
@@ -467,7 +521,10 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
 
         async public override Task<List<string>> DatabaseViews()
         {
-            if (_conn == null) return new List<string>();
+            if (_conn == null)
+            {
+                return new List<string>();
+            }
 
             try
             {
@@ -478,7 +535,10 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
                     foreach (DataRow row in tab.Rows)
                     {
                         if (_systemViews.Contains(row["relname"].ToString()))
+                        {
                             continue;
+                        }
+
                         views.Add(row["relname"].ToString());
                     }
 
@@ -493,7 +553,10 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
 
         async protected Task<bool> CheckTablePrivilege(string tableName)
         {
-            if (_conn == null) return false;
+            if (_conn == null)
+            {
+                return false;
+            }
 
             try
             {
@@ -550,9 +613,14 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
                     return "varchar(1) NULL";
                 case FieldType.String:
                     if (field.size > 0)
+                    {
                         return "varchar(" + Math.Min(field.size, 4000) + ")";
+                    }
                     else if (field.size <= 0)
+                    {
                         return "varchar(255) NULL";
+                    }
+
                     break;
                 case FieldType.guid:
                     //return "varchar(40) NULL";
@@ -569,13 +637,19 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
 
         async override public Task<IFeatureCursor> Query(IFeatureClass fc, IQueryFilter filter)
         {
-            if (_conn == null || fc == null || !(fc.Dataset is IFDBDataset)) return null;
+            if (_conn == null || fc == null || !(fc.Dataset is IFDBDataset))
+            {
+                return null;
+            }
 
             filter.fieldPostfix = filter.fieldPrefix = "\"";
             if (filter is IBufferQueryFilter)
             {
                 ISpatialFilter bFilter = await BufferQueryFilter.ConvertToSpatialFilter(filter as IBufferQueryFilter);
-                if (bFilter == null) return null;
+                if (bFilter == null)
+                {
+                    return null;
+                }
 
                 return await Query(fc, bFilter);
             }
@@ -589,12 +663,18 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
             {
                 if (filter is ISpatialFilter)
                 {
-                    if (((ISpatialFilter)filter).SpatialRelation != spatialRelation.SpatialRelationEnvelopeIntersects) filter.AddField("FDB_SHAPE");
+                    if (((ISpatialFilter)filter).SpatialRelation != spatialRelation.SpatialRelationEnvelopeIntersects)
+                    {
+                        filter.AddField("FDB_SHAPE");
+                    }
                 }
                 //subfields=filter.SubFields.Replace(" ",",");
                 subfields = filter.SubFieldsAndAlias;
             }
-            if (subfields == String.Empty) subfields = "*";
+            if (subfields == String.Empty)
+            {
+                subfields = "*";
+            }
 
             List<long> NIDs = null;
             ISpatialFilter sFilter = null;
@@ -613,9 +693,13 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
                 {
                     if (sFilter.SpatialRelation == spatialRelation.SpatialRelationMapEnvelopeIntersects &&
                         sFilter.Geometry is IEnvelope)
+                    {
                         NIDs = tree.CollectNIDsPlus((IEnvelope)sFilter.Geometry);
+                    }
                     else
+                    {
                         NIDs = tree.CollectNIDs(sFilter.Geometry);
+                    }
                 }
                 if (((ISpatialFilter)filter).SpatialRelation == spatialRelation.SpatialRelationMapEnvelopeIntersects)
                 {
@@ -654,10 +738,16 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
         async override public Task<List<IDatasetElement>> DatasetLayers(IDataset dataset)
         {
             _errMsg = String.Empty;
-            if (_conn == null) return null;
+            if (_conn == null)
+            {
+                return null;
+            }
 
             int dsID = await this.DatasetID(dataset.DatasetName);
-            if (dsID == -1) return null;
+            if (dsID == -1)
+            {
+                return null;
+            }
 
             DataSet ds = new DataSet();
             if (!await _conn.SQLQuery(ds, "SELECT * FROM " + TableName("FDB_FeatureClasses") + " WHERE " + DbColName("DatasetID") + "=" + dsID, "FC"))
@@ -716,7 +806,10 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
                 {
                     IDataset linkedDs = await LinkedDataset(LinkedDatasetCacheInstance, LinkedDatasetId(row));
                     if (linkedDs == null)
+                    {
                         continue;
+                    }
+
                     IDatasetElement linkedElement = await linkedDs.Element((string)row["Name"]);
 
                     LinkedFeatureClass fc = new LinkedFeatureClass(dataset,
@@ -733,16 +826,24 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
                 {
                     string[] viewNames = row["Name"].ToString().Split('@');
                     if (viewNames.Length != 2)
+                    {
                         continue;
+                    }
+
                     DataRow[] fcRows = ds.Tables[0].Select("Name='" + viewNames[0] + "'");
                     if (fcRows == null || fcRows.Length != 1)
+                    {
                         continue;
+                    }
+
                     fcRow = fcRows[0];
                 }
 
                 if (!await TableExists(FcTableName(fcRow["name"].ToString())) ||
                     !await CheckTablePrivilege(FcTableName(fcRow["name"].ToString())))
+                {
                     continue;
+                }
                 //if (_seVersion != 0)
                 //{
                 //    _conn.ExecuteNoneQuery("execute LoadIndex '" + row["Name"].ToString() + "'");
@@ -856,14 +957,16 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
                             var field = fClass.Fields[i];
 
                             if (field.type == FieldType.Shape || field.type == FieldType.ID || field.name.Equals("FDB_NID", StringComparison.InvariantCultureIgnoreCase))
+                            {
                                 continue;
+                            }
 
                             dbFields.Add(field);
                             fields.Append(",");
                             fields.Append(DbColName(field.name));
                         }
 
-                        bool hasNID = features.Where(f => f.FindField("$FDB_NID") != null).FirstOrDefault()!=null;
+                        bool hasNID = features.Where(f => f.FindField("$FDB_NID") != null).FirstOrDefault() != null;
                         fields.Append("," + DbColName("FDB_NID"));
 
                         #endregion
@@ -911,9 +1014,9 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
                                 shapeParameter.Value = DBNull.Value;
                             }
 
-                           if(feature.Fields!=null)
-                           {
-                                
+                            if (feature.Fields != null)
+                            {
+
                                 foreach (var dbField in dbFields)
                                 {
                                     var fv = feature.Fields.Where(f => f.Name.Equals(dbField.name)).FirstOrDefault();
@@ -927,7 +1030,7 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
                                         parameters.Append(",");
                                     }
                                     parameters.Append(parameter.ParameterName);
-                                    
+
 
                                     if (fv == null)
                                     {
@@ -959,7 +1062,7 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
                             command.Parameters.Add(fdbNidparameter);
 
                             var fdbNidField = feature.FindField("$FDB_NID");
-                            if(fdbNidField!=null)
+                            if (fdbNidField != null)
                             {
                                 fdbNidparameter.Value = fdbNidField.Value;
                             }
@@ -971,7 +1074,7 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
                                     NID = tree.InsertSINode(feature.Shape.Envelope);
                                 }
 
-                                fdbNidparameter.Value = NID;                               
+                                fdbNidparameter.Value = NID;
                             }
 
                             if (count > 0)
@@ -1000,8 +1103,15 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
 
         async public /*override*/ Task<bool> Insert_old(IFeatureClass fClass, List<IFeature> features)
         {
-            if (fClass == null || features == null || !(fClass.Dataset is IFDBDataset)) return false;
-            if (features.Count == 0) return true;
+            if (fClass == null || features == null || !(fClass.Dataset is IFDBDataset))
+            {
+                return false;
+            }
+
+            if (features.Count == 0)
+            {
+                return true;
+            }
 
             BinarySearchTree2 tree = null;
             bool isNetwork = fClass.GeometryType == GeometryType.Network;
@@ -1083,16 +1193,30 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
                             {
                                 foreach (IFieldValue fv in feature.Fields)
                                 {
-                                    if (fv.Name == "FDB_NID" || fv.Name == "FDB_SHAPE" || fv.Name == "FDB_OID") continue;
+                                    if (fv.Name == "FDB_NID" || fv.Name == "FDB_SHAPE" || fv.Name == "FDB_OID")
+                                    {
+                                        continue;
+                                    }
+
                                     string name = fv.Name.Replace("$", String.Empty);
                                     if (name == "FDB_NID")
                                     {
                                         hasNID = true;
                                     }
-                                    else if (fClass.FindField(name) == null) continue;
+                                    else if (fClass.FindField(name) == null)
+                                    {
+                                        continue;
+                                    }
 
-                                    if (fields.Length != 0) fields.Append(",");
-                                    if (parameters.Length != 0) parameters.Append(",");
+                                    if (fields.Length != 0)
+                                    {
+                                        fields.Append(",");
+                                    }
+
+                                    if (parameters.Length != 0)
+                                    {
+                                        parameters.Append(",");
+                                    }
 
                                     DbParameter parameter = factory.CreateParameter();
                                     parameter.ParameterName = "@" + name;
@@ -1109,10 +1233,19 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
                             {
                                 long NID = 0;
                                 if (tree != null && feature.Shape != null)
+                                {
                                     NID = tree.InsertSINode(feature.Shape.Envelope);
+                                }
 
-                                if (fields.Length != 0) fields.Append(",");
-                                if (parameters.Length != 0) parameters.Append(",");
+                                if (fields.Length != 0)
+                                {
+                                    fields.Append(",");
+                                }
+
+                                if (parameters.Length != 0)
+                                {
+                                    parameters.Append(",");
+                                }
 
                                 DbParameter parameter = factory.CreateParameter();
                                 parameter.ParameterName = "@fdb_nid";
@@ -1155,8 +1288,15 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
         }
         async public override Task<bool> Update(IFeatureClass fClass, List<IFeature> features)
         {
-            if (fClass == null || features == null || !(fClass.Dataset is IFDBDataset)) return false;
-            if (features.Count == 0) return true;
+            if (fClass == null || features == null || !(fClass.Dataset is IFDBDataset))
+            {
+                return false;
+            }
+
+            if (features.Count == 0)
+            {
+                return true;
+            }
 
             BinarySearchTree2 tree = null;
 
@@ -1210,7 +1350,10 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
                             long NID = 0;
                             StringBuilder commandText = new StringBuilder();
 
-                            if (feature == null) continue;
+                            if (feature == null)
+                            {
+                                continue;
+                            }
 
                             if (feature.OID < 0)
                             {
@@ -1244,16 +1387,26 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
                             {
                                 foreach (IFieldValue fv in feature.Fields)
                                 {
-                                    if (fv.Name == "FDB_OID" || fv.Name == "FDB_SHAPE") continue;
+                                    if (fv.Name == "FDB_OID" || fv.Name == "FDB_SHAPE")
+                                    {
+                                        continue;
+                                    }
+
                                     if (fv.Name == "$FDB_NID")
                                     {
                                         long.TryParse(fv.Value.ToString(), out NID);
                                         continue;
                                     }
                                     string name = fv.Name;
-                                    if (fClass.FindField(name) == null) continue;
+                                    if (fClass.FindField(name) == null)
+                                    {
+                                        continue;
+                                    }
 
-                                    if (fields.Length != 0) fields.Append(",");
+                                    if (fields.Length != 0)
+                                    {
+                                        fields.Append(",");
+                                    }
 
                                     DbParameter parameter = _dbProviderFactory.CreateParameter();
                                     parameter.ParameterName = "@" + name;
@@ -1267,7 +1420,10 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
                             {
                                 NID = (NID != 0) ? tree.UpdadeSINode(feature.Shape.Envelope, NID) : tree.InsertSINode(feature.Shape.Envelope);
 
-                                if (fields.Length != 0) fields.Append(",");
+                                if (fields.Length != 0)
+                                {
+                                    fields.Append(",");
+                                }
 
                                 DbParameter parameterNID = _dbProviderFactory.CreateParameter();
                                 parameterNID.ParameterName = "@fdb_nid";
@@ -1300,7 +1456,10 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
         }
         async public override Task<bool> Delete(IFeatureClass fClass, string where)
         {
-            if (fClass == null) return false;
+            if (fClass == null)
+            {
+                return false;
+            }
 
             try
             {
@@ -1401,7 +1560,10 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
         #region Rebuild Spatial Index
         protected override bool UpdateFeatureSpatialNodeID(IFeatureClass fc, int oid, long nid)
         {
-            if (fc == null || _conn == null) return false;
+            if (fc == null || _conn == null)
+            {
+                return false;
+            }
 
             try
             {
@@ -1442,8 +1604,15 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
                 {
                     string name = fv.Name;
 
-                    if (fields.Length != 0) fields.Append(",");
-                    if (parameters.Length != 0) parameters.Append(",");
+                    if (fields.Length != 0)
+                    {
+                        fields.Append(",");
+                    }
+
+                    if (parameters.Length != 0)
+                    {
+                        parameters.Append(",");
+                    }
 
                     DbParameter parameter = _dbProviderFactory.CreateParameter();
                     parameter.ParameterName = "@" + name;
@@ -1484,7 +1653,9 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
         override public bool InsertRows(string table, List<IRow> rows, IReplicationTransaction replTrans)
         {
             if (rows == null || rows.Count == 0)
+            {
                 return true;
+            }
 
             try
             {
@@ -1505,8 +1676,15 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
                             {
                                 string name = fv.Name;
 
-                                if (fields.Length != 0) fields.Append(",");
-                                if (parameters.Length != 0) parameters.Append(",");
+                                if (fields.Length != 0)
+                                {
+                                    fields.Append(",");
+                                }
+
+                                if (parameters.Length != 0)
+                                {
+                                    parameters.Append(",");
+                                }
 
                                 DbParameter parameter = _dbProviderFactory.CreateParameter();
                                 parameter.ParameterName = "@" + name;
@@ -1543,8 +1721,15 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
                                 {
                                     string name = fv.Name;
 
-                                    if (fields.Length != 0) fields.Append(",");
-                                    if (parameters.Length != 0) parameters.Append(",");
+                                    if (fields.Length != 0)
+                                    {
+                                        fields.Append(",");
+                                    }
+
+                                    if (parameters.Length != 0)
+                                    {
+                                        parameters.Append(",");
+                                    }
 
                                     DbParameter parameter = _dbProviderFactory.CreateParameter();
                                     parameter.ParameterName = "@" + name;
@@ -1591,7 +1776,10 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
                 foreach (IFieldValue fv in row.Fields)
                 {
                     string name = fv.Name;
-                    if (fields.Length != 0) fields.Append(",");
+                    if (fields.Length != 0)
+                    {
+                        fields.Append(",");
+                    }
 
                     DbParameter parameter = _dbProviderFactory.CreateParameter();
                     parameter.ParameterName = "@" + name;
@@ -1687,9 +1875,16 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
 
         async public override Task<bool> AlterTable(string table, IField oldField, IField newField)
         {
-            if (oldField == null && newField == null) return true;
+            if (oldField == null && newField == null)
+            {
+                return true;
+            }
 
-            if (_conn == null) return false;
+            if (_conn == null)
+            {
+                return false;
+            }
+
             int dsID = await DatasetIDFromFeatureClassName(table);
             string dsname = await DatasetNameFromFeatureClassName(table);
             if (dsname == "")
@@ -1704,7 +1899,10 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
 
             IFeatureClass fc = await GetFeatureclass(dsname, table);
 
-            if (fc == null || fc.Fields == null) return false;
+            if (fc == null || fc.Fields == null)
+            {
+                return false;
+            }
 
             try
             {
@@ -1715,7 +1913,10 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
                         _errMsg = "Featureclass " + table + " do not contain field '" + oldField.name + "'";
                         return false;
                     }
-                    if (oldField.Equals(newField)) return true;
+                    if (oldField.Equals(newField))
+                    {
+                        return true;
+                    }
 
                     if (newField != null)   // ALTER COLUMN
                     {
@@ -1775,7 +1976,10 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
             }
             finally
             {
-                if (TableAltered != null) TableAltered(table);
+                if (TableAltered != null)
+                {
+                    TableAltered(table);
+                }
             }
         }
         #endregion
@@ -1826,7 +2030,10 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
                 }
                 set
                 {
-                    if (m_selectionset != null && m_selectionset != value) m_selectionset.Clear();
+                    if (m_selectionset != null && m_selectionset != value)
+                    {
+                        m_selectionset.Clear();
+                    }
 
                     m_selectionset = value;
                 }
@@ -1834,7 +2041,11 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
 
             async public Task<bool> Select(IQueryFilter filter, gView.Framework.Data.CombinationMethod methode)
             {
-                if (!(this.Class is ITableClass)) return false;
+                if (!(this.Class is ITableClass))
+                {
+                    return false;
+                }
+
                 ISelectionSet selSet = await ((ITableClass)this.Class).Select(filter);
 
                 SelectionSet = selSet;
@@ -1859,7 +2070,9 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
             public void FireSelectionChangedEvent()
             {
                 if (FeatureSelectionChanged != null)
+                {
                     FeatureSelectionChanged(this);
+                }
             }
 
             #endregion
@@ -1888,7 +2101,7 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
                 base((geomDef != null) ? geomDef.SpatialReference : null,
                      toSRef)
             {
-                
+
             }
 
             async static public Task<IFeatureCursor> Create(string connString, string sql, string where, string orderBy, int limit, int beginRecord, bool nolock, List<long> nids, ISpatialFilter filter, IGeometryDef geomDef, ISpatialReference toSRef)
@@ -1955,7 +2168,11 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
                     }
                     if (_nids[_nid_pos] < 0)
                     {
-                        if (where_nid.Length > 1) where_nid.Append(" OR ");
+                        if (where_nid.Length > 1)
+                        {
+                            where_nid.Append(" OR ");
+                        }
+
                         where_nid.Append("(\"FDB_NID\" between @p" + (pIndex++) + " and @p" + (pIndex++) + ")");
 
                         DbParameter parameter1 = _factory.CreateParameter();
@@ -1979,7 +2196,11 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
                     }
                     else
                     {
-                        if (where_nid.Length > 1) where_nid.Append(" OR ");
+                        if (where_nid.Length > 1)
+                        {
+                            where_nid.Append(" OR ");
+                        }
+
                         where_nid.Append("(\"FDB_NID\"=@p" + (pIndex++) + ")");
 
                         DbParameter parameter = _factory.CreateParameter();
@@ -1996,18 +2217,23 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
                 }
                 else
                 {
-                    if (_nid_pos > 0) return false;
+                    if (_nid_pos > 0)
+                    {
+                        return false;
+                    }
                 }
                 _nid_pos++;
 
                 if (String.IsNullOrEmpty(_command.CommandText))
+                {
                     _command.CommandText = GetCommandText(null, where);
+                }
 
-                if(_limit>0)
+                if (_limit > 0)
                 {
                     _command.CommandText += " limit " + _limit;
                 }
-                if(_beginrecord>0)
+                if (_beginrecord > 0)
                 {
                     _command.CommandText += " offset " + Math.Max(0, _beginrecord - 1);
                 }
@@ -2058,8 +2284,11 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
                 if (_connection != null)
                 {
                     if (_connection.State == ConnectionState.Open)
+                    {
                         try { _connection.Close(); }
                         catch { }
+                    }
+
                     _connection.Dispose();
                     _connection = null;
                 }
@@ -2141,10 +2370,15 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
                                 FieldValue fv = new FieldValue(name, obj);
                                 feature.Fields.Add(fv);
                                 if (fv.Name == "FDB_OID")
+                                {
                                     feature.OID = Convert.ToInt32(obj);
+                                }
                             }
                         }
-                        if (feature == null) continue;
+                        if (feature == null)
+                        {
+                            continue;
+                        }
 
                         Transform(feature);
                         return feature;
@@ -2163,9 +2397,14 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
             private string GetCommandText(StringBuilder where_nid, string where)
             {
                 if (where_nid != null)
+                {
                     where = where_nid.ToString() + (!String.IsNullOrEmpty(where) ? " AND (" + where + ")" : String.Empty);
+                }
 
-                if (where != String.Empty) where = " WHERE " + where;
+                if (where != String.Empty)
+                {
+                    where = " WHERE " + where;
+                }
 
                 return _sql + where + ((_orderBy != String.Empty) ? " ORDER BY " + _orderBy : String.Empty);
             }
@@ -2189,7 +2428,7 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
             private pgFeatureCursorIDs(IGeometryDef geomDef, ISpatialReference toSRef)
                 : base((geomDef != null) ? geomDef.SpatialReference : null, toSRef)
             {
-                
+
             }
 
             async public static Task<IFeatureCursor> Create(string connString, string sql, List<int> IDs, IGeometryDef geomDef, ISpatialReference toSRef)
@@ -2255,7 +2494,11 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
                 }
                 if (_connection != null)
                 {
-                    if (_connection.State == ConnectionState.Open) _connection.Close();
+                    if (_connection.State == ConnectionState.Open)
+                    {
+                        _connection.Close();
+                    }
+
                     _connection.Dispose();
                     _connection = null;
                 }
@@ -2268,20 +2511,37 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
                     _reader.Close();
                     _reader = null;
                 }
-                if (_IDs == null) return false;
-                if (_id_pos >= _IDs.Count) return false;
+                if (_IDs == null)
+                {
+                    return false;
+                }
+
+                if (_id_pos >= _IDs.Count)
+                {
+                    return false;
+                }
 
                 int counter = 0;
                 StringBuilder sb = new StringBuilder();
                 while (true)
                 {
-                    if (sb.Length > 0) sb.Append(",");
+                    if (sb.Length > 0)
+                    {
+                        sb.Append(",");
+                    }
+
                     sb.Append(_IDs[_id_pos].ToString());
                     counter++;
                     _id_pos++;
-                    if (_id_pos >= _IDs.Count || counter > 49) break;
+                    if (_id_pos >= _IDs.Count || counter > 49)
+                    {
+                        break;
+                    }
                 }
-                if (sb.Length == 0) return false;
+                if (sb.Length == 0)
+                {
+                    return false;
+                }
 
                 string where = " WHERE \"FDB_OID\" IN (" + sb.ToString() + ")";
 
@@ -2310,7 +2570,11 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
             {
                 try
                 {
-                    if (_reader == null) return null;
+                    if (_reader == null)
+                    {
+                        return null;
+                    }
+
                     if (!await _reader.ReadAsync())
                     {
                         await ExecuteReaderAsync();
@@ -2354,7 +2618,9 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
                             FieldValue fv = new FieldValue(/*_schemaTable.Rows[i][0].ToString()*/name, obj);
                             feature.Fields.Add(fv);
                             if (fv.Name == "FDB_OID")
+                            {
                                 feature.OID = Convert.ToInt32(obj);
+                            }
                         }
                     }
 

@@ -1,28 +1,28 @@
-using System;
 using GeoAPI.Geometries;
 using Proj4Net.Utility;
+using System;
 
 namespace Proj4Net.Projection
 {
-/*
-Copyright 2006 Jerry Huxtable
+    /*
+    Copyright 2006 Jerry Huxtable
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
 
-   http://www.apache.org/licenses/LICENSE-2.0
+       http://www.apache.org/licenses/LICENSE-2.0
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+    */
 
-/*
- * This file was semi-automatically converted from the public-domain USGS PROJ source.
- */
+    /*
+     * This file was semi-automatically converted from the public-domain USGS PROJ source.
+     */
 
     public class AiryProjection : Projection
     {
@@ -32,15 +32,15 @@ limitations under the License.
         private double _cosph0;
         private double _cb;
         private int _mode;
-        private Boolean _noCut = true;	/* do not cut at hemisphere limit */
+        private Boolean _noCut = true;  /* do not cut at hemisphere limit */
 
-// ReSharper disable InconsistentNaming
+        // ReSharper disable InconsistentNaming
         private const double EPS = 1.0e-10;
         private const int N_POLE = 0;
         private const int S_POLE = 1;
         private const int EQUIT = 2;
         private const int OBLIQ = 3;
-// ReSharper restore InconsistentNaming
+        // ReSharper restore InconsistentNaming
 
         public AiryProjection()
         {
@@ -54,8 +54,10 @@ limitations under the License.
         protected new void CopyParams(Projection to)
         {
             AiryProjection toAiry = to as AiryProjection;
-            if ( toAiry == null )
+            if (toAiry == null)
+            {
                 throw new ArgumentException("to");
+            }
 
             base.CopyParams(to);
 
@@ -89,42 +91,64 @@ limitations under the License.
                 case OBLIQ:
                     sinphi = Math.Sin(lpphi);
                     cosphi = Math.Cos(lpphi);
-                    cosz = cosphi*coslam;
+                    cosz = cosphi * coslam;
                     if (_mode == OBLIQ)
-                        cosz = _sinph0*sinphi + _cosph0*cosz;
+                    {
+                        cosz = _sinph0 * sinphi + _cosph0 * cosz;
+                    }
+
                     if (!_noCut && cosz < -EPS)
+                    {
                         throw new ProjectionException("F");
+                    }
+
                     s = 1.0 - cosz;
                     if (Math.Abs(s) > EPS)
                     {
-                        t = 0.5*(1.0 + cosz);
-                        Krho = -Math.Log(t)/s - _cb/t;
+                        t = 0.5 * (1.0 + cosz);
+                        Krho = -Math.Log(t) / s - _cb / t;
                     }
                     else
+                    {
                         Krho = 0.5 - _cb;
-                    coord.X = Krho*cosphi*sinlam;
+                    }
+
+                    coord.X = Krho * cosphi * sinlam;
                     if (_mode == OBLIQ)
-                        coord.Y = Krho*(_cosph0*sinphi -
-                                        _sinph0*cosphi*coslam);
+                    {
+                        coord.Y = Krho * (_cosph0 * sinphi -
+                                        _sinph0 * cosphi * coslam);
+                    }
                     else
-                        coord.Y = Krho*sinphi;
+                    {
+                        coord.Y = Krho * sinphi;
+                    }
+
                     break;
                 case S_POLE:
                 case N_POLE:
                     coord.Y = Math.Abs(_poleHalfPi - lpphi);
                     if (!_noCut && (lpphi - EPS) > ProjectionMath.PiHalf)
+                    {
                         throw new ProjectionException("F");
+                    }
+
                     if ((coord.Y *= 0.5) > EPS)
                     {
                         t = Math.Tan(lpphi);
-                        Krho = -2.0*(Math.Log(Math.Cos(lpphi))/t + t*_cb);
-                        coord.X = Krho*sinlam;
-                        coord.Y = Krho*coslam;
+                        Krho = -2.0 * (Math.Log(Math.Cos(lpphi)) / t + t * _cb);
+                        coord.X = Krho * sinlam;
+                        coord.Y = Krho * coslam;
                         if (_mode == N_POLE)
+                        {
                             coord.Y = -coord.Y;
+                        }
                     }
                     else
+                    {
                         coord.X = coord.Y = 0.0;
+                    }
+
                     break;
             }
             return coord;
@@ -139,13 +163,16 @@ limitations under the License.
             _noCut = false;//FIXME
             double beta = 0.5 * (ProjectionMath.PiHalf - 0);
             if (Math.Abs(beta) < EPS)
+            {
                 _cb = -0.5;
+            }
             else
             {
                 _cb = 1.0 / Math.Tan(beta);
                 _cb *= _cb * Math.Log(Math.Cos(beta));
             }
             if (Math.Abs(Math.Abs(_projectionLatitude) - ProjectionMath.PiHalf) < EPS)
+            {
                 if (_projectionLatitude < 0.0)
                 {
                     _poleHalfPi = -ProjectionMath.PiHalf;
@@ -156,10 +183,13 @@ limitations under the License.
                     _poleHalfPi = ProjectionMath.PiHalf;
                     _mode = N_POLE;
                 }
+            }
             else
             {
                 if (Math.Abs(_projectionLatitude) < EPS)
+                {
                     _mode = EQUIT;
+                }
                 else
                 {
                     _mode = OBLIQ;

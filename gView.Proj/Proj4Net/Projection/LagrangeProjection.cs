@@ -13,9 +13,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-using System;
 using GeoAPI.Geometries;
 using Proj4Net.Utility;
+using System;
 
 namespace Proj4Net.Projection
 {
@@ -45,7 +45,10 @@ namespace Proj4Net.Projection
                 lpphi = Math.Sin(lpphi);
                 v = a1 * Math.Pow((1.0 + lpphi) / (1.0 - lpphi), hrw);
                 if ((c = 0.5 * (v + 1.0 / v) + Math.Cos(lplam *= rw)) < Tolerance)
+                {
                     throw new ProjectionException();
+                }
+
                 xy.X = 2.0 * Math.Sin(lplam) / c;
                 xy.Y = (v - 1.0 / v) / c;
             }
@@ -62,11 +65,17 @@ namespace Proj4Net.Projection
         {
             base.Initialize();
             if (rw <= 0)
+            {
                 throw new ProjectionException("-27");
+            }
+
             hrw = 0.5 * (rw = 1.0 / rw);
             phi1 = ProjectionLatitude1;
             if (Math.Abs(Math.Abs(phi1 = Math.Sin(phi1)) - 1.0) < Tolerance)
+            {
                 throw new ProjectionException("-22");
+            }
+
             a1 = Math.Pow((1.0 - phi1) / (1.0 + phi1), hrw);
         }
 

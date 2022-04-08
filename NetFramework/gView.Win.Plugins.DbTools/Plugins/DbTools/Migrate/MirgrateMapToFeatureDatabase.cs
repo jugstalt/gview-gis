@@ -1,13 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using gView.Framework.UI;
-using gView.Framework.Data;
-using gView.Framework.system;
-using System.Windows.Forms;
-using gView.Framework.Carto;
+﻿using gView.Framework.Carto;
 using gView.Framework.Globalisation;
+using gView.Framework.system;
+using gView.Framework.UI;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace gView.Plugins.DbTools.Migrate
 {
@@ -29,7 +25,7 @@ namespace gView.Plugins.DbTools.Migrate
 
         public bool Enable(object element)
         {
-            return element is IMap && ((IMap)element).MapElements!=null && ((IMap)element).MapElements.Count > 0;
+            return element is IMap && ((IMap)element).MapElements != null && ((IMap)element).MapElements.Count > 0;
         }
 
         public bool Visible(object element)
@@ -40,13 +36,17 @@ namespace gView.Plugins.DbTools.Migrate
         public void OnCreate(object hook)
         {
             if (hook is IMapDocument)
+            {
                 _doc = (IMapDocument)hook;
+            }
         }
 
         public Task<bool> OnEvent(object map, object parent)
         {
             if (_doc == null || !(map is IMap))
+            {
                 return Task.FromResult(false);
+            }
 
             MigrateMapToFeatureDatabaseDialog dlg = new MigrateMapToFeatureDatabaseDialog(_doc, (IMap)map);
             if (dlg.ShowDialog() == DialogResult.OK)

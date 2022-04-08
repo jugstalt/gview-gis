@@ -378,7 +378,7 @@ namespace gView.Framework.Carto
         {
             try
             {
-                
+
                 display.Canvas.DrawBitmap(_bitmap, new GraphicsEngine.CanvasPoint(0, 0));
 
                 //_bm.Save(@"c:\temp\label.png", System.Drawing.Imaging.ImageFormat.Png);
@@ -421,7 +421,7 @@ namespace gView.Framework.Carto
                 }
 
                 #endregion
-                
+
                 foreach (IAnnotationPolygonCollision polyCollision in aPolygons)
                 {
                     AnnotationPolygonEnvelope env = polyCollision.Envelope;

@@ -1,8 +1,6 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-using gView.Framework.Geometry;
 using gView.Framework.Data;
+using gView.Framework.Geometry;
+using System;
 using System.Threading.Tasks;
 
 namespace gView.DataSources.OGR
@@ -43,7 +41,11 @@ namespace gView.DataSources.OGR
                 switch (fdefn.GetFieldTypeName(fdefn.GetFieldType()).ToLower())
                 {
                     case "integer":
-                        if (_idFieldName == String.Empty) _idFieldName = field.name;
+                        if (_idFieldName == String.Empty)
+                        {
+                            _idFieldName = field.name;
+                        }
+
                         field.type = FieldType.integer;
                         break;
                     case "real":
@@ -74,7 +76,7 @@ namespace gView.DataSources.OGR
                     break;
                 case OSGeo_v1.OGR.wkbGeometryType.wkbPolygon:
                 case OSGeo_v1.OGR.wkbGeometryType.wkbMultiPolygon:
-                    _geomType=GeometryType.Polygon;
+                    _geomType = GeometryType.Polygon;
                     break;
             }
         }
@@ -131,7 +133,10 @@ namespace gView.DataSources.OGR
         {
             foreach (IField field in _fields.ToEnumerable())
             {
-                if (field.name == name) return field;
+                if (field.name == name)
+                {
+                    return field;
+                }
             }
             return null;
         }

@@ -47,5 +47,5 @@ namespace gView.Framework.UI
         Task<bool> OnEvent(object MapEvent);
     }
 
-    
+
 }

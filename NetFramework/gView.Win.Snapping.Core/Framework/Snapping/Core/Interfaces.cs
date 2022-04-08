@@ -1,9 +1,8 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
 using gView.Framework.Carto;
 using gView.Framework.Data;
 using gView.Framework.UI;
+using System;
+using System.Collections.Generic;
 
 namespace gView.Framework.Snapping.Core
 {
@@ -13,14 +12,14 @@ namespace gView.Framework.Snapping.Core
         static public Guid ModuleGuid = new Guid(ModuleGuidString);
     }
 
-    public enum SnapMethode { None=0, Vertex = 1, Edge = 2, EndPoint = 4 }
+    public enum SnapMethode { None = 0, Vertex = 1, Edge = 2, EndPoint = 4 }
 
     public interface ISnapLayer
     {
         SnapMethode Methode { get; }
         IFeatureLayer FeatureLayer { get; }
     }
-    
+
     public interface ISnapSchema : IEnumerable<ISnapLayer>
     {
         string Name { get; }

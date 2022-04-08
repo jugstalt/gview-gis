@@ -9,7 +9,7 @@ namespace gView.GraphicsEngine.Abstraction
         float DpiY { get; }
 
         CompositingMode CompositingMode { set; }
-        InterpolationMode InterpolationMode { get;  set; }
+        InterpolationMode InterpolationMode { get; set; }
         SmoothingMode SmoothingMode { get; set; }
         TextRenderingHint TextRenderingHint { get; set; }
 
@@ -30,7 +30,7 @@ namespace gView.GraphicsEngine.Abstraction
 
         void DrawBitmap(IBitmap bitmap, CanvasPoint point);
         void DrawBitmap(IBitmap bitmap, CanvasPointF pointF);
-        void DrawBitmap(IBitmap bitmap, CanvasRectangle dest, CanvasRectangle source, float opacity=1.0f);
+        void DrawBitmap(IBitmap bitmap, CanvasRectangle dest, CanvasRectangle source, float opacity = 1.0f);
         void DrawBitmap(IBitmap bitmap, CanvasRectangleF dest, CanvasRectangleF source);
         void DrawBitmap(IBitmap bitmap, CanvasPointF[] points, CanvasRectangleF source, float opacity = 1.0f);
 

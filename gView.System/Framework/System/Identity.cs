@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Security.Cryptography;
+using System.Text;
 
 namespace gView.Framework.system
 {
@@ -35,7 +35,10 @@ namespace gView.Framework.system
 
         public string ToFormattedString()
         {
-            if (String.IsNullOrEmpty(_name)) return String.Empty;
+            if (String.IsNullOrEmpty(_name))
+            {
+                return String.Empty;
+            }
 
             StringBuilder sb = new StringBuilder();
             sb.Append(encodeString(_name));
@@ -44,7 +47,11 @@ namespace gView.Framework.system
             {
                 foreach (string role in _roles)
                 {
-                    if (String.IsNullOrEmpty(role)) continue;
+                    if (String.IsNullOrEmpty(role))
+                    {
+                        continue;
+                    }
+
                     sb.Append("|" + encodeString(role));
                 }
             }
@@ -63,13 +70,19 @@ namespace gView.Framework.system
 
         public static Identity FromFormattedString(string str)
         {
-            if (String.IsNullOrEmpty(str)) return new Identity("");
+            if (String.IsNullOrEmpty(str))
+            {
+                return new Identity("");
+            }
+
             string[] parts = str.Split('|');
 
             string name = decodeString(parts[0]);
-            List<string> roles=new List<string>();
+            List<string> roles = new List<string>();
             for (int i = 1; i < parts.Length; i++)
+            {
                 roles.Add(decodeString(parts[i]));
+            }
 
             return new Identity(name, roles);
         }
@@ -90,7 +103,10 @@ namespace gView.Framework.system
         #region PasswordHash
         static public string HashPassword(string password)
         {
-            if (String.IsNullOrEmpty(password)) return String.Empty;
+            if (String.IsNullOrEmpty(password))
+            {
+                return String.Empty;
+            }
 
             MD5CryptoServiceProvider md5 = new MD5CryptoServiceProvider();
             byte[] byteValue = UTF8Encoding.UTF8.GetBytes(password);

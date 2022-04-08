@@ -366,7 +366,7 @@ namespace gView.Server.Controllers
             {
                 folder = folder?.ToLower() ?? String.Empty;
 
-                var mapService = _mapServiceMananger.MapServices.Where(s => s.Type== MapServiceType.Folder && s.Fullname?.ToLower() == folder).FirstOrDefault();
+                var mapService = _mapServiceMananger.MapServices.Where(s => s.Type == MapServiceType.Folder && s.Fullname?.ToLower() == folder).FirstOrDefault();
                 if (mapService == null)
                 {
                     throw new MapServerException("Unknown folder: " + folder);
@@ -404,7 +404,7 @@ namespace gView.Server.Controllers
             {
                 var folder = Request.Query["folder"].ToString().ToLower();
 
-                var mapService = _mapServiceMananger.MapServices.Where(s => s.Type== MapServiceType.Folder && s.Fullname?.ToLower() == folder).FirstOrDefault();
+                var mapService = _mapServiceMananger.MapServices.Where(s => s.Type == MapServiceType.Folder && s.Fullname?.ToLower() == folder).FirstOrDefault();
                 if (mapService == null)
                 {
                     throw new MapServerException("Unknown folder: " + folder);
@@ -470,9 +470,9 @@ namespace gView.Server.Controllers
                                 }
                             }
                         }
-                        else 
+                        else
                         {
-                            switch(key)
+                            switch (key)
                             {
                                 case "advancedsettings_onlineresource":
                                     settings.OnlineResource = String.IsNullOrWhiteSpace(form[key]) ? null : form[key].ToString();
@@ -600,7 +600,7 @@ namespace gView.Server.Controllers
         {
             var status = settings?.Status ?? MapServiceStatus.Running;
 
-            if(status == MapServiceStatus.Running)
+            if (status == MapServiceStatus.Running)
             {
                 if (!_mapServiceMananger.Instance.IsLoaded(mapService.Name, mapService.Folder))
                 {

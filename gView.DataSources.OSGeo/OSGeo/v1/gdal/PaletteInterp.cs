@@ -9,11 +9,12 @@
 namespace OSGeo_v1.GDAL
 {
 
-public enum PaletteInterp {
-  GPI_Gray = 0,
-  GPI_RGB = 1,
-  GPI_CMYK = 2,
-  GPI_HLS = 3
-}
+    public enum PaletteInterp
+    {
+        GPI_Gray = 0,
+        GPI_RGB = 1,
+        GPI_CMYK = 2,
+        GPI_HLS = 3
+    }
 
 }

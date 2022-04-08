@@ -1,8 +1,6 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
 using gView.Framework.Geometry;
 using gView.Framework.Topology;
+using System;
 
 namespace gView.Framework.SpatialAlgorithms
 {
@@ -15,7 +13,9 @@ namespace gView.Framework.SpatialAlgorithms
         {
             int nv = nodes.Count;
             if (nv < 3)
+            {
                 throw new ArgumentException("Need at least three vertices for triangulation");
+            }
 
             int trimax = 4 * nv;
 
@@ -27,10 +27,25 @@ namespace gView.Framework.SpatialAlgorithms
             double ymax = ymin;
             for (int i = 1; i < nv; i++)
             {
-                if (nodes[i].X < xmin) xmin = nodes[i].X;
-                if (nodes[i].X > xmax) xmax = nodes[i].X;
-                if (nodes[i].Y < ymin) ymin = nodes[i].Y;
-                if (nodes[i].Y > ymax) ymax = nodes[i].Y;
+                if (nodes[i].X < xmin)
+                {
+                    xmin = nodes[i].X;
+                }
+
+                if (nodes[i].X > xmax)
+                {
+                    xmax = nodes[i].X;
+                }
+
+                if (nodes[i].Y < ymin)
+                {
+                    ymin = nodes[i].Y;
+                }
+
+                if (nodes[i].Y > ymax)
+                {
+                    ymax = nodes[i].Y;
+                }
             }
 
             double dx = xmax - xmin;
@@ -56,7 +71,9 @@ namespace gView.Framework.SpatialAlgorithms
             for (int i = 0; i < nv; i++)
             {
                 if (Progress != null)
+                {
                     Progress(i, nv);
+                }
 
                 Edges Edges = new Edges(); //[trimax * 3];
                 // Set up the edge buffer.
@@ -73,7 +90,10 @@ namespace gView.Framework.SpatialAlgorithms
                         j--;
                     }
                 }
-                if (i >= nv) continue; //In case we the last duplicate point we removed was the last in the array
+                if (i >= nv)
+                {
+                    continue; //In case we the last duplicate point we removed was the last in the array
+                }
 
                 // Remove duplicate edges
                 // Note: if all triangles are specified anticlockwise then all
@@ -97,7 +117,10 @@ namespace gView.Framework.SpatialAlgorithms
                 for (int j = 0; j < Edges.Count; j++)
                 {
                     if (Triangle.Count >= trimax)
+                    {
                         throw new ApplicationException("Exceeded maximum edges");
+                    }
+
                     Triangle.Add(new Triangle(Edges[j].p1, Edges[j].p2, i));
                 }
                 Edges.Clear();
@@ -108,7 +131,9 @@ namespace gView.Framework.SpatialAlgorithms
             for (int i = Triangle.Count - 1; i >= 0; i--)
             {
                 if (Triangle[i].p1 >= nv || Triangle[i].p2 >= nv || Triangle[i].p3 >= nv)
+                {
                     Triangle.RemoveAt(i);
+                }
             }
             //Remove SuperTriangle vertices
             nodes.RemoveAt(nodes.Count - 1);
@@ -119,7 +144,10 @@ namespace gView.Framework.SpatialAlgorithms
         }
         public Edges TriangleEdges(Triangles triangles)
         {
-            if (triangles == null) return null;
+            if (triangles == null)
+            {
+                return null;
+            }
 
             Edges edges = new Edges();
             int max = triangles.Count;
@@ -131,12 +159,25 @@ namespace gView.Framework.SpatialAlgorithms
                 Edge e2 = new Edge(triangle.p1, triangle.p3);
                 Edge e3 = new Edge(triangle.p2, triangle.p3);
 
-                if (!edges.Contains(e1)) edges.Add(e1);
-                if (!edges.Contains(e2)) edges.Add(e2);
-                if (!edges.Contains(e3)) edges.Add(e3);
+                if (!edges.Contains(e1))
+                {
+                    edges.Add(e1);
+                }
+
+                if (!edges.Contains(e2))
+                {
+                    edges.Add(e2);
+                }
+
+                if (!edges.Contains(e3))
+                {
+                    edges.Add(e3);
+                }
 
                 if (Progress != null)
+                {
                     Progress(pos++, max);
+                }
             }
 
             return edges;
@@ -199,6 +240,6 @@ namespace gView.Framework.SpatialAlgorithms
             double drsqr = dx * dx + dy * dy;
 
             return (drsqr <= rsqr);
-        } 
+        }
     }
 }

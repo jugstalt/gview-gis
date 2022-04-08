@@ -1,13 +1,9 @@
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Drawing;
-using System.Data;
-using System.Text;
-using System.Windows.Forms;
-using gView.Framework.UI.Dialogs;
 using gView.Framework.Geometry;
 using gView.Framework.Proj;
+using gView.Framework.UI.Dialogs;
+using System;
+using System.Collections.Generic;
+using System.Windows.Forms;
 
 namespace gView.Interoperability.OGC.UI.Dataset.WMS
 {
@@ -31,7 +27,9 @@ namespace gView.Interoperability.OGC.UI.Dataset.WMS
             if (_metadata != null && _metadata.EPSGCodes != null)
             {
                 foreach (string code in _metadata.EPSGCodes)
+                {
                     lstCodes.Items.Add(code);
+                }
             }
         }
 
@@ -41,14 +39,16 @@ namespace gView.Interoperability.OGC.UI.Dataset.WMS
             {
                 List<string> codes = new List<string>();
                 foreach (string item in lstCodes.Items)
+                {
                     codes.Add(item);
+                }
 
                 _metadata.EPSGCodes = codes.ToArray();
             }
         }
         private void btnAdd_Click(object sender, EventArgs e)
         {
-            FormSpatialReferenceSystems dlg=new FormSpatialReferenceSystems(ProjDBTables.projs);
+            FormSpatialReferenceSystems dlg = new FormSpatialReferenceSystems(ProjDBTables.projs);
             if (dlg.ShowDialog() == DialogResult.OK)
             {
                 if (dlg.SpatialRefererence != null)
@@ -71,9 +71,12 @@ namespace gView.Interoperability.OGC.UI.Dataset.WMS
         private void lstCodes_SelectedIndexChanged(object sender, EventArgs e)
         {
             txtDescription.Text = String.Empty;
-            if (lstCodes.SelectedItem == null) return;
+            if (lstCodes.SelectedItem == null)
+            {
+                return;
+            }
 
-            string sRefID=lstCodes.SelectedItem.ToString();
+            string sRefID = lstCodes.SelectedItem.ToString();
             ISpatialReference sRef = SpatialReference.FromID(sRefID);
 
             if (sRef != null)

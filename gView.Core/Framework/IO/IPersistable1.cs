@@ -1,8 +1,8 @@
 ﻿namespace gView.Framework.IO
 {
-    public interface IPersistable 
-	{
+    public interface IPersistable
+    {
         void Load(IPersistStream stream);
-		void Save(IPersistStream stream);
-	}
+        void Save(IPersistStream stream);
+    }
 }

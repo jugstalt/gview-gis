@@ -1,14 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using gView.Framework.Carto;
 using gView.Framework.UI;
-using gView.Framework.Carto;
 using System.Threading.Tasks;
 
 namespace gView.Framework.Data.Relations
 {
-    public class TableRelation : ITableRelation 
+    public class TableRelation : ITableRelation
     {
         private IMapDocument _mapDocument;
 
@@ -114,7 +110,7 @@ namespace gView.Framework.Data.Relations
         {
             this.RelationName = (string)stream.Load("RelationName");
 
-            this.LeftTable = DatasetElementById((string)stream.Load("LeftMap"), (int)stream.Load("LeftTableId",(int)-1));
+            this.LeftTable = DatasetElementById((string)stream.Load("LeftMap"), (int)stream.Load("LeftTableId", (int)-1));
             this.LeftTableField = (string)stream.Load("LeftTableField");
 
             this.RightTable = DatasetElementById((string)stream.Load("RightMap"), (int)stream.Load("RightTableId", (int)-1));
@@ -126,7 +122,7 @@ namespace gView.Framework.Data.Relations
         public void Save(IO.IPersistStream stream)
         {
             stream.Save("RelationName", this.RelationName);
-            
+
             IMap leftMap = MapByDatasetElement(this.LeftTable);
             if (leftMap != null)
             {
@@ -144,7 +140,7 @@ namespace gView.Framework.Data.Relations
 
             stream.Save("LogicalOperator", this.LogicalOperator);
         }
-        
+
         #endregion
 
         #region Helper
@@ -154,7 +150,9 @@ namespace gView.Framework.Data.Relations
             foreach (IMap map in _mapDocument.Maps)
             {
                 if (map[element] != null)
+                {
                     return map;
+                }
             }
             return null;
         }
@@ -168,7 +166,9 @@ namespace gView.Framework.Data.Relations
                     foreach (IDatasetElement element in map.MapElements)
                     {
                         if (element.ID == id)
+                        {
                             return element;
+                        }
                     }
                 }
             }
@@ -178,19 +178,29 @@ namespace gView.Framework.Data.Relations
         private string ObjectString(object obj)
         {
             if (obj is double)
+            {
                 return ((double)obj).ToString(gView.Framework.system.Numbers.Nhi);
-            if(obj is float)
+            }
+
+            if (obj is float)
+            {
                 return ((float)obj).ToString(gView.Framework.system.Numbers.Nhi);
+            }
 
             if (obj == null)
+            {
                 return "null";
+            }
 
             return obj.ToString();
         }
 
         private string ValueString(IField field, object value)
         {
-            if (value == null) return "null";
+            if (value == null)
+            {
+                return "null";
+            }
 
             switch (field.type)
             {

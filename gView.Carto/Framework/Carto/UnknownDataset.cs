@@ -1,11 +1,9 @@
 ﻿using gView.Framework.Data;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using gView.Framework.FDB;
 using gView.Framework.IO;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace gView.Carto.Framework.Carto
 {
@@ -28,7 +26,7 @@ namespace gView.Carto.Framework.Carto
         {
             return Task.FromResult(true);
         }
-        
+
 
         public IDatabase Database
         {
@@ -56,7 +54,7 @@ namespace gView.Carto.Framework.Carto
 
         public Task<List<IDatasetElement>> Elements()
         {
-                return Task.FromResult(new List<IDatasetElement>());
+            return Task.FromResult(new List<IDatasetElement>());
         }
 
         public string LastErrorMessage
@@ -103,7 +101,7 @@ namespace gView.Carto.Framework.Carto
 
         public void Dispose()
         {
-            
+
         }
 
         public IMetadataProvider MetadataProvider(Guid guid)
@@ -118,7 +116,7 @@ namespace gView.Carto.Framework.Carto
 
         public void ReadMetadata(IPersistStream stream)
         {
-           
+
         }
 
         public Task UpdateMetadataProviders()
@@ -143,7 +141,7 @@ namespace gView.Carto.Framework.Carto
 
         public void Save(IPersistStream stream)
         {
-            
+
         }
     }
 }

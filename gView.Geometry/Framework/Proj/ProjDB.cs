@@ -1,32 +1,30 @@
-using System;
-using System.Data;
-using System.Runtime.CompilerServices;
 using gView.Framework.Db;
 using gView.Framework.system;
-using gView.Framework.Geometry.SpatialRefTranslation;
+using System;
+using System.Data;
 using System.Data.Common;
 
 namespace gView.Framework.Proj
-{    
-	public enum ProjDBTables { projs,datums }
-	/// <summary>
-	/// Zusammenfassung für ProjDB.
-	/// </summary>
-	public class ProjDB
-	{
+{
+    public enum ProjDBTables { projs, datums }
+    /// <summary>
+    /// Zusammenfassung für ProjDB.
+    /// </summary>
+    public class ProjDB
+    {
         private IFormatProvider _nhi = System.Globalization.CultureInfo.InvariantCulture.NumberFormat;
-    
-		private DbProviderFactory _dbFactory = null;
-        private string _connectionString = String.Empty;
-		private DataSet _ds=null;
-		private string _table;
 
-		public ProjDB() : this("projs") 
-		{
-		}
-		public ProjDB(ProjDBTables table) : this(table.ToString()) 
-		{
-		}
+        private DbProviderFactory _dbFactory = null;
+        private string _connectionString = String.Empty;
+        private DataSet _ds = null;
+        private string _table;
+
+        public ProjDB() : this("projs")
+        {
+        }
+        public ProjDB(ProjDBTables table) : this(table.ToString())
+        {
+        }
         public ProjDB(string table)
         {
             _table = table;
@@ -35,7 +33,7 @@ namespace gView.Framework.Proj
             _connectionString = "Data Source=" + SystemVariables.StartupDirectory + @"/proj.db";
         }
 
-		/*
+        /*
 		public ProjDB(string dbname)
 		{
 			_conn=new DBConnection();
@@ -43,22 +41,22 @@ namespace gView.Framework.Proj
 		}
 		*/
 
-		~ProjDB() 
-		{
-			this.Dispose();
-		}
+        ~ProjDB()
+        {
+            this.Dispose();
+        }
 
-		public void Dispose() 
-		{
+        public void Dispose()
+        {
 
-		}
-		public string errMessage 
-		{
-			get { return this.LastDbError; }
-		}
-		public bool Refresh() 
-		{
-			_ds = new DataSet();
+        }
+        public string errMessage
+        {
+            get { return this.LastDbError; }
+        }
+        public bool Refresh()
+        {
+            _ds = new DataSet();
             DataTable table = DbSelect("*", _table, String.Empty);
             if (table == null)
             {
@@ -67,10 +65,10 @@ namespace gView.Framework.Proj
             }
             _ds.Tables.Add(table);
             return true;
-		}
+        }
 
-		public bool createProjection(string id,string param,string description,string category) 
-		{
+        public bool createProjection(string id, string param, string description, string category)
+        {
             //_err="";
             //DataSet ds=new DataSet();
             //if(_conn.SQLQuery(ref ds,"SELECT * FROM "+_table+" WHERE ID=-1","PROJS",true)) 
@@ -96,24 +94,38 @@ namespace gView.Framework.Proj
             //return true;
 
             throw new NotImplementedException();
-		}
+        }
 
-		public string GetParameters(string ID) 
-		{
-			DataTable tab = DbSelect("PROJ_P4", _table, "PROJ_ID like '" + ID + "'");
-            if (tab == null || tab.Rows.Count == 0) return "";
+        public string GetParameters(string ID)
+        {
+            DataTable tab = DbSelect("PROJ_P4", _table, "PROJ_ID like '" + ID + "'");
+            if (tab == null || tab.Rows.Count == 0)
+            {
+                return "";
+            }
 
             DataRow row = tab.Rows[0];
-			string param=row["PROJ_P4"].ToString().Trim();
-            if (param == "") return "";
-            if (param[0] != '+') param = "+" + param.Replace(" ", " +");
+            string param = row["PROJ_P4"].ToString().Trim();
+            if (param == "")
+            {
+                return "";
+            }
+
+            if (param[0] != '+')
+            {
+                param = "+" + param.Replace(" ", " +");
+            }
+
             return param;
-		}
+        }
 
         public string GetDatumParameters(string ID)
         {
             DataTable tab = DbSelect("*", _table, "DATUM_Name='" + ID + "'");
-            if (tab == null || tab.Rows.Count == 0) return "";
+            if (tab == null || tab.Rows.Count == 0)
+            {
+                return "";
+            }
 
             DataRow row = tab.Rows[0];
             string param = String.Format("+towgs84={0},{1},{2},{3},{4},{5},{6}",
@@ -128,33 +140,43 @@ namespace gView.Framework.Proj
             return param;
         }
 
-		public string GetDescription(string ID) 
-		{
+        public string GetDescription(string ID)
+        {
             DataTable tab = DbSelect("PROJ_DESCRIPTION", _table, "PROJ_ID like '" + ID + "'");
-            if (tab == null || tab.Rows.Count == 0) return "";
+            if (tab == null || tab.Rows.Count == 0)
+            {
+                return "";
+            }
 
             DataRow row = tab.Rows[0];
-			string descr=row["PROJ_DESCRIPTION"].ToString().Trim();
-			return descr;
-		}
+            string descr = row["PROJ_DESCRIPTION"].ToString().Trim();
+            return descr;
+        }
 
         public string GetDatumName(string ID)
         {
             DataTable tab = DbSelect("PROJ_DATUM", _table, "PROJ_ID like '" + ID + "'");
-            if (tab == null || tab.Rows.Count == 0) return "Unknown";
+            if (tab == null || tab.Rows.Count == 0)
+            {
+                return "Unknown";
+            }
 
             DataRow row = tab.Rows[0];
 
             string datum = row["PROJ_DATUM"].ToString().Trim();
-            if (datum == "") return "Unknown";
+            if (datum == "")
+            {
+                return "Unknown";
+            }
+
             return datum;
         }
 
-		public DataTable GetTable(string where) 
-		{
-			DataTable tab = DbSelect("PROJ_ID,PROJ_DESCRIPTION", _table, where);
+        public DataTable GetTable(string where)
+        {
+            DataTable tab = DbSelect("PROJ_ID,PROJ_DESCRIPTION", _table, where);
             return tab;
-		}
+        }
 
         public DataTable GetDatumTable(string where)
         {
@@ -162,7 +184,7 @@ namespace gView.Framework.Proj
             return tab;
         }
 
-        public static string SpheroidByP4(string ID, out double majorAxis, out double minorAxis,out double invFlattening)
+        public static string SpheroidByP4(string ID, out double majorAxis, out double minorAxis, out double invFlattening)
         {
             ProjDB projDb = new ProjDB();
             DataTable tab = projDb.DbSelect("*", "spheroid", "SPHEROID_P4='" + ID + "'");
@@ -181,7 +203,7 @@ namespace gView.Framework.Proj
             return "";
         }
 
-        public static string SpheroidByName(string Name, out double majorAxis, out double minorAxis,out double invFlattening)
+        public static string SpheroidByName(string Name, out double majorAxis, out double minorAxis, out double invFlattening)
         {
             ProjDB projDb = new ProjDB();
             DataTable tab = projDb.DbSelect("*", "spheroid", "SPHEROID_Name='" + Name + "'");
@@ -249,7 +271,10 @@ namespace gView.Framework.Proj
             try
             {
                 DataTable tab = DbSelect("WKT", "wkt", "PROJ_ID like '" + ID + "'");
-                if (tab == null || tab.Rows.Count == 0) return String.Empty;
+                if (tab == null || tab.Rows.Count == 0)
+                {
+                    return String.Empty;
+                }
 
                 return tab.Rows[0]["WKT"].ToString();
             }
@@ -301,15 +326,15 @@ namespace gView.Framework.Proj
                     using (var reader = command.ExecuteReader())
                     {
                         int fieldCount = reader.FieldCount;
-                        for(int i=0;i< fieldCount; i++)
+                        for (int i = 0; i < fieldCount; i++)
                         {
                             table.Columns.Add(new DataColumn(reader.GetName(i), typeof(object)));
                         }
 
-                        while(reader.Read())
+                        while (reader.Read())
                         {
                             DataRow row = table.NewRow();
-                            for(int i=0;i<fieldCount;i++)
+                            for (int i = 0; i < fieldCount; i++)
                             {
                                 row[i] = reader.GetValue(i);
                             }

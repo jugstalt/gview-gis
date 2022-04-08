@@ -13,9 +13,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-using System;
 using GeoAPI.Geometries;
 using Proj4Net.Utility;
+using System;
 
 namespace Proj4Net.Projection
 {
@@ -48,7 +48,10 @@ namespace Proj4Net.Projection
         {
             EquidistantAzimuthalProjection p = (EquidistantAzimuthalProjection)base.Clone();
             if (_en != null)
+            {
                 p._en = (double[])_en.Clone();
+            }
+
             return p;
         }
 
@@ -108,14 +111,25 @@ namespace Proj4Net.Projection
                     case AzimuthalMode.Equator:
                     case AzimuthalMode.Oblique:
                         if (Mode == AzimuthalMode.Equator)
+                        {
                             xy.Y = cosphi * coslam;
+                        }
                         else
+                        {
                             xy.Y = _sinphi0 * sinphi + _cosphi0 * cosphi * coslam;
+                        }
+
                         if (Math.Abs(Math.Abs(xy.Y) - 1.0) < Tolerance)
+                        {
                             if (xy.Y < 0.0)
+                            {
                                 throw new ProjectionException();
+                            }
                             else
+                            {
                                 xy.X = xy.Y = 0.0;
+                            }
+                        }
                         else
                         {
                             xy.Y = Math.Acos(xy.Y);
@@ -133,7 +147,10 @@ namespace Proj4Net.Projection
                             coslam = -coslam;
                         }
                         if (Math.Abs(phi - ProjectionMath.PiHalf) < EPS10)
+                        {
                             throw new ProjectionException();
+                        }
+
                         xy.X = (xy.Y = (ProjectionMath.PiHalf + phi)) * Math.Sin(lam);
                         xy.Y *= coslam;
                         break;
@@ -150,7 +167,11 @@ namespace Proj4Net.Projection
                 {
                     case AzimuthalMode.NorthPole:
                     case AzimuthalMode.SouthPole:
-                        if (Mode == AzimuthalMode.NorthPole) coslam = -coslam;
+                        if (Mode == AzimuthalMode.NorthPole)
+                        {
+                            coslam = -coslam;
+                        }
+
                         xy.X = (rho = Math.Abs(_mp - ProjectionMath.mlfn(phi, sinphi, cosphi, _en))) *
                             Math.Sin(lam);
                         xy.Y = rho * coslam;
@@ -193,7 +214,10 @@ namespace Proj4Net.Projection
                 if ((c_rh = ProjectionMath.Distance(x, y)) > Math.PI)
                 {
                     if (c_rh - EPS10 > Math.PI)
+                    {
                         throw new ProjectionException();
+                    }
+
                     c_rh = Math.PI;
                 }
                 else if (c_rh < EPS10)
@@ -256,11 +280,17 @@ namespace Proj4Net.Projection
                     psi = ProjectionMath.Asin(_sinphi0 * Math.Cos(E) + t * Math.Sin(E));
                     lp.X = ProjectionMath.Asin(Math.Sin(Az) * Math.Sin(E) / Math.Cos(psi));
                     if ((t = Math.Abs(psi)) < EPS10)
+                    {
                         lp.Y = 00.0;
+                    }
                     else if (Math.Abs(t - ProjectionMath.PiHalf) < 0.0)
+                    {
                         lp.Y = ProjectionMath.PiHalf;
+                    }
                     else
+                    {
                         lp.Y = Math.Atan((1.0 - EccentricitySquared * F * _sinphi0 / Math.Sin(psi)) * Math.Tan(psi) / _oneEs);
+                    }
                 }
                 else
                 {

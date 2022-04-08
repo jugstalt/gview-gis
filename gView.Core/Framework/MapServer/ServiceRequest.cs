@@ -1,6 +1,6 @@
-﻿using System;
-using gView.Framework.system;
+﻿using gView.Framework.system;
 using Newtonsoft.Json;
+using System;
 
 namespace gView.MapServer
 {
@@ -35,11 +35,11 @@ namespace gView.MapServer
                     return String.Empty;
                 }
 
-                if(_response is string)
+                if (_response is string)
                 {
                     return (string)_response;
                 }
-                else if(_response is byte[])
+                else if (_response is byte[])
                 {
                     return $"base64:{ Convert.ToBase64String((byte[])_response) }";
                 }

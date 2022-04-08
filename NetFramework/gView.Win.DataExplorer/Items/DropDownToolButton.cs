@@ -1,11 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using gView.Desktop.Wpf.Controls;
 using gView.Framework.UI;
-using gView.Desktop.Wpf.Controls;
+using System;
 using System.Windows;
-using System.Windows.Media;
 
 namespace gView.Win.DataExplorer.Items
 {
@@ -17,7 +13,10 @@ namespace gView.Win.DataExplorer.Items
         public DropDownToolButton(IExToolMenu tool)
         {
             _tool = tool;
-            if (_tool == null || _tool.DropDownTools == null) return;
+            if (_tool == null || _tool.DropDownTools == null)
+            {
+                return;
+            }
 
             if (_tool != null && _tool.SelectedTool != null)
             {
@@ -35,10 +34,13 @@ namespace gView.Win.DataExplorer.Items
 
         void button_Click(object sender, EventArgs e)
         {
-            if (!(sender is DropDownToolButtonItem)) return;
+            if (!(sender is DropDownToolButtonItem))
+            {
+                return;
+            }
 
             _tool.SelectedTool = ((DropDownToolButtonItem)sender).Tool;
-            base.Icon = base.LargeIcon= ImageFactory.FromBitmap(_tool.SelectedTool.Image as global::System.Drawing.Image);
+            base.Icon = base.LargeIcon = ImageFactory.FromBitmap(_tool.SelectedTool.Image as global::System.Drawing.Image);
             base.Header = _tool.SelectedTool.Name;
 
             this.OnClick();
@@ -72,7 +74,9 @@ namespace gView.Win.DataExplorer.Items
         public void OnClick()
         {
             if (Click != null)
+            {
                 Click(this, new RoutedEventArgs());
+            }
         }
 
         #endregion
@@ -88,7 +92,7 @@ namespace gView.Win.DataExplorer.Items
             _parent = parent;
             _tool = tool;
 
-            base.Icon = base.LargeIcon= ImageFactory.FromBitmap(tool.Image as global::System.Drawing.Image);
+            base.Icon = base.LargeIcon = ImageFactory.FromBitmap(tool.Image as global::System.Drawing.Image);
             base.Header = tool.Name;
             base.SizeDefinition = "Middle";
         }

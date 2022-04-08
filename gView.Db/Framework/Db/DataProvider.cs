@@ -1,18 +1,15 @@
+using Oracle.ManagedDataAccess.Client;
 using System;
 using System.Data;
 using System.Data.Common;
 using System.Data.SqlClient;
-using System.Xml;
 using System.Text;
-using System.Reflection;
-using gView.Framework.system;
-using Oracle.ManagedDataAccess.Client;
 
 namespace gView.Framework.Db
 {
-	/// <summary>
-	/// Zusammenfassung für DataProvider.
-	/// </summary>
+    /// <summary>
+    /// Zusammenfassung für DataProvider.
+    /// </summary>
     public class DataProvider
     {
         private SqlConnection sqlConnection = null;
@@ -41,7 +38,10 @@ namespace gView.Framework.Db
         public bool Open(string connectionString, bool testIt)
         {
             int pos = connectionString.IndexOf(":");
-            if (pos == -1) return false;
+            if (pos == -1)
+            {
+                return false;
+            }
 
             try
             {
@@ -158,15 +158,29 @@ namespace gView.Framework.Db
                     adapter.Fill(ds);
                     dbConnection.Close();
                 }
-                if (ds.Tables.Count == 0) return null;
+                if (ds.Tables.Count == 0)
+                {
+                    return null;
+                }
 
                 return ds.Tables[0];
             }
             catch (Exception ex)
             {
-                if (oracleConnection != null) oracleConnection.Close();
-                if (sqlConnection != null) sqlConnection.Close();
-                if (dbConnection != null) dbConnection.Close();
+                if (oracleConnection != null)
+                {
+                    oracleConnection.Close();
+                }
+
+                if (sqlConnection != null)
+                {
+                    sqlConnection.Close();
+                }
+
+                if (dbConnection != null)
+                {
+                    dbConnection.Close();
+                }
 
                 _errMsg = ex.Message;
                 return null;
@@ -274,7 +288,11 @@ namespace gView.Framework.Db
                     StringBuilder sb = new StringBuilder();
                     foreach (string t in tableName.Split('.'))
                     {
-                        if (sb.Length > 0) sb.Append(".");
+                        if (sb.Length > 0)
+                        {
+                            sb.Append(".");
+                        }
+
                         sb.Append((t != t.ToLower()) ? "\"" + t + "\"" : t);
                     }
                     tableName = sb.ToString();
@@ -313,7 +331,11 @@ namespace gView.Framework.Db
             StringBuilder sb = new StringBuilder();
             foreach (string fieldName in fieldNames.Replace(",", " ").Split(' '))
             {
-                if (sb.Length > 0) sb.Append(",");
+                if (sb.Length > 0)
+                {
+                    sb.Append(",");
+                }
+
                 sb.Append(ToDbFieldName(type, fieldName));
             }
             return sb.ToString();
@@ -338,7 +360,9 @@ namespace gView.Framework.Db
             static public string Parse(string where)
             {
                 if (String.IsNullOrEmpty(where))
+                {
                     return String.Empty;
+                }
 
                 Parse(ref where, "=");
                 Parse(ref where, ">");
@@ -375,7 +399,10 @@ namespace gView.Framework.Db
                         break;
                     }
 
-                    if (InsideQuotes(where, pos)) continue;
+                    if (InsideQuotes(where, pos))
+                    {
+                        continue;
+                    }
 
                     string fieldName = WordBefore(where, pos);
                     string w1 = where.Substring(0, pos - fieldName.Length);
@@ -392,13 +419,21 @@ namespace gView.Framework.Db
                 for (int i = 0; i <= pos; i++)
                 {
                     if (str[i] == '\'' && act == (char)0)
+                    {
                         act = '\'';
+                    }
                     else if (str[i] == '\'' && act == '\'')
+                    {
                         act = (char)0;
+                    }
                     else if (str[i] == '"' && act == (char)0)
+                    {
                         act = '"';
+                    }
                     else if (str[i] == '"' && act == '"')
+                    {
                         act = (char)0;
+                    }
                 }
                 return act != (char)0;
             }
@@ -412,7 +447,9 @@ namespace gView.Framework.Db
                     {
                         string wb = str.Substring(i + 1, pos - i - 1);
                         if (!String.IsNullOrEmpty(wb.Trim()))
+                        {
                             return wb;
+                        }
                     }
                 }
                 return str.Substring(0, pos);

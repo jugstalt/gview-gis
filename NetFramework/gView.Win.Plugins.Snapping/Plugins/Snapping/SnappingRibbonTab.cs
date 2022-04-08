@@ -1,10 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using gView.Framework.system.UI;
 using gView.Framework.UI;
+using System;
+using System.Collections.Generic;
 using System.Windows;
-using gView.Framework.system.UI;
 
 namespace gView.Plugins.Snapping
 {
@@ -19,7 +17,7 @@ namespace gView.Plugins.Snapping
                 new RibbonGroupBox[]{
                     new RibbonGroupBox(String.Empty,
                         new RibbonItem[] {
-                            new RibbonItem(new Guid("9CDE6BD1-317E-478b-8828-B169A6688CC5")),  
+                            new RibbonItem(new Guid("9CDE6BD1-317E-478b-8828-B169A6688CC5")),
                             new RibbonItem(new Guid("D678C377-79A0-49e5-88A3-6635FD7B522C"))
                         }
                        ) { OnLauncherClick=OnSnappingLauncherClick }

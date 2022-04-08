@@ -1,9 +1,7 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.IO;
 using gView.Framework.Geometry;
 using gView.Framework.system.UI;
+using System;
+using System.IO;
 using System.Threading.Tasks;
 
 namespace gView.Framework.UI
@@ -72,7 +70,9 @@ namespace gView.Framework.UI
         async public Task<object> GetInstanceAsync()
         {
             if (_sRef != null)
+            {
                 return null;
+            }
 
             try
             {

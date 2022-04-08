@@ -222,7 +222,7 @@ namespace gView.DataSources.Fdb.UI.SQLite
             dlg.Title = "New SQLite Feature Database...";
             dlg.Filter = "SQLite DB(*.fdb)|*.fdb";
             dlg.InitialDirectory = parentExObject.FullName;
-            dlg.FileName ="database1.fdb";
+            dlg.FileName = "database1.fdb";
 
             if (dlg.ShowDialog() == DialogResult.OK)
             {

@@ -1,29 +1,25 @@
+using gView.Framework.Carto;
+using gView.Framework.Data;
+using gView.Framework.system;
 using System;
-using System.Drawing;
-using System.Data;
-using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data;
+using System.Drawing;
 using System.Windows.Forms;
-using System.Text;
-using gView.Framework;
-using gView.Framework.Data;
-using gView.Framework.Carto;
-using gView.Framework.UI;
-using gView.Framework.system;
 
 namespace gView.Framework.UI.Dialogs
 {
-	/// <summary>
-	/// Zusammenfassung für FormDataTable.
-	/// </summary>
-	public class FormDataTable2 : System.Windows.Forms.Form,IDockableWindow
+    /// <summary>
+    /// Zusammenfassung für FormDataTable.
+    /// </summary>
+    public class FormDataTable2 : System.Windows.Forms.Form, IDockableWindow
     {
         private IContainer components;
         private IDatasetElement _dsElement;
-		private ITableClass _tableClass;
+        private ITableClass _tableClass;
         private ITable _result;
-		//private DataSet _ds;
+        //private DataSet _ds;
         private IMap _map = null;
         private ToolStrip toolStrip1;
         private ToolStripButton btnFirst;
@@ -47,26 +43,30 @@ namespace gView.Framework.UI.Dialogs
         private ToolStripSeparator toolStripSeparator5;
         private ToolStripDropDownButton toolStripDropDownButton1;
         private ToolStripMenuItem toolStripMenuItem1;
-		private IMapDocument _doc=null;
+        private IMapDocument _doc = null;
         private ToolStripMenuItem toolStripMenuItem_LoadAllSelectedRecords;
         private ToolStripSeparator toolStripSeparator6;
         private DataGridView grid;
-        private int _maxNewSelectedRows=200;
+        private int _maxNewSelectedRows = 200;
         private VScrollBar vScrollBar;
         private ToolStripButton toolStripButton_CloseWindow;
         private ToolStripSeparator toolStripSeparator7;
         private DataGridView dataGridView1;
         private List<int> _selectedRowIndices = new List<int>();
 
-		public FormDataTable2(IDatasetElement dsElement)
-		{
+        public FormDataTable2(IDatasetElement dsElement)
+        {
             InitializeComponent();
 
             _tableClass = null;
             if (dsElement is IFeatureLayer)
+            {
                 _tableClass = ((IFeatureLayer)dsElement).FeatureClass;
+            }
             else if (dsElement is ITableLayer)
+            {
                 _tableClass = ((ITableLayer)dsElement).TableClass;
+            }
 
             _dsElement = dsElement;
 
@@ -77,49 +77,49 @@ namespace gView.Framework.UI.Dialogs
                 ((IFeatureSelection)_dsElement).FeatureSelectionChanged -= new FeatureSelectionChangedEvent(FeatureSelectionChanged);
                 ((IFeatureSelection)_dsElement).FeatureSelectionChanged += new FeatureSelectionChangedEvent(FeatureSelectionChanged);
             }
-		}
+        }
 
-		/// <summary>
-		/// Die verwendeten Ressourcen bereinigen.
-		/// </summary>
-		protected override void Dispose( bool disposing )
-		{
-			if( disposing )
-			{
-				if(components != null)
-				{
-					components.Dispose();
-				}
-			}
-			base.Dispose( disposing );
-		}
+        /// <summary>
+        /// Die verwendeten Ressourcen bereinigen.
+        /// </summary>
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                if (components != null)
+                {
+                    components.Dispose();
+                }
+            }
+            base.Dispose(disposing);
+        }
 
-		public IMapDocument MapDocument 
-		{
-			set 
-			{
-				if(value==null) 
-				{
-					_doc=null;
-					_map=null;
-					return;
-				}
-				_map=value.FocusMap; 
-				_doc=value;
-			}
-		}
+        public IMapDocument MapDocument
+        {
+            set
+            {
+                if (value == null)
+                {
+                    _doc = null;
+                    _map = null;
+                    return;
+                }
+                _map = value.FocusMap;
+                _doc = value;
+            }
+        }
         public ITableClass TableClass
         {
             get { return _tableClass; }
         }
 
-		#region Vom Windows Form-Designer generierter Code
-		/// <summary>
-		/// Erforderliche Methode für die Designerunterstützung. 
-		/// Der Inhalt der Methode darf nicht mit dem Code-Editor geändert werden.
-		/// </summary>
-		private void InitializeComponent()
-		{
+        #region Vom Windows Form-Designer generierter Code
+        /// <summary>
+        /// Erforderliche Methode für die Designerunterstützung. 
+        /// Der Inhalt der Methode darf nicht mit dem Code-Editor geändert werden.
+        /// </summary>
+        private void InitializeComponent()
+        {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormDataTable2));
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
             this.toolStrip1 = new System.Windows.Forms.ToolStrip();
@@ -439,11 +439,11 @@ namespace gView.Framework.UI.Dialogs
             this.ResumeLayout(false);
             this.PerformLayout();
 
-		}
-		#endregion
+        }
+        #endregion
 
-		async private void FormDataTable_Load(object sender, System.EventArgs e)
-		{
+        async private void FormDataTable_Load(object sender, System.EventArgs e)
+        {
             var value = _tableClass;
 
             _maxNewSelectedRows = 200;
@@ -451,14 +451,21 @@ namespace gView.Framework.UI.Dialogs
             grid.DataSource = null;
 
             _tableClass = value;
-            if (_tableClass == null) return;
+            if (_tableClass == null)
+            {
+                return;
+            }
 
             grid.DefaultCellStyle.BackColor = Color.White;
 
             gView.Framework.Data.QueryFilter filter = new gView.Framework.Data.QueryFilter();
             foreach (IField field in _tableClass.Fields.ToEnumerable())
             {
-                if (field.type == FieldType.binary || field.type == FieldType.Shape) continue;
+                if (field.type == FieldType.binary || field.type == FieldType.Shape)
+                {
+                    continue;
+                }
+
                 filter.AddField(field.name);
             }
             //filter.SubFields="*";
@@ -490,22 +497,30 @@ namespace gView.Framework.UI.Dialogs
             PrepareDataView(_result.Table);
             cmbShow.SelectedIndex = 0;  // hier wird auch MarkSelected durchgeführt
             progress1.Visible = false;
-		}
+        }
 
-		private void FeatureSelectionChanged(IFeatureSelection sender) 
-		{
+        private void FeatureSelectionChanged(IFeatureSelection sender)
+        {
             if (_dsElement is IFeatureSelection)
             {
                 ISelectionSet selSet = ((IFeatureSelection)_dsElement).SelectionSet;
                 if (selSet is IIDSelectionSet)
                 {
-                    if (_selectedIDs != null) _selectedIDs.Clear();
+                    if (_selectedIDs != null)
+                    {
+                        _selectedIDs.Clear();
+                    }
+
                     _selectedIDs = ((IIDSelectionSet)selSet).IDs;
                     _selectedIDs.Sort();
                 }
                 else if (selSet == null)
                 {
-                    if (_selectedIDs != null) _selectedIDs.Clear();
+                    if (_selectedIDs != null)
+                    {
+                        _selectedIDs.Clear();
+                    }
+
                     _selectedIDs = null;
                 }
             }
@@ -513,12 +528,16 @@ namespace gView.Framework.UI.Dialogs
             {
                 vScrollBar.Value = 0;
             }
-			markSelected(_maxNewSelectedRows);
-		}
+            markSelected(_maxNewSelectedRows);
+        }
 
-		private void markSelected(int maxNewSelectedRows) 
-		{
-			if(_result==null) return;
+        private void markSelected(int maxNewSelectedRows)
+        {
+            if (_result == null)
+            {
+                return;
+            }
+
             tsLabelCount.Text = _result.Table.Rows.Count.ToString();
             tsLabelCount.Text += (_result.hasMore) ? "*" : "";
             tsLabelSelected.Text = "0";
@@ -536,14 +555,21 @@ namespace gView.Framework.UI.Dialogs
                 txtPos.Enabled = false;
                 txtPos.Text = "";
             }
-			if(!(_dsElement is IFeatureSelection)) return;
+            if (!(_dsElement is IFeatureSelection))
+            {
+                return;
+            }
+
             IFeatureSelection selection = (IFeatureSelection)_dsElement;
 
             tsLabelSelected.Text = "0";
             tsLabelCount.Text = _result.Table.Rows.Count.ToString();
             tsLabelCount.Text += (_result.hasMore) ? "*" : "";
 
-			if(!(selection.SelectionSet is IIDSelectionSet)) return;
+            if (!(selection.SelectionSet is IIDSelectionSet))
+            {
+                return;
+            }
 
             List<int> IDs = ((IIDSelectionSet)selection.SelectionSet).IDs;
 
@@ -551,7 +577,7 @@ namespace gView.Framework.UI.Dialogs
             {
                 // Noch fehlende IDs suchen
                 List<int> ids = ListOperations<int>.Clone(IDs);
-                
+
                 int alreayIncluded = 0;
                 ids.Sort();
                 foreach (int id in IDs)
@@ -560,7 +586,7 @@ namespace gView.Framework.UI.Dialogs
                     {
                         ids.Remove(id);
                         alreayIncluded++;
-                        if(alreayIncluded>=maxNewSelectedRows && maxNewSelectedRows>0)
+                        if (alreayIncluded >= maxNewSelectedRows && maxNewSelectedRows > 0)
                         {
                             ids.Clear();
                         }
@@ -595,20 +621,23 @@ namespace gView.Framework.UI.Dialogs
                 grid.ForeColor = Color.Black;
                 PrepareDataView(_result.Table);
             }
-            
+
             tsLabelCount.Text = _result.Table.Rows.Count.ToString();
             tsLabelCount.Text += (_result.hasMore) ? "*" : "";
             tsLabelSelected.Text = IDs.Count.ToString();
-		}
+        }
 
         private int _viewPos = 0;
         private DataTable _viewTable = null;
-        private DataRow [] _sortedViewRows = null;
-        private DataRow [] _selectedViewRows = null;
+        private DataRow[] _sortedViewRows = null;
+        private DataRow[] _selectedViewRows = null;
         private List<int> _selectedIDs = null;
         private void PrepareDataView(DataTable table)
         {
-            if (table == null) return;
+            if (table == null)
+            {
+                return;
+            }
             //return table.DefaultView;
 
             if (_viewTable == null)
@@ -616,18 +645,21 @@ namespace gView.Framework.UI.Dialogs
                 _viewTable = table.Clone();
             }
 
-            int max = (grid.Height-grid.ColumnHeadersHeight) / 22+1;
-            if (max == 0) return;
+            int max = (grid.Height - grid.ColumnHeadersHeight) / 22 + 1;
+            if (max == 0)
+            {
+                return;
+            }
 
             _viewPos = vScrollBar.Value;
             int cols = _viewTable.Columns.Count;
-            
+
             _viewTable.Rows.Clear();
 
             if (cmbShow.SelectedIndex == 0)
             {
                 vScrollBar.Maximum = table.Rows.Count;
-                for (int i = _viewPos; i < Math.Min(_viewPos + max, ((_sortedViewRows!=null) ? _sortedViewRows.Length : table.Rows.Count)); i++)
+                for (int i = _viewPos; i < Math.Min(_viewPos + max, ((_sortedViewRows != null) ? _sortedViewRows.Length : table.Rows.Count)); i++)
                 {
                     DataRow row = _viewTable.NewRow();
                     for (int c = 0; c < cols; c++)
@@ -651,7 +683,7 @@ namespace gView.Framework.UI.Dialogs
                     }
                 }
             }
-            else 
+            else
             {
                 if (_selectedViewRows != null)
                 {
@@ -696,45 +728,55 @@ namespace gView.Framework.UI.Dialogs
 
         private void UnselectAll()
         {
-            int max=grid.Rows.Count;
+            int max = grid.Rows.Count;
             foreach (int index in _selectedRowIndices)
             {
-                if (index >= max) continue;
-                DataGridViewRow row=grid.Rows[index];
+                if (index >= max)
+                {
+                    continue;
+                }
+
+                DataGridViewRow row = grid.Rows[index];
 
                 row.DefaultCellStyle.BackColor = row.DefaultCellStyle.SelectionBackColor = Color.White;
             }
             _selectedRowIndices.Clear();
         }
 
-		private void cmbShow_SelectedIndexChanged(object sender, System.EventArgs e)
-		{
-			if(_dsElement==null || _result==null || _tableClass==null) return;
+        private void cmbShow_SelectedIndexChanged(object sender, System.EventArgs e)
+        {
+            if (_dsElement == null || _result == null || _tableClass == null)
+            {
+                return;
+            }
 
-			//DataView dv=_result.Table.DefaultView;
+            //DataView dv=_result.Table.DefaultView;
 
-			switch(cmbShow.SelectedIndex) 
-			{
-				case 0:
+            switch (cmbShow.SelectedIndex)
+            {
+                case 0:
                     if (_selectedTable != null)
                     {
                         _selectedTable.Dispose();
                         _selectedTable = null;
                     }
-					PrepareDataView(_result.Table);
-					break;
-				case 1:
+                    PrepareDataView(_result.Table);
+                    break;
+                case 1:
                     PrepareSelectionFilter();
-					break;
-			}
+                    break;
+            }
             vScrollBar.Value = 0;
             markSelected(0);
-		}
+        }
 
-        private DataTable _selectedTable=null;
+        private DataTable _selectedTable = null;
         private void PrepareSelectionFilter()
         {
-            if (_dsElement == null || _result == null || _tableClass == null) return;
+            if (_dsElement == null || _result == null || _tableClass == null)
+            {
+                return;
+            }
 
             if (grid.DataSource != _result.Table.DefaultView && grid.DataSource is DataView)
             {
@@ -742,7 +784,11 @@ namespace gView.Framework.UI.Dialogs
                 grid.DataSource = null;
             }
 
-            if (!(_dsElement is IFeatureSelection)) return;
+            if (!(_dsElement is IFeatureSelection))
+            {
+                return;
+            }
+
             if (!(((IFeatureSelection)_dsElement).SelectionSet is IIDSelectionSet))
             {
                 grid.DataSource = null;
@@ -772,23 +818,27 @@ namespace gView.Framework.UI.Dialogs
             */
 
             _selectedIDs = IDs;
-            DataRow [] selRows=(DataRow [])Array.CreateInstance(typeof(DataRow), _selectedIDs.Count);
-            int index=0;
+            DataRow[] selRows = (DataRow[])Array.CreateInstance(typeof(DataRow), _selectedIDs.Count);
+            int index = 0;
             if (_sortedViewRows == null)
             {
                 foreach (object id in IDs)
                 {
                     DataRow[] rows = _result.Table.Select(_tableClass.IDFieldName + "=" + id.ToString());
-                    if (rows.Length == 0) continue;
-                    ((Array)selRows).SetValue(rows[0], index++);
+                    if (rows.Length == 0)
+                    {
+                        continue;
+                    } ((Array)selRows).SetValue(rows[0], index++);
                 }
             }
             else
             {
                 foreach (DataRow row in _sortedViewRows)
                 {
-                    if (IDs.IndexOf(Convert.ToInt32(row[_tableClass.IDFieldName])) == -1) continue;
-                    ((Array)selRows).SetValue(row, index++);
+                    if (IDs.IndexOf(Convert.ToInt32(row[_tableClass.IDFieldName])) == -1)
+                    {
+                        continue;
+                    } ((Array)selRows).SetValue(row, index++);
                 }
             }
             _selectedViewRows = (DataRow[])Array.CreateInstance(typeof(DataRow), index);
@@ -797,59 +847,74 @@ namespace gView.Framework.UI.Dialogs
             PrepareDataView(_result.Table);
         }
 
-		private void grid_Scroll(object sender, System.EventArgs e)
-		{
-			
-		}
+        private void grid_Scroll(object sender, System.EventArgs e)
+        {
 
-		private void grid_CurrentCellChanged(object sender, System.EventArgs e)
-		{
-			//txtPos.Text=(grid.CurrentCell.RowNumber+1).ToString();
-            txtPos.Text = (grid.CurrentCellAddress.Y+1).ToString();
-		}
+        }
 
-		private void btnMoveNext_Click(object sender, System.EventArgs e)
-		{
-			//if(grid.CurrentRowIndex>=_result.Table.Rows.Count-1) return;
-			//grid.CurrentRowIndex++;
-            if (grid.CurrentCellAddress.Y >= _result.Table.Rows.Count - 1) return;
+        private void grid_CurrentCellChanged(object sender, System.EventArgs e)
+        {
+            //txtPos.Text=(grid.CurrentCell.RowNumber+1).ToString();
+            txtPos.Text = (grid.CurrentCellAddress.Y + 1).ToString();
+        }
+
+        private void btnMoveNext_Click(object sender, System.EventArgs e)
+        {
+            //if(grid.CurrentRowIndex>=_result.Table.Rows.Count-1) return;
+            //grid.CurrentRowIndex++;
+            if (grid.CurrentCellAddress.Y >= _result.Table.Rows.Count - 1)
+            {
+                return;
+            }
+
             grid.CurrentCell = grid[grid.CurrentCellAddress.X, grid.CurrentCellAddress.Y + 1];
-		}
+        }
 
-		private void btnMovePrev_Click(object sender, System.EventArgs e)
-		{
-			//if(grid.CurrentRowIndex==0) return;
-			//grid.CurrentRowIndex--;
-            if (grid.CurrentCellAddress.Y == 0) return;
+        private void btnMovePrev_Click(object sender, System.EventArgs e)
+        {
+            //if(grid.CurrentRowIndex==0) return;
+            //grid.CurrentRowIndex--;
+            if (grid.CurrentCellAddress.Y == 0)
+            {
+                return;
+            }
+
             grid.CurrentCell = grid[grid.CurrentCellAddress.X, grid.CurrentCellAddress.Y - 1];
-		}
+        }
 
-		private void btnMoveFirst_Click(object sender, System.EventArgs e)
-		{
-			//grid.CurrentRowIndex=0;
+        private void btnMoveFirst_Click(object sender, System.EventArgs e)
+        {
+            //grid.CurrentRowIndex=0;
             grid.CurrentCell = grid[grid.CurrentCellAddress.X, 0];
-		}
+        }
 
-		private void btnMoveLast_Click(object sender, System.EventArgs e)
-		{
-			if(_result==null) return;
-			if(_result.Table==null) return;
+        private void btnMoveLast_Click(object sender, System.EventArgs e)
+        {
+            if (_result == null)
+            {
+                return;
+            }
 
-			if(_result.hasMore) 
-			{
-				grid.DataSource=null;
+            if (_result.Table == null)
+            {
+                return;
+            }
+
+            if (_result.hasMore)
+            {
+                grid.DataSource = null;
 
                 progress1.Value = 0;
                 progress1.Visible = true;
-				_result.Fill(progress1.Maximum=2000);
+                _result.Fill(progress1.Maximum = 2000);
                 progress1.Visible = false;
-			
-			    PrepareDataView(_result.Table);
+
+                PrepareDataView(_result.Table);
                 markSelected(_maxNewSelectedRows);
-			}
-			//grid.CurrentRowIndex=_result.Table.Rows.Count-1;
+            }
+            //grid.CurrentRowIndex=_result.Table.Rows.Count-1;
             grid.CurrentCell = grid[grid.CurrentCellAddress.X, grid.Rows.Count - 1];
-		}
+        }
 
         private void grid_RowHeaderMouseClick(object sender, DataGridViewCellMouseEventArgs e)
         {
@@ -857,10 +922,17 @@ namespace gView.Framework.UI.Dialogs
             grid_Click(sender, e);
         }
 
-		private void grid_Click(object sender, System.EventArgs e)
-		{
-			if(grid.DataSource==null) return;
-            if (!(_dsElement is IFeatureSelection) || _tableClass.IDFieldName == String.Empty) return;
+        private void grid_Click(object sender, System.EventArgs e)
+        {
+            if (grid.DataSource == null)
+            {
+                return;
+            }
+
+            if (!(_dsElement is IFeatureSelection) || _tableClass.IDFieldName == String.Empty)
+            {
+                return;
+            }
 
             if (((IFeatureSelection)_dsElement).SelectionSet == null)
             {
@@ -870,8 +942,8 @@ namespace gView.Framework.UI.Dialogs
             {
                 ((IFeatureSelection)_dsElement).SelectionSet.Clear();
             }
-			this.Cursor=Cursors.WaitCursor;
-			int count=((DataView)grid.DataSource).Count;
+            this.Cursor = Cursors.WaitCursor;
+            int count = ((DataView)grid.DataSource).Count;
 
             if (((IFeatureSelection)_dsElement).SelectionSet is IIDSelectionSet)
             {
@@ -885,70 +957,73 @@ namespace gView.Framework.UI.Dialogs
                 }
                 Select(((IDSelectionSet)((IFeatureSelection)_dsElement).SelectionSet).IDs);
             }
-			((IFeatureSelection)_dsElement).FeatureSelectionChanged-=new FeatureSelectionChangedEvent(FeatureSelectionChanged);
-			((IFeatureSelection)_dsElement).FireSelectionChangedEvent();
-			((IFeatureSelection)_dsElement).FeatureSelectionChanged+=new FeatureSelectionChangedEvent(FeatureSelectionChanged);
+            ((IFeatureSelection)_dsElement).FeatureSelectionChanged -= new FeatureSelectionChangedEvent(FeatureSelectionChanged);
+            ((IFeatureSelection)_dsElement).FireSelectionChangedEvent();
+            ((IFeatureSelection)_dsElement).FeatureSelectionChanged += new FeatureSelectionChangedEvent(FeatureSelectionChanged);
 
             if (_doc != null)
             {
                 _doc.FocusMap.RefreshMap(DrawPhase.Selection, null);
             }
-    
-			this.Cursor=Cursors.Default;
-		}
 
-		private void FormDataTable_Closing(object sender, System.ComponentModel.CancelEventArgs e)
-		{
+            this.Cursor = Cursors.Default;
+        }
+
+        private void FormDataTable_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
             if (_dsElement is IFeatureSelection)
             {
-                ((IFeatureSelection)_dsElement).FeatureSelectionChanged-=new FeatureSelectionChangedEvent(FeatureSelectionChanged);
+                ((IFeatureSelection)_dsElement).FeatureSelectionChanged -= new FeatureSelectionChangedEvent(FeatureSelectionChanged);
             }
-		}
+        }
 
-		private void MoveTo(int pos)
-		{
-			if(_result==null) 
-			{
-				txtPos.Text="0";
-			}
-			
-			if(pos>_result.Table.Rows.Count) 
-			{
-				grid.DataSource=null;
+        private void MoveTo(int pos)
+        {
+            if (_result == null)
+            {
+                txtPos.Text = "0";
+            }
+
+            if (pos > _result.Table.Rows.Count)
+            {
+                grid.DataSource = null;
 
                 progress1.Value = 0;
                 progress1.Visible = true;
                 progress1.Maximum = pos - _result.Table.Rows.Count;
-				while(true) 
-				{
-					int nextN=Math.Min(pos-_result.Table.Rows.Count,20000);
-					if(nextN<=0 || !_result.hasMore) break;
+                while (true)
+                {
+                    int nextN = Math.Min(pos - _result.Table.Rows.Count, 20000);
+                    if (nextN <= 0 || !_result.hasMore)
+                    {
+                        break;
+                    }
 
-					_result.Fill(progress1.Maximum=nextN);
-				}
+                    _result.Fill(progress1.Maximum = nextN);
+                }
                 progress1.Visible = false;
-			
-				PrepareDataView(_result.Table);
+
+                PrepareDataView(_result.Table);
                 markSelected(_maxNewSelectedRows);
-			}
+            }
 
-			//grid.CurrentRowIndex=Math.Min(_result.Table.Rows.Count-1,pos-1);
-			//txtPos.Text=(grid.CurrentRowIndex+1).ToString();
-		}
+            //grid.CurrentRowIndex=Math.Min(_result.Table.Rows.Count-1,pos-1);
+            //txtPos.Text=(grid.CurrentRowIndex+1).ToString();
+        }
 
-		private void btnMoveTo_Click(object sender, System.EventArgs e)
-		{
-			try 
-			{
-				int pos=Convert.ToInt32(txtPos.Text);
-				MoveTo(pos);
-			} 
-			catch(Exception ex) 
-			{
-				MessageBox.Show(this,ex.Message);
-				txtPos.Text=(grid.CurrentCellAddress.Y+1).ToString();
-			}
-		}
+        private void btnMoveTo_Click(object sender, System.EventArgs e)
+        {
+            try
+            {
+                int pos = Convert.ToInt32(txtPos.Text);
+                MoveTo(pos);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(this, ex.Message);
+                txtPos.Text = (grid.CurrentCellAddress.Y + 1).ToString();
+            }
+        }
 
         private void RowsAddedToTable(int count)
         {
@@ -963,8 +1038,8 @@ namespace gView.Framework.UI.Dialogs
             statusStrip1.Refresh();
         }
 
-		#region resizing
-		/*
+        #region resizing
+        /*
 		int _width,_height,_left,_top;
 		bool _isMinimized=false,_resizing=false;
 		private void FormDataTable_Resize(object sender, System.EventArgs e)
@@ -1007,7 +1082,7 @@ namespace gView.Framework.UI.Dialogs
 			}
 		}
 		*/
-		#endregion
+        #endregion
 
         #region IDockableWindow Members
 
@@ -1050,7 +1125,7 @@ namespace gView.Framework.UI.Dialogs
                     }
                 }
             }
-            
+
         }
 
         private void toolStripMenuItem_LoadAllSelectedRecords_Click(object sender, EventArgs e)
@@ -1060,21 +1135,36 @@ namespace gView.Framework.UI.Dialogs
 
         private void grid_SizeChanged(object sender, EventArgs e)
         {
-            if (!vScrollBar.Visible) return;
-            if (_result == null) return;
+            if (!vScrollBar.Visible)
+            {
+                return;
+            }
+
+            if (_result == null)
+            {
+                return;
+            }
 
             PrepareDataView(_result.Table);
         }
 
         private void vScrollBar_ValueChanged(object sender, EventArgs e)
         {
-            if (_result == null) return;
+            if (_result == null)
+            {
+                return;
+            }
+
             PrepareDataView(_result.Table);
         }
 
         private void grid_Sorted(object sender, EventArgs e)
         {
-            if (_result == null || _viewTable == null) return;
+            if (_result == null || _viewTable == null)
+            {
+                return;
+            }
+
             if (_sortedViewRows != null)
             {
                 // Dispose ?
@@ -1093,7 +1183,7 @@ namespace gView.Framework.UI.Dialogs
 
         private void toolStripButton_CloseWindow_Click(object sender, EventArgs e)
         {
-            if (_result!=null)
+            if (_result != null)
             {
                 _result.Table.Dispose();
             }

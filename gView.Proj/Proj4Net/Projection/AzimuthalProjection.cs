@@ -13,8 +13,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-using System;
 using Proj4Net.Utility;
+using System;
 
 namespace Proj4Net.Projection
 {
@@ -70,7 +70,9 @@ namespace Proj4Net.Projection
         {
             base.Initialize();
             if (Math.Abs(Math.Abs(ProjectionLatitude) - ProjectionMath.PiHalf) < EPS10)
+            {
                 _mode = ProjectionLatitude < 0.0 ? AzimuthalMode.SouthPole : AzimuthalMode.NorthPole;
+            }
             else if (Math.Abs(ProjectionLatitude) > EPS10)
             {
                 _mode = AzimuthalMode.Oblique;
@@ -78,7 +80,9 @@ namespace Proj4Net.Projection
                 _cosphi0 = Math.Cos(ProjectionLatitude);
             }
             else
+            {
                 _mode = AzimuthalMode.Equator;
+            }
         }
 
         public override Boolean Inside(double lon, double lat)

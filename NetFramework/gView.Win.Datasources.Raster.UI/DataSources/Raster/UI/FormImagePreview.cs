@@ -1,9 +1,5 @@
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
-using System.Text;
 using System.Windows.Forms;
 
 namespace gView.DataSources.Raster.UI
@@ -24,7 +20,7 @@ namespace gView.DataSources.Raster.UI
                     Image image = Image.FromFile(value);
                     pictureBox1.Image = image;
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
                     MessageBox.Show(ex.Message);
                 }

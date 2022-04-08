@@ -60,7 +60,7 @@ namespace gView.Framework.Carto.LayerRenderers
                 int max_x = Math.Min(iWidth = _map.iWidth, (int)Math.Max(minx, maxx) + 1);
                 int max_y = Math.Min(iHeight = _map.iHeight, (int)Math.Max(miny, maxy) + 1);
 
-                
+
                 using (var paintContext = await _layer.RasterClass.BeginPaint(_map.Display, _cancelTracker))
                 {
                     if (_filter != FilterImplementations.Default)

@@ -1,13 +1,11 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Data;
+using gView.Data.Framework.Data.Extensions;
 using gView.Framework.Data;
 using gView.Framework.Geometry;
+using gView.Framework.system;
+using System;
+using System.Data;
 using System.Data.Common;
 using System.Threading.Tasks;
-using gView.Framework.system;
-using gView.Data.Framework.Data.Extensions;
 
 namespace gView.Framework.OGC.DB
 {
@@ -25,7 +23,7 @@ namespace gView.Framework.OGC.DB
         protected OgcSpatialFeatureclass() { }
         private OgcSpatialFeatureclass(OgcSpatialDataset dataset, DataRow geometry_columns_row)
         {
-            
+
         }
 
         async public static Task<IFeatureClass> Create(OgcSpatialDataset dataset, DataRow geometry_columns_row)
@@ -35,7 +33,9 @@ namespace gView.Framework.OGC.DB
             featureClass._dataset = dataset;
 
             if (featureClass._dataset == null || geometry_columns_row == null)
+            {
                 return featureClass;
+            }
 
             try
             {
@@ -45,9 +45,14 @@ namespace gView.Framework.OGC.DB
                 try
                 {
                     if (!String.IsNullOrEmpty(featureClass._dataset.OgcDictionary("geometry_columns.f_table_schema")))
+                    {
                         schema = geometry_columns_row[featureClass._dataset.OgcDictionary("geometry_columns.f_table_schema")].ToString();
+                    }
+
                     if (!String.IsNullOrEmpty(schema))
+                    {
                         schema += ".";
+                    }
                 }
                 catch { schema = ""; }
                 featureClass._name = schema + geometry_columns_row[featureClass._dataset.OgcDictionary("geometry_columns.f_table_name")].ToString();
@@ -57,7 +62,9 @@ namespace gView.Framework.OGC.DB
                 // Read Primary Key -> PostGIS id is not always "gid";
                 string pKey = featureClass.GetPKey();
                 if (!String.IsNullOrWhiteSpace(pKey) && !pKey.Equals(featureClass._idfield))
+                {
                     featureClass._idfield = pKey;
+                }
 
                 featureClass._geometry_columns_type = geometry_columns_row[featureClass._dataset.OgcDictionary("geometry_columns.type")].ToString().ToUpper();
                 switch (featureClass._geometry_columns_type)
@@ -115,7 +122,11 @@ namespace gView.Framework.OGC.DB
 
         async protected Task ReadSchema()
         {
-            if (_dataset == null) return;
+            if (_dataset == null)
+            {
+                return;
+            }
+
             try
             {
                 // Fields
@@ -154,7 +165,10 @@ namespace gView.Framework.OGC.DB
                             if (schema.Columns["IsIdentity"] != null && row["IsIdentity"] != null && (bool)row["IsIdentity"] == true)
                             {
                                 if (foundId == false)
+                                {
                                     _idfield = row["ColumnName"].ToString();
+                                }
+
                                 foundId = true;
 
                                 _fields.Add(new Field(_idfield, FieldType.ID,
@@ -167,28 +181,49 @@ namespace gView.Framework.OGC.DB
                             if (row["DataType"] is Type)
                             {
                                 if ((Type)row["DataType"] == typeof(System.Int32))
+                                {
                                     field.type = FieldType.integer;
+                                }
                                 else if ((Type)row["DataType"] == typeof(System.Int16))
+                                {
                                     field.type = FieldType.smallinteger;
+                                }
                                 else if ((Type)row["DataType"] == typeof(System.Int64))
+                                {
                                     field.type = FieldType.biginteger;
+                                }
                                 else if ((Type)row["DataType"] == typeof(System.DateTime))
+                                {
                                     field.type = FieldType.Date;
+                                }
                                 else if ((Type)row["DataType"] == typeof(System.Double))
+                                {
                                     field.type = FieldType.Double;
+                                }
                                 else if ((Type)row["DataType"] == typeof(System.Decimal))
+                                {
                                     field.type = FieldType.Float;
+                                }
                                 else if ((Type)row["DataType"] == typeof(System.Boolean))
+                                {
                                     field.type = FieldType.boolean;
+                                }
                                 else if ((Type)row["DataType"] == typeof(System.Char))
+                                {
                                     field.type = FieldType.character;
+                                }
                                 else if ((Type)row["DataType"] == typeof(System.String))
+                                {
                                     field.type = FieldType.String;
+                                }
                                 else if (row["DataType"].ToString() == "Microsoft.SqlServer.Types.SqlGeometry" ||
                                          row["DataType"].ToString() == "Microsoft.SqlServer.Types.SqlGeography")
                                 {
                                     if (foundShape == false)
+                                    {
                                         _shapefield = row["ColumnName"].ToString();
+                                    }
+
                                     foundShape = true;
                                     field.type = FieldType.String;
                                 }
@@ -198,7 +233,9 @@ namespace gView.Framework.OGC.DB
                             field.size = Convert.ToInt32(row["ColumnSize"]);
                             int precision;
                             if (int.TryParse(row["NumericPrecision"]?.ToString(), out precision))
+                            {
                                 field.precision = precision;
+                            }
 
                             _fields.Add(field);
                         }
@@ -295,7 +332,10 @@ namespace gView.Framework.OGC.DB
             if (filter is IBufferQueryFilter)
             {
                 ISpatialFilter sFilter = await BufferQueryFilter.ConvertToSpatialFilter(filter as IBufferQueryFilter);
-                if (sFilter == null) return null;
+                if (sFilter == null)
+                {
+                    return null;
+                }
 
                 return await GetFeatures(sFilter);
             }
@@ -317,7 +357,9 @@ namespace gView.Framework.OGC.DB
         {
             filter.SubFields = this.IDFieldName;
             if (filter is ISpatialFilter)
+            {
                 filter.AddField(this.ShapeFieldName);
+            }
 
             using (IFeatureCursor cursor = await OgcSpatialFeatureCursor.Create(this, filter))
             {
@@ -350,7 +392,10 @@ namespace gView.Framework.OGC.DB
         {
             foreach (IField field in _fields.ToEnumerable())
             {
-                if (field.name == name) return field;
+                if (field.name == name)
+                {
+                    return field;
+                }
             }
             return null;
         }
@@ -471,7 +516,9 @@ namespace gView.Framework.OGC.DB
                                     {
                                         var sRef = gView.Framework.Geometry.SpatialReference.FromID("epsg:" + srid.ToString());
                                         if (sRef != null)
+                                        {
                                             return sRef;
+                                        }
                                     }
                                 }
                             }
@@ -481,7 +528,7 @@ namespace gView.Framework.OGC.DB
                     }
                 }
             }
-            catch(Exception ex) 
+            catch (Exception ex)
             {
                 string msg = ex.Message;
             }

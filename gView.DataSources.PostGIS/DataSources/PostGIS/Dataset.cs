@@ -146,10 +146,10 @@ namespace gView.DataSources.PostGIS
             return String.IsNullOrEmpty(schema) ? tabName : "\"" + schema + "\"" + "." + tabName;
         }
 
-        protected override string AddGeometryColumn(string schemaName, 
-                                                    string tableName, 
-                                                    string colunName, 
-                                                    IGeometryDef geomDef, 
+        protected override string AddGeometryColumn(string schemaName,
+                                                    string tableName,
+                                                    string colunName,
+                                                    IGeometryDef geomDef,
                                                     string geomTypeString)
         {
 

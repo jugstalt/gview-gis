@@ -1,8 +1,5 @@
 using System;
-using System.Collections.Generic;
 using System.Text;
-using System.IO;
-using System.Security.Cryptography;
 
 namespace gView.Framework.system
 {
@@ -16,9 +13,14 @@ namespace gView.Framework.system
             for (int i = 0; i < st.Length; i += MoveBase)
             {
                 if (i + MoveBase > st.Length - 1)
+                {
                     c = st.Length - i;
+                }
                 else
+                {
                     c = MoveBase;
+                }
+
                 SB.Append(InverseString(st.Substring(i, c)));
             }
             return SB.ToString();
@@ -40,9 +42,13 @@ namespace gView.Framework.system
             foreach (char ch in st)
             {
                 if (char.IsLetterOrDigit(ch) == false)
+                {
                     SB.Append(Convert.ToInt16(ch).ToString());
+                }
                 else
+                {
                     SB.Append(ch);
+                }
             }
             return SB.ToString();
         }
@@ -61,7 +67,7 @@ namespace gView.Framework.system
                 NewPlace = i * Convert.ToUInt16(st[i]);
                 NewPlace = NewPlace % st.Length;
                 ch = st[i];
-                st = st.Remove(i,1);
+                st = st.Remove(i, 1);
                 st = st.Insert(NewPlace, ch.ToString());
             }
             return st;
@@ -70,7 +76,9 @@ namespace gView.Framework.system
         static public string MakePassword(string st, string Identifier)
         {
             if (Identifier.Length != 3)
+            {
                 throw new ArgumentException("Identifier must be 3 character length");
+            }
 
             int[] num = new int[3];
             num[0] = Convert.ToInt32(Identifier[0].ToString(), 10);
@@ -90,20 +98,32 @@ namespace gView.Framework.system
         }
 
         static private char ChangeChar(char ch, int[] EnCode)
-        { 
+        {
             ch = char.ToUpper(ch);
             if (ch >= 'A' && ch <= 'H')
+            {
                 return Convert.ToChar(Convert.ToInt16(ch) + 2 * EnCode[0]);
+            }
             else if (ch >= 'I' && ch <= 'P')
+            {
                 return Convert.ToChar(Convert.ToInt16(ch) - EnCode[2]);
+            }
             else if (ch >= 'Q' && ch <= 'Z')
+            {
                 return Convert.ToChar(Convert.ToInt16(ch) - EnCode[1]);
+            }
             else if (ch >= '0' && ch <= '4')
+            {
                 return Convert.ToChar(Convert.ToInt16(ch) + 5);
+            }
             else if (ch >= '5' && ch <= '9')
+            {
                 return Convert.ToChar(Convert.ToInt16(ch) - 5);
+            }
             else
+            {
                 return '0';
+            }
         }
     }
 }

@@ -4,11 +4,11 @@ using gView.Framework.IO;
 using gView.Framework.Symbology.UI;
 using gView.Framework.system;
 using gView.Framework.UI;
+using gView.GraphicsEngine;
+using gView.GraphicsEngine.Abstraction;
 using System;
 using System.ComponentModel;
 using System.Reflection;
-using gView.GraphicsEngine;
-using gView.GraphicsEngine.Abstraction;
 
 namespace gView.Framework.Symbology
 {
@@ -515,7 +515,7 @@ namespace gView.Framework.Symbology
             }
             set
             {
-                
+
             }
         }
 

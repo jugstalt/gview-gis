@@ -1,12 +1,6 @@
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Text;
-using System.Windows.Forms;
 using gView.Framework.Data;
 using gView.Framework.UI.Controls;
+using System.Windows.Forms;
 
 namespace gView.Framework.Carto.Rendering.UI
 {
@@ -16,7 +10,11 @@ namespace gView.Framework.Carto.Rendering.UI
         {
             InitializeComponent();
 
-            if (field == null) return;
+            if (field == null)
+            {
+                return;
+            }
+
             switch (field.type)
             {
                 case FieldType.ID:

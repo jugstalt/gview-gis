@@ -13,8 +13,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-using System;
 using Proj4Net.Utility;
+using System;
 
 namespace Proj4Net.Units
 {
@@ -71,7 +71,9 @@ namespace Proj4Net.Units
             for (int i = 0; i < PredifinedUnits.Length; i++)
             {
                 if (name.Equals(PredifinedUnits[i].Name) || name.Equals(PredifinedUnits[i].Plural) || name.Equals(PredifinedUnits[i].Abbreviation))
+                {
                     return PredifinedUnits[i];
+                }
             }
             return Metres;
         }
@@ -79,7 +81,10 @@ namespace Proj4Net.Units
         public static double Convert(double value, Unit from, Unit to)
         {
             if (from == to)
+            {
                 return value;
+            }
+
             return to.FromBase(from.ToBase(value));
         }
 

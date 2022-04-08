@@ -13,8 +13,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-using System;
 using GeoAPI.Geometries;
+using System;
 
 namespace Proj4Net.Projection
 {
@@ -31,7 +31,9 @@ namespace Proj4Net.Projection
         public override Coordinate Project(double lplam, double lpphi, Coordinate xy)
         {
             if (Math.Abs(lpphi) <= PHI_LIM)
+            {
                 xy = _sinu.Project(lplam, lpphi, xy);
+            }
             else
             {
                 xy = _moll.Project(lplam, lpphi, xy);
@@ -43,7 +45,9 @@ namespace Proj4Net.Projection
         public override Coordinate ProjectInverse(double xyx, double xyy, Coordinate lp)
         {
             if (Math.Abs(xyy) <= PHI_LIM)
+            {
                 lp = _sinu.ProjectInverse(xyx, xyy, lp);
+            }
             else
             {
                 xyy += xyy >= 0.0 ? Y_COR : -Y_COR;

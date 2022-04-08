@@ -1,7 +1,5 @@
-﻿using System;
+﻿using gView.Framework.system;
 using System.Collections.Generic;
-using System.Text;
-using gView.Framework.system;
 
 namespace gView.Framework.Network.Build
 {
@@ -69,15 +67,23 @@ namespace gView.Framework.Network.Build
             int IComparer<NetworkGraphEdge>.Compare(NetworkGraphEdge x, NetworkGraphEdge y)
             {
                 if (x.FromNodeIndex < y.FromNodeIndex)
+                {
                     return -1;
+                }
                 else if (x.FromNodeIndex > y.FromNodeIndex)
+                {
                     return 1;
+                }
 
                 // bei gleichstand, nach ToNodeIndex Sortieren
                 if (x.ToNodeIndex < y.ToNodeIndex)
+                {
                     return -1;
+                }
                 else if (x.ToNodeIndex > y.ToNodeIndex)
+                {
                     return 1;
+                }
 
                 return 0;
             }

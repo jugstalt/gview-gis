@@ -1,15 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using gView.Framework.Data;
-using gView.Framework.IO;
-using gView.Framework.system;
+﻿using gView.Framework.Data;
 using gView.Framework.Geometry;
 using gView.Framework.Geometry.Tiling;
-using System.Threading.Tasks;
-using System.Net.Http;
+using gView.Framework.IO;
+using gView.Framework.system;
+using System;
+using System.Collections.Generic;
 using System.Net;
+using System.Net.Http;
+using System.Threading.Tasks;
 
 namespace gView.DataSources.TileCache
 {
@@ -18,7 +16,7 @@ namespace gView.DataSources.TileCache
     {
         private string _dsName = String.Empty;
         private DatasetState _state = DatasetState.unknown;
-        private string _connectionString, _lastErrMsg=String.Empty, _copyright;
+        private string _connectionString, _lastErrMsg = String.Empty, _copyright;
         private ParentRasterClass _class = null;
         private IDatasetElement _dsElement = null;
 
@@ -29,7 +27,7 @@ namespace gView.DataSources.TileCache
 
         public Dataset()
         {
-            
+
         }
 
         #region IDataset Member
@@ -58,7 +56,10 @@ namespace gView.DataSources.TileCache
             }
             string origin = ConfigTextStream.ExtractValue(value, "origin");
             if (!String.IsNullOrEmpty(origin))
+            {
                 this.Origin = (GridOrientation)int.Parse(origin);
+            }
+
             string sref64 = ConfigTextStream.ExtractValue(value, "sref64");
             if (!String.IsNullOrEmpty(sref64))
             {
@@ -69,17 +70,27 @@ namespace gView.DataSources.TileCache
             List<double> listScales = new List<double>();
             foreach (string scale in scales.Split(','))
             {
-                if (String.IsNullOrEmpty(scale)) continue;
+                if (String.IsNullOrEmpty(scale))
+                {
+                    continue;
+                }
+
                 listScales.Add(double.Parse(scale, Numbers.Nhi));
             }
             this.Scales = listScales.ToArray();
 
             string tileWidth = ConfigTextStream.ExtractValue(value, "tilewidth");
             if (!String.IsNullOrEmpty(tileWidth))
+            {
                 TileWidth = int.Parse(tileWidth);
+            }
+
             string tileHeight = ConfigTextStream.ExtractValue(value, "tileheight");
             if (!String.IsNullOrEmpty(tileHeight))
+            {
                 TileHeight = int.Parse(tileHeight);
+            }
+
             TileUrl = ConfigTextStream.ExtractValue(value, "tileurl");
 
             _copyright = ConfigTextStream.ExtractValue(value, "copyright");
@@ -126,7 +137,9 @@ namespace gView.DataSources.TileCache
         public Task<List<IDatasetElement>> Elements()
         {
             if (_dsElement == null)
+            {
                 return null;
+            }
 
             return Task.FromResult(new List<IDatasetElement>() { _dsElement });
         }
@@ -162,7 +175,7 @@ namespace gView.DataSources.TileCache
 
         public void Dispose()
         {
-            
+
         }
 
         #endregion

@@ -5,5 +5,5 @@
         ITool[] ContextTools { get; }
     }
 
-    
+
 }

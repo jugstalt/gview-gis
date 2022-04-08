@@ -1,8 +1,6 @@
 using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Windows.Forms;
 using System.Drawing;
+using System.Windows.Forms;
 
 namespace gView.Framework.Symbology.UI.Controls
 {
@@ -23,7 +21,10 @@ namespace gView.Framework.Symbology.UI.Controls
 
         void PenWidth_PenWidthSelected(object sender, EventArgs e)
         {
-            if (PenWidthSelected != null) PenWidthSelected(this, EventArgs.Empty);
+            if (PenWidthSelected != null)
+            {
+                PenWidthSelected(this, EventArgs.Empty);
+            }
         }
 
         public int PenWidth
@@ -56,11 +57,19 @@ namespace gView.Framework.Symbology.UI.Controls
 
         private Point GetOpenPoint()
         {
-            if (this.Owner == null) return new Point(5, 5);
+            if (this.Owner == null)
+            {
+                return new Point(5, 5);
+            }
+
             int x = 0;
             foreach (ToolStripItem item in this.Parent.Items)
             {
-                if (item == this) break;
+                if (item == this)
+                {
+                    break;
+                }
+
                 x += item.Width;
             }
             return this.Owner.PointToScreen(new Point(x, 0));

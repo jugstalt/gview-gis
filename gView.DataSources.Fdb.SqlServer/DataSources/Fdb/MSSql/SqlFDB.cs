@@ -1,26 +1,20 @@
-using System;
-using System.Data;
-using System.Collections;
-using System.Collections.Generic;
-using System.Data.SqlClient;
-using System.IO;
-using System.Text;
-using System.Data.SqlTypes;
-using gView.Framework.Db;
 using gView.Framework.Data;
+using gView.Framework.Db;
+using gView.Framework.Db.Extensions;
 using gView.Framework.FDB;
 using gView.Framework.Geometry;
-using gView.Framework.Carto;
-using gView.Framework.SpatialAlgorithms;
-using gView.Framework.UI;
-using gView.Framework.system;
-using gView.DataSources.Raster;
-using gView.DataSources.Raster.File;
-using gView.Framework.Symbology;
-using System.Data.Common;
 using gView.Framework.Offline;
+using gView.Framework.system;
+using gView.Framework.UI;
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Data.Common;
+using System.Data.SqlClient;
+using System.Data.SqlTypes;
+using System.IO;
+using System.Text;
 using System.Threading.Tasks;
-using gView.Framework.Db.Extensions;
 
 namespace gView.DataSources.Fdb.MSSql
 {
@@ -52,7 +46,11 @@ namespace gView.DataSources.Fdb.MSSql
                 {
                     continue;
                 }
-                if (sb.Length > 0) sb.Append(";");
+                if (sb.Length > 0)
+                {
+                    sb.Append(";");
+                }
+
                 sb.Append(p);
             }
             return sb.ToString();
@@ -62,7 +60,11 @@ namespace gView.DataSources.Fdb.MSSql
 
         override public void Dispose()
         {
-            if (_conn != null) _conn.Dispose();
+            if (_conn != null)
+            {
+                _conn.Dispose();
+            }
+
             _conn = null;
 
             base.Dispose();
@@ -104,18 +106,34 @@ namespace gView.DataSources.Fdb.MSSql
                         foreach (string type in parameters.UserDataTypes)
                         {
                             if (type.ToLower() == "name")
+                            {
                                 hasName = true;
-                            if (!first) sql.Append(",");
+                            }
+
+                            if (!first)
+                            {
+                                sql.Append(",");
+                            }
+
                             sql.Append(type + "=");
                             if (type.ToLower() == "filename")
+                            {
                                 sql.Append("'" + parameters.GetUserData(type) + "'");
+                            }
                             else
+                            {
                                 sql.Append(parameters.GetUserData(type));
+                            }
+
                             first = false;
                         }
                         if (!hasName)
                         {
-                            if (!first) sql.Append(",");
+                            if (!first)
+                            {
+                                sql.Append(",");
+                            }
+
                             sql.Append("name=" + name);
                         }
                         sql.Append(")");
@@ -124,7 +142,9 @@ namespace gView.DataSources.Fdb.MSSql
                     bool execute = true;
 
                     if (sql.ToString().ToLower().IndexOf("create database") == 0 && false.Equals(parameters.GetUserData("CreateDatabase")))
+                    {
                         execute = false;
+                    }
 
                     if (execute)
                     {
@@ -136,7 +156,11 @@ namespace gView.DataSources.Fdb.MSSql
                             return false;
                         }
                     }
-                    if (sql.ToString().ToLower().IndexOf("create database") == 0) _conn.ConnectionString += ";database=" + name;
+                    if (sql.ToString().ToLower().IndexOf("create database") == 0)
+                    {
+                        _conn.ConnectionString += ";database=" + name;
+                    }
+
                     sql = new StringBuilder();
                 }
                 else
@@ -171,7 +195,11 @@ namespace gView.DataSources.Fdb.MSSql
                         reader.Close();
                         return false;
                     }
-                    if (sql.ToString().ToLower().IndexOf("create database") == 0) _conn.ConnectionString += ";database=" + name;
+                    if (sql.ToString().ToLower().IndexOf("create database") == 0)
+                    {
+                        _conn.ConnectionString += ";database=" + name;
+                    }
+
                     sql = new StringBuilder();
                 }
                 else
@@ -189,7 +217,11 @@ namespace gView.DataSources.Fdb.MSSql
         {
             try
             {
-                if (_conn != null) _conn.Dispose();
+                if (_conn != null)
+                {
+                    _conn.Dispose();
+                }
+
                 _conn = new CommonDbConnection();
 
                 _conn.ConnectionString = parseConnectionString(connString);
@@ -242,7 +274,11 @@ namespace gView.DataSources.Fdb.MSSql
         async private Task<int> CreateDataset(string name, ISpatialReference sRef, bool imagedataset, string imageSpace)
         {
             _errMsg = "";
-            if (_conn == null) return -1;
+            if (_conn == null)
+            {
+                return -1;
+            }
+
             try
             {
                 int sRefID = await CreateSpatialReference(sRef);
@@ -296,12 +332,18 @@ namespace gView.DataSources.Fdb.MSSql
 
         async override public Task<IFeatureCursor> Query(IFeatureClass fc, IQueryFilter filter)
         {
-            if (_conn == null || fc == null || !(fc.Dataset is IFDBDataset)) return null;
+            if (_conn == null || fc == null || !(fc.Dataset is IFDBDataset))
+            {
+                return null;
+            }
 
             if (filter is IBufferQueryFilter)
             {
                 ISpatialFilter sFilter = await BufferQueryFilter.ConvertToSpatialFilter(filter as IBufferQueryFilter);
-                if (sFilter == null) return null;
+                if (sFilter == null)
+                {
+                    return null;
+                }
 
                 return await Query(fc, sFilter);
             }
@@ -317,12 +359,18 @@ namespace gView.DataSources.Fdb.MSSql
                 filter.fieldPostfix = "]";
                 if (filter is ISpatialFilter)
                 {
-                    if (((ISpatialFilter)filter).SpatialRelation != spatialRelation.SpatialRelationEnvelopeIntersects) filter.AddField("FDB_SHAPE");
+                    if (((ISpatialFilter)filter).SpatialRelation != spatialRelation.SpatialRelationEnvelopeIntersects)
+                    {
+                        filter.AddField("FDB_SHAPE");
+                    }
                 }
                 //subfields=filter.SubFields.Replace(" ",",");
                 subfields = filter.SubFieldsAndAlias;
             }
-            if (subfields == "") subfields = "*";
+            if (subfields == "")
+            {
+                subfields = "*";
+            }
 
             if (((IFDBDataset)fc.Dataset).SpatialIndexDef is MSSpatialIndex)
             {
@@ -385,9 +433,13 @@ namespace gView.DataSources.Fdb.MSSql
                         {
                             if (sFilter.SpatialRelation == spatialRelation.SpatialRelationMapEnvelopeIntersects &&
                                 sFilter.Geometry is IEnvelope)
+                            {
                                 NIDs = tree.CollectNIDsPlus((IEnvelope)sFilter.Geometry);
+                            }
                             else
+                            {
                                 NIDs = tree.CollectNIDs(sFilter.Geometry);
+                            }
                         }
                     }
                     if (((ISpatialFilter)filter).SpatialRelation == spatialRelation.SpatialRelationMapEnvelopeIntersects)
@@ -428,14 +480,16 @@ namespace gView.DataSources.Fdb.MSSql
         {
             SqlFDBDataset sqlDataset = dataset as SqlFDBDataset;
             if (sqlDataset == null)
+            {
                 throw new Exception("datasset is null or not an SqlFDBDataset");
+            }
 
             ISpatialReference sRef = await this.SpatialReference(sqlDataset.DatasetName);
 
             if (sqlDataset.DatasetName == elementName)
             {
                 var isImageDatasetResult = await IsImageDataset(sqlDataset.DatasetName);
-                string imageSpace=isImageDatasetResult.imageSpace;
+                string imageSpace = isImageDatasetResult.imageSpace;
                 if (isImageDatasetResult.isImageDataset)
                 {
                     IDatasetElement fLayer = (await DatasetElement(sqlDataset, elementName + "_IMAGE_POLYGONS")) as IDatasetElement;
@@ -471,7 +525,10 @@ namespace gView.DataSources.Fdb.MSSql
             {
                 IDataset linkedDs = await LinkedDataset(LinkedDatasetCacheInstance, LinkedDatasetId(row));
                 if (linkedDs == null)
+                {
                     return null;
+                }
+
                 IDatasetElement linkedElement = await linkedDs.Element((string)row["Name"]);
 
                 LinkedFeatureClass fc = new LinkedFeatureClass(sqlDataset,
@@ -486,10 +543,16 @@ namespace gView.DataSources.Fdb.MSSql
             {
                 string[] viewNames = row["Name"].ToString().Split('@');
                 if (viewNames.Length != 2)
+                {
                     return null;
+                }
+
                 DataTable tab2 = await _conn.Select("*", "FDB_FeatureClasses", "DatasetID=" + sqlDataset._dsID + " AND Name='" + viewNames[0] + "'");
-                if (tab2 == null || tab2.Rows.Count !=1)
+                if (tab2 == null || tab2.Rows.Count != 1)
+                {
                     return null;
+                }
+
                 fcRow = tab2.Rows[0];
             }
 
@@ -531,7 +594,11 @@ namespace gView.DataSources.Fdb.MSSql
 
         async internal Task<DataTable> Select(string fields, string from, string where)
         {
-            if (_conn == null) return null;
+            if (_conn == null)
+            {
+                return null;
+            }
+
             return await _conn.Select(fields, from, where);
         }
 
@@ -539,7 +606,11 @@ namespace gView.DataSources.Fdb.MSSql
         {
             get
             {
-                if (_conn == null) return "";
+                if (_conn == null)
+                {
+                    return "";
+                }
+
                 return _conn.ConnectionString;
             }
         }
@@ -547,10 +618,16 @@ namespace gView.DataSources.Fdb.MSSql
         async override public Task<List<IDatasetElement>> DatasetLayers(IDataset dataset)
         {
             _errMsg = "";
-            if (_conn == null) return null;
+            if (_conn == null)
+            {
+                return null;
+            }
 
             int dsID = await this.DatasetID(dataset.DatasetName);
-            if (dsID == -1) return null;
+            if (dsID == -1)
+            {
+                return null;
+            }
 
             DataSet ds = new DataSet();
             if (!await _conn.SQLQuery(ds, "SELECT * FROM FDB_FeatureClasses WHERE DatasetID=" + dsID, "FC"))
@@ -608,7 +685,10 @@ namespace gView.DataSources.Fdb.MSSql
                 {
                     IDataset linkedDs = await LinkedDataset(LinkedDatasetCacheInstance, LinkedDatasetId(row));
                     if (linkedDs == null)
+                    {
                         continue;
+                    }
+
                     IDatasetElement linkedElement = await linkedDs.Element((string)row["Name"]);
 
                     LinkedFeatureClass fc = new LinkedFeatureClass(dataset,
@@ -625,15 +705,23 @@ namespace gView.DataSources.Fdb.MSSql
                 {
                     string[] viewNames = row["Name"].ToString().Split('@');
                     if (viewNames.Length != 2)
+                    {
                         continue;
+                    }
+
                     DataRow[] fcRows = ds.Tables[0].Select("Name='" + viewNames[0] + "'");
                     if (fcRows == null || fcRows.Length != 1)
+                    {
                         continue;
+                    }
+
                     fcRow = fcRows[0];
                 }
 
                 if (!await TableExists("FC_" + fcRow["Name"].ToString()))
+                {
                     continue;
+                }
                 //if (_seVersion != 0)
                 //{
                 //    _conn.ExecuteNoneQuery("execute LoadIndex '" + row["Name"].ToString() + "'");
@@ -797,9 +885,14 @@ namespace gView.DataSources.Fdb.MSSql
                     return "[nvarchar] (1) NULL";
                 case FieldType.String:
                     if (field.size > 0)
+                    {
                         return "[nvarchar](" + Math.Min(field.size, 4000) + ")";
+                    }
                     else if (field.size <= 0)
+                    {
                         return "[nvarchar] (255) NULL";
+                    }
+
                     break;
                 case FieldType.guid:
                     return "[uniqueidentifier] NULL";
@@ -871,9 +964,14 @@ namespace gView.DataSources.Fdb.MSSql
                             {
                                 types.Append("[int] IDENTITY(1,1) NOT NULL CONSTRAINT KEY_" + System.Guid.NewGuid().ToString("N") + "_" + field.name + " PRIMARY KEY");
                                 if (msSpatial)
+                                {
                                     types.Append(" CLUSTERED");
+                                }
                                 else
+                                {
                                     types.Append(" NONCLUSTERED");
+                                }
+
                                 hasID = true;
                                 idField = field.name;
                             }
@@ -897,9 +995,14 @@ namespace gView.DataSources.Fdb.MSSql
                             break;
                         case FieldType.String:
                             if (field.size > 0)
+                            {
                                 types.Append("[nvarchar](" + Math.Min(field.size, 4000) + ")");
+                            }
                             else if (field.size <= 0)
+                            {
                                 types.Append("[nvarchar] (255) NULL");
+                            }
+
                             break;
                         case FieldType.guid:
                             types.Append("[uniqueidentifier] NULL");
@@ -944,11 +1047,19 @@ namespace gView.DataSources.Fdb.MSSql
             try
             {
                 string dsname = await DatasetNameFromFeatureClassName(FCName);
-                if (dsname == "") return false;
+                if (dsname == "")
+                {
+                    return false;
+                }
+
                 Fields fields = new Fields();
                 foreach (IField field in await FeatureClassFields(dsname, FCName))
                 {
-                    if (field.name == "FDB_OID" || field.name == "FDB_SHAPE") continue;
+                    if (field.name == "FDB_OID" || field.name == "FDB_SHAPE")
+                    {
+                        continue;
+                    }
+
                     fields.Add(field);
                 }
 
@@ -982,14 +1093,25 @@ namespace gView.DataSources.Fdb.MSSql
 
                 foreach (SpatialIndexNode node in nodes)
                 {
-                    if (node.IDs == null) continue;
-                    if (node.IDs.Count == 0) continue;
+                    if (node.IDs == null)
+                    {
+                        continue;
+                    }
+
+                    if (node.IDs.Count == 0)
+                    {
+                        continue;
+                    }
 
                     StringBuilder sb = new StringBuilder();
                     int counter = 0;
                     foreach (int oid in node.IDs)
                     {
-                        if (sb.Length > 0) sb.Append(",");
+                        if (sb.Length > 0)
+                        {
+                            sb.Append(",");
+                        }
+
                         sb.Append(oid.ToString());
 
                         if (counter > 24)
@@ -1219,8 +1341,15 @@ namespace gView.DataSources.Fdb.MSSql
         }
         async public override Task<bool> Insert(IFeatureClass fClass, List<IFeature> features)
         {
-            if (fClass == null || features == null || !(fClass.Dataset is IFDBDataset)) return false;
-            if (features.Count == 0) return true;
+            if (fClass == null || features == null || !(fClass.Dataset is IFDBDataset))
+            {
+                return false;
+            }
+
+            if (features.Count == 0)
+            {
+                return true;
+            }
 
             BinarySearchTree2 tree = null;
             ISpatialIndexDef si = ((IFDBDataset)fClass.Dataset).SpatialIndexDef;
@@ -1294,16 +1423,24 @@ namespace gView.DataSources.Fdb.MSSql
                                 if (si.GeometryType == GeometryFieldType.MsGeometry)
                                 {
                                     if (fClass.GeometryType == GeometryType.Polygon)
+                                    {
                                         wkt = "geometry::STGeomFromText('" + gView.Framework.OGC.WKT.ToWKT(shape) + "',0).MakeValid()";
+                                    }
                                     else
+                                    {
                                         wkt = "geometry::STGeomFromText('" + gView.Framework.OGC.WKT.ToWKT(shape) + "',0)";
+                                    }
                                 }
                                 else
                                 {
                                     if (fClass.GeometryType == GeometryType.Polygon)
+                                    {
                                         wkt = "geography::STGeomFromText('" + GeographyMakeValid(connection, transaction, gView.Framework.OGC.WKT.ToWKT(shape)) + "',4326)";
+                                    }
                                     else
+                                    {
                                         wkt = "geography::STGeomFromText('" + gView.Framework.OGC.WKT.ToWKT(shape) + "',4326)";
+                                    }
                                 }
                                 //SqlParameter parameter = new SqlParameter("@FDB_SHAPE", wkt);
                                 fields.Append("[FDB_SHAPE]");
@@ -1334,16 +1471,30 @@ namespace gView.DataSources.Fdb.MSSql
                         {
                             foreach (IFieldValue fv in feature.Fields)
                             {
-                                if (fv.Name == "FDB_NID" || fv.Name == "FDB_SHAPE" || fv.Name == "FDB_OID") continue;
+                                if (fv.Name == "FDB_NID" || fv.Name == "FDB_SHAPE" || fv.Name == "FDB_OID")
+                                {
+                                    continue;
+                                }
+
                                 string name = fv.Name.Replace("$", "");
                                 if (name == "FDB_NID")
                                 {
                                     hasNID = true;
                                 }
-                                else if (fClass.FindField(name) == null) continue;
+                                else if (fClass.FindField(name) == null)
+                                {
+                                    continue;
+                                }
 
-                                if (fields.Length != 0) fields.Append(",");
-                                if (parameters.Length != 0) parameters.Append(",");
+                                if (fields.Length != 0)
+                                {
+                                    fields.Append(",");
+                                }
+
+                                if (parameters.Length != 0)
+                                {
+                                    parameters.Append(",");
+                                }
 
                                 SqlParameter parameter = new SqlParameter("@" + name,
                                     fv.Value != null ? fv.Value : System.DBNull.Value);
@@ -1359,10 +1510,19 @@ namespace gView.DataSources.Fdb.MSSql
                             if (_seVersion == 0)
                             {
                                 if (tree != null && feature.Shape != null)
+                                {
                                     NID = tree.InsertSINode(feature.Shape.Envelope);
+                                }
 
-                                if (fields.Length != 0) fields.Append(",");
-                                if (parameters.Length != 0) parameters.Append(",");
+                                if (fields.Length != 0)
+                                {
+                                    fields.Append(",");
+                                }
+
+                                if (parameters.Length != 0)
+                                {
+                                    parameters.Append(",");
+                                }
 
                                 SqlParameter parameter = new SqlParameter("@FDB_NID", NID);
                                 fields.Append("[FDB_NID]");
@@ -1373,8 +1533,15 @@ namespace gView.DataSources.Fdb.MSSql
                             }
                             else
                             {
-                                if (fields.Length != 0) fields.Append(",");
-                                if (parameters.Length != 0) parameters.Append(",");
+                                if (fields.Length != 0)
+                                {
+                                    fields.Append(",");
+                                }
+
+                                if (parameters.Length != 0)
+                                {
+                                    parameters.Append(",");
+                                }
 
                                 IGeometryDef geomDef = fClass as IGeometryDef;
                                 fields.Append("[FDB_NID]");
@@ -1427,8 +1594,15 @@ namespace gView.DataSources.Fdb.MSSql
         }
         async public override Task<bool> Update(IFeatureClass fClass, List<IFeature> features)
         {
-            if (fClass == null || features == null || !(fClass.Dataset is IFDBDataset)) return false;
-            if (features.Count == 0) return true;
+            if (fClass == null || features == null || !(fClass.Dataset is IFDBDataset))
+            {
+                return false;
+            }
+
+            if (features.Count == 0)
+            {
+                return true;
+            }
 
             BinarySearchTree2 tree = null;
 
@@ -1494,7 +1668,10 @@ namespace gView.DataSources.Fdb.MSSql
                         command.Parameters.Clear();
                         StringBuilder commandText = new StringBuilder();
 
-                        if (feature == null) continue;
+                        if (feature == null)
+                        {
+                            continue;
+                        }
 
                         if (feature.OID < 0)
                         {
@@ -1514,16 +1691,24 @@ namespace gView.DataSources.Fdb.MSSql
                                 if (si.GeometryType == GeometryFieldType.MsGeometry)
                                 {
                                     if (fClass.GeometryType == GeometryType.Polygon)
+                                    {
                                         wkt = "geometry::STGeomFromText('" + gView.Framework.OGC.WKT.ToWKT(feature.Shape) + "',0).MakeValid()";
+                                    }
                                     else
+                                    {
                                         wkt = "geometry::STGeomFromText('" + gView.Framework.OGC.WKT.ToWKT(feature.Shape) + "',0)";
+                                    }
                                 }
                                 else
                                 {
                                     if (fClass.GeometryType == GeometryType.Polygon)
+                                    {
                                         wkt = "geography::STGeomFromText('" + GeographyMakeValid(connection, transaction, gView.Framework.OGC.WKT.ToWKT(feature.Shape)) + "',4326)";
+                                    }
                                     else
+                                    {
                                         wkt = "geography::STGeomFromText('" + gView.Framework.OGC.WKT.ToWKT(feature.Shape) + "',4326)";
+                                    }
                                 }
                                 //SqlParameter parameter = new SqlParameter("@FDB_SHAPE", wkt);
                                 //fields.Append("[FDB_SHAPE]=@FDB_SHAPE");
@@ -1550,16 +1735,26 @@ namespace gView.DataSources.Fdb.MSSql
                         {
                             foreach (IFieldValue fv in feature.Fields)
                             {
-                                if (fv.Name == "FDB_OID" || fv.Name == "FDB_SHAPE") continue;
+                                if (fv.Name == "FDB_OID" || fv.Name == "FDB_SHAPE")
+                                {
+                                    continue;
+                                }
+
                                 if (fv.Name == "$FDB_NID")
                                 {
                                     long.TryParse(fv.Value.ToString(), out NID);
                                     continue;
                                 }
                                 string name = fv.Name;
-                                if (fClass.FindField(name) == null) continue;
+                                if (fClass.FindField(name) == null)
+                                {
+                                    continue;
+                                }
 
-                                if (fields.Length != 0) fields.Append(",");
+                                if (fields.Length != 0)
+                                {
+                                    fields.Append(",");
+                                }
 
                                 SqlParameter parameter = new SqlParameter("@" + name,
                                     fv.Value != null ? fv.Value : System.DBNull.Value);
@@ -1575,7 +1770,10 @@ namespace gView.DataSources.Fdb.MSSql
                                 commandText.Append("declare @FDB_NID bigint\n");
                                 commandText.Append("set @FDB_NID=dbo.UpdateSINode('" + fClass.Name + "'," + feature.OID + ",@FDB_SHAPE)\n");
                                 commandText.Append("exec dbo.UpdateSIndex '" + fClass.Name + "',@FDB_NID\n");
-                                if (fields.Length != 0) fields.Append(",");
+                                if (fields.Length != 0)
+                                {
+                                    fields.Append(",");
+                                }
 
                                 fields.Append("[FDB_NID]=@FDB_NID");
                             }
@@ -1590,7 +1788,10 @@ namespace gView.DataSources.Fdb.MSSql
                                     NID = 0;
                                 }
 
-                                if (fields.Length != 0) fields.Append(",");
+                                if (fields.Length != 0)
+                                {
+                                    fields.Append(",");
+                                }
 
                                 SqlParameter parameterNID = new SqlParameter("@FDB_NID", NID);
                                 fields.Append("[FDB_NID]=@FDB_NID");
@@ -1634,7 +1835,10 @@ namespace gView.DataSources.Fdb.MSSql
         }
         async public override Task<bool> Delete(IFeatureClass fClass, string where)
         {
-            if (fClass == null) return false;
+            if (fClass == null)
+            {
+                return false;
+            }
 
             try
             {
@@ -1751,7 +1955,10 @@ namespace gView.DataSources.Fdb.MSSql
         }
         protected override bool UpdateFeatureSpatialNodeID(IFeatureClass fc, int oid, long nid)
         {
-            if (fc == null || _conn == null) return false;
+            if (fc == null || _conn == null)
+            {
+                return false;
+            }
 
             try
             {
@@ -1812,14 +2019,21 @@ namespace gView.DataSources.Fdb.MSSql
         async private Task<bool> SplitIndexNodes(IFeatureClass fClass, SqlConnection connection, List<long> nids)
         {
             //return true;
-            if (nids == null || nids.Count == 0) return true;
+            if (nids == null || nids.Count == 0)
+            {
+                return true;
+            }
 
             try
             {
                 StringBuilder NIDs = new StringBuilder();
                 foreach (long nid in nids)
                 {
-                    if (NIDs.Length > 0) NIDs.Append(",");
+                    if (NIDs.Length > 0)
+                    {
+                        NIDs.Append(",");
+                    }
+
                     NIDs.Append(nid.ToString());
                 }
 
@@ -1837,16 +2051,23 @@ namespace gView.DataSources.Fdb.MSSql
                         catch (SqlException ex)
                         {
                             if (ex.Number == 1205 && ex.ErrorCode == -2146232060)
+                            {
                                 System.Threading.Thread.Sleep(10);
+                            }
                             else
+                            {
                                 throw ex;
+                            }
                         }
                     }
                 }
 
                 foreach (DataRow row in tab.Select("NID_COUNT>200"))
                 {
-                    if (!await SplitIndexNode(fClass, connection, (long)row["FDB_NID"])) return false;
+                    if (!await SplitIndexNode(fClass, connection, (long)row["FDB_NID"]))
+                    {
+                        return false;
+                    }
                 }
 
                 return true;
@@ -1866,9 +2087,16 @@ namespace gView.DataSources.Fdb.MSSql
             }
 
             BinarySearchTree2 tree = _spatialSearchTrees[fClass.Name] as BinarySearchTree2;
-            if (tree == null) return false;
+            if (tree == null)
+            {
+                return false;
+            }
 
-            if (!tree.SplitNode(nid)) return false;
+            if (!tree.SplitNode(nid))
+            {
+                return false;
+            }
+
             long c1, c2;
             tree.ChildNodeNumbers(nid, out c1, out c2);
             IEnvelope env1 = tree[c1];
@@ -1895,14 +2123,21 @@ namespace gView.DataSources.Fdb.MSSql
                         catch (SqlException ex)
                         {
                             if (ex.Number == 1205 && ex.ErrorCode == -2146232060)
+                            {
                                 System.Threading.Thread.Sleep(100);
+                            }
                             else
+                            {
                                 throw ex;
+                            }
                         }
                     }
                     foreach (DataRow row in tab.Rows)
                     {
-                        if (row["FDB_SHAPE"] == System.DBNull.Value) continue;
+                        if (row["FDB_SHAPE"] == System.DBNull.Value)
+                        {
+                            continue;
+                        }
 
                         byte[] obj = (byte[])row["FDB_SHAPE"];
                         BinaryReader r = new BinaryReader(new MemoryStream());
@@ -1923,7 +2158,11 @@ namespace gView.DataSources.Fdb.MSSql
                                 break;
                         }
 
-                        if (p == null) continue;
+                        if (p == null)
+                        {
+                            continue;
+                        }
+
                         p.Deserialize(r, geomDef);
                         r.Close();
 
@@ -1946,17 +2185,27 @@ namespace gView.DataSources.Fdb.MSSql
                     if (addC1)
                     {
                         nids.Add(c1);
-                        if (!AddSpatatialIndexNode(fClass, connection, c1)) return false;
+                        if (!AddSpatatialIndexNode(fClass, connection, c1))
+                        {
+                            return false;
+                        }
                     }
                     if (addC2)
                     {
                         nids.Add(c2);
-                        if (!AddSpatatialIndexNode(fClass, connection, c2)) return false;
+                        if (!AddSpatatialIndexNode(fClass, connection, c2))
+                        {
+                            return false;
+                        }
                     }
 
                     if (addC1 || addC2)
-                        if (!IncSpatialIndexVersion(fClass, connection)) return false;
-
+                    {
+                        if (!IncSpatialIndexVersion(fClass, connection))
+                        {
+                            return false;
+                        }
+                    }
 
                     SqlCommand updateCommand = new SqlCommand(
                         "UPDATE " + FcTableName(fClass) + " SET FDB_NID=@FDB_NID WHERE FDB_OID=@FDB_OID",
@@ -1979,9 +2228,13 @@ namespace gView.DataSources.Fdb.MSSql
                         {
                             Console.WriteLine(ex.ErrorCode);
                             if (ex.Number == 1205 && ex.ErrorCode == -2146232060)
+                            {
                                 System.Threading.Thread.Sleep(100);
+                            }
                             else
+                            {
                                 throw ex;
+                            }
                         }
                     }
 
@@ -2016,12 +2269,19 @@ namespace gView.DataSources.Fdb.MSSql
                     catch (SqlException ex)
                     {
                         if (ex.Number == 1205 && ex.ErrorCode == -2146232060)
+                        {
                             System.Threading.Thread.Sleep(100);
+                        }
                         else
+                        {
                             throw ex;
+                        }
                     }
 
-                    if (tab.Rows.Count != 0) return true;
+                    if (tab.Rows.Count != 0)
+                    {
+                        return true;
+                    }
 
                     DataRow row = tab.NewRow();
                     row["NID"] = NID;
@@ -2046,9 +2306,13 @@ namespace gView.DataSources.Fdb.MSSql
                         catch (SqlException ex)
                         {
                             if (ex.Number == 1205 && ex.ErrorCode == -2146232060)
+                            {
                                 System.Threading.Thread.Sleep(100);
+                            }
                             else
+                            {
                                 throw ex;
+                            }
                         }
                     }
                     return true;
@@ -2082,9 +2346,13 @@ namespace gView.DataSources.Fdb.MSSql
                     DataRow row = tab.Rows[0];
 
                     if (row["SIVersion"] == System.DBNull.Value)
+                    {
                         row["SIVersion"] = 1;
+                    }
                     else
+                    {
                         row["SIVersion"] = (long)row["SIVersion"] + 1;
+                    }
 
                     SqlCommand command = new SqlCommand(
                         "UPDATE FDB_FeatureClasses SET SIVersion=@SIVersion WHERE ID=@ID", connection);
@@ -2106,9 +2374,13 @@ namespace gView.DataSources.Fdb.MSSql
                         catch (SqlException ex)
                         {
                             if (ex.Number == 1205 && ex.ErrorCode == -2146232060)
+                            {
                                 System.Threading.Thread.Sleep(100);
+                            }
                             else
+                            {
                                 throw ex;
+                            }
                         }
                     }
                     return true;
@@ -2125,7 +2397,10 @@ namespace gView.DataSources.Fdb.MSSql
         {
             if (_seVersion == 0)
             {
-                if (_conn == null) return false;
+                if (_conn == null)
+                {
+                    return false;
+                }
 
                 if (!_conn.ExecuteNoneQuery("TRUNCATE TABLE " + FcTableName(table)))
                 {
@@ -2159,7 +2434,10 @@ namespace gView.DataSources.Fdb.MSSql
 
         async protected override Task<bool> RenameField(string table, IField oldField, IField newField)
         {
-            if (oldField == null || newField == null || _conn == null) return false;
+            if (oldField == null || newField == null || _conn == null)
+            {
+                return false;
+            }
 
             string sql = "exec sp_rename '" + FcTableName(table) + "." + oldField.name + "','" + newField.name + "','COLUMN'";
 
@@ -2174,7 +2452,10 @@ namespace gView.DataSources.Fdb.MSSql
 
         async protected override Task<bool> TableExists(string tableName)
         {
-            if (_conn == null) return false;
+            if (_conn == null)
+            {
+                return false;
+            }
 
             try
             {
@@ -2191,7 +2472,10 @@ namespace gView.DataSources.Fdb.MSSql
 
         async public override Task<List<string>> DatabaseTables()
         {
-            if (_conn == null) return new List<string>();
+            if (_conn == null)
+            {
+                return new List<string>();
+            }
 
             try
             {
@@ -2200,7 +2484,10 @@ namespace gView.DataSources.Fdb.MSSql
                 {
                     List<string> tables = new List<string>();
                     foreach (DataRow row in tab.Rows)
+                    {
                         tables.Add(row["name"].ToString());
+                    }
+
                     return tables;
                 }
             }
@@ -2212,7 +2499,10 @@ namespace gView.DataSources.Fdb.MSSql
 
         async public override Task<List<string>> DatabaseViews()
         {
-            if (_conn == null) return new List<string>();
+            if (_conn == null)
+            {
+                return new List<string>();
+            }
 
             try
             {
@@ -2221,7 +2511,10 @@ namespace gView.DataSources.Fdb.MSSql
                 {
                     List<string> views = new List<string>();
                     foreach (DataRow row in tab.Rows)
+                    {
                         views.Add(row["name"].ToString());
+                    }
+
                     return views;
                 }
             }
@@ -2237,7 +2530,10 @@ namespace gView.DataSources.Fdb.MSSql
             {
                 try
                 {
-                    if (_conn == null) return new Version();
+                    if (_conn == null)
+                    {
+                        return new Version();
+                    }
 
                     using (SqlConnection connection = new SqlConnection(_conn.ConnectionString))
                     {
@@ -2258,7 +2554,10 @@ namespace gView.DataSources.Fdb.MSSql
 
         async public override Task<bool> CreateIfNotExists(string tableName, IFields fields)
         {
-            if (await TableExists(tableName)) return true;
+            if (await TableExists(tableName))
+            {
+                return true;
+            }
 
             return CreateTable(tableName, fields, false);
         }
@@ -2299,8 +2598,15 @@ namespace gView.DataSources.Fdb.MSSql
                 {
                     string name = fv.Name;
 
-                    if (fields.Length != 0) fields.Append(",");
-                    if (parameters.Length != 0) parameters.Append(",");
+                    if (fields.Length != 0)
+                    {
+                        fields.Append(",");
+                    }
+
+                    if (parameters.Length != 0)
+                    {
+                        parameters.Append(",");
+                    }
 
                     SqlParameter parameter = new SqlParameter("@" + name, fv.Value);
 
@@ -2311,7 +2617,9 @@ namespace gView.DataSources.Fdb.MSSql
 
                 string tabname = table;
                 if (!tabname.StartsWith("[") && !tabname.EndsWith("]"))
+                {
                     tabname = "[" + tabname + "]";
+                }
 
                 command.CommandText = "INSERT INTO " + tabname + " (" + fields.ToString() + ") VALUES (" + parameters + ")";
 
@@ -2341,7 +2649,9 @@ namespace gView.DataSources.Fdb.MSSql
         public override bool InsertRows(string table, List<IRow> rows, IReplicationTransaction replTrans)
         {
             if (rows == null || rows.Count == 0)
+            {
                 return true;
+            }
 
             try
             {
@@ -2365,8 +2675,15 @@ namespace gView.DataSources.Fdb.MSSql
                             {
                                 string name = fv.Name;
 
-                                if (fields.Length != 0) fields.Append(",");
-                                if (parameters.Length != 0) parameters.Append(",");
+                                if (fields.Length != 0)
+                                {
+                                    fields.Append(",");
+                                }
+
+                                if (parameters.Length != 0)
+                                {
+                                    parameters.Append(",");
+                                }
 
                                 SqlParameter parameter = new SqlParameter("@" + name, fv.Value);
 
@@ -2377,7 +2694,9 @@ namespace gView.DataSources.Fdb.MSSql
 
                             string tabname = table;
                             if (!tabname.StartsWith("[") && !tabname.EndsWith("]"))
+                            {
                                 tabname = "[" + tabname + "]";
+                            }
 
                             command.CommandText = "INSERT INTO " + tabname + " (" + fields.ToString() + ") VALUES (" + parameters + ")";
 
@@ -2411,8 +2730,15 @@ namespace gView.DataSources.Fdb.MSSql
                                 {
                                     string name = fv.Name;
 
-                                    if (fields.Length != 0) fields.Append(",");
-                                    if (parameters.Length != 0) parameters.Append(",");
+                                    if (fields.Length != 0)
+                                    {
+                                        fields.Append(",");
+                                    }
+
+                                    if (parameters.Length != 0)
+                                    {
+                                        parameters.Append(",");
+                                    }
 
                                     SqlParameter parameter = new SqlParameter("@" + name, fv.Value);
 
@@ -2423,7 +2749,9 @@ namespace gView.DataSources.Fdb.MSSql
 
                                 string tabname = table;
                                 if (!tabname.StartsWith("[") && !tabname.EndsWith("]"))
+                                {
                                     tabname = "[" + tabname + "]";
+                                }
 
                                 command.CommandText = "INSERT INTO " + tabname + " (" + fields.ToString() + ") VALUES (" + parameters + ")";
 
@@ -2460,7 +2788,10 @@ namespace gView.DataSources.Fdb.MSSql
                 foreach (IFieldValue fv in row.Fields)
                 {
                     string name = fv.Name;
-                    if (fields.Length != 0) fields.Append(",");
+                    if (fields.Length != 0)
+                    {
+                        fields.Append(",");
+                    }
 
                     SqlParameter parameter = new SqlParameter("@" + name, fv.Value);
                     fields.Append("[" + name + "]=@" + name);
@@ -2469,7 +2800,9 @@ namespace gView.DataSources.Fdb.MSSql
 
                 string tabname = table;
                 if (!tabname.StartsWith("[") && !tabname.EndsWith("]"))
+                {
                     tabname = "[" + tabname + "]";
+                }
 
                 commandText.Append("UPDATE " + tabname + " SET " + fields.ToString() + " WHERE " + IDField + "=" + row.OID);
                 command.CommandText = commandText.ToString();
@@ -2533,7 +2866,9 @@ namespace gView.DataSources.Fdb.MSSql
             get
             {
                 if (_factory == null)
+                {
                     _factory = System.Data.SqlClient.SqlClientFactory.Instance;
+                }
 
                 return _factory;
             }
@@ -2567,7 +2902,9 @@ namespace gView.DataSources.Fdb.MSSql
                     conn.Open();
                     object obj = cmd.ExecuteScalar();
                     if (obj != null)
+                    {
                         return obj.ToString();
+                    }
 
                     return String.Empty;
                 }
@@ -2596,14 +2933,18 @@ namespace gView.DataSources.Fdb.MSSql
         override protected string FcTableName(IFeatureClass fc)
         {
             if (fc is SqlFDBFeatureClass)
+            {
                 return ((SqlFDBFeatureClass)fc).DbTableName;
+            }
 
             return FcTableName(fc.Name);
         }
         override protected string FcsiTableName(IFeatureClass fc)
         {
             if (fc is SqlFDBFeatureClass)
+            {
                 return ((SqlFDBFeatureClass)fc).SiDbTableName;
+            }
 
             return FcsiTableName(fc.Name);
         }
@@ -2685,7 +3026,11 @@ namespace gView.DataSources.Fdb.MSSql
             }
             if (_connection != null)
             {
-                if (_connection.State == ConnectionState.Open) _connection.Close();
+                if (_connection.State == ConnectionState.Open)
+                {
+                    _connection.Close();
+                }
+
                 _connection = null;
             }
         }
@@ -2697,20 +3042,37 @@ namespace gView.DataSources.Fdb.MSSql
                 _reader.Close();
                 _reader = null;
             }
-            if (_IDs == null) return false;
-            if (_id_pos >= _IDs.Count) return false;
+            if (_IDs == null)
+            {
+                return false;
+            }
+
+            if (_id_pos >= _IDs.Count)
+            {
+                return false;
+            }
 
             int counter = 0;
             StringBuilder sb = new StringBuilder();
             while (true)
             {
-                if (sb.Length > 0) sb.Append(",");
+                if (sb.Length > 0)
+                {
+                    sb.Append(",");
+                }
+
                 sb.Append(_IDs[_id_pos].ToString());
                 counter++;
                 _id_pos++;
-                if (_id_pos >= _IDs.Count || counter > 49) break;
+                if (_id_pos >= _IDs.Count || counter > 49)
+                {
+                    break;
+                }
             }
-            if (sb.Length == 0) return false;
+            if (sb.Length == 0)
+            {
+                return false;
+            }
 
             string where = " WHERE [FDB_OID] IN (" + sb.ToString() + ")";
 
@@ -2738,7 +3100,11 @@ namespace gView.DataSources.Fdb.MSSql
         {
             try
             {
-                if (_reader == null) return null;
+                if (_reader == null)
+                {
+                    return null;
+                }
+
                 if (!await _reader.ReadAsync())
                 {
                     await ExecuteReaderAsync();
@@ -2782,7 +3148,9 @@ namespace gView.DataSources.Fdb.MSSql
                         FieldValue fv = new FieldValue(/*_schemaTable.Rows[i][0].ToString()*/name, obj);
                         feature.Fields.Add(fv);
                         if (fv.Name == "FDB_OID")
+                        {
                             feature.OID = Convert.ToInt32(obj);
+                        }
                     }
                 }
 
@@ -2818,10 +3186,10 @@ namespace gView.DataSources.Fdb.MSSql
 
         private SqlFDBFeatureCursor(IGeometryDef geomDef, ISpatialReference toSRef) :
             base((geomDef != null) ? geomDef.SpatialReference : null,
-                /*(filter!=null) ? filter.FeatureSpatialReference : null*/
+                 /*(filter!=null) ? filter.FeatureSpatialReference : null*/
                  toSRef)
         {
-            
+
         }
 
         async public static Task<IFeatureCursor> Create(string connString, string sql, string where, string orderBy, int limit, int beginRecord, bool nolock, List<long> nids, ISpatialFilter filter, IGeometryDef geomDef, ISpatialReference toSRef)
@@ -2874,7 +3242,11 @@ namespace gView.DataSources.Fdb.MSSql
             long pVal = 0, p2Val = 0;
             if (_nids != null)
             {
-                if (_nid_pos >= _nids.Count) return false;
+                if (_nid_pos >= _nids.Count)
+                {
+                    return false;
+                }
+
                 if (_nids[_nid_pos] < 0)
                 {
                     where = "(FDB_NID BETWEEN @FDB_NID_FROM AND @FDB_NID_TO)" + (!String.IsNullOrEmpty(where) ? " AND (" + where + ")" : String.Empty);
@@ -2895,18 +3267,24 @@ namespace gView.DataSources.Fdb.MSSql
             }
             else
             {
-                if (_nid_pos > 0) return false;
+                if (_nid_pos > 0)
+                {
+                    return false;
+                }
             }
-            if (where != "") where = " WHERE " + where;
+            if (where != "")
+            {
+                where = " WHERE " + where;
+            }
 
             string offset = String.Empty;
-            if(this._limit>0)
+            if (this._limit > 0)
             {
-                if(String.IsNullOrWhiteSpace(_orderBy))  // offset only works with order by
+                if (String.IsNullOrWhiteSpace(_orderBy))  // offset only works with order by
                 {
                     _orderBy = "FDB_OID";
                 }
-                offset= " offset " + Math.Max(0, _beginRecord - 1) + " rows fetch next " + _limit + " rows only";
+                offset = " offset " + Math.Max(0, _beginRecord - 1) + " rows fetch next " + _limit + " rows only";
             }
 
             _nid_pos++;
@@ -2916,13 +3294,27 @@ namespace gView.DataSources.Fdb.MSSql
                 (!String.IsNullOrWhiteSpace(offset) ? " " + offset : "") +
                 (_nolock == true ? " WITH (NOLOCK)" : ""),
                 _connection);
-            if (parameter != null) _command.Parameters.Add(parameter);
-            if (parameter2 != null) _command.Parameters.Add(parameter2);
+            if (parameter != null)
+            {
+                _command.Parameters.Add(parameter);
+            }
+
+            if (parameter2 != null)
+            {
+                _command.Parameters.Add(parameter2);
+            }
 
             _command.Prepare();
 
-            if (parameter != null) parameter.Value = pVal;
-            if (parameter2 != null) parameter2.Value = p2Val;
+            if (parameter != null)
+            {
+                parameter.Value = pVal;
+            }
+
+            if (parameter2 != null)
+            {
+                parameter2.Value = p2Val;
+            }
 
             _command.SetCustomCursorTimeout();
             _reader = await _command.ExecuteReaderAsync(CommandBehavior.Default);
@@ -2968,8 +3360,11 @@ namespace gView.DataSources.Fdb.MSSql
             if (_connection != null)
             {
                 if (_connection.State == ConnectionState.Open)
+                {
                     try { _connection.Close(); }
                     catch { }
+                }
+
                 _connection.Dispose();
                 _connection = null;
             }
@@ -3061,10 +3456,15 @@ namespace gView.DataSources.Fdb.MSSql
                             FieldValue fv = new FieldValue(/*_schemaTable.Rows[i][0].ToString()*/name, obj);
                             feature.Fields.Add(fv);
                             if (fv.Name == "FDB_OID")
+                            {
                                 feature.OID = Convert.ToInt32(obj);
+                            }
                         }
                     }
-                    if (feature == null) continue;
+                    if (feature == null)
+                    {
+                        continue;
+                    }
 
                     Transform(feature);
                     return feature;
@@ -3092,7 +3492,7 @@ namespace gView.DataSources.Fdb.MSSql
             : base((fc != null) ? fc.SpatialReference : null,
             (filter != null) ? filter.FeatureSpatialReference : null)
         {
-            
+
         }
 
         async public static Task<IFeatureCursor> Create(string connectionString, IFeatureClass fc, IQueryFilter filter, GeometryFieldType geometryType)
@@ -3106,7 +3506,9 @@ namespace gView.DataSources.Fdb.MSSql
                 filter = (IQueryFilter)filter.Clone();
                 filter.SubFields = "";
                 foreach (IField field in fc.Fields.ToEnumerable())
+                {
                     filter.AddField(field.name);
+                }
             }
             if (filter is ISpatialFilter && ((ISpatialFilter)filter).Geometry != null)
             {
@@ -3117,30 +3519,50 @@ namespace gView.DataSources.Fdb.MSSql
                 {
                     where.Append(fc.ShapeFieldName + ".Filter(");
                     if (geometryType == GeometryFieldType.MsGeometry)
+                    {
                         where.Append("geometry::STGeomFromText('");
+                    }
                     else
+                    {
                         where.Append("geography::STGeomFromText('");
+                    }
+
                     where.Append(gView.Framework.OGC.WKT.ToWKT(sFilter.Geometry));
                     where.Append("',");
                     if (geometryType == GeometryFieldType.MsGeometry)
+                    {
                         where.Append("0");
+                    }
                     else
+                    {
                         where.Append("4326");
+                    }
+
                     where.Append("))=1");
                 }
                 else if (sFilter.Geometry != null)
                 {
                     where.Append(fc.ShapeFieldName + ".STIntersects(");
                     if (geometryType == GeometryFieldType.MsGeometry)
+                    {
                         where.Append("geometry::STGeomFromText('");
+                    }
                     else
+                    {
                         where.Append("geography::STGeomFromText('");
+                    }
+
                     where.Append(gView.Framework.OGC.WKT.ToWKT(sFilter.Geometry));
                     where.Append("',");
                     if (geometryType == GeometryFieldType.MsGeometry)
+                    {
                         where.Append("0");
+                    }
                     else
+                    {
                         where.Append("4326");
+                    }
+
                     where.Append("))=1");
                 }
                 filter.AddField(fc.ShapeFieldName);
@@ -3151,7 +3573,11 @@ namespace gView.DataSources.Fdb.MSSql
             StringBuilder fieldNames = new StringBuilder();
             foreach (string fieldName in filter.SubFields.Split(' '))
             {
-                if (fieldNames.Length > 0) fieldNames.Append(",");
+                if (fieldNames.Length > 0)
+                {
+                    fieldNames.Append(",");
+                }
+
                 if (fieldName == "[" + fc.ShapeFieldName + "]")
                 {
                     fieldNames.Append(fc.ShapeFieldName + ".STAsBinary() as temp_geometry");
@@ -3220,10 +3646,15 @@ namespace gView.DataSources.Fdb.MSSql
                         FieldValue fv = new FieldValue(name, obj);
                         feature.Fields.Add(fv);
                         if (fv.Name == "FDB_OID")
+                        {
                             feature.OID = Convert.ToInt32(obj);
+                        }
                     }
                 }
-                if (feature == null) continue;
+                if (feature == null)
+                {
+                    continue;
+                }
 
                 Transform(feature);
                 return Task.FromResult<IFeature>(feature);
@@ -3270,7 +3701,11 @@ namespace gView.DataSources.Fdb.MSSql
             }
             if (_connection != null)
             {
-                if (_connection.State == ConnectionState.Open) _connection.Close();
+                if (_connection.State == ConnectionState.Open)
+                {
+                    _connection.Close();
+                }
+
                 _connection.Dispose();
                 _connection = null;
             }
@@ -3320,7 +3755,10 @@ namespace gView.DataSources.Fdb.MSSql
             }
             set
             {
-                if (m_selectionset != null && m_selectionset != value) m_selectionset.Clear();
+                if (m_selectionset != null && m_selectionset != value)
+                {
+                    m_selectionset.Clear();
+                }
 
                 m_selectionset = value;
             }
@@ -3328,7 +3766,11 @@ namespace gView.DataSources.Fdb.MSSql
 
         async public Task<bool> Select(IQueryFilter filter, gView.Framework.Data.CombinationMethod methode)
         {
-            if (!(this.Class is ITableClass)) return false;
+            if (!(this.Class is ITableClass))
+            {
+                return false;
+            }
+
             ISelectionSet selSet = await ((ITableClass)this.Class).Select(filter);
 
             SelectionSet = selSet;
@@ -3377,7 +3819,9 @@ namespace gView.DataSources.Fdb.MSSql
         public void FireSelectionChangedEvent()
         {
             if (FeatureSelectionChanged != null)
+            {
                 FeatureSelectionChanged(this);
+            }
         }
 
         #endregion

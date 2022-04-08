@@ -1,5 +1,5 @@
-using System;
 using GeoAPI.Geometries;
+using System;
 
 namespace Proj4Net.Utility
 {

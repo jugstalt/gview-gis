@@ -160,7 +160,7 @@ namespace gView.Framework.Symbology
                         PointCollection pointCollection = new PointCollection();
                         if (pointCount >= 2)
                         {
-                            switch(this.StepWidthUnit)
+                            switch (this.StepWidthUnit)
                             {
                                 case StepWidthUnit.Percent:
                                     step = length * ((float)stepWidthValue / 100f);
@@ -227,7 +227,9 @@ namespace gView.Framework.Symbology
                                 symbolEnvelope.TranslateTo(pointCollection[i].X, pointCollection[i].Y);
 
                                 if (symbolEnvelope.IntersectsOne(symbolEnvelopes))
+                                {
                                     continue;
+                                }
 
                                 symbolEnvelopes.Add(symbolEnvelope);
                             }
@@ -247,7 +249,7 @@ namespace gView.Framework.Symbology
                                 }
                             }
 
-                            
+
                             this.PointSymbol.Draw(display, pointCollection[i]);
                         }
                     }
@@ -316,7 +318,7 @@ namespace gView.Framework.Symbology
             cloneSym.StepWidthUnit = this.StepWidthUnit;
             cloneSym.SymbolMaxDistance = (int)((float)this.SymbolMaxDistance * fac);
 
-            switch(cloneSym.StepWidthUnit)
+            switch (cloneSym.StepWidthUnit)
             {
                 case StepWidthUnit.Pixel:
                     cloneSym.StepWidth = (int)((float)this.StepWidth * fac);
@@ -327,7 +329,7 @@ namespace gView.Framework.Symbology
                     cloneSym.StepStartPos = this.StepStartPos;
                     break;
             }
-            
+
             cloneSym.UseSymbolRotation = this.UseSymbolRotation;
 
             return cloneSym;

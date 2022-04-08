@@ -80,7 +80,7 @@ namespace gView.Win.Plugin.Tools.Plugins.MapTools.Dialogs
                         item.SubItems[3].Text = "";
                     }
                 }
-                foreach(var item in remove)
+                foreach (var item in remove)
                 {
                     lstLayers.Items.Remove(item);
                 }
@@ -116,9 +116,9 @@ namespace gView.Win.Plugin.Tools.Plugins.MapTools.Dialogs
                     }
                 }
 
-                foreach(ListViewItem item in lstLayers.Items)
+                foreach (ListViewItem item in lstLayers.Items)
                 {
-                    if(item.SubItems[0].Text?.ToLower() == "hidden")
+                    if (item.SubItems[0].Text?.ToLower() == "hidden")
                     {
                         item.SubItems[3].Text = (++maxId).ToString();
                     }
@@ -171,14 +171,14 @@ namespace gView.Win.Plugin.Tools.Plugins.MapTools.Dialogs
             {
                 if (int.TryParse(item.SubItems[3].Text, out int layerId) == true)
                 {
-                    if(ids.Contains(layerId))  // Must be unique
+                    if (ids.Contains(layerId))  // Must be unique
                     {
                         enableApplyButton = false;
                         break;
                     }
                     ids.Add(layerId);
-                } 
-                else 
+                }
+                else
                 {
                     enableApplyButton = false;
                     break;
@@ -260,10 +260,10 @@ namespace gView.Win.Plugin.Tools.Plugins.MapTools.Dialogs
                 get
                 {
                     var parent = this.TOCElement?.ParentGroup;
-                    while(parent!=null)
+                    while (parent != null)
                     {
                         IGroupLayer groupLayer = parent.Layers.FirstOrDefault() as IGroupLayer;
-                        if(groupLayer!=null && groupLayer.MapServerStyle == MapServerGrouplayerStyle.Checkbox)
+                        if (groupLayer != null && groupLayer.MapServerStyle == MapServerGrouplayerStyle.Checkbox)
                         {
                             return true;
                         }

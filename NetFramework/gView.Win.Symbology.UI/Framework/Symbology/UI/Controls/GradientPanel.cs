@@ -1,10 +1,7 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Windows.Forms;
-using System.Drawing.Drawing2D;
-using System.Drawing;
 using System.ComponentModel;
+using System.Drawing;
+using System.Drawing.Drawing2D;
+using System.Windows.Forms;
 
 namespace gView.Framework.Symbology.UI.Controls
 {
@@ -33,7 +30,7 @@ namespace gView.Framework.Symbology.UI.Controls
         /// <summary>
         /// Gets or sets the right/lower color for the gradient panel
         /// </summary>
-        [Category("Appearance"), Description("The right/lower color for the gradient panel.")]        
+        [Category("Appearance"), Description("The right/lower color for the gradient panel.")]
         public Color EndColor
         {
             get { return _endColor; }
@@ -45,7 +42,7 @@ namespace gView.Framework.Symbology.UI.Controls
         /// <summary>
         /// Gets or sets the direction of the linear gradient
         /// </summary>
-        [Category("Appearance"), Description("The direction of the linear gradient.")]        
+        [Category("Appearance"), Description("The direction of the linear gradient.")]
         public LinearGradientMode GradientMode
         {
             get { return _gradientMode; }
@@ -69,8 +66,8 @@ namespace gView.Framework.Symbology.UI.Controls
         /// <param name="e"></param>
         protected override void OnPaintBackground(PaintEventArgs pevent)
         {
-            LinearGradientBrush brush = 
-                new LinearGradientBrush(pevent.ClipRectangle, _startColor, _endColor,  _gradientMode);
+            LinearGradientBrush brush =
+                new LinearGradientBrush(pevent.ClipRectangle, _startColor, _endColor, _gradientMode);
             pevent.Graphics.FillRectangle(brush, pevent.ClipRectangle);
             brush.Dispose();
         }

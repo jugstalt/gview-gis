@@ -1,16 +1,12 @@
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Drawing;
-using Microsoft.Win32;
-using System.Data;
-using System.Text;
-using System.Windows.Forms;
-using gView.Framework.UI;
 using gView.Framework.Globalisation;
 using gView.Framework.UI.Controls.Filter;
 using gView.Framework.UI.Dialogs;
+using System;
+using System.Collections.Generic;
+using System.Drawing;
+using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace gView.Framework.UI.Controls
 {
@@ -19,7 +15,7 @@ namespace gView.Framework.UI.Controls
         public delegate void ItemClickedEvent(List<IExplorerObject> exObject);
         public event ItemClickedEvent ItemSelected = null;
         internal delegate void ElementTextStatusChangedEvent(TextBox tb);
-        public event ElementTextStatusChangedEvent ElementTextStatusChanged=null;
+        public event ElementTextStatusChangedEvent ElementTextStatusChanged = null;
 
         private List<Filter.ExplorerDialogFilter> _filters = null;
         private List<IExplorerObject> _selectedObjects = new List<IExplorerObject>();
@@ -49,13 +45,19 @@ namespace gView.Framework.UI.Controls
                 _filters = value;
 
                 cmbFilters.Items.Clear();
-                if (_filters == null) return;
+                if (_filters == null)
+                {
+                    return;
+                }
 
                 foreach (ExplorerDialogFilter filter in _filters)
                 {
                     cmbFilters.Items.Add(filter);
                 }
-                if (cmbFilters.Items.Count > 0) cmbFilters.SelectedIndex = 0;
+                if (cmbFilters.Items.Count > 0)
+                {
+                    cmbFilters.SelectedIndex = 0;
+                }
             }
         }
 
@@ -70,7 +72,11 @@ namespace gView.Framework.UI.Controls
             bool first = true;
             foreach (MyFavorites.Favorite fav in (new MyFavorites()).Favorites)
             {
-                if (fav == null) continue;
+                if (fav == null)
+                {
+                    continue;
+                }
+
                 FavoriteMenuItem fItem = new FavoriteMenuItem(fav);
                 fItem.Click += new EventHandler(fItem_Click);
 
@@ -93,7 +99,11 @@ namespace gView.Framework.UI.Controls
                 }
                 else
                 {
-                    if (catalogComboBox1.SelectedExplorerObject == null) return null;
+                    if (catalogComboBox1.SelectedExplorerObject == null)
+                    {
+                        return null;
+                    }
+
                     List<IExplorerObject> selected = new List<IExplorerObject>();
                     selected.Add(catalogComboBox1.SelectedExplorerObject);
                     return selected;
@@ -121,7 +131,10 @@ namespace gView.Framework.UI.Controls
             set
             {
                 contentsList1.IsOpenDialog = _open = value;
-                if (!_open) MultiSelection = false;
+                if (!_open)
+                {
+                    MultiSelection = false;
+                }
             }
         }
 
@@ -138,17 +151,24 @@ namespace gView.Framework.UI.Controls
                     {
                         _selectedObjects.Add(exObject);
 
-                        if (txtElement.Text != "") txtElement.Text += ";";
+                        if (txtElement.Text != "")
+                        {
+                            txtElement.Text += ";";
+                        }
+
                         txtElement.Text += exObject.Name;
                     }
                 }
             }
             else
             {
-                
+
             }
 
-            if (ItemSelected != null) ItemSelected(_selectedObjects);
+            if (ItemSelected != null)
+            {
+                ItemSelected(_selectedObjects);
+            }
         }
 
         async void contentsList1_ItemDoubleClicked(ListViewItem node)
@@ -161,7 +181,7 @@ namespace gView.Framework.UI.Controls
                     //contentsList1.ExplorerObject = n.ExplorerObject;
                     if (_open)
                     {
-                        if (contentsList1.Filter != null && (!await contentsList1.Filter.Match(n.ExplorerObject) || 
+                        if (contentsList1.Filter != null && (!await contentsList1.Filter.Match(n.ExplorerObject) ||
                             contentsList1.Filter.BrowseAll ||
                             n.ExplorerObject is DirectoryObject   // Bei Directory immer weiter hineinbrowsen
                             ))
@@ -179,7 +199,10 @@ namespace gView.Framework.UI.Controls
                         Cursor = Cursors.Default;
 
                         txtElement.Enabled = contentsList1.Filter != null && await contentsList1.Filter.Match(n.ExplorerObject);
-                        if (ElementTextStatusChanged != null) ElementTextStatusChanged(txtElement);
+                        if (ElementTextStatusChanged != null)
+                        {
+                            ElementTextStatusChanged(txtElement);
+                        }
                     }
 
                     StoreLastPath(n.ExplorerObject);
@@ -189,13 +212,16 @@ namespace gView.Framework.UI.Controls
 
         private void StoreLastPath(IExplorerObject exObject)
         {
-            if (!(exObject is ISerializableExplorerObject)) return;
+            if (!(exObject is ISerializableExplorerObject))
+            {
+                return;
+            }
 
             try
             {
                 //RegistryKey key = Registry.CurrentUser.OpenSubKey(@"Software\gViewGisOS\ExplorerDialog", true);
                 //if (key == null) key = Registry.CurrentUser.CreateSubKey(@"Software\gViewGisOS\ExplorerDialog");
-                
+
                 //key.SetValue("path", exObject.FullName);
                 //key.SetValue("guid", exObject.GUID);
                 //key.Close();
@@ -243,23 +269,38 @@ namespace gView.Framework.UI.Controls
             if (!_open)
             {
                 //if (contentsList1.Filter is ExplorerSaveDialogFilter && ((ExplorerSaveDialogFilter)contentsList1.Filter).MatchParent(catalogComboBox1.SelectedExplorerObject))
-                if(contentsList1.Filter!=null && await contentsList1.Filter.Match(catalogComboBox1.SelectedExplorerObject))
+                if (contentsList1.Filter != null && await contentsList1.Filter.Match(catalogComboBox1.SelectedExplorerObject))
                 {
-                    if (txtElement.Enabled == false) changed = true;
+                    if (txtElement.Enabled == false)
+                    {
+                        changed = true;
+                    }
+
                     txtElement.Enabled = true;
                 }
                 else
                 {
-                    if (txtElement.Enabled == true) changed = true;
+                    if (txtElement.Enabled == true)
+                    {
+                        changed = true;
+                    }
+
                     txtElement.Enabled = false;
                 }
             }
             else
             {
-                if (txtElement.Enabled == false) changed = true;
+                if (txtElement.Enabled == false)
+                {
+                    changed = true;
+                }
+
                 txtElement.Enabled = true;
             }
-            if (changed && ElementTextStatusChanged != null) ElementTextStatusChanged(txtElement);
+            if (changed && ElementTextStatusChanged != null)
+            {
+                ElementTextStatusChanged(txtElement);
+            }
         }
 
         async private void btnMoveUp_Click(object sender, EventArgs e)
@@ -269,7 +310,10 @@ namespace gView.Framework.UI.Controls
             if (!_open)
             {
                 txtElement.Enabled = await contentsList1.Filter.Match(catalogComboBox1.SelectedExplorerObject);
-                if (ElementTextStatusChanged != null) ElementTextStatusChanged(txtElement);
+                if (ElementTextStatusChanged != null)
+                {
+                    ElementTextStatusChanged(txtElement);
+                }
             }
         }
 
@@ -285,15 +329,21 @@ namespace gView.Framework.UI.Controls
 
         private void txtElement_TextChanged(object sender, EventArgs e)
         {
-            if (ElementTextStatusChanged != null) ElementTextStatusChanged(txtElement);
+            if (ElementTextStatusChanged != null)
+            {
+                ElementTextStatusChanged(txtElement);
+            }
         }
 
         private void toolAddToFavorites_Click(object sender, EventArgs e)
         {
             IExplorerObject selected = catalogComboBox1.SelectedExplorerObject;
-            if (selected == null) return;
+            if (selected == null)
+            {
+                return;
+            }
 
-            FormAddToFavorites dlg = new FormAddToFavorites(selected.FullName,false);
+            FormAddToFavorites dlg = new FormAddToFavorites(selected.FullName, false);
             if (dlg.ShowDialog() == DialogResult.OK)
             {
                 MyFavorites favs = new MyFavorites();
@@ -304,7 +354,9 @@ namespace gView.Framework.UI.Controls
                 fItem.Click += new EventHandler(fItem_Click);
 
                 if (btnFavorites.DropDownItems.Count < 2)
+                {
                     btnFavorites.DropDownItems.Add(new ToolStripSeparator());
+                }
 
                 btnFavorites.DropDownItems.Add(fItem);
             }
@@ -324,11 +376,18 @@ namespace gView.Framework.UI.Controls
                     StringBuilder fullPath = new StringBuilder();
                     foreach (string subPath in item.Favorite.Path.Split('\\'))
                     {
-                        if (fullPath.Length > 0) fullPath.Append(@"\");
+                        if (fullPath.Length > 0)
+                        {
+                            fullPath.Append(@"\");
+                        }
+
                         fullPath.Append(subPath);
 
                         ListViewItem listItem = contentsList1.GetItemPerPath(fullPath.ToString());
-                        if (item == null) return;
+                        if (item == null)
+                        {
+                            return;
+                        }
 
                         contentsList1_ItemDoubleClicked(listItem);
                     }

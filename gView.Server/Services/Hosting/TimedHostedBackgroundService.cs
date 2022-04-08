@@ -3,8 +3,6 @@ using gView.Server.Services.Logging;
 using gView.Server.Services.MapServer;
 using Microsoft.Extensions.Hosting;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -62,7 +60,7 @@ namespace gView.Server.Services.Hosting
 
                 outputDirectory.TryDeleteFilesOlderThan(DateTime.UtcNow.AddMinutes(-10));
             }
-            
+
             counter++;
             if (counter >= 1440)
             {

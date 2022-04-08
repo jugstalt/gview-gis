@@ -1,13 +1,8 @@
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Text;
-using System.Windows.Forms;
-using gView.Framework.UI;
-using gView.Framework.Web;
 using gView.Framework.Globalisation;
+using gView.Framework.Web;
+using System;
+using System.Drawing;
+using System.Windows.Forms;
 
 namespace gView.Framework.UI.Dialogs
 {
@@ -59,7 +54,9 @@ namespace gView.Framework.UI.Dialogs
             ProxySettings.Domain = txtDomain.Text;
             ProxySettings.User = txtUser.Text;
             if (txtPassword.Text != "          ")
+            {
                 ProxySettings.Password = txtPassword.Text;
+            }
 
             if (!ProxySettings.Commit())
             {

@@ -1,11 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Windows.Forms;
+﻿using System.Windows.Forms;
 
 namespace gView.Framework.Carto.Rendering.UI
 {
@@ -37,11 +30,17 @@ namespace gView.Framework.Carto.Rendering.UI
             get
             {
                 if (btnParallel.Checked == true)
+                {
                     return SimpleLabelRenderer.CartographicLineLabeling.Parallel;
+                }
                 else if (btnHorizontal.Checked == true)
+                {
                     return SimpleLabelRenderer.CartographicLineLabeling.Horizontal;
+                }
                 else if (btnPerpenticular.Checked == true)
+                {
                     return SimpleLabelRenderer.CartographicLineLabeling.Perpendicular;
+                }
 
                 return SimpleLabelRenderer.CartographicLineLabeling.CurvedText;
             }

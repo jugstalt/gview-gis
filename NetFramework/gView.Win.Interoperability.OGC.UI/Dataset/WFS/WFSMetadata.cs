@@ -1,11 +1,5 @@
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Drawing;
-using System.Data;
-using System.Text;
-using System.Windows.Forms;
 using gView.Framework.system;
+using System.Windows.Forms;
 
 namespace gView.Interoperability.OGC.UI.Dataset.WFS
 {

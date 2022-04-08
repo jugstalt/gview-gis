@@ -1,16 +1,14 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
+using gView.Framework.Carto.Rendering.UI;
+using gView.Framework.Data;
 using gView.Framework.Geometry;
-using gView.Framework.Symbology;
 using gView.Framework.IO;
+using gView.Framework.Symbology;
 using gView.Framework.system;
 using gView.Framework.UI;
-using gView.Framework.Data;
-using System.Reflection;
-using gView.Framework.Carto.Rendering.UI;
-using System.Threading.Tasks;
+using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 
 namespace gView.Framework.Carto.Rendering
 {
@@ -40,33 +38,58 @@ namespace gView.Framework.Carto.Rendering
             set
             {
                 if (value == null)
+                {
                     _symbolRotation.RotationFieldName = "";
+                }
                 else
+                {
                     _symbolRotation = value;
+                }
             }
         }
 
         public bool UsePointSymbol
         {
             get { return (_symbol != null) ? _symbol.UsePointSymbol : false; }
-            set { if (_symbol != null) _symbol.UsePointSymbol = value; }
+            set
+            {
+                if (_symbol != null)
+                {
+                    _symbol.UsePointSymbol = value;
+                }
+            }
         }
         public bool UseLineSymbol
         {
             get { return (_symbol != null) ? _symbol.UseLineSymbol : false; }
-            set { if (_symbol != null) _symbol.UseLineSymbol = value; }
+            set
+            {
+                if (_symbol != null)
+                {
+                    _symbol.UseLineSymbol = value;
+                }
+            }
         }
         public bool UsePolygonSymbol
         {
             get { return (_symbol != null) ? _symbol.UsePolygonSymbol : false; }
-            set { if (_symbol != null) _symbol.UsePolygonSymbol = value; }
+            set
+            {
+                if (_symbol != null)
+                {
+                    _symbol.UsePolygonSymbol = value;
+                }
+            }
         }
 
         #region IFeatureRenderer Member
 
         public void Draw(IDisplay disp, gView.Framework.Data.IFeature feature)
         {
-            if (feature == null) return;
+            if (feature == null)
+            {
+                return;
+            }
 
             _symbol.Draw(feature.Shape, disp);
         }
@@ -88,10 +111,14 @@ namespace gView.Framework.Carto.Rendering
                 layer.FeatureClass != null &&
                 (layer.FeatureClass.GeometryType == GeometryType.Unknown ||
                  layer.FeatureClass.GeometryType == GeometryType.Network ||
-                 layer.FeatureClass.GeometryType == GeometryType.Aggregate)) return true;
-
-            else if (layer is IWebServiceTheme)
+                 layer.FeatureClass.GeometryType == GeometryType.Aggregate))
+            {
                 return true;
+            }
+            else if (layer is IWebServiceTheme)
+            {
+                return true;
+            }
 
             return false;
         }
@@ -155,7 +182,9 @@ namespace gView.Framework.Carto.Rendering
         {
             UniversalGeometryRenderer renderer = new UniversalGeometryRenderer();
             if (_symbol != null)
+            {
                 renderer._symbol = (UniversalGeometrySymbol)_symbol.Clone(_useRefScale ? options : null);
+            }
 
             renderer._symbolRotation = (SymbolRotation)_symbolRotation.Clone();
 
@@ -185,7 +214,10 @@ namespace gView.Framework.Carto.Rendering
             if (initObject is IFeatureLayer)
             {
                 if (((IFeatureLayer)initObject).FeatureClass == null
-                    && !(initObject is IWebServiceTheme)) return null;
+                    && !(initObject is IWebServiceTheme))
+                {
+                    return null;
+                }
 
                 string appPath = System.IO.Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
                 Assembly uiAssembly = Assembly.LoadFrom(appPath + @"/gView.Win.Carto.Rendering.UI.dll");
@@ -213,12 +245,26 @@ namespace gView.Framework.Carto.Rendering
         {
             get
             {
-                if (_symbol == null) return 0;
+                if (_symbol == null)
+                {
+                    return 0;
+                }
 
                 int count = 0;
-                if (_symbol.UsePointSymbol) count++;
-                if (_symbol.UseLineSymbol) count++;
-                if (_symbol.UsePolygonSymbol) count++;
+                if (_symbol.UsePointSymbol)
+                {
+                    count++;
+                }
+
+                if (_symbol.UseLineSymbol)
+                {
+                    count++;
+                }
+
+                if (_symbol.UsePolygonSymbol)
+                {
+                    count++;
+                }
 
                 return count;
             }
@@ -226,31 +272,52 @@ namespace gView.Framework.Carto.Rendering
 
         public ILegendItem LegendItem(int index)
         {
-            if (_symbol == null) return null;
+            if (_symbol == null)
+            {
+                return null;
+            }
 
             switch (index)
             {
                 case 0:
                     if (_symbol.UsePointSymbol)
+                    {
                         return _symbol[GeometryType.Point];
+                    }
+
                     if (_symbol.UseLineSymbol)
+                    {
                         return _symbol[GeometryType.Polyline];
+                    }
+
                     if (_symbol.UsePolygonSymbol)
+                    {
                         return _symbol[GeometryType.Polygon];
+                    }
+
                     break;
                 case 1:
                     if (_symbol.UsePointSymbol &&
                         _symbol.UseLineSymbol)
+                    {
                         return _symbol[GeometryType.Polyline];
+                    }
+
                     if (_symbol.UseLineSymbol &&
                         _symbol.UsePolygonSymbol)
+                    {
                         return _symbol[GeometryType.Polygon];
+                    }
+
                     break;
                 case 2:
                     if (_symbol.UsePointSymbol &&
                         _symbol.UseLineSymbol &&
                         _symbol.UsePolygonSymbol)
+                    {
                         return _symbol[GeometryType.Polygon];
+                    }
+
                     break;
             }
             return null;
@@ -258,14 +325,25 @@ namespace gView.Framework.Carto.Rendering
 
         public void SetSymbol(ILegendItem item, ISymbol symbol)
         {
-            if (_symbol == null) return;
+            if (_symbol == null)
+            {
+                return;
+            }
 
             if (item == _symbol[GeometryType.Point])
+            {
                 _symbol[GeometryType.Point] = symbol;
+            }
+
             if (item == _symbol[GeometryType.Polyline])
+            {
                 _symbol[GeometryType.Polyline] = symbol;
+            }
+
             if (item == _symbol[GeometryType.Polygon])
+            {
                 _symbol[GeometryType.Polygon] = symbol;
+            }
         }
 
         #endregion
@@ -277,7 +355,10 @@ namespace gView.Framework.Carto.Rendering
             get
             {
                 if (_symbol != null)
+                {
                     return _symbol.Symbols;
+                }
+
                 return new List<ISymbol>();
             }
         }
@@ -337,7 +418,10 @@ namespace gView.Framework.Carto.Rendering
             }
             set
             {
-                if (value == null) return;
+                if (value == null)
+                {
+                    return;
+                }
 
                 switch (type)
                 {
@@ -383,7 +467,10 @@ namespace gView.Framework.Carto.Rendering
         }
         public void Draw(IGeometry geometry, IDisplay display)
         {
-            if (display == null || geometry == null) return;
+            if (display == null || geometry == null)
+            {
+                return;
+            }
 
             if (geometry is IPoint)
             {
@@ -392,7 +479,9 @@ namespace gView.Framework.Carto.Rendering
             else if (geometry is IPointCollection)
             {
                 for (int i = 0; i < ((IPointCollection)geometry).PointCount; i++)
+                {
                     Draw(((IPointCollection)geometry)[i], display);
+                }
             }
             else if (geometry is IPolyline)
             {
@@ -405,7 +494,9 @@ namespace gView.Framework.Carto.Rendering
             else if (geometry is IAggregateGeometry)
             {
                 for (int i = 0; i < ((IAggregateGeometry)geometry).GeometryCount; i++)
+                {
                     Draw(((IAggregateGeometry)geometry)[i], display);
+                }
             }
         }
 
@@ -449,9 +540,20 @@ namespace gView.Framework.Carto.Rendering
 
         public void Release()
         {
-            if (_pointSymbol != null) _pointSymbol.Release();
-            if (_lineSymbol != null) _lineSymbol.Release();
-            if (_polygonSymbol != null) _polygonSymbol.Release();
+            if (_pointSymbol != null)
+            {
+                _pointSymbol.Release();
+            }
+
+            if (_lineSymbol != null)
+            {
+                _lineSymbol.Release();
+            }
+
+            if (_polygonSymbol != null)
+            {
+                _polygonSymbol.Release();
+            }
 
             _pointSymbol = null;
             _lineSymbol = null;

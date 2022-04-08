@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using gView.Desktop.Wpf.Controls;
 using gView.Framework.UI;
-using gView.Desktop.Wpf.Controls;
 
 namespace gView.Desktop.Wpf.Items
 {
@@ -15,7 +11,10 @@ namespace gView.Desktop.Wpf.Items
         {
             base.Header = text;
             if (image != null)
+            {
                 base.Icon = ImageFactory.FromBitmap(image);
+            }
+
             _window = window;
         }
 

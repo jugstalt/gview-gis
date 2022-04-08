@@ -1,7 +1,6 @@
-﻿using System;
+﻿using gView.Framework.Geometry;
+using System;
 using System.Collections.Generic;
-using System.Text;
-using gView.Framework.Geometry;
 
 namespace gView.Framework.Data
 {
@@ -19,7 +18,9 @@ namespace gView.Framework.Data
         public GridIndex(IEnvelope bounds, int cellsX, int cellsY)
         {
             if (bounds == null || cellsX <= 0 || cellsY <= 0)
+            {
                 throw new ArgumentException();
+            }
 
             _bounds = new Envelope(bounds);
             ((Envelope)_bounds).Raise(120);
@@ -35,21 +36,31 @@ namespace gView.Framework.Data
         public int XIndex(IPoint p)
         {
             if (p == null)
+            {
                 return -1;
+            }
 
             int i = (int)Math.Floor((p.X - _bounds.minx) / _cX);
             if (i < 0 || i >= _cellsX)
+            {
                 return -1;
+            }
+
             return i;
         }
         public int YIndex(IPoint p)
         {
             if (p == null)
+            {
                 return -1;
+            }
 
             int i = (int)Math.Floor((p.Y - _bounds.miny) / _cY);
             if (i < 0 || i >= _cellsY)
+            {
                 return -1;
+            }
+
             return i;
         }
         public int XYIndex(IPoint p)
@@ -57,7 +68,9 @@ namespace gView.Framework.Data
             int ix = XIndex(p);
             int iy = YIndex(p);
             if (ix < 0 || iy < 0)
+            {
                 return -1;
+            }
 
             return iy * _cellsX + ix;
         }
@@ -71,13 +84,21 @@ namespace gView.Framework.Data
 
             i = XYIndex(new Point(env.minx, env.maxy));
             if (!ret.Contains(i))
+            {
                 ret.Add(i);
+            }
+
             i = XYIndex(new Point(env.maxx, env.maxy));
             if (!ret.Contains(i))
+            {
                 ret.Add(i);
+            }
+
             i = XYIndex(new Point(env.maxx, env.miny));
             if (!ret.Contains(i))
+            {
                 ret.Add(i);
+            }
 
             return ret;
         }
@@ -86,15 +107,22 @@ namespace gView.Framework.Data
             get
             {
                 if (_gridCellContainer.ContainsKey(index))
+                {
                     return _gridCellContainer[index];
+                }
+
                 return null;
             }
             set
             {
                 if (_gridCellContainer.ContainsKey(index))
+                {
                     _gridCellContainer[index] = value;
+                }
                 else
+                {
                     _gridCellContainer.Add(index, value);
+                }
             }
         }
 
@@ -107,7 +135,9 @@ namespace gView.Framework.Data
                 {
                     T t = _gridCellContainer[key];
                     if (t == null)
+                    {
                         continue;
+                    }
 
                     ret.Add(t);
                 }
@@ -169,9 +199,11 @@ namespace gView.Framework.Data
             {
                 foreach (int index in grid.XYIndices(env))
                 {
-                    T t= grid[index];
+                    T t = grid[index];
                     if (t != null)
+                    {
                         list.Add(t);
+                    }
                 }
             }
             return list;

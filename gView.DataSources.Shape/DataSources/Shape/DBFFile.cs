@@ -1,10 +1,9 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Text;
-using System.IO;
-using System.Data;
 using gView.Framework.Data;
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.IO;
+using System.Text;
 
 namespace gView.DataSources.Shape
 {
@@ -32,7 +31,10 @@ namespace gView.DataSources.Shape
 
         public static bool Write(BinaryWriter bw, Fields fields)
         {
-            if (bw == null || fields == null) return false;
+            if (bw == null || fields == null)
+            {
+                return false;
+            }
 
             int c = 0, rl = 1;  // deleted Flag
             foreach (IField field in fields.ToEnumerable())
@@ -154,7 +156,10 @@ namespace gView.DataSources.Shape
 
         public static bool Write(BinaryWriter bw, IField field)
         {
-            if (bw == null || field == null) return false;
+            if (bw == null || field == null)
+            {
+                return false;
+            }
 
             byte decimalCount = 0, fieldLength = 0;
             char fieldType = 'C';
@@ -214,9 +219,13 @@ namespace gView.DataSources.Shape
             for (int i = 0; i < 10; i++)
             {
                 if (i < field.name.Length)
+                {
                     bw.Write((byte)field.name[i]);
+                }
                 else
+                {
                     bw.Write((byte)0);
+                }
             }
             bw.Write((byte)0);
 
@@ -295,7 +304,11 @@ namespace gView.DataSources.Shape
             try
             {
                 FileInfo fi = new FileInfo(filename);
-                if (!fi.Exists) return;
+                if (!fi.Exists)
+                {
+                    return;
+                }
+
                 _filename = filename;
 
                 StreamReader sr = new StreamReader(filename);
@@ -313,7 +326,10 @@ namespace gView.DataSources.Shape
                 int c = 1;
                 string idFieldName = _idField;
                 while (HasField(idFieldName))
+                {
                     idFieldName = _idField + "_" + c++;
+                }
+
                 _idField = idFieldName;
 
                 _encoder = null;
@@ -373,7 +389,9 @@ namespace gView.DataSources.Shape
                     }
 
                     if (_encoder == null)
+                    {
                         _encoder = new UTF7Encoding();
+                    }
                 }
                 //Record(0);
                 //Record(1);
@@ -401,7 +419,10 @@ namespace gView.DataSources.Shape
         {
             foreach (FieldDescriptor fd in _fields)
             {
-                if (fd.FieldName == name) return true;
+                if (fd.FieldName == name)
+                {
+                    return true;
+                }
             }
             return false;
         }
@@ -432,7 +453,9 @@ namespace gView.DataSources.Shape
                         if (field.FieldName == fieldname)
                         {
                             if (tab.Columns[fieldname] == null)
+                            {
                                 tab.Columns.Add(fieldname, DataType(field));
+                            }
                         }
                     }
                 }
@@ -443,7 +466,9 @@ namespace gView.DataSources.Shape
                 foreach (FieldDescriptor field in _fields)
                 {
                     if (tab.Columns[field.FieldName] == null)
+                    {
                         tab.Columns.Add(field.FieldName, DataType(field));
+                    }
                 }
             }
 
@@ -458,13 +483,25 @@ namespace gView.DataSources.Shape
                 case 'N':
                     if (fd.DecimalCount == 0)
                     {
-                        if (fd.FieldLength <= 6) return typeof(short);
-                        if (fd.FieldLength <= 9) return typeof(int);
+                        if (fd.FieldLength <= 6)
+                        {
+                            return typeof(short);
+                        }
+
+                        if (fd.FieldLength <= 9)
+                        {
+                            return typeof(int);
+                        }
+
                         return typeof(long);
                     }
                     else // if( fd.DecimalCount==9 && fd.FieldLength==31 )
                     {
-                        if (fd.DecimalCount <= 9) return typeof(float);
+                        if (fd.DecimalCount <= 9)
+                        {
+                            return typeof(float);
+                        }
+
                         return typeof(double);
                     }
                 case 'L': return typeof(bool);
@@ -484,13 +521,25 @@ namespace gView.DataSources.Shape
                 case 'N':
                     if (fd.DecimalCount == 0)
                     {
-                        if (fd.FieldLength <= 6) return gView.Framework.Data.FieldType.smallinteger;
-                        if (fd.FieldLength <= 9) return gView.Framework.Data.FieldType.integer;
+                        if (fd.FieldLength <= 6)
+                        {
+                            return gView.Framework.Data.FieldType.smallinteger;
+                        }
+
+                        if (fd.FieldLength <= 9)
+                        {
+                            return gView.Framework.Data.FieldType.integer;
+                        }
+
                         return gView.Framework.Data.FieldType.biginteger;
                     }
                     else  // if( fd.DecimalCount==9 && fd.FieldLength==31 ) 
                     {
-                        if (fd.DecimalCount <= 9) return gView.Framework.Data.FieldType.Float;
+                        if (fd.DecimalCount <= 9)
+                        {
+                            return gView.Framework.Data.FieldType.Float;
+                        }
+
                         return gView.Framework.Data.FieldType.Double;
                     }
                 case 'L': return gView.Framework.Data.FieldType.boolean;
@@ -514,7 +563,10 @@ namespace gView.DataSources.Shape
 
             string[] names = null;
             fieldnames = fieldnames.Replace(" ", "");
-            if (fieldnames != "*") names = fieldnames.Split(',');
+            if (fieldnames != "*")
+            {
+                names = fieldnames.Split(',');
+            }
 
             DataTable tab = DataTable(names);
             Record(index, tab, br);
@@ -525,12 +577,18 @@ namespace gView.DataSources.Shape
 
         internal void Record(uint index, DataTable tab, BinaryReader br)
         {
-            if (index > _header.recordCount || index < 1) return;
+            if (index > _header.recordCount || index < 1)
+            {
+                return;
+            }
 
             br.BaseStream.Position = _header.headerLength + _header.LegthOfEachRecord * (index - 1);
 
             char deleted = br.ReadChar();
-            if (deleted != ' ') return;
+            if (deleted != ' ')
+            {
+                return;
+            }
 
             DataRow row = tab.NewRow();
             foreach (FieldDescriptor field in _fields)
@@ -575,11 +633,20 @@ namespace gView.DataSources.Shape
                     case 'L':
                         char c = br.ReadChar();
                         if (c == 'Y' || c == 'y' ||
-                            c == 'T' || c == 't') row[field.FieldName] = true;
+                            c == 'T' || c == 't')
+                        {
+                            row[field.FieldName] = true;
+                        }
                         else if (c == 'N' || c == 'n' ||
-                            c == 'F' || c == 'f') row[field.FieldName] = false;
+                            c == 'F' || c == 'f')
+                        {
+                            row[field.FieldName] = false;
+                        }
                         else
+                        {
                             row[field.FieldName] = null;
+                        }
+
                         break;
                     case 'D':
                         string date = _encoder.GetString(br.ReadBytes(field.FieldLength)).TrimEnd(_trims);
@@ -594,7 +661,11 @@ namespace gView.DataSources.Shape
                         break;
                 }
             }
-            if (tab.Columns[_idField] != null) row[_idField] = index;
+            if (tab.Columns[_idField] != null)
+            {
+                row[_idField] = index;
+            }
+
             tab.Rows.Add(row);
         }
 
@@ -607,7 +678,10 @@ namespace gView.DataSources.Shape
                 br.BaseStream.Position = _header.headerLength + _header.LegthOfEachRecord * (i);
 
                 char deleted = br.ReadChar();
-                if (deleted != ' ') continue;
+                if (deleted != ' ')
+                {
+                    continue;
+                }
 
                 DataRow row = tab.NewRow();
 
@@ -653,11 +727,20 @@ namespace gView.DataSources.Shape
                         case 'L':
                             char c = br.ReadChar();
                             if (c == 'Y' || c == 'y' ||
-                                c == 'T' || c == 't') row[field.FieldName] = true;
+                                c == 'T' || c == 't')
+                            {
+                                row[field.FieldName] = true;
+                            }
                             else if (c == 'N' || c == 'n' ||
-                                c == 'F' || c == 'f') row[field.FieldName] = false;
+                                c == 'F' || c == 'f')
+                            {
+                                row[field.FieldName] = false;
+                            }
                             else
+                            {
                                 row[field.FieldName] = null;
+                            }
+
                             break;
                         case 'D':
                             string date = _encoder.GetString(br.ReadBytes(field.FieldLength)).TrimEnd(_trims);
@@ -672,7 +755,11 @@ namespace gView.DataSources.Shape
                             break;
                     }
                 }
-                if (tab.Columns[_idField] != null) row[_idField] = i + 1;
+                if (tab.Columns[_idField] != null)
+                {
+                    row[_idField] = i + 1;
+                }
+
                 tab.Rows.Add(row);
             }
         }
@@ -684,7 +771,10 @@ namespace gView.DataSources.Shape
             try
             {
                 FileInfo fi = new FileInfo(filename);
-                if (fi.Exists) fi.Delete();
+                if (fi.Exists)
+                {
+                    fi.Delete();
+                }
 
                 StreamWriter sw = new StreamWriter(filename);
                 BinaryWriter bw = new BinaryWriter(sw.BaseStream);
@@ -705,7 +795,10 @@ namespace gView.DataSources.Shape
 
         internal bool WriteRecord(uint index, IFeature feature)
         {
-            if (feature == null) return false;
+            if (feature == null)
+            {
+                return false;
+            }
 
             FileStream fs = null;
             BinaryWriter bw = null;
@@ -809,7 +902,9 @@ namespace gView.DataSources.Shape
             finally
             {
                 if (fs != null)
+                {
                     fs.Close();
+                }
             }
         }
 
@@ -826,9 +921,13 @@ namespace gView.DataSources.Shape
             for (int i = 0; i < fd.FieldLength; i++)
             {
                 if (i < bytes.Length)
+                {
                     bw.Write((byte)bytes[i]);
+                }
                 else
+                {
                     bw.Write((byte)0);
+                }
             }
         }
 
@@ -873,14 +972,21 @@ namespace gView.DataSources.Shape
 
         public DBFDataReader(DBFFile file, string fieldnames)
         {
-            if (file == null) return;
+            if (file == null)
+            {
+                return;
+            }
+
             _file = file;
             _sr = new StreamReader(_file.Filename);
             _br = new BinaryReader(_sr.BaseStream);
 
             string[] names = null;
             fieldnames = fieldnames.Replace(" ", "");
-            if (fieldnames != "*") names = fieldnames.Split(',');
+            if (fieldnames != "*")
+            {
+                names = fieldnames.Split(',');
+            }
 
             _tab = _file.DataTable(names);
         }
@@ -889,7 +995,10 @@ namespace gView.DataSources.Shape
         {
             get
             {
-                if (_file == null) return null;
+                if (_file == null)
+                {
+                    return null;
+                }
 
                 _file.Records(_tab, _br);
                 return _tab;

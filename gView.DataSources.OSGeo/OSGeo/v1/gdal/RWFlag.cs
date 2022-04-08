@@ -9,9 +9,10 @@
 namespace OSGeo_v1.GDAL
 {
 
-public enum RWFlag {
-  GF_Read = 0,
-  GF_Write = 1
-}
+    public enum RWFlag
+    {
+        GF_Read = 0,
+        GF_Write = 1
+    }
 
 }

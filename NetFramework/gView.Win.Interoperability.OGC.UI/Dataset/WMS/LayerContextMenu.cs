@@ -1,11 +1,8 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
+using gView.Framework.Data;
 using gView.Framework.UI;
 using gView.Interoperability.OGC.Dataset.WMS;
-using System.Windows.Forms;
-using gView.Framework.Data;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace gView.Interoperability.OGC.UI.Dataset.WMS
 {
@@ -22,8 +19,10 @@ namespace gView.Interoperability.OGC.UI.Dataset.WMS
 
         public bool Enable(object element)
         {
-            if(element is IDatasetElement && ((IDatasetElement)element).Class is WMSClass)
+            if (element is IDatasetElement && ((IDatasetElement)element).Class is WMSClass)
+            {
                 return true;
+            }
 
             return false;
         }
@@ -32,17 +31,21 @@ namespace gView.Interoperability.OGC.UI.Dataset.WMS
         {
             return Enable(element);
         }
-        
+
         public void OnCreate(object hook)
         {
             if (hook is IMapDocument)
+            {
                 _doc = hook as IMapDocument;
+            }
         }
 
-        public Task<bool> OnEvent(object element,object dataset)
+        public Task<bool> OnEvent(object element, object dataset)
         {
             if (!this.Enable(element))
+            {
                 return Task.FromResult(true);
+            }
 
             FormWMSCoordinateSystem dlg = new FormWMSCoordinateSystem(((IDatasetElement)element).Class as WMSClass);
             if (dlg.ShowDialog() == DialogResult.OK)
@@ -57,14 +60,16 @@ namespace gView.Interoperability.OGC.UI.Dataset.WMS
                     }
                     else
                     {
-                        if (MessageBox.Show(null, "Set this Coordinate System for the current map also?", "", MessageBoxButtons.YesNo)==DialogResult.Yes)
+                        if (MessageBox.Show(null, "Set this Coordinate System for the current map also?", "", MessageBoxButtons.YesNo) == DialogResult.Yes)
                         {
                             _doc.FocusMap.Display.SpatialReference = ((WMSClass)((IDatasetElement)element).Class).SpatialReference;
                         }
                     }
 
-                    if(_doc.Application is IMapApplication)
+                    if (_doc.Application is IMapApplication)
+                    {
                         ((IMapApplication)_doc.Application).RefreshActiveMap(gView.Framework.Carto.DrawPhase.All);
+                    }
                 }
             }
 

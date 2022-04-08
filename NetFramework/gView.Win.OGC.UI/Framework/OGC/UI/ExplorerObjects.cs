@@ -1,12 +1,7 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
 using gView.Framework.system;
-using System.Xml;
-using gView.Framework.Data;
-using gView.Framework.OGC.DB;
-using gView.Framework.UI;
 using gView.Framework.system.UI;
+using gView.Framework.UI;
+using System;
 using System.Threading.Tasks;
 
 namespace gView.Framework.OGC.UI
@@ -70,7 +65,10 @@ namespace gView.Framework.OGC.UI
             foreach (var compType in compMan.GetPlugins(Plugins.Type.IExplorerObject))
             {
                 IExplorerObject exObject = compMan.CreateInstance<IExplorerObject>(compType);
-                if (!(exObject is IOgcGroupExplorerObject)) continue;
+                if (!(exObject is IOgcGroupExplorerObject))
+                {
+                    continue;
+                }
 
                 base.AddChildObject(exObject);
             }
@@ -85,7 +83,9 @@ namespace gView.Framework.OGC.UI
         public Task<IExplorerObject> CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache cache)
         {
             if (cache.Contains(FullName))
+            {
                 return Task.FromResult<IExplorerObject>(cache[FullName]);
+            }
 
             if (this.FullName == FullName)
             {

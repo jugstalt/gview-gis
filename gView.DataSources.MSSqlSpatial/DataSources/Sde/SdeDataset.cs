@@ -1,5 +1,4 @@
-﻿using gView.Data.Framework.Data.Extensions;
-using gView.DataSources.MSSqlSpatial.DataSources.Sde.Repo;
+﻿using gView.DataSources.MSSqlSpatial.DataSources.Sde.Repo;
 using gView.Framework.Data;
 using gView.Framework.Geometry;
 using gView.Framework.OGC.DB;
@@ -319,7 +318,7 @@ namespace gView.DataSources.MSSqlSpatial.DataSources.Sde
             }
 
             string fcName = fc.Name;
-            if(fc is SdeFeatureClass && !String.IsNullOrWhiteSpace(((SdeFeatureClass)fc).MultiVersionedViewName))
+            if (fc is SdeFeatureClass && !String.IsNullOrWhiteSpace(((SdeFeatureClass)fc).MultiVersionedViewName))
             {
                 fcName = ((SdeFeatureClass)fc).MultiVersionedViewName;
 
@@ -370,8 +369,8 @@ namespace gView.DataSources.MSSqlSpatial.DataSources.Sde
                 foreach (var sdeLayer in RepoProvider.Layers)
                 {
                     layers.Add(new DatasetElement(
-                       await SdeFeatureClass.Create(this, sdeLayer.Owner + "." + sdeLayer.TableName, 
-                          String.IsNullOrWhiteSpace(sdeLayer.MultiVersionedViewName) ? null : sdeLayer.Owner+"."+sdeLayer.MultiVersionedViewName)));
+                       await SdeFeatureClass.Create(this, sdeLayer.Owner + "." + sdeLayer.TableName,
+                          String.IsNullOrWhiteSpace(sdeLayer.MultiVersionedViewName) ? null : sdeLayer.Owner + "." + sdeLayer.MultiVersionedViewName)));
                 }
 
                 _layers = layers;
@@ -391,7 +390,7 @@ namespace gView.DataSources.MSSqlSpatial.DataSources.Sde
 
             if (sdeLayer != null)
             {
-                return new DatasetElement(await SdeFeatureClass.Create(this, 
+                return new DatasetElement(await SdeFeatureClass.Create(this,
                     sdeLayer.Owner + "." + sdeLayer.TableName,
                     String.IsNullOrWhiteSpace(sdeLayer.MultiVersionedViewName) ? null : sdeLayer.Owner + "." + sdeLayer.MultiVersionedViewName));
             }

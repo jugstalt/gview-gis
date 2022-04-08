@@ -5,45 +5,45 @@ namespace gView.Framework.Symbology.UI
     /// <summary>
     /// Zusammenfassung für PropertyForm_SimplePointSymbol.
     /// </summary>
-    internal class PropertyForm_SimplePointSymbol : System.Windows.Forms.Form,IPropertyPageUI,gView.Framework.Symbology.UI.IPropertyPanel
-	{
-		private System.Windows.Forms.TabControl tabControl1;
-		private System.Windows.Forms.TabPage tabPage1;
-		private System.Windows.Forms.PropertyGrid propertyGrid;
-		/// <summary>
-		/// Erforderliche Designervariable.
-		/// </summary>
-		private System.ComponentModel.Container components = null;
-		public System.Windows.Forms.Panel panelSymbol;
-		private ISymbol _symbol;
+    internal class PropertyForm_SimplePointSymbol : System.Windows.Forms.Form, IPropertyPageUI, gView.Framework.Symbology.UI.IPropertyPanel
+    {
+        private System.Windows.Forms.TabControl tabControl1;
+        private System.Windows.Forms.TabPage tabPage1;
+        private System.Windows.Forms.PropertyGrid propertyGrid;
+        /// <summary>
+        /// Erforderliche Designervariable.
+        /// </summary>
+        private System.ComponentModel.Container components = null;
+        public System.Windows.Forms.Panel panelSymbol;
+        private ISymbol _symbol;
 
-		public PropertyForm_SimplePointSymbol()
-		{
-			InitializeComponent();
-		}
+        public PropertyForm_SimplePointSymbol()
+        {
+            InitializeComponent();
+        }
 
-		/// <summary>
-		/// Die verwendeten Ressourcen bereinigen.
-		/// </summary>
-		protected override void Dispose( bool disposing )
-		{
-			if( disposing )
-			{
-				if(components != null)
-				{
-					components.Dispose();
-				}
-			}
-			base.Dispose( disposing );
-		}
+        /// <summary>
+        /// Die verwendeten Ressourcen bereinigen.
+        /// </summary>
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                if (components != null)
+                {
+                    components.Dispose();
+                }
+            }
+            base.Dispose(disposing);
+        }
 
-		#region Vom Windows Form-Designer generierter Code
-		/// <summary>
-		/// Erforderliche Methode für die Designerunterstützung. 
-		/// Der Inhalt der Methode darf nicht mit dem Code-Editor geändert werden.
-		/// </summary>
-		private void InitializeComponent()
-		{
+        #region Vom Windows Form-Designer generierter Code
+        /// <summary>
+        /// Erforderliche Methode für die Designerunterstützung. 
+        /// Der Inhalt der Methode darf nicht mit dem Code-Editor geändert werden.
+        /// </summary>
+        private void InitializeComponent()
+        {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(PropertyForm_SimplePointSymbol));
             this.panelSymbol = new System.Windows.Forms.Panel();
             this.tabControl1 = new System.Windows.Forms.TabControl();
@@ -93,22 +93,22 @@ namespace gView.Framework.Symbology.UI
             this.tabPage1.ResumeLayout(false);
             this.ResumeLayout(false);
 
-		}
-		#endregion
+        }
+        #endregion
 
-		private void propertyGrid_PropertyValueChanged(object s, System.Windows.Forms.PropertyValueChangedEventArgs e)
-		{
-			if(PropertyChanged!=null)
+        private void propertyGrid_PropertyValueChanged(object s, System.Windows.Forms.PropertyValueChangedEventArgs e)
+        {
+            if (PropertyChanged != null)
             {
                 PropertyChanged(_symbol);
             }
         }
 
-		#region IPropertryPageUI
+        #region IPropertryPageUI
 
-		public event PropertyChangedEvent PropertyChanged=null;
+        public event PropertyChangedEvent PropertyChanged = null;
 
-		#endregion
+        #endregion
 
         #region IPropertyPanel Member
 

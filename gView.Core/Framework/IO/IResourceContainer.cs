@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Collections.Generic;
 
 namespace gView.Framework.IO
 {
@@ -10,7 +8,7 @@ namespace gView.Framework.IO
 
         byte[] this[string name] { get; set; }
 
-        bool HasResources { get;}
+        bool HasResources { get; }
     }
 
     public interface IResource

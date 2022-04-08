@@ -1,17 +1,9 @@
-using System;
-using System.Data;
-using System.Drawing;
-using System.Drawing.Drawing2D;
-using gView.Framework;
-using gView.Framework.Geometry;
-using gView.Framework.Carto.Rendering;
-
 namespace gView.Objects
 {
-	/// <summary>
-	/// Zusammenfassung für SelectionRenderer.
-	/// </summary>
-	/*
+    /// <summary>
+    /// Zusammenfassung für SelectionRenderer.
+    /// </summary>
+    /*
 	public class SelectionRenderer : IImageRenderer  
 	{
 		private IEnvelope m_envelope;

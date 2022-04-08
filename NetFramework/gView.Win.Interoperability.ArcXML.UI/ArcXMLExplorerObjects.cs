@@ -1,8 +1,8 @@
 using gView.Framework.Globalisation;
 using gView.Framework.IO;
+using gView.Framework.system;
 using gView.Framework.system.UI;
 using gView.Framework.UI;
-using gView.Framework.system;
 using System;
 using System.Threading.Tasks;
 using System.Xml;
@@ -171,7 +171,7 @@ namespace gView.Interoperability.ArcXML.Dataset
         {
             if (cache.Contains(FullName))
             {
-                return  Task.FromResult(cache[FullName]);
+                return Task.FromResult(cache[FullName]);
             }
 
             return Task.FromResult<IExplorerObject>(null);

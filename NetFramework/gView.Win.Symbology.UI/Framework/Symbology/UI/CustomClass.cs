@@ -1,9 +1,9 @@
+using gView.Framework.Sys.UI.Extensions;
 using System;
 using System.Collections;
 using System.ComponentModel;
 using System.Drawing;
 using System.Reflection;
-using gView.Framework.Sys.UI.Extensions;
 
 namespace gView.Framework.Symbology.UI
 {
@@ -201,7 +201,7 @@ namespace gView.Framework.Symbology.UI
                         propAttributes[p] = new EditorAttribute(typeof(LineSymbolTypeEditor), typeof(System.Drawing.Design.UITypeEditor));
                         break;
                     }
-                    if(propAttributes[p] is UsePointSymbolPicker)
+                    if (propAttributes[p] is UsePointSymbolPicker)
                     {
                         propAttributes[p] = new EditorAttribute(typeof(PointSymbolTypeEditor), typeof(System.Drawing.Design.UITypeEditor));
                         break;
@@ -277,16 +277,16 @@ namespace gView.Framework.Symbology.UI
         {
             get
             {
-                if(typeof(GraphicsEngine.Abstraction.IFont).IsAssignableFrom(_pi.PropertyType))
+                if (typeof(GraphicsEngine.Abstraction.IFont).IsAssignableFrom(_pi.PropertyType))
                 {
                     var iFont = (GraphicsEngine.Abstraction.IFont)_pi.GetValue(_object, null);
-                    if (iFont != null) 
+                    if (iFont != null)
                     {
                         return new System.Drawing.Font(iFont.Name, iFont.Size, iFont.Style.ToGdiFontStyle());
                     }
                     return null;
                 }
-                if(typeof(GraphicsEngine.ArgbColor).Equals(_pi.PropertyType))
+                if (typeof(GraphicsEngine.ArgbColor).Equals(_pi.PropertyType))
                 {
                     return ((GraphicsEngine.ArgbColor)_pi.GetValue(_object, null)).ToGdiColor();
                 }
@@ -332,11 +332,11 @@ namespace gView.Framework.Symbology.UI
         {
             get
             {
-                if(typeof(GraphicsEngine.Abstraction.IFont).IsAssignableFrom(_pi.PropertyType))
+                if (typeof(GraphicsEngine.Abstraction.IFont).IsAssignableFrom(_pi.PropertyType))
                 {
                     return typeof(System.Drawing.Font);
                 }
-                if(typeof(GraphicsEngine.ArgbColor).Equals(_pi.PropertyType))
+                if (typeof(GraphicsEngine.ArgbColor).Equals(_pi.PropertyType))
                 {
                     return typeof(System.Drawing.Color);
                 }

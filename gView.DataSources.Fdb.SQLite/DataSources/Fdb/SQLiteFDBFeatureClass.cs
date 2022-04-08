@@ -4,8 +4,6 @@ using gView.Framework.Geometry;
 using gView.Framework.system;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace gView.DataSources.Fdb.SQLite
@@ -38,7 +36,9 @@ namespace gView.DataSources.Fdb.SQLite
             fc._geomDef = (geomDef != null) ? geomDef : new GeometryDef();
 
             if (fc._geomDef != null && fc._geomDef.SpatialReference == null && dataset is IFeatureDataset)
+            {
                 fc._geomDef.SpatialReference = await ((IFeatureDataset)dataset).GetSpatialReference();
+            }
 
             fc.m_fields = new Fields();
 
@@ -71,19 +71,30 @@ namespace gView.DataSources.Fdb.SQLite
 
         async public Task<int> CountFeatures()
         {
-            if (_fdb == null) return -1;
+            if (_fdb == null)
+            {
+                return -1;
+            }
+
             return await _fdb.CountFeatures(_name);
         }
 
         async public Task<List<SpatialIndexNode>> SpatialIndexNodes()
         {
-            if (_fdb == null) return null;
+            if (_fdb == null)
+            {
+                return null;
+            }
+
             return await _fdb.SpatialIndexNodes2(_name);
         }
 
         async public Task<IFeatureCursor> GetFeatures(IQueryFilter filter/*, gView.Framework.Data.getFeatureQueryType type*/)
         {
-            if (_fdb == null) return null;
+            if (_fdb == null)
+            {
+                return null;
+            }
 
             if (filter != null)
             {
@@ -135,11 +146,17 @@ namespace gView.DataSources.Fdb.SQLite
 
         public IField FindField(string name)
         {
-            if (m_fields == null) return null;
+            if (m_fields == null)
+            {
+                return null;
+            }
 
             foreach (IField field in m_fields.ToEnumerable())
             {
-                if (field.name == name) return field;
+                if (field.name == name)
+                {
+                    return field;
+                }
             }
             return null;
         }
@@ -203,10 +220,16 @@ namespace gView.DataSources.Fdb.SQLite
 
         public void RefreshFrom(object obj)
         {
-            if (!(obj is SQLiteFDBFeatureClass)) return;
+            if (!(obj is SQLiteFDBFeatureClass))
+            {
+                return;
+            }
 
             SQLiteFDBFeatureClass fc = (SQLiteFDBFeatureClass)obj;
-            if (fc.Name != this.Name) return;
+            if (fc.Name != this.Name)
+            {
+                return;
+            }
 
             this.Envelope = fc.Envelope;
             this.SpatialReference = fc.SpatialReference;
@@ -239,9 +262,13 @@ namespace gView.DataSources.Fdb.SQLite
             {
                 string name = _name;
                 if (name.Contains("@"))
+                {
                     name = _fdb.SpatialViewNames(name)[1];
+                }
                 else
+                {
                     name = "FC_" + name;
+                }
 
                 return (String.IsNullOrEmpty(_dbSchema) ? "\"" + name + "\"" : _dbSchema + ".\"" + name + "\"");
             }
@@ -253,7 +280,9 @@ namespace gView.DataSources.Fdb.SQLite
             {
                 string name = _name;
                 if (name.Contains("@"))
+                {
                     name = _fdb.SpatialViewNames(name)[0];
+                }
 
                 return (String.IsNullOrEmpty(_dbSchema) ? "\"FCSI_" + name + "\"" : "\"" + _dbSchema + "\".\"FCSI_" + name + "\"");
             }

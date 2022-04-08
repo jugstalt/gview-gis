@@ -1,16 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Windows.Forms;
-using System.Windows.Forms.DataVisualization.Charting;
+﻿using gView.Framework.system.UI;
 using gView.Framework.UI;
-using gView.Framework.system.UI;
+using System;
+using System.Collections.Generic;
+using System.Drawing;
 using System.IO;
 using System.Threading.Tasks;
+using System.Windows.Forms;
+using System.Windows.Forms.DataVisualization.Charting;
 
 namespace gView.Plugins.MapTools.Dialogs
 {
@@ -22,8 +18,8 @@ namespace gView.Plugins.MapTools.Dialogs
         public FormChart(string title, Series[] series)
         {
             InitializeComponent();
- 
-            _series=series;
+
+            _series = series;
             _gvChart = new gvChart(chart1);
 
             chart1.Titles.Add(title);
@@ -45,7 +41,9 @@ namespace gView.Plugins.MapTools.Dialogs
         private void FormChart_Load(object sender, EventArgs e)
         {
             foreach (Series ser in _series)
+            {
                 _gvChart.Series.Add(ser);
+            }
 
             _gvChart.Refresh();
         }
@@ -60,7 +58,7 @@ namespace gView.Plugins.MapTools.Dialogs
             }
             set
             {
-                
+
             }
         }
 
@@ -158,7 +156,9 @@ namespace gView.Plugins.MapTools.Dialogs
                     {
                         tools.Add(new ChartTypeTool(chartType));
                         if (chartType.ChartType == _chartType.ChartType)
+                        {
                             _selectedTool = tools[tools.Count - 1];
+                        }
                     }
 
                     return tools;

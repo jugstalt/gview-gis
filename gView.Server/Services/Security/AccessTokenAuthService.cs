@@ -1,10 +1,7 @@
-﻿using gView.Server.AppCode;
-using gView.Server.Extensions;
+﻿using gView.Server.Extensions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace gView.Server.Services.Security
@@ -29,7 +26,7 @@ namespace gView.Server.Services.Security
 
                 if (_options.AllowAccessTokenAuthorization)
                 {
-                    var accessToken =context.Request.Query[_options.AccessTokenParameterName].ToString();
+                    var accessToken = context.Request.Query[_options.AccessTokenParameterName].ToString();
 
                     if (!String.IsNullOrEmpty(accessToken))
                     {
@@ -50,6 +47,6 @@ namespace gView.Server.Services.Security
             catch { }
 
             return null;
-        }  
+        }
     }
 }

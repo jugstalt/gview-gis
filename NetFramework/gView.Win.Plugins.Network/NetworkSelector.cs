@@ -1,13 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using gView.Framework.UI;
-using System.Windows.Forms;
-using gView.Framework.system;
+﻿using gView.Framework.Data;
 using gView.Framework.Globalisation;
-using gView.Framework.Data;
 using gView.Framework.Network;
+using gView.Framework.system;
+using gView.Framework.UI;
+using System;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace gView.Plugins.Network
 {
@@ -31,9 +29,13 @@ namespace gView.Plugins.Network
             if (_module != null)
             {
                 if (_combo.SelectedItem is NetworkClassItem)
+                {
                     _module.SelectedNetworkFeatureClass = ((NetworkClassItem)_combo.SelectedItem).NetworkFeatureClass;
+                }
                 else
+                {
                     _module.SelectedNetworkFeatureClass = null;
+                }
             }
         }
 
@@ -42,12 +44,16 @@ namespace gView.Plugins.Network
             _combo.Items.Clear();
 
             if (_doc == null || _doc.FocusMap == null)
+            {
                 return;
+            }
 
             foreach (IDatasetElement layer in _doc.FocusMap.MapElements)
             {
                 if (!(layer is IFeatureLayer))
+                {
                     continue;
+                }
 
                 if (layer.Class is INetworkFeatureClass)
                 {
@@ -55,7 +61,9 @@ namespace gView.Plugins.Network
                 }
             }
             if (_combo.Items.Count > 0)
+            {
                 _combo.SelectedIndex = 0;
+            }
         }
 
         #region ITool Member
@@ -159,7 +167,9 @@ namespace gView.Plugins.Network
             get
             {
                 if (_combo.SelectedItem is NetworkClassItem)
+                {
                     return ((NetworkClassItem)_combo.SelectedItem).NetworkFeatureClass;
+                }
 
                 return null;
             }

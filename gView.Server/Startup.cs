@@ -38,7 +38,7 @@ namespace gView.Server
                     break;
             }
 
-            switch(Configuration["graphics:encoding"]?.ToString())
+            switch (Configuration["graphics:encoding"]?.ToString())
             {
                 case "skia":
                 case "skiasharp":
@@ -114,9 +114,9 @@ namespace gView.Server
                         config.LogServiceRequestDetails = Configuration["Logging:LogServerRequestDetails"]?.ToLower() == "true";
 
                         Globals.AllowFormsLogin = config.AllowFormsLogin = Configuration["allowFormsLogin"]?.ToLower() != "false";
-                        config.ForceHttps= Configuration["force-https"]?.ToLower() == "true";
+                        config.ForceHttps = Configuration["force-https"]?.ToLower() == "true";
 
-                        if(!String.IsNullOrWhiteSpace(Configuration["port"]))
+                        if (!String.IsNullOrWhiteSpace(Configuration["port"]))
                         {
                             config.Port = int.Parse(Configuration["port"]);
                         }
@@ -193,8 +193,8 @@ namespace gView.Server
             {
                 routes.MapRoute(
                     name: "output-path",
-                    template:"output/{id}",
-                    defaults: new {controller="Output", Action="Index" }
+                    template: "output/{id}",
+                    defaults: new { controller = "Output", Action = "Index" }
                 );
 
                 // geoservices Server
@@ -275,7 +275,7 @@ namespace gView.Server
                 routes.MapRoute(
                     name: "geoservices_rest_folder",
                     template: "geoservices/rest/services/{id}",
-                    defaults: new { controller = "GeoServicesRest", Action="Folder" }
+                    defaults: new { controller = "GeoServicesRest", Action = "Folder" }
                 );
                 routes.MapRoute(
                     name: "geoservices_rest_services",
@@ -453,7 +453,7 @@ namespace gView.Server
                     name: "default",
                     template: "{controller=Home}/{action=Index}/{id?}");
             });
-            
+
             //InternetMapServer.Init(env.ContentRootPath).Wait();
         }
     }

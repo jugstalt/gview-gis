@@ -1,22 +1,5 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.IO;
-using System.Windows.Forms;
-using System.Runtime.Remoting;
-using System.Runtime.Remoting.Proxies;
-using System.Runtime.Remoting.Messaging;
-using System.Runtime.InteropServices;
 using gView.Framework.UI;
-using gView.Framework.UI.Dialogs;
-using gView.Framework.Data;
-using gView.Framework.Geometry;
-using gView.Framework.FDB;
-using gView.Framework.system.UI;
-using gView.Framework.system;
-using gView.DataSources.Fdb.UI.MSSql;
-using gView.DataSources.Fdb.MSAccess;
-using gView.Framework.UI.Controls.Filter;
+using System;
 
 namespace gView.DataSources.Fdb.UI.MSAccess
 {

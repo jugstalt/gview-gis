@@ -150,7 +150,7 @@ namespace gView.MapServer.Lib.UI
 
         }
 
-        public Task< object> GetInstanceAsync()
+        public Task<object> GetInstanceAsync()
         {
             return Task.FromResult<object>(null);
         }
@@ -578,7 +578,7 @@ namespace gView.MapServer.Lib.UI
                     System.Windows.Forms.MessageBox.Show("Can't add map", "ERROR");
                 }
                 //Refresh();
-                if(!await Refresh())
+                if (!await Refresh())
                 {
                     return false;
                 }
@@ -620,7 +620,7 @@ namespace gView.MapServer.Lib.UI
 
         #region ISerializableExplorerObject Member
 
-        async  public Task<IExplorerObject> CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache cache)
+        async public Task<IExplorerObject> CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache cache)
         {
             if (cache.Contains(FullName))
             {
@@ -887,7 +887,7 @@ namespace gView.MapServer.Lib.UI
             pObj = pObj.CreateInstanceByFullName(cnName) as MapServerConnectionExplorerObject;
 
             var childObject = await pObj.ChildObjects();
-            
+
             if (pObj == null || childObject == null)
             {
                 return null;

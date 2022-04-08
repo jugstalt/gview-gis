@@ -10,11 +10,17 @@ namespace gView.Framework.system
     {
         static public List<T> Clone(List<T> l)
         {
-            if (l == null) return null;
+            if (l == null)
+            {
+                return null;
+            }
+
             List<T> c = new List<T>();
-            
+
             foreach (T e in l)
+            {
                 c.Add(e);
+            }
 
             return c;
         }
@@ -23,7 +29,9 @@ namespace gView.Framework.system
         {
             List<T> s = new List<T>();
             for (int i = l.Count - 1; i >= 0; i--)
+            {
                 s.Add(l[i]);
+            }
 
             return s;
         }
@@ -37,7 +45,10 @@ namespace gView.Framework.system
             // Reihenfolge unverändert bleicht, wenn der Comparer 0 liefert.
             // Beim normal List.Sort ist das nicht unbedingt der Fall...
             //
-            if (l == null || c == null) return l;
+            if (l == null || c == null)
+            {
+                return l;
+            }
 
             try
             {

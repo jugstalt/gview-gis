@@ -397,7 +397,7 @@ namespace gView.Interoperability.OGC.Request.WMTS
                     using (var bitmap = Current.Engine.CreateBitmap(metadata.TileWidth, metadata.TileHeight))
                     using (var canvas = bitmap.CreateCanvas())
                     using (var font = Current.Engine.CreateFont("Arial", 9f))
-                    using(var redBrush = Current.Engine.CreateSolidBrush(ArgbColor.Red))
+                    using (var redBrush = Current.Engine.CreateSolidBrush(ArgbColor.Red))
                     {
                         canvas.DrawText(ex.Message, font, redBrush, new CanvasRectangleF(0f, 0f, bitmap.Width, bitmap.Height));
                         canvas.Flush();

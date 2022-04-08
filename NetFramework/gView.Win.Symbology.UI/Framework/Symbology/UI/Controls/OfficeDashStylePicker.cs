@@ -1,10 +1,6 @@
 using gView.Framework.Sys.UI.Extensions;
 using gView.GraphicsEngine;
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Text;
 using System.Windows.Forms;
 
 namespace gView.Framework.Symbology.UI.Controls
@@ -118,10 +114,16 @@ namespace gView.Framework.Symbology.UI.Controls
         {
             if (_selectedIndex != -1)
             {
-                if (DashStyleSelected != null) DashStyleSelected(this, EventArgs.Empty);
+                if (DashStyleSelected != null)
+                {
+                    DashStyleSelected(this, EventArgs.Empty);
+                }
             }
             if (_contextForm != null)
+            {
                 _contextForm.Hide();
+            }
+
             _contextForm = null;
         }
         protected override void OnMouseLeave(EventArgs e)

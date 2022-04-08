@@ -1,15 +1,9 @@
-using System;
-using System.Text;
-using System.Data;
-using System.Data.SqlClient;
-using System.Collections;
-using System.Collections.Generic;
-using gView.Framework.IO;
-using gView.Framework.Geometry;
-using gView.Framework.Data;
 using gView.Framework.Carto;
+using gView.Framework.Data;
 using gView.Framework.FDB;
-using gView.Framework.system;
+using gView.Framework.Geometry;
+using gView.Framework.IO;
+using System.Collections.Generic;
 using System.Reflection;
 using System.Threading.Tasks;
 
@@ -88,17 +82,23 @@ namespace gView.DataSources.Fdb.MSSql
                         if (element is IFeatureLayer)
                         {
                             if (_addedLayers.Contains(((IFeatureLayer)element).FeatureClass.Name))
+                            {
                                 list.Add(element);
+                            }
                         }
                         else if (element is IRasterLayer)
                         {
                             if (_addedLayers.Contains(((IRasterLayer)element).Title))
+                            {
                                 list.Add(element);
+                            }
                         }
                         else
                         {
                             if (_addedLayers.Contains(element.Title))
+                            {
                                 list.Add(element);
+                            }
                         }
                     }
                     _layers = list;
@@ -107,7 +107,9 @@ namespace gView.DataSources.Fdb.MSSql
             }
 
             if (_layers == null)
+            {
                 return new List<IDatasetElement>();
+            }
 
             return _layers;
         }
@@ -136,7 +138,9 @@ namespace gView.DataSources.Fdb.MSSql
         async public Task<IEnvelope> Envelope()
         {
             if (_layers == null)
+            {
                 return null;
+            }
 
             bool first = true;
             IEnvelope env = null;
@@ -148,14 +152,23 @@ namespace gView.DataSources.Fdb.MSSql
                 {
                     envelope = ((IFeatureClass)layer.Class).Envelope;
                     if (envelope.Width > 1e10 && await ((IFeatureClass)layer.Class).CountFeatures() == 0)
+                    {
                         envelope = null;
+                    }
                 }
                 else if (layer.Class is IRasterClass)
                 {
-                    if (((IRasterClass)layer.Class).Polygon == null) continue;
+                    if (((IRasterClass)layer.Class).Polygon == null)
+                    {
+                        continue;
+                    }
+
                     envelope = ((IRasterClass)layer.Class).Polygon.Envelope;
                 }
-                if (gView.Framework.Geometry.Envelope.IsNull(envelope)) continue;
+                if (gView.Framework.Geometry.Envelope.IsNull(envelope))
+                {
+                    continue;
+                }
 
                 if (first)
                 {
@@ -171,18 +184,25 @@ namespace gView.DataSources.Fdb.MSSql
         }
 
         async public Task<ISpatialReference> GetSpatialReference()
-        { 
-                if (_sRef != null) return _sRef;
-
-                if (_fdb == null) return null;
-                return _sRef = await _fdb.SpatialReference(_dsname);
+        {
+            if (_sRef != null)
+            {
+                return _sRef;
             }
+
+            if (_fdb == null)
+            {
+                return null;
+            }
+
+            return _sRef = await _fdb.SpatialReference(_dsname);
+        }
         public void SetSpatialReference(ISpatialReference sRef)
         {
             // Nicht in Databank übernehmen !!!
             _sRef = sRef;
         }
-        
+
         #endregion
 
         #region IDataset Member
@@ -199,12 +219,18 @@ namespace gView.DataSources.Fdb.MSSql
         {
             get
             {
-                if (_fdb == null) return "";
+                if (_fdb == null)
+                {
+                    return "";
+                }
+
                 string c = _fdb._conn.ConnectionString + ";" +
                     "dsname=" + ConfigTextStream.ExtractValue(_connStr, "dsname") + ";";
 
                 while (c.IndexOf(";;") != -1)
+                {
                     c = c.Replace(";;", ";");
+                }
 
                 /*
                 if (_layers != null && _layers.Count > 0)
@@ -229,20 +255,35 @@ namespace gView.DataSources.Fdb.MSSql
         {
             _connStr = value;
             if (value == null)
+            {
                 return false;
+            }
 
             while (_connStr.IndexOf(";;") != -1)
+            {
                 _connStr = _connStr.Replace(";;", ";");
+            }
 
             _dsname = ConfigTextStream.ExtractValue(value, "dsname");
             _addedLayers.Clear();
             foreach (string layername in ConfigTextStream.ExtractValue(value, "layers").Split('@'))
             {
-                if (layername == "") continue;
-                if (_addedLayers.IndexOf(layername) != -1) continue;
+                if (layername == "")
+                {
+                    continue;
+                }
+
+                if (_addedLayers.IndexOf(layername) != -1)
+                {
+                    continue;
+                }
+
                 _addedLayers.Add(layername);
             }
-            if (_fdb == null) _fdb = new SqlFDB();
+            if (_fdb == null)
+            {
+                _fdb = new SqlFDB();
+            }
 
             _fdb.DatasetRenamed += new gView.DataSources.Fdb.MSAccess.AccessFDB.DatasetRenamedEventHandler(SqlFDB_DatasetRenamed);
             _fdb.FeatureClassRenamed += new gView.DataSources.Fdb.MSAccess.AccessFDB.FeatureClassRenamedEventHandler(SqlFDB_FeatureClassRenamed);
@@ -251,7 +292,7 @@ namespace gView.DataSources.Fdb.MSSql
 
             return true;
         }
-        
+
 
         public DatasetState State
         {
@@ -261,7 +302,9 @@ namespace gView.DataSources.Fdb.MSSql
         async public Task<bool> Open()
         {
             if (_fdb == null)
+            {
                 return false;
+            }
 
             _dsID = await _fdb.DatasetID(_dsname);
             if (_dsID < 0)
@@ -308,7 +351,9 @@ namespace gView.DataSources.Fdb.MSSql
         async public Task<IDatasetElement> Element(string DatasetElementTitle)
         {
             if (_fdb == null)
+            {
                 return null;
+            }
 
             IDatasetElement element = await _fdb.DatasetElement(this, DatasetElementTitle);
 
@@ -328,7 +373,9 @@ namespace gView.DataSources.Fdb.MSSql
         async public Task RefreshClasses()
         {
             if (_fdb != null)
+            {
                 await _fdb.RefreshClasses(this);
+            }
         }
         #endregion
 
@@ -375,22 +422,34 @@ namespace gView.DataSources.Fdb.MSSql
 
         async public Task AppendElement(string elementName)
         {
-            if (_layers == null) _layers = new List<IDatasetElement>();
+            if (_layers == null)
+            {
+                _layers = new List<IDatasetElement>();
+            }
 
             foreach (IDatasetElement e in _layers)
             {
-                if (e.Title == elementName) return;
+                if (e.Title == elementName)
+                {
+                    return;
+                }
             }
 
             IDatasetElement element = await _fdb.DatasetElement(this, elementName);
-            if (element != null) _layers.Add(element);
+            if (element != null)
+            {
+                _layers.Add(element);
+            }
         }
 
         #endregion
 
         void SqlFDB_FeatureClassRenamed(string oldName, string newName)
         {
-            if (_layers == null) return;
+            if (_layers == null)
+            {
+                return;
+            }
 
             foreach (IDatasetElement element in _layers)
             {
@@ -404,7 +463,10 @@ namespace gView.DataSources.Fdb.MSSql
 
         async void SqlFDB_TableAltered(string table)
         {
-            if (_layers == null) return;
+            if (_layers == null)
+            {
+                return;
+            }
 
             foreach (IDatasetElement element in _layers)
             {
@@ -427,7 +489,9 @@ namespace gView.DataSources.Fdb.MSSql
         void SqlFDB_DatasetRenamed(string oldName, string newName)
         {
             if (_dsname == oldName)
+            {
                 _dsname = newName;
+            }
         }
 
         #region IFDBDataset Member
@@ -448,7 +512,9 @@ namespace gView.DataSources.Fdb.MSSql
 
             gView.Framework.UI.IConnectionStringDialog p = uiAssembly.CreateInstance("gView.DataSources.Fdb.UI.MSSql.SqlFdbConnectionStringDialog") as gView.Framework.UI.IConnectionStringDialog;
             if (p != null)
+            {
                 return p.ShowConnectionStringDialog(initConnectionString);
+            }
 
             return null;
         }

@@ -40,7 +40,7 @@ namespace gView.Framework.system
 
         public TimeSpan Duration
         {
-            get { return _finish-_start; }
+            get { return _finish - _start; }
         }
 
         public int Counter

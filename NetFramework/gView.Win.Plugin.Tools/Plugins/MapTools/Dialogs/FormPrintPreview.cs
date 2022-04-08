@@ -1,13 +1,8 @@
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Drawing.Printing;
-using System.Text;
-using System.Windows.Forms;
-using gView.Framework.UI;
 using gView.Framework.Carto;
+using gView.Framework.UI;
+using System;
+using System.Drawing.Printing;
+using System.Windows.Forms;
 
 namespace gView.Plugins.MapTools.Dialogs
 {
@@ -62,7 +57,11 @@ namespace gView.Plugins.MapTools.Dialogs
 
         private void btnPrint_Click_1(object sender, EventArgs e)
         {
-            if (Document == null) return;
+            if (Document == null)
+            {
+                return;
+            }
+
             Document.DefaultPageSettings.PrinterResolution.X =
                     Document.DefaultPageSettings.PrinterResolution.Y = (int)numResolution.Value;
 
@@ -90,7 +89,10 @@ namespace gView.Plugins.MapTools.Dialogs
 
         private void numResolution_ValueChanged(object sender, EventArgs e)
         {
-            if (Document == null) return;
+            if (Document == null)
+            {
+                return;
+            }
 
             Document.DefaultPageSettings.PrinterResolution.X =
                 Document.DefaultPageSettings.PrinterResolution.Y = (int)numResolution.Value;

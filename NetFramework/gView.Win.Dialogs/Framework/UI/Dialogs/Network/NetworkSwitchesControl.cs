@@ -1,13 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using System.Windows.Forms;
-using gView.Framework.Data;
+﻿using gView.Framework.Data;
 using gView.Framework.FDB;
 using gView.Framework.Network;
 using gView.Framework.UI.Controls.Wizard;
 using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace gView.Framework.UI.Dialogs.Network
 {
@@ -21,20 +21,28 @@ namespace gView.Framework.UI.Dialogs.Network
             InitializeComponent();
 
             if (dataset != null)
+            {
                 _database = dataset.Database as IFeatureDatabase3;
+            }
 
             if (_database == null)
+            {
                 throw new ArgumentException();
+            }
 
             _selected = selected;
             if (_selected == null)
+            {
                 throw new ArgumentException();
+            }
         }
 
         async private Task FillGrid()
         {
             if (_selected.NodeFeatureclasses == null)
+            {
                 return;
+            }
 
             #region Delete Rows
             List<DataGridViewRow> delete = new List<DataGridViewRow>();
@@ -52,10 +60,14 @@ namespace gView.Framework.UI.Dialogs.Network
                     }
                 }
                 if (!found)
+                {
                     delete.Add(r);
+                }
             }
             foreach (DataGridViewRow r in delete)
+            {
                 gridFcs.Rows.Remove(r);
+            }
             #endregion
 
             foreach (IFeatureClass fc in _selected.NodeFeatureclasses)
@@ -72,7 +84,9 @@ namespace gView.Framework.UI.Dialogs.Network
             foreach (DataGridViewRow r in gridFcs.Rows)
             {
                 if (r.Cells[0].Value.Equals(fcId))
+                {
                     return;
+                }
             }
 
             DataGridViewRow row = new DataGridViewRow();
@@ -107,7 +121,10 @@ namespace gView.Framework.UI.Dialogs.Network
 
             DataGridViewComboBoxCell typeCell = new DataGridViewComboBoxCell();
             foreach (object nodeType in Enum.GetValues(typeof(NetworkNodeType)))
+            {
                 typeCell.Items.Add(nodeType.ToString());
+            }
+
             typeCell.Value = gView.Framework.Network.NetworkNodeType.Unknown.ToString();
             row.Cells.Add(typeCell);
 
@@ -128,7 +145,9 @@ namespace gView.Framework.UI.Dialogs.Network
                     {
                         string fieldname = (string)row.Cells[3].Value;
                         if (fieldname == "<none>")
+                        {
                             fieldname = String.Empty;
+                        }
 
                         ret.Add((int)row.Cells[0].Value, fieldname);
                     }
@@ -184,7 +203,9 @@ namespace gView.Framework.UI.Dialogs.Network
             set
             {
                 if (value == null || value.Rows == null)
+                {
                     return;
+                }
 
                 foreach (DataGridViewRow gridRow in gridFcs.Rows)
                 {
@@ -237,7 +258,9 @@ namespace gView.Framework.UI.Dialogs.Network
         public bool CheckNecessity()
         {
             if (_selected == null || _selected.NodeFeatureclasses == null || _selected.NodeFeatureclasses.Count == 0)
+            {
                 return false;
+            }
 
             return true;
         }

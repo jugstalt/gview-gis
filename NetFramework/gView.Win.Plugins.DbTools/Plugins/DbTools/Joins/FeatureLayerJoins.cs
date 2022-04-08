@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using gView.Framework.UI;
+﻿using gView.Framework.Data;
 using gView.Framework.system;
-using gView.Framework.Data;
+using gView.Framework.UI;
 using System.Threading.Tasks;
 
 namespace gView.Plugins.DbTools.Joins
@@ -42,7 +38,9 @@ namespace gView.Plugins.DbTools.Joins
         public Task<bool> OnEvent(object element, object dataset)
         {
             if (_doc == null || !(element is IFeatureLayer) && !(((IFeatureLayer)element).Class is IFeatureClass))
+            {
                 return Task.FromResult(false);
+            }
 
             FeatureLayerJoinsDialog dlg = new FeatureLayerJoinsDialog(_doc, (IFeatureLayer)element);
             dlg.ShowDialog();

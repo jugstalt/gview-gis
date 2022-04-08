@@ -13,8 +13,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-using System;
 using GeoAPI.Geometries;
+using System;
 
 namespace Proj4Net.Projection
 {
@@ -81,7 +81,11 @@ namespace Proj4Net.Projection
                     break;
                 case Modes.NorthPole:
                 case Modes.SouthPole:
-                    if (mode == Modes.NorthPole) coslam = -coslam;
+                    if (mode == Modes.NorthPole)
+                    {
+                        coslam = -coslam;
+                    }
+
                     xy.Y *= cosphi * coslam;
                     break;
             }

@@ -1,12 +1,7 @@
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Drawing;
-using System.Data;
-using System.Text;
-using System.Windows.Forms;
-using gView.Framework.system;
 using gView.Framework.Data.Fields.FieldDomains;
+using gView.Framework.system;
+using System;
+using System.Windows.Forms;
 
 namespace gView.Framework.Data.Fields.UI.FieldDomains
 {
@@ -29,8 +24,8 @@ namespace gView.Framework.Data.Fields.UI.FieldDomains
 
             if (_domain != null)
             {
-                numMinValue.Value = (decimal)Math.Max(_domain.MinValue,(double)numMinValue.Minimum);
-                numMaxValue.Value = (decimal)Math.Min(_domain.MaxValue,(double)numMaxValue.Maximum);
+                numMinValue.Value = (decimal)Math.Max(_domain.MinValue, (double)numMinValue.Minimum);
+                numMaxValue.Value = (decimal)Math.Min(_domain.MaxValue, (double)numMaxValue.Maximum);
             }
         }
 
@@ -44,13 +39,17 @@ namespace gView.Framework.Data.Fields.UI.FieldDomains
         private void numMinValue_ValueChanged(object sender, EventArgs e)
         {
             if (_domain != null)
+            {
                 _domain.MinValue = (double)numMinValue.Value;
+            }
         }
 
         private void numMaxValue_ValueChanged(object sender, EventArgs e)
         {
             if (_domain != null)
+            {
                 _domain.MaxValue = (double)numMaxValue.Value;
+            }
         }
     }
 }

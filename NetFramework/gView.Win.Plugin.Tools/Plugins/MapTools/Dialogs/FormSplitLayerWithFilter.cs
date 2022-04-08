@@ -1,12 +1,8 @@
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Text;
-using System.Windows.Forms;
 using gView.Framework.Data;
 using gView.Framework.UI;
+using System;
+using System.Collections.Generic;
+using System.Windows.Forms;
 
 namespace gView.Plugins.MapTools.Dialogs
 {
@@ -18,25 +14,37 @@ namespace gView.Plugins.MapTools.Dialogs
         {
             InitializeComponent();
 
-            if (!(layer.Class is IFeatureClass)) return;
+            if (!(layer.Class is IFeatureClass))
+            {
+                return;
+            }
+
             _layer = layer;
 
             cmbOperator.SelectedIndex = 0;
 
             foreach (IField field in ((IFeatureClass)layer.Class).Fields.ToEnumerable())
             {
-                if (field == null) continue;
+                if (field == null)
+                {
+                    continue;
+                }
+
                 cmbFilterField.Items.Add(new FieldItem(field));
             }
-            if (cmbFilterField.Items.Count > 0) 
+            if (cmbFilterField.Items.Count > 0)
+            {
                 cmbFilterField.SelectedIndex = 0;
+            }
 
             string title = _layer.Title;
             if (doc != null && doc.FocusMap != null && doc.FocusMap.TOC != null)
             {
                 ITOCElement tocElement = doc.FocusMap.TOC.GetTOCElement(_layer);
                 if (tocElement != null)
+                {
                     title = tocElement.Name;
+                }
             }
             txtTemplate.Text = title + " [VALUE]";
         }
@@ -123,7 +131,7 @@ namespace gView.Plugins.MapTools.Dialogs
                 }
             }
         }
-        
+
         async private void btnApply_Click(object sender, EventArgs e)
         {
             if (!txtTemplate.Text.Contains("[VALUE]"))
@@ -137,7 +145,10 @@ namespace gView.Plugins.MapTools.Dialogs
             filter.OrderBy = fieldName;
             using (IFeatureCursor cursor = await ((IFeatureClass)_layer.Class).Search(filter) as IFeatureCursor)
             {
-                if (cursor == null) return;
+                if (cursor == null)
+                {
+                    return;
+                }
 
                 IFeature feature;
                 while ((feature = await cursor.NextFeature()) != null)
@@ -145,8 +156,14 @@ namespace gView.Plugins.MapTools.Dialogs
                     object oobj;
                     object obj = oobj = feature[fieldName];
                     if (obj == null && fieldName.Contains(":"))
+                    {
                         obj = oobj = feature[fieldName.Split(':')[1]];
-                    if (obj == null || obj == DBNull.Value) continue;
+                    }
+
+                    if (obj == null || obj == DBNull.Value)
+                    {
+                        continue;
+                    }
 
                     if (numOperator.Visible)
                     {
@@ -189,13 +206,17 @@ namespace gView.Plugins.MapTools.Dialogs
         private void btnCheckAll_Click(object sender, EventArgs e)
         {
             for (int i = 0; i < lstLayerNames.Items.Count; i++)
+            {
                 lstLayerNames.SetItemChecked(i, true);
+            }
         }
 
         private void btnUncheckAll_Click(object sender, EventArgs e)
         {
             for (int i = 0; i < lstLayerNames.Items.Count; i++)
+            {
                 lstLayerNames.SetItemChecked(i, false);
+            }
         }
         #endregion
 

@@ -1,14 +1,13 @@
+using gView.Framework.Data;
+using gView.Framework.Geometry;
+using gView.Framework.IO;
+using gView.Framework.XML;
+using gView.MapServer;
 using System;
 using System.Collections.Generic;
-using System.Text;
-using System.Xml;
-using gView.Framework.Data;
-using gView.Framework.IO;
-using gView.Framework.Geometry;
-using gView.Framework.XML;
 using System.IO;
-using gView.MapServer;
 using System.Threading.Tasks;
+using System.Xml;
 
 namespace gView.Interoperability.ArcXML.Dataset
 {
@@ -164,7 +163,9 @@ namespace gView.Interoperability.ArcXML.Dataset
         public Task<IDatasetElement> Element(string title)
         {
             if (_class != null && title == _class.Name)
+            {
                 return Task.FromResult<IDatasetElement>(new DatasetElement(_class));
+            }
 
             return Task.FromResult<IDatasetElement>(null);
         }
@@ -178,7 +179,10 @@ namespace gView.Interoperability.ArcXML.Dataset
 
         async public Task<bool> Open(IServiceRequestContext context)
         {
-            if (_class == null) _class = new ArcIMSClass(this);
+            if (_class == null)
+            {
+                _class = new ArcIMSClass(this);
+            }
 
             string server = ConfigTextStream.ExtractValue(ConnectionString, "server");
             string service = ConfigTextStream.ExtractValue(ConnectionString, "service");
@@ -203,7 +207,9 @@ namespace gView.Interoperability.ArcXML.Dataset
 
             dotNETConnector connector = new dotNETConnector();
             if (!String.IsNullOrEmpty(user) || !String.IsNullOrEmpty(pwd))
+            {
                 connector.setAuthentification(user, pwd);
+            }
 
             try
             {
@@ -224,7 +230,9 @@ namespace gView.Interoperability.ArcXML.Dataset
                 if (screen != null)
                 {
                     if (screen.Attributes["dpi"] != null)
+                    {
                         dpi = Convert.ToDouble(screen.Attributes["dpi"].Value.Replace(".", ","));
+                    }
                 }
                 double dpm = (dpi / 0.0254);
 
@@ -246,7 +254,10 @@ namespace gView.Interoperability.ArcXML.Dataset
                 {
                     bool visible = true;
 
-                    if (layerNode.Attributes["visible"] != null) bool.TryParse(layerNode.Attributes["visible"].Value, out visible);
+                    if (layerNode.Attributes["visible"] != null)
+                    {
+                        bool.TryParse(layerNode.Attributes["visible"].Value, out visible);
+                    }
 
                     XmlNode tocNode = layerNode.SelectSingleNode("TOC");
                     if (tocNode != null)
@@ -282,7 +293,11 @@ namespace gView.Interoperability.ArcXML.Dataset
                             }
                         }
                         theme = LayerFactory.Create(themeClass, _class as IWebServiceClass) as IWebServiceTheme;
-                        if (theme == null) continue;
+                        if (theme == null)
+                        {
+                            continue;
+                        }
+
                         theme.Visible = visible;
                     }
                     else if (layerNode.Attributes["type"] != null && layerNode.Attributes["type"].Value == "image")
@@ -307,9 +322,14 @@ namespace gView.Interoperability.ArcXML.Dataset
                     try
                     {
                         if (layerNode.Attributes["minscale"] != null)
+                        {
                             theme.MinimumScale = Convert.ToDouble(layerNode.Attributes["minscale"].Value.Replace(".", ",")) * dpm;
+                        }
+
                         if (layerNode.Attributes["maxscale"] != null)
+                        {
                             theme.MaximumScale = Convert.ToDouble(layerNode.Attributes["maxscale"].Value.Replace(".", ",")) * dpm;
+                        }
                     }
                     catch { }
                     _themes.Add(theme);

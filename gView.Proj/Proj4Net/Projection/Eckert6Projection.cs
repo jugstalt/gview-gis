@@ -14,8 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-using System;
 using GeoAPI.Geometries;
+using System;
 
 namespace Proj4Net.Projection
 {
@@ -23,18 +23,18 @@ namespace Proj4Net.Projection
     {
 
         private const double n = 2.570796326794896619231321691;
-        private static readonly double C_y = Math.Sqrt((2)/n);
-        private static readonly double C_x = C_y/2;
+        private static readonly double C_y = Math.Sqrt((2) / n);
+        private static readonly double C_x = C_y / 2;
         private const int MAX_ITER = 8;
         private const double LOOP_TOL = 1e-7;
 
         public override Coordinate Project(double lam, double phi, Coordinate xy)
         {
             int i;
-            var k = n*Math.Sin(phi);
+            var k = n * Math.Sin(phi);
             for (i = MAX_ITER; i > 0;)
             {
-                var V = (phi + Math.Sin(phi) - k)/(1 + Math.Cos(phi));
+                var V = (phi + Math.Sin(phi) - k) / (1 + Math.Cos(phi));
                 phi -= V;
                 if (Math.Abs(V) < LOOP_TOL)
                 {

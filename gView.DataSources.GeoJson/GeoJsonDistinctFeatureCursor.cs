@@ -15,7 +15,7 @@ namespace gView.DataSources.GeoJson
 
         public GeoJsonDistinctFeatureCursor(IEnumerable<IFeature> features, DistinctFilter filter)
         {
-            _distinctField = filter.SubFields?.Trim().Replace(","," ").Split(' ')[0];
+            _distinctField = filter.SubFields?.Trim().Replace(",", " ").Split(' ')[0];
 
             if (features != null && !String.IsNullOrEmpty(_distinctField))
             {

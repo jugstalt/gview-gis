@@ -1,20 +1,15 @@
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Text;
-using System.Windows.Forms;
-using gView.Framework.Geometry;
 using gView.Framework.Data;
 using gView.Framework.FDB;
+using gView.Framework.Geometry;
 using gView.Framework.UI.Controls;
+using System;
+using System.Windows.Forms;
 
 namespace gView.Framework.UI.Dialogs
 {
     public partial class FormNewDataset : Form
     {
-        public enum datasetType { FeatureDataset=0, ImageDataset=1 }
+        public enum datasetType { FeatureDataset = 0, ImageDataset = 1 }
 
         private FormSpatialReference _sDlg;
         private bool _showSpatialIndex = false;
@@ -42,12 +37,16 @@ namespace gView.Framework.UI.Dialogs
                 if (_showSpatialIndex)
                 {
                     if (!tabControl1.TabPages.Contains(tabSpatialIndex))
+                    {
                         tabControl1.TabPages.Add(tabSpatialIndex);
+                    }
                 }
                 else
                 {
                     if (tabControl1.TabPages.Contains(tabSpatialIndex))
+                    {
                         tabControl1.TabPages.Remove(tabSpatialIndex);
+                    }
                 }
             }
         }
@@ -57,19 +56,27 @@ namespace gView.Framework.UI.Dialogs
         {
             radioButton3.Enabled = (cmbType.SelectedIndex == 1);
             radioButton2.Enabled = radioButton1.Enabled = txtImageSpace.Enabled = btnGetImageSpace.Enabled = false;
-            
+
             if (cmbType.SelectedIndex == 0)
             {
                 if (_showSpatialIndex == false)
+                {
                     tabControl1.TabPages.Remove(tabSpatialIndex);
+                }
+
                 tabControl1.TabPages.Remove(tabAdditionalFields);
             }
             else
             {
                 if (!tabControl1.TabPages.Contains(tabSpatialIndex))
+                {
                     tabControl1.TabPages.Add(tabSpatialIndex);
+                }
+
                 if (!tabControl1.TabPages.Contains(tabAdditionalFields))
+                {
                     tabControl1.TabPages.Add(tabAdditionalFields);
+                }
             }
         }
 
@@ -105,9 +112,21 @@ namespace gView.Framework.UI.Dialogs
         {
             get
             {
-                if (radioButton1.Checked) return "database";
-                if (radioButton2.Checked) return txtImageSpace.Text;
-                if (radioButton3.Checked) return "unmanaged";
+                if (radioButton1.Checked)
+                {
+                    return "database";
+                }
+
+                if (radioButton2.Checked)
+                {
+                    return txtImageSpace.Text;
+                }
+
+                if (radioButton3.Checked)
+                {
+                    return "unmanaged";
+                }
+
                 return "";
             }
         }
@@ -129,7 +148,8 @@ namespace gView.Framework.UI.Dialogs
 
         public ISpatialIndexDef SpatialIndexDef
         {
-            get {
+            get
+            {
                 if (spatialIndexControl.Type == SpatialIndexControl.IndexType.gView)
                 {
                     gViewSpatialIndexDef gvIndex = new gViewSpatialIndexDef(
@@ -156,7 +176,9 @@ namespace gView.Framework.UI.Dialogs
         private void tabControl1_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (tabControl1.SelectedTab == tabSpatialIndex)
+            {
                 spatialIndexControl.SpatialReference = this.SpatialReferene;
+            }
         }
 
         private void FormNewDataset_Shown(object sender, EventArgs e)

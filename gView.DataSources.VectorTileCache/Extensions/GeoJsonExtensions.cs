@@ -1,7 +1,4 @@
 ﻿using gView.Framework.Geometry;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace gView.DataSources.VectorTileCache.Extensions
 {
@@ -11,7 +8,7 @@ namespace gView.DataSources.VectorTileCache.Extensions
         {
             IGeometry geometry = null;
 
-            switch(geoJsonGeometry.Type)
+            switch (geoJsonGeometry.Type)
             {
                 case GeoJSON.Net.GeoJSONObjectType.Point:
                     geometry = (geoJsonGeometry as GeoJSON.Net.Geometry.Point).ToPoint();
@@ -38,7 +35,7 @@ namespace gView.DataSources.VectorTileCache.Extensions
 
         static public Point ToPoint(this GeoJSON.Net.Geometry.Point geoJsonPoint)
         {
-            if(geoJsonPoint?.Coordinates != null)
+            if (geoJsonPoint?.Coordinates != null)
             {
                 return new Point(geoJsonPoint.Coordinates.Longitude, geoJsonPoint.Coordinates.Latitude);
             }
@@ -55,7 +52,7 @@ namespace gView.DataSources.VectorTileCache.Extensions
                 foreach (var geoJsonPoint in geoJsonMultiPoint.Coordinates)
                 {
                     var point = geoJsonPoint.ToPoint();
-                    if(point!=null)
+                    if (point != null)
                     {
                         multiPoint.AddPoint(point);
                     }
@@ -71,11 +68,11 @@ namespace gView.DataSources.VectorTileCache.Extensions
             var path = new Path();
             polyline.AddPath(path);
 
-            if(geoJsonLineString?.Coordinates!=null)
+            if (geoJsonLineString?.Coordinates != null)
             {
-                foreach(var position in geoJsonLineString.Coordinates)
+                foreach (var position in geoJsonLineString.Coordinates)
                 {
-                    path.AddPoint(new Point(position.Longitude, position.Latitude));        
+                    path.AddPoint(new Point(position.Longitude, position.Latitude));
                 }
             }
 
@@ -90,7 +87,7 @@ namespace gView.DataSources.VectorTileCache.Extensions
             {
                 foreach (var geoJsonLineString in geoJsonMultiLineString.Coordinates)
                 {
-                    if(geoJsonLineString.Coordinates!=null)
+                    if (geoJsonLineString.Coordinates != null)
                     {
                         var path = new Path();
                         polyline.AddPath(path);
@@ -109,12 +106,12 @@ namespace gView.DataSources.VectorTileCache.Extensions
         static public Polygon ToPolygon(this GeoJSON.Net.Geometry.Polygon geoJsonPolygon)
         {
             var polygon = new Polygon();
-            
+
             if (geoJsonPolygon?.Coordinates != null)
             {
                 foreach (var geoJsonLineString in geoJsonPolygon.Coordinates)
                 {
-                    if (geoJsonLineString?.Coordinates != null) 
+                    if (geoJsonLineString?.Coordinates != null)
                     {
                         var ring = new Ring();
                         polygon.AddRing(ring);
