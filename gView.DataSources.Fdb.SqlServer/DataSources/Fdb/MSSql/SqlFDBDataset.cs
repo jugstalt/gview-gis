@@ -266,7 +266,7 @@ namespace gView.DataSources.Fdb.MSSql
             _dsID = await _fdb.DatasetID(_dsname);
             if (_dsID < 0)
             {
-                _errMsg = _fdb.LastErrorMessage ?? _fdb.lastException?.Message;
+                _errMsg = _fdb.LastErrorMessage ?? _fdb.LastException?.Message;
                 return false;
             }
 

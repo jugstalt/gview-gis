@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Collections.Generic;
 
 namespace gView.Data.Framework.Data.TileCache
 {
@@ -23,8 +20,8 @@ namespace gView.Data.Framework.Data.TileCache
 
         public class LevelConfig
         {
-            public int Level{get;set;}
+            public int Level { get; set; }
             public double Scale { get; set; }
-        } 
+        }
     }
 }

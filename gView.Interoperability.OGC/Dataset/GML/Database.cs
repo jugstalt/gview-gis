@@ -83,7 +83,7 @@ namespace gView.Interoperability.OGC.Dataset.GML
             set { _errMsg = value; }
         }
 
-        public Exception lastException { get { return null; } }
+        public Exception LastException { get { return null; } }
         #endregion
 
         #region IFeatureDatabase Member

@@ -556,9 +556,9 @@ namespace gView.DataSources.Fdb.UI.MSSql
                     _errMsg = fdb.LastErrorMessage;
                     return null;
                 }
-                if (fdb.lastException != null)
+                if (fdb.LastException != null)
                 {
-                    FormException dlg = new FormException(fdb.lastException);
+                    FormException dlg = new FormException(fdb.LastException);
                     dlg.ShowDialog();
                     return null;
                 }

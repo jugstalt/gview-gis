@@ -151,7 +151,7 @@ namespace gView.Framework.OGC.DB
             set { _errMsg = value; }
         }
 
-        public Exception lastException { get { return null; } }
+        public Exception LastException { get { return null; } }
 
         public int order
         {

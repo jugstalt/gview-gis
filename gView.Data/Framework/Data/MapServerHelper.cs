@@ -1,12 +1,11 @@
+using gView.Framework.Carto;
+using gView.Framework.Geometry;
+using gView.Framework.system;
+using gView.Framework.UI;
 using System;
 using System.Collections.Generic;
-using System.Text;
-using gView.Framework.Carto;
-using gView.Framework.UI;
-using gView.Framework.system;
-using gView.Framework.Geometry;
-using System.Xml;
 using System.Threading.Tasks;
+using System.Xml;
 
 namespace gView.Framework.Data
 {
@@ -17,12 +16,18 @@ namespace gView.Framework.Data
         public static List<Layers> MapLayers(IServiceMap map, bool useTOC)
         {
             if (useTOC)
+            {
                 return MapLayersFromTOC(map);
+            }
 
             List<Layers> layersList = new List<Layers>();
             foreach (IDatasetElement element in map.MapElements)
             {
-                if (!(element is ILayer)) continue;
+                if (!(element is ILayer))
+                {
+                    continue;
+                }
+
                 ILayer layer = element as ILayer;
 
                 if (layer.Class is IWebServiceClass)
@@ -30,7 +35,9 @@ namespace gView.Framework.Data
                     foreach (IWebServiceTheme theme in ((IWebServiceClass)layer.Class).Themes)
                     {
                         if (!(theme is ILayer))
+                        {
                             continue;
+                        }
 
                         string title = layer.Title;
                         string group = String.Empty;
@@ -47,7 +54,9 @@ namespace gView.Framework.Data
                             }
                         }
                         if (!String.IsNullOrEmpty(layer.Namespace))
+                        {
                             title = layer.Namespace + ":" + title;
+                        }
 
                         layersList.Add(new Layers(theme));
                         layersList[layersList.Count - 1].Title = title;
@@ -71,7 +80,9 @@ namespace gView.Framework.Data
                         }
                     }
                     if (!String.IsNullOrEmpty(layer.Namespace))
+                    {
                         title = layer.Namespace + ":" + title;
+                    }
 
                     layersList.Add(new Layers(layer));
                     layersList[layersList.Count - 1].Title = title;
@@ -84,7 +95,10 @@ namespace gView.Framework.Data
         private static List<Layers> MapLayersFromTOC(IServiceMap map)
         {
             List<Layers> layersList = new List<Layers>();
-            if (map.TOC == null) return layersList;
+            if (map.TOC == null)
+            {
+                return layersList;
+            }
 
             ITOC toc = map.TOC;
             foreach (ITOCElement tocElement in toc.Elements)
@@ -92,7 +106,10 @@ namespace gView.Framework.Data
                 if (tocElement == null ||
                     tocElement.ElementType != TOCElementType.Layer ||
                     tocElement.Layers.Count == 0
-                    ) continue;
+                    )
+                {
+                    continue;
+                }
 
                 Layers layers = new Layers();
                 layers.Title = tocElement.Name;
@@ -100,11 +117,17 @@ namespace gView.Framework.Data
                 layers.GroupName = ParentGroupName(tocElement);
                 foreach (ILayer layer in tocElement.Layers)
                 {
-                    if (layer == null) continue;
+                    if (layer == null)
+                    {
+                        continue;
+                    }
+
                     layers.Add(layer);
                 }
                 if (layers.Count > 0)
+                {
                     layersList.Add(layers);
+                }
             }
 
             return layersList;
@@ -112,7 +135,10 @@ namespace gView.Framework.Data
 
         private static string ParentGroupName(ITOCElement element)
         {
-            if (element == null || element.ParentGroup == null) return String.Empty;
+            if (element == null || element.ParentGroup == null)
+            {
+                return String.Empty;
+            }
 
             string group = String.Empty;
             while ((element = element.ParentGroup) != null)
@@ -125,11 +151,17 @@ namespace gView.Framework.Data
         public static Layers FindMapLayers(IServiceMap map, bool useTOC, string id, List<ILayer> clonedLayers)
         {
             if (useTOC)
+            {
                 return FindMapLayersFromTOC(map, id, clonedLayers);
+            }
 
             foreach (IDatasetElement element in map.MapElements)
             {
-                if (!(element is ILayer)) continue;
+                if (!(element is ILayer))
+                {
+                    continue;
+                }
+
                 ILayer layer = element as ILayer;
 
                 if (layer.SID == id)
@@ -140,10 +172,14 @@ namespace gView.Framework.Data
                 {
                     foreach (IWebServiceTheme theme in ((IWebServiceClass)element.Class).Themes)
                     {
-                        if (!(theme is ILayer)) continue;
+                        if (!(theme is ILayer))
+                        {
+                            continue;
+                        }
+
                         if (theme.SID == id)
                         {
-                            return new Layers(GetLayerByID(clonedLayers, theme.ID)); 
+                            return new Layers(GetLayerByID(clonedLayers, theme.ID));
                         }
                     }
                 }
@@ -152,7 +188,10 @@ namespace gView.Framework.Data
         }
         private static Layers FindMapLayersFromTOC(IServiceMap map, string id, List<ILayer> clonedLayers)
         {
-            if (map.TOC == null) return new Layers();
+            if (map.TOC == null)
+            {
+                return new Layers();
+            }
 
             ITOC toc = map.TOC;
             foreach (ITOCElement tocElement in toc.Elements)
@@ -160,7 +199,10 @@ namespace gView.Framework.Data
                 if (tocElement == null ||
                     tocElement.ElementType != TOCElementType.Layer ||
                     tocElement.Layers.Count == 0
-                    ) continue;
+                    )
+                {
+                    continue;
+                }
 
                 foreach (ILayer layer in tocElement.Layers)
                 {
@@ -185,11 +227,17 @@ namespace gView.Framework.Data
         public static Layers FindMapLayers(IServiceMap map, bool useTOC, string id)
         {
             if (useTOC)
+            {
                 return FindMapLayersFromTOC(map, id);
+            }
 
             foreach (IDatasetElement element in map.MapElements)
             {
-                if (!(element is ILayer)) continue;
+                if (!(element is ILayer))
+                {
+                    continue;
+                }
+
                 ILayer layer = element as ILayer;
 
                 if (layer.SID == id)
@@ -201,7 +249,11 @@ namespace gView.Framework.Data
                 {
                     foreach (IWebServiceTheme theme in ((IWebServiceClass)element.Class).Themes)
                     {
-                        if (!(theme is ILayer)) continue;
+                        if (!(theme is ILayer))
+                        {
+                            continue;
+                        }
+
                         if (theme.SID == id)
                         {
                             return new Layers(theme);
@@ -213,7 +265,10 @@ namespace gView.Framework.Data
         }
         private static Layers FindMapLayersFromTOC(IServiceMap map, string id)
         {
-            if (map.TOC == null) return new Layers();
+            if (map.TOC == null)
+            {
+                return new Layers();
+            }
 
             ITOC toc = map.TOC;
             foreach (ITOCElement tocElement in toc.Elements)
@@ -221,14 +276,17 @@ namespace gView.Framework.Data
                 if (tocElement == null ||
                     tocElement.ElementType != TOCElementType.Layer ||
                     tocElement.Layers.Count == 0
-                    ) continue;
+                    )
+                {
+                    continue;
+                }
 
                 foreach (ILayer layer in tocElement.Layers)
                 {
                     if (layer.SID == id)
                     {
                         Layers layers = new Layers(tocElement.Layers);
-                      
+
                         layers.Title = tocElement.Name;
                         layers.TocElement = tocElement;
                         return layers;
@@ -243,9 +301,15 @@ namespace gView.Framework.Data
         {
             foreach (ILayer layer in clonedLayers)
             {
-                if (layer == null) continue;
+                if (layer == null)
+                {
+                    continue;
+                }
+
                 if (layer.ID == id)
+                {
                     return layer;
+                }
             }
             return null;
         }
@@ -256,13 +320,18 @@ namespace gView.Framework.Data
             foreach (IDatasetElement element in map.MapElements)
             {
                 if (element != null && element.Class == Class)
+                {
                     return element.ID;
+                }
+
                 if (element is IWebServiceLayer && ((IWebServiceLayer)element).WebServiceClass != null)
                 {
                     foreach (IWebServiceTheme theme in ((IWebServiceLayer)element).WebServiceClass.Themes)
                     {
                         if (theme != null && theme.Class == Class)
+                        {
                             return theme.ID;
+                        }
                     }
                 }
             }
@@ -272,7 +341,11 @@ namespace gView.Framework.Data
 
         async public static Task<bool> ModifyFilter(IServiceMap map, ITableClass tClass, IQueryFilter filter)
         {
-            if (filter == null || tClass == null) return false;
+            if (filter == null || tClass == null)
+            {
+                return false;
+            }
+
             string subFields = filter.SubFields;
 
             if (subFields != "*")
@@ -291,7 +364,9 @@ namespace gView.Framework.Data
                     {
                         if (tClass.FindField(fname) != null ||
                             (tClass is IFeatureClass && ((IFeatureClass)tClass).ShapeFieldName == fname))
+                        {
                             filter.AddField(fname);
+                        }
                     }
                 }
             }
@@ -309,10 +384,17 @@ namespace gView.Framework.Data
                     if (propertyName.InnerText == MergedObjectIDName)
                     {
                         XmlNode literal = propertyName.ParentNode.SelectSingleNode("Literal");
-                        if (literal == null) return false;
+                        if (literal == null)
+                        {
+                            return false;
+                        }
 
                         long mergedID;
-                        if (!long.TryParse(literal.InnerText, out mergedID)) return false;
+                        if (!long.TryParse(literal.InnerText, out mergedID))
+                        {
+                            return false;
+                        }
+
                         int classID = GetClassID(map, tClass), propertyClassID = GetClassID(mergedID);
 
                         if (classID != propertyClassID)
@@ -339,30 +421,48 @@ namespace gView.Framework.Data
 
                 // Prüfen, ob vom Filter noch was übrig bleibt...
                 if (!String.IsNullOrEmpty(filter.WhereClause) &&
-                    String.IsNullOrEmpty(f.WhereClause)) return false;
-                
+                    String.IsNullOrEmpty(f.WhereClause))
+                {
+                    return false;
+                }
+
                 filter.WhereClause = f.WhereClause;
             }
             catch { return false; }
             return true;
         }
-        
+
 
         public static IFeatureClass GetProtoFeatureClass(Layers layers)
         {
-            if (layers == null) return null;
+            if (layers == null)
+            {
+                return null;
+            }
+
             if (layers.Count == 1 && layers[0].Class is IFeatureClass)
+            {
                 return layers[0].Class as IFeatureClass;
+            }
 
             List<IFeatureClass> fcs = new List<IFeatureClass>();
             foreach (ILayer layer in layers)
             {
                 if (layer.Class is IFeatureClass)
+                {
                     fcs.Add((IFeatureClass)layer.Class);
+                }
             }
 
-            if (fcs.Count == 0) return null;
-            if (fcs.Count == 1) return fcs[0];
+            if (fcs.Count == 0)
+            {
+                return null;
+            }
+
+            if (fcs.Count == 1)
+            {
+                return fcs[0];
+            }
 
             FeatureClass featureClass = new FeatureClass();
             featureClass.Name = layers.ID;
@@ -374,7 +474,7 @@ namespace gView.Framework.Data
 
             IEnvelope envelope = null;
             foreach (IFeatureClass fc in fcs)
-            {   
+            {
                 //
                 // Merged ID einfügen:
                 // DataType: long
@@ -386,7 +486,10 @@ namespace gView.Framework.Data
                 // Fields
                 foreach (IField field in fc.Fields.ToEnumerable())
                 {
-                    if (featureClass.FindField(field.name) != null) continue;
+                    if (featureClass.FindField(field.name) != null)
+                    {
+                        continue;
+                    }
 
                     Field f = new Field(field);
 
@@ -397,11 +500,14 @@ namespace gView.Framework.Data
                     // Es wird daher eine Merged ID eingeführt
                     //
                     if (f.type == FieldType.ID)
+                    {
                         f.type = FieldType.integer;
-                    if (f.type == FieldType.Shape && featureClass.ShapeFieldName == String.Empty)
-                        featureClass.ShapeFieldName = fc.ShapeFieldName;
+                    }
 
-                    ((Fields)featureClass.Fields).Add(f);
+                    if (f.type == FieldType.Shape && featureClass.ShapeFieldName == String.Empty)
+                    {
+                        featureClass.ShapeFieldName = fc.ShapeFieldName;
+                    } ((Fields)featureClass.Fields).Add(f);
                 }
                 // Envelope
                 if (fc.Envelope != null)
@@ -433,14 +539,21 @@ namespace gView.Framework.Data
         }
         public static void AppendMergedID(int FeatureClassID, IRow row)
         {
-            if (row == null || row.Fields==null) return;
+            if (row == null || row.Fields == null)
+            {
+                return;
+            }
+
             row.Fields.Add(new FieldValue(MergedObjectIDName,
                 CalculateMergedID(FeatureClassID, row.OID)));
         }
 
         public static List<ILayer> FindAdditionalWebServiceLayers(IWebServiceClass wsClass, List<ILayer> layers)
         {
-            if (wsClass == null || layers == null) return layers;
+            if (wsClass == null || layers == null)
+            {
+                return layers;
+            }
 
             List<ILayer> clonedLayers = ListOperations<ILayer>.Clone(layers);
             foreach (IWebServiceTheme theme in wsClass.Themes)
@@ -452,23 +565,42 @@ namespace gView.Framework.Data
         }
         public static IWebServiceClass CloneNonVisibleWebServiceClass(IWebServiceClass wsClass)
         {
-            if (wsClass == null) return null;
+            if (wsClass == null)
+            {
+                return null;
+            }
 
             IWebServiceClass clone = wsClass.Clone() as IWebServiceClass;
-            if (clone == null) return null;
+            if (clone == null)
+            {
+                return null;
+            }
+
             foreach (IWebServiceTheme theme in clone.Themes)
             {
-                if (theme == null) continue;
+                if (theme == null)
+                {
+                    continue;
+                }
+
                 theme.Visible = false;
             }
             return clone;
         }
-        public static void CopyWebThemeProperties(IWebServiceClass wsClass,ILayer master) 
+        public static void CopyWebThemeProperties(IWebServiceClass wsClass, ILayer master)
         {
-            if (wsClass == null || master == null) return;
+            if (wsClass == null || master == null)
+            {
+                return;
+            }
+
             foreach (IWebServiceTheme theme in wsClass.Themes)
             {
-                if (theme == null) continue;
+                if (theme == null)
+                {
+                    continue;
+                }
+
                 if (theme.Title == master.Title)
                 {
                     if (master is IFeatureLayer)
@@ -485,12 +617,22 @@ namespace gView.Framework.Data
         }
         public static bool HasVisibleThemes(IWebServiceClass wsClass)
         {
-            if (wsClass == null) return false;
+            if (wsClass == null)
+            {
+                return false;
+            }
 
             foreach (IWebServiceTheme theme in wsClass.Themes)
             {
-                if (theme == null) continue;
-                if (theme.Visible) return true;
+                if (theme == null)
+                {
+                    continue;
+                }
+
+                if (theme.Visible)
+                {
+                    return true;
+                }
             }
             return false;
         }
@@ -498,7 +640,7 @@ namespace gView.Framework.Data
         public class Layers : List<ILayer>
         {
             private string _title = String.Empty, _group = String.Empty;
-            private ITOCElement _tocElement=null;
+            private ITOCElement _tocElement = null;
 
             public Layers()
                 : base()
@@ -507,17 +649,28 @@ namespace gView.Framework.Data
             public Layers(ILayer layer)
                 : base()
             {
-                if (layer == null) return;
+                if (layer == null)
+                {
+                    return;
+                }
+
                 base.Add(layer);
             }
             public Layers(List<ILayer> layers)
                 : base()
             {
-                if (layers == null) return;
+                if (layers == null)
+                {
+                    return;
+                }
 
                 foreach (ILayer layer in layers)
                 {
-                    if (layer == null) continue;
+                    if (layer == null)
+                    {
+                        continue;
+                    }
+
                     base.Add(layer);
                 }
             }
@@ -536,7 +689,10 @@ namespace gView.Framework.Data
             {
                 get
                 {
-                    if (this.FirstLayer == null) return "-1";
+                    if (this.FirstLayer == null)
+                    {
+                        return "-1";
+                    }
                     //return this.FirstLayer.ID.ToString();
                     return this.FirstLayer.SID;
                 }
@@ -545,7 +701,11 @@ namespace gView.Framework.Data
             {
                 get
                 {
-                    if (this.Count == 0) return null;
+                    if (this.Count == 0)
+                    {
+                        return null;
+                    }
+
                     return this[0];
                 }
             }
@@ -555,14 +715,21 @@ namespace gView.Framework.Data
                 {
                     foreach (ILayer layer in this)
                     {
-                        if (layer.Class != null) return layer.Class;
+                        if (layer.Class != null)
+                        {
+                            return layer.Class;
+                        }
                     }
                     return null;
                 }
             }
-            public new void Add(ILayer layer) 
+            public new void Add(ILayer layer)
             {
-                if (layer == null) return;
+                if (layer == null)
+                {
+                    return;
+                }
+
                 base.Add(layer);
             }
 
@@ -576,14 +743,24 @@ namespace gView.Framework.Data
             {
                 get
                 {
-                    if (this.Count == 0) return 0.0;
+                    if (this.Count == 0)
+                    {
+                        return 0.0;
+                    }
+
                     double minScale = this[0].MinimumScale;
-                    if (minScale == 0.0) return 0.0;
+                    if (minScale == 0.0)
+                    {
+                        return 0.0;
+                    }
 
                     for (int i = 1; i < this.Count; i++)
                     {
                         if (this[i].MinimumScale == 0.0)
+                        {
                             return 0.0;
+                        }
+
                         minScale = Math.Min(minScale, this[i].MinimumScale);
                     }
                     return minScale;
@@ -594,15 +771,25 @@ namespace gView.Framework.Data
             {
                 get
                 {
-                    if (this.Count == 0) return 0.0;
+                    if (this.Count == 0)
+                    {
+                        return 0.0;
+                    }
+
                     double maxScale = this[0].MaximumScale;
                     if (maxScale == 0.0)
-                    for (int i = 1; i < this.Count; i++)
                     {
-                        if (this[i].MinimumScale == 0.0)
-                            return 0.0;
-                        maxScale = Math.Max(maxScale, this[i].MinimumScale);
+                        for (int i = 1; i < this.Count; i++)
+                        {
+                            if (this[i].MinimumScale == 0.0)
+                            {
+                                return 0.0;
+                            }
+
+                            maxScale = Math.Max(maxScale, this[i].MinimumScale);
+                        }
                     }
+
                     return maxScale;
                 }
             }

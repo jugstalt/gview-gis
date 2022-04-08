@@ -160,7 +160,7 @@ namespace gView.DataSources.Shape
             set { _errMsg = value; }
         }
 
-        public Exception lastException { get { return null; } }
+        public Exception LastException { get { return null; } }
 
         #endregion
 

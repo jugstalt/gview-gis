@@ -1,18 +1,15 @@
-using System;
-using System.Xml;
-using System.Collections;
-using System.Collections.Generic;
-using gView.Framework;
 using gView.Framework.Carto;
-using gView.Framework.Data;
+using gView.Framework.Geometry;
 using gView.Framework.IO;
 using gView.Framework.Symbology;
 using gView.Framework.system;
-using gView.Framework.Geometry;
+using gView.GraphicsEngine.Filters;
+using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
-using gView.GraphicsEngine.Filters;
 
 namespace gView.Framework.Data
 {
@@ -44,7 +41,10 @@ namespace gView.Framework.Data
             get
             {
                 if (String.IsNullOrEmpty(_sid))
+                {
                     return _id.ToString();
+                }
+
                 return _sid;
             }
             set
@@ -70,7 +70,10 @@ namespace gView.Framework.Data
         public DatasetElement(IClass Class)
         {
             _class = Class;
-            if (_class != null) _title = _class.Name;
+            if (_class != null)
+            {
+                _title = _class.Name;
+            }
         }
         public DatasetElement(IDatasetElement element)
         {
@@ -79,7 +82,10 @@ namespace gView.Framework.Data
 
         internal virtual void CopyFrom(IDatasetElement element)
         {
-            if (element == null) return;
+            if (element == null)
+            {
+                return;
+            }
 
             this.ID = element.ID;
             this.SID = element.HasSID ? element.SID : null;
@@ -125,7 +131,9 @@ namespace gView.Framework.Data
             Refresh();
 
             if (PropertyChanged != null)
+            {
                 PropertyChanged();
+            }
         }
 
         #endregion
@@ -166,7 +174,10 @@ namespace gView.Framework.Data
             {
                 ILayer layer = element as ILayer;
 
-                if (layer == null) return;
+                if (layer == null)
+                {
+                    return;
+                }
 
                 _visible = layer.Visible;
                 _MinimumScale = layer.MinimumScale;
@@ -182,51 +193,98 @@ namespace gView.Framework.Data
 
         static private void minimumScale(ILayer layer, ref double scale)
         {
-            if (layer == null || layer.GroupLayer == null) return;
+            if (layer == null || layer.GroupLayer == null)
+            {
+                return;
+            }
+
             if (scale <= 1.0)
+            {
                 scale = layer.GroupLayer.MinimumScale;
+            }
             else if (layer.GroupLayer.MinimumScale > 1.0)
+            {
                 scale = Math.Max(layer.GroupLayer.MinimumScale, scale);
+            }
         }
         static private void maximumScale(ILayer layer, ref double scale)
         {
-            if (layer == null || layer.GroupLayer == null) return;
+            if (layer == null || layer.GroupLayer == null)
+            {
+                return;
+            }
+
             if (scale <= 1.0)
+            {
                 scale = layer.GroupLayer.MaximumScale;
+            }
             else if (layer.GroupLayer.MaximumScale > 1.0)
+            {
                 scale = Math.Min(layer.GroupLayer.MaximumScale, scale);
+            }
         }
 
         static private void minimumLabelScale(ILayer layer, ref double scale)
         {
-            if (layer == null || layer.GroupLayer == null) return;
+            if (layer == null || layer.GroupLayer == null)
+            {
+                return;
+            }
+
             if (scale <= 1.0)
+            {
                 scale = layer.GroupLayer.MinimumLabelScale;
+            }
             else if (layer.GroupLayer.MinimumLabelScale > 1.0)
+            {
                 scale = Math.Max(layer.GroupLayer.MinimumLabelScale, scale);
+            }
         }
         static private void maximumLabelScale(ILayer layer, ref double scale)
         {
-            if (layer == null || layer.GroupLayer == null) return;
+            if (layer == null || layer.GroupLayer == null)
+            {
+                return;
+            }
+
             if (scale <= 1.0)
+            {
                 scale = layer.GroupLayer.MaximumLabelScale;
+            }
             else if (layer.GroupLayer.MaximumLabelScale > 1.0)
+            {
                 scale = Math.Min(layer.GroupLayer.MaximumLabelScale, scale);
+            }
         }
 
         static private void maximumZoomToFeatureScale(ILayer layer, ref double scale)
         {
-            if (layer == null || layer.GroupLayer == null) return;
+            if (layer == null || layer.GroupLayer == null)
+            {
+                return;
+            }
+
             if (scale <= 1.0)
+            {
                 scale = layer.GroupLayer.MaximumZoomToFeatureScale;
+            }
             else if (layer.GroupLayer.MaximumZoomToFeatureScale > 1.0)
+            {
                 scale = Math.Max(layer.GroupLayer.MaximumZoomToFeatureScale, scale);
+            }
         }
 
         static private void visible(ILayer layer, ref bool visible)
         {
-            if (layer == null || layer.GroupLayer == null || visible == false) return;
-            if (layer.GroupLayer.Visible == false) visible = false;
+            if (layer == null || layer.GroupLayer == null || visible == false)
+            {
+                return;
+            }
+
+            if (layer.GroupLayer.Visible == false)
+            {
+                visible = false;
+            }
         }
 
         #region ILayer Member
@@ -346,7 +404,10 @@ namespace gView.Framework.Data
         virtual public void Save(IPersistStream stream)
         {
             stream.Save("ID", this.ID);
-            if (HasSID) stream.Save("SID", this.SID);
+            if (HasSID)
+            {
+                stream.Save("SID", this.SID);
+            }
 
             stream.Save("Title", _title);
             stream.Save("DatasetID", _datasetID);
@@ -395,14 +456,20 @@ namespace gView.Framework.Data
 
         public void Add(Layer layer)
         {
-            if (layer == null || _childLayers.Contains(layer)) return;
+            if (layer == null || _childLayers.Contains(layer))
+            {
+                return;
+            }
 
             _childLayers.Add(layer);
             layer.GroupLayer = this;
         }
         public void Remove(Layer layer)
         {
-            if (layer == null || !_childLayers.Contains(layer)) return;
+            if (layer == null || !_childLayers.Contains(layer))
+            {
+                return;
+            }
 
             _childLayers.Remove(layer);
             layer.GroupLayer = null;
@@ -448,7 +515,11 @@ namespace gView.Framework.Data
             {
                 foreach (IField field in fields)
                 {
-                    if (field == null) continue;
+                    if (field == null)
+                    {
+                        continue;
+                    }
+
                     _fields.Add(field);
                 }
             }
@@ -492,7 +563,9 @@ namespace gView.Framework.Data
                             }
                             _fields.Add(f);
                             if (fields.PrimaryDisplayField != null && f.name == fields.PrimaryDisplayField.name)
+                            {
                                 _primaryField = f;
+                            }
                         }
                     }
                     else
@@ -506,7 +579,10 @@ namespace gView.Framework.Data
             if (Class is ITableClass && ((ITableClass)Class).Fields != null)
             {
                 IFields classFields = ((ITableClass)Class).Fields;
-                if (_fields == null) _fields = new List<IField>();
+                if (_fields == null)
+                {
+                    _fields = new List<IField>();
+                }
 
                 foreach (IField classField in classFields.ToEnumerable())
                 {
@@ -543,7 +619,10 @@ namespace gView.Framework.Data
                         break;
                     }
                 }
-                if (!found) _primaryField = null;
+                if (!found)
+                {
+                    _primaryField = null;
+                }
             }
             if (_primaryField == null && _fields != null)
             {
@@ -565,10 +644,18 @@ namespace gView.Framework.Data
         #region IFields Member
         public IField FindField(string aliasname)
         {
-            if (_fields == null) return null;
+            if (_fields == null)
+            {
+                return null;
+            }
 
             foreach (IField field in _fields)
-                if (field.aliasname == aliasname) return field;
+            {
+                if (field.aliasname == aliasname)
+                {
+                    return field;
+                }
+            }
 
             return null;
         }
@@ -580,7 +667,11 @@ namespace gView.Framework.Data
             }
             set
             {
-                if (_fields == null || !_fields.Contains(value)) return;
+                if (_fields == null || !_fields.Contains(value))
+                {
+                    return;
+                }
+
                 _primaryField = value;
             }
         }
@@ -591,7 +682,11 @@ namespace gView.Framework.Data
         {
             string primaryField = (string)stream.Load("PrimaryField", "");
 
-            if (_fields == null) _fields = new List<IField>();
+            if (_fields == null)
+            {
+                _fields = new List<IField>();
+            }
+
             IField field;
             while ((field = stream.Load("Field", null, new Field()) as IField) != null)
             {
@@ -602,14 +697,18 @@ namespace gView.Framework.Data
             foreach (IField fieldPriority in this.ToEnumerable())
             {
                 if (fieldPriority is Field)
+                {
                     ((Field)fieldPriority).Priority = priority++;
+                }
             }
 
             _primaryField = null;
             foreach (IField f in _fields)
             {
                 if (f.name == primaryField)
+                {
                     _primaryField = f;
+                }
             }
         }
         public void Save(IPersistStream stream)
@@ -622,7 +721,10 @@ namespace gView.Framework.Data
                 }
             }
 
-            if (_primaryField != null) stream.Save("PrimaryField", _primaryField.name);
+            if (_primaryField != null)
+            {
+                stream.Save("PrimaryField", _primaryField.name);
+            }
         }
         #endregion
 
@@ -705,7 +807,11 @@ namespace gView.Framework.Data
 
             public bool MoveNext()
             {
-                if (_fields == null) return false;
+                if (_fields == null)
+                {
+                    return false;
+                }
+
                 index++;
                 return index <= _fields.Count;
             }
@@ -726,7 +832,11 @@ namespace gView.Framework.Data
 
             foreach (IField field in this.ToEnumerable())
             {
-                if (field == null) continue;
+                if (field == null)
+                {
+                    continue;
+                }
+
                 fields.Add(new Field(field));
             }
 
@@ -741,7 +851,10 @@ namespace gView.Framework.Data
         {
             get
             {
-                if (_fields == null || i < 0 || i >= _fields.Count) return null;
+                if (_fields == null || i < 0 || i >= _fields.Count)
+                {
+                    return null;
+                }
 
                 return _fields[i];
             }
@@ -757,7 +870,7 @@ namespace gView.Framework.Data
 
         public IEnumerable<IField> ToEnumerable()
         {
-            lock(_privateLocker)  // Threadsafe
+            lock (_privateLocker)  // Threadsafe
             {
                 return _fields.ToArray().OrderBy(f => f is IPriority ? ((IPriority)f).Priority : int.MaxValue);
             }
@@ -775,9 +888,13 @@ namespace gView.Framework.Data
                 if (x is IPriority && y is IPriority)
                 {
                     if (((IPriority)x).Priority < ((IPriority)y).Priority)
+                    {
                         return -1;
+                    }
                     else if (((IPriority)x).Priority < ((IPriority)y).Priority)
+                    {
                         return 1;
+                    }
                 }
                 return 0;
             }
@@ -793,7 +910,7 @@ namespace gView.Framework.Data
         //    return ToEnumerable();
         //}
     }
-    
+
     public class FeatureLayer : Layer, IFeatureLayer, IFeatureLayerComposition
     {
         protected IFeatureRenderer _renderer = null, _selectionrenderer = null;
@@ -856,7 +973,10 @@ namespace gView.Framework.Data
             {
                 IFeatureLayer layer = (IFeatureLayer)element;
 
-                if (layer == null) return;
+                if (layer == null)
+                {
+                    return;
+                }
 
                 _renderer = layer.FeatureRenderer;
                 _selectionrenderer = layer.SelectionRenderer;
@@ -873,7 +993,9 @@ namespace gView.Framework.Data
                 _geometryType = layer.LayerGeometryType;
 
                 if (layer.Joins != null)
+                {
                     this.Joins = (FeatureLayerJoins)layer.Joins.Clone();
+                }
 
                 if (layer is IFeatureLayerComposition)
                 {
@@ -930,7 +1052,10 @@ namespace gView.Framework.Data
                     if (_fields.PrimaryDisplayField != null)
                     {
                         IField f = newFields.FindField(_fields.PrimaryDisplayField.name);
-                        if (f != null) newFields.PrimaryDisplayField = f;
+                        if (f != null)
+                        {
+                            newFields.PrimaryDisplayField = f;
+                        }
                     }
                 }
             }
@@ -965,8 +1090,10 @@ namespace gView.Framework.Data
             private set
             {
                 _class = value as IFeatureClass;
-                if(_class==null)
+                if (_class == null)
+                {
                     return;
+                }
 
                 if (_joins != null)
                 {
@@ -982,10 +1109,12 @@ namespace gView.Framework.Data
                 else
                 {
                     if (_class is WrappedFeatureClassWithJoins)
+                    {
                         _class = ((WrappedFeatureClassWithJoins)_class).WrappedFeatureclass;
+                    }
                 }
 
-                if(_class is IFeatureClass &&
+                if (_class is IFeatureClass &&
                     ((IFeatureClass)_class).GeometryType != GeometryType.Unknown)
                 {
                     _geometryType = GeometryType.Unknown;
@@ -1038,7 +1167,9 @@ namespace gView.Framework.Data
             {
                 _joins = value;
                 if (_joins != null)
+                {
                     this.FeatureClass = (IFeatureClass)_class; // Refresh WrappedClass!
+                }
             }
         }
 
@@ -1047,7 +1178,9 @@ namespace gView.Framework.Data
             get
             {
                 if (this.FeatureClass != null && this.FeatureClass.GeometryType != GeometryType.Unknown)
+                {
                     return this.FeatureClass.GeometryType;
+                }
 
                 return _geometryType;
             }
@@ -1095,7 +1228,7 @@ namespace gView.Framework.Data
 
             this.Joins = (FeatureLayerJoins)stream.Load("Joins", null, new FeatureLayerJoins());
 
-            if(this is IFeatureLayerComposition)
+            if (this is IFeatureLayerComposition)
             {
                 var flComposition = (IFeatureLayerComposition)this;
                 flComposition.CompositionMode = (FeatureLayerCompositionMode)(int)stream.Load("composition_mode", (int)FeatureLayerCompositionMode.Over);
@@ -1110,36 +1243,66 @@ namespace gView.Framework.Data
             //stream.Save("Featureclass", FeatureClass != null ? FeatureClass.Name : _title);
 
             if (_renderer != null)
+            {
                 stream.Save("IRenderer", _renderer);
+            }
+
             if (_labelRenderer != null)
+            {
                 stream.Save("ILabelRenderer", _labelRenderer);
+            }
+
             if (_selectionrenderer != null)
+            {
                 stream.Save("ISelectionRenderer", _selectionrenderer);
+            }
+
             if (_fields != null)
+            {
                 stream.Save("IFields", _fields);
+            }
 
             if (_applyRefScale == false)
+            {
                 stream.Save("applyRefScale", _applyRefScale);
+            }
+
             if (_applyLabelRefScale == false)
+            {
                 stream.Save("applyLRefScale", _applyLabelRefScale);
+            }
+
             if (this.MaxRefScaleFactor > 0D)
+            {
                 stream.Save("maxRefScaleFactor", this.MaxRefScaleFactor);
+            }
+
             if (this.MaxLabelRefScaleFactor > 0D)
+            {
                 stream.Save("maxLabelRefScaleFactor", this.MaxLabelRefScaleFactor);
+            }
 
             if (_geometryType != GeometryType.Unknown)
+            {
                 stream.Save("geomType", (int)_geometryType);
+            }
 
             if (this.FilterQuery != null)
             {
                 if (!String.IsNullOrEmpty(this.FilterQuery.JsonWhereClause))
+                {
                     stream.Save("FilterQuery", this.FilterQuery.JsonWhereClause);
+                }
                 else
+                {
                     stream.Save("FilterQuery", this.FilterQuery.WhereClause);
+                }
             }
 
             if (_joins != null)
+            {
                 stream.Save("Joins", _joins);
+            }
 
             if (this is IFeatureLayerComposition)
             {
@@ -1207,10 +1370,14 @@ namespace gView.Framework.Data
                     if (_selectionSet == null)
                     {
                         if (selSet is SpatialIndexedIDSelectionSet)
+                        {
                             _selectionSet = new SpatialIndexedIDSelectionSet(
                                 ((SpatialIndexedIDSelectionSet)_selectionSet).Bounds);
+                        }
                         else
+                        {
                             _selectionSet = new IDSelectionSet();
+                        }
                     }
 
                     _selectionSet.Combine(selSet, methode);
@@ -1225,14 +1392,21 @@ namespace gView.Framework.Data
         {
             if (_selectionSet != null)
             {
-                if (BeforeClearSelection != null) BeforeClearSelection(this);
+                if (BeforeClearSelection != null)
+                {
+                    BeforeClearSelection(this);
+                }
+
                 _selectionSet.Clear();
             }
         }
 
         public void FireSelectionChangedEvent()
         {
-            if (FeatureSelectionChanged != null) FeatureSelectionChanged(this);
+            if (FeatureSelectionChanged != null)
+            {
+                FeatureSelectionChanged(this);
+            }
         }
 
         #endregion
@@ -1260,7 +1434,7 @@ namespace gView.Framework.Data
         private float _transparency = 0.0f;
         private GraphicsEngine.ArgbColor _transColor = GraphicsEngine.ArgbColor.Transparent;
 
-        public RasterLayer() 
+        public RasterLayer()
         {
             this.FilterImplementation = FilterImplementations.Default;
         }
@@ -1268,7 +1442,10 @@ namespace gView.Framework.Data
             : this()
         {
             _class = rasterClass;
-            if (rasterClass != null) _title = rasterClass.Name;
+            if (rasterClass != null)
+            {
+                _title = rasterClass.Name;
+            }
         }
         public RasterLayer(IRasterLayer layer)
             : this()
@@ -1387,7 +1564,10 @@ namespace gView.Framework.Data
             base(rasterClass as IFeatureClass)
         {
             _class = rasterClass;
-            if (rasterClass != null) _title = rasterClass.Name;
+            if (rasterClass != null)
+            {
+                _title = rasterClass.Name;
+            }
         }
         public RasterCatalogLayer(IRasterCatalogLayer layer)
             : base(layer as IFeatureLayer)
@@ -1507,7 +1687,10 @@ namespace gView.Framework.Data
         public WebServiceLayer(IWebServiceClass webClass)
         {
             _class = webClass;
-            if (webClass != null) _title = webClass.Name;
+            if (webClass != null)
+            {
+                _title = webClass.Name;
+            }
         }
 
         internal override void CopyFrom(IDatasetElement element)
@@ -1556,8 +1739,15 @@ namespace gView.Framework.Data
 
         private void SerializeThemes()
         {
-            if (!(_class is IWebServiceClass) || _themes == null) return;
-            if (((IWebServiceClass)_class).Themes == null) return;
+            if (!(_class is IWebServiceClass) || _themes == null)
+            {
+                return;
+            }
+
+            if (((IWebServiceClass)_class).Themes == null)
+            {
+                return;
+            }
 
             foreach (IWebServiceTheme theme in ((IWebServiceClass)_class).Themes)
             {
@@ -1593,7 +1783,11 @@ namespace gView.Framework.Data
             WebServiceTheme theme;
             while ((theme = (WebServiceTheme)stream.Load("IWebServiceTheme", null, new WebServiceTheme())) != null)
             {
-                if (_themes == null) _themes = new List<IWebServiceTheme>();
+                if (_themes == null)
+                {
+                    _themes = new List<IWebServiceTheme>();
+                }
+
                 _themes.Add(theme);
             }
 
@@ -1862,7 +2056,10 @@ namespace gView.Framework.Data
         {
             foreach (IField field in _fields.ToEnumerable())
             {
-                if (field.name == name) return field;
+                if (field.name == name)
+                {
+                    return field;
+                }
             }
             return null;
         }
@@ -2045,7 +2242,9 @@ namespace gView.Framework.Data
                     foreach (FieldValue fv in feature.Fields)
                     {
                         if (fv.Value == null || fv.Value == DBNull.Value)
+                        {
                             continue;
+                        }
 
                         if (tab.Columns[fv.Name] == null)
                         {
@@ -2056,7 +2255,9 @@ namespace gView.Framework.Data
 
                     DataRow row = tab.NewRow();
                     foreach (FieldValue fv in feature.Fields)
+                    {
                         row[fv.Name] = fv.Value;
+                    }
 
                     row["#SHAPE#"] = feature.Shape;
                     row["#OID#"] = feature.OID;
@@ -2083,21 +2284,30 @@ namespace gView.Framework.Data
             public Task<IFeature> NextFeature()
             {
                 if (_rows == null || _pos >= _rows.Length)
+                {
                     return null;
+                }
 
                 DataRow row = _rows[_pos++];
                 DataTable tab = row.Table;
                 Feature feature = new Feature();
 
                 if (tab.Columns["#OID#"] != null)
+                {
                     feature.OID = (int)row["#OID#"];
+                }
+
                 if (tab.Columns["#SHAPE#"] != null)
+                {
                     feature.Shape = row["#SHAPE#"] as IGeometry;
+                }
 
                 foreach (DataColumn col in tab.Columns)
                 {
                     if (col.ColumnName == "#OID#" || col.ColumnName == "#SHAPE#")
+                    {
                         continue;
+                    }
 
                     feature.Fields.Add(new FieldValue(col.ColumnName, row[col.ColumnName]));
                 }

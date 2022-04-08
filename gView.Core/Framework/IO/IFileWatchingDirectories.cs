@@ -3,7 +3,6 @@ using System.IO;
 
 namespace gView.Framework.IO
 {
-
     public interface IFileWatchingDirectories
     {
         /// <summary>

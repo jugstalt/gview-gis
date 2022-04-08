@@ -66,7 +66,7 @@ namespace gView.DataSources.MongoDb
             }
             catch (Exception ex)
             {
-                lastException = ex;
+                LastException = ex;
                 LastErrorMessage = ex.Message;
 
                 return 0;
@@ -109,7 +109,7 @@ namespace gView.DataSources.MongoDb
             }
             catch (Exception ex)
             {
-                this.lastException = ex;
+                this.LastException = ex;
                 this.LastErrorMessage = ex.Message;
                 return false;
             }
@@ -261,7 +261,7 @@ namespace gView.DataSources.MongoDb
             }
             catch (Exception ex)
             {
-                lastException = ex;
+                LastException = ex;
                 LastErrorMessage = ex.Message;
 
                 return false;
@@ -310,7 +310,7 @@ namespace gView.DataSources.MongoDb
 
         public string LastErrorMessage { get; set; }
 
-        public Exception lastException { get; private set; }
+        public Exception LastException { get; private set; }
 
         public int SuggestedInsertFeatureCountPerTransaction => throw new NotImplementedException();
 
@@ -344,7 +344,7 @@ namespace gView.DataSources.MongoDb
             }
             catch (Exception ex)
             {
-                this.lastException = ex;
+                this.LastException = ex;
                 return null;
             }
         }
