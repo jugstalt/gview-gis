@@ -141,8 +141,6 @@ namespace gView.Interoperability.GeoServices.Dataset
             }
 
             return true;
-
-            return true;
         }
 
         public Task<bool> LegendRequest(gView.Framework.Carto.IDisplay display)

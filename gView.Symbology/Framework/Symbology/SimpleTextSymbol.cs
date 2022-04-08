@@ -876,7 +876,7 @@ namespace gView.Framework.Symbology
 
         #region IPersistable Members
 
-        virtual public void Load(IPersistStream stream)
+        new virtual public void Load(IPersistStream stream)
         {
             base.Load(stream);
 
@@ -940,7 +940,7 @@ namespace gView.Framework.Symbology
             this.IncludesSuperScript = (bool)stream.Load("includessuperscript", false);
         }
 
-        virtual public void Save(IPersistStream stream)
+        new virtual public void Save(IPersistStream stream)
         {
             base.Save(stream);
 

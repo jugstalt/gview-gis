@@ -108,7 +108,7 @@ namespace gView.Framework.UI.Controls
             {
                 base.WndProc(ref msg);
             }
-            catch (Exception ex)
+            catch (Exception /*ex*/)
             {
             }
         }

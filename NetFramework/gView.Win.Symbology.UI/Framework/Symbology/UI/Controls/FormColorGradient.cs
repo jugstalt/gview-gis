@@ -7,7 +7,7 @@ namespace gView.Framework.Symbology.UI.Controls
 {
     public partial class FormColorGradient : Form
     {
-        private ColorGradient _gradient;
+        //private ColorGradient _gradient;
 
         public FormColorGradient()
         {

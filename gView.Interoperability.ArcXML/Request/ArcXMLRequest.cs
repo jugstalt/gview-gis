@@ -505,50 +505,49 @@ namespace gView.Interoperability.ArcXML
                                 // wird recht kompliziert, abfrage zwar möglich, aber dann die Darstellung...
                                 // darum ERROR 
                                 serviceRequest.Response = WriteException("Can't perform buffer operation with merged Featureclasses...");
-                                return;
 
-                                List<IPolygon> bufferPolygons = new List<IPolygon>();
-                                foreach (ITableClass rootClass in getFeatures.Classes)
-                                {
-                                    IQueryFilter cloned = filter.Clone() as IQueryFilter;
-                                    if (!await MapServerHelper.ModifyFilter(map2, rootClass, cloned))
-                                    {
-                                        continue;
-                                    }
+                                //List<IPolygon> bufferPolygons = new List<IPolygon>();
+                                //foreach (ITableClass rootClass in getFeatures.Classes)
+                                //{
+                                //    IQueryFilter cloned = filter.Clone() as IQueryFilter;
+                                //    if (!await MapServerHelper.ModifyFilter(map2, rootClass, cloned))
+                                //    {
+                                //        continue;
+                                //    }
 
-                                    BufferQueryFilter bFilter = new BufferQueryFilter();
-                                    bFilter.RootFilter = cloned;
-                                    bFilter.RootFeatureClass = rootClass as IFeatureClass;
-                                    bFilter.BufferDistance = Convert.ToDouble(buffer.Attributes["distance"].Value.Replace(".", ","));
+                                //    BufferQueryFilter bFilter = new BufferQueryFilter();
+                                //    bFilter.RootFilter = cloned;
+                                //    bFilter.RootFeatureClass = rootClass as IFeatureClass;
+                                //    bFilter.BufferDistance = Convert.ToDouble(buffer.Attributes["distance"].Value.Replace(".", ","));
 
-                                    try
-                                    {
-                                        ISpatialFilter sFilter = await BufferQueryFilter.ConvertToSpatialFilter(bFilter);
-                                        IPolygon polygon = sFilter.Geometry as IPolygon;
-                                        if (sFilter.FilterSpatialReference != null &&
-                                            !sFilter.FilterSpatialReference.Equals(map2.Display.SpatialReference))
-                                        {
-                                            polygon = GeometricTransformerFactory.Transform2D(
-                                                polygon,
-                                                sFilter.FilterSpatialReference,
-                                                map2.Display.SpatialReference) as IPolygon;
-                                        }
-                                        bufferPolygons.Add(polygon);
-                                    }
-                                    catch { }
+                                //    try
+                                //    {
+                                //        ISpatialFilter sFilter = await BufferQueryFilter.ConvertToSpatialFilter(bFilter);
+                                //        IPolygon polygon = sFilter.Geometry as IPolygon;
+                                //        if (sFilter.FilterSpatialReference != null &&
+                                //            !sFilter.FilterSpatialReference.Equals(map2.Display.SpatialReference))
+                                //        {
+                                //            polygon = GeometricTransformerFactory.Transform2D(
+                                //                polygon,
+                                //                sFilter.FilterSpatialReference,
+                                //                map2.Display.SpatialReference) as IPolygon;
+                                //        }
+                                //        bufferPolygons.Add(polygon);
+                                //    }
+                                //    catch { }
 
-                                    IPolygon bufferPolygon = gView.Framework.SpatialAlgorithms.Algorithm.MergePolygons(bufferPolygons);
-                                    if (bufferPolygons != null)
-                                    {
-                                        ISpatialFilter newFilter = new SpatialFilter();
-                                        newFilter.SubFields = filter.SubFields;
-                                        newFilter.FilterSpatialReference = map2.Display.SpatialReference;
-                                        newFilter.SpatialRelation = spatialRelation.SpatialRelationIntersects;
-                                        newFilter.Geometry = bufferPolygon;
-                                        newFilter.FeatureSpatialReference = filter.FeatureSpatialReference;
-                                        filter = new ArcXMLSpatialFilter(newFilter);
-                                    }
-                                }
+                                //    IPolygon bufferPolygon = gView.Framework.SpatialAlgorithms.Algorithm.MergePolygons(bufferPolygons);
+                                //    if (bufferPolygons != null)
+                                //    {
+                                //        ISpatialFilter newFilter = new SpatialFilter();
+                                //        newFilter.SubFields = filter.SubFields;
+                                //        newFilter.FilterSpatialReference = map2.Display.SpatialReference;
+                                //        newFilter.SpatialRelation = spatialRelation.SpatialRelationIntersects;
+                                //        newFilter.Geometry = bufferPolygon;
+                                //        newFilter.FeatureSpatialReference = filter.FeatureSpatialReference;
+                                //        filter = new ArcXMLSpatialFilter(newFilter);
+                                //    }
+                                //}
                             }
                             else if (tClass.Count == 1)
                             {

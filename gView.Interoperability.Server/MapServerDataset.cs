@@ -295,7 +295,7 @@ namespace gView.Interoperability.Server
                 _state = DatasetState.opened;
                 return Task.FromResult(true);
             }
-            catch (Exception ex)
+            catch (Exception /*ex*/)
             {
                 _state = DatasetState.unknown;
                 _class = null;
@@ -360,8 +360,9 @@ namespace gView.Interoperability.Server
             return Task.FromResult<IDatasetElement>(null);
         }
 
-        async public Task RefreshClasses()
+        public Task RefreshClasses()
         {
+            return Task.CompletedTask;
         }
 
         #endregion IDataset Member
@@ -589,9 +590,9 @@ namespace gView.Interoperability.Server
             }
         }
 
-        async public Task<bool> LegendRequest(gView.Framework.Carto.IDisplay display)
+        public Task<bool> LegendRequest(gView.Framework.Carto.IDisplay display)
         {
-            return false;
+            return Task.FromResult(false);
         }
 
         GeorefBitmap IWebServiceClass.Image
@@ -723,11 +724,11 @@ namespace gView.Interoperability.Server
             }
         }
 
-        async protected override Task<string> SendRequest(IUserData userData, string axlRequest)
+        protected override Task<string> SendRequest(IUserData userData, string axlRequest)
         {
             if (_dataset == null)
             {
-                return "";
+                return Task.FromResult(String.Empty);
             }
 
             string server = ConfigTextStream.ExtractValue(_dataset.ConnectionString, "server");
@@ -763,12 +764,12 @@ namespace gView.Interoperability.Server
 
             try
             {
-                return conn.Send(service, axlRequest, "BB294D9C-A184-4129-9555-398AA70284BC", user, pwd);
+                return Task.FromResult(conn.Send(service, axlRequest, "BB294D9C-A184-4129-9555-398AA70284BC", user, pwd));
             }
             catch (Exception ex)
             {
                 MapServerClass.ErrorLog(context, "Query", server, service, ex);
-                return String.Empty;
+                return Task.FromResult(String.Empty);
             }
         }
     }
@@ -819,11 +820,11 @@ namespace gView.Interoperability.Server
         {
         }
 
-        async protected override Task<string> SendRequest(IUserData userData, string axlRequest)
+        protected override Task<string> SendRequest(IUserData userData, string axlRequest)
         {
             if (_dataset == null)
             {
-                return "";
+                return Task.FromResult(String.Empty);
             }
 
             string server = ConfigTextStream.ExtractValue(_dataset.ConnectionString, "server");
@@ -857,12 +858,12 @@ namespace gView.Interoperability.Server
             ServerConnection conn = new ServerConnection(server);
             try
             {
-                return conn.Send(service, axlRequest, "BB294D9C-A184-4129-9555-398AA70284BC", user, pwd);
+                return Task.FromResult(conn.Send(service, axlRequest, "BB294D9C-A184-4129-9555-398AA70284BC", user, pwd));
             }
             catch (Exception ex)
             {
                 MapServerClass.ErrorLog(context, "Query", server, service, ex);
-                return String.Empty;
+                return Task.FromResult(String.Empty);
             }
         }
     }

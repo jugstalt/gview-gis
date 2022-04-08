@@ -737,7 +737,7 @@ namespace gView.DataSources.OGR.UI
 
         #endregion
 
-        public void Dispose()
+        new public void Dispose()
         {
             base.Dispose();
         }

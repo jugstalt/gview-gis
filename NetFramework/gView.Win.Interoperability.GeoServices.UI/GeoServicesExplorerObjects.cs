@@ -383,7 +383,6 @@ namespace gView.Interoperability.GeoServices.Dataset
     {
         private IExplorerIcon _icon = new GeoServicesServiceIcon();
         private string _name = "", _connectionString = "";
-        private GeoServicesClass _class = null;
         private GeoServicesConnectionExplorerObject _parent = null;
 
         internal GeoServicesFolderExplorerObject(GeoServicesConnectionExplorerObject parent, string name, string connectionString)
@@ -488,12 +487,7 @@ namespace gView.Interoperability.GeoServices.Dataset
             get { return _icon; }
         }
 
-        public void Dispose()
-        {
-
-        }
-
-        async public Task<object> GetInstanceAsync()
+        public Task<object> GetInstanceAsync()
         {
 
             return Task.FromResult<object>(null);
@@ -602,11 +596,6 @@ namespace gView.Interoperability.GeoServices.Dataset
         public IExplorerIcon Icon
         {
             get { return _icon; }
-        }
-
-        public void Dispose()
-        {
-
         }
 
         async public Task<object> GetInstanceAsync()
@@ -742,8 +731,6 @@ namespace gView.Interoperability.GeoServices.Dataset
 
         private IExplorerObject _parent;
         private readonly GeoServicesFeatureClass _fc;
-        private readonly string _name;
-        private readonly string _id;
 
         public GeoServicesServiceLayerExplorerObject()
             : base(null, typeof(GeoServicesFeatureClass), 1)

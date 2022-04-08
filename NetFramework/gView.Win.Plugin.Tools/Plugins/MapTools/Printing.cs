@@ -45,7 +45,7 @@ namespace gView.Plugins.MapTools
             Document.QueryPageSettings -= new QueryPageSettingsEventHandler(Document_QueryPageSettings);
         }
 
-        async private void Document_PrintPage(object sender, System.Drawing.Printing.PrintPageEventArgs e)
+        private void Document_PrintPage(object sender, System.Drawing.Printing.PrintPageEventArgs e)
         {
             throw new NotImplementedException();
 

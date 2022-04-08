@@ -24,7 +24,7 @@ namespace gView.DataSources.Fdb.UI
 
         #region IExplorerTabPage Members
 
-        public new Control Control
+        public Control Control
         {
             get { return this; }
         }
@@ -92,7 +92,7 @@ namespace gView.DataSources.Fdb.UI
         {
             return _exObject;
         }
-        async public Task SetExplorerObjectAsync(IExplorerObject value)
+        public Task SetExplorerObjectAsync(IExplorerObject value)
         {
             if (value != null)
             {
@@ -102,6 +102,8 @@ namespace gView.DataSources.Fdb.UI
             {
                 _exObject = null;
             }
+
+            return Task.CompletedTask;
         }
 
         public Task<bool> ShowWith(IExplorerObject exObject)

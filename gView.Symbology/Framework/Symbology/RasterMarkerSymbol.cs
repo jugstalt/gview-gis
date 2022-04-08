@@ -235,7 +235,7 @@ namespace gView.Framework.Symbology
 
         #region IPersistable Member
 
-        public void Load(IPersistStream stream)
+        new public void Load(IPersistStream stream)
         {
             base.Load(stream);
 
@@ -247,7 +247,7 @@ namespace gView.Framework.Symbology
             SizeY = (float)stream.Load("sy", 10f);
         }
 
-        public void Save(IPersistStream stream)
+        new public void Save(IPersistStream stream)
         {
             base.Save(stream);
 

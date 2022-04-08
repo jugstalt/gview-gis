@@ -954,9 +954,8 @@ namespace gView.DataSources.Fdb.SQLite
         private Polygon _polygon;
         private ISpatialReference _sRef = null;
         private string _dsname = "";
-        private double _X, _Y;
-        private double _dx_X, _dx_Y, _dy_X, _dy_Y;
-        int _iWidth, _iHeight;
+        private double _X = 0D, _Y = 0D;
+        private double _dx_X = 0D, _dx_Y = 0D, _dy_X = 0D, _dy_Y = 0D;
 
         public SQLiteFDBImageDatasetImageClass(SQLiteFDB fdb, string dsname, int ID, Polygon polygon)
         {

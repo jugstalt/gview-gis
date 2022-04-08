@@ -1871,6 +1871,7 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
         #endregion
 
         #region IAltertable
+
         public event AlterTableEventHandler TableAltered = null;
 
         async public override Task<bool> AlterTable(string table, IField oldField, IField newField)
@@ -2262,7 +2263,7 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
                                     _command.Cancel();
                                 }
                             }
-                            catch (Exception ex)
+                            catch (Exception /*ex*/)
                             {
 
                             }
@@ -2296,10 +2297,8 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
 
             #region IFeatureCursor Member
 
-            int _pos;
             public void Reset()
             {
-                _pos = 0;
             }
 
             public void Release()
@@ -2473,7 +2472,7 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
                                     _command.Cancel();
                                 }
                             }
-                            catch (Exception ex)
+                            catch (Exception)
                             {
 
                             }
@@ -2556,11 +2555,10 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
 
             #region IFeatureCursor Member
 
-            int _pos;
             public void Reset()
             {
-                _pos = 0;
             }
+
             public void Release()
             {
                 this.Dispose();

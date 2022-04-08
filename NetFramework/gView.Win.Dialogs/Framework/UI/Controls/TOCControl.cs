@@ -2275,7 +2275,7 @@ namespace gView.Framework.UI.Controls
                 return null;
             }
         }
-        public string Name
+        public new string Name
         {
             get
             {

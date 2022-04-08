@@ -161,7 +161,7 @@ namespace gView.Win.Carto.Items
 
         public ITool Tool { get; private set; }
 
-        public bool Checked
+        public new bool Checked
         {
             get
             {

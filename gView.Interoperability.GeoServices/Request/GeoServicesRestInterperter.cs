@@ -494,7 +494,6 @@ namespace gView.Interoperability.GeoServices.Request
                 using (var serviceMap = await context.CreateServiceMapInstance())
                 {
                     string filterQuery;
-                    IDictionary<string, string> fieldFunctions = null;
 
                     var tableClasses = FindTableClass(serviceMap, query.LayerId.ToString(), out filterQuery);
                     if (isFeatureServer == true && tableClasses.Count > 1)

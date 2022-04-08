@@ -177,7 +177,7 @@ namespace gView.Framework.Carto.Rendering
                     return p.PropertyPanel(this, (IFeatureLayer)initObject);
                 }
             }
-            catch (Exception ex)
+            catch (Exception /*ex*/)
             {
 
             }

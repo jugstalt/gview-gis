@@ -132,7 +132,7 @@ namespace gView.Framework.UI.Controls
 
         #region IExplorerTabPage Members
 
-        public new Control Control
+        public Control Control
         {
             get { return this; }
         }

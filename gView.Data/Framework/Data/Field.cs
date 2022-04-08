@@ -164,10 +164,10 @@ namespace gView.Framework.Data
         {
             get
             {
-                if (m_precision != null)
-                {
-                    return m_precision;
-                }
+                //if (m_precision > 0)
+                //{
+                //    return m_precision;
+                //}
 
                 switch (type)
                 {
@@ -175,6 +175,7 @@ namespace gView.Framework.Data
                     case FieldType.Double:
                         return m_precision;
                 }
+
                 return 0;
             }
             set { m_precision = value; }
@@ -183,7 +184,7 @@ namespace gView.Framework.Data
         {
             get
             {
-                if (m_size != null)
+                if (m_size > 0)
                 {
                     return m_size;
                 }

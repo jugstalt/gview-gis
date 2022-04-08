@@ -20,7 +20,7 @@ namespace gView.Desktop.Wpf.Carto
             _dv = dv;
         }
 
-        public string Name
+        public new string Name
         {
             get
             {

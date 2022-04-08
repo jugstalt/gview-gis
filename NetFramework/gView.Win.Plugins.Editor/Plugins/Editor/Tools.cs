@@ -913,7 +913,7 @@ namespace gView.Plugins.Editor
                         ((IGUIApplication)_doc.Application).SetCursor(_hit.Cursor as Cursor);
                     }
 
-                    if (_hit.Cursor == gView.Plugins.Editor.EditSketch.HitPosition.VertexCursor)
+                    if (gView.Plugins.Editor.EditSketch.HitPosition.VertexCursor.Equals(_hit?.Cursor))
                     {
                         _currentMenu = _removeVertexMenu;
                     }

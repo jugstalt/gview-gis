@@ -74,7 +74,7 @@ namespace gView.Interoperability.ArcXML.Dataset
                     names.Add(service.Attributes["name"].Value);
                 }
             }
-            catch (Exception ex)
+            catch (Exception /*ex*/)
             {
                 //log("ERROR@Connector.getServiceNames:\n"+ex.Message,"");
             }

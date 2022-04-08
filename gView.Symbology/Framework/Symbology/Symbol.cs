@@ -16,14 +16,14 @@ namespace gView.Framework.Symbology
             set { _smothingMode = value; }
         }
 
-        public void Load(IPersistStream stream)
+        new public void Load(IPersistStream stream)
         {
             base.Load(stream);
 
             this.Smoothingmode = (SymbolSmoothing)stream.Load("smoothing", (int)SymbolSmoothing.None);
         }
 
-        public void Save(IPersistStream stream)
+        new public void Save(IPersistStream stream)
         {
             base.Save(stream);
 

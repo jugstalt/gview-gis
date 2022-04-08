@@ -250,7 +250,7 @@ namespace gView.Framework.Symbology
             }
         }
 
-        public void Load(IPersistStream stream)
+        new public void Load(IPersistStream stream)
         {
             base.Load(stream);
 
@@ -272,7 +272,7 @@ namespace gView.Framework.Symbology
             this.PenWidthUnit = (DrawingUnit)stream.Load("widthunit", DrawingUnit.Pixel);
         }
 
-        public void Save(IPersistStream stream)
+        new public void Save(IPersistStream stream)
         {
             base.Save(stream);
 

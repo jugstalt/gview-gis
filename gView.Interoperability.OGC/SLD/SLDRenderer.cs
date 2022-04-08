@@ -362,7 +362,7 @@ namespace gView.Interoperability.OGC.SLD
                     return p.PropertyPanel(this, (IFeatureLayer)initObject);
                 }
             }
-            catch (Exception ex)
+            catch (Exception /*ex*/)
             {
 
             }

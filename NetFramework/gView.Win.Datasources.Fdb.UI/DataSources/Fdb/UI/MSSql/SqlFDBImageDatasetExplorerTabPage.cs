@@ -40,7 +40,7 @@ namespace gView.DataSources.Fdb.UI.MSSql
 
         #region IExplorerTabPage Members
 
-        public new Control Control
+        public Control Control
         {
             get { return this; }
         }
@@ -71,16 +71,18 @@ namespace gView.DataSources.Fdb.UI.MSSql
         {
             return _exObject;
         }
-        async public Task SetExplorerObjectAsync(IExplorerObject value)
+        public Task SetExplorerObjectAsync(IExplorerObject value)
         {
             if (_exObject == value)
             {
-                return;
+                return Task.CompletedTask;
             }
 
             listView.Items.Clear();
             _exObject = value;
             CancelRefreshList();
+
+            return Task.CompletedTask;
         }
 
         async public Task<bool> ShowWith(IExplorerObject exObject)

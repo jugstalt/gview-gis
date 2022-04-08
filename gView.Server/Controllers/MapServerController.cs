@@ -369,12 +369,12 @@ namespace gView.Server.Controllers
 
         #region ETag
 
-        private bool HasIfNonMatch()
+        private new bool HasIfNonMatch()
         {
             return this.Request.Headers["If-None-Match"].ToString() != null;
         }
 
-        private bool IfMatch()
+        private new bool IfMatch()
         {
             try
             {
@@ -399,7 +399,7 @@ namespace gView.Server.Controllers
             }
         }
 
-        private void AppendEtag(DateTime expires)
+        private new void AppendEtag(DateTime expires)
         {
             this.Request.Headers.Add("ETag", expires.Ticks.ToString());
             this.Request.Headers.Add("Last-Modified", DateTime.UtcNow.ToString("R"));
@@ -409,7 +409,7 @@ namespace gView.Server.Controllers
             //this.Response.Cache.SetMaxAge(new TimeSpan(24, 0, 0));
         }
 
-        protected IActionResult NotModified()
+        protected new IActionResult NotModified()
         {
             Response.StatusCode = 304;
             return Content(String.Empty);

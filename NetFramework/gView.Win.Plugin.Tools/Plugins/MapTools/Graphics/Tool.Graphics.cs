@@ -20,7 +20,6 @@ namespace gView.Plugins.MapTools.Graphics
     [gView.Framework.system.RegisterPlugIn("D1E12064-72E0-4399-82DD-D2E7165044C4")]
     public class GraphicsToolbar : IToolbar
     {
-        private bool _visible = true;
         private List<Guid> _guids;
 
         public GraphicsToolbar()

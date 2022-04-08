@@ -143,7 +143,7 @@ namespace gView.Framework.UI.Controls
             }
         }
 
-        public ContextMenuStrip ContextMenu
+        public new ContextMenuStrip ContextMenu
         {
             get { return _contextMenu; }
             set { _contextMenu = value; }
@@ -1335,7 +1335,7 @@ namespace gView.Framework.UI.Controls
                 if (_mapDoc != null && _mapDoc.Application is IMapApplication)
                 {
                     // Avoid Deadlocking -> run this inside of Task  (or Thread?);
-                    Task.Run(async () =>
+                    var refreshTask = Task.Run(async () =>
                     {
                         await ((IMapApplication)_mapDoc.Application).RefreshActiveMap(phase);
                     });

@@ -9,7 +9,6 @@ namespace gView.Framework.FDB
         bool Create(string name);
         Task<bool> Open(string name);
 
-        string LastErrorMessage { get; }
         Exception LastException { get; }
     }
 }

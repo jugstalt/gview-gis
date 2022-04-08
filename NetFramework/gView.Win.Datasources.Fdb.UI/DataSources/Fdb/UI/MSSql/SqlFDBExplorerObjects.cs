@@ -25,7 +25,7 @@ using System.Windows.Forms;
 
 namespace gView.DataSources.Fdb.UI.MSSql
 {
-    [gView.Framework.system.RegisterPlugIn("3453D3AA-5A41-4b88-895E-B5DC7CA8B5B5")]
+    [RegisterPlugIn("3453D3AA-5A41-4b88-895E-B5DC7CA8B5B5")]
     public class SqlFDBExplorerGroupObject : ExplorerParentObject, IExplorerGroupObject
     {
         private IExplorerIcon _icon = new SqlFDBConnectionsIcon();
@@ -121,11 +121,10 @@ namespace gView.DataSources.Fdb.UI.MSSql
         #endregion
     }
 
-    [gView.Framework.system.RegisterPlugIn("320E7A05-ACC5-4229-A989-2BF6D7CC62BF")]
+    [RegisterPlugIn("320E7A05-ACC5-4229-A989-2BF6D7CC62BF")]
     public class SqlFDBNewFDBDatabase : ExplorerObjectCls, IExplorerObject, IExplorerObjectCreatable
     {
         private SqlFDBIcon _icon = new SqlFDBIcon();
-        private IExplorerObject _parent;
 
         public SqlFDBNewFDBDatabase()
             : base(null, null, 0)
@@ -201,7 +200,7 @@ namespace gView.DataSources.Fdb.UI.MSSql
         #endregion
     }
 
-    [gView.Framework.system.RegisterPlugIn("8368C71F-51CE-42E8-B167-BE9AE414C1C8")]
+    [RegisterPlugIn("8368C71F-51CE-42E8-B167-BE9AE414C1C8")]
     public class SqlFDBNewConnectionObject : ExplorerObjectCls, IExplorerSimpleObject, IExplorerObjectDoubleClick, IExplorerObjectCreatable
     {
         private IExplorerIcon _icon = new SqlFDBNewConnectionIcon();
@@ -537,7 +536,6 @@ namespace gView.DataSources.Fdb.UI.MSSql
             }
         }
 
-        public void Dispose() { }
         public Task<object> GetInstanceAsync()
         {
             return Task.FromResult<object>(null);
@@ -823,7 +821,6 @@ namespace gView.DataSources.Fdb.UI.MSSql
     {
         private ProgressReport _report = new ProgressReport();
         private ICancelTracker _cancelTracker = null;
-        private int _progress = 0;
 
         public SqlCommandProgressReporter(SqlCommandInterpreter interpreter)
         {
@@ -861,7 +858,7 @@ namespace gView.DataSources.Fdb.UI.MSSql
         #endregion
     }
 
-    [gView.Framework.system.RegisterPlugIn("42610C64-F3A9-4241-A7A8-1FEE4A4FE9FE")]
+    [RegisterPlugIn("42610C64-F3A9-4241-A7A8-1FEE4A4FE9FE")]
     public class SqlFDBDatasetExplorerObject : ExplorerObjectFeatureClassImport, IExplorerSimpleObject, IExplorerObjectDeletable, ISerializableExplorerObject, IExplorerObjectCreatable, IExplorerObjectContextMenu, IExplorerObjectRenamable
     {
         private IExplorerIcon _icon = null;
@@ -1275,7 +1272,7 @@ namespace gView.DataSources.Fdb.UI.MSSql
     }
 
 
-    [gView.Framework.system.RegisterPlugIn("FE6E1EA7-1300-400c-8674-68465859E991")]
+    [RegisterPlugIn("FE6E1EA7-1300-400c-8674-68465859E991")]
     public class SqlFDBFeatureClassExplorerObject : ExplorerObjectCls, IExplorerSimpleObject, IExplorerObjectDeletable, ISerializableExplorerObject, IExplorerObjectContextMenu, IExplorerObjectRenamable, IExplorerObjectCreatable, IExporerOjectSchema
     {
         private interface _IMClass : IFeatureClass, IRasterClass { }
@@ -1739,7 +1736,7 @@ namespace gView.DataSources.Fdb.UI.MSSql
         #endregion
     }
 
-    [gView.Framework.system.RegisterPlugIn("97914E6A-3084-4fc0-8B31-4A6D2C990F72")]
+    [RegisterPlugIn("97914E6A-3084-4fc0-8B31-4A6D2C990F72")]
     public class SqlFDBNetworkClassExplorerObject : ExplorerObjectCls, IExplorerSimpleObject, IExplorerObjectCreatable
     {
         public SqlFDBNetworkClassExplorerObject() : base(null, typeof(SqlFDBNetworkFeatureclass), 0) { }
@@ -1846,7 +1843,7 @@ namespace gView.DataSources.Fdb.UI.MSSql
         #endregion
     }
 
-    [gView.Framework.system.RegisterPlugIn("11D0739F-66FC-4ca7-BA58-887DBB6F088C")]
+    [RegisterPlugIn("11D0739F-66FC-4ca7-BA58-887DBB6F088C")]
     public class SqlFDBGeographicViewExplorerObject : IExplorerSimpleObject, IExplorerObjectCreatable
     {
         #region IExplorerObjectCreatable Member
@@ -1948,7 +1945,7 @@ namespace gView.DataSources.Fdb.UI.MSSql
         #endregion
     }
 
-    [gView.Framework.system.RegisterPlugIn("19AF8E6C-8324-4290-AF7C-5B19E31A952E")]
+    [RegisterPlugIn("19AF8E6C-8324-4290-AF7C-5B19E31A952E")]
     public class SqlFDBLinkedFeatureclassExplorerObject : IExplorerSimpleObject, IExplorerObjectCreatable
     {
         #region IExplorerObjectCreatable Member
@@ -2073,7 +2070,7 @@ namespace gView.DataSources.Fdb.UI.MSSql
         #endregion
     }
 
-    //[gView.Framework.system.RegisterPlugIn("C3D1F9CA-69B5-46e9-B4DB-05534512F8B9")]
+    //[RegisterPlugIn("C3D1F9CA-69B5-46e9-B4DB-05534512F8B9")]
     public class SqlFDBTileGridClassExplorerObject : ExplorerObjectCls, IExplorerSimpleObject, IExplorerObjectCreatable
     {
         public SqlFDBTileGridClassExplorerObject() : base(null, null, 1) { }

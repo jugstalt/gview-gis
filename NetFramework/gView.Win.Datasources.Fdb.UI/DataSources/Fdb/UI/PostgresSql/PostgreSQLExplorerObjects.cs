@@ -405,7 +405,6 @@ namespace gView.DataSources.Fdb.UI.PostgreSql
             }
         }
 
-        public void Dispose() { }
         public Task<object> GetInstanceAsync()
         {
             return Task.FromResult<object>(null);
@@ -1815,7 +1814,7 @@ namespace gView.DataSources.Fdb.UI.PostgreSql
             return Task.FromResult<object>(null);
         }
 
-        public int Priority { get { return 1; } }
+        public new int Priority { get { return 1; } }
 
         #endregion
 

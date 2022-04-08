@@ -620,7 +620,6 @@ namespace gView.Framework.Network.Algorthm
         public class NetworkPathEdge
         {
             private int _eid;
-            private double _t = 1.0;
 
             public NetworkPathEdge(int eid)
             {

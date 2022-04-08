@@ -228,7 +228,7 @@ namespace gView.Framework.Db
                     }
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
             }
             return false;

@@ -8,7 +8,6 @@ namespace gView.Plugins.MapTools
     //[gView.Framework.system.RegisterPlugIn("C24147EC-F9F2-4a02-8C6D-A987B5ADB73E")]
     public class ThreeDToolbar : IToolbar
     {
-        private bool _visible = true;
         private List<Guid> _guids;
 
         public ThreeDToolbar()

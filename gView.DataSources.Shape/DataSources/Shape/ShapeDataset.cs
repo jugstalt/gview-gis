@@ -369,8 +369,9 @@ namespace gView.DataSources.Shape
             return null;
         }
 
-        async public Task RefreshClasses()
+        public Task RefreshClasses()
         {
+            return Task.CompletedTask;
         }
         #endregion
 

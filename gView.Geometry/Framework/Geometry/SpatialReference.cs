@@ -784,7 +784,7 @@ namespace gView.Framework.Geometry
 
                 return sRef;
             }
-            catch (Exception ex)
+            catch (Exception /*ex*/)
             {
                 return null;
             }

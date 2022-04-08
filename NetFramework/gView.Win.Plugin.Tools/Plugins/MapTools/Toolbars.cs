@@ -9,7 +9,6 @@ namespace gView.Plugins.MapTools
     [gView.Framework.system.RegisterPlugIn("1F1B9CEC-F957-43fd-B482-C41606160560")]
     public class MainToolbar : IToolbar, IPersistable
     {
-        private bool _visible = true;
         private List<Guid> _guids;
 
         public MainToolbar()
@@ -83,7 +82,6 @@ namespace gView.Plugins.MapTools
     [gView.Framework.system.RegisterPlugIn("052F5F8C-94FC-4827-9147-F65FCC61FFB3")]
     public class ToolsToolbar : IToolbar, IPersistable
     {
-        private bool _visible = true;
         private List<Guid> _guids;
 
         public ToolsToolbar()
@@ -166,7 +164,6 @@ namespace gView.Plugins.MapTools
     [gView.Framework.system.RegisterPlugIn("9FBD6EB9-9D41-475f-BEC4-1D983B1590BC")]
     public class ScaleToolbar : IToolbar, IPersistable
     {
-        private bool _visible = true;
         private List<Guid> _guids;
 
         public ScaleToolbar()

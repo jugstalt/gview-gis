@@ -12,11 +12,12 @@ namespace gView.Framework.UI.Dialogs
 
         #region IDockableWindow Members
 
-        public string Name
+        new public string Name
         {
             get { return this.Text; }
             set { this.Text = value; }
         }
+
         private DockWindowState _dockState = DockWindowState.bottom;
         public DockWindowState DockableWindowState
         {

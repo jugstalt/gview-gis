@@ -64,10 +64,12 @@ namespace gView.Framework.UI.Controls
             return _exObject;
         }
 
-        async public Task SetExplorerObjectAsync(IExplorerObject value)
+        public Task SetExplorerObjectAsync(IExplorerObject value)
         {
             _exObject = value;
             //await OnShow();
+
+            return Task.CompletedTask;
         }
 
 

@@ -275,7 +275,6 @@ namespace gView.Framework.Carto.Rendering.UI
                         _renderer[labels[0]] = null;  // neues Symbol erzeugen...
                     }
                     //symbolsListView1.addSymbol(_renderer[labels[0]],labels); 
-                    int i = 0;
                 }
 
                 BuildList();

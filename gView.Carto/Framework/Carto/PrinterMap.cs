@@ -442,7 +442,7 @@ namespace gView.Framework.Carto
                     canvas.DrawBitmap(paintContext.Bitmap, points, rect, opacity: opaque);
                 }
             }
-            catch (Exception ex)
+            catch (Exception /*ex*/)
             {
             }
         }

@@ -55,7 +55,7 @@ namespace gView.DataSources.OSGeo
 
                 return true;
             }
-            catch (Exception ex)
+            catch (Exception /*ex*/)
             {
                 return false;
             }

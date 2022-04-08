@@ -164,14 +164,14 @@ namespace gView.Framework.Symbology
 
         #region IPersistable Member
 
-        public void Load(IPersistStream stream)
+        new public void Load(IPersistStream stream)
         {
             base.Load(stream);
 
             this.Color = ArgbColor.FromArgb((int)stream.Load("color", ArgbColor.White.ToArgb()));
         }
 
-        public void Save(IPersistStream stream)
+        new public void Save(IPersistStream stream)
         {
             base.Save(stream);
 

@@ -18,7 +18,6 @@ namespace gView.Framework.system.UI
     public class AssemblyExplorer
     {
         public delegate void AddPluginEvent(string Name, Type type);
-        public event AddPluginEvent AddPlugin = null;
         public delegate void AddPluginExceptionEvent(object sender, AddPluginExceptionEventArgs args);
         public event AddPluginExceptionEvent AddPluginException = null;
 
@@ -110,7 +109,7 @@ namespace gView.Framework.system.UI
                                         continue;
                                     }
                                 }
-                                catch (Exception dependenciesEx)
+                                catch (Exception /*dependenciesEx*/)
                                 {
                                     // GDAL kann jammern, weil auch die Referenzierten Assemblies gdal_sharp.dll, ...
                                     // nicht im Pojekt sind!
@@ -313,7 +312,7 @@ namespace gView.Framework.system.UI
 
                 return xml.ToString();
             }
-            catch (Exception ex)
+            catch (Exception /*ex*/)
             {
                 return "";
             }

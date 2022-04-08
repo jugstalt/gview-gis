@@ -6,7 +6,6 @@ namespace gView.Framework.UI.Dialogs
     public class XmlViewTree : TreeView
     {
         private XmlDocument _doc = null;
-        private System.ComponentModel.IContainer components;
 
         public XmlViewTree()
             : base()

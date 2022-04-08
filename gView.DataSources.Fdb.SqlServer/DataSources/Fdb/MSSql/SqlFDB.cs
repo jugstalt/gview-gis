@@ -2007,7 +2007,7 @@ namespace gView.DataSources.Fdb.MSSql
                     command.ExecuteNonQuery();
                 }
             }
-            catch (Exception ex)
+            catch (Exception /*ex*/)
             {
                 _errMsg = _conn.errorMessage;
                 return false;
@@ -2432,11 +2432,11 @@ namespace gView.DataSources.Fdb.MSSql
             return false;
         }
 
-        async protected override Task<bool> RenameField(string table, IField oldField, IField newField)
+        protected override Task<bool> RenameField(string table, IField oldField, IField newField)
         {
             if (oldField == null || newField == null || _conn == null)
             {
-                return false;
+                return Task.FromResult(false);
             }
 
             string sql = "exec sp_rename '" + FcTableName(table) + "." + oldField.name + "','" + newField.name + "','COLUMN'";
@@ -2444,10 +2444,10 @@ namespace gView.DataSources.Fdb.MSSql
             if (!_conn.ExecuteNoneQuery(sql))
             {
                 _errMsg = _conn.errorMessage;
-                return false;
+                return Task.FromResult(false);
             }
 
-            return true;
+            return Task.FromResult(true);
         }
 
         async protected override Task<bool> TableExists(string tableName)
@@ -2982,7 +2982,7 @@ namespace gView.DataSources.Fdb.MSSql
 
                 await cursor.ExecuteReaderAsync();
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 cursor.Dispose();
             }
@@ -3006,7 +3006,7 @@ namespace gView.DataSources.Fdb.MSSql
                                 _command.Cancel();
                             }
                         }
-                        catch (Exception ex)
+                        catch (Exception)
                         {
 
                         }
@@ -3086,11 +3086,10 @@ namespace gView.DataSources.Fdb.MSSql
 
         #region IFeatureCursor Member
 
-        int _pos;
         public void Reset()
         {
-            _pos = 0;
         }
+
         public void Release()
         {
             this.Dispose();
@@ -3338,7 +3337,7 @@ namespace gView.DataSources.Fdb.MSSql
                                 _command.Cancel();
                             }
                         }
-                        catch (Exception ex)
+                        catch (Exception)
                         {
 
                         }
@@ -3372,10 +3371,8 @@ namespace gView.DataSources.Fdb.MSSql
 
         #region IFeatureCursor Member
 
-        int _pos;
         public void Reset()
         {
-            _pos = 0;
         }
 
         public void Release()
@@ -3681,7 +3678,7 @@ namespace gView.DataSources.Fdb.MSSql
                                 _command.Cancel();
                             }
                         }
-                        catch (Exception ex)
+                        catch (Exception)
                         {
 
                         }
@@ -3803,7 +3800,7 @@ namespace gView.DataSources.Fdb.MSSql
             */
         }
 
-        public event gView.Framework.Data.FeatureSelectionChangedEvent FeatureSelectionChanged;
+        public event FeatureSelectionChangedEvent FeatureSelectionChanged;
         public event BeforeClearSelectionEvent BeforeClearSelection;
 
         public void ClearSelection()

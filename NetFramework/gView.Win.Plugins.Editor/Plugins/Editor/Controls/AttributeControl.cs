@@ -1551,7 +1551,7 @@ namespace gView.Plugins.Editor.Controls
                             break;
                     }
                 }
-                catch (Exception ex)
+                catch (Exception /*ex*/)
                 {
                     e.Cancel = true;
                     //MessageBox.Show("Insert valid " + _field.type.ToString() + "-Number!");

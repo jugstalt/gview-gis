@@ -19,7 +19,6 @@ namespace gView.Framework.UI.Dialogs
         private System.Windows.Forms.Timer timer1;
         private System.ComponentModel.IContainer components;
         private Task _task = null;
-        private object _argument = null;
         private gView.Framework.UI.Controls.ProgressDisk progressDisk1;
         private ICancelTracker _cancelTracker = null;
         private Panel panelTime;

@@ -551,9 +551,9 @@ namespace gView.Plugins.MapTools.Dialogs
 
     internal class FeatureTreeNode : TreeNode
     {
-        private IFeature _feature;
-        private ILayer _layer;
-        private ISpatialReference _sRef;
+        private readonly IFeature _feature;
+        private readonly ILayer _layer;
+        private readonly ISpatialReference _sRef;
 
         public FeatureTreeNode(IMapDocument mapDocument, IFeature feature, ISpatialReference sRef, ILayer layer, string primaryFieldName)
         {
@@ -599,8 +599,10 @@ namespace gView.Plugins.MapTools.Dialogs
                     base.Text = feature.OID.ToString();
                 }
             }
+
             _feature = feature;
             _layer = layer;
+            _sRef = sRef;
 
             if (mapDocument != null && mapDocument.TableRelations != null)
             {

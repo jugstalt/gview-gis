@@ -214,7 +214,7 @@ namespace gView.Framework.Symbology.UI.Controls
             }
         }
 
-        public void Refresh()
+        new public void Refresh()
         {
             lbSymbols.Refresh();
             DrawPreview();

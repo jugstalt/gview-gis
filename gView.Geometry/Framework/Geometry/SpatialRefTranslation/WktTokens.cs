@@ -331,7 +331,7 @@ namespace gView.Framework.Geometry.SpatialRefTranslation
         /// <summary>
         /// Human readable text describing intended region of transformation.
         /// </summary>
-        public string AreaOfUse;
+        //public string AreaOfUse;
         /// <summary>
         /// Bursa Wolf shift in meters.
         /// </summary>
@@ -1239,17 +1239,17 @@ namespace gView.Framework.Geometry.SpatialRefTranslation
         }
 
 
-        public AxisInfo GetAxis(int dimension)
+        new public AxisInfo GetAxis(int dimension)
         {
             return _axisInfoArray[dimension];
         }
 
-        public Unit GetUnits(int dimension)
+        new public Unit GetUnits(int dimension)
         {
             throw new NotImplementedException();
         }
 
-        public int Dimension
+        new public int Dimension
         {
             get
             {
@@ -1273,7 +1273,7 @@ namespace gView.Framework.Geometry.SpatialRefTranslation
             }
         }
 
-        public Envelope DefaultEnvelope
+        new public Envelope DefaultEnvelope
         {
             get
             {

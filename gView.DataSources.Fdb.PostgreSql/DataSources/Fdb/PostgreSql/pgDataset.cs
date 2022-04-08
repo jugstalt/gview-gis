@@ -11,7 +11,6 @@ namespace gView.DataSources.Fdb.PostgreSql
     [gView.Framework.system.RegisterPlugIn("33254063-133D-4b17-AAE2-46AF7A7DA733")]
     public class pgDataset : DatasetMetadata, IFeatureDataset2, IRasterDataset, IFDBDataset, gView.Framework.UI.IConnectionStringDialog
     {
-        private int _order = 0;
         internal int _dsID = -1;
         private List<IDatasetElement> _layers;
         private string _errMsg = String.Empty;

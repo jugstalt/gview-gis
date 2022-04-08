@@ -4,7 +4,6 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Windows.Forms.Design;
 
-[assembly: CLSCompliant(true)]
 namespace gView.Framework.UI.Controls
 {
     [Browsable(false)]
@@ -151,6 +150,7 @@ namespace gView.Framework.UI.Controls
             /// <summary>
             ///   This typically sets the control's Text property.  
             ///   Here it does nothing so the Text is left blank. </summary>
+            [Obsolete]
             public override void OnSetComponentDefaults()
             {
             }

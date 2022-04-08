@@ -17,7 +17,6 @@ namespace gView.Framework.Sys.UI
         private LicenseTypes _runType = LicenseTypes.Unknown;
         private Guid _cryptoPassword = new Guid("406B7F91-C647-4401-ABC5-EACD27A743F5");
         private List<string> _components = new List<string>();
-        private int _durationDays = 60;
 
         private bool _hasCompanyLicense = false;
         private string _companyName = String.Empty;

@@ -11,77 +11,78 @@ namespace gView.Desktop.Wpf
                 return (Cursor)cursor;
             }
 
-            if (cursor == System.Windows.Forms.Cursors.AppStarting)
+
+            if (System.Windows.Forms.Cursors.AppStarting.Equals(cursor))
             {
                 return Cursors.AppStarting;
             }
 
-            if (cursor == System.Windows.Forms.Cursors.Arrow)
+            if (System.Windows.Forms.Cursors.Arrow.Equals(cursor))
             {
                 return Cursors.Arrow;
             }
 
-            if (cursor == System.Windows.Forms.Cursors.Cross)
+            if (System.Windows.Forms.Cursors.Cross.Equals(cursor))
             {
                 return Cursors.Cross;
             }
 
-            if (cursor == System.Windows.Forms.Cursors.Default)
+            if (System.Windows.Forms.Cursors.Default.Equals(cursor))
             {
                 return Cursors.Arrow;
             }
 
-            if (cursor == System.Windows.Forms.Cursors.Hand)
+            if (System.Windows.Forms.Cursors.Hand.Equals(cursor))
             {
                 return Cursors.Hand;
             }
 
-            if (cursor == System.Windows.Forms.Cursors.Help)
+            if (System.Windows.Forms.Cursors.Help.Equals(cursor))
             {
                 return Cursors.Help;
             }
 
-            if (cursor == System.Windows.Forms.Cursors.IBeam)
+            if (System.Windows.Forms.Cursors.IBeam.Equals(cursor))
             {
                 return Cursors.IBeam;
             }
 
-            if (cursor == System.Windows.Forms.Cursors.No)
+            if (System.Windows.Forms.Cursors.No.Equals(cursor))
             {
                 return Cursors.No;
             }
 
-            if (cursor == System.Windows.Forms.Cursors.SizeAll)
+            if (System.Windows.Forms.Cursors.SizeAll.Equals(cursor))
             {
                 return Cursors.SizeAll;
             }
 
-            if (cursor == System.Windows.Forms.Cursors.SizeNESW)
+            if (System.Windows.Forms.Cursors.SizeNESW.Equals(cursor))
             {
                 return Cursors.SizeNESW;
             }
 
-            if (cursor == System.Windows.Forms.Cursors.SizeNS)
+            if (System.Windows.Forms.Cursors.SizeNS.Equals(cursor))
             {
                 return Cursors.SizeNS;
             }
 
-            if (cursor == System.Windows.Forms.Cursors.SizeNWSE)
+            if (System.Windows.Forms.Cursors.SizeNWSE.Equals(cursor))
             {
                 return Cursors.SizeNWSE;
             }
 
-            if (cursor == System.Windows.Forms.Cursors.SizeWE)
+            if (System.Windows.Forms.Cursors.SizeWE.Equals(cursor))
             {
                 return Cursors.SizeWE;
             }
 
-            if (cursor == System.Windows.Forms.Cursors.UpArrow)
+            if (System.Windows.Forms.Cursors.UpArrow.Equals(cursor))
             {
                 return Cursors.UpArrow;
             }
 
-            if (cursor == System.Windows.Forms.Cursors.WaitCursor)
+            if (System.Windows.Forms.Cursors.WaitCursor.Equals(cursor))
             {
                 return Cursors.Wait;
             }

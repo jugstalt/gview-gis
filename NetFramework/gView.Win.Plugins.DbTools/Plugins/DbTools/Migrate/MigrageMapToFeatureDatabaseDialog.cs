@@ -177,7 +177,8 @@ namespace gView.Plugins.DbTools.Migrate
         }
 
         #region Export
-        private FeatureImport _export = null;
+
+        //private FeatureImport _export = null;
         private FDBImport _fdbExport = null;
         private IFeatureDataset _dataset = null;
         private IQueryFilter _filter = null;

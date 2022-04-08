@@ -21,7 +21,7 @@ namespace gView.Framework.Network
             }
         }
 
-        public IGraphWeightFeatureClass this[int fcId]
+        public new IGraphWeightFeatureClass this[int fcId]
         {
             get
             {

@@ -223,7 +223,7 @@ namespace gView.DataSources.MSSqlSpatial.UI
     public class MsSql2008SpatialSdeExplorerObject : gView.Framework.OGC.UI.ExplorerObjectFeatureClassImport, IExplorerSimpleObject, IExplorerObjectDeletable, IExplorerObjectRenamable, ISerializableExplorerObject
     {
         private MsSql2008SpatialSdeIcon _icon = new MsSql2008SpatialSdeIcon();
-        private string _server = "", _connectionString = "", _errMsg = "";
+        private string _server = "", _connectionString = "";
         private IFeatureDataset _dataset;
 
         public MsSql2008SpatialSdeExplorerObject() : base(null, typeof(IFeatureDataset)) { }

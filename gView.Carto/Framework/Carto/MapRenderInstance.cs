@@ -778,11 +778,11 @@ namespace gView.Framework.Carto
                 if (_canvas != null)
                 {
                     return false;  // irgendwas tut sich noch
-                    lock (_canvas)
-                    {
-                        _canvas.Dispose();
-                        _canvas = null;
-                    }
+                    //lock (_canvas)
+                    //{
+                    //    _canvas.Dispose();
+                    //    _canvas = null;
+                    //}
                 }
                 NewBitmap?.BeginInvoke(null, new AsyncCallback(AsyncInvoke.RunAndForget), null);
 

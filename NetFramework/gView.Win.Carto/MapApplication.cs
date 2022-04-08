@@ -875,19 +875,21 @@ namespace gView.Win.Carto
         #endregion
 
         //private void RefreshActiveMapThread(object drawPhase)
-        async private Task RefreshActiveMapThread(object drawPhase)
+        private Task RefreshActiveMapThread(object drawPhase)
         {
             if (_activeDataView == null)
             {
-                return;
+                return Task.CompletedTask;
             }
 
             if (_activeDataView.MapView == null)
             {
-                return;
+                return Task.CompletedTask;
             }
 
             _activeDataView.MapView.RefreshMap((DrawPhase)drawPhase);
+
+            return Task.CompletedTask;
         }
 
         public IDocumentWindow DocumentWindow

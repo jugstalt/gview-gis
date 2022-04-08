@@ -312,7 +312,7 @@ namespace gView.Framework.Symbology
             }
         }
 
-        public void Load(IPersistStream stream)
+        new public void Load(IPersistStream stream)
         {
             base.Load(stream);
 
@@ -333,7 +333,7 @@ namespace gView.Framework.Symbology
             this.MinSymbolSize = (float)stream.Load("minsymbolsize", 0f);
         }
 
-        public void Save(IPersistStream stream)
+        new public void Save(IPersistStream stream)
         {
             base.Save(stream);
 

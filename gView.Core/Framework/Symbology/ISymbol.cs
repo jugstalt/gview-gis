@@ -8,7 +8,6 @@ namespace gView.Framework.Symbology
     public interface ISymbol : IPersistable, IClone, IClone2, ILegendItem
     {
         void Draw(IDisplay display, IGeometry geometry);
-        void Release();
 
         string Name { get; }
 

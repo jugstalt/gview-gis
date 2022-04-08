@@ -439,7 +439,7 @@ namespace gView.Framework.XML
                 */
                 return null;
             }
-            catch (Exception ex)
+            catch (Exception /*ex*/)
             {
                 return null;
             }
@@ -954,7 +954,7 @@ namespace gView.Framework.XML
 
                 _features = doc.SelectNodes("//FEATURE");
             }
-            catch (Exception ex)
+            catch (Exception /*ex*/)
             {
                 _features = null;
             }
@@ -972,7 +972,7 @@ namespace gView.Framework.XML
 
                 _features = doc.SelectNodes("//FEATURE");
             }
-            catch (Exception ex)
+            catch (Exception /*ex*/)
             {
                 _features = null;
             }

@@ -1245,8 +1245,10 @@ namespace gView.Framework.Data
             tab.Columns.Add("POS", typeof(int));
 
             int NID;
-            while ((NID = br.ReadInt32()) != null)
+            while (true)
             {
+                NID = br.ReadInt32();
+
                 if (NID == -999)
                 {
                     break;

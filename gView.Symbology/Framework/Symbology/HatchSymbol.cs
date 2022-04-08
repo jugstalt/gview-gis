@@ -234,7 +234,7 @@ namespace gView.Framework.Symbology
             }
         }
 
-        public void Load(IPersistStream stream)
+        new public void Load(IPersistStream stream)
         {
             base.Load(stream);
 
@@ -244,7 +244,7 @@ namespace gView.Framework.Symbology
             _outlineSymbol = (ISymbol)stream.Load("outlinesymbol");
         }
 
-        public void Save(IPersistStream stream)
+        new public void Save(IPersistStream stream)
         {
             base.Save(stream);
 

@@ -169,7 +169,7 @@ namespace gView.DataSources.PostGIS.UI
         int _pos = 0;
         public void Reset()
         {
-            int _pos = 0;
+            _pos = 0;
         }
 
         private void button1_Click(object sender, System.EventArgs e)

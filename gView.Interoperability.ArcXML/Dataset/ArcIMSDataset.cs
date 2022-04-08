@@ -170,8 +170,9 @@ namespace gView.Interoperability.ArcXML.Dataset
             return Task.FromResult<IDatasetElement>(null);
         }
 
-        async public Task RefreshClasses()
+        public Task RefreshClasses()
         {
+            return Task.CompletedTask;
         }
         #endregion
 

@@ -15,7 +15,6 @@ namespace gView.DataSources.Fdb.MSSql
     [gView.Framework.system.RegisterPlugIn("3B870AB5-8BE0-4a00-911D-ECC6C83DD6B4")]
     public class SqlFDBDataset : DatasetMetadata, IFeatureDataset2, IRasterDataset, IFDBDataset, gView.Framework.UI.IConnectionStringDialog
     {
-        private int _order = 0;
         internal int _dsID = -1;
         private List<IDatasetElement> _layers;
         private string _errMsg = "";

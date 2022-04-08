@@ -898,7 +898,7 @@ namespace gView.Framework.Offline
                     return obj.ToString();
                 }
             }
-            catch (Exception ex)
+            catch (Exception /*ex*/)
             {
                 return String.Empty;
             }
@@ -3019,7 +3019,7 @@ SELECT " + c.parentFc_id + @"," + c.parentDb.DbColName("OBJECT_GUID") + ",0," + 
                     return LockState.Error;
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return LockState.Error;
             }
@@ -3118,7 +3118,7 @@ SELECT " + c.parentFc_id + @"," + c.parentDb.DbColName("OBJECT_GUID") + ",0," + 
                     return tab;
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return null;
             }

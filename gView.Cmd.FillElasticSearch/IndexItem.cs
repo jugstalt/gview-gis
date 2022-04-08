@@ -3,7 +3,7 @@ using Newtonsoft.Json;
 
 namespace gView.Cmd.FillElasticSearch
 {
-    [ElasticsearchType(Name = "item")]
+    [ElasticsearchType(RelationName = "item")]
     public class Item
     {
         [Text(Name = "id", Index = false)]
@@ -33,7 +33,7 @@ namespace gView.Cmd.FillElasticSearch
         public string BBox { get; set; }
     }
 
-    [ElasticsearchType(Name = "meta")]
+    [ElasticsearchType(RelationName = "meta")]
     public class Meta
     {
         [Text(Name = "id", Index = false)]

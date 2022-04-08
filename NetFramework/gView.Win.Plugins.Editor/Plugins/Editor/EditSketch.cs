@@ -608,5 +608,10 @@ namespace gView.Plugins.Editor
 
             return true;
         }
+
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
+        }
     }
 }

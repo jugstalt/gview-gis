@@ -202,7 +202,7 @@ namespace gView.Framework.system.UI
                     path.AddEllipse(baseRect);
                 }
             }
-            catch (Exception ex)
+            catch (Exception /*ex*/)
             {
                 path.AddEllipse(baseRect);
             }

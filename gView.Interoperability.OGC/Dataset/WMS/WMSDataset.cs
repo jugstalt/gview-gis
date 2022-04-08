@@ -208,8 +208,9 @@ namespace gView.Interoperability.OGC.Dataset.WMS
             return Task.FromResult<IDatasetElement>(null);
         }
 
-        async public Task RefreshClasses()
+        public Task RefreshClasses()
         {
+            return Task.CompletedTask;
         }
         #endregion
 

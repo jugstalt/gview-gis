@@ -887,7 +887,7 @@ namespace gView.DataSources.Fdb.SQLite
 
         private Dictionary<string, List<long>> _addTreeNodes = new Dictionary<string, List<long>>();
         private object thisLock = new object();
-        async protected override Task AddTreeNode(string fcName, long nid)
+        protected override Task AddTreeNode(string fcName, long nid)
         {
             lock (thisLock)
             {
@@ -900,6 +900,8 @@ namespace gView.DataSources.Fdb.SQLite
                     _addTreeNodes[fcName].Add(nid);
                 }
             }
+
+            return Task.CompletedTask;
         }
         async private Task AddTreeNodes()
         {

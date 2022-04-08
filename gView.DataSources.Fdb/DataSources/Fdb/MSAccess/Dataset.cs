@@ -530,15 +530,10 @@ namespace gView.DataSources.Fdb.MSAccess
         private IDataset _dataset;
         private string _name = "", _aliasname = "";
         private string m_idfield = "", m_shapeField = "";
-        private GeometryType m_fClassType;
         private Fields m_fields;
         private IEnvelope m_envelope = null;
         private BinarySearchTree _searchTree = null;
-        //private AccessFDBFeatureCursor _cursor=null;
-        private IFeatureCursor _cursor = null;
-        private int _pos = -1;
         private GeometryDef _geomDef;
-        //private QueryResult _queryResult=null;
 
         public AccessFDBFeatureClass(AccessFDB fdb, IDataset dataset, GeometryDef geomDef)
         {

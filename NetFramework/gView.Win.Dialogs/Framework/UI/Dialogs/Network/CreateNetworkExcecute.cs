@@ -99,9 +99,11 @@ namespace gView.Framework.UI.Dialogs.Network
 
         #region ISerializableExecute
 
-        async public Task DeserializeObject(string config)
+        public Task DeserializeObject(string config)
         {
             _serialized = JsonConvert.DeserializeObject<FormNewNetworkclass.Serialized>(config);
+
+            return Task.CompletedTask;
         }
 
 

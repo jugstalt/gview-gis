@@ -113,5 +113,20 @@ namespace gView.Framework.Geometry
         {
             return !(a == b);
         }
+
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
+        }
+
+        public override bool Equals(object obj)
+        {
+            if(obj is Vector2D)
+            {
+                return this == (Vector2D)obj;
+            }
+
+            return false;
+        }
     }
 }

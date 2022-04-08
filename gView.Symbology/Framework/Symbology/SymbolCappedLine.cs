@@ -221,7 +221,7 @@ namespace gView.Framework.Symbology
 
         #region IPersistable
 
-        public void Load(IPersistStream stream)
+        new public void Load(IPersistStream stream)
         {
             base.Load(stream);
 
@@ -233,7 +233,7 @@ namespace gView.Framework.Symbology
             this.RotateEndSymbol = (bool)stream.Load("rotateendsymbol", true);
         }
 
-        public void Save(IPersistStream stream)
+        new public void Save(IPersistStream stream)
         {
             base.Save(stream);
 

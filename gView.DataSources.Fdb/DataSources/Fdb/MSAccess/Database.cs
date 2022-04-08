@@ -4348,7 +4348,6 @@ namespace gView.DataSources.Fdb.MSAccess
             }
         }
 
-        DbProviderFactory _factory = null;
         abstract public DbProviderFactory ProviderFactory { get; }
 
         virtual public string GuidToSql(Guid guid)

@@ -188,7 +188,7 @@ namespace gView.Server.Services.Security
                     {
                         return authToken = _encryptionCertService.FromToken(cookie);
                     }
-                    catch (System.Security.Cryptography.CryptographicException ex)
+                    catch (System.Security.Cryptography.CryptographicException)
                     {
                         return authToken = new AuthToken()
                         {

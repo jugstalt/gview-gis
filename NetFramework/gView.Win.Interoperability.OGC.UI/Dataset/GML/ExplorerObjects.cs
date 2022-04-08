@@ -91,15 +91,6 @@ namespace gView.Interoperability.OGC.UI.Dataset.GML
 
         #endregion
 
-        #region IDisposable Member
-
-        public void Dispose()
-        {
-
-        }
-
-        #endregion
-
         #region ISerializableExplorerObject Member
 
         async public Task<IExplorerObject> CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache cache)

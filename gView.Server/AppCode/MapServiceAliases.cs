@@ -2,7 +2,7 @@
 {
     class MapServiceAlias : MapService
     {
-        string _serviceName;
+        private readonly string _serviceName = string.Empty;
 
         //public MapServiceAlias(string alias, MapServiceType type, string serviceName)
         //    : base(alias, type)

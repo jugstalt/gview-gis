@@ -1030,7 +1030,7 @@ namespace gView.Plugins.MapTools.Controls
         {
             get { return imageList1.Images[0]; }
         }
-        public string Name
+        public new string Name
         {
             get { return LocalizedResources.GetResString("String.Selection", "Selection"); }
             set { }

@@ -15,7 +15,7 @@ namespace gView.Framework.UI.Dialogs
     /// </summary>
     public class FormDataTable2 : System.Windows.Forms.Form, IDockableWindow
     {
-        private IContainer components;
+        private IContainer components = null;
         private IDatasetElement _dsElement;
         private ITableClass _tableClass;
         private ITable _result;

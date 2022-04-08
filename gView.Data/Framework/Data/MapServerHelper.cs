@@ -472,7 +472,6 @@ namespace gView.Framework.Data
             featureClass.HasM = fcs[0].HasZ;
             featureClass.SpatialReference = fcs[0].SpatialReference;
 
-            IEnvelope envelope = null;
             foreach (IFeatureClass fc in fcs)
             {
                 //

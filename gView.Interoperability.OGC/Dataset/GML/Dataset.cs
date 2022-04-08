@@ -307,8 +307,9 @@ namespace gView.Interoperability.OGC.Dataset.GML
             return null;
         }
 
-        async public Task RefreshClasses()
+        public Task RefreshClasses()
         {
+            return Task.CompletedTask;
         }
         #endregion
 

@@ -13,7 +13,6 @@ namespace gView.DataSources.OGR
         private Dataset _dataset;
         private bool _hasZ = false, _hasM = false;
         private GeometryType _geomType = GeometryType.Unknown;
-        private int _layerIndex;
         private Fields _fields;
 
         public FeatureClassV3(Dataset dataset, string name)

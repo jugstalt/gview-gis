@@ -8,7 +8,6 @@ namespace gView.Plugins.Editor
     [gView.Framework.system.RegisterPlugIn("414BD661-4128-42fe-BDA5-831E993C393B", Obsolete = true)]
     class Toolbar : IToolbar
     {
-        private bool _visible = true;
         private List<Guid> _guids;
 
         public Toolbar()

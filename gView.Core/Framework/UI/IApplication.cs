@@ -11,6 +11,4 @@ namespace gView.Framework.UI
 
         void Exit();
     }
-
-
 }
