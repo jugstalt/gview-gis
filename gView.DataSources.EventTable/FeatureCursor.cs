@@ -15,7 +15,6 @@ namespace gView.DataSources.EventTable
 
         private EventTableConnection _etcon;
         //private DataTable _tab = null;
-        private int _pos = 0;
         private bool _addShape = false;
         private DbDataReader _dbReader = null;
         private DbConnection _dbConnection = null;

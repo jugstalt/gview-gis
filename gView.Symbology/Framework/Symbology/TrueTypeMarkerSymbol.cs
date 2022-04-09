@@ -218,7 +218,7 @@ namespace gView.Framework.Symbology
 
         #region IPersistable Member
 
-        public void Load(IPersistStream stream)
+        public new void Load(IPersistStream stream)
         {
             base.Load(stream);
 
@@ -293,7 +293,7 @@ namespace gView.Framework.Symbology
             SetCurrentEngineOffset();
         }
 
-        public void Save(IPersistStream stream)
+        public new void Save(IPersistStream stream)
         {
             base.Save(stream);
 

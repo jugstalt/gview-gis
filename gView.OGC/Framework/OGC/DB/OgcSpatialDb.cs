@@ -266,8 +266,9 @@ namespace gView.Framework.OGC.DB
             }
         }
 
-        async public Task RefreshClasses()
+        public Task RefreshClasses()
         {
+            return Task.CompletedTask;
         }
         #endregion
 

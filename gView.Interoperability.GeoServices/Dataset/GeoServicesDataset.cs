@@ -25,7 +25,7 @@ namespace gView.Interoperability.GeoServices.Dataset
         internal string _name = "";
         internal List<IWebServiceTheme> _themes = new List<IWebServiceTheme>();
         private GeoServicesClass _class = null;
-        private IEnvelope _envelope;
+        private IEnvelope _envelope = null;
         private string _errMsg = "";
         private DatasetState _state = DatasetState.unknown;
         private ISpatialReference _sRef = null;

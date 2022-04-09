@@ -13,10 +13,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Proj4Net.Core" Version="1.22.501" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\gView.Core\gView.Core.csproj" />
     <ProjectReference Include="..\gView.Db\gView.Db.csproj" />
     <ProjectReference Include="..\gView.Math\gView.Math.csproj" />
-    <ProjectReference Include="..\gView.Proj\gView.Proj.csproj" />
     <ProjectReference Include="..\gView.System\gView.System.csproj" />
   </ItemGroup>
 

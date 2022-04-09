@@ -324,6 +324,11 @@ namespace gView.Framework.Data
                 this.precision == field.precision;
         }
 
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
+        }
+
         public override string ToString()
         {
             return this.name;

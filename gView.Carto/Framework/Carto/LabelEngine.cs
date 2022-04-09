@@ -102,11 +102,8 @@ namespace gView.Framework.Carto
             IEnvelope labelPolyonEnvelope = null;
             if (symbol is ILabel)
             {
-                var labelApendResult = LabelAppendResult.Succeeded;
                 foreach (var symbolAlignment in LabelAlignments((ILabel)symbol))
                 {
-                    labelApendResult = LabelAppendResult.Succeeded;
-
                     List<IAnnotationPolygonCollision> aPolygons = ((ILabel)symbol).AnnotationPolygon(display, geometry, symbolAlignment);
                     bool outside = true;
 

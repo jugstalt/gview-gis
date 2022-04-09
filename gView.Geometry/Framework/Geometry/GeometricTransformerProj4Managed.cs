@@ -1,4 +1,4 @@
-﻿using Proj4Net;
+﻿using Proj4Net.Core;
 using System;
 using System.Linq;
 using System.Text;
@@ -303,24 +303,28 @@ namespace gView.Framework.Geometry
 
         private CoordinateReferenceSystem[] ProjectionPipeline(CoordinateReferenceSystem from, CoordinateReferenceSystem to)
         {
-            //
-            //  Proj4net berücksichtigt nadgrids=@null nicht, wodurch bei Koordinatensystem mit diesem Parametern ein Fehler im Hochwert entsteht!
-            //  Workaround: Zuerst nach WGS84 projezieren und dann weiter...
-            //
-            if (from.Parameters.Contains("+nadgrids=@null") || to.Parameters.Contains("+nadgrids=@null"))
-            {
-                var wgs84 = _factory.CreateFromParameters("epsg:4326", "+proj=longlat +ellps=WGS84 +datum=WGS84 +towgs84=0,0,0,0,0,0,0");
+            #region Problem solved with Proj4Net.Core, thx Jürgen
 
-                if (!IsEqual(wgs84, from) && !IsEqual(wgs84, to))
-                {
-                    return new CoordinateReferenceSystem[]
-                    {
-                        from,
-                        wgs84,
-                        to
-                    };
-                }
-            }
+            ////
+            ////  Proj4net berücksichtigt nadgrids=@null nicht, wodurch bei Koordinatensystem mit diesem Parametern ein Fehler im Hochwert entsteht!
+            ////  Workaround: Zuerst nach WGS84 projezieren und dann weiter...
+            ////
+            //if (from.Parameters.Contains("+nadgrids=@null") || to.Parameters.Contains("+nadgrids=@null"))
+            //{
+            //    var wgs84 = _factory.CreateFromParameters("epsg:4326", "+proj=longlat +ellps=WGS84 +datum=WGS84 +towgs84=0,0,0,0,0,0,0");
+
+            //    if (!IsEqual(wgs84, from) && !IsEqual(wgs84, to))
+            //    {
+            //        return new CoordinateReferenceSystem[]
+            //        {
+            //            from,
+            //            wgs84,
+            //            to
+            //        };
+            //    }
+            //}
+
+            #endregion
 
             return new CoordinateReferenceSystem[] { from, to };
         }

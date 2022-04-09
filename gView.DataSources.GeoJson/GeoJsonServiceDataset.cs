@@ -100,7 +100,7 @@ namespace gView.DataSources.GeoJson
             _spatialReference = sRef;
         }
 
-        async public Task<bool> Open()
+        public Task<bool> Open()
         {
             try
             {
@@ -116,9 +116,10 @@ namespace gView.DataSources.GeoJson
             catch (Exception ex)
             {
                 this.LastErrorMessage = ex.Message;
-                return false;
+
+                return Task.FromResult(false);
             }
-            return true;
+            return Task.FromResult(true);
         }
 
         public Task RefreshClasses()

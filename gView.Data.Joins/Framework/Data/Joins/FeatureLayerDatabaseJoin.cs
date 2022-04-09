@@ -105,7 +105,7 @@ namespace gView.Framework.Data.Joins
             return Task.FromResult<IRow>(row);
         }
 
-        async public Task PerformCacheQuery(string[] vals)
+        public Task PerformCacheQuery(string[] vals)
         {
             IField field = _fields.FindField(this.JoinField);
             StringBuilder where = new StringBuilder();
@@ -126,7 +126,7 @@ namespace gView.Framework.Data.Joins
             }
             if (where.Length == 0)
             {
-                return;
+                return Task.CompletedTask;
             }
 
             string fields = _selectFieldNames;
@@ -138,7 +138,7 @@ namespace gView.Framework.Data.Joins
             DataTable tab = _provider.ExecuteQuery("select " + fields + " from " + _provider.ToTableName(this.JoinTable) + " where " + _provider.ToFieldName(this.JoinField) + " in (" + where.ToString() + ")");
             if (tab == null || tab.Rows.Count == 0)
             {
-                return;
+                return Task.CompletedTask;
             }
 
             foreach (DataRow tableRow in tab.Rows)
@@ -161,6 +161,8 @@ namespace gView.Framework.Data.Joins
                 }
                 _rows[key] = row;
             }
+
+            return Task.CompletedTask;
         }
 
         public Task<ICursor> PerformQuery(IQueryFilter filter)

@@ -291,7 +291,7 @@ namespace gView.DataSources.Fdb.SQLite
             private SQLiteFDB _fdb;
             private string _networkName;
             private List<IFeatureClass> _edgeFcs = new List<IFeatureClass>();
-            private IFeatureClass _edgeFc = null, _nodeFc = null;
+            private IFeatureClass _nodeFc = null;
             private int _edgeFcIndex = 0, _fcid = -1;
             private IFeatureCursor _edgeCursor = null, _nodeCursor = null;
             private IQueryFilter _filter;

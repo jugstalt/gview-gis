@@ -298,9 +298,10 @@ namespace gView.Framework.Db
             }
             return ds.Tables[0];
         }
-        async public Task<bool> SQLQuery(DataSet ds, string sql, string table)
+        public Task<bool> SQLQuery(DataSet ds, string sql, string table)
         {
             DbDataAdapter adapter = null;
+
             try
             {
                 switch (_dbtype)
@@ -334,9 +335,11 @@ namespace gView.Framework.Db
 
                 m_errMsg = "QUERY (" + sql + "): " + e.Message;
                 _lastException = e;
-                return false;
+
+                return Task.FromResult(false);
             }
-            return true;
+
+            return Task.FromResult(true);
         }
         async public Task<bool> SQLQuery(DataSet ds, string sql, string table, DataRow refRow)
         {

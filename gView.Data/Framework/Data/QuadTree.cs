@@ -1068,10 +1068,10 @@ namespace gView.Framework.Data
         protected BinarySearchTreeNode _root = null;
 
         protected BinarySearchTree() { }
-        public BinarySearchTree(IEnvelope Bounds, double SpatialRatio)
+        public BinarySearchTree(IEnvelope bounds, double spatialRatio)
         {
-            _bounds = Bounds = Bounds;
-            _spatialRatio = SpatialRatio;
+            _bounds = bounds;
+            _spatialRatio = spatialRatio;
         }
         public BinarySearchTreeNode Root
         {

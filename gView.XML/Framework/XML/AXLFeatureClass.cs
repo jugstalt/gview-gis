@@ -12,7 +12,6 @@ namespace gView.Framework.XML
     {
         private const int _maxResultConst = 200;
         protected IDataset _dataset;
-        private int _maxResult = _maxResultConst;
         private string _name = "", _aliasname = "";
         private string _idfield = "", _shapeField = "", _id = "";
         private Fields _fields;

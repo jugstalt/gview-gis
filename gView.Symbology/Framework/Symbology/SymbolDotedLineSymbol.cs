@@ -362,7 +362,7 @@ namespace gView.Framework.Symbology
 
         #region IPersistable
 
-        public void Load(IPersistStream stream)
+        public new void Load(IPersistStream stream)
         {
             base.Load(stream);
 
@@ -380,7 +380,7 @@ namespace gView.Framework.Symbology
             this.UseSymbolRotation = (bool)stream.Load("usesymbolrotation", true);
         }
 
-        public void Save(IPersistStream stream)
+        public new void Save(IPersistStream stream)
         {
             base.Save(stream);
 

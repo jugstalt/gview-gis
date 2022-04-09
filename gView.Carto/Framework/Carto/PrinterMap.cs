@@ -291,7 +291,6 @@ namespace gView.Framework.Carto
         private InterpolationMethod _interpolMethod = InterpolationMethod.Fast;
         private float _transparency = 0.0f;
         private GraphicsEngine.ArgbColor _transColor = GraphicsEngine.ArgbColor.Transparent;
-        static private IRasterLayer _lastRasterLayer = null;
 
         public RenderRasterLayerThreadPrint(Map map, IRasterLayer layer, IRasterLayer rootLayer, ICancelTracker cancelTracker)
         {

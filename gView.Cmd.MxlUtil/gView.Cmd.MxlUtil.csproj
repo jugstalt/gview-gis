@@ -52,7 +52,6 @@
     <ProjectReference Include="..\gView.Offline\gView.Offline.csproj" />
     <ProjectReference Include="..\gView.OGC\gView.OGC.csproj" />
     <ProjectReference Include="..\gView.Plugins.Modules\gView.Plugins.Modules.csproj" />
-    <ProjectReference Include="..\gView.Proj\gView.Proj.csproj" />
     <ProjectReference Include="..\gView.Security\gView.Security.csproj" />
     <ProjectReference Include="..\gView.Server.Connector\gView.Server.Connector.csproj" />
     <ProjectReference Include="..\gView.Symbology\gView.Symbology.csproj" />

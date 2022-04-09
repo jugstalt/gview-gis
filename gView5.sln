@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.28803.202
+# Visual Studio Version 17
+VisualStudioVersion = 17.1.32328.378
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.System", "gView.System\gView.System.csproj", "{E50D8014-0FB8-4B67-8291-0ABEE04A1403}"
 EndProject
@@ -52,8 +52,6 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Interoperability.OGC", "gView.Interoperability.OGC\gView.Interoperability.OGC.csproj", "{FAFEF445-A01C-4770-B993-4E9CA33D95E3}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Metadata", "gView.Metadata\gView.Metadata.csproj", "{42696D09-69C7-4E21-8351-DC53698D24E8}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Proj", "gView.Proj\gView.Proj.csproj", "{F236407A-27B9-42D0-9000-6BC4A04E8F54}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Server", "gView.Server\gView.Server.csproj", "{C5E46A29-ECBA-4F6B-A14C-5DE553CE77BE}"
 EndProject
@@ -199,7 +197,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.MxlUtil.Lib", "gView.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Server.Models", "gView.Server.Models\gView.Server.Models.csproj", "{72A5E829-24DD-4BCB-B559-AF7D7BFB13A6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gView.SetupHelper", "gView.SetupHelper\gView.SetupHelper.csproj", "{0EB012A6-40AD-4D29-BDFA-39AC094BF536}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.SetupHelper", "gView.SetupHelper\gView.SetupHelper.csproj", "{0EB012A6-40AD-4D29-BDFA-39AC094BF536}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -409,14 +407,6 @@ Global
 		{42696D09-69C7-4E21-8351-DC53698D24E8}.Release|Any CPU.Build.0 = Release|Any CPU
 		{42696D09-69C7-4E21-8351-DC53698D24E8}.Release|x64.ActiveCfg = Release|Any CPU
 		{42696D09-69C7-4E21-8351-DC53698D24E8}.Release|x64.Build.0 = Release|Any CPU
-		{F236407A-27B9-42D0-9000-6BC4A04E8F54}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{F236407A-27B9-42D0-9000-6BC4A04E8F54}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{F236407A-27B9-42D0-9000-6BC4A04E8F54}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{F236407A-27B9-42D0-9000-6BC4A04E8F54}.Debug|x64.Build.0 = Debug|Any CPU
-		{F236407A-27B9-42D0-9000-6BC4A04E8F54}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{F236407A-27B9-42D0-9000-6BC4A04E8F54}.Release|Any CPU.Build.0 = Release|Any CPU
-		{F236407A-27B9-42D0-9000-6BC4A04E8F54}.Release|x64.ActiveCfg = Release|Any CPU
-		{F236407A-27B9-42D0-9000-6BC4A04E8F54}.Release|x64.Build.0 = Release|Any CPU
 		{C5E46A29-ECBA-4F6B-A14C-5DE553CE77BE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{C5E46A29-ECBA-4F6B-A14C-5DE553CE77BE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C5E46A29-ECBA-4F6B-A14C-5DE553CE77BE}.Debug|x64.ActiveCfg = Debug|Any CPU

@@ -326,10 +326,6 @@
       <Project>{04e002f8-468c-45e8-997b-332e5048ba31}</Project>
       <Name>gView.Plugins.Modules</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\gView.Proj\gView.Proj.csproj">
-      <Project>{f236407a-27b9-42d0-9000-6bc4a04e8f54}</Project>
-      <Name>gView.Proj</Name>
-    </ProjectReference>
     <ProjectReference Include="..\..\gView.Security\gView.Security.csproj">
       <Project>{f90e3a4d-8a73-4899-9f49-a756f58828f7}</Project>
       <Name>gView.Security</Name>

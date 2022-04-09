@@ -360,9 +360,10 @@ namespace gView.Framework.Symbology
             }
         }
 
-        public void Load(IPersistStream stream)
+        public new void Load(IPersistStream stream)
         {
             base.Load(stream);
+
             _symbols.Clear();
 
             SymbolCollectionItem item;
@@ -372,9 +373,10 @@ namespace gView.Framework.Symbology
             }
         }
 
-        public void Save(IPersistStream stream)
+        public new void Save(IPersistStream stream)
         {
             base.Save(stream);
+
             foreach (SymbolCollectionItem item in _symbols)
             {
                 stream.Save("Item", item);

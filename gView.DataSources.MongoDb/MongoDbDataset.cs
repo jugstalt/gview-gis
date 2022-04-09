@@ -125,9 +125,9 @@ namespace gView.DataSources.MongoDb
             throw new NotImplementedException();
         }
 
-        async public Task<IFeatureCursor> Query(IFeatureClass fc, IQueryFilter filter)
+        public Task<IFeatureCursor> Query(IFeatureClass fc, IQueryFilter filter)
         {
-            return new MongoDbFeatureCursor((MongoDbFeatureClass)fc, filter);
+            return Task.FromResult<IFeatureCursor>(new MongoDbFeatureCursor((MongoDbFeatureClass)fc, filter));
         }
 
         public Task<string[]> DatasetNames()
@@ -376,9 +376,9 @@ namespace gView.DataSources.MongoDb
             return dataset;
         }
 
-        async public Task<IEnvelope> Envelope()
+        public Task<IEnvelope> Envelope()
         {
-            return new Envelope();
+            return Task.FromResult<IEnvelope>(new Envelope());
         }
 
         internal ISpatialReference _spatialReference = null;
@@ -432,9 +432,9 @@ namespace gView.DataSources.MongoDb
             return true;
         }
 
-        async public Task RefreshClasses()
+        public Task RefreshClasses()
         {
-
+            return Task.CompletedTask;
         }
 
         public Task<bool> SetConnectionString(string connectionString)
