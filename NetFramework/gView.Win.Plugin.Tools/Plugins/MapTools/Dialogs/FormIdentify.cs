@@ -1,5 +1,6 @@
 using gView.Framework.Carto;
 using gView.Framework.Data;
+using gView.Framework.Data.Cursors;
 using gView.Framework.Geometry;
 using gView.Framework.Globalisation;
 using gView.Framework.UI;

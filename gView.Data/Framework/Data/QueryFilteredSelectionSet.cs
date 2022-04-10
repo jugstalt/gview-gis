@@ -1,4 +1,5 @@
-﻿using gView.Framework.Data.Filters;
+﻿using gView.Framework.Data.Cursors;
+using gView.Framework.Data.Filters;
 using System;
 using System.Threading.Tasks;
 

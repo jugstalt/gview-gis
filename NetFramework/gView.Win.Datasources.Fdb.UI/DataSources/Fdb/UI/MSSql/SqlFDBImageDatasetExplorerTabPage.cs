@@ -5,6 +5,7 @@ using gView.DataSources.Fdb.PostgreSql;
 using gView.DataSources.Fdb.SQLite;
 using gView.DataSources.Raster.File;
 using gView.Framework.Data;
+using gView.Framework.Data.Cursors;
 using gView.Framework.FDB;
 using gView.Framework.IO;
 using gView.Framework.system;

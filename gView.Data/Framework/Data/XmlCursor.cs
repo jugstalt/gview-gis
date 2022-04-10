@@ -1,4 +1,6 @@
-﻿namespace gView.Framework.Data
+﻿using gView.Framework.Data.Cursors;
+
+namespace gView.Framework.Data
 {
     public class XmlCursor : IXmlCursor
     {

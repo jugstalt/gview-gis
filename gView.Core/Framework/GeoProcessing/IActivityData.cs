@@ -1,4 +1,5 @@
 ﻿using gView.Framework.Data;
+using gView.Framework.Data.Cursors;
 
 namespace gView.Framework.GeoProcessing
 {

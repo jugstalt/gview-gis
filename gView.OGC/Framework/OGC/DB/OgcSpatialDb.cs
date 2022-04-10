@@ -1,5 +1,6 @@
 using gView.Db.Framework.Db;
 using gView.Framework.Data;
+using gView.Framework.Data.Cursors;
 using gView.Framework.Data.Filters;
 using gView.Framework.Data.Metadata;
 using gView.Framework.Editor.Core;

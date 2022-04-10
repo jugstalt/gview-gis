@@ -1,4 +1,5 @@
 ﻿using gView.Framework.Carto;
+using gView.Framework.Data.Cursors;
 using gView.Framework.Data.Filters;
 using gView.Framework.system;
 using gView.Framework.UI;

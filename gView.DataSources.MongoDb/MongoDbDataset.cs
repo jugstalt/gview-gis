@@ -1,4 +1,8 @@
-﻿using gView.Framework.Data;
+﻿// Only experimental Dataset
+#pragma warning disable
+
+using gView.Framework.Data;
+using gView.Framework.Data.Cursors;
 using gView.Framework.Data.Filters;
 using gView.Framework.Data.Metadata;
 using gView.Framework.FDB;

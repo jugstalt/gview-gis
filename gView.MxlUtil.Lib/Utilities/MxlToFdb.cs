@@ -2,6 +2,7 @@
 using gView.DataSources.Fdb.MSSql;
 using gView.Framework.Carto;
 using gView.Framework.Data;
+using gView.Framework.Data.Cursors;
 using gView.Framework.Data.Filters;
 using gView.Framework.FDB;
 using gView.Framework.Geometry;
