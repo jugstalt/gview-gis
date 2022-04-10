@@ -20,6 +20,7 @@ namespace gView.Framework.Data
         {
             _name = newName;
         }
+
         #region IFieldValue Member
 
         public string Name
