@@ -81,9 +81,7 @@ namespace gView.DataSources.Fdb.UI
             catch (Exception ex)
             {
                 //Throw away any error if we are not in debug mode
-#if (DEBUG)
-                MessageBox.Show(ex.Message, "Acquire SQL Servier List Error");
-#endif
+                MessageBox.Show(ex.Message, "Acquire SQL Server List Error");
                 txt = string.Empty;
             }
             finally
