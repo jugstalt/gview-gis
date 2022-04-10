@@ -1,4 +1,5 @@
 using gView.Framework.Carto;
+using gView.Framework.Data.Filters;
 using gView.Framework.Geometry;
 using gView.Framework.system;
 using gView.Framework.UI;
@@ -480,7 +481,7 @@ namespace gView.Framework.Data
                 // setzt sich aus Featureclass ID (oberen 32 bit)
                 // und Object ID (untere 32 bit) zusammen
                 //
-                ((Fields)featureClass.Fields).Add(new Field(MergedObjectIDName, FieldType.ID));
+                ((FieldCollection)featureClass.Fields).Add(new Field(MergedObjectIDName, FieldType.ID));
 
                 // Fields
                 foreach (IField field in fc.Fields.ToEnumerable())
@@ -506,7 +507,7 @@ namespace gView.Framework.Data
                     if (f.type == FieldType.Shape && featureClass.ShapeFieldName == String.Empty)
                     {
                         featureClass.ShapeFieldName = fc.ShapeFieldName;
-                    } ((Fields)featureClass.Fields).Add(f);
+                    } ((FieldCollection)featureClass.Fields).Add(f);
                 }
                 // Envelope
                 if (fc.Envelope != null)

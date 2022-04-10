@@ -36,7 +36,7 @@ namespace gView.DataSources.Fdb
 
                     #region Add "FDB_LinkedFeatureClasses"
 
-                    var fields = new Fields();
+                    var fields = new FieldCollection();
                     fields.Add(new Field("ID", FieldType.ID));
                     fields.Add(new Field("Plugin", FieldType.guid));
                     fields.Add(new Field("Connection", FieldType.String, 4000));

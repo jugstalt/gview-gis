@@ -1,5 +1,6 @@
 using gView.Framework.Carto;
 using gView.Framework.Data;
+using gView.Framework.Data.Metadata;
 using gView.Framework.Globalisation;
 using gView.Framework.IO;
 using gView.Framework.Sys.UI;
@@ -1025,7 +1026,7 @@ namespace gView.MapServer.Lib.UI
         {
             XmlStream stream = new XmlStream("metadata");
             this.ReadMetadata(stream);
-            gView.Framework.Data.Metadata metadata = new gView.Framework.Data.Metadata();
+            Metadata metadata = new Metadata();
             metadata.ReadMetadata(stream);
 
             gView.Framework.Metadata.TileServiceMetadata tileServiceMetadata = metadata.MetadataProvider(new Guid("D33D3DD2-DD63-4a47-9F84-F840FE0D01C0")) as gView.Framework.Metadata.TileServiceMetadata;

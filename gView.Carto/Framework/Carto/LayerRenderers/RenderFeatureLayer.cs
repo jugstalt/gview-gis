@@ -1,4 +1,5 @@
 ﻿using gView.Framework.Data;
+using gView.Framework.Data.Filters;
 using gView.Framework.Geometry;
 using gView.Framework.Symbology;
 using gView.Framework.system;
@@ -141,7 +142,7 @@ namespace gView.Framework.Carto.LayerRenderers
                     filterGeom = MapHelper.Project(fClass, _map.Display);
                 }
 
-                gView.Framework.Data.SpatialFilter filter = new gView.Framework.Data.SpatialFilter();
+                var filter = new SpatialFilter();
                 filter.DatasetCachingContext = _datasetCachingContext;
                 filter.Geometry = filterGeom;
                 filter.AddField(fClass.ShapeFieldName);

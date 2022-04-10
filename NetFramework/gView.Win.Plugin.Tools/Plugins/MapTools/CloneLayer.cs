@@ -1,6 +1,7 @@
 using gView.Framework.Carto;
 using gView.Framework.Carto.UI;
 using gView.Framework.Data;
+using gView.Framework.Data.Filters;
 using gView.Framework.Globalisation;
 using gView.Framework.UI;
 using gView.Plugins.MapTools.Dialogs;

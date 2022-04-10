@@ -1,4 +1,5 @@
 ﻿using gView.Framework.Data;
+using gView.Framework.Data.Filters;
 using gView.Framework.Geometry;
 using Microsoft.Azure.Documents;
 using Microsoft.Azure.Documents.Client;
@@ -28,7 +29,7 @@ namespace gView.DataSources.CosmoDb
                 fc.SpatialReference = dataset._spatialReference;  // ToDo
             }
 
-            var fields = new Fields();
+            var fields = new FieldCollection();
             if (spatialCollectoinItem.Fields != null)
             {
                 foreach (var field in spatialCollectoinItem.Fields)
@@ -76,7 +77,7 @@ namespace gView.DataSources.CosmoDb
 
         public IEnvelope Envelope { get; private set; }
 
-        public IFields Fields { get; private set; }
+        public IFieldCollection Fields { get; private set; }
 
         public string IDFieldName => "id";
 

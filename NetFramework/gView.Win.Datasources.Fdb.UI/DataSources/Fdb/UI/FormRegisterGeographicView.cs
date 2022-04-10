@@ -55,7 +55,7 @@ namespace gView.DataSources.Fdb.UI
             {
                 foreach (string view in await fdb.DatabaseViews())
                 {
-                    IFields fields = fdb.TableFields(view);
+                    IFieldCollection fields = fdb.TableFields(view);
                     if (fields == null ||
                         fields.FindField("FDB_OID") == null ||
                         fields.FindField("FDB_SHAPE") == null ||

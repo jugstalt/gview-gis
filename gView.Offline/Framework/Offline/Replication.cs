@@ -1,4 +1,5 @@
 using gView.Framework.Data;
+using gView.Framework.Data.Filters;
 using gView.Framework.FDB;
 using gView.Framework.Geometry;
 using gView.Framework.system;
@@ -28,7 +29,7 @@ namespace gView.Framework.Offline
                 throw new Exception("Argument Exception: db==null !");
             }
 
-            Fields fields = new Fields();
+            FieldCollection fields = new FieldCollection();
             fields.Add(new Field("ID", FieldType.ID));
             fields.Add(new Field("FC_ID", FieldType.integer));
             fields.Add(new Field("OBJECT_GUID_FIELDNAME", FieldType.String, 255));
@@ -38,7 +39,7 @@ namespace gView.Framework.Offline
                 throw new Exception(db.LastErrorMessage);
             }
 
-            fields = new Fields();
+            fields = new FieldCollection();
             fields.Add(new Field("ID", FieldType.ID));
             fields.Add(new Field("FC_ID", FieldType.integer));
             fields.Add(new Field("CHECKOUT_GUID", FieldType.guid));
@@ -60,7 +61,7 @@ namespace gView.Framework.Offline
                 throw new Exception(db.LastErrorMessage);
             }
 
-            fields = new Fields();
+            fields = new FieldCollection();
             fields.Add(new Field("ID", FieldType.ID));
             fields.Add(new Field("CHECKOUT_GUID", FieldType.guid));
             fields.Add(new Field("DIFF_DATUM", FieldType.Date));
@@ -74,7 +75,7 @@ namespace gView.Framework.Offline
                 throw new Exception(db.LastErrorMessage);
             }
 
-            fields = new Fields();
+            fields = new FieldCollection();
             fields.Add(new Field("ID", FieldType.ID));
             fields.Add(new Field("FC_ID", FieldType.integer));
             fields.Add(new Field("PARENT_OBJECT_GUID", FieldType.guid));
@@ -91,7 +92,7 @@ namespace gView.Framework.Offline
                 throw new Exception(db.LastErrorMessage);
             }
 
-            fields = new Fields();
+            fields = new FieldCollection();
             fields.Add(new Field("ID", FieldType.ID));
             fields.Add(new Field("FC_ID", FieldType.integer));
             fields.Add(new Field("OBJECT_GUID", FieldType.guid));
@@ -3699,7 +3700,7 @@ SELECT " + c.parentFc_id + @"," + c.parentDb.DbColName("OBJECT_GUID") + ",0," + 
                 return await _fc.Select(filter);
             }
 
-            public IFields Fields
+            public IFieldCollection Fields
             {
                 get { return _fc.Fields; }
             }

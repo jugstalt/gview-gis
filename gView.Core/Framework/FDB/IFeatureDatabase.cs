@@ -1,4 +1,5 @@
 ﻿using gView.Framework.Data;
+using gView.Framework.Data.Filters;
 using gView.Framework.Geometry;
 using System.Threading.Tasks;
 
@@ -17,7 +18,7 @@ namespace gView.Framework.FDB
             string dsname,
             string fcname,
             IGeometryDef geomDef,
-            IFields Fields);
+            IFieldCollection Fields);
 
         Task<IFeatureDataset> GetDataset(string name);
 

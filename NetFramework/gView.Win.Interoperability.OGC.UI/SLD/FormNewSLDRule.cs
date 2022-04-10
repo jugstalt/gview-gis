@@ -1,4 +1,5 @@
 using gView.Framework.Data;
+using gView.Framework.Data.Filters;
 using gView.Framework.Geometry;
 using gView.Framework.UI.Dialogs;
 using gView.Interoperability.OGC.SLD;

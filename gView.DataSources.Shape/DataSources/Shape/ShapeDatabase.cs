@@ -1,4 +1,5 @@
 using gView.Framework.Data;
+using gView.Framework.Data.Filters;
 using gView.Framework.FDB;
 using gView.Framework.Geometry;
 using System;
@@ -27,7 +28,7 @@ namespace gView.DataSources.Shape
             return Task.FromResult<int>(Create(name) ? 0 : -1);
         }
 
-        public Task<int> CreateFeatureClass(string dsname, string fcname, IGeometryDef geomDef, IFields fields)
+        public Task<int> CreateFeatureClass(string dsname, string fcname, IGeometryDef geomDef, IFieldCollection fields)
         {
             if (geomDef == null || fields == null)
             {
@@ -35,7 +36,7 @@ namespace gView.DataSources.Shape
             }
 
             string filename = _directoryName + @"/" + fcname;
-            Fields f = new Fields();
+            FieldCollection f = new FieldCollection();
 
             foreach (IField field in fields.ToEnumerable())
             {

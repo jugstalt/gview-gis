@@ -5,6 +5,7 @@ using gView.Framework.IO;
 using gView.Framework.system;
 using gView.Framework.UI;
 using gView.GraphicsEngine;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -16,8 +17,8 @@ namespace gView.MxUtil.Lib
         private int _focusMapIndex = -1;
         private ITableRelations _tableRelations;
 
-        public event LayerAddedEvent LayerAdded;
-        public event LayerRemovedEvent LayerRemoved;
+        public event LayerAddedEvent LayerAdded { add { throw new NotSupportedException(); } remove { } }
+        public event LayerRemovedEvent LayerRemoved { add { throw new NotSupportedException(); } remove { } }
         public event MapAddedEvent MapAdded;
         public event MapDeletedEvent MapDeleted;
         public event MapScaleChangedEvent MapScaleChanged;

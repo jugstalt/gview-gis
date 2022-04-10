@@ -1,4 +1,6 @@
 ﻿using gView.Framework.Data;
+using gView.Framework.Data.Filters;
+using gView.Framework.Data.Metadata;
 using gView.Framework.FDB;
 using gView.Framework.Geometry;
 using gView.Framework.IO;
@@ -32,7 +34,7 @@ namespace gView.DataSources.MongoDb
         public delegate IGeometryDef BeforeCreateFeatureClassHandler(string fcname, IGeometryDef geomDef);
         public BeforeCreateFeatureClassHandler BeforeCreateFeatureClass = null;
 
-        async public Task<int> CreateFeatureClass(string dsname, string fcname, IGeometryDef geomDef, IFields fields)
+        async public Task<int> CreateFeatureClass(string dsname, string fcname, IGeometryDef geomDef, IFieldCollection fields)
         {
             try
             {

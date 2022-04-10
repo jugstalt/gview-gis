@@ -9,7 +9,7 @@ namespace gView.DataSources.CosmoDb.Json
     {
         public SpatialCollectionItem() { }
 
-        public SpatialCollectionItem(IGeometryDef geomDef, IFields fields)
+        public SpatialCollectionItem(IGeometryDef geomDef, IFieldCollection fields)
         {
             AddFields(fields);
             this.GeometryDef = new GeometryDefinition()
@@ -29,7 +29,7 @@ namespace gView.DataSources.CosmoDb.Json
 
         public IEnumerable<Field> Fields { get; set; }
 
-        private void AddFields(IFields fields)
+        private void AddFields(IFieldCollection fields)
         {
             if (fields == null)
             {

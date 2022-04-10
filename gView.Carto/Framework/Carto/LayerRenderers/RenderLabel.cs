@@ -1,4 +1,5 @@
 ﻿using gView.Framework.Data;
+using gView.Framework.Data.Filters;
 using gView.Framework.Geometry;
 using gView.Framework.system;
 using System;
@@ -49,7 +50,7 @@ namespace gView.Framework.Carto.LayerRenderers
                     //filterGeom = (IGeometry)_map.Display.GeometricTransformer.InvTransform2D(filterGeom);
                 }
 
-                gView.Framework.Data.SpatialFilter filter = new gView.Framework.Data.SpatialFilter();
+                SpatialFilter filter = new SpatialFilter();
                 filter.Geometry = filterGeom;
                 filter.AddField(fClass.ShapeFieldName);
                 filter.SpatialRelation = spatialRelation.SpatialRelationMapEnvelopeIntersects;

@@ -2,6 +2,7 @@ using gView.DataSources.Fdb.MSAccess;
 using gView.DataSources.Fdb.MSSql;
 using gView.DataSources.Fdb.PostgreSql;
 using gView.Framework.Data;
+using gView.Framework.Data.Filters;
 using gView.Framework.FDB;
 using gView.Framework.Geometry;
 using gView.Framework.system;
@@ -160,7 +161,7 @@ namespace gView.DataSources.Fdb.UI
                                                       fcname,
                                                       geomDef,
                                                       (fieldTranslation == null) ?
-                                                      ((sourceFC.Fields != null) ? (IFields)sourceFC.Fields.Clone() : new Fields()) :
+                                                      ((sourceFC.Fields != null) ? (IFieldCollection)sourceFC.Fields.Clone() : new FieldCollection()) :
                                                       fieldTranslation.DestinationFields);
                         if (fcID < 0)
                         {
@@ -180,7 +181,7 @@ namespace gView.DataSources.Fdb.UI
                                                       fcname,
                                                       geomDef,
                                                       (fieldTranslation == null) ?
-                                                      ((sourceFC.Fields != null) ? (IFields)sourceFC.Fields.Clone() : new Fields()) :
+                                                      ((sourceFC.Fields != null) ? (IFieldCollection)sourceFC.Fields.Clone() : new FieldCollection()) :
                                                       fieldTranslation.DestinationFields);
                 }
                 if (fcID < 0)

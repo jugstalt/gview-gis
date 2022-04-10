@@ -1,5 +1,6 @@
 
 using gView.Framework.Data;
+using gView.Framework.Data.Filters;
 using gView.Framework.Db;
 using gView.Framework.Editor.Core;
 using gView.Framework.FDB;
@@ -471,7 +472,7 @@ namespace gView.DataSources.Fdb.MSAccess
             string dsname,
             string fcname,
             IGeometryDef geomDef,
-            IFields Fields)
+            IFieldCollection Fields)
         {
             return await CreateFeatureClass(dsname, fcname, geomDef, Fields, false);
         }
@@ -480,10 +481,10 @@ namespace gView.DataSources.Fdb.MSAccess
             string dsname,
             string fcname,
             IGeometryDef geomDef,
-            IFields Fields,
+            IFieldCollection Fields,
             bool recreate)
         {
-            Fields fields = new Fields(Fields);
+            FieldCollection fields = new FieldCollection(Fields);
 
             if (_conn == null)
             {
@@ -573,10 +574,10 @@ namespace gView.DataSources.Fdb.MSAccess
 
                 if (fields == null)
                 {
-                    fields = new Fields();
+                    fields = new FieldCollection();
                 }
 
-                Fields FieldsCopy = new Fields();
+                FieldCollection FieldsCopy = new FieldCollection();
                 foreach (IField f in fields.ToEnumerable())
                 {
                     FieldsCopy.Add(f);
@@ -1108,7 +1109,7 @@ namespace gView.DataSources.Fdb.MSAccess
             string dsname,
             string fcname,
             IGeometryDef geomDef,
-            IFields Fields)
+            IFieldCollection Fields)
         {
             int fcId = await FeatureClassID(await DatasetID(dsname), fcname);
             if (fcId == -1)
@@ -1176,7 +1177,7 @@ namespace gView.DataSources.Fdb.MSAccess
             }
             return "";
         }
-        virtual protected bool CreateTable(string name, IFields Fields, bool msSpatial)
+        virtual protected bool CreateTable(string name, IFieldCollection Fields, bool msSpatial)
         {
             try
             {
@@ -1642,7 +1643,7 @@ namespace gView.DataSources.Fdb.MSAccess
             }
         }
 
-        virtual public IFields TableFields(string name)
+        virtual public IFieldCollection TableFields(string name)
         {
             if (_conn == null)
             {
@@ -1655,7 +1656,7 @@ namespace gView.DataSources.Fdb.MSAccess
                 return null;
             }
 
-            Fields fields = new Fields();
+            FieldCollection fields = new FieldCollection();
             foreach (DataRow row in schema.Rows)
             {
                 Field field = new Field(row);
@@ -1814,7 +1815,7 @@ namespace gView.DataSources.Fdb.MSAccess
 
             string name_nodes = "FCSI_" + FCName;
 
-            Fields Fields = new Fields();
+            FieldCollection Fields = new FieldCollection();
             if (_indexType == IndexType.BinaryTree)
             {
                 // NID
@@ -2671,7 +2672,7 @@ namespace gView.DataSources.Fdb.MSAccess
 
         #region ImageDataset
 
-        async public Task<int> CreateImageDataset(string name, ISpatialReference sRef, ISpatialIndexDef sIndexDef, string imageSpace, IFields additionalFields)
+        async public Task<int> CreateImageDataset(string name, ISpatialReference sRef, ISpatialIndexDef sIndexDef, string imageSpace, IFieldCollection additionalFields)
         {
             int dsID = await this.CreateDataset(name, sRef, sIndexDef, true, imageSpace);
             if (dsID == -1)
@@ -2679,7 +2680,7 @@ namespace gView.DataSources.Fdb.MSAccess
                 return -1;
             }
 
-            Fields fields = new Fields();
+            FieldCollection fields = new FieldCollection();
 
             fields.Add(new Field(ColumnName("PATH"), FieldType.String, 255));
             fields.Add(new Field(ColumnName("LAST_MODIFIED"), FieldType.Date));
@@ -3479,7 +3480,7 @@ namespace gView.DataSources.Fdb.MSAccess
 
             DataTable schema = _conn.GetSchema2(FcTableName(fcname));
 
-            Fields fields = new Fields();
+            FieldCollection fields = new FieldCollection();
             gView.Framework.Data.Field field = new Field();
             field.name = ColumnName("FDB_OID");
             field.aliasname = "OID";
@@ -3587,7 +3588,7 @@ namespace gView.DataSources.Fdb.MSAccess
             if (fcname.Contains("@"))
             {
                 string[] viewNames = SpatialViewNames(fcname);
-                IFields addFields = TableFields(viewNames[1]);
+                IFieldCollection addFields = TableFields(viewNames[1]);
 
                 if (addFields != null)
                 {
@@ -4277,7 +4278,7 @@ namespace gView.DataSources.Fdb.MSAccess
 
         #region ICheckoutableDatabase Member
 
-        async virtual public Task<bool> CreateIfNotExists(string tableName, IFields fields)
+        async virtual public Task<bool> CreateIfNotExists(string tableName, IFieldCollection fields)
         {
             if (await TableExists(tableName))
             {

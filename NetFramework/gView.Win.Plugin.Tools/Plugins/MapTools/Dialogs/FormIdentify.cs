@@ -64,7 +64,7 @@ namespace gView.Plugins.MapTools.Dialogs
         {
             AddFeature(feature, sRef, layer, Category, null, null);
         }
-        public void AddFeature(IFeature feature, ISpatialReference sRef, IFeatureLayer layer, string Category, IFields fields, IField primaryDisplayField)
+        public void AddFeature(IFeature feature, ISpatialReference sRef, IFeatureLayer layer, string Category, IFieldCollection fields, IField primaryDisplayField)
         {
             if (feature == null)
             {

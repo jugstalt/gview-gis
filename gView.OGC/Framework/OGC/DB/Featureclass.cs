@@ -1,5 +1,6 @@
 using gView.Data.Framework.Data.Extensions;
 using gView.Framework.Data;
+using gView.Framework.Data.Filters;
 using gView.Framework.Geometry;
 using gView.Framework.system;
 using System;
@@ -16,7 +17,7 @@ namespace gView.Framework.OGC.DB
         protected bool _hasZ = false;
         protected OgcSpatialDataset _dataset;
         protected IEnvelope _envelope;
-        protected Fields _fields = new Fields();
+        protected FieldCollection _fields = new FieldCollection();
         protected ISpatialReference _sRef = null;
         internal string _geometry_columns_type = String.Empty;
 
@@ -374,7 +375,7 @@ namespace gView.Framework.OGC.DB
             }
         }
 
-        public IFields Fields
+        public IFieldCollection Fields
         {
             get
             {

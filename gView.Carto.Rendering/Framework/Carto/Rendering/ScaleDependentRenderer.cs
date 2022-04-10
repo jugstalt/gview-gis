@@ -1,5 +1,6 @@
 using gView.Framework.Carto.Rendering.UI;
 using gView.Framework.Data;
+using gView.Framework.Data.Filters;
 using gView.Framework.IO;
 using gView.Framework.Symbology;
 using gView.Framework.system;
@@ -58,7 +59,7 @@ namespace gView.Framework.Carto.Rendering
             }
         }
 
-        public void PrepareQueryFilter(gView.Framework.Data.IFeatureLayer layer, gView.Framework.Data.IQueryFilter filter)
+        public void PrepareQueryFilter(IFeatureLayer layer, IQueryFilter filter)
         {
             foreach (IFeatureRenderer renderer in _renderers)
             {
@@ -71,12 +72,12 @@ namespace gView.Framework.Carto.Rendering
             }
         }
 
-        public bool CanRender(gView.Framework.Data.IFeatureLayer layer, IMap map)
+        public bool CanRender(IFeatureLayer layer, IMap map)
         {
             return true;
         }
 
-        public bool HasEffect(gView.Framework.Data.IFeatureLayer layer, IMap map)
+        public bool HasEffect(IFeatureLayer layer, IMap map)
         {
             if (_renderers == null)
             {
@@ -382,7 +383,7 @@ namespace gView.Framework.Carto.Rendering
                 }
             }
 
-            public void PrepareQueryFilter(gView.Framework.Data.IFeatureLayer layer, gView.Framework.Data.IQueryFilter filter)
+            public void PrepareQueryFilter(IFeatureLayer layer, IQueryFilter filter)
             {
                 if (_renderer == null)
                 {

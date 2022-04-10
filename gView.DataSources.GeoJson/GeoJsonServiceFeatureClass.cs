@@ -1,4 +1,5 @@
 ﻿using gView.Framework.Data;
+using gView.Framework.Data.Filters;
 using gView.Framework.Geometry;
 using gView.Framework.system;
 using System;
@@ -26,7 +27,7 @@ namespace gView.DataSources.GeoJson
 
             #region Loop all features for Fields
 
-            var fields = new Fields();
+            var fields = new FieldCollection();
             if (dataset.Source != null)
             {
                 bool idIsInterger = false;
@@ -80,7 +81,7 @@ namespace gView.DataSources.GeoJson
 
         public IEnvelope Envelope => _dataset.Source?.Envelope ?? new Envelope();
 
-        public IFields Fields { get; private set; }
+        public IFieldCollection Fields { get; private set; }
 
         public string IDFieldName => "id";
 

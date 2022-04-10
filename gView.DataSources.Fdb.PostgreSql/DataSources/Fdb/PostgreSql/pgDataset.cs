@@ -1,4 +1,5 @@
 ﻿using gView.Framework.Data;
+using gView.Framework.Data.Metadata;
 using gView.Framework.FDB;
 using gView.Framework.Geometry;
 using gView.Framework.IO;
@@ -459,11 +460,11 @@ namespace gView.DataSources.Fdb.PostgreSql
                     var fields = await _fdb.FeatureClassFields(this._dsID, table);
 
                     pgFeatureClass fc = element.Class as pgFeatureClass;
-                    ((Fields)fc.Fields).Clear();
+                    ((FieldCollection)fc.Fields).Clear();
 
                     foreach (IField field in fields)
                     {
-                        ((Fields)fc.Fields).Add(field);
+                        ((FieldCollection)fc.Fields).Add(field);
                     }
                 }
             }

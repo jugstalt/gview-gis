@@ -1,4 +1,5 @@
-﻿using gView.Framework.Db;
+﻿using gView.Framework.Data.Filters;
+using gView.Framework.Db;
 using gView.Framework.system;
 using gView.Framework.UI;
 using System;
@@ -14,7 +15,7 @@ namespace gView.Framework.Data.Joins
     public class FeatureLayerDatabaseJoin : IFeatureLayerJoin, IPropertyPage
     {
         private DataProvider _provider = null;
-        private IFields _fields = new Fields();
+        private IFieldCollection _fields = new FieldCollection();
         private string _selectFieldNames = String.Empty;
         private joinType _joinType = joinType.LeftOuterJoin;
         private Dictionary<string, IRow> _rows = new Dictionary<string, IRow>();
@@ -57,7 +58,7 @@ namespace gView.Framework.Data.Joins
             set;
         }
 
-        public IFields JoinFields
+        public IFieldCollection JoinFields
         {
             get { return _fields; }
             set
@@ -229,7 +230,7 @@ namespace gView.Framework.Data.Joins
             this.JoinConnectionString = (string)stream.Load("joinconnectionstring", String.Empty);
             this.JoinTable = (string)stream.Load("jointable", String.Empty);
             this.JoinField = (string)stream.Load("joinfield", String.Empty);
-            _fields = stream.Load("Fields", null, new Fields()) as Fields;
+            _fields = stream.Load("Fields", null, new FieldCollection()) as FieldCollection;
             _joinType = (joinType)stream.Load("jointype", (int)joinType.LeftOuterJoin);
         }
 
@@ -264,7 +265,7 @@ namespace gView.Framework.Data.Joins
             clone.JoinTable = this.JoinTable;
             clone.JoinField = this.JoinField;
 
-            clone._fields = this._fields != null ? (Fields)this._fields.Clone() : null;
+            clone._fields = this._fields != null ? (FieldCollection)this._fields.Clone() : null;
             clone._selectFieldNames = this._selectFieldNames;
             clone._joinType = this._joinType;
 

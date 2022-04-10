@@ -116,7 +116,7 @@ namespace gView.DataSources.EventTable.UI
         {
             cmbID.Items.Clear();
 
-            Fields fields = FilterFields(FieldType.integer);
+            FieldCollection fields = FilterFields(FieldType.integer);
             if (fields != null)
             {
                 foreach (IField field in fields.ToEnumerable())
@@ -130,7 +130,7 @@ namespace gView.DataSources.EventTable.UI
         {
             cmbX.Items.Clear();
 
-            Fields fields = FilterFields(FieldType.Double);
+            FieldCollection fields = FilterFields(FieldType.Double);
             if (fields != null)
             {
                 foreach (IField field in fields.ToEnumerable())
@@ -144,7 +144,7 @@ namespace gView.DataSources.EventTable.UI
         {
             cmbY.Items.Clear();
 
-            Fields fields = FilterFields(FieldType.Double);
+            FieldCollection fields = FilterFields(FieldType.Double);
             if (fields != null)
             {
                 foreach (IField field in fields.ToEnumerable())
@@ -169,7 +169,7 @@ namespace gView.DataSources.EventTable.UI
         }
 
         #region Helper
-        public Fields FilterFields(FieldType fType)
+        public FieldCollection FilterFields(FieldType fType)
         {
             try
             {
@@ -187,8 +187,8 @@ namespace gView.DataSources.EventTable.UI
                     MessageBox.Show(conn.errorMessage, "Error");
                     return null;
                 }
-                Fields fields = new Fields(conn.schemaTable);
-                Fields f = new Fields();
+                FieldCollection fields = new FieldCollection(conn.schemaTable);
+                FieldCollection f = new FieldCollection();
 
                 foreach (IField field in fields.ToEnumerable())
                 {

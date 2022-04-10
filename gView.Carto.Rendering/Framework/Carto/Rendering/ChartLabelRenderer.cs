@@ -1,5 +1,6 @@
 ﻿using gView.Framework.Carto.Rendering.UI;
 using gView.Framework.Data;
+using gView.Framework.Data.Filters;
 using gView.Framework.Geometry;
 using gView.Framework.Symbology;
 using gView.Framework.system;
@@ -117,7 +118,7 @@ namespace gView.Framework.Carto.Rendering
 
         #region ILabelRenderer Member
 
-        public void PrepareQueryFilter(IDisplay display, IFeatureLayer layer, Data.IQueryFilter filter)
+        public void PrepareQueryFilter(IDisplay display, IFeatureLayer layer, IQueryFilter filter)
         {
             if (layer.FeatureClass == null)
             {

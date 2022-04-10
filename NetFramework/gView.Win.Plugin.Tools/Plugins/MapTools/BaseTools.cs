@@ -1,5 +1,6 @@
 using gView.Framework.Carto;
 using gView.Framework.Data;
+using gView.Framework.Data.Filters;
 using gView.Framework.Geometry;
 using gView.Framework.Globalisation;
 using gView.Framework.IO;
@@ -1884,7 +1885,7 @@ namespace gView.Plugins.MapTools
                 return false;
             }
 
-            gView.Framework.Data.SpatialFilter filter = new gView.Framework.Data.SpatialFilter();
+            SpatialFilter filter = new SpatialFilter();
 
             filter.Geometry = geometry;
             filter.FilterSpatialReference = map.Display.SpatialReference;
@@ -3029,7 +3030,7 @@ namespace gView.Plugins.MapTools
                         filter.WhereClause = layer.FilterQuery.WhereClause;
                     }
 
-                    IFields fields = layer.Fields;
+                    IFieldCollection fields = layer.Fields;
                     if (fields == null)
                     {
                         filter.SubFields = "*";
@@ -3107,12 +3108,12 @@ namespace gView.Plugins.MapTools
                             IFeatureClass fc = layer.Class as IFeatureClass;
 
                             #region Fields
-                            IFields fields = null;
+                            IFieldCollection fields = null;
                             IField primaryDisplayField = null;
 
                             if (layer.Fields != null && table.VisibleFieldDef != null && table.VisibleFieldDef.UseDefault == false)
                             {
-                                fields = new Fields();
+                                fields = new FieldCollection();
 
                                 foreach (IField field in layer.Fields.ToEnumerable())
                                 {
@@ -3130,7 +3131,7 @@ namespace gView.Plugins.MapTools
                                     Field f = new Field(field);
                                     f.visible = true;
                                     f.aliasname = (string)r[0]["Alias"];
-                                    ((Fields)fields).Add(f);
+                                    ((FieldCollection)fields).Add(f);
                                 }
                             }
                             else

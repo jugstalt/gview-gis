@@ -1,4 +1,5 @@
 using gView.Framework.Carto;
+using gView.Framework.Data.Filters;
 using gView.Framework.Geometry;
 using System;
 using System.Collections.Generic;
@@ -422,11 +423,11 @@ namespace gView.Framework.Data
         {
             return await GetFeatures(_getFeatureGUID, filter);
         }
-        virtual public IFields Fields
+        virtual public IFieldCollection Fields
         {
             get
             {
-                return new Fields();
+                return new FieldCollection();
             }
         }
         async virtual public Task<ISelectionSet> Select(IQueryFilter filter)

@@ -1,5 +1,7 @@
 using gView.Framework.Carto;
 using gView.Framework.Data;
+using gView.Framework.Data.Filters;
+using gView.Framework.Data.Metadata;
 using gView.Framework.FDB;
 using gView.Framework.Geometry;
 using gView.Framework.IO;
@@ -403,11 +405,11 @@ namespace gView.DataSources.Fdb.MSAccess
                     var fields = await _fdb.FeatureClassFields(this._dsID, table);
 
                     AccessFDBFeatureClass fc = element.Class as AccessFDBFeatureClass;
-                    ((Fields)fc.Fields).Clear();
+                    ((FieldCollection)fc.Fields).Clear();
 
                     foreach (IField field in fields)
                     {
-                        ((Fields)fc.Fields).Add(field);
+                        ((FieldCollection)fc.Fields).Add(field);
                     }
                 }
             }
@@ -530,7 +532,7 @@ namespace gView.DataSources.Fdb.MSAccess
         private IDataset _dataset;
         private string _name = "", _aliasname = "";
         private string m_idfield = "", m_shapeField = "";
-        private Fields m_fields;
+        private FieldCollection m_fields;
         private IEnvelope m_envelope = null;
         private BinarySearchTree _searchTree = null;
         private GeometryDef _geomDef;
@@ -540,7 +542,7 @@ namespace gView.DataSources.Fdb.MSAccess
             _fdb = fdb;
             _dataset = dataset;
             _geomDef = (geomDef != null) ? geomDef : new GeometryDef();
-            m_fields = new Fields();
+            m_fields = new FieldCollection();
         }
         public AccessFDBFeatureClass(AccessFDB fdb, IDataset dataset, GeometryDef geomDef, BinarySearchTree tree)
             : this(fdb, dataset, geomDef)
@@ -673,7 +675,7 @@ namespace gView.DataSources.Fdb.MSAccess
             return selSet;
         }
 
-        public IFields Fields
+        public IFieldCollection Fields
         {
             get
             {
@@ -870,7 +872,7 @@ namespace gView.DataSources.Fdb.MSAccess
             _geomDef.HasZ = fc.HasZ;
             _geomDef.HasM = fc.HasM;
 
-            Fields fields = new Fields(fc.Fields);
+            FieldCollection fields = new FieldCollection(fc.Fields);
             if (fields != null)
             {
                 fields.PrimaryDisplayField = m_fields.PrimaryDisplayField;

@@ -1,4 +1,5 @@
 using gView.Framework.Data;
+using gView.Framework.Data.Metadata;
 using gView.Framework.Geometry;
 using gView.Framework.IO;
 using gView.Framework.OGC.GML;
@@ -198,7 +199,7 @@ namespace gView.Interoperability.OGC.Dataset.GML
                 {
                     string shapeFieldName;
                     GeometryType geomType;
-                    Fields fields = schemaReader.ElementFields(elementName, out shapeFieldName, out geomType);
+                    FieldCollection fields = schemaReader.ElementFields(elementName, out shapeFieldName, out geomType);
                     FeatureClass fc = await FeatureClass.CreateAsync(this, elementName, fields);
                     fc.ShapeFieldName = shapeFieldName;
                     fc.GeometryType = geomType;

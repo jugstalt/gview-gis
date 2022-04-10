@@ -1,4 +1,5 @@
 using gView.Framework.Data;
+using gView.Framework.Data.Metadata;
 using gView.Framework.Geometry;
 using gView.Framework.IO;
 using gView.Framework.system;
@@ -401,7 +402,6 @@ namespace gView.Interoperability.Server
         private MapServerDataset _dataset;
         private IBitmap _legend = null;
         private GeorefBitmap _image = null;
-        private IEnvelope _envelope = null;
         private ISpatialReference _sRef = null;
         private List<IWebServiceTheme> _clonedThemes = null;
 
@@ -435,9 +435,9 @@ namespace gView.Interoperability.Server
 
         #region IWebServiceClass Member
 
-        public event BeforeMapRequestEventHandler BeforeMapRequest = null;
+        public event BeforeMapRequestEventHandler BeforeMapRequest { add { throw new NotSupportedException(); } remove { } }
 
-        public event AfterMapRequestEventHandler AfterMapRequest = null;
+        public event AfterMapRequestEventHandler AfterMapRequest;
 
         async public Task<bool> MapRequest(gView.Framework.Carto.IDisplay display)
         {

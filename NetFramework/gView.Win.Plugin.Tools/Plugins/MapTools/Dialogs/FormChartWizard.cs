@@ -1,6 +1,7 @@
 ﻿using gView.Framework.Carto;
 using gView.Framework.Carto.Rendering;
 using gView.Framework.Data;
+using gView.Framework.Data.Filters;
 using gView.Framework.Geometry;
 using gView.Framework.Symbology;
 using gView.Framework.Sys.UI.Extensions;
@@ -304,7 +305,7 @@ namespace gView.Plugins.MapTools.Dialogs
             filter.AddField(dataField.name);
             tab.Columns.Add(new DataFieldColumn(dataField.name));
 
-            Fields seriesFields = new Fields();
+            FieldCollection seriesFields = new FieldCollection();
             foreach (SymbolsListView.SymbolListViewItem item in seriesListView.Items)
             {
                 seriesFields.Add(((ITableClass)_layer.Class).Fields.FindField(item.Text));

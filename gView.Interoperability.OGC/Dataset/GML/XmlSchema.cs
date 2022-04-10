@@ -42,7 +42,7 @@ namespace gView.Interoperability.OGC.Dataset.GML
             }
         }
 
-        public Fields ElementFields(string elementName, out string shapeFieldname, out GeometryType geomType)
+        public FieldCollection ElementFields(string elementName, out string shapeFieldname, out GeometryType geomType)
         {
             shapeFieldname = "";
             geomType = GeometryType.Unknown;
@@ -69,7 +69,7 @@ namespace gView.Interoperability.OGC.Dataset.GML
                 return null;
             }
 
-            Fields fields = new Fields();
+            FieldCollection fields = new FieldCollection();
             foreach (XmlNode eNode in complexTypeNode.SelectNodes("W3:complexContent/W3:extension/W3:sequence/W3:element", _ns))
             {
                 string name = String.Empty;

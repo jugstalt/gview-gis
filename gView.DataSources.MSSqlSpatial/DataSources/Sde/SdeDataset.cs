@@ -1,5 +1,6 @@
 ﻿using gView.DataSources.MSSqlSpatial.DataSources.Sde.Repo;
 using gView.Framework.Data;
+using gView.Framework.Data.Filters;
 using gView.Framework.Geometry;
 using gView.Framework.OGC.DB;
 using gView.Framework.SpatialAlgorithms;

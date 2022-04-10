@@ -1,5 +1,6 @@
 using gView.Framework.Carto;
 using gView.Framework.Data;
+using gView.Framework.Data.Filters;
 using gView.Framework.Geometry;
 using gView.GraphicsEngine;
 using gView.GraphicsEngine.Abstraction;
@@ -39,7 +40,7 @@ namespace gView.Framework.XML
         private ILabelRenderer m_labelrenderer = null;
         private IFeatureClass m_featureclass = null;
         private IQueryFilter m_filterQuery = null;
-        private Fields _fields = new Fields();
+        private FieldCollection _fields = new FieldCollection();
 
         private IDSelectionSet m_selectionset;
         private IDataset m_parent;
@@ -61,7 +62,7 @@ namespace gView.Framework.XML
         #region IFeatureSelection
 
         public event FeatureSelectionChangedEvent FeatureSelectionChanged;
-        public event BeforeClearSelectionEvent BeforeClearSelection;
+        public event BeforeClearSelectionEvent BeforeClearSelection { add { throw new NotSupportedException(); } remove { } }
 
         public ISelectionSet SelectionSet
         {
@@ -183,7 +184,7 @@ namespace gView.Framework.XML
         {
             get { return m_featureclass; }
         }
-        public IFields Fields
+        public IFieldCollection Fields
         {
             get { return _fields; }
         }

@@ -10,7 +10,7 @@ namespace gView.OGC.Framework.OGC.DB
 
         Task<int> FeatureClassSpatialReference(IFeatureClass fc);
 
-        Task<Fields> FeatureClassFields(IFeatureClass fc);
+        Task<FieldCollection> FeatureClassFields(IFeatureClass fc);
 
         Task<GeometryType> FeatureClassGeometryType(IFeatureClass fc);
     }

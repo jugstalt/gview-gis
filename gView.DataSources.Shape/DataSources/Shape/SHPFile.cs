@@ -706,7 +706,7 @@ namespace gView.DataSources.Shape
         }
 
         #region Write
-        public static bool Create(string filename, IGeometryDef geomDef, Fields fields)
+        public static bool Create(string filename, IGeometryDef geomDef, FieldCollection fields)
         {
             if (geomDef == null || fields == null)
             {
@@ -1364,7 +1364,7 @@ namespace gView.DataSources.Shape
             return new DBFDataReader(_dbfFile, fieldnames);
         }
 
-        public IFields Fields
+        public IFieldCollection Fields
         {
             get
             {
@@ -1372,7 +1372,7 @@ namespace gView.DataSources.Shape
                 {
                     return _dbfFile.Fields;
                 }
-                return new Fields();
+                return new FieldCollection();
             }
         }
 

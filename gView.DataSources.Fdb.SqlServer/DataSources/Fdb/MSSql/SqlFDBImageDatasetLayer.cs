@@ -1,4 +1,6 @@
 using gView.Framework.Data;
+using gView.Framework.Data.Cursors;
+using gView.Framework.Data.Filters;
 using gView.Framework.Geometry;
 using gView.Framework.IO;
 using gView.Framework.system;
@@ -396,7 +398,7 @@ namespace gView.DataSources.Fdb.MSSql
             return await _fc.Select(filter);
         }
 
-        public IFields Fields
+        public IFieldCollection Fields
         {
             get
             {

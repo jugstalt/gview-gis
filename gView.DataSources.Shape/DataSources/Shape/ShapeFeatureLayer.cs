@@ -1,5 +1,6 @@
 using gView.DataSources.Shape.Lib;
 using gView.Framework.Data;
+using gView.Framework.Data.Filters;
 using gView.Framework.FDB;
 using gView.Framework.Geometry;
 using System;
@@ -30,7 +31,7 @@ namespace gView.DataSources.Shape
         #region IFeatureSelection Members
 
         public event FeatureSelectionChangedEvent FeatureSelectionChanged;
-        public event BeforeClearSelectionEvent BeforeClearSelection;
+        public event BeforeClearSelectionEvent BeforeClearSelection { add { throw new NotSupportedException(); } remove { } }
 
         public ISelectionSet SelectionSet
         {
@@ -174,7 +175,7 @@ namespace gView.DataSources.Shape
 
         #region IFeatureClass Member
 
-        async public Task<IFeatureCursor> GetFeatures(gView.Framework.Data.IQueryFilter filter/*, gView.Framework.Data.getFeatureQueryType type*/)
+        async public Task<IFeatureCursor> GetFeatures(IQueryFilter filter/*, gView.Framework.Data.getFeatureQueryType type*/)
         {
             if (filter != null)
             {
@@ -316,12 +317,12 @@ namespace gView.DataSources.Shape
             return null;
         }
 
-        async public Task<ICursor> Search(gView.Framework.Data.IQueryFilter filter)
+        async public Task<ICursor> Search(IQueryFilter filter)
         {
             return await GetFeatures(filter);
         }
 
-        async public Task<ISelectionSet> Select(gView.Framework.Data.IQueryFilter filter)
+        async public Task<ISelectionSet> Select(IQueryFilter filter)
         {
             if (filter is IBufferQueryFilter)
             {
@@ -349,7 +350,7 @@ namespace gView.DataSources.Shape
             return selSet;
         }
 
-        public IFields Fields
+        public IFieldCollection Fields
         {
             get
             {

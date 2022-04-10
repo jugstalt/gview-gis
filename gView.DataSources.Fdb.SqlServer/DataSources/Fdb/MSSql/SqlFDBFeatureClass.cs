@@ -1,4 +1,5 @@
 ﻿using gView.Framework.Data;
+using gView.Framework.Data.Filters;
 using gView.Framework.FDB;
 using gView.Framework.Geometry;
 using gView.Framework.system;
@@ -14,7 +15,7 @@ namespace gView.DataSources.Fdb.MSSql
         private IDataset _dataset;
         private string _name = "", _aliasname = "";
         private string m_idfield = "", m_shapeField = "";
-        private Fields m_fields;
+        private FieldCollection m_fields;
         private IEnvelope m_envelope = null;
         //private SqlFDBFeatureCursor _cursor=null;
 
@@ -37,7 +38,7 @@ namespace gView.DataSources.Fdb.MSSql
                 fc._geomDef.SpatialReference = await ((IFeatureDataset)dataset).GetSpatialReference();
             }
 
-            fc.m_fields = new Fields();
+            fc.m_fields = new FieldCollection();
 
             return fc;
         }
@@ -194,7 +195,7 @@ namespace gView.DataSources.Fdb.MSSql
             return selSet;
         }
 
-        public IFields Fields
+        public IFieldCollection Fields
         {
             get
             {
@@ -306,7 +307,7 @@ namespace gView.DataSources.Fdb.MSSql
             _geomDef.HasZ = fc.HasZ;
             _geomDef.HasM = fc.HasM;
 
-            Fields fields = new Fields(fc.Fields);
+            FieldCollection fields = new FieldCollection(fc.Fields);
             if (fields != null)
             {
                 fields.PrimaryDisplayField = m_fields.PrimaryDisplayField;

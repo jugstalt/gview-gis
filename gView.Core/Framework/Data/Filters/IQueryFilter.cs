@@ -3,7 +3,7 @@ using gView.Framework.system;
 using System;
 using System.Collections.Generic;
 
-namespace gView.Framework.Data
+namespace gView.Framework.Data.Filters
 {
     /// <summary>
     /// Zusammenfassung für IQuery.

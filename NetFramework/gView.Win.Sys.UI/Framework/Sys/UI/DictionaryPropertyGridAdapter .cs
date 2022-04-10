@@ -20,7 +20,7 @@ namespace gView.system.UI
         {
         }
 
-        public DictionaryPropertyGridAdapter(IFeature feature, IFields fields)
+        public DictionaryPropertyGridAdapter(IFeature feature, IFieldCollection fields)
         {
             _dictionary = new Dictionary<string, object>();
 

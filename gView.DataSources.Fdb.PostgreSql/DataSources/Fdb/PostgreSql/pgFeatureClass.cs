@@ -1,4 +1,5 @@
 ﻿using gView.Framework.Data;
+using gView.Framework.Data.Filters;
 using gView.Framework.FDB;
 using gView.Framework.Geometry;
 using gView.Framework.system;
@@ -14,7 +15,7 @@ namespace gView.DataSources.Fdb.PostgreSql
         private IDataset _dataset;
         private string _name = String.Empty, _aliasname = String.Empty;
         private string m_idfield = String.Empty, m_shapeField = String.Empty;
-        private Fields m_fields;
+        private FieldCollection m_fields;
         private IEnvelope m_envelope = null;
 
         private BinarySearchTree _searchTree = null;
@@ -40,7 +41,7 @@ namespace gView.DataSources.Fdb.PostgreSql
                 fc._geomDef.SpatialReference = await ((IFeatureDataset)dataset).GetSpatialReference();
             }
 
-            fc.m_fields = new Fields();
+            fc.m_fields = new FieldCollection();
 
             return fc;
         }
@@ -143,7 +144,7 @@ namespace gView.DataSources.Fdb.PostgreSql
             }
         }
 
-        public IFields Fields
+        public IFieldCollection Fields
         {
             get
             {
@@ -247,7 +248,7 @@ namespace gView.DataSources.Fdb.PostgreSql
             _geomDef.HasZ = fc.HasZ;
             _geomDef.HasM = fc.HasM;
 
-            Fields fields = new Fields(fc.Fields);
+            FieldCollection fields = new FieldCollection(fc.Fields);
             if (fields != null)
             {
                 fields.PrimaryDisplayField = m_fields.PrimaryDisplayField;

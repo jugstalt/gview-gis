@@ -28,12 +28,12 @@ namespace gView.Server.AppCode
 
         #region IMapDocument Member
 
-        public event LayerAddedEvent LayerAdded;
-        public event LayerRemovedEvent LayerRemoved;
+        public event LayerAddedEvent LayerAdded { add { throw new NotSupportedException(); } remove { } }
+        public event LayerRemovedEvent LayerRemoved { add { throw new NotSupportedException(); } remove { } }
         public event MapAddedEvent MapAdded;
         public event MapDeletedEvent MapDeleted;
-        public event MapScaleChangedEvent MapScaleChanged;
-        public event AfterSetFocusMapEvent AfterSetFocusMap;
+        public event MapScaleChangedEvent MapScaleChanged { add { throw new NotSupportedException(); } remove { } }
+        public event AfterSetFocusMapEvent AfterSetFocusMap { add { throw new NotSupportedException(); } remove { } }
 
         public IEnumerable<IMap> Maps
         {

@@ -51,7 +51,7 @@ namespace gView.Framework.Data.Joins.UI
             set { cmbJoinTableField.Text = value; }
         }
 
-        public IFields JoinTableFields
+        public IFieldCollection JoinTableFields
         {
             get { return _fields; }
             set
@@ -104,7 +104,7 @@ namespace gView.Framework.Data.Joins.UI
         {
             cmbJoinTableField.Items.Clear();
 
-            Fields fields = FilterFields(FieldType.unknown);
+            FieldCollection fields = FilterFields(FieldType.unknown);
             if (fields != null)
             {
                 foreach (IField field in fields.ToEnumerable())
@@ -118,7 +118,7 @@ namespace gView.Framework.Data.Joins.UI
 
         #region Gui
 
-        IFields _fields = null;
+        IFieldCollection _fields = null;
         private void FillJoinTableFieldsList()
         {
             lstJoinTableFields.Items.Clear();
@@ -141,7 +141,7 @@ namespace gView.Framework.Data.Joins.UI
         #endregion   
 
         #region Helper
-        public Fields FilterFields(FieldType fType)
+        public FieldCollection FilterFields(FieldType fType)
         {
             try
             {
@@ -168,8 +168,8 @@ namespace gView.Framework.Data.Joins.UI
                         return null;
                     }
                 }
-                Fields fields = new Fields(conn.schemaTable);
-                Fields f = new Fields();
+                FieldCollection fields = new FieldCollection(conn.schemaTable);
+                FieldCollection f = new FieldCollection();
 
                 foreach (IField field in fields.ToEnumerable())
                 {

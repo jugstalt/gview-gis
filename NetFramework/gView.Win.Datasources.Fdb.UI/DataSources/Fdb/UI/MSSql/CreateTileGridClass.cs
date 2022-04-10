@@ -1,6 +1,7 @@
 ﻿using gView.DataSources.Fdb.MSSql;
 using gView.Framework.Carto;
 using gView.Framework.Data;
+using gView.Framework.Data.Filters;
 using gView.Framework.FDB;
 using gView.Framework.Geometry;
 using gView.Framework.system;
@@ -181,7 +182,7 @@ namespace gView.DataSources.Fdb.UI.MSSql
                 }
                 if (fc == null)
                 {
-                    Fields fields = new Fields();
+                    FieldCollection fields = new FieldCollection();
 
                     fields.Add(new Field("GRID_LEVEL", FieldType.integer));
                     fields.Add(new Field("GRID_ROW", FieldType.integer));

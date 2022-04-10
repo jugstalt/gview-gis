@@ -62,7 +62,7 @@ namespace gView.Interoperability.OGC.Dataset.GML
             return false;
         }
 
-        async public static Task<bool> Create(string filename, IGeometryDef geomDef, Fields fields, GmlVersion gmlVersion)
+        async public static Task<bool> Create(string filename, IGeometryDef geomDef, FieldCollection fields, GmlVersion gmlVersion)
         {
             try
             {

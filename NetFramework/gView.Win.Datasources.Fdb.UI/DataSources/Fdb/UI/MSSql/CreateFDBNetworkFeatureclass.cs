@@ -1,5 +1,6 @@
 ﻿using gView.DataSources.Fdb.MSAccess;
 using gView.Framework.Data;
+using gView.Framework.Data.Filters;
 using gView.Framework.FDB;
 using gView.Framework.Geometry;
 using gView.Framework.Network;
@@ -436,14 +437,14 @@ namespace gView.DataSources.Fdb.UI.MSSql
                 #region Create Edge Featureclass
 
                 #region Simple Edges Table
-                Fields fields = new Fields();
+                FieldCollection fields = new FieldCollection();
                 fields.Add(new Field("Page", FieldType.integer));
                 fields.Add(new Field("Data", FieldType.binary));
                 await db.CreateIfNotExists(_networkName + "_Edges", fields);
                 #endregion
 
                 #region Edge Index Table
-                fields = new Fields();
+                fields = new FieldCollection();
                 fields.Add(new Field("EID", FieldType.integer));
                 fields.Add(new Field("FCID", FieldType.integer));
                 fields.Add(new Field("OID", FieldType.integer));
@@ -452,7 +453,7 @@ namespace gView.DataSources.Fdb.UI.MSSql
                 #endregion
 
                 #region Complex Edges FeatureClass
-                fields = new Fields();
+                fields = new FieldCollection();
                 fields.Add(new Field("EID", FieldType.integer));
                 fields.Add(new Field("N1", FieldType.integer));
                 fields.Add(new Field("N2", FieldType.integer));
@@ -577,7 +578,7 @@ namespace gView.DataSources.Fdb.UI.MSSql
                 {
                     foreach (IGraphWeight weight in _graphWeights)
                     {
-                        fields = new Fields();
+                        fields = new FieldCollection();
                         fields.Add(new Field("Page", FieldType.integer));
                         fields.Add(new Field("Data", FieldType.binary));
                         await db.CreateIfNotExists(_networkName + "_Weights_" + weight.Guid.ToString("N").ToLower(), fields);
@@ -623,7 +624,7 @@ namespace gView.DataSources.Fdb.UI.MSSql
                 }
                 #endregion
                 #region Create Node Featureclass
-                fields = new Fields();
+                fields = new FieldCollection();
                 //fields.Add(new Field("NID", FieldType.integer));
                 //fields.Add(new Field("G1", FieldType.integer));
                 //fields.Add(new Field("G2", FieldType.integer));
@@ -700,7 +701,7 @@ namespace gView.DataSources.Fdb.UI.MSSql
                 #endregion
                 #region Create Graph Class
                 int graph_page = 0;
-                fields = new Fields();
+                fields = new FieldCollection();
                 fields.Add(new Field("Page", FieldType.integer));
                 fields.Add(new Field("Data", FieldType.binary));
                 //fields.Add(new Field("N1", FieldType.integer));
@@ -775,7 +776,7 @@ namespace gView.DataSources.Fdb.UI.MSSql
 
                 #region Create FDB_Networks
                 int netId = await _fdb.GetFeatureClassID(_networkName);
-                fields = new Fields();
+                fields = new FieldCollection();
                 fields.Add(new Field("ID", FieldType.integer));
                 fields.Add(new Field("Properties", FieldType.binary));
                 await db.CreateIfNotExists("FDB_Networks", fields);
@@ -790,7 +791,7 @@ namespace gView.DataSources.Fdb.UI.MSSql
                 #endregion
 
                 #region Create FDB_NetworkClasses
-                fields = new Fields();
+                fields = new FieldCollection();
                 fields.Add(new Field("NetworkId", FieldType.integer));
                 fields.Add(new Field("FCID", FieldType.integer));
                 fields.Add(new Field("Properties", FieldType.binary));
@@ -814,7 +815,7 @@ namespace gView.DataSources.Fdb.UI.MSSql
                 #endregion
 
                 #region FDB_NetworkWeighs
-                fields = new Fields();
+                fields = new FieldCollection();
                 fields.Add(new Field("NetworkId", FieldType.integer));
                 fields.Add(new Field("Name", FieldType.String));
                 fields.Add(new Field("WeightGuid", FieldType.guid));

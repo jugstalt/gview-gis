@@ -27,11 +27,11 @@ namespace gView.Framework.Data
             }
         }
 
-        public IFields DestinationFields
+        public IFieldCollection DestinationFields
         {
             get
             {
-                Fields destFields = new Fields();
+                FieldCollection destFields = new FieldCollection();
                 foreach (IField field in _fields.Keys)
                 {
                     Field f = new Field(field);
@@ -50,11 +50,11 @@ namespace gView.Framework.Data
                 return destFields;
             }
         }
-        public IFields SourceFields
+        public IFieldCollection SourceFields
         {
             get
             {
-                Fields sourceFields = new Fields();
+                FieldCollection sourceFields = new FieldCollection();
                 foreach (IField field in _fields.Keys)
                 {
                     Field f = new Field(field);
@@ -137,12 +137,12 @@ namespace gView.Framework.Data
             return fieldname.Replace(" ", "");
         }
 
-        static public string CheckNameLength(IFields fields, IField field, string fieldname, int maxLength)
+        static public string CheckNameLength(IFieldCollection fields, IField field, string fieldname, int maxLength)
         {
             return CheckNameLength(fields, field, fieldname, maxLength, 2);
         }
 
-        static private string CheckNameLength(IFields fields, IField field, string fieldname, int maxLength, int counter)
+        static private string CheckNameLength(IFieldCollection fields, IField field, string fieldname, int maxLength, int counter)
         {
             foreach (IField f in fields.ToEnumerable())
             {

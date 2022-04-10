@@ -1,6 +1,7 @@
 using gView.Core.Framework.Exceptions;
 using gView.Framework.Carto;
 using gView.Framework.Data;
+using gView.Framework.Data.Filters;
 using gView.Framework.Geometry;
 using gView.Framework.IO;
 using gView.Framework.OGC.GeoJson;

@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace gView.Framework.Data
+namespace gView.Framework.Data.Filters
 {
     public interface IGlobalRowIDFilter : IQueryFilter
     {

@@ -458,9 +458,13 @@ namespace gView.GraphicsEngine.Skia
             // Multiply S * N * A
             SKMatrix result = SKMatrix.CreateIdentity();
 
-            SKMatrix.PostConcat(ref result, S);
-            SKMatrix.PostConcat(ref result, N);
-            SKMatrix.PostConcat(ref result, A);
+            //SKMatrix.PostConcat(ref result, S);
+            //SKMatrix.PostConcat(ref result, N);
+            //SKMatrix.PostConcat(ref result, A);
+
+            result = result.PostConcat(S);
+            result = result.PostConcat(N);
+            result = result.PostConcat(A);
 
             return result;
         }

@@ -1,6 +1,6 @@
 ﻿using gView.Framework.Geometry;
 
-namespace gView.Framework.Data
+namespace gView.Framework.Data.Filters
 {
     public interface ISpatialFilter : IQueryFilter
     {

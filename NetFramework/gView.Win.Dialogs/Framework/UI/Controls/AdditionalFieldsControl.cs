@@ -58,11 +58,11 @@ namespace gView.Framework.UI.Controls
             }
         }
 
-        public Fields AdditionalFields
+        public FieldCollection AdditionalFields
         {
             get
             {
-                Fields fields = new Fields();
+                FieldCollection fields = new FieldCollection();
                 foreach (Control control in tablePanel.Controls)
                 {
                     if (control is AutoFieldCheckBox && ((AutoFieldCheckBox)control).Checked)

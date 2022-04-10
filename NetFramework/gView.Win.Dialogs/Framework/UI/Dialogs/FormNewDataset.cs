@@ -136,7 +136,7 @@ namespace gView.Framework.UI.Dialogs
             get { return spatialIndexControl.Extent; }
         }
 
-        public Fields AdditionalFields
+        public FieldCollection AdditionalFields
         {
             get { return additionalFieldsControl1.AdditionalFields; }
         }

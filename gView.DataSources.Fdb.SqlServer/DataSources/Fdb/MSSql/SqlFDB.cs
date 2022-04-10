@@ -1,4 +1,5 @@
 using gView.Framework.Data;
+using gView.Framework.Data.Filters;
 using gView.Framework.Db;
 using gView.Framework.Db.Extensions;
 using gView.Framework.FDB;
@@ -580,7 +581,7 @@ namespace gView.DataSources.Fdb.MSSql
             {
                 foreach (IField field in fields)
                 {
-                    ((Fields)((ITableClass)layer.Class).Fields).Add(field);
+                    ((FieldCollection)((ITableClass)layer.Class).Fields).Add(field);
                 }
             }
 
@@ -656,7 +657,7 @@ namespace gView.DataSources.Fdb.MSSql
                     {
                         foreach (IField field in fields)
                         {
-                            ((Fields)fc.Fields).Add(field);
+                            ((FieldCollection)fc.Fields).Add(field);
                         }
                     }
 
@@ -752,7 +753,7 @@ namespace gView.DataSources.Fdb.MSSql
                 {
                     foreach (IField field in fields)
                     {
-                        ((Fields)((ITableClass)layer.Class).Fields).Add(field);
+                        ((FieldCollection)((ITableClass)layer.Class).Fields).Add(field);
                     }
                 }
                 layers.Add(layer);
@@ -904,7 +905,7 @@ namespace gView.DataSources.Fdb.MSSql
             }
             return "";
         }
-        override protected bool CreateTable(string name, IFields Fields, bool msSpatial)
+        override protected bool CreateTable(string name, IFieldCollection Fields, bool msSpatial)
         {
             try
             {
@@ -1052,7 +1053,7 @@ namespace gView.DataSources.Fdb.MSSql
                     return false;
                 }
 
-                Fields fields = new Fields();
+                FieldCollection fields = new FieldCollection();
                 foreach (IField field in await FeatureClassFields(dsname, FCName))
                 {
                     if (field.name == "FDB_OID" || field.name == "FDB_SHAPE")
@@ -2552,7 +2553,7 @@ namespace gView.DataSources.Fdb.MSSql
 
         #region ICheckoutableDatabase Member
 
-        async public override Task<bool> CreateIfNotExists(string tableName, IFields fields)
+        async public override Task<bool> CreateIfNotExists(string tableName, IFieldCollection fields)
         {
             if (await TableExists(tableName))
             {
@@ -3801,7 +3802,7 @@ namespace gView.DataSources.Fdb.MSSql
         }
 
         public event FeatureSelectionChangedEvent FeatureSelectionChanged;
-        public event BeforeClearSelectionEvent BeforeClearSelection;
+        public event BeforeClearSelectionEvent BeforeClearSelection { add { throw new NotSupportedException(); } remove { } }
 
         public void ClearSelection()
         {

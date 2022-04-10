@@ -1,6 +1,7 @@
 ﻿using gView.Core.Framework.Exceptions;
 using gView.Framework.Carto;
 using gView.Framework.Data;
+using gView.Framework.Data.Filters;
 using gView.Framework.Editor.Core;
 using gView.Framework.FDB;
 using gView.Framework.Geometry;

@@ -1,4 +1,5 @@
 ﻿using gView.Framework.Carto;
+using gView.Framework.Data.Filters;
 using System;
 
 namespace gView.Framework.Data

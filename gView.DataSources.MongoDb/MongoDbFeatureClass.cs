@@ -1,4 +1,5 @@
 ﻿using gView.Framework.Data;
+using gView.Framework.Data.Filters;
 using gView.Framework.Geometry;
 using MongoDB.Driver;
 using System;
@@ -28,7 +29,7 @@ namespace gView.DataSources.MongoDb
                 fc.SpatialReference = dataset._spatialReference;  // ToDo
             }
 
-            var fields = new Fields();
+            var fields = new FieldCollection();
             //fields.Add(new Field("_id", FieldType.ID));
             fields.Add(new Field("_shape", FieldType.Shape));
             if (spatialCollectoinItem.Fields != null)
@@ -58,7 +59,7 @@ namespace gView.DataSources.MongoDb
 
         public IEnvelope Envelope { get; private set; }
 
-        public IFields Fields { get; private set; }
+        public IFieldCollection Fields { get; private set; }
 
         public string IDFieldName => "id";
 

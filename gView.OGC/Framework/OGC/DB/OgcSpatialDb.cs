@@ -1,5 +1,7 @@
 using gView.Db.Framework.Db;
 using gView.Framework.Data;
+using gView.Framework.Data.Filters;
+using gView.Framework.Data.Metadata;
 using gView.Framework.Editor.Core;
 using gView.Framework.Extensions;
 using gView.Framework.FDB;
@@ -366,7 +368,7 @@ namespace gView.Framework.OGC.DB
             throw new Exception("The method or operation is not implemented.");
         }
 
-        async virtual public Task<int> CreateFeatureClass(string dsname, string fcname, IGeometryDef geomDef, IFields Fields)
+        async virtual public Task<int> CreateFeatureClass(string dsname, string fcname, IGeometryDef geomDef, IFieldCollection Fields)
         {
             DatasetNameCase nameCase = DatasetNameCase.ignore;
             foreach (System.Attribute attribute in System.Attribute.GetCustomAttributes(this.GetType()))

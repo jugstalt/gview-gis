@@ -2,6 +2,7 @@
 using gView.DataSources.Fdb.MSSql;
 using gView.Framework.Carto;
 using gView.Framework.Data;
+using gView.Framework.Data.Filters;
 using gView.Framework.FDB;
 using gView.Framework.Geometry;
 using gView.Framework.IO;
@@ -190,7 +191,7 @@ namespace gView.MxlUtil.Lib.Utilities
                                     HasZ = sourceFc.HasZ,
                                     SpatialReference = sourceFc.SpatialReference
                                 },
-                                new Fields(sourceFc.Fields.ToEnumerable().Select(f =>
+                                new FieldCollection(sourceFc.Fields.ToEnumerable().Select(f =>
                                 {
                                     if (f != null && f.type == FieldType.ID && f.name.ToUpper().Equals("FDB_OID") == false)  // also include original ID Column
                                     {

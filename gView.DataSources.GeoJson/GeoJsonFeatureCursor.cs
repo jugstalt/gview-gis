@@ -1,4 +1,5 @@
 ﻿using gView.Framework.Data;
+using gView.Framework.Data.Filters;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;

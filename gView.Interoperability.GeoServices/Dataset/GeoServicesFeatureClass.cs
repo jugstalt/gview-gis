@@ -1,4 +1,5 @@
 ﻿using gView.Framework.Data;
+using gView.Framework.Data.Filters;
 using gView.Framework.Geometry;
 using gView.Interoperability.GeoServices.Rest;
 using gView.Interoperability.GeoServices.Rest.Json;
@@ -23,7 +24,7 @@ namespace gView.Interoperability.GeoServices.Dataset
             featureClass.ID = jsonLayer.Id.ToString();
             featureClass.Name = jsonLayer.Name;
 
-            var fields = featureClass.Fields as Fields;
+            var fields = featureClass.Fields as FieldCollection;
             if (fields != null && jsonLayer.Fields != null)
             {
                 foreach (var jsonField in jsonLayer.Fields)

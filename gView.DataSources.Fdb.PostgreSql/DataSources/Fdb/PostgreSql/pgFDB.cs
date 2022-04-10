@@ -1,4 +1,5 @@
 ﻿using gView.Framework.Data;
+using gView.Framework.Data.Filters;
 using gView.Framework.Db;
 using gView.Framework.Db.Extensions;
 using gView.Framework.FDB;
@@ -284,7 +285,7 @@ namespace gView.DataSources.Fdb.PostgreSql
             {
                 foreach (IField field in fields)
                 {
-                    ((Fields)((ITableClass)layer.Class).Fields).Add(field);
+                    ((FieldCollection)((ITableClass)layer.Class).Fields).Add(field);
                 }
             }
 
@@ -332,7 +333,7 @@ namespace gView.DataSources.Fdb.PostgreSql
         #endregion
 
         #region Overrides
-        protected override bool CreateTable(string name, IFields Fields, bool msSpatial)
+        protected override bool CreateTable(string name, IFieldCollection Fields, bool msSpatial)
         {
             try
             {
@@ -777,7 +778,7 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
                     {
                         foreach (IField field in fields)
                         {
-                            ((Fields)fc.Fields).Add(field);
+                            ((FieldCollection)fc.Fields).Add(field);
                         }
                     }
 
@@ -874,7 +875,7 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
                 {
                     foreach (IField field in fields)
                     {
-                        ((Fields)((ITableClass)layer.Class).Fields).Add(field);
+                        ((FieldCollection)((ITableClass)layer.Class).Fields).Add(field);
                     }
                 }
                 layers.Add(layer);
@@ -1872,7 +1873,7 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
 
         #region IAltertable
 
-        public event AlterTableEventHandler TableAltered = null;
+        public new event AlterTableEventHandler TableAltered;
 
         async public override Task<bool> AlterTable(string table, IField oldField, IField newField)
         {
@@ -2056,7 +2057,7 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
             }
 
             public event gView.Framework.Data.FeatureSelectionChangedEvent FeatureSelectionChanged;
-            public event BeforeClearSelectionEvent BeforeClearSelection;
+            public event BeforeClearSelectionEvent BeforeClearSelection { add { throw new NotSupportedException(); } remove { } }
 
             public void ClearSelection()
             {

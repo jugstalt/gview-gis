@@ -1,5 +1,7 @@
 using gView.Framework.Carto;
 using gView.Framework.Data;
+using gView.Framework.Data.Filters;
+using gView.Framework.Data.Metadata;
 using gView.Framework.Geometry;
 using gView.Framework.IO;
 using gView.Framework.Symbology;
@@ -193,7 +195,7 @@ namespace gView.Framework.UI.Controls
     {
         private IFeatureClass _fc;
         private IFeatureRenderer _renderer;
-        private IFields _fields;
+        private IFieldCollection _fields;
 
         public PreviewFeatureLayer(IFeatureClass fc)
         {
@@ -211,7 +213,7 @@ namespace gView.Framework.UI.Controls
             {
                 ((IFeatureRenderer2)_renderer).Symbol = ((ISymbolCreator)_renderer).CreateStandardSymbol(_fc.GeometryType);
             }
-            _fields = new Fields();
+            _fields = new FieldCollection();
         }
 
         #region IFeatureLayer Members
@@ -293,7 +295,7 @@ namespace gView.Framework.UI.Controls
             }
         }
 
-        public IFields Fields
+        public IFieldCollection Fields
         {
             get { return _fields; }
         }
@@ -324,7 +326,7 @@ namespace gView.Framework.UI.Controls
         IGUIApplication _application = null;
         //private MapView _mapView = null;
         private PreviewControl _control = null;
-        public event EventHandler OnApplicationStart;
+        public event EventHandler OnApplicationStart { add { throw new NotSupportedException(); } remove { } }
 
         public ExplorerMapApplication(IGUIApplication application, PreviewControl control)
         {
@@ -339,9 +341,9 @@ namespace gView.Framework.UI.Controls
 
         #region IMapApplication Members
 
-        public event AfterLoadMapDocumentEvent AfterLoadMapDocument;
-        public event ActiveMapToolChangedEvent ActiveMapToolChanged;
-        public event OnCursorPosChangedEvent OnCursorPosChanged;
+        public event AfterLoadMapDocumentEvent AfterLoadMapDocument { add { throw new NotSupportedException(); } remove { } }
+        public event ActiveMapToolChangedEvent ActiveMapToolChanged { add { throw new NotSupportedException(); } remove { } }
+        public event OnCursorPosChangedEvent OnCursorPosChanged { add { throw new NotSupportedException(); } remove { } }
 
         public bool InvokeRequired
         {
@@ -467,7 +469,7 @@ namespace gView.Framework.UI.Controls
             }
         }
 
-        public event DockWindowAddedEvent DockWindowAdded;
+        public event DockWindowAddedEvent DockWindowAdded { add { throw new NotSupportedException(); } remove { } }
 
         public List<IDockableWindow> DockableWindows
         {
@@ -482,7 +484,7 @@ namespace gView.Framework.UI.Controls
             }
         }
 
-        public event OnShowDockableWindowEvent OnShowDockableWindow;
+        public event OnShowDockableWindowEvent OnShowDockableWindow { add { throw new NotSupportedException(); } remove { } }
 
         public void ShowDockableWindow(IDockableWindow window)
         {

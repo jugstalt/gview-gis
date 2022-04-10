@@ -1,5 +1,6 @@
 using gView.Framework.Carto.Rendering.UI;
 using gView.Framework.Data;
+using gView.Framework.Data.Filters;
 using gView.Framework.IO;
 using gView.Framework.Symbology;
 using gView.Framework.system;
@@ -10,7 +11,7 @@ using System.Reflection;
 
 namespace gView.Framework.Carto.Rendering
 {
-    [gView.Framework.system.RegisterPlugIn("4221EF57-E89E-4035-84EB-D3FA163FDE0C")]
+    [RegisterPlugIn("4221EF57-E89E-4035-84EB-D3FA163FDE0C")]
     public class ScaleDependentLabelRenderer : ILabelRenderer, ILabelGroupRenderer, ILegendGroup, IPropertyPage
     {
         private RendererList _renderers;
@@ -31,7 +32,7 @@ namespace gView.Framework.Carto.Rendering
 
         #region ILabelRenderer Member
 
-        public void PrepareQueryFilter(IDisplay display, gView.Framework.Data.IFeatureLayer layer, gView.Framework.Data.IQueryFilter filter)
+        public void PrepareQueryFilter(IDisplay display, IFeatureLayer layer, IQueryFilter filter)
         {
             foreach (ILabelRenderer renderer in _renderers)
             {
@@ -355,7 +356,7 @@ namespace gView.Framework.Carto.Rendering
 
             #region ILabelRenderer Member
 
-            public void PrepareQueryFilter(IDisplay display, gView.Framework.Data.IFeatureLayer layer, gView.Framework.Data.IQueryFilter filter)
+            public void PrepareQueryFilter(IDisplay display, IFeatureLayer layer, IQueryFilter filter)
             {
                 if (_renderer != null)
                 {

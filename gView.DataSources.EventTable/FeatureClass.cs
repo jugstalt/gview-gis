@@ -1,4 +1,5 @@
 ﻿using gView.Framework.Data;
+using gView.Framework.Data.Filters;
 using gView.Framework.Db;
 using gView.Framework.Geometry;
 using System;
@@ -9,7 +10,7 @@ namespace gView.DataSources.EventTable
 {
     class FeatureClass : IFeatureClass
     {
-        private Fields _fields = null;
+        private FieldCollection _fields = null;
         private EventTableConnection _etcon;
         private Dataset _dataset;
         private IEnvelope _env = null;
@@ -30,7 +31,7 @@ namespace gView.DataSources.EventTable
                 conn.ConnectionString2 = fc._etcon.DbConnectionString.ConnectionString;
                 if (conn.GetSchema(fc._etcon.TableName))
                 {
-                    fc._fields = new Fields(conn.schemaTable);
+                    fc._fields = new FieldCollection(conn.schemaTable);
                     IField idfield = fc._fields.FindField(fc._etcon.IdFieldName);
                     if (idfield is Field)
                     {
@@ -117,7 +118,7 @@ namespace gView.DataSources.EventTable
             }
         }
 
-        public IFields Fields
+        public IFieldCollection Fields
         {
             get { return _fields; }
         }

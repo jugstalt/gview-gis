@@ -1,4 +1,5 @@
 ﻿using gView.Framework.Data;
+using gView.Framework.Data.Metadata;
 using gView.Framework.FDB;
 using gView.Framework.Geometry;
 using gView.Framework.IO;
@@ -469,11 +470,11 @@ namespace gView.DataSources.Fdb.SQLite
                     var fields = await _fdb.FeatureClassFields(this._dsID, table);
 
                     SQLiteFDBFeatureClass fc = element.Class as SQLiteFDBFeatureClass;
-                    ((Fields)fc.Fields).Clear();
+                    ((FieldCollection)fc.Fields).Clear();
 
                     foreach (IField field in fields)
                     {
-                        ((Fields)fc.Fields).Add(field);
+                        ((FieldCollection)fc.Fields).Add(field);
                     }
                 }
             }

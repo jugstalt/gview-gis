@@ -83,7 +83,7 @@ namespace gView.Framework.Carto
 
         public override event NewBitmapEvent NewBitmap;
         public override event DrawingLayerEvent DrawingLayer;
-        public override event DrawingLayerFinishedEvent DrawingLayerFinished;
+        public override event DrawingLayerFinishedEvent DrawingLayerFinished { add { throw new NotSupportedException(); } remove { } }
         public override event NewExtentRenderedEvent NewExtentRendered;
         public override event DoRefreshMapViewEvent DoRefreshMapView;
 

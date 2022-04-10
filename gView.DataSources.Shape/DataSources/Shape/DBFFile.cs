@@ -29,7 +29,7 @@ namespace gView.DataSources.Shape
             Reserved4 = br.ReadInt16();
         }
 
-        public static bool Write(BinaryWriter bw, Fields fields)
+        public static bool Write(BinaryWriter bw, FieldCollection fields)
         {
             if (bw == null || fields == null)
             {
@@ -766,7 +766,7 @@ namespace gView.DataSources.Shape
 
         #region Writer
 
-        public static bool Create(string filename, Fields fields)
+        public static bool Create(string filename, FieldCollection fields)
         {
             try
             {
@@ -933,11 +933,11 @@ namespace gView.DataSources.Shape
 
         #endregion
 
-        public IFields Fields
+        public IFieldCollection Fields
         {
             get
             {
-                Fields fields = new Fields();
+                FieldCollection fields = new FieldCollection();
 
                 // ID
                 Field field = new Field();

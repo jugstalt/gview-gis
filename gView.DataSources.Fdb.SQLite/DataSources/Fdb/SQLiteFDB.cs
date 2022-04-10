@@ -1,5 +1,6 @@
 ﻿using gView.DataSources.Fdb.Sqlite;
 using gView.Framework.Data;
+using gView.Framework.Data.Filters;
 using gView.Framework.Geometry;
 using gView.Framework.Offline;
 using gView.Framework.system;
@@ -139,7 +140,7 @@ namespace gView.DataSources.Fdb.SQLite
                     {
                         foreach (IField field in fields)
                         {
-                            ((Fields)fc.Fields).Add(field);
+                            ((FieldCollection)fc.Fields).Add(field);
                         }
                     }
 
@@ -235,7 +236,7 @@ namespace gView.DataSources.Fdb.SQLite
                 {
                     foreach (IField field in fields)
                     {
-                        ((Fields)((ITableClass)layer.Class).Fields).Add(field);
+                        ((FieldCollection)((ITableClass)layer.Class).Fields).Add(field);
                     }
                 }
                 layers.Add(layer);
@@ -1026,7 +1027,7 @@ namespace gView.DataSources.Fdb.SQLite
             {
                 foreach (IField field in fields)
                 {
-                    ((Fields)((ITableClass)layer.Class).Fields).Add(field);
+                    ((FieldCollection)((ITableClass)layer.Class).Fields).Add(field);
                 }
             }
 
@@ -1288,7 +1289,7 @@ namespace gView.DataSources.Fdb.SQLite
             return "";
         }
 
-        protected override bool CreateTable(string name, IFields Fields, bool msSpatial)
+        protected override bool CreateTable(string name, IFieldCollection Fields, bool msSpatial)
         {
             try
             {
@@ -2208,7 +2209,7 @@ namespace gView.DataSources.Fdb.SQLite
             }
 
             public event gView.Framework.Data.FeatureSelectionChangedEvent FeatureSelectionChanged;
-            public event BeforeClearSelectionEvent BeforeClearSelection;
+            public event BeforeClearSelectionEvent BeforeClearSelection { add { throw new NotSupportedException(); } remove { } }
 
             public void ClearSelection()
             {

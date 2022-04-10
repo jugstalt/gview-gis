@@ -145,11 +145,11 @@ namespace gView.Framework.UI.Dialogs
             set { spatialIndexControl.MSIndex = value; }
 
         }
-        public IFields Fields
+        public IFieldCollection Fields
         {
             get
             {
-                Fields fields = new Fields();
+                FieldCollection fields = new FieldCollection();
                 foreach (DataRow row in dsFields.Tables[0].Rows)
                 {
                     if (row["FieldField"] is IField)

@@ -211,11 +211,11 @@ SELECT @newid ""Next RowID""";
             return spatialRef.AuthSrid.Value;
         }
 
-        async public Task<Fields> FeatureClassFields(IFeatureClass fc)
+        async public Task<FieldCollection> FeatureClassFields(IFeatureClass fc)
         {
             await this.Refresh();
 
-            var fields = new Fields();
+            var fields = new FieldCollection();
 
             var fcName = fc.Name.ToLower();
             foreach (var sdeField in SdeColumns.Where(c => (c.Owner + "." + c.TableName).ToLower() == fcName && !c.ColumnName.StartsWith("GDB_")))
@@ -231,7 +231,7 @@ SELECT @newid ""Next RowID""";
         {
             await this.Refresh();
 
-            var fields = new Fields();
+            var fields = new FieldCollection();
 
             var fcName = fc.Name.ToLower();
             var geomColumn = SdeGeometryColumns.Where(c => (c.Owner + "." + c.TableName).ToLower() == fcName).FirstOrDefault();

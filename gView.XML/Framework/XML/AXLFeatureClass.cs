@@ -1,4 +1,5 @@
 using gView.Framework.Data;
+using gView.Framework.Data.Filters;
 using gView.Framework.Geometry;
 using gView.Framework.system;
 using System;
@@ -14,14 +15,14 @@ namespace gView.Framework.XML
         protected IDataset _dataset;
         private string _name = "", _aliasname = "";
         private string _idfield = "", _shapeField = "", _id = "";
-        private Fields _fields;
+        private FieldCollection _fields;
         private IEnvelope _envelope = null;
         private GeometryDef _geomDef = new GeometryDef();
 
         public AXLFeatureClass(IDataset dataset, string id)
         {
             _dataset = dataset;
-            _fields = new Fields();
+            _fields = new FieldCollection();
             _id = id;
         }
 
@@ -187,7 +188,7 @@ namespace gView.Framework.XML
             get { return _geomDef; }
         }
 
-        public IFields Fields
+        public IFieldCollection Fields
         {
             get
             {
@@ -274,7 +275,7 @@ namespace gView.Framework.XML
             {
                 try
                 {
-                    _fields = new Fields();
+                    _fields = new FieldCollection();
                     XmlDocument doc = new XmlDocument();
                     doc.LoadXml("<LAYERDEF>" + value + "</LAYERDEF>");
 

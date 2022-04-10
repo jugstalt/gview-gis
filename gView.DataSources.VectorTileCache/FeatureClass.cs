@@ -1,4 +1,5 @@
 ﻿using gView.Framework.Data;
+using gView.Framework.Data.Filters;
 using gView.Framework.Geometry;
 using System;
 using System.Linq;
@@ -36,7 +37,7 @@ namespace gView.DataSources.VectorTileCache
                     dataset.Capabilities.Bounds[3]);
             }
 
-            this.Fields = new Fields();
+            this.Fields = new FieldCollection();
             if (layer.Fields != null)
             {
                 foreach (var fieldName in layer.Fields.Keys)
@@ -53,7 +54,7 @@ namespace gView.DataSources.VectorTileCache
                             break;
                     }
 
-                    ((Fields)this.Fields).Add(field);
+                    ((FieldCollection)this.Fields).Add(field);
                 }
             }
 
@@ -65,7 +66,7 @@ namespace gView.DataSources.VectorTileCache
 
         public IEnvelope Envelope { get; }
 
-        public IFields Fields { get; }
+        public IFieldCollection Fields { get; }
 
         public string IDFieldName => "id"; // ???
 

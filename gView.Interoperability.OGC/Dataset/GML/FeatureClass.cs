@@ -1,4 +1,5 @@
 using gView.Framework.Data;
+using gView.Framework.Data.Filters;
 using gView.Framework.Geometry;
 using System.Threading.Tasks;
 using System.Xml;
@@ -8,20 +9,20 @@ namespace gView.Interoperability.OGC.Dataset.GML
     class FeatureClass : IFeatureClass
     {
         private string _idField = "oid", _shapeField = "geometry";
-        private Fields _fields;
+        private FieldCollection _fields;
         private string _name;
         private Dataset _dataset;
         private GeometryType _geomType = GeometryType.Unknown;
         private GmlVersion _gmlVersion = GmlVersion.v1;
 
-        private FeatureClass(Dataset dataset, string name, Fields fields)
+        private FeatureClass(Dataset dataset, string name, FieldCollection fields)
         {
             _dataset = dataset;
             _name = name;
             _fields = fields;
         }
 
-        async static public Task<FeatureClass> CreateAsync(Dataset dataset, string name, Fields fields)
+        async static public Task<FeatureClass> CreateAsync(Dataset dataset, string name, FieldCollection fields)
         {
             var fc = new FeatureClass(dataset, name, fields);
             if (dataset != null)
@@ -76,7 +77,7 @@ namespace gView.Interoperability.OGC.Dataset.GML
             return Task.FromResult<ISelectionSet>(null);
         }
 
-        public IFields Fields
+        public IFieldCollection Fields
         {
             get
             {

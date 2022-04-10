@@ -1,4 +1,5 @@
 ﻿using gView.Framework.Data;
+using gView.Framework.Data.Filters;
 using gView.Framework.Geometry;
 using gView.Framework.SpatialAlgorithms;
 using gView.Framework.system;
@@ -28,7 +29,8 @@ namespace gView.Cmd.FillLuceneServer
                 string basicAuthUser = String.Empty, basicAuthPassword = String.Empty;
 
                 int packageSize = 50000;
-                bool replace = false;
+                
+                //bool replace = false;
 
                 for (int i = 0; i < args.Length; i++)
                 {
@@ -57,10 +59,10 @@ namespace gView.Cmd.FillLuceneServer
                         category = args[i + 1];
                     }
 
-                    if (args[i] == "-r")
-                    {
-                        replace = true;
-                    }
+                    //if (args[i] == "-r")
+                    //{
+                    //    replace = true;
+                    //}
 
                     if (args[i] == "-packagesize" && i < args.Length - 1)
                     {

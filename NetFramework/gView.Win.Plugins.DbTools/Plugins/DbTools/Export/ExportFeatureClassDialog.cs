@@ -2,6 +2,7 @@ using gView.DataSources.Fdb.MSAccess;
 using gView.DataSources.Fdb.UI;
 using gView.Framework.Carto;
 using gView.Framework.Data;
+using gView.Framework.Data.Filters;
 using gView.Framework.FDB;
 using gView.Framework.Globalisation;
 using gView.Framework.system;

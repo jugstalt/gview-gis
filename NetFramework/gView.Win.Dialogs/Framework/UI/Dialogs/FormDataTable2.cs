@@ -1,5 +1,6 @@
 using gView.Framework.Carto;
 using gView.Framework.Data;
+using gView.Framework.Data.Filters;
 using gView.Framework.system;
 using System;
 using System.Collections.Generic;
@@ -458,7 +459,7 @@ namespace gView.Framework.UI.Dialogs
 
             grid.DefaultCellStyle.BackColor = Color.White;
 
-            gView.Framework.Data.QueryFilter filter = new gView.Framework.Data.QueryFilter();
+            QueryFilter filter = new QueryFilter();
             foreach (IField field in _tableClass.Fields.ToEnumerable())
             {
                 if (field.type == FieldType.binary || field.type == FieldType.Shape)

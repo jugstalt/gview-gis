@@ -1,4 +1,5 @@
 using gView.Framework.Data;
+using gView.Framework.Data.Filters;
 using gView.Framework.Geometry;
 using System;
 using System.Threading.Tasks;
@@ -13,7 +14,7 @@ namespace gView.DataSources.OGR
         private Dataset _dataset;
         private bool _hasZ = false, _hasM = false;
         private GeometryType _geomType = GeometryType.Unknown;
-        private Fields _fields;
+        private FieldCollection _fields;
         private OSGeo_v1.OGR.Layer _ogrLayer = null;
 
         public FeatureClassV1(Dataset dataset, OSGeo_v1.OGR.Layer layer)
@@ -32,7 +33,7 @@ namespace gView.DataSources.OGR
                 }
                 catch { }
             }
-            _fields = new Fields();
+            _fields = new FieldCollection();
             for (int i = 0; i < defn.GetFieldCount(); i++)
             {
                 OSGeo_v1.OGR.FieldDefn fdefn = defn.GetFieldDefn(i);
@@ -117,7 +118,7 @@ namespace gView.DataSources.OGR
             throw new Exception("The method or operation is not implemented.");
         }
 
-        public IFields Fields
+        public IFieldCollection Fields
         {
             get
             {

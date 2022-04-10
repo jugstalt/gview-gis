@@ -1,4 +1,5 @@
 ﻿using gView.Framework.Carto;
+using gView.Framework.Data.Filters;
 using gView.Framework.system;
 using gView.Framework.UI;
 using System;
@@ -37,7 +38,7 @@ namespace gView.Framework.Data.Joins
             set;
         }
 
-        public IFields JoinFields
+        public IFieldCollection JoinFields
         {
             get
             {
@@ -46,7 +47,7 @@ namespace gView.Framework.Data.Joins
                     return _joinLayer.Fields;
                 }
 
-                return new Fields();
+                return new FieldCollection();
             }
             set
             {

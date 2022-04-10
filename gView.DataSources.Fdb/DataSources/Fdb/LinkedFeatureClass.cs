@@ -1,4 +1,5 @@
 ﻿using gView.Framework.Data;
+using gView.Framework.Data.Filters;
 using gView.Framework.FDB;
 using System;
 using System.Threading.Tasks;
@@ -69,9 +70,9 @@ namespace gView.DataSources.Fdb
             return await Select(filter);
         }
 
-        public IFields Fields
+        public IFieldCollection Fields
         {
-            get { return _fc != null ? _fc.Fields : new Fields(); }
+            get { return _fc != null ? _fc.Fields : new FieldCollection(); }
         }
 
         public IField FindField(string name)

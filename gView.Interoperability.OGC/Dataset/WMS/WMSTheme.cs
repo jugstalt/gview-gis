@@ -1,4 +1,5 @@
 using gView.Framework.Data;
+using gView.Framework.Data.Cursors;
 using gView.Framework.Geometry;
 using gView.Framework.system;
 using gView.Framework.Web;

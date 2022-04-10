@@ -1,4 +1,5 @@
 using gView.Framework.Carto;
+using gView.Framework.Data.Filters;
 using gView.Framework.FDB;
 using gView.Framework.Geometry;
 using gView.Framework.IO;
@@ -273,7 +274,7 @@ namespace gView.Framework.Data
         Task<ICursor> Search(IQueryFilter filter);
         Task<ISelectionSet> Select(IQueryFilter filter);
 
-        IFields Fields { get; }
+        IFieldCollection Fields { get; }
         IField FindField(string name);
 
         string IDFieldName { get; }
@@ -392,7 +393,7 @@ namespace gView.Framework.Data
         MapServerGrouplayerStyle MapServerStyle { get; set; }
     }
 
-    public interface IFields : /*IEnumerable<IField>,*/ IClone
+    public interface IFieldCollection : /*IEnumerable<IField>,*/ IClone
     {
         IField FindField(string aliasname);
         IField PrimaryDisplayField { get; set; }
@@ -599,7 +600,7 @@ namespace gView.Framework.Data
 
         string Field { get; set; }
 
-        IFields JoinFields { get; set; }
+        IFieldCollection JoinFields { get; set; }
         Task<IRow> GetJoinedRow(string val);
         Task PerformCacheQuery(string[] vals);
         Task<ICursor> PerformQuery(IQueryFilter filter);
@@ -722,7 +723,7 @@ namespace gView.Framework.Data
         IFeatureClass FeatureClass { get; }
         IQueryFilter FilterQuery { get; set; }
 
-        IFields Fields { get; }
+        IFieldCollection Fields { get; }
 
         FeatureLayerJoins Joins { get; set; }
 

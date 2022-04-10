@@ -1,4 +1,6 @@
 ﻿using gView.Framework.Data;
+using gView.Framework.Data.Cursors;
+using gView.Framework.Data.Filters;
 using gView.Framework.FDB;
 using gView.Framework.Geometry;
 using gView.Framework.Network;
@@ -18,7 +20,7 @@ namespace gView.DataSources.Fdb.PostgreSql
         private pgFDB _fdb;
         private IDataset _dataset;
         private string _name = String.Empty, _aliasname = String.Empty;
-        private Fields _fields;
+        private FieldCollection _fields;
         private GeometryDef _geomDef;
         private IFeatureClass _nodeFc = null;
         private Dictionary<int, IFeatureClass> _edgeFcs = new Dictionary<int, IFeatureClass>();
@@ -46,7 +48,7 @@ namespace gView.DataSources.Fdb.PostgreSql
                 fc._geomDef.SpatialReference = await ((IFeatureDataset)dataset).GetSpatialReference();
             }
 
-            fc._fields = new Fields();
+            fc._fields = new FieldCollection();
 
             fc._name = fc._aliasname = name;
 
@@ -215,7 +217,7 @@ namespace gView.DataSources.Fdb.PostgreSql
             return Task.FromResult<ISelectionSet>(null);
         }
 
-        public IFields Fields
+        public IFieldCollection Fields
         {
             get { return _fields; }
         }

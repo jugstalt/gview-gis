@@ -1,5 +1,6 @@
 using gView.Framework.Carto;
 using gView.Framework.Data;
+using gView.Framework.Data.Metadata;
 using gView.Framework.FDB;
 using gView.Framework.Geometry;
 using gView.Framework.IO;
@@ -475,11 +476,11 @@ namespace gView.DataSources.Fdb.MSSql
                     var fields = await _fdb.FeatureClassFields(this._dsID, table);
 
                     SqlFDBFeatureClass fc = element.Class as SqlFDBFeatureClass;
-                    ((Fields)fc.Fields).Clear();
+                    ((FieldCollection)fc.Fields).Clear();
 
                     foreach (IField field in fields)
                     {
-                        ((Fields)fc.Fields).Add(field);
+                        ((FieldCollection)fc.Fields).Add(field);
                     }
                 }
             }

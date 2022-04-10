@@ -31,7 +31,7 @@ namespace gView.Framework.Carto
         public virtual event DrawingLayerEvent DrawingLayer;
         public virtual event DrawingLayerFinishedEvent DrawingLayerFinished;
         public virtual event StartRefreshMapEvent StartRefreshMap;
-        public virtual event NewExtentRenderedEvent NewExtentRendered;
+        public virtual event NewExtentRenderedEvent NewExtentRendered { add { throw new NotSupportedException(); } remove { } }
         public event EventHandler MapRenamed;
         public event UserIntefaceEvent OnUserInterface;
 

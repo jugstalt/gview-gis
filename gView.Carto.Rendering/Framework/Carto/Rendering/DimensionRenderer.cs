@@ -1,5 +1,6 @@
 using gView.Framework.Carto.Rendering.UI;
 using gView.Framework.Data;
+using gView.Framework.Data.Filters;
 using gView.Framework.Geometry;
 using gView.Framework.Symbology;
 using gView.Framework.system;
@@ -229,7 +230,7 @@ namespace gView.Framework.Carto.Rendering
         {
         }
 
-        public void PrepareQueryFilter(gView.Framework.Data.IFeatureLayer layer, gView.Framework.Data.IQueryFilter filter)
+        public void PrepareQueryFilter(IFeatureLayer layer, IQueryFilter filter)
         {
 
         }

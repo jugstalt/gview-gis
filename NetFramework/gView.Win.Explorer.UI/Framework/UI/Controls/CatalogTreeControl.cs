@@ -17,7 +17,7 @@ namespace gView.Framework.UI.Controls
         public delegate void NodeDeletedEvent(IExplorerObject exObject);
         public event NodeDeletedEvent NodeDeleted = null;
         public delegate void NodeRenamedEvent(IExplorerObject exObject);
-        public event NodeRenamedEvent NodeRenamed = null;
+        public event NodeRenamedEvent NodeRenamed { add { throw new NotSupportedException(); } remove { } }
 
         private ToolStripMenuItem _renameMenuItem, _deleteMenuItem;
         private Filter.ExplorerOpenDialogFilter _filter = null;

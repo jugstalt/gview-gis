@@ -1,4 +1,5 @@
 using gView.Framework.Data;
+using gView.Framework.Data.Filters;
 using gView.Framework.Geometry;
 using gView.Framework.OGC.WFS;
 using gView.Framework.Web;
@@ -17,7 +18,7 @@ namespace gView.Interoperability.OGC.Dataset.WFS
         private WFSDataset _dataset;
         private WMSClass.SRS _srs;
         private string _name, _shapefieldName = "wsGeometry", _idFieldname = String.Empty, _targetNamespace = "";
-        private Fields _fields = new Fields();
+        private FieldCollection _fields = new FieldCollection();
         private GeometryType _geomtype = GeometryType.Unknown;
         private ISpatialReference _sRef = null;
 
@@ -111,7 +112,7 @@ namespace gView.Interoperability.OGC.Dataset.WFS
 
         #region ITableClass Member
 
-        public IFields Fields
+        public override IFieldCollection Fields
         {
             get
             {

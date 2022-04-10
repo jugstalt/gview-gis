@@ -1,4 +1,5 @@
 using gView.Framework.Data;
+using gView.Framework.Data.Filters;
 using gView.Framework.system;
 using System;
 using System.Collections.Generic;
@@ -36,7 +37,7 @@ namespace gView.Framework.UI.Dialogs
                 return dlg;
             }
 
-            gView.Framework.Data.QueryFilter filter = new gView.Framework.Data.QueryFilter();
+            QueryFilter filter = new QueryFilter();
             filter.SubFields = "*";
 
             using (ICursor cursor = await dlg._tc.Search(filter))

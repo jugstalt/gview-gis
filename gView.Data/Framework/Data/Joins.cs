@@ -1,4 +1,5 @@
-﻿using gView.Framework.system;
+﻿using gView.Framework.Data.Filters;
+using gView.Framework.system;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -11,7 +12,7 @@ namespace gView.Framework.Data
     {
         private IFeatureClass _fc;
         private FeatureLayerJoins _joins;
-        private Fields _fields;
+        private FieldCollection _fields;
 
         public WrappedFeatureClassWithJoins(IFeatureClass fc, FeatureLayerJoins joins)
         {
@@ -21,7 +22,7 @@ namespace gView.Framework.Data
 
         public void Refresh()
         {
-            _fields = new Fields();
+            _fields = new FieldCollection();
 
             foreach (IField field in _fc.Fields.ToEnumerable())
             {
@@ -334,7 +335,7 @@ namespace gView.Framework.Data
             return selSet;
         }
 
-        public IFields Fields
+        public IFieldCollection Fields
         {
             get { return _fields; }
         }

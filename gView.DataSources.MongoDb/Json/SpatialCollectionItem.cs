@@ -13,7 +13,7 @@ namespace gView.DataSources.MongoDb.Json
             this.GeneralizationLevel = 0;
         }
 
-        public SpatialCollectionItem(IGeometryDef geomDef, IFields fields)
+        public SpatialCollectionItem(IGeometryDef geomDef, IFieldCollection fields)
         {
             AddFields(fields);
             this.GeometryDef = new GeometryDefinition()
@@ -37,7 +37,7 @@ namespace gView.DataSources.MongoDb.Json
         [BsonElement("fields")]
         public IEnumerable<Field> Fields { get; set; }
 
-        private void AddFields(IFields fields)
+        private void AddFields(IFieldCollection fields)
         {
             if (fields == null)
             {

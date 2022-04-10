@@ -1,4 +1,4 @@
-﻿namespace gView.Framework.Data
+﻿namespace gView.Framework.Data.Filters
 {
     public interface IFunctionFilter : IQueryFilter
     {

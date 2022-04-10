@@ -1,5 +1,6 @@
 using gView.Framework.Carto;
 using gView.Framework.Data;
+using gView.Framework.Data.Filters;
 using gView.Framework.Geometry;
 using gView.Framework.system;
 using gView.Framework.UI;
@@ -137,7 +138,7 @@ namespace gView.Plugins.MapTools.Dialogs
                     //
                     // Collect Fields
                     //
-                    Fields queryFields = new Fields();
+                    FieldCollection queryFields = new FieldCollection();
                     foreach (IField field in fc.Fields.ToEnumerable())
                     {
                         if (field.type == FieldType.binary || field.type == FieldType.Shape)
@@ -439,12 +440,12 @@ namespace gView.Plugins.MapTools.Dialogs
                     #endregion
 
                     #region Fields
-                    Fields fields = null;
+                    FieldCollection fields = null;
                     IField primaryDisplayField = null;
 
                     if (layer != null && layer.Fields != null && table.VisibleFieldDef != null && table.VisibleFieldDef.UseDefault == false)
                     {
-                        fields = new Fields();
+                        fields = new FieldCollection();
 
                         foreach (IField field in layer.Fields.ToEnumerable())
                         {
@@ -589,8 +590,8 @@ namespace gView.Plugins.MapTools.Dialogs
             }
         }
 
-        private delegate void AddFeatureCallback(List<IFeature> features, ISpatialReference sRef, IFeatureLayer layer, string category, IFields fields, IField primaryDisplayField, ManualResetEvent resetEvent);
-        private void AddFeature(List<IFeature> features, ISpatialReference sRef, IFeatureLayer layer, string category, IFields fields, IField primaryDisplayField, ManualResetEvent resetEvent)
+        private delegate void AddFeatureCallback(List<IFeature> features, ISpatialReference sRef, IFeatureLayer layer, string category, IFieldCollection fields, IField primaryDisplayField, ManualResetEvent resetEvent);
+        private void AddFeature(List<IFeature> features, ISpatialReference sRef, IFeatureLayer layer, string category, IFieldCollection fields, IField primaryDisplayField, ManualResetEvent resetEvent)
         {
             if (_parent.InvokeRequired)
             {

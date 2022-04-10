@@ -1,4 +1,5 @@
 using gView.Framework.Data;
+using gView.Framework.Data.Filters;
 using gView.Framework.FDB;
 using gView.Framework.Geometry;
 using System;
@@ -96,7 +97,7 @@ namespace gView.Interoperability.OGC.Dataset.GML
             return Task.FromResult<int>(Create(name) ? 0 : -1);
         }
 
-        async public Task<int> CreateFeatureClass(string dsname, string fcname, gView.Framework.Geometry.IGeometryDef geomDef, IFields fields)
+        async public Task<int> CreateFeatureClass(string dsname, string fcname, gView.Framework.Geometry.IGeometryDef geomDef, IFieldCollection fields)
         {
             if (geomDef == null || fields == null)
             {
@@ -104,7 +105,7 @@ namespace gView.Interoperability.OGC.Dataset.GML
             }
 
             string filename = _directoryName + @"/" + fcname + ".gml";
-            Fields f = new Fields();
+            FieldCollection f = new FieldCollection();
 
             foreach (IField field in fields.ToEnumerable())
             {
@@ -186,7 +187,7 @@ namespace gView.Interoperability.OGC.Dataset.GML
             return false;
         }
 
-        async public Task<IFeatureCursor> Query(gView.Framework.Data.IFeatureClass fc, gView.Framework.Data.IQueryFilter filter)
+        async public Task<IFeatureCursor> Query(IFeatureClass fc, IQueryFilter filter)
         {
             if (fc == null)
             {

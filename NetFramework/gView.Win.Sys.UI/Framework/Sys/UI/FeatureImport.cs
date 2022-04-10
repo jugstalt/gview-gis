@@ -1,6 +1,8 @@
 using gView.Framework.Data;
+using gView.Framework.Data.Filters;
 using gView.Framework.FDB;
 using gView.Framework.Geometry;
+using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -13,7 +15,7 @@ namespace gView.Framework.system.UI
         public delegate void ReportActionEvent(FeatureImport sender, string action);
         public delegate void ReportProgressEvent(FeatureImport sender, int progress);
         public delegate void ReportRequestEvent(FeatureImport sender, RequestArgs args);
-        public event ReportActionEvent ReportAction = null;
+        public event ReportActionEvent ReportAction { add { throw new NotSupportedException(); } remove { } }
         public event ReportProgressEvent ReportProgress = null;
         public event ReportRequestEvent ReportRequest = null;
         private string _errMsg = "";
@@ -156,7 +158,7 @@ namespace gView.Framework.system.UI
                                                   fcname,
                                                   geomDef,
                                                   (fieldTranslation == null) ?
-                                                  ((sourceFC.Fields != null) ? (IFields)sourceFC.Fields.Clone() : new Fields()) :
+                                                  ((sourceFC.Fields != null) ? (IFieldCollection)sourceFC.Fields.Clone() : new FieldCollection()) :
                                                   fieldTranslation.DestinationFields);
                 if (fcID < 0)
                 {

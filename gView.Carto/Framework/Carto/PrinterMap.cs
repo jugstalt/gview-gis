@@ -14,8 +14,8 @@ namespace gView.Framework.Carto
 {
     public sealed class PrinterMap : Map
     {
-        public override event DoRefreshMapViewEvent DoRefreshMapView;
-        public override event DrawingLayerEvent DrawingLayer;
+        public override event DoRefreshMapViewEvent DoRefreshMapView { add { throw new NotSupportedException(); } remove { } }
+        public override event DrawingLayerEvent DrawingLayer { add { throw new NotSupportedException(); } remove { } }
         private PrinterScreen _screen;
 
         public PrinterMap(Map original)

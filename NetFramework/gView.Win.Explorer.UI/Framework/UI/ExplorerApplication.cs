@@ -13,7 +13,7 @@ namespace gView.Framework.UI
         private gView.Explorer.UI.Framework.UI.IFormExplorer _appWindow = null;
         private IStatusBar _statusBar = null;
 
-        public event EventHandler OnApplicationStart;
+        public event EventHandler OnApplicationStart { add { throw new NotSupportedException(); } remove { } }
 
         public ExplorerApplication(gView.Explorer.UI.Framework.UI.IFormExplorer appWindow)
             : base()

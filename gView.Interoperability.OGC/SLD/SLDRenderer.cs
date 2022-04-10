@@ -1,6 +1,7 @@
 using gView.Framework.Carto;
 using gView.Framework.Carto.Rendering;
 using gView.Framework.Data;
+using gView.Framework.Data.Filters;
 using gView.Framework.Geometry;
 using gView.Framework.IO;
 using gView.Framework.Symbology;
@@ -195,7 +196,7 @@ namespace gView.Interoperability.OGC.SLD
         }
 
         private ISpatialReference _featureSRef = null;
-        public void PrepareQueryFilter(gView.Framework.Data.IFeatureLayer layer, gView.Framework.Data.IQueryFilter filter)
+        public void PrepareQueryFilter(IFeatureLayer layer, IQueryFilter filter)
         {
             List<string> propertyNames = new List<string>();
             foreach (Rule rule in _rules)

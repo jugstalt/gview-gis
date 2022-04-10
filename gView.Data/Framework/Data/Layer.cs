@@ -1,4 +1,6 @@
 using gView.Framework.Carto;
+using gView.Framework.Data.Filters;
+using gView.Framework.Data.Metadata;
 using gView.Framework.Geometry;
 using gView.Framework.IO;
 using gView.Framework.Symbology;
@@ -493,22 +495,22 @@ namespace gView.Framework.Data
 
         #endregion
     }
-    public class Fields : IFields, IPersistable
+    public class FieldCollection : IFieldCollection, IPersistable
     {
         protected List<IField> _fields = null;
         protected IField _primaryField = null;
         private object _privateLocker = new object();
 
-        public Fields()
+        public FieldCollection()
         {
             _fields = new List<IField>();
         }
-        public Fields(IFields fields)
+        public FieldCollection(IFieldCollection fields)
             : this(fields?.ToEnumerable())
         {
         }
 
-        public Fields(IEnumerable<IField> fields)
+        public FieldCollection(IEnumerable<IField> fields)
             : this()
         {
             if (fields != null)
@@ -525,7 +527,7 @@ namespace gView.Framework.Data
             }
         }
 
-        public Fields(DataTable schemaTable)
+        public FieldCollection(DataTable schemaTable)
         {
             _fields = new List<IField>();
             if (schemaTable != null)
@@ -537,7 +539,7 @@ namespace gView.Framework.Data
             }
         }
 
-        internal void CopyFrom(IFields fields, IClass Class)
+        internal void CopyFrom(IFieldCollection fields, IClass Class)
         {
             if (fields != null)
             {
@@ -578,7 +580,7 @@ namespace gView.Framework.Data
             // Add new fields "invisible" to the layer
             if (Class is ITableClass && ((ITableClass)Class).Fields != null)
             {
-                IFields classFields = ((ITableClass)Class).Fields;
+                IFieldCollection classFields = ((ITableClass)Class).Fields;
                 if (_fields == null)
                 {
                     _fields = new List<IField>();
@@ -828,7 +830,7 @@ namespace gView.Framework.Data
 
         public object Clone()
         {
-            Fields fields = new Fields();
+            FieldCollection fields = new FieldCollection();
 
             foreach (IField field in this.ToEnumerable())
             {
@@ -916,7 +918,7 @@ namespace gView.Framework.Data
         protected IFeatureRenderer _renderer = null, _selectionrenderer = null;
         protected ILabelRenderer _labelRenderer = null;
         protected IQueryFilter _filterQuery = null;
-        protected Fields _fields = new Fields();
+        protected FieldCollection _fields = new FieldCollection();
         protected bool _applyRefScale = true, _applyLabelRefScale = true;
         protected FeatureLayerJoins _joins = null;
         protected GeometryType _geometryType = GeometryType.Unknown;
@@ -1007,7 +1009,7 @@ namespace gView.Framework.Data
 
         private void RefreshFields()
         {
-            Fields newFields = new Fields();
+            FieldCollection newFields = new FieldCollection();
             if (_class is ITableClass)
             {
                 foreach (IField field in ((ITableClass)_class).Fields.ToEnumerable())
@@ -1155,7 +1157,7 @@ namespace gView.Framework.Data
         public float MaxRefScaleFactor { get; set; }
         public float MaxLabelRefScaleFactor { get; set; }
 
-        public IFields Fields
+        public IFieldCollection Fields
         {
             get { return _fields; }
         }
@@ -1208,7 +1210,7 @@ namespace gView.Framework.Data
             _renderer = (IFeatureRenderer)stream.Load("IRenderer");
             _labelRenderer = (ILabelRenderer)stream.Load("ILabelRenderer");
             _selectionrenderer = (IFeatureRenderer)stream.Load("ISelectionRenderer");
-            _fields = stream.Load("IFields", new Fields(), new Fields()) as Fields;
+            _fields = stream.Load("IFields", new FieldCollection(), new FieldCollection()) as FieldCollection;
 
             _applyRefScale = (bool)stream.Load("applyRefScale", true);
             _applyLabelRefScale = (bool)stream.Load("applyLRefScale", true);
@@ -1998,7 +2000,7 @@ namespace gView.Framework.Data
     public class FeatureClass : IFeatureClass
     {
         private string _name = String.Empty, _idFieldName = String.Empty, _shapeFieldName = String.Empty;
-        private IFields _fields = new Fields();
+        private IFieldCollection _fields = new FieldCollection();
         private IEnvelope _envelope = null;
 
         #region IFeatureClass Member
@@ -2074,7 +2076,7 @@ namespace gView.Framework.Data
             return Task.FromResult<ISelectionSet>(null);
         }
 
-        public IFields Fields
+        public IFieldCollection Fields
         {
             get
             {
