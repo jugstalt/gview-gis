@@ -58,6 +58,7 @@
     <Compile Include="Framework\UI\DoackableWindowContainers.cs" />
     <Compile Include="Framework\UI\MapXMLExplorerObject.cs" />
     <Compile Include="Framework\UI\PrjExplorerObject.cs" />
+    <Compile Include="Plugins\ExTools\AddNetworkDirectory.cs" />
     <Compile Include="Plugins\ExTools\Dialogs\FormDeleteExObjects.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -70,7 +71,7 @@
     <Compile Include="Plugins\ExTools\Dialogs\FormRenameExObject.Designer.cs">
       <DependentUpon>FormRenameExObject.cs</DependentUpon>
     </Compile>
-    <Compile Include="Plugins\ExTools\ExTools.cs" />
+    <Compile Include="Plugins\ExTools\Refresh.cs" />
     <Compile Include="Plugins\ExTools\Icons.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -78,7 +79,18 @@
       <DependentUpon>Icons.cs</DependentUpon>
     </Compile>
     <Compile Include="Plugins\ExTools\RibbonTabs\HomeRibbonTab.cs" />
-    <Compile Include="Plugins\MapTools\BaseTools.cs" />
+    <Compile Include="Plugins\MapTools\About.cs" />
+    <Compile Include="Plugins\MapTools\ClearSelection.cs" />
+    <Compile Include="Plugins\MapTools\Enums.cs" />
+    <Compile Include="Plugins\MapTools\ExitApplication.cs" />
+    <Compile Include="Plugins\MapTools\FeatureClassDataTable.cs" />
+    <Compile Include="Plugins\MapTools\FeatureLayerProperties.cs" />
+    <Compile Include="Plugins\MapTools\Find.cs" />
+    <Compile Include="Plugins\MapTools\Identify.cs" />
+    <Compile Include="Plugins\MapTools\LoadDocument.cs" />
+    <Compile Include="Plugins\MapTools\Measure.cs" />
+    <Compile Include="Plugins\MapTools\MeasureGraphicsElement.cs" />
+    <Compile Include="Plugins\MapTools\NewDocument.cs" />
     <Compile Include="Plugins\MapTools\Buttons.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -231,13 +243,45 @@
     <Compile Include="Plugins\MapTools\NewTool.cs" />
     <Compile Include="Plugins\MapTools\OnMapStart.cs" />
     <Compile Include="Plugins\MapTools\OpenRendererFilter.cs" />
+    <Compile Include="Plugins\MapTools\OverViewMap.cs" />
+    <Compile Include="Plugins\MapTools\Pan.cs" />
+    <Compile Include="Plugins\MapTools\PdfDocs.cs" />
+    <Compile Include="Plugins\MapTools\PerformanceMonitor.cs" />
     <Compile Include="Plugins\MapTools\Printing.cs" />
+    <Compile Include="Plugins\MapTools\QueryThemeCombo.cs" />
+    <Compile Include="Plugins\MapTools\QueryThemeText.cs" />
+    <Compile Include="Plugins\MapTools\RefreshMap.cs" />
     <Compile Include="Plugins\MapTools\RibbonTabs\GraphicsRibbonTab.cs" />
     <Compile Include="Plugins\MapTools\RibbonTabs\StandardRibbonTab.cs" />
+    <Compile Include="Plugins\MapTools\SaveDocument.cs" />
+    <Compile Include="Plugins\MapTools\SaveDocumentAs.cs" />
+    <Compile Include="Plugins\MapTools\SaveDocumentBackstage.cs" />
+    <Compile Include="Plugins\MapTools\ScaleCombo.cs" />
+    <Compile Include="Plugins\MapTools\ScaleText.cs" />
+    <Compile Include="Plugins\MapTools\Select.cs" />
+    <Compile Include="Plugins\MapTools\SelectionGraphicsElement.cs" />
+    <Compile Include="Plugins\MapTools\ShowLegend.cs" />
+    <Compile Include="Plugins\MapTools\SmartNavigation.cs" />
+    <Compile Include="Plugins\MapTools\TableClassSelectByAttributes.cs" />
     <Compile Include="Plugins\MapTools\ThreeD.cs" />
+    <Compile Include="Plugins\MapTools\TOCCommand.cs" />
     <Compile Include="Plugins\MapTools\Toolbars.cs" />
     <Compile Include="Plugins\MapTools\ToolPlugins.cs" />
     <Compile Include="Plugins\MapTools\Tools.cs" />
+    <Compile Include="Plugins\MapTools\UnitMenuItem.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Plugins\MapTools\XY.cs" />
+    <Compile Include="Plugins\MapTools\Zoom2FullExtent.cs" />
+    <Compile Include="Plugins\MapTools\Zoom2Selection.cs" />
+    <Compile Include="Plugins\MapTools\ZoomBack.cs" />
+    <Compile Include="Plugins\MapTools\ZoomForward.cs" />
+    <Compile Include="Plugins\MapTools\ZoomForwardStack.cs" />
+    <Compile Include="Plugins\MapTools\ZoomIn.cs" />
+    <Compile Include="Plugins\MapTools\ZoomInStatic.cs" />
+    <Compile Include="Plugins\MapTools\ZoomOut.cs" />
+    <Compile Include="Plugins\MapTools\ZoomOutStatic.cs" />
+    <Compile Include="Plugins\MapTools\ZoomStack.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>

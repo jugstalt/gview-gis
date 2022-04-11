@@ -17,7 +17,7 @@ namespace gView.Framework.UI.Controls
         public delegate void NodeDeletedEvent(IExplorerObject exObject);
         public event NodeDeletedEvent NodeDeleted = null;
         public delegate void NodeRenamedEvent(IExplorerObject exObject);
-        public event NodeRenamedEvent NodeRenamed { add { throw new NotSupportedException(); } remove { } }
+        public event NodeRenamedEvent NodeRenamed; // { add { throw new NotSupportedException(); } remove { } }
 
         private ToolStripMenuItem _renameMenuItem, _deleteMenuItem;
         private Filter.ExplorerOpenDialogFilter _filter = null;
@@ -74,9 +74,9 @@ namespace gView.Framework.UI.Controls
                             pos = treeView.Nodes.IndexOf(_contextNode);
                             treeView.Nodes.Remove(_contextNode);
                         }
-                        if (pos != -1 && NodeDeleted != null)
+                        if (pos != -1)
                         {
-                            NodeDeleted(_contextNode.ExplorerObject);
+                            NodeDeleted?.Invoke(_contextNode.ExplorerObject);
                         }
                     }
                 }
@@ -92,7 +92,11 @@ namespace gView.Framework.UI.Controls
 
         void _renameMenuItem_Click(object sender, EventArgs e)
         {
-
+            // Should this be possible
+            if (_contextNode is ExplorerObjectNode)
+            {
+                NodeRenamed?.Invoke(_contextNode.ExplorerObject);
+            }
         }
 
         public Filter.ExplorerOpenDialogFilter Filter

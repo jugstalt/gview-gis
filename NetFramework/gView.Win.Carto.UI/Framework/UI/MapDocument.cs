@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace gView.Framework.UI
 {
-    public class MapDocument : IMapDocument, IPersistableLoadAsync, IPersistableTemporaryRestore
+    public class MapDocument : IMapDocument, IMapDocumentEvents, IPersistableLoadAsync, IPersistableTemporaryRestore
     {
         List<IMap> _maps;
         private int _focusMapIndex = -1;

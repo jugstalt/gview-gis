@@ -37,8 +37,6 @@ namespace gView.Interoperability.GeoServices.Dataset
 
         #region IWebServiceClass Member
 
-        public event BeforeMapRequestEventHandler BeforeMapRequest = null;
-
         public event AfterMapRequestEventHandler AfterMapRequest = null;
 
         async public Task<bool> MapRequest(gView.Framework.Carto.IDisplay display)
@@ -239,7 +237,6 @@ namespace gView.Interoperability.GeoServices.Dataset
                     theme.Class,
                     theme as ILayer, clone) as IWebServiceTheme);
             }
-            clone.BeforeMapRequest = BeforeMapRequest;
             clone.AfterMapRequest = AfterMapRequest;
             clone.ModifyResponseOuput = ModifyResponseOuput;
             return clone;

@@ -84,21 +84,25 @@ namespace gView.Plugins.Editor
             {
                 if (_doc != null)
                 {
-                    _doc.LayerAdded -= new LayerAddedEvent(_doc_LayerAdded);
-                    _doc.LayerRemoved -= new LayerRemovedEvent(_doc_LayerRemoved);
-                    _doc.MapAdded -= new MapAddedEvent(_doc_MapAdded);
-                    _doc.MapDeleted -= new MapDeletedEvent(_doc_MapDeleted);
+                    if (_doc is IMapDocumentEvents)
+                    {
+                        ((IMapDocumentEvents)_doc).LayerAdded -= new LayerAddedEvent(_doc_LayerAdded);
+                        ((IMapDocumentEvents)_doc).LayerRemoved -= new LayerRemovedEvent(_doc_LayerRemoved);
+                        ((IMapDocumentEvents)_doc).MapAdded -= new MapAddedEvent(_doc_MapAdded);
+                        ((IMapDocumentEvents)_doc).MapDeleted -= new MapDeletedEvent(_doc_MapDeleted);
+                    }
                     if (_doc.Application is IMapApplication)
                     {
                         ((IMapApplication)_doc.Application).AfterLoadMapDocument -= new AfterLoadMapDocumentEvent(Module_AfterLoadMapDocument);
                     }
                 }
+
                 _doc = (IMapDocument)hook;
 
-                _doc.LayerAdded += new LayerAddedEvent(_doc_LayerAdded);
-                _doc.LayerRemoved += new LayerRemovedEvent(_doc_LayerRemoved);
-                _doc.MapAdded += new MapAddedEvent(_doc_MapAdded);
-                _doc.MapDeleted += new MapDeletedEvent(_doc_MapDeleted);
+                ((IMapDocumentEvents)_doc).LayerAdded += new LayerAddedEvent(_doc_LayerAdded);
+                ((IMapDocumentEvents)_doc).LayerRemoved += new LayerRemovedEvent(_doc_LayerRemoved);
+                ((IMapDocumentEvents)_doc).MapAdded += new MapAddedEvent(_doc_MapAdded);
+                ((IMapDocumentEvents)_doc).MapDeleted += new MapDeletedEvent(_doc_MapDeleted);
                 if (_doc.Application is IMapApplication)
                 {
                     ((IMapApplication)_doc.Application).AfterLoadMapDocument += new AfterLoadMapDocumentEvent(Module_AfterLoadMapDocument);

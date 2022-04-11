@@ -326,7 +326,7 @@ namespace gView.Framework.UI.Controls
         IGUIApplication _application = null;
         //private MapView _mapView = null;
         private PreviewControl _control = null;
-        public event EventHandler OnApplicationStart { add { throw new NotSupportedException(); } remove { } }
+        public event EventHandler OnApplicationStart { add { } remove { } }
 
         public ExplorerMapApplication(IGUIApplication application, PreviewControl control)
         {
@@ -336,14 +336,14 @@ namespace gView.Framework.UI.Controls
         public ExplorerMapApplication(IGUIApplication application, PreviewControl control, object mapView)
             : this(application, control)
         {
-            //_mapView = mapView;
+
         }
 
         #region IMapApplication Members
 
-        public event AfterLoadMapDocumentEvent AfterLoadMapDocument { add { throw new NotSupportedException(); } remove { } }
-        public event ActiveMapToolChangedEvent ActiveMapToolChanged { add { throw new NotSupportedException(); } remove { } }
-        public event OnCursorPosChangedEvent OnCursorPosChanged { add { throw new NotSupportedException(); } remove { } }
+        public event AfterLoadMapDocumentEvent AfterLoadMapDocument { add { } remove { } }
+        public event ActiveMapToolChangedEvent ActiveMapToolChanged { add { } remove { } }
+        public event OnCursorPosChangedEvent OnCursorPosChanged { add { } remove { } }
 
         public bool InvokeRequired
         {
@@ -469,7 +469,7 @@ namespace gView.Framework.UI.Controls
             }
         }
 
-        public event DockWindowAddedEvent DockWindowAdded { add { throw new NotSupportedException(); } remove { } }
+        public event DockWindowAddedEvent DockWindowAdded { add { } remove { } }
 
         public List<IDockableWindow> DockableWindows
         {
@@ -484,7 +484,7 @@ namespace gView.Framework.UI.Controls
             }
         }
 
-        public event OnShowDockableWindowEvent OnShowDockableWindow { add { throw new NotSupportedException(); } remove { } }
+        public event OnShowDockableWindowEvent OnShowDockableWindow { add { } remove { } }
 
         public void ShowDockableWindow(IDockableWindow window)
         {

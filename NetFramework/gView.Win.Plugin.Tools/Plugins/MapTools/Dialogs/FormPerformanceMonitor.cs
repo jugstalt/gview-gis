@@ -24,7 +24,12 @@ namespace gView.Plugins.MapTools.Dialogs
             _statistics.TimeEventAdded += new TimeEventAddedEventHandler(_statistics_TimeEventAdded);
 
             _doc = doc;
-            _doc.AfterSetFocusMap += new AfterSetFocusMapEvent(_doc_AfterSetFocusMap);
+
+            if (_doc is IMapDocumentEvents)
+            {
+                ((IMapDocumentEvents)_doc).AfterSetFocusMap += new AfterSetFocusMapEvent(_doc_AfterSetFocusMap);
+            }
+
             this.Name = "Performance Monitor";
 
             lvwColumnSorter = new ListViewColumnSorter();

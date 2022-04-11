@@ -1395,10 +1395,7 @@ namespace gView.Framework.Data
         {
             if (_selectionSet != null)
             {
-                if (BeforeClearSelection != null)
-                {
-                    BeforeClearSelection(this);
-                }
+                BeforeClearSelection?.Invoke(this);
 
                 _selectionSet.Clear();
             }
@@ -1406,10 +1403,7 @@ namespace gView.Framework.Data
 
         public void FireSelectionChangedEvent()
         {
-            if (FeatureSelectionChanged != null)
-            {
-                FeatureSelectionChanged(this);
-            }
+            FeatureSelectionChanged?.Invoke(this);
         }
 
         #endregion

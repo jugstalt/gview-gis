@@ -4,13 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
-using System.Runtime.CompilerServices;
-
-// erzeugung PublicKey
-// sn -p key.snk key.xxx
-// sn -tp key.xxx >key.txt
-
-[assembly: InternalsVisibleTo("gView.System.UI, PublicKey=0024000004800000940000000602000000240000525341310004000001000100e7f9b6324e02e10e05e5a385d9e60b9dcfcaa6328d68251b810d335e822bc169b1779e3845e95102e1f80bd23d006d9319dbd6910075038f7c2ef0e4eac1a532816d96d96b2888b152c58893ab182557c1f4ccbde9802a3118b35969d89d21c00c5b3205a0e150756ca6ed49251d97b3a24b1f1d1f3e7f0b933cb56099e093bb")]
 
 namespace gView.Framework.system
 {

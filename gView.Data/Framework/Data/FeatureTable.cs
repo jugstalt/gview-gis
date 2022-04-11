@@ -128,12 +128,9 @@ namespace gView.Framework.Data
 
                 counter++;
 
-                if (RowsAddedToTable != null)
+                if ((counter % 50) == 0)
                 {
-                    if ((counter % 50) == 0)
-                    {
-                        RowsAddedToTable(50);
-                    }
+                    RowsAddedToTable?.Invoke(50);
                 }
 
                 if ((counter >= next_N_Rows && next_N_Rows > 0) || (cancelTracker != null && !cancelTracker.Continue))
@@ -143,6 +140,7 @@ namespace gView.Framework.Data
                 }
                 feat = (_cursor != null) ? await _cursor.NextFeature() : null;
             }
+
             _hasMore = false;
             return counter;
         }

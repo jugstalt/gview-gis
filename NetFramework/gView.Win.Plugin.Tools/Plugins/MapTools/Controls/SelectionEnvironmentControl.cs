@@ -533,13 +533,16 @@ namespace gView.Plugins.MapTools.Controls
                 return;
             }
 
-            _doc.MapAdded -= new MapAddedEvent(_iMapDocument_MapAdded);
-            _doc.MapDeleted -= new MapDeletedEvent(_iMapDocument_MapDeleted);
-            _doc.AfterSetFocusMap -= new AfterSetFocusMapEvent(_iMapDocument_AferSetFocusMap);
+            if (_doc is IMapDocumentEvents)
+            {
+                ((IMapDocumentEvents)_doc).MapAdded -= new MapAddedEvent(_iMapDocument_MapAdded);
+                ((IMapDocumentEvents)_doc).MapDeleted -= new MapDeletedEvent(_iMapDocument_MapDeleted);
+                ((IMapDocumentEvents)_doc).AfterSetFocusMap -= new AfterSetFocusMapEvent(_iMapDocument_AferSetFocusMap);
 
-            _doc.MapAdded += new MapAddedEvent(_iMapDocument_MapAdded);
-            _doc.MapDeleted += new MapDeletedEvent(_iMapDocument_MapDeleted);
-            _doc.AfterSetFocusMap += new AfterSetFocusMapEvent(_iMapDocument_AferSetFocusMap);
+                ((IMapDocumentEvents)_doc).MapAdded += new MapAddedEvent(_iMapDocument_MapAdded);
+                ((IMapDocumentEvents)_doc).MapDeleted += new MapDeletedEvent(_iMapDocument_MapDeleted);
+                ((IMapDocumentEvents)_doc).AfterSetFocusMap += new AfterSetFocusMapEvent(_iMapDocument_AferSetFocusMap);
+            }
 
             if (_doc.FocusMap != null && _doc.FocusMap.TOC != null)
             {

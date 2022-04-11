@@ -3803,12 +3803,14 @@ namespace gView.DataSources.Fdb.MSSql
         }
 
         public event FeatureSelectionChangedEvent FeatureSelectionChanged;
-        public event BeforeClearSelectionEvent BeforeClearSelection { add { throw new NotSupportedException(); } remove { } }
+        public event BeforeClearSelectionEvent BeforeClearSelection; // { add { throw new NotSupportedException(); } remove { } }
 
         public void ClearSelection()
         {
             if (m_selectionset != null)
             {
+                BeforeClearSelection?.Invoke(this);
+
                 m_selectionset.Clear();
                 m_selectionset = null;
                 FireSelectionChangedEvent();
@@ -3817,10 +3819,7 @@ namespace gView.DataSources.Fdb.MSSql
 
         public void FireSelectionChangedEvent()
         {
-            if (FeatureSelectionChanged != null)
-            {
-                FeatureSelectionChanged(this);
-            }
+            FeatureSelectionChanged?.Invoke(this);
         }
 
         #endregion

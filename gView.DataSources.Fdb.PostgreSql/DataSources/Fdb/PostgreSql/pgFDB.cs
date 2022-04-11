@@ -2058,12 +2058,14 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
             }
 
             public event gView.Framework.Data.FeatureSelectionChangedEvent FeatureSelectionChanged;
-            public event BeforeClearSelectionEvent BeforeClearSelection { add { throw new NotSupportedException(); } remove { } }
+            public event BeforeClearSelectionEvent BeforeClearSelection;
 
             public void ClearSelection()
             {
                 if (m_selectionset != null)
                 {
+                    BeforeClearSelection?.Invoke(this);
+
                     m_selectionset.Clear();
                     m_selectionset = null;
                     FireSelectionChangedEvent();
@@ -2072,10 +2074,7 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
 
             public void FireSelectionChangedEvent()
             {
-                if (FeatureSelectionChanged != null)
-                {
-                    FeatureSelectionChanged(this);
-                }
+                FeatureSelectionChanged?.Invoke(this);
             }
 
             #endregion

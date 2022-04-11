@@ -1273,7 +1273,15 @@ namespace gView.Win.DataExplorer
         {
             return _tree.MoveToNode(path);
         }
+
         #endregion
+
+        private void RibbonWindow_Activated(object sender, EventArgs e)
+        {
+            this.BringIntoView();
+            this.Activated -= new EventHandler(RibbonWindow_Activated);
+            ((ExplorerApplication)_application).Start();
+        }
 
         #region IWin32Window Member
 

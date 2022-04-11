@@ -83,8 +83,6 @@ namespace gView.Framework.Carto
 
         public override event NewBitmapEvent NewBitmap;
         public override event DrawingLayerEvent DrawingLayer;
-        public override event DrawingLayerFinishedEvent DrawingLayerFinished { add { throw new NotSupportedException(); } remove { } }
-        public override event NewExtentRenderedEvent NewExtentRendered;
         public override event DoRefreshMapViewEvent DoRefreshMapView;
 
         #endregion
@@ -538,13 +536,11 @@ namespace gView.Framework.Carto
                             _lastRenderExtent = new Envelope();
                         }
 
-                        if (NewExtentRendered != null)
+                        if (!_lastRenderExtent.Equals(Display.Envelope))
                         {
-                            if (!_lastRenderExtent.Equals(Display.Envelope))
-                            {
-                                NewExtentRendered(this, Display.Envelope);
-                            }
+                            _original.FireNewExtentRendered();
                         }
+
                         _lastRenderExtent.minx = Display.Envelope.minx;
                         _lastRenderExtent.miny = Display.Envelope.miny;
                         _lastRenderExtent.maxx = Display.Envelope.maxx;

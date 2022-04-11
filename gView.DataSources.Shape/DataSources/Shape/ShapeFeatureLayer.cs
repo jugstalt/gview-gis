@@ -32,7 +32,7 @@ namespace gView.DataSources.Shape
         #region IFeatureSelection Members
 
         public event FeatureSelectionChangedEvent FeatureSelectionChanged;
-        public event BeforeClearSelectionEvent BeforeClearSelection { add { throw new NotSupportedException(); } remove { } }
+        public event BeforeClearSelectionEvent BeforeClearSelection; // { add { throw new NotSupportedException(); } remove { } }
 
         public ISelectionSet SelectionSet
         {
@@ -78,6 +78,8 @@ namespace gView.DataSources.Shape
         {
             if (_selectionset != null)
             {
+                BeforeClearSelection?.Invoke(this);
+
                 _selectionset.Clear();
                 _selectionset = null;
                 FireSelectionChangedEvent();
@@ -86,10 +88,7 @@ namespace gView.DataSources.Shape
 
         public void FireSelectionChangedEvent()
         {
-            if (FeatureSelectionChanged != null)
-            {
-                FeatureSelectionChanged(this);
-            }
+            FeatureSelectionChanged?.Invoke(this);
         }
 
         #endregion

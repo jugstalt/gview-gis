@@ -121,12 +121,10 @@ namespace gView.Framework.Data
         #endregion
     }
 
-    public delegate void BeforeMapRequestEventHandler(IWebServiceClass sender, IDisplay display, ref ISpatialReference sRef, ref int iWidth, ref int iHeight);
     public delegate void AfterMapRequestEventHandler(IWebServiceClass sender, IDisplay display, GeorefBitmap image);
 
     public interface IWebServiceClass : IClass, IClone
     {
-        event BeforeMapRequestEventHandler BeforeMapRequest;
         event AfterMapRequestEventHandler AfterMapRequest;
 
         Task<bool> MapRequest(IDisplay display);

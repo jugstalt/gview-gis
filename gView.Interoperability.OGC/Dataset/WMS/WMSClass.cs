@@ -375,8 +375,6 @@ namespace gView.Interoperability.OGC.Dataset.WMS
 
         #region IWebServiceClass Member
 
-        public event BeforeMapRequestEventHandler BeforeMapRequest = null;
-
         public event AfterMapRequestEventHandler AfterMapRequest = null;
 
         async public Task<bool> MapRequest(gView.Framework.Carto.IDisplay display)
@@ -437,16 +435,6 @@ namespace gView.Interoperability.OGC.Dataset.WMS
 
             int iWidth = display.iWidth;
             int iHeight = display.iHeight;
-
-            if (BeforeMapRequest != null)
-            {
-                ISpatialReference sRef = this.SpatialReference;
-                BeforeMapRequest(this, display, ref sRef, ref iWidth, ref iHeight);
-                if (sRef != null && sRef.Name.ToLower() != this.SRSCode.ToLower())
-                {
-                    this.SRSCode = sRef.Name;
-                }
-            }
 
             IEnvelope displayEnv = display.Envelope;
 
@@ -728,7 +716,6 @@ namespace gView.Interoperability.OGC.Dataset.WMS
             clone._getMap = this._getMap;
             clone._userDefinedSymbolization = this._userDefinedSymbolization;
             clone.AfterMapRequest = AfterMapRequest;
-            clone.BeforeMapRequest = BeforeMapRequest;
             return clone;
         }
 

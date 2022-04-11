@@ -35,7 +35,6 @@ namespace gView.Interoperability.ArcXML.Dataset
 
         #region IWebServiceClass Member
 
-        public event BeforeMapRequestEventHandler BeforeMapRequest = null;
         public event AfterMapRequestEventHandler AfterMapRequest = null;
 
         async public Task<bool> MapRequest(gView.Framework.Carto.IDisplay display)
@@ -126,11 +125,6 @@ namespace gView.Interoperability.ArcXML.Dataset
 
             int iWidth = display.iWidth;
             int iHeight = display.iHeight;
-
-            if (BeforeMapRequest != null)
-            {
-                BeforeMapRequest(this, display, ref sRef, ref iWidth, ref iHeight);
-            }
 
             try
             {
@@ -546,7 +540,6 @@ namespace gView.Interoperability.ArcXML.Dataset
 
                 clone._clonedThemes.Add(LayerFactory.Create(theme.Class, theme, clone) as IWebServiceTheme);
             }
-            clone.BeforeMapRequest = BeforeMapRequest;
             clone.AfterMapRequest = AfterMapRequest;
             clone.ModifyResponseOuput = ModifyResponseOuput;
             return clone;

@@ -443,7 +443,11 @@ namespace gView.Plugins.Editor
             if (hook is IMapDocument)
             {
                 _doc = (IMapDocument)hook;
-                _doc.AfterSetFocusMap += new AfterSetFocusMapEvent(_doc_AfterSetFocusMap);
+
+                if (_doc is IMapDocumentEvents)
+                {
+                    ((IMapDocumentEvents)_doc).AfterSetFocusMap += new AfterSetFocusMapEvent(_doc_AfterSetFocusMap);
+                }
 
                 if (_doc.Application is IMapApplication)
                 {

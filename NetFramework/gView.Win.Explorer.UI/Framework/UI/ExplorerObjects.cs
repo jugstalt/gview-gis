@@ -254,8 +254,7 @@ namespace gView.Framework.UI
         #endregion
 
         #region IExplorerObjectCreatable Member
-
-        public event ExplorerObjectCreatedEvent ExplorerObjectCreated { add { throw new NotSupportedException(); } remove { } }
+        
         public bool CanCreate(IExplorerObject parentExObject)
         {
             if (parentExObject is DirectoryObject ||

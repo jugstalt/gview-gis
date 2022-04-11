@@ -76,10 +76,7 @@ namespace gView.Win.Carto
 
         public void Start()
         {
-            if (OnApplicationStart != null)
-            {
-                OnApplicationStart(this, new EventArgs());
-            }
+            OnApplicationStart?.Invoke(this, new EventArgs());
         }
 
         public MapDocument mapDocument

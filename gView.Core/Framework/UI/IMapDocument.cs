@@ -6,13 +6,6 @@ namespace gView.Framework.UI
 {
     public interface IMapDocument  // IMxDocument
     {
-        event LayerAddedEvent LayerAdded;
-        event LayerRemovedEvent LayerRemoved;
-        event MapAddedEvent MapAdded;
-        event MapDeletedEvent MapDeleted;
-        event MapScaleChangedEvent MapScaleChanged;
-        event AfterSetFocusMapEvent AfterSetFocusMap;
-
         IEnumerable<IMap> Maps { get; }
         IMap FocusMap { get; set; }
 
@@ -36,6 +29,4 @@ namespace gView.Framework.UI
 
         ITableRelations TableRelations { get; }
     }
-
-
 }

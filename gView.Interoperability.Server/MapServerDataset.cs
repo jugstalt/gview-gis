@@ -435,8 +435,6 @@ namespace gView.Interoperability.Server
 
         #region IWebServiceClass Member
 
-        public event BeforeMapRequestEventHandler BeforeMapRequest { add { throw new NotSupportedException(); } remove { } }
-
         public event AfterMapRequestEventHandler AfterMapRequest;
 
         async public Task<bool> MapRequest(gView.Framework.Carto.IDisplay display)
@@ -458,6 +456,8 @@ namespace gView.Interoperability.Server
                 display.SpatialReference.Clone() as ISpatialReference :
                 null;
 
+                int iWidth = display.iWidth, iHeight = display.iHeight;
+
                 StringBuilder sb = new StringBuilder();
                 sb.Append("<?xml version='1.0' encoding='utf-8'?>");
                 sb.Append("<ARCXML version='1.1'>");
@@ -465,7 +465,7 @@ namespace gView.Interoperability.Server
                 sb.Append("<GET_IMAGE>");
                 sb.Append("<PROPERTIES>");
                 sb.Append("<ENVELOPE minx='" + display.Envelope.minx.ToString() + "' miny='" + display.Envelope.miny.ToString() + "' maxx='" + display.Envelope.maxx.ToString() + "' maxy='" + display.Envelope.maxy.ToString() + "' />");
-                sb.Append("<IMAGESIZE width='" + display.iWidth + "' height='" + display.iHeight + "' />");
+                sb.Append("<IMAGESIZE width='" + iWidth + "' height='" + iHeight + "' />");
                 sb.Append("<BACKGROUND color='255,255,255' transcolor='255,255,255' />");
                 //if (display.SpatialReference != null && !display.SpatialReference.Equals(_sRef))
                 //{
@@ -497,6 +497,8 @@ namespace gView.Interoperability.Server
                         }
                     }
                 }
+
+
 
                 sb.Append("<LAYERLIST>");
                 foreach (IWebServiceTheme theme in Themes)
@@ -575,10 +577,7 @@ namespace gView.Interoperability.Server
                     _image.SpatialReference = display.SpatialReference;
                     _image.Envelope = display.Envelope;
 
-                    if (AfterMapRequest != null)
-                    {
-                        AfterMapRequest(this, display, _image);
-                    }
+                    AfterMapRequest?.Invoke(this, display, _image);
                 }
 
                 return _image != null;

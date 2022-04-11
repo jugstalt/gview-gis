@@ -35,9 +35,12 @@ namespace gView.Plugins.Snapping
                     map.NewExtentRendered += new NewExtentRenderedEvent(map_NewExtentRendered);
                 }
 
-                _doc.MapAdded += new MapAddedEvent(_doc_MapAdded);
-                _doc.MapDeleted += new MapDeletedEvent(_doc_MapDeleted);
-                _doc.AfterSetFocusMap += new AfterSetFocusMapEvent(_doc_AfterSetFocusMap);
+                if (_doc is IMapDocumentEvents)
+                {
+                    ((IMapDocumentEvents)_doc).MapAdded += new MapAddedEvent(_doc_MapAdded);
+                    ((IMapDocumentEvents)_doc).MapDeleted += new MapDeletedEvent(_doc_MapDeleted);
+                    ((IMapDocumentEvents)_doc).AfterSetFocusMap += new AfterSetFocusMapEvent(_doc_AfterSetFocusMap);
+                }
             }
         }
         #endregion

@@ -98,9 +98,13 @@ namespace gView.Plugins.Network
             if (hook is IMapDocument)
             {
                 _doc = (IMapDocument)hook;
-                _doc.AfterSetFocusMap += new AfterSetFocusMapEvent(_doc_AfterSetFocusMap);
-                _doc.LayerAdded += new gView.Framework.Carto.LayerAddedEvent(_doc_LayerAdded);
-                _doc.LayerRemoved += new gView.Framework.Carto.LayerRemovedEvent(_doc_LayerRemoved);
+
+                if (_doc is IMapDocumentEvents)
+                {
+                    ((IMapDocumentEvents)_doc).AfterSetFocusMap += new AfterSetFocusMapEvent(_doc_AfterSetFocusMap);
+                    ((IMapDocumentEvents)_doc).LayerAdded += new gView.Framework.Carto.LayerAddedEvent(_doc_LayerAdded);
+                    ((IMapDocumentEvents)_doc).LayerRemoved += new gView.Framework.Carto.LayerRemovedEvent(_doc_LayerRemoved);
+                }
 
                 _module = Module.GetModule(_doc);
             }

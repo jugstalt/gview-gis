@@ -29,9 +29,9 @@ namespace gView.Framework.Carto
         public virtual event NewBitmapEvent NewBitmap;
         public virtual event DoRefreshMapViewEvent DoRefreshMapView;
         public virtual event DrawingLayerEvent DrawingLayer;
-        public virtual event DrawingLayerFinishedEvent DrawingLayerFinished;
-        public virtual event StartRefreshMapEvent StartRefreshMap;
-        public virtual event NewExtentRenderedEvent NewExtentRendered { add { throw new NotSupportedException(); } remove { } }
+        public event DrawingLayerFinishedEvent DrawingLayerFinished;
+        public event StartRefreshMapEvent StartRefreshMap;
+        public event NewExtentRenderedEvent NewExtentRendered;
         public event EventHandler MapRenamed;
         public event UserIntefaceEvent OnUserInterface;
 
@@ -322,6 +322,11 @@ namespace gView.Framework.Carto
         internal void FireStartRefreshMap()
         {
             StartRefreshMap?.Invoke(this);
+        }
+
+        internal void FireNewExtentRendered()
+        {
+            NewExtentRendered?.Invoke(this, this.Display.Envelope);
         }
 
         #region getLayer

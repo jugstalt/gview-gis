@@ -13,7 +13,7 @@ namespace gView.Framework.Data
         private IRowCursor _cursor;
         private bool _hasMore = true;
 
-        public event RowsAddedToTableEvent RowsAddedToTable { add { throw new NotSupportedException(); } remove { } }
+        public event RowsAddedToTableEvent RowsAddedToTable;
 
         public RowTable(IRowCursor cursor, IFieldCollection fields)
         {
@@ -67,7 +67,14 @@ namespace gView.Framework.Data
                     }
                     _table.Rows.Add(row);
                 }
+
                 counter++;
+
+                if ((counter % 50) == 0)
+                {
+                    RowsAddedToTable?.Invoke(50);
+                }
+
                 if (counter >= next_N_Rows && next_N_Rows > 0)
                 {
                     _hasMore = true;
@@ -75,6 +82,7 @@ namespace gView.Framework.Data
                 }
                 feat = await _cursor.NextRow();
             }
+
             _hasMore = false;
             return counter;
         }

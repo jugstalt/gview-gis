@@ -334,10 +334,13 @@ namespace gView.Framework.UI.Controls
                 return;
             }
 
-            _iMapDocument.LayerAdded += new LayerAddedEvent(_iMapDocument_LayerAdded);
-            _iMapDocument.LayerRemoved += new LayerRemovedEvent(_iMapDocument_LayerRemoved);
-            _iMapDocument.MapAdded += new MapAddedEvent(_iMapDocument_MapAdded);
-            _iMapDocument.MapDeleted += new MapDeletedEvent(_iMapDocument_MapDeleted);
+            if (_iMapDocument is IMapDocumentEvents)
+            {
+                ((IMapDocumentEvents)_iMapDocument).LayerAdded += new LayerAddedEvent(_iMapDocument_LayerAdded);
+                ((IMapDocumentEvents)_iMapDocument).LayerRemoved += new LayerRemovedEvent(_iMapDocument_LayerRemoved);
+                ((IMapDocumentEvents)_iMapDocument).MapAdded += new MapAddedEvent(_iMapDocument_MapAdded);
+                ((IMapDocumentEvents)_iMapDocument).MapDeleted += new MapDeletedEvent(_iMapDocument_MapDeleted);
+            }
 
             //LicenseTypes lt = _iMapDocument.Application.ComponentLicenseType("gview.desktop;gview.map");
             //if (lt == LicenseTypes.Express || lt == LicenseTypes.Licensed)
@@ -356,7 +359,11 @@ namespace gView.Framework.UI.Controls
                 ((IMapApplication)_iMapDocument.Application).AfterLoadMapDocument += new AfterLoadMapDocumentEvent(_iMapDocument_AfterLoadMapDocument);
                 _readonly = ((IMapApplication)_iMapDocument.Application).ReadOnly;
             }
-            _iMapDocument.AfterSetFocusMap += new AfterSetFocusMapEvent(_iMapDocument_AfterSetFocusMap);
+
+            if (_iMapDocument is IMapDocumentEvents)
+            {
+                ((IMapDocumentEvents)_iMapDocument).AfterSetFocusMap += new AfterSetFocusMapEvent(_iMapDocument_AfterSetFocusMap);
+            }
 
             await BuildList(null);
         }

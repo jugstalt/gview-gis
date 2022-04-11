@@ -16,7 +16,7 @@ namespace gView.Framework.system.UI
         public delegate void ReportActionEvent(FeatureImport sender, string action);
         public delegate void ReportProgressEvent(FeatureImport sender, int progress);
         public delegate void ReportRequestEvent(FeatureImport sender, RequestArgs args);
-        public event ReportActionEvent ReportAction { add { throw new NotSupportedException(); } remove { } }
+        public event ReportActionEvent ReportAction; // { add { throw new NotSupportedException(); } remove { } }
         public event ReportProgressEvent ReportProgress = null;
         public event ReportRequestEvent ReportRequest = null;
         private string _errMsg = "";
@@ -227,6 +227,8 @@ namespace gView.Framework.system.UI
                     }
                 }
                 destDS.Dispose();
+
+                ReportAction?.Invoke(this, "Import finished");
 
                 if (_cancelTracker.Continue)
                 {

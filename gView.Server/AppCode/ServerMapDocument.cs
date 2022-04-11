@@ -28,13 +28,6 @@ namespace gView.Server.AppCode
 
         #region IMapDocument Member
 
-        public event LayerAddedEvent LayerAdded { add { throw new NotSupportedException(); } remove { } }
-        public event LayerRemovedEvent LayerRemoved { add { throw new NotSupportedException(); } remove { } }
-        public event MapAddedEvent MapAdded;
-        public event MapDeletedEvent MapDeleted;
-        public event MapScaleChangedEvent MapScaleChanged { add { throw new NotSupportedException(); } remove { } }
-        public event AfterSetFocusMapEvent AfterSetFocusMap { add { throw new NotSupportedException(); } remove { } }
-
         public IEnumerable<IMap> Maps
         {
             get { return _maps.ToArray(); }
@@ -65,10 +58,6 @@ namespace gView.Server.AppCode
             }
 
             _maps.Add(map);
-            if (MapAdded != null)
-            {
-                MapAdded(map);
-            }
 
             return true;
         }
@@ -81,11 +70,6 @@ namespace gView.Server.AppCode
             }
 
             _maps = new ConcurrentBag<IMap>(_maps.Except(new[] { map }));
-
-            if (MapDeleted != null)
-            {
-                MapDeleted(map);
-            }
 
             return true;
         }

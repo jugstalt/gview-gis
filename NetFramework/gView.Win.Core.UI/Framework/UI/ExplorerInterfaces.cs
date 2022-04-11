@@ -145,7 +145,6 @@ namespace gView.Framework.UI
     public delegate void ExplorerObjectCreatedEvent(IExplorerObject exObject);
     public interface IExplorerObjectCreatable
     {
-        //event ExplorerObjectCreatedEvent ExplorerObjectCreated;
         bool CanCreate(IExplorerObject parentExObject);
         Task<IExplorerObject> CreateExplorerObject(IExplorerObject parentExObject);
     }

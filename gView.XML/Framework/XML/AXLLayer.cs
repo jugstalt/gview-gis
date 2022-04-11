@@ -62,7 +62,7 @@ namespace gView.Framework.XML
         #region IFeatureSelection
 
         public event FeatureSelectionChangedEvent FeatureSelectionChanged;
-        public event BeforeClearSelectionEvent BeforeClearSelection { add { throw new NotSupportedException(); } remove { } }
+        public event BeforeClearSelectionEvent BeforeClearSelection; // { add { throw new NotSupportedException(); } remove { } }
 
         public ISelectionSet SelectionSet
         {
@@ -106,6 +106,8 @@ namespace gView.Framework.XML
         {
             if (m_selectionset != null)
             {
+                BeforeClearSelection?.Invoke(this);
+
                 m_selectionset.Dispose();
                 m_selectionset = null;
                 FireSelectionChangedEvent();
@@ -113,10 +115,7 @@ namespace gView.Framework.XML
         }
         public void FireSelectionChangedEvent()
         {
-            if (FeatureSelectionChanged != null)
-            {
-                FeatureSelectionChanged(this);
-            }
+            FeatureSelectionChanged?.Invoke(this);
         }
         #endregion
 
