@@ -177,7 +177,7 @@ namespace gView.Server.AppCode
                 }
                 else
                 {
-                    throw ex;
+                    throw;
                 }
             }
         }

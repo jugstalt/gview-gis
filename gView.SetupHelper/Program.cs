@@ -74,6 +74,7 @@ namespace gView.SetupHelper
 
                         string targetPath = Path.Combine(sharedDirectory, currentPath, fileInfo.Name);
                         var targetFileInfo = new FileInfo(targetPath);
+                        
                         if (!targetFileInfo.Directory.Exists)
                         {
                             targetFileInfo.Directory.Create();

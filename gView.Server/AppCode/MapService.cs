@@ -158,10 +158,6 @@ namespace gView.Server.AppCode
                     _settingsLastWriteTime = fi.LastWriteTimeUtc;
                 }
             }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
             finally
             {
                 if (_settings == null)
@@ -195,10 +191,6 @@ namespace gView.Server.AppCode
 
                 await folderMapService.ReloadServiceSettings(ifNewer);
                 _folderSettings = folderMapService._settings;
-            }
-            catch (Exception ex)
-            {
-                throw ex;
             }
             finally
             {

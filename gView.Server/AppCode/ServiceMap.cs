@@ -114,7 +114,7 @@ namespace gView.Server.AppCode
                 }
                 //return false;
 
-                throw ex;
+                throw;
             }
         }
 

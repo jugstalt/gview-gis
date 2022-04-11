@@ -88,20 +88,13 @@ namespace gView.Server.Controllers
                 List<IMapService> services = new List<IMapService>();
                 foreach (var s in _mapServerService.MapServices)
                 {
-                    try
+                    if (s.Type != MapServiceType.Folder &&
+                        s.Folder == folder &&
+                        (await s.GetSettingsAsync()).IsRunningOrIdle() &&
+                         await s.HasAnyAccess(identity) &&
+                         await IsAccessAllowed(identity, s))
                     {
-                        if (s.Type != MapServiceType.Folder &&
-                            s.Folder == folder &&
-                            (await s.GetSettingsAsync()).IsRunningOrIdle() &&
-                             await s.HasAnyAccess(identity) &&
-                             await IsAccessAllowed(identity, s))
-                        {
-                            services.Add(s);
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        throw ex;
+                        services.Add(s);
                     }
                 }
 

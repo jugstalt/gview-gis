@@ -7,10 +7,12 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Runtime.Versioning;
 using System.Threading.Tasks;
 
 namespace gView.Cmd.ClipCompactTilecache
 {
+    [SupportedOSPlatform("windows")]
     class Program
     {
         async static Task<int> Main(string[] args)
