@@ -51,14 +51,14 @@ namespace gView.SetupHelper
                 currentPath = currentPath.Substring(1);
             }
 
-            foreach (var fileInfo in new DirectoryInfo($"{ root }/{ subDirectory[0] }/{ currentPath }").GetFiles("*.*"))
+            foreach (var fileInfo in new DirectoryInfo($"{root}/{subDirectory[0]}/{currentPath}").GetFiles("*.*"))
             {
                 List<FileInfo> fileInfos = new List<FileInfo>();
                 fileInfos.Add(fileInfo);
 
                 for (int i = 1; i < subDirectory.Length; i++)
                 {
-                    fileInfos.Add(new FileInfo(Path.Combine($"{ root }/{ subDirectory[i] }", currentPath, fileInfo.Name)));
+                    fileInfos.Add(new FileInfo(Path.Combine($"{root}/{subDirectory[i]}", currentPath, fileInfo.Name)));
                 }
 
                 //foreach (var fi in fileInfos)
@@ -70,7 +70,7 @@ namespace gView.SetupHelper
                 {
                     if (fileInfos.Where(f => f.Length != fileInfo.Length).Count() == 0)
                     {
-                        Console.WriteLine($"{ counter++ }:{ currentPath }/{ fileInfo.Name } => _shared/{ currentPath }");
+                        Console.WriteLine($"{counter++}:{currentPath}/{fileInfo.Name} => _shared/{currentPath}");
 
                         string targetPath = Path.Combine(sharedDirectory, currentPath, fileInfo.Name);
                         var targetFileInfo = new FileInfo(targetPath);
