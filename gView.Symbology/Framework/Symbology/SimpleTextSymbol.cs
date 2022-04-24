@@ -488,22 +488,22 @@ namespace gView.Framework.Symbology
                     break;
                 case TextSymbolAlignment.rightAlignCenter:
                     x1 = x - size.Width;
-                    y1 = y - size.Height / 2;
+                    y1 = y - size.Height / 2f;
                     break;
                 case TextSymbolAlignment.rightAlignUnder:
                     x1 = x - size.Width;
                     y1 = y;
                     break;
                 case TextSymbolAlignment.Over:
-                    x1 = x - size.Width / 2;
+                    x1 = x - size.Width / 2f;
                     y1 = y - size.Height;
                     break;
                 case TextSymbolAlignment.Center:
-                    x1 = x - size.Width / 2;
-                    y1 = y - size.Height / 2;
+                    x1 = x - size.Width / 2f;
+                    y1 = y - size.Height / 2f;
                     break;
                 case TextSymbolAlignment.Under:
-                    x1 = x - size.Width / 2;
+                    x1 = x - size.Width / 2f;
                     y1 = y;
                     break;
                 case TextSymbolAlignment.leftAlignOver:
@@ -512,7 +512,7 @@ namespace gView.Framework.Symbology
                     break;
                 case TextSymbolAlignment.leftAlignCenter:
                     x1 = x;
-                    y1 = y - size.Height / 2;
+                    y1 = y - size.Height / 2f;
                     break;
                 case TextSymbolAlignment.leftAlignUnder:
                     x1 = x;
