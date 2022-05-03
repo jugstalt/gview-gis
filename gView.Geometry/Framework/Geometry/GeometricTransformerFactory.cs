@@ -8,7 +8,7 @@
 
     static public class GeometricTransformerFactory
     {
-        static public GeoTranformerType TransformerType = GeoTranformerType.NativeProj4;
+        static public GeoTranformerType TransformerType = GeoTranformerType.ManagedProj4;
 
         static public IGeometricTransformer Create()
         {

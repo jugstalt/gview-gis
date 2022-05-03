@@ -122,7 +122,7 @@
       <Version>3.6.2</Version>
     </PackageReference>
     <PackageReference Include="Fluent.Ribbon">
-      <Version>9.0.3</Version>
+      <Version>9.0.4</Version>
     </PackageReference>
     <PackageReference Include="Legacy2CPSWorkaround" Version="1.0.0">
       <PrivateAssets>All</PrivateAssets>
