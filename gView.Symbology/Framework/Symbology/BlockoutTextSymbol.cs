@@ -137,7 +137,14 @@ namespace gView.Framework.Symbology
                     display.Canvas.TranslateTransform(new CanvasPointF((float)point.X, (float)point.Y));
                     if (angle != 0 || _angle != 0 || _rotation != 0)
                     {
-                        display.Canvas.RotateTransform(angle + _angle + _rotation);
+                        var transformRotation = angle + _angle + _rotation;
+
+                        if (display.DisplayTransformation.UseTransformation)
+                        {
+                            transformRotation -= (float)display.DisplayTransformation.DisplayRotation;
+                        }
+
+                        display.Canvas.RotateTransform(transformRotation);
                     }
 
                     if (level < 0 || level == 0)

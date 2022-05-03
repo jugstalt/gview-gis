@@ -94,7 +94,14 @@ namespace gView.Framework.Symbology
                     display.Canvas.TranslateTransform(new CanvasPointF((float)point.X, (float)point.Y));
                     if (angle != 0 || _angle != 0 || _rotation != 0)
                     {
-                        display.Canvas.RotateTransform(angle + _angle + _rotation);
+                        var transformRotation = angle + _angle + _rotation;
+
+                        if (display.DisplayTransformation.UseTransformation)
+                        {
+                            transformRotation -= (float)display.DisplayTransformation.DisplayRotation;
+                        }
+
+                        display.Canvas.RotateTransform(transformRotation);
                     }
                     DrawString(display.Canvas, text, _font, _brush, _xOffset, _yOffset, format);
                 }
@@ -248,11 +255,13 @@ namespace gView.Framework.Symbology
                 IDisplayPath path = (IDisplayPath)geometry;
 
                 #region Text On Path
+
                 var format = StringFormatFromAlignment(_align);
 
                 IDisplayCharacterRanges ranges = this.MeasureCharacterWidth(display);
                 float sizeW = ranges.Width;
                 float stat0 = path.Chainage, stat1 = stat0 + sizeW, stat = stat0;
+
                 if (stat0 < 0)
                 {
                     return null;
@@ -277,6 +286,7 @@ namespace gView.Framework.Symbology
 
                     #endregion
                 }
+
                 #endregion
 
                 AnnotationPolygonCollection charPolygons = new AnnotationPolygonCollection();
@@ -360,6 +370,7 @@ namespace gView.Framework.Symbology
                 if (charPolygons.Count > 0)
                 {
                     #region Glättung
+
                     //for (int i = 1; i < charPolygons.Count - 1; i++)
                     //{
                     //    double angle0 = ((AnnotationPolygon)charPolygons[i - 1]).Angle;
@@ -373,6 +384,7 @@ namespace gView.Framework.Symbology
                     //    ((AnnotationPolygon)charPolygons[i]).X1 = (x0 + x2) * 0.5f;
                     //    ((AnnotationPolygon)charPolygons[i]).Y1 = (y0 + y2) * 0.5f;
                     //}
+
                     #endregion
 
                     polygons.Add(charPolygons);
@@ -397,10 +409,11 @@ namespace gView.Framework.Symbology
                     {
                         p2 = path[iPoint];
                         double angle = -Math.Atan2(p2.Y - p1.Y, p2.X - p1.X) * 180.0 / Math.PI;
-                        if (display.DisplayTransformation.UseTransformation)
-                        {
-                            angle -= display.DisplayTransformation.DisplayRotation;
-                        }
+
+                        //if (display.DisplayTransformation.UseTransformation)
+                        //{
+                        //    angle -= display.DisplayTransformation.DisplayRotation;
+                        //}
 
                         if (angle < 0)
                         {
@@ -550,7 +563,10 @@ namespace gView.Framework.Symbology
         [Browsable(false)]
         public float Angle
         {
-            get { return _angle; }
+            get
+            {
+                return _angle;
+            }
             set
             {
                 _angle = value;
@@ -629,6 +645,10 @@ namespace gView.Framework.Symbology
                 format.LineAlignment = StringAlignment.Center;
                 format.Alignment = StringAlignment.Center;
 
+                float displayRotation = display.DisplayTransformation.UseTransformation ?
+                    (float)display.DisplayTransformation.DisplayRotation :
+                    0f;
+
                 if (_text.Length == apc.Count)
                 {
                     int drawingLevels = this.DrawingLevels; // Für Blockout und Glowing Text -> Zuerst den Blockout für alle Zeichen...
@@ -640,115 +660,15 @@ namespace gView.Framework.Symbology
                             if (ap != null)
                             {
                                 var centerPoint = ap.CenterPoint;
-                                DrawAtPoint(display, new Geometry.Point(centerPoint.X, centerPoint.Y), _text[i].ToString(), (float)ap.Angle, format, level);
+
+                                // (+) displayRotation hier => (-) in DrawAtPoint => makes it neutral for Paths...
+                                float apAngle = (float)ap.Angle + displayRotation;
+
+                                DrawAtPoint(display, new Geometry.Point(centerPoint.X, centerPoint.Y), _text[i].ToString(), apAngle, format, level);
                             }
                         }
                     }
                 }
-
-                #region Old Method
-                /*
-                #region Text On Path
-                StringFormat format = stringFormatFromAlignment;
-                DisplayCharacterRanges ranges = new DisplayCharacterRanges(display.GraphicsContext, _font, format, _text);
-
-                double sizeW = ranges.Width;
-                double len = path.Length;
-                double stat0 = len / 2 - sizeW / 2, stat1 = stat0 + sizeW;
-                if (stat0 < 0) return;
-
-                #region Richtung des Textes
-                Geometry.Point p1_ = SpatialAlgorithms.Algorithm.DisplayPathPoint(path, stat0);
-                Geometry.Point p2_ = SpatialAlgorithms.Algorithm.DisplayPathPoint(path, stat1);
-                if (p1_ == null || p2_ == null)
-                    return;
-                if (p1_.X > p2_.X)
-                {
-                    #region Swap Path Direction
-                    path.ChangeDirection();
-                    #endregion
-                }
-                #endregion
-
-                AnnotationPolygonCollection charPolygons = new AnnotationPolygonCollection();
-                double x, y, angle;
-
-                for (int i = 0; i < _text.Length; i++)
-                {
-                    RectangleF cSize = ranges[i];
-                    Geometry.Point p1, p2;
-                    while (true)
-                    {
-                        p1 = SpatialAlgorithms.Algorithm.DisplayPathPoint(path, stat0);
-                        p2 = SpatialAlgorithms.Algorithm.DisplayPathPoint(path, stat0 + cSize.Width);
-                        if (p1 == null || p2 == null)
-                            return;
-
-                        angle = Math.Atan2(p2.Y - p1.Y, p2.X - p1.X) * 180.0 / Math.PI;
-
-                        x = p1.X; y = p1.Y;
-                        AnnotationPolygon polygon = null;
-                        switch (format.LineAlignment)
-                        {
-                            case StringAlignment.Near:
-                                polygon = new Symbology.AnnotationPolygon((float)x + .1f * cSize.Width, (float)y + .2f * cSize.Height,
-                                                                           .8f * cSize.Width, .6f * cSize.Height);
-                                break;
-                            case StringAlignment.Far:
-                                polygon = new Symbology.AnnotationPolygon((float)x + .1f * cSize.Width, (float)y - .8f * cSize.Height,
-                                                                           .8f * cSize.Width, .6f * cSize.Height);
-                                break;
-                            default:
-                                polygon = new Symbology.AnnotationPolygon((float)x + .1f * cSize.Width, (float)y - .6f * cSize.Height / 2f,
-                                                                           .8f * cSize.Width, .6f * cSize.Height);
-                                break;
-                        }
-                        polygon.Rotate((float)x, (float)y, Angle + angle);
-                        if (charPolygons.CheckCollision(polygon))
-                        {
-                            stat0 += cSize.Width / 10.0;
-                            continue;
-                        }
-                        charPolygons.Add(polygon);
-
-                        //using (System.Drawing.Drawing2D.GraphicsPath grpath = new System.Drawing.Drawing2D.GraphicsPath())
-                        //{
-                        //    grpath.StartFigure();
-                        //    grpath.AddLine(polygon[0], polygon[1]);
-                        //    grpath.AddLine(polygon[1], polygon[2]);
-                        //    grpath.AddLine(polygon[2], polygon[3]);
-                        //    grpath.CloseFigure();
-
-                        //    display.GraphicsContext.FillPath(Brushes.Aqua, grpath);
-                        //}
-
-                        break;
-                    }
-
-                    if (format.Alignment == StringAlignment.Center)
-                    {
-                        x = p1.X * 0.5 + p2.X * 0.5;
-                        y = p1.Y * 0.5 + p2.Y * 0.5;
-                    }
-                    else if (format.Alignment == StringAlignment.Far)
-                    {
-                        x = p2.X;
-                        y = p2.Y;
-                    }
-                    else
-                    {
-                        x = p1.X;
-                        y = p1.Y;
-                    }
-                    DrawAtPoint(display, new Geometry.Point(x, y), _text[i].ToString(), (float)angle, format);
-
-                    stat0 += (double)cSize.Width;
-                }
-                //display.GraphicsContext.FillEllipse(Brushes.Green, (float)p1_.X - 3, (float)p1_.Y - 3, 6f, 6f);
-                //display.GraphicsContext.FillEllipse(Brushes.Blue, (float)p2_.X - 3, (float)p2_.Y - 3, 6f, 6f);
-                #endregion
-                 * */
-                #endregion
             }
             else if (geometry is IPolyline)
             {
@@ -768,10 +688,11 @@ namespace gView.Framework.Symbology
                     {
                         p2 = path[iPoint];
                         double angle = -Math.Atan2(p2.Y - p1.Y, p2.X - p1.X) * 180.0 / Math.PI;
-                        if (display.DisplayTransformation.UseTransformation)
-                        {
-                            angle -= display.DisplayTransformation.DisplayRotation;
-                        }
+
+                        //if (display.DisplayTransformation.UseTransformation)
+                        //{
+                        //    angle -= display.DisplayTransformation.DisplayRotation;
+                        //}
 
                         var format = StringFormatFromAlignment(symbolAlignment);
 

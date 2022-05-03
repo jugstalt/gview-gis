@@ -99,8 +99,14 @@ namespace gView.Framework.Symbology
 
                 try
                 {
+                    var transformRatation = _angle + _rotation;
+                    if (display.DisplayTransformation.UseTransformation)
+                    {
+                        transformRatation -= (float)display.DisplayTransformation.DisplayRotation;
+                    }
+
                     display.Canvas.TranslateTransform(new CanvasPointF((float)point.X, (float)point.Y));
-                    display.Canvas.RotateTransform(_angle + _rotation);
+                    display.Canvas.RotateTransform(transformRatation);
 
                     double xo = _xOffset, yo = _yOffset;
 

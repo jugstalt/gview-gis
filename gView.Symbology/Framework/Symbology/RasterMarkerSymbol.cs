@@ -88,8 +88,15 @@ namespace gView.Framework.Symbology
 
                 try
                 {
+                    var transformRotation = _angle + _rotation;
+
+                    if (display.DisplayTransformation.UseTransformation)
+                    {
+                        transformRotation -= (float)display.DisplayTransformation.DisplayRotation;
+                    }
+
                     display.Canvas.TranslateTransform(new CanvasPointF((float)point.X, (float)point.Y));
-                    display.Canvas.RotateTransform(_angle + _rotation);
+                    display.Canvas.RotateTransform(transformRotation);
 
                     var rect = new CanvasRectangle((int)x, (int)y, (int)sizeX, (int)sizeY);
 
