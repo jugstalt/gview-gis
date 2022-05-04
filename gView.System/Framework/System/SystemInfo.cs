@@ -113,6 +113,8 @@ namespace gView.Framework.system
         {
             if (SystemInfo.IsWindows)
             {
+                //Directory.SetCurrentDirectory(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location));
+
                 Environment.SetEnvironmentVariable("PATH", $"{ Path.GetDirectoryName(Assembly.GetEntryAssembly().Location) }");
                 Environment.SetEnvironmentVariable("GDAL_DRIVER_PATH", $"{ Path.GetDirectoryName(Assembly.GetEntryAssembly().Location) }\\gdalplugins");
             }

@@ -15,7 +15,7 @@ namespace gView.Server
         public static void Main(string[] args)
         {
             try
-            {
+            {                
                 #region Init the global PluginManager
 
                 PlugInManager.Init();

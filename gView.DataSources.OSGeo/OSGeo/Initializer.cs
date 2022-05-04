@@ -44,14 +44,13 @@ namespace gView.DataSources.OSGeo
 
                 //int driverCount = OSGeo_v3.GDAL.Gdal.GetDriverCount();
                 //var drivers = new string[driverCount];
-                //StringBuilder sb = new StringBuilder();
+                //System.Text.StringBuilder sb = new System.Text.StringBuilder();
                 //for (int i = 0; i < driverCount; i++)
                 //{
-                //    var driver = OSGeo_v1.GDAL.Gdal.GetDriver(i);
+                //    var driver = OSGeo_v3.GDAL.Gdal.GetDriver(i);
                 //    drivers[i] = driver.LongName;
                 //    sb.Append($"{ driver.ShortName }: { driver.LongName }\n");
                 //}
-
 
                 return true;
             }

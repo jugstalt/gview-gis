@@ -4,8 +4,12 @@
     <TargetFramework>net6.0</TargetFramework>
 	<ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
   </PropertyGroup>
-
-  <!--
+	
+<!--
+	<PropertyGroup>
+		<AspNetCoreHostingModel>OutOfProcess</AspNetCoreHostingModel>
+	</PropertyGroup>
+  
   <PropertyGroup>
     <AspNetCoreHostingModel></AspNetCoreHostingModel>
   </PropertyGroup>
