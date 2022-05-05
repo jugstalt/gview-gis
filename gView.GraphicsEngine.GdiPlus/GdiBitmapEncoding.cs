@@ -68,6 +68,13 @@ namespace gView.GraphicsEngine.GdiPlus
                 try
                 {
                     pixelData = bitmap.LockBitmapPixelData(BitmapLockMode.ReadWrite, bitmap.PixelFormat);
+
+                    //Console.WriteLine("Width: " + pixelData.Width);
+                    //Console.WriteLine("Height: " + pixelData.Height);
+                    //Console.WriteLine("Stride: " + pixelData.Stride);
+                    //Console.WriteLine("Format: " + pixelData.PixelFormat);
+                    //Console.WriteLine("Scan0: " + pixelData.Scan0);
+
                     using (var bm = new System.Drawing.Bitmap(
                             pixelData.Width,
                             pixelData.Height,
