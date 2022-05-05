@@ -3,6 +3,7 @@
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
 	<ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
+	<GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
   </PropertyGroup>
 	
 <!--
@@ -93,6 +94,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Update="gv_estag_dkm_sdet.Designer.cs">
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>gv_estag_dkm_sdet.settings</DependentUpon>
+    </Compile>
     <Compile Update="tor_sdep.Designer.cs">
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
       <AutoGen>True</AutoGen>
@@ -101,6 +107,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="gv_estag_dkm_sdet.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>gv_estag_dkm_sdet.Designer.cs</LastGenOutput>
+    </None>
     <None Update="tor_sdep.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>tor_sdep.Designer.cs</LastGenOutput>
