@@ -40,6 +40,9 @@ namespace gView.Server.Controllers
                 case ".jpeg":
                     contentType = "image/jpeg";
                     break;
+                case ".webp":
+                    contentType = "image/webp";
+                    break;
                 case ".gif":
                     contentType = "image/gif";
                     break;

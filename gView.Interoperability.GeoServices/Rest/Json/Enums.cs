@@ -46,7 +46,8 @@
         png,
         png24,
         png32,
-        jpg
+        jpg,
+        webp
     }
 
     public enum EsriUnits

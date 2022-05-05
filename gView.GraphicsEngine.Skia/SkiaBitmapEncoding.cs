@@ -57,6 +57,8 @@ namespace gView.GraphicsEngine.Skia
                     return image.Encode(SKEncodedImageFormat.Jpeg, quality > 0 ? quality : 75);
                 case ImageFormat.Gif:
                     return image.Encode(SKEncodedImageFormat.Gif, quality > 0 ? quality : 75);
+                case ImageFormat.Webp:
+                    return image.Encode(SKEncodedImageFormat.Webp, quality > 0 ? quality : 75);
                 default:
                     throw new Exception($"Unsported image format: { format }");
             }

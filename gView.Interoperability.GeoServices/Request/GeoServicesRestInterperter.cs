@@ -164,10 +164,16 @@ namespace gView.Interoperability.GeoServices.Request
                     {
                         throw new MapServerException("Unsuported image format: " + _exportMap.ImageFormat);
                     }
+
                     var iFormat = GraphicsEngine.ImageFormat.Png;
-                    if (imageFormat == ImageFormat.jpg)
+                    switch (imageFormat)
                     {
-                        iFormat = GraphicsEngine.ImageFormat.Jpeg;
+                        case ImageFormat.jpg:
+                            iFormat = GraphicsEngine.ImageFormat.Jpeg;
+                            break;
+                        case ImageFormat.webp:
+                            iFormat = GraphicsEngine.ImageFormat.Webp;
+                            break;
                     }
 
                     if (_exportMap.Transparent)
@@ -215,20 +221,20 @@ namespace gView.Interoperability.GeoServices.Request
                         }
                         else
                         {
-                            string fileName = serviceMap.Name
-                                .Replace("/", "_")
-                                .Replace(",", "_") + "_" + System.Guid.NewGuid().ToString("N") + "." + iFormat.ToString().ToLower();
+                            string serviceMapName = serviceMap.Name.Replace("/", "_").Replace(",", "_"); 
+                            string fileName = 
+                               $"{serviceMapName}_{System.Guid.NewGuid().ToString("N")}.{iFormat.ToString().ToLower()}";
 
-                            string path = (_mapServer.OutputPath + @"/" + fileName).ToPlatformPath();
+                            string path = ($"{_mapServer.OutputPath}/{fileName}").ToPlatformPath();
                             await serviceMap.SaveImage(path, iFormat);
 
                             context.ServiceRequest.Succeeded = true;
                             context.ServiceRequest.Response = new JsonExportResponse()
                             {
-                                Href = context.ServiceRequest.OutputUrl + "/" + fileName,
+                                Href = $"{context.ServiceRequest.OutputUrl}/{fileName}",
                                 Width = serviceMap.Display.iWidth,
                                 Height = serviceMap.Display.iHeight,
-                                ContentType = "image/" + iFormat.ToString().ToLower(),
+                                ContentType = $"image/{iFormat.ToString().ToLower()}",
                                 Scale = serviceMap.Display.mapScale,
                                 Extent = new JsonExtent()
                                 {
