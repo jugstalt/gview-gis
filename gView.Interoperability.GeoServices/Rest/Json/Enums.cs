@@ -47,7 +47,16 @@
         png24,
         png32,
         jpg,
-        webp
+        webp,
+        bmp,
+        gif,
+        ico,
+        wbmp,
+        pkm,
+        ktx,
+        astc,
+        dng,
+        heif
     }
 
     public enum EsriUnits

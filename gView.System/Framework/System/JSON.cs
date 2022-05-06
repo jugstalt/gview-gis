@@ -63,17 +63,7 @@ namespace gView.Framework.system
             }
         }
 
-        /// <summary>
-        /// Converts a Hashtable / ArrayList object into a JSON string
-        /// </summary>
-        /// <param name="json">A Hashtable / ArrayList</param>
-        /// <returns>A JSON encoded string, or null if object 'json' is not serializable</returns>
-        public static string JsonEncode(object json)
-        {
-            StringBuilder builder = new StringBuilder(BUILDER_CAPACITY);
-            bool success = SerializeValue(json, builder);
-            return (success ? builder.ToString() : null);
-        }
+
 
         protected static Hashtable ParseObject(char[] json, ref int index, ref bool success)
         {

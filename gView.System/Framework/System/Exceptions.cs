@@ -1,4 +1,0 @@
-﻿namespace gView.Framework.system
-{
-
-}

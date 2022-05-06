@@ -5,6 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\gView.DataSources.OSGeo\gView.DataSources.OSGeo.csproj" />
     <ProjectReference Include="..\gView.GraphicsEngine\gView.GraphicsEngine.csproj" />
   </ItemGroup>
 

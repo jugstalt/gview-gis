@@ -7,33 +7,6 @@ namespace gView.Framework.system
     {
         private static Object thisLocker = new Object();
 
-        public static void Log(loggingMethod method, string text)
-        {
-            Log(method, String.Empty, text);
-        }
-        public static void Log(loggingMethod method, string file_postfix, string text)
-        {
-            string procName = global::System.Diagnostics.Process.GetCurrentProcess().ProcessName.Replace(".", "_");
-
-            string filename = SystemVariables.MyCommonApplicationData + @"/Logfiles/" + procName + @"/";
-            switch (method)
-            {
-                case loggingMethod.request:
-                    filename += procName + ((!String.IsNullOrEmpty(file_postfix)) ? "_" + file_postfix : "") + "_Requests.log";
-                    break;
-                case loggingMethod.request_detail_pro:
-                case loggingMethod.request_detail:
-                    filename += procName + ((!String.IsNullOrEmpty(file_postfix)) ? "_" + file_postfix : "") + "_Request_Details.log";
-                    text += "\nend\n";
-                    break;
-                case loggingMethod.error:
-                    filename += procName + ((!String.IsNullOrEmpty(file_postfix)) ? "_" + file_postfix : "") + "_Errors.log";
-                    break;
-            }
-
-            Log(filename, text);
-        }
-
         public static void Log(string filename, string text)
         {
             lock (thisLocker)
@@ -47,7 +20,7 @@ namespace gView.Framework.system
                         {
                             try
                             {
-                                if (log_archive)
+                                if (Log_Archive)
                                 {
                                     string aname = fi.DirectoryName + @"/archive_" + DateTime.Now.ToShortDateString().Replace(":", ".") + "_" + DateTime.Now.ToLongTimeString().Replace(":", ".") + "_";
                                     aname = aname + fi.Name;
@@ -109,16 +82,6 @@ namespace gView.Framework.system
         }
         //#endif
 
-        private static bool log_archive
-        {
-            get
-            {
-                return false;
-                //if (System.Configuration.ConfigurationSettings.AppSettings["log_archive"] == null) return false;
-                //bool result = false;
-                //bool.TryParse(System.Configuration.ConfigurationSettings.AppSettings["log_archive"], out result);
-                //return result;
-            }
-        }
+        private static bool Log_Archive => false;
     }
 }

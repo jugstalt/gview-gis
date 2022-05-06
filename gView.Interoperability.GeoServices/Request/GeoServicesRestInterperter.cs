@@ -165,16 +165,7 @@ namespace gView.Interoperability.GeoServices.Request
                         throw new MapServerException("Unsuported image format: " + _exportMap.ImageFormat);
                     }
 
-                    var iFormat = GraphicsEngine.ImageFormat.Png;
-                    switch (imageFormat)
-                    {
-                        case ImageFormat.jpg:
-                            iFormat = GraphicsEngine.ImageFormat.Jpeg;
-                            break;
-                        case ImageFormat.webp:
-                            iFormat = GraphicsEngine.ImageFormat.Webp;
-                            break;
-                    }
+                    var iFormat = imageFormat.ToGraphicsEngineImageFormat();
 
                     if (_exportMap.Transparent)
                     {
@@ -276,7 +267,7 @@ namespace gView.Interoperability.GeoServices.Request
                     Error = new JsonError.ErrorDef()
                     {
                         Code = ex is GeoServicesException ? ((GeoServicesException)ex).ErrorCode : -1,
-                        Message = ex.Message + (/*ex is NullReferenceException*/ true ? $" Stacktrace: { ex.StackTrace }" : "")
+                        Message = ex.Message + (ex is NullReferenceException ? $" Stacktrace: { ex.StackTrace }" : "")
                     }
                 };
             }
@@ -317,7 +308,6 @@ namespace gView.Interoperability.GeoServices.Request
                             {
                                 layer.Visible = true;
                             }
-
                             break;
                         case "exclude":
                             if (layerIdContains)

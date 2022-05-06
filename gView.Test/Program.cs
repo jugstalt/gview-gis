@@ -30,8 +30,7 @@ namespace gView.Test
 
                 //Current.Engine = new gView.GraphicsEngine.GdiPlus.GdiGraphicsEngine(96);
                 Current.Engine = new gView.GraphicsEngine.Skia.SkiaGraphicsEngine(96);
-                Current.Encoder = new GraphicsEngine.GdiPlus.GdiBitmapEncoding();
-                ////Current.Encoder = new GraphicsEngine.Skia.SkiaBitmapEncoding();
+                Current.Encoder = new GraphicsEngine.Default.BitmapEncoding();
 
                 using (var bitmap = CreateImage(850, 600))
                 {

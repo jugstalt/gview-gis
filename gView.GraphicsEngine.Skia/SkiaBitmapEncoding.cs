@@ -41,6 +41,11 @@ namespace gView.GraphicsEngine.Skia
             var image = SKImage.FromBitmap((SKBitmap)bitmap.EngineElement);
             using (var data = EncodedData(image, format, quality))
             {
+                if (data == null)
+                {
+                    throw new ArgumentException($"Image not encodable to {format}");
+                }
+
                 stream.Write(data.ToArray(), 0, (int)data.Size);
             }
         }
@@ -55,10 +60,26 @@ namespace gView.GraphicsEngine.Skia
                     return image.Encode(SKEncodedImageFormat.Png, quality > 0 ? quality : 75);
                 case ImageFormat.Jpeg:
                     return image.Encode(SKEncodedImageFormat.Jpeg, quality > 0 ? quality : 75);
-                case ImageFormat.Gif:
-                    return image.Encode(SKEncodedImageFormat.Gif, quality > 0 ? quality : 75);
                 case ImageFormat.Webp:
                     return image.Encode(SKEncodedImageFormat.Webp, quality > 0 ? quality : 75);
+                case ImageFormat.Gif:
+                    return image.Encode(SKEncodedImageFormat.Gif, quality > 0 ? quality : 75);
+                case ImageFormat.Bmp:
+                    return image.Encode(SKEncodedImageFormat.Bmp, quality > 0 ? quality : 75);
+                case ImageFormat.Heif:
+                    return image.Encode(SKEncodedImageFormat.Heif, quality > 0 ? quality : 75);
+                case ImageFormat.Astc:
+                    return image.Encode(SKEncodedImageFormat.Astc, quality > 0 ? quality : 75);
+                case ImageFormat.Dng:
+                    return image.Encode(SKEncodedImageFormat.Dng, quality > 0 ? quality : 75);
+                case ImageFormat.Ico:
+                    return image.Encode(SKEncodedImageFormat.Ico, quality > 0 ? quality : 75);
+                case ImageFormat.Ktx:
+                    return image.Encode(SKEncodedImageFormat.Ktx, quality > 0 ? quality : 75);
+                case ImageFormat.Pkm:
+                    return image.Encode(SKEncodedImageFormat.Pkm, quality > 0 ? quality : 75);
+                case ImageFormat.Wbmp:
+                    return image.Encode(SKEncodedImageFormat.Wbmp, quality > 0 ? quality : 75);
                 default:
                     throw new Exception($"Unsported image format: { format }");
             }

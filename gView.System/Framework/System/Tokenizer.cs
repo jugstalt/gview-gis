@@ -18,20 +18,9 @@ namespace gView.Framework.system
             _parentToken = new Token(RemoveStrings(text), opener, closer);
         }
 
-        public Token Token
-        {
-            get
-            {
-                return _parentToken;
-            }
-        }
-
         public delegate void TransformTokenEventHandler(ref string text);
         public event TransformTokenEventHandler OnTransformToken = null;
-        public string Transform()
-        {
-            return AddStrings(TransformToken(_parentToken));
-        }
+
         public string TransformXML()
         {
             return AddStringsXML(TransformToken(_parentToken));
@@ -110,14 +99,6 @@ namespace gView.Framework.system
             }
             #endregion
 
-            return text;
-        }
-        private string AddStrings(string text)
-        {
-            for (int i = 0; i < _strings.Count; i++)
-            {
-                text = text.Replace("[STRING" + i + "]", _strings[i]);
-            }
             return text;
         }
         private string AddStringsXML(string text)

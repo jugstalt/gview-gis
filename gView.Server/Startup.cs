@@ -44,9 +44,11 @@ namespace gView.Server
                 case "skiasharp":
                     GraphicsEngine.Current.Encoder = new GraphicsEngine.Skia.SkiaBitmapEncoding();
                     break;
+                //case "gdal":
+                //    GraphicsEngine.Current.Encoder = new GraphicsEngine.Gdal.GdalBitmapEncoding();
+                //    break;
                 default:
-                    // Gdi+ encoding: faster & smaller images!
-                    GraphicsEngine.Current.Encoder = new GraphicsEngine.GdiPlus.GdiBitmapEncoding();
+                    GraphicsEngine.Current.Encoder = new GraphicsEngine.Default.BitmapEncoding();
                     break;
             }
 
