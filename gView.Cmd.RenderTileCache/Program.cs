@@ -106,7 +106,7 @@ namespace gView.Cmd.RenderTileCache
                 var metadata = new TileServiceMetadata().FromService(server, service);
                 if (metadata == null)
                 {
-                    throw new Exception("Can't read metadata from server. Are you sure taht ervice is a gView WMTS service?");
+                    throw new Exception("Can't read metadata from server. Are you sure that ervice is a gView WMTS service?");
                 }
 
                 #endregion

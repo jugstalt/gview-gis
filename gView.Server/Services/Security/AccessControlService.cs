@@ -43,13 +43,21 @@ namespace gView.Server.Services.Security
 
         async public Task CheckPublishAccess(string folder, IIdentity identity)
         {
+            if(String.IsNullOrEmpty(folder))  // root folder (only allowed for admin)
+            {
+                if (identity != null && identity.IsAdministrator)
+                {
+                    return;
+                }
+            }
+
             var folderService = _mapServerService.GetFolderService(folder);
             if (folderService == null)
             {
                 throw new MapServerException("Unknown folder: " + folder);
             }
 
-            if (identity != null && identity.IsAdministrator)
+            if (identity != null && identity.IsAdministrator)  // admin can publish anywhere
             {
                 return;
             }

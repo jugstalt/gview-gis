@@ -8,7 +8,7 @@
   "output-url_": "https://localhost:44377/http/output",
   "onlineresource-url_": "https://localhost:44331",
   "onlineresource-url": "http://localhost:8889",
-  "tilecache-root": "E:\\gview5\\tilecache",
+  "tilecache-root": "C:\\temp\\gview5\\tilecache",
 
   "task-queue": {
     "max-parallel-tasks": 5,

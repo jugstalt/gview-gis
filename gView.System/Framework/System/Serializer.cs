@@ -11,8 +11,18 @@ namespace gView.Framework.system
     {
         public T Deserialize(Stream stream)
         {
-            XmlSerializer ser = new XmlSerializer(typeof(T));
-            return (T)ser.Deserialize(stream);
+            // avoid errors => DTD parsing is not allowed per default:
+            // https://stackoverflow.com/questions/13854068/dtd-prohibited-in-xml-document-exception
+
+            XmlReaderSettings settings = new XmlReaderSettings();
+            settings.DtdProcessing = DtdProcessing.Ignore;
+            settings.MaxCharactersFromEntities = 1024;
+
+            using (XmlReader xmlReader = XmlReader.Create(stream, settings))
+            {
+                XmlSerializer ser = new XmlSerializer(typeof(T));
+                return (T)ser.Deserialize(xmlReader);
+            }
         }
 
         public T FromString(string xml, global::System.Text.Encoding encoding)
