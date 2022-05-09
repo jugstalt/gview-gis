@@ -123,12 +123,14 @@ namespace gView.Server.Controllers
                     }
                 }
 
-                return Result(new JsonServices()
-                {
-                    CurrentVersion = Version,
-                    Folders = folders.ToArray(),
-                    Services = services.ToArray()
-                });
+                var jsonService = String.IsNullOrEmpty(id) ?
+                    new JsonServicesRoot() : new JsonServices();
+
+                jsonService.CurrentVersion = Version;
+                jsonService.Folders = folders.ToArray();
+                jsonService.Services = services.ToArray();
+
+                return Result(jsonService);
             });
         }
 
@@ -1334,7 +1336,20 @@ namespace gView.Server.Controllers
 
             foreach (var serviceMethodAttribute in obj.GetType().GetCustomAttributes<ServiceMethodAttribute>(false))
             {
-                sb.Append("<a href='" + _mapServerService.Options.OnlineResource + this.Request.Path + "/" + serviceMethodAttribute.Method + "'>" + serviceMethodAttribute.Name + "</a>");
+                var url =  serviceMethodAttribute.Method;
+                var target = String.Empty;
+               
+                if(serviceMethodAttribute.Method.StartsWith("http://") || serviceMethodAttribute.Method.StartsWith("https://"))
+                {
+                    url = url.Replace("{onlineresource-url}", _mapServerService.Options.OnlineResource);
+                    target = "_blank";
+                } 
+                else
+                {
+                    url = $"{_mapServerService.Options.OnlineResource}{this.Request.Path}/{url}";
+                }
+
+                sb.Append($"<a href='{url}' target='{target}' >{serviceMethodAttribute.Name}</a>");
             }
 
             sb.Append("<div class='code-block'>");
