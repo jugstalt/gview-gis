@@ -63,12 +63,12 @@ namespace gView.Framework.Carto.LayerRenderers
 
                 using (var paintContext = await _layer.RasterClass.BeginPaint(_map.Display, _cancelTracker))
                 {
-                    if (_filter != FilterImplementations.Default)
+                    if (_filter != FilterImplementations.Default && paintContext != null)
                     {
                         _filteredBitmap = BaseFilter.ApplyFilter(paintContext.Bitmap, _filter);
                     }
 
-                    if (paintContext.Bitmap == null && _filteredBitmap == null)
+                    if (paintContext?.Bitmap == null && _filteredBitmap == null)
                     {
                         return;
                     }

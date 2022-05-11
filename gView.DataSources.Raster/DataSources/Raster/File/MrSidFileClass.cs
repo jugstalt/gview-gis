@@ -16,7 +16,6 @@ namespace gView.DataSources.Raster.File
         private IRasterDataset _dataset = null;
         private string _filename = "";
         private IPolygon _polygon = null;
-        private IntPtr _reader = (IntPtr)0;
         private MrSidGeoCoord _geoCoord = new MrSidGeoCoord();
         private ISpatialReference _sRef = null;
         private RasterType _type;
@@ -84,20 +83,17 @@ namespace gView.DataSources.Raster.File
 
 
         //private IntPtr memBuffer;
-        private bool InitReader()
+        private IntPtr InitReader()
         {
-            if (_reader != (IntPtr)0)
-            {
-                ReleaseReader();
-            }
+            IntPtr reader = IntPtr.Zero;
 
             switch (_type)
             {
                 case RasterType.sid:
-                    _reader = MrSidWrapper.LoadMrSIDReader(_filename, ref _geoCoord);
+                    reader = MrSidWrapper.LoadMrSIDReader(_filename, ref _geoCoord);
                     break;
                 case RasterType.jp2:
-                    _reader = MrSidWrapper.LoadJP2Reader(_filename, ref _geoCoord);
+                    reader = MrSidWrapper.LoadJP2Reader(_filename, ref _geoCoord);
                     //FileInfo finfo = new FileInfo(_filename);
 
                     //unsafe
@@ -122,17 +118,17 @@ namespace gView.DataSources.Raster.File
                 //_geoCoord.X -= _geoCoord.xRes / 2.0 + _geoCoord.xRot / 2.0;
                 //_geoCoord.Y -= _geoCoord.yRes / 2.0 + _geoCoord.yRot / 2.0;
             }
-            return (_reader != (IntPtr)0);
+            return reader;
         }
 
-        private void ReleaseReader()
+        private void ReleaseReader(IntPtr reader)
         {
             try
             {
-                if (_reader != (IntPtr)0)
+                if (reader != IntPtr.Zero)
                 {
-                    MrSidWrapper.FreeReader(_reader);
-                    _reader = (IntPtr)0;
+                    MrSidWrapper.FreeReader(reader);
+                    reader = IntPtr.Zero;
                 }
             }
             catch (Exception ex)
@@ -143,7 +139,7 @@ namespace gView.DataSources.Raster.File
 
         private void CleanUp()
         {
-            ReleaseReader();
+            //ReleaseReader();
         }
 
         internal bool isValid
@@ -153,33 +149,41 @@ namespace gView.DataSources.Raster.File
 
         private bool calcPolygon()
         {
-            if (!InitReader())
+            IntPtr reader = InitReader();
+            try
             {
-                return false;
-            }
+                if (reader == IntPtr.Zero)
+                {
+                    return false;
+                }
 
-            TFWFile tfw = this.GeoCoord as TFWFile;
-            if (tfw == null)
+                TFWFile tfw = this.GeoCoord as TFWFile;
+                if (tfw == null)
+                {
+                    return false;
+                }
+
+                int iWidth = _geoCoord.iWidth;
+                int iHeight = _geoCoord.iHeight;
+
+                _polygon = new Polygon();
+                Ring ring = new Ring();
+                gView.Framework.Geometry.Point p1 = new gView.Framework.Geometry.Point(
+                    tfw.X - tfw.dx_X / 2.0 - tfw.dy_X / 2.0,
+                    tfw.Y - tfw.dx_Y / 2.0 - tfw.dy_Y / 2.0);
+
+                ring.AddPoint(p1);
+                ring.AddPoint(new gView.Framework.Geometry.Point(p1.X + tfw.dx_X * iWidth, p1.Y + tfw.dx_Y * iWidth));
+                ring.AddPoint(new gView.Framework.Geometry.Point(p1.X + tfw.dx_X * iWidth + tfw.dy_X * iHeight, p1.Y + tfw.dx_Y * iWidth + tfw.dy_Y * iHeight));
+                ring.AddPoint(new gView.Framework.Geometry.Point(p1.X + tfw.dy_X * iHeight, p1.Y + tfw.dy_Y * iHeight));
+                _polygon.AddRing(ring);
+
+                return true;
+            }
+            finally
             {
-                return false;
+                ReleaseReader(reader);
             }
-
-            int iWidth = _geoCoord.iWidth;
-            int iHeight = _geoCoord.iHeight;
-
-            _polygon = new Polygon();
-            Ring ring = new Ring();
-            gView.Framework.Geometry.Point p1 = new gView.Framework.Geometry.Point(
-                tfw.X - tfw.dx_X / 2.0 - tfw.dy_X / 2.0,
-                tfw.Y - tfw.dx_Y / 2.0 - tfw.dy_Y / 2.0);
-
-            ring.AddPoint(p1);
-            ring.AddPoint(new gView.Framework.Geometry.Point(p1.X + tfw.dx_X * iWidth, p1.Y + tfw.dx_Y * iWidth));
-            ring.AddPoint(new gView.Framework.Geometry.Point(p1.X + tfw.dx_X * iWidth + tfw.dy_X * iHeight, p1.Y + tfw.dx_Y * iWidth + tfw.dy_Y * iHeight));
-            ring.AddPoint(new gView.Framework.Geometry.Point(p1.X + tfw.dy_X * iHeight, p1.Y + tfw.dy_Y * iHeight));
-            _polygon.AddRing(ring);
-
-            return true;
         }
 
         #region IRasterClass Member
@@ -233,7 +237,7 @@ namespace gView.DataSources.Raster.File
 
         async public Task<IRasterPaintContext> BeginPaint(gView.Framework.Carto.IDisplay display, ICancelTracker cancelTracker)
         {
-            IntPtr bufferData = (IntPtr)0;
+            IntPtr bufferData = IntPtr.Zero;
             GraphicsEngine.BitmapPixelData bitmapData = null;
             double mag = 1f; // mag immer als float, läuft stabiler!!!
 
@@ -243,18 +247,12 @@ namespace gView.DataSources.Raster.File
             int iHeight = 0;
 
             GraphicsEngine.Abstraction.IBitmap bitmap = null;
+            IntPtr reader = IntPtr.Zero;
 
             try
             {
-                if (_reader == (IntPtr)0)
-                {
-                    if (!InitReader())
-                    {
-                        return null;
-                    }
-                }
-
-                if (!(_polygon is ITopologicalOperation) || _reader == (IntPtr)0)
+                reader = InitReader();
+                if (reader == IntPtr.Zero || !(_polygon is ITopologicalOperation))
                 {
                     return null;
                 }
@@ -334,8 +332,8 @@ namespace gView.DataSources.Raster.File
                 iWidth = (int)((picEnv.Width - 1) * mag);
                 iHeight = (int)((picEnv.Height - 1) * mag);
 
-                bufferData = MrSidWrapper.Read(_reader, x, y, iWidth, iHeight, mag);
-                if (bufferData == (IntPtr)0)
+                bufferData = MrSidWrapper.Read(reader, x, y, iWidth, iHeight, mag);
+                if (bufferData == IntPtr.Zero)
                 {
                     return null;
                 }
@@ -383,7 +381,7 @@ namespace gView.DataSources.Raster.File
                 }
 
                 MrSidWrapper.ReleaseBandData(bufferData);
-                ReleaseReader();
+                ReleaseReader(reader);
             }
         }
 
