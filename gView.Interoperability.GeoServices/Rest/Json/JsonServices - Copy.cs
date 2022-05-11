@@ -4,7 +4,7 @@ using Newtonsoft.Json;
 
 namespace gView.Interoperability.GeoServices.Rest.Json
 {
-    [ServiceMethod("Geoservices Explorer", "http://geoexplorer.gviewonline.com?server={onlineresource-url}/geoservices/rest/services&servername=gview")]
+    [ServiceMethod("Geoservices Explorer", "https://geoexplorer.gviewonline.com?server={onlineresource-url}/geoservices/rest/services&servername=gview")]
     public class JsonServicesRoot : JsonServices
     {
     }
