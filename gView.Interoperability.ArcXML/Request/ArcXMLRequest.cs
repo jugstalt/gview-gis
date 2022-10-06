@@ -110,12 +110,11 @@ namespace gView.Interoperability.ArcXML
 #if(DEBUG)
                         Logger.LogDebug("Start ArcXML GET_RASTER_INFO Request");
 #endif
-                        await PerformGetRasterInfoRequest(context, rType);
-                        Logger.LogDebug("ArcXML GET_RASTER_INFO Request Finished");
-                        break;
+                        await PerformGetRasterInfoRequest(context, rType);                 
 #if (DEBUG)
-
+                        Logger.LogDebug("ArcXML GET_RASTER_INFO Request Finished");
 #endif
+                        break;
                     case "gv_CAN_TRACE_NETWORK":
                         await PerformCanTraceNetwork(context, rType);
                         break;
