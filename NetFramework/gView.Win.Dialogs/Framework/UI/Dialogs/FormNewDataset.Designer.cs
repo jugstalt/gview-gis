@@ -29,19 +29,19 @@
         private void InitializeComponent()
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormNewDataset));
-            gView.Framework.Geometry.Envelope envelope3 = new gView.Framework.Geometry.Envelope();
-            gView.Framework.Geometry.Point point11 = new gView.Framework.Geometry.Point();
-            gView.Framework.Geometry.Point point12 = new gView.Framework.Geometry.Point();
-            gView.Framework.Geometry.Point point13 = new gView.Framework.Geometry.Point();
-            gView.Framework.Geometry.Point point14 = new gView.Framework.Geometry.Point();
-            gView.Framework.Geometry.Point point15 = new gView.Framework.Geometry.Point();
-            gView.Framework.Data.gViewSpatialIndexDef gViewSpatialIndexDef2 = new gView.Framework.Data.gViewSpatialIndexDef();
-            gView.Framework.Geometry.Envelope envelope4 = new gView.Framework.Geometry.Envelope();
-            gView.Framework.Geometry.Point point16 = new gView.Framework.Geometry.Point();
-            gView.Framework.Geometry.Point point17 = new gView.Framework.Geometry.Point();
-            gView.Framework.Geometry.Point point18 = new gView.Framework.Geometry.Point();
-            gView.Framework.Geometry.Point point19 = new gView.Framework.Geometry.Point();
-            gView.Framework.Geometry.Point point20 = new gView.Framework.Geometry.Point();
+            gView.Framework.Geometry.Envelope envelope5 = new gView.Framework.Geometry.Envelope();
+            gView.Framework.Geometry.Point point21 = new gView.Framework.Geometry.Point();
+            gView.Framework.Geometry.Point point22 = new gView.Framework.Geometry.Point();
+            gView.Framework.Geometry.Point point23 = new gView.Framework.Geometry.Point();
+            gView.Framework.Geometry.Point point24 = new gView.Framework.Geometry.Point();
+            gView.Framework.Geometry.Point point25 = new gView.Framework.Geometry.Point();
+            gView.Framework.Data.gViewSpatialIndexDef gViewSpatialIndexDef3 = new gView.Framework.Data.gViewSpatialIndexDef();
+            gView.Framework.Geometry.Envelope envelope6 = new gView.Framework.Geometry.Envelope();
+            gView.Framework.Geometry.Point point26 = new gView.Framework.Geometry.Point();
+            gView.Framework.Geometry.Point point27 = new gView.Framework.Geometry.Point();
+            gView.Framework.Geometry.Point point28 = new gView.Framework.Geometry.Point();
+            gView.Framework.Geometry.Point point29 = new gView.Framework.Geometry.Point();
+            gView.Framework.Geometry.Point point30 = new gView.Framework.Geometry.Point();
             this.btnGetImageSpace = new System.Windows.Forms.Button();
             this.txtImageSpace = new System.Windows.Forms.TextBox();
             this.radioButton2 = new System.Windows.Forms.RadioButton();
@@ -58,13 +58,13 @@
             this.tabPage1 = new System.Windows.Forms.TabPage();
             this.radioButton3 = new System.Windows.Forms.RadioButton();
             this.tabSpatialIndex = new System.Windows.Forms.TabPage();
-            this.spatialIndexControl = new gView.Framework.UI.Controls.SpatialIndexControl();
             this.tabAdditionalFields = new System.Windows.Forms.TabPage();
-            this.additionalFieldsControl1 = new gView.Framework.UI.Controls.AdditionalFieldsControl();
             this.panel4 = new System.Windows.Forms.Panel();
             this.tabPage2 = new System.Windows.Forms.TabPage();
             this.folderBrowserDialog1 = new System.Windows.Forms.FolderBrowserDialog();
             this.panel1 = new System.Windows.Forms.Panel();
+            this.spatialIndexControl = new gView.Framework.UI.Controls.SpatialIndexControl();
+            this.additionalFieldsControl1 = new gView.Framework.UI.Controls.AdditionalFieldsControl();
             this.panel2.SuspendLayout();
             this.panel3.SuspendLayout();
             this.tabControl1.SuspendLayout();
@@ -76,147 +76,94 @@
             // 
             // btnGetImageSpace
             // 
-            this.btnGetImageSpace.AccessibleDescription = null;
-            this.btnGetImageSpace.AccessibleName = null;
             resources.ApplyResources(this.btnGetImageSpace, "btnGetImageSpace");
-            this.btnGetImageSpace.BackgroundImage = null;
-            this.btnGetImageSpace.Font = null;
             this.btnGetImageSpace.Name = "btnGetImageSpace";
             this.btnGetImageSpace.UseVisualStyleBackColor = true;
             this.btnGetImageSpace.Click += new System.EventHandler(this.btnGetImageSpace_Click);
             // 
             // txtImageSpace
             // 
-            this.txtImageSpace.AccessibleDescription = null;
-            this.txtImageSpace.AccessibleName = null;
             resources.ApplyResources(this.txtImageSpace, "txtImageSpace");
-            this.txtImageSpace.BackgroundImage = null;
-            this.txtImageSpace.Font = null;
             this.txtImageSpace.Name = "txtImageSpace";
             // 
             // radioButton2
             // 
-            this.radioButton2.AccessibleDescription = null;
-            this.radioButton2.AccessibleName = null;
             resources.ApplyResources(this.radioButton2, "radioButton2");
-            this.radioButton2.BackgroundImage = null;
-            this.radioButton2.Font = null;
             this.radioButton2.Name = "radioButton2";
             this.radioButton2.UseVisualStyleBackColor = true;
             // 
             // radioButton1
             // 
-            this.radioButton1.AccessibleDescription = null;
-            this.radioButton1.AccessibleName = null;
             resources.ApplyResources(this.radioButton1, "radioButton1");
-            this.radioButton1.BackgroundImage = null;
-            this.radioButton1.Font = null;
             this.radioButton1.Name = "radioButton1";
             this.radioButton1.UseVisualStyleBackColor = true;
             // 
             // txtName
             // 
-            this.txtName.AccessibleDescription = null;
-            this.txtName.AccessibleName = null;
             resources.ApplyResources(this.txtName, "txtName");
-            this.txtName.BackgroundImage = null;
-            this.txtName.Font = null;
             this.txtName.Name = "txtName";
             // 
             // label2
             // 
-            this.label2.AccessibleDescription = null;
-            this.label2.AccessibleName = null;
             resources.ApplyResources(this.label2, "label2");
             this.label2.Name = "label2";
             // 
             // label1
             // 
-            this.label1.AccessibleDescription = null;
-            this.label1.AccessibleName = null;
             resources.ApplyResources(this.label1, "label1");
-            this.label1.Font = null;
             this.label1.Name = "label1";
             // 
             // cmbType
             // 
-            this.cmbType.AccessibleDescription = null;
-            this.cmbType.AccessibleName = null;
-            resources.ApplyResources(this.cmbType, "cmbType");
-            this.cmbType.BackgroundImage = null;
             this.cmbType.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.cmbType.Font = null;
             this.cmbType.FormattingEnabled = true;
             this.cmbType.Items.AddRange(new object[] {
             resources.GetString("cmbType.Items"),
             resources.GetString("cmbType.Items1")});
+            resources.ApplyResources(this.cmbType, "cmbType");
             this.cmbType.Name = "cmbType";
             this.cmbType.SelectedIndexChanged += new System.EventHandler(this.cmbType_SelectedIndexChanged);
             // 
             // panel2
             // 
-            this.panel2.AccessibleDescription = null;
-            this.panel2.AccessibleName = null;
-            resources.ApplyResources(this.panel2, "panel2");
-            this.panel2.BackgroundImage = null;
             this.panel2.Controls.Add(this.panel3);
             this.panel2.Controls.Add(this.btnCancel);
-            this.panel2.Font = null;
+            resources.ApplyResources(this.panel2, "panel2");
             this.panel2.Name = "panel2";
             // 
             // panel3
             // 
-            this.panel3.AccessibleDescription = null;
-            this.panel3.AccessibleName = null;
-            resources.ApplyResources(this.panel3, "panel3");
-            this.panel3.BackgroundImage = null;
             this.panel3.Controls.Add(this.btnOK);
-            this.panel3.Font = null;
+            resources.ApplyResources(this.panel3, "panel3");
             this.panel3.Name = "panel3";
             // 
             // btnOK
             // 
-            this.btnOK.AccessibleDescription = null;
-            this.btnOK.AccessibleName = null;
-            resources.ApplyResources(this.btnOK, "btnOK");
-            this.btnOK.BackgroundImage = null;
             this.btnOK.DialogResult = System.Windows.Forms.DialogResult.OK;
-            this.btnOK.Font = null;
+            resources.ApplyResources(this.btnOK, "btnOK");
             this.btnOK.Name = "btnOK";
             this.btnOK.UseVisualStyleBackColor = true;
             // 
             // btnCancel
             // 
-            this.btnCancel.AccessibleDescription = null;
-            this.btnCancel.AccessibleName = null;
-            resources.ApplyResources(this.btnCancel, "btnCancel");
-            this.btnCancel.BackgroundImage = null;
             this.btnCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.btnCancel.Font = null;
+            resources.ApplyResources(this.btnCancel, "btnCancel");
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.UseVisualStyleBackColor = true;
             // 
             // tabControl1
             // 
-            this.tabControl1.AccessibleDescription = null;
-            this.tabControl1.AccessibleName = null;
-            resources.ApplyResources(this.tabControl1, "tabControl1");
-            this.tabControl1.BackgroundImage = null;
             this.tabControl1.Controls.Add(this.tabPage1);
             this.tabControl1.Controls.Add(this.tabSpatialIndex);
             this.tabControl1.Controls.Add(this.tabAdditionalFields);
             this.tabControl1.Controls.Add(this.tabPage2);
-            this.tabControl1.Font = null;
+            resources.ApplyResources(this.tabControl1, "tabControl1");
             this.tabControl1.Name = "tabControl1";
             this.tabControl1.SelectedIndex = 0;
             this.tabControl1.SelectedIndexChanged += new System.EventHandler(this.tabControl1_SelectedIndexChanged);
             // 
             // tabPage1
             // 
-            this.tabPage1.AccessibleDescription = null;
-            this.tabPage1.AccessibleName = null;
-            resources.ApplyResources(this.tabPage1, "tabPage1");
-            this.tabPage1.BackgroundImage = null;
             this.tabPage1.Controls.Add(this.radioButton3);
             this.tabPage1.Controls.Add(this.btnGetImageSpace);
             this.tabPage1.Controls.Add(this.label1);
@@ -224,179 +171,150 @@
             this.tabPage1.Controls.Add(this.radioButton1);
             this.tabPage1.Controls.Add(this.cmbType);
             this.tabPage1.Controls.Add(this.radioButton2);
-            this.tabPage1.Font = null;
+            resources.ApplyResources(this.tabPage1, "tabPage1");
             this.tabPage1.Name = "tabPage1";
             this.tabPage1.UseVisualStyleBackColor = true;
             // 
             // radioButton3
             // 
-            this.radioButton3.AccessibleDescription = null;
-            this.radioButton3.AccessibleName = null;
             resources.ApplyResources(this.radioButton3, "radioButton3");
-            this.radioButton3.BackgroundImage = null;
             this.radioButton3.Checked = true;
-            this.radioButton3.Font = null;
             this.radioButton3.Name = "radioButton3";
             this.radioButton3.TabStop = true;
             this.radioButton3.UseVisualStyleBackColor = true;
             // 
             // tabSpatialIndex
             // 
-            this.tabSpatialIndex.AccessibleDescription = null;
-            this.tabSpatialIndex.AccessibleName = null;
-            resources.ApplyResources(this.tabSpatialIndex, "tabSpatialIndex");
-            this.tabSpatialIndex.BackgroundImage = null;
             this.tabSpatialIndex.Controls.Add(this.spatialIndexControl);
-            this.tabSpatialIndex.Font = null;
+            resources.ApplyResources(this.tabSpatialIndex, "tabSpatialIndex");
             this.tabSpatialIndex.Name = "tabSpatialIndex";
             this.tabSpatialIndex.UseVisualStyleBackColor = true;
             // 
-            // spatialIndexControl
-            // 
-            this.spatialIndexControl.AccessibleDescription = null;
-            this.spatialIndexControl.AccessibleName = null;
-            resources.ApplyResources(this.spatialIndexControl, "spatialIndexControl");
-            this.spatialIndexControl.BackgroundImage = null;
-            point11.M = 0;
-            point11.X = 0;
-            point11.Y = 0;
-            point11.Z = 0;
-            envelope3.Center = point11;
-            point12.M = 0;
-            point12.X = 0;
-            point12.Y = 0;
-            point12.Z = 0;
-            envelope3.LowerLeft = point12;
-            point13.M = 0;
-            point13.X = 0;
-            point13.Y = 0;
-            point13.Z = 0;
-            envelope3.LowerRight = point13;
-            envelope3.maxx = 0;
-            envelope3.maxy = 0;
-            envelope3.minx = 0;
-            envelope3.miny = 0;
-            point14.M = 0;
-            point14.X = 0;
-            point14.Y = 0;
-            point14.Z = 0;
-            envelope3.UpperLeft = point14;
-            point15.M = 0;
-            point15.X = 0;
-            point15.Y = 0;
-            point15.Z = 0;
-            envelope3.UpperRight = point15;
-            this.spatialIndexControl.Extent = envelope3;
-            this.spatialIndexControl.Font = null;
-            this.spatialIndexControl.IndexTypeIsEditable = true;
-            this.spatialIndexControl.Levels = 0;
-            this.spatialIndexControl.MSIndex = null;
-            this.spatialIndexControl.Name = "spatialIndexControl";
-            gViewSpatialIndexDef2.Levels = 0;
-            gViewSpatialIndexDef2.MaxPerNode = 200;
-            point16.M = 0;
-            point16.X = 0;
-            point16.Y = 0;
-            point16.Z = 0;
-            envelope4.Center = point16;
-            point17.M = 0;
-            point17.X = 0;
-            point17.Y = 0;
-            point17.Z = 0;
-            envelope4.LowerLeft = point17;
-            point18.M = 0;
-            point18.X = 0;
-            point18.Y = 0;
-            point18.Z = 0;
-            envelope4.LowerRight = point18;
-            envelope4.maxx = 0;
-            envelope4.maxy = 0;
-            envelope4.minx = 0;
-            envelope4.miny = 0;
-            point19.M = 0;
-            point19.X = 0;
-            point19.Y = 0;
-            point19.Z = 0;
-            envelope4.UpperLeft = point19;
-            point20.M = 0;
-            point20.X = 0;
-            point20.Y = 0;
-            point20.Z = 0;
-            envelope4.UpperRight = point20;
-            gViewSpatialIndexDef2.SpatialIndexBounds = envelope4;
-            gViewSpatialIndexDef2.SpatialReference = null;
-            gViewSpatialIndexDef2.SplitRatio = 0.55;
-            this.spatialIndexControl.SpatialIndexDef = gViewSpatialIndexDef2;
-            this.spatialIndexControl.Type = gView.Framework.UI.Controls.SpatialIndexControl.IndexType.gView;
-            // 
             // tabAdditionalFields
             // 
-            this.tabAdditionalFields.AccessibleDescription = null;
-            this.tabAdditionalFields.AccessibleName = null;
-            resources.ApplyResources(this.tabAdditionalFields, "tabAdditionalFields");
-            this.tabAdditionalFields.BackgroundImage = null;
             this.tabAdditionalFields.Controls.Add(this.additionalFieldsControl1);
             this.tabAdditionalFields.Controls.Add(this.panel4);
-            this.tabAdditionalFields.Font = null;
+            resources.ApplyResources(this.tabAdditionalFields, "tabAdditionalFields");
             this.tabAdditionalFields.Name = "tabAdditionalFields";
             this.tabAdditionalFields.UseVisualStyleBackColor = true;
             // 
-            // additionalFieldsControl1
-            // 
-            this.additionalFieldsControl1.AccessibleDescription = null;
-            this.additionalFieldsControl1.AccessibleName = null;
-            resources.ApplyResources(this.additionalFieldsControl1, "additionalFieldsControl1");
-            this.additionalFieldsControl1.BackgroundImage = null;
-            this.additionalFieldsControl1.Font = null;
-            this.additionalFieldsControl1.Name = "additionalFieldsControl1";
-            // 
             // panel4
             // 
-            this.panel4.AccessibleDescription = null;
-            this.panel4.AccessibleName = null;
             resources.ApplyResources(this.panel4, "panel4");
-            this.panel4.BackgroundImage = null;
-            this.panel4.Font = null;
             this.panel4.Name = "panel4";
             // 
             // tabPage2
             // 
-            this.tabPage2.AccessibleDescription = null;
-            this.tabPage2.AccessibleName = null;
             resources.ApplyResources(this.tabPage2, "tabPage2");
-            this.tabPage2.BackgroundImage = null;
-            this.tabPage2.Font = null;
             this.tabPage2.Name = "tabPage2";
             this.tabPage2.UseVisualStyleBackColor = true;
             // 
-            // folderBrowserDialog1
-            // 
-            resources.ApplyResources(this.folderBrowserDialog1, "folderBrowserDialog1");
-            // 
             // panel1
             // 
-            this.panel1.AccessibleDescription = null;
-            this.panel1.AccessibleName = null;
-            resources.ApplyResources(this.panel1, "panel1");
-            this.panel1.BackgroundImage = null;
             this.panel1.Controls.Add(this.txtName);
             this.panel1.Controls.Add(this.label2);
-            this.panel1.Font = null;
+            resources.ApplyResources(this.panel1, "panel1");
             this.panel1.Name = "panel1";
+            // 
+            // spatialIndexControl
+            // 
+            point21.M = 0D;
+            point21.Srs = null;
+            point21.X = 0D;
+            point21.Y = 0D;
+            point21.Z = 0D;
+            envelope5.Center = point21;
+            point22.M = 0D;
+            point22.Srs = null;
+            point22.X = 0D;
+            point22.Y = 0D;
+            point22.Z = 0D;
+            envelope5.LowerLeft = point22;
+            point23.M = 0D;
+            point23.Srs = null;
+            point23.X = 0D;
+            point23.Y = 0D;
+            point23.Z = 0D;
+            envelope5.LowerRight = point23;
+            envelope5.maxx = 0D;
+            envelope5.maxy = 0D;
+            envelope5.minx = 0D;
+            envelope5.miny = 0D;
+            envelope5.Srs = null;
+            point24.M = 0D;
+            point24.Srs = null;
+            point24.X = 0D;
+            point24.Y = 0D;
+            point24.Z = 0D;
+            envelope5.UpperLeft = point24;
+            point25.M = 0D;
+            point25.Srs = null;
+            point25.X = 0D;
+            point25.Y = 0D;
+            point25.Z = 0D;
+            envelope5.UpperRight = point25;
+            this.spatialIndexControl.Extent = envelope5;
+            this.spatialIndexControl.IndexTypeIsEditable = true;
+            this.spatialIndexControl.Levels = 0;
+            resources.ApplyResources(this.spatialIndexControl, "spatialIndexControl");
+            this.spatialIndexControl.MSIndex = null;
+            this.spatialIndexControl.Name = "spatialIndexControl";
+            gViewSpatialIndexDef3.Levels = 0;
+            gViewSpatialIndexDef3.MaxPerNode = 200;
+            point26.M = 0D;
+            point26.Srs = null;
+            point26.X = 0D;
+            point26.Y = 0D;
+            point26.Z = 0D;
+            envelope6.Center = point26;
+            point27.M = 0D;
+            point27.Srs = null;
+            point27.X = 0D;
+            point27.Y = 0D;
+            point27.Z = 0D;
+            envelope6.LowerLeft = point27;
+            point28.M = 0D;
+            point28.Srs = null;
+            point28.X = 0D;
+            point28.Y = 0D;
+            point28.Z = 0D;
+            envelope6.LowerRight = point28;
+            envelope6.maxx = 0D;
+            envelope6.maxy = 0D;
+            envelope6.minx = 0D;
+            envelope6.miny = 0D;
+            envelope6.Srs = null;
+            point29.M = 0D;
+            point29.Srs = null;
+            point29.X = 0D;
+            point29.Y = 0D;
+            point29.Z = 0D;
+            envelope6.UpperLeft = point29;
+            point30.M = 0D;
+            point30.Srs = null;
+            point30.X = 0D;
+            point30.Y = 0D;
+            point30.Z = 0D;
+            envelope6.UpperRight = point30;
+            gViewSpatialIndexDef3.SpatialIndexBounds = envelope6;
+            gViewSpatialIndexDef3.SpatialReference = null;
+            gViewSpatialIndexDef3.SplitRatio = 0.55D;
+            this.spatialIndexControl.SpatialIndexDef = gViewSpatialIndexDef3;
+            this.spatialIndexControl.Type = gView.Framework.UI.Controls.SpatialIndexControl.IndexType.gView;
+            // 
+            // additionalFieldsControl1
+            // 
+            resources.ApplyResources(this.additionalFieldsControl1, "additionalFieldsControl1");
+            this.additionalFieldsControl1.Name = "additionalFieldsControl1";
             // 
             // FormNewDataset
             // 
-            this.AccessibleDescription = null;
-            this.AccessibleName = null;
             resources.ApplyResources(this, "$this");
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.BackgroundImage = null;
             this.Controls.Add(this.tabControl1);
             this.Controls.Add(this.panel1);
             this.Controls.Add(this.panel2);
-            this.Font = null;
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.SizableToolWindow;
-            this.Icon = null;
             this.Name = "FormNewDataset";
             this.Shown += new System.EventHandler(this.FormNewDataset_Shown);
             this.panel2.ResumeLayout(false);

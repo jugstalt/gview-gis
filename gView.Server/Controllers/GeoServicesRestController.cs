@@ -1070,7 +1070,8 @@ namespace gView.Server.Controllers
                 }
 
                 string type = "Feature Layer";
-                if (datasetElement.Class is IRasterClass)
+                if (datasetElement.Class is IRasterClass &&
+                    !(datasetElement.Class is IRasterCatalogClass)) // RasterCatalogClass is like a Featureclass (Features a rendert as Image, but you can query/filter them as Polygons with attributes...)
                 {
                     type = "Raster Layer";
                 }

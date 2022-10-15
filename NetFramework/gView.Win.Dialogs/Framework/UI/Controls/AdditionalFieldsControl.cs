@@ -19,7 +19,7 @@ namespace gView.Framework.UI.Controls
             if (autoFields != null)
             {
                 tablePanel.RowCount = autoFields.Count();
-                tablePanel.Height = autoFields.Count() * 25;
+                //tablePanel.Height = autoFields.Count() * 25;
                 tablePanel.Resize += new EventHandler(tablePanel_Resize);
 
                 int row = 0;

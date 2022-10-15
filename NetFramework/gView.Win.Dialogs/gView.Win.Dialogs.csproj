@@ -531,12 +531,6 @@
     <EmbeddedResource Include="Framework\UI\Dialogs\FormMapProperties.resx">
       <DependentUpon>FormMapProperties.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Framework\UI\Dialogs\FormNewDataset.de-DE.resx">
-      <DependentUpon>FormNewDataset.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Framework\UI\Dialogs\FormNewDataset.de.resx">
-      <DependentUpon>FormNewDataset.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="Framework\UI\Dialogs\FormNewDataset.resx">
       <DependentUpon>FormNewDataset.cs</DependentUpon>
     </EmbeddedResource>

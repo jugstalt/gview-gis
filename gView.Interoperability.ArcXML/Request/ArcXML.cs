@@ -1299,8 +1299,8 @@ namespace gView.Interoperability.ArcXML
                 xWriter.WriteStartElement("SERVICE");
                 xWriter.WriteAttributeString("access", "PUBLIC");
                 xWriter.WriteAttributeString("ACCESS", "PUBLIC");
-                xWriter.WriteAttributeString("name", map.Name);
-                xWriter.WriteAttributeString("NAME", map.Name);
+                xWriter.WriteAttributeString("name", map.Fullname);
+                xWriter.WriteAttributeString("NAME", map.Fullname);
                 xWriter.WriteAttributeString("private", "true");
                 xWriter.WriteAttributeString("servicegroup", "ImageServer1");
                 xWriter.WriteAttributeString("SERVICEGROUP", "ImageServer1");
