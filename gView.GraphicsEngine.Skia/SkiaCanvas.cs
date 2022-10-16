@@ -328,6 +328,12 @@ namespace gView.GraphicsEngine.Skia
         private SKPaint GetSKPaint(IFont font, SKPaint brush, IDrawTextFormat format, ref string text, ref SKPoint point)
         {
             var skPaint = GetSKPaint(font, brush);
+
+            if (this.TextRenderingHint == TextRenderingHint.AntiAlias)
+            {
+                skPaint.IsAntialias = true;
+            }
+
             text = text.RemoveReturns();
 
             if (format != null)

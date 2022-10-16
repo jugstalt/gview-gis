@@ -769,8 +769,6 @@ namespace gView.Framework.Symbology
             }
         }
 
-
-
         virtual public void Release()
         {
             if (_font != null)
@@ -829,9 +827,6 @@ namespace gView.Framework.Symbology
                 ms.Position = 0;
                 SoapFormatter formatter = new SoapFormatter();
                 _font = (IFont)formatter.Deserialize<IFont>(ms, stream, this);
-
-                this.MaxFontSize = (float)stream.Load("maxfontsize", 0f);
-                this.MinFontSize = (float)stream.Load("minfontsize", 0f);
             }
             catch (Exception ex)
             {
@@ -858,6 +853,8 @@ namespace gView.Framework.Symbology
                 catch { }
             }
 
+            this.MaxFontSize = (float)stream.Load("maxfontsize", 0f);
+            this.MinFontSize = (float)stream.Load("minfontsize", 0f);
             this.IncludesSuperScript = (bool)stream.Load("includessuperscript", false);
         }
 
@@ -912,6 +909,8 @@ namespace gView.Framework.Symbology
             tSym.Angle = Angle;
             tSym._align = _align;
             tSym.Smoothingmode = this.Smoothingmode;
+            tSym.MinFontSize = this.MinFontSize;
+            tSym.MaxFontSize = this.MaxFontSize;
             tSym.IncludesSuperScript = this.IncludesSuperScript;
             tSym.SecondaryTextSymbolAlignments = this.SecondaryTextSymbolAlignments;
 
@@ -945,6 +944,8 @@ namespace gView.Framework.Symbology
             tSym.Angle = Angle;
             tSym._align = _align;
             tSym.Smoothingmode = this.Smoothingmode;
+            tSym.MinFontSize = this.MinFontSize;
+            tSym.MaxFontSize = this.MaxFontSize;
             tSym.IncludesSuperScript = this.IncludesSuperScript;
             tSym.SecondaryTextSymbolAlignments = this.SecondaryTextSymbolAlignments;
 

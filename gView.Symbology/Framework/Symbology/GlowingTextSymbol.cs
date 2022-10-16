@@ -88,6 +88,8 @@ namespace gView.Framework.Symbology
             tSym.Smoothingmode = this.Smoothingmode;
             tSym.GlowingSmoothingmode = this.GlowingSmoothingmode;
             tSym.GlowingWidth = this.GlowingWidth;
+            tSym.MinFontSize = this.MinFontSize;
+            tSym.MaxFontSize = this.MaxFontSize;
             tSym.IncludesSuperScript = this.IncludesSuperScript;
             tSym.SecondaryTextSymbolAlignments = this.SecondaryTextSymbolAlignments;
 
@@ -106,7 +108,12 @@ namespace gView.Framework.Symbology
             float fac = 1;
             if (options.ApplyRefScale)
             {
-                fac = (float)(display.refScale / display.mapScale);
+                fac = ReferenceScaleHelper.RefscaleFactor(
+                    (float)(display.refScale / display.mapScale),
+                    _font.Size,
+                    MinFontSize,
+                    MaxFontSize);
+
                 fac = options.LabelRefScaleFactor(fac);
             }
             fac *= options.DpiFactor;
@@ -119,6 +126,8 @@ namespace gView.Framework.Symbology
             tSym.Smoothingmode = this.Smoothingmode;
             tSym.GlowingSmoothingmode = this.GlowingSmoothingmode;
             tSym.GlowingWidth = this.GlowingWidth;
+            tSym.MinFontSize = this.MinFontSize;
+            tSym.MaxFontSize = this.MaxFontSize;
             tSym.IncludesSuperScript = this.IncludesSuperScript;
             tSym.SecondaryTextSymbolAlignments = this.SecondaryTextSymbolAlignments;
 
