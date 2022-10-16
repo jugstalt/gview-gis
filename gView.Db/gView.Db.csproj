@@ -20,12 +20,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Npgsql" Version="6.0.4" />
-    <PackageReference Include="Oracle.ManagedDataAccess.Core" Version="2.19.91" />
-    <PackageReference Include="Stub.System.Data.SQLite.Core.NetStandard" Version="1.0.115.5" />
-    <PackageReference Include="System.Data.SqlClient" Version="4.8.3" />
-    <PackageReference Include="System.Data.SQLite" Version="1.0.115.5" />
-    <PackageReference Include="System.Data.SQLite.Core" Version="1.0.115.5" />
+    <PackageReference Include="Npgsql" Version="6.0.7" />
+    <PackageReference Include="Oracle.ManagedDataAccess.Core" Version="2.19.160" />
+    <PackageReference Include="Stub.System.Data.SQLite.Core.NetStandard" Version="1.0.116" />
+    <PackageReference Include="System.Data.SqlClient" Version="4.8.4" />
+    <PackageReference Include="System.Data.SQLite" Version="1.0.116" />
+    <PackageReference Include="System.Data.SQLite.Core" Version="1.0.116" />
   </ItemGroup>
 
 </Project>
