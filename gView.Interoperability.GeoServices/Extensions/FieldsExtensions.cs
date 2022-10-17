@@ -22,7 +22,7 @@ namespace gView.Interoperability.GeoServices.Extensions
                 {
                     if (tableClass.Fields.FindField(fieldName) == null)
                     {
-                        throw new Exception($"Forbidden field function detected: { fieldName }");
+                        throw new Exception($"Forbidden field function detected: {fieldName}");
                     }
                 }
             }

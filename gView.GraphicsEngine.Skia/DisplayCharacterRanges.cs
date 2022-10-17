@@ -26,7 +26,7 @@ namespace gView.GraphicsEngine.Skia
             float xOffset = 0, height = 0; ;
             for (int i = 0, to = text.Length; i < to; i++)
             {
-                font.MeasureText($"{ text[i] }_", ref rect);
+                font.MeasureText($"{text[i]}_", ref rect);
 
                 _rectF[i].Left = rect.Left + xOffset;
                 _rectF[i].Top = rect.Top;

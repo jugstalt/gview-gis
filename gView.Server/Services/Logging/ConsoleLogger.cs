@@ -19,7 +19,7 @@ namespace gView.Server.Services.Logging
 
         public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
         {
-            Console.WriteLine($"{ logLevel.ToString() }: { eventId.Name } - { exception.Message }");
+            Console.WriteLine($"{logLevel.ToString()}: {eventId.Name} - {exception.Message}");
         }
 
         #endregion

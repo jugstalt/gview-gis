@@ -43,7 +43,7 @@ namespace gView.Server.Services.Security
 
         async public Task CheckPublishAccess(string folder, IIdentity identity)
         {
-            if(String.IsNullOrEmpty(folder))  // root folder (only allowed for admin)
+            if (String.IsNullOrEmpty(folder))  // root folder (only allowed for admin)
             {
                 if (identity != null && identity.IsAdministrator)
                 {

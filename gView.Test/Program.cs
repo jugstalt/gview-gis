@@ -40,7 +40,7 @@ namespace gView.Test
 
                         SaveBitmap(filteredBitmap, "C:\\temp\\graphic.jpg");
 
-                        Console.WriteLine($"Encoding Time: { (DateTime.Now - start).TotalMilliseconds }ms");
+                        Console.WriteLine($"Encoding Time: {(DateTime.Now - start).TotalMilliseconds}ms");
                     }
                 }
             }
@@ -252,23 +252,23 @@ namespace gView.Test
                 var featureCache = new gView.DataSources.VectorTileCache.FeatureCache(dataset);
                 await featureCache.LoadAsync(14, 8841, 8842, 5787, 5788);
 
-                Console.WriteLine($"TimeSpan: { (DateTime.Now - start).TotalMilliseconds } ms");
+                Console.WriteLine($"TimeSpan: {(DateTime.Now - start).TotalMilliseconds} ms");
 
                 int count = 0;
                 foreach (var layername in featureCache.LayersNames)
                 {
                     count += featureCache.FeatureCount(layername);
-                    Console.WriteLine($"{ layername }: { featureCache.FeatureCount(layername) }");
+                    Console.WriteLine($"{layername}: {featureCache.FeatureCount(layername)}");
 
                     //System.IO.File.WriteAllText($@"c:\temp\{ layername }.json", featureCache.ToGeoJson(layername));
                 }
 
-                Console.WriteLine($"Sum Featuers: { count }");
+                Console.WriteLine($"Sum Featuers: {count}");
             }
 
             if (!String.IsNullOrEmpty(dataset.LastErrorMessage))
             {
-                Console.WriteLine($"ERROR: { dataset.LastErrorMessage }");
+                Console.WriteLine($"ERROR: {dataset.LastErrorMessage}");
             }
         }
 

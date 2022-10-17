@@ -29,7 +29,7 @@ namespace gView.DataSources.OSGeo
                     OSGeo_v3.GDAL.Gdal.AllRegister();
                     OSGeo_v3.OGR.Ogr.RegisterAll();
 
-                    OSGeo_v3.OSR.Osr.SetPROJSearchPaths(new[] { $"{ System.IO.Path.GetDirectoryName(Assembly.GetEntryAssembly().Location) }/gdalproj" });
+                    OSGeo_v3.OSR.Osr.SetPROJSearchPaths(new[] { $"{System.IO.Path.GetDirectoryName(Assembly.GetEntryAssembly().Location)}/gdalproj" });
 
                     InstalledVersion = GdalVersion.V3;
                 }
@@ -49,7 +49,7 @@ namespace gView.DataSources.OSGeo
                 {
                     var driver = OSGeo_v3.GDAL.Gdal.GetDriver(i);
                     drivers[i] = driver.LongName;
-                    sb.Append($"{ driver.ShortName }: { driver.LongName }\n");
+                    sb.Append($"{driver.ShortName}: {driver.LongName}\n");
                 }
 
                 return true;

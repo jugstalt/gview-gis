@@ -314,7 +314,7 @@ namespace gView.Framework.Symbology.UI
                 switch (resourcePicker.ShowDialog())
                 {
                     case DialogResult.OK:
-                        return $"resource:{ resourcePicker.SelectedResourceName }";
+                        return $"resource:{resourcePicker.SelectedResourceName}";
                     case DialogResult.Abort:
                         // Open Filedialog
                         break;

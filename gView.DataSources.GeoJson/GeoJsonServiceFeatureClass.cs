@@ -24,7 +24,7 @@ namespace gView.DataSources.GeoJson
             var instance = new GeoJsonServiceFeatureClass(dataset);
             instance.SpatialReference = await dataset.GetSpatialReference();
             instance.GeometryType = geometryType;
-            instance.Name = $"{ dataset.DatasetName }-{ geometryType.ToString().ToLower() }";
+            instance.Name = $"{dataset.DatasetName}-{geometryType.ToString().ToLower()}";
 
             #region Loop all features for Fields
 

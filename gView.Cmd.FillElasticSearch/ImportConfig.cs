@@ -34,7 +34,7 @@ namespace gView.Cmd.FillElasticSearch
             [JsonProperty(PropertyName = "delete_index")]
             public bool DeleteIndex { get; set; }
 
-            public string MetaIndex => $"{ this.DefaultIndex }.meta";
+            public string MetaIndex => $"{this.DefaultIndex}.meta";
         }
 
         public class DatasetConnection

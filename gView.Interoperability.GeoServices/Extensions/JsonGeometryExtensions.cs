@@ -37,7 +37,7 @@ namespace gView.Interoperability.GeoServices.Extensions
             }
             else
             {
-                throw new Exception($"Unkown geometry { geometryString }");
+                throw new Exception($"Unkown geometry {geometryString}");
             }
         }
 

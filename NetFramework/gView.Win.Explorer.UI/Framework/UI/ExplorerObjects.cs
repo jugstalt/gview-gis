@@ -254,7 +254,7 @@ namespace gView.Framework.UI
         #endregion
 
         #region IExplorerObjectCreatable Member
-        
+
         public bool CanCreate(IExplorerObject parentExObject)
         {
             if (parentExObject is DirectoryObject ||

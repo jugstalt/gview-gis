@@ -128,7 +128,7 @@ namespace gView.Web.Framework.Web.Authorization
 
                         _globalTokenCache[CacheKey] = token = new Token()
                         {
-                            AuthToken = Convert.ToBase64String(Encoding.UTF8.GetBytes($"{ this.Username }:{ this.Password }")),
+                            AuthToken = Convert.ToBase64String(Encoding.UTF8.GetBytes($"{this.Username}:{this.Password}")),
                             Expires = DateTime.Now.AddDays(365)
                         };
 
@@ -145,7 +145,7 @@ namespace gView.Web.Framework.Web.Authorization
                             {
                                 authServiceClient.DefaultRequestHeaders.Authorization =
                                     new System.Net.Http.Headers.AuthenticationHeaderValue("Basic",
-                                    Convert.ToBase64String(Encoding.UTF8.GetBytes($"{ this.Username }:{ this.Password }")));
+                                    Convert.ToBase64String(Encoding.UTF8.GetBytes($"{this.Username}:{this.Password}")));
                                 //authServiceClient.DefaultRequestHeaders.TryAddWithoutValidation("Content-Type", "application/x-www-form-urlencoded");
 
                                 var nvc = new List<KeyValuePair<string, string>>();
@@ -163,7 +163,7 @@ namespace gView.Web.Framework.Web.Authorization
 
                                         if (!String.IsNullOrEmpty(accessToken.error))
                                         {
-                                            throw new Exception(RemoveSecrets($"AccessToken POST request returns error: { accessToken.error } - { accessToken.error_description ?? String.Empty }"));
+                                            throw new Exception(RemoveSecrets($"AccessToken POST request returns error: {accessToken.error} - {accessToken.error_description ?? String.Empty}"));
                                         }
 
                                         _globalTokenCache[CacheKey] = token = new Token()
@@ -174,7 +174,7 @@ namespace gView.Web.Framework.Web.Authorization
                                     }
                                     else
                                     {
-                                        throw new Exception($"AccessToken POST request returns statuscode { httpResponseMessage.StatusCode }");
+                                        throw new Exception($"AccessToken POST request returns statuscode {httpResponseMessage.StatusCode}");
                                     }
                                 }
                             }
@@ -210,13 +210,13 @@ namespace gView.Web.Framework.Web.Authorization
             }
         }
 
-        private string CacheKey => $"{ this.AccessTokenTokenServiceUrl }:{ this.AuthType.ToString() }:{ this.Username }";
+        private string CacheKey => $"{this.AccessTokenTokenServiceUrl}:{this.AuthType.ToString()}:{this.Username}";
 
         private string RemoveSecrets(string msg)
         {
             if (!String.IsNullOrEmpty(Username))
             {
-                msg = msg.Replace(Username, $"{ Username.Substring(0, Math.Min(Username.Length, 2)) }******");
+                msg = msg.Replace(Username, $"{Username.Substring(0, Math.Min(Username.Length, 2))}******");
             }
 
             if (!String.IsNullOrEmpty(Password))
@@ -226,7 +226,7 @@ namespace gView.Web.Framework.Web.Authorization
 
             if (!String.IsNullOrEmpty(AccessTokenTokenServiceUrl))
             {
-                msg = msg.Replace(AccessTokenTokenServiceUrl, $"{ AccessTokenTokenServiceUrl.Substring(0, Math.Min(AccessTokenTokenServiceUrl.Length, 24)) }******");
+                msg = msg.Replace(AccessTokenTokenServiceUrl, $"{AccessTokenTokenServiceUrl.Substring(0, Math.Min(AccessTokenTokenServiceUrl.Length, 24))}******");
             }
 
             return msg;

@@ -15,7 +15,7 @@ namespace gView.Server
         public static void Main(string[] args)
         {
             try
-            {                
+            {
                 #region Init the global PluginManager
 
                 PlugInManager.Init();
@@ -72,7 +72,7 @@ namespace gView.Server
 
                 foreach (var url in urls)
                 {
-                    Console.WriteLine($"Exposing: { url }");
+                    Console.WriteLine($"Exposing: {url}");
                 }
             }
 

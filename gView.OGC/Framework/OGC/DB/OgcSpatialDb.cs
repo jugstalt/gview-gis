@@ -336,7 +336,7 @@ namespace gView.Framework.OGC.DB
             }
             catch (Exception ex)
             {
-                this.LastErrorMessage = $"Can't open dataset: { ex.Message }";
+                this.LastErrorMessage = $"Can't open dataset: {ex.Message}";
                 return false;
             }
         }
@@ -1181,7 +1181,7 @@ namespace gView.Framework.OGC.DB
 
             where = String.IsNullOrWhiteSpace(where) ?
                 filterWhereClause :
-                where + (String.IsNullOrWhiteSpace(filterWhereClause) ? "" : $" AND ({ filterWhereClause })");
+                where + (String.IsNullOrWhiteSpace(filterWhereClause) ? "" : $" AND ({filterWhereClause})");
 
             StringBuilder fieldNames = new StringBuilder();
             foreach (string fieldName in filter.SubFields.Split(' '))

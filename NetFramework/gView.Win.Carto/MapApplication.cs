@@ -674,7 +674,7 @@ namespace gView.Win.Carto
             {
                 if (map.HasErrorMessages)
                 {
-                    FormToolException.Show($"Loading Map '{ map.Name }'", String.Join(Environment.NewLine, map.ErrorMessages));
+                    FormToolException.Show($"Loading Map '{map.Name}'", String.Join(Environment.NewLine, map.ErrorMessages));
                 }
             }
 

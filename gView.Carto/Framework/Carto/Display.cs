@@ -1,5 +1,4 @@
-﻿using gView.Framework.Data;
-using gView.Framework.Data.Metadata;
+﻿using gView.Framework.Data.Metadata;
 using gView.Framework.Geometry;
 using gView.Framework.Symbology;
 using gView.Framework.system;

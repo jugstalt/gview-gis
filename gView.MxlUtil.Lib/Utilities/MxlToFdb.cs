@@ -123,8 +123,8 @@ namespace gView.MxlUtil.Lib.Utilities
                 foreach (var dataset in map.Datasets.ToArray())
                 {
                     Console.WriteLine();
-                    Console.WriteLine($"Dataset: { dataset.DatasetName }");
-                    Console.WriteLine($"         { dataset.GetType() }");
+                    Console.WriteLine($"Dataset: {dataset.DatasetName}");
+                    Console.WriteLine($"         {dataset.GetType()}");
                     Console.WriteLine("-------------------------------------------------------");
 
                     foreach (var dsElement in map.MapElements.Where(e => e.DatasetID == datasetId))
@@ -143,9 +143,9 @@ namespace gView.MxlUtil.Lib.Utilities
                         }
 
                         Console.WriteLine();
-                        Console.WriteLine($"FeatureLayer: { featureLayer.Title }");
-                        Console.WriteLine($"       Class: { dsElement.Class.Name }");
-                        Console.WriteLine($"              { dsElement.Class.GetType() }");
+                        Console.WriteLine($"FeatureLayer: {featureLayer.Title}");
+                        Console.WriteLine($"       Class: {dsElement.Class.Name}");
+                        Console.WriteLine($"              {dsElement.Class.GetType()}");
                         Console.WriteLine();
 
                         var sourceFc = dsElement.Class as IFeatureClass;
@@ -170,13 +170,13 @@ namespace gView.MxlUtil.Lib.Utilities
                             var count = await targetFc.CountFeatures();
                             if (count > 0)
                             {
-                                Console.Write($"Already exists in target fdb ({ count } features)");
+                                Console.Write($"Already exists in target fdb ({count} features)");
                             }
                             else
                             {
                                 if (!await targetDatabase.DeleteFeatureClass(targetFcName))
                                 {
-                                    throw new Exception($"Can't delete existing (empty) featureclass { targetFcName }");
+                                    throw new Exception($"Can't delete existing (empty) featureclass {targetFcName}");
                                 }
                             }
                         }
@@ -202,13 +202,13 @@ namespace gView.MxlUtil.Lib.Utilities
                                 })));
                             if (fcId <= 0)
                             {
-                                throw new Exception($"Can't create featureclass { targetFcName }: { targetDatabase.LastErrorMessage }");
+                                throw new Exception($"Can't create featureclass {targetFcName}: {targetDatabase.LastErrorMessage}");
                             }
 
                             targetFc = (await targetFeatureDataset.Element(targetFcName)).Class as IFeatureClass;
                             if (targetFc == null)
                             {
-                                throw new Exception($"Can't load target FeatureClass { targetFcName }");
+                                throw new Exception($"Can't load target FeatureClass {targetFcName}");
                             }
 
                             var copyFeatures = dontCopyFeatues == null ||
@@ -261,7 +261,7 @@ namespace gView.MxlUtil.Lib.Utilities
                                         {
                                             if (featureCursor == null)
                                             {
-                                                throw new Exception($"Can't query features from soure featureclass: { (sourceFc is IDebugging ? ((IDebugging)sourceFc).LastException?.Message : "") }");
+                                                throw new Exception($"Can't query features from soure featureclass: {(sourceFc is IDebugging ? ((IDebugging)sourceFc).LastException?.Message : "")}");
                                             }
 
                                             while ((feature = await featureCursor.NextFeature()) != null)
@@ -271,7 +271,7 @@ namespace gView.MxlUtil.Lib.Utilities
 
                                                 if (counter % 10000 == 0)
                                                 {
-                                                    Console.Write($"...{ counter }");
+                                                    Console.Write($"...{counter}");
                                                 }
                                             }
                                         }
@@ -280,7 +280,7 @@ namespace gView.MxlUtil.Lib.Utilities
 
                                         #region Write to target featureclass
 
-                                        Console.WriteLine($"...{ counter }");
+                                        Console.WriteLine($"...{counter}");
                                         Console.WriteLine("copy feature to target feature class");
                                         counter = 0;
 
@@ -318,7 +318,7 @@ namespace gView.MxlUtil.Lib.Utilities
                                         {
                                             if (featureCursor == null)
                                             {
-                                                throw new Exception($"Can't query features from soure featureclass: { (sourceFc is IDebugging ? ((IDebugging)sourceFc).LastException?.Message : "") }");
+                                                throw new Exception($"Can't query features from soure featureclass: {(sourceFc is IDebugging ? ((IDebugging)sourceFc).LastException?.Message : "")}");
                                             }
 
                                             while ((feature = await featureCursor.NextFeature()) != null)
@@ -357,7 +357,7 @@ namespace gView.MxlUtil.Lib.Utilities
             stream = new XmlStream("");
             stream.Save("MapDocument", doc);
 
-            Console.WriteLine($"Write: { outFile }");
+            Console.WriteLine($"Write: {outFile}");
             stream.WriteStream(outFile);
             Console.WriteLine("succeeded...");
         }
@@ -399,11 +399,11 @@ Optional arguments:
 
         private static async Task<bool> Store(IFeatureUpdater featureUpdater, IFeatureClass fc, List<IFeature> featureBag, int counter)
         {
-            Console.Write($"...{ counter }");
+            Console.Write($"...{counter}");
 
             if (!await featureUpdater.Insert(fc, featureBag))
             {
-                throw new Exception($"Unable to insert features: { featureUpdater.LastErrorMessage }");
+                throw new Exception($"Unable to insert features: {featureUpdater.LastErrorMessage}");
             }
 
             featureBag.Clear();
@@ -494,10 +494,10 @@ Optional arguments:
                         counter++;
                         if (counter % 10000 == 0)
                         {
-                            Console.Write($"...{ counter }");
+                            Console.Write($"...{counter}");
                         }
                     }
-                    Console.Write($"...{ counter }");
+                    Console.Write($"...{counter}");
                 }
             }
 

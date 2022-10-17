@@ -1,6 +1,4 @@
-﻿using gView.Framework.system;
-using gView.Interoperability.GeoServices.Rest.Reflection;
-using Newtonsoft.Json;
+﻿using gView.Interoperability.GeoServices.Rest.Reflection;
 
 namespace gView.Interoperability.GeoServices.Rest.Json
 {

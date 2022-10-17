@@ -212,8 +212,8 @@ namespace gView.Interoperability.GeoServices.Request
                         }
                         else
                         {
-                            string serviceMapName = serviceMap.Name.Replace("/", "_").Replace(",", "_"); 
-                            string fileName = 
+                            string serviceMapName = serviceMap.Name.Replace("/", "_").Replace(",", "_");
+                            string fileName =
                                $"{serviceMapName}_{System.Guid.NewGuid().ToString("N")}.{iFormat.ToString().ToLower()}";
 
                             string path = ($"{_mapServer.OutputPath}/{fileName}").ToPlatformPath();
@@ -267,7 +267,7 @@ namespace gView.Interoperability.GeoServices.Request
                     Error = new JsonError.ErrorDef()
                     {
                         Code = ex is GeoServicesException ? ((GeoServicesException)ex).ErrorCode : -1,
-                        Message = ex.Message + (ex is NullReferenceException ? $" Stacktrace: { ex.StackTrace }" : "")
+                        Message = ex.Message + (ex is NullReferenceException ? $" Stacktrace: {ex.StackTrace}" : "")
                     }
                 };
             }
@@ -346,7 +346,7 @@ namespace gView.Interoperability.GeoServices.Request
                 }
                 catch (Exception ex)
                 {
-                    throw new Exception($"Can't parse layer definitions: { ex.Message }");
+                    throw new Exception($"Can't parse layer definitions: {ex.Message}");
                 }
 
                 #endregion
@@ -533,7 +533,7 @@ namespace gView.Interoperability.GeoServices.Request
                             ((SpatialFilter)filter).Geometry = filterGeometry;
                             ((SpatialFilter)filter).FilterSpatialReference =
                                 SRef(query.InSRef) ??
-                                (filterGeometry.Srs > 0 ? SpatialReference.FromID($"epsg:{ filterGeometry.Srs }") : null);
+                                (filterGeometry.Srs > 0 ? SpatialReference.FromID($"epsg:{filterGeometry.Srs}") : null);
                         }
                         else if (!String.IsNullOrWhiteSpace(query.ObjectIds))
                         {
@@ -913,7 +913,7 @@ namespace gView.Interoperability.GeoServices.Request
                         }
                         catch (Exception ex)
                         {
-                            throw new Exception($"Can't parse layer definitions: { ex.Message }");
+                            throw new Exception($"Can't parse layer definitions: {ex.Message}");
                         }
 
                         #endregion

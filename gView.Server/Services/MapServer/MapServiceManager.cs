@@ -92,7 +92,7 @@ namespace gView.Server.Services.MapServer
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError($"Service { mapName }: loadConfig - { mapFileInfo.Name  }: { ex.Message }");
+                    _logger.LogError($"Service {mapName}: loadConfig - {mapFileInfo.Name}: {ex.Message}");
                 }
             }
 

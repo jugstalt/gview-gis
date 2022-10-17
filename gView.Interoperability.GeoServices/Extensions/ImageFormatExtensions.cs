@@ -34,7 +34,7 @@ namespace gView.Interoperability.GeoServices.Extensions
                     return GraphicsEngine.ImageFormat.Pkm;
                 case ImageFormat.wbmp:
                     return GraphicsEngine.ImageFormat.Wbmp;
-                 default:
+                default:
                     throw new System.Exception($"Unknown GraphicsEngine ImageFormat {imageFormat}");
             }
         }

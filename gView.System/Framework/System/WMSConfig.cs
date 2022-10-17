@@ -1,5 +1,3 @@
-using System;
-
 namespace gView.Framework.system
 {
     public class WMSConfig

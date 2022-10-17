@@ -152,7 +152,7 @@ namespace gView.DataSources.GeoJson
                 case GeometryType.Polygon:
                     return GetFeatures<IPolygon>();
                 default:
-                    throw new Exception($"geometry type { geometryType } not implemented with GeoJsonSource");
+                    throw new Exception($"geometry type {geometryType} not implemented with GeoJsonSource");
             }
         }
     }

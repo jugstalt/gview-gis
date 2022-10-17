@@ -122,7 +122,7 @@ namespace gView.Framework.UI.Dialogs
 
             int iWidth = (int)((float)_display.iWidth * 96f / (float)_display.dpi);
             int iHeight = (int)((float)_display.iHeight * 96f / (float)_display.dpi);
-            txtCurrentSize.Text = $"{ iWidth },{ iHeight }";
+            txtCurrentSize.Text = $"{iWidth},{iHeight}";
 
             #endregion
 
@@ -388,7 +388,7 @@ namespace gView.Framework.UI.Dialogs
                     });
                     gridRow.Cells.Add(new DataGridViewTextBoxCell()
                     {
-                        Value = $"{ Math.Round(data.Length / 1024.0, 2).ToString() }kb"
+                        Value = $"{Math.Round(data.Length / 1024.0, 2).ToString()}kb"
                     });
                     gridRow.Cells.Add(new DataGridViewButtonCell()
                     {
@@ -409,7 +409,7 @@ namespace gView.Framework.UI.Dialogs
 
                     string resourceName = row.Cells[0].Value.ToString();
 
-                    if (MessageBox.Show($"Remove resouorce { resourceName } from map?", "Remove", MessageBoxButtons.YesNo) == DialogResult.Yes)
+                    if (MessageBox.Show($"Remove resouorce {resourceName} from map?", "Remove", MessageBoxButtons.YesNo) == DialogResult.Yes)
                     {
                         _map.ResourceContainer[resourceName] = null;
                         gridResources.Rows.Remove(row);

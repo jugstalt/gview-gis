@@ -200,7 +200,7 @@ namespace gView.DataSources.Fdb.ImageDataset
                 imageSpace = "database";
             }
 
-            DataTable tab = await _conn.Select("*", DataProvider.ToDbTableName(_conn.dbTypeString, "FC_" + _dsname + "_IMAGE_POLYGONS"), $"{ DataProvider.ToDbFieldName(_conn.dbTypeString, "FDB_OID") }={ image_id }", ""/*, ((bitmapOnly) ? false : true)*/);
+            DataTable tab = await _conn.Select("*", DataProvider.ToDbTableName(_conn.dbTypeString, "FC_" + _dsname + "_IMAGE_POLYGONS"), $"{DataProvider.ToDbFieldName(_conn.dbTypeString, "FDB_OID")}={image_id}", ""/*, ((bitmapOnly) ? false : true)*/);
             if (tab == null)
             {
                 _errMsg = _conn.errorMessage;
@@ -219,7 +219,7 @@ namespace gView.DataSources.Fdb.ImageDataset
             if (!bitmapOnly)
             {
                 row.Delete();
-                if (!_conn.ExecuteNoneQuery($"DELETE FROM { DataProvider.ToDbTableName(_conn.dbTypeString, $"FC_{ _dsname }_IMAGE_POLYGONS") } WHERE { DataProvider.ToDbFieldName(_conn.dbTypeString, "FDB_OID") }={ image_id }"))
+                if (!_conn.ExecuteNoneQuery($"DELETE FROM {DataProvider.ToDbTableName(_conn.dbTypeString, $"FC_{_dsname}_IMAGE_POLYGONS")} WHERE {DataProvider.ToDbFieldName(_conn.dbTypeString, "FDB_OID")}={image_id}"))
                 //if (!_conn.Update(tab))
                 {
                     _errMsg = _conn.errorMessage;
@@ -235,7 +235,7 @@ namespace gView.DataSources.Fdb.ImageDataset
             {
                 case "":
                 case "database":
-                    if (!_conn.ExecuteNoneQuery($"DELETE FROM { DataProvider.ToDbTableName(_conn.dbTypeString, $"{ _dsname }_IMAGE_DATA") } WHERE { DataProvider.ToDbFieldName(_conn.dbTypeString, "IMAGE_ID") }={ image_id }"))
+                    if (!_conn.ExecuteNoneQuery($"DELETE FROM {DataProvider.ToDbTableName(_conn.dbTypeString, $"{_dsname}_IMAGE_DATA")} WHERE {DataProvider.ToDbFieldName(_conn.dbTypeString, "IMAGE_ID")}={image_id}"))
                     {
                         _errMsg = _conn.errorMessage;
                         return false;
@@ -289,7 +289,7 @@ namespace gView.DataSources.Fdb.ImageDataset
                 return -1;
             }
 
-            object ID = await _conn.QuerySingleField($"SELECT { DataProvider.ToDbFieldName(_conn.dbTypeString, "FDB_OID") } FROM { DataProvider.ToDbTableName(_conn.dbTypeString, "FC_" + _dsname + "_IMAGE_POLYGONS") } WHERE { DataProvider.ToDbFieldName(_conn.dbTypeString, "PATH") }='" + image_path + "'", "FDB_OID");
+            object ID = await _conn.QuerySingleField($"SELECT {DataProvider.ToDbFieldName(_conn.dbTypeString, "FDB_OID")} FROM {DataProvider.ToDbTableName(_conn.dbTypeString, "FC_" + _dsname + "_IMAGE_POLYGONS")} WHERE {DataProvider.ToDbFieldName(_conn.dbTypeString, "PATH")}='" + image_path + "'", "FDB_OID");
             if (ID == null)
             {
                 return -1;

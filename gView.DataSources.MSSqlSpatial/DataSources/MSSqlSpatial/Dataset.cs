@@ -354,7 +354,7 @@ namespace gView.DataSources.MSSqlSpatial
 
             if (!String.IsNullOrEmpty(where))
             {
-                command.CommandText += " WHERE " + where + ((filterWhereClause != "") ? $" AND ({ filterWhereClause })" : "");
+                command.CommandText += " WHERE " + where + ((filterWhereClause != "") ? $" AND ({filterWhereClause})" : "");
             }
             else if (!String.IsNullOrEmpty(filterWhereClause))
             {
@@ -999,7 +999,7 @@ namespace gView.DataSources.MSSqlSpatial
 
             if (!String.IsNullOrEmpty(where))
             {
-                command.CommandText += " WHERE " + where + ((filterWhereClause != "") ? $" AND ({ filterWhereClause })" : "");
+                command.CommandText += " WHERE " + where + ((filterWhereClause != "") ? $" AND ({filterWhereClause})" : "");
             }
             else if (!String.IsNullOrEmpty(filterWhereClause))
             {

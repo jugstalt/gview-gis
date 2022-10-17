@@ -23,8 +23,8 @@ namespace gView.Framework.IO
 
             if (!String.IsNullOrEmpty(uri.UserInfo))
             {
-                requestMessage.Headers.Add("Authorization", $"Basic { Convert.ToBase64String(Encoding.UTF8.GetBytes(uri.UserInfo)) }");
-                uri = new Uri($"{ uri.Scheme }://{ uri.Authority }{ uri.PathAndQuery }");
+                requestMessage.Headers.Add("Authorization", $"Basic {Convert.ToBase64String(Encoding.UTF8.GetBytes(uri.UserInfo))}");
+                uri = new Uri($"{uri.Scheme}://{uri.Authority}{uri.PathAndQuery}");
             }
 
             requestMessage.RequestUri = uri;
@@ -62,13 +62,13 @@ namespace gView.Framework.IO
 
                         if (!response.IsSuccessStatusCode)
                         {
-                            throw new Exception($"SaveOrUpload: Upload status code: { response.StatusCode }");
+                            throw new Exception($"SaveOrUpload: Upload status code: {response.StatusCode}");
                         }
                     }
                 }
                 catch (Exception ex)
                 {
-                    throw new Exception($"SaveOrUpload: { ex.Message }", ex);
+                    throw new Exception($"SaveOrUpload: {ex.Message}", ex);
                 }
 
                 return file_bytes.Length;

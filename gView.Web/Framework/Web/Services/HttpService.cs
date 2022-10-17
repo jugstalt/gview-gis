@@ -84,7 +84,7 @@ namespace gView.Framework.Web.Services
                     }
                     else
                     {
-                        throw new HttpServiceException($"Request returned Statuscode { responseMessage.StatusCode }");
+                        throw new HttpServiceException($"Request returned Statuscode {responseMessage.StatusCode}");
                     }
                 }
                 catch /*(TaskCanceledException ex)*/
@@ -148,7 +148,7 @@ namespace gView.Framework.Web.Services
                     }
                     else
                     {
-                        throw new HttpServiceException($"Request returned Statuscode { responseMessage.StatusCode }");
+                        throw new HttpServiceException($"Request returned Statuscode {responseMessage.StatusCode}");
                     }
                 }
                 catch /*(TaskCanceledException ex)*/
@@ -200,7 +200,7 @@ namespace gView.Framework.Web.Services
                     }
                     else
                     {
-                        throw new HttpServiceException($"Request returned Statuscode { responseMessage.StatusCode }");
+                        throw new HttpServiceException($"Request returned Statuscode {responseMessage.StatusCode}");
                     }
                 }
                 catch /*(TaskCanceledException ex)*/
@@ -250,7 +250,7 @@ namespace gView.Framework.Web.Services
                     }
                     else
                     {
-                        throw new HttpServiceException($"Request returned Statuscode { responseMessage.StatusCode }");
+                        throw new HttpServiceException($"Request returned Statuscode {responseMessage.StatusCode}");
                     }
                 }
                 catch /*(TaskCanceledException ex)*/
@@ -300,7 +300,7 @@ namespace gView.Framework.Web.Services
                     }
                     else
                     {
-                        throw new HttpServiceException($"Request returned Statuscode { responseMessage.StatusCode }");
+                        throw new HttpServiceException($"Request returned Statuscode {responseMessage.StatusCode}");
                     }
                 }
                 catch /*(TaskCanceledException ex)*/
@@ -443,7 +443,7 @@ namespace gView.Framework.Web.Services
         {
             if (url.StartsWith("//"))
             {
-                url = $"{ (_options.ForceHttps ? "https:" : "http:") }{ url }";
+                url = $"{(_options.ForceHttps ? "https:" : "http:")}{url}";
             }
 
             return url;

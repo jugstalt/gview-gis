@@ -140,20 +140,20 @@ namespace gView.Cmd.FillElasticSearch
 
                     if (!searchContext.CreateIndex<Item>())
                     {
-                        throw new Exception($"Can't create elasticsearch index { importConfig.Connection.DefaultIndex }: { searchContext.LastErrorMessage }");
+                        throw new Exception($"Can't create elasticsearch index {importConfig.Connection.DefaultIndex}: {searchContext.LastErrorMessage}");
                     }
                     if (!searchContext.Map<Item>())
                     {
-                        throw new Exception($"Can't map item in elasticsearch index { importConfig.Connection.DefaultIndex }: { searchContext.LastErrorMessage }");
+                        throw new Exception($"Can't map item in elasticsearch index {importConfig.Connection.DefaultIndex}: {searchContext.LastErrorMessage}");
                     }
                     if (!searchContext.CreateIndex<Meta>(importConfig.Connection.MetaIndex))
                     {
-                        throw new Exception($"Can't create elasticsearch index { importConfig.Connection.MetaIndex }: { searchContext.LastErrorMessage }");
+                        throw new Exception($"Can't create elasticsearch index {importConfig.Connection.MetaIndex}: {searchContext.LastErrorMessage}");
                     }
 
                     if (!searchContext.Map<Meta>(importConfig.Connection.MetaIndex))
                     {
-                        throw new Exception($"Can't map item in elasticsearch index { importConfig.Connection.MetaIndex }: { searchContext.LastErrorMessage }");
+                        throw new Exception($"Can't map item in elasticsearch index {importConfig.Connection.MetaIndex}: {searchContext.LastErrorMessage}");
                     }
 
                     ISpatialReference sRefTarget = SpatialReference.FromID("epsg:4326");
@@ -199,7 +199,7 @@ namespace gView.Cmd.FillElasticSearch
                                 };
                                 if (!searchContext.Index<Meta>(meta, importConfig.Connection.MetaIndex))
                                 {
-                                    throw new Exception($"Can't index meta item in elasticsearch index { importConfig.Connection.MetaIndex }");
+                                    throw new Exception($"Can't index meta item in elasticsearch index {importConfig.Connection.MetaIndex}");
                                 }
                             }
 
@@ -254,7 +254,7 @@ namespace gView.Cmd.FillElasticSearch
                                     {
                                         if (!searchContext.IndexManyPro<Item>(items.ToArray()))
                                         {
-                                            throw new Exception($"Error on indexing { items.Count } items on elasticsearch index { importConfig.Connection.DefaultIndex }: { searchContext.LastErrorMessage }");
+                                            throw new Exception($"Error on indexing {items.Count} items on elasticsearch index {importConfig.Connection.DefaultIndex}: {searchContext.LastErrorMessage}");
                                         }
                                         items.Clear();
 
@@ -266,7 +266,7 @@ namespace gView.Cmd.FillElasticSearch
                                 {
                                     if (!searchContext.IndexManyPro<Item>(items.ToArray()))
                                     {
-                                        throw new Exception($"Error on indexing { items.Count } items on elasticsearch index { importConfig.Connection.DefaultIndex }: { searchContext.LastErrorMessage }");
+                                        throw new Exception($"Error on indexing {items.Count} items on elasticsearch index {importConfig.Connection.DefaultIndex}: {searchContext.LastErrorMessage}");
                                     }
                                     Console.WriteLine(count + "...finish");
                                 }
@@ -337,7 +337,7 @@ namespace gView.Cmd.FillElasticSearch
 
                     if (searchContext.RemoveMany<Item>(items, indexName))
                     {
-                        Console.WriteLine($"Successfully deleted { items.Count() } items: { searchContext.LastErrorMessage }");
+                        Console.WriteLine($"Successfully deleted {items.Count()} items: {searchContext.LastErrorMessage}");
                     }
 
                     System.Threading.Thread.Sleep(1000);

@@ -57,15 +57,15 @@ namespace gView.Framework.Data
 
             if (filter.ToLower().Contains(" or "))
             {
-                filter = $"({ filter })";
+                filter = $"({filter})";
             }
 
             if (appendFilter.ToLower().Contains(" or "))
             {
-                appendFilter = $"({ appendFilter })";
+                appendFilter = $"({appendFilter})";
             }
 
-            return $"{ filter } and { appendFilter }";
+            return $"{filter} and {appendFilter}";
         }
 
         static public IQueryFilter AppendWhereClause(this IQueryFilter queryFilter, string appendFilter)

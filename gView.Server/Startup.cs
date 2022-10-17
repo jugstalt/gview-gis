@@ -107,9 +107,9 @@ namespace gView.Server
                         config.TaskQueue_MaxThreads = Math.Max(1, int.Parse(Configuration["task-queue:max-parallel-tasks"]));
                         config.TaskQueue_QueueLength = Math.Max(10, int.Parse(Configuration["task-queue:max-queue-length"]));
 
-                        config.ServicesPath = $"{ Configuration["services-folder"] }/services";
-                        config.LoginManagerRootPath = $"{ Configuration["services-folder"] }/_login";
-                        config.LoggingRootPath = $"{ Configuration["services-folder"] }/log";
+                        config.ServicesPath = $"{Configuration["services-folder"]}/services";
+                        config.LoginManagerRootPath = $"{Configuration["services-folder"]}/_login";
+                        config.LoggingRootPath = $"{Configuration["services-folder"]}/log";
 
                         config.LogServiceErrors = Configuration["Logging:LogServiceErrors"]?.ToLower() != "false";
                         config.LogServiceRequests = Configuration["Logging:LogServiceRequests"]?.ToLower() == "true";

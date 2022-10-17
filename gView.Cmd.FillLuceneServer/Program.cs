@@ -30,7 +30,7 @@ namespace gView.Cmd.FillLuceneServer
                 string basicAuthUser = String.Empty, basicAuthPassword = String.Empty;
 
                 int packageSize = 50000;
-                
+
                 //bool replace = false;
 
                 for (int i = 0; i < args.Length; i++)
@@ -144,7 +144,7 @@ namespace gView.Cmd.FillLuceneServer
                     var httpClient = new HttpClient(handler: httpClientHandler, disposeHandler: true);
                     if (!String.IsNullOrEmpty(basicAuthUser))
                     {
-                        var byteArray = Encoding.ASCII.GetBytes($"{ basicAuthUser }:{ basicAuthPassword }");
+                        var byteArray = Encoding.ASCII.GetBytes($"{basicAuthUser}:{basicAuthPassword}");
                         httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Basic", Convert.ToBase64String(byteArray));
                     }
 
@@ -160,12 +160,12 @@ namespace gView.Cmd.FillLuceneServer
 
                         if (!await luceneServerClient.CreateIndexAsync())
                         {
-                            throw new Exception($"Can't create elasticsearch index { importConfig.Connection.DefaultIndex }");
+                            throw new Exception($"Can't create elasticsearch index {importConfig.Connection.DefaultIndex}");
                         }
                         if (!await luceneServerClient.MapAsync(new SearchIndexMapping(importConfig.Connection.PhoneticAlgorithm,
                                                                                       importConfig.Connection.EncodeCharacters)))
                         {
-                            throw new Exception($"Can't map item in elasticsearch index { importConfig.Connection.DefaultIndex }");
+                            throw new Exception($"Can't map item in elasticsearch index {importConfig.Connection.DefaultIndex}");
                         }
 
                         ISpatialReference sRefTarget = SpatialReference.FromID("epsg:4326");
@@ -211,7 +211,7 @@ namespace gView.Cmd.FillLuceneServer
                                     };
                                     if (!await luceneServerClient.AddCustomMetadataAsync(metaId, JsonConvert.SerializeObject(meta)))
                                     {
-                                        throw new Exception($"Can't index meta item in elasticsearch index { importConfig.Connection.MetaIndex }");
+                                        throw new Exception($"Can't index meta item in elasticsearch index {importConfig.Connection.MetaIndex}");
                                     }
                                 }
 
@@ -266,7 +266,7 @@ namespace gView.Cmd.FillLuceneServer
                                         {
                                             if (!await luceneServerClient.IndexDocumentsAsync(items.ToArray()))
                                             {
-                                                throw new Exception($"Error on indexing { items.Count } items on elasticsearch index { importConfig.Connection.DefaultIndex }");
+                                                throw new Exception($"Error on indexing {items.Count} items on elasticsearch index {importConfig.Connection.DefaultIndex}");
                                             }
                                             items.Clear();
 
@@ -278,7 +278,7 @@ namespace gView.Cmd.FillLuceneServer
                                     {
                                         if (!await luceneServerClient.IndexDocumentsAsync(items.ToArray()))
                                         {
-                                            throw new Exception($"Error on indexing { items.Count } items on elasticsearch index { importConfig.Connection.DefaultIndex }");
+                                            throw new Exception($"Error on indexing {items.Count} items on elasticsearch index {importConfig.Connection.DefaultIndex}");
                                         }
                                         Console.WriteLine(count + "...finish");
                                     }

@@ -40,7 +40,7 @@ namespace gView.Cmd.MxlInfo
                         continue;
                     }
 
-                    Console.WriteLine($"Map: { map.Name }");
+                    Console.WriteLine($"Map: {map.Name}");
                     Console.WriteLine("==========================================================");
 
                     var featureLayers = map.TOC.Layers.Where(l => l is IFeatureLayer)
@@ -54,8 +54,8 @@ namespace gView.Cmd.MxlInfo
                         int datasetID = 0;
                         foreach (var dataset in map.Datasets)
                         {
-                            Console.WriteLine($"Dataset: { dataset.DatasetName }");
-                            Console.WriteLine($"         { dataset.GetType().ToString() }");
+                            Console.WriteLine($"Dataset: {dataset.DatasetName}");
+                            Console.WriteLine($"         {dataset.GetType().ToString()}");
                             Console.WriteLine("-------------------------------------------------------");
 
                             foreach (var dsElement in map.MapElements.Where(e => e.DatasetID == datasetID))
@@ -73,9 +73,9 @@ namespace gView.Cmd.MxlInfo
                                     continue;
                                 }
 
-                                Console.WriteLine($"FeatureLayer: { featureLayer.Title }");
-                                Console.WriteLine($"       Class: { dsElement.Class.Name }");
-                                Console.WriteLine($"              { dsElement.Class.GetType().ToString() }");
+                                Console.WriteLine($"FeatureLayer: {featureLayer.Title}");
+                                Console.WriteLine($"       Class: {dsElement.Class.Name}");
+                                Console.WriteLine($"              {dsElement.Class.GetType().ToString()}");
                             }
                         }
                     }

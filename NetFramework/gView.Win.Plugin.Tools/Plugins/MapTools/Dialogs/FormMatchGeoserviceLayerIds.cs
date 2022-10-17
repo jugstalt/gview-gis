@@ -216,11 +216,11 @@ namespace gView.Win.Plugin.Tools.Plugins.MapTools.Dialogs
                 {
                     if (layer.Type == "Annotation Layer" || layer.Type == "Annotation SubLayer")
                     {
-                        name = $"{ layer.Name }/{ layer.Name } ({ name })";
+                        name = $"{layer.Name}/{layer.Name} ({name})";
                     }
                     else
                     {
-                        name = $"{ layer.Name }/{ name }";
+                        name = $"{layer.Name}/{name}";
                     }
                 }
             }

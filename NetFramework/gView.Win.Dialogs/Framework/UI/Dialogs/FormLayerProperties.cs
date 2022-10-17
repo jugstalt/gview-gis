@@ -2163,7 +2163,7 @@ namespace gView.Framework.UI.Dialogs
 
             public override string ToString()
             {
-                return $"{ this.CompositionMode.ToString() }{ ((int)this.CompositionMode == 0 ? " (default)" : "") }";
+                return $"{this.CompositionMode.ToString()}{((int)this.CompositionMode == 0 ? " (default)" : "")}";
             }
         }
 

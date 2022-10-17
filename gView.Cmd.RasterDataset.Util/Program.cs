@@ -315,7 +315,7 @@ namespace gView.Cmd.RasterDataset.Util
 
                 if (ProgressCounter % 100 == 0)
                 {
-                    Console.WriteLine($"... { ProgressCounter }");
+                    Console.WriteLine($"... {ProgressCounter}");
                 }
             };
 

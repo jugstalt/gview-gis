@@ -115,7 +115,7 @@ namespace gView.DataSources.VectorTileCache
             }
             catch (Exception ex)
             {
-                _dataset.LastErrorMessage = $"{ ex.Message } at \n{ ex.StackTrace }";
+                _dataset.LastErrorMessage = $"{ex.Message} at \n{ex.StackTrace}";
             }
         }
 
@@ -153,7 +153,7 @@ namespace gView.DataSources.VectorTileCache
 
         private const string LocalCachePath = @"C:\temp\vtc";
 
-        private string LocalStorageTilePath(int level, int col, int row) => $"{ LocalCachePath }/{ level }/{ col }/{ row }.mvt";
+        private string LocalStorageTilePath(int level, int col, int row) => $"{LocalCachePath}/{level}/{col}/{row}.mvt";
 
         private void StoreToLocalcache(int level, int col, int row, byte[] data)
         {

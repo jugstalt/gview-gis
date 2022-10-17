@@ -25,7 +25,7 @@ namespace gView.Win.DataSources.GeoJson.UI
                 var waConnectionString = webAuthControl.ConnectionString;
                 if (!String.IsNullOrEmpty(waConnectionString))
                 {
-                    sb.Append($";{ waConnectionString }");
+                    sb.Append($";{waConnectionString}");
                 }
 
                 return sb.ToString();

@@ -26,7 +26,7 @@ namespace gView.DataSources.VectorTileCache
 
             if (layer == null)
             {
-                throw new Exception($"layer { name } is not included in tile cache capabilities");
+                throw new Exception($"layer {name} is not included in tile cache capabilities");
             }
 
             if (dataset.Capabilities.Bounds != null && dataset.Capabilities.Bounds.Length == 4)

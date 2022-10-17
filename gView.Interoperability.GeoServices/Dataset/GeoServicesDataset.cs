@@ -303,7 +303,7 @@ namespace gView.Interoperability.GeoServices.Dataset
                     try
                     {
                         result = await _http.PostFormUrlEncodedStringAsync(url.UrlAppendParameters(tokenParameter),
-                                                                              $"{ postData }{ tokenParameter }");
+                                                                              $"{postData}{tokenParameter}");
 
                         //result = Encoding.UTF8.GetString(await WebFunctions.DownloadRawAsync(url.UrlAppendParameters(tokenParameter), 
                         //                                                                     postData == null ? null : Encoding.UTF8.GetBytes(postData),

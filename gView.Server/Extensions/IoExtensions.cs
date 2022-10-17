@@ -22,7 +22,7 @@ namespace gView.Server.Extensions
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"Warnung: Can't create directory { directoryPath }");
+                    Console.WriteLine($"Warnung: Can't create directory {directoryPath}");
                     Console.WriteLine(ex.Message);
 
                     return false;
@@ -53,7 +53,7 @@ namespace gView.Server.Extensions
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"Warnung: Can't delete files form directory { directoryPath }");
+                    Console.WriteLine($"Warnung: Can't delete files form directory {directoryPath}");
                     Console.WriteLine(ex.Message);
 
                     return false;
@@ -75,7 +75,7 @@ namespace gView.Server.Extensions
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Warnung: Can't delete file { filePath }");
+                Console.WriteLine($"Warnung: Can't delete file {filePath}");
                 Console.WriteLine(ex.Message);
 
                 return false;

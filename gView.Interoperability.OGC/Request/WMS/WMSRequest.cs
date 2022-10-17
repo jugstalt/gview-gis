@@ -410,7 +410,7 @@ namespace gView.Interoperability.OGC
                         #region GetFeatureInfo
 
                         List<string> gfiFormats = new List<string>(new string[] { "text/plain", "text/html", "text/xml", "application/vnd.ogc.gml", "application/json" });
-                        DirectoryInfo di = new DirectoryInfo($"{ _mapServer.EtcPath }/wms/getfeatureinfo/xsl");
+                        DirectoryInfo di = new DirectoryInfo($"{_mapServer.EtcPath}/wms/getfeatureinfo/xsl");
                         if (di.Exists)
                         {
                             foreach (FileInfo fi in di.GetFiles("*.xsl"))
@@ -1233,7 +1233,7 @@ namespace gView.Interoperability.OGC
                     string output = String.Empty;
                     try
                     {
-                        output = this.TransformXML(xml.ToString(), $"{ _mapServer.EtcPath }/wms/getfeatureinfo/{ formatXsl }");
+                        output = this.TransformXML(xml.ToString(), $"{_mapServer.EtcPath}/wms/getfeatureinfo/{formatXsl}");
 
                         /*
                         var xslTrans = new XslCompiledTransform();

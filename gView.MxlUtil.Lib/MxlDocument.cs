@@ -5,7 +5,6 @@ using gView.Framework.IO;
 using gView.Framework.system;
 using gView.Framework.UI;
 using gView.GraphicsEngine;
-using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 

@@ -77,7 +77,7 @@ namespace gView.Interoperability.GeoServices.Dataset
 
         public override Task<IFeatureCursor> GetFeatures(IQueryFilter filter)
         {
-            string queryUrl = $"{ _dataaset.ServiceUrl() }/{ this.ID }/query?f=json";
+            string queryUrl = $"{_dataaset.ServiceUrl()}/{this.ID}/query?f=json";
 
             string geometryType = String.Empty, geometry = String.Empty;
             int outSrefId = (filter.FeatureSpatialReference != null) ? filter.FeatureSpatialReference.EpsgCode : 0,
@@ -126,10 +126,10 @@ namespace gView.Interoperability.GeoServices.Dataset
             //string orderBy = this.IDFieldName;
 
             var postBodyData = new StringBuilder();
-            postBodyData.Append($"&geometry={ geometry }&geometryType={ geometryType }&spatialRel=esriSpatialRelIntersects&relationParam=&objectIds=");
-            postBodyData.Append($"&time=&maxAllowableOffset=&outFields={ separatedSubFieldsString }&resultRecordCount={ featureLimit }&f=pjson");
+            postBodyData.Append($"&geometry={geometry}&geometryType={geometryType}&spatialRel=esriSpatialRelIntersects&relationParam=&objectIds=");
+            postBodyData.Append($"&time=&maxAllowableOffset=&outFields={separatedSubFieldsString}&resultRecordCount={featureLimit}&f=pjson");
 
-            postBodyData.Append($"&returnCountOnly=false&returnIdsOnly=false&returnGeometry={ true }");
+            postBodyData.Append($"&returnCountOnly=false&returnIdsOnly=false&returnGeometry={true}");
 
             return Task.FromResult<IFeatureCursor>(
                 new GeoServicesFeatureCursor(_dataaset, this, queryUrl, postBodyData.ToString(), where));

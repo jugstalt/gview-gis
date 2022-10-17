@@ -33,14 +33,14 @@ namespace gView.Interoperability.GeoServices.Dataset
                     string tokenServiceUrl = serviceUrl.Substring(0, pos) + "/tokens/generateToken";
 
                     //string tokenParams = $"request=gettoken&username={ user }&password={ password.UrlEncodePassword() }&expiration={ RequestTokenCache.TicketExpiration }&f=json";
-                    string tokenParams = $"request=gettoken&username={ user }&password={ password.UrlEncodePassword() }&f=json";
+                    string tokenParams = $"request=gettoken&username={user}&password={password.UrlEncodePassword()}&f=json";
 
                     string tokenResponse = String.Empty;
                     while (true)
                     {
                         try
                         {
-                            tokenResponse = WebFunctions.HttpSendRequest($"{ tokenServiceUrl }?{ tokenParams }");
+                            tokenResponse = WebFunctions.HttpSendRequest($"{tokenServiceUrl}?{tokenParams}");
                             break;
                         }
                         catch (WebException we)
@@ -56,7 +56,7 @@ namespace gView.Interoperability.GeoServices.Dataset
                     if (tokenResponse.Contains("\"error\":"))
                     {
                         JsonError error = JsonConvert.DeserializeObject<JsonError>(tokenResponse);
-                        throw new Exception($"GetToken-Error:{ error.Error?.Code }\n{ error.Error?.Message }\n{ error.Error?.Details?.ToString() }");
+                        throw new Exception($"GetToken-Error:{error.Error?.Code}\n{error.Error?.Message}\n{error.Error?.Details?.ToString()}");
                     }
                     else
                     {

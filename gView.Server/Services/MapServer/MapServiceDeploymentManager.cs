@@ -160,7 +160,7 @@ namespace gView.Server.Services.MapServer
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Map {name}: LoadConfig - { ex.Message }");
+                _logger.LogError($"Map {name}: LoadConfig - {ex.Message}");
                 _mapServerService?.Instance?.LogAsync(name, "LoadMap.Exception", loggingMethod.error, ex.Message);
             }
             finally
@@ -169,7 +169,7 @@ namespace gView.Server.Services.MapServer
                 {
                     foreach (var errorMessage in map.ErrorMessages)
                     {
-                        _logger.LogWarning($"{ map.Name }: LoadMap - { errorMessage} ");
+                        _logger.LogWarning($"{map.Name}: LoadMap - {errorMessage} ");
                         _mapServerService?.Instance?.LogAsync(map.Name, "LoadMap.MapErrors", loggingMethod.error, errorMessage);
                     }
                 }
@@ -275,11 +275,11 @@ namespace gView.Server.Services.MapServer
                 {
                     if (map.LayerDefaultSpatialReference != null)
                     {
-                        errors.Append($"Warning: { featureLayer.Title } has no spatial reference. Map default '{ map.LayerDefaultSpatialReference.EpsgCode }' will used for this layer." + Environment.NewLine);
+                        errors.Append($"Warning: {featureLayer.Title} has no spatial reference. Map default '{map.LayerDefaultSpatialReference.EpsgCode}' will used for this layer." + Environment.NewLine);
                     }
                     else
                     {
-                        errors.Append($"Error: { featureLayer.Title } has no spatial reference. Fix this or at least set a default spatial reference for this map in the carto app" + Environment.NewLine);
+                        errors.Append($"Error: {featureLayer.Title} has no spatial reference. Fix this or at least set a default spatial reference for this map in the carto app" + Environment.NewLine);
                     }
                 }
             }
@@ -363,7 +363,7 @@ namespace gView.Server.Services.MapServer
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Map { mapDocument?.Maps?.First()?.Name }: LoadConfig - { ex.Message }");
+                _logger.LogError($"Map {mapDocument?.Maps?.First()?.Name}: LoadConfig - {ex.Message}");
             }
         }
 
@@ -393,7 +393,7 @@ namespace gView.Server.Services.MapServer
             }
             catch (Exception ex)
             {
-                _logger.LogError($" {mapName }: RemoveConfig - { ex.Message }");
+                _logger.LogError($" {mapName}: RemoveConfig - {ex.Message}");
                 return false;
             }
         }
@@ -454,7 +454,7 @@ namespace gView.Server.Services.MapServer
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Map { map.Name }: ApplyMetadata - { ex.Message }");
+                _logger.LogError($"Map {map.Name}: ApplyMetadata - {ex.Message}");
             }
         }
 

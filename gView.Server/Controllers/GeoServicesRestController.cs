@@ -74,7 +74,7 @@ namespace gView.Server.Controllers
                 {
                     IsTokenBasedSecurity = true,
                     ShortLivedTokenValidity = 60,
-                    TokenServicesUrl = $"{ _urlHelperService.AppRootUrl(this.Request) }/geoservices/tokens"
+                    TokenServicesUrl = $"{_urlHelperService.AppRootUrl(this.Request)}/geoservices/tokens"
                 }
             });
         }
@@ -141,7 +141,7 @@ namespace gView.Server.Controllers
                 var mapService = _mapServerService.Instance.GetMapService(id, folder);
                 if (mapService == null)
                 {
-                    throw new Exception($"Unknown service: { id }");
+                    throw new Exception($"Unknown service: {id}");
                 }
 
                 await mapService.CheckAccess(identity, _mapServerService.GetInterpreter(typeof(GeoServicesRestInterperter)));
@@ -150,7 +150,7 @@ namespace gView.Server.Controllers
                 {
                     if (map == null)
                     {
-                        throw new MapServerException($"unable to create map: { id }. Check log file for details");
+                        throw new MapServerException($"unable to create map: {id}. Check log file for details");
                     }
 
                     gView.Framework.Geometry.IEnvelope fullExtent = map.FullExtent();
@@ -230,7 +230,7 @@ namespace gView.Server.Controllers
                 {
                     if (map == null)
                     {
-                        throw new MapServerException($"unable to create map: { id }. Check log file for details");
+                        throw new MapServerException($"unable to create map: {id}. Check log file for details");
                     }
 
                     var jsonLayers = new JsonLayers();
@@ -264,7 +264,7 @@ namespace gView.Server.Controllers
                 var map = await _mapServerService.Instance.GetServiceMapAsync(id, folder);
                 if (map == null)
                 {
-                    throw new MapServerException($"unable to create map: { id }. Check log file for details");
+                    throw new MapServerException($"unable to create map: {id}. Check log file for details");
                 }
 
                 var jsonLayers = new JsonLayers();
@@ -498,7 +498,7 @@ namespace gView.Server.Controllers
                 var map = await _mapServerService.Instance.GetServiceMapAsync(id, folder);
                 if (map == null)
                 {
-                    throw new MapServerException($"unable to create map: { id }. Check log file for details");
+                    throw new MapServerException($"unable to create map: {id}. Check log file for details");
                 }
 
                 gView.Framework.Geometry.Envelope fullExtent = null;
@@ -850,7 +850,7 @@ namespace gView.Server.Controllers
                 var map = await _mapServerService.Instance.GetServiceMapAsync(id, folder);
                 if (map == null)
                 {
-                    throw new MapServerException($"unable to create map: { id }. Check log file for details");
+                    throw new MapServerException($"unable to create map: {id}. Check log file for details");
                 }
 
                 var jsonLayers = new JsonLayers();
@@ -1337,14 +1337,14 @@ namespace gView.Server.Controllers
 
             foreach (var serviceMethodAttribute in obj.GetType().GetCustomAttributes<ServiceMethodAttribute>(false))
             {
-                var url =  serviceMethodAttribute.Method;
+                var url = serviceMethodAttribute.Method;
                 var target = String.Empty;
-               
-                if(serviceMethodAttribute.Method.StartsWith("http://") || serviceMethodAttribute.Method.StartsWith("https://"))
+
+                if (serviceMethodAttribute.Method.StartsWith("http://") || serviceMethodAttribute.Method.StartsWith("https://"))
                 {
                     url = url.Replace("{onlineresource-url}", _mapServerService.Options.OnlineResource);
                     target = "_blank";
-                } 
+                }
                 else
                 {
                     url = $"{_mapServerService.Options.OnlineResource}{this.Request.Path}/{url}";
@@ -1479,9 +1479,9 @@ namespace gView.Server.Controllers
                                         if (arrayIndex == 0)
                                         {
                                             sb.Append("<div class='yaml-comment'>");
-                                            sb.Append($"<div>{ HtmlYamlSpaces(spaces + 2) }#</div>");
-                                            sb.Append($"<div>{ HtmlYamlSpaces(spaces + 2) }# { groupByAttribute.GroupByField }: { groupBy }</div>");
-                                            sb.Append($"<div>{ HtmlYamlSpaces(spaces + 2) }#</div>");
+                                            sb.Append($"<div>{HtmlYamlSpaces(spaces + 2)}#</div>");
+                                            sb.Append($"<div>{HtmlYamlSpaces(spaces + 2)}# {groupByAttribute.GroupByField}: {groupBy}</div>");
+                                            sb.Append($"<div>{HtmlYamlSpaces(spaces + 2)}#</div>");
                                             sb.Append("</div>");
                                         }
                                     }

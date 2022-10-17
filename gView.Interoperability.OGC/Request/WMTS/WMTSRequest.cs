@@ -157,7 +157,7 @@ namespace gView.Interoperability.OGC.Request.WMTS
                     }
                 }
 
-                context.ServiceRequest.ResponseContentType = $"image/{ format.Substring(1) }";
+                context.ServiceRequest.ResponseContentType = $"image/{format.Substring(1)}";
                 context.ServiceRequest.ResponseExpries = DateTime.UtcNow.AddDays(7);
                 context.ServiceRequest.Response = imageData ?? _emptyPic;
             }
@@ -173,7 +173,7 @@ namespace gView.Interoperability.OGC.Request.WMTS
         {
             if (!String.IsNullOrWhiteSpace(context.ServiceRequest.Folder))
             {
-                return $"{ context.ServiceRequest.Folder }/{ context.ServiceRequest.Service }";
+                return $"{context.ServiceRequest.Folder}/{context.ServiceRequest.Service}";
             }
 
             return context.ServiceRequest.Service;
@@ -524,14 +524,14 @@ namespace gView.Interoperability.OGC.Request.WMTS
                 IEnvelope extent = metadata.GetEPSGEnvelope(epsg);
                 if (extent == null)
                 {
-                    Console.WriteLine($"EPSG { epsg }: Envelope not exits");
+                    Console.WriteLine($"EPSG {epsg}: Envelope not exits");
                     continue;
                 }
 
                 IPoint origin = metadata.GetOriginUpperLeft(epsg);
                 if (origin == null)
                 {
-                    Console.WriteLine($"EPSG { epsg }: Origin not exits");
+                    Console.WriteLine($"EPSG {epsg}: Origin not exits");
                     continue;
                 }
 
@@ -565,7 +565,7 @@ namespace gView.Interoperability.OGC.Request.WMTS
 
                     if (!new DirectoryInfo(epsgPath).Exists)
                     {
-                        Console.WriteLine($"Path { epsgPath }: not exists");
+                        Console.WriteLine($"Path {epsgPath}: not exists");
                         continue;
                     }
 

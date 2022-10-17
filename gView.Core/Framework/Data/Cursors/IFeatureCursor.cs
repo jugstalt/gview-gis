@@ -16,7 +16,7 @@ namespace gView.Framework.Data.Cursors
         Task<IFeature> NextFeature();
     }
 
-    
+
 
     /*
     public interface IFeatureBuffer 

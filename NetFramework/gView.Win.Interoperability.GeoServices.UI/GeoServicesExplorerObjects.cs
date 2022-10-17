@@ -515,7 +515,7 @@ namespace gView.Interoperability.GeoServices.Dataset
             GeoServicesConnectionExplorerObject connectionExObject = null;
             foreach (var connectionObject in (await group.ChildObjects()).OrderByDescending(e => e.FullName.Length))
             {
-                if (fullName.StartsWith($@"{ connectionObject.FullName }\"))
+                if (fullName.StartsWith($@"{connectionObject.FullName}\"))
                 {
                     connectionExObject = connectionObject as GeoServicesConnectionExplorerObject;
                     break;
@@ -679,7 +679,7 @@ namespace gView.Interoperability.GeoServices.Dataset
 
             foreach (var connectionObject in (await group.ChildObjects()).OrderByDescending(e => e.FullName.Length))
             {
-                if (fullName.StartsWith($@"{ connectionObject.FullName }\"))
+                if (fullName.StartsWith($@"{connectionObject.FullName}\"))
                 {
                     connectionExObject = connectionObject as GeoServicesConnectionExplorerObject;
                     break;
@@ -699,7 +699,7 @@ namespace gView.Interoperability.GeoServices.Dataset
             {
                 folderName = name.Substring(0, name.LastIndexOf(@"\"));
                 name = name.Substring(name.LastIndexOf(@"\") + 1);
-                parentExObject = await new GeoServicesFolderExplorerObject(null, String.Empty, String.Empty).CreateInstanceByFullName($@"{ connectionExObject.FullName }\{ folderName }", null);
+                parentExObject = await new GeoServicesFolderExplorerObject(null, String.Empty, String.Empty).CreateInstanceByFullName($@"{connectionExObject.FullName}\{folderName}", null);
             }
             else
             {

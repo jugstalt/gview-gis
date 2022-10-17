@@ -44,7 +44,7 @@ namespace gView.Server.AppCode
             _log_request_details = _mapServiceMananger.Options.LogServiceRequestDetails;
             _log_errors = _mapServiceMananger.Options.LogServiceErrors;
 
-            _etcPath = $"{ new DirectoryInfo(_mapServiceMananger.Options.ServicesPath).Parent.FullName }/etc";
+            _etcPath = $"{new DirectoryInfo(_mapServiceMananger.Options.ServicesPath).Parent.FullName}/etc";
         }
 
         async private Task<IServiceMap> Map(string name, string folder, IServiceRequestContext context)

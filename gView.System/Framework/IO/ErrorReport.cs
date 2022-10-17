@@ -15,19 +15,19 @@ namespace gView.Framework.IO
         {
             if (source != null)
             {
-                warning = $"{ warning } ({ source.ToString() })";
+                warning = $"{warning} ({source.ToString()})";
             }
 
-            _warnings.Add($"Warning: { warning }");
+            _warnings.Add($"Warning: {warning}");
         }
         public void AddError(string error, object source)
         {
             if (source != null)
             {
-                error = $"{error} ({ source.ToString() })";
+                error = $"{error} ({source.ToString()})";
             }
 
-            _errors.Add($"Error: { error  }");
+            _errors.Add($"Error: {error}");
         }
 
         public IEnumerable<string> Warnings { get { return _warnings.ToArray(); } }

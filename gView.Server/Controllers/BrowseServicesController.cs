@@ -304,13 +304,13 @@ namespace gView.Server.Controllers
                     }
                     if (!newFolder.IsValidFolderName())
                     {
-                        throw new MapServerException($"Foldername { newFolder } is invalid");
+                        throw new MapServerException($"Foldername {newFolder} is invalid");
                     }
 
-                    var di = new DirectoryInfo($"{ _mapServerService.Options.ServicesPath }/{ newFolder.ToLower() }");
+                    var di = new DirectoryInfo($"{_mapServerService.Options.ServicesPath}/{newFolder.ToLower()}");
                     if (di.Exists)
                     {
-                        throw new MapServerException($"Folder { newFolder } already exists");
+                        throw new MapServerException($"Folder {newFolder} already exists");
                     }
 
                     di.Create();

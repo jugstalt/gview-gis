@@ -49,7 +49,7 @@ namespace gView.Framework.system
                 sb.Append(";");
             }
 
-            sb.Append($"{ parameter.Trim() }={ value?.Trim() }");
+            sb.Append($"{parameter.Trim()}={value?.Trim()}");
         }
 
         static public string OrTake(this string str, string orTake)

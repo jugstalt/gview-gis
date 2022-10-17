@@ -183,11 +183,11 @@ namespace gView.DataSources.GDAL
             {
                 string errMsg = ex.Message;
 
-                Console.WriteLine($"GDAL Excepiton: { ex.Message }");
+                Console.WriteLine($"GDAL Excepiton: {ex.Message}");
                 while (ex.InnerException != null)
                 {
                     ex = ex.InnerException;
-                    Console.WriteLine($"  Inner Exception: { ex.Message }");
+                    Console.WriteLine($"  Inner Exception: {ex.Message}");
                 }
 
                 _dataset.LastErrorMessage = ex.Message;

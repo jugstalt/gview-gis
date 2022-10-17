@@ -5,7 +5,7 @@
         bool KnowsFunctions { get; }
     }
 
-    
+
 
     /*
     public interface IFeatureBuffer 

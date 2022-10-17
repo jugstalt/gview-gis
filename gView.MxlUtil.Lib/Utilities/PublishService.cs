@@ -97,8 +97,8 @@ Optional arguments:
 
                 if (!String.IsNullOrEmpty(client) && !String.IsNullOrEmpty(secret))
                 {
-                    var tokenUrl = $"{ server }/geoservices/tokens/generateToken";
-                    var tokenParams = $"request=gettoken&username={ client }&password={ secret }&expiration=60&f=json";
+                    var tokenUrl = $"{server}/geoservices/tokens/generateToken";
+                    var tokenParams = $"request=gettoken&username={client}&password={secret}&expiration=60&f=json";
 
                     using (var httpClient = new HttpClient())
                     using (var tokenRequest = new HttpRequestMessage(HttpMethod.Post, tokenUrl)
@@ -115,7 +115,7 @@ Optional arguments:
                             if (tokenResponseString.Contains("\"error\":"))
                             {
                                 JsonError error = JsonConvert.DeserializeObject<JsonError>(tokenResponseString);
-                                throw new Exception($"GetToken-Error: { error.Error?.Code }\n{ error.Error?.Message }\n{ error.Error?.Details }");
+                                throw new Exception($"GetToken-Error: {error.Error?.Code}\n{error.Error?.Message}\n{error.Error?.Details}");
                             }
                             else
                             {
@@ -123,20 +123,20 @@ Optional arguments:
                                 if (jsonToken.token != null)
                                 {
                                     accessToken = jsonToken.token;
-                                    Console.WriteLine($"Successfull requested access token ({ client }): { accessToken.Substring(0, 5) }........");
+                                    Console.WriteLine($"Successfull requested access token ({client}): {accessToken.Substring(0, 5)}........");
                                 }
                             }
                         }
                         else
                         {
-                            throw new Exception($"Token request returned Statuscode { tokenResponse.StatusCode }");
+                            throw new Exception($"Token request returned Statuscode {tokenResponse.StatusCode}");
                         }
                     }
                 }
 
                 #endregion
 
-                var url = $"{ server }/BrowseServices/AddService?service={ service }&folder={ folder }&token={ accessToken }&f=json";
+                var url = $"{server}/BrowseServices/AddService?service={service}&folder={folder}&token={accessToken}&f=json";
                 using (var httpClient = new HttpClient())
                 {
                     var requestContent = new MultipartFormDataContent();
@@ -150,10 +150,10 @@ Optional arguments:
                     var mapServerResponse = JsonConvert.DeserializeObject<AdminMapServerResponse>(await response.Content.ReadAsStringAsync());
                     if (mapServerResponse.Success == false)
                     {
-                        throw new Exception($"Error on publishing service:{ Environment.NewLine }{ mapServerResponse.Message }");
+                        throw new Exception($"Error on publishing service:{Environment.NewLine}{mapServerResponse.Message}");
                     }
 
-                    Console.WriteLine($"Service { folder }/{ service } successfully published...");
+                    Console.WriteLine($"Service {folder}/{service} successfully published...");
                 }
             }
             catch (Exception ex)

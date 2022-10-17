@@ -41,7 +41,7 @@ namespace gView.MapServer
                 }
                 else if (_response is byte[])
                 {
-                    return $"base64:{ Convert.ToBase64String((byte[])_response) }";
+                    return $"base64:{Convert.ToBase64String((byte[])_response)}";
                 }
                 else
                 {

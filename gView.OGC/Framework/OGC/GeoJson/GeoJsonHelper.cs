@@ -100,7 +100,7 @@ namespace gView.Framework.OGC.GeoJson
 
                 FieldValue fv = feature.Fields[i];
                 //sb.Append($"\"" + fv.Name + "\":\"" + fv.Value.ToString() + "\"");
-                sb.Append($"\"{ fv.Name }\":{ JsonConvert.SerializeObject(fv.Value) }");
+                sb.Append($"\"{fv.Name}\":{JsonConvert.SerializeObject(fv.Value)}");
             }
             sb.Append("}");
 

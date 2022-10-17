@@ -59,7 +59,7 @@ namespace gView.MapServer
             var serviceMap = await _mapServer?.GetServiceMapAsync(this);
             if (serviceMap == null)
             {
-                throw new MapServerException($"Unable to load service { _request.Folder }/{ _request.Service }: Check error log for details");
+                throw new MapServerException($"Unable to load service {_request.Folder}/{_request.Service}: Check error log for details");
             }
 
             return serviceMap;

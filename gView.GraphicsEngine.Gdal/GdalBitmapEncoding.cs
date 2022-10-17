@@ -17,7 +17,7 @@ namespace gView.GraphicsEngine.Gdal
         public bool CanEncode(IBitmap bitmap)
         {
             return
-                DataSources.OSGeo.Initializer.InstalledVersion == DataSources.OSGeo.GdalVersion.V3 && 
+                DataSources.OSGeo.Initializer.InstalledVersion == DataSources.OSGeo.GdalVersion.V3 &&
                 (bitmap.PixelFormat == PixelFormat.Rgb32 || bitmap.PixelFormat == PixelFormat.Rgba32);
         }
 

@@ -19,7 +19,7 @@ namespace gView.Win.DataSources.VectorTileCache.UI.Explorer.Dialogs
         {
             get
             {
-                return $"name={ txtName.Text };source={ txtCapabilites.Text }";
+                return $"name={txtName.Text};source={txtCapabilites.Text}";
             }
             set
             {

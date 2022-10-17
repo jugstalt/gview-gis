@@ -115,7 +115,7 @@ namespace gView.Cmd.RenderTileCache
                 {
                     #region TileSize
 
-                    Console.WriteLine($"TileSize [Pixel]: { metadata.TileWidth } x { metadata.TileHeight }");
+                    Console.WriteLine($"TileSize [Pixel]: {metadata.TileWidth} x {metadata.TileHeight}");
 
                     #endregion
 
@@ -135,7 +135,7 @@ namespace gView.Cmd.RenderTileCache
                     {
                         foreach (var scale in metadata.Scales)
                         {
-                            Console.WriteLine($"  1 : { scale }");
+                            Console.WriteLine($"  1 : {scale}");
                         }
                     }
 
@@ -155,12 +155,12 @@ namespace gView.Cmd.RenderTileCache
                             if (metadata.UpperLeft)
                             {
                                 var ul = metadata.GetOriginUpperLeft(epsgCode);
-                                Console.WriteLine($"  EPSG:{ epsgCode } upperleft: { ul.X }, { ul.Y }");
+                                Console.WriteLine($"  EPSG:{epsgCode} upperleft: {ul.X}, {ul.Y}");
                             }
                             if (metadata.LowerLeft)
                             {
                                 var ll = metadata.GetOriginUpperLeft(epsgCode);
-                                Console.WriteLine($"  EPSG:{ epsgCode } lowerleft: { ll.X }, { ll.Y }");
+                                Console.WriteLine($"  EPSG:{epsgCode} lowerleft: {ll.X}, {ll.Y}");
                             }
                         }
                     }
@@ -177,7 +177,7 @@ namespace gView.Cmd.RenderTileCache
                             var envelope = metadata.GetEPSGEnvelope(epsgCode);
                             if (envelope != null)
                             {
-                                Console.WriteLine($"  EPSG:{ epsgCode }: { envelope.minx }, { envelope.miny }, { envelope.maxx }, { envelope.maxy }");
+                                Console.WriteLine($"  EPSG:{epsgCode}: {envelope.minx}, {envelope.miny}, {envelope.maxx}, {envelope.maxy}");
                             }
                         }
                     }
@@ -205,7 +205,7 @@ namespace gView.Cmd.RenderTileCache
                     tileRender.Renderer(server, service);
 
                     Console.WriteLine();
-                    Console.WriteLine($"Finished: { Math.Round((DateTime.Now - startTime).TotalSeconds) }sec");
+                    Console.WriteLine($"Finished: {Math.Round((DateTime.Now - startTime).TotalSeconds)}sec");
                 }
 
                 return 0;

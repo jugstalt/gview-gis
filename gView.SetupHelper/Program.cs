@@ -25,7 +25,7 @@ namespace gView.SetupHelper
                     return 0;
                 }
 
-                var sharedDirInfo = new DirectoryInfo($"{ root }/_shared");
+                var sharedDirInfo = new DirectoryInfo($"{root}/_shared");
                 if (sharedDirInfo.Exists)
                 {
                     sharedDirInfo.Delete(true);
@@ -74,7 +74,7 @@ namespace gView.SetupHelper
 
                         string targetPath = Path.Combine(sharedDirectory, currentPath, fileInfo.Name);
                         var targetFileInfo = new FileInfo(targetPath);
-                        
+
                         if (!targetFileInfo.Directory.Exists)
                         {
                             targetFileInfo.Directory.Create();
@@ -90,9 +90,9 @@ namespace gView.SetupHelper
                 }
             }
 
-            foreach (var di in new DirectoryInfo($"{ root }/{ subDirectory[0] }/{ currentPath }").GetDirectories())
+            foreach (var di in new DirectoryInfo($"{root}/{subDirectory[0]}/{currentPath}").GetDirectories())
             {
-                SearchIdent(root, subDirectory, sharedDirectory, $"{ currentPath }/{ di.Name }");
+                SearchIdent(root, subDirectory, sharedDirectory, $"{currentPath}/{di.Name}");
             }
         }
     }

@@ -1463,7 +1463,7 @@ namespace gView.Framework.Carto
                     .Select(i => int.Parse(i)))
                 {
                     this.SetLayerDescription(key, System.Text.Encoding.Unicode.GetString(
-                        Convert.FromBase64String((string)stream.Load($"LayerDescription_{ key }", String.Empty))));
+                        Convert.FromBase64String((string)stream.Load($"LayerDescription_{key}", String.Empty))));
                 }
             }
 
@@ -1476,7 +1476,7 @@ namespace gView.Framework.Carto
                     .Select(i => int.Parse(i)))
                 {
                     this.SetLayerCopyrightText(key, System.Text.Encoding.Unicode.GetString(
-                        Convert.FromBase64String((string)stream.Load($"LayerCopyrightText_{ key }", String.Empty))));
+                        Convert.FromBase64String((string)stream.Load($"LayerCopyrightText_{key}", String.Empty))));
                 }
             }
 
@@ -1592,7 +1592,7 @@ namespace gView.Framework.Carto
 
                 foreach (var key in _layerDescriptions.Keys)
                 {
-                    stream.Save($"LayerDescription_{ key }", Convert.ToBase64String(
+                    stream.Save($"LayerDescription_{key}", Convert.ToBase64String(
                         System.Text.Encoding.Unicode.GetBytes(_layerDescriptions[key])));
                 }
             }
@@ -1606,7 +1606,7 @@ namespace gView.Framework.Carto
 
                 foreach (var key in _layerCopyrightTexts.Keys)
                 {
-                    stream.Save($"LayerCopyrightText_{ key }", Convert.ToBase64String(
+                    stream.Save($"LayerCopyrightText_{key}", Convert.ToBase64String(
                         System.Text.Encoding.Unicode.GetBytes(_layerCopyrightTexts[key])));
                 }
             }

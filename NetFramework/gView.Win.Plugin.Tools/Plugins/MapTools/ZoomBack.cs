@@ -84,8 +84,8 @@ namespace gView.Plugins.MapTools
             if (_doc is IMapDocumentEvents)
             {
                 ((IMapDocumentEvents)_doc).MapScaleChanged -= new MapScaleChangedEvent(ZoomBack_MapScaleChanged);
-            } 
-            
+            }
+
             ((MapEvent)MapEvent).Map.Display.ZoomTo(new Envelope(env.minx, env.miny, env.maxx, env.maxy));
 
             if (_doc is IMapDocumentEvents)

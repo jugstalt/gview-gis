@@ -5,7 +5,6 @@ using gView.Framework.IO;
 using gView.Framework.LinAlg;
 using gView.Framework.system;
 using gView.GraphicsEngine;
-using Microsoft.SqlServer.Management.SqlParser.SqlCodeDom;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -190,11 +189,11 @@ namespace gView.DataSources.GDAL
             {
                 string errMsg = ex.Message;
 
-                Console.WriteLine($"GDAL Excepiton: { ex.Message }");
+                Console.WriteLine($"GDAL Excepiton: {ex.Message}");
                 while (ex.InnerException != null)
                 {
                     ex = ex.InnerException;
-                    Console.WriteLine($"  Inner Exception: { ex.Message }");
+                    Console.WriteLine($"  Inner Exception: {ex.Message}");
                 }
 
                 _dataset.LastErrorMessage = ex.Message;
@@ -384,7 +383,7 @@ namespace gView.DataSources.GDAL
                         {
                             int ch = 0;
                             var colorInterp = (ColorInterp)band.GetRasterColorInterpretation();
-                            
+
                             if (i == 1 && colorInterp != ColorInterp.Undefined)
                             {
                                 hasDefinedBands = true;
@@ -543,15 +542,15 @@ namespace gView.DataSources.GDAL
                                     ch = 3;
                                     break;
                                 case ColorInterp.Undefined:
-                                    if(hasDefinedBands)
+                                    if (hasDefinedBands)
                                     {
                                         continue;
                                     }
 
                                     // If the bands are undefined, 
                                     // imply at that first three bands are red, green, blue, alpha...!? 
-                                    
-                                    ch = ((3 - i) + 4) % 4;   
+
+                                    ch = ((3 - i) + 4) % 4;
 
                                     // i=1: 2
                                     // i=2: 1

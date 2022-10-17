@@ -114,7 +114,7 @@ Optional arguments:
 
             if (map.HasErrorMessages)
             {
-                throw new Exception($"Can't load source mxl { inFile }:{ Environment.NewLine }{ String.Join('\n', map.ErrorMessages) }");
+                throw new Exception($"Can't load source mxl {inFile}:{Environment.NewLine}{String.Join('\n', map.ErrorMessages)}");
             }
 
             bool saveOutput = false;
@@ -129,7 +129,7 @@ Optional arguments:
                     saveOutput = true;
                     break;
                 default:
-                    throw new Exception($"Unkown command: { command }");
+                    throw new Exception($"Unkown command: {command}");
             }
 
             if (saveOutput)
@@ -137,7 +137,7 @@ Optional arguments:
                 stream = new XmlStream("");
                 stream.Save("MapDocument", doc);
 
-                Console.WriteLine($"Write: { outFile }");
+                Console.WriteLine($"Write: {outFile}");
                 stream.WriteStream(outFile);
                 Console.WriteLine("succeeded...");
             }
@@ -154,7 +154,7 @@ Optional arguments:
             {
                 Console.WriteLine($"Dataset {index}");
                 Console.WriteLine("==============================================================================");
-                Console.WriteLine($"Type: { dataset.GetType() }");
+                Console.WriteLine($"Type: {dataset.GetType()}");
 
                 Console.WriteLine(Environment.NewLine);
                 Console.WriteLine($"ConnectionString:");
@@ -163,7 +163,7 @@ Optional arguments:
                 var connectionParameters = ConfigTextStream.Extract(dataset.ConnectionString);
                 foreach (string key in connectionParameters.Keys)
                 {
-                    Console.WriteLine($"{ key }={ ConfigTextStream.SecureConfigValue(key, connectionParameters[key]) }");
+                    Console.WriteLine($"{key}={ConfigTextStream.SecureConfigValue(key, connectionParameters[key])}");
                 }
 
                 if (!String.IsNullOrEmpty(dataset.LastErrorMessage))
@@ -205,11 +205,11 @@ Optional arguments:
 
                     if (modifyConnectionString)
                     {
-                        Console.WriteLine($"Set ConnectionString: { ConfigTextStream.SecureConfig(ConfigTextStream.Build(connectionParameters)) }");
+                        Console.WriteLine($"Set ConnectionString: {ConfigTextStream.SecureConfig(ConfigTextStream.Build(connectionParameters))}");
                         if (!(await dataset.SetConnectionString(ConfigTextStream.Build(connectionParameters))) ||
                             !(await dataset.Open()))
                         {
-                            throw new Exception($"Can't change connectionstring:\n{ dataset.LastErrorMessage }");
+                            throw new Exception($"Can't change connectionstring:\n{dataset.LastErrorMessage}");
                         }
                     }
                 }

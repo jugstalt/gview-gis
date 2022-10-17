@@ -9,7 +9,7 @@
                 service = service.Replace("/", "@");
             }
 
-            return $"{ server }/ogc/{ service }?service=WMTS&version=1.0.0&request={ request }";
+            return $"{server}/ogc/{service}?service=WMTS&version=1.0.0&request={request}";
         }
     }
 }

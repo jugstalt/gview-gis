@@ -32,7 +32,7 @@ namespace gView.Framework.Web.Extensions
                     authType?.ToLower() == "basic")
                 {
                     requestMessage.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Basic",
-                        Convert.ToBase64String(Encoding.UTF8.GetBytes($"{ username }:{ password }")));
+                        Convert.ToBase64String(Encoding.UTF8.GetBytes($"{username}:{password}")));
                 }
                 else if (!String.IsNullOrEmpty(authentication.AccessToken) &&
                         authType?.ToLower() == "bearer")

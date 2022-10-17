@@ -37,7 +37,7 @@ namespace gView.Server.AppCode
                         {
                             Console.WriteLine(configContent);
 
-                            File.WriteAllText($"{ fi.Directory.FullName }/mapserver.json", configContent);
+                            File.WriteAllText($"{fi.Directory.FullName}/mapserver.json", configContent);
                         }
                     }
                 }
@@ -62,11 +62,11 @@ namespace gView.Server.AppCode
             string host = "http://localhost:5000";
             if (!String.IsNullOrEmpty(args.GetArgumentValue("-expose-https")))
             {
-                host = $"https://localhost:{ args.GetArgumentValue("-expose-https") }";
+                host = $"https://localhost:{args.GetArgumentValue("-expose-https")}";
             }
             else if (!String.IsNullOrEmpty(args.GetArgumentValue("-expose-http")))
             {
-                host = $"http://localhost:{ args.GetArgumentValue("-expose-http") }";
+                host = $"http://localhost:{args.GetArgumentValue("-expose-http")}";
             }
 
             var configText = File.ReadAllText(fi.FullName);

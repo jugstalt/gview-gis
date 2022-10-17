@@ -17,7 +17,7 @@ namespace gView.Server.Extensions
             {
                 var item = new PerforamceLoggerServiceRequestItem()
                 {
-                    PartitionKey = $"gview.{ folder.ToLower() }",
+                    PartitionKey = $"gview.{folder.ToLower()}",
                     RowKey = $"{(long.MaxValue - DateTime.UtcNow.Ticks).ToString().PadLeft(19, '0')}_{new Random().Next(9999).ToString().PadLeft(4, '0')}",
 
                     Created = DateTime.UtcNow,
@@ -25,7 +25,7 @@ namespace gView.Server.Extensions
                     Milliseconds = (int)response.DurationMilliseconds,
                     ContentSize = response.SizeBytes.HasValue ? response.SizeBytes.Value : 0,
                     Count = 1,
-                    TypeName = $"Geoservices.{ method }"
+                    TypeName = $"Geoservices.{method}"
                 };
 
                 logger.Log(item);

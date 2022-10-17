@@ -16,7 +16,7 @@ namespace gView.GraphicsEngine.Skia.Extensions
                 case PixelFormat.Gray8:
                     return SKColorType.Gray8;
                 default:
-                    throw new Exception($"Not Supported PixelFormat: { format }");
+                    throw new Exception($"Not Supported PixelFormat: {format}");
             }
         }
 
@@ -30,7 +30,7 @@ namespace gView.GraphicsEngine.Skia.Extensions
                 case SKColorType.Gray8:
                     return PixelFormat.Gray8;
                 default:
-                    throw new Exception($"Not Supported ColorType: { colorType }");
+                    throw new Exception($"Not Supported ColorType: {colorType}");
             }
         }
     }

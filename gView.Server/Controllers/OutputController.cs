@@ -29,7 +29,7 @@ namespace gView.Server.Controllers
                 return StatusCode(400);
             }
 
-            var fileInfo = new FileInfo($"{ _mapServerService.Options.OutputPath }/{ id }");
+            var fileInfo = new FileInfo($"{_mapServerService.Options.OutputPath}/{id}");
             string contentType;
             switch (fileInfo.Extension.ToLower())
             {

@@ -10,7 +10,7 @@ namespace gView.Framework.system
 {
     public class SystemInfo
     {
-        public static Version Version = new Version(5, 22, 4202);
+        public static Version Version = new Version(5, 22, 4203);
 
         #region -> Private Variables
 
@@ -115,8 +115,8 @@ namespace gView.Framework.system
             {
                 //Directory.SetCurrentDirectory(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location));
 
-                Environment.SetEnvironmentVariable("PATH", $"{ Path.GetDirectoryName(Assembly.GetEntryAssembly().Location) }");
-                Environment.SetEnvironmentVariable("GDAL_DRIVER_PATH", $"{ Path.GetDirectoryName(Assembly.GetEntryAssembly().Location) }\\gdalplugins");
+                Environment.SetEnvironmentVariable("PATH", $"{Path.GetDirectoryName(Assembly.GetEntryAssembly().Location)}");
+                Environment.SetEnvironmentVariable("GDAL_DRIVER_PATH", $"{Path.GetDirectoryName(Assembly.GetEntryAssembly().Location)}\\gdalplugins");
             }
         }
 

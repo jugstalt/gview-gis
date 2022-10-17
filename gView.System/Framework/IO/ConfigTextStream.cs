@@ -381,7 +381,7 @@ namespace gView.Framework.IO
                     sb.Append(";");
                 }
 
-                sb.Append($"{ key }={ keyValues[key] }");
+                sb.Append($"{key}={keyValues[key]}");
             }
 
             return sb.ToString();

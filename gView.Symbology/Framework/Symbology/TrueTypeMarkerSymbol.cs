@@ -277,8 +277,8 @@ namespace gView.Framework.Symbology
                 {
                     _engineOffset[key] = new Offset()
                     {
-                        HorizontalOffset = (float)stream.Load($"{ key }.x", defaultHorizontalOffset),
-                        VerticalOffset = (float)stream.Load($"{ key }.y", defaultVerticalOffset)
+                        HorizontalOffset = (float)stream.Load($"{key}.x", defaultHorizontalOffset),
+                        VerticalOffset = (float)stream.Load($"{key}.y", defaultVerticalOffset)
                     };
                 }
             }
@@ -331,8 +331,8 @@ namespace gView.Framework.Symbology
                 stream.Save("engine-offset-keys", String.Join(",", _engineOffset.Select(e => e.Key)));
                 foreach (var key in _engineOffset.Keys)
                 {
-                    stream.Save($"{ key }.x", _engineOffset[key].HorizontalOffset);
-                    stream.Save($"{ key }.y", _engineOffset[key].VerticalOffset);
+                    stream.Save($"{key}.x", _engineOffset[key].HorizontalOffset);
+                    stream.Save($"{key}.y", _engineOffset[key].VerticalOffset);
                 }
             }
         }

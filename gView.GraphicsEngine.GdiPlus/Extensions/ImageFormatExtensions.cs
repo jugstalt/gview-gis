@@ -17,7 +17,7 @@ namespace gView.GraphicsEngine.GdiPlus.Extensions
                 case ImageFormat.Bmp:
                     return System.Drawing.Imaging.ImageFormat.Bmp;
                 default:
-                    throw new Exception($"Save Bitmap: Format not supported: { format }");
+                    throw new Exception($"Save Bitmap: Format not supported: {format}");
             }
         }
     }

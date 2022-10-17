@@ -121,7 +121,7 @@ namespace gView.Framework.Geometry
 
         public override bool Equals(object obj)
         {
-            if(obj is Vector2D)
+            if (obj is Vector2D)
             {
                 return this == (Vector2D)obj;
             }

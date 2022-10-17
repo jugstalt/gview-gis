@@ -43,16 +43,16 @@ namespace gView.Cmd.RenderTileCache
 
         public void Renderer(string server, string service, string user = "", string pwd = "")
         {
-            ISpatialReference sRef = SpatialReference.FromID($"epsg:{ _epsg }");
+            ISpatialReference sRef = SpatialReference.FromID($"epsg:{_epsg}");
             if (sRef == null)
             {
-                throw new Exception($"Can't load SpatialReference EPSG:{ _epsg }");
+                throw new Exception($"Can't load SpatialReference EPSG:{_epsg}");
             }
 
             IEnvelope metadataBBox = _metadata.GetEPSGEnvelope(_epsg);
             if (metadataBBox == null)
             {
-                throw new Exception($"Can't get extent for EPSG:{ _epsg } from metadata");
+                throw new Exception($"Can't get extent for EPSG:{_epsg} from metadata");
             }
             if (_bbox == null)
             {
@@ -60,7 +60,7 @@ namespace gView.Cmd.RenderTileCache
             }
             else if (metadataBBox.Contains(_bbox))
             {
-                throw new Exception($"BBox must be completly contained in tile cache BBox: { metadataBBox.ToBBoxString() }");
+                throw new Exception($"BBox must be completly contained in tile cache BBox: {metadataBBox.ToBBoxString()}");
             }
 
             double width = _bbox.Width;
@@ -105,18 +105,18 @@ namespace gView.Cmd.RenderTileCache
 
             #endregion
 
-            Console.WriteLine($"TilesCount: { featureMax }");
+            Console.WriteLine($"TilesCount: {featureMax}");
 
             RenderTileThreadPool threadPool = new RenderTileThreadPool(connector, service, user, pwd, _maxParallelRequests);
 
             var thread = threadPool.FreeThread;
             if (_orientation == GridOrientation.UpperLeft)
             {
-                thread.Start($"init/{ _cacheFormat }/ul/{ _epsg }/{ _imageFormat.Replace(".", "") }");
+                thread.Start($"init/{_cacheFormat}/ul/{_epsg}/{_imageFormat.Replace(".", "")}");
             }
             else
             {
-                thread.Start($"init/{ _cacheFormat }/ll/{ _epsg }/{ _imageFormat.Replace(".", "") }");
+                thread.Start($"init/{_cacheFormat}/ll/{_epsg}/{_imageFormat.Replace(".", "")}");
             }
 
             foreach (double scale in _preRenderScales ?? _metadata.Scales)
@@ -157,7 +157,7 @@ namespace gView.Cmd.RenderTileCache
                         tilePos++;
                         if (tilePos % 5 == 0 || _cacheFormat == "compact")
                         {
-                            Console.Write($"...{ tilePos }");
+                            Console.Write($"...{tilePos}");
                         }
 
                         //if (!_cancelTracker.Continue)

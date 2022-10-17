@@ -84,7 +84,7 @@ namespace gView.Server.Services.Logging
                     }
                 }
 
-                string fileName = $"{ loggingMethod.ToString() }-{ ticks.ToString().PadLeft(21, '0') }.log";
+                string fileName = $"{loggingMethod.ToString()}-{ticks.ToString().PadLeft(21, '0')}.log";
 
                 return dir + "/" + fileName;
             }

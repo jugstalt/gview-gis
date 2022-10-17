@@ -20,7 +20,7 @@ namespace gView.Server.Extensions
         async static public Task<JwtSecurityToken> ToValidatedJwtSecurityToken(this string jwtEncodedString, string issuerUrl, string audience = null)
         {
             IConfigurationManager<OpenIdConnectConfiguration> configurationManager =
-                   new ConfigurationManager<OpenIdConnectConfiguration>($"{ issuerUrl.ToValidIssuerUrl() }/.well-known/openid-configuration", new OpenIdConnectConfigurationRetriever());
+                   new ConfigurationManager<OpenIdConnectConfiguration>($"{issuerUrl.ToValidIssuerUrl()}/.well-known/openid-configuration", new OpenIdConnectConfigurationRetriever());
             OpenIdConnectConfiguration openIdConfiguration = await configurationManager.GetConfigurationAsync(CancellationToken.None);
 
             var tokenHandler = new JwtSecurityTokenHandler();
@@ -40,7 +40,7 @@ namespace gView.Server.Extensions
             }
             catch (Exception ex)
             {
-                throw new TokenValidationException($"Invalid token: { ex.Message }");
+                throw new TokenValidationException($"Invalid token: {ex.Message}");
             }
             return jwtEncodedString.ToJwtSecurityToken();
         }

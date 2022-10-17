@@ -81,7 +81,7 @@ namespace gView.GraphicsEngine.Skia
                 case ImageFormat.Wbmp:
                     return image.Encode(SKEncodedImageFormat.Wbmp, quality > 0 ? quality : 75);
                 default:
-                    throw new Exception($"Unsported image format: { format }");
+                    throw new Exception($"Unsported image format: {format}");
             }
         }
 

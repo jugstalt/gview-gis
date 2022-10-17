@@ -20,7 +20,7 @@ namespace gView.Cmd.MxlUtil
             {
                 string utility = args.FirstOrDefault();
 
-                var assemblyPath = $"{ Path.GetDirectoryName(Assembly.GetEntryAssembly().Location) }/gView.MxlUtil.Lib.dll";
+                var assemblyPath = $"{Path.GetDirectoryName(Assembly.GetEntryAssembly().Location)}/gView.MxlUtil.Lib.dll";
                 var assembly = Assembly.LoadFrom(assemblyPath);
                 utilityInstance =
                     assembly.GetTypes()

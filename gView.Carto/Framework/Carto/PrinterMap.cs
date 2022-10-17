@@ -3,7 +3,6 @@ using gView.Framework.Data;
 using gView.Framework.Geometry;
 using gView.Framework.system;
 using System;
-using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
 namespace gView.Framework.Carto

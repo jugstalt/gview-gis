@@ -113,9 +113,9 @@ namespace gView.Server.AppCode.Extensions
         {
             if (ex != null)
             {
-                Console.WriteLine($"Exception      : { ex.GetType().ToString() }");
-                Console.WriteLine($"     Message   : { ex.Message }");
-                Console.WriteLine($"     Stacktrace: { ex.StackTrace }");
+                Console.WriteLine($"Exception      : {ex.GetType().ToString()}");
+                Console.WriteLine($"     Message   : {ex.Message}");
+                Console.WriteLine($"     Stacktrace: {ex.StackTrace}");
             }
         }
     }

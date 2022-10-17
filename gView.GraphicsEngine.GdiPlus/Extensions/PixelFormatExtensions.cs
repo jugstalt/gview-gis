@@ -57,7 +57,7 @@ namespace gView.GraphicsEngine.GdiPlus.Extensions
                 //case PixelFormat.PAlpha:
                 //    return System.Drawing.Imaging.PixelFormat.PAlpha;
                 default:
-                    throw new Exception($"Not Supported PixelFormat: { format }");
+                    throw new Exception($"Not Supported PixelFormat: {format}");
             }
         }
 
@@ -114,7 +114,7 @@ namespace gView.GraphicsEngine.GdiPlus.Extensions
                 //case System.Drawing.Imaging.PixelFormat.PAlpha:
                 //    return PixelFormat.PAlpha;
                 default:
-                    throw new Exception($"Not Supported PixelFormat: { format }");
+                    throw new Exception($"Not Supported PixelFormat: {format}");
             }
         }
     }

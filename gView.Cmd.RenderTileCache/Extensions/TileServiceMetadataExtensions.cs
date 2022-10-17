@@ -16,7 +16,7 @@ namespace gView.Cmd.RenderTileCache.Extensions
                 var response = client.GetAsync(url).Result;
                 if (!response.IsSuccessStatusCode)
                 {
-                    throw new Exception($"{ url } return with status code { response.StatusCode }");
+                    throw new Exception($"{url} return with status code {response.StatusCode}");
                 }
 
                 var responseStream = response.Content.ReadAsStreamAsync().Result;

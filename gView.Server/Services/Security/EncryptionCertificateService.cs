@@ -53,7 +53,7 @@ namespace gView.Server.Services.Security
         {
             try
             {
-                FileInfo fi = new FileInfo(Path.Combine(_mapServerService.Options.LoginManagerRootPath, $"{ name }.pfx"));
+                FileInfo fi = new FileInfo(Path.Combine(_mapServerService.Options.LoginManagerRootPath, $"{name}.pfx"));
                 if (!fi.Exists)
                 {
                     CreateCert(name);
