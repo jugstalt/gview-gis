@@ -5,6 +5,7 @@ using gView.Framework.IO;
 using gView.Framework.LinAlg;
 using gView.Framework.system;
 using gView.GraphicsEngine;
+using Microsoft.SqlServer.Management.SqlParser.SqlCodeDom;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -73,9 +74,12 @@ namespace gView.DataSources.GDAL
                         case ".gsd":
                             _type = RasterType.grid;
                             break;
-                            //case ".jp2":
-                            //    _type = RasterType.wavelet;
-                            //    break;
+                        case ".jp2":
+                            if (gdalDataset.RasterCount == 4)
+                            {
+                                _type = RasterType.wavelet;
+                            }
+                            break;
                     }
 
                     using (OSGeo_v3.GDAL.Band band = gdalDataset.GetRasterBand(1))
@@ -371,13 +375,22 @@ namespace gView.DataSources.GDAL
                 {
 
                     List<ArgbColor> colors = new List<ArgbColor>();
-                    for (int i = 1; i <= (gdalDataset.RasterCount > 3 ? 3 : gdalDataset.RasterCount); ++i)
+                    int rasterBands = /*gdalDataset.RasterCount; */(gdalDataset.RasterCount > 3 ? 3 : gdalDataset.RasterCount);
+                    bool hasDefinedBands = false;
+
+                    for (int i = 1; i <= rasterBands; ++i)
                     {
                         using (OSGeo_v3.GDAL.Band band = gdalDataset.GetRasterBand(i))
                         {
-
                             int ch = 0;
-                            switch ((ColorInterp)band.GetRasterColorInterpretation())
+                            var colorInterp = (ColorInterp)band.GetRasterColorInterpretation();
+                            
+                            if (i == 1 && colorInterp != ColorInterp.Undefined)
+                            {
+                                hasDefinedBands = true;
+                            }
+
+                            switch (colorInterp)
                             {
                                 case ColorInterp.BlueBand:
                                     ch = 0;
@@ -410,10 +423,24 @@ namespace gView.DataSources.GDAL
                                     }
 
                                     break;
+                                case ColorInterp.Undefined:
+                                    if (hasDefinedBands)
+                                    {
+                                        continue;
+                                    }
+
+                                    // If the bands are undefined, 
+                                    // imply at that first three bands are red, green, blue...!? 
+                                    ch = 3 - i;
+                                    break;
                             }
-                            band.ReadRaster(x, y, wWidth, wHeight,
-                                new IntPtr(buf.ToInt64() + ch),
-                                iWidth, iHeight, OSGeo_v3.GDAL.DataType.GDT_Byte, pixelSpace, stride);
+
+                            if (ch >= 0 && ch <= 2)
+                            {
+                                band.ReadRaster(x, y, wWidth, wHeight,
+                                    new IntPtr(buf.ToInt64() + ch),
+                                    iWidth, iHeight, OSGeo_v3.GDAL.DataType.GDT_Byte, pixelSpace, stride);
+                            }
 
                             band.Dispose();
                         }
@@ -487,13 +514,21 @@ namespace gView.DataSources.GDAL
 
                 using (var gdalDataset = OpenGdalDataset())
                 {
-                    for (int i = 1; i <= (gdalDataset.RasterCount > 3 ? 3 : gdalDataset.RasterCount); ++i)
+                    int rasterBands = /*gdalDataset.RasterCount; */(gdalDataset.RasterCount > 4 ? 4 : gdalDataset.RasterCount);
+                    bool hasDefinedBands = false;
+
+                    for (int i = 1; i <= rasterBands; ++i)
                     {
                         using (OSGeo_v3.GDAL.Band band = gdalDataset.GetRasterBand(i))
                         {
+                            var colorInterp = (ColorInterp)band.GetRasterColorInterpretation();
+                            if (i == 1 && colorInterp != ColorInterp.Undefined)
+                            {
+                                hasDefinedBands = true;
+                            }
 
                             int ch = 0;
-                            switch ((ColorInterp)band.GetRasterColorInterpretation())
+                            switch (colorInterp)
                             {
                                 case ColorInterp.BlueBand:
                                     ch = 0;
@@ -504,10 +539,34 @@ namespace gView.DataSources.GDAL
                                 case ColorInterp.RedBand:
                                     ch = 2;
                                     break;
+                                case ColorInterp.AlphaBand:
+                                    ch = 3;
+                                    break;
+                                case ColorInterp.Undefined:
+                                    if(hasDefinedBands)
+                                    {
+                                        continue;
+                                    }
+
+                                    // If the bands are undefined, 
+                                    // imply at that first three bands are red, green, blue, alpha...!? 
+                                    
+                                    ch = ((3 - i) + 4) % 4;   
+
+                                    // i=1: 2
+                                    // i=2: 1
+                                    // i=3: 0
+                                    // i=4: 3   (3-4) + 4 = 3    % 4 = 3
+
+                                    break;
                             }
-                            band.ReadRaster(x, y, wWidth, wHeight,
+
+                            if (ch >= 0 && ch <= 3)
+                            {
+                                band.ReadRaster(x, y, wWidth, wHeight,
                                     new IntPtr(buf.ToInt64() + ch),
                                     iWidth, iHeight, OSGeo_v3.GDAL.DataType.GDT_Byte, pixelSpace, stride);
+                            }
                         }
                     }
 
