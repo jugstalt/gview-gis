@@ -15,7 +15,7 @@ namespace gView.DataSources.GDAL
 {
     public class RasterClassV3 : IRasterClass2, IRasterFile, IRasterFileBitmap, IPointIdentify, IGridIdentify, IGridClass, IPersistable, IDisposable
     {
-        internal enum RasterType { image = 0, grid = 1, wavelet = 2 }
+        internal enum RasterType { image = 0, grid = 1, imageRgba = 2 }
 
         private string _filename, _title;
         private bool _valid = true;
@@ -66,6 +66,7 @@ namespace gView.DataSources.GDAL
 
                     _iWidth = gdalDataset.RasterXSize;
                     _iHeight = gdalDataset.RasterYSize;
+                    _type = RasterType.image;
 
                     switch (fi.Extension.ToLower())
                     {
@@ -76,7 +77,7 @@ namespace gView.DataSources.GDAL
                         case ".jp2":
                             if (gdalDataset.RasterCount == 4)
                             {
-                                _type = RasterType.wavelet;
+                                _type = RasterType.imageRgba;
                             }
                             break;
                     }
@@ -330,8 +331,8 @@ namespace gView.DataSources.GDAL
                 {
                     case RasterType.image:
                         return Task.FromResult<IRasterPaintContext>(PaintImage(x, y, wWidth, wHeight, iWidth, iHeight, cancelTracker));
-                    case RasterType.wavelet:
-                        return Task.FromResult<IRasterPaintContext>(PaintWavelet(x, y, wWidth, wHeight, iWidth, iHeight, cancelTracker));
+                    case RasterType.imageRgba:
+                        return Task.FromResult<IRasterPaintContext>(PaintImageRgba(x, y, wWidth, wHeight, iWidth, iHeight, cancelTracker));
                     case RasterType.grid:
                         if (_renderRawGridValues)
                         {
@@ -495,7 +496,7 @@ namespace gView.DataSources.GDAL
             }
         }
 
-        private IRasterPaintContext PaintWavelet(int x, int y, int wWidth, int wHeight, int iWidth, int iHeight, ICancelTracker cancelTracker)
+        private IRasterPaintContext PaintImageRgba(int x, int y, int wWidth, int wHeight, int iWidth, int iHeight, ICancelTracker cancelTracker)
         {
             if (CancelTracker.Canceled(cancelTracker))
             {
