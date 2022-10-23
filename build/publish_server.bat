@@ -12,6 +12,9 @@ if errorlevel 1 goto error
 dotnet build gView.Server.csproj /p:DeployOnBuild=true /p:PublishProfile=linux64
 if errorlevel 1 goto error
 
+dotnet publish gView.Server.csproj /p:PublishProfile=docker-linux64
+if errorlevel 1 goto error
+dotnet build gView.Server.csproj /p:DeployOnBuild=true /p:PublishProfile=docker-linux64
 if errorlevel 1 goto error
 
 echo ==================
