@@ -1772,6 +1772,13 @@ namespace gView.Server.Controllers
                             propertyInfo.SetValue(instance, Convert.ToInt64(val));
                         }
                     }
+                    else if(propertyInfo.PropertyType == typeof(bool))
+                    {
+                        if(!String.IsNullOrWhiteSpace(val)) 
+                        {
+                            propertyInfo.SetValue(instance, Convert.ToBoolean(val));
+                        }
+                    }
                     else if (propertyInfo.PropertyType == typeof(System.String))
                     {
                         propertyInfo.SetValue(instance, val);

@@ -70,7 +70,14 @@ namespace gView.Server.AppCode
             }
 
             var configText = File.ReadAllText(fi.FullName);
-            configText = configText.Replace("{installation-path}", fi.Directory.Parent.Parent.FullName.Replace("\\", "\\\\"))
+
+            var parentDirectory = fi.Directory.Parent.Parent;
+            if(parentDirectory.Name.Equals(SystemInfo.Version.ToString())) 
+            {
+                parentDirectory = parentDirectory.Parent;
+            }
+
+            configText = configText.Replace("{installation-path}", parentDirectory.FullName.Replace("\\", "\\\\"))
                                    .Replace("{installation-host}", host);
 
             return configText;
