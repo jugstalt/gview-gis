@@ -1047,6 +1047,8 @@ namespace gView.Framework.OGC.DB
             return geometryString;
         }
 
+        virtual protected object NullDbValue() => DBNull.Value;
+
         virtual protected IGeometry ValidateGeometry(IFeatureClass fc, IGeometry geometry)
         {
             return geometry;
