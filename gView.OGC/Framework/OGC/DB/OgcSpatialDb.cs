@@ -743,7 +743,7 @@ namespace gView.Framework.OGC.DB
                                 parameter.ParameterName = DbParameterName(fvName);
                                 try
                                 {
-                                    parameter.Value = field.TryConvertType(val);
+                                    parameter.Value = field.TryConvertType(val) ?? this.NullDbValue();
                                 }
                                 catch
                                 {
@@ -877,7 +877,7 @@ namespace gView.Framework.OGC.DB
 
                             DbParameter parameter = this.ProviderFactory.CreateParameter();
                             parameter.ParameterName = DbParameterName(fv.Name);
-                            parameter.Value = field.TryConvertType(val);
+                            parameter.Value = field.TryConvertType(val)?? this.NullDbValue();
                             //NpgsqlParameter parameter = new NpgsqlParameter("@" + fv.Name, val);
                             fields.Append(DbColumnName(fv.Name) + "=" + DbParameterName(fv.Name));
                             command.Parameters.Add(parameter);
