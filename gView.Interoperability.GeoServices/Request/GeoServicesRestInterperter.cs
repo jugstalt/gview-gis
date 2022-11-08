@@ -522,7 +522,7 @@ namespace gView.Interoperability.GeoServices.Request
                             esriGeometryType = JsonLayer.ToGeometryType(geometryType);
                         }
 
-                        QueryFilter filter;
+                        IQueryFilter filter;
 
                         if (!String.IsNullOrWhiteSpace(query.Geometry))
                         {
@@ -534,6 +534,10 @@ namespace gView.Interoperability.GeoServices.Request
                             ((SpatialFilter)filter).FilterSpatialReference =
                                 SRef(query.InSRef) ??
                                 (filterGeometry.Srs > 0 ? SpatialReference.FromID($"epsg:{filterGeometry.Srs}") : null);
+                        }
+                        else if(query.ReturnDistinctValues)
+                        {
+                            filter = new DistinctFilter(query.OutFields);
                         }
                         else if (!String.IsNullOrWhiteSpace(query.ObjectIds))
                         {
@@ -583,17 +587,26 @@ namespace gView.Interoperability.GeoServices.Request
 
                             filter.SubFields = tableClass.IDFieldName;
                         }
+                        else if(query.ReturnDistinctValues)
+                        {
+                            if(query.ReturnGeometry)
+                            {
+                                throw new Exception("Geometry is not supported with DISTINCT.");
+                            }
+                        }
                         else
                         {
                             var outFields = query.OutFields.FieldsNames().CheckAllowedFunctions(tableClass);
 
                             filter.SubFields = String.Join(",", outFields);
-                            if (query.ReturnGeometry && tableClass is IFeatureClass && !filter.HasField(((IFeatureClass)tableClass).ShapeFieldName))
+                            if (query.ReturnGeometry)
                             {
-                                filter.AddField(((IFeatureClass)tableClass).ShapeFieldName);
+                                if (tableClass is IFeatureClass && !filter.HasField(((IFeatureClass)tableClass).ShapeFieldName))
+                                {
+                                    filter.AddField(((IFeatureClass)tableClass).ShapeFieldName);
+                                }
                             }
                         }
-
                         if (!String.IsNullOrWhiteSpace(query.OutSRef))
                         {
                             filter.FeatureSpatialReference = SRef(query.OutSRef);
@@ -647,6 +660,7 @@ namespace gView.Interoperability.GeoServices.Request
                                 {
                                     IFeature feature;
                                     IFeatureCursor featureCursor = (IFeatureCursor)cursor;
+                                    
                                     while ((feature = await featureCursor.NextFeature()) != null)
                                     {
                                         featureCount++;

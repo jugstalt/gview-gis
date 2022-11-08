@@ -13,6 +13,7 @@ namespace gView.Framework.Data.Filters
     {
         void AddField(string fieldname, bool caseSensitive = true);
         void AddField(string fieldname, string alias);
+        bool HasField(string fieldname);
         string Alias(string fieldname);
 
         IEnumerable<string> QuerySubFields { get; }

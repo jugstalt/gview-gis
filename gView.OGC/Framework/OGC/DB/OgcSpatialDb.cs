@@ -8,6 +8,7 @@ using gView.Framework.Extensions;
 using gView.Framework.FDB;
 using gView.Framework.Geometry;
 using gView.Framework.IO;
+using gView.Framework.system;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -1148,7 +1149,7 @@ namespace gView.Framework.OGC.DB
                 filter.AddField(fc.IDFieldName);
                 filter.AddField(fc.ShapeFieldName);
             }
-            else
+            else if(!(filter is DistinctFilter))
             {
                 filter.AddField(fc.IDFieldName);
             }
@@ -1186,21 +1187,29 @@ namespace gView.Framework.OGC.DB
                 where + (String.IsNullOrWhiteSpace(filterWhereClause) ? "" : $" AND ({filterWhereClause})");
 
             StringBuilder fieldNames = new StringBuilder();
-            foreach (string fieldName in filter.SubFields.Split(' '))
-            {
-                if (fieldNames.Length > 0)
-                {
-                    fieldNames.Append(",");
-                }
 
-                if (fieldName == "\"" + fc.ShapeFieldName + "\"")
+            if (filter is DistinctFilter)
+            {
+                fieldNames.Append(filter.SubFieldsAndAlias);
+            }
+            else
+            {
+                foreach (string fieldName in filter.SubFields.Split(' '))
                 {
-                    fieldNames.Append("ST_AsBinary(\"" + fc.ShapeFieldName + "\") as temp_geometry");
-                    shapeFieldName = "temp_geometry";
-                }
-                else
-                {
-                    fieldNames.Append(fieldName);
+                    if (fieldNames.Length > 0)
+                    {
+                        fieldNames.Append(",");
+                    }
+
+                    if (fieldName == "\"" + fc.ShapeFieldName + "\"")
+                    {
+                        fieldNames.Append("ST_AsBinary(\"" + fc.ShapeFieldName + "\") as temp_geometry");
+                        shapeFieldName = "temp_geometry";
+                    }
+                    else
+                    {
+                        fieldNames.Append(fieldName);
+                    }
                 }
             }
 
