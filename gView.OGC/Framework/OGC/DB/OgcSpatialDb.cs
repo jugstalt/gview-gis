@@ -1154,19 +1154,37 @@ namespace gView.Framework.OGC.DB
                 filter.AddField(fc.IDFieldName);
             }
 
-            string where = "";
+            var where = new StringBuilder();
+
             if (filter is ISpatialFilter)
             {
                 ISpatialFilter sFilter = filter as ISpatialFilter;
-                if (sFilter.Geometry is IEnvelope)
+
+                if (sFilter.Geometry != null)
                 {
-                    where = fc.ShapeFieldName + " && " + gView.Framework.OGC.OGC.Envelope2box2(sFilter.Geometry as IEnvelope, fc.SpatialReference);
+                    if (sFilter.SpatialRelation == spatialRelation.SpatialRelationMapEnvelopeIntersects /*|| sFilter.Geometry is IEnvelope*/)
+                    {
+                        where.Append($"{fc.ShapeFieldName} && {OGC.Envelope2box2(sFilter.Geometry.Envelope, fc.SpatialReference)}");
+                    }
+                    else
+                    {
+                        // https://postgis.net/docs/ST_Intersects.html  
+                        // ST_Intersects(geom, SRID=4326;WKT...)
+
+                        var wkt = new StringBuilder();
+                        
+                        if(fc.SpatialReference?.EpsgCode>0)
+                        {
+                            wkt.Append($"SRID={fc.SpatialReference.EpsgCode};");
+                        }
+                        wkt.Append(WKT.ToWKT(sFilter.Geometry));
+
+                        where.Append($"ST_Intersects({fc.ShapeFieldName}, '{wkt}')");
+                    }
+
+
+                    filter.AddField(fc.ShapeFieldName);
                 }
-                else if (sFilter.Geometry != null)
-                {
-                    where = fc.ShapeFieldName + " && " + gView.Framework.OGC.OGC.Envelope2box2(sFilter.Geometry.Envelope, fc.SpatialReference);
-                }
-                filter.AddField(fc.ShapeFieldName);
             }
 
             if (!String.IsNullOrWhiteSpace(functionName) && !String.IsNullOrWhiteSpace(functionField))
@@ -1182,9 +1200,15 @@ namespace gView.Framework.OGC.DB
             //    where += " AND ";
             //}
 
-            where = String.IsNullOrWhiteSpace(where) ?
-                filterWhereClause :
-                where + (String.IsNullOrWhiteSpace(filterWhereClause) ? "" : $" AND ({filterWhereClause})");
+            if (where.Length == 0)
+            {
+                where.Append(filterWhereClause);
+            }
+            else if (!String.IsNullOrEmpty(filterWhereClause))
+            {
+                where.Append(" AND ");
+                where.Append($"({filterWhereClause})");
+            }
 
             StringBuilder fieldNames = new StringBuilder();
 
@@ -1213,25 +1237,40 @@ namespace gView.Framework.OGC.DB
                 }
             }
 
-            string limit = String.Empty, orderBy = String.Empty;
+            StringBuilder limit = new StringBuilder(), 
+                          orderBy = new StringBuilder();
 
             if (!String.IsNullOrWhiteSpace(filter.OrderBy))
             {
-                orderBy = " order by " + filter.OrderBy;
+                orderBy.Append($" order by {filter.OrderBy}");
             }
 
             if (filter.Limit > 0)
             {
-                limit = " limit " + filter.Limit;
+                limit.Append($" limit {filter.Limit}");
             }
 
             if (filter.BeginRecord > 1)  // Default in QueryFilter is one!!!
             {
-                limit += " offset " + Math.Max(0, filter.BeginRecord - 1);
+                limit.Append($" offset {Math.Max(0, filter.BeginRecord - 1)}");
             }
 
             DbCommand command = ((OgcSpatialDataset)fc.Dataset).ProviderFactory.CreateCommand();
-            command.CommandText = ("SELECT " + fieldNames + " FROM " + DbTableName(fc.Name) + ((where != "") ? " WHERE " + where : "") + orderBy + limit).Trim();
+
+            StringBuilder sqlCommand = new StringBuilder();
+            sqlCommand.Append("SELECT ");
+            sqlCommand.Append(fieldNames);
+            sqlCommand.Append(" FROM ");
+            sqlCommand.Append(DbTableName(fc.Name));
+            if(where.Length>0)
+            {
+                sqlCommand.Append(" WHERE ");
+                sqlCommand.Append(where.ToString());
+            }
+            sqlCommand.Append(orderBy.ToString());
+            sqlCommand.Append(limit.ToString());
+
+            command.CommandText = sqlCommand.ToString();
 
             return command;
         }
