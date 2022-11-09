@@ -14,6 +14,8 @@ using System.Threading.Tasks;
 namespace gView.DataSources.MSSqlSpatial
 {
     [gView.Framework.system.RegisterPlugIn("69A965B6-E7F6-4C67-A8F4-57AEDF9541C3")]
+    [UseDatasetNameCase(DatasetNameCase.fieldNamesUpper)]
+    [ImportFeatureClassNameWithSchema]
     public class GeometryDataset : gView.Framework.OGC.DB.OgcSpatialDataset, IFeatureImportEvents
     {
         protected DbProviderFactory _factory = null;
@@ -499,11 +501,11 @@ namespace gView.DataSources.MSSqlSpatial
 
                     DbDataAdapter adapter = this.ProviderFactory.CreateDataAdapter();
                     adapter.SelectCommand = this.ProviderFactory.CreateCommand();
-                    adapter.SelectCommand.CommandText = @"select t.name as tabName, c.name as colName, types.name from sys.tables t join sys.columns c on (t.object_id = c.object_id) join sys.types types on (c.user_type_id = types.user_type_id) where types.name = 'geometry'";
+                    adapter.SelectCommand.CommandText = @"select SCHEMA_NAME(t.schema_id) as dbSchema, t.name as tabName, c.name as colName, types.name from sys.tables t join sys.columns c on (t.object_id = c.object_id) join sys.types types on (c.user_type_id = types.user_type_id) where types.name = 'geometry'";
                     adapter.SelectCommand.Connection = conn;
                     adapter.Fill(tables);
 
-                    adapter.SelectCommand.CommandText = @"select t.name as tabName, c.name as colName, types.name from sys.views t join sys.columns c on (t.object_id = c.object_id) join sys.types types on (c.user_type_id = types.user_type_id) where types.name = 'geometry'";
+                    adapter.SelectCommand.CommandText = @"select SCHEMA_NAME(t.schema_id) as dbSchema, t.name as tabName, c.name as colName, types.name from sys.views t join sys.columns c on (t.object_id = c.object_id) join sys.types types on (c.user_type_id = types.user_type_id) where types.name = 'geometry'";
                     adapter.Fill(views);
 
                     conn.Close();
@@ -517,11 +519,14 @@ namespace gView.DataSources.MSSqlSpatial
 
             foreach (DataRow row in tables.Rows)
             {
-                string tableName = row["tabName"].ToString();
-                if (await EqualsTableName(tableName, title, false))
+                var fcShema = row["dbSchema"].ToString();
+                var tableName = row["tabName"].ToString();
+                var fcName = title.Contains(".") ? $"{fcShema}.{tableName}" : tableName;
+
+                if (await EqualsTableName(fcName, title, false))
                 {
                     return new DatasetElement(await Featureclass.Create(this,
-                        tableName,
+                        fcName,
                         IDFieldName(title),
                         row["colName"].ToString(), false));
                 }
@@ -529,11 +534,14 @@ namespace gView.DataSources.MSSqlSpatial
 
             foreach (DataRow row in views.Rows)
             {
-                string tableName = row["tabName"].ToString();
-                if (await EqualsTableName(tableName, title, true))
+                var fcShema = row["dbSchema"].ToString();
+                var tableName = row["tabName"].ToString();
+                var fcName = title.Contains(".") ? $"{fcShema}.{tableName}" : tableName;
+
+                if (await EqualsTableName(fcName, title, true))
                 {
                     return new DatasetElement(await Featureclass.Create(this,
-                        tableName,
+                        fcName,
                         IDFieldName(title),
                         row["colName"].ToString(), true));
                 }

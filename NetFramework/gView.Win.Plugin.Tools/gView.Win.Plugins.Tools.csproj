@@ -267,7 +267,7 @@
     <Compile Include="Plugins\MapTools\TOCCommand.cs" />
     <Compile Include="Plugins\MapTools\Toolbars.cs" />
     <Compile Include="Plugins\MapTools\ToolPlugins.cs" />
-    <Compile Include="Plugins\MapTools\Tools.cs" />
+    <Compile Include="Plugins\MapTools\AddData.cs" />
     <Compile Include="Plugins\MapTools\UnitMenuItem.cs">
       <SubType>Component</SubType>
     </Compile>

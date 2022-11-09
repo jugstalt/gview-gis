@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 namespace gView.DataSources.MSSqlSpatial
 {
     [gView.Framework.system.RegisterPlugIn("6EB3070C-377A-4B1B-8479-A0ADA92D8D69")]
+    [ImportFeatureClassNameWithSchema]
     public class GeographyDataset : GeometryDataset
     {
         public GeographyDataset()
@@ -110,8 +111,8 @@ namespace gView.DataSources.MSSqlSpatial
             //return gView.Framework.OGC.OGC.GeometryToWKB(shape, gView.Framework.OGC.OGC.WkbByteOrder.Ndr);
             string geometryString =
                 (shape is IPolygon) ?
-                "geometry::STGeomFromText('" + gView.Framework.OGC.WKT.ToWKT(shape) + "'," + srid + ").MakeValid()" :
-                "geometry::STGeomFromText('" + gView.Framework.OGC.WKT.ToWKT(shape) + "'," + srid + ")";
+                "geography::STGeomFromText('" + gView.Framework.OGC.WKT.ToWKT(shape) + "'," + srid + ").MakeValid()" :
+                "geography::STGeomFromText('" + gView.Framework.OGC.WKT.ToWKT(shape) + "'," + srid + ")";
             return geometryString;
             //return "geometry::STGeomFromText('" + geometryString + "',0)";
 
@@ -342,11 +343,11 @@ namespace gView.DataSources.MSSqlSpatial
 
                     DbDataAdapter adapter = this.ProviderFactory.CreateDataAdapter();
                     adapter.SelectCommand = this.ProviderFactory.CreateCommand();
-                    adapter.SelectCommand.CommandText = @"select t.name as tabName, c.name as colName, types.name from sys.tables t join sys.columns c on (t.object_id = c.object_id) join sys.types types on (c.user_type_id = types.user_type_id) where types.name = 'geography'";
+                    adapter.SelectCommand.CommandText = @"select SCHEMA_NAME(t.schema_id) as dbSchema, t.name as tabName, c.name as colName, types.name from sys.tables t join sys.columns c on (t.object_id = c.object_id) join sys.types types on (c.user_type_id = types.user_type_id) where types.name = 'geography'";
                     adapter.SelectCommand.Connection = conn;
                     adapter.Fill(tables);
 
-                    adapter.SelectCommand.CommandText = @"select t.name as tabName, c.name as colName, types.name from sys.views t join sys.columns c on (t.object_id = c.object_id) join sys.types types on (c.user_type_id = types.user_type_id) where types.name = 'geography'";
+                    adapter.SelectCommand.CommandText = @"select SCHEMA_NAME(t.schema_id) as dbSchema, t.name as tabName, c.name as colName, types.name from sys.views t join sys.columns c on (t.object_id = c.object_id) join sys.types types on (c.user_type_id = types.user_type_id) where types.name = 'geography'";
                     adapter.Fill(views);
 
                     conn.Close();
@@ -360,22 +361,28 @@ namespace gView.DataSources.MSSqlSpatial
 
             foreach (DataRow row in tables.Rows)
             {
-                string tableName = row["tabName"].ToString();
-                if (await EqualsTableName(tableName, title, false))
+                var fcShema = row["dbSchema"].ToString();
+                var tableName = row["tabName"].ToString();
+                var fcName = title.Contains(".") ? $"{fcShema}.{tableName}" : tableName;
+
+                if (await EqualsTableName(fcName, title, false))
                 {
                     return new DatasetElement(await Featureclass.Create(this,
-                        tableName,
+                        fcName,
                         IDFieldName(title),
                         row["colName"].ToString(), false));
                 }
             }
             foreach (DataRow row in views.Rows)
             {
-                string tableName = row["tabName"].ToString();
-                if (await EqualsTableName(tableName, title, true))
+                var fcShema = row["dbSchema"].ToString();
+                var tableName = row["tabName"].ToString();
+                var fcName = title.Contains(".") ? $"{fcShema}.{tableName}" : tableName;
+
+                if (await EqualsTableName(fcName, title, true))
                 {
                     return new DatasetElement(await Featureclass.Create(this,
-                        tableName,
+                        fcName,
                         IDFieldName(title),
                         row["colName"].ToString(), true));
                 }

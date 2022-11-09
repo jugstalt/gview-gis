@@ -3,6 +3,7 @@ using gView.Framework.Data.Cursors;
 using gView.Framework.Data.Filters;
 using gView.Framework.FDB;
 using gView.Framework.Geometry;
+using gView.Framework.Network;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -66,13 +67,33 @@ namespace gView.Framework.system.UI
             }
 
             DatasetNameCase nameCase = DatasetNameCase.ignore;
+            bool importWithSchema = false;
+
             foreach (System.Attribute attribute in System.Attribute.GetCustomAttributes(destDS.GetType()))
             {
-                if (attribute is UseDatasetNameCase)
+                if (attribute is UseDatasetNameCaseAttribute)
                 {
-                    nameCase = ((UseDatasetNameCase)attribute).Value;
+                    nameCase = ((UseDatasetNameCaseAttribute)attribute).Value;
+                }
+
+                if(attribute is ImportFeatureClassNameWithSchemaAttribute)
+                {
+                    importWithSchema = true;
                 }
             }
+
+            if(importWithSchema==false)
+            {
+                fcname = fcname.Replace(".", "_");
+            } 
+            else
+            {
+                if(fcname.Contains(".") && fcname.Split('.').Length>2)
+                {
+                    throw new System.Exception($"Featureclass name {fcname} not allowed. Use SCHEMA.FEATURECLASS_NAME for example.");
+                }
+            }
+
             return await ImportToNewFeatureclass(destDS, fcname, sourceFC, fieldTranslation, project, filters, nameCase, sourceGeometryType);
         }
 
@@ -108,8 +129,6 @@ namespace gView.Framework.system.UI
             }
             try
             {
-                fcname = fcname.Replace(".", "_");
-
                 if (destDS == null)
                 {
                     _errMsg = "Argument Exception";
@@ -155,11 +174,11 @@ namespace gView.Framework.system.UI
                 }
 
                 int fcID = await fdb.CreateFeatureClass(destDS.DatasetName,
-                                                  fcname,
-                                                  geomDef,
-                                                  (fieldTranslation == null) ?
-                                                  ((sourceFC.Fields != null) ? (IFieldCollection)sourceFC.Fields.Clone() : new FieldCollection()) :
-                                                  fieldTranslation.DestinationFields);
+                                                        fcname,
+                                                        geomDef,
+                                                        (fieldTranslation == null) ?
+                                                        ((sourceFC.Fields != null) ? (IFieldCollection)sourceFC.Fields.Clone() : new FieldCollection()) :
+                                                        fieldTranslation.DestinationFields);
                 if (fcID < 0)
                 {
                     _errMsg = "Can't create featureclass " + fcname + "...\r\n" + fdb.LastErrorMessage;

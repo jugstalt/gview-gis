@@ -375,9 +375,9 @@ namespace gView.Framework.OGC.DB
             DatasetNameCase nameCase = DatasetNameCase.ignore;
             foreach (System.Attribute attribute in System.Attribute.GetCustomAttributes(this.GetType()))
             {
-                if (attribute is UseDatasetNameCase)
+                if (attribute is UseDatasetNameCaseAttribute)
                 {
-                    nameCase = ((UseDatasetNameCase)attribute).Value;
+                    nameCase = ((UseDatasetNameCaseAttribute)attribute).Value;
                 }
             }
             switch (nameCase)
@@ -593,9 +593,9 @@ namespace gView.Framework.OGC.DB
             DatasetNameCase nameCase = DatasetNameCase.ignore;
             foreach (System.Attribute attribute in System.Attribute.GetCustomAttributes(this.GetType()))
             {
-                if (attribute is UseDatasetNameCase)
+                if (attribute is UseDatasetNameCaseAttribute)
                 {
-                    nameCase = ((UseDatasetNameCase)attribute).Value;
+                    nameCase = ((UseDatasetNameCaseAttribute)attribute).Value;
                 }
             }
 

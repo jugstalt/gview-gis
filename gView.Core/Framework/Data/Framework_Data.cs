@@ -148,10 +148,10 @@ namespace gView.Framework.Data
 
     public enum DatasetNameCase { ignore = 0, upper = 1, lower = 2, classNameUpper = 3, classNameLower = 4, fieldNamesUpper = 5, fieldNamesLower = 6 }
     [global::System.AttributeUsageAttribute(global::System.AttributeTargets.Class)]
-    public class UseDatasetNameCase : global::System.Attribute
+    public class UseDatasetNameCaseAttribute : global::System.Attribute
     {
         private DatasetNameCase _case;
-        public UseDatasetNameCase(DatasetNameCase nameCase)
+        public UseDatasetNameCaseAttribute(DatasetNameCase nameCase)
         {
             _case = nameCase;
         }
@@ -159,6 +159,12 @@ namespace gView.Framework.Data
         {
             get { return _case; }
         }
+    }
+
+    [global::System.AttributeUsageAttribute(global::System.AttributeTargets.Class)]
+    public class ImportFeatureClassNameWithSchemaAttribute : global::System.Attribute
+    {
+
     }
 
     [global::System.AttributeUsageAttribute(global::System.AttributeTargets.Class)]

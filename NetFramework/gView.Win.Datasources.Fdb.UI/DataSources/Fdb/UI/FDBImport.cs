@@ -179,11 +179,11 @@ namespace gView.DataSources.Fdb.UI
                 if (fcID < 0)
                 {
                     fcID = await fdb.CreateFeatureClass(destDS.DatasetName,
-                                                      fcname,
-                                                      geomDef,
-                                                      (fieldTranslation == null) ?
-                                                      ((sourceFC.Fields != null) ? (IFieldCollection)sourceFC.Fields.Clone() : new FieldCollection()) :
-                                                      fieldTranslation.DestinationFields);
+                                                        fcname,
+                                                        geomDef,
+                                                        (fieldTranslation == null) ?
+                                                        ((sourceFC.Fields != null) ? (IFieldCollection)sourceFC.Fields.Clone() : new FieldCollection()) :
+                                                        fieldTranslation.DestinationFields);
                 }
                 if (fcID < 0)
                 {
