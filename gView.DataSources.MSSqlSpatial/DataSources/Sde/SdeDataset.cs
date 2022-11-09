@@ -232,6 +232,10 @@ namespace gView.DataSources.MSSqlSpatial.DataSources.Sde
                 }
                 else if (sFilter.Geometry != null)
                 {
+                    // 
+                    // let sqlserver do the hole intersection => make geometry to WKT not only the envelope
+                    // otherwise if there is an limit set (1000) not all features will returned
+                    //
                     where.Append($"{fc.ShapeFieldName}.STIntersects(");
                     where.Append($"geometry::STGeomFromText('{WKT.ToWKT(sFilter.Geometry)}',{srid}))=1");
                 }
