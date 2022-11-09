@@ -490,9 +490,12 @@ namespace gView.Framework.UI.Controls
                           }
                           else
                           {
-                              lock (_iBitmap)
+                              if (_iBitmap != null)
                               {
-                                  myMapRendererInstance.Dispose();
+                                  lock (_iBitmap)
+                                  {
+                                      myMapRendererInstance.Dispose();
+                                  }
                               }
                           }
                       }

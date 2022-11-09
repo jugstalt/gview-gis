@@ -2,6 +2,7 @@
 using gView.Framework.Data;
 using gView.Framework.Data.Filters;
 using gView.Framework.Geometry;
+using gView.Framework.OGC;
 using gView.Framework.OGC.DB;
 using gView.Framework.SpatialAlgorithms;
 using System;
@@ -182,6 +183,7 @@ namespace gView.DataSources.MSSqlSpatial.DataSources.Sde
             shapeFieldName = String.Empty;
 
             DbCommand command = this.ProviderFactory.CreateCommand();
+            var sqlCommand = new StringBuilder();
 
             filter.fieldPrefix = "[";
             filter.fieldPostfix = "]";
@@ -208,7 +210,7 @@ namespace gView.DataSources.MSSqlSpatial.DataSources.Sde
                 filter.AddField(fc.IDFieldName);
             }
 
-            string where = String.Empty;
+            var where = new StringBuilder();
             if (filter is ISpatialFilter && ((ISpatialFilter)filter).Geometry != null)
             {
                 ISpatialFilter sFilter = filter as ISpatialFilter;
@@ -225,45 +227,13 @@ namespace gView.DataSources.MSSqlSpatial.DataSources.Sde
 
                 if (sFilter.SpatialRelation == spatialRelation.SpatialRelationMapEnvelopeIntersects /*|| sFilter.Geometry is IEnvelope*/)
                 {
-                    IEnvelope env = sFilter.Geometry.Envelope;
-
-                    where = fc.ShapeFieldName + ".Filter(";
-                    where += "geometry::STGeomFromText('POLYGON((";
-                    where += env.minx.ToString(_nhi) + " ";
-                    where += env.miny.ToString(_nhi) + ",";
-
-                    where += env.minx.ToString(_nhi) + " ";
-                    where += env.maxy.ToString(_nhi) + ",";
-
-                    where += env.maxx.ToString(_nhi) + " ";
-                    where += env.maxy.ToString(_nhi) + ",";
-
-                    where += env.maxx.ToString(_nhi) + " ";
-                    where += env.miny.ToString(_nhi) + ",";
-
-                    where += env.minx.ToString(_nhi) + " ";
-                    where += env.miny.ToString(_nhi) + "))'," + srid + "))=1";
+                    where.Append($"{fc.ShapeFieldName}.STIntersects(");
+                    where.Append($"geometry::STGeomFromText('{WKT.ToWKT(sFilter.Geometry.Envelope)}',{srid}))=1");
                 }
                 else if (sFilter.Geometry != null)
                 {
-                    IEnvelope env = sFilter.Geometry.Envelope;
-
-                    where = fc.ShapeFieldName + ".STIntersects(";
-                    where += "geometry::STGeomFromText('POLYGON((";
-                    where += env.minx.ToString(_nhi) + " ";
-                    where += env.miny.ToString(_nhi) + ",";
-
-                    where += env.minx.ToString(_nhi) + " ";
-                    where += env.maxy.ToString(_nhi) + ",";
-
-                    where += env.maxx.ToString(_nhi) + " ";
-                    where += env.maxy.ToString(_nhi) + ",";
-
-                    where += env.maxx.ToString(_nhi) + " ";
-                    where += env.miny.ToString(_nhi) + ",";
-
-                    where += env.minx.ToString(_nhi) + " ";
-                    where += env.miny.ToString(_nhi) + "))'," + srid + "))=1";
+                    where.Append($"{fc.ShapeFieldName}.STIntersects(");
+                    where.Append($"geometry::STGeomFromText('{WKT.ToWKT(sFilter.Geometry)}',{srid}))=1");
                 }
                 filter.AddField(fc.ShapeFieldName);
             }
@@ -276,7 +246,7 @@ namespace gView.DataSources.MSSqlSpatial.DataSources.Sde
 
             string filterWhereClause = (filter is IRowIDFilter) ? ((IRowIDFilter)filter).RowIDWhereClause : filter.WhereClause;
 
-            StringBuilder fieldNames = new StringBuilder();
+            var fieldNames = new StringBuilder();
             foreach (string fieldName in filter.QuerySubFields)
             {
                 if (fieldNames.Length > 0)
@@ -295,26 +265,29 @@ namespace gView.DataSources.MSSqlSpatial.DataSources.Sde
                 }
             }
 
-            string limit = String.Empty, top = String.Empty, orderBy = String.Empty;
+            StringBuilder limit = new StringBuilder(),
+                          top = new StringBuilder(),
+                          orderBy = new StringBuilder();
+
             if (!String.IsNullOrWhiteSpace(filter.OrderBy))
             {
-                orderBy = " order by " + filter.OrderBy;
+                orderBy.Append($" order by {filter.OrderBy}");
             }
 
             if (filter.Limit > 0)
             {
-                if (String.IsNullOrEmpty(fc.IDFieldName) && String.IsNullOrWhiteSpace(orderBy))
+                if (String.IsNullOrEmpty(fc.IDFieldName) && orderBy.Length == 0)
                 {
-                    top = "top(" + filter.Limit + ") ";
+                    top.Append($"top({filter.Limit}) ");
                 }
                 else
                 {
-                    if (String.IsNullOrWhiteSpace(orderBy))
+                    if (orderBy.Length == 0)
                     {
-                        orderBy = " order by " + filter.fieldPrefix + fc.IDFieldName + filter.fieldPostfix;
+                        orderBy.Append($" order by {filter.fieldPrefix}{fc.IDFieldName}{filter.fieldPostfix}");
                     }
 
-                    limit = " offset " + Math.Max(0, filter.BeginRecord - 1) + " rows fetch next " + filter.Limit + " rows only";
+                    limit.Append($" offset {Math.Max(0, filter.BeginRecord - 1)} rows fetch next {filter.Limit} rows only");
                 }
             }
 
@@ -326,17 +299,24 @@ namespace gView.DataSources.MSSqlSpatial.DataSources.Sde
                 // ToDo: filterWhereClause? SDE_STATE_ID=0?? 
             }
 
-            command.CommandText = "SELECT " + top + fieldNames + " FROM " + fcName;
+            sqlCommand.Append($"SELECT {top}{fieldNames} FROM {fcName}");
 
-            if (!String.IsNullOrEmpty(where))
+            if (where.Length > 0)
             {
-                command.CommandText += " WHERE " + where + ((filterWhereClause != "") ? $" AND ({filterWhereClause})" : "");
+                sqlCommand.Append($" WHERE {where.ToString()}");
+                if (!String.IsNullOrEmpty(filterWhereClause))
+                {
+                    sqlCommand.Append($" AND ({filterWhereClause})");
+                }
             }
             else if (!String.IsNullOrEmpty(filterWhereClause))
             {
-                command.CommandText += " WHERE " + filterWhereClause;
+                sqlCommand.Append($" WHERE {filterWhereClause}");
             }
-            command.CommandText += orderBy + limit;
+            sqlCommand.Append(orderBy.ToString());
+            sqlCommand.Append(limit.ToString());
+
+            command.CommandText = sqlCommand.ToString();
 
             return command;
         }
