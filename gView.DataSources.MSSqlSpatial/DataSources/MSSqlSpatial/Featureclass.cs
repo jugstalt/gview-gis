@@ -1,6 +1,7 @@
 ﻿using gView.Framework.Data;
 using gView.Framework.Geometry;
 using System;
+using System.Data.Common;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -15,7 +16,7 @@ namespace gView.DataSources.MSSqlSpatial
 
         }
 
-        async static public Task<IFeatureClass> Create(GeometryDataset dataset, string name, string idFieldName, string shapeFieldName, bool isView)
+        async static public Task<IFeatureClass> Create(DbConnection resuableConnection, GeometryDataset dataset, string name, string idFieldName, string shapeFieldName, bool isView)
         {
             var featureClass = new Featureclass(dataset, name, idFieldName, shapeFieldName, isView);
 
@@ -30,7 +31,7 @@ namespace gView.DataSources.MSSqlSpatial
                 featureClass._sRef = gView.Framework.Geometry.SpatialReference.FromID("epsg:4326");
             }
 
-            await featureClass.ReadSchema();
+            await featureClass.ReadSchema(resuableConnection);
 
             if (String.IsNullOrEmpty(featureClass._idfield) && featureClass._fields.Count > 0 && featureClass._dataset != null)
             {

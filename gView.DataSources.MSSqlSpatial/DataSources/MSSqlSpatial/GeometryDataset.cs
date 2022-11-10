@@ -357,7 +357,7 @@ namespace gView.DataSources.MSSqlSpatial
             return String.Empty;
         }
 
-        protected string IDFieldName(string tabName)
+        protected string IDFieldName(DbConnection dbConnection, string tabName)
         {
             try
             {
@@ -370,35 +370,30 @@ namespace gView.DataSources.MSSqlSpatial
 
                 string idFieldName = String.Empty;
 
-                using (DbConnection conn = this.ProviderFactory.CreateConnection())
+
+                DbCommand command = this.ProviderFactory.CreateCommand();
+
+                command.CommandText = "SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE WHERE OBJECTPROPERTY(OBJECT_ID(CONSTRAINT_SCHEMA + '.' + QUOTENAME(CONSTRAINT_NAME)), 'IsPrimaryKey') = 1 AND TABLE_NAME = '" + tabName + "'";
+                if (!String.IsNullOrWhiteSpace(schemaName))
                 {
-                    conn.ConnectionString = _connectionString;
-                    conn.Open();
-
-                    DbCommand command = this.ProviderFactory.CreateCommand();
-
-                    command.CommandText = "SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE WHERE OBJECTPROPERTY(OBJECT_ID(CONSTRAINT_SCHEMA + '.' + QUOTENAME(CONSTRAINT_NAME)), 'IsPrimaryKey') = 1 AND TABLE_NAME = '" + tabName + "'";
-                    if (!String.IsNullOrWhiteSpace(schemaName))
-                    {
-                        command.CommandText += " AND TABLE_SCHEMA = '" + schemaName + "'";
-                    }
-                    command.Connection = conn;
-
-                    try
-                    {
-                        idFieldName = command.ExecuteScalar() as string;
-                    }
-                    catch { }
-
-                    if (String.IsNullOrWhiteSpace(idFieldName))
-                    {
-                        command.CommandText = "select c.name from sys.tables t join sys.columns c on (t.object_id = c.object_id) join sys.types types on (c.user_type_id = types.user_type_id) where t.name='" + tabName + "' and c.is_identity = 1";
-                        command.Connection = conn;
-
-                        idFieldName = command.ExecuteScalar() as string;
-                    }
-                    return idFieldName;
+                    command.CommandText += " AND TABLE_SCHEMA = '" + schemaName + "'";
                 }
+                command.Connection = dbConnection;
+
+                try
+                {
+                    idFieldName = command.ExecuteScalar() as string;
+                }
+                catch { }
+
+                if (String.IsNullOrWhiteSpace(idFieldName))
+                {
+                    command.CommandText = "select c.name from sys.tables t join sys.columns c on (t.object_id = c.object_id) join sys.types types on (c.user_type_id = types.user_type_id) where t.name='" + tabName + "' and c.is_identity = 1";
+                    command.Connection = dbConnection;
+
+                    idFieldName = command.ExecuteScalar() as string;
+                }
+                return idFieldName;
             }
             catch (Exception ex)
             {
@@ -414,27 +409,68 @@ namespace gView.DataSources.MSSqlSpatial
             if (_layers == null || _layers.Count == 0)
             {
                 List<IDatasetElement> layers = new List<IDatasetElement>();
-                
-                DataTable tables = new DataTable(), 
+
+                DataTable tables = new DataTable(),
                           views = new DataTable();
-                
+
                 try
                 {
-                    using (DbConnection conn = this.ProviderFactory.CreateConnection())
+                    using (DbConnection dbConnection = this.ProviderFactory.CreateConnection())
                     {
-                        conn.ConnectionString = _connectionString;
-                        await conn.OpenAsync();
+                        dbConnection.ConnectionString = _connectionString;
+                        await dbConnection.OpenAsync();
 
                         DbDataAdapter adapter = this.ProviderFactory.CreateDataAdapter();
                         adapter.SelectCommand = this.ProviderFactory.CreateCommand();
                         adapter.SelectCommand.CommandText = @"select SCHEMA_NAME(t.schema_id) as dbSchema, t.name as tabName, c.name as colName, types.name from sys.tables t join sys.columns c on (t.object_id = c.object_id) join sys.types types on (c.user_type_id = types.user_type_id) where types.name = 'geometry'";
-                        adapter.SelectCommand.Connection = conn;
+                        adapter.SelectCommand.Connection = dbConnection;
                         adapter.Fill(tables);
 
                         adapter.SelectCommand.CommandText = @"select SCHEMA_NAME(t.schema_id) as dbSchema, t.name as tabName, c.name as colName, types.name from sys.views t join sys.columns c on (t.object_id = c.object_id) join sys.types types on (c.user_type_id = types.user_type_id) where types.name = 'geometry'";
                         adapter.Fill(views);
 
-                        conn.Close();
+                        foreach (DataRow row in tables.Rows)
+                        {
+                            try
+                            {
+                                var fcShema = row["dbSchema"].ToString();
+                                var fcName = String.IsNullOrEmpty(fcShema) ? row["tabName"].ToString() : $"{fcShema}.{row["tabName"].ToString()}";
+
+                                IFeatureClass fc = await Featureclass.Create(dbConnection, this,
+                                    fcName,
+                                    IDFieldName(dbConnection, fcName),
+                                    row["colName"].ToString(), false);
+
+                                if (fc.Fields.Count > 0)
+                                {
+                                    layers.Add(new DatasetElement(fc));
+                                }
+                            }
+                            catch { }
+                        }
+                        foreach (DataRow row in views.Rows)
+                        {
+                            try
+                            {
+                                var fcShema = row["dbSchema"].ToString();
+                                var fcName = String.IsNullOrEmpty(fcShema) ? row["tabName"].ToString() : $"{fcShema}.{row["tabName"].ToString()}";
+
+                                IFeatureClass fc = await Featureclass.Create(dbConnection, this,
+                                    fcName,
+                                    IDFieldName(dbConnection, fcName),
+                                    row["colName"].ToString(), true);
+
+                                if (fc.Fields.Count > 0)
+                                {
+                                    layers.Add(new DatasetElement(fc));
+                                }
+                            }
+                            catch { }
+                        }
+
+                        _layers = layers;
+
+                        dbConnection.Close();
                     }
 
                 }
@@ -443,47 +479,6 @@ namespace gView.DataSources.MSSqlSpatial
                     _errMsg = ex.Message;
                     return layers;
                 }
-
-                foreach (DataRow row in tables.Rows)
-                {
-                    try
-                    {
-                        var fcShema = row["dbSchema"].ToString();
-                        var fcName = String.IsNullOrEmpty(fcShema) ? row["tabName"].ToString() : $"{fcShema}.{row["tabName"].ToString()}";
-
-                        IFeatureClass fc = await Featureclass.Create(this,
-                            fcName,
-                            IDFieldName(fcName),
-                            row["colName"].ToString(), false);
-
-                        if (fc.Fields.Count > 0)
-                        {
-                            layers.Add(new DatasetElement(fc));
-                        }
-                    }
-                    catch { }
-                }
-                foreach (DataRow row in views.Rows)
-                {
-                    try
-                    {
-                        var fcShema = row["dbSchema"].ToString();
-                        var fcName = String.IsNullOrEmpty(fcShema) ? row["tabName"].ToString() : $"{fcShema}.{row["tabName"].ToString()}";
-
-                        IFeatureClass fc = await Featureclass.Create(this,
-                            fcName,
-                            IDFieldName(fcName),
-                            row["colName"].ToString(), true);
-
-                        if (fc.Fields.Count > 0)
-                        {
-                            layers.Add(new DatasetElement(fc));
-                        }
-                    }
-                    catch { }
-                }
-
-                _layers = layers;
             }
             return _layers;
         }
@@ -494,21 +489,51 @@ namespace gView.DataSources.MSSqlSpatial
 
             try
             {
-                using (DbConnection conn = this.ProviderFactory.CreateConnection())
+                using (DbConnection dbConnection = this.ProviderFactory.CreateConnection())
                 {
-                    conn.ConnectionString = _connectionString;
-                    await conn.OpenAsync();
+                    dbConnection.ConnectionString = _connectionString;
+                    await dbConnection.OpenAsync();
 
                     DbDataAdapter adapter = this.ProviderFactory.CreateDataAdapter();
                     adapter.SelectCommand = this.ProviderFactory.CreateCommand();
                     adapter.SelectCommand.CommandText = @"select SCHEMA_NAME(t.schema_id) as dbSchema, t.name as tabName, c.name as colName, types.name from sys.tables t join sys.columns c on (t.object_id = c.object_id) join sys.types types on (c.user_type_id = types.user_type_id) where types.name = 'geometry'";
-                    adapter.SelectCommand.Connection = conn;
+                    adapter.SelectCommand.Connection = dbConnection;
                     adapter.Fill(tables);
 
                     adapter.SelectCommand.CommandText = @"select SCHEMA_NAME(t.schema_id) as dbSchema, t.name as tabName, c.name as colName, types.name from sys.views t join sys.columns c on (t.object_id = c.object_id) join sys.types types on (c.user_type_id = types.user_type_id) where types.name = 'geometry'";
                     adapter.Fill(views);
 
-                    conn.Close();
+                    foreach (DataRow row in tables.Rows)
+                    {
+                        var fcShema = row["dbSchema"].ToString();
+                        var tableName = row["tabName"].ToString();
+                        var fcName = title.Contains(".") ? $"{fcShema}.{tableName}" : tableName;
+
+                        if (await EqualsTableName(fcName, title, false))
+                        {
+                            return new DatasetElement(await Featureclass.Create(dbConnection, this,
+                                fcName,
+                                IDFieldName(dbConnection, title),
+                                row["colName"].ToString(), false));
+                        }
+                    }
+
+                    foreach (DataRow row in views.Rows)
+                    {
+                        var fcShema = row["dbSchema"].ToString();
+                        var tableName = row["tabName"].ToString();
+                        var fcName = title.Contains(".") ? $"{fcShema}.{tableName}" : tableName;
+
+                        if (await EqualsTableName(fcName, title, true))
+                        {
+                            return new DatasetElement(await Featureclass.Create(dbConnection, this,
+                                fcName,
+                                IDFieldName(dbConnection, title),
+                                row["colName"].ToString(), true));
+                        }
+                    }
+
+                    dbConnection.Close();
                 }
             }
             catch (Exception ex)
@@ -516,37 +541,6 @@ namespace gView.DataSources.MSSqlSpatial
                 _errMsg = ex.Message;
                 return null;
             }
-
-            foreach (DataRow row in tables.Rows)
-            {
-                var fcShema = row["dbSchema"].ToString();
-                var tableName = row["tabName"].ToString();
-                var fcName = title.Contains(".") ? $"{fcShema}.{tableName}" : tableName;
-
-                if (await EqualsTableName(fcName, title, false))
-                {
-                    return new DatasetElement(await Featureclass.Create(this,
-                        fcName,
-                        IDFieldName(title),
-                        row["colName"].ToString(), false));
-                }
-            }
-
-            foreach (DataRow row in views.Rows)
-            {
-                var fcShema = row["dbSchema"].ToString();
-                var tableName = row["tabName"].ToString();
-                var fcName = title.Contains(".") ? $"{fcShema}.{tableName}" : tableName;
-
-                if (await EqualsTableName(fcName, title, true))
-                {
-                    return new DatasetElement(await Featureclass.Create(this,
-                        fcName,
-                        IDFieldName(title),
-                        row["colName"].ToString(), true));
-                }
-            }
-
             return null;
         }
         #endregion
