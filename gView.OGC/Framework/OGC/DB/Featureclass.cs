@@ -122,142 +122,132 @@ namespace gView.Framework.OGC.DB
 
         private Exception _lastException = null;
 
-        async protected Task ReadSchema(DbConnection reuseableDbConnection = null)
+        async protected Task ReadSchema()
         {
             if (_dataset == null)
             {
                 return;
             }
 
-            var dbConnection = reuseableDbConnection;
-            if (dbConnection == null)
-            {
-                dbConnection = _dataset.ProviderFactory.CreateConnection();
-                dbConnection.ConnectionString = _dataset.ConnectionString;
-
-                await dbConnection.OpenAsync();
-            }
             try
             {
                 // Fields
-                DbCommand command = _dataset.ProviderFactory.CreateCommand();
-                command.CommandText = _dataset.SelectReadSchema(this.Name); // "select * from " + this.Name;
-                command.Connection = dbConnection;
-
-                //NpgsqlCommand command = new NpgsqlCommand("select * from " + this.Name, connection);
-                using (DbDataReader schemareader = await command.ExecuteReaderAsync(CommandBehavior.SchemaOnly))
+                using (DbConnection dbConnection = _dataset.ProviderFactory.CreateConnection())
                 {
-                    DataTable schema = schemareader.GetSchemaTable();
+                    dbConnection.ConnectionString = _dataset.ConnectionString;
+                    await dbConnection.OpenAsync();
 
-                    bool foundId = false, foundShape = false;
-                    foreach (DataRow row in schema.Rows)
+                    DbCommand command = _dataset.ProviderFactory.CreateCommand();
+                    command.CommandText = _dataset.SelectReadSchema(this.Name); // "select * from " + this.Name;
+                    command.Connection = dbConnection;
+
+                    //NpgsqlCommand command = new NpgsqlCommand("select * from " + this.Name, connection);
+                    using (DbDataReader schemareader = await command.ExecuteReaderAsync(CommandBehavior.SchemaOnly))
                     {
-                        if (row["ColumnName"].ToString() == _idfield && foundId == false)
-                        {
-                            foundId = true;
-                            _fields.Add(new Field(_idfield, FieldType.ID,
-                                Convert.ToInt32(row["ColumnSize"]),
-                                Convert.ToInt32(row["NumericPrecision"])));
-                            continue;
-                        }
-                        else if (row["ColumnName"].ToString() == _shapefield && foundShape == false)
-                        {
-                            foundShape = true;
-                            _fields.Add(new Field(_shapefield, FieldType.Shape));
-                            continue;
-                        }
+                        DataTable schema = schemareader.GetSchemaTable();
 
-                        if (schema.Columns["IsIdentity"] != null && row["IsIdentity"] != null && (bool)row["IsIdentity"] == true)
+                        bool foundId = false, foundShape = false;
+                        foreach (DataRow row in schema.Rows)
                         {
-                            if (foundId == false)
+                            if (row["ColumnName"].ToString() == _idfield && foundId == false)
                             {
-                                _idfield = row["ColumnName"].ToString();
+                                foundId = true;
+                                _fields.Add(new Field(_idfield, FieldType.ID,
+                                    Convert.ToInt32(row["ColumnSize"]),
+                                    Convert.ToInt32(row["NumericPrecision"])));
+                                continue;
+                            }
+                            else if (row["ColumnName"].ToString() == _shapefield && foundShape == false)
+                            {
+                                foundShape = true;
+                                _fields.Add(new Field(_shapefield, FieldType.Shape));
+                                continue;
                             }
 
-                            foundId = true;
-
-                            _fields.Add(new Field(_idfield, FieldType.ID,
-                                Convert.ToInt32(row["ColumnSize"]),
-                                Convert.ToInt32(row["NumericPrecision"])));
-                            continue;
-                        }
-
-                        Field field = new Field(row["ColumnName"].ToString());
-                        if (row["DataType"] is Type)
-                        {
-                            if ((Type)row["DataType"] == typeof(System.Int32))
+                            if (schema.Columns["IsIdentity"] != null && row["IsIdentity"] != null && (bool)row["IsIdentity"] == true)
                             {
-                                field.type = FieldType.integer;
-                            }
-                            else if ((Type)row["DataType"] == typeof(System.Int16))
-                            {
-                                field.type = FieldType.smallinteger;
-                            }
-                            else if ((Type)row["DataType"] == typeof(System.Int64))
-                            {
-                                field.type = FieldType.biginteger;
-                            }
-                            else if ((Type)row["DataType"] == typeof(System.DateTime))
-                            {
-                                field.type = FieldType.Date;
-                            }
-                            else if ((Type)row["DataType"] == typeof(System.Double))
-                            {
-                                field.type = FieldType.Double;
-                            }
-                            else if ((Type)row["DataType"] == typeof(System.Decimal))
-                            {
-                                field.type = FieldType.Float;
-                            }
-                            else if ((Type)row["DataType"] == typeof(System.Boolean))
-                            {
-                                field.type = FieldType.boolean;
-                            }
-                            else if ((Type)row["DataType"] == typeof(System.Char))
-                            {
-                                field.type = FieldType.character;
-                            }
-                            else if ((Type)row["DataType"] == typeof(System.String))
-                            {
-                                field.type = FieldType.String;
-                            }
-                            else if (row["DataType"].ToString() == "Microsoft.SqlServer.Types.SqlGeometry" ||
-                                     row["DataType"].ToString() == "Microsoft.SqlServer.Types.SqlGeography")
-                            {
-                                if (foundShape == false)
+                                if (foundId == false)
                                 {
-                                    _shapefield = row["ColumnName"].ToString();
+                                    _idfield = row["ColumnName"].ToString();
                                 }
 
-                                foundShape = true;
-                                field.type = FieldType.String;
+                                foundId = true;
+
+                                _fields.Add(new Field(_idfield, FieldType.ID,
+                                    Convert.ToInt32(row["ColumnSize"]),
+                                    Convert.ToInt32(row["NumericPrecision"])));
+                                continue;
                             }
+
+                            Field field = new Field(row["ColumnName"].ToString());
+                            if (row["DataType"] is Type)
+                            {
+                                if ((Type)row["DataType"] == typeof(System.Int32))
+                                {
+                                    field.type = FieldType.integer;
+                                }
+                                else if ((Type)row["DataType"] == typeof(System.Int16))
+                                {
+                                    field.type = FieldType.smallinteger;
+                                }
+                                else if ((Type)row["DataType"] == typeof(System.Int64))
+                                {
+                                    field.type = FieldType.biginteger;
+                                }
+                                else if ((Type)row["DataType"] == typeof(System.DateTime))
+                                {
+                                    field.type = FieldType.Date;
+                                }
+                                else if ((Type)row["DataType"] == typeof(System.Double))
+                                {
+                                    field.type = FieldType.Double;
+                                }
+                                else if ((Type)row["DataType"] == typeof(System.Decimal))
+                                {
+                                    field.type = FieldType.Float;
+                                }
+                                else if ((Type)row["DataType"] == typeof(System.Boolean))
+                                {
+                                    field.type = FieldType.boolean;
+                                }
+                                else if ((Type)row["DataType"] == typeof(System.Char))
+                                {
+                                    field.type = FieldType.character;
+                                }
+                                else if ((Type)row["DataType"] == typeof(System.String))
+                                {
+                                    field.type = FieldType.String;
+                                }
+                                else if (row["DataType"].ToString() == "Microsoft.SqlServer.Types.SqlGeometry" ||
+                                         row["DataType"].ToString() == "Microsoft.SqlServer.Types.SqlGeography")
+                                {
+                                    if (foundShape == false)
+                                    {
+                                        _shapefield = row["ColumnName"].ToString();
+                                    }
+
+                                    foundShape = true;
+                                    field.type = FieldType.String;
+                                }
+                            }
+
+
+                            field.size = Convert.ToInt32(row["ColumnSize"]);
+                            int precision;
+                            if (int.TryParse(row["NumericPrecision"]?.ToString(), out precision))
+                            {
+                                field.precision = precision;
+                            }
+
+                            _fields.Add(field);
                         }
 
-
-                        field.size = Convert.ToInt32(row["ColumnSize"]);
-                        int precision;
-                        if (int.TryParse(row["NumericPrecision"]?.ToString(), out precision))
-                        {
-                            field.precision = precision;
-                        }
-
-                        _fields.Add(field);
                     }
-
                 }
             }
             catch (Exception ex)
             {
                 string msg = ex.Message;
-            }
-            finally
-            {
-                if(reuseableDbConnection==null)
-                {
-                    dbConnection.Close();
-                    dbConnection.Dispose();
-                }
             }
         }
 

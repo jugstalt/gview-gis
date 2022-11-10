@@ -16,50 +16,57 @@ namespace gView.DataSources.MSSqlSpatial
 
         }
 
-        async static public Task<IFeatureClass> Create(DbConnection resuableConnection, GeometryDataset dataset, string name, string idFieldName, string shapeFieldName, bool isView)
+        async static public Task<IFeatureClass> Create(GeometryDataset dataset, string name, string idFieldName, string shapeFieldName, bool isView)
         {
-            var featureClass = new Featureclass(dataset, name, idFieldName, shapeFieldName, isView);
-
-            featureClass._name = await dataset.TableNamePlusSchema(name, isView);
-            featureClass._idfield = idFieldName;
-            featureClass._shapefield = shapeFieldName;
-            featureClass._geomType = GeometryType.Unknown;
-
-            featureClass._dataset = dataset;
-            if (featureClass._dataset is GeographyDataset)
+            try
             {
-                featureClass._sRef = gView.Framework.Geometry.SpatialReference.FromID("epsg:4326");
-            }
+                var featureClass = new Featureclass(dataset, name, idFieldName, shapeFieldName, isView);
 
-            await featureClass.ReadSchema(resuableConnection);
+                featureClass._name = await dataset.TableNamePlusSchema(name, isView);
+                featureClass._idfield = idFieldName;
+                featureClass._shapefield = shapeFieldName;
+                featureClass._geomType = GeometryType.Unknown;
 
-            if (String.IsNullOrEmpty(featureClass._idfield) && featureClass._fields.Count > 0 && featureClass._dataset != null)
-            {
-                for (int i = 0; i < featureClass._fields.Count; i++)
+                featureClass._dataset = dataset;
+                if (featureClass._dataset is GeographyDataset)
                 {
-                    var field = featureClass._fields[i] as Field;
+                    featureClass._sRef = gView.Framework.Geometry.SpatialReference.FromID("epsg:4326");
+                }
 
-                    if (field != null && IdFieldCandidates.Contains(field.name.ToLower()))
+                await featureClass.ReadSchema();
+
+                if (String.IsNullOrEmpty(featureClass._idfield) && featureClass._fields.Count > 0 && featureClass._dataset != null)
+                {
+                    for (int i = 0; i < featureClass._fields.Count; i++)
                     {
-                        if ((field.type == FieldType.integer || field.type == FieldType.biginteger || field.type == FieldType.ID))
-                        {
-                            featureClass._idfield = field.name;
-                            ((Field)field).type = FieldType.ID;
+                        var field = featureClass._fields[i] as Field;
 
-                            break;
+                        if (field != null && IdFieldCandidates.Contains(field.name.ToLower()))
+                        {
+                            if ((field.type == FieldType.integer || field.type == FieldType.biginteger || field.type == FieldType.ID))
+                            {
+                                featureClass._idfield = field.name;
+                                ((Field)field).type = FieldType.ID;
+
+                                break;
+                            }
                         }
                     }
                 }
+
+                //base._geomType = geometryType.Polygon;
+
+                if (featureClass._sRef == null)
+                {
+                    featureClass._sRef = await gView.Framework.OGC.DB.OgcSpatialFeatureclass.TrySelectSpatialReference(dataset, featureClass);
+                }
+
+                return featureClass;
             }
-
-            //base._geomType = geometryType.Polygon;
-
-            if (featureClass._sRef == null)
+            catch
             {
-                featureClass._sRef = await gView.Framework.OGC.DB.OgcSpatialFeatureclass.TrySelectSpatialReference(dataset, featureClass);
+                return null;
             }
-
-            return featureClass;
         }
 
         public override ISpatialReference SpatialReference

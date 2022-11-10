@@ -293,31 +293,32 @@ namespace gView.DataSources.MSSqlSpatial
                         adapter.SelectCommand.CommandText = @"select SCHEMA_NAME(t.schema_id) as dbSchema, t.name as tabName, c.name as colName, types.name from sys.views t join sys.columns c on (t.object_id = c.object_id) join sys.types types on (c.user_type_id = types.user_type_id) where types.name = 'geography'";
                         adapter.Fill(views);
 
-                        foreach (DataRow row in tables.Rows)
-                        {
-                            var fcShema = row["dbSchema"].ToString();
-                            var fcName = String.IsNullOrEmpty(fcShema) ? row["tabName"].ToString() : $"{fcShema}.{row["tabName"].ToString()}";
-
-                            IFeatureClass fc = await Featureclass.Create(dbConnection, this,
-                                fcName,
-                                IDFieldName(dbConnection, fcName),
-                                row["colName"].ToString(), false);
-                            layers.Add(new DatasetElement(fc));
-                        }
-                        foreach (DataRow row in views.Rows)
-                        {
-                            var fcShema = row["dbSchema"].ToString();
-                            var fcName = String.IsNullOrEmpty(fcShema) ? row["tabName"].ToString() : $"{fcShema}.{row["tabName"].ToString()}";
-
-                            IFeatureClass fc = await Featureclass.Create(dbConnection, this,
-                                fcName,
-                                IDFieldName(dbConnection, fcName),
-                                row["colName"].ToString(), true);
-                            layers.Add(new DatasetElement(fc));
-                        }
-
                         dbConnection.Close();
                     }
+
+                    foreach (DataRow row in tables.Rows)
+                    {
+                        var fcShema = row["dbSchema"].ToString();
+                        var fcName = String.IsNullOrEmpty(fcShema) ? row["tabName"].ToString() : $"{fcShema}.{row["tabName"].ToString()}";
+
+                        IFeatureClass fc = await Featureclass.Create(this,
+                            fcName,
+                            await IDFieldName(fcName),
+                            row["colName"].ToString(), false);
+                        layers.Add(new DatasetElement(fc));
+                    }
+                    foreach (DataRow row in views.Rows)
+                    {
+                        var fcShema = row["dbSchema"].ToString();
+                        var fcName = String.IsNullOrEmpty(fcShema) ? row["tabName"].ToString() : $"{fcShema}.{row["tabName"].ToString()}";
+
+                        IFeatureClass fc = await Featureclass.Create(this,
+                            fcName,
+                            await IDFieldName(fcName),
+                            row["colName"].ToString(), true);
+                        layers.Add(new DatasetElement(fc));
+                    }
+
 
                     _layers = layers;
                 }
@@ -350,36 +351,37 @@ namespace gView.DataSources.MSSqlSpatial
                     adapter.SelectCommand.CommandText = @"select SCHEMA_NAME(t.schema_id) as dbSchema, t.name as tabName, c.name as colName, types.name from sys.views t join sys.columns c on (t.object_id = c.object_id) join sys.types types on (c.user_type_id = types.user_type_id) where types.name = 'geography'";
                     adapter.Fill(views);
 
-                    foreach (DataRow row in tables.Rows)
-                    {
-                        var fcShema = row["dbSchema"].ToString();
-                        var tableName = row["tabName"].ToString();
-                        var fcName = title.Contains(".") ? $"{fcShema}.{tableName}" : tableName;
-
-                        if (await EqualsTableName(fcName, title, false))
-                        {
-                            return new DatasetElement(await Featureclass.Create(dbConnection, this,
-                                fcName,
-                                IDFieldName(dbConnection, title),
-                                row["colName"].ToString(), false));
-                        }
-                    }
-                    foreach (DataRow row in views.Rows)
-                    {
-                        var fcShema = row["dbSchema"].ToString();
-                        var tableName = row["tabName"].ToString();
-                        var fcName = title.Contains(".") ? $"{fcShema}.{tableName}" : tableName;
-
-                        if (await EqualsTableName(fcName, title, true))
-                        {
-                            return new DatasetElement(await Featureclass.Create(dbConnection, this,
-                                fcName,
-                                IDFieldName(dbConnection, title),
-                                row["colName"].ToString(), true));
-                        }
-                    }
 
                     dbConnection.Close();
+                }
+
+                foreach (DataRow row in tables.Rows)
+                {
+                    var fcShema = row["dbSchema"].ToString();
+                    var tableName = row["tabName"].ToString();
+                    var fcName = title.Contains(".") ? $"{fcShema}.{tableName}" : tableName;
+
+                    if (await EqualsTableName(fcName, title, false))
+                    {
+                        return new DatasetElement(await Featureclass.Create(this,
+                            fcName,
+                            await IDFieldName( title),
+                            row["colName"].ToString(), false));
+                    }
+                }
+                foreach (DataRow row in views.Rows)
+                {
+                    var fcShema = row["dbSchema"].ToString();
+                    var tableName = row["tabName"].ToString();
+                    var fcName = title.Contains(".") ? $"{fcShema}.{tableName}" : tableName;
+
+                    if (await EqualsTableName(fcName, title, true))
+                    {
+                        return new DatasetElement(await Featureclass.Create(this,
+                            fcName,
+                            await IDFieldName(title),
+                            row["colName"].ToString(), true));
+                    }
                 }
             }
             catch (Exception ex)
