@@ -480,10 +480,7 @@ namespace gView.DataSources.MSSqlSpatial
                         }
                     }
 
-                    _layers = new List<IDatasetElement>(layers.ToArray());
-
-
-
+                    _layers = new List<IDatasetElement>(layers.OrderByDescending(l => l.Class.Name).ToArray());
                 }
                 catch (Exception ex)
                 {
