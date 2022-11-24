@@ -660,6 +660,7 @@ namespace gView.Framework.OGC.DB
                                     fields.Append(this.DbColumnName(fClass.ShapeFieldName));
 
                                     string paramExpresssion = InsertShapeParameterExpression((OgcSpatialFeatureclass)fClass, shape);
+                                    
                                     if (!String.IsNullOrWhiteSpace(paramExpresssion))
                                     {
                                         paramExpresssion = String.Format(paramExpresssion, this.DbParameterName(fClass.ShapeFieldName));
@@ -842,12 +843,25 @@ namespace gView.Framework.OGC.DB
                             object shapeObject = this.ShapeParameterValue((OgcSpatialFeatureclass)fClass, shape,
                                 shape.Srs != null && shape.Srs > 0 ? (int)shape.Srs : srid,
                                 out asParameter);
+
                             if (asParameter == true)
                             {
                                 DbParameter parameter = this.ProviderFactory.CreateParameter();
                                 parameter.ParameterName = "@" + fClass.ShapeFieldName;
                                 parameter.Value = shapeObject != null ? shapeObject : DBNull.Value;
-                                fields.Append(DbColumnName(fClass.ShapeFieldName) + "=" + DbParameterName(fClass.ShapeFieldName));
+
+                                string paramExpresssion = InsertShapeParameterExpression((OgcSpatialFeatureclass)fClass, shape);
+
+                                if (!String.IsNullOrWhiteSpace(paramExpresssion))
+                                {
+                                    paramExpresssion = String.Format(paramExpresssion, this.DbParameterName(fClass.ShapeFieldName));
+                                }
+                                else
+                                {
+                                    paramExpresssion = DbParameterName(fClass.ShapeFieldName);
+                                }
+
+                                fields.Append(DbColumnName(fClass.ShapeFieldName) + "=" + paramExpresssion);
                                 command.Parameters.Add(parameter);
                             }
                             else
