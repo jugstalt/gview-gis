@@ -27,5 +27,7 @@ namespace gView.Framework.Geometry
         }
 
         bool Equals(ISpatialReference sRef);
+
+        double MakeValidTolerance { get; }
     }
 }

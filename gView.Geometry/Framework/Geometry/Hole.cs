@@ -20,7 +20,7 @@ namespace gView.Framework.Geometry
 
         public override object Clone()
         {
-            return new Hole(m_points);
+            return new Hole(_points);
         }
     }
 }

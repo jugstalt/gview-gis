@@ -40,6 +40,7 @@ namespace gView.Framework.Geometry
                 m_x = m_y = m_z = m_m = 0.0;
             }
         }
+
         #region IPoint Member
 
         /// <summary>

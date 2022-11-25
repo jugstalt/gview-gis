@@ -6,7 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace gView.Interoperability.GeoServices.Request
+namespace gView.Interoperability.GeoServices.Request.Extensions
 {
     static class Extensions
     {
@@ -14,7 +14,7 @@ namespace gView.Interoperability.GeoServices.Request
         {
             try
             {
-                if (String.IsNullOrWhiteSpace(val) || !val.Contains(","))
+                if (string.IsNullOrWhiteSpace(val) || !val.Contains(","))
                 {
                     return new int[] { 400, 400 };
                 }
@@ -34,10 +34,10 @@ namespace gView.Interoperability.GeoServices.Request
             {
                 var bbox = val.Split(',');
                 return new double[] {
-                    NumberConverter.ToDouble(bbox[0]),
-                    NumberConverter.ToDouble(bbox[1]),
-                    NumberConverter.ToDouble(bbox[2]),
-                    NumberConverter.ToDouble(bbox[3])
+                    bbox[0].ToDouble(),
+                    bbox[1].ToDouble(),
+                    bbox[2].ToDouble(),
+                    bbox[3].ToDouble()
                 };
             }
             catch (Exception ex)

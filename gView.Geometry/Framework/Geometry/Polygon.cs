@@ -171,29 +171,64 @@ namespace gView.Framework.Geometry
             }
         }
 
-        public void CloseAllRings()
+        public void CloseAllRings(double tolerance = GeometryConst.Epsilon)
         {
             if (_rings != null)
             {
                 foreach (var ring in _rings)
                 {
-                    ring.Close();
+                    ring.Close(tolerance);
                 }
             }
         }
 
-        public void MakeValid()
+        public void MakeValid__(double tolerance = GeometryConst.Epsilon)
         {
             List<IRing> v = _rings;
             _rings = new List<IRing>();
 
             foreach (var ring in v)
             {
-                _rings.AddRange(Algorithm.SplitRing(ring));
+                _rings.AddRange(Algorithm.SplitRing(ring, tolerance));
             }
 
             VerifyHoles();
         }
+
+        public void MakeValid(double tolerance = GeometryConst.Epsilon)
+        {
+            var newRings = new List<IRing>();
+
+            foreach (IRing ring in _rings)
+            {
+                var newRing = new Ring();
+                IPoint startPoint = null;
+
+                for (int p = 0, pointCount = ring.PointCount; p < pointCount; p++)
+                {
+                    if (p == 0)
+                    {
+                        newRing.AddPoint(startPoint = ring[p]);
+                    }
+                    else if (p < pointCount - 1 && startPoint.Distance(ring[p]) < tolerance)
+                    {
+                        newRings.Add(newRing);
+
+                        newRing = new Ring();
+                        newRing.AddPoint(startPoint = ring[p]);
+                    }
+                    else
+                    {
+                        newRing.AddPoint(ring[p]);
+                    }
+                }
+
+                newRings.Add(newRing);
+            }
+
+            _rings = new List<IRing>(newRings.Where(r => r.Area > 0.0));
+        }
+
 
         #endregion
 
@@ -345,6 +380,7 @@ namespace gView.Framework.Geometry
 
             _ringsChecked = _rings.Count;
         }
+
 
         public IEnumerable<IRing> OuterRings()
         {

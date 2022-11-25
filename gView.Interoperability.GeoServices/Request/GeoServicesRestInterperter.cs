@@ -12,6 +12,7 @@ using gView.Framework.system;
 using gView.Framework.UI;
 using gView.Interoperability.GeoServices.Exceptions;
 using gView.Interoperability.GeoServices.Extensions;
+using gView.Interoperability.GeoServices.Request.Extensions;
 using gView.Interoperability.GeoServices.Rest.Json;
 using gView.Interoperability.GeoServices.Rest.Json.Features;
 using gView.Interoperability.GeoServices.Rest.Json.FeatureServer;
@@ -1142,6 +1143,8 @@ namespace gView.Interoperability.GeoServices.Request
                         throw new Exception("Can't insert features with existing ObjectId");
                     }
 
+                    features.GeometryMakeValid(serviceMap, featureClass);
+
                     if (!await database.Insert(featureClass, features))
                     {
                         throw new Exception(database.LastErrorMessage);
@@ -1210,6 +1213,8 @@ namespace gView.Interoperability.GeoServices.Request
                     {
                         throw new Exception("Can't update features without existing ObjectId");
                     }
+
+                    features.GeometryMakeValid(serviceMap, featureClass);
 
                     if (!await database.Update(featureClass, features))
                     {

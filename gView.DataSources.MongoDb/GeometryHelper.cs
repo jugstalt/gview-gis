@@ -43,7 +43,10 @@ namespace gView.DataSources.MongoDb
             if (geometry is IPolygon)
             {
                 var polygon = (IPolygon)geometry;
-                polygon.MakeValid();
+                if(geometry is Polygon)
+                {
+                    ((Polygon)polygon).MakeValid__();
+                }
                 polygon.CloseAllRings();
 
                 if (polygon.OuterRingCount == 1)

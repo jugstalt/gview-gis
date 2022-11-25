@@ -114,7 +114,7 @@ namespace gView.Framework.Geometry
 
         public override object Clone()
         {
-            return new Ring(m_points);
+            return new Ring(_points);
         }
     }
 }

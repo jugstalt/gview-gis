@@ -32,13 +32,13 @@ namespace gView.Framework.Geometry
         {
             get
             {
-                if (m_points.Count < 2)
+                if (_points.Count < 2)
                 {
                     return 0.0;
                 }
 
                 double len = 0.0;
-                for (int i = 1; i < m_points.Count; i++)
+                for (int i = 1; i < _points.Count; i++)
                 {
                     len += Math.Sqrt(
                         (this[i - 1].X - this[i].X) * (this[i - 1].X - this[i].X) +
@@ -69,23 +69,23 @@ namespace gView.Framework.Geometry
 
         public void ChangeDirection()
         {
-            m_points = ListOperations<IPoint>.Swap(m_points);
+            _points = ListOperations<IPoint>.Swap(_points);
         }
         public IPath Trim(double length)
         {
             Path trim = new Path();
-            if (m_points.Count == 0)
+            if (_points.Count == 0)
             {
                 return trim;
             }
 
-            IPoint prePoint = new Point(m_points[0]);
+            IPoint prePoint = new Point(_points[0]);
             trim.AddPoint(prePoint);
 
             double len = 0.0;
-            for (int i = 1; i < m_points.Count; i++)
+            for (int i = 1; i < _points.Count; i++)
             {
-                IPoint point = m_points[i];
+                IPoint point = _points[i];
                 double l = prePoint.Distance(point);
                 if (len + l > length)
                 {
@@ -144,21 +144,24 @@ namespace gView.Framework.Geometry
 
         public virtual object Clone()
         {
-            return new Path(m_points);
+            return new Path(_points);
         }
 
         #endregion
 
-        public void Close()
+        public void Close(double tolerance = GeometryConst.Epsilon)
         {
-            if (m_points.Count < 3)
+            if (_points.Count < 3)
             {
                 return;
             }
 
-            if (!m_points[0].Equals(m_points[m_points.Count - 1]))
+            var first = _points[0];
+            var last = _points[_points.Count - 1];
+
+            if(first.Distance2(last)>=tolerance*tolerance)
             {
-                m_points.Add(new Point(m_points[0]));
+                _points.Add(first);
             }
         }
     }

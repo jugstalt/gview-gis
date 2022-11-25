@@ -12,14 +12,14 @@ namespace gView.Framework.Geometry
         IRing this[int ringIndex] { get; }
 
         void VerifyHoles();
-        void MakeValid();
+        void MakeValid(double tolerance = GeometryConst.Epsilon);
 
 
         int OuterRingCount { get; }
 
         int InnerRingCount { get; }
 
-        void CloseAllRings();
+        void CloseAllRings(double tolerance = GeometryConst.Epsilon);
 
         IEnumerable<IRing> OuterRings();
         IEnumerable<IHole> InnerRings(IRing outer);

@@ -41,7 +41,7 @@ namespace gView.Framework.Geometry
 
         public object Clone()
         {
-            return new MultiPoint(m_points);
+            return new MultiPoint(_points);
         }
 
         #endregion

@@ -526,7 +526,7 @@ namespace gView.Framework.SpatialAlgorithms
 
         #region Paths
 
-        public static int[] FindIdenticalPoints(IPointCollection pColl, bool ignoreStartAndEnd = false)
+        public static int[] FindIdenticalPoints(IPointCollection pColl, double tolerance, bool ignoreStartAndEnd = false)
         {
             int from = ignoreStartAndEnd ? 1 : 0;
             int to = ignoreStartAndEnd ? pColl.PointCount - 1 : pColl.PointCount;
@@ -540,7 +540,7 @@ namespace gView.Framework.SpatialAlgorithms
                     continue;
                 }
 
-                var duples = FindDuples(pColl, pColl[i], i + 1);
+                var duples = FindDuples(pColl, pColl[i], tolerance, i + 1);
                 if (duples.Length > 0)
                 {
                     if (idendenticalPoints == null)
@@ -556,13 +556,13 @@ namespace gView.Framework.SpatialAlgorithms
             return idendenticalPoints?.ToArray() ?? new int[0];
         }
 
-        public static int[] FindDuples(IPointCollection pColl, IPoint point, int startAt = 0)
+        public static int[] FindDuples(IPointCollection pColl, IPoint point, double tolerance, int startAt = 0)
         {
             List<int> result = null;
 
             for (int i = startAt, to = pColl.PointCount; i < to; i++)
             {
-                if (pColl[i].Equals(point, 1e-11))
+                if (pColl[i].Equals(point, tolerance))
                 {
                     if (result == null)
                     {
@@ -576,7 +576,7 @@ namespace gView.Framework.SpatialAlgorithms
             return result?.ToArray() ?? new int[0];
         }
 
-        public static IEnumerable<IRing> SplitRing(IRing ring)
+        public static IEnumerable<IRing> SplitRing(IRing ring, double tolerance)
         {
             ring.Close();
 
@@ -585,7 +585,7 @@ namespace gView.Framework.SpatialAlgorithms
                 throw new Exception("can't resolve self intersecting for polygon ring");
             }
 
-            var identicalPoints = FindIdenticalPoints(ring, true);
+            var identicalPoints = FindIdenticalPoints(ring, tolerance, true);
             if (identicalPoints.Length == 0)
             {
                 return new IRing[] { ring }.Where(r => r.Area > 0);
@@ -593,6 +593,7 @@ namespace gView.Framework.SpatialAlgorithms
 
             List<IPath> paths = new List<IPath>();
             Path current = new Path();
+
             for (int i = 0; i < ring.PointCount; i++)
             {
                 current.AddPoint(new Point(ring[i]));

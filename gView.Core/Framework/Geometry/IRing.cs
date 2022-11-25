@@ -4,7 +4,7 @@
     {
         double Area { get; }
         IPoint Centroid { get; }
-        void Close();
+        void Close(double tolerance = GeometryConst.Epsilon);
 
         IPolygon ToPolygon();
     }

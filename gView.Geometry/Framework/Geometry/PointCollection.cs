@@ -11,17 +11,17 @@ namespace gView.Framework.Geometry
     /// </summary>
     public class PointCollection : IPointCollection
     {
-        protected List<IPoint> m_points;
+        protected List<IPoint> _points;
         private IEnvelope _cacheEnv = null;
 
         public PointCollection()
         {
-            m_points = new List<IPoint>();
+            _points = new List<IPoint>();
         }
         public PointCollection(List<IPoint> points)
             : this()
         {
-            m_points = new List<IPoint>();
+            _points = new List<IPoint>();
             foreach (IPoint point in points)
             {
                 if (point == null)
@@ -29,7 +29,7 @@ namespace gView.Framework.Geometry
                     continue;
                 }
 
-                m_points.Add(new Point(point.X, point.Y));
+                _points.Add(new Point(point.X, point.Y));
             }
         }
         public PointCollection(double[] x, double[] y, double[] z)
@@ -38,7 +38,7 @@ namespace gView.Framework.Geometry
         }
         public PointCollection(double[] xy)
         {
-            m_points = new List<IPoint>();
+            _points = new List<IPoint>();
             if (xy == null)
             {
                 return;
@@ -46,7 +46,7 @@ namespace gView.Framework.Geometry
 
             for (int i = 0; i < xy.Length - 1; i += 2)
             {
-                m_points.Add(new Point(xy[i], xy[i + 1]));
+                _points.Add(new Point(xy[i], xy[i + 1]));
             }
         }
         public PointCollection(IPointCollection pColl)
@@ -56,7 +56,7 @@ namespace gView.Framework.Geometry
                 return;
             }
 
-            m_points = new List<IPoint>();
+            _points = new List<IPoint>();
             for (int i = 0; i < pColl.PointCount; i++)
             {
                 if (pColl[i] == null)
@@ -64,7 +64,7 @@ namespace gView.Framework.Geometry
                     continue;
                 }
 
-                m_points.Add(new Point(pColl[i].X, pColl[i].Y, pColl[i].Z));
+                _points.Add(new Point(pColl[i].X, pColl[i].Y, pColl[i].Z));
             }
         }
 
@@ -76,7 +76,7 @@ namespace gView.Framework.Geometry
         /// <param name="z"></param>
         internal void setXYZ(double[] x, double[] y, double[] z)
         {
-            m_points = new List<IPoint>();
+            _points = new List<IPoint>();
             if (x.Length == y.Length)
             {
                 int count = x.Length;
@@ -84,17 +84,17 @@ namespace gView.Framework.Geometry
                 {
                     if (z == null)
                     {
-                        m_points.Add(new Point(x[i], y[i]));
+                        _points.Add(new Point(x[i], y[i]));
                     }
                     else
                     {
                         if (z.Length < i)
                         {
-                            m_points.Add(new Point(x[i], y[i], z[i]));
+                            _points.Add(new Point(x[i], y[i], z[i]));
                         }
                         else
                         {
-                            m_points.Add(new Point(x[i], y[i], 0.0));
+                            _points.Add(new Point(x[i], y[i], 0.0));
                         }
                     }
                 }
@@ -108,14 +108,14 @@ namespace gView.Framework.Geometry
         /// <param name="y"></param>
         internal void getXY(out double[] x, out double[] y)
         {
-            int count = m_points.Count;
+            int count = _points.Count;
             x = new double[count];
             y = new double[count];
 
             for (int i = 0; i < count; i++)
             {
-                x[i] = m_points[i].X;
-                y[i] = m_points[i].Y;
+                x[i] = _points[i].X;
+                y[i] = _points[i].Y;
             }
         }
 
@@ -127,16 +127,16 @@ namespace gView.Framework.Geometry
         /// <param name="z"></param>
         internal void getXYZ(out double[] x, out double[] y, out double[] z)
         {
-            int count = m_points.Count;
+            int count = _points.Count;
             x = new double[count];
             y = new double[count];
             z = new double[count];
 
             for (int i = 0; i < count; i++)
             {
-                x[i] = m_points[i].X;
-                y[i] = m_points[i].Y;
-                z[i] = m_points[i].Z;
+                x[i] = _points[i].X;
+                y[i] = _points[i].Y;
+                z[i] = _points[i].Z;
             }
         }
 
@@ -144,11 +144,11 @@ namespace gView.Framework.Geometry
         {
             if (reverse)
             {
-                return ((IEnumerable<Point>)m_points).Reverse().Skip(fromIndex).ToArray();
+                return ((IEnumerable<Point>)_points).Reverse().Skip(fromIndex).ToArray();
             }
             else
             {
-                return m_points.Skip(fromIndex).ToArray();
+                return _points.Skip(fromIndex).ToArray();
             }
         }
 
@@ -166,7 +166,7 @@ namespace gView.Framework.Geometry
         public void AddPoint(IPoint point)
         {
             _cacheEnv = null;
-            m_points.Add(point);
+            _points.Add(point);
         }
 
         /// <summary>
@@ -177,9 +177,9 @@ namespace gView.Framework.Geometry
         public void InsertPoint(IPoint point, int pos)
         {
             _cacheEnv = null;
-            if (pos > m_points.Count)
+            if (pos > _points.Count)
             {
-                pos = m_points.Count;
+                pos = _points.Count;
             }
 
             if (pos < 0)
@@ -187,7 +187,7 @@ namespace gView.Framework.Geometry
                 pos = 0;
             }
 
-            m_points.Insert(pos, point);
+            _points.Insert(pos, point);
         }
 
         public void AddPoints(IEnumerable<IPoint> points)
@@ -197,7 +197,7 @@ namespace gView.Framework.Geometry
                 return;
             }
 
-            m_points.AddRange(points.Where(p => p != null));
+            _points.AddRange(points.Where(p => p != null));
 
             _cacheEnv = null;
         }
@@ -209,18 +209,18 @@ namespace gView.Framework.Geometry
         public void RemovePoint(int pos)
         {
             _cacheEnv = null;
-            if (pos < 0 || pos >= m_points.Count)
+            if (pos < 0 || pos >= _points.Count)
             {
                 return;
             }
 
-            m_points.RemoveAt(pos);
+            _points.RemoveAt(pos);
         }
 
         public void RemovePoint(IPoint point)
         {
             _cacheEnv = null;
-            m_points.Remove(point);
+            _points.Remove(point);
         }
 
         /// <summary>
@@ -230,7 +230,7 @@ namespace gView.Framework.Geometry
         {
             get
             {
-                return m_points == null ? 0 : m_points.Count;
+                return _points == null ? 0 : _points.Count;
             }
         }
 
@@ -241,12 +241,12 @@ namespace gView.Framework.Geometry
         {
             get
             {
-                if (pointIndex < 0 || pointIndex >= m_points.Count)
+                if (pointIndex < 0 || pointIndex >= _points.Count)
                 {
                     return null;
                 }
 
-                return m_points[pointIndex];
+                return _points[pointIndex];
             }
         }
 
@@ -270,7 +270,7 @@ namespace gView.Framework.Geometry
                 bool first = true;
                 double minx = 0, miny = 0, maxx = 0, maxy = 0;
 
-                foreach (IPoint point in m_points)
+                foreach (IPoint point in _points)
                 {
                     if (first)
                     {
@@ -315,8 +315,8 @@ namespace gView.Framework.Geometry
             //    }
             //}
 
-            w.Write(m_points.Count);
-            foreach (IPoint p in m_points)
+            w.Write(_points.Count);
+            foreach (IPoint p in _points)
             {
                 p.Serialize(w, geomDef);
             }
@@ -327,7 +327,7 @@ namespace gView.Framework.Geometry
         /// <param name="w"></param>
         public void Deserialize(BinaryReader r, IGeometryDef geomDef)
         {
-            m_points.Clear();
+            _points.Clear();
             int points = r.ReadInt32();
 
             //if (points >= 0)
@@ -337,7 +337,7 @@ namespace gView.Framework.Geometry
             {
                 Point p = new Point();
                 p.Deserialize(r, geomDef);
-                m_points.Add(p);
+                _points.Add(p);
             }
 
             //}
@@ -362,7 +362,7 @@ namespace gView.Framework.Geometry
 
         public void RemoveAllPoints()
         {
-            m_points.Clear();
+            _points.Clear();
         }
 
         public override int GetHashCode()
@@ -414,7 +414,7 @@ namespace gView.Framework.Geometry
 
         IEnumerator IEnumerable.GetEnumerator()
         {
-            return m_points.GetEnumerator();
+            return _points.GetEnumerator();
         }
 
         #endregion
