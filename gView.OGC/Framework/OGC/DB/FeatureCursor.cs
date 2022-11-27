@@ -129,6 +129,7 @@ namespace gView.Framework.OGC.DB
                     }
 
                     Feature feature = new Feature();
+                    
                     for (int i = 0; i < _reader.FieldCount; i++)
                     {
                         string fieldname = _reader.GetName(i).OrTake(_subFields != null && _subFields.Length == _reader.FieldCount ? _subFields[i] : "");   // Functions Shape.STArea() as no fieldname

@@ -159,9 +159,16 @@ namespace gView.Framework.Geometry
             var first = _points[0];
             var last = _points[_points.Count - 1];
 
-            if(first.Distance2(last)>=tolerance*tolerance)
+            var dist2 = first.Distance2(last);
+
+            if (dist2 >= tolerance * tolerance)
             {
                 _points.Add(first);
+            }
+            else if (dist2 > 0.0)  // snap it!
+            {
+                last.X = first.X;
+                last.Y = first.Y;
             }
         }
     }

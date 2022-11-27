@@ -421,7 +421,7 @@ namespace gView.Framework.SpatialAlgorithms
             return null;
         }
 
-        public static bool IsSelfIntersecting(IPointCollection pColl, bool appendIntersectionVertices = false)
+        public static bool IsSelfIntersecting(IPointCollection pColl, double tolerance, bool appendIntersectionVertices = false)
         {
             if (pColl == null || pColl.PointCount <= 2)
             {
@@ -449,7 +449,7 @@ namespace gView.Framework.SpatialAlgorithms
                     double x1 = p01.X - p00.X, y1 = p01.Y - p00.Y;
                     double x2 = p02.X - p01.X, y2 = p02.Y - p01.Y;
 
-                    if (IsParallel(x1, y1, x2, y2) == -1)
+                    if (IsParallel(x1, y1, x2, y2, tolerance) == -1)
                     {
                         return true;
                     }
@@ -469,17 +469,17 @@ namespace gView.Framework.SpatialAlgorithms
 
                     IPoint intersectionPoint = SegmentIntersection(p00, p01, p10, p11, true);
                     if (intersectionPoint != null &&
-                        (intersectionPoint.Distance(p00) > 1e-11) &&
-                        (intersectionPoint.Distance(p01) > 1e-11) &&
-                        (intersectionPoint.Distance(p10) > 1e-11) &&
-                        (intersectionPoint.Distance(p11) > 1e-11))
+                        (intersectionPoint.Distance(p00) > tolerance) &&
+                        (intersectionPoint.Distance(p01) > tolerance) &&
+                        (intersectionPoint.Distance(p10) > tolerance) &&
+                        (intersectionPoint.Distance(p11) > tolerance))
                     {
                         if (appendIntersectionVertices)
                         {
                             pColl.InsertPoint(intersectionPoint, j + 1);   // j first !!
                             pColl.InsertPoint(intersectionPoint, i + 1);
 
-                            return IsSelfIntersecting(pColl, appendIntersectionVertices);
+                            return IsSelfIntersecting(pColl, tolerance, appendIntersectionVertices);
                         }
                         else
                         {
@@ -492,9 +492,40 @@ namespace gView.Framework.SpatialAlgorithms
             return result;
         }
 
+        public static bool HasInverseParallels(IPointCollection pColl, double tolerance)
+        {
+            if (pColl == null || pColl.PointCount <= 2)
+            {
+                return false;
+            }
 
+            int to = pColl.PointCount - 1;
+            for (int i = 0; i < to; i++)
+            {
+                IPoint p00 = pColl[i], p01 = pColl[i + 1];
 
-        public static int IsParallel(double x1, double y1, double x2, double y2, double epsi = 1e-7)
+                #region Check if next is parallel with opposite direction
+
+                if (i < pColl.PointCount - 2)
+                {
+                    IPoint p02 = pColl[i + 2];
+
+                    double x1 = p01.X - p00.X, y1 = p01.Y - p00.Y;
+                    double x2 = p02.X - p01.X, y2 = p02.Y - p01.Y;
+
+                    if (IsParallel(x1, y1, x2, y2, tolerance) == -1)
+                    {
+                        return true;
+                    }
+                }
+
+                #endregion
+            }
+
+            return false;
+        }
+
+        public static int IsParallel(double x1, double y1, double x2, double y2, double tolerance)
         {
             var len1 = Math.Sqrt(x1 * x1 + y1 * y1);
             var len2 = Math.Sqrt(x2 * x2 + y2 * y2);
@@ -509,12 +540,12 @@ namespace gView.Framework.SpatialAlgorithms
             x2 /= len2;
             y2 /= len2;
 
-            if (Math.Abs(x2 - x1) < epsi && Math.Abs(y2 - y1) < epsi)   // Parallel with same direction
+            if (Math.Abs(x2 - x1) < tolerance && Math.Abs(y2 - y1) < tolerance)   // Parallel with same direction
             {
                 return 1;
             }
 
-            if (Math.Abs(x1 + x2) < epsi && Math.Abs(y1 + y2) < epsi)   // Paralell with opposite direction 
+            if (Math.Abs(x1 + x2) < tolerance && Math.Abs(y1 + y2) < tolerance)   // Paralell with opposite direction 
             {
                 return -1;
             }
@@ -526,21 +557,23 @@ namespace gView.Framework.SpatialAlgorithms
 
         #region Paths
 
-        public static int[] FindIdenticalPoints(IPointCollection pColl, double tolerance, bool ignoreStartAndEnd = false)
+        private static int[] FindIdenticalPoints(IPointCollection pColl, double tolerance, bool ignoreStartAndEnd = false)
         {
             int from = ignoreStartAndEnd ? 1 : 0;
             int to = ignoreStartAndEnd ? pColl.PointCount - 1 : pColl.PointCount;
+            var tolerance2 = tolerance * tolerance;
 
             List<int> idendenticalPoints = null;
 
             for (int i = from; i < to; i++)
             {
-                if (idendenticalPoints != null && idendenticalPoints.Contains(i))
+                if (idendenticalPoints?.Contains(i) == true)
                 {
                     continue;
                 }
 
-                var duples = FindDuples(pColl, pColl[i], tolerance, i + 1);
+                var duples = FindDuples(pColl, pColl[i], tolerance2, i + 1);
+
                 if (duples.Length > 0)
                 {
                     if (idendenticalPoints == null)
@@ -556,13 +589,13 @@ namespace gView.Framework.SpatialAlgorithms
             return idendenticalPoints?.ToArray() ?? new int[0];
         }
 
-        public static int[] FindDuples(IPointCollection pColl, IPoint point, double tolerance, int startAt = 0)
+        private static int[] FindDuples(IPointCollection pColl, IPoint point, double tolerance2, int startAt = 0)
         {
             List<int> result = null;
 
             for (int i = startAt, to = pColl.PointCount; i < to; i++)
             {
-                if (pColl[i].Equals(point, tolerance))
+                if (pColl[i].Distance2(point) <= tolerance2)
                 {
                     if (result == null)
                     {
@@ -576,11 +609,11 @@ namespace gView.Framework.SpatialAlgorithms
             return result?.ToArray() ?? new int[0];
         }
 
-        public static IEnumerable<IRing> SplitRing(IRing ring, double tolerance)
+        public static IEnumerable<IRing> SplitRing__(IRing ring, double tolerance)
         {
-            ring.Close();
+            ring.Close(tolerance);
 
-            if (IsSelfIntersecting(ring, true))
+            if (IsSelfIntersecting(ring, tolerance, true))
             {
                 throw new Exception("can't resolve self intersecting for polygon ring");
             }
@@ -588,7 +621,7 @@ namespace gView.Framework.SpatialAlgorithms
             var identicalPoints = FindIdenticalPoints(ring, tolerance, true);
             if (identicalPoints.Length == 0)
             {
-                return new IRing[] { ring }.Where(r => r.Area > 0);
+                return new IRing[] { ring }.Where(r => r.Area > tolerance * tolerance);
             }
 
             List<IPath> paths = new List<IPath>();
@@ -613,12 +646,48 @@ namespace gView.Framework.SpatialAlgorithms
 
             foreach (var newPolygon in paths.Polygonize())
             {
-                result.AddRange(newPolygon.Rings.Where(r => r.Area > 0));
+                result.AddRange(newPolygon.Rings.Where(r => r.Area > tolerance * tolerance));
             }
 
             #endregion
 
-            return result.Where(r => r.Area > 0);
+            return result.Where(r => r.Area > tolerance * tolerance);
+        }
+
+        public static IEnumerable<IRing> RemoveLineArtifacts(IRing ring, double tolerance)
+        {
+            if (HasInverseParallels(ring, tolerance))
+            {
+                throw new Exception("can't resolve self overlapping rings");
+            }
+
+            ring.Close(tolerance);
+
+            var identicalPoints = FindIdenticalPoints(ring, tolerance, true);
+            if (identicalPoints.Length == 0)
+            {
+                return new IRing[] { ring }.Where(r => r.Area > 0);
+            }
+
+            var newRings = new List<IRing>();
+            var newRing = new Ring();
+
+            newRings.Add(newRing);
+
+            for (int p = 0, pointCount = ring.PointCount; p < pointCount; p++)
+            {
+                if (p > 0 && p < pointCount - 1 && identicalPoints.Contains(p))
+                {
+                    newRing.Close(tolerance);
+
+                    newRing = new Ring();
+                    newRings.Add(newRing);
+                }
+                newRing.AddPoint(ring[p]);
+            }
+            newRing.Close(tolerance);
+
+            return newRings.Where(r => r.Area > tolerance * tolerance);
         }
 
         #endregion

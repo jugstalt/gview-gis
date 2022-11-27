@@ -175,7 +175,8 @@ namespace gView.DataSources.MSSqlSpatial.DataSources.Sde
 
         protected override IGeometry ValidateGeometry(IFeatureClass fc, IGeometry geometry)
         {
-            return geometry.MakeValid(geometryType: fc.GeometryType);
+            return geometry.MakeValid(fc.SpatialReference?.MakeValidTolerance ?? 1e-8,
+                                      geometryType: fc.GeometryType);
         }
 
         public override DbCommand SelectCommand(gView.Framework.OGC.DB.OgcSpatialFeatureclass fc, IQueryFilter filter, out string shapeFieldName, string functionName = "", string functionField = "", string functionAlias = "")

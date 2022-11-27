@@ -537,6 +537,9 @@ namespace gView.Framework.OGC
                     continue;
                 }
 
+                // a reserved byte for every part... always 1?
+                writer.Write((byte)1);
+
                 if (geometry is IPoint)
                 {
                     writer.Write((uint)WKBGeometryType.wkbPoint);
@@ -627,9 +630,13 @@ namespace gView.Framework.OGC
             int numGeometries = (int)ReadUInt32(reader, byteOrder);
 
             AggregateGeometry aGeometry = new AggregateGeometry();
+            
             for (int g = 0; g < numGeometries; g++)
             {
+                reader.ReadByte(); // read the reseved byte => always 1?
+
                 IGeometry geometry = WKBToGeometry(reader, byteOrder);
+                
                 if (geometry != null)
                 {
                     aGeometry.AddGeometry(geometry);

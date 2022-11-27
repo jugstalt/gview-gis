@@ -4,7 +4,10 @@ namespace gView.Framework.SpatialAlgorithms
 {
     static public class Extensions
     {
-        static public IGeometry MakeValid(this IGeometry geometry, GeometryType geometryType = GeometryType.Unknown, bool closeRings = false)
+        static public IGeometry MakeValid(this IGeometry geometry,
+                                          double tolerance,
+                                          GeometryType geometryType = GeometryType.Unknown, 
+                                          bool closeRings = false)
         {
             if (geometry == null)
             {
@@ -90,47 +93,49 @@ namespace gView.Framework.SpatialAlgorithms
 
                 #region Remove Zero Area Rings
 
-                int removeRing;
-                do
-                {
-                    removeRing = -1;
+                //int removeRing;
+                //do
+                //{
+                //    removeRing = -1;
 
-                    for (int p = 0, to = polygon.RingCount; p < to; p++)
-                    {
-                        if (polygon[p] == null || polygon[p].Area == 0.0)
-                        {
-                            removeRing = p;
-                            break;
-                        }
-                    }
+                //    for (int p = 0, to = polygon.RingCount; p < to; p++)
+                //    {
+                //        if (polygon[p] == null || polygon[p].Area == 0.0)
+                //        {
+                //            removeRing = p;
+                //            break;
+                //        }
+                //    }
 
-                    if (removeRing >= 0)
-                    {
-                        polygon.RemoveRing(removeRing);
-                    }
-                }
-                while (removeRing >= 0);
+                //    if (removeRing >= 0)
+                //    {
+                //        polygon.RemoveRing(removeRing);
+                //    }
+                //}
+                //while (removeRing >= 0);
 
                 #endregion
 
                 #region Check rings
 
-                for (int p = 0, to = polygon.RingCount; p < to; p++)
-                {
-                    var ring = polygon[p];
+                //for (int p = 0, to = polygon.RingCount; p < to; p++)
+                //{
+                //    var ring = polygon[p];
 
-                    if (Algorithm.IsSelfIntersecting(ring))
-                    {
-                        throw new InvalidGeometryException("Selfintersecting polygon rings are not allowed");
-                    }
+                //    if (Algorithm.IsSelfIntersecting(ring, tolerance))
+                //    {
+                //        throw new InvalidGeometryException("Selfintersecting polygon rings are not allowed");
+                //    }
 
-                    if (closeRings)
-                    {
-                        ring.Close();
-                    }
-                }
+                //    if (closeRings)
+                //    {
+                //        ring.Close();
+                //    }
+                //}
 
                 #endregion
+
+                polygon.RemoveLineArtifacts(tolerance);
             }
 
             return geometry;

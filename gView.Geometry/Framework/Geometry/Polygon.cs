@@ -189,45 +189,56 @@ namespace gView.Framework.Geometry
 
             foreach (var ring in v)
             {
-                _rings.AddRange(Algorithm.SplitRing(ring, tolerance));
+                _rings.AddRange(Algorithm.SplitRing__(ring, tolerance));
             }
 
             VerifyHoles();
         }
 
-        public void MakeValid(double tolerance = GeometryConst.Epsilon)
+        public void RemoveLineArtifacts(double tolerance = GeometryConst.Epsilon)
         {
-            var newRings = new List<IRing>();
+            var  v = _rings;
+            _rings = new List<IRing>();
 
-            foreach (IRing ring in _rings)
+            foreach (var ring in v)
             {
-                var newRing = new Ring();
-                IPoint startPoint = null;
-
-                for (int p = 0, pointCount = ring.PointCount; p < pointCount; p++)
-                {
-                    if (p == 0)
-                    {
-                        newRing.AddPoint(startPoint = ring[p]);
-                    }
-                    else if (p < pointCount - 1 && startPoint.Distance(ring[p]) < tolerance)
-                    {
-                        newRings.Add(newRing);
-
-                        newRing = new Ring();
-                        newRing.AddPoint(startPoint = ring[p]);
-                    }
-                    else
-                    {
-                        newRing.AddPoint(ring[p]);
-                    }
-                }
-
-                newRings.Add(newRing);
+                _rings.AddRange(Algorithm.RemoveLineArtifacts(ring, tolerance));
             }
-
-            _rings = new List<IRing>(newRings.Where(r => r.Area > 0.0));
         }
+
+        //public void MakeValid(double tolerance = GeometryConst.Epsilon)
+        //{
+        //    var newRings = new List<IRing>();
+
+        //    foreach (IRing ring in _rings)
+        //    {
+        //        var newRing = new Ring();
+        //        IPoint startPoint = null;
+
+        //        for (int p = 0, pointCount = ring.PointCount; p < pointCount; p++)
+        //        {
+        //            if (p == 0)
+        //            {
+        //                newRing.AddPoint(startPoint = ring[p]);
+        //            }
+        //            else if (p < pointCount - 1 && startPoint.Distance(ring[p]) < tolerance)
+        //            {
+        //                newRings.Add(newRing);
+
+        //                newRing = new Ring();
+        //                newRing.AddPoint(startPoint = ring[p]);
+        //            }
+        //            else
+        //            {
+        //                newRing.AddPoint(ring[p]);
+        //            }
+        //        }
+
+        //        newRings.Add(newRing);
+        //    }
+
+        //    _rings = new List<IRing>(newRings.Where(r => r.Area > 0.0));
+        //}
 
 
         #endregion
