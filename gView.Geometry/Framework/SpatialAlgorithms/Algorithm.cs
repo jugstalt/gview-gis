@@ -492,14 +492,16 @@ namespace gView.Framework.SpatialAlgorithms
             return result;
         }
 
-        public static bool HasInverseParallels(IPointCollection pColl, double tolerance)
+        public static bool HasInverseParallels(IPointCollection pColl, double tolerance, bool autoRepair = false)
         {
             if (pColl == null || pColl.PointCount <= 2)
             {
                 return false;
             }
 
+            bool retry = false;
             int to = pColl.PointCount - 1;
+
             for (int i = 0; i < to; i++)
             {
                 IPoint p00 = pColl[i], p01 = pColl[i + 1];
@@ -515,6 +517,12 @@ namespace gView.Framework.SpatialAlgorithms
 
                     if (IsParallel(x1, y1, x2, y2, tolerance) == -1)
                     {
+                        if (autoRepair)
+                        {
+                            pColl.RemovePoint(i + 1);
+                            retry = true;
+                            break;
+                        }
                         return true;
                     }
                 }
@@ -522,6 +530,10 @@ namespace gView.Framework.SpatialAlgorithms
                 #endregion
             }
 
+            if (retry == true)
+            {
+                return HasInverseParallels(pColl, tolerance, autoRepair);
+            }
             return false;
         }
 
@@ -656,38 +668,47 @@ namespace gView.Framework.SpatialAlgorithms
 
         public static IEnumerable<IRing> RemoveLineArtifacts(IRing ring, double tolerance)
         {
-            if (HasInverseParallels(ring, tolerance))
+            ring.Close(tolerance);
+
+            if (HasInverseParallels(ring, tolerance, true))
             {
                 throw new Exception("can't resolve self overlapping rings");
             }
 
-            ring.Close(tolerance);
-
-            var identicalPoints = FindIdenticalPoints(ring, tolerance, true);
-            if (identicalPoints.Length == 0)
+            if (ring.Area < tolerance * tolerance)
             {
-                return new IRing[] { ring }.Where(r => r.Area > 0);
+                return Array.Empty<IRing>();
             }
 
-            var newRings = new List<IRing>();
-            var newRing = new Ring();
+            return new[] { ring };
 
-            newRings.Add(newRing);
+            //ring.Close(tolerance);
 
-            for (int p = 0, pointCount = ring.PointCount; p < pointCount; p++)
-            {
-                if (p > 0 && p < pointCount - 1 && identicalPoints.Contains(p))
-                {
-                    newRing.Close(tolerance);
+            //var identicalPoints = FindIdenticalPoints(ring, tolerance, true);
+            //if (identicalPoints.Length == 0)
+            //{
+            //    return new IRing[] { ring }.Where(r => r.Area > 0);
+            //}
 
-                    newRing = new Ring();
-                    newRings.Add(newRing);
-                }
-                newRing.AddPoint(ring[p]);
-            }
-            newRing.Close(tolerance);
+            //var newRings = new List<IRing>();
+            //var newRing = new Ring();
 
-            return newRings.Where(r => r.Area > tolerance * tolerance);
+            //newRings.Add(newRing);
+
+            //for (int p = 0, pointCount = ring.PointCount; p < pointCount; p++)
+            //{
+            //    if (p > 0 && p < pointCount - 1 && identicalPoints.Contains(p))
+            //    {
+            //        newRing.Close(tolerance);
+
+            //        newRing = new Ring();
+            //        newRings.Add(newRing);
+            //    }
+            //    newRing.AddPoint(ring[p]);
+            //}
+            //newRing.Close(tolerance);
+
+            //return newRings.Where(r => r.Area > tolerance * tolerance);
         }
 
         #endregion

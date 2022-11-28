@@ -131,6 +131,7 @@ namespace gView.DataSources.MSSqlSpatial
                     AsSqlParameter = true;
                     return null;
                 }
+
                 shape = p;
 
                 #endregion
@@ -162,10 +163,14 @@ namespace gView.DataSources.MSSqlSpatial
             AsSqlParameter = false;
 
             //return gView.Framework.OGC.OGC.GeometryToWKB(shape, gView.Framework.OGC.OGC.WkbByteOrder.Ndr);
+
+            var wkt = gView.Framework.OGC.WKT.ToWKT(shape);
+
             string geometryString =
                 (shape is IPolygon) ?
-                "geometry::STGeomFromText('" + gView.Framework.OGC.WKT.ToWKT(shape) + "'," + srid + ").MakeValid()" :
-                "geometry::STGeomFromText('" + gView.Framework.OGC.WKT.ToWKT(shape) + "'," + srid + ")";
+                $"geometry::STGeomFromText('{wkt}',{srid}).MakeValid()" :
+                $"geometry::STGeomFromText('{wkt}',{srid})";
+
             return geometryString;
             //return "geometry::STGeomFromText('" + geometryString + "',0)";
         }
