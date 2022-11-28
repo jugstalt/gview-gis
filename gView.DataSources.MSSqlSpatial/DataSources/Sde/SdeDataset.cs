@@ -217,7 +217,6 @@ namespace gView.DataSources.MSSqlSpatial.DataSources.Sde
 
             if (filter.QuerySubFields.Contains("*"))
             {
-                // var subFieldFunctions = filter.QuerySubFields.Where(f => f.IsSubFieldFunction());
                 filter.SubFields = "";
 
                 foreach (IField field in fc.Fields.ToEnumerable())
@@ -226,11 +225,6 @@ namespace gView.DataSources.MSSqlSpatial.DataSources.Sde
                 }
                 filter.AddField(fc.IDFieldName);
                 filter.AddField(fc.ShapeFieldName);
-
-                //foreach(var subFieldFunction in subFieldFunctions)
-                //{
-                //    filter.AddField(subFieldFunction);
-                //}
             }
             else
             {
