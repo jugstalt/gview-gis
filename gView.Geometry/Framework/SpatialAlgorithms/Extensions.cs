@@ -93,26 +93,26 @@ namespace gView.Framework.SpatialAlgorithms
 
                 #region Remove Zero Area Rings
 
-                //int removeRing;
-                //do
-                //{
-                //    removeRing = -1;
+                int removeRing;
+                do
+                {
+                    removeRing = -1;
 
-                //    for (int p = 0, to = polygon.RingCount; p < to; p++)
-                //    {
-                //        if (polygon[p] == null || polygon[p].Area == 0.0)
-                //        {
-                //            removeRing = p;
-                //            break;
-                //        }
-                //    }
+                    for (int p = 0, to = polygon.RingCount; p < to; p++)
+                    {
+                        if (polygon[p] == null || polygon[p].Area == 0.0)
+                        {
+                            removeRing = p;
+                            break;
+                        }
+                    }
 
-                //    if (removeRing >= 0)
-                //    {
-                //        polygon.RemoveRing(removeRing);
-                //    }
-                //}
-                //while (removeRing >= 0);
+                    if (removeRing >= 0)
+                    {
+                        polygon.RemoveRing(removeRing);
+                    }
+                }
+                while (removeRing >= 0);
 
                 #endregion
 
@@ -135,7 +135,7 @@ namespace gView.Framework.SpatialAlgorithms
 
                 #endregion
 
-                polygon.RemoveLineArtifacts(tolerance);
+                //polygon.RemoveLineArtifacts(tolerance);
             }
 
             return geometry;

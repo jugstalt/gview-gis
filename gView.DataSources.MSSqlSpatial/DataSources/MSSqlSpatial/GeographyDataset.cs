@@ -1,6 +1,7 @@
 ﻿using gView.Framework.Data;
 using gView.Framework.Data.Filters;
 using gView.Framework.Geometry;
+using gView.Framework.Geometry.Extensions;
 using gView.Framework.OGC.DB;
 using System;
 using System.Collections.Generic;
@@ -61,7 +62,11 @@ namespace gView.DataSources.MSSqlSpatial
             }
         }
 
-        protected override object ShapeParameterValue(OgcSpatialFeatureclass fClass, gView.Framework.Geometry.IGeometry shape, int srid, out bool AsSqlParameter)
+        protected override object ShapeParameterValue(OgcSpatialFeatureclass fClass, 
+                                                      IGeometry shape, 
+                                                      int srid,
+                                                      StringBuilder sqlStatementHeader,
+                                                      out bool AsSqlParameter)
         {
             if (shape is IPolygon)
             {
@@ -108,19 +113,37 @@ namespace gView.DataSources.MSSqlSpatial
 
             AsSqlParameter = false;
 
-            //return gView.Framework.OGC.OGC.GeometryToWKB(shape, gView.Framework.OGC.OGC.WkbByteOrder.Ndr);
-            string geometryString =
+            var wkt = gView.Framework.OGC.WKT.ToWKT(shape);
+
+            sqlStatementHeader.Append("DECLARE @");
+            sqlStatementHeader.Append(fClass.ShapeFieldName);
+            sqlStatementHeader.Append(" geometry=");
+            sqlStatementHeader.Append(
                 (shape is IPolygon) ?
-                "geography::STGeomFromText('" + gView.Framework.OGC.WKT.ToWKT(shape) + "'," + srid + ").MakeValid()" :
-                "geography::STGeomFromText('" + gView.Framework.OGC.WKT.ToWKT(shape) + "'," + srid + ")";
-            return geometryString;
-            //return "geometry::STGeomFromText('" + geometryString + "',0)";
+                $"geography::STGeomFromText('{wkt}',{srid}).MakeValid();" :
+                $"geography::STGeomFromText('{wkt}',{srid});");
 
-            // Old
-            //AsSqlParameter = true;
+            var targetGeometryType = fClass.GeometryType != GeometryType.Unknown ?
+                        fClass.GeometryType :
+                        shape.ToGeometryType();
 
-            //string geometryString = gView.Framework.OGC.WKT.ToWKT(shape);
-            //return geometryString;
+            switch (targetGeometryType)
+            {
+                case GeometryType.Point:
+                    sqlStatementHeader.Append($"IF @{fClass.ShapeFieldName}.STGeometryType() NOT IN ('point') THROW 500001, 'Invalid {targetGeometryType} Geometry', 1;");
+                    break;
+                case GeometryType.Multipoint:
+                    sqlStatementHeader.Append($"IF @{fClass.ShapeFieldName}.STGeometryType() NOT IN ('point','multipoint') THROW 500001, 'Invalid {targetGeometryType} Geometry', 1;");
+                    break;
+                case GeometryType.Polyline:
+                    sqlStatementHeader.Append($"IF @{fClass.ShapeFieldName}.STGeometryType() NOT IN ('linestring','multilinestring') THROW 500001, 'Invalid {targetGeometryType} Geometry', 1;");
+                    break;
+                case GeometryType.Polygon:
+                    sqlStatementHeader.Append($"IF @{fClass.ShapeFieldName}.STGeometryType() NOT IN ('polygon','multipolygon') THROW 500001, 'Invalid {targetGeometryType} Geometry', 1;");
+                    break;
+            }
+
+            return $"@{fClass.ShapeFieldName}";
         }
 
         public override Task<IEnvelope> FeatureClassEnvelope(IFeatureClass fc)

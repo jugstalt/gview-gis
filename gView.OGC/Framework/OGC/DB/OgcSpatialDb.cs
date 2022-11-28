@@ -642,6 +642,8 @@ namespace gView.Framework.OGC.DB
                         foreach (IFeature feature in features)
                         {
                             StringBuilder fields = new StringBuilder(), parameters = new StringBuilder();
+                            StringBuilder sqlStatementHeader = new StringBuilder();
+
                             command.Parameters.Clear();
                             if (feature.Shape != null)
                             {
@@ -650,6 +652,7 @@ namespace gView.Framework.OGC.DB
                                 bool asParameter;
                                 object shapeObject = this.ShapeParameterValue((OgcSpatialFeatureclass)fClass, shape,
                                     shape.Srs != null && shape.Srs > 0 ? (int)shape.Srs : srid,
+                                    sqlStatementHeader,
                                     out asParameter);
 
                                 if (asParameter == true)
@@ -761,7 +764,7 @@ namespace gView.Framework.OGC.DB
                                 command.Parameters.Add(parameter);
                             }
 
-                            command.CommandText = "INSERT INTO " + fClass.Name + " (" + fields.ToString() + ") VALUES (" + parameters + ")";
+                            command.CommandText = $"{sqlStatementHeader}INSERT INTO {fClass.Name} ({fields}) VALUES ({parameters});";
                             await command.ExecuteNonQueryAsync();
                         }
 
@@ -834,6 +837,7 @@ namespace gView.Framework.OGC.DB
                     foreach (IFeature feature in features)
                     {
                         StringBuilder fields = new StringBuilder();
+                        StringBuilder sqlStatementHeader = new StringBuilder();
                         command.Parameters.Clear();
                         if (feature.Shape != null)
                         {
@@ -842,12 +846,13 @@ namespace gView.Framework.OGC.DB
                             bool asParameter;
                             object shapeObject = this.ShapeParameterValue((OgcSpatialFeatureclass)fClass, shape,
                                 shape.Srs != null && shape.Srs > 0 ? (int)shape.Srs : srid,
+                                sqlStatementHeader,
                                 out asParameter);
 
                             if (asParameter == true)
                             {
                                 DbParameter parameter = this.ProviderFactory.CreateParameter();
-                                parameter.ParameterName = "@" + fClass.ShapeFieldName;
+                                parameter.ParameterName = $"@{fClass.ShapeFieldName}";
                                 parameter.Value = shapeObject != null ? shapeObject : DBNull.Value;
 
                                 string paramExpresssion = InsertShapeParameterExpression((OgcSpatialFeatureclass)fClass, shape);
@@ -861,12 +866,12 @@ namespace gView.Framework.OGC.DB
                                     paramExpresssion = DbParameterName(fClass.ShapeFieldName);
                                 }
 
-                                fields.Append(DbColumnName(fClass.ShapeFieldName) + "=" + paramExpresssion);
+                                fields.Append($"{DbColumnName(fClass.ShapeFieldName)}={paramExpresssion}");
                                 command.Parameters.Add(parameter);
                             }
                             else
                             {
-                                fields.Append(DbColumnName(fClass.ShapeFieldName) + "=" + shapeObject.ToString());
+                                fields.Append($"{DbColumnName(fClass.ShapeFieldName)}={shapeObject.ToString()}");
                             }
                         }
 
@@ -893,12 +898,11 @@ namespace gView.Framework.OGC.DB
                             DbParameter parameter = this.ProviderFactory.CreateParameter();
                             parameter.ParameterName = DbParameterName(fv.Name);
                             parameter.Value = field.TryConvertType(val)?? this.NullDbValue();
-                            //NpgsqlParameter parameter = new NpgsqlParameter("@" + fv.Name, val);
-                            fields.Append(DbColumnName(fv.Name) + "=" + DbParameterName(fv.Name));
+                            fields.Append($"{DbColumnName(fv.Name)}={DbParameterName(fv.Name)}");
                             command.Parameters.Add(parameter);
                         }
 
-                        command.CommandText = "UPDATE " + fClass.Name + " SET " + fields.ToString() + " WHERE " + fClass.IDFieldName + "=" + feature.OID;
+                        command.CommandText = $"{sqlStatementHeader}UPDATE {fClass.Name} SET {fields} WHERE {fClass.IDFieldName}={feature.OID}";
                         await command.ExecuteNonQueryAsync();
                     }
                 }
@@ -1053,7 +1057,11 @@ namespace gView.Framework.OGC.DB
         {
             return "SELECT DropGeometryTable ('" + schemaName + "','" + tableName + "')";
         }
-        virtual protected object ShapeParameterValue(OgcSpatialFeatureclass featureClass, IGeometry shape, int srid, out bool AsSqlParameter)
+        virtual protected object ShapeParameterValue(OgcSpatialFeatureclass featureClass, 
+                                                     IGeometry shape, 
+                                                     int srid, 
+                                                     StringBuilder sqlStatementHeader,
+                                                     out bool AsSqlParameter)
         {
             AsSqlParameter = true;
 

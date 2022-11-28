@@ -6,6 +6,7 @@ using gView.Framework.system;
 using System;
 using System.Collections.Generic;
 using System.Data.Common;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace gView.DataSources.PostGIS
@@ -78,7 +79,11 @@ namespace gView.DataSources.PostGIS
             return base.SelectReadSchema(tableName) + " limit 0";
         }
 
-        protected override object ShapeParameterValue(OgcSpatialFeatureclass fClass, IGeometry shape, int srid, out bool AsSqlParameter)
+        protected override object ShapeParameterValue(OgcSpatialFeatureclass fClass, 
+                                                      IGeometry shape, 
+                                                      int srid,
+                                                      StringBuilder sqlStatementHeader,
+                                                      out bool AsSqlParameter)
         {
             AsSqlParameter = true;
 
