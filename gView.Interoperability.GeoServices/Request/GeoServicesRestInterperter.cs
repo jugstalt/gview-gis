@@ -647,6 +647,21 @@ namespace gView.Interoperability.GeoServices.Request
                             {
                                 geoTransfromer.SetSpatialReferences(serviceMap.LayerDefaultSpatialReference, filter.FeatureSpatialReference);
                                 transform = true;
+
+                                #region Transform Filter Geometry
+
+                                if (filter is ISpatialFilter && 
+                                    ((ISpatialFilter)filter).FilterSpatialReference!=null &&
+                                    !serviceMap.LayerDefaultSpatialReference.EpsgCode.Equals(((ISpatialFilter)filter).FilterSpatialReference?.EpsgCode))
+                                {
+                                    using(var filterTransformer = GeometricTransformerFactory.Create())
+                                    {
+                                        filterTransformer.SetSpatialReferences(((SpatialFilter)filter).FilterSpatialReference, serviceMap.LayerDefaultSpatialReference);
+                                        ((SpatialFilter)filter).Geometry = filterTransformer.Transform2D(((SpatialFilter)filter).Geometry) as IGeometry;
+                                    }
+                                }
+
+                                #endregion
                             }
 
                             using (var cursor = await tableClass.Search(filter))
@@ -939,6 +954,7 @@ namespace gView.Interoperability.GeoServices.Request
                     #region Sptial Reference
 
                     var spatialFilter = new SpatialFilter();
+
                     spatialFilter.FilterSpatialReference = spatialFilter.FeatureSpatialReference = sRef;
                     spatialFilter.Geometry = geometry;
                     spatialFilter.SubFields = "*";
@@ -965,11 +981,13 @@ namespace gView.Interoperability.GeoServices.Request
                         if (cursor is IFeatureCursor)
                         {
                             IFeature feature;
+
                             while ((feature = await ((IFeatureCursor)cursor).NextFeature()) != null)
                             {
                                 var result = new JsonIdentifyResponse.Result() { LayerId = layer.ID, LayerName = layer.Title };
 
                                 result.ResultAttributes = feature.AttributesDictionary();
+
                                 if (identify.ReturnGeometry)
                                 {
                                     // ToDo: Project?
