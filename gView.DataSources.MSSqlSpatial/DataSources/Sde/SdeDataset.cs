@@ -94,7 +94,7 @@ namespace gView.DataSources.MSSqlSpatial.DataSources.Sde
                 case FieldType.Shape:
                     return "[GEOMETRY]";
                 case FieldType.ID:
-                    return "[int] IDENTITY(1,1) NOT NULL CONSTRAINT KEY_" + System.Guid.NewGuid().ToString("N") + "_" + field.name + " PRIMARY KEY CLUSTERED";
+                    return $"[int] IDENTITY(1,1) NOT NULL CONSTRAINT KEY_{System.Guid.NewGuid().ToString("N")}_{field.name} PRIMARY KEY CLUSTERED";
                 case FieldType.smallinteger:
                     return "[int] NULL";
                 case FieldType.integer:
@@ -112,7 +112,7 @@ namespace gView.DataSources.MSSqlSpatial.DataSources.Sde
                 case FieldType.Date:
                     return "[datetime] NULL";
                 case FieldType.String:
-                    return "[nvarchar](" + field.size + ")";
+                    return $"[nvarchar]({field.size})";
                 default:
                     return "[nvarchar] (255) NULL";
             }
