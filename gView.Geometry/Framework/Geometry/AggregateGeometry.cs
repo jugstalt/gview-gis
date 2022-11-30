@@ -11,11 +11,11 @@ namespace gView.Framework.Geometry
     /// </summary>
     public sealed class AggregateGeometry : IAggregateGeometry, ITopologicalOperation
     {
-        private List<IGeometry> _childGeometries;
+        private List<IGeometry> _geometries;
 
         public AggregateGeometry()
         {
-            _childGeometries = new List<IGeometry>();
+            _geometries = new List<IGeometry>();
         }
 
         #region IAggregateGeometry Member
@@ -31,7 +31,7 @@ namespace gView.Framework.Geometry
                 return;
             }
 
-            _childGeometries.Add(geometry);
+            _geometries.Add(geometry);
         }
 
         /// <summary>
@@ -46,9 +46,9 @@ namespace gView.Framework.Geometry
                 return;
             }
 
-            if (pos > _childGeometries.Count)
+            if (pos > _geometries.Count)
             {
-                pos = _childGeometries.Count;
+                pos = _geometries.Count;
             }
 
             if (pos < 0)
@@ -56,7 +56,7 @@ namespace gView.Framework.Geometry
                 pos = 0;
             }
 
-            _childGeometries.Insert(pos, geometry);
+            _geometries.Insert(pos, geometry);
         }
 
         /// <summary>
@@ -65,12 +65,12 @@ namespace gView.Framework.Geometry
         /// <param name="pos"></param>
         public void RemoveGeometry(int pos)
         {
-            if (pos < 0 || pos >= _childGeometries.Count)
+            if (pos < 0 || pos >= _geometries.Count)
             {
                 return;
             }
 
-            _childGeometries.RemoveAt(pos);
+            _geometries.RemoveAt(pos);
         }
 
         /// <summary>
@@ -80,7 +80,7 @@ namespace gView.Framework.Geometry
         {
             get
             {
-                return _childGeometries == null ? 0 : _childGeometries.Count;
+                return _geometries == null ? 0 : _geometries.Count;
             }
         }
 
@@ -91,12 +91,12 @@ namespace gView.Framework.Geometry
         {
             get
             {
-                if (geometryIndex < 0 || geometryIndex >= _childGeometries.Count)
+                if (geometryIndex < 0 || geometryIndex >= _geometries.Count)
                 {
                     return null;
                 }
 
-                return _childGeometries[geometryIndex];
+                return _geometries[geometryIndex];
             }
         }
 
@@ -106,7 +106,7 @@ namespace gView.Framework.Geometry
             {
                 List<IPoint> points = new List<IPoint>();
 
-                foreach (IGeometry geom in _childGeometries)
+                foreach (IGeometry geom in _geometries)
                 {
                     if (geom is IPoint)
                     {
@@ -156,7 +156,7 @@ namespace gView.Framework.Geometry
             get
             {
                 List<IPolyline> polylines = new List<IPolyline>();
-                foreach (IGeometry geom in _childGeometries)
+                foreach (IGeometry geom in _geometries)
                 {
                     if (geom is IPolyline)
                     {
@@ -207,7 +207,7 @@ namespace gView.Framework.Geometry
             get
             {
                 List<IPolygon> polygons = new List<IPolygon>();
-                foreach (IGeometry geom in _childGeometries)
+                foreach (IGeometry geom in _geometries)
                 {
                     if (geom is IPolygon)
                     {
@@ -273,7 +273,7 @@ namespace gView.Framework.Geometry
             }
         }
 
-        public int VertexCount => GeometryCount == 0 ? 0 : _childGeometries.Sum(g => g.VertexCount);
+        public int VertexCount => GeometryCount == 0 ? 0 : _geometries.Sum(g => g.VertexCount);
 
         /// <summary>
         /// For the internal use of the framework
@@ -281,8 +281,8 @@ namespace gView.Framework.Geometry
         /// <param name="w"></param>
         public void Serialize(BinaryWriter w, IGeometryDef geomDef)
         {
-            w.Write(_childGeometries.Count);
-            foreach (IGeometry geom in _childGeometries)
+            w.Write(_geometries.Count);
+            foreach (IGeometry geom in _geometries)
             {
                 w.Write((System.Int32)geom.GeometryType);
                 geom.Serialize(w, geomDef);
@@ -294,7 +294,7 @@ namespace gView.Framework.Geometry
         /// <param name="w"></param>
         public void Deserialize(BinaryReader r, IGeometryDef geomDef)
         {
-            _childGeometries.Clear();
+            _geometries.Clear();
 
             int geoms = r.ReadInt32();
             for (int i = 0; i < geoms; i++)
@@ -324,7 +324,7 @@ namespace gView.Framework.Geometry
                 if (geom != null)
                 {
                     geom.Deserialize(r, geomDef);
-                    _childGeometries.Add(geom);
+                    _geometries.Add(geom);
                 }
                 else
                 {
@@ -335,6 +335,16 @@ namespace gView.Framework.Geometry
 
         public int? Srs { get; set; }
 
+        public void Clean(CleanGemetryMethods methods, double tolerance = 1e-8)
+        {
+            foreach(var geometry in _geometries)
+            {
+                geometry.Clean(methods, tolerance);
+            }
+        }
+
+        public bool IsEmpty() => this.GeometryCount == 0;
+
         #endregion
 
         #region ICloneable Member
@@ -343,7 +353,7 @@ namespace gView.Framework.Geometry
         {
 
             AggregateGeometry aggregate = new AggregateGeometry();
-            foreach (IGeometry geom in _childGeometries)
+            foreach (IGeometry geom in _geometries)
             {
                 if (geom == null)
                 {
@@ -485,7 +495,7 @@ namespace gView.Framework.Geometry
 
         public IEnumerator<IGeometry> GetEnumerator()
         {
-            return _childGeometries.GetEnumerator();
+            return _geometries.GetEnumerator();
         }
 
         #endregion
@@ -494,7 +504,7 @@ namespace gView.Framework.Geometry
 
         IEnumerator IEnumerable.GetEnumerator()
         {
-            return _childGeometries.GetEnumerator();
+            return _geometries.GetEnumerator();
         }
 
         #endregion

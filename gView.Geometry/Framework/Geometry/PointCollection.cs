@@ -358,6 +358,30 @@ namespace gView.Framework.Geometry
             //    }
             //}
         }
+
+        public void RemoveIdentNeighbors(double tolerance)
+        {
+            if (_points.Count == 0)
+            {
+                return;
+            }
+
+            var points = new List<IPoint>();
+            double tolerance2 = tolerance * tolerance;
+
+            points.Add(_points[0]);
+
+            for (int i = 1, to = _points.Count(); i < to; i++)
+            {
+                if (_points[i - 1].Distance2(_points[i]) > tolerance2)
+                {
+                    points.Add(_points[i]);
+                }
+            }
+
+            _points = points;
+        }
+
         #endregion
 
         public void RemoveAllPoints()

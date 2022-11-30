@@ -150,6 +150,14 @@ namespace gView.Framework.Geometry
                 m_m = r.ReadDouble();
             }
         }
+
+        public void Clean(CleanGemetryMethods methods, double tolerance = 1e-8)
+        {
+            // Nothing to do for points
+        }
+
+        public bool IsEmpty() => false;
+
         #endregion
 
         #region IGeometry Member

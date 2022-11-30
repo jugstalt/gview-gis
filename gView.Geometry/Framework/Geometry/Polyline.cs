@@ -234,6 +234,34 @@ namespace gView.Framework.Geometry
 
         public int? Srs { get; set; }
 
+        public void Clean(CleanGemetryMethods methods, double tolerance = 1e-8)
+        {
+            if (methods.HasFlag(CleanGemetryMethods.IdentNeighbors))
+            {
+                foreach (var path in _paths)
+                {
+                    path.RemoveIdentNeighbors(tolerance);
+                }
+            }
+
+            if (methods.HasFlag(CleanGemetryMethods.ZeroParts))
+            {
+                var paths = new List<IPath>();
+
+                foreach (var path in _paths)
+                {
+                    if (path.Length > tolerance)
+                    {
+                        paths.Add(path);
+                    }
+                }
+
+                _paths = paths;
+            }
+        }
+
+        public bool IsEmpty() => this.PathCount == 0;
+
         #endregion
 
         private void CopyGeometry(IPolyline polyline)

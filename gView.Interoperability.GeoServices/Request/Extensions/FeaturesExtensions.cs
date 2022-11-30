@@ -27,7 +27,7 @@ namespace gView.Interoperability.GeoServices.Request.Extensions
 
                     if (sRef != null)
                     {
-                        (feature.Shape as IPolygon)?.RemoveLineArtifacts(sRef.MakeValidTolerance);
+                        feature.Shape?.Clean(CleanGemetryMethods.IdentNeighbors | CleanGemetryMethods.ZeroParts);
                     }
                 }
             }

@@ -35,6 +35,16 @@ namespace gView.Framework.Geometry
 
         public int VertexCount => base.PointCount;
 
+        public void Clean(CleanGemetryMethods methods, double tolerance = 1e-8)
+        {
+            if(methods.HasFlag(CleanGemetryMethods.IdentNeighbors))
+            {
+                base.RemoveIdentNeighbors(tolerance);
+            }
+        }
+
+        public bool IsEmpty() => this.PointCount == 0;
+
         #endregion
 
         #region ICloneable Member

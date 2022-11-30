@@ -21,6 +21,8 @@ namespace gView.Framework.Geometry
 
         bool Equals(object obj, double epsi);
 
+        void RemoveIdentNeighbors(double tolerance);
+
         IPoint[] ToArray(int fromIndex = 0, bool reverse = false);
     }
 }

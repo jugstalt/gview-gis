@@ -12,7 +12,6 @@ namespace gView.Framework.Geometry
         IRing this[int ringIndex] { get; }
 
         void VerifyHoles();
-        void RemoveLineArtifacts(double tolerance = GeometryConst.Epsilon);
 
         int OuterRingCount { get; }
 

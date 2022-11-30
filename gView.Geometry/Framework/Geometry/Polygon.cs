@@ -182,6 +182,40 @@ namespace gView.Framework.Geometry
             }
         }
 
+        public void Clean(CleanGemetryMethods methods, double tolerance = 1e-8)
+        {
+            if (methods.HasFlag(CleanGemetryMethods.IdentNeighbors))
+            {
+                foreach (var ring in _rings)
+                {
+                    ring.RemoveIdentNeighbors(tolerance);
+                }
+            }
+
+            if (methods.HasFlag(CleanGemetryMethods.ZeroParts))
+            {
+                var rings = new List<IRing>();
+
+                var tolerance2 = tolerance * tolerance;
+                foreach (var ring in _rings)
+                {
+                    if (ring.Area > tolerance)
+                    {
+                        rings.Add(ring);
+                    }
+                }
+
+                _rings = rings;
+            }
+
+            if(methods.HasFlag(CleanGemetryMethods.LineArtifacts))
+            {
+                this.RemoveLineArtifacts(tolerance);
+            }
+        }
+
+        public bool IsEmpty() => this.RingCount == 0;
+
         public void MakeValid__(double tolerance = GeometryConst.Epsilon)
         {
             List<IRing> v = _rings;
@@ -195,7 +229,7 @@ namespace gView.Framework.Geometry
             VerifyHoles();
         }
 
-        public void RemoveLineArtifacts(double tolerance = GeometryConst.Epsilon)
+        private void RemoveLineArtifacts(double tolerance = GeometryConst.Epsilon)
         {
             var  v = _rings;
             _rings = new List<IRing>();

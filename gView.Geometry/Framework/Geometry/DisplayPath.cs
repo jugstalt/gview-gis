@@ -161,6 +161,13 @@ namespace gView.Framework.Geometry
 
         public int VertexCount => _points == null ? 0 : _points.Count;
 
+        public void Clean(CleanGemetryMethods methods, double tolerance = 1e-8)
+        {
+            // Nothing to do for displaypaths?
+        }
+
+        public bool IsEmpty() => false;
+
         #endregion
 
         #region ICloneable Member

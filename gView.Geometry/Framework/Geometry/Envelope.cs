@@ -242,6 +242,13 @@ namespace gView.Framework.Geometry
             return null;
         }
 
+        public void Clean(CleanGemetryMethods methods, double tolerance = 1e-8)
+        {
+            // Nothing to do for envelops?
+        }
+
+        public bool IsEmpty() => false;
+
         /// <summary>
         /// Sets the Envelope equal to the union of the base Envelope and the input Envelope
         /// </summary>

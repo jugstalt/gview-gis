@@ -68,47 +68,12 @@ namespace gView.DataSources.MSSqlSpatial
                                                       StringBuilder sqlStatementHeader,
                                                       out bool AsSqlParameter)
         {
-            if (shape is IPolygon)
-            {
-                #region Check Polygon Rings
-                IPolygon p = new Polygon();
-                for (int i = 0; i < ((IPolygon)shape).RingCount; i++)
-                {
-                    IRing ring = ((IPolygon)shape)[i];
-                    if (ring != null && ring.Area > 0D)
-                    {
-                        p.AddRing(ring);
-                    }
-                }
+            shape?.Clean(CleanGemetryMethods.IdentNeighbors | CleanGemetryMethods.ZeroParts);
 
-                if (p.RingCount == 0)
-                {
-                    AsSqlParameter = true;
-                    return null;
-                }
-                shape = p;
-                #endregion
-            }
-            else if (shape is IPolyline)
+            if (shape?.IsEmpty() == true)
             {
-                #region Check Polyline Paths
-                IPolyline l = new Polyline();
-                for (int i = 0; i < ((IPolyline)shape).PathCount; i++)
-                {
-                    IPath path = ((IPolyline)shape)[i];
-                    if (path != null && path.Length > 0D)
-                    {
-                        l.AddPath(path);
-                    }
-                }
-
-                if (l.PathCount == 0)
-                {
-                    AsSqlParameter = true;
-                    return null;
-                }
-                shape = l;
-                #endregion
+                AsSqlParameter = true;
+                return null;
             }
 
             AsSqlParameter = false;

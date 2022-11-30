@@ -21,7 +21,8 @@ namespace gView.Framework.Geometry
         void Deserialize(BinaryReader r, IGeometryDef geomDef);
 
         bool Equals(object obj, double epsi);
+
+        void Clean(CleanGemetryMethods methods, double tolerance = 1e-8);
+        bool IsEmpty();
     }
-
-
 }

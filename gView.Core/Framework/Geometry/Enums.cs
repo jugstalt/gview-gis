@@ -1,4 +1,6 @@
-﻿namespace gView.Framework.Geometry
+﻿using System;
+
+namespace gView.Framework.Geometry
 {
     public enum GeometryType
     {
@@ -25,5 +27,13 @@
         v1 = 0,
         v2 = 2,
         v3 = 3
+    }
+
+    [Flags]
+    public enum CleanGemetryMethods
+    {
+        IdentNeighbors = 1,
+        ZeroParts = 2,
+        LineArtifacts = 4
     }
 }
