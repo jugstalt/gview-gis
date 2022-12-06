@@ -62,6 +62,11 @@ namespace gView.DataSources.MSSqlSpatial
             }
         }
 
+        protected override string DbColumnName(string colName)
+        {
+            return $"[{colName}]";
+        }
+
         protected override object ShapeParameterValue(OgcSpatialFeatureclass fClass, 
                                                       IGeometry shape, 
                                                       int srid,

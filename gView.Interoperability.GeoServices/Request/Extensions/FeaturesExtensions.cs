@@ -21,13 +21,19 @@ namespace gView.Interoperability.GeoServices.Request.Extensions
                 foreach (var feature in features)
                 {
                     var polygon = feature.Shape as IPolygon;
+                    
+                    if (polygon == null)
+                    {
+                        continue;
+                    }
+
                     var sRef = polygon.Srs.HasValue && !polygon.Srs.Equals(featureClass.SpatialReference?.EpsgCode) ?
                         SpatialReference.FromID($"epsg:{polygon.Srs.Value}") :
                         featureClass.SpatialReference ?? map.LayerDefaultSpatialReference;
 
                     if (sRef != null)
                     {
-                        feature.Shape?.Clean(CleanGemetryMethods.IdentNeighbors | CleanGemetryMethods.ZeroParts);
+                        feature.Shape.Clean(CleanGemetryMethods.IdentNeighbors | CleanGemetryMethods.ZeroParts);
                     }
                 }
             }

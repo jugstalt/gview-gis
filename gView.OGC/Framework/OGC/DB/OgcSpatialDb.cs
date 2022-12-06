@@ -498,12 +498,12 @@ namespace gView.Framework.OGC.DB
 
         virtual protected string DbColumnName(string colName)
         {
-            return "\"" + colName + "\"";
+            return $"\"{colName}\"";
         }
 
         virtual protected string DbParameterName(string name)
         {
-            return "@" + name;
+            return $"@{name}";
         }
 
         Task<IFeatureDataset> IFeatureDatabase.GetDataset(string name)
@@ -628,7 +628,6 @@ namespace gView.Framework.OGC.DB
 
                     using (var transaction = this.DbImplementsTransactions ? connection.BeginTransaction() : new FakeTransaction(connection))
                     {
-
                         DbCommand command = this.ProviderFactory.CreateCommand();
                         command.Connection = connection;
 
@@ -732,6 +731,11 @@ namespace gView.Framework.OGC.DB
                                     continue;
                                 }
 
+                                if(field.name.Contains("(") && !field.name.Contains(")"))
+                                {
+                                    throw new Exception($"A Field-Function '{field.name}' can not be inserted to a table");
+                                }
+
                                 if (fields.Length != 0)
                                 {
                                     fields.Append(",");
@@ -831,79 +835,102 @@ namespace gView.Framework.OGC.DB
                     connection.ConnectionString = _connectionString;
                     await connection.OpenAsync();
 
-
-                    DbCommand command = this.ProviderFactory.CreateCommand();
-                    command.Connection = connection;
-                    foreach (IFeature feature in features)
+                    using (var transaction = this.DbImplementsTransactions ? connection.BeginTransaction() : new FakeTransaction(connection))
                     {
-                        StringBuilder fields = new StringBuilder();
-                        StringBuilder sqlStatementHeader = new StringBuilder();
-                        command.Parameters.Clear();
-                        if (feature.Shape != null)
+                        DbCommand command = this.ProviderFactory.CreateCommand();
+                        command.Connection = connection;
+
+                        if (this.DbImplementsTransactions)
                         {
-                            var shape = ValidateGeometry(fClass, feature.Shape);
+                            command.Transaction = transaction;
+                        }
 
-                            bool asParameter;
-                            object shapeObject = this.ShapeParameterValue((OgcSpatialFeatureclass)fClass, shape,
-                                shape.Srs != null && shape.Srs > 0 ? (int)shape.Srs : srid,
-                                sqlStatementHeader,
-                                out asParameter);
-
-                            if (asParameter == true)
+                        foreach (IFeature feature in features)
+                        {
+                            StringBuilder fields = new StringBuilder();
+                            StringBuilder sqlStatementHeader = new StringBuilder();
+                            command.Parameters.Clear();
+                            if (feature.Shape != null)
                             {
-                                DbParameter parameter = this.ProviderFactory.CreateParameter();
-                                parameter.ParameterName = $"@{fClass.ShapeFieldName}";
-                                parameter.Value = shapeObject != null ? shapeObject : DBNull.Value;
+                                var shape = ValidateGeometry(fClass, feature.Shape);
 
-                                string paramExpresssion = InsertShapeParameterExpression((OgcSpatialFeatureclass)fClass, shape);
+                                bool asParameter;
+                                object shapeObject = this.ShapeParameterValue((OgcSpatialFeatureclass)fClass, shape,
+                                    shape.Srs != null && shape.Srs > 0 ? (int)shape.Srs : srid,
+                                    sqlStatementHeader,
+                                    out asParameter);
 
-                                if (!String.IsNullOrWhiteSpace(paramExpresssion))
+                                if (asParameter == true)
                                 {
-                                    paramExpresssion = String.Format(paramExpresssion, this.DbParameterName(fClass.ShapeFieldName));
+                                    DbParameter parameter = this.ProviderFactory.CreateParameter();
+                                    parameter.ParameterName = $"@{fClass.ShapeFieldName}";
+                                    parameter.Value = shapeObject != null ? shapeObject : DBNull.Value;
+
+                                    string paramExpresssion = InsertShapeParameterExpression((OgcSpatialFeatureclass)fClass, shape);
+
+                                    if (!String.IsNullOrWhiteSpace(paramExpresssion))
+                                    {
+                                        paramExpresssion = String.Format(paramExpresssion, this.DbParameterName(fClass.ShapeFieldName));
+                                    }
+                                    else
+                                    {
+                                        paramExpresssion = DbParameterName(fClass.ShapeFieldName);
+                                    }
+
+                                    fields.Append($"{DbColumnName(fClass.ShapeFieldName)}={paramExpresssion}");
+                                    command.Parameters.Add(parameter);
                                 }
                                 else
                                 {
-                                    paramExpresssion = DbParameterName(fClass.ShapeFieldName);
+                                    fields.Append($"{DbColumnName(fClass.ShapeFieldName)}={shapeObject.ToString()}");
+                                }
+                            }
+
+                            foreach (IFieldValue fv in feature.Fields)
+                            {
+                                if (fv.Name == fClass.IDFieldName || fv.Name == fClass.ShapeFieldName)
+                                {
+                                    continue;
                                 }
 
-                                fields.Append($"{DbColumnName(fClass.ShapeFieldName)}={paramExpresssion}");
+                                IField field = fClass.FindField(fv.Name);
+                                if (field == null)
+                                {
+                                    continue;
+                                }
+
+                                if (field.name.Contains("(") && !field.name.Contains(")"))
+                                {
+                                    throw new Exception($"A Field-Function '{field.name}' can not be inserted to a table");
+                                }
+
+                                if (fields.Length != 0)
+                                {
+                                    fields.Append(",");
+                                }
+
+                                object val = fv.Value;
+
+                                DbParameter parameter = this.ProviderFactory.CreateParameter();
+                                parameter.ParameterName = DbParameterName(fv.Name);
+                                parameter.Value = field.TryConvertType(val) ?? this.NullDbValue();
+                                fields.Append($"{DbColumnName(fv.Name)}={DbParameterName(fv.Name)}");
                                 command.Parameters.Add(parameter);
                             }
-                            else
-                            {
-                                fields.Append($"{DbColumnName(fClass.ShapeFieldName)}={shapeObject.ToString()}");
-                            }
-                        }
 
-                        foreach (IFieldValue fv in feature.Fields)
+                            command.CommandText = $"{sqlStatementHeader}UPDATE {fClass.Name} SET {fields} WHERE {fClass.IDFieldName}={feature.OID}";
+                            await command.ExecuteNonQueryAsync();
+                        }
+                        
+                        try
                         {
-                            if (fv.Name == fClass.IDFieldName || fv.Name == fClass.ShapeFieldName)
-                            {
-                                continue;
-                            }
-
-                            IField field = fClass.FindField(fv.Name);
-                            if (field == null)
-                            {
-                                continue;
-                            }
-
-                            if (fields.Length != 0)
-                            {
-                                fields.Append(",");
-                            }
-
-                            object val = fv.Value;
-
-                            DbParameter parameter = this.ProviderFactory.CreateParameter();
-                            parameter.ParameterName = DbParameterName(fv.Name);
-                            parameter.Value = field.TryConvertType(val)?? this.NullDbValue();
-                            fields.Append($"{DbColumnName(fv.Name)}={DbParameterName(fv.Name)}");
-                            command.Parameters.Add(parameter);
+                            transaction.Commit();
                         }
-
-                        command.CommandText = $"{sqlStatementHeader}UPDATE {fClass.Name} SET {fields} WHERE {fClass.IDFieldName}={feature.OID}";
-                        await command.ExecuteNonQueryAsync();
+                        catch (Exception ex)
+                        {
+                            transaction.Rollback();
+                            throw ex;
+                        }
                     }
                 }
 
@@ -923,7 +950,7 @@ namespace gView.Framework.OGC.DB
                 return false;
             }
 
-            return await Delete(fClass, fClass.IDFieldName + "=" + oid.ToString());
+            return await Delete(fClass, $"{DbColumnName(fClass.IDFieldName)}={oid.ToString()}");
         }
 
         async public Task<bool> Delete(IFeatureClass fClass, string where)
@@ -952,6 +979,7 @@ namespace gView.Framework.OGC.DB
 
                     await command.ExecuteNonQueryAsync();
                     connection.Close();
+
                     return true;
                 }
             }
@@ -1091,6 +1119,7 @@ namespace gView.Framework.OGC.DB
 
             IEnvelope envelope = null;
             DataTable tab = new DataTable();
+
             using (DbConnection conn = this.ProviderFactory.CreateConnection())
             {
                 conn.ConnectionString = this.ConnectionString;
@@ -1203,7 +1232,6 @@ namespace gView.Framework.OGC.DB
 
                         where.Append($"ST_Intersects({fc.ShapeFieldName}, '{wkt}')");
                     }
-
 
                     filter.AddField(fc.ShapeFieldName);
                 }

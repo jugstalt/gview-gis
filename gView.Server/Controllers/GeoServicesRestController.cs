@@ -1026,30 +1026,33 @@ namespace gView.Server.Controllers
                 JsonField[] fields = new JsonField[0];
                 if (datasetElement.Class is ITableClass)
                 {
-                    fields = ((ITableClass)datasetElement.Class).Fields.ToEnumerable().Select(f =>
-                    {
-                        if (isJsonFeatureServiceLayer)
+                    fields = ((ITableClass)datasetElement.Class).Fields.ToEnumerable()
+                        .Where(f=> isJsonFeatureServiceLayer && f.name.EndsWith("()") ? false : true)  // FeatureServer => don't show functions line STArea, STLength, ... only supported with MapServer
+                        .Select(f =>
                         {
-                            return new JsonFeatureLayerField()
+                            if (isJsonFeatureServiceLayer)
                             {
-                                Name = f.name,
-                                Alias = f.aliasname,
-                                Type = JsonField.ToType(f.type).ToString(),
-                                Editable = f.type != FieldType.ID,
-                                Nullable = f.type != FieldType.ID,
-                                Length = f.size
-                            };
-                        }
-                        else
-                        {
-                            return new JsonField()
+                                return new JsonFeatureLayerField()
+                                {
+                                    Name = f.name,
+                                    Alias = f.aliasname,
+                                    Type = JsonField.ToType(f.type).ToString(),
+                                    Editable = f.type != FieldType.ID,
+                                    Nullable = f.type != FieldType.ID,
+                                    Length = f.size
+                                };
+                            }
+                            else
                             {
-                                Name = f.name,
-                                Alias = f.aliasname,
-                                Type = JsonField.ToType(f.type).ToString()
-                            };
-                        }
-                    }).ToArray();
+                                return new JsonField()
+                                {
+                                    Name = f.name,
+                                    Alias = f.aliasname,
+                                    Type = JsonField.ToType(f.type).ToString()
+                                };
+                            }
+                        })
+                        .ToArray();
                 }
 
                 JsonExtent extent = null;

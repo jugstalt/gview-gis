@@ -118,15 +118,20 @@ namespace gView.DataSources.MSSqlSpatial.DataSources.Sde
             }
         }
 
-        protected override object ShapeParameterValue(OgcSpatialFeatureclass fClass, 
-                                                      IGeometry shape, 
+        protected override string DbColumnName(string colName)
+        {
+            return $"[{colName}]";
+        }
+
+        protected override object ShapeParameterValue(OgcSpatialFeatureclass fClass,
+                                                      IGeometry shape,
                                                       int srid,
                                                       StringBuilder sqlStatementHeader,
                                                       out bool AsSqlParameter)
         {
             shape?.Clean(CleanGemetryMethods.IdentNeighbors | CleanGemetryMethods.ZeroParts);
-            
-            if(shape?.IsEmpty()==true)
+
+            if (shape?.IsEmpty() == true)
             {
                 AsSqlParameter = true;
                 return null;
@@ -136,10 +141,13 @@ namespace gView.DataSources.MSSqlSpatial.DataSources.Sde
 
             var wkt = gView.Framework.OGC.WKT.ToWKT(shape);
 
-            string geometryString =
+            sqlStatementHeader.Append("DECLARE @");
+            sqlStatementHeader.Append(fClass.ShapeFieldName);
+            sqlStatementHeader.Append(" geometry=");
+            sqlStatementHeader.Append(
                 (shape is IPolygon) ?
-                $"geometry::STGeomFromText('{wkt}',{srid}).MakeValid()" :
-                $"geometry::STGeomFromText('{wkt}',{srid})";
+                $"geometry::STGeomFromText('{wkt}',{srid}).MakeValid();" :
+                $"geometry::STGeomFromText('{wkt}',{srid});");
 
             var targetGeometryType = fClass.GeometryType != GeometryType.Unknown ?
                         fClass.GeometryType :
@@ -340,8 +348,8 @@ namespace gView.DataSources.MSSqlSpatial.DataSources.Sde
                 foreach (var sdeLayer in RepoProvider.Layers)
                 {
                     layers.Add(new DatasetElement(
-                       await SdeFeatureClass.Create(this, sdeLayer.Owner + "." + sdeLayer.TableName,
-                          String.IsNullOrWhiteSpace(sdeLayer.MultiVersionedViewName) ? null : sdeLayer.Owner + "." + sdeLayer.MultiVersionedViewName)));
+                       await SdeFeatureClass.Create(this, $"{sdeLayer.Owner}.{sdeLayer.TableName}",
+                          String.IsNullOrWhiteSpace(sdeLayer.MultiVersionedViewName) ? null : $"{sdeLayer.Owner}.{sdeLayer.MultiVersionedViewName}")));
                 }
 
                 _layers = layers;
@@ -357,13 +365,13 @@ namespace gView.DataSources.MSSqlSpatial.DataSources.Sde
             }
 
             title = title.ToLower();
-            var sdeLayer = RepoProvider.Layers.Where(l => (l.Owner + "." + l.TableName).ToLower() == title).FirstOrDefault();
+            var sdeLayer = RepoProvider.Layers.Where(l => $"{l.Owner}.{l.TableName}".ToLower() == title).FirstOrDefault();
 
             if (sdeLayer != null)
             {
                 return new DatasetElement(await SdeFeatureClass.Create(this,
-                    sdeLayer.Owner + "." + sdeLayer.TableName,
-                    String.IsNullOrWhiteSpace(sdeLayer.MultiVersionedViewName) ? null : sdeLayer.Owner + "." + sdeLayer.MultiVersionedViewName));
+                    $"{sdeLayer.Owner}.{sdeLayer.TableName}",
+                    String.IsNullOrWhiteSpace(sdeLayer.MultiVersionedViewName) ? null : $"{sdeLayer.Owner}.{sdeLayer.MultiVersionedViewName}"));
             }
 
             return null;
@@ -383,7 +391,7 @@ namespace gView.DataSources.MSSqlSpatial.DataSources.Sde
             var sdeLayer = RepoProvider.LayerFromTableClass(table);
             if (sdeLayer == null)
             {
-                throw new Exception("Sde layer not found: " + table?.Name);
+                throw new Exception($"Sde layer not found: {table?.Name}");
             }
 
             return await RepoProvider.GetInsertRowId(sdeLayer);

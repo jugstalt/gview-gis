@@ -109,7 +109,12 @@ namespace gView.DataSources.MSSqlSpatial
 
         protected override string DropGeometryTable(string schemaName, string tableName)
         {
-            return "DROP TABLE " + tableName;
+            return $"DROP TABLE {tableName}";
+        }
+
+        protected override string DbColumnName(string colName)
+        {
+            return $"[{colName}]";
         }
 
         protected override object ShapeParameterValue(OgcSpatialFeatureclass fClass,

@@ -20,6 +20,7 @@ using gView.Interoperability.GeoServices.Rest.Json.Renderers.SimpleRenderers;
 using gView.Interoperability.GeoServices.Rest.Json.Request;
 using gView.Interoperability.GeoServices.Rest.Json.Response;
 using gView.MapServer;
+using Microsoft.SqlServer.Management.SqlParser.SqlCodeDom;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -597,7 +598,7 @@ namespace gView.Interoperability.GeoServices.Request
                         }
                         else
                         {
-                            var outFields = query.OutFields.FieldsNames().CheckAllowedFunctions(tableClass);
+                            var outFields = query.OutFields.FieldsNames().CheckAllowedFunctions(tableClass, isFeatureServer);
 
                             filter.SubFields = String.Join(",", outFields);
                             if (query.ReturnGeometry)
@@ -700,6 +701,7 @@ namespace gView.Interoperability.GeoServices.Request
                                                 foreach (var field in feature.Fields)
                                                 {
                                                     object val = field.Value;
+                                                    
                                                     if (val is DateTime)
                                                     {
                                                         val = Convert.ToInt64(((DateTime)val - new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc)).TotalMilliseconds);
@@ -1196,6 +1198,7 @@ namespace gView.Interoperability.GeoServices.Request
                             {
                                 Code = ex is GeoServicesException ? ((GeoServicesException)ex).ErrorCode : 999,
                                 Description = ex.Message.Split('\n')[0]
+                                //Description = $"{ex.Message}\n{ex.StackTrace}"
                             }
                         }
                     }
@@ -1261,6 +1264,7 @@ namespace gView.Interoperability.GeoServices.Request
                             {
                                 Code = ex is GeoServicesException ? ((GeoServicesException)ex).ErrorCode : 999,
                                 Description = ex.Message.Split('\n')[0]
+                                //Description = $"{ex.Message}\n{ex.StackTrace}"
                             }
                         }
                     }

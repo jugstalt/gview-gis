@@ -14,8 +14,16 @@ namespace gView.Interoperability.GeoServices.Extensions
                         .Select(f => f.Trim());
         }
 
-        static public IEnumerable<string> CheckAllowedFunctions(this IEnumerable<string> fieldNames, ITableClass tableClass)
+        static public IEnumerable<string> CheckAllowedFunctions(this IEnumerable<string> fieldNames, ITableClass tableClass, bool isFeatureServer)
         {
+            if (isFeatureServer && fieldNames.Count() == 1 && fieldNames.First() == "*")
+            {
+                fieldNames = tableClass.Fields.ToEnumerable()
+                        .Select(f => f.name)
+                        .Where(n => !n.IsFieldFunction())  // FeatureServer Query do not return FieldFunctions link STArea, STLength, ...
+                        .ToArray();
+            }
+
             foreach (var fieldName in fieldNames)
             {
                 if (fieldName.IsFieldFunction())

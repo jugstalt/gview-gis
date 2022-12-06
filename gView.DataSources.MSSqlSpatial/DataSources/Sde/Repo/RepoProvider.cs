@@ -49,7 +49,7 @@ namespace gView.DataSources.MSSqlSpatial.DataSources.Sde.Repo
                 command.Connection = connection;
 
 
-                command.CommandText = "select * from " + sdeSchemaName + ".sde_table_registry";
+                command.CommandText = $"select * from {sdeSchemaName}.sde_table_registry";
                 using (var reader = await command.ExecuteReaderAsync())
                 {
                     while (await reader.ReadAsync())
@@ -57,12 +57,12 @@ namespace gView.DataSources.MSSqlSpatial.DataSources.Sde.Repo
                         string mv_view_name = reader["imv_view_name"]?.ToString();
                         if (!String.IsNullOrWhiteSpace(mv_view_name))
                         {
-                            SdeLayerMultiversionViewNames[(reader["owner"]?.ToString() + "." + reader["table_name"]?.ToString()).ToLower()] = mv_view_name;
+                            SdeLayerMultiversionViewNames[($"{reader["owner"]?.ToString()}.{reader["table_name"]?.ToString()}").ToLower()] = mv_view_name;
                         }
                     }
                 }
 
-                command.CommandText = "select * from " + sdeSchemaName + ".sde_layers";
+                command.CommandText = $"select * from {sdeSchemaName}.sde_layers";
                 using (var reader = await command.ExecuteReaderAsync())
                 {
                     while (await reader.ReadAsync())
@@ -71,7 +71,7 @@ namespace gView.DataSources.MSSqlSpatial.DataSources.Sde.Repo
                     }
                 }
 
-                command.CommandText = "select * from " + sdeSchemaName + ".sde_spatial_references";
+                command.CommandText = $"select * from {sdeSchemaName}.sde_spatial_references";
                 using (var reader = await command.ExecuteReaderAsync())
                 {
                     while (await reader.ReadAsync())
@@ -80,7 +80,7 @@ namespace gView.DataSources.MSSqlSpatial.DataSources.Sde.Repo
                     }
                 }
 
-                command.CommandText = "select * from " + sdeSchemaName + ".sde_column_registry";
+                command.CommandText = $"select * from {sdeSchemaName}.sde_column_registry";
                 using (var reader = await command.ExecuteReaderAsync())
                 {
                     while (await reader.ReadAsync())
@@ -89,7 +89,7 @@ namespace gView.DataSources.MSSqlSpatial.DataSources.Sde.Repo
                     }
                 }
 
-                command.CommandText = "select * from " + sdeSchemaName + ".sde_geometry_columns";
+                command.CommandText = $"select * from {sdeSchemaName}.sde_geometry_columns";
                 using (var reader = await command.ExecuteReaderAsync())
                 {
                     while (await reader.ReadAsync())
@@ -164,8 +164,8 @@ namespace gView.DataSources.MSSqlSpatial.DataSources.Sde.Repo
                 command.Connection = connection;
 
                 command.CommandText =
-@"declare @newid int
-exec " + sdeSchemaName + @".next_rowid '" + sdeLayer.Owner + @"','" + sdeLayer.TableName + @"',@newid OUTPUT
+$@"declare @newid int
+exec {sdeSchemaName}.next_rowid '{sdeLayer.Owner}','{sdeLayer.TableName}',@newid OUTPUT
 SELECT @newid ""Next RowID""";
 
                 object newId = await command.ExecuteScalarAsync();
@@ -180,7 +180,7 @@ SELECT @newid ""Next RowID""";
             await this.Refresh();
 
             var fcName = fc.Name.ToLower();
-            var sdeLayer = SdeLayers.Where(l => (l.Owner + "." + l.TableName).ToLower() == fcName).FirstOrDefault();
+            var sdeLayer = SdeLayers.Where(l => $"{l.Owner}.{l.TableName}".ToLower() == fcName).FirstOrDefault();
 
             if (sdeLayer == null)
             {
@@ -195,7 +195,7 @@ SELECT @newid ""Next RowID""";
             await this.Refresh();
 
             var fcName = fc.Name.ToLower();
-            var sdeLayer = SdeLayers.Where(l => (l.Owner + "." + l.TableName).ToLower() == fcName).FirstOrDefault();
+            var sdeLayer = SdeLayers.Where(l => $"{l.Owner}.{l.TableName}".ToLower() == fcName).FirstOrDefault();
 
             if (sdeLayer == null)
             {
@@ -218,7 +218,7 @@ SELECT @newid ""Next RowID""";
             var fields = new FieldCollection();
 
             var fcName = fc.Name.ToLower();
-            foreach (var sdeField in SdeColumns.Where(c => (c.Owner + "." + c.TableName).ToLower() == fcName && !c.ColumnName.StartsWith("GDB_")))
+            foreach (var sdeField in SdeColumns.Where(c => $"{c.Owner}.{c.TableName}".ToLower() == fcName && !c.ColumnName.StartsWith("GDB_")))
             {
                 var field = new Field(sdeField.ColumnName, SdeTypes.FieldType(sdeField));
                 fields.Add(field);
@@ -234,7 +234,7 @@ SELECT @newid ""Next RowID""";
             var fields = new FieldCollection();
 
             var fcName = fc.Name.ToLower();
-            var geomColumn = SdeGeometryColumns.Where(c => (c.Owner + "." + c.TableName).ToLower() == fcName).FirstOrDefault();
+            var geomColumn = SdeGeometryColumns.Where(c => $"{c.Owner}.{c.TableName}".ToLower() == fcName).FirstOrDefault();
 
             if (geomColumn != null)
             {
@@ -257,7 +257,5 @@ SELECT @newid ""Next RowID""";
         }
 
         #endregion
-
-
     }
 }
