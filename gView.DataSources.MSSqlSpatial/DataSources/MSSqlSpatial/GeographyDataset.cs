@@ -206,21 +206,29 @@ namespace gView.DataSources.MSSqlSpatial
             string filterWhereClause = (filter is IRowIDFilter) ? ((IRowIDFilter)filter).RowIDWhereClause : filter.WhereClause;
 
             StringBuilder fieldNames = new StringBuilder();
-            foreach (string fieldName in filter.SubFields.Split(' '))
-            {
-                if (fieldNames.Length > 0)
-                {
-                    fieldNames.Append(",");
-                }
 
-                if (fieldName == "[" + fc.ShapeFieldName + "]")
+            if (filter is DistinctFilter)
+            {
+                fieldNames.Append(filter.SubFieldsAndAlias);
+            }
+            else
+            {
+                foreach (string fieldName in filter.SubFields.Split(' '))
                 {
-                    fieldNames.Append(fc.ShapeFieldName + ".STAsBinary() as temp_geometry");
-                    shapeFieldName = "temp_geometry";
-                }
-                else
-                {
-                    fieldNames.Append(fieldName);
+                    if (fieldNames.Length > 0)
+                    {
+                        fieldNames.Append(",");
+                    }
+
+                    if (fieldName == "[" + fc.ShapeFieldName + "]")
+                    {
+                        fieldNames.Append(fc.ShapeFieldName + ".STAsBinary() as temp_geometry");
+                        shapeFieldName = "temp_geometry";
+                    }
+                    else
+                    {
+                        fieldNames.Append(fieldName);
+                    }
                 }
             }
 
