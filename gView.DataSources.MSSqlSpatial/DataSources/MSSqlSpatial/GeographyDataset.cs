@@ -7,6 +7,8 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
+using System.Data.SqlClient;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -126,6 +128,7 @@ namespace gView.DataSources.MSSqlSpatial
             shapeFieldName = String.Empty;
 
             DbCommand command = this.ProviderFactory.CreateCommand();
+            var sqlCommand = new StringBuilder();
 
             filter.fieldPrefix = "[";
             filter.fieldPostfix = "]";
@@ -232,41 +235,57 @@ namespace gView.DataSources.MSSqlSpatial
                 }
             }
 
-            string limit = String.Empty, top = String.Empty, orderBy = String.Empty;
+            StringBuilder limit = new StringBuilder(),
+                          top = new StringBuilder(),
+                          orderBy = new StringBuilder();
+
             if (!String.IsNullOrWhiteSpace(filter.OrderBy))
             {
-                orderBy = " order by " + filter.OrderBy;
+                orderBy.Append($" order by {filter.OrderBy}");
             }
 
             if (filter.Limit > 0)
             {
-                if (String.IsNullOrEmpty(fc.IDFieldName) && String.IsNullOrWhiteSpace(orderBy))
+                if (String.IsNullOrEmpty(fc.IDFieldName) && orderBy.Length == 0 && !(filter is DistinctFilter))
                 {
-                    top = "top(" + filter.Limit + ") ";
+                    top.Append($"top({filter.Limit}) ");
                 }
                 else
                 {
-                    if (String.IsNullOrWhiteSpace(orderBy))
+                    if (orderBy.Length == 0)
                     {
-                        orderBy = " order by " + filter.fieldPrefix + fc.IDFieldName + filter.fieldPostfix;
+                        if (filter is DistinctFilter)
+                        {
+                            orderBy.Append($" order by {filter.SubFields}");
+                        }
+                        else
+                        {
+                            orderBy.Append($" order by {filter.fieldPrefix}{fc.IDFieldName}{filter.fieldPostfix}");
+                        }
                     }
 
-                    limit = " offset " + Math.Max(0, filter.BeginRecord - 1) + " rows fetch next " + filter.Limit + " rows only";
+                    limit.Append($" offset {Math.Max(0, filter.BeginRecord - 1)} rows fetch next {filter.Limit} rows only");
                 }
             }
 
-            command.CommandText = "SELECT " + limit + fieldNames + " FROM " + fc.Name;
+            sqlCommand.Append($"SELECT {top}{fieldNames} FROM {fc.Name}");
 
-            if (!String.IsNullOrEmpty(where))
+            if (where.Length > 0)
             {
-                command.CommandText += " WHERE " + where + ((filterWhereClause != "") ? $" AND ({filterWhereClause})" : "");
+                sqlCommand.Append($" WHERE {where.ToString()}");
+                if (!String.IsNullOrEmpty(filterWhereClause))
+                {
+                    sqlCommand.Append($" AND ({filterWhereClause})");
+                }
             }
             else if (!String.IsNullOrEmpty(filterWhereClause))
             {
-                command.CommandText += " WHERE " + filterWhereClause;
+                sqlCommand.Append($" WHERE {filterWhereClause}");
             }
+            sqlCommand.Append(orderBy.ToString());
+            sqlCommand.Append(limit.ToString());
 
-            command.CommandText += orderBy + limit;
+            command.CommandText = sqlCommand.ToString();
 
             return command;
         }

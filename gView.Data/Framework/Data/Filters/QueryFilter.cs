@@ -367,6 +367,7 @@ namespace gView.Framework.Data.Filters
                 m_orderBy = value;
             }
         }
+
         public bool NoLock
         {
             get

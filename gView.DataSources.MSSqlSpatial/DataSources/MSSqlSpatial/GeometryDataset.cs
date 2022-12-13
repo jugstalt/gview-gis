@@ -316,7 +316,7 @@ namespace gView.DataSources.MSSqlSpatial
 
             if (filter.Limit > 0)
             {
-                if (String.IsNullOrEmpty(fc.IDFieldName) && orderBy.Length == 0)
+                if (String.IsNullOrEmpty(fc.IDFieldName) && orderBy.Length == 0 && !(filter is DistinctFilter))
                 {
                     top.Append($"top({filter.Limit}) ");
                 }
@@ -324,7 +324,14 @@ namespace gView.DataSources.MSSqlSpatial
                 {
                     if (orderBy.Length == 0)
                     {
-                        orderBy.Append($" order by {filter.fieldPrefix}{fc.IDFieldName}{filter.fieldPostfix}");
+                        if (filter is DistinctFilter)
+                        {
+                            orderBy.Append($" order by {filter.SubFields}");
+                        }
+                        else
+                        {
+                            orderBy.Append($" order by {filter.fieldPrefix}{fc.IDFieldName}{filter.fieldPostfix}");
+                        }
                     }
 
                     limit.Append($" offset {Math.Max(0, filter.BeginRecord - 1)} rows fetch next {filter.Limit} rows only");
