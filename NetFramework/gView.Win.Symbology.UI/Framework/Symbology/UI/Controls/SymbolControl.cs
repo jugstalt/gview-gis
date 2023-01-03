@@ -35,6 +35,7 @@ namespace gView.Framework.Symbology.UI.Controls
             if (symbol != null)
             {
                 _symbol = (ISymbol)symbol.Clone();
+
                 if (_symbol is ILabel)
                 {
                     _txtSymbolAlignment = ((ILabel)_symbol).TextSymbolAlignment;
@@ -51,10 +52,12 @@ namespace gView.Framework.Symbology.UI.Controls
             get
             {
                 ISymbol symbol = symbolCollectionComposer.Symbol;
+
                 if (symbol is ILabel)
                 {
                     ((ILabel)symbol).TextSymbolAlignment = _txtSymbolAlignment;
                 }
+
                 return symbol;
             }
             set
@@ -62,6 +65,7 @@ namespace gView.Framework.Symbology.UI.Controls
                 if (value != null)
                 {
                     _symbol = (ISymbol)value.Clone();
+
                     if (_symbol is ILabel)
                     {
                         _txtSymbolAlignment = ((ILabel)_symbol).TextSymbolAlignment;
@@ -101,8 +105,8 @@ namespace gView.Framework.Symbology.UI.Controls
             this.panelProperties = new System.Windows.Forms.Panel();
             this.splitter1 = new System.Windows.Forms.Splitter();
             this.panel2 = new System.Windows.Forms.Panel();
-            this.symbolCollectionComposer = new gView.Framework.Symbology.UI.Controls.SymbolCollectionComposer();
             this.symbolSelectorControl1 = new gView.Framework.Symbology.UI.Controls.SymbolSelectorControl();
+            this.symbolCollectionComposer = new gView.Framework.Symbology.UI.Controls.SymbolCollectionComposer();
             this.panel1.SuspendLayout();
             this.panel2.SuspendLayout();
             this.SuspendLayout();
@@ -143,18 +147,18 @@ namespace gView.Framework.Symbology.UI.Controls
             resources.ApplyResources(this.panel2, "panel2");
             this.panel2.Name = "panel2";
             // 
+            // symbolSelectorControl1
+            // 
+            resources.ApplyResources(this.symbolSelectorControl1, "symbolSelectorControl1");
+            this.symbolSelectorControl1.Name = "symbolSelectorControl1";
+            this.symbolSelectorControl1.OnSymbolSelected += new System.EventHandler(this.symbolSelectorControl1_OnSymbolSelected);
+            // 
             // symbolCollectionComposer
             // 
             resources.ApplyResources(this.symbolCollectionComposer, "symbolCollectionComposer");
             this.symbolCollectionComposer.Name = "symbolCollectionComposer";
             this.symbolCollectionComposer.Symbol = null;
             this.symbolCollectionComposer.SelectedSymbolChanged += new gView.Framework.Symbology.UI.Controls.SymbolCollectionComposer.SelectedSymbolChangedEvent(this.symbolCollectionComposer_SelectedSymbolChanged);
-            // 
-            // symbolSelectorControl1
-            // 
-            resources.ApplyResources(this.symbolSelectorControl1, "symbolSelectorControl1");
-            this.symbolSelectorControl1.Name = "symbolSelectorControl1";
-            this.symbolSelectorControl1.OnSymbolSelected += new System.EventHandler(this.symbolSelectorControl1_OnSymbolSelected);
             // 
             // SymbolControl
             // 

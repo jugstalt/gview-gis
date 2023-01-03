@@ -25,7 +25,7 @@ namespace gView.Framework.Symbology
         [DisplayName("Start Cap Symbol")]
         [Category("Cap Symbols")]
         [UsePointSymbolPicker()]
-        public IPointSymbol StartCapPointSymbol
+        public ISymbol StartCapPointSymbol
         {
             get; set;
         }
@@ -34,7 +34,7 @@ namespace gView.Framework.Symbology
         [DisplayName("End Cap Symbol")]
         [Category("Cap Symbols")]
         [UsePointSymbolPicker()]
-        public IPointSymbol EndCapPointSymbol
+        public ISymbol EndCapPointSymbol
         {
             get; set;
         }
@@ -53,7 +53,7 @@ namespace gView.Framework.Symbology
         [DisplayName("Symbol")]
         [Category("Line Symbol")]
         [UseLineSymbolPicker()]
-        public ILineSymbol LineSymbol
+        public ISymbol LineSymbol
         {
             get; set;
         }
@@ -196,17 +196,17 @@ namespace gView.Framework.Symbology
             SymbolCappedLineSymbol cloneSym = new SymbolCappedLineSymbol();
             if (this.LineSymbol != null)
             {
-                cloneSym.LineSymbol = this.LineSymbol.Clone(options) as ILineSymbol;
+                cloneSym.LineSymbol = this.LineSymbol.Clone(options) as ISymbol;
             }
 
             if (this.StartCapPointSymbol != null)
             {
-                cloneSym.StartCapPointSymbol = this.StartCapPointSymbol.Clone(options) as IPointSymbol;
+                cloneSym.StartCapPointSymbol = this.StartCapPointSymbol.Clone(options) as ISymbol;
             }
 
             if (this.EndCapPointSymbol != null)
             {
-                cloneSym.EndCapPointSymbol = this.EndCapPointSymbol.Clone(options) as IPointSymbol;
+                cloneSym.EndCapPointSymbol = this.EndCapPointSymbol.Clone(options) as ISymbol;
             }
 
             cloneSym.LegendLabel = _legendLabel;
@@ -225,9 +225,9 @@ namespace gView.Framework.Symbology
         {
             base.Load(stream);
 
-            this.StartCapPointSymbol = (IPointSymbol)stream.Load("startcappointsymbol");
-            this.EndCapPointSymbol = (IPointSymbol)stream.Load("endcappointsymbol");
-            this.LineSymbol = (ILineSymbol)stream.Load("linesymbol");
+            this.StartCapPointSymbol = (ISymbol)stream.Load("startcappointsymbol");
+            this.EndCapPointSymbol = (ISymbol)stream.Load("endcappointsymbol");
+            this.LineSymbol = (ISymbol)stream.Load("linesymbol");
 
             this.RotateStartSymbol = (bool)stream.Load("rotatestartsymbol", true);
             this.RotateEndSymbol = (bool)stream.Load("rotateendsymbol", true);

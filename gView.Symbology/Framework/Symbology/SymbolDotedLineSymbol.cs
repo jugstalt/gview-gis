@@ -26,7 +26,7 @@ namespace gView.Framework.Symbology
         [DisplayName("Symbol")]
         [Category("Point Symbol")]
         [UsePointSymbolPicker()]
-        public IPointSymbol PointSymbol
+        public ISymbol PointSymbol
         {
             get; set;
         }
@@ -35,7 +35,7 @@ namespace gView.Framework.Symbology
         [DisplayName("Symbol")]
         [Category("Line Symbol")]
         [UseLineSymbolPicker()]
-        public ILineSymbol LineSymbol
+        public ISymbol LineSymbol
         {
             get; set;
         }
@@ -302,12 +302,12 @@ namespace gView.Framework.Symbology
             SymbolDotedLineSymbol cloneSym = new SymbolDotedLineSymbol();
             if (this.LineSymbol != null)
             {
-                cloneSym.LineSymbol = this.LineSymbol.Clone(options) as ILineSymbol;
+                cloneSym.LineSymbol = this.LineSymbol.Clone(options) as ISymbol;
             }
 
             if (this.PointSymbol != null)
             {
-                cloneSym.PointSymbol = this.PointSymbol.Clone(options) as IPointSymbol;
+                cloneSym.PointSymbol = this.PointSymbol.Clone(options) as ISymbol;
             }
 
             cloneSym.LegendLabel = _legendLabel;
@@ -366,9 +366,9 @@ namespace gView.Framework.Symbology
         {
             base.Load(stream);
 
-            this.PointSymbol = (IPointSymbol)stream.Load("pointsymbol");
-            this.LineSymbol = (ILineSymbol)stream.Load("linesymbol");
-
+            this.PointSymbol = (ISymbol)stream.Load("pointsymbol");
+            this.LineSymbol = (ISymbol)stream.Load("linesymbol");
+                
             this.DrawStartPoint = (bool)stream.Load("drawstartpoint", true);
             this.DrawEndPoint = (bool)stream.Load("drawendpoint", true);
             this.DrawStepPoints = (bool)stream.Load("drawsteppoints", true);

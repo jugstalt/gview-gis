@@ -3,6 +3,7 @@ using gView.Framework.Sys.UI.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 using System.Windows.Forms;
 
 namespace gView.Framework.Symbology.UI.Controls
@@ -21,6 +22,11 @@ namespace gView.Framework.Symbology.UI.Controls
             set
             {
                 var symbolProtoType = value;
+
+                while (symbolProtoType is ISymbolCollection)
+                {
+                    symbolProtoType = ((ISymbolCollection)symbolProtoType).Symbols?.FirstOrDefault()?.Symbol;
+                }
 
                 this.listViewSymbols.Items.Clear();
 
