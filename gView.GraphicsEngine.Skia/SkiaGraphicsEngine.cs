@@ -17,9 +17,15 @@ namespace gView.GraphicsEngine.Skia
 
         public float ScreenDpi { get; }
 
-        #region Bitmap
+        //
+        // Skia measures text exact without a padding like GDI+
+        // Some Funktions like BlockoutText and IncludesSuperScript requires MeasureText with padding
+        //
+        public bool MeasuresTextWithPadding => false;  
 
-        public IBitmap CreateBitmap(int width, int height)
+    #region Bitmap
+
+    public IBitmap CreateBitmap(int width, int height)
         {
             return new SkiaBitmap(width, height);
         }

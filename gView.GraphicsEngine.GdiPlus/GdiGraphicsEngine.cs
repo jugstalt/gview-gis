@@ -15,6 +15,8 @@ namespace gView.GraphicsEngine.GdiPlus
 
         public float ScreenDpi { get; }
 
+        public bool MeasuresTextWithPadding => true;
+
         public IBitmap CreateBitmap(int width, int height)
         {
             return new GdiBitmap(width, height);

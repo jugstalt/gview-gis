@@ -6,6 +6,7 @@ using gView.Framework.system;
 using gView.Framework.UI;
 using gView.GraphicsEngine;
 using gView.GraphicsEngine.Abstraction;
+using gView.GraphicsEngine.Extensions;
 using gView.Symbology.Framework.Symbology.IO;
 using System;
 using System.Collections.Generic;
@@ -1096,7 +1097,9 @@ namespace gView.Framework.Symbology
                         using (var subFont = Current.Engine.CreateFont(font.Name, fontSize))
                         {
                             canvas.DrawText(subText, subFont, brush, alignXOffset, alignYOffset, format);
-                            var size = canvas.MeasureText(subText, subFont);
+                            var size = canvas.MeasureText(subText, subFont)
+                                             .AddPadding(subFont);
+
                             if (!String.IsNullOrWhiteSpace(subText))
                             {
                                 alignXOffset += size.Width - subFont.Size * .2f;

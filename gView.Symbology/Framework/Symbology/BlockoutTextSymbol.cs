@@ -4,6 +4,7 @@ using gView.Framework.IO;
 using gView.Framework.system;
 using gView.GraphicsEngine;
 using gView.GraphicsEngine.Abstraction;
+using gView.GraphicsEngine.Extensions;
 using System;
 using System.ComponentModel;
 
@@ -158,8 +159,9 @@ namespace gView.Framework.Symbology
 
                     if (level < 0 || level == 0)
                     {
-                        var size = display.Canvas.MeasureText(text, _font);
+                        var size = display.Canvas.MeasureText(text, _font).AddPadding(_font);
                         var rect = new CanvasRectangleF(0f, 0f, size.Width, size.Height);
+
                         switch (format.Alignment)
                         {
                             case StringAlignment.Center:

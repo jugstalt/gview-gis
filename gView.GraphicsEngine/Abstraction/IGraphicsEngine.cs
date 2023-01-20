@@ -26,6 +26,8 @@ namespace gView.GraphicsEngine.Abstraction
 
         float ScreenDpi { get; }
 
+        bool MeasuresTextWithPadding { get; }
+
         //void DrawTextOffestPointsToFontUnit(ref CanvasPointF offset);
     }
 }

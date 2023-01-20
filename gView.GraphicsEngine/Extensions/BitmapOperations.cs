@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
 
-namespace gView.GraphicsEngine.Skia
+namespace gView.GraphicsEngine.Extensions
 {
     static public class BitmapOperations
     {
