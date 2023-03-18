@@ -183,6 +183,8 @@ namespace gView.Framework.Symbology
                                 break;
                         }
 
+                        rect = rect.AddOffsetPadding(_font, format);
+
                         display.Canvas.SmoothingMode = (SmoothingMode)this.Smoothingmode;
                         display.Canvas.FillRectangle(_outlinebrush, rect);
                         display.Canvas.SmoothingMode = SmoothingMode.None;

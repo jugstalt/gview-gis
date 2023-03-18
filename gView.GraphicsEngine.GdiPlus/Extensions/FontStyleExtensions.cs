@@ -4,21 +4,29 @@
     {
         static public System.Drawing.FontStyle ToGdiFontStyle(this FontStyle fontStyle)
         {
-            switch (fontStyle)
+            var result = System.Drawing.FontStyle.Regular;
+
+            if (fontStyle.HasFlag(FontStyle.Bold))
             {
-                case FontStyle.Regular:
-                    return System.Drawing.FontStyle.Regular;
-                case FontStyle.Bold:
-                    return System.Drawing.FontStyle.Bold;
-                case FontStyle.Italic:
-                    return System.Drawing.FontStyle.Italic;
-                case FontStyle.Strikeout:
-                    return System.Drawing.FontStyle.Strikeout;
-                case FontStyle.Underline:
-                    return System.Drawing.FontStyle.Underline;
+                result |= System.Drawing.FontStyle.Bold;
             }
 
-            return System.Drawing.FontStyle.Regular;
+            if (fontStyle.HasFlag(FontStyle.Italic))
+            {
+                result |= System.Drawing.FontStyle.Italic;
+            }
+
+            if (fontStyle.HasFlag(FontStyle.Strikeout))
+            {
+                result |= System.Drawing.FontStyle.Strikeout;
+            }
+
+            if (fontStyle.HasFlag(FontStyle.Underline))
+            {
+                result |= System.Drawing.FontStyle.Underline;
+            }
+
+            return result;
         }
     }
 }

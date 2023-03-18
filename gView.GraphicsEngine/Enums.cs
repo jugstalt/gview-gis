@@ -1,4 +1,6 @@
-﻿namespace gView.GraphicsEngine
+﻿using System;
+
+namespace gView.GraphicsEngine
 {
     //public enum PixelFormat
     //{
@@ -65,6 +67,7 @@
         Copy = 4
     }
 
+    [Flags]
     public enum FontStyle
     {
         Regular = 0,
