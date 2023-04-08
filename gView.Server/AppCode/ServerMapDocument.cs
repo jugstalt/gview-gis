@@ -85,6 +85,19 @@ namespace gView.Server.AppCode
             return true;
         }
 
+        public void RemoveAllMaps()
+        {
+            var maps = _maps?.ToArray();
+
+            if(maps!=null && maps.Length > 0)
+            {
+                foreach(var map in maps)
+                {
+                    RemoveMap(map);
+                }
+            }
+        }
+
         public IMap this[string mapName]
         {
             get
@@ -135,11 +148,7 @@ namespace gView.Server.AppCode
             XmlStream stream = new XmlStream("");
             if (stream.ReadStream(path))
             {
-                while (_maps.Count > 0)
-                {
-                    this.RemoveMap((IMap)_maps.First());
-                }
-
+                RemoveAllMaps();
                 return await stream.LoadAsync("MapDocument", this) != null;
             }
             return false;
@@ -157,10 +166,7 @@ namespace gView.Server.AppCode
 
         async public Task<bool> LoadAsync(IPersistStream stream)
         {
-            while (_maps.Count > 0)
-            {
-                this.RemoveMap((IMap)_maps.First());
-            }
+            RemoveAllMaps();
 
             IMap map;
             while ((map = (await stream.LoadAsync<IMap>("IMap", new gView.Framework.Carto.Map()))) != null)
@@ -239,14 +245,9 @@ namespace gView.Server.AppCode
                 return;
             }
 
-            while (true)
+            ModulePersist module;
+            while ((module = stream.Load("Module", null, new ModulePersist()) as ModulePersist) != null)
             {
-                ModulePersist module = stream.Load("Module", null, new ModulePersist()) as ModulePersist;
-                if (module == null)
-                {
-                    break;
-                }
-
                 if (module.Module != null)
                 {
                     module.Module.OnCreate(_map);

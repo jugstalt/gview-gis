@@ -298,11 +298,14 @@ namespace gView.Framework.Carto
         {
             if (DrawingLayerFinished != null && sender != null && sender.WebServiceLayer != null)
             {
-                IDataset ds = this[sender.WebServiceLayer.DatasetID];
-                DrawingLayerFinished(this, new TimeEvent("Map Request: " +
-                    sender.WebServiceLayer.Title +
-                    ((ds != null) ? " (" + ds.DatasetName + ")" : String.Empty),
-                    sender.StartTime, sender.FinishTime));
+                try
+                {
+                    IDataset ds = this[sender.WebServiceLayer.DatasetID];
+                    DrawingLayerFinished(this, new TimeEvent("Map Request: " +
+                        sender.WebServiceLayer.Title +
+                        ((ds != null) ? " (" + ds.DatasetName + ")" : String.Empty),
+                        sender.StartTime, sender.FinishTime));
+                } catch { }
             }
             if (succeeded)
             {
@@ -340,25 +343,23 @@ namespace gView.Framework.Carto
         {
             while (this[m_datasetNr] != null)
             {
-                IDataset dataset = this[m_datasetNr];
-                if (!(dataset is IFeatureDataset))
+                IFeatureDataset fDataset = this[m_datasetNr] as IFeatureDataset;
+                
+                if (fDataset != null)
                 {
-                    continue;
-                }
-
-                IFeatureDataset fDataset = (IFeatureDataset)dataset;
-
-                for (int i = m_layerNr; i < (await fDataset.Elements()).Count; i++)
-                {
-                    m_layerNr++;
-                    IDatasetElement layer = (await fDataset.Elements())[i];
-                    string name = layer.Title;
-
-                    if (layername == name)
+                    for (int i = m_layerNr; i < (await fDataset.Elements()).Count; i++)
                     {
-                        return layer;
+                        m_layerNr++;
+                        IDatasetElement layer = (await fDataset.Elements())[i];
+                        string name = layer.Title;
+
+                        if (layername == name)
+                        {
+                            return layer;
+                        }
                     }
                 }
+
                 m_layerNr = 0;
                 m_datasetNr++;
             }
