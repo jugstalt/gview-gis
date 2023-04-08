@@ -178,6 +178,18 @@ namespace gView.Server.Services.MapServer
             return null;
         }
 
+        public Map GetMapByName(string name)
+        {
+            foreach (IMap map in this.MapDocument.Maps)
+            {
+                if (map.Name.Equals(name, StringComparison.InvariantCultureIgnoreCase) && map is Map)
+                {
+                    return (Map)map;
+                }
+            }
+
+            return null;
+        }
 
         #region Helper
 
