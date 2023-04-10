@@ -1,11 +1,16 @@
 ﻿using gView.GraphicsEngine.Abstraction;
 using gView.GraphicsEngine.Skia.Extensions;
 using SkiaSharp;
+using System;
+using System.Collections.Concurrent;
 
 namespace gView.GraphicsEngine.Skia
 {
     class SkiaFont : IFont
     {
+        private static ConcurrentDictionary<IntPtr, object> _lockers = new ConcurrentDictionary<IntPtr, object>();
+
+        private object _locker = null;
         private SKPaint _skPaint;
 
         public SkiaFont(string name, float size, FontStyle fontStyle, GraphicsUnit unit, char? typefaceCharakter = null)
@@ -18,7 +23,16 @@ namespace gView.GraphicsEngine.Skia
                     break;
             }
 
-            var skFont = new SKFont(SKTypeface.FromFamilyName(name, fontStyle.ToSKFontStyle()), size: pixelSize);
+            var fontTypeFace = SKTypeface.FromFamilyName(name, fontStyle.ToSKFontStyle());
+            var skFont = new SKFont(fontTypeFace, size: pixelSize);
+
+            // SKTypeface is not thread safe
+            // https://groups.google.com/g/skia-discuss/c/-G1cyl1QD9E
+            if (!_lockers.ContainsKey(fontTypeFace.Handle))
+            {
+                _lockers.TryAdd(fontTypeFace.Handle, new object());
+            }
+            _lockers.TryGetValue(fontTypeFace.Handle, out _locker);
 
             _skPaint = new SKPaint(skFont)
             {
@@ -50,6 +64,8 @@ namespace gView.GraphicsEngine.Skia
         public GraphicsUnit Unit { get; }
 
         public object EngineElement => _skPaint;
+
+        public object LockObject => _locker;
 
         public void Dispose()
         {

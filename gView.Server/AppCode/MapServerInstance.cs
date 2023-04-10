@@ -471,6 +471,8 @@ public class MapServerInstance : IMapServer
             return null;
         }
 
+        //return await _mapServiceDeploymentMananger.LoadMap(name) as Map;
+        
         using (var mutex = await FuzzyMutexAsync.LockAsync(name))
         {
             // try again, already loaded?

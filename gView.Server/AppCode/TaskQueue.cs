@@ -1,80 +1,135 @@
-﻿using System;
+﻿using gView.Framework.system;
+using System;
+using System.Collections.Concurrent;
 using System.Threading.Tasks;
 
-namespace gView.Server.AppCode
+namespace gView.Server.AppCode;
+
+public class TaskQueue<T>
 {
-    public class TaskQueue<T>
+    public delegate Task QueuedTask(T parameter);
+
+    private int _idleDuration = 100;
+    private ConcurrentCounter _runningTasks;
+    private int _maxRunningTasks = 50;
+    private readonly ConcurrentQueue<QueueSemaphore> _queueSemaphores;
+
+    public TaskQueue(int maxParallelTask, int maxQueueLength)
     {
-        public delegate Task QueuedTask(T parameter);
+        this._maxRunningTasks = maxParallelTask;
+        _runningTasks = new ConcurrentCounter();
+        _queueSemaphores = new ConcurrentQueue<QueueSemaphore>();
+    }
 
-        private long ProcessId = 0;
-        private long ProcessedTasks = 0;
-        private int MaxParallelTasks = 50;
-        private object locker = new object();
+    public long IdleDuration => _idleDuration;
+    public long CurrentQueuedTasks { get; private set; } = 0;
+    public int CurrentRunningTasks => _runningTasks.GetValue();
 
-        public TaskQueue(int maxParallelTask, int maxQueueLength)
+    #region Helper
+
+    private bool ContinueWithoutQueueing()
+    {
+        lock (_runningTasks)
         {
-            this.MaxParallelTasks = maxParallelTask;
-        }
-
-        private long NextProcessId()
-        {
-            lock (locker)
+            if (_runningTasks.GetValue() >= _maxRunningTasks)
             {
-                return ++ProcessId;
+                return false;
             }
-        }
 
-        private void IncreaseProcessedTasks()
-        {
-            lock (locker)
-            {
-                ProcessedTasks = ++ProcessedTasks;
-            }
+            _runningTasks.Increment();
+            return true;
         }
+    }
 
-        private bool IsReadyToRumble(long currentProcessId)
-        {
-            lock (locker)
-            {
-                return currentProcessId - ProcessedTasks <= MaxParallelTasks;
-            }
-        }
+    private void ReleaseTask()
+    {
+        _runningTasks.Decrement();
+    }
 
-        async public Task<bool> AwaitRequest(TaskQueue<T>.QueuedTask method, T parameter)
+    private bool IsReadyToRumble(QueueSemaphore queueSemaphore)
+    {
+        return queueSemaphore.IsDequeued == true;
+    }
+
+    #endregion
+
+    async public Task<bool> AwaitRequest(TaskQueue<T>.QueuedTask method, T parameter)
+    {
+        try
         {
-            try
+            if (!ContinueWithoutQueueing())
             {
-                long currentProcessId = NextProcessId();
+                var queueSemaphore = new QueueSemaphore();
+                _queueSemaphores.Enqueue(queueSemaphore);
 
                 while (true)
                 {
-                    if (IsReadyToRumble(currentProcessId))
+                    if (IsReadyToRumble(queueSemaphore))
                     {
                         break;
                     }
 
                     await Task.Delay(10);
-                    //return false;
                 }
-
-                await method?.Invoke(parameter);
-
-                return true;
             }
-            catch (Exception /*ex*/)
-            {
-                //await Logger.LogAsync(
-                //    parameter as IServiceRequestContext,
-                //    Framework.system.loggingMethod.error,
-                //    "Thread Error: " + ex.Message + "\n" + ex.Source + "\n" + ex.StackTrace);
 
-                return false;
-            }
-            finally
-            {
-                IncreaseProcessedTasks();
-            }
+            await method?.Invoke(parameter);
+
+            return true;
+        }
+        catch (Exception /*ex*/)
+        {
+            //await Logger.LogAsync(
+            //    parameter as IServiceRequestContext,
+            //    Framework.system.loggingMethod.error,
+            //    "Thread Error: " + ex.Message + "\n" + ex.Source + "\n" + ex.StackTrace);
+
+            return false;
+        }
+        finally
+        {
+            ReleaseTask();
         }
     }
+
+    public int Dequeue()
+    {
+        int dequeueCount = 0;
+
+        lock (_runningTasks)
+        {
+            dequeueCount = _maxRunningTasks - _runningTasks.GetValue();
+
+            for (int i = 0; i < dequeueCount; i++)
+            {
+                if (_queueSemaphores.TryDequeue(out var queueSemaphore))
+                {
+                    _runningTasks.Increment();
+                    queueSemaphore.IsDequeued = true;
+                }
+            }
+        }
+
+        this.CurrentQueuedTasks = _queueSemaphores.Count;
+
+        if(this.CurrentQueuedTasks > 0 )
+        {
+            _idleDuration = Math.Max(10, _idleDuration - 10);
+        } 
+        else
+        {
+            _idleDuration = Math.Min(100, _idleDuration + 10);
+        }
+
+        return _idleDuration;
+    }
+
+    #region Classes
+
+    public class QueueSemaphore
+    {
+        public bool IsDequeued { get; set; } = false;
+    }
+
+    #endregion
 }

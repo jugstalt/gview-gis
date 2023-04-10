@@ -11,7 +11,7 @@
   "tilecache-root": "C:\\temp\\gview5\\tilecache",
 
   "task-queue": {
-    "max-parallel-tasks": 5,
+    "max-parallel-tasks": 20,
     "max-queue-length": 1000
   },
 
