@@ -13,7 +13,7 @@ namespace gView.GraphicsEngine.Skia
         private object _locker = null;
         private SKPaint _skPaint;
 
-        public SkiaFont(string name, float size, FontStyle fontStyle, GraphicsUnit unit, char? typefaceCharakter = null)
+        public SkiaFont(string name, float size, FontStyle fontStyle, GraphicsUnit unit/*, char? typefaceCharakter = null*/)
         {
             var pixelSize = size;
             switch (unit)
@@ -44,15 +44,15 @@ namespace gView.GraphicsEngine.Skia
             this.Style = fontStyle;
             this.Unit = unit;
 
-            if (typefaceCharakter.HasValue)
-            {
-                var fontManager = SKFontManager.Default;
-                var typeFace = fontManager.MatchCharacter(name, typefaceCharakter.Value);
-                if (typeFace != null)
-                {
-                    _skPaint.Typeface = typeFace;
-                }
-            }
+            //if (typefaceCharakter.HasValue)
+            //{
+            //    var fontManager = SKFontManager.Default;
+            //    var typeFace = fontManager.MatchCharacter(name, typefaceCharakter.Value);
+            //    if (typeFace != null)
+            //    {
+            //        _skPaint.Typeface = typeFace;
+            //    }
+            //}
         }
 
         public string Name { get; }

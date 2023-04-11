@@ -47,7 +47,7 @@ namespace gView.GraphicsEngine.GdiPlus
             return new DrawTextFormat();
         }
 
-        public IFont CreateFont(string fontFamily, float size, FontStyle fontStyle = FontStyle.Regular, GraphicsUnit grUnit = GraphicsUnit.Point, char? typefaceCharakter = null)
+        public IFont CreateFont(string fontFamily, float size, FontStyle fontStyle = FontStyle.Regular, GraphicsUnit grUnit = GraphicsUnit.Point)
         {
             return new GdiFont(fontFamily, size, fontStyle);
         }

@@ -23,9 +23,9 @@ namespace gView.GraphicsEngine.Skia
         //
         public bool MeasuresTextWithPadding => false;  
 
-    #region Bitmap
+        #region Bitmap
 
-    public IBitmap CreateBitmap(int width, int height)
+        public IBitmap CreateBitmap(int width, int height)
         {
             return new SkiaBitmap(width, height);
         }
@@ -57,9 +57,9 @@ namespace gView.GraphicsEngine.Skia
             return new SkiaDrawTextFormat();
         }
 
-        public IFont CreateFont(string fontFamily, float size, FontStyle fontStyle = FontStyle.Regular, GraphicsUnit grUnit = GraphicsUnit.Point, char? typefaceCharakter = null)
+        public IFont CreateFont(string fontFamily, float size, FontStyle fontStyle = FontStyle.Regular, GraphicsUnit grUnit = GraphicsUnit.Point)
         {
-            return new SkiaFont(fontFamily, size, fontStyle, grUnit, typefaceCharakter);
+            return new SkiaFont(fontFamily, size, fontStyle, grUnit);
         }
 
         public IGraphicsPath CreateGraphicsPath()

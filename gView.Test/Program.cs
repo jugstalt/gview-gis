@@ -357,7 +357,7 @@ namespace gView.Test
                     for (int x = 0; x < 32; x++)
                     {
                         char c = (char)(byte)(x + y * 32);
-                        using (var font = Current.Engine.CreateFont("Arial", 20, typefaceCharakter: c))
+                        using (var font = Current.Engine.CreateFont("Arial", 20/*, typefaceCharakter: c*/))
                         {
                             canvas.DrawText(c.ToString(), font, blackBrush, (x * 20) * 1.3f, ((y + 1) * 20) * 1.5f);
                         }
