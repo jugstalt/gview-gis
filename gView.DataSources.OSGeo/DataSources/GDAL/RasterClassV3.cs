@@ -17,8 +17,6 @@ namespace gView.DataSources.GDAL
     {
         internal enum RasterType { image = 0, grid = 1, imageRgba = 2 }
 
-        private static object _locker = new object();
-
         private string _filename, _title;
         private bool _valid = true;
         private int _iWidth = 0, _iHeight = 0;
