@@ -454,13 +454,6 @@ namespace gView.Framework.Data
         Task<ICursor> ImageList();
     }
 
-    public interface IRasterClass2 : IRasterClass
-    {
-        IPoint PicPoint1 { get; }
-        IPoint PicPoint2 { get; }
-        IPoint PicPoint3 { get; }
-    }
-
     public enum GridRenderMethode { None = 0, Colors = 1, HillShade = 4, NullValue = 8 }
     public class GridColorClass : gView.Framework.IO.IPersistable
     {

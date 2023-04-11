@@ -1,4 +1,5 @@
-﻿using gView.GraphicsEngine.Abstraction;
+﻿using gView.Framework.Geometry;
+using gView.GraphicsEngine.Abstraction;
 
 namespace gView.Framework.Data
 {
@@ -21,5 +22,17 @@ namespace gView.Framework.Data
                 _bitmap = null;
             }
         }
+    }
+
+    public class RasterPaintContext2 : RasterPaintContext, IRasterPointContext2
+    {
+        public RasterPaintContext2(IBitmap bitmap)
+            :base(bitmap)
+        {
+        }
+
+        public IPoint PicPoint1 { get; set; }
+        public IPoint PicPoint2 { get; set; }
+        public IPoint PicPoint3 { get; set; }
     }
 }

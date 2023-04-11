@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace gView.DataSources.GDAL
 {
-    public class RasterClassV1 : IRasterClass2, IRasterFile, IRasterFileBitmap, IPointIdentify, IGridIdentify, IGridClass, IPersistable, IDisposable
+    public class RasterClassV1 : IRasterClass, IRasterFile, IRasterFileBitmap, IPointIdentify, IGridIdentify, IGridClass, IPersistable, IDisposable
     {
         internal enum RasterType { image = 0, grid = 1, wavelet = 2 }
 
@@ -295,9 +295,9 @@ namespace gView.DataSources.GDAL
                 vecs[1] = new vector2(picEnv.maxx, picEnv.miny);
                 vecs[2] = new vector2(picEnv.minx, picEnv.maxy);
                 tfw.Project(vecs);
-                _p1 = new gView.Framework.Geometry.Point(vecs[0].x, vecs[0].y);
-                _p2 = new gView.Framework.Geometry.Point(vecs[1].x, vecs[1].y);
-                _p3 = new gView.Framework.Geometry.Point(vecs[2].x, vecs[2].y);
+                var p1 = new gView.Framework.Geometry.Point(vecs[0].x, vecs[0].y);
+                var p2 = new gView.Framework.Geometry.Point(vecs[1].x, vecs[1].y);
+                var p3 = new gView.Framework.Geometry.Point(vecs[2].x, vecs[2].y);
 
                 double pix = display.mapScale / (display.dpi / 0.0254);  // [m]
                 double c1 = Math.Sqrt(_tfw.dx_X * _tfw.dx_X + _tfw.dx_Y * _tfw.dx_Y);
@@ -320,24 +320,36 @@ namespace gView.DataSources.GDAL
                 int iWidth = (int)(wWidth * mag);
                 int iHeight = (int)(wHeight * mag);
 
+                RasterPaintContext2 rasterPaintContext = null;
+
                 switch (_type)
                 {
                     case RasterType.image:
-                        return Task.FromResult<IRasterPaintContext>(PaintImage(x, y, wWidth, wHeight, iWidth, iHeight, cancelTracker));
+                        rasterPaintContext = PaintImage(x, y, wWidth, wHeight, iWidth, iHeight, cancelTracker);
+                        break;
                     case RasterType.wavelet:
-                        return Task.FromResult<IRasterPaintContext>(PaintWavelet(x, y, wWidth, wHeight, iWidth, iHeight, cancelTracker));
+                        rasterPaintContext = PaintWavelet(x, y, wWidth, wHeight, iWidth, iHeight, cancelTracker);
+                        break;
                     case RasterType.grid:
                         if (_renderRawGridValues)
                         {
-                            return Task.FromResult<IRasterPaintContext>(PaintGrid(x, y, wWidth, wHeight, iWidth, iHeight));
+                            rasterPaintContext = PaintGrid(x, y, wWidth, wHeight, iWidth, iHeight);
                         }
                         else
                         {
-                            return Task.FromResult<IRasterPaintContext>(PaintHillShade(x, y, wWidth, wHeight, iWidth, iHeight, mag, cancelTracker));
+                            rasterPaintContext = PaintHillShade(x, y, wWidth, wHeight, iWidth, iHeight, mag, cancelTracker);
                         }
+                        break;
                 }
 
-                return null;
+                if (rasterPaintContext != null)
+                {
+                    rasterPaintContext.PicPoint1 = p1;
+                    rasterPaintContext.PicPoint2 = p2;
+                    rasterPaintContext.PicPoint3 = p3;
+                }
+
+                return Task.FromResult<IRasterPaintContext>(rasterPaintContext);
             }
             finally
             {
@@ -347,7 +359,7 @@ namespace gView.DataSources.GDAL
 
         #endregion
 
-        private IRasterPaintContext PaintImage(int x, int y, int wWidth, int wHeight, int iWidth, int iHeight, ICancelTracker cancelTracker)
+        private RasterPaintContext2 PaintImage(int x, int y, int wWidth, int wHeight, int iWidth, int iHeight, ICancelTracker cancelTracker)
         {
             if (CancelTracker.Canceled(cancelTracker) || _gDS == null)
             {
@@ -436,7 +448,7 @@ namespace gView.DataSources.GDAL
                     }
                 }
 
-                return new RasterPaintContext(bitmap);
+                return new RasterPaintContext2(bitmap);
             }
             catch (Exception ex)
             {
@@ -459,7 +471,7 @@ namespace gView.DataSources.GDAL
             }
         }
 
-        private IRasterPaintContext PaintWavelet(int x, int y, int wWidth, int wHeight, int iWidth, int iHeight, ICancelTracker cancelTracker)
+        private RasterPaintContext2 PaintWavelet(int x, int y, int wWidth, int wHeight, int iWidth, int iHeight, ICancelTracker cancelTracker)
         {
             if (CancelTracker.Canceled(cancelTracker) || _gDS == null)
             {
@@ -499,7 +511,7 @@ namespace gView.DataSources.GDAL
                     }
                 }
 
-                return new RasterPaintContext(bitmap);
+                return new RasterPaintContext2(bitmap);
             }
             catch (Exception ex)
             {
@@ -522,7 +534,7 @@ namespace gView.DataSources.GDAL
             }
         }
 
-        private IRasterPaintContext PaintGrid(int x, int y, int wWidth, int wHeight, int iWidth, int iHeight)
+        private RasterPaintContext2 PaintGrid(int x, int y, int wWidth, int wHeight, int iWidth, int iHeight)
         {
             if (_gDS == null)
             {
@@ -617,7 +629,7 @@ namespace gView.DataSources.GDAL
                         canvas.DrawBitmap(bitmap, new GraphicsEngine.CanvasPoint(0, 0));
                     }
 
-                    return new RasterPaintContext(contextBitmap);
+                    return new RasterPaintContext2(contextBitmap);
                 }
                 catch (Exception ex)
                 {
@@ -633,7 +645,7 @@ namespace gView.DataSources.GDAL
             }
         }
 
-        private IRasterPaintContext PaintHillShade(int x, int y, int wWidth, int wHeight, int iWidth, int iHeight, double mag, ICancelTracker cancelTracker)
+        private RasterPaintContext2 PaintHillShade(int x, int y, int wWidth, int wHeight, int iWidth, int iHeight, double mag, ICancelTracker cancelTracker)
         {
             if (CancelTracker.Canceled(cancelTracker) || _gDS == null)
             {
@@ -743,7 +755,7 @@ namespace gView.DataSources.GDAL
                         gr.DrawBitmap(bitmap, new GraphicsEngine.CanvasPoint(0, 0));
                     }
 
-                    return new RasterPaintContext(contextBitmap);
+                    return new RasterPaintContext2(contextBitmap);
                 }
                 catch (Exception ex)
                 {
@@ -774,26 +786,6 @@ namespace gView.DataSources.GDAL
         public IDataset Dataset
         {
             get { return _dataset; }
-        }
-
-        #endregion
-
-        #region IRasterClass2 Member
-
-        private IPoint _p1, _p2, _p3;
-        public IPoint PicPoint1
-        {
-            get { return _p1; }
-        }
-
-        public IPoint PicPoint2
-        {
-            get { return _p2; }
-        }
-
-        public IPoint PicPoint3
-        {
-            get { return _p3; }
         }
 
         #endregion

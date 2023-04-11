@@ -109,11 +109,12 @@ namespace gView.Framework.Carto.LayerRenderers
 
                     var points = new GraphicsEngine.CanvasPointF[3];
 
-                    if (_layer.RasterClass is IRasterClass2)
+                    if (paintContext is IRasterPointContext2)
                     {
-                        IPoint p1 = ((IRasterClass2)_layer.RasterClass).PicPoint1;
-                        IPoint p2 = ((IRasterClass2)_layer.RasterClass).PicPoint2;
-                        IPoint p3 = ((IRasterClass2)_layer.RasterClass).PicPoint3;
+                        IPoint p1 = ((IRasterPointContext2)paintContext).PicPoint1;
+                        IPoint p2 = ((IRasterPointContext2)paintContext).PicPoint2;
+                        IPoint p3 = ((IRasterPointContext2)paintContext).PicPoint3;
+
                         if (_map.Display.GeometricTransformer != null)
                         {
                             p1 = (IPoint)_map.Display.GeometricTransformer.Transform2D(p1);

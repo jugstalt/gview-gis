@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace gView.DataSources.Raster.File
 {
-    public class MrSidFileClass : IRasterClass2, IRasterFileBitmap, IRasterFile, IDisposable
+    public class MrSidFileClass : IRasterClass, IRasterFileBitmap, IRasterFile, IDisposable
     {
         private enum RasterType { sid, jp2, unknown }
 
@@ -306,9 +306,9 @@ namespace gView.DataSources.Raster.File
                 vecs[1] = new vector2(picEnv.maxx, picEnv.miny);
                 vecs[2] = new vector2(picEnv.minx, picEnv.maxy);
                 tfw.Project(vecs);
-                _p1 = new gView.Framework.Geometry.Point(vecs[0].x, vecs[0].y);
-                _p2 = new gView.Framework.Geometry.Point(vecs[1].x, vecs[1].y);
-                _p3 = new gView.Framework.Geometry.Point(vecs[2].x, vecs[2].y);
+                var p1 = new gView.Framework.Geometry.Point(vecs[0].x, vecs[0].y);
+                var p2 = new gView.Framework.Geometry.Point(vecs[1].x, vecs[1].y);
+                var p3 = new gView.Framework.Geometry.Point(vecs[2].x, vecs[2].y);
 
                 double pix = display.mapScale / (display.dpi / 0.0254);  // [m]
                 double c1 = Math.Sqrt(_geoCoord.xRes * _geoCoord.xRes + _geoCoord.xRot * _geoCoord.xRot);
@@ -346,7 +346,12 @@ namespace gView.DataSources.Raster.File
 
                 MrSidWrapper.ReadBandData(bufferData, bitmapData.Scan0, 3, (uint)bitmapData.Stride);
 
-                return new RasterPaintContext(bitmap);
+                return new RasterPaintContext2(bitmap)
+                {
+                    PicPoint1 = p1,
+                    PicPoint2 = p2,
+                    PicPoint3 = p3
+                };
             }
             catch (Exception ex)
             {
@@ -482,26 +487,6 @@ namespace gView.DataSources.Raster.File
                         _geoCoord.yRes);
             }
         }
-
-        #region IRasterClass2 Member
-
-        private IPoint _p1, _p2, _p3;
-        public IPoint PicPoint1
-        {
-            get { return _p1; }
-        }
-
-        public IPoint PicPoint2
-        {
-            get { return _p2; }
-        }
-
-        public IPoint PicPoint3
-        {
-            get { return _p3; }
-        }
-
-        #endregion
 
         #region IDisposable Member
 
