@@ -2983,12 +2983,15 @@ namespace gView.Framework.SpatialAlgorithms
         {
             PointCollection pColl = new PointCollection();
 
-            for (double s = fromStat; s <= toStat; s += step)
+            if (step > double.Epsilon)
             {
-                IPoint p = PathPoint(path, s, createPointM2);
-                if (p != null)
+                for (double s = fromStat; s <= toStat; s += step)
                 {
-                    pColl.AddPoint(p);
+                    IPoint p = PathPoint(path, s, createPointM2);
+                    if (p != null)
+                    {
+                        pColl.AddPoint(p);
+                    }
                 }
             }
 

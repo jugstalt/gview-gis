@@ -6,17 +6,23 @@ namespace gView.GraphicsEngine.Skia.Extensions
     {
         static public SKFontStyle ToSKFontStyle(this FontStyle fontStyle)
         {
-            switch (fontStyle)
+            if (fontStyle.HasFlag(FontStyle.Bold) &&
+               fontStyle.HasFlag(FontStyle.Italic))
             {
-                case FontStyle.Bold:
-                    return SKFontStyle.Bold;
-                case FontStyle.Italic:
-                    return SKFontStyle.Italic;
-                case FontStyle.Bold | FontStyle.Italic:
-                    return SKFontStyle.BoldItalic;
-                default:
-                    return SKFontStyle.Normal;
+                return SKFontStyle.BoldItalic;
             }
+
+            if (fontStyle.HasFlag(FontStyle.Bold))
+            {
+                return SKFontStyle.Bold;
+            }
+
+            if (fontStyle.HasFlag(FontStyle.Italic))
+            {
+                return SKFontStyle.Italic;
+            }
+
+            return SKFontStyle.Normal;
         }
     }
 }

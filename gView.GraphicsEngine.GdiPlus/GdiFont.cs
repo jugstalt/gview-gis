@@ -23,6 +23,8 @@ namespace gView.GraphicsEngine.GdiPlus
 
         public GraphicsUnit Unit => (GraphicsUnit)_font.Unit;
 
+        public object LockObject => null;
+
         public void Dispose()
         {
             if (_font != null)

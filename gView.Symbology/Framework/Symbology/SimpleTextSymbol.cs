@@ -1094,7 +1094,7 @@ namespace gView.Framework.Symbology
                             subText = text.Substring(0, text.IndexOf(superScript ? "^" : "~"));
                         }
 
-                        using (var subFont = Current.Engine.CreateFont(font.Name, fontSize))
+                        using (var subFont = Current.Engine.CreateFont(font.Name, fontSize, font.Style))
                         {
                             canvas.DrawText(subText, subFont, brush, alignXOffset, alignYOffset, format);
                             var size = canvas.MeasureText(subText, subFont)

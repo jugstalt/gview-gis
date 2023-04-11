@@ -99,40 +99,56 @@ namespace gView.Framework.Sys.UI.Extensions
 
         static public System.Drawing.FontStyle ToGdiFontStyle(this GraphicsEngine.FontStyle fontStyle)
         {
-            switch (fontStyle)
+            var result = System.Drawing.FontStyle.Regular;
+
+            if (fontStyle.HasFlag(GraphicsEngine.FontStyle.Bold))
             {
-                case GraphicsEngine.FontStyle.Regular:
-                    return System.Drawing.FontStyle.Regular;
-                case GraphicsEngine.FontStyle.Bold:
-                    return System.Drawing.FontStyle.Bold;
-                case GraphicsEngine.FontStyle.Italic:
-                    return System.Drawing.FontStyle.Italic;
-                case GraphicsEngine.FontStyle.Strikeout:
-                    return System.Drawing.FontStyle.Strikeout;
-                case GraphicsEngine.FontStyle.Underline:
-                    return System.Drawing.FontStyle.Underline;
+                result |= System.Drawing.FontStyle.Bold;
             }
 
-            return System.Drawing.FontStyle.Regular;
+            if (fontStyle.HasFlag(GraphicsEngine.FontStyle.Italic))
+            {
+                result |= System.Drawing.FontStyle.Italic;
+            }
+
+            if (fontStyle.HasFlag(GraphicsEngine.FontStyle.Strikeout))
+            {
+                result |= System.Drawing.FontStyle.Strikeout;
+            }
+
+            if (fontStyle.HasFlag(GraphicsEngine.FontStyle.Underline))
+            {
+                result |= System.Drawing.FontStyle.Underline;
+            }
+
+            return result;
         }
 
         static public GraphicsEngine.FontStyle ToFontStyle(this System.Drawing.FontStyle fontStyle)
         {
-            switch (fontStyle)
+            var result = GraphicsEngine.FontStyle.Regular;
+
+            if (fontStyle.HasFlag(System.Drawing.FontStyle.Bold))
             {
-                case System.Drawing.FontStyle.Regular:
-                    return GraphicsEngine.FontStyle.Regular;
-                case System.Drawing.FontStyle.Bold:
-                    return GraphicsEngine.FontStyle.Bold;
-                case System.Drawing.FontStyle.Italic:
-                    return GraphicsEngine.FontStyle.Italic;
-                case System.Drawing.FontStyle.Strikeout:
-                    return GraphicsEngine.FontStyle.Strikeout;
-                case System.Drawing.FontStyle.Underline:
-                    return GraphicsEngine.FontStyle.Underline;
+                result |= GraphicsEngine.FontStyle.Bold;
             }
 
-            return GraphicsEngine.FontStyle.Regular;
+            if (fontStyle.HasFlag(System.Drawing.FontStyle.Italic))
+            {
+                result |= GraphicsEngine.FontStyle.Italic;
+            }
+
+            if (fontStyle.HasFlag(System.Drawing.FontStyle.Strikeout))
+            {
+                result |= GraphicsEngine.FontStyle.Strikeout;
+            }
+
+            if (fontStyle.HasFlag(System.Drawing.FontStyle.Underline))
+            {
+                result |= GraphicsEngine.FontStyle.Underline;
+            }
+
+            return result;
         }
 
         static public CanvasRectangleF ToCanvasRectangleF(this RectangleF rectangleF)

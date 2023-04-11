@@ -13,5 +13,7 @@ namespace gView.GraphicsEngine.Abstraction
         GraphicsUnit Unit { get; }
 
         object EngineElement { get; }
+
+        object LockObject { get; }
     }
 }

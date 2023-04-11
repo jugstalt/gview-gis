@@ -170,7 +170,7 @@ namespace gView.Framework.Symbology
 
                             #region Step Points
 
-                            if (this.DrawStepPoints && stepWidthValue >= 1 && step > 0.0)
+                            if (this.DrawStepPoints && stepWidthValue >= 1 && step > double.Epsilon)
                             {
                                 pointCollection = length > step ?
                                     SpatialAlgorithms.Algorithm.PathPoints(path,

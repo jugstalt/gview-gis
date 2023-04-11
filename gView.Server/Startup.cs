@@ -155,6 +155,7 @@ namespace gView.Server
 
             #region Background Task
 
+            services.AddHostedService<TaskQueueDequeueService>();
             services.AddHostedService<TimedHostedBackgroundService>();
 
             #endregion

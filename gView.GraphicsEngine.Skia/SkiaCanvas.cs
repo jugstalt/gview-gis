@@ -184,27 +184,27 @@ namespace gView.GraphicsEngine.Skia
 
         public void DrawText(string text, IFont font, IBrush brush, CanvasPoint point)
         {
-            DrawMultilineText(text.RemoveReturns(), point.ToSKPoint(), GetSKPaint(font, (SKPaint)brush.EngineElement));
+            DrawMultilineText(text.RemoveReturns(), point.ToSKPoint(), GetSKPaint(font, (SKPaint)brush.EngineElement), font);
         }
 
         public void DrawText(string text, IFont font, IBrush brush, int x, int y)
         {
-            DrawMultilineText(text.RemoveReturns(), x, y, GetSKPaint(font, (SKPaint)brush.EngineElement));
+            DrawMultilineText(text.RemoveReturns(), x, y, GetSKPaint(font, (SKPaint)brush.EngineElement), font);
         }
 
         public void DrawText(string text, IFont font, IBrush brush, CanvasPointF pointF)
         {
-            DrawMultilineText(text.RemoveReturns(), pointF.ToSKPoint(), GetSKPaint(font, (SKPaint)brush.EngineElement));
+            DrawMultilineText(text.RemoveReturns(), pointF.ToSKPoint(), GetSKPaint(font, (SKPaint)brush.EngineElement), font);
         }
 
         public void DrawText(string text, IFont font, IBrush brush, float x, float y)
         {
-            DrawMultilineText(text.RemoveReturns(), x, y, GetSKPaint(font, (SKPaint)brush.EngineElement));
+            DrawMultilineText(text.RemoveReturns(), x, y, GetSKPaint(font, (SKPaint)brush.EngineElement), font);
         }
 
         public void DrawText(string text, IFont font, IBrush brush, CanvasRectangleF rectangleF)
         {
-            DrawMultilineText(text.RemoveReturns(), rectangleF.Center.ToSKPoint(), GetSKPaint(font, (SKPaint)brush.EngineElement));
+            DrawMultilineText(text.RemoveReturns(), rectangleF.Center.ToSKPoint(), GetSKPaint(font, (SKPaint)brush.EngineElement), font);
         }
 
         public void DrawText(string text, IFont font, IBrush brush, CanvasPoint point, IDrawTextFormat format)
@@ -212,7 +212,7 @@ namespace gView.GraphicsEngine.Skia
             var skPoint = point.ToSKPoint();
             var skPaint = GetSKPaint(font, (SKPaint)brush.EngineElement, format, ref text, ref skPoint);
 
-            DrawMultilineText(text, skPoint, skPaint);
+            DrawMultilineText(text, skPoint, skPaint, font);
         }
 
         public void DrawText(string text, IFont font, IBrush brush, int x, int y, IDrawTextFormat format)
@@ -220,7 +220,7 @@ namespace gView.GraphicsEngine.Skia
             var skPoint = new SKPoint(x, y);
             var skPaint = GetSKPaint(font, (SKPaint)brush.EngineElement, format, ref text, ref skPoint);
 
-            DrawMultilineText(text, skPoint, skPaint);
+            DrawMultilineText(text, skPoint, skPaint, font);
         }
 
         public void DrawText(string text, IFont font, IBrush brush, CanvasPointF pointF, IDrawTextFormat format)
@@ -228,7 +228,7 @@ namespace gView.GraphicsEngine.Skia
             var skPoint = pointF.ToSKPoint();
             var skPaint = GetSKPaint(font, (SKPaint)brush.EngineElement, format, ref text, ref skPoint);
 
-            DrawMultilineText(text, skPoint, skPaint);
+            DrawMultilineText(text, skPoint, skPaint, font);
         }
 
         public void DrawText(string text, IFont font, IBrush brush, float x, float y, IDrawTextFormat format)
@@ -236,7 +236,7 @@ namespace gView.GraphicsEngine.Skia
             var skPoint = new SKPoint(x, y);
             var skPaint = GetSKPaint(font, (SKPaint)brush.EngineElement, format, ref text, ref skPoint);
 
-            DrawMultilineText(text, skPoint, skPaint);
+            DrawMultilineText(text, skPoint, skPaint, font);
         }
 
         public CanvasSizeF MeasureText(string text, IFont font)
@@ -261,6 +261,11 @@ namespace gView.GraphicsEngine.Skia
                 GetSKPaint(font).MeasureText(text, ref bounds);
                 size.Width = bounds.Width;
                 size.Height = bounds.Height;
+            }
+
+            if (font.Style.HasFlag(FontStyle.Underline))
+            {
+                size.Height *= 1.1f;
             }
 
             return size;
@@ -379,7 +384,7 @@ namespace gView.GraphicsEngine.Skia
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DrawMultilineText(string text, SKPoint point, SKPaint paint)
+        private void DrawMultilineText(string text, SKPoint point, SKPaint paint, IFont font)
         {
             if (text.Contains("\n"))
             {
@@ -387,19 +392,21 @@ namespace gView.GraphicsEngine.Skia
 
                 foreach (var line in lines)
                 {
-                    _canvas?.DrawText(line, point, paint);
+                    //_canvas?.DrawText(line, point, paint);
+                    DrawText(line, point.X, point.Y, paint, font);
 
                     point.Y += paint.TextSize;
                 }
             }
             else
             {
-                _canvas?.DrawText(text, point, paint);
+                //_canvas?.DrawText(text, point, paint);
+                DrawText(text, point.X, point.Y, paint, font);
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DrawMultilineText(string text, float x, float y, SKPaint paint)
+        private void DrawMultilineText(string text, float x, float y, SKPaint paint, IFont font)
         {
             if (text.Contains("\n"))
             {
@@ -407,14 +414,76 @@ namespace gView.GraphicsEngine.Skia
 
                 foreach (var line in lines)
                 {
-                    _canvas?.DrawText(line, x, y, paint);
+                    DrawText(line, x, y, paint, font);
 
                     y += paint.TextSize;
                 }
             }
             else
             {
+                DrawText(text, x, y, paint, font);
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void DrawText(string text, float x, float y, SKPaint paint, IFont font)
+        {
+            var locker = font.LockObject;
+            if (locker != null)  // SKTypeface is not type safe
+            {
+                lock (locker)
+                {
+                    _canvas?.DrawText(text, x, y, paint);
+                }
+            }
+            else
+            {
                 _canvas?.DrawText(text, x, y, paint);
+            }
+
+            if (font.Style.HasFlag(FontStyle.Underline) ||
+                font.Style.HasFlag(FontStyle.Strikeout))
+            {
+                #region Draw underline/strikout line
+
+                var sizeF = this.MeasureText(text, font);
+                float strokeWidth = paint.StrokeWidth;
+                float w2 = sizeF.Width / 2f,
+                      x1 = x - sizeF.Width / 2f,
+                      x2 = x + sizeF.Width / 2f;
+
+                switch (paint.TextAlign)
+                {
+                    case SKTextAlign.Left:
+                        x1 += w2;
+                        x2 += w2;
+                        break;
+                    case SKTextAlign.Right:
+                        x1 -= w2;
+                        x2 -= w2;
+                        break;
+                }
+
+                if (font.Style.HasFlag(FontStyle.Underline))
+                {
+                    float lineY = y + paint.TextSize * 0.1f;
+
+                    paint.StrokeWidth = paint.TextSize * 0.1f;
+                    _canvas.DrawLine(x1, lineY,
+                                     x2, lineY, paint);
+                }
+                if (font.Style.HasFlag(FontStyle.Strikeout))
+                {
+                    float lineY = y - paint.TextSize / 3f * 0.82f; // empiric
+
+                    paint.StrokeWidth = paint.TextSize * 0.05f;
+                    _canvas.DrawLine(x1, lineY,
+                                     x2, lineY, paint);
+                }
+
+                paint.StrokeWidth = strokeWidth;
+
+                #endregion
             }
         }
 
