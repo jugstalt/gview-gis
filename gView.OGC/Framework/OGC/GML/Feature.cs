@@ -3,6 +3,8 @@ using gView.Framework.Data.Cursors;
 using gView.Framework.Geometry;
 using System.Text;
 using System.Threading.Tasks;
+using gView.Framework.Extensions;
+using gView.Framework.OGC.Extensions;
 
 namespace gView.Framework.OGC.GML
 {
@@ -45,9 +47,9 @@ namespace gView.Framework.OGC.GML
                     continue;
                 }
 
-                // TODO: Value soll noch auf <,>,&,... untersucht werden !!!
+                
                 sb.Append(@"
-         <gv:" + fv.Name.Replace("#", "") + ">" + fv.Value + "</gv:" + fv.Name.Replace("#", "") + ">");
+         <gv:" + fv.Name.ToValidXmlTag() + ">" + fv.Value?.ToString().XmlEncoded() + "</gv:" + fv.Name.ToValidXmlTag() + ">");
             }
             sb.Append(@"
       </gv:" + fcID + @">
