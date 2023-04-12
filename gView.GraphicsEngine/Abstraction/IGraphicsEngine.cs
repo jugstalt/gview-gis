@@ -1,4 +1,5 @@
-﻿using System;
+﻿using gView.GraphicsEngine.Threading;
+using System;
 using System.IO;
 
 namespace gView.GraphicsEngine.Abstraction
@@ -27,6 +28,8 @@ namespace gView.GraphicsEngine.Abstraction
         float ScreenDpi { get; }
 
         bool MeasuresTextWithPadding { get; }
+
+        IThreadLocker CloneObjectsLocker { get; }
 
         //void DrawTextOffestPointsToFontUnit(ref CanvasPointF offset);
     }

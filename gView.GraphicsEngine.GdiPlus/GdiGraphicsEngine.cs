@@ -1,4 +1,5 @@
 ﻿using gView.GraphicsEngine.Abstraction;
+using gView.GraphicsEngine.Threading;
 using System;
 using System.IO;
 
@@ -6,6 +7,8 @@ namespace gView.GraphicsEngine.GdiPlus
 {
     public class GdiGraphicsEngine : IGraphicsEngine
     {
+        private static IThreadLocker _cloneObjectsLocker = new ThreadLocker();
+
         public GdiGraphicsEngine(float screenDpi)
         {
             ScreenDpi = screenDpi;
@@ -81,5 +84,7 @@ namespace gView.GraphicsEngine.GdiPlus
         {
             // System.Drawing use unit "points" => do nothing
         }
+
+        public IThreadLocker CloneObjectsLocker => _cloneObjectsLocker;
     }
 }

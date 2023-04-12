@@ -1,4 +1,5 @@
 ﻿using gView.GraphicsEngine.Abstraction;
+using gView.GraphicsEngine.Threading;
 using System;
 using System.IO;
 
@@ -93,6 +94,8 @@ namespace gView.GraphicsEngine.Skia
             //offset.Y = offset.Y.PointsToPixels() / 1.2f;
         }
 
+        public IThreadLocker CloneObjectsLocker => null;
+        
         #endregion
     }
 }

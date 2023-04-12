@@ -3,6 +3,7 @@ using gView.GraphicsEngine.Skia.Extensions;
 using SkiaSharp;
 using System;
 using System.Runtime.CompilerServices;
+using gView.GraphicsEngine.Extensions;
 
 namespace gView.GraphicsEngine.Skia
 {
@@ -428,18 +429,9 @@ namespace gView.GraphicsEngine.Skia
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void DrawText(string text, float x, float y, SKPaint paint, IFont font)
         {
-            var locker = font.LockObject;
-            if (locker != null)  // SKTypeface is not type safe
-            {
-                lock (locker)
-                {
-                    _canvas?.DrawText(text, x, y, paint);
-                }
-            }
-            else
-            {
-                _canvas?.DrawText(text, x, y, paint);
-            }
+            font.LockObject.InterLock(() =>
+                _canvas?.DrawText(text, x, y, paint)
+            );
 
             if (font.Style.HasFlag(FontStyle.Underline) ||
                 font.Style.HasFlag(FontStyle.Strikeout))

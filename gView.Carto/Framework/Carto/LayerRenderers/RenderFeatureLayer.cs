@@ -4,6 +4,7 @@ using gView.Framework.Data.Filters;
 using gView.Framework.Geometry;
 using gView.Framework.Symbology;
 using gView.Framework.system;
+using gView.GraphicsEngine.Extensions;
 using System;
 using System.Threading.Tasks;
 
@@ -15,7 +16,6 @@ namespace gView.Framework.Carto.LayerRenderers
         private IDatasetCachingContext _datasetCachingContext;
         private IFeatureLayer _layer;
         private ICancelTracker _cancelTracker;
-        private static object lockThis = new object();
         private bool _useLabelRenderer = false;
         private FeatureCounter _counter;
         private bool _isServiceMap = false;
@@ -191,9 +191,9 @@ namespace gView.Framework.Carto.LayerRenderers
                 IFeatureRenderer renderer = null;
                 ILabelRenderer labelRenderer = null;
 
-                lock (lockThis)
+                GraphicsEngine.Current.Engine?.CloneObjectsLocker.InterLock(() =>
                 {
-                    // Beim Clonen sprerren...
+                    // Beim Clonen sprerren... GDI+
                     // Da sonst bei der Servicemap bei gleichzeitigen Requests
                     // Exception "Objekt wird bereits an anderer Stelle verwendet" auftreten kann!
                     if (layer.FeatureRenderer != null && layer.FeatureRenderer.HasEffect(layer, _map))
@@ -226,7 +226,7 @@ namespace gView.Framework.Carto.LayerRenderers
                             //display.refScale = refScale;
                         }
                     }
-                }
+                });
 
                 #endregion
 

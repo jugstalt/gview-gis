@@ -1,5 +1,6 @@
 ﻿using gView.GraphicsEngine.Abstraction;
 using gView.GraphicsEngine.GdiPlus.Extensions;
+using gView.GraphicsEngine.Threading;
 using System.Drawing;
 
 namespace gView.GraphicsEngine.GdiPlus
@@ -23,7 +24,7 @@ namespace gView.GraphicsEngine.GdiPlus
 
         public GraphicsUnit Unit => (GraphicsUnit)_font.Unit;
 
-        public object LockObject => null;
+        public IThreadLocker LockObject => null;
 
         public void Dispose()
         {

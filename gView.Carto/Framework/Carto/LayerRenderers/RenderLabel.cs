@@ -3,6 +3,7 @@ using gView.Framework.Data.Cursors;
 using gView.Framework.Data.Filters;
 using gView.Framework.Geometry;
 using gView.Framework.system;
+using gView.GraphicsEngine.Extensions;
 using System;
 using System.Threading.Tasks;
 
@@ -13,7 +14,6 @@ namespace gView.Framework.Carto.LayerRenderers
         private Map _map;
         private IFeatureLayer _layer;
         private ICancelTracker _cancelTracker;
-        private static object lockThis = new object();
         private FeatureCounter _counter;
 
         public RenderLabel(Map map, IFeatureLayer layer, ICancelTracker cancelTracker, FeatureCounter counter)
@@ -71,7 +71,7 @@ namespace gView.Framework.Carto.LayerRenderers
 
                 ILabelRenderer labelRenderer = null;
 
-                lock (lockThis)
+                GraphicsEngine.Current.Engine?.CloneObjectsLocker.InterLock(() =>
                 {
                     // Beim Clonen sprerren...
                     // Da sonst bei der Servicemap bei gleichzeitigen Requests
@@ -89,7 +89,7 @@ namespace gView.Framework.Carto.LayerRenderers
                     {
                         labelRenderer = clonedLabelRenderer = (ILabelRenderer)_layer.LabelRenderer.Clone(null);
                     }
-                }
+                });
 
                 #endregion
 

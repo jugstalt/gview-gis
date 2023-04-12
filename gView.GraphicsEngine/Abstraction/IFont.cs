@@ -1,4 +1,5 @@
-﻿using System;
+﻿using gView.GraphicsEngine.Threading;
+using System;
 
 namespace gView.GraphicsEngine.Abstraction
 {
@@ -14,6 +15,6 @@ namespace gView.GraphicsEngine.Abstraction
 
         object EngineElement { get; }
 
-        object LockObject { get; }
+        IThreadLocker LockObject { get; }
     }
 }

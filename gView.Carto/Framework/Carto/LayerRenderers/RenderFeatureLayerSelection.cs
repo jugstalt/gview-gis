@@ -3,6 +3,7 @@ using gView.Framework.Data.Cursors;
 using gView.Framework.Data.Filters;
 using gView.Framework.Geometry;
 using gView.Framework.system;
+using gView.GraphicsEngine.Extensions;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -13,7 +14,6 @@ namespace gView.Framework.Carto.LayerRenderers
         private Map _map;
         private IFeatureLayer _layer;
         private ICancelTracker _cancelTracker;
-        private static object lockThis = new object();
 
         public RenderFeatureLayerSelection(Map map, IFeatureLayer layer, ICancelTracker cancelTracker)
         {
@@ -108,7 +108,7 @@ namespace gView.Framework.Carto.LayerRenderers
 
             IFeatureRenderer selectionRenderer = null;
 
-            lock (lockThis)
+            GraphicsEngine.Current.Engine?.CloneObjectsLocker.InterLock(() =>
             {
                 // Beim Clonen sprerren...
                 // Da sonst bei der Servicemap bei gleichzeitigen Requests
@@ -116,7 +116,7 @@ namespace gView.Framework.Carto.LayerRenderers
                 selectionRenderer = (IFeatureRenderer)_layer.SelectionRenderer.Clone(new CloneOptions(_map,
                                                                                                       false,
                                                                                                       maxLabelRefscaleFactor: _layer.MaxRefScaleFactor));
-            }
+            });
 
             #endregion
 
