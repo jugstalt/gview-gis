@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace gView.DataExplorer.Plugins.ExplorerObject;
 
-[gView.Framework.system.RegisterPlugIn("458E62A0-4A93-45cf-B14D-2F958D67E522")]
+[RegisterPlugIn("458E62A0-4A93-45cf-B14D-2F958D67E522")]
 public class DirectoryObject : ExplorerParentObject, IExplorerObject, IExplorerObjectCommandParameters, ISerializableExplorerObject, IExplorerObjectDeletable, IExplorerObjectRenamable, IExplorerObjectCreatable, IExplorerObjectContentDragDropEvents2
 {
     static private IExplorerIcon _icon = new DirectoryExplorerIcon();
@@ -140,7 +140,7 @@ public class DirectoryObject : ExplorerParentObject, IExplorerObject, IExplorerO
 
         gView.Framework.system.PlugInManager manager = new gView.Framework.system.PlugInManager();
 
-        foreach (var exObjectType in manager.GetPlugins(Plugins.Type.IExplorerObject))
+        foreach (var exObjectType in manager.GetPlugins(Framework.system.Plugins.Type.IExplorerObject))
         {
             var exObj = manager.CreateInstance<IExplorerObject>(exObjectType);
             if (!(exObj is IExplorerFileObject))
