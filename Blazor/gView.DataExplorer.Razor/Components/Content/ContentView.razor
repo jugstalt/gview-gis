@@ -1,1 +1,12 @@
-<h1>content</h1>
+@inject PluginManagerService PluginManager;
+
+
+
+@code {
+    private IEnumerable<IExplorerTabPage>? tabPages;
+
+    protected override void OnInitialized()
+    {
+        //tabPages = PluginManager.GetPlugins<IExplorerTabPage>(Framework.system.Plugins.Type.IExplorerTabPage);
+    }
+}

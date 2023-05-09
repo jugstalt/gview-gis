@@ -1,0 +1,60 @@
+@inject IDialogService DialogService
+
+@code {
+    protected void Handle(Action action)
+    {
+        try
+        {
+            action.Invoke();
+        }
+        catch(Exception ex)
+        {
+            HandleException(ex).Wait();
+        }
+    }
+
+    async protected Task HandleAsync(Func<Task> actionAsync)
+    {
+        try
+        {
+            await actionAsync.Invoke();
+        }
+        catch (Exception ex)
+        {
+            await HandleException(ex);
+        }
+    }
+
+    protected T? HandleFunc<T>(Func<T> func)
+    {
+        try
+        {
+            return func.Invoke();
+        }
+        catch (Exception ex)
+        {
+            HandleException(ex).Wait();
+            return default(T);
+        }
+    }
+
+    async protected Task<T?> HandleFuncAsync<T>(Func<Task<T>> func)
+    {
+        try
+        {
+            return await func.Invoke();
+        }
+        catch (Exception ex)
+        {
+            await HandleException(ex);
+            return default(T);
+        }
+    }
+
+    async private Task HandleException(Exception ex)
+    {
+        bool? result = await DialogService.ShowMessageBox(
+            "Error",
+            ex.Message);
+    }
+}

@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using gView.Blazor.Core.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using MudBlazor.Services;
 
 namespace gView.DataExplorer
@@ -23,6 +24,8 @@ namespace gView.DataExplorer
 #endif
 
             builder.Services.AddMudServices();
+
+            builder.Services.AddPluginMangerService();
 
             return builder.Build();
         }

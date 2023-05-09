@@ -1,0 +1,56 @@
+@inherits BaseHandler
+@inject PluginManagerService PluginManager;
+
+<MudPaper Width="300px" Elevation="0">
+    <MudTreeView ServerData="LoadServerData" Items="TreeItems" 
+                  ExpandOnDoubleClick="true" 
+                  MultiSelection="false"
+                  Hover="true">
+        <ItemTemplate>
+            <div style="white-space:nowrap; overflow-x:hidden">
+               <MudTreeViewItem  Value="@context" 
+                                  Icon="sketchpen-rect"
+                                  LoadingIconColor="Color.Info" 
+                                  CanExpand="@context.HasChildren"
+                                  Text="@context.Name">
+                </MudTreeViewItem>
+            </div>
+        </ItemTemplate>
+    </MudTreeView>
+ </MudPaper>
+
+@code {
+    private HashSet<ExplorerTreeNode> TreeItems { get; set; } = new HashSet<ExplorerTreeNode>();
+    private IEnumerable<IExplorerObject>? exObjects;
+
+    protected override void OnInitialized()
+    {
+        base.Handle(() =>
+        {
+            TreeItems.Add(new ExplorerTreeNode(new ComputerObject(null)));
+            exObjects = PluginManager.GetPlugins<IExplorerObject>(Framework.system.Plugins.Type.IExplorerObject);
+        });
+    }
+
+    public Task<HashSet<ExplorerTreeNode>?> LoadServerData(ExplorerTreeNode parentNode)
+    {
+        return base.HandleFuncAsync(async () =>
+        {
+            var exObject = parentNode.ExObject;
+
+            var childNodes = new HashSet<ExplorerTreeNode>();
+
+            if(exObject is IExplorerParentObject)
+            {
+                var exParent = (IExplorerParentObject)exObject;
+            
+                foreach(var childObject in await exParent.ChildObjects())
+                {
+                    childNodes.Add(new ExplorerTreeNode(childObject));
+                }
+            }
+
+            return childNodes;
+        });
+    }
+}
