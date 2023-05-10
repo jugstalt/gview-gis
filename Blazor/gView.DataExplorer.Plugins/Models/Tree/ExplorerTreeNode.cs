@@ -11,7 +11,8 @@ public class ExplorerTreeNode : TreeItem
     {
         _exObject = exObject;
 
-        base.Name = exObject.Name;
+        base.Text = exObject.Name;
+        base.Icon = exObject.Icon;
         base.IsExpanded = false;
         base.HasChildren = exObject is IExplorerParentObject;
     }

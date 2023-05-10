@@ -26,6 +26,7 @@ namespace gView.DataExplorer
             builder.Services.AddMudServices();
 
             builder.Services.AddPluginMangerService();
+            builder.Services.AddIconService();
 
             return builder.Build();
         }

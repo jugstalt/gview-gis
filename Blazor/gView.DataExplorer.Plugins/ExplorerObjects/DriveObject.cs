@@ -7,9 +7,9 @@ namespace gView.DataExplorer.Plugins.ExplorerObject;
 
 public class DriveObject : ExplorerParentObject, IExplorerObject
 {
-    private string _drive = "";
-    private int _imageIndex = 0;
-    private string _type = "";
+    private readonly string _drive = "";
+    private readonly string _icon;
+    private readonly string _type = "";
 
     public DriveObject(IExplorerObject parent, string drive, uint type)
         : base(parent, null, -1)
@@ -18,29 +18,27 @@ public class DriveObject : ExplorerParentObject, IExplorerObject
         switch (type)
         {
             case 2:
-                _imageIndex = 7;
+                _icon = "basic:folder";
                 _type = $"Floppy Disk ({drive})";
                 break;
             case 5:
-                _imageIndex = 4;
+                _icon = "basic:circle-pie-25";
                 _type = $"CD-ROM Drive ({_drive})";
                 break;
             case 4:
-                _imageIndex = 5;
+                _icon = "basic:open-in-window";
                 _type = $"Mapped Drive ({_drive})";
                 break;
             case 999:
-                _imageIndex = 5;
+                _icon = "basic:folder";
                 _type = drive;
                 break;
             default:
-                _imageIndex = 6;
+                _icon = "basic:folder";
                 _type = $"Local Drive ({_drive})";
                 break;
         }
     }
-
-    public int ImageIndex { get { return _imageIndex; } }
 
     #region IExplorerObject Members
 
@@ -67,13 +65,7 @@ public class DriveObject : ExplorerParentObject, IExplorerObject
         get { return _type; }
     }
 
-    public IExplorerIcon Icon
-    {
-        get
-        {
-            return new ObjectIcon(_imageIndex);
-        }
-    }
+    public string Icon => _icon;
 
     public Task<object> GetInstanceAsync()
     {

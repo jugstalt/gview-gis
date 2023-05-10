@@ -15,7 +15,6 @@ namespace gView.DataExplorer.Plugins.ExplorerObject;
 [RegisterPlugIn("458E62A0-4A93-45cf-B14D-2F958D67E522")]
 public class DirectoryObject : ExplorerParentObject, IExplorerObject, IExplorerObjectCommandParameters, ISerializableExplorerObject, IExplorerObjectDeletable, IExplorerObjectRenamable, IExplorerObjectCreatable
 {
-    static private IExplorerIcon _icon = new DirectoryExplorerIcon();
     string _path = "";
 
     public DirectoryObject() : base(null, null, 1) { }
@@ -56,13 +55,7 @@ public class DirectoryObject : ExplorerParentObject, IExplorerObject, IExplorerO
         get { return "Directory"; }
     }
 
-    public IExplorerIcon Icon
-    {
-        get
-        {
-            return _icon;
-        }
-    }
+    public string Icon => "basic:folder-white";
 
     public Task<object> GetInstanceAsync()
     {

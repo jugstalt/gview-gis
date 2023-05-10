@@ -9,7 +9,7 @@ public interface IExplorerObject : IDisposable, ISerializableExplorerObject
     string FullName { get; }
     string Type { get; }
 
-    IExplorerIcon Icon { get; }
+    string Icon { get; }
     IExplorerObject ParentExplorerObject { get; }
 
     Task<object> GetInstanceAsync();

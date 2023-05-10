@@ -36,10 +36,7 @@ public class ComputerObject : ExplorerParentObject, IExplorerObject
         get { return ""; }
     }
 
-    public IExplorerIcon Icon
-    {
-        get { return new ObjectIcon(0); }
-    }
+    public string Icon => "basic:monitor";
 
     public Task<object> GetInstanceAsync()
     {

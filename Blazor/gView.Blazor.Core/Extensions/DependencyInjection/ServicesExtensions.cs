@@ -9,4 +9,9 @@ public static class ServicesExtensions
     {
         return services.AddTransient<PluginManagerService>();
     }
+
+    static public IServiceCollection AddIconService(this IServiceCollection services)
+    {
+        return services.AddTransient<IconService>();   
+    }
 }

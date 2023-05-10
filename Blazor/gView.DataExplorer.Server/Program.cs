@@ -9,6 +9,7 @@ builder.Services.AddServerSideBlazor();
 
 builder.Services.AddMudServices();
 builder.Services.AddPluginMangerService();
+builder.Services.AddIconService();
 
 var app = builder.Build();
 

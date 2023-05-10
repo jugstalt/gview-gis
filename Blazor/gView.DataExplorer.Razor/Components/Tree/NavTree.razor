@@ -1,18 +1,19 @@
 @inherits BaseHandler
-@inject PluginManagerService PluginManager;
+@inject PluginManagerService PluginManager
+@inject IconService Icons
 
-<MudPaper Width="300px" Elevation="0">
+<MudPaper Width="100%" Elevation="0">
     <MudTreeView ServerData="LoadServerData" Items="TreeItems" 
                   ExpandOnDoubleClick="true" 
                   MultiSelection="false"
                   Hover="true">
         <ItemTemplate>
             <div style="white-space:nowrap; overflow-x:hidden">
-               <MudTreeViewItem  Value="@context" 
-                                  Icon="sketchpen-rect"
+               <MudTreeViewItem  Value="@context"
+                                  Icon=@Icons.AsIcon(context.Icon)
                                   LoadingIconColor="Color.Info" 
                                   CanExpand="@context.HasChildren"
-                                  Text="@context.Name">
+                                  Text="@context.Text">
                 </MudTreeViewItem>
             </div>
         </ItemTemplate>
