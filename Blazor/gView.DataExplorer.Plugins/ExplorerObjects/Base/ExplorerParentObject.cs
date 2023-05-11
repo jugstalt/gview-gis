@@ -10,7 +10,7 @@ public class ExplorerParentObject : ExplorerObjectCls, IExplorerParentObject
 {
     private List<IExplorerObject>? _childObjects = null;
 
-    public ExplorerParentObject(IExplorerObject parent, Type type, int priority)
+    public ExplorerParentObject(IExplorerObject? parent, Type? type, int priority)
         : base(parent, type, priority)
     {
     }

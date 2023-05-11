@@ -1,13 +1,14 @@
 ﻿using gView.Framework.UI;
+using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace gView.Framework.DataExplorer.Abstraction;
 
 public interface IExplorerTabPage : IOrder
 {
-    /*System.Windows.Forms.Control*/ object Control { get; }
-
-    //System.Guid ExplorerObjectGUID { get; }
+    Type RazorComponent { get; }
 
     void OnCreate(object hook);
 
@@ -20,5 +21,5 @@ public interface IExplorerTabPage : IOrder
     Task<bool> ShowWith(IExplorerObject exObject);
     string Title { get; }
 
-    Task<bool> RefreshContents();
+    Task<IEnumerable<IExplorerObject>> RefreshContents();
 }

@@ -1,36 +1,37 @@
-.main {
+﻿.dataexplorer-main {
     position: absolute;
     left: 0px;
     top: 0px;
     right: 0px;
     bottom: 0px;
-    background:#0094ff;
+    background: #0094ff;
 }
 
-    .main .toolbar {
+    .dataexplorer-main .toolbar {
         position: absolute;
         left: 0px;
         top: 0px;
         right: 0px;
         height: 60px;
-        background:#ccc;
+        background: #ccc;
     }
 
-    .main .tree {
+    .dataexplorer-main .tree {
         position: absolute;
         left: 0px;
         top: 62px;
         bottom: 0px;
         width: 300px;
-        background:#fff;
-        overflow:auto;
+        background: #fff;
+        overflow: auto;
     }
 
-    .main .content {
+    .dataexplorer-main .content {
         position: absolute;
         left: 302px;
         top: 62px;
         right: 0px;
         bottom: 0px;
-        background:#efefef;
+        background: #efefef;
+        overflow: auto;
     }

@@ -1,0 +1,31 @@
+@if(ExplorerObjects!=null)
+{
+    <ul>
+    @foreach(var explorerObject in ExplorerObjects)
+    {
+        <li>
+            @explorerObject.FullName
+        </li>
+    }
+    </ul>
+}
+
+@code{
+    [Parameter] public IExplorerTabPage? FrameworkElement { get; set; }
+    [Parameter] public ExplorerTreeNode? SelectedTreeNode { get; set; }
+
+    private IEnumerable<IExplorerObject>? ExplorerObjects = null;
+
+    async protected override Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+
+        if (FrameworkElement == null) 
+        {
+            return;
+        }
+
+        await FrameworkElement.SetExplorerObjectAsync(SelectedTreeNode?.ExObject);
+        ExplorerObjects = await FrameworkElement.RefreshContents();
+    }
+}

@@ -1,5 +1,6 @@
 using MudBlazor.Services;
 using gView.Blazor.Core.Extensions.DependencyInjection;
+using gView.DataExplorer.Plugins.Extensions.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -8,6 +9,8 @@ builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 
 builder.Services.AddMudServices();
+
+builder.Services.AddExplorerDesktopApplicationService();
 builder.Services.AddPluginMangerService();
 builder.Services.AddIconService();
 

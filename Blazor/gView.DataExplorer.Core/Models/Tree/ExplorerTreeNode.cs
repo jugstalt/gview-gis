@@ -1,7 +1,7 @@
 ﻿using gView.Blazor.Models.Tree;
 using gView.Framework.DataExplorer.Abstraction;
 
-namespace gView.DataExplorer.Plugins.Models.Tree;
+namespace gView.DataExplorer.Core.Models.Tree;
 
 public class ExplorerTreeNode : TreeItem
 {

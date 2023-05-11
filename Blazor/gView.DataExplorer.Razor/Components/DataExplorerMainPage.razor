@@ -1,16 +1,19 @@
-<div class="main">
-    <h1>app</h1>
+<div class="dataexplorer-main">
 
-    <div class="toolbar">
+    <MudPaper Class="toolbar" Elevation="2">
         <ToolRibbon />
-    </div>
+    </MudPaper>
 
-    <div class="tree">
-        <NavTree />
-    </div>
+    <MudPaper Class="tree" Elevation="2">
+        <NavTree @bind-SelectedNode="SelectedTreeNode" />
+    </MudPaper>
     
-    <div class="content">
-        <ContentView />
-    </div>
+    <MudPaper Class="content" Elevation="2">
+        <ContentView SelectedTreeNode="@SelectedTreeNode" />
+    </MudPaper>
 
 </div>
+
+@code{
+    public ExplorerTreeNode? SelectedTreeNode{ get; set; }
+}

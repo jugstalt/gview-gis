@@ -1,12 +1,30 @@
-@inject PluginManagerService PluginManager;
+@inherits BaseHandler
+@inject PluginManagerService PluginManager
+@inject IconService Icons
 
-
+@if(tabPages!=null)
+{
+    <MudTabs Elevation="1" Rounded="true" PanelClass="pa-6">
+        @foreach(var tabPage in tabPages)
+        {
+            <MudTabPanel Text="@tabPage.Title" ToolTip="">
+                <DynamicComponent Type="@(tabPage.RazorComponent)"
+                                   Parameters="@(new Dictionary<string, object?>() { ["FrameworkElement"] = tabPage, ["SelectedTreeNode"] = SelectedTreeNode })" />
+            </MudTabPanel>
+        }
+    </MudTabs>
+}
 
 @code {
+    [Parameter] public ExplorerTreeNode? SelectedTreeNode { get; set; }
+
     private IEnumerable<IExplorerTabPage>? tabPages;
 
     protected override void OnInitialized()
     {
-        //tabPages = PluginManager.GetPlugins<IExplorerTabPage>(Framework.system.Plugins.Type.IExplorerTabPage);
+        base.Handle(() =>
+        {
+            tabPages = PluginManager.GetPlugins<IExplorerTabPage>(Framework.system.Plugins.Type.IExplorerTabPage);
+        });
     }
 }

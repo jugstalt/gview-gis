@@ -1,16 +1,19 @@
 @inherits BaseHandler
+@inject IExplorerApplicationService ExplorerApplication
 @inject PluginManagerService PluginManager
 @inject IconService Icons
 
-<MudPaper Width="100%" Elevation="0">
-    <MudTreeView ServerData="LoadServerData" Items="TreeItems" 
+
+    <MudTreeView ServerData="LoadServerData"
+                  SelectedValueChanged="SelectedNodeChanged"
+                  Items="TreeItems" 
                   ExpandOnDoubleClick="true" 
                   MultiSelection="false"
                   Hover="true">
         <ItemTemplate>
             <div style="white-space:nowrap; overflow-x:hidden">
                <MudTreeViewItem  Value="@context"
-                                  Icon=@Icons.AsIcon(context.Icon)
+                                  Icon=@Icons.FromString(context.Icon)
                                   LoadingIconColor="Color.Info" 
                                   CanExpand="@context.HasChildren"
                                   Text="@context.Text">
@@ -18,18 +21,18 @@
             </div>
         </ItemTemplate>
     </MudTreeView>
- </MudPaper>
 
 @code {
     private HashSet<ExplorerTreeNode> TreeItems { get; set; } = new HashSet<ExplorerTreeNode>();
-    private IEnumerable<IExplorerObject>? exObjects;
+
+    [Parameter] public ExplorerTreeNode? SelectedNode { get; set; }
+    [Parameter] public EventCallback<ExplorerTreeNode> SelectedNodeChanged { get; set; }
 
     protected override void OnInitialized()
     {
         base.Handle(() =>
         {
-            TreeItems.Add(new ExplorerTreeNode(new ComputerObject(null)));
-            exObjects = PluginManager.GetPlugins<IExplorerObject>(Framework.system.Plugins.Type.IExplorerObject);
+            TreeItems.Add(new ExplorerTreeNode(ExplorerApplication.RootExplorerObject));
         });
     }
 
@@ -44,7 +47,7 @@
             if(exObject is IExplorerParentObject)
             {
                 var exParent = (IExplorerParentObject)exObject;
-            
+
                 foreach(var childObject in await exParent.ChildObjects())
                 {
                     childNodes.Add(new ExplorerTreeNode(childObject));

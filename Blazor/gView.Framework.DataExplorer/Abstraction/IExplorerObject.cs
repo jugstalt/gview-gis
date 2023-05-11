@@ -7,12 +7,12 @@ public interface IExplorerObject : IDisposable, ISerializableExplorerObject
 {
     string Name { get; }
     string FullName { get; }
-    string Type { get; }
+    string? Type { get; }
 
     string Icon { get; }
-    IExplorerObject ParentExplorerObject { get; }
+    IExplorerObject? ParentExplorerObject { get; }
 
-    Task<object> GetInstanceAsync();
+    Task<object?> GetInstanceAsync();
     Type ObjectType { get; }
 
     int Priority { get; }
