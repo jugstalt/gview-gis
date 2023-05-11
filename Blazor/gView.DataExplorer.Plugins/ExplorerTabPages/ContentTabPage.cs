@@ -19,24 +19,19 @@ public class ContentTabPage : IExplorerTabPage
 
     public string Title => "Content";
 
-    public IExplorerObject GetExplorerObject()
+    public IExplorerObject? GetExplorerObject()
     {
-        throw new NotImplementedException();
-    }
-
-    public void OnCreate(object hook)
-    {
-        throw new NotImplementedException();
+        return _exObject;
     }
 
     public void OnHide()
     {
-        throw new NotImplementedException();
+        
     }
 
     public Task<bool> OnShow()
     {
-        throw new NotImplementedException();
+        return Task.FromResult(true);
     }
 
     async public Task<ContentItemResult> RefreshContents()
@@ -62,14 +57,14 @@ public class ContentTabPage : IExplorerTabPage
         return new ContentItemResult() { Item = table };
     }
 
-    public Task SetExplorerObjectAsync(IExplorerObject value)
+    public Task SetExplorerObjectAsync(IExplorerObject? value)
     {
         _exObject = value;
 
         return Task.CompletedTask;
     }
 
-    public Task<bool> ShowWith(IExplorerObject exObject)
+    public Task<bool> ShowWith(IExplorerObject? exObject)
     {
         return Task.FromResult(exObject is IExplorerParentObject);
     }

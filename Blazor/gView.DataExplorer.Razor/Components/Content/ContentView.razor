@@ -1,23 +1,25 @@
 @inherits BaseHandler
 @inject PluginManagerService PluginManager
 @inject IconService Icons
+@inject EventBusService EventBus
 
-@if(tabPages!=null)
+@if (tabPages != null)
 {
-    <MudTabs Elevation="1" Rounded="true" PanelClass="pa-6">
-        @foreach(var tabPage in tabPages)
+    <MudTabs Elevation="1" Rounded="true">
+        @foreach (var tabPage in tabPages)
         {
-            <MudTabPanel Text="@tabPage.Title" ToolTip="">
+            <MudTabPanel Text="@tabPage.Title" 
+                          ToolTip=""
+                          Style="">
                 <DynamicComponent Type="@(tabPage.RazorComponent)"
-                                   Parameters="@(new Dictionary<string, object?>() { ["FrameworkElement"] = tabPage, ["SelectedTreeNode"] = SelectedTreeNode })" />
+                                   Parameters="@(new Dictionary<string, object?>() { ["FrameworkElement"] = tabPage, ["CurrentExplorerObject"] = CurrentExplorerObject })" />
             </MudTabPanel>
         }
     </MudTabs>
 }
 
 @code {
-    [Parameter] public ExplorerTreeNode? SelectedTreeNode { get; set; }
-
+    private IExplorerObject? CurrentExplorerObject { get; set; }
     private IEnumerable<IExplorerTabPage>? tabPages;
 
     protected override void OnInitialized()
@@ -25,6 +27,23 @@
         base.Handle(() =>
         {
             tabPages = PluginManager.GetPlugins<IExplorerTabPage>(Framework.system.Plugins.Type.IExplorerTabPage);
+            EventBus.OnTreeItemClickAsync += OnTreeItemClickAsync;
         });
+    }
+
+    private Task OnTreeItemClickAsync(IExplorerObject exObject)
+    {
+        base.Handle(() =>
+        {
+            CurrentExplorerObject = exObject;
+            StateHasChanged();
+        });
+
+        return Task.CompletedTask;
+    }
+
+    public void Dispose()
+    {
+        EventBus.OnTreeItemClickAsync -= OnTreeItemClickAsync;
     }
 }

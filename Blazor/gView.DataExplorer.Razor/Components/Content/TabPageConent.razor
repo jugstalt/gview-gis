@@ -1,9 +1,12 @@
 @inherits BaseHandler
 @inject IconService Icons
+@inject EventBusService EventBus
 
 @if (table != null)
 {
-    <MudTable Items="@table.Rows" Hover="true">
+    
+    <MudTable Items="@table.Rows" Hover="true" Dense="true"
+              T="RowItem">
         <HeaderContent>
             @foreach(var column in table.Columns) 
             {
@@ -15,8 +18,10 @@
                 var first = true;
                 foreach (var column in table.Columns)
                 {
-                    <MudTd>
-                       <div style="vertical-align:top;display:inline-flex;">
+                    <MudTd onclick="">
+                       <div style="vertical-align:top;display:inline-flex;"
+                            @onclick="@((x) => OnRowCLick(context))" @onclick:stopPropagation="true"
+                            @ondblclick="@((x) => OnRowDoubleCLick(context))">
                             @if (first == true && !String.IsNullOrEmpty(context.Icon))
                             {
                                 <MudIcon Icon="@Icons.FromString(context.Icon)" />
@@ -33,22 +38,45 @@
 
 @code{
     [Parameter] public IExplorerTabPage? FrameworkElement { get; set; }
-    [Parameter] public ExplorerTreeNode? SelectedTreeNode { get; set; }
+    [Parameter] public IExplorerObject? CurrentExplorerObject { get; set; }
 
     private TableItem? table;
+
+    protected override void OnInitialized()
+    {
+        
+    } 
 
     async protected override Task OnParametersSetAsync()
     {
         await base.OnParametersSetAsync();
 
-        if (FrameworkElement == null) 
+        await base.HandleAsync(async () =>
         {
-            return;
-        }
+            if (FrameworkElement == null)
+            {
+                return;
+            }
 
-        await FrameworkElement.SetExplorerObjectAsync(SelectedTreeNode?.ExObject);
-        var result = await FrameworkElement.RefreshContents();
+            await FrameworkElement.SetExplorerObjectAsync(CurrentExplorerObject);
+            var result = await FrameworkElement.RefreshContents();
 
-        table = result.Item as TableItem;
+            table = result.Item as TableItem;
+        });
+    }
+
+    private void OnRowCLick(RowItem row)
+    {
+        EventBus.ContentItemClickAsync(null);
+    }
+
+    private void OnRowDoubleCLick(RowItem row)
+    {
+        EventBus.ContentItemDoubleClickAsync(null);
+    }
+
+    public void Dispose()
+    {
+       
     }
 }

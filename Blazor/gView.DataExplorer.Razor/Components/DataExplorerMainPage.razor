@@ -5,15 +5,15 @@
     </MudPaper>
 
     <MudPaper Class="tree" Elevation="2">
-        <NavTree @bind-SelectedNode="SelectedTreeNode" />
+        <NavTree />
     </MudPaper>
     
     <MudPaper Class="content" Elevation="2">
-        <ContentView SelectedTreeNode="@SelectedTreeNode" />
+        <ContentView />
     </MudPaper>
 
 </div>
 
 @code{
-    public ExplorerTreeNode? SelectedTreeNode{ get; set; }
+    //public ExplorerTreeNode? SelectedTreeNode{ get; set; }
 }

@@ -2,21 +2,23 @@
 @inject IExplorerApplicationService ExplorerApplication
 @inject PluginManagerService PluginManager
 @inject IconService Icons
+@inject EventBusService EventBus
 
 
     <MudTreeView ServerData="LoadServerData"
-                  SelectedValueChanged="SelectedNodeChanged"
                   Items="TreeItems" 
                   ExpandOnDoubleClick="true" 
                   MultiSelection="false"
-                  Hover="true">
+                  Hover="true" Dense="true">
         <ItemTemplate>
-            <div style="white-space:nowrap; overflow-x:hidden">
+            <div style="white-space:nowrap; overflow-x:hidden;">
                <MudTreeViewItem  Value="@context"
                                   Icon=@Icons.FromString(context.Icon)
                                   LoadingIconColor="Color.Info" 
                                   CanExpand="@context.HasChildren"
-                                  Text="@context.Text">
+                                  @bind-Expanded="@context.IsExpanded"
+                                  Text="@context.Text"
+                                  @onclick="@(() => OnNodeClickAsync(context))">
                 </MudTreeViewItem>
             </div>
         </ItemTemplate>
@@ -25,15 +27,29 @@
 @code {
     private HashSet<ExplorerTreeNode> TreeItems { get; set; } = new HashSet<ExplorerTreeNode>();
 
-    [Parameter] public ExplorerTreeNode? SelectedNode { get; set; }
-    [Parameter] public EventCallback<ExplorerTreeNode> SelectedNodeChanged { get; set; }
-
     protected override void OnInitialized()
     {
         base.Handle(() =>
         {
             TreeItems.Add(new ExplorerTreeNode(ExplorerApplication.RootExplorerObject));
+
+            EventBus.OnContentItemDoubleClickAsync += HandleContentItemDoubleClickAsync;
         });
+    }
+
+    private Task OnNodeClickAsync(ExplorerTreeNode node)
+    {
+        return EventBus.TreeItemClickAsync(node.ExObject);
+    }
+
+    private Task HandleContentItemDoubleClickAsync(IExplorerObject exObject)
+    {
+        //if (SelectedNode != null)
+        //{
+        //    SelectedNode.IsExpanded = true;
+        //}
+
+        return Task.CompletedTask;
     }
 
     public Task<HashSet<ExplorerTreeNode>?> LoadServerData(ExplorerTreeNode parentNode)
@@ -56,5 +72,10 @@
 
             return childNodes;
         });
+    }
+
+    public void Dispose()
+    {
+        EventBus.OnContentItemDoubleClickAsync -= HandleContentItemDoubleClickAsync;
     }
 }
