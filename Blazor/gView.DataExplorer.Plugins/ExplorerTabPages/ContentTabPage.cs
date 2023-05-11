@@ -1,4 +1,6 @@
-﻿using gView.Framework.DataExplorer.Abstraction;
+﻿using gView.Blazor.Models.Content;
+using gView.Blazor.Models.Table;
+using gView.Framework.DataExplorer.Abstraction;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -37,9 +39,9 @@ public class ContentTabPage : IExplorerTabPage
         throw new NotImplementedException();
     }
 
-    async public Task<IEnumerable<IExplorerObject>> RefreshContents()
+    async public Task<ContentItemResult> RefreshContents()
     {
-        List<IExplorerObject> list = new List<IExplorerObject>();
+        var table = new TableItem(new[] { "Name", "Type" });
 
         if (_exObject is IExplorerParentObject)
         {
@@ -47,11 +49,17 @@ public class ContentTabPage : IExplorerTabPage
 
             if (childs != null)
             {
-                list.AddRange(childs);
+                foreach(var child in childs)
+                {
+                    table.AddRow()
+                        .AddData("Name", child.Name)
+                        .AddData("Type", child.Type)
+                        .Icon = child.Icon;
+                }
             }
         }
 
-        return list;
+        return new ContentItemResult() { Item = table };
     }
 
     public Task SetExplorerObjectAsync(IExplorerObject value)

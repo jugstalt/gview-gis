@@ -1,20 +1,41 @@
-@if(ExplorerObjects!=null)
+@inherits BaseHandler
+@inject IconService Icons
+
+@if (table != null)
 {
-    <ul>
-    @foreach(var explorerObject in ExplorerObjects)
-    {
-        <li>
-            @explorerObject.FullName
-        </li>
-    }
-    </ul>
+    <MudTable Items="@table.Rows" Hover="true">
+        <HeaderContent>
+            @foreach(var column in table.Columns) 
+            {
+                <MudTh Class="table-column-icon">@column</MudTh>
+            }
+        </HeaderContent>
+        <RowTemplate>
+            @{
+                var first = true;
+                foreach (var column in table.Columns)
+                {
+                    <MudTd>
+                       <div style="vertical-align:top;display:inline-flex;">
+                            @if (first == true && !String.IsNullOrEmpty(context.Icon))
+                            {
+                                <MudIcon Icon="@Icons.FromString(context.Icon)" />
+                                { first = false; }
+                            }
+                            <span>&nbsp;@context[column]</span>
+                       </div>
+                    </MudTd>
+                }
+            }
+        </RowTemplate>
+    </MudTable>
 }
 
 @code{
     [Parameter] public IExplorerTabPage? FrameworkElement { get; set; }
     [Parameter] public ExplorerTreeNode? SelectedTreeNode { get; set; }
 
-    private IEnumerable<IExplorerObject>? ExplorerObjects = null;
+    private TableItem? table;
 
     async protected override Task OnParametersSetAsync()
     {
@@ -26,6 +47,8 @@
         }
 
         await FrameworkElement.SetExplorerObjectAsync(SelectedTreeNode?.ExObject);
-        ExplorerObjects = await FrameworkElement.RefreshContents();
+        var result = await FrameworkElement.RefreshContents();
+
+        table = result.Item as TableItem;
     }
 }
