@@ -50,19 +50,19 @@ public class DirectoryObject : ExplorerParentObject, IExplorerObject, IExplorerO
 
     }
 
-    public string Type
+    public string? Type
     {
         get { return "Directory"; }
     }
 
     public string Icon => "basic:folder-white";
 
-    public Task<object> GetInstanceAsync()
+    public Task<object?> GetInstanceAsync()
     {
-        return Task.FromResult<object>(null);
+        return Task.FromResult<object?>(null);
     }
 
-    public IExplorerObject CreateInstanceByFullName(string FullName)
+    public IExplorerObject? CreateInstanceByFullName(string FullName)
     {
         try
         {
@@ -125,7 +125,7 @@ public class DirectoryObject : ExplorerParentObject, IExplorerObject, IExplorerO
                 childs.Add(new DirectoryObject(parent, di.FullName));
             }
         }
-        catch (Exception ex)
+        catch /*(Exception ex)*/
         {
             //System.Windows.Forms.MessageBox.Show(ex.Message);
             //return null;
@@ -163,11 +163,11 @@ public class DirectoryObject : ExplorerParentObject, IExplorerObject, IExplorerO
 
     #region ISerializableExplorerObject Member
 
-    public Task<IExplorerObject> CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache cache)
+    public Task<IExplorerObject?> CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache cache)
     {
         if (cache.Contains(FullName))
         {
-            return Task.FromResult<IExplorerObject>(cache[FullName]);
+            return Task.FromResult<IExplorerObject?>(cache[FullName]);
         }
 
         try
@@ -175,16 +175,16 @@ public class DirectoryObject : ExplorerParentObject, IExplorerObject, IExplorerO
             DirectoryInfo di = new DirectoryInfo(FullName);
             if (!di.Exists)
             {
-                return null;
+                return Task.FromResult<IExplorerObject?>(null);
             }
 
             DirectoryObject dObject = new DirectoryObject(this, FullName);
             cache.Append(dObject);
-            return Task.FromResult<IExplorerObject>(dObject);
+            return Task.FromResult<IExplorerObject?>(dObject);
         }
         catch
         {
-            return Task.FromResult<IExplorerObject>(null);
+            return Task.FromResult<IExplorerObject?>(null);
         }
     }
 
@@ -192,7 +192,7 @@ public class DirectoryObject : ExplorerParentObject, IExplorerObject, IExplorerO
 
     #region IExplorerObjectDeletable Member
 
-    public event ExplorerObjectDeletedEvent ExplorerObjectDeleted;
+    public event ExplorerObjectDeletedEvent? ExplorerObjectDeleted;
 
     public Task<bool> DeleteExplorerObject(ExplorerObjectEventArgs e)
     {
@@ -207,11 +207,11 @@ public class DirectoryObject : ExplorerParentObject, IExplorerObject, IExplorerO
 
             return Task.FromResult(true);
         }
-        catch (Exception ex)
+        catch /*(Exception ex)*/
         {
             //System.Windows.Forms.MessageBox.Show("ERROR: " + ex.Message);
             //return Task.FromResult(false);
-            throw ex;
+            throw;
         }
     }
 
@@ -219,14 +219,14 @@ public class DirectoryObject : ExplorerParentObject, IExplorerObject, IExplorerO
 
     #region IExplorerObjectRenamable Member
 
-    public event ExplorerObjectRenamedEvent ExplorerObjectRenamed;
+    public event ExplorerObjectRenamedEvent? ExplorerObjectRenamed;
 
     public Task<bool> RenameExplorerObject(string newName)
     {
         try
         {
             DirectoryInfo di = new DirectoryInfo(_path);
-            string newPath = di.Parent.FullName + @"\" + newName;
+            string newPath = di.Parent?.FullName + @"\" + newName;
 
             Directory.Move(_path, newPath);
 
@@ -239,11 +239,11 @@ public class DirectoryObject : ExplorerParentObject, IExplorerObject, IExplorerO
 
             return Task.FromResult(true);
         }
-        catch (Exception ex)
+        catch/* (Exception ex)*/
         {
             //System.Windows.Forms.MessageBox.Show("ERROR: " + ex.Message);
             //return Task.FromResult(false);
-            throw ex;
+            throw;
         }
     }
 
@@ -262,14 +262,14 @@ public class DirectoryObject : ExplorerParentObject, IExplorerObject, IExplorerO
         return false;
     }
 
-    public Task<IExplorerObject> CreateExplorerObject(IExplorerObject parentExObject)
+    public Task<IExplorerObject?> CreateExplorerObject(IExplorerObject parentExObject)
     {
         //string newName = Microsoft.VisualBasic.Interaction.InputBox("New Directory", "Create", "New Directory", 200, 300);
         // ToDo
         string newName = String.Empty;
         if (newName.Trim().Equals(String.Empty))
         {
-            return null;
+            return Task.FromResult<IExplorerObject?>(null);
         }
 
         try
@@ -277,13 +277,13 @@ public class DirectoryObject : ExplorerParentObject, IExplorerObject, IExplorerO
             DirectoryInfo di = new DirectoryInfo(parentExObject.FullName + @"\" + newName);
             di.Create();
 
-            return Task.FromResult<IExplorerObject>(new DirectoryObject(parentExObject, di.FullName));
+            return Task.FromResult<IExplorerObject?>(new DirectoryObject(parentExObject, di.FullName));
         }
-        catch (Exception ex)
+        catch /*(Exception ex)*/
         {
             //System.Windows.Forms.MessageBox.Show("ERROR: " + ex.Message);
             //return Task.FromResult<IExplorerObject>(null);
-            throw ex;
+            throw;
         }
     }
 
@@ -291,8 +291,8 @@ public class DirectoryObject : ExplorerParentObject, IExplorerObject, IExplorerO
 
     #region Import
 
-    private FeatureImportService _import = null;
-    private IFeatureDataset _dataset = null;
+    private FeatureImportService? _import = null;
+    private IFeatureDataset? _dataset = null;
 
     async private Task ImportDatasetObject(object datasetObject, bool schemaOnly)
     {
@@ -360,7 +360,7 @@ public class DirectoryObject : ExplorerParentObject, IExplorerObject, IExplorerO
             return;
         }
 
-        if (element is IFeatureClass)
+        if (element is IFeatureClass && _dataset != null)
         {
             if (!await _import.ImportToNewFeatureclass(
                 _dataset,
@@ -398,7 +398,7 @@ public class DirectoryObject : ExplorerParentObject, IExplorerObject, IExplorerO
     class FeatureClassImportProgressReporter : IProgressReporter
     {
         private ProgressReport _report = new ProgressReport();
-        private ICancelTracker _cancelTracker = null;
+        private ICancelTracker _cancelTracker = new CancelTracker();
 
         private FeatureClassImportProgressReporter() { }
 
@@ -463,7 +463,7 @@ public class DirectoryObject : ExplorerParentObject, IExplorerObject, IExplorerO
 
         #region IProgressReporter Member
 
-        public event ProgressReporterEvent ReportProgress;
+        public event ProgressReporterEvent? ReportProgress;
 
         public ICancelTracker CancelTracker
         {

@@ -1,9 +1,9 @@
-﻿using gView.Blazor.Models.Abstraction;
+﻿using gView.Blazor.Models.Content;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace gView.Blazor.Models.Table;
-public class TableItem : IContentItem
+public class TableItem : ContentItem
 {
     private readonly string[] _columns;
     private readonly List<RowItem> _rows;

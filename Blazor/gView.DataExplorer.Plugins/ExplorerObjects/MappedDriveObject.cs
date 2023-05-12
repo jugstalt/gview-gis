@@ -14,7 +14,7 @@ internal class MappedDriveObject : DriveObject, IExplorerObjectDeletable
 
     #region IExplorerObjectDeletable
 
-    public event ExplorerObjectDeletedEvent ExplorerObjectDeleted;
+    public event ExplorerObjectDeletedEvent? ExplorerObjectDeleted;
 
     public Task<bool> DeleteExplorerObject(ExplorerObjectEventArgs e)
     {

@@ -4,5 +4,5 @@ public interface ISerializableExplorerObjectCache
 {
     void Append(IExplorerObject exObject);
     bool Contains(string FullName);
-    IExplorerObject this[string FullName] { get; }
+    IExplorerObject? this[string FullName] { get; }
 }

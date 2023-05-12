@@ -60,19 +60,19 @@ public class DriveObject : ExplorerParentObject, IExplorerObject
         get { return _drive + @"\"; }
     }
 
-    public string Type
+    public string? Type
     {
         get { return _type; }
     }
 
     public string Icon => _icon;
 
-    public Task<object> GetInstanceAsync()
+    public Task<object?> GetInstanceAsync()
     {
-        return Task.FromResult<object>(null);
+        return Task.FromResult<object?>(null);
     }
 
-    public IExplorerObject CreateInstanceByFullName(string FullName)
+    public IExplorerObject? CreateInstanceByFullName(string FullName)
     {
         return null;
     }
@@ -102,14 +102,14 @@ public class DriveObject : ExplorerParentObject, IExplorerObject
 
     #region ISerializableExplorerObject Member
 
-    public Task<IExplorerObject> CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache cache)
+    public Task<IExplorerObject?> CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache cache)
     {
         if (cache.Contains(FullName))
         {
-            return Task.FromResult<IExplorerObject>(cache[FullName]);
+            return Task.FromResult(cache[FullName]);
         }
 
-        return Task.FromResult<IExplorerObject>(null);
+        return Task.FromResult<IExplorerObject?>(null);
     }
 
     #endregion

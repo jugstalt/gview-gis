@@ -1,5 +1,4 @@
-﻿using gView.Blazor.Models.Content;
-using gView.Framework.UI;
+﻿using gView.Framework.UI;
 using System;
 using System.Threading.Tasks;
 
@@ -18,5 +17,5 @@ public interface IExplorerTabPage : IOrder
     Task<bool> ShowWith(IExplorerObject? exObject);
     string Title { get; }
 
-    Task<ContentItemResult> RefreshContents();
+    Task<IContentItemResult> RefreshContents();
 }

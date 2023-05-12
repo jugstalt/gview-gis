@@ -33,7 +33,7 @@
         {
             TreeItems.Add(new ExplorerTreeNode(ExplorerApplication.RootExplorerObject));
 
-            EventBus.OnContentItemDoubleClickAsync += HandleContentItemDoubleClickAsync;
+            EventBus.OnSetCurrentExplorerObjectAsync += HandleSetCurrentExplorerObjectAsync;
         });
     }
 
@@ -42,7 +42,7 @@
         return EventBus.TreeItemClickAsync(node.ExObject);
     }
 
-    private Task HandleContentItemDoubleClickAsync(IExplorerObject exObject)
+    private Task HandleSetCurrentExplorerObjectAsync(IExplorerObject exObject)
     {
         //if (SelectedNode != null)
         //{
@@ -56,9 +56,14 @@
     {
         return base.HandleFuncAsync(async () =>
         {
+            if (parentNode.Children != null && parentNode.Children.Any()) 
+            {
+                return parentNode.Children;
+            }
+
             var exObject = parentNode.ExObject;
 
-            var childNodes = new HashSet<ExplorerTreeNode>();
+            parentNode.Children = new HashSet<ExplorerTreeNode>();
 
             if(exObject is IExplorerParentObject)
             {
@@ -66,16 +71,16 @@
 
                 foreach(var childObject in await exParent.ChildObjects())
                 {
-                    childNodes.Add(new ExplorerTreeNode(childObject));
+                    parentNode.Children.Add(new ExplorerTreeNode(childObject));
                 }
             }
 
-            return childNodes;
+            return parentNode.Children;
         });
     }
 
     public void Dispose()
     {
-        EventBus.OnContentItemDoubleClickAsync -= HandleContentItemDoubleClickAsync;
+        EventBus.OnSetCurrentExplorerObjectAsync -= HandleSetCurrentExplorerObjectAsync;
     }
 }

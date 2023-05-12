@@ -1,7 +1,7 @@
-﻿using gView.Blazor.Models.Abstraction;
+﻿using gView.Framework.DataExplorer.Abstraction;
 
 namespace gView.Blazor.Models.Content;
-public class ContentItemResult
+public class ContentItemResult : IContentItemResult
 {
     public IContentItem? Item { get; set; }
 }

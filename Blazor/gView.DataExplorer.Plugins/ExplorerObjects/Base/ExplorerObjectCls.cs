@@ -1,13 +1,12 @@
 ﻿using gView.Framework.DataExplorer.Abstraction;
 using System;
-using System.Text;
 
 namespace gView.DataExplorer.Plugins.ExplorerObject.Base;
 
 public class ExplorerObjectCls
 {
     private IExplorerObject? _parent;
-    private Type? _type = null;
+    private Type? _type = typeof(object);
 
     public ExplorerObjectCls(IExplorerObject? parent, Type? type, int priority)
     {

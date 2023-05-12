@@ -13,7 +13,7 @@ public interface IExplorerObject : IDisposable, ISerializableExplorerObject
     IExplorerObject? ParentExplorerObject { get; }
 
     Task<object?> GetInstanceAsync();
-    Type ObjectType { get; }
+    Type? ObjectType { get; }
 
     int Priority { get; }
 }

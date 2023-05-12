@@ -3,7 +3,7 @@ using gView.Framework.DataExplorer.Abstraction;
 
 namespace gView.DataExplorer.Core.Models.Tree;
 
-public class ExplorerTreeNode : TreeItem
+public class ExplorerTreeNode : TreeItem<ExplorerTreeNode>
 {
     private readonly IExplorerObject _exObject;
 

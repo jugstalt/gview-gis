@@ -18,12 +18,12 @@ public class FeatureImportService
     public delegate void ReportActionEvent(FeatureImportService sender, string action);
     public delegate void ReportProgressEvent(FeatureImportService sender, int progress);
     public delegate void ReportRequestEvent(FeatureImportService sender, RequestArgs args);
-    public event ReportActionEvent ReportAction; // { add { throw new NotSupportedException(); } remove { } }
-    public event ReportProgressEvent ReportProgress = null;
-    public event ReportRequestEvent ReportRequest = null;
+    public event ReportActionEvent? ReportAction; // { add { throw new NotSupportedException(); } remove { } }
+    public event ReportProgressEvent? ReportProgress = null;
+    public event ReportRequestEvent? ReportRequest = null;
     private string _errMsg = "";
     private ICancelTracker _cancelTracker;
-    private IGeometricTransformer _transformer = null;
+    private IGeometricTransformer? _transformer = null;
     private bool _schemaOnly = false;
 
     public FeatureImportService(int featureBufferSize = 100)
@@ -56,12 +56,12 @@ public class FeatureImportService
 
     private int FeatureBufferSize { get; set; }
 
-    public Task<bool> ImportToNewFeatureclass(IFeatureDataset destDS, string fcname, IFeatureClass sourceFC, FieldTranslation fieldTranslation, bool project, GeometryType? sourceGeometryType = null)
+    public Task<bool> ImportToNewFeatureclass(IFeatureDataset destDS, string fcname, IFeatureClass sourceFC, FieldTranslation? fieldTranslation, bool project, GeometryType? sourceGeometryType = null)
     {
         return ImportToNewFeatureclass(destDS, fcname, sourceFC, fieldTranslation, project, null, sourceGeometryType);
     }
 
-    async public Task<bool> ImportToNewFeatureclass(IFeatureDataset destDS, string fcname, IFeatureClass sourceFC, FieldTranslation fieldTranslation, bool project, List<IQueryFilter> filters, GeometryType? sourceGeometryType = null)
+    async public Task<bool> ImportToNewFeatureclass(IFeatureDataset destDS, string fcname, IFeatureClass sourceFC, FieldTranslation? fieldTranslation, bool project, List<IQueryFilter>? filters, GeometryType? sourceGeometryType = null)
     {
         if (destDS == null)
         {
@@ -99,7 +99,7 @@ public class FeatureImportService
         return await ImportToNewFeatureclass(destDS, fcname, sourceFC, fieldTranslation, project, filters, nameCase, sourceGeometryType);
     }
 
-    async private Task<bool> ImportToNewFeatureclass(IFeatureDataset destDS, string fcname, IFeatureClass sourceFC, FieldTranslation fieldTranslation, bool project, List<IQueryFilter> filters, DatasetNameCase namecase, GeometryType? sourceGeometryType = null)
+    async private Task<bool> ImportToNewFeatureclass(IFeatureDataset destDS, string fcname, IFeatureClass sourceFC, FieldTranslation? fieldTranslation, bool project, List<IQueryFilter>? filters, DatasetNameCase namecase, GeometryType? sourceGeometryType = null)
     {
         if (!_cancelTracker.Continue)
         {
@@ -110,11 +110,11 @@ public class FeatureImportService
         {
             case DatasetNameCase.upper:
                 fcname = fcname.ToUpper();
-                fieldTranslation.ToUpper();
+                fieldTranslation?.ToUpper();
                 break;
             case DatasetNameCase.lower:
                 fcname = fcname.ToLower();
-                fieldTranslation.ToLower();
+                fieldTranslation?.ToLower();
                 break;
             case DatasetNameCase.classNameUpper:
                 fcname = fcname.ToUpper();
@@ -123,10 +123,10 @@ public class FeatureImportService
                 fcname = fcname.ToLower();
                 break;
             case DatasetNameCase.fieldNamesUpper:
-                fieldTranslation.ToUpper();
+                fieldTranslation?.ToUpper();
                 break;
             case DatasetNameCase.fieldNamesLower:
-                fieldTranslation.ToLower();
+                fieldTranslation?.ToLower();
                 break;
         }
         try
@@ -136,7 +136,7 @@ public class FeatureImportService
                 _errMsg = "Argument Exception";
                 return false;
             }
-            IFeatureDatabase fdb = destDS.Database as IFeatureDatabase;
+            IFeatureDatabase? fdb = destDS.Database as IFeatureDatabase;
             if (!(fdb is IFeatureUpdater))
             {
                 _errMsg = "Database don't implement IFeatureUpdater...";
@@ -196,7 +196,8 @@ public class FeatureImportService
                 destDS.Dispose();
                 return false;
             }
-            IFeatureClass destFC = destLayer.Class as IFeatureClass;
+            
+            IFeatureClass destFC = (destLayer.Class as IFeatureClass)!;
 
             if (project && destFC.SpatialReference != null && !destFC.SpatialReference.Equals(sourceFC.SpatialReference))
             {
@@ -271,15 +272,17 @@ public class FeatureImportService
         }
     }
 
-    async private Task<bool> CopyFeatures(IFeatureClass source, IFeatureUpdater fdb, IFeatureClass dest, FieldTranslation fTrans, List<IQueryFilter> filters)
+    async private Task<bool> CopyFeatures(IFeatureClass source, IFeatureUpdater fdb, IFeatureClass dest, FieldTranslation? fTrans, List<IQueryFilter>? filters)
     {
         if (filters == null)
         {
             QueryFilter filter = new QueryFilter();
             filter.SubFields = "*";
 
-            filters = new List<IQueryFilter>();
-            filters.Add(filter);
+            filters = new List<IQueryFilter>
+            {
+                filter
+            };
         }
 
         int counter = 0;

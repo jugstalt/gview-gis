@@ -19,7 +19,7 @@
                 foreach (var column in table.Columns)
                 {
                     <MudTd onclick="">
-                       <div style="vertical-align:top;display:inline-flex;"
+                       <div style="vertical-align:top;display:inline-flex;width:100%;cursor:pointer"
                             @onclick="@((x) => OnRowCLick(context))" @onclick:stopPropagation="true"
                             @ondblclick="@((x) => OnRowDoubleCLick(context))">
                             @if (first == true && !String.IsNullOrEmpty(context.Icon))
@@ -44,7 +44,7 @@
 
     protected override void OnInitialized()
     {
-        
+
     } 
 
     async protected override Task OnParametersSetAsync()
@@ -67,12 +67,18 @@
 
     private void OnRowCLick(RowItem row)
     {
-        EventBus.ContentItemClickAsync(null);
+        if(row.ExplorerObject!=null) 
+        {
+            //EventBus.ContentItemClickAsync(row.ExplorerObject);
+        }
     }
 
     private void OnRowDoubleCLick(RowItem row)
     {
-        EventBus.ContentItemDoubleClickAsync(null);
+        if (row.ExplorerObject != null)
+        {
+            EventBus.SetCurrentExplorerObjectAsync(row.ExplorerObject);
+        }
     }
 
     public void Dispose()

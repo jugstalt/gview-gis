@@ -1,10 +1,10 @@
 ﻿using gView.Blazor.Models.Content;
+using gView.Blazor.Models.Extensions;
 using gView.Blazor.Models.Table;
 using gView.Framework.DataExplorer.Abstraction;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using System.Xml.Linq;
 
 namespace gView.DataExplorer.Plugins.ExplorerTabPages;
 
@@ -26,7 +26,7 @@ public class ContentTabPage : IExplorerTabPage
 
     public void OnHide()
     {
-        
+
     }
 
     public Task<bool> OnShow()
@@ -34,22 +34,24 @@ public class ContentTabPage : IExplorerTabPage
         return Task.FromResult(true);
     }
 
-    async public Task<ContentItemResult> RefreshContents()
+    async public Task<IContentItemResult> RefreshContents()
     {
-        var table = new TableItem(new[] { "Name", "Type" });
+        var table = new TableItem(new[] { "Name", "Type" })
+            .SetExplorerObject(_exObject);
 
         if (_exObject is IExplorerParentObject)
         {
-            List<IExplorerObject> childs = await((IExplorerParentObject)_exObject).ChildObjects();
+            List<IExplorerObject> childs = await ((IExplorerParentObject)_exObject).ChildObjects();
 
             if (childs != null)
             {
-                foreach(var child in childs)
+                foreach (var child in childs)
                 {
                     table.AddRow()
+                        .SetExplorerObject(child)
                         .AddData("Name", child.Name)
                         .AddData("Type", child.Type)
-                        .Icon = child.Icon;
+                        .SetIcon(child.Icon);
                 }
             }
         }
