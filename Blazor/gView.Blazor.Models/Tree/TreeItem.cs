@@ -10,5 +10,6 @@ public class TreeItem<T>
     public bool IsExpanded { get; set; }
     public bool HasChildren { get; set; }
     public HashSet<T>? Children { get; set; }
-        
+
+    public object? RefObject { get; set; }
 }

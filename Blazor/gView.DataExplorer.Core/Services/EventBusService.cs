@@ -7,11 +7,11 @@ namespace gView.DataExplorer.Core.Services;
 
 public class EventBusService
 {
-    public event Func<IExplorerObject, Task>? OnTreeItemClickAsync;
+    public event Func<IExplorerObject?, Task>? OnTreeItemClickAsync;
     //public event Func<IExplorerObject, Task>? OnContentItemClickAsync;
-    public event Func<IExplorerObject, Task>? OnSetCurrentExplorerObjectAsync;
+    public event Func<IExplorerObject?, Task>? OnSetCurrentExplorerObjectAsync;
 
-    public Task TreeItemClickAsync(IExplorerObject item)
+    public Task TreeItemClickAsync(IExplorerObject? item)
         => OnTreeItemClickAsync?.FireAsync(item) ?? Task.CompletedTask;
 
 
@@ -19,6 +19,6 @@ public class EventBusService
     //    => OnContentItemClickAsync?.Invoke(item) ?? Task.CompletedTask;
 
 
-    public Task SetCurrentExplorerObjectAsync(IExplorerObject item)
+    public Task SetCurrentExplorerObjectAsync(IExplorerObject? item)
         => OnSetCurrentExplorerObjectAsync?.Invoke(item) ?? Task.CompletedTask;
 }

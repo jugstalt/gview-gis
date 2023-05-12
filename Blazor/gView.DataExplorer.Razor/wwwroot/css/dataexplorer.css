@@ -16,10 +16,25 @@
         background: #ccc;
     }
 
-    .dataexplorer-main .tree {
+    .dataexplorer-main .navigation-bar {
         position: absolute;
         left: 0px;
         top: 62px;
+        right: 0px;
+        height: 40px;
+        background: #0078d4;
+        padding: 0px;
+    }
+
+        .dataexplorer-main .navigation-bar .mud-breadcrumbs,
+        .dataexplorer-main .navigation-bar .mud-breadcrumbs .mud-breadcrumb-separator {
+            padding: 0px;
+        }
+
+    .dataexplorer-main .tree {
+        position: absolute;
+        left: 0px;
+        top: 104px;
         bottom: 0px;
         width: 300px;
         background: #fff;
@@ -29,7 +44,7 @@
     .dataexplorer-main .content {
         position: absolute;
         left: 302px;
-        top: 62px;
+        top: 104px;
         right: 0px;
         bottom: 0px;
         background: #efefef;
@@ -39,4 +54,9 @@
 
 .table-column-icon {
     width: 30px;
+}
+
+.treenode.selected > li > div:first-child {
+    background: #0078d4;
+    color:#efefef;
 }

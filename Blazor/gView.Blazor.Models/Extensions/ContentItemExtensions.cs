@@ -11,4 +11,7 @@ static public class ContentItemExtensions
 
         return item;
     }
+
+    static public IContentItemResult ToResult(this ContentItem item)
+        => new ContentItemResult() { Item = item };
 }

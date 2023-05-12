@@ -11,6 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\gView.DataExplorer.Plugins.ExplorerObjects.Shape\gView.DataExplorer.Plugins.ExplorerObjects.Shape.csproj" />
     <ProjectReference Include="..\gView.Blazor.Core\gView.Blazor.Core.csproj" />
     <ProjectReference Include="..\gView.DataExplorer.Plugins\gView.DataExplorer.Plugins.csproj" />
     <ProjectReference Include="..\gView.DataExplorer.Razor\gView.DataExplorer.Razor.csproj" />

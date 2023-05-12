@@ -1,0 +1,183 @@
+@inherits BaseHandler
+@inject IExplorerApplicationService ExplorerApplication
+@inject PluginManagerService PluginManager
+@inject IconService Icons
+@inject EventBusService EventBus
+
+
+    <MudTreeView @ref="treeView"
+                  Items="TreeNodes" 
+                  ExpandOnDoubleClick="true" 
+                  MultiSelection="false"
+                  Hover="true" Dense="true">
+        <ItemTemplate>
+            <div style="white-space:nowrap; overflow-x:hidden;" class="treenode @((context == _selected) ? "selected" : "")">
+               <MudTreeViewItem  Value="@context"
+                                  Icon=@Icons.FromString(context.Icon)
+                                  Items="@context.Children"
+                                  CanExpand="@context.HasChildren" 
+                                  Expanded="@context.IsExpanded"
+                                  ExpandedChanged="@((expanded) => OnNodeExpandedChanged(context, expanded))"
+                                  Text="@context.Text"
+                                  @onclick="@(() => OnNodeClickAsync(context))" >
+                </MudTreeViewItem>
+            </div>
+        </ItemTemplate>
+    </MudTreeView>
+
+@code {
+    private MudTreeView<ExplorerTreeNode>? treeView;
+    private HashSet<ExplorerTreeNode> TreeNodes { get; set; } = new HashSet<ExplorerTreeNode>();
+    private ExplorerTreeNode? _selected = null;
+
+    protected override void OnInitialized()
+    {
+        base.Handle(() =>
+        {
+            TreeNodes.Add(_selected = new ExplorerTreeNode(ExplorerApplication.RootExplorerObject));
+
+            EventBus.OnSetCurrentExplorerObjectAsync += HandleSetCurrentExplorerObjectAsync;
+        });
+    }
+
+    async protected override Task OnAfterRenderAsync(bool firstRender)
+    {
+        if(firstRender && _selected != null)
+        {
+            await EventBus.TreeItemClickAsync(_selected?.ExObject);
+        }
+    }
+
+    async private Task OnNodeExpandedChanged(ExplorerTreeNode node, bool expanded)
+    {
+        node.IsExpanded = expanded;
+        if(expanded)
+        {
+            await LoadServerData(node);
+        }
+    }
+
+    async private Task OnNodeClickAsync(ExplorerTreeNode node)
+    {
+        if(node.IsServerLoaded == false)
+        {
+            await LoadServerData(node);
+        }
+
+        _selected = node;
+
+        await EventBus.TreeItemClickAsync(node.ExObject);
+    }
+
+    private Task HandleSetCurrentExplorerObjectAsync(IExplorerObject? exObject)
+    {
+        return base.HandleAsync(async () =>
+        {
+            var exObjects = exObject?.GetAncestors(true);
+            if(exObjects == null)
+            {
+                return;
+            }
+
+            var node = await SelectTreeNode(0, exObjects.ToArray());
+
+            if (node != null)
+            {
+                await OnNodeClickAsync(_selected = node);
+
+                StateHasChanged();
+            }
+        });
+    }
+
+    #region Tree 
+
+    async private Task<ExplorerTreeNode?> SelectTreeNode(int index, IExplorerObject[] exObjects, ExplorerTreeNode? currentNode = null)
+    {
+        var treeNodes = currentNode != null ? currentNode.Children : TreeNodes;
+        if (treeNodes == null)
+        {
+            return null;
+        }
+
+        currentNode = treeNodes.Where(t => t.ExObject?.FullName == exObjects[index].FullName).FirstOrDefault();
+        if(currentNode == null)
+        {
+            return null;
+        }
+
+        if (index == exObjects.Length - 1)
+        {
+            return currentNode;
+        }
+
+        if (currentNode.Children == null || currentNode.Children.Count() == 0)
+        {
+            await LoadServerData(currentNode);
+        }
+
+        currentNode.IsExpanded = true;
+
+        return await SelectTreeNode(++index, exObjects, currentNode);
+    }
+
+    private ExplorerTreeNode? FindTreeNode(HashSet<ExplorerTreeNode>? rootNodes, IExplorerObject exObject)
+    {
+        if (rootNodes == null)
+        {
+            return null;
+        }
+
+        foreach(var node in rootNodes)
+        {
+            if (node.ExObject?.FullName.Equals(exObject.FullName) == true)
+            {
+                return node;
+            } 
+            else
+            {
+                var childNode = FindTreeNode(node.Children, exObject);
+                if(childNode!=null)
+                {
+                    return childNode;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    #endregion
+
+    public Task<HashSet<ExplorerTreeNode>?> LoadServerData(ExplorerTreeNode parentNode)
+    {
+        return base.HandleFuncAsync(async () =>
+        {
+            if (parentNode.IsServerLoaded) 
+            {
+                return parentNode.Children;
+            }
+
+            var exObject = parentNode.ExObject;
+
+            parentNode.Children = new HashSet<ExplorerTreeNode>();
+
+            if(exObject is IExplorerParentObject)
+            {
+                var exParent = (IExplorerParentObject)exObject;
+
+                foreach(var childObject in await exParent.ChildObjects())
+                {
+                    parentNode.Children.Add(new ExplorerTreeNode(childObject));
+                }
+            }
+
+            return parentNode.Children;
+        });
+    }
+
+    public void Dispose()
+    {
+        EventBus.OnSetCurrentExplorerObjectAsync -= HandleSetCurrentExplorerObjectAsync;
+    }
+}

@@ -1,5 +1,8 @@
 ﻿using gView.Blazor.Models.Tree;
 using gView.Framework.DataExplorer.Abstraction;
+using System;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace gView.DataExplorer.Core.Models.Tree;
 
@@ -15,7 +18,18 @@ public class ExplorerTreeNode : TreeItem<ExplorerTreeNode>
         base.Icon = exObject.Icon;
         base.IsExpanded = false;
         base.HasChildren = exObject is IExplorerParentObject;
+
+        if (HasChildren)
+        {
+            base.Children = new System.Collections.Generic.HashSet<ExplorerTreeNode>()
+            {
+                new ExplorerTreeNode(new DummyExplorerObject())
+            };
+        }
     }
 
     public IExplorerObject ExObject => _exObject;
+
+    public bool IsServerLoaded
+        => (this.Children == null || this.Children.FirstOrDefault()?.ExObject is DummyExplorerObject) == false;
 }

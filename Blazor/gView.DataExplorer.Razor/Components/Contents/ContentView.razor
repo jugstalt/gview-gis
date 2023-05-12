@@ -6,7 +6,7 @@
 @if (tabPages != null)
 {
     <MudTabs Elevation="1" Rounded="true">
-        @foreach (var tabPage in tabPages)
+        @foreach (var tabPage in tabPages.Where(t=>t.ShowWith(CurrentExplorerObject).Result))
         {
             <MudTabPanel Text="@tabPage.Title" 
                           ToolTip=""
@@ -31,7 +31,7 @@
         });
     }
 
-    private Task OnTreeItemClickAsync(IExplorerObject exObject)
+    private Task OnTreeItemClickAsync(IExplorerObject? exObject)
     {
         base.Handle(() =>
         {

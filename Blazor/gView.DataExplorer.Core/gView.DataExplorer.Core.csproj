@@ -15,4 +15,8 @@
     <ProjectReference Include="..\gView.Framework.DataExplorer\gView.Framework.DataExplorer.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Models\Nav\" />
+  </ItemGroup>
+
 </Project>

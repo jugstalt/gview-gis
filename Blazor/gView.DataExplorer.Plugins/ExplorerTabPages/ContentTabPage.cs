@@ -15,7 +15,7 @@ public class ContentTabPage : IExplorerTabPage
 
     #region IExplorerTabPage
 
-    public Type RazorComponent => typeof(Razor.Components.Content.TabPageConent);
+    public Type RazorComponent => typeof(Razor.Components.Contents.TabPageConent);
 
     public string Title => "Content";
 
