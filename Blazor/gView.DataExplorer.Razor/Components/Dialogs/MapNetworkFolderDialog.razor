@@ -1,0 +1,17 @@
+<MudPaper Style="padding:20px">
+    <MudForm ReadOnly="false">
+        <MudTextField T="string" Label="Folder" Required="true" RequiredError="Folder required!" ReadOnly="false" @bind-Value="model.FolderPath" />
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="CloseDialog">Ok</MudButton>
+    </MudForm>
+</MudPaper>
+
+@code {
+    [Parameter] public EventCallback<Blazor.Models.Dialogs.DialogResult> OnDialogClose { get; set; }
+
+    private MapNetworkFolderModel model = new MapNetworkFolderModel();
+
+    private Task CloseDialog()
+    {
+        return OnDialogClose.InvokeAsync(model.ToResult());
+    }
+}

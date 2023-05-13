@@ -7,18 +7,19 @@ namespace gView.DataExplorer.Core.Services;
 
 public class EventBusService
 {
-    public event Func<IExplorerObject?, Task>? OnTreeItemClickAsync;
-    //public event Func<IExplorerObject, Task>? OnContentItemClickAsync;
-    public event Func<IExplorerObject?, Task>? OnSetCurrentExplorerObjectAsync;
+    public event Func<Task>? OnRefreshContentAsync;
+    public Task FireRefreshContentAsync()
+        => OnRefreshContentAsync?.FireAsync() ?? Task.CompletedTask;
 
-    public Task TreeItemClickAsync(IExplorerObject? item)
+    public event Func<IExplorerObject?, Task>? OnTreeItemClickAsync;
+    public Task FireTreeItemClickAsync(IExplorerObject? item)
         => OnTreeItemClickAsync?.FireAsync(item) ?? Task.CompletedTask;
 
-
+    //public event Func<IExplorerObject, Task>? OnContentItemClickAsync;
     //public Task ContentItemClickAsync(IExplorerObject item)
     //    => OnContentItemClickAsync?.Invoke(item) ?? Task.CompletedTask;
 
-
+    public event Func<IExplorerObject?, Task>? OnSetCurrentExplorerObjectAsync;
     public Task SetCurrentExplorerObjectAsync(IExplorerObject? item)
-        => OnSetCurrentExplorerObjectAsync?.Invoke(item) ?? Task.CompletedTask;
+        => OnSetCurrentExplorerObjectAsync?.FireAsync(item) ?? Task.CompletedTask;    
 }

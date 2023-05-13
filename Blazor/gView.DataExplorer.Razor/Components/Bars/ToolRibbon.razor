@@ -1,1 +1,32 @@
-<h1>toolbar</h1>
+@inherits BaseHandler
+@inject PluginManagerService PluginManager
+@inject IconService Icons
+@inject IExplorerApplicationScope AppScope
+
+@if (exTools != null)
+{
+    @foreach (var exTool in exTools.OrderBy(t => t.SortOrder))
+    {
+        <div class="explorer-tool"
+             alt="@exTool.ToolTip"
+             @onclick="async () => await ToolClickAsync(exTool)">
+            <div class=@Icons.FromString(exTool.Icon) ></div>
+            <div class="title">@exTool.Name</div>
+        </div>
+    }
+}
+
+@code {
+    private IEnumerable<IExplorerTool>? exTools;
+
+    protected override void OnInitialized()
+    {
+        base.Handle(() =>
+        {
+            exTools = PluginManager.GetPlugins<IExplorerTool>(Framework.system.Plugins.Type.IExplorerTool);
+        });
+    }
+
+    private Task ToolClickAsync(IExplorerTool exTool)
+        => base.HandleAsync(() => exTool.OnEvent(AppScope));
+}

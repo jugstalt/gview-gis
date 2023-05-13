@@ -30,7 +30,7 @@ namespace gView.DataExplorer
             builder.Services.AddExplorerDesktopApplicationService();
             builder.Services.AddPluginMangerService();
             builder.Services.AddIconService();
-            builder.Services.AddEventBus();
+            builder.Services.AddApplicationScopeService();
 
             return builder.Build();
         }

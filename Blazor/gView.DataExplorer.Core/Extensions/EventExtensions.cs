@@ -21,4 +21,16 @@ internal static class EventExtensions
             }
         }
     }
+
+    async static public Task FireAsync(this Func<Task> eventFunction)
+    {
+        if (eventFunction != null)
+        {
+            foreach (var handler in eventFunction.GetInvocationList()
+                                                .OfType<Func<Task>>())
+            {
+                await handler.Invoke();
+            }
+        }
+    }
 }

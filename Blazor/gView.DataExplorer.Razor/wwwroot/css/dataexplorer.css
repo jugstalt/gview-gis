@@ -12,14 +12,33 @@
         left: 0px;
         top: 0px;
         right: 0px;
-        height: 60px;
+        height: 80px;
         background: #ccc;
     }
+
+    .dataexplorer-main .toolbar .explorer-tool {
+        height:76px;
+        display:inline-block;
+        text-align:center;
+        padding:8px;
+        margin:2px;
+        max-width:120px;
+        vertical-align:top;
+        border:1px solid #aaa;
+        cursor:pointer;
+        box-sizing:border-box;
+        font-size:0.9em;
+    }
+
+        .dataexplorer-main .toolbar .explorer-tool:hover {
+            background-color: #0094ff46;
+            border: 1px solid #0094ff;
+        }
 
     .dataexplorer-main .navigation-bar {
         position: absolute;
         left: 0px;
-        top: 62px;
+        top: 82px;
         right: 0px;
         height: 40px;
         background: #0078d4;
@@ -34,7 +53,7 @@
     .dataexplorer-main .tree {
         position: absolute;
         left: 0px;
-        top: 104px;
+        top: 124px;
         bottom: 0px;
         width: 300px;
         background: #fff;
@@ -44,7 +63,7 @@
     .dataexplorer-main .content {
         position: absolute;
         left: 302px;
-        top: 104px;
+        top: 124px;
         right: 0px;
         bottom: 0px;
         background: #efefef;

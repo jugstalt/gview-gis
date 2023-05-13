@@ -14,7 +14,7 @@ builder.Services.AddMudServices();
 builder.Services.AddExplorerDesktopApplicationService();
 builder.Services.AddPluginMangerService();
 builder.Services.AddIconService();
-builder.Services.AddEventBus();
+builder.Services.AddApplicationScopeService();
 
 var app = builder.Build();
 
