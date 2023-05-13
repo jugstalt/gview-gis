@@ -1,5 +1,5 @@
 ﻿using gView.DataExplorer.Core.Services.Abstraction;
-using gView.DataExplorer.Plugins.ExplorerObject;
+using gView.DataExplorer.Plugins.ExplorerObjects;
 using gView.Framework.DataExplorer.Abstraction;
 
 namespace gView.DataExplorer.Plugins.Services;

@@ -1,7 +1,7 @@
 ﻿using gView.Framework.DataExplorer.Abstraction;
 using System;
 
-namespace gView.DataExplorer.Plugins.ExplorerObject.Base;
+namespace gView.DataExplorer.Plugins.ExplorerObjects.Base;
 
 public class ExplorerObjectCls
 {

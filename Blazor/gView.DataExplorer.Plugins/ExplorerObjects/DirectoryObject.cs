@@ -2,7 +2,7 @@
 using gView.Framework.Data;
 using gView.Framework.DataExplorer.Abstraction;
 using gView.Framework.DataExplorer.Events;
-using gView.DataExplorer.Plugins.ExplorerObject.Base;
+using gView.DataExplorer.Plugins.ExplorerObjects.Base;
 using gView.Framework.system;
 using gView.Framework.UI;
 using System;
@@ -10,7 +10,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 
-namespace gView.DataExplorer.Plugins.ExplorerObject;
+namespace gView.DataExplorer.Plugins.ExplorerObjects;
 
 [RegisterPlugIn("458E62A0-4A93-45cf-B14D-2F958D67E522")]
 public class DirectoryObject : ExplorerParentObject, IExplorerObject, IExplorerObjectCommandParameters, ISerializableExplorerObject, IExplorerObjectDeletable, IExplorerObjectRenamable, IExplorerObjectCreatable
@@ -147,7 +147,7 @@ public class DirectoryObject : ExplorerParentObject, IExplorerObject, IExplorerO
                 foreach (string file in Directory.GetFiles(FullName, filter))
                 {
                     FileInfo fi = new FileInfo(file);
-                    IExplorerFileObject obj = await ((IExplorerFileObject)exObj).CreateInstance(parent, fi.FullName);
+                    IExplorerFileObject? obj = await ((IExplorerFileObject)exObj).CreateInstance(parent, fi.FullName);
                     if (obj == null)
                     {
                         continue;

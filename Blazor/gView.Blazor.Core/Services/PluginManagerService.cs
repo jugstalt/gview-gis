@@ -18,6 +18,7 @@ public class PluginManagerService
     {
         return _plugInManager
             .GetPlugins(pluginType)
-            .Select(t => _plugInManager.CreateInstance<T>(t));
+            .Select(t => _plugInManager.CreateInstance<T>(t))
+            .ToArray();
     }
 }

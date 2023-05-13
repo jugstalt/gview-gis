@@ -3,7 +3,7 @@ using gView.Framework.DataExplorer.Events;
 using gView.Framework.IO;
 using System.Threading.Tasks;
 
-namespace gView.DataExplorer.Plugins.ExplorerObject;
+namespace gView.DataExplorer.Plugins.ExplorerObjects;
 
 internal class MappedDriveObject : DriveObject, IExplorerObjectDeletable
 {

@@ -1,6 +1,6 @@
 ﻿using gView.Framework.DataExplorer.Abstraction;
 
-namespace gView.DataExplorer.Plugins.ExplorerObject.Base;
+namespace gView.DataExplorer.Plugins.ExplorerObjects.Base;
 
 public class ExObjectComparer
 {

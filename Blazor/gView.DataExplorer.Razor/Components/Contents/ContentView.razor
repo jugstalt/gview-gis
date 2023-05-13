@@ -6,7 +6,9 @@
 @if (tabPages != null)
 {
     <MudTabs Elevation="1" Rounded="true">
-        @foreach (var tabPage in tabPages.Where(t=>t.ShowWith(CurrentExplorerObject).Result))
+        @foreach (var tabPage in tabPages
+                                    .Where(t => t.ShowWith(CurrentExplorerObject).Result)
+                                    .OrderBy(t => t.SortOrder))
         {
             <MudTabPanel Text="@tabPage.Title" 
                           ToolTip=""

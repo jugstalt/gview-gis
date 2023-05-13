@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace gView.DataExplorer.Plugins.ExplorerObject.Base;
+namespace gView.DataExplorer.Plugins.ExplorerObjects.Base;
 
 public class ExplorerParentObject : ExplorerObjectCls, IExplorerParentObject
 {

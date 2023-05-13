@@ -1,32 +1,24 @@
 @inherits BaseHandler
-@inject IconService Icons
 @inject EventBusService EventBus
 
 @if (table != null)
 {
-    
     <MudTable Items="@table.Rows" Hover="true" Dense="true"
-               T="RowItem">
+              T="RowItem">
         <HeaderContent>
-            @foreach(var column in table.Columns) 
+            @foreach (var column in table.Columns)
             {
                 <MudTh Class="table-column-icon">@column</MudTh>
             }
         </HeaderContent>
         <RowTemplate>
             @{
-                var first = true;
                 foreach (var column in table.Columns)
                 {
-                    <MudTd onclick="">
-                       <div style="vertical-align:top;display:inline-flex;width:100%;cursor:pointer">
-                            @if (first == true && !String.IsNullOrEmpty(context.Icon))
-                            {
-                                <MudIcon Icon="@Icons.FromString(context.Icon)" />
-                                { first = false; }
-                            }
+                    <MudTd>
+                        <div style="vertical-align:top;display:inline-flex;width:100%;cursor:pointer">
                             <span>&nbsp;@context[column]</span>
-                       </div>
+                        </div>
                     </MudTd>
                 }
             }
@@ -34,7 +26,7 @@
     </MudTable>
 }
 
-@code{
+@code {
     [Parameter] public IExplorerTabPage? FrameworkElement { get; set; }
     [Parameter] public IExplorerObject? CurrentExplorerObject { get; set; }
 
@@ -54,7 +46,7 @@
             await FrameworkElement.SetExplorerObjectAsync(CurrentExplorerObject);
             var result = await FrameworkElement.RefreshContents();
 
-            table = result.Item as TableItem;
+            table ??= result.Item as TableItem;
         });
     }
 }

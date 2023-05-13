@@ -62,7 +62,7 @@ public class FeatureClassTabPage : IExplorerTabPage
                 .AddData("Field", field.name)
                 .AddData("Aliasname", field.aliasname)
                 .AddData("Type", field.type)
-                .SetIcon("webgis:table");
+                .SetIcon("basic:table");
         }
 
         return table.ToResult();

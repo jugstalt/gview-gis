@@ -1,9 +1,9 @@
 ﻿using gView.Framework.DataExplorer.Abstraction;
-using gView.DataExplorer.Plugins.ExplorerObject.Base;
+using gView.DataExplorer.Plugins.ExplorerObjects.Base;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace gView.DataExplorer.Plugins.ExplorerObject;
+namespace gView.DataExplorer.Plugins.ExplorerObjects;
 
 public class DriveObject : ExplorerParentObject, IExplorerObject
 {

@@ -1,4 +1,4 @@
-﻿using gView.DataExplorer.Plugins.ExplorerObject.Base;
+﻿using gView.DataExplorer.Plugins.ExplorerObjects.Base;
 using gView.Framework.DataExplorer.Abstraction;
 using gView.Framework.IO;
 using gView.Framework.system;
@@ -6,7 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace gView.DataExplorer.Plugins.ExplorerObject;
+namespace gView.DataExplorer.Plugins.ExplorerObjects;
 
 public class ComputerObject : ExplorerParentObject, IExplorerObject
 {

@@ -30,11 +30,14 @@
     private HashSet<ExplorerTreeNode> TreeNodes { get; set; } = new HashSet<ExplorerTreeNode>();
     private ExplorerTreeNode? _selected = null;
 
-    protected override void OnInitialized()
+    protected override Task OnInitializedAsync()
     {
-        base.Handle(() =>
+        return base.HandleAsync(async () =>
         {
+            // initialize tree
             TreeNodes.Add(_selected = new ExplorerTreeNode(ExplorerApplication.RootExplorerObject));
+            await LoadServerData(_selected);
+            _selected.IsExpanded = true;
 
             EventBus.OnSetCurrentExplorerObjectAsync += HandleSetCurrentExplorerObjectAsync;
         });
