@@ -3,6 +3,8 @@ using gView.DataExplorer.Plugins.ExplorerObjects;
 using gView.DataExplorer.Plugins.Extensions;
 using gView.DataExplorer.Razor.Components.Dialogs.Data;
 using gView.Framework.DataExplorer.Abstraction;
+using gView.Framework.IO;
+using System.IO;
 using System.Threading.Tasks;
 
 namespace gView.DataExplorer.Plugins.ExplorerTools;
@@ -38,12 +40,14 @@ internal class AddNetworkDirectory : IExplorerTool
             this.Name,
             model);
 
-        if (model == null)
+        if (!string.IsNullOrWhiteSpace(model?.FolderPath) &&
+            Directory.Exists(model.FolderPath))
         {
-            throw new GeneralException("Dilaog Canceled");
-        }
+            ConfigConnections connStream = new ConfigConnections("directories");
+            connStream.Add(model.FolderPath.Trim(), model.FolderPath.Trim());
 
-        throw new GeneralException($"The Result is: {model.FolderPath}");
+            await scopeService.EventBus.FireFreshContentAsync();
+        }
 
         return true;
     }

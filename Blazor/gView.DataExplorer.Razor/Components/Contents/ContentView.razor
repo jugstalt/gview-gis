@@ -29,7 +29,7 @@
         base.Handle(() =>
         {
             tabPages = PluginManager.GetPlugins<IExplorerTabPage>(Framework.system.Plugins.Type.IExplorerTabPage);
-            EventBus.OnTreeItemClickAsync += OnTreeItemClickAsync;
+            EventBus.OnCurrentExplorerObjectChanged += OnTreeItemClickAsync;
         });
     }
 
@@ -46,6 +46,6 @@
 
     public void Dispose()
     {
-        EventBus.OnTreeItemClickAsync -= OnTreeItemClickAsync;
+        EventBus.OnCurrentExplorerObjectChanged -= OnTreeItemClickAsync;
     }
 }

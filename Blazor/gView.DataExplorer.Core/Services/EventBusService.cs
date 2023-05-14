@@ -1,6 +1,7 @@
 ﻿using gView.DataExplorer.Core.Extensions;
 using gView.Framework.DataExplorer.Abstraction;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace gView.DataExplorer.Core.Services;
@@ -11,15 +12,15 @@ public class EventBusService
     public Task FireFreshContentAsync()
         => OnRefreshContentAsync?.FireAsync() ?? Task.CompletedTask;
 
-    public event Func<IExplorerObject?, Task>? OnTreeItemClickAsync;
-    public Task FireTreeItemClickAsync(IExplorerObject? item)
-        => OnTreeItemClickAsync?.FireAsync(item) ?? Task.CompletedTask;
-
-    //public event Func<IExplorerObject, Task>? OnContentItemClickAsync;
-    //public Task ContentItemClickAsync(IExplorerObject item)
-    //    => OnContentItemClickAsync?.Invoke(item) ?? Task.CompletedTask;
+    public event Func<IExplorerObject?, Task>? OnCurrentExplorerObjectChanged;
+    public Task FireCurrentExplorerObjectChanged(IExplorerObject? item)
+        => OnCurrentExplorerObjectChanged?.FireAsync(item) ?? Task.CompletedTask;
 
     public event Func<IExplorerObject?, Task>? OnSetCurrentExplorerObjectAsync;
     public Task SetCurrentExplorerObjectAsync(IExplorerObject? item)
-        => OnSetCurrentExplorerObjectAsync?.FireAsync(item) ?? Task.CompletedTask;    
+        => OnSetCurrentExplorerObjectAsync?.FireAsync(item) ?? Task.CompletedTask;
+
+    public event Func<IEnumerable<IExplorerObject>?, Task>? OnContextExplorerObjectsChanged;
+    public Task FireContextExplorerObjectsChanged(IEnumerable<IExplorerObject>? item)
+        => OnContextExplorerObjectsChanged?.Invoke(item) ?? Task.CompletedTask;
 }

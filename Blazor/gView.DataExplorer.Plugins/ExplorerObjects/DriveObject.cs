@@ -2,6 +2,7 @@
 using gView.DataExplorer.Plugins.ExplorerObjects.Base;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using System.Linq;
 
 namespace gView.DataExplorer.Plugins.ExplorerObjects;
 
@@ -10,6 +11,7 @@ public class DriveObject : ExplorerParentObject, IExplorerObject
     private readonly string _drive = "";
     private readonly string _icon;
     private readonly string _type = "";
+    private readonly string _name = "";
 
     public DriveObject(IExplorerObject parent, string drive, uint type)
         : base(parent, null, -1)
@@ -19,23 +21,25 @@ public class DriveObject : ExplorerParentObject, IExplorerObject
         {
             case 2:
                 _icon = "basic:folder";
-                _type = $"Floppy Disk ({drive})";
+                _name = _type = $"Floppy Disk ({drive})";
                 break;
             case 5:
                 _icon = "basic:circle-pie-25";
-                _type = $"CD-ROM Drive ({_drive})";
+                _name = _type = $"CD-ROM Drive ({_drive})";
                 break;
             case 4:
                 _icon = "basic:open-in-window";
-                _type = $"Mapped Drive ({_drive})";
+                _name = _drive.Replace(@"\", "/").Split('/').Last();
+                _type = $"Mapped Drive: {_drive}";
                 break;
             case 999:
-                _icon = "basic:folder";
-                _type = drive;
+                _icon = "basic:open-in-window";
+                _name = _drive.Replace(@"\", "/").Split('/').Last();
+                _type = $"Mapped Folder: {_drive}";
                 break;
             default:
                 _icon = "basic:folder";
-                _type = $"Local Drive ({_drive})";
+                _name = _type = $"Local Drive ({_drive})";
                 break;
         }
     }
@@ -51,7 +55,7 @@ public class DriveObject : ExplorerParentObject, IExplorerObject
     {
         get
         {
-            return _type;
+            return _name;
         }
     }
 

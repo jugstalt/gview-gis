@@ -4,10 +4,11 @@ using Microsoft.AspNetCore.Components;
 using MudBlazor;
 using System;
 using System.Threading.Tasks;
+using System.Collections.Generic;
 
 namespace gView.DataExplorer.Plugins.Services;
 
-public class ExplorerApplicationScopeService : IExplorerApplicationScope, IHandleEvent
+public class ExplorerApplicationScopeService : IExplorerApplicationScope
 {
     private readonly IDialogService _dialogService;
     private readonly EventBusService _eventBus;
@@ -18,14 +19,18 @@ public class ExplorerApplicationScopeService : IExplorerApplicationScope, IHandl
         _dialogService = dialogService;
         _eventBus = eventBus;
 
-        _eventBus.OnTreeItemClickAsync += EventBus_OnTreeItemClickAsync;
+        _eventBus.OnCurrentExplorerObjectChanged += EventBus_OnTreeItemClickAsync;
+        _eventBus.OnContextExplorerObjectsChanged += EventBus_OnContextExplorerObjectsChanged;
     }
+
+    
 
     #region IDisposable
 
     public void Dispose()
     {
-        _eventBus.OnTreeItemClickAsync -= EventBus_OnTreeItemClickAsync;
+        _eventBus.OnCurrentExplorerObjectChanged -= EventBus_OnTreeItemClickAsync;
+        _eventBus.OnContextExplorerObjectsChanged -= EventBus_OnContextExplorerObjectsChanged;
     }
 
     #endregion
@@ -37,14 +42,17 @@ public class ExplorerApplicationScopeService : IExplorerApplicationScope, IHandl
         return Task.CompletedTask;
     }
 
+    private Task EventBus_OnContextExplorerObjectsChanged(IEnumerable<IExplorerObject>? arg)
+    {
+        ContextExplorerObject = arg;
+
+        return Task.CompletedTask;
+    }
+
     public IExplorerObject? CurrentExplorerObject { get; private set; }
+    public IEnumerable<IExplorerObject>? ContextExplorerObject { get; private set; } 
 
     public EventBusService EventBus => _eventBus;
-
-    //public void ShowModalDialog2(Type razorType, Action<IDialogResultItem> callback)
-    //{
-    //    throw new ShowDialogException(razorType, callback);
-    //}
 
     async public Task<T?> ShowModalDialog<T>(Type razorComponent,
                                              string title,
@@ -95,13 +103,4 @@ public class ExplorerApplicationScopeService : IExplorerApplicationScope, IHandl
             }
         }
     }
-
-    #region IHandleEvent
-
-    public Task HandleEventAsync(EventCallbackWorkItem item, object? arg)
-    {
-        return item.InvokeAsync(arg);
-    }
-
-    #endregion
 }

@@ -1,9 +1,13 @@
+@inherits BaseHandler
+
 <MudDialog>
     <DialogContent>
         <MudForm @ref="_form">
             @FormContent
         </MudForm>
-        @InfoContent
+        <MudAlert Severity="Severity.Info" Dense="true">
+            @InfoContent
+        </MudAlert>
     </DialogContent>
     <DialogActions>
         <MudButton Color="Color.Primary" OnClick="Submit">Confirm</MudButton>

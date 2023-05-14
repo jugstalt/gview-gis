@@ -21,7 +21,7 @@
 
     protected override void OnInitialized()
     {
-        EventBus.OnTreeItemClickAsync += OnTreeItemClickAsync;
+        EventBus.OnCurrentExplorerObjectChanged += OnTreeItemClickAsync;
     }
 
     private Task OnTreeItemClickAsync(IExplorerObject? exObject)
@@ -46,7 +46,7 @@
 
     public void Dispose()
     {
-        EventBus.OnTreeItemClickAsync -= OnTreeItemClickAsync;
+        EventBus.OnCurrentExplorerObjectChanged -= OnTreeItemClickAsync;
     }
 
     #region Item Classes 

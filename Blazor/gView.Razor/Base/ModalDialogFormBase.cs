@@ -10,18 +10,20 @@ public class ModalDialogFormBase<T> : ModalDialogForm
     [Parameter] public EventCallback<gView.Blazor.Models.Dialogs.DialogResult> OnDialogClose { get; set; }
     [Parameter] public T Model { get; set; } = Activator.CreateInstance<T>();
 
-    async override protected Task Submit()
-    {
-        if (_form != null)
+    override protected Task Submit()
+        => HandleAsync(async () =>
         {
-            await _form.Validate();
-
-            if (_form.IsValid == true)
+            if (_form != null)
             {
-                await OnDialogClose.InvokeAsync(Model.ToResult());
-            }
-        }
-    }
+                await _form.Validate();
 
-    override protected Task Close() => OnDialogClose.InvokeAsync(null);
+                if (_form.IsValid == true)
+                {
+                    await OnDialogClose.InvokeAsync(Model.ToResult());
+                }
+            }
+        });
+
+    override protected Task Close()
+        => HandleAsync(() => OnDialogClose.InvokeAsync(null));
 }
