@@ -1,24 +1,32 @@
 ﻿using gView.DataExplorer.Plugins.Extensions;
 using gView.Framework.DataExplorer;
 using gView.Framework.DataExplorer.Abstraction;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace gView.DataExplorer.Plugins.ExplorerTools;
 
-[gView.Framework.system.RegisterPlugIn("54597B19-B37A-4fa2-BA45-8B4137F2910E")]
-public class Refresh : IExplorerTool
+[gView.Framework.system.RegisterPlugIn("91F17A8E-D859-4840-A287-7FDE14152CB1")]
+public class Rename : IExplorerTool
 {
     #region IExplorerTool
 
-    public string Name => "Refresh";
-
-    public bool IsEnabled(IExplorerApplicationScope scope) => true;
+    public string Name => "Rename";
 
     public string ToolTip => "";
 
-    public string Icon => "basic:refresh";
+    public string Icon => "basic:edit";
 
-    public ExplorerToolTarget Target => ExplorerToolTarget.Gernal;
+    public ExplorerToolTarget Target => ExplorerToolTarget.SelectedContextExplorerObjects;
+
+    public bool IsEnabled(IExplorerApplicationScope scope)
+    {
+        var scopeService = scope.ToScopeService();
+
+        return scopeService.ContextExplorerObjects?
+            .Where(e => e is IExplorerObjectRenamable)
+            .Count() > 0;
+    }
 
     async public Task<bool> OnEvent(IExplorerApplicationScope scope)
     {
@@ -31,7 +39,7 @@ public class Refresh : IExplorerTool
 
     #region IOrder
 
-    public int SortOrder => 15;
+    public int SortOrder => 16;
 
     #endregion
 

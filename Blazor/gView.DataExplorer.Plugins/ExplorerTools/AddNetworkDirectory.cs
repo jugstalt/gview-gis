@@ -1,7 +1,7 @@
-﻿using gView.Blazor.Core.Exceptions;
-using gView.DataExplorer.Plugins.ExplorerObjects;
+﻿using gView.DataExplorer.Plugins.ExplorerObjects;
 using gView.DataExplorer.Plugins.Extensions;
 using gView.DataExplorer.Razor.Components.Dialogs.Data;
+using gView.Framework.DataExplorer;
 using gView.Framework.DataExplorer.Abstraction;
 using gView.Framework.IO;
 using System.IO;
@@ -16,18 +16,20 @@ internal class AddNetworkDirectory : IExplorerTool
 
     public string Name => "Map (network) folder...";
 
-    public bool Enabled => true;
+    public bool IsEnabled(IExplorerApplicationScope scope) => true;
 
     public string ToolTip => "";
 
     public string Icon => "basic:open-in-window";
+
+    public ExplorerToolTarget Target => ExplorerToolTarget.Gernal;
 
     public async Task<bool> OnEvent(IExplorerApplicationScope scope)
     {
         MapNetworkFolderModel? model = null;
         var scopeService = scope.ToScopeService();
 
-        if(scopeService.CurrentExplorerObject is DirectoryObject)
+        if (scopeService.CurrentExplorerObject is DirectoryObject)
         {
             model = new MapNetworkFolderModel()
             {

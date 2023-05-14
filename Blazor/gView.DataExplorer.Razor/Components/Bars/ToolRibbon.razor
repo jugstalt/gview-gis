@@ -2,10 +2,15 @@
 @inject PluginManagerService PluginManager
 @inject IconService Icons
 @inject IExplorerApplicationScope AppScope
+@inject EventBusService EventBus
 
 @if (exTools != null)
 {
-    @foreach (var exTool in exTools.OrderBy(t => t.SortOrder))
+    <div class="explorer-tool-box">
+    @foreach (var exTool in exTools
+                                .Where(t=> t.Target == ExplorerToolTarget.Gernal)
+                                .Where(t=> t.IsEnabled(AppScope))
+                                .OrderBy(t => t.SortOrder))
     {
         <div class="explorer-tool"
              alt="@exTool.ToolTip"
@@ -14,6 +19,22 @@
             <div class="title">@exTool.Name</div>
         </div>
     }
+    </div>
+
+    <div class="explorer-tool-box context-selected">
+    @foreach (var exTool in exTools
+                               .Where(t => t.Target == ExplorerToolTarget.SelectedContextExplorerObjects)
+                               .Where(t => t.IsEnabled(AppScope))
+                               .OrderBy(t => t.SortOrder))
+    {
+        <div class="explorer-tool"
+             alt="@exTool.ToolTip"
+        @onclick="async () => await ToolClickAsync(exTool)">
+            <div class=@Icons.FromString(exTool.Icon)></div>
+            <div class="title">@exTool.Name</div>
+        </div>
+    }
+    </div>
 }
 
 @code {
@@ -24,9 +45,23 @@
         base.Handle(() =>
         {
             exTools = PluginManager.GetPlugins<IExplorerTool>(Framework.system.Plugins.Type.IExplorerTool);
+
+            EventBus.OnContextExplorerObjectsChanged += OnContextExplorerObjectsChanges;
         });
+    }
+
+    private Task OnContextExplorerObjectsChanges(IEnumerable<IExplorerObject>? contextExplorerObjets)
+    {
+        StateHasChanged();
+
+        return Task.CompletedTask;
     }
 
     private Task ToolClickAsync(IExplorerTool exTool)
         => base.HandleAsync(() => exTool.OnEvent(AppScope));
+
+    public void Dispose()
+    {
+        EventBus.OnContextExplorerObjectsChanged -= OnContextExplorerObjectsChanges;
+    }
 }

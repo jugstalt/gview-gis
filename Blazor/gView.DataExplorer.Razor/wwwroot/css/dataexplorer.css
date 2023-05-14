@@ -18,19 +18,25 @@
         background: #ccc;
     }
 
-    .dataexplorer-main .toolbar .explorer-tool {
-        height:76px;
-        display:inline-block;
-        text-align:center;
-        padding:8px;
-        margin:2px;
-        max-width:120px;
-        vertical-align:top;
-        /*border:1px solid #aaa;*/
-        cursor:pointer;
-        box-sizing:border-box;
-        font-size:0.9em;
-    }
+        .dataexplorer-main .toolbar .explorer-tool-box {
+            height: 76px;
+            display: inline-block;
+            vertical-align: top;
+        }
+
+            .dataexplorer-main .toolbar .explorer-tool-box .explorer-tool {
+                height: 76px;
+                display: inline-block;
+                text-align: center;
+                padding: 8px;
+                margin: 2px;
+                max-width: 120px;
+                vertical-align: top;
+                /*border:1px solid #aaa;*/
+                cursor: pointer;
+                box-sizing: border-box;
+                font-size: 0.9em;
+            }
 
         .dataexplorer-main .toolbar .explorer-tool:hover {
             background-color: #0094ff46;

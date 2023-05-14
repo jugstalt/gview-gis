@@ -44,13 +44,13 @@ public class ExplorerApplicationScopeService : IExplorerApplicationScope
 
     private Task EventBus_OnContextExplorerObjectsChanged(IEnumerable<IExplorerObject>? arg)
     {
-        ContextExplorerObject = arg;
+        ContextExplorerObjects = arg;
 
         return Task.CompletedTask;
     }
 
     public IExplorerObject? CurrentExplorerObject { get; private set; }
-    public IEnumerable<IExplorerObject>? ContextExplorerObject { get; private set; } 
+    public IEnumerable<IExplorerObject>? ContextExplorerObjects { get; private set; } 
 
     public EventBusService EventBus => _eventBus;
 
