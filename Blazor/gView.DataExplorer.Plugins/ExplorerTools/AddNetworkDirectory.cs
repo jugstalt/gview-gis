@@ -1,6 +1,8 @@
-﻿using gView.DataExplorer.Core.Extensions;
+﻿using gView.Blazor.Core.Exceptions;
+using gView.DataExplorer.Plugins.ExplorerObjects;
+using gView.DataExplorer.Plugins.Extensions;
+using gView.DataExplorer.Razor.Components.Dialogs.Data;
 using gView.Framework.DataExplorer.Abstraction;
-using System;
 using System.Threading.Tasks;
 
 namespace gView.DataExplorer.Plugins.ExplorerTools;
@@ -18,18 +20,32 @@ internal class AddNetworkDirectory : IExplorerTool
 
     public string Icon => "basic:open-in-window";
 
-    public Task<bool> OnEvent(IExplorerApplicationScope scope)
+    public async Task<bool> OnEvent(IExplorerApplicationScope scope)
     {
-        int i=new Random().Next();
+        MapNetworkFolderModel? model = null;
+        var scopeService = scope.ToScopeService();
 
-        scope.ToScopeService().ShowModalDialog(
-            typeof(gView.DataExplorer.Razor.Components.Dialogs.MapNetworkFolderDialog),
-            (data) =>
+        if(scopeService.CurrentExplorerObject is DirectoryObject)
+        {
+            model = new MapNetworkFolderModel()
             {
-                i++;
-            });
+                FolderPath = ((DirectoryObject)scopeService.CurrentExplorerObject).FullName
+            };
+        }
 
-        return Task.FromResult(true);
+        model = await scopeService.ShowModalDialog(
+            typeof(Razor.Components.Dialogs.MapNetworkFolderDialog),
+            this.Name,
+            model);
+
+        if (model == null)
+        {
+            throw new GeneralException("Dilaog Canceled");
+        }
+
+        throw new GeneralException($"The Result is: {model.FolderPath}");
+
+        return true;
     }
 
     #endregion

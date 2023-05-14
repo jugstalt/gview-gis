@@ -1,8 +1,8 @@
-﻿using gView.DataExplorer.Core.Services;
+﻿using gView.DataExplorer.Plugins.Services;
 using gView.Framework.DataExplorer.Abstraction;
 using System;
 
-namespace gView.DataExplorer.Core.Extensions;
+namespace gView.DataExplorer.Plugins.Extensions;
 
 static public class ExplorerApplicationScopeExtensions
 {

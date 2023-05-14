@@ -28,9 +28,9 @@ namespace gView.DataExplorer
             builder.Services.AddMudServices();
 
             builder.Services.AddExplorerDesktopApplicationService();
+            builder.Services.AddExplorerApplicationScopeService();
             builder.Services.AddPluginMangerService();
             builder.Services.AddIconService();
-            builder.Services.AddApplicationScopeService();
 
             return builder.Build();
         }

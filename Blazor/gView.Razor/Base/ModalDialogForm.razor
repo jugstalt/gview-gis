@@ -1,0 +1,22 @@
+<MudDialog>
+    <DialogContent>
+        <MudForm @ref="_form">
+            @FormContent
+        </MudForm>
+        @InfoContent
+    </DialogContent>
+    <DialogActions>
+        <MudButton Color="Color.Primary" OnClick="Submit">Confirm</MudButton>
+        <MudButton Color="Color.Secondary" OnClick="Close">Cancel</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [Parameter] public RenderFragment? FormContent { get; set; }
+    [Parameter] public RenderFragment? InfoContent { get; set; }
+
+    protected MudForm? _form;
+
+    virtual protected Task Submit() => Task.CompletedTask;
+    virtual protected Task Close() => Task.CompletedTask;
+}

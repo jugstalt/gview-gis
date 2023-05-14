@@ -1,17 +1,40 @@
-<MudPaper Style="padding:20px">
-    <MudForm ReadOnly="false">
-        <MudTextField T="string" Label="Folder" Required="true" RequiredError="Folder required!" ReadOnly="false" @bind-Value="model.FolderPath" />
-        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="CloseDialog">Ok</MudButton>
-    </MudForm>
-</MudPaper>
+@inherits ModalDialogFormBase<MapNetworkFolderModel>
+
+<ModalDialogFormBase T="MapNetworkFolderModel" 
+                      OnDialogClose="base.OnDialogClose"
+                      Model="base.Model">
+    <FormContent>
+        <MudTextField @bind-Value="Model!.FolderPath"
+                      Label="Path"
+                      HelperText="Please enter a path"
+                      Required="true"
+                      Validation="@(new Func<string, IEnumerable<string>>(ValidatePath))" />
+    </FormContent>
+
+    <InfoContent>
+        <MudText Typo="Typo.h6">Examples for input:</MudText>
+        <MudText Typo="Typo.body1">Local path: C:\Geodata (windows), /usr/home/geodata (linux)</MudText>
+        <MudText Typo="Typo.body1">Windows UNC path: \\Server\Share</MudText>
+    </InfoContent>
+</ModalDialogFormBase>
 
 @code {
-    [Parameter] public EventCallback<Blazor.Models.Dialogs.DialogResult> OnDialogClose { get; set; }
-
-    private MapNetworkFolderModel model = new MapNetworkFolderModel();
-
-    private Task CloseDialog()
+    private IEnumerable<string> ValidatePath(string path)
     {
-        return OnDialogClose.InvokeAsync(model.ToResult());
+        if (string.IsNullOrEmpty(path))
+        {
+            yield return "Path is required.";
+            yield break;
+        }
+
+        if (!path.StartsWith(@"\\") && !path.Contains(@":\") && !path.StartsWith(@"/"))
+        {
+            yield return "Path must start with a backslash or contain :\\ for local paths.";
+        }
+
+        if(!System.IO.Directory.Exists(path))
+        {
+            yield return "Path does not exists on system";
+        }
     }
 }

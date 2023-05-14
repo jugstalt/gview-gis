@@ -1,7 +1,6 @@
-﻿using gView.Framework.DataExplorer.Abstraction;
-using System;
+﻿using gView.DataExplorer.Plugins.Extensions;
+using gView.Framework.DataExplorer.Abstraction;
 using System.Threading.Tasks;
-using gView.DataExplorer.Core.Extensions;
 
 namespace gView.DataExplorer.Plugins.ExplorerTools;
 
@@ -20,7 +19,7 @@ public class Refresh : IExplorerTool
 
     async public Task<bool> OnEvent(IExplorerApplicationScope scope)
     {
-        await scope.ToScopeService().EventBus.FireRefreshContentAsync();
+        await scope.ToScopeService().EventBus.FireFreshContentAsync();
 
         return true;
     }
@@ -37,7 +36,7 @@ public class Refresh : IExplorerTool
 
     public void Dispose()
     {
-        
+
     }
 
     #endregion

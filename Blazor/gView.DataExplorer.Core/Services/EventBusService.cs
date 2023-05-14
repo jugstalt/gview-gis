@@ -8,7 +8,7 @@ namespace gView.DataExplorer.Core.Services;
 public class EventBusService
 {
     public event Func<Task>? OnRefreshContentAsync;
-    public Task FireRefreshContentAsync()
+    public Task FireFreshContentAsync()
         => OnRefreshContentAsync?.FireAsync() ?? Task.CompletedTask;
 
     public event Func<IExplorerObject?, Task>? OnTreeItemClickAsync;
