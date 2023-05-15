@@ -10,7 +10,11 @@ using System.Threading.Tasks;
 namespace gView.DataExplorer.Plugins.ExplorerObjects.ShapeFiles
 {
     [gView.Framework.system.RegisterPlugIn("665E0CD5-B3DF-436c-91B4-D4C0B3ECA5B9")]
-    public class ShapeFileExplorerObject : ExplorerObjectCls, IExplorerFileObject, ISerializableExplorerObject, IExplorerObjectRenamable, IExplorerObjectDeletable
+    public class ShapeFileExplorerObject : ExplorerObjectCls, 
+                                           IExplorerFileObject, 
+                                           ISerializableExplorerObject, 
+                                           IExplorerObjectRenamable, 
+                                           IExplorerObjectDeletable
     {
         private string _filename = "";
         private ShapeDataset? _shapeDataset = null;

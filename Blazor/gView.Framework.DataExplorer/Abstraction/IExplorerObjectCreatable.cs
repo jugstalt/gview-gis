@@ -2,7 +2,7 @@
 
 namespace gView.Framework.DataExplorer.Abstraction;
 
-public interface IExplorerObjectCreatable
+public interface IExplorerObjectCreatable : IExplorerObject
 {
     bool CanCreate(IExplorerObject parentExObject);
     Task<IExplorerObject?> CreateExplorerObject(IExplorerObject parentExObject);

@@ -8,7 +8,9 @@ using System.Threading.Tasks;
 namespace gView.DataExplorer.Plugins.ExplorerObjects.Fdb.SqLite;
 
 [RegisterPlugIn("AFDE90FF-D063-4224-BD31-1B30C266D55B")]
-public class SqLiteFdbNetworkClassExplorerObject : ExplorerObjectCls, IExplorerSimpleObject, IExplorerObjectCreatable
+public class SqLiteFdbNetworkClassExplorerObject : ExplorerObjectCls, 
+                                                   IExplorerSimpleObject, 
+                                                   IExplorerObjectCreatable
 {
     public SqLiteFdbNetworkClassExplorerObject() : base(null, typeof(SQLiteFDBNetworkFeatureClass), 1) { }
 

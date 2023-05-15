@@ -10,7 +10,8 @@ using System.Threading.Tasks;
 namespace gView.DataExplorer.Plugins.ExplorerObjects.Fdb.SqLite;
 
 [RegisterPlugIn("EEDCCBB2-588E-418A-B048-4B6C210A25AE")]
-public class SqLiteFdbLinkedFeatureclassExplorerObject : IExplorerSimpleObject, IExplorerObjectCreatable
+public class SqLiteFdbLinkedFeatureclassExplorerObject : IExplorerSimpleObject, 
+                                                         IExplorerObjectCreatable
 {
     #region IExplorerObjectCreatable Member
 

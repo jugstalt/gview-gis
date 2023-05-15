@@ -21,37 +21,78 @@
     }
     </div>
 
+    <div class="explorer-tool-box current-selected">
+        @if(currentExplorerObject!=null)
+        {
+            @if(creatableExplorerTools?.Where(e=>e.CanCreate(currentExplorerObject)).Any() == true)
+            {
+                <div class="explorer-tool-sub-box">
+                    @foreach (var creatable in creatableExplorerTools?.Where(e => e.CanCreate(currentExplorerObject))!)
+                    {
+                        <div class="explorer-tool"
+                                 alt="Create new..." >
+                            <div class=@Icons.FromString(creatable.Icon)></div>
+                            <div class="title">@creatable.Type</div>
+                        </div>
+                    }
+                    <div class="title">Create new</div>
+                </div>
+            }
+        }
+    </div>
+
     <div class="explorer-tool-box context-selected">
-    @foreach (var exTool in exTools
-                               .Where(t => t.Target == ExplorerToolTarget.SelectedContextExplorerObjects)
-                               .Where(t => t.IsEnabled(AppScope))
-                               .OrderBy(t => t.SortOrder))
-    {
-        <div class="explorer-tool"
-             alt="@exTool.ToolTip"
-        @onclick="async () => await ToolClickAsync(exTool)">
-            <div class=@Icons.FromString(exTool.Icon)></div>
-            <div class="title">@exTool.Name</div>
-        </div>
-    }
+        @if (exTools.Where(t => t.Target == ExplorerToolTarget.SelectedContextExplorerObjects).Where(t => t.IsEnabled(AppScope)).Any())
+        {
+            <div class="explorer-tool-sub-box">
+                @foreach (var exTool in exTools
+                                                 .Where(t => t.Target == ExplorerToolTarget.SelectedContextExplorerObjects)
+                                                 .Where(t => t.IsEnabled(AppScope))
+                                                 .OrderBy(t => t.SortOrder))
+                {
+                    <div class="explorer-tool"
+                    alt="@exTool.ToolTip"
+                    @onclick="async () => await ToolClickAsync(exTool)">
+                        <div class=@Icons.FromString(exTool.Icon)></div>
+                        <div class="title">@exTool.Name</div>
+                    </div>
+                }
+                <div class="title">Selected</div>
+            </div>
+        }
     </div>
 }
 
 @code {
-    private IEnumerable<IExplorerTool>? exTools;
+    private IExplorerTool[]? exTools;
+    private IExplorerObjectCreatable[]? creatableExplorerTools;
+    private IExplorerObject? currentExplorerObject;
 
     protected override void OnInitialized()
     {
         base.Handle(() =>
         {
-            exTools = PluginManager.GetPlugins<IExplorerTool>(Framework.system.Plugins.Type.IExplorerTool);
+            exTools = PluginManager.GetPlugins<IExplorerTool>(Framework.system.Plugins.Type.IExplorerTool).ToArray();
+            creatableExplorerTools = PluginManager.GetPlugins<IExplorerObject>(Framework.system.Plugins.Type.IExplorerObject)
+                                                .Where(e => e is IExplorerObjectCreatable)
+                                                .Select(e => (IExplorerObjectCreatable)e)
+                                                .ToArray();
 
-            EventBus.OnContextExplorerObjectsChanged += OnContextExplorerObjectsChanges;
+            EventBus.OnContextExplorerObjectsChanged += OnContextExplorerObjectsChanged;
+            EventBus.OnCurrentExplorerObjectChanged += OnCurrentExplorerObjectChanged;
         });
     }
 
-    private Task OnContextExplorerObjectsChanges(IEnumerable<IExplorerObject>? contextExplorerObjets)
+    private Task OnContextExplorerObjectsChanged(IEnumerable<IExplorerObject>? contextExplorerObjets)
     {
+        StateHasChanged();
+
+        return Task.CompletedTask;
+    }
+
+    private Task OnCurrentExplorerObjectChanged(IExplorerObject? explorerObject)
+    {
+        currentExplorerObject = explorerObject;
         StateHasChanged();
 
         return Task.CompletedTask;
@@ -62,6 +103,7 @@
 
     public void Dispose()
     {
-        EventBus.OnContextExplorerObjectsChanged -= OnContextExplorerObjectsChanges;
+        EventBus.OnContextExplorerObjectsChanged -= OnContextExplorerObjectsChanged;
+        EventBus.OnCurrentExplorerObjectChanged -= OnCurrentExplorerObjectChanged;
     }
 }

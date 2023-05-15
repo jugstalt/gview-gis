@@ -12,7 +12,12 @@ using System.Threading.Tasks;
 namespace gView.DataExplorer.Plugins.ExplorerObjects.Fdb.SqLite;
 
 [RegisterPlugIn("A4F900EC-C5E4-4518-BAB9-213AF660E8F1")]
-internal class SqLiteFdbExplorerObject : ExplorerParentObject, IExplorerFileObject, IExplorerObjectCommandParameters, ISerializableExplorerObject, IExplorerObjectDeletable, IExplorerObjectCreatable
+internal class SqLiteFdbExplorerObject : ExplorerParentObject, 
+                                         IExplorerFileObject, 
+                                         IExplorerObjectCommandParameters, 
+                                         ISerializableExplorerObject, 
+                                         IExplorerObjectDeletable, 
+                                         IExplorerObjectCreatable
 {
     private string _filename = "", _errMsg = "";
 

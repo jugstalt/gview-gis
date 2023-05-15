@@ -1,6 +1,10 @@
 ﻿using gView.DataExplorer.Plugins.Extensions;
+using gView.DataExplorer.Razor.Components.Dialogs.Data;
 using gView.Framework.DataExplorer;
 using gView.Framework.DataExplorer.Abstraction;
+using gView.Framework.DataExplorer.Events;
+using MudBlazor.Charts;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -26,9 +30,39 @@ namespace gView.DataExplorer.Plugins.ExplorerTools
                 .Count() > 0;
         }
 
-        public Task<bool> OnEvent(IExplorerApplicationScope scope)
+        async public Task<bool> OnEvent(IExplorerApplicationScope scope)
         {
-            return Task.FromResult(true);
+            var scopeService = scope.ToScopeService();
+
+            if (scopeService.ContextExplorerObjects != null && scopeService.ContextExplorerObjects.Any())
+            {
+                var model = new DeleteObjectsModel()
+                {
+                    ExplorerObjects = new List<SelectItemModel<IExplorerObject>>(
+                        scopeService.ContextExplorerObjects
+                            .Where(e => e is IExplorerObjectDeletable)
+                            .Select(e => new SelectItemModel<IExplorerObject>(e)))
+                };
+
+
+                model = await scopeService.ShowModalDialog(
+                    typeof(Razor.Components.Dialogs.DeleteObjectsDialog),
+                    this.Name,
+                    model);
+
+                if (model != null)
+                {
+                    foreach (var exObject in model.SelectedExplorerItems)
+                    {
+                       await (exObject as IExplorerObjectDeletable)!
+                                    .DeleteExplorerObject(new ExplorerObjectEventArgs());
+                    }
+                }
+
+                await scopeService.EventBus.FireFreshContentAsync();
+            }
+
+            return true;
         }
 
         #region IDisposable

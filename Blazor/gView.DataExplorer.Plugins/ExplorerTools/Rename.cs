@@ -1,4 +1,5 @@
 ﻿using gView.DataExplorer.Plugins.Extensions;
+using gView.DataExplorer.Razor.Components.Dialogs.Data;
 using gView.Framework.DataExplorer;
 using gView.Framework.DataExplorer.Abstraction;
 using System.Linq;
@@ -25,12 +26,34 @@ public class Rename : IExplorerTool
 
         return scopeService.ContextExplorerObjects?
             .Where(e => e is IExplorerObjectRenamable)
-            .Count() > 0;
+            .Count() == 1;
     }
 
     async public Task<bool> OnEvent(IExplorerApplicationScope scope)
     {
-        await scope.ToScopeService().EventBus.FireFreshContentAsync();
+        var scopeService = scope.ToScopeService();
+
+        var exObject = scopeService.ContextExplorerObjects?
+            .Where(e => e is IExplorerObjectRenamable)
+            .FirstOrDefault();
+
+        if (exObject != null)
+        {
+            var model = new RenameObjectModel() { ExplorerObject = exObject };
+
+            model = await scopeService.ShowModalDialog(
+                   typeof(Razor.Components.Dialogs.RenameObjectDialog),
+                   this.Name,
+                   model);
+
+            if (model != null)
+            {
+                await (exObject as IExplorerObjectRenamable)!
+                             .RenameExplorerObject(model.NewName);
+
+                await scopeService.EventBus.FireFreshContentAsync();
+            }
+        }
 
         return true;
     }

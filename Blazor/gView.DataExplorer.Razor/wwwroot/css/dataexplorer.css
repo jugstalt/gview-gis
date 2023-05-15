@@ -14,39 +14,63 @@
         left: 0px;
         top: 0px;
         right: 0px;
-        height: 80px;
+        height: 100px;
         background: #ccc;
     }
 
         .dataexplorer-main .toolbar .explorer-tool-box {
-            height: 76px;
+            height: 96px;
             display: inline-block;
             vertical-align: top;
+            margin:2px;
+            border-radius:4px;
         }
 
             .dataexplorer-main .toolbar .explorer-tool-box .explorer-tool {
-                height: 76px;
+                height: 94px;
                 display: inline-block;
                 text-align: center;
                 padding: 8px;
-                margin: 2px;
+                margin: 0px 2px;
                 max-width: 120px;
                 vertical-align: top;
-                /*border:1px solid #aaa;*/
+                border:1px solid transparent;
                 cursor: pointer;
                 box-sizing: border-box;
+                border-radius:4px;
                 font-size: 0.9em;
             }
 
         .dataexplorer-main .toolbar .explorer-tool:hover {
             background-color: #0094ff46;
             border: 1px solid #0094ff;
+            box-sizing:border-box;
         }
+
+        .dataexplorer-main .toolbar .explorer-tool-box .explorer-tool-sub-box {
+            position:relative;
+            display:inline-block;
+            height:96px;
+        }
+            .dataexplorer-main .toolbar .explorer-tool-box .explorer-tool-sub-box > .title {
+                position: absolute;
+                bottom: 0px;
+                left: 0px;
+                right: 0px;
+                height: 20px;
+                text-align: center;
+                color: #888;
+                font-size: 11px;
+            }
+
+            .dataexplorer-main .toolbar .explorer-tool-box .explorer-tool-sub-box .explorer-tool {
+                height:74px;
+            }
 
     .dataexplorer-main .navigation-bar {
         position: absolute;
         left: 0px;
-        top: 82px;
+        top: 102px;
         right: 0px;
         height: 40px;
         background: #0078d4;
@@ -61,7 +85,7 @@
     .dataexplorer-main .tree {
         position: absolute;
         left: 0px;
-        top: 124px;
+        top: 144px;
         bottom: 0px;
         width: 300px;
         background: #fff;
@@ -71,7 +95,7 @@
     .dataexplorer-main .content {
         position: absolute;
         left: 302px;
-        top: 124px;
+        top: 144px;
         right: 0px;
         bottom: 0px;
         background: #efefef;
@@ -90,4 +114,18 @@
 
 .dataexplorer-main .context-selected {
     background: #ffff00a9;
+}
+
+.dataexplorer-main .current-selected {
+    background: #0078d476;
+}
+
+
+/* MudBlazor overrides */
+.mud-list-item .mud-icon-button {
+    padding: 2px 6px 2px 2px !important;
+}
+
+.mud-list-item .mud-icon-root {
+    margin-right: 6px;
 }

@@ -13,7 +13,13 @@ using System.Threading.Tasks;
 namespace gView.DataExplorer.Plugins.ExplorerObjects.Fdb.SqLite;
 
 [RegisterPlugIn("16DB07EC-5C30-4C2E-85AC-B49A44188B1A")]
-public class SqLiteFdbFeatureClassExplorerObject : ExplorerObjectCls, IExplorerSimpleObject, ISerializableExplorerObject, IExplorerObjectDeletable/*, IExplorerObjectContextMenu*/, IExplorerObjectRenamable, IExplorerObjectCreatable
+public class SqLiteFdbFeatureClassExplorerObject : ExplorerObjectCls, 
+                                                   IExplorerSimpleObject, 
+                                                   ISerializableExplorerObject, 
+                                                   IExplorerObjectDeletable
+                                                   /*, IExplorerObjectContextMenu*/, 
+                                                   IExplorerObjectRenamable, 
+                                                   IExplorerObjectCreatable
 {
     private string _filename = "", _dsname = "", _fcname = "", _type = "";
     private string _icon = "";

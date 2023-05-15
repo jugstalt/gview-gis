@@ -13,7 +13,13 @@ using System.Threading.Tasks;
 namespace gView.DataExplorer.Plugins.ExplorerObjects;
 
 [RegisterPlugIn("458E62A0-4A93-45cf-B14D-2F958D67E522")]
-public class DirectoryObject : ExplorerParentObject, IExplorerObject, IExplorerObjectCommandParameters, ISerializableExplorerObject, IExplorerObjectDeletable, IExplorerObjectRenamable, IExplorerObjectCreatable
+public class DirectoryObject : ExplorerParentObject, 
+                               IExplorerObject, 
+                               IExplorerObjectCommandParameters, 
+                               ISerializableExplorerObject, 
+                               IExplorerObjectDeletable, 
+                               IExplorerObjectRenamable, 
+                               IExplorerObjectCreatable
 {
     string _path = "";
 
