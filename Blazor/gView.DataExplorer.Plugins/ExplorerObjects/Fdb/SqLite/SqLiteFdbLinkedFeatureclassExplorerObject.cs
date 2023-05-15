@@ -20,7 +20,7 @@ public class SqLiteFdbLinkedFeatureclassExplorerObject : IExplorerSimpleObject,
         return parentExObject is SqLiteFdbDatasetExplorerObject;
     }
 
-    async public Task<IExplorerObject?> CreateExplorerObject(IExplorerObject? parentExObject)
+    async public Task<IExplorerObject?> CreateExplorerObjectAsync(IExplorerApplicationScope scope, IExplorerObject? parentExObject)
     {
         SqLiteFdbDatasetExplorerObject? parent = (SqLiteFdbDatasetExplorerObject?)parentExObject;
         if (parent == null)

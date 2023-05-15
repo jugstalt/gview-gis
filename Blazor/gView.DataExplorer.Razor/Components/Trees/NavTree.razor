@@ -40,6 +40,7 @@
             _selected.IsExpanded = true;
 
             EventBus.OnSetCurrentExplorerObjectAsync += HandleSetCurrentExplorerObjectAsync;
+            EventBus.OnRefreshContentAsync += OnRefreshContentAsync;
         });
     }
 
@@ -71,6 +72,17 @@
 
         await EventBus.FireCurrentExplorerObjectChanged(node.ExObject);
     }
+
+    private Task OnRefreshContentAsync()
+        => base.HandleAsync(async () =>
+        {
+            if (_selected != null && await _selected.ExObject.SecureRefresh() == true)
+            {
+                _selected.Children = null;
+                await LoadServerData(_selected);
+                StateHasChanged();
+            }
+        });
 
     private Task HandleSetCurrentExplorerObjectAsync(IExplorerObject? exObject)
     {
@@ -182,5 +194,6 @@
     public void Dispose()
     {
         EventBus.OnSetCurrentExplorerObjectAsync -= HandleSetCurrentExplorerObjectAsync;
+        EventBus.OnRefreshContentAsync -= OnRefreshContentAsync;
     }
 }

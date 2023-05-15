@@ -2,7 +2,7 @@
 
 public enum ExplorerToolTarget
 {
-    Gernal,
+    General,
     CurrentExplorerObject,
     SelectedContextExplorerObjects
 }

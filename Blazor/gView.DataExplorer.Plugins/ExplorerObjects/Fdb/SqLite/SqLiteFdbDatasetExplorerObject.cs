@@ -267,7 +267,7 @@ public class SqLiteFdbDatasetExplorerObject : ExplorerObjectFeatureClassImport,
     public bool CanCreate(IExplorerObject? parentExObject)
         => parentExObject is SqLiteFdbExplorerObject;
 
-    async public Task<IExplorerObject?> CreateExplorerObject(IExplorerObject? parentExObject)
+    async public Task<IExplorerObject?> CreateExplorerObjectAsync(IExplorerApplicationScope scope, IExplorerObject? parentExObject)
     {
         if (!CanCreate(parentExObject))
         {

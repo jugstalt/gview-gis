@@ -1,13 +1,18 @@
 ﻿using gView.Blazor.Core;
+using gView.Blazor.Core.Exceptions;
 using gView.DataExplorer.Plugins.ExplorerObjects.Base;
+using gView.DataExplorer.Plugins.Extensions;
+using gView.DataExplorer.Razor.Components.Dialogs.Data;
 using gView.DataSources.Fdb.SQLite;
 using gView.Framework.DataExplorer.Abstraction;
 using gView.Framework.DataExplorer.Events;
 using gView.Framework.system;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
+using static MudBlazor.CategoryTypes;
 
 namespace gView.DataExplorer.Plugins.ExplorerObjects.Fdb.SqLite;
 
@@ -197,41 +202,55 @@ internal class SqLiteFdbExplorerObject : ExplorerParentObject,
 
     public bool CanCreate(IExplorerObject parentExObject)
     {
-        if (parentExObject == null)
+        if (parentExObject is DirectoryObject ||
+            parentExObject is DriveObject)
         {
-            return false;
+            return true;
         }
 
-        return (PlugInManager.PlugInID(parentExObject) == KnownExplorerObjectIDs.Directory);
+        return false;
     }
 
-    public Task<IExplorerObject?> CreateExplorerObject(IExplorerObject parentExObject)
+    async public Task<IExplorerObject?> CreateExplorerObjectAsync(IExplorerApplicationScope scope, 
+                                                                  IExplorerObject parentExObject)
     {
         if (!CanCreate(parentExObject))
         {
-            return Task.FromResult<IExplorerObject?>(null);
+            return null;
         }
 
-        /*
-        SaveFileDialog dlg = new SaveFileDialog();
-        dlg.Title = "New SQLite Feature Database...";
-        dlg.Filter = "SQLite DB(*.fdb)|*.fdb";
-        dlg.InitialDirectory = parentExObject.FullName;
-        dlg.FileName = "database1.fdb";
-
-        if (dlg.ShowDialog() == DialogResult.OK)
-        {
-            SQLiteFDB fdb = new SQLiteFDB();
-            if (!fdb.Create(dlg.FileName))
+        var model = await scope.ToScopeService().ShowModalDialog(
+            typeof(gView.DataExplorer.Razor.Components.Dialogs.InputBoxDialog),
+            "Create",
+            new InputBoxModel()
             {
-                MessageBox.Show(fdb.LastErrorMessage, "ERROR", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return Task.FromResult<IExplorerObject>(null);
+                Value = "",
+                Icon = this.Icon,
+                Name = this.Type ?? String.Empty,
+                Label = "Name",
+                Prompt = "Enter new database name"
+            });
+
+        if(!String.IsNullOrEmpty(model?.Value))
+        {
+            var name = model.Value;
+            if(!name.EndsWith(".fdb", StringComparison.OrdinalIgnoreCase))
+            {
+                name = $"{name}.fdb";
             }
-            _filename = dlg.FileName;
-            return Task.FromResult<IExplorerObject>(this);
+
+            var filename = Path.Combine(parentExObject.FullName, name);
+            var fdb = new SQLiteFDB();
+
+            if (!fdb.Create(filename))
+            {
+                throw new GeneralException(fdb.LastErrorMessage);
+            }
+
+            return new SqLiteFdbExplorerObject(parentExObject, filename);
         }
-        */
-        return Task.FromResult<IExplorerObject?>(null);
+
+        return null;
     }
 
     #endregion

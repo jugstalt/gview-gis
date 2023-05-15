@@ -1,25 +1,45 @@
 ﻿using gView.Framework.DataExplorer.Abstraction;
+using gView.Framework.system;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace gView.DataExplorer.Core.Extensions;
 
 static public class ExplorerObjectExtensions
 {
-    static public IEnumerable<IExplorerObject> GetAncestors(this IExplorerObject obj, bool includeSelf)
+    static public IEnumerable<IExplorerObject> GetAncestors(this IExplorerObject exObject, bool includeSelf)
     {
         List<IExplorerObject> ancestors = new List<IExplorerObject>();
 
         if (includeSelf)
         {
-            ancestors.Add(obj);
+            ancestors.Add(exObject);
         }
 
-        while (obj.ParentExplorerObject != null)
+        while (exObject.ParentExplorerObject != null)
         {
-            ancestors.Insert(0, obj.ParentExplorerObject);
-            obj = obj.ParentExplorerObject;
+            ancestors.Insert(0, exObject.ParentExplorerObject);
+            exObject = exObject.ParentExplorerObject;
         }
 
         return ancestors;
+    }
+
+    async static public Task<bool> SecureRefresh(this IExplorerObject exObject)
+    {
+        if (exObject is IExplorerParentObject)
+        {
+            using (var mutex = await FuzzyMutexAsync.LockAsync(exObject.GetHashCode().ToString()))
+            {
+                if (mutex.WasBlocked == false)
+                {
+                    await ((IExplorerParentObject)exObject).Refresh();
+                }
+            }
+
+            return true;
+        }
+
+        return false;
     }
 }

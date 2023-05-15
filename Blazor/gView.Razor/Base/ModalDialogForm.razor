@@ -5,13 +5,16 @@
         <MudForm @ref="_form">
             @FormContent
         </MudForm>
-        <MudAlert Severity="Severity.Info" Dense="true">
-            @InfoContent
-        </MudAlert>
+        @if (InfoContent != null)
+        {
+            <MudAlert Severity="Severity.Info" Dense="true">
+                @InfoContent
+            </MudAlert>
+        }
     </DialogContent>
     <DialogActions>
-        <MudButton Color="Color.Primary" OnClick="Submit">Confirm</MudButton>
-        <MudButton Color="Color.Secondary" OnClick="Close">Cancel</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Secondary" OnClick="Close">Cancel</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="Submit">Confirm</MudButton>
     </DialogActions>
 </MudDialog>
 

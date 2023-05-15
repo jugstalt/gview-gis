@@ -20,7 +20,7 @@
                 {
                     <MudTd Class="@(selectedExplorerObjects?.Contains(context.ExplorerObject) == true ? "context-selected" : "")">
                        <div style="vertical-align:top;display:inline-flex;width:100%;cursor:pointer"
-                            @onclick="@((x) => OnRowCLick(x, context))" @onclick:stopPropagation="true"
+                            @onclick="@((x) => OnRowCLickAsync(x, context))" @onclick:stopPropagation="true"
                             @ondblclick="@((x) => OnRowDoubleCLick(context))">
                             @if (first == true && !String.IsNullOrEmpty(context.Icon))
                             {
@@ -45,7 +45,7 @@
 
     protected override void OnInitialized()
     {
-
+        EventBus.OnRefreshContentAsync += OnRefreshContentAsync;
     } 
 
     async protected override Task OnParametersSetAsync()
@@ -60,15 +60,19 @@
             }
 
             await FrameworkElement.SetExplorerObjectAsync(CurrentExplorerObject);
-            var result = await FrameworkElement.RefreshContents();
-
-            table = result.Item as TableItem;
-
+            await RefreshContentAsync();
             await EventBus.FireContextExplorerObjectsChanged(null);
         });
     }
 
-    private Task OnRowCLick(MouseEventArgs mEvent, RowItem row)
+    private Task OnRefreshContentAsync()
+        => base.HandleAsync(async () =>
+            {
+                await RefreshContentAsync();
+                StateHasChanged();
+            });
+
+    private Task OnRowCLickAsync(MouseEventArgs mEvent, RowItem row)
         => HandleAsync(()
             => EventBus.FireContextExplorerObjectsChanged(selectedExplorerObjects =
                     row.ExplorerObject.AddToSelection(
@@ -89,8 +93,19 @@
         }
     }
 
+    private Task RefreshContentAsync()
+       => base.HandleAsync(async () =>
+        {
+            if (FrameworkElement?.GetExplorerObject() != null &&
+                await FrameworkElement.GetExplorerObject()!.SecureRefresh() == true)
+            {
+                var result = await FrameworkElement.RefreshContents();
+                table = result.Item as TableItem;
+            }
+        });
+
     public void Dispose()
     {
-       
+        EventBus.OnRefreshContentAsync -= OnRefreshContentAsync;
     }
 }

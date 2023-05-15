@@ -1,8 +1,11 @@
-﻿using gView.DataExplorer.Core.Services;
+﻿using gView.Blazor.Core.Exceptions;
+using gView.DataExplorer.Core.Services;
+using gView.DataExplorer.Plugins.ExplorerObjects.Base;
+using gView.DataExplorer.Plugins.Extensions;
+using gView.DataExplorer.Razor.Components.Dialogs.Data;
 using gView.Framework.Data;
 using gView.Framework.DataExplorer.Abstraction;
 using gView.Framework.DataExplorer.Events;
-using gView.DataExplorer.Plugins.ExplorerObjects.Base;
 using gView.Framework.system;
 using gView.Framework.UI;
 using System;
@@ -13,12 +16,12 @@ using System.Threading.Tasks;
 namespace gView.DataExplorer.Plugins.ExplorerObjects;
 
 [RegisterPlugIn("458E62A0-4A93-45cf-B14D-2F958D67E522")]
-public class DirectoryObject : ExplorerParentObject, 
-                               IExplorerObject, 
-                               IExplorerObjectCommandParameters, 
-                               ISerializableExplorerObject, 
-                               IExplorerObjectDeletable, 
-                               IExplorerObjectRenamable, 
+public class DirectoryObject : ExplorerParentObject,
+                               IExplorerObject,
+                               IExplorerObjectCommandParameters,
+                               ISerializableExplorerObject,
+                               IExplorerObjectDeletable,
+                               IExplorerObjectRenamable,
                                IExplorerObjectCreatable
 {
     string _path = "";
@@ -268,29 +271,40 @@ public class DirectoryObject : ExplorerParentObject,
         return false;
     }
 
-    public Task<IExplorerObject?> CreateExplorerObject(IExplorerObject parentExObject)
+    public async Task<IExplorerObject?> CreateExplorerObjectAsync(IExplorerApplicationScope scope,
+                                                            IExplorerObject parentExObject)
     {
-        //string newName = Microsoft.VisualBasic.Interaction.InputBox("New Directory", "Create", "New Directory", 200, 300);
-        // ToDo
-        string newName = String.Empty;
-        if (newName.Trim().Equals(String.Empty))
-        {
-            return Task.FromResult<IExplorerObject?>(null);
-        }
+        var model = await scope.ToScopeService().ShowModalDialog(
+            typeof(gView.DataExplorer.Razor.Components.Dialogs.InputBoxDialog),
+            "Create",
+            new InputBoxModel()
+            {
+                Value = "",
+                Icon = this.Icon,
+                Name = this.Type ?? String.Empty,
+                Label = "Name",
+                Prompt = "Enter new directory name"
+            });
 
-        try
+        if (model != null)
         {
-            DirectoryInfo di = new DirectoryInfo(parentExObject.FullName + @"\" + newName);
+            string newName = model.Value.Trim();
+            if (String.IsNullOrEmpty(newName))
+            {
+                return null;
+            }
+
+            DirectoryInfo di = new DirectoryInfo(Path.Combine(parentExObject.FullName, newName));
+            if(di.Exists)
+            {
+                throw new GeneralException($"Directory {newName} alread exists!");
+            }
             di.Create();
 
-            return Task.FromResult<IExplorerObject?>(new DirectoryObject(parentExObject, di.FullName));
+            return new DirectoryObject(parentExObject, di.FullName);
         }
-        catch /*(Exception ex)*/
-        {
-            //System.Windows.Forms.MessageBox.Show("ERROR: " + ex.Message);
-            //return Task.FromResult<IExplorerObject>(null);
-            throw;
-        }
+
+        return null;
     }
 
     #endregion

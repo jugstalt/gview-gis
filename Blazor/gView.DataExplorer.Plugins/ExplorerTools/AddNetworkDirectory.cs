@@ -22,7 +22,7 @@ internal class AddNetworkDirectory : IExplorerTool
 
     public string Icon => "basic:open-in-window";
 
-    public ExplorerToolTarget Target => ExplorerToolTarget.Gernal;
+    public ExplorerToolTarget Target => ExplorerToolTarget.General;
 
     public async Task<bool> OnEvent(IExplorerApplicationScope scope)
     {

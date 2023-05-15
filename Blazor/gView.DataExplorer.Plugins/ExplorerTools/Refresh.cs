@@ -18,7 +18,7 @@ public class Refresh : IExplorerTool
 
     public string Icon => "basic:refresh";
 
-    public ExplorerToolTarget Target => ExplorerToolTarget.Gernal;
+    public ExplorerToolTarget Target => ExplorerToolTarget.General;
 
     async public Task<bool> OnEvent(IExplorerApplicationScope scope)
     {

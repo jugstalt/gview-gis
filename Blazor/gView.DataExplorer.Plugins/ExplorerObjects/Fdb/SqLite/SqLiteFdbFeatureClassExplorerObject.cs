@@ -28,7 +28,10 @@ public class SqLiteFdbFeatureClassExplorerObject : ExplorerObjectCls,
     private SqLiteFdbDatasetExplorerObject? _parent = null;
     private bool _isNetwork = false;
 
-    public SqLiteFdbFeatureClassExplorerObject() : base(null, typeof(FeatureClass), 1) { }
+    public SqLiteFdbFeatureClassExplorerObject() : 
+        base(null, typeof(FeatureClass), 1) 
+    { 
+    }
     public SqLiteFdbFeatureClassExplorerObject(SqLiteFdbDatasetExplorerObject parent, string filename, string dsname, IDatasetElement element)
         : base(parent, typeof(FeatureClass), 1)
     {
@@ -352,7 +355,7 @@ public class SqLiteFdbFeatureClassExplorerObject : ExplorerObjectCls,
         return false;
     }
 
-    async public Task<IExplorerObject?> CreateExplorerObject(IExplorerObject parentExObject)
+    async public Task<IExplorerObject?> CreateExplorerObjectAsync(IExplorerApplicationScope scope, IExplorerObject parentExObject)
     {
         if (!CanCreate(parentExObject))
         {
