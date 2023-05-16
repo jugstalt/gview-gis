@@ -129,3 +129,7 @@
 .mud-list-item .mud-icon-root {
     margin-right: 6px;
 }
+
+.mud-table-cell {
+    white-space: nowrap;
+}

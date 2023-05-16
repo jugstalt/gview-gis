@@ -37,12 +37,12 @@ public class SqLiteFdbDatasetExplorerObject : ExplorerObjectFeatureClassImport,
         {
             _isImageDataset = true;
             dsname = dsname.Substring(1, dsname.Length - 1);
-            _icon = "webgis:layer-middle";
+            _icon = "webgis:tiles";
         }
         else
         {
             _isImageDataset = false;
-            _icon = "webgis:tiles";
+            _icon = "webgis:layer-middle";
         }
         _dsname = dsname;
 

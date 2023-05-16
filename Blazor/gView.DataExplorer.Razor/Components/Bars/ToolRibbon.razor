@@ -5,6 +5,8 @@
 @inject IExplorerApplicationScope AppScope
 @inject EventBusService EventBus
 
+@inject IDialogService DialogService;  // test
+ 
 @if (exTools != null)
 {
     <div class="explorer-tool-box">
@@ -20,6 +22,12 @@
             <div class="title">@exTool.Name</div>
         </div>
     }
+
+        <div class="explorer-tool"
+             @onclick="async () => await TestClickAsync()">
+            <div class="title">Test</div>
+        </div>
+
     </div>
 
     <div class="explorer-tool-box current-selected">
@@ -53,8 +61,8 @@
                                                  .OrderBy(t => t.SortOrder))
                 {
                     <div class="explorer-tool"
-                    alt="@exTool.ToolTip"
-                    @onclick="async () => await ToolClickAsync(exTool)">
+                        alt="@exTool.ToolTip"
+                        @onclick="async () => await ToolClickAsync(exTool)">
                         <div class=@Icons.FromString(exTool.Icon)></div>
                         <div class="title">@exTool.Name</div>
                     </div>
@@ -122,5 +130,10 @@
     {
         EventBus.OnContextExplorerObjectsChanged -= OnContextExplorerObjectsChanged;
         EventBus.OnCurrentExplorerObjectChanged -= OnCurrentExplorerObjectChanged;
+    }
+
+    private Task TestClickAsync()
+    {
+        return DialogService.ShowAsync<ExplorerDilaog>();
     }
 }

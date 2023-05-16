@@ -1,0 +1,107 @@
+@inherits BaseHandler
+@inject IconService Icons
+@inject IExplorerApplicationService ExplorerApplication
+
+<MudDialog Style="width:800px">
+    <DialogContent>
+        <MudSelect T="IExplorerObject" @bind-Value="@selectedRoot" Dense="true">
+            @foreach(var rootExplorerObject in rootExplorerObjects)
+            {
+                <MudSelectItem Value="@rootExplorerObject">
+                     <span class="@Icons.FromString(rootExplorerObject.Icon)"></span>@rootExplorerObject.Name
+                </MudSelectItem>
+            }
+        </MudSelect>
+
+        <MudPaper Elevation="2">
+            <MudList Clickable="true" Style=" height:600px;overflow:auto" Dense="true">
+                @foreach (var exObject in ((IExplorerParentObject)selectedRoot).ChildObjects().Result)
+                {
+                    <MudListItem @ondblclick="() => ListItemDoubleClick(exObject)">
+                        <div style="display: flex; align-items: center;" >
+                            <MudIcon Icon="@Icons.FromString(exObject.Icon)" Style="margin-right: 6px;" />
+                            <MudText>@exObject.Name</MudText>
+                        </div>
+                    </MudListItem>
+                }
+            </MudList>
+        </MudPaper>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Filled" Color="Color.Default" OnClick="Close">Cancel</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="Submit">Confirm</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    private List<IExplorerObject> rootExplorerObjects = new List<IExplorerObject>();
+    private Dictionary<IExplorerObject, int> levels = new Dictionary<IExplorerObject, int>();
+    private IExplorerObject? selectedRoot;
+
+    protected override Task OnInitializedAsync()
+        => HandleAsync(async () =>
+        {
+            #region Initialize Select
+
+            selectedRoot = ExplorerApplication.RootExplorerObject;
+            rootExplorerObjects.Add(selectedRoot);
+            levels[selectedRoot] = 0;
+
+            if (selectedRoot is IExplorerParentObject)
+            {
+                foreach (var exObject in await ((IExplorerParentObject)selectedRoot).ChildObjects())
+                {
+                    rootExplorerObjects.Add(exObject);
+                    levels[exObject] = 1;
+                }
+
+
+            }
+
+            #endregion
+        });
+
+
+    private void ListItemDoubleClick(IExplorerObject exObject)
+    {
+        var rootIndex = rootExplorerObjects.IndexOf(selectedRoot);
+
+        if (!rootExplorerObjects.Contains(exObject))
+        {
+            rootExplorerObjects.Insert(rootIndex + 1, exObject);
+            levels[exObject] = levels[selectedRoot] + 1;
+        }
+
+        selectedRoot = exObject;
+    }
+
+    virtual protected Task Submit() => Task.CompletedTask;
+    virtual protected Task Close() => Task.CompletedTask;
+
+    //public Task<HashSet<ExplorerTreeNode>?> LoadServerData(ExplorerTreeNode parentNode)
+    //{
+    //    return base.HandleFuncAsync(async () =>
+    //    {
+    //        if (parentNode.IsServerLoaded)
+    //        {
+    //            return parentNode.Children;
+    //        }
+
+    //        var exObject = parentNode.ExObject;
+
+    //        parentNode.Children = new HashSet<ExplorerTreeNode>();
+
+    //        if (exObject is IExplorerParentObject)
+    //        {
+    //            var exParent = (IExplorerParentObject)exObject;
+
+    //            foreach (var childObject in await exParent.ChildObjects())
+    //            {
+    //                parentNode.Children.Add(new ExplorerTreeNode(childObject));
+    //            }
+    //        }
+
+    //        return parentNode.Children;
+    //    });
+    //}
+}
