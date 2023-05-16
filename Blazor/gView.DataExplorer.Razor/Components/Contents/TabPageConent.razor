@@ -1,4 +1,5 @@
 @inherits BaseHandler
+@implements IDisposable
 @inject IconService Icons
 @inject EventBusService EventBus 
 @inject IExplorerApplicationScope Scope
@@ -96,8 +97,8 @@
     private Task RefreshContentAsync()
        => base.HandleAsync(async () =>
         {
-            if (FrameworkElement?.GetExplorerObject() != null &&
-                await FrameworkElement.GetExplorerObject()!.SecureRefresh() == true)
+            if (FrameworkElement?.GetExplorerObject() != null /*&&
+                await FrameworkElement.GetExplorerObject()!.SecureRefresh() == true*/)
             {
                 var result = await FrameworkElement.RefreshContents();
                 table = result.Item as TableItem;

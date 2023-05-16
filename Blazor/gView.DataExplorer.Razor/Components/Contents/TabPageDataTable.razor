@@ -1,4 +1,5 @@
 @inherits BaseHandler
+@implements IDisposable
 @inject EventBusService EventBus
 
 @if (table != null)
@@ -24,7 +25,7 @@
             }
         </RowTemplate>
     </MudTable>
-}
+} 
 
 @code {
     [Parameter] public IExplorerTabPage? FrameworkElement { get; set; }
@@ -46,7 +47,12 @@
             await FrameworkElement.SetExplorerObjectAsync(CurrentExplorerObject);
             var result = await FrameworkElement.RefreshContents();
 
-            table ??= result.Item as TableItem;
+            table = result.Item as TableItem;
         });
+    }
+
+    public void Dispose()
+    {
+        
     }
 }

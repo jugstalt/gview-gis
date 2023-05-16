@@ -1,4 +1,5 @@
 @inherits BaseHandler
+@implements IDisposable
 @inject IExplorerApplicationService ExplorerApplication
 @inject PluginManagerService PluginManager
 @inject IconService Icons
@@ -44,52 +45,54 @@
         });
     }
 
-    async protected override Task OnAfterRenderAsync(bool firstRender)
-    {
-        if(firstRender && _selected != null)
+    protected override Task OnAfterRenderAsync(bool firstRender)
+        => HandleAsync(async () =>
         {
-            await EventBus.FireCurrentExplorerObjectChanged(_selected?.ExObject);
-        }
-    }
+            if (firstRender && _selected != null)
+            {
+                await EventBus.FireCurrentExplorerObjectChanged(_selected?.ExObject);
+            }
+        });
 
-    async private Task OnNodeExpandedChanged(ExplorerTreeNode node, bool expanded)
-    {
-        node.IsExpanded = expanded;
-        if(expanded)
+    private Task OnNodeExpandedChanged(ExplorerTreeNode node, bool expanded)
+    => base.HandleAsync(async () =>
+       {
+           node.IsExpanded = expanded;
+           if (expanded)
+           {
+               await LoadServerData(node);
+           }
+       });
+
+    private Task OnNodeClickAsync(ExplorerTreeNode node)
+        => base.HandleAsync(async () =>
         {
-            await LoadServerData(node);
-        }
-    }
+            if (node.IsServerLoaded == false)
+            {
+                await LoadServerData(node);
+            }
 
-    async private Task OnNodeClickAsync(ExplorerTreeNode node)
-    {
-        if(node.IsServerLoaded == false)
-        {
-            await LoadServerData(node);
-        }
+            _selected = node;
 
-        _selected = node;
+            await RefreshCurrentNodeAsync();
+            await EventBus.FireCurrentExplorerObjectChanged(node.ExObject);
+        });
 
-        await EventBus.FireCurrentExplorerObjectChanged(node.ExObject);
-    }
 
     private Task OnRefreshContentAsync()
         => base.HandleAsync(async () =>
         {
-            if (_selected != null && await _selected.ExObject.SecureRefresh() == true)
+            if (await RefreshCurrentNodeAsync())
             {
-                _selected.Children = null;
-                await LoadServerData(_selected);
                 StateHasChanged();
             }
         });
 
     private Task HandleSetCurrentExplorerObjectAsync(IExplorerObject? exObject)
-    {
-        return base.HandleAsync(async () =>
+        => base.HandleAsync(async () =>
         {
             var exObjects = exObject?.GetAncestors(true);
-            if(exObjects == null)
+            if (exObjects == null)
             {
                 return;
             }
@@ -98,12 +101,31 @@
 
             if (node != null)
             {
-                await OnNodeClickAsync(_selected = node);
+                _selected = node;
 
-                StateHasChanged();
+                if (await RefreshCurrentNodeAsync())
+                {
+                    _selected.IsExpanded = true;
+                    StateHasChanged();
+                }
+
+                await OnNodeClickAsync(node);
             }
         });
-    }
+
+    private Task<bool> RefreshCurrentNodeAsync()
+        => base.HandleFuncAsync(async () =>
+        {
+            if (_selected != null && await _selected.ExObject.SecureRefresh() == true)
+            {
+                _selected.Children = null;
+                await LoadServerData(_selected);
+
+                return true;
+            }
+
+            return false;
+        });
 
     #region Tree 
 
