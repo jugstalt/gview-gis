@@ -120,8 +120,12 @@
     background: #0078d476;
 }
 
-
 /* MudBlazor overrides */
+
+.mud-select-input > .explorer-dialog-root-select-item {
+    padding-left: 0px !important;
+}
+
 .mud-list-item .mud-icon-button {
     padding: 2px 6px 2px 2px !important;
 }

@@ -2,41 +2,83 @@
 @inject IconService Icons
 @inject IExplorerApplicationService ExplorerApplication
 
-<MudDialog Style="width:800px">
-    <DialogContent>
-        <MudSelect T="IExplorerObject" @bind-Value="@selectedRoot" Dense="true">
-            @foreach(var rootExplorerObject in rootExplorerObjects)
-            {
-                <MudSelectItem Value="@rootExplorerObject">
-                     <span class="@Icons.FromString(rootExplorerObject.Icon)"></span>@rootExplorerObject.Name
-                </MudSelectItem>
-            }
-        </MudSelect>
+@if (selectedRoot != null)
+{
+    IEnumerable<IExplorerObject> childObjects = selectedRoot is IExplorerParentObject ?
+            ((IExplorerParentObject)selectedRoot).ChildObjects().Result :
+            Array.Empty<IExplorerObject>();
 
-        <MudPaper Elevation="2">
-            <MudList Clickable="true" Style=" height:600px;overflow:auto" Dense="true">
-                @foreach (var exObject in ((IExplorerParentObject)selectedRoot).ChildObjects().Result)
+    @foreach (var childObject in childObjects.Reverse())
+    {
+        if (!rootExplorerObjects.Contains(childObject)) {
+            rootExplorerObjects.Insert(rootExplorerObjects.IndexOf(selectedRoot) + 1, childObject);
+            levels[childObject] = levels[selectedRoot] + 1;
+        }
+    }
+
+    <MudDialog Style="width:800px">
+        <DialogContent>
+            <MudSelect @bind-Value="@selectedRoot"
+            Class="explorer-dialog-root-select"
+            Variant="Variant.Outlined"
+            Dense="true">
+                @foreach (var rootExplorerObject in rootExplorerObjects)
                 {
-                    <MudListItem @ondblclick="() => ListItemDoubleClick(exObject)">
-                        <div style="display: flex; align-items: center;" >
-                            <MudIcon Icon="@Icons.FromString(exObject.Icon)" Style="margin-right: 6px;" />
-                            <MudText>@exObject.Name</MudText>
+                    <MudSelectItem Value="@rootExplorerObject">
+                        <div class="explorer-dialog-root-select-item" style="display: flex; align-items: center; padding-left:@(levels[rootExplorerObject]*24)px">
+                            <MudIcon Icon="@Icons.FromString(rootExplorerObject.Icon)" Style="margin-right: 6px;" />
+                            <MudText>@rootExplorerObject.Name</MudText>
                         </div>
-                    </MudListItem>
+                    </MudSelectItem>
                 }
-            </MudList>
-        </MudPaper>
-    </DialogContent>
-    <DialogActions>
-        <MudButton Variant="Variant.Filled" Color="Color.Default" OnClick="Close">Cancel</MudButton>
-        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="Submit">Confirm</MudButton>
-    </DialogActions>
-</MudDialog>
+            </MudSelect>
+
+            <MudPaper Elevation="2">
+                <MudList Clickable="true" Style=" height:600px;overflow:auto" Dense="true">
+                    @if (levels[selectedRoot] > 0)
+                    {
+                        <MudListItem OnClick="MoveUp">
+                            <div style="display: flex; align-items: center;">
+                                <MudIcon Icon="@Icons.FromString("basic:triangle-left-up")" Style="margin-right: 6px;" />
+                                <MudText>..</MudText>
+                            </div>
+                        </MudListItem>
+                    }
+                    @foreach (var exObject in childObjects)
+                    {
+                        <MudListItem @ondblclick="() => ListItemDoubleClick(exObject)"
+                                     OnClick="async () => await ListItemCLick(exObject)">
+                            <div style="display: flex; align-items: center;" >
+                                <MudIcon Icon="@Icons.FromString(exObject.Icon)" Style="margin-right: 6px;" />
+                                <MudText>@exObject.Name</MudText>
+                            </div>
+                        </MudListItem>
+                    }
+                </MudList>
+            </MudPaper>
+
+            <MudTextField Value="@String.Join(", ",selectedExplorerObjects.Select(e=>e.Name))" />
+
+        </DialogContent>
+        <DialogActions>
+            <MudButton Variant="Variant.Filled" Color="Color.Default" OnClick="Close">Cancel</MudButton>
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="Submit">Confirm</MudButton>
+        </DialogActions>
+    </MudDialog>
+}
 
 @code {
     private List<IExplorerObject> rootExplorerObjects = new List<IExplorerObject>();
     private Dictionary<IExplorerObject, int> levels = new Dictionary<IExplorerObject, int>();
     private IExplorerObject? selectedRoot;
+
+    private List<IExplorerObject> selectedExplorerObjects = new List<IExplorerObject>();
+
+    public ExplorerDialogModel Model = new ExplorerDialogModel()
+        {
+            Filters = new List<ExplorerDialogFilter> { new OpenShapeFilter() },
+            Open = true
+        };
 
     protected override Task OnInitializedAsync()
         => HandleAsync(async () =>
@@ -54,54 +96,56 @@
                     rootExplorerObjects.Add(exObject);
                     levels[exObject] = 1;
                 }
-
-
             }
 
             #endregion
         });
 
-
     private void ListItemDoubleClick(IExplorerObject exObject)
-    {
-        var rootIndex = rootExplorerObjects.IndexOf(selectedRoot);
-
-        if (!rootExplorerObjects.Contains(exObject))
+        => Handle(() =>
         {
-            rootExplorerObjects.Insert(rootIndex + 1, exObject);
-            levels[exObject] = levels[selectedRoot] + 1;
-        }
+            if (exObject is IExplorerParentObject)
+            {
+                selectedRoot = exObject;
+            }
+        });
 
-        selectedRoot = exObject;
+    private Task ListItemCLick(IExplorerObject exObject)
+    {
+        return HandleAsync(async () =>
+        {
+            foreach (var filter in Model.Filters)
+            {
+                if (await filter.Match(exObject))
+                {
+                    if(!selectedExplorerObjects.Contains(exObject))
+                    {
+                        selectedExplorerObjects.Add(exObject);
+                    }
+                }
+            }
+        });
     }
+
+    private void MoveUp()
+        => Handle(() =>
+        {
+            if (selectedRoot != null)
+            {
+                var currentLevel = levels[selectedRoot];
+                var currentIndex = rootExplorerObjects.IndexOf(selectedRoot);
+
+                for (int i = currentIndex - 1; i >= 0; i--)
+                {
+                    if (levels[rootExplorerObjects[i]] < currentLevel)
+                    {
+                        selectedRoot = rootExplorerObjects[i];
+                        break;
+                    }
+                }
+            }
+        });
 
     virtual protected Task Submit() => Task.CompletedTask;
     virtual protected Task Close() => Task.CompletedTask;
-
-    //public Task<HashSet<ExplorerTreeNode>?> LoadServerData(ExplorerTreeNode parentNode)
-    //{
-    //    return base.HandleFuncAsync(async () =>
-    //    {
-    //        if (parentNode.IsServerLoaded)
-    //        {
-    //            return parentNode.Children;
-    //        }
-
-    //        var exObject = parentNode.ExObject;
-
-    //        parentNode.Children = new HashSet<ExplorerTreeNode>();
-
-    //        if (exObject is IExplorerParentObject)
-    //        {
-    //            var exParent = (IExplorerParentObject)exObject;
-
-    //            foreach (var childObject in await exParent.ChildObjects())
-    //            {
-    //                parentNode.Children.Add(new ExplorerTreeNode(childObject));
-    //            }
-    //        }
-
-    //        return parentNode.Children;
-    //    });
-    //}
 }
