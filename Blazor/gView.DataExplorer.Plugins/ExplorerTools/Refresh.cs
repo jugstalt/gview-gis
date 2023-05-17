@@ -37,14 +37,14 @@ public class Refresh : IExplorerTool
         //        Mode = ExploerDialogMode.Open
         //    });
 
-        var model = await scope.ToScopeService().ShowModalDialog(
-            typeof(Razor.Components.Dialogs.ExplorerDilaog),
-            this.Name,
-            new ExplorerDialogModel()
-            {
-                Filters = SaveFeatureClassFilters.DatabaseFilters,
-                Mode = ExploerDialogMode.Save
-            });
+        //var model = await scope.ToScopeService().ShowModalDialog(
+        //    typeof(Razor.Components.Dialogs.ExplorerDilaog),
+        //    this.Name,
+        //    new ExplorerDialogModel()
+        //    {
+        //        Filters = SaveFeatureClassFilters.DatabaseFilters,
+        //        Mode = ExploerDialogMode.Save
+        //    });
 
         await scope.ToScopeService().EventBus.FireFreshContentAsync();
 
