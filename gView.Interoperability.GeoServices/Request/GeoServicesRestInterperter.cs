@@ -24,6 +24,7 @@ using Microsoft.SqlServer.Management.SqlParser.SqlCodeDom;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.Design;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -489,6 +490,8 @@ namespace gView.Interoperability.GeoServices.Request
                     query.OutSRef = "4326";
                 }
 
+                Envelope extent = null;
+
                 #endregion
 
                 using (var serviceMap = await context.CreateServiceMapInstance())
@@ -589,6 +592,17 @@ namespace gView.Interoperability.GeoServices.Request
 
                             filter.SubFields = tableClass.IDFieldName;
                         }
+                        else if(query.ReturnExtentOnly)
+                        {
+                            if (tableClass is IFeatureClass && !filter.HasField(((IFeatureClass)tableClass).ShapeFieldName))
+                            {
+                                filter.SubFields = ((IFeatureClass)tableClass).ShapeFieldName;
+                            }
+                            else
+                            {
+                                throw new Exception("ReturnExtentOnly can only applied on tables with shape/geometry field");
+                            }
+                        }
                         else if(query.ReturnDistinctValues)
                         {
                             if(query.ReturnGeometry)
@@ -682,7 +696,11 @@ namespace gView.Interoperability.GeoServices.Request
                                     {
                                         featureCount++;
 
-                                        if (transform)
+                                        if(query.ReturnGeometry == false && query.ReturnExtentOnly == false)
+                                        {
+                                            feature.Shape = null;  // do not geometry
+                                        }
+                                        else if (transform)
                                         {
                                             feature.Shape = geoTransfromer.Transform2D(feature.Shape) as IGeometry;
                                         }
@@ -690,6 +708,24 @@ namespace gView.Interoperability.GeoServices.Request
                                         if (returnGeoJson)
                                         {
                                             returnGeoJsonFeatures.Add(feature);
+                                        }
+                                        else if(query.ReturnExtentOnly)
+                                        {
+                                            #region Calculate Envelope
+
+                                            if (feature.Shape != null)
+                                            {
+                                                if (extent == null)
+                                                {
+                                                    extent = new Envelope(feature.Shape.Envelope);
+                                                }
+                                                else
+                                                {
+                                                    extent.Union(feature.Shape.Envelope);
+                                                }
+                                            }
+
+                                            #endregion
                                         }
                                         else
                                         {
@@ -753,6 +789,20 @@ namespace gView.Interoperability.GeoServices.Request
                     {
                         ObjectIdFieldName = objectIdFieldName,
                         ObjectIds = jsonFeatures.Select(f => Convert.ToInt32(((IDictionary<string, object>)f.Attributes)[objectIdFieldName]))
+                    };
+                }
+                else if(query.ReturnExtentOnly)
+                {
+                    context.ServiceRequest.Response = new JsonExtentResponse()
+                    {
+                        Extend = new JsonExtent()
+                        {
+                            Xmin = extent != null ? extent.minx : double.NaN,
+                            Ymin = extent != null ? extent.miny : double.NaN,
+                            Xmax = extent != null ? extent.maxx : double.NaN,
+                            Ymax = extent != null ? extent.maxy : double.NaN,
+                            SpatialReference = featureSref
+                        }
                     };
                 }
                 else if (returnGeoJson)
