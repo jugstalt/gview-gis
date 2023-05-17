@@ -9,8 +9,8 @@
     <MudBreadcrumbs Items="Items" MaxItems="8" Separator="">
         <ItemTemplate>
             <MudChip Icon=@Icons.FromString((context as ExplorerObjectBreadcrumbItem)!.ExObject.Icon)
-                      Color="Color.Dark"
-                      OnClick="()=>ChipClickAsync((context as ExplorerObjectBreadcrumbItem)!)">
+                     Color="Color.Dark"
+                     OnClick="()=>ChipClickAsync((context as ExplorerObjectBreadcrumbItem)!)">
                 @context.Text
             </MudChip>
         </ItemTemplate>

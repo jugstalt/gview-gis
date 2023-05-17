@@ -17,6 +17,12 @@
         }
     }
 
+    if (Model.Mode == ExploerDialogMode.Save)
+    {
+        placeToSave = (selectedFilter != null && selectedRoot != null && selectedFilter.Match(selectedRoot).Result == true);
+        Model.Result.ExplorerObjects.ReplaceItems(placeToSave ? new[] { selectedRoot } : Array.Empty<IExplorerObject>());
+    }
+
     <MudDialog Style="width:980px">
         <DialogContent>
             <MudSelect @bind-Value="@selectedRoot"
@@ -70,23 +76,29 @@
             } 
             else if(Model.Mode == ExploerDialogMode.Save)
             {
-                <MudTextField @bind-Value="Model.Result.Name" 
-                              Required="true"
-                              Label="Name"
-                              Variant="Variant.Outlined" />
+                <MudTextField @bind-Value = "Model.Result.Name" 
+                              Required = "true"
+                              Label = "Name"
+                              Disabled = "@(!placeToSave)"
+                              Variant = "Variant.Outlined" />
             }
 
-            <MudSelect @bind-Value="selectedFilter" Variant="Variant.Outlined" Label="Filter">
+            <MudSelect T="ExplorerDialogFilter" Variant="Variant.Outlined" Label="Filter" ValueChanged="(value) => FilterSelectionChanged(value)">
             @foreach(var filter in Model.Filters)
             {
-                    <MudSelectItem Value="@filter" />
+                 <MudSelectItem Value="@filter" />
             }
             </MudSelect>
 
         </DialogContent>
         <DialogActions>
-            <MudButton Variant="Variant.Filled" Color="Color.Default" OnClick="Close">Cancel</MudButton>
-            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="Submit">Confirm</MudButton>
+            <MudButton Variant="Variant.Filled" 
+                       Color="Color.Default" 
+                       OnClick="Close">Cancel</MudButton>
+            <MudButton Variant="Variant.Filled"
+                       Disabled = "Model.Result.ExplorerObjects.Count == 0"
+                       Color="Color.Primary" 
+                       OnClick="Submit">@(Model.Mode == ExploerDialogMode.Save ? "Create" : "Open")</MudButton>
         </DialogActions>
     </MudDialog>
 }
@@ -94,9 +106,18 @@
 @code {
     public ExplorerDialogModel Model = new()
         {
-            Filters = new List<ExplorerDialogFilter> { new OpenFDBFeatureclassFilter() },
+            Filters = new List<ExplorerDialogFilter> { 
+                new OpenFDBFeatureclassFilter(),
+                new OpenShapeFilter() 
+            },
             Mode = ExploerDialogMode.Open
         };
+
+    // public ExplorerDialogModel Model = new()
+    //     {
+    //         Filters = SaveFeatureClassFilters.DatabaseFilters,
+    //         Mode = ExploerDialogMode.Save
+    //     };
 
     private List<IExplorerObject> rootExplorerObjects = new();
     private List<IExplorerObject> currentListExplorerObjects = new();
@@ -104,6 +125,7 @@
     private IExplorerObject? selectedRoot;
     private ExplorerDialogFilter? selectedFilter;
 
+    private bool placeToSave = false;
 
     protected override Task OnInitializedAsync()
         => HandleAsync(async () =>
@@ -129,7 +151,7 @@
         });
 
     private void ListItemDoubleClick(IExplorerObject exObject)
-        => Handle(() =>
+        => Handle(async () =>
         {
             if (exObject is IExplorerParentObject)
             {
@@ -142,40 +164,41 @@
     {
         return HandleAsync(async () =>
         {
-            List<IExplorerObject> matchingExplorerObjects = new();
-
-            #region Collect filter matching list items
-
-            foreach (var item in currentListExplorerObjects) 
+            if (Model.Mode == ExploerDialogMode.Open)
             {
-                foreach (var filter in Model.Filters)
+                List<IExplorerObject> matchingExplorerObjects = new();
+
+                #region Collect filter matching list items
+
+                if (selectedFilter != null)
                 {
-                    if (await filter.Match(exObject))
+                    foreach (var item in currentListExplorerObjects)
                     {
-                        matchingExplorerObjects.Add(item);
-                        break;
+                        if (await selectedFilter.Match(exObject))
+                        {
+                            matchingExplorerObjects.Add(item);
+                        }
                     }
                 }
-            }
 
-            #endregion
+                #endregion
 
-
-            if(matchingExplorerObjects.Contains(exObject))
-            {
-                Model.Result.ExplorerObjects.ReplaceItems(
-                    exObject.AddToSelection(Model.Result.ExplorerObjects, 
-                                            matchingExplorerObjects,
-                                            mEvent switch
-                                            {
-                                                { ShiftKey: true } => GenericAddToStrategy.AddAllBetweenLastItem,
-                                                { CtrlKey: true } => GenericAddToStrategy.AddOrRemoveIfExists,
-                                                _ => GenericAddToStrategy.RemoveOthers
-                                            }));
-            } 
-            else
-            {
-                Model.Result.ExplorerObjects.Clear();
+                if (matchingExplorerObjects.Contains(exObject))
+                {
+                    Model.Result.ExplorerObjects.ReplaceItems(
+                        exObject.AddToSelection(Model.Result.ExplorerObjects,
+                                                matchingExplorerObjects,
+                                                mEvent switch
+                                                {
+                                                    { ShiftKey: true } => GenericAddToStrategy.AddAllBetweenLastItem,
+                                                    { CtrlKey: true } => GenericAddToStrategy.AddOrRemoveIfExists,
+                                                    _ => GenericAddToStrategy.RemoveOthers
+                                                }));
+                }
+                else
+                {
+                    Model.Result.ExplorerObjects.Clear();
+                }
             }
         });
     }
@@ -200,6 +223,12 @@
 
             Model.Result.ExplorerObjects.Clear();
         });
+
+    private void FilterSelectionChanged(ExplorerDialogFilter filter)
+    {
+        selectedFilter = filter;
+        Model.Result.ExplorerObjects.Clear();
+    }
 
     virtual protected Task Submit() => Task.CompletedTask;
     virtual protected Task Close() => Task.CompletedTask;
