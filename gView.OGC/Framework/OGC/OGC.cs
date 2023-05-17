@@ -184,7 +184,7 @@ namespace gView.Framework.OGC
             bool hasZ, hasM, hasSRID;
             uint baseGeometryType;
 
-            // Check if the higher bits are set (EWKB)
+            // Check if the higher bits are set (Extended WKB)
             if ((geometryType & 0xE0000000) != 0)
             {
                 // Extract Z, M and SRID flags from geometry type
