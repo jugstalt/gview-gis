@@ -17,11 +17,13 @@ public class ModalDialogFormBase<T> : ModalDialogForm
             {
                 await _form.Validate();
 
-                if (_form.IsValid == true)
+                if (_form.IsValid != true)
                 {
-                    await OnDialogClose.InvokeAsync(Model.ToResult());
+                    return;
                 }
             }
+
+            await OnDialogClose.InvokeAsync(Model.ToResult());
         });
 
     override protected Task Close()

@@ -1,9 +1,10 @@
-﻿using gView.DataExplorer.Razor.Components.Dialogs.Filters;
+﻿using gView.Blazor.Models.Dialogs;
+using gView.DataExplorer.Razor.Components.Dialogs.Filters;
 using gView.Framework.DataExplorer.Abstraction;
 
 namespace gView.DataExplorer.Razor.Components.Dialogs.Models;
 
-public class ExplorerDialogModel
+public class ExplorerDialogModel : IDialogResultItem
 {
     public ExplorerDialogModel()
     {
