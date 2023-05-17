@@ -21,7 +21,7 @@
                 {
                     <MudTd Class="@(selectedExplorerObjects?.Contains(context.ExplorerObject) == true ? "context-selected" : "")">
                        <div style="vertical-align:top;display:inline-flex;width:100%;cursor:pointer"
-                            @onclick="@((x) => OnRowCLickAsync(x, context))" @onclick:stopPropagation="true"
+                        @onclick="@((mEvent) => OnRowCLickAsync(mEvent, context))" @onclick:stopPropagation="true"
                             @ondblclick="@((x) => OnRowDoubleCLick(context))">
                             @if (first == true && !String.IsNullOrEmpty(context.Icon))
                             {

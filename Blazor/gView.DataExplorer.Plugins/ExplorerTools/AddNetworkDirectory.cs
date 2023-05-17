@@ -1,6 +1,6 @@
 ﻿using gView.DataExplorer.Plugins.ExplorerObjects;
 using gView.DataExplorer.Plugins.Extensions;
-using gView.DataExplorer.Razor.Components.Dialogs.Data;
+using gView.DataExplorer.Razor.Components.Dialogs.Models;
 using gView.Framework.DataExplorer;
 using gView.Framework.DataExplorer.Abstraction;
 using gView.Framework.IO;

@@ -1,4 +1,4 @@
-﻿namespace gView.DataExplorer.Razor.Components.Dialogs.Data;
+﻿namespace gView.DataExplorer.Razor.Components.Dialogs.Models;
 
 public class SelectItemModel<T>
 {

@@ -1,7 +1,7 @@
 ﻿using gView.Blazor.Models.Dialogs;
 using gView.Framework.DataExplorer.Abstraction;
 
-namespace gView.DataExplorer.Razor.Components.Dialogs.Data;
+namespace gView.DataExplorer.Razor.Components.Dialogs.Models;
 
 public class DeleteObjectsModel : IDialogResultItem
 {

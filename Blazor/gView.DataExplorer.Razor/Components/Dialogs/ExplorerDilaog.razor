@@ -4,11 +4,12 @@
 
 @if (selectedRoot != null)
 {
-    IEnumerable<IExplorerObject> childObjects = selectedRoot is IExplorerParentObject ?
+    currentListExplorerObjects.Clear();
+    currentListExplorerObjects.AddRange(selectedRoot is IExplorerParentObject ?
             ((IExplorerParentObject)selectedRoot).ChildObjects().Result :
-            Array.Empty<IExplorerObject>();
+            Array.Empty<IExplorerObject>());
 
-    @foreach (var childObject in childObjects.Reverse())
+    @foreach (var childObject in currentListExplorerObjects.ToArray().Reverse())
     {
         if (!rootExplorerObjects.Contains(childObject)) {
             rootExplorerObjects.Insert(rootExplorerObjects.IndexOf(selectedRoot) + 1, childObject);
@@ -16,12 +17,13 @@
         }
     }
 
-    <MudDialog Style="width:800px">
+    <MudDialog Style="width:980px">
         <DialogContent>
             <MudSelect @bind-Value="@selectedRoot"
-            Class="explorer-dialog-root-select"
-            Variant="Variant.Outlined"
-            Dense="true">
+                        Label="Folder/Path"
+                        Class="explorer-dialog-root-select"
+                        Variant="Variant.Outlined"
+                        Dense="true">
                 @foreach (var rootExplorerObject in rootExplorerObjects)
                 {
                     <MudSelectItem Value="@rootExplorerObject">
@@ -44,10 +46,11 @@
                             </div>
                         </MudListItem>
                     }
-                    @foreach (var exObject in childObjects)
+                    @foreach (var exObject in currentListExplorerObjects)
                     {
                         <MudListItem @ondblclick="() => ListItemDoubleClick(exObject)"
-                                     OnClick="async () => await ListItemCLick(exObject)">
+                                     Class="@($"explorer-dialog-item {(Model.Result.ExplorerObjects.Contains(exObject) ? "selected" : "")}")"
+                                     OnClick="async (mEvent) => await ListItemCLick(mEvent, exObject)">
                             <div style="display: flex; align-items: center;" >
                                 <MudIcon Icon="@Icons.FromString(exObject.Icon)" Style="margin-right: 6px;" />
                                 <MudText>@exObject.Name</MudText>
@@ -57,7 +60,28 @@
                 </MudList>
             </MudPaper>
 
-            <MudTextField Value="@String.Join(", ",selectedExplorerObjects.Select(e=>e.Name))" />
+            @if(Model.Mode == ExploerDialogMode.Open) 
+            {
+                <MudTextField Value="@String.Join(", ",Model.Result.ExplorerObjects.Select(e=>e.Name))" 
+                              Label="Selected"
+                              Required="true"
+                              ReadOnly="true" 
+                              Variant="Variant.Filled" />
+            } 
+            else if(Model.Mode == ExploerDialogMode.Save)
+            {
+                <MudTextField @bind-Value="Model.Result.Name" 
+                              Required="true"
+                              Label="Name"
+                              Variant="Variant.Outlined" />
+            }
+
+            <MudSelect @bind-Value="selectedFilter" Variant="Variant.Outlined" Label="Filter">
+            @foreach(var filter in Model.Filters)
+            {
+                    <MudSelectItem Value="@filter" />
+            }
+            </MudSelect>
 
         </DialogContent>
         <DialogActions>
@@ -68,17 +92,18 @@
 }
 
 @code {
-    private List<IExplorerObject> rootExplorerObjects = new List<IExplorerObject>();
-    private Dictionary<IExplorerObject, int> levels = new Dictionary<IExplorerObject, int>();
-    private IExplorerObject? selectedRoot;
-
-    private List<IExplorerObject> selectedExplorerObjects = new List<IExplorerObject>();
-
-    public ExplorerDialogModel Model = new ExplorerDialogModel()
+    public ExplorerDialogModel Model = new()
         {
-            Filters = new List<ExplorerDialogFilter> { new OpenShapeFilter() },
-            Open = true
+            Filters = new List<ExplorerDialogFilter> { new OpenFDBFeatureclassFilter() },
+            Mode = ExploerDialogMode.Open
         };
+
+    private List<IExplorerObject> rootExplorerObjects = new();
+    private List<IExplorerObject> currentListExplorerObjects = new();
+    private Dictionary<IExplorerObject, int> levels = new();
+    private IExplorerObject? selectedRoot;
+    private ExplorerDialogFilter? selectedFilter;
+
 
     protected override Task OnInitializedAsync()
         => HandleAsync(async () =>
@@ -98,6 +123,8 @@
                 }
             }
 
+            selectedFilter = Model.Filters.FirstOrDefault();
+
             #endregion
         });
 
@@ -107,28 +134,54 @@
             if (exObject is IExplorerParentObject)
             {
                 selectedRoot = exObject;
+                Model.Result.ExplorerObjects.Clear();
             }
         });
 
-    private Task ListItemCLick(IExplorerObject exObject)
+    private Task ListItemCLick(MouseEventArgs mEvent, IExplorerObject exObject)
     {
         return HandleAsync(async () =>
         {
-            foreach (var filter in Model.Filters)
+            List<IExplorerObject> matchingExplorerObjects = new();
+
+            #region Collect filter matching list items
+
+            foreach (var item in currentListExplorerObjects) 
             {
-                if (await filter.Match(exObject))
+                foreach (var filter in Model.Filters)
                 {
-                    if(!selectedExplorerObjects.Contains(exObject))
+                    if (await filter.Match(exObject))
                     {
-                        selectedExplorerObjects.Add(exObject);
+                        matchingExplorerObjects.Add(item);
+                        break;
                     }
                 }
+            }
+
+            #endregion
+
+
+            if(matchingExplorerObjects.Contains(exObject))
+            {
+                Model.Result.ExplorerObjects.ReplaceItems(
+                    exObject.AddToSelection(Model.Result.ExplorerObjects, 
+                                            matchingExplorerObjects,
+                                            mEvent switch
+                                            {
+                                                { ShiftKey: true } => GenericAddToStrategy.AddAllBetweenLastItem,
+                                                { CtrlKey: true } => GenericAddToStrategy.AddOrRemoveIfExists,
+                                                _ => GenericAddToStrategy.RemoveOthers
+                                            }));
+            } 
+            else
+            {
+                Model.Result.ExplorerObjects.Clear();
             }
         });
     }
 
     private void MoveUp()
-        => Handle(() =>
+    => Handle(() =>
         {
             if (selectedRoot != null)
             {
@@ -144,6 +197,8 @@
                     }
                 }
             }
+
+            Model.Result.ExplorerObjects.Clear();
         });
 
     virtual protected Task Submit() => Task.CompletedTask;

@@ -48,7 +48,7 @@ static public class GenericExtensions
             int index1 = allItems.IndexOf(item),
                 index2 = allItems.IndexOf(selectedItems.LastOrDefault());
 
-            if(index1 == -1 ||  index2 == -1)  // change nothing?
+            if (index1 == -1 || index2 == -1)  // change nothing?
             {
                 return selectedItems;
             }
@@ -62,7 +62,27 @@ static public class GenericExtensions
         return list.Where(e => e != null).ToArray();
     }
 
-    public static int IndexOf<T>(this IEnumerable<T> source, T item)
+    static public int IndexOf<T>(this IEnumerable<T> source, T item)
         => source.Select((x, index) => new { Item = x, Index = index })
                  .FirstOrDefault(x => Equals(x.Item, item))?.Index ?? -1;
+
+    static public void AddItems<T>(this ICollection<T> collectoin, IEnumerable<T> items)
+    {
+        if (collectoin != null && items != null)
+        {
+            foreach (var item in items)
+            {
+                collectoin.Add(item);
+            }
+        }
+    }
+
+    static public void ReplaceItems<T>(this ICollection<T> list, IEnumerable<T> items)
+    {
+        if (list != null)
+        {
+            list.Clear();
+            list.AddItems(items);
+        }
+    }
 }

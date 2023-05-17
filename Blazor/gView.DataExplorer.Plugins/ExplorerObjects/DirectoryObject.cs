@@ -2,7 +2,7 @@
 using gView.DataExplorer.Core.Services;
 using gView.DataExplorer.Plugins.ExplorerObjects.Base;
 using gView.DataExplorer.Plugins.Extensions;
-using gView.DataExplorer.Razor.Components.Dialogs.Data;
+using gView.DataExplorer.Razor.Components.Dialogs.Models;
 using gView.Framework.Data;
 using gView.Framework.DataExplorer.Abstraction;
 using gView.Framework.DataExplorer.Events;

@@ -2,7 +2,7 @@
 using gView.Blazor.Core.Exceptions;
 using gView.DataExplorer.Plugins.ExplorerObjects.Base;
 using gView.DataExplorer.Plugins.Extensions;
-using gView.DataExplorer.Razor.Components.Dialogs.Data;
+using gView.DataExplorer.Razor.Components.Dialogs.Models;
 using gView.DataSources.Fdb.SQLite;
 using gView.Framework.DataExplorer.Abstraction;
 using gView.Framework.DataExplorer.Events;
