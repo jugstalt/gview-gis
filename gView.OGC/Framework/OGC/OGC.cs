@@ -111,11 +111,18 @@ namespace gView.Framework.OGC
             return WKBToGeometry(reader, (WkbByteOrder)byteOrder);
         }
 
-        private static IGeometry WKBToGeometry(BinaryReader reader, WkbByteOrder byteOrder)
+        private static IGeometry WKBToGeometry__old_iso_wkb(BinaryReader reader, WkbByteOrder byteOrder)
         {
             // Get the type of this geometry.
             uint type = (uint)ReadUInt32(reader, (WkbByteOrder)byteOrder);
 
+            // https://github.com/jugstalt/gview5/issues/17
+            // https://libgeos.org/specifications/wkb/  (ISO or Extended WKB?)
+            // check if Extended WKB
+            // int newSrid = (type & 0x20000000) != 0 ? reader.ReadInt32() : -1; // < --only if interestested on SRID
+            // type = (type & 0xffff) % 1000; // ** < --can type correctly to Enum
+
+            // Otherwise its maybe ISO WKB
             bool hasZ = false, hasM = false;
             if (type >= 1000 && type < 2000)
             {
@@ -166,6 +173,78 @@ namespace gView.Framework.OGC
 
                 default:
                     throw new NotSupportedException("Geometry type '" + ((WKBGeometryType)type).ToString() + "' not supported");
+            }
+        }
+
+        private static IGeometry WKBToGeometry(BinaryReader reader, WkbByteOrder byteOrder)
+        {
+            // Read geometry type
+            uint geometryType = (uint)ReadUInt32(reader, byteOrder);
+
+            bool hasZ, hasM, hasSRID;
+            uint baseGeometryType;
+
+            // Check if the higher bits are set (Extended WKB)
+            if ((geometryType & 0xE0000000) != 0)
+            {
+                // Extract Z, M and SRID flags from geometry type
+                hasZ = (geometryType & 0x80000000) != 0;
+                hasM = (geometryType & 0x40000000) != 0;
+                hasSRID = (geometryType & 0x20000000) != 0;
+                baseGeometryType = geometryType & 0x1FFFFFFF;
+
+                if (hasSRID)
+                {
+                    // Read SRID
+                    uint srid = (uint)ReadUInt32(reader, byteOrder);
+                }
+            }
+            else
+            {
+                // Assume ISO WKB format
+
+                // Extract Z and M values from geometry type
+                hasZ = (geometryType / 1000) % 2 != 0;
+                hasM = (geometryType / 2000) % 2 != 0;
+                baseGeometryType = geometryType % 1000;
+
+                // ISO WKB does not store SRID
+                hasSRID = false;
+            }
+
+            if (!Enum.IsDefined(typeof(WKBGeometryType), baseGeometryType))
+            {
+                throw new ArgumentException("Geometry type not recognized");
+            }
+
+            switch ((WKBGeometryType)baseGeometryType)
+            {
+                case WKBGeometryType.wkbPoint:
+                    return CreatePoint(reader, byteOrder, hasZ, hasM);
+
+                case WKBGeometryType.wkbLineString:
+                    return CreateLineString(reader, byteOrder, hasZ, hasM);
+
+                case WKBGeometryType.wkbPolygon:
+                    return CreatePolygon(reader, byteOrder, hasZ, hasM);
+
+                case WKBGeometryType.wkbMultiPoint:
+                    return CreateMultiPoint(reader, byteOrder, hasZ, hasM);
+
+                case WKBGeometryType.wkbMultiLineString:
+                    return CreateMultiLineString(reader, byteOrder, hasZ, hasM);
+
+                case WKBGeometryType.wkbMultiPolygon:
+                    return CreateMultiPolygon(reader, byteOrder, hasZ, hasM);
+
+                case WKBGeometryType.wkbGeometryCollection:
+                    return CreateGeometryCollection(reader, byteOrder, hasZ, hasM);
+
+                //case WKBGeometryType.wkbMultiCurve:
+                //    return CreateMultiCurve(reader, byteOrder, hasZ, hasM);
+
+                default:
+                    throw new NotSupportedException("Geometry type '" + ((WKBGeometryType)baseGeometryType).ToString() + "' not supported");
             }
         }
 
