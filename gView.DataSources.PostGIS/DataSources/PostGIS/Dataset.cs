@@ -2,6 +2,7 @@ using gView.Framework.Data;
 using gView.Framework.Db;
 using gView.Framework.Geometry;
 using gView.Framework.OGC.DB;
+using gView.Framework.OGC.KML;
 using gView.Framework.system;
 using System;
 using System.Collections.Generic;
@@ -87,7 +88,17 @@ namespace gView.DataSources.PostGIS
         {
             AsSqlParameter = true;
 
-            byte[] geometry = gView.Framework.OGC.OGC.GeometryToWKB(shape, srid, gView.Framework.OGC.OGC.WkbByteOrder.Ndr, fClass.GeometryTypeString);
+            bool hasZ = false, hasM = false;
+            var geometryDef = fClass as IGeometryDef;
+            if (geometryDef != null)
+            {
+                hasZ = geometryDef.HasZ;
+                hasM = geometryDef.HasM; 
+            }
+
+            byte[] geometry = gView.Framework.OGC.OGC.GeometryToWKB(shape, srid, gView.Framework.OGC.OGC.WkbByteOrder.Ndr, 
+                                                                    fClass.GeometryTypeString, 
+                                                                    hasZ: hasZ, hasM: hasM);
             string geometryString = gView.Framework.OGC.OGC.BytesToHexString(geometry);
 
             return geometryString;
@@ -165,7 +176,17 @@ namespace gView.DataSources.PostGIS
                                     geomDef.SpatialReference.EpsgCode.ToString() :
                                     "-1";
 
-                return "SELECT " + DbSchemaPrefix + "AddGeometryColumn ('" + schemaName + "','" + tableName + "','" + colunName + "','" + srid + "','" + geomTypeString + "','2',true)";
+                int dimensions = 2;
+                if(geomDef.HasZ)
+                {
+                    dimensions = 3;
+                    if (geomDef.HasM)
+                    {
+                        dimensions = 4;
+                    }
+                }
+
+                return $"SELECT {DbSchemaPrefix}AddGeometryColumn ('{schemaName}','{tableName}','{colunName}','{srid}','{geomTypeString}','{dimensions}',true)";
             }
 
             return base.AddGeometryColumn(schemaName, tableName, colunName, geomDef, geomTypeString);

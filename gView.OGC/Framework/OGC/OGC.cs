@@ -182,8 +182,10 @@ namespace gView.Framework.OGC
             uint geometryType = (uint)ReadUInt32(reader, byteOrder);
 
             bool hasZ, hasM, hasSRID;
+            int srid = 0;
             uint baseGeometryType;
 
+            // https://libgeos.org/specifications/wkb/
             // Check if the higher bits are set (Extended WKB)
             if ((geometryType & 0xE0000000) != 0)
             {
@@ -196,7 +198,7 @@ namespace gView.Framework.OGC
                 if (hasSRID)
                 {
                     // Read SRID
-                    uint srid = (uint)ReadUInt32(reader, byteOrder);
+                    srid = (int)ReadUInt32(reader, byteOrder);
                 }
             }
             else
@@ -217,35 +219,44 @@ namespace gView.Framework.OGC
                 throw new ArgumentException("Geometry type not recognized");
             }
 
+            IGeometry geometry;
+
             switch ((WKBGeometryType)baseGeometryType)
             {
                 case WKBGeometryType.wkbPoint:
-                    return CreatePoint(reader, byteOrder, hasZ, hasM);
-
+                    geometry = CreatePoint(reader, byteOrder, hasZ, hasM);
+                    break;
                 case WKBGeometryType.wkbLineString:
-                    return CreateLineString(reader, byteOrder, hasZ, hasM);
-
+                    geometry = CreateLineString(reader, byteOrder, hasZ, hasM);
+                    break;
                 case WKBGeometryType.wkbPolygon:
-                    return CreatePolygon(reader, byteOrder, hasZ, hasM);
-
+                    geometry = CreatePolygon(reader, byteOrder, hasZ, hasM);
+                    break;
                 case WKBGeometryType.wkbMultiPoint:
-                    return CreateMultiPoint(reader, byteOrder, hasZ, hasM);
-
+                    geometry = CreateMultiPoint(reader, byteOrder, hasZ, hasM);
+                    break;
                 case WKBGeometryType.wkbMultiLineString:
-                    return CreateMultiLineString(reader, byteOrder, hasZ, hasM);
-
+                    geometry = CreateMultiLineString(reader, byteOrder, hasZ, hasM);
+                    break;
                 case WKBGeometryType.wkbMultiPolygon:
-                    return CreateMultiPolygon(reader, byteOrder, hasZ, hasM);
-
+                    geometry = CreateMultiPolygon(reader, byteOrder, hasZ, hasM);
+                    break;
                 case WKBGeometryType.wkbGeometryCollection:
-                    return CreateGeometryCollection(reader, byteOrder, hasZ, hasM);
-
+                    geometry = CreateGeometryCollection(reader, byteOrder, hasZ, hasM);
+                    break;
                 //case WKBGeometryType.wkbMultiCurve:
                 //    return CreateMultiCurve(reader, byteOrder, hasZ, hasM);
 
                 default:
                     throw new NotSupportedException("Geometry type '" + ((WKBGeometryType)baseGeometryType).ToString() + "' not supported");
             }
+
+            if (hasSRID && srid > 0 && geometry != null)
+            {
+                geometry.Srs = srid;
+            }
+
+            return geometry;
         }
 
         public static string BytesToHexString(byte[] bytes)
@@ -304,9 +315,10 @@ namespace gView.Framework.OGC
 
         public static byte[] GeometryToWKB(IGeometry geometry, int srid, WkbByteOrder byteOrder)
         {
-            return GeometryToWKB(geometry, srid, byteOrder, String.Empty);
+            return GeometryToWKB(geometry, srid, byteOrder, String.Empty, false, false);
         }
-        public static byte[] GeometryToWKB(IGeometry geometry, int srid, WkbByteOrder byteOrder, string typeString)
+        public static byte[] GeometryToWKB(IGeometry geometry, int srid, WkbByteOrder byteOrder, string typeString,
+                                           bool hasZ, bool hasM)
         {
             MemoryStream ms = new MemoryStream();
             using (BinaryWriter writer = new BinaryWriter(ms))
@@ -315,109 +327,78 @@ namespace gView.Framework.OGC
 
                 if (geometry is IPoint)
                 {
-                    if (srid == 0)
-                    {
-                        writer.Write((uint)WKBGeometryType.wkbPoint);
-                    }
-                    else  // Gstalt  (PostGIS) ??!!
-                    {
-                        writer.Write((uint)WKBGeometryType.wkbPoint + (uint)0x20000000);
-                        writer.Write((uint)srid);
-                    }
-                    WritePoint((IPoint)geometry, writer, byteOrder);
+                    WriteGeometryType(writer, (uint)WKBGeometryType.wkbPoint, srid, byteOrder, hasZ, hasM);
+                    WritePoint((IPoint)geometry, writer, byteOrder, hasZ, hasM);
                 }
                 else if (geometry is IMultiPoint)
                 {
-                    if (srid == 0)
-                    {
-                        writer.Write((uint)WKBGeometryType.wkbMultiPoint);
-                    }
-                    else  // Gstalt  (PostGIS) ??!! 
-                    {
-                        writer.Write((uint)WKBGeometryType.wkbMultiPoint + (uint)0x20000000);
-                        writer.Write((uint)srid);
-                    }
-                    WriteMultiPoint((IMultiPoint)geometry, writer, byteOrder);
+                    WriteGeometryType(writer, (uint)WKBGeometryType.wkbMultiPoint, srid, byteOrder, hasZ, hasM);
+                    WriteMultiPoint((IMultiPoint)geometry, writer, byteOrder, hasZ, hasM);
                 }
                 else if (geometry is IPolyline)
                 {
                     if (typeString == "LINESTRING" && ((IPolyline)geometry).PathCount == 1)
                     {
-                        if (srid == 0)
-                        {
-                            writer.Write((uint)WKBGeometryType.wkbLineString);
-                        }
-                        else  // Gstalt  (PostGIS) ??!!
-                        {
-                            writer.Write((uint)WKBGeometryType.wkbLineString + (uint)0x20000000);
-                            writer.Write((uint)srid);
-                        }
-                        WriteLineString(((IPolyline)geometry)[0], writer, byteOrder);
+                        WriteGeometryType(writer, (uint)WKBGeometryType.wkbLineString, srid, byteOrder, hasZ, hasM);
+                        WriteLineString(((IPolyline)geometry)[0], writer, byteOrder, hasZ, hasM);
                     }
                     else
                     {
-                        if (srid == 0)
-                        {
-                            writer.Write((uint)WKBGeometryType.wkbMultiLineString);
-                        }
-                        else  // Gstalt  (PostGIS) ??!!
-                        {
-                            writer.Write((uint)WKBGeometryType.wkbMultiLineString + (uint)0x20000000);
-                            writer.Write((uint)srid);
-                        }
-                        WriteMultiLineString((IPolyline)geometry, writer, byteOrder);
+                        WriteGeometryType(writer, (uint)WKBGeometryType.wkbMultiLineString, srid, byteOrder, hasZ, hasM);
+                        WriteMultiLineString((IPolyline)geometry, writer, byteOrder, hasZ, hasM);
                     }
                 }
                 else if (geometry is IPolygon)
                 {
                     if (typeString == "POLYGON")
                     {
-                        if (srid == 0)
-                        {
-                            writer.Write((uint)WKBGeometryType.wkbPolygon);
-                        }
-                        else  // Gstalt  (PostGIS) ??!!
-                        {
-                            writer.Write((uint)WKBGeometryType.wkbPolygon + (uint)0x20000000);
-                            writer.Write((uint)srid);
-                        }
-                        WritePolygon((IPolygon)geometry, writer, byteOrder);
+                        WriteGeometryType(writer, (uint)WKBGeometryType.wkbPolygon, srid, byteOrder, hasZ, hasM);
+                        WritePolygon((IPolygon)geometry, writer, byteOrder, hasZ, hasM);
                     }
                     else
                     {
-                        if (srid == 0)
-                        {
-                            writer.Write((uint)WKBGeometryType.wkbMultiPolygon);
-                        }
-                        else  // Gstalt  (PostGIS) ??!!
-                        {
-                            writer.Write((uint)WKBGeometryType.wkbMultiPolygon + (uint)0x20000000);
-                            writer.Write((uint)srid);
-                        }
-                        WriteMultiPolygon((IPolygon)geometry, writer, byteOrder);
+                        WriteGeometryType(writer, (uint)WKBGeometryType.wkbMultiPolygon, srid, byteOrder, hasZ, hasM);
+                        WriteMultiPolygon((IPolygon)geometry, writer, byteOrder, hasZ, hasM);
                     }
                 }
                 else if (geometry is IAggregateGeometry)
                 {
-                    if (srid == 0)
-                    {
-                        writer.Write((uint)WKBGeometryType.wkbGeometryCollection);
-                    }
-                    else  // Gstalt  (PostGIS) ??!!
-                    {
-                        writer.Write((uint)WKBGeometryType.wkbGeometryCollection + (uint)0x20000000);
-                        writer.Write((uint)srid);
-                    }
-                    WriteGeometryCollection((IAggregateGeometry)geometry, writer, byteOrder);
+                    WriteGeometryType(writer, (uint)WKBGeometryType.wkbGeometryCollection, srid, byteOrder, hasZ, hasM);
+                    WriteGeometryCollection((IAggregateGeometry)geometry, writer, byteOrder, hasZ, hasM);
                 }
                 else
                 {
                     throw new NotSupportedException("Geometry type is not supported");
                 }
+
                 ms.Position = 0;
                 byte[] g = new byte[ms.Length];
                 ms.Read(g, 0, g.Length);
                 return g;
+            }
+        }
+
+        private static void WriteGeometryType(BinaryWriter writer, uint geometryType, int srid, WkbByteOrder byteOrder, bool hasZ, bool hasM)
+        {
+            // https://libgeos.org/specifications/wkb/
+            if (hasZ)
+            {
+                geometryType += (uint)0x80000000;
+            }
+            if (hasM)
+            {
+                geometryType += (uint)0x40000000;
+            }
+
+            if (srid == 0)
+            {
+                WriteUInt32((uint)geometryType, writer, byteOrder);
+            }
+            else  // Gstalt  (PostGIS) ??!!
+            {
+                geometryType += (uint)0x20000000;
+                WriteUInt32((uint)geometryType, writer, byteOrder);
+                writer.Write((uint)srid);
             }
         }
 
@@ -443,10 +424,29 @@ namespace gView.Framework.OGC
             return p;
         }
 
-        private static void WritePoint(IPoint point, BinaryWriter writer, WkbByteOrder byteOrder)
+        private static void WritePoint(IPoint point, BinaryWriter writer, WkbByteOrder byteOrder, bool hasZ, bool hasM)
         {
             WriteDouble(point.X, writer, byteOrder);
             WriteDouble(point.Y, writer, byteOrder);
+
+            if (hasZ)
+            {
+                WriteDouble(point.Z, writer, byteOrder);
+            }
+            if (hasM)
+            {
+                double M = 0D;
+                if (point is PointM)
+                {
+                    try
+                    {
+                        M = Convert.ToDouble(((PointM)point).M);
+                    }
+                    catch { }
+                }
+
+                WriteDouble(M, writer, byteOrder);
+            }
         }
 
         private static void ReadPointCollection(BinaryReader reader, WkbByteOrder byteOrder, IPointCollection pColl, bool hasZ, bool hasM)
@@ -482,7 +482,7 @@ namespace gView.Framework.OGC
             }
         }
 
-        private static void WritePointCollection(IPointCollection pColl, BinaryWriter writer, WkbByteOrder byteOrder)
+        private static void WritePointCollection(IPointCollection pColl, BinaryWriter writer, WkbByteOrder byteOrder, bool hasZ, bool hasM)
         {
             if (pColl == null)
             {
@@ -492,7 +492,7 @@ namespace gView.Framework.OGC
             WriteUInt32((uint)pColl.PointCount, writer, byteOrder);
             for (int i = 0; i < pColl.PointCount; i++)
             {
-                WritePoint(pColl[i], writer, byteOrder);
+                WritePoint(pColl[i], writer, byteOrder, hasZ, hasM);
             }
         }
 
@@ -517,9 +517,9 @@ namespace gView.Framework.OGC
             return points;
         }
 
-        private static void WriteMultiPoint(IMultiPoint mpoint, BinaryWriter writer, WkbByteOrder byteOrder)
+        private static void WriteMultiPoint(IMultiPoint mpoint, BinaryWriter writer, WkbByteOrder byteOrder, bool hasZ, bool hasM)
         {
-            WritePointCollection(mpoint, writer, byteOrder);
+            WritePointCollection(mpoint, writer, byteOrder, hasZ, hasM);
         }
 
         private static Polyline CreateLineString(BinaryReader reader, WkbByteOrder byteOrder, bool hasZ, bool hasM)
@@ -532,9 +532,9 @@ namespace gView.Framework.OGC
             return pline;
         }
 
-        private static void WriteLineString(IPath path, BinaryWriter writer, WkbByteOrder byteOrder)
+        private static void WriteLineString(IPath path, BinaryWriter writer, WkbByteOrder byteOrder, bool hasZ, bool hasM)
         {
-            WritePointCollection(path, writer, byteOrder);
+            WritePointCollection(path, writer, byteOrder, hasZ, hasM);
         }
 
         private static Polyline CreateMultiLineString(BinaryReader reader, WkbByteOrder byteOrder, bool hasZ, bool hasM)
@@ -563,7 +563,7 @@ namespace gView.Framework.OGC
             return pline;
         }
 
-        private static void WriteMultiLineString(IPolyline polyline, BinaryWriter writer, WkbByteOrder byteOrder)
+        private static void WriteMultiLineString(IPolyline polyline, BinaryWriter writer, WkbByteOrder byteOrder, bool hasZ, bool hasM)
         {
             WriteUInt32((uint)polyline.PathCount, writer, byteOrder);
 
@@ -573,7 +573,7 @@ namespace gView.Framework.OGC
                 writer.Write((byte)byteOrder);
                 writer.Write((uint)WKBGeometryType.wkbLineString);
 
-                WritePointCollection(polyline[i], writer, byteOrder);
+                WritePointCollection(polyline[i], writer, byteOrder, hasZ, hasM);
             }
         }
 
@@ -594,17 +594,17 @@ namespace gView.Framework.OGC
             return polygon;
         }
 
-        private static void WritePolygon(IPolygon polygon, BinaryWriter writer, WkbByteOrder byteOrder)
+        private static void WritePolygon(IPolygon polygon, BinaryWriter writer, WkbByteOrder byteOrder, bool hasZ, bool hasM)
         {
             WriteUInt32((uint)polygon.RingCount, writer, byteOrder);
 
             for (int i = 0; i < polygon.RingCount; i++)
             {
-                WritePointCollection(polygon[i], writer, byteOrder);
+                WritePointCollection(polygon[i], writer, byteOrder, hasZ, hasM);
             }
         }
 
-        private static void WriteGeometryCollection(IAggregateGeometry aGeometry, BinaryWriter writer, WkbByteOrder byteOrder)
+        private static void WriteGeometryCollection(IAggregateGeometry aGeometry, BinaryWriter writer, WkbByteOrder byteOrder, bool hasZ, bool hasM)
         {
             WriteUInt32((uint)aGeometry.GeometryCount, writer, byteOrder);
 
@@ -622,27 +622,27 @@ namespace gView.Framework.OGC
                 if (geometry is IPoint)
                 {
                     writer.Write((uint)WKBGeometryType.wkbPoint);
-                    WritePoint((IPoint)geometry, writer, byteOrder);
+                    WritePoint((IPoint)geometry, writer, byteOrder, hasZ, hasM);
                 }
                 else if (geometry is IMultiPoint)
                 {
                     writer.Write((uint)WKBGeometryType.wkbMultiPoint);
-                    WriteMultiPoint((IMultiPoint)geometry, writer, byteOrder);
+                    WriteMultiPoint((IMultiPoint)geometry, writer, byteOrder, hasZ, hasM);
                 }
                 else if (geometry is IPolyline)
                 {
                     writer.Write((uint)WKBGeometryType.wkbMultiLineString);
-                    WriteMultiLineString((IPolyline)geometry, writer, byteOrder);
+                    WriteMultiLineString((IPolyline)geometry, writer, byteOrder, hasZ, hasM);
                 }
                 else if (geometry is IPolygon)
                 {
                     writer.Write((uint)WKBGeometryType.wkbMultiPolygon);
-                    WriteMultiPolygon((IPolygon)geometry, writer, byteOrder);
+                    WriteMultiPolygon((IPolygon)geometry, writer, byteOrder, hasZ, hasM);
                 }
                 else if (geometry is IAggregateGeometry)
                 {
                     writer.Write((uint)WKBGeometryType.wkbGeometryCollection);
-                    WriteGeometryCollection((IAggregateGeometry)geometry, writer, byteOrder);
+                    WriteGeometryCollection((IAggregateGeometry)geometry, writer, byteOrder, hasZ, hasM);
                 }
                 else
                 {
@@ -675,7 +675,7 @@ namespace gView.Framework.OGC
             return polygon;
         }
 
-        private static void WriteMultiPolygon(IPolygon polygon, BinaryWriter writer, WkbByteOrder byteOrder)
+        private static void WriteMultiPolygon(IPolygon polygon, BinaryWriter writer, WkbByteOrder byteOrder, bool hasZ, bool hasM)
         {
             //int count = 0;
             //for (int i = 0; i < polygon.RingCount; i++)
@@ -700,7 +700,7 @@ namespace gView.Framework.OGC
             writer.Write((byte)byteOrder);
             writer.Write((uint)WKBGeometryType.wkbPolygon);
 
-            WritePolygon(polygon, writer, byteOrder);
+            WritePolygon(polygon, writer, byteOrder, hasZ, hasM);
         }
 
         private static IAggregateGeometry CreateGeometryCollection(BinaryReader reader, WkbByteOrder byteOrder, bool hasZ, bool hasM)
@@ -709,13 +709,13 @@ namespace gView.Framework.OGC
             int numGeometries = (int)ReadUInt32(reader, byteOrder);
 
             AggregateGeometry aGeometry = new AggregateGeometry();
-            
+
             for (int g = 0; g < numGeometries; g++)
             {
                 reader.ReadByte(); // read the reseved byte => always 1?
 
                 IGeometry geometry = WKBToGeometry(reader, byteOrder);
-                
+
                 if (geometry != null)
                 {
                     aGeometry.AddGeometry(geometry);
