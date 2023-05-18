@@ -20,7 +20,6 @@ using gView.Interoperability.GeoServices.Rest.Json.Renderers.SimpleRenderers;
 using gView.Interoperability.GeoServices.Rest.Json.Request;
 using gView.Interoperability.GeoServices.Rest.Json.Response;
 using gView.MapServer;
-using Microsoft.SqlServer.Management.SqlParser.SqlCodeDom;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -489,6 +488,8 @@ namespace gView.Interoperability.GeoServices.Request
                     query.OutSRef = "4326";
                 }
 
+                Envelope extent = null;
+
                 #endregion
 
                 using (var serviceMap = await context.CreateServiceMapInstance())
@@ -537,7 +538,7 @@ namespace gView.Interoperability.GeoServices.Request
                                 SRef(query.InSRef) ??
                                 (filterGeometry.Srs > 0 ? SpatialReference.FromID($"epsg:{filterGeometry.Srs}") : null);
                         }
-                        else if(query.ReturnDistinctValues)
+                        else if (query.ReturnDistinctValues)
                         {
                             filter = new DistinctFilter(query.OutFields);
                         }
@@ -589,9 +590,20 @@ namespace gView.Interoperability.GeoServices.Request
 
                             filter.SubFields = tableClass.IDFieldName;
                         }
-                        else if(query.ReturnDistinctValues)
+                        else if (query.ReturnExtentOnly)
                         {
-                            if(query.ReturnGeometry)
+                            if (tableClass is IFeatureClass && !filter.HasField(((IFeatureClass)tableClass).ShapeFieldName))
+                            {
+                                filter.SubFields = ((IFeatureClass)tableClass).ShapeFieldName;
+                            }
+                            else
+                            {
+                                throw new Exception("ReturnExtentOnly can only applied on tables with shape/geometry field");
+                            }
+                        }
+                        else if (query.ReturnDistinctValues)
+                        {
+                            if (query.ReturnGeometry)
                             {
                                 throw new Exception("Geometry is not supported with DISTINCT.");
                             }
@@ -651,11 +663,11 @@ namespace gView.Interoperability.GeoServices.Request
 
                                 #region Transform Filter Geometry
 
-                                if (filter is ISpatialFilter && 
-                                    ((ISpatialFilter)filter).FilterSpatialReference!=null &&
+                                if (filter is ISpatialFilter &&
+                                    ((ISpatialFilter)filter).FilterSpatialReference != null &&
                                     !serviceMap.LayerDefaultSpatialReference.EpsgCode.Equals(((ISpatialFilter)filter).FilterSpatialReference?.EpsgCode))
                                 {
-                                    using(var filterTransformer = GeometricTransformerFactory.Create())
+                                    using (var filterTransformer = GeometricTransformerFactory.Create())
                                     {
                                         filterTransformer.SetSpatialReferences(((SpatialFilter)filter).FilterSpatialReference, serviceMap.LayerDefaultSpatialReference);
                                         ((SpatialFilter)filter).Geometry = filterTransformer.Transform2D(((SpatialFilter)filter).Geometry) as IGeometry;
@@ -677,12 +689,16 @@ namespace gView.Interoperability.GeoServices.Request
                                 {
                                     IFeature feature;
                                     IFeatureCursor featureCursor = (IFeatureCursor)cursor;
-                                    
+
                                     while ((feature = await featureCursor.NextFeature()) != null)
                                     {
                                         featureCount++;
 
-                                        if (transform)
+                                        if (query.ReturnGeometry == false && query.ReturnExtentOnly == false)
+                                        {
+                                            feature.Shape = null;  // do not geometry
+                                        }
+                                        else if (transform)
                                         {
                                             feature.Shape = geoTransfromer.Transform2D(feature.Shape) as IGeometry;
                                         }
@@ -690,6 +706,24 @@ namespace gView.Interoperability.GeoServices.Request
                                         if (returnGeoJson)
                                         {
                                             returnGeoJsonFeatures.Add(feature);
+                                        }
+                                        else if (query.ReturnExtentOnly)
+                                        {
+                                            #region Calculate Envelope
+
+                                            if (feature.Shape != null)
+                                            {
+                                                if (extent == null)
+                                                {
+                                                    extent = new Envelope(feature.Shape.Envelope);
+                                                }
+                                                else
+                                                {
+                                                    extent.Union(feature.Shape.Envelope);
+                                                }
+                                            }
+
+                                            #endregion
                                         }
                                         else
                                         {
@@ -701,7 +735,7 @@ namespace gView.Interoperability.GeoServices.Request
                                                 foreach (var field in feature.Fields)
                                                 {
                                                     object val = field.Value;
-                                                    
+
                                                     if (val is DateTime)
                                                     {
                                                         val = Convert.ToInt64(((DateTime)val - new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc)).TotalMilliseconds);
@@ -753,6 +787,20 @@ namespace gView.Interoperability.GeoServices.Request
                     {
                         ObjectIdFieldName = objectIdFieldName,
                         ObjectIds = jsonFeatures.Select(f => Convert.ToInt32(((IDictionary<string, object>)f.Attributes)[objectIdFieldName]))
+                    };
+                }
+                else if (query.ReturnExtentOnly)
+                {
+                    context.ServiceRequest.Response = new JsonExtentResponse()
+                    {
+                        Extend = new JsonExtent()
+                        {
+                            Xmin = extent != null ? extent.minx : double.NaN,
+                            Ymin = extent != null ? extent.miny : double.NaN,
+                            Xmax = extent != null ? extent.maxx : double.NaN,
+                            Ymax = extent != null ? extent.maxy : double.NaN,
+                            SpatialReference = featureSref
+                        }
                     };
                 }
                 else if (returnGeoJson)
