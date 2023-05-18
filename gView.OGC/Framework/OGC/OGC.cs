@@ -371,10 +371,7 @@ namespace gView.Framework.OGC
                     throw new NotSupportedException("Geometry type is not supported");
                 }
 
-                ms.Position = 0;
-                byte[] g = new byte[ms.Length];
-                ms.Read(g, 0, g.Length);
-                return g;
+                return ms.ToArray();
             }
         }
 
