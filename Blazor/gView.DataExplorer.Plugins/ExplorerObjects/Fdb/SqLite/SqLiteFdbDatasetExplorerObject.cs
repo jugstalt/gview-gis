@@ -1,5 +1,6 @@
 ﻿using gView.DataExplorer.Plugins.ExplorerObjects.Base;
 using gView.DataSources.Fdb.SQLite;
+using gView.Framework.Blazor.Services.Abstraction;
 using gView.Framework.Data;
 using gView.Framework.DataExplorer.Abstraction;
 using gView.Framework.DataExplorer.Events;
@@ -12,12 +13,12 @@ using System.Threading.Tasks;
 namespace gView.DataExplorer.Plugins.ExplorerObjects.Fdb.SqLite;
 
 [RegisterPlugIn("E76179C7-FD21-4C0F-ADA0-1DC260E8C50E")]
-public class SqLiteFdbDatasetExplorerObject : ExplorerObjectFeatureClassImport, 
-                                              IExplorerSimpleObject, 
-                                              IExplorerObjectCommandParameters, 
-                                              ISerializableExplorerObject, 
-                                              IExplorerObjectDeletable, 
-                                              IExplorerObjectCreatable, 
+public class SqLiteFdbDatasetExplorerObject : ExplorerObjectFeatureClassImport,
+                                              IExplorerSimpleObject,
+                                              IExplorerObjectCommandParameters,
+                                              ISerializableExplorerObject,
+                                              IExplorerObjectDeletable,
+                                              IExplorerObjectCreatable,
                                               IExplorerObjectRenamable
 {
     private string _icon = "";
@@ -267,7 +268,7 @@ public class SqLiteFdbDatasetExplorerObject : ExplorerObjectFeatureClassImport,
     public bool CanCreate(IExplorerObject? parentExObject)
         => parentExObject is SqLiteFdbExplorerObject;
 
-    async public Task<IExplorerObject?> CreateExplorerObjectAsync(IExplorerApplicationScope scope, IExplorerObject? parentExObject)
+    async public Task<IExplorerObject?> CreateExplorerObjectAsync(IApplicationScope scope, IExplorerObject? parentExObject)
     {
         if (!CanCreate(parentExObject))
         {

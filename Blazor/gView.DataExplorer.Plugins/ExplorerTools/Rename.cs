@@ -1,5 +1,6 @@
 ﻿using gView.DataExplorer.Plugins.Extensions;
 using gView.DataExplorer.Razor.Components.Dialogs.Models;
+using gView.Framework.Blazor.Services.Abstraction;
 using gView.Framework.DataExplorer;
 using gView.Framework.DataExplorer.Abstraction;
 using System.Linq;
@@ -20,7 +21,7 @@ public class Rename : IExplorerTool
 
     public ExplorerToolTarget Target => ExplorerToolTarget.SelectedContextExplorerObjects;
 
-    public bool IsEnabled(IExplorerApplicationScope scope)
+    public bool IsEnabled(IApplicationScope scope)
     {
         var scopeService = scope.ToScopeService();
 
@@ -29,7 +30,7 @@ public class Rename : IExplorerTool
             .Count() == 1;
     }
 
-    async public Task<bool> OnEvent(IExplorerApplicationScope scope)
+    async public Task<bool> OnEvent(IApplicationScope scope)
     {
         var scopeService = scope.ToScopeService();
 

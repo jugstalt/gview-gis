@@ -1,6 +1,7 @@
 ﻿using gView.DataExplorer.Plugins.ExplorerObjects.Base;
 using gView.DataSources.Fdb;
 using gView.DataSources.Fdb.SQLite;
+using gView.Framework.Blazor.Services.Abstraction;
 using gView.Framework.Data;
 using gView.Framework.DataExplorer.Abstraction;
 using gView.Framework.DataExplorer.Events;
@@ -13,12 +14,12 @@ using System.Threading.Tasks;
 namespace gView.DataExplorer.Plugins.ExplorerObjects.Fdb.SqLite;
 
 [RegisterPlugIn("16DB07EC-5C30-4C2E-85AC-B49A44188B1A")]
-public class SqLiteFdbFeatureClassExplorerObject : ExplorerObjectCls, 
-                                                   IExplorerSimpleObject, 
-                                                   ISerializableExplorerObject, 
+public class SqLiteFdbFeatureClassExplorerObject : ExplorerObjectCls,
+                                                   IExplorerSimpleObject,
+                                                   ISerializableExplorerObject,
                                                    IExplorerObjectDeletable
-                                                   /*, IExplorerObjectContextMenu*/, 
-                                                   IExplorerObjectRenamable, 
+                                                   /*, IExplorerObjectContextMenu*/,
+                                                   IExplorerObjectRenamable,
                                                    IExplorerObjectCreatable
 {
     private string _filename = "", _dsname = "", _fcname = "", _type = "";
@@ -28,9 +29,9 @@ public class SqLiteFdbFeatureClassExplorerObject : ExplorerObjectCls,
     private SqLiteFdbDatasetExplorerObject? _parent = null;
     private bool _isNetwork = false;
 
-    public SqLiteFdbFeatureClassExplorerObject() : 
-        base(null, typeof(FeatureClass), 1) 
-    { 
+    public SqLiteFdbFeatureClassExplorerObject() :
+        base(null, typeof(FeatureClass), 1)
+    {
     }
     public SqLiteFdbFeatureClassExplorerObject(SqLiteFdbDatasetExplorerObject parent, string filename, string dsname, IDatasetElement element)
         : base(parent, typeof(FeatureClass), 1)
@@ -355,7 +356,7 @@ public class SqLiteFdbFeatureClassExplorerObject : ExplorerObjectCls,
         return false;
     }
 
-    async public Task<IExplorerObject?> CreateExplorerObjectAsync(IExplorerApplicationScope scope, IExplorerObject parentExObject)
+    async public Task<IExplorerObject?> CreateExplorerObjectAsync(IApplicationScope scope, IExplorerObject parentExObject)
     {
         if (!CanCreate(parentExObject))
         {

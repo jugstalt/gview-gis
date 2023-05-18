@@ -3,6 +3,7 @@ using gView.DataExplorer.Core.Services;
 using gView.DataExplorer.Plugins.ExplorerObjects.Base;
 using gView.DataExplorer.Plugins.Extensions;
 using gView.DataExplorer.Razor.Components.Dialogs.Models;
+using gView.Framework.Blazor.Services.Abstraction;
 using gView.Framework.Data;
 using gView.Framework.DataExplorer.Abstraction;
 using gView.Framework.DataExplorer.Events;
@@ -271,7 +272,7 @@ public class DirectoryObject : ExplorerParentObject,
         return false;
     }
 
-    public async Task<IExplorerObject?> CreateExplorerObjectAsync(IExplorerApplicationScope scope,
+    public async Task<IExplorerObject?> CreateExplorerObjectAsync(IApplicationScope scope,
                                                             IExplorerObject parentExObject)
     {
         var model = await scope.ToScopeService().ShowModalDialog(

@@ -5,10 +5,11 @@ using MudBlazor;
 using System;
 using System.Threading.Tasks;
 using System.Collections.Generic;
+using gView.Framework.Blazor.Services.Abstraction;
 
 namespace gView.DataExplorer.Plugins.Services;
 
-public class ExplorerApplicationScopeService : IExplorerApplicationScope
+public class ExplorerApplicationScopeService : IApplicationScope
 {
     private readonly IDialogService _dialogService;
     private readonly EventBusService _eventBus;

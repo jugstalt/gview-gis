@@ -1,6 +1,7 @@
 ﻿using gView.DataExplorer.Core.Extensions.DependencyInjeftion;
 using gView.DataExplorer.Core.Services.Abstraction;
 using gView.DataExplorer.Plugins.Services;
+using gView.Framework.Blazor.Services.Abstraction;
 using gView.Framework.DataExplorer.Abstraction;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -16,6 +17,6 @@ static public class ServicesExtensions
     {
         return services
             .AddEventBus()
-            .AddScoped<IExplorerApplicationScope, ExplorerApplicationScopeService>();
+            .AddScoped<IApplicationScope, ExplorerApplicationScopeService>();
     }
 }

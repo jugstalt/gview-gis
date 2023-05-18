@@ -1,27 +1,25 @@
-﻿using gView.Blazor.Core;
-using gView.Blazor.Core.Exceptions;
+﻿using gView.Blazor.Core.Exceptions;
 using gView.DataExplorer.Plugins.ExplorerObjects.Base;
 using gView.DataExplorer.Plugins.Extensions;
 using gView.DataExplorer.Razor.Components.Dialogs.Models;
 using gView.DataSources.Fdb.SQLite;
+using gView.Framework.Blazor.Services.Abstraction;
 using gView.Framework.DataExplorer.Abstraction;
 using gView.Framework.DataExplorer.Events;
 using gView.Framework.system;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
-using static MudBlazor.CategoryTypes;
 
 namespace gView.DataExplorer.Plugins.ExplorerObjects.Fdb.SqLite;
 
 [RegisterPlugIn("A4F900EC-C5E4-4518-BAB9-213AF660E8F1")]
-internal class SqLiteFdbExplorerObject : ExplorerParentObject, 
-                                         IExplorerFileObject, 
-                                         IExplorerObjectCommandParameters, 
-                                         ISerializableExplorerObject, 
-                                         IExplorerObjectDeletable, 
+internal class SqLiteFdbExplorerObject : ExplorerParentObject,
+                                         IExplorerFileObject,
+                                         IExplorerObjectCommandParameters,
+                                         ISerializableExplorerObject,
+                                         IExplorerObjectDeletable,
                                          IExplorerObjectCreatable
 {
     private string _filename = "", _errMsg = "";
@@ -211,7 +209,7 @@ internal class SqLiteFdbExplorerObject : ExplorerParentObject,
         return false;
     }
 
-    async public Task<IExplorerObject?> CreateExplorerObjectAsync(IExplorerApplicationScope scope, 
+    async public Task<IExplorerObject?> CreateExplorerObjectAsync(IApplicationScope scope,
                                                                   IExplorerObject parentExObject)
     {
         if (!CanCreate(parentExObject))
@@ -231,10 +229,10 @@ internal class SqLiteFdbExplorerObject : ExplorerParentObject,
                 Prompt = "Enter new database name"
             });
 
-        if(!String.IsNullOrEmpty(model?.Value))
+        if (!String.IsNullOrEmpty(model?.Value))
         {
             var name = model.Value;
-            if(!name.EndsWith(".fdb", StringComparison.OrdinalIgnoreCase))
+            if (!name.EndsWith(".fdb", StringComparison.OrdinalIgnoreCase))
             {
                 name = $"{name}.fdb";
             }

@@ -1,4 +1,5 @@
 ﻿using gView.DataSources.Fdb.MSAccess;
+using gView.Framework.Blazor.Services.Abstraction;
 using gView.Framework.Data;
 using gView.Framework.DataExplorer.Abstraction;
 using gView.Framework.Network;
@@ -20,7 +21,7 @@ public class SqLiteFdbLinkedFeatureclassExplorerObject : IExplorerSimpleObject,
         return parentExObject is SqLiteFdbDatasetExplorerObject;
     }
 
-    async public Task<IExplorerObject?> CreateExplorerObjectAsync(IExplorerApplicationScope scope, IExplorerObject? parentExObject)
+    async public Task<IExplorerObject?> CreateExplorerObjectAsync(IApplicationScope scope, IExplorerObject? parentExObject)
     {
         SqLiteFdbDatasetExplorerObject? parent = (SqLiteFdbDatasetExplorerObject?)parentExObject;
         if (parent == null)

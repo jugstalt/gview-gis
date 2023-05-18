@@ -3,7 +3,7 @@ using gView.Framework.Geometry;
 
 namespace gView.DataExplorer.Razor.Components.Dialogs.Models;
 
-public class SpatialReferenceSelectorModel : IDialogResultItem
+public class SpatialReferenceModel : IDialogResultItem
 {
     public ISpatialReference? SpatialReference { get; set; }
 }

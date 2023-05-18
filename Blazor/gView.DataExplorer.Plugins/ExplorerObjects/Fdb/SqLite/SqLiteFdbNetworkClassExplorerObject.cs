@@ -1,5 +1,6 @@
 ﻿using gView.DataExplorer.Plugins.ExplorerObjects.Base;
 using gView.DataSources.Fdb.SQLite;
+using gView.Framework.Blazor.Services.Abstraction;
 using gView.Framework.DataExplorer.Abstraction;
 using gView.Framework.system;
 using System;
@@ -70,7 +71,7 @@ public class SqLiteFdbNetworkClassExplorerObject : ExplorerObjectCls,
         return false;
     }
 
-    async public Task<IExplorerObject?> CreateExplorerObjectAsync(IExplorerApplicationScope scope, IExplorerObject? parentExObject)
+    async public Task<IExplorerObject?> CreateExplorerObjectAsync(IApplicationScope scope, IExplorerObject? parentExObject)
     {
         if (!(parentExObject is SqLiteFdbDatasetExplorerObject))
         {

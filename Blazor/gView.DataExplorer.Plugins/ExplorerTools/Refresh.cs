@@ -1,9 +1,8 @@
 ﻿using gView.DataExplorer.Plugins.Extensions;
-using gView.DataExplorer.Razor.Components.Dialogs.Filters;
 using gView.DataExplorer.Razor.Components.Dialogs.Models;
+using gView.Framework.Blazor.Services.Abstraction;
 using gView.Framework.DataExplorer;
 using gView.Framework.DataExplorer.Abstraction;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace gView.DataExplorer.Plugins.ExplorerTools;
@@ -15,7 +14,7 @@ public class Refresh : IExplorerTool
 
     public string Name => "Refresh";
 
-    public bool IsEnabled(IExplorerApplicationScope scope) => true;
+    public bool IsEnabled(IApplicationScope scope) => true;
 
     public string ToolTip => "";
 
@@ -23,7 +22,7 @@ public class Refresh : IExplorerTool
 
     public ExplorerToolTarget Target => ExplorerToolTarget.General;
 
-    async public Task<bool> OnEvent(IExplorerApplicationScope scope)
+    async public Task<bool> OnEvent(IApplicationScope scope)
     {
         //var model = await scope.ToScopeService().ShowModalDialog(
         //    typeof(Razor.Components.Dialogs.ExplorerDilaog),
@@ -47,9 +46,9 @@ public class Refresh : IExplorerTool
         //    });
 
         var model = await scope.ToScopeService().ShowModalDialog(
-            typeof(Razor.Components.Dialogs.SpatialReferenceSelectorDialog),
+            typeof(Razor.Components.Dialogs.SpatialReferenceDialog),
             this.Name,
-            new SpatialReferenceSelectorModel());
+            new SpatialReferenceModel());
 
         await scope.ToScopeService().EventBus.FireFreshContentAsync();
 

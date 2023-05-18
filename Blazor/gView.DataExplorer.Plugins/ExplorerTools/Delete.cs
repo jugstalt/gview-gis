@@ -1,9 +1,9 @@
 ﻿using gView.DataExplorer.Plugins.Extensions;
 using gView.DataExplorer.Razor.Components.Dialogs.Models;
+using gView.Framework.Blazor.Services.Abstraction;
 using gView.Framework.DataExplorer;
 using gView.Framework.DataExplorer.Abstraction;
 using gView.Framework.DataExplorer.Events;
-using MudBlazor.Charts;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -21,7 +21,7 @@ namespace gView.DataExplorer.Plugins.ExplorerTools
 
         public ExplorerToolTarget Target => ExplorerToolTarget.SelectedContextExplorerObjects;
 
-        public bool IsEnabled(IExplorerApplicationScope scope)
+        public bool IsEnabled(IApplicationScope scope)
         {
             var scopeService = scope.ToScopeService();
 
@@ -30,7 +30,7 @@ namespace gView.DataExplorer.Plugins.ExplorerTools
                 .Count() > 0;
         }
 
-        async public Task<bool> OnEvent(IExplorerApplicationScope scope)
+        async public Task<bool> OnEvent(IApplicationScope scope)
         {
             var scopeService = scope.ToScopeService();
 
@@ -54,8 +54,8 @@ namespace gView.DataExplorer.Plugins.ExplorerTools
                 {
                     foreach (var exObject in model.SelectedExplorerItems)
                     {
-                       await (exObject as IExplorerObjectDeletable)!
-                                    .DeleteExplorerObject(new ExplorerObjectEventArgs());
+                        await (exObject as IExplorerObjectDeletable)!
+                                     .DeleteExplorerObject(new ExplorerObjectEventArgs());
                     }
                 }
 

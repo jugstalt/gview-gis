@@ -237,7 +237,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Framework.DataExplore
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.DataExplorer.Server", "Blazor\gView.DataExplorer.Server\gView.DataExplorer.Server.csproj", "{79A38BC5-0E85-4A36-918A-905B2A588065}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gView.Razor", "Blazor\gView.Razor\gView.Razor.csproj", "{B72D6366-422E-4B0D-8091-7D44C207E298}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Razor", "Blazor\gView.Razor\gView.Razor.csproj", "{B72D6366-422E-4B0D-8091-7D44C207E298}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gView.Framework.Blazor", "Blazor\gView.Framework.Blazor\gView.Framework.Blazor.csproj", "{CEE100F9-D37B-4E43-B2F7-C43C137A6D4F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -1123,6 +1125,14 @@ Global
 		{B72D6366-422E-4B0D-8091-7D44C207E298}.Release|Any CPU.Build.0 = Release|Any CPU
 		{B72D6366-422E-4B0D-8091-7D44C207E298}.Release|x64.ActiveCfg = Release|Any CPU
 		{B72D6366-422E-4B0D-8091-7D44C207E298}.Release|x64.Build.0 = Release|Any CPU
+		{CEE100F9-D37B-4E43-B2F7-C43C137A6D4F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CEE100F9-D37B-4E43-B2F7-C43C137A6D4F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CEE100F9-D37B-4E43-B2F7-C43C137A6D4F}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{CEE100F9-D37B-4E43-B2F7-C43C137A6D4F}.Debug|x64.Build.0 = Debug|Any CPU
+		{CEE100F9-D37B-4E43-B2F7-C43C137A6D4F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CEE100F9-D37B-4E43-B2F7-C43C137A6D4F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CEE100F9-D37B-4E43-B2F7-C43C137A6D4F}.Release|x64.ActiveCfg = Release|Any CPU
+		{CEE100F9-D37B-4E43-B2F7-C43C137A6D4F}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -1245,6 +1255,7 @@ Global
 		{C7DEF84A-E2D6-410C-8718-C06DA9E3E192} = {75D9853B-5A03-4E2C-9B36-509B68E2ADEA}
 		{79A38BC5-0E85-4A36-918A-905B2A588065} = {75D9853B-5A03-4E2C-9B36-509B68E2ADEA}
 		{B72D6366-422E-4B0D-8091-7D44C207E298} = {75D9853B-5A03-4E2C-9B36-509B68E2ADEA}
+		{CEE100F9-D37B-4E43-B2F7-C43C137A6D4F} = {75D9853B-5A03-4E2C-9B36-509B68E2ADEA}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {11C25FC0-EB32-4DE1-9CBB-CF2D68D1AA9B}
