@@ -13,7 +13,7 @@ builder.Services.AddMudServices();
 
 builder.Services.AddExplorerDesktopApplicationService();
 builder.Services.AddExplorerApplicationScopeService();
-builder.Services.AddPluginMangerService();
+builder.Services.AddFrameworkServices();
 builder.Services.AddIconService();
 
 var app = builder.Build();

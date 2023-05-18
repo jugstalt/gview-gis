@@ -23,11 +23,6 @@
         </div>
     }
 
-        <div class="explorer-tool"
-             @onclick="async () => await TestClickAsync()">
-            <div class="title">Test</div>
-        </div>
-
     </div>
 
     <div class="explorer-tool-box current-selected">
@@ -130,10 +125,5 @@
     {
         EventBus.OnContextExplorerObjectsChanged -= OnContextExplorerObjectsChanged;
         EventBus.OnCurrentExplorerObjectChanged -= OnCurrentExplorerObjectChanged;
-    }
-
-    private Task TestClickAsync()
-    {
-        return DialogService.ShowAsync<ExplorerDilaog>();
     }
 }

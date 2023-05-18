@@ -46,6 +46,11 @@ public class Refresh : IExplorerTool
         //        Mode = ExploerDialogMode.Save
         //    });
 
+        var model = await scope.ToScopeService().ShowModalDialog(
+            typeof(Razor.Components.Dialogs.SpatialReferenceSelectorDialog),
+            this.Name,
+            new SpatialReferenceSelectorModel());
+
         await scope.ToScopeService().EventBus.FireFreshContentAsync();
 
         return true;

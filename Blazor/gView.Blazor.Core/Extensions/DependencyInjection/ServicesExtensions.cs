@@ -5,9 +5,11 @@ namespace gView.Blazor.Core.Extensions.DependencyInjection;
 
 public static class ServicesExtensions
 {
-    static public IServiceCollection AddPluginMangerService(this IServiceCollection services)
+    static public IServiceCollection AddFrameworkServices(this IServiceCollection services)
     {
-        return services.AddTransient<PluginManagerService>();
+        return services
+            .AddTransient<SpatialReferenceService>()
+            .AddTransient<PluginManagerService>();
     }
 
     static public IServiceCollection AddIconService(this IServiceCollection services)

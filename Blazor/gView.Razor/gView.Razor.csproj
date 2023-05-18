@@ -22,9 +22,11 @@
 
   <ItemGroup>
     <None Include="Base\BaseHandler.razor" />
+    <None Include="Controls\SpatialReferenceSelectorControl.razor" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\gView.Blazor.Core\gView.Blazor.Core.csproj" />
     <ProjectReference Include="..\gView.Blazor.Models\gView.Blazor.Models.csproj" />
   </ItemGroup>
 
