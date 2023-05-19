@@ -790,8 +790,11 @@ namespace gView.Server.AppCode
                 _mapServer = context.MapServer;
                 _interpreter = context.ServiceRequestInterpreter;
                 _request = context.ServiceRequest;
+                this.Metrics = context.Metrics;
             }
         }
+
+        public IDictionary<string, double> Metrics { get; private set; }
 
         public T GetModule<T>()
         {

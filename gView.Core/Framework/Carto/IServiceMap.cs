@@ -38,6 +38,8 @@ namespace gView.Framework.Carto
 
         string GetLayerCopyrightText(int layerId);
 
+        IDictionary<string, double> Metrics { get; }
+
         ISpatialReference LayerDefaultSpatialReference
         {
             get;

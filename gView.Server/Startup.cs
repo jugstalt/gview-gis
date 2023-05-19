@@ -24,6 +24,9 @@ namespace gView.Server
             Environment = environment;
 
             Framework.system.SystemInfo.RegisterGdal1_10_PluginEnvironment();
+            Framework.system.SystemVariables.UseDiagnostic = 
+            Framework.system.ContextVariables.UseMetrics =    
+                "true".Equals(Configuration["diagnostics"], StringComparison.OrdinalIgnoreCase);
 
             #region Graphics Engine
 

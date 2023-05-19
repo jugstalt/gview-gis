@@ -186,6 +186,8 @@ namespace gView.Framework.system
                 _sytemFontScaleFactor = value;
             }
         }
+
+        static public bool UseDiagnostic { get; set; } = false;
     }
 
     public interface IProperties
