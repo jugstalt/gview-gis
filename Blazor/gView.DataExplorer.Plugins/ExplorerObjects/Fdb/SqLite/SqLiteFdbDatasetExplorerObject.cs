@@ -1,4 +1,5 @@
 ﻿using gView.DataExplorer.Plugins.ExplorerObjects.Base;
+using gView.DataExplorer.Plugins.ExplorerObjects.Fdb.ContextTools;
 using gView.DataSources.Fdb.SQLite;
 using gView.Framework.Blazor.Services.Abstraction;
 using gView.Framework.Data;
@@ -19,13 +20,13 @@ public class SqLiteFdbDatasetExplorerObject : ExplorerObjectFeatureClassImport,
                                               ISerializableExplorerObject,
                                               IExplorerObjectDeletable,
                                               IExplorerObjectCreatable,
-                                              IExplorerObjectRenamable
+                                              IExplorerObjectRenamable,
+                                              IExplorerObjectContextTools
 {
     private string _icon = "";
     private string _filename = "";
-    //private ToolStripItem[] _contextItems = null;
+    private IEnumerable<IExplorerObjectContextTool>? _contextTools = null;
     private bool _isImageDataset = false;
-    //private AccessFDBDataset _dataset = null;
 
     public SqLiteFdbDatasetExplorerObject() : base(null, typeof(SQLiteFDBDataset)) { }
 
@@ -47,11 +48,11 @@ public class SqLiteFdbDatasetExplorerObject : ExplorerObjectFeatureClassImport,
         }
         _dsname = dsname;
 
-        //_contextItems = new ToolStripItem[2];
-        //_contextItems[0] = new ToolStripMenuItem("Spatial Reference...");
-        //_contextItems[0].Click += new EventHandler(SpatialReference_Click);
-        //_contextItems[1] = new ToolStripMenuItem("Shrink Spatial Indices...");
-        //_contextItems[1].Click += new EventHandler(ShrinkSpatialIndices_Click);
+        _contextTools = new IExplorerObjectContextTool[]
+        {
+            new SetSpatialReference(),
+            new ShrinkSpatialIndices()
+        };
     }
 
     //async void SpatialReference_Click(object sender, EventArgs e)
@@ -311,14 +312,13 @@ public class SqLiteFdbDatasetExplorerObject : ExplorerObjectFeatureClassImport,
 
     #endregion
 
-    //#region IExplorerObjectContextMenu Member
+    #region IExplorerObjectContextTools Member
 
-    //public ToolStripItem[] ContextMenuItems
-    //{
-    //    get { return _contextItems; }
-    //}
+    public IEnumerable<IExplorerObjectContextTool> ContextTools
+        => _contextTools ?? Array.Empty<IExplorerObjectContextTool>();
+           
 
-    //#endregion
+    #endregion
 
     #region IExplorerObjectDeletable Member
 

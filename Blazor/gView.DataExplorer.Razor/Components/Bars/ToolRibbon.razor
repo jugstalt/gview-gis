@@ -65,6 +65,20 @@
                 <div class="title">Selected</div>
             </div>
         }
+        @if (contextExplorerObject is IExplorerObjectContextTools)
+        {
+            <div class="explorer-tool-sub-box">
+                @foreach (var contextTool in ((IExplorerObjectContextTools)contextExplorerObject).ContextTools)
+                {
+                    <div class="explorer-context-tool"
+                         @onclick="async () => await ContextToolClickAsync(contextTool)">
+                        <div class=@Icons.FromString(contextTool.Icon)></div>
+                        <div class="title">@contextTool.Name</div>
+                    </div>
+                }
+                <div class="title">Context: @contextExplorerObject.Name</div>
+            </div>
+        }
     </div>
 }
 
@@ -72,6 +86,7 @@
     private IExplorerTool[]? exTools;
     private IExplorerObjectCreatable[]? creatableExplorerTools;
     private IExplorerObject? currentExplorerObject;
+    private IExplorerObject? contextExplorerObject;
 
     protected override void OnInitialized()
     {
@@ -88,8 +103,10 @@
         });
     }
 
-    private Task OnContextExplorerObjectsChanged(IEnumerable<IExplorerObject>? contextExplorerObjets)
+    private Task OnContextExplorerObjectsChanged(IEnumerable<IExplorerObject>? contextExplorerObjects)
     {
+        contextExplorerObject = contextExplorerObjects != null && contextExplorerObjects.Count() == 1 ?
+                                            contextExplorerObjects.First() : null;
         StateHasChanged();
 
         return Task.CompletedTask;
@@ -105,6 +122,9 @@
 
     private Task ToolClickAsync(IExplorerTool exTool)
         => base.HandleAsync(() => exTool.OnEvent(AppScope));
+
+    private Task ContextToolClickAsync(IExplorerObjectContextTool contextTool)
+        => base.HandleAsync(() => contextTool.OnEvent(AppScope, contextExplorerObject!));
 
     private Task CreateClickAsync(IExplorerObjectCreatable creatable)
     {

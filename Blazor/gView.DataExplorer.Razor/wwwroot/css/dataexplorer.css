@@ -51,6 +51,7 @@
             position:relative;
             display:inline-block;
             height:96px;
+            vertical-align:top;
         }
             .dataexplorer-main .toolbar .explorer-tool-box .explorer-tool-sub-box > .title {
                 position: absolute;
@@ -66,6 +67,23 @@
             .dataexplorer-main .toolbar .explorer-tool-box .explorer-tool-sub-box .explorer-tool {
                 height:74px;
             }
+
+            .dataexplorer-main .toolbar .explorer-tool-box .explorer-tool-sub-box .explorer-context-tool {
+                height: 37px;
+                overflow: hidden;
+                padding: 4px 7px;
+            }
+
+                .dataexplorer-main .toolbar .explorer-tool-box .explorer-tool-sub-box .explorer-context-tool:hover {
+                    background-color: #0094ff46;
+                    border: 1px solid #0094ff;
+                    box-sizing: border-box;
+                }
+
+                .dataexplorer-main .toolbar .explorer-tool-box .explorer-tool-sub-box .explorer-context-tool .title {
+                    display: inline-block;
+                    vertical-align: top;
+                }
 
     .dataexplorer-main .navigation-bar {
         position: absolute;
