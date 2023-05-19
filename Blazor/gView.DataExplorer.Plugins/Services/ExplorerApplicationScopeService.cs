@@ -1,30 +1,38 @@
-﻿using gView.DataExplorer.Core.Services;
+﻿using gView.Blazor.Core;
+using gView.Blazor.Core.Exceptions;
+using gView.Blazor.Core.Services.Abstraction;
+using gView.DataExplorer.Core.Services;
+using gView.Framework.Blazor;
+using gView.Framework.Blazor.Services.Abstraction;
 using gView.Framework.DataExplorer.Abstraction;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
 using System;
-using System.Threading.Tasks;
 using System.Collections.Generic;
-using gView.Framework.Blazor.Services.Abstraction;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace gView.DataExplorer.Plugins.Services;
 
 public class ExplorerApplicationScopeService : IApplicationScope
 {
     private readonly IDialogService _dialogService;
+    IEnumerable<IKnownDialogService> _knownDialogs;
     private readonly EventBusService _eventBus;
 
     public ExplorerApplicationScopeService(IDialogService dialogService,
+                                           IEnumerable<IKnownDialogService> knownDialogs,
                                            EventBusService eventBus)
     {
         _dialogService = dialogService;
+        _knownDialogs = knownDialogs;
         _eventBus = eventBus;
 
         _eventBus.OnCurrentExplorerObjectChanged += EventBus_OnTreeItemClickAsync;
         _eventBus.OnContextExplorerObjectsChanged += EventBus_OnContextExplorerObjectsChanged;
     }
 
-    
+
 
     #region IDisposable
 
@@ -51,7 +59,7 @@ public class ExplorerApplicationScopeService : IApplicationScope
     }
 
     public IExplorerObject? CurrentExplorerObject { get; private set; }
-    public IEnumerable<IExplorerObject>? ContextExplorerObjects { get; private set; } 
+    public IEnumerable<IExplorerObject>? ContextExplorerObjects { get; private set; }
 
     public EventBusService EventBus => _eventBus;
 
@@ -103,5 +111,26 @@ public class ExplorerApplicationScopeService : IApplicationScope
                 dialog.Close();
             }
         }
+    }
+
+    async public Task<T?> ShowKnownDialog<T>(KnownDialogs dialog,
+                                             string? title = null,
+                                             T? model = default)
+    {
+        var knownDialog = _knownDialogs.Where(d => d.Dialog == dialog).FirstOrDefault();
+
+        if (knownDialog == null)
+        {
+            throw new GeneralException($"Dialog {dialog} is not registered as know dialog");
+        }
+
+        model = model ?? Activator.CreateInstance<T>();
+
+        if (model == null)
+        {
+            throw new GeneralException($"Can't create dialog model");
+        }
+
+        return await ShowModalDialog(knownDialog.RazorType, title ?? knownDialog.Title, model);
     }
 }

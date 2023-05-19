@@ -15,8 +15,4 @@
     <ProjectReference Include="..\gView.Blazor.Models\gView.Blazor.Models.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Services\Abstraction\" />
-  </ItemGroup>
-
 </Project>

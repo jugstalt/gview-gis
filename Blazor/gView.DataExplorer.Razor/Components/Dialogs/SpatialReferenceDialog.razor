@@ -1,24 +1,18 @@
-@inherits ModalDialogFormBase<SpatialReferenceModel>
+@inherits ModalDialogFormBase<BaseDialogModel<ISpatialReference>>
 @inject IApplicationScope AppScope
 
-<ModalDialogFormBase T="SpatialReferenceModel"
-                     OnDialogClose="base.OnDialogClose"
-                     Model="base.Model">
+<ModalDialogFormBase T="BaseDialogModel<ISpatialReference>"
+                       OnDialogClose="base.OnDialogClose"
+                       Model="base.Model">
     <FormContent>
-        <SpatialReferenceControl OnSelectProjection="OnProjectionSelector" @ref="control"/>
+        <SpatialReferenceControl SpatialReference="Model.Value" SRefChanged="OnSRefChanged"/>
     </FormContent>
 
 </ModalDialogFormBase>
 
 @code {
-    private SpatialReferenceControl? control;
-
-    private Task OnProjectionSelector()
-            => HandleAsync(async () => {
-                await AppScope.ShowModalDialog(typeof(SpatialReferenceSelectorDialog),
-                                               "Select Project",
-                                               Model);
-
-                control!.SpatialReference = Model.SpatialReference;
-            });
+    private void OnSRefChanged(ISpatialReference sRef)
+    {
+        Model.Value = sRef;
+    }
 }

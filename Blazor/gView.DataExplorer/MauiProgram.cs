@@ -29,6 +29,7 @@ namespace gView.DataExplorer
 
             builder.Services.AddExplorerDesktopApplicationService();
             builder.Services.AddExplorerApplicationScopeService();
+            builder.Services.AddKnownExplorerDialogsServices();
             builder.Services.AddFrameworkServices();
             builder.Services.AddIconService();
 

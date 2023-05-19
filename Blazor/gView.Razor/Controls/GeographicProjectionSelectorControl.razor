@@ -1,4 +1,3 @@
-@using gView.Framework.Geometry;
 @inherits BaseHandler
 @inject SpatialReferenceService SRefService
 
@@ -69,11 +68,11 @@
     protected override Task OnInitializedAsync()
        => HandleAsync(async () =>
        {
-           items = (await GetProjectes()).ToList();
+           items = (await GetProjections()).ToList();
            filteredItems = items.ToArray();
        });
 
-    async private Task<IEnumerable<KeyValuePair<string, string>>> GetProjectes()
+    async private Task<IEnumerable<KeyValuePair<string, string>>> GetProjections()
     {
         return await SRefService.GetProjections();
     }
@@ -107,5 +106,4 @@
             SpatialReference = await SRefService.GetSpatialReference(item.Key);
             await SpatialReferenceChanged.InvokeAsync();
         });
-    }
 }

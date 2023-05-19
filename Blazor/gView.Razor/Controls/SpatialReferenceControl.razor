@@ -1,4 +1,5 @@
 @inherits BaseHandler
+@inject IApplicationScope AppScope
 
 <MudPaper Elevation="2">
     <MudCard>
@@ -32,17 +33,37 @@
             <MudCardActions>
                 <MudButton Variant="Variant.Text"
                            Color="Color.Primary"
-                           OnClick="SelectProjection">Select</MudButton>
+                           OnClick="SelectDatum">Select</MudButton>
             </MudCardActions>
         </MudCard>
     }
 </MudPaper>
 
 @code{
-        [Parameter] public ISpatialReference? SpatialReference{ get; set; }
-        [Parameter] public EventCallback OnSelectProjection { get; set; }
+    [Parameter] public ISpatialReference? SpatialReference{ get; set; }
+    [Parameter] public EventCallback<ISpatialReference> SRefChanged { get; set; }
 
-        private Task SelectProjection()
-            => OnSelectProjection.InvokeAsync();
-        
+    private Task SelectProjection()
+        => HandleAsync(async () =>
+        {
+            var model = await AppScope.ShowKnownDialog<BaseDialogModel<ISpatialReference>>(KnownDialogs.GeographicProjectionSelectorDialog);
+
+            if (model?.Value != null)
+            {
+                this.SpatialReference = model?.Value;
+                await SRefChanged.InvokeAsync(this.SpatialReference);
+            }
+        });
+
+    private Task SelectDatum()
+        => HandleAsync(async () =>
+            {
+                var model = await AppScope.ShowKnownDialog<BaseDialogModel<IGeodeticDatum>>(KnownDialogs.GeographicDatumSelectorDialog);
+
+                if (model?.Value != null && this.SpatialReference is SpatialReference)
+                {
+                    ((SpatialReference)this.SpatialReference).Datum = model?.Value;
+                    await SRefChanged.InvokeAsync(this.SpatialReference);
+                }
+            });
 }
