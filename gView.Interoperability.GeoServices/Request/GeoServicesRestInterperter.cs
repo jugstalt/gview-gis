@@ -9,6 +9,7 @@ using gView.Framework.Geometry;
 using gView.Framework.IO;
 using gView.Framework.OGC.GeoJson;
 using gView.Framework.system;
+using gView.Framework.system.Diagnostics;
 using gView.Framework.UI;
 using gView.Interoperability.GeoServices.Exceptions;
 using gView.Interoperability.GeoServices.Extensions;
@@ -236,6 +237,7 @@ namespace gView.Interoperability.GeoServices.Request
                                     Ymax = serviceMap.Display.Envelope.maxy
                                     // ToDo: SpatialReference
                                 },
+                                IdleMilliseconds = ContextVariables.UseMetrics ? serviceMap.Metrics : null,
                                 Error = serviceMap is IMap && ((IMap)serviceMap).HasRequestExceptions ?
                                     new JsonError.ErrorDef()
                                     {
@@ -467,7 +469,7 @@ namespace gView.Interoperability.GeoServices.Request
                 int featureCount = 0;
                 List<JsonFeature> jsonFeatures = new List<JsonFeature>();
                 List<JsonFeatureResponse.Field> jsonFields = new List<JsonFeatureResponse.Field>();
-
+                double idleMilliseconds = 0D;
                 string objectIdFieldName = String.Empty;
                 EsriGeometryType esriGeometryType = EsriGeometryType.esriGeometryAny;
                 JsonSpatialReference featureSref = null;
@@ -767,6 +769,11 @@ namespace gView.Interoperability.GeoServices.Request
                                         }
                                     }
                                 }
+
+                                if(cursor is IDiagnostics)
+                                {
+                                    idleMilliseconds = ((IDiagnostics)cursor).DiagnosticParameters?.IdleMilliseconds ?? 0D;
+                                }
                             }
                         }
                     }
@@ -828,7 +835,10 @@ namespace gView.Interoperability.GeoServices.Request
                         SpatialReference = featureSref,
                         Fields = jsonFields.ToArray(),
                         Features = jsonFeatures.ToArray(),
-                        ExceededTransferLimit = jsonFeatures.Count() >= limit
+                        ExceededTransferLimit = jsonFeatures.Count() >= limit,
+                        IdleMilliseconds = SystemVariables.UseDiagnostic ?
+                                new Dictionary<string, double> { ["0"] = idleMilliseconds } :
+                                null
                     };
                 }
             }

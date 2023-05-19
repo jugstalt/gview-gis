@@ -4,6 +4,7 @@ using gView.Framework.Data.Filters;
 using gView.Framework.Geometry;
 using gView.Framework.Symbology;
 using gView.Framework.system;
+using gView.Framework.system.Diagnostics;
 using gView.GraphicsEngine.Extensions;
 using System;
 using System.Threading.Tasks;
@@ -333,6 +334,18 @@ namespace gView.Framework.Carto.LayerRenderers
                                 new GraphicsEngine.CanvasRectangle(0, 0, compositionModeCopyBitmap.Width, compositionModeCopyBitmap.Height),
                                 new GraphicsEngine.CanvasRectangle(0, 0, compositionModeCopyBitmap.Width, compositionModeCopyBitmap.Height),
                                 opacity: (float)Math.Min(1, (100f - ((IFeatureLayerComposition)layer).CompositionModeCopyTransparency) / 100));
+                        }
+
+                        if(SystemVariables.UseDiagnostic)
+                        {
+                            if(fCursor is IDiagnostics)
+                            {
+                                var metrics = (_map as IServiceMap)?.Metrics;
+                                if(metrics!=null)
+                                {
+                                    metrics[_layer.Title] = ((IDiagnostics)fCursor).DiagnosticParameters?.IdleMilliseconds ?? 0D;
+                                }
+                            }
                         }
                     }
                     else

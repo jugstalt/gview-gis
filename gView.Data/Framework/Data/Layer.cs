@@ -6,6 +6,7 @@ using gView.Framework.Geometry;
 using gView.Framework.IO;
 using gView.Framework.Symbology;
 using gView.Framework.system;
+using gView.Framework.system.Diagnostics;
 using gView.GraphicsEngine.Filters;
 using System;
 using System.Collections;
@@ -2148,7 +2149,7 @@ namespace gView.Framework.Data
         #endregion
     }
 
-    public abstract class FeatureCursor : IFeatureCursorSkills
+    public abstract class FeatureCursor : IFeatureCursorSkills, IDiagnostics
     {
         private IGeometricTransformer _transformer = null;
         private bool _knowsFunctions = true;
@@ -2323,6 +2324,12 @@ namespace gView.Framework.Data
 
             #endregion
         }
+
+        #endregion
+
+        #region IDiagnostics
+
+        public DiagnosticParameters DiagnosticParameters { get; protected set; }
 
         #endregion
     }

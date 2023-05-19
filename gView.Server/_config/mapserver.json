@@ -9,6 +9,7 @@
   "onlineresource-url": "https://localhost:44331",
   "onlineresource-url_": "http://localhost:8889",
   "tilecache-root": "C:\\temp\\gview5\\tilecache",
+  "diagnostics_": true,
 
   "task-queue": {
     "max-parallel-tasks": 20,

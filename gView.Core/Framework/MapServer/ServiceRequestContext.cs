@@ -1,8 +1,11 @@
 ﻿using gView.Core.Framework.Exceptions;
+using gView.Framework.system;
 using gView.Framework.Carto;
 using gView.Framework.IO;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
+using System.Collections.Concurrent;
 
 namespace gView.MapServer
 {
@@ -17,6 +20,11 @@ namespace gView.MapServer
             _mapServer = mapServer;
             _interpreter = interpreter;
             _request = request;
+
+            if (ContextVariables.UseMetrics)
+            {
+                this.Metrics = new ConcurrentDictionary<string, double>();
+            }
         }
 
         async static public Task<IServiceRequestContext> TryCreate(IMapServer mapServer, IServiceRequestInterpreter interpreter, ServiceRequest request, bool checkSecurity = true)
@@ -53,6 +61,8 @@ namespace gView.MapServer
         {
             get { return _request; }
         }
+
+        public IDictionary<string, double> Metrics { get; }
 
         async public Task<IServiceMap> CreateServiceMapInstance()
         {

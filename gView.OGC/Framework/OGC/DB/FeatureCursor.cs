@@ -4,6 +4,7 @@ using gView.Framework.Data.Filters;
 using gView.Framework.Db.Extensions;
 using gView.Framework.Geometry;
 using gView.Framework.system;
+using gView.Framework.system.Diagnostics;
 using System;
 using System.Data;
 using System.Data.Common;
@@ -16,8 +17,6 @@ namespace gView.Framework.OGC.DB
     {
         private DbConnection _conn = null;
         private DbDataReader _reader = null;
-        //private OleDbConnection _conn = null;
-        //private OleDbDataReader _reader = null;
         private ISpatialFilter _spatialfilter = null;
         private string[] _subFields = null;
         private string _shapeField = "", _idField = "";
@@ -28,6 +27,8 @@ namespace gView.Framework.OGC.DB
                    (filter != null) ? filter.FeatureSpatialReference : null)
         {
             base.CancelTracker = filter?.CancelTracker;
+            base.DiagnosticParameters = SystemVariables.UseDiagnostic ?
+                                                new DiagnosticParameters() : null;
         }
 
         async static public Task<IFeatureCursor> Create(OgcSpatialFeatureclass fc, IQueryFilter filter)
@@ -92,7 +93,10 @@ namespace gView.Framework.OGC.DB
                 await featureCursor._conn.OpenAsync();
 
                 command.SetCustomCursorTimeout();
-                featureCursor._reader = await command.ExecuteReaderAsync();
+
+                //featureCursor._reader = await command.ExecuteReaderAsync();
+                //featureCursor._reader = await featureCursor._diagnostics.StopIdleTimeAsync(command.ExecuteReaderAsync());
+                featureCursor._reader = await (command.ExecuteReaderAsync().StopIdleAsync(featureCursor.DiagnosticParameters));
 
                 return featureCursor;
             }
@@ -123,7 +127,7 @@ namespace gView.Framework.OGC.DB
             {
                 try
                 {
-                    if (_reader == null || !await _reader.ReadAsync())
+                    if (_reader == null || !await _reader.ReadAsync().StopIdleAsync(base.DiagnosticParameters))
                     {
                         return null;
                     }
