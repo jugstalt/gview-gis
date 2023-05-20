@@ -1,12 +1,7 @@
 ﻿using gView.DataExplorer.Plugins.Extensions;
-using gView.DataExplorer.Razor.Components.Dialogs.Filters;
-using gView.DataExplorer.Razor.Components.Dialogs.Models;
 using gView.Framework.Blazor.Services.Abstraction;
 using gView.Framework.DataExplorer;
 using gView.Framework.DataExplorer.Abstraction;
-using gView.Framework.Geometry;
-using gView.Razor.Base;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace gView.DataExplorer.Plugins.ExplorerTools;
@@ -46,11 +41,6 @@ public class Refresh : IExplorerTool
         //        Filters = SaveFeatureClassFilters.DatabaseFilters,
         //        Mode = ExploerDialogMode.Save
         //    });
-
-        var model3 = await scope.ToScopeService().ShowKnownDialog<BaseDialogModel<ISpatialReference>>(
-            Framework.Blazor.KnownDialogs.SpatialReferenceDialog,
-            /* optional */ model: new BaseDialogModel<ISpatialReference>() { Value = new SpatialReference("epsg:31256") }
-            );
 
         await scope.ToScopeService().EventBus.FireFreshContentAsync();
 
