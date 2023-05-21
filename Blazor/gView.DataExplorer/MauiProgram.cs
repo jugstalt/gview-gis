@@ -1,6 +1,7 @@
 ﻿using gView.Blazor.Core.Extensions.DependencyInjection;
 using gView.DataExplorer.Plugins.Extensions.DependencyInjection;
 using gView.DataExplorer.Core.Extensions.DependencyInjeftion;
+using gView.Razor.Leaflet.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using MudBlazor.Services;
 
@@ -32,6 +33,7 @@ namespace gView.DataExplorer
             builder.Services.AddKnownExplorerDialogsServices();
             builder.Services.AddFrameworkServices();
             builder.Services.AddIconService();
+            builder.Services.AddLeafletService();
 
             return builder.Build();
         }

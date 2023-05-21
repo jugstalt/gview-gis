@@ -1,0 +1,16 @@
+@inject LeafletInteropService LeafletJs
+
+<div id="@Map.Id" style="width: 100%; height: 100%;"></div>
+
+@code {
+    [Parameter] public required Map Map { get; set; }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await LeafletJs.Create(Map);
+            await Map.FireOnIntialized();
+        }
+    }
+}

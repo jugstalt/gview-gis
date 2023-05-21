@@ -1,0 +1,128 @@
+@inherits BaseHandler
+@implements IAsyncDisposable
+@inject LeafletService Leaflet
+@inject GeoTransformerService GeoTransformer
+
+@if (LeafletMap != null)
+{
+    <LeafletMap Map="LeafletMap" />
+}
+
+@code {
+    [Parameter] public IExplorerTabPage? FrameworkElement { get; set; }
+    [Parameter] public IExplorerObject? CurrentExplorerObject { get; set; }
+
+    private Map? LeafletMap { get; set; }
+    private ImageLayer? ImageLayer = null;
+
+    // protected override Task OnInitializedAsync()
+    //     => HandleAsync(async () =>
+    //     {
+    //         await base.OnInitializedAsync();
+    //     });
+
+    async protected override Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+
+        await base.HandleAsync(async () =>
+        {
+            if (FrameworkElement == null)
+            {
+                return;
+            }
+
+            if (LeafletMap != null)
+            {
+                LeafletMap.OnIntialized -= OnMapInitialized;
+                LeafletMap.OnViewReset -= OnMapViewRest;
+                await LeafletMap.Destroy();
+            }
+
+            await FrameworkElement.SetExplorerObjectAsync(CurrentExplorerObject);
+            LeafletMap = Leaflet.CreateMap();
+            LeafletMap.OnIntialized += OnMapInitialized;
+
+            //LeafletMap.OnViewReset += OnMapViewRest;
+            LeafletMap.OnZoomEnd += OnMapViewRest;
+            //LeafletMap.OnMoveEnd += OnMapViewRest;
+        });
+    }
+
+    private Task OnMapInitialized()
+        => HandleAsync(async () => {
+            IEnvelope? dataEnvelope = null;
+            ISpatialReference? dataSRef = null;
+
+            var exObject = FrameworkElement?.GetExplorerObject();
+            if (exObject != null) 
+            {
+                var instance = await exObject.GetInstanceAsync();
+
+                dataEnvelope = instance switch
+                {
+                    IFeatureClass fc => fc.Envelope,
+                    IFeatureDataset ds => await ds.Envelope(),
+                    _ => null
+                };
+
+                dataSRef = instance switch
+                {
+                    IFeatureClass fc => fc.SpatialReference,
+                    IFeatureDataset ds => await ds.GetSpatialReference(),
+                    _ => null
+                };
+            }
+            await LeafletMap!.AddLayer(new gView.Razor.Leaflet.Models.Layers.TileLayer()
+            {
+                UrlTemplate = "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+                Attribution = "&copy; <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a> contributors",
+                Opacity = 0.5
+            });
+
+            if (dataSRef != null && dataEnvelope != null)
+            {
+                dataEnvelope = GeoTransformer.ToWGS84(dataEnvelope, dataSRef).Envelope;
+            }
+            if (dataEnvelope != null)
+            {
+                LeafletMap.FitBounds(new LatLng(dataEnvelope.LowerLeft.Y, dataEnvelope.LowerLeft.X),
+                                     new LatLng(dataEnvelope.UpperRight.Y, dataEnvelope.UpperRight.X));
+            }
+        });
+
+    async private Task OnMapViewRest(object sender, Event e)
+    {
+        if (LeafletMap == null)
+        {
+            return;
+        }
+
+        var center = await LeafletMap.GetCenter();
+        var bounds = await LeafletMap.GetBounds();
+
+        if (ImageLayer == null)
+        {
+            ImageLayer = new ImageLayer("", bounds.SouthWest, bounds.NorthEast);
+            await LeafletMap.AddLayer(ImageLayer);
+        } 
+        else
+        {
+            await LeafletMap.UpdateImageLayer(ImageLayer, "", bounds.SouthWest, bounds.NorthEast);    
+        }
+    }
+
+    async public ValueTask DisposeAsync()
+    {
+        if (LeafletMap != null)
+        {
+            LeafletMap.OnIntialized -= OnMapInitialized;
+            
+            //LeafletMap.OnViewReset -= OnMapViewRest;
+            LeafletMap.OnZoomEnd += OnMapViewRest;
+            //LeafletMap.OnMoveEnd += OnMapViewRest;
+
+            await LeafletMap.Destroy();
+        }
+    }
+}

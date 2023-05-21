@@ -1,7 +1,7 @@
-using MudBlazor.Services;
 using gView.Blazor.Core.Extensions.DependencyInjection;
 using gView.DataExplorer.Plugins.Extensions.DependencyInjection;
-using gView.DataExplorer.Core.Extensions.DependencyInjeftion;
+using gView.Razor.Leaflet.Extensions.DependencyInjection;
+using MudBlazor.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,6 +16,7 @@ builder.Services.AddExplorerApplicationScopeService();
 builder.Services.AddKnownExplorerDialogsServices();
 builder.Services.AddFrameworkServices();
 builder.Services.AddIconService();
+builder.Services.AddLeafletService();
 
 var app = builder.Build();
 

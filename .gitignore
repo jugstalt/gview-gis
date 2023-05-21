@@ -260,5 +260,4 @@ paket-files/
 __pycache__/
 *.pyc
 
-src/Blazor/gView.Razor.Leaflet/wwwroot/lib/
-/Blazor/gView.Razor.Leaflet/wwwroot/lib/leaflet
+/Blazor/gView.Razor.Leaflet/wwwroot/lib/

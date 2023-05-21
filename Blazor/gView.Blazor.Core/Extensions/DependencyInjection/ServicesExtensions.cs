@@ -9,6 +9,7 @@ public static class ServicesExtensions
     {
         return services
             .AddTransient<SpatialReferenceService>()
+            .AddTransient<GeoTransformerService>()
             .AddTransient<PluginManagerService>();
     }
 

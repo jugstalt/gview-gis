@@ -120,6 +120,19 @@
         overflow: auto;
         padding:0px;
     }
+        .dataexplorer-main .content .mud-tabs {
+            position: absolute;
+            inset: 0px 0px 0px 0px;
+        }
+            .dataexplorer-main .content .mud-tabs .mud-tabs-panels {
+                position: absolute;
+                inset: 49px 0px 0px 0px;
+                overflow: auto;
+            }
+
+                .dataexplorer-main .content .mud-tabs .mud-tabs-panels .mud-table-container {
+                    overflow: unset !important;
+                }
 
 .table-column-icon {
     width: 30px;
