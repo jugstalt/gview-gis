@@ -1,7 +1,4 @@
 ﻿using gView.DataSources.MSSqlSpatial.DataSources.Sde.Repo;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace gView.DataSources.MSSqlSpatial.DataSources.Sde.Extensions
 {
