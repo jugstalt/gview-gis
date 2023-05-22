@@ -10,7 +10,8 @@ public static class ServicesExtensions
         return services
             .AddTransient<SpatialReferenceService>()
             .AddTransient<GeoTransformerService>()
-            .AddTransient<PluginManagerService>();
+            .AddTransient<PluginManagerService>()
+            .AddTransient<MapRenderService>();
     }
 
     static public IServiceCollection AddIconService(this IServiceCollection services)

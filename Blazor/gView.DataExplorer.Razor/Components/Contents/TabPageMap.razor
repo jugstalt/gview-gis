@@ -2,6 +2,7 @@
 @implements IAsyncDisposable
 @inject LeafletService Leaflet
 @inject GeoTransformerService GeoTransformer
+@inject MapRenderService MapRenderer
 
 @if (LeafletMap != null)
 {
@@ -12,14 +13,17 @@
     [Parameter] public IExplorerTabPage? FrameworkElement { get; set; }
     [Parameter] public IExplorerObject? CurrentExplorerObject { get; set; }
 
-    private Map? LeafletMap { get; set; }
+    private LMap? LeafletMap { get; set; }
     private ImageLayer? ImageLayer = null;
 
-    // protected override Task OnInitializedAsync()
-    //     => HandleAsync(async () =>
-    //     {
-    //         await base.OnInitializedAsync();
-    //     });
+    private ISpatialReference _mapSRef = new SpatialReference("epsg:3857");
+
+    protected override Task OnInitializedAsync()
+        => HandleAsync(async () =>
+        {
+            await base.OnInitializedAsync();
+            MapRenderer.OnRefreshMapImage += OnRefreshMapImage;
+        });
 
     async protected override Task OnParametersSetAsync()
     {
@@ -39,13 +43,16 @@
                 await LeafletMap.Destroy();
             }
 
+            MapRenderer.InitMap(_mapSRef);
+            MapRenderer.AddFeatureClass(await CurrentExplorerObject.GetInstanceAsync() as IFeatureClass);
+
             await FrameworkElement.SetExplorerObjectAsync(CurrentExplorerObject);
             LeafletMap = Leaflet.CreateMap();
             LeafletMap.OnIntialized += OnMapInitialized;
 
             //LeafletMap.OnViewReset += OnMapViewRest;
             LeafletMap.OnZoomEnd += OnMapViewRest;
-            //LeafletMap.OnMoveEnd += OnMapViewRest;
+            LeafletMap.OnMoveEnd += OnMapViewRest;
         });
     }
 
@@ -80,14 +87,16 @@
                 Opacity = 0.5
             });
 
+            IEnvelope? lMapBounds = null;
             if (dataSRef != null && dataEnvelope != null)
             {
-                dataEnvelope = GeoTransformer.ToWGS84(dataEnvelope, dataSRef).Envelope;
+                lMapBounds = GeoTransformer.ToWGS84(new Envelope(dataEnvelope), dataSRef).Envelope;
             }
-            if (dataEnvelope != null)
+
+            if (lMapBounds != null)
             {
-                LeafletMap.FitBounds(new LatLng(dataEnvelope.LowerLeft.Y, dataEnvelope.LowerLeft.X),
-                                     new LatLng(dataEnvelope.UpperRight.Y, dataEnvelope.UpperRight.X));
+                LeafletMap.FitBounds(new LatLng(lMapBounds.LowerLeft.Y, lMapBounds.LowerLeft.X),
+                                     new LatLng(lMapBounds.UpperRight.Y, lMapBounds.UpperRight.X));
             }
         });
 
@@ -98,29 +107,55 @@
             return;
         }
 
-        var center = await LeafletMap.GetCenter();
         var bounds = await LeafletMap.GetBounds();
+        var size = await LeafletMap.GetImageSize();
 
         if (ImageLayer == null)
         {
-            ImageLayer = new ImageLayer("", bounds.SouthWest, bounds.NorthEast);
+            ImageLayer = new ImageLayer("", bounds.SouthWest, bounds.NorthEast) { Opacity = 0.8f };
             await LeafletMap.AddLayer(ImageLayer);
-        } 
+        }
         else
         {
-            await LeafletMap.UpdateImageLayer(ImageLayer, "", bounds.SouthWest, bounds.NorthEast);    
+            await LeafletMap.UpdateImageLayer(ImageLayer, "", bounds.SouthWest, bounds.NorthEast);
         }
+
+        using (var mutex = await FuzzyMutexAsync.LockAsync(LeafletMap.Id))
+        {
+            if (mutex.WasBlocked == false)
+            {
+                await OnRefreshMapImage(null);
+
+                await Task.Delay(300);
+
+                var mapBounds = GeoTransformer.FromWGS84(new Envelope(bounds.SouthWest.Lng, bounds.SouthWest.Lat, bounds.NorthEast.Lng, bounds.NorthEast.Lat), _mapSRef).Envelope;
+                MapRenderer.SetBoundsAndSize(mapBounds, size.Width, size.Height);
+                MapRenderer.BeginRender();
+            }
+        }
+    }
+
+    async private Task OnRefreshMapImage(byte[]? data)
+    {
+        if (ImageLayer == null || LeafletMap == null)
+        {
+            return;
+        }
+
+        await LeafletMap.UpdateImageLayer(ImageLayer, $"data:image/png;base64, {Convert.ToBase64String(data ?? Array.Empty<byte>())}", null, null);
     }
 
     async public ValueTask DisposeAsync()
     {
+        MapRenderer.OnRefreshMapImage -= OnRefreshMapImage;
+
         if (LeafletMap != null)
         {
             LeafletMap.OnIntialized -= OnMapInitialized;
             
             //LeafletMap.OnViewReset -= OnMapViewRest;
             LeafletMap.OnZoomEnd += OnMapViewRest;
-            //LeafletMap.OnMoveEnd += OnMapViewRest;
+            LeafletMap.OnMoveEnd += OnMapViewRest;
 
             await LeafletMap.Destroy();
         }

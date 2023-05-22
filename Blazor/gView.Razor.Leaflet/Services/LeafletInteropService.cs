@@ -3,7 +3,6 @@ using gView.Razor.Leaflet.Models.Layers;
 using System.Collections.Concurrent;
 using gView.Razor.Leaflet.Models;
 using Microsoft.AspNetCore.Components.Web;
-using System.Drawing;
 
 namespace gView.Razor.Leaflet.Services;
 
@@ -20,7 +19,7 @@ public class LeafletInteropService : IDisposable
         _layerReferences = new ConcurrentDictionary<string, (IDisposable, string, Layer)>();
     }
 
-    internal ValueTask Create(Map map) =>
+    internal ValueTask Create(LMap map) =>
             _jsRuntime.InvokeVoidAsync($"{_gViewLeaflet}.create", map, DotNetObjectReference.Create(map));
 
     internal ValueTask AddLayer(string mapId, Layer layer)
@@ -51,6 +50,9 @@ public class LeafletInteropService : IDisposable
     internal ValueTask<Bounds> GetBounds(string mapId)
         => _jsRuntime.InvokeAsync<Bounds>($"{_gViewLeaflet}.getBounds", mapId);
 
+    internal ValueTask<Size> GetImageSize(string mapId)
+        => _jsRuntime.InvokeAsync<Size>($"{_gViewLeaflet}.getImageSize", mapId);
+
     internal ValueTask<float> GetZoom(string mapId) =>
         _jsRuntime.InvokeAsync<float>($"{_gViewLeaflet}.getZoom", mapId);
 
@@ -63,7 +65,7 @@ public class LeafletInteropService : IDisposable
     internal ValueTask Destroy(string mapId) =>
         _jsRuntime.InvokeVoidAsync($"{_gViewLeaflet}.destroy", mapId);
 
-    internal ValueTask UpdateImageLayer(string mapId, string layerId, string url, LatLng southWest, LatLng northEast)
+    internal ValueTask UpdateImageLayer(string mapId, string layerId, string url, LatLng? southWest, LatLng? northEast)
         => _jsRuntime.InvokeVoidAsync($"{_gViewLeaflet}.updateImageLayer", mapId, layerId, url, southWest, northEast);
 
     #region Helper

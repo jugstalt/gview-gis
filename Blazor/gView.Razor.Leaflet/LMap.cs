@@ -10,14 +10,14 @@ using Microsoft.JSInterop;
 
 namespace gView.Razor.Leaflet;
 
-public class Map
+public class LMap
 {
     private readonly LeafletInteropService _leafletJs;
     private readonly List<Layer> _layers;
 
     private bool _isInitialized = false;
 
-    internal Map(LeafletInteropService leafletJs)
+    internal LMap(LeafletInteropService leafletJs)
     {
         _leafletJs = leafletJs;
         _layers = new List<Layer>();
@@ -89,6 +89,8 @@ public class Map
 
     public async Task<Bounds> GetBounds() => await _leafletJs.GetBounds(Id);
 
+    public async Task<Size> GetImageSize() => await _leafletJs.GetImageSize(Id);
+
     public async Task<float> GetZoom() =>
         await _leafletJs.GetZoom(Id);
 
@@ -98,7 +100,7 @@ public class Map
 
     public async Task Destroy() => await _leafletJs.Destroy(Id);
 
-    public async Task UpdateImageLayer(ImageLayer imageLayer, string url, LatLng southWest, LatLng northEast) 
+    public async Task UpdateImageLayer(ImageLayer imageLayer, string url, LatLng? southWest, LatLng? northEast) 
         => await _leafletJs.UpdateImageLayer(Id, imageLayer.Id, url, southWest, northEast);
 
     #endregion
@@ -176,7 +178,7 @@ public class Map
 
     #region Interactive Layer Events
 
-    public delegate void MouseEventHandler(Map sender, MouseEvent e);
+    public delegate void MouseEventHandler(LMap sender, MouseEvent e);
 
     public event MouseEventHandler? OnClick;
     [JSInvokable]

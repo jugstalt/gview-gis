@@ -3,6 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
 	  <LangVersion>11</LangVersion>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
@@ -10,6 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\gView.Carto\gView.Carto.csproj" />
     <ProjectReference Include="..\..\gView.Geometry\gView.Geometry.csproj" />
     <ProjectReference Include="..\..\gView.System\gView.System.csproj" />
     <ProjectReference Include="..\gView.Blazor.Models\gView.Blazor.Models.csproj" />

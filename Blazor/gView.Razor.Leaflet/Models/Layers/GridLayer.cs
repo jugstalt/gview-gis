@@ -1,6 +1,4 @@
-﻿using System.Drawing;
-
-namespace gView.Razor.Leaflet.Models.Layers;
+﻿namespace gView.Razor.Leaflet.Models.Layers;
 
 public abstract class GridLayer : Layer
 {

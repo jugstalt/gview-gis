@@ -1,7 +1,4 @@
 ﻿using gView.Framework.Geometry;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace gView.Blazor.Core.Services;
 
@@ -11,7 +8,14 @@ public class GeoTransformerService
     {
         var toSRef = new SpatialReference($"epsg:4326");
 
-        return Transform(geometry, fromSRef, toSRef); 
+        return Transform(geometry, fromSRef, toSRef);
+    }
+
+    public IGeometry FromWGS84(IGeometry geometry, ISpatialReference toSRef)
+    {
+        var fromSRef = new SpatialReference($"epsg:4326");
+
+        return Transform(geometry, fromSRef, toSRef);
     }
 
     public IGeometry Transform(IGeometry geometry, int fromEpsg, int toEpsg)
@@ -19,7 +23,7 @@ public class GeoTransformerService
         var fromSRef = new SpatialReference($"epsg:{fromEpsg}");
         var toSRef = new SpatialReference($"epsg:{toEpsg}");
 
-        return Transform(geometry, fromSRef, toSRef); 
+        return Transform(geometry, fromSRef, toSRef);
     }
 
     public IGeometry Transform(IGeometry geometry, ISpatialReference fromSRef, ISpatialReference toSRef)

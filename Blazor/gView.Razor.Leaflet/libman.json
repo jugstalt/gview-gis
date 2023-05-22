@@ -12,10 +12,10 @@
       "destination": "wwwroot/lib/proj4js/"
     }
   ,
-{
-  "provider": "cdnjs",
-  "library": "proj4leaflet@1.0.2",
-  "destination": "wwwroot/lib/proj4leaflet/"
-}
-]
+  {
+    "provider": "cdnjs",
+    "library": "proj4leaflet@1.0.2",
+    "destination": "wwwroot/lib/proj4leaflet/"
+  }
+  ]
 }

@@ -11,6 +11,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\gView.Carto.Rendering\gView.Carto.Rendering.csproj" />
+    <ProjectReference Include="..\..\gView.Carto\gView.Carto.csproj" />
+    <ProjectReference Include="..\..\gView.Symbology\gView.Symbology.csproj" />
     <ProjectReference Include="..\gView.Blazor.Core\gView.Blazor.Core.csproj" />
     <ProjectReference Include="..\gView.DataExplorer.Plugins\gView.DataExplorer.Plugins.csproj" />
     <ProjectReference Include="..\gView.DataExplorer.Razor\gView.DataExplorer.Razor.csproj" />

@@ -230,6 +230,9 @@ window.gViewLeafletInterops = {
     getBounds: function (mapId) {
         return gViewLeaflet.maps[mapId].getBounds();
     },
+    getImageSize: function (mapId) {
+        return gViewLeaflet.maps[mapId].getSize();
+    },
     destroy: function (mapId) {
         const map = gViewLeaflet.maps[mapId];
         if (map) {

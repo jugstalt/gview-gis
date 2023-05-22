@@ -1152,7 +1152,7 @@ namespace gView.Framework.Carto
                             {
                                 if (rLayer is ILayer)
                                 {
-                                    DrawingLayer?.BeginInvoke(((ILayer)rLayer).Title, new AsyncCallback(AsyncInvoke.RunAndForget), null);
+                                    DrawingLayer?.Invoke(((ILayer)rLayer).Title);
                                 }
                             }
 
@@ -1905,14 +1905,16 @@ namespace gView.Framework.Carto
 
         #endregion
 
+
         internal void FireOnUserInterface(bool lockUI)
         {
-            this.OnUserInterface?.BeginInvoke(this, lockUI, new AsyncCallback(AsyncInvoke.RunAndForget), null);
+            this.OnUserInterface?.Invoke(this, lockUI);
+
         }
 
         internal void FireDrawingLayer(string layername)
         {
-            this.DrawingLayer?.BeginInvoke(layername, new AsyncCallback(AsyncInvoke.RunAndForget), null);
+            this.DrawingLayer?.Invoke(layername);
         }
 
         protected void SetResourceContainer(IResourceContainer resourceContainer)
