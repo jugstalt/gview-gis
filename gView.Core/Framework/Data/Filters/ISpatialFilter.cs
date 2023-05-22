@@ -10,5 +10,7 @@ namespace gView.Framework.Data.Filters
         //double BufferDistance { get; set ; }
         //bool FuzzyQuery { get ; set ; }
         spatialRelation SpatialRelation { get; set; }
+
+        bool IgnoreFeatureCursorCheckIntersection { get; set; }
     }
 }

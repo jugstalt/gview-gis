@@ -143,7 +143,8 @@ namespace gView.Framework.OGC.DB
                         {
                             feature.Shape = gView.Framework.OGC.OGC.WKBToGeometry((byte[])obj);
 
-                            if (_spatialfilter != null &&
+                            if (_spatialfilter != null && 
+                                _spatialfilter.IgnoreFeatureCursorCheckIntersection != true &&
                                 _spatialfilter.SpatialRelation != spatialRelation.SpatialRelationMapEnvelopeIntersects)
                             {
                                 if (!gView.Framework.Geometry.SpatialRelation.Check(_spatialfilter, feature.Shape))

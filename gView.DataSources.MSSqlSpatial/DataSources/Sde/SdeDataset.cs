@@ -232,6 +232,8 @@ namespace gView.DataSources.MSSqlSpatial.DataSources.Sde
                     //
                     where.Append($"{fc.ShapeFieldName}.STIntersects(");
                     where.Append($"geometry::STGeomFromText('{WKT.ToWKT(sFilter.Geometry)}',{srid}))=1");
+
+                    //sFilter.IgnoreFeatureCursorCheckIntersection = true;
                 }
                 filter.AddField(fc.ShapeFieldName);
             }
@@ -259,7 +261,7 @@ namespace gView.DataSources.MSSqlSpatial.DataSources.Sde
                         fieldNames.Append(",");
                     }
 
-                    if (fieldName == "[" + fc.ShapeFieldName + "]")
+                    if ($"[{fc.ShapeFieldName}]".Equals(fieldName, StringComparison.OrdinalIgnoreCase))
                     {
                         fieldNames.Append(fc.ShapeFieldName + ".STAsBinary() as temp_geometry");
                         shapeFieldName = "temp_geometry";

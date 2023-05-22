@@ -30,6 +30,7 @@ namespace gView.Framework.Data.Filters
             this.Geometry = spatialFilter.Geometry;
             this.FilterSpatialReference = spatialFilter.FilterSpatialReference;
             this.SpatialRelation = spatialFilter.SpatialRelation;
+            this.IgnoreFeatureCursorCheckIntersection=spatialFilter.IgnoreFeatureCursorCheckIntersection;
         }
 
         #region ISpatialFilter Member
@@ -92,6 +93,8 @@ namespace gView.Framework.Data.Filters
                 _spatialRelation = value;
             }
         }
+
+        public bool IgnoreFeatureCursorCheckIntersection { get; set; } = false;
 
         #endregion
 
