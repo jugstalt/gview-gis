@@ -1,4 +1,5 @@
-﻿using gView.DataSources.MSSqlSpatial.DataSources.Sde.Repo;
+﻿using gView.DataSources.MSSqlSpatial.DataSources.Sde.Extensions;
+using gView.DataSources.MSSqlSpatial.DataSources.Sde.Repo;
 using gView.Framework.Data;
 using gView.Framework.Data.Filters;
 using gView.Framework.Geometry;
@@ -284,7 +285,9 @@ namespace gView.DataSources.MSSqlSpatial.DataSources.Sde
 
             if (filter.Limit > 0)
             {
-                if (String.IsNullOrEmpty(fc.IDFieldName) && orderBy.Length == 0 && !(filter is DistinctFilter))
+                if (RepoProvider.PreferTopThanOffset() ||
+                    (String.IsNullOrEmpty(fc.IDFieldName) && 
+                     orderBy.Length == 0 && !(filter is DistinctFilter)))
                 {
                     top.Append($"top({filter.Limit}) ");
                 }
