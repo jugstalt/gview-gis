@@ -8,6 +8,7 @@ public partial class ConnectionStringDialog
 {
     private bool _xmlLoaded = false;
     private XmlDocument? _xmlConfig;
+    private string? _connectionString;
 
     private void LoadXml()
     {
@@ -57,6 +58,44 @@ public partial class ConnectionStringDialog
         catch (Exception ex)
         {
 
+        }
+    }
+
+    private string[]? Parameters(XmlNode ConnectionType)
+    {
+        if (ConnectionType == null)
+        {
+            return null;
+        }
+
+        string commandLine = _connectionString = ConnectionType.InnerText.Trim();
+        int pos1 = 0, pos2;
+        pos1 = commandLine.IndexOf("[");
+        string parameters = "";
+
+        while (pos1 != -1)
+        {
+            pos2 = commandLine.IndexOf("]", pos1);
+            if (pos2 == -1)
+            {
+                break;
+            }
+
+            if (parameters != "")
+            {
+                parameters += ";";
+            }
+
+            parameters += commandLine.Substring(pos1 + 1, pos2 - pos1 - 1);
+            pos1 = commandLine.IndexOf("[", pos2);
+        }
+        if (parameters != "")
+        {
+            return parameters.Split(';');
+        }
+        else
+        {
+            return null;
         }
     }
 }
