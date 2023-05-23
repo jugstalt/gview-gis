@@ -17,17 +17,19 @@ public class LMap
 
     private bool _isInitialized = false;
 
-    internal LMap(LeafletInteropService leafletJs)
+    internal LMap(LeafletInteropService leafletJs, string? id)
     {
         _leafletJs = leafletJs;
         _layers = new List<Layer>();
 
-        this.Id = "gview_leaflet_map".AddGuid();
+        this.Id = String.IsNullOrEmpty(id) ? "gview_leaflet_map".AddGuid() : id;
     }
 
     #region Properties
 
     public string Id { get; }
+
+    internal bool IsIntialized => _isInitialized;
 
     public LatLng Center
     {

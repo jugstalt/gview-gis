@@ -3,6 +3,7 @@
 @inject LeafletService Leaflet
 @inject GeoTransformerService GeoTransformer
 @inject MapRenderService MapRenderer
+@inject EventBusService EventBus
 
 @if (LeafletMap != null)
 {
@@ -12,6 +13,9 @@
 @code {
     [Parameter] public IExplorerTabPage? FrameworkElement { get; set; }
     [Parameter] public IExplorerObject? CurrentExplorerObject { get; set; }
+
+    public IExplorerTabPage? _currentFrameworkElement = null;
+    public IExplorerObject? _currentExplorerObject = null;
 
     private LMap? LeafletMap { get; set; }
     private ImageLayer? ImageLayer = null;
@@ -23,6 +27,7 @@
         {
             await base.OnInitializedAsync();
             MapRenderer.OnRefreshMapImage += OnRefreshMapImage;
+            EventBus.OnExplorerTabPageChanged += OnExplorerTabPageChanged;
         });
 
     async protected override Task OnParametersSetAsync()
@@ -31,10 +36,14 @@
 
         await base.HandleAsync(async () =>
         {
-            if (FrameworkElement == null)
+            if (_currentExplorerObject == CurrentExplorerObject &&
+                _currentFrameworkElement == FrameworkElement)
             {
-                return;
+                return; // nothing changed, do not destry map
             }
+
+            _currentExplorerObject = CurrentExplorerObject;
+            _currentFrameworkElement = FrameworkElement;
 
             if (LeafletMap != null)
             {
@@ -43,11 +52,34 @@
                 await LeafletMap.Destroy();
             }
 
+            if (FrameworkElement == null || CurrentExplorerObject == null)
+            {
+                return;
+            }
+
+            var dataInstance = await CurrentExplorerObject.GetInstanceAsync();
+            if (dataInstance == null)
+            {
+                return;
+            }
+
             MapRenderer.InitMap(_mapSRef);
-            MapRenderer.AddFeatureClass(await CurrentExplorerObject.GetInstanceAsync() as IFeatureClass);
+
+            if (dataInstance is IFeatureClass)
+            {
+                MapRenderer.AddFeatureClass((IFeatureClass)dataInstance);
+            }
+            else if (dataInstance is IFeatureDataset)
+            {
+                await MapRenderer.AddFeatureDataset((IFeatureDataset)dataInstance);
+            }
+            else
+            {
+                throw new GeneralException($"Can't show spatial data from {dataInstance.GetType()}");
+            }
 
             await FrameworkElement.SetExplorerObjectAsync(CurrentExplorerObject);
-            LeafletMap = Leaflet.CreateMap();
+            LeafletMap = Leaflet.CreateMap(LeafletMap?.Id);
             LeafletMap.OnIntialized += OnMapInitialized;
 
             //LeafletMap.OnViewReset += OnMapViewRest;
@@ -145,6 +177,16 @@
         await LeafletMap.UpdateImageLayer(ImageLayer, $"data:image/png;base64, {Convert.ToBase64String(data ?? Array.Empty<byte>())}", null, null);
     }
 
+    private Task OnExplorerTabPageChanged(IExplorerTabPage? newPage, IExplorerTabPage? oldPage)
+    {
+        if(oldPage == FrameworkElement)
+        {
+            MapRenderer.CancelRender();
+        }
+
+        return Task.CompletedTask;
+    }
+
     async public ValueTask DisposeAsync()
     {
         MapRenderer.OnRefreshMapImage -= OnRefreshMapImage;
@@ -154,8 +196,8 @@
             LeafletMap.OnIntialized -= OnMapInitialized;
             
             //LeafletMap.OnViewReset -= OnMapViewRest;
-            LeafletMap.OnZoomEnd += OnMapViewRest;
-            LeafletMap.OnMoveEnd += OnMapViewRest;
+            LeafletMap.OnZoomEnd -= OnMapViewRest;
+            LeafletMap.OnMoveEnd -= OnMapViewRest;
 
             await LeafletMap.Destroy();
         }

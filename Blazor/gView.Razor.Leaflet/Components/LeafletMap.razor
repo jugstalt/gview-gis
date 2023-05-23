@@ -5,12 +5,26 @@
 @code {
     [Parameter] public required LMap Map { get; set; }
 
+    private bool _firstRenderDone = false;
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender)
+        if (firstRender || (_firstRenderDone && Map != null && Map.IsIntialized==false))  // firstRender or rebuild required
         {
-            await LeafletJs.Create(Map);
-            await Map.FireOnIntialized();
+            using (var mutex = await FuzzyMutexAsync.LockAsync(Map.Id))
+            {
+                if (mutex.WasBlocked) 
+                {
+                    return;
+                }
+
+                _firstRenderDone = true;
+
+                await Task.Delay(100);
+
+                await LeafletJs.Create(Map);
+                await Map.FireOnIntialized();
+            }
         }
     }
 }

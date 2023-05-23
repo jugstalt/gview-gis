@@ -11,7 +11,7 @@ public static class ServicesExtensions
             .AddTransient<SpatialReferenceService>()
             .AddTransient<GeoTransformerService>()
             .AddTransient<PluginManagerService>()
-            .AddTransient<MapRenderService>();
+            .AddScoped<MapRenderService>();
     }
 
     static public IServiceCollection AddIconService(this IServiceCollection services)

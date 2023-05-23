@@ -63,6 +63,19 @@ public class MapRenderService : IDisposable
         _map!.AddLayer(LayerFactory.Create(featureClass));
     }
 
+    async public Task AddFeatureDataset(IFeatureDataset featureDataset)
+    {
+        MapRendererNotIntializedException.ThrowIfNull(_map);
+
+        foreach(var datasetElement in await featureDataset.Elements())
+        {
+            if(datasetElement?.Class is IFeatureClass)
+            {
+                AddFeatureClass((IFeatureClass)datasetElement.Class);
+            }
+        }
+    }
+
     public void BeginRender()
     {
         MapRendererNotIntializedException.ThrowIfNull(_map);
@@ -72,6 +85,11 @@ public class MapRenderService : IDisposable
             var mapRenderInstance = await CreateMapRendererInstance();
             await mapRenderInstance.RefreshMap(DrawPhase.All, _cancelTracker = new CancelTracker());
         });
+    }
+
+    public void CancelRender()
+    {
+        _cancelTracker?.Cancel();
     }
 
     #region Helper

@@ -20,4 +20,8 @@
     <Folder Include="Components\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\gView.System\gView.System.csproj" />
+  </ItemGroup>
+
 </Project>

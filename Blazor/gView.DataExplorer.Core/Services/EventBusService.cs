@@ -22,5 +22,9 @@ public class EventBusService
 
     public event Func<IEnumerable<IExplorerObject>?, Task>? OnContextExplorerObjectsChanged;
     public Task FireContextExplorerObjectsChanged(IEnumerable<IExplorerObject>? item)
-        => OnContextExplorerObjectsChanged?.Invoke(item) ?? Task.CompletedTask;
+        => OnContextExplorerObjectsChanged?.FireAsync(item) ?? Task.CompletedTask;
+
+    public event Func<IExplorerTabPage?, IExplorerTabPage?, Task>? OnExplorerTabPageChanged;
+    public Task FireExplorerTabPageChanged(IExplorerTabPage? newTabPage, IExplorerTabPage? oldTabPage)
+        => OnExplorerTabPageChanged?.FireAsync(newTabPage, oldTabPage) ?? Task.CompletedTask;
 }

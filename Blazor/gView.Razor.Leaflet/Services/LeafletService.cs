@@ -9,8 +9,8 @@ public class LeafletService
         _leafletInterop = leafletInterop;
     }
 
-    public LMap CreateMap()
+    public LMap CreateMap(string? id)
     {
-        return new LMap(_leafletInterop);
+        return new LMap(_leafletInterop, id);
     }
 }
