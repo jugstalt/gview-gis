@@ -1,8 +1,10 @@
-﻿using gView.Framework.DataExplorer.Events;
+﻿using gView.Framework.Blazor.Services.Abstraction;
+using gView.Framework.DataExplorer.Events;
+using System.Threading.Tasks;
 
 namespace gView.Framework.DataExplorer.Abstraction;
 
 public interface IExplorerObjectDoubleClick
 {
-    void ExplorerObjectDoubleClick(ExplorerObjectEventArgs e);
+    Task ExplorerObjectDoubleClick(IApplicationScope appScope, ExplorerObjectEventArgs e);
 }

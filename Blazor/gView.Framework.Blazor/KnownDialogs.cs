@@ -5,6 +5,7 @@
         ExplorerDialog,
         SpatialReferenceDialog,
         GeographicProjectionSelectorDialog,
-        GeographicDatumSelectorDialog
+        GeographicDatumSelectorDialog,
+        ConnectionString
     }
 }

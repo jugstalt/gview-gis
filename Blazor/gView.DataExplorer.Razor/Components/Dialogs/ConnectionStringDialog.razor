@@ -1,0 +1,35 @@
+@inherits ModalDialogFormBase<ConnectionStringModel>
+@inject IconService Icons
+@inject IExplorerApplicationService ExplorerApplication
+
+<ModalDialogFormBase T="ConnectionStringModel"
+                      OnDialogClose="base.OnDialogClose"
+                      Model="base.Model">
+    <DialogBody>
+        <MudSelect Label="Provider" T="string"
+                    Variant="Variant.Outlined"
+                    Dense="true">
+                    @foreach (var provider in _providers)
+                    {
+                        <MudSelectItem Value="@provider.Key">
+                            <div>
+                                <MudText>@provider.Value</MudText>
+                            </div>
+                        </MudSelectItem>
+                    }
+        </MudSelect>
+    </DialogBody>
+
+</ModalDialogFormBase>
+
+@code{
+    private Dictionary<string, string> _providers = new Dictionary<string, string>();
+    private Dictionary<string, string> _connections = new Dictionary<string, string>();
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+
+        LoadXml();  // intialize Conenctions/Providers
+    }
+}

@@ -17,7 +17,12 @@ public class MapRenderService : IDisposable
     private MapRenderInstance2? _renderer;
     private ICancelTracker? _cancelTracker;
 
-    public MapRenderService() { }
+    private readonly GeoTransformerService _geoTransformer;
+
+    public MapRenderService(GeoTransformerService geoTransformer)
+    {
+        _geoTransformer = geoTransformer;
+    }
 
     #region IDispose
 
@@ -34,14 +39,37 @@ public class MapRenderService : IDisposable
     {
         ReleaseCurrentMapRendererInstance();
 
+        #region Remember current extent and size
+
+        var bounds = _map?.Envelope;
+        var iWidth = _map?.iWidth;
+        var iHeight = _map?.iHeight;
+        var sRef = _map?.SpatialReference;
+
+        #endregion
+
         if (_map != null)
         {
             _map.Dispose();
+            _map.NewBitmap -= NewBitmapCreated;
+            _map.DoRefreshMapView -= MakeMapViewRefresh;
         }
 
         _map = new Map();
         _map.Display.SpatialReference = mapSRef;
         _map.MakeTransparent = true;
+
+        #region Recover current extend and size
+
+        if (bounds != null && iWidth.HasValue && iHeight.HasValue && sRef != null)
+        {
+            bounds = _geoTransformer.Transform(bounds, sRef, mapSRef).Envelope;
+            _map.Envelope = bounds;
+            _map.iWidth = iWidth.Value;
+            _map.iHeight = iHeight.Value;
+        }
+
+        #endregion
 
         _map.NewBitmap += NewBitmapCreated;
         _map.DoRefreshMapView += MakeMapViewRefresh;
@@ -51,12 +79,21 @@ public class MapRenderService : IDisposable
     {
         MapRendererNotIntializedException.ThrowIfNull(_map);
 
-        _map!.Display.iWidth = imageWidth;
-        _map!.Display.iHeight=imageHeight;
-        _map!.Display.ZoomTo(bounds);
+        _map.Display.iWidth = imageWidth;
+        _map.Display.iHeight = imageHeight;
+        _map.Display.ZoomTo(bounds);
     }
 
-    public void AddFeatureClass(IFeatureClass featureClass) 
+    #region Properties
+
+    public IEnvelope Bounds => _map?.Envelope ?? Envelope.Null();
+    public int ImageWidth => _map?.iWidth ?? 0;
+    public int ImageHeight=> _map?.iHeight ?? 0;
+    public ISpatialReference SpatialReference => _map?.SpatialReference ?? new SpatialReference("wgs:3857");
+
+    #endregion
+
+    public void AddFeatureClass(IFeatureClass featureClass)
     {
         MapRendererNotIntializedException.ThrowIfNull(_map);
 
@@ -67,9 +104,9 @@ public class MapRenderService : IDisposable
     {
         MapRendererNotIntializedException.ThrowIfNull(_map);
 
-        foreach(var datasetElement in await featureDataset.Elements())
+        foreach (var datasetElement in await featureDataset.Elements())
         {
-            if(datasetElement?.Class is IFeatureClass)
+            if (datasetElement?.Class is IFeatureClass)
             {
                 AddFeatureClass((IFeatureClass)datasetElement.Class);
             }
@@ -108,7 +145,7 @@ public class MapRenderService : IDisposable
 
     private void ReleaseCurrentMapRendererInstance()
     {
-        if(_cancelTracker != null)
+        if (_cancelTracker != null)
         {
             _cancelTracker.Cancel();
         }
@@ -141,7 +178,7 @@ public class MapRenderService : IDisposable
 
     private void DisposeMap()
     {
-        if (_map != null )
+        if (_map != null)
         {
             _map.Dispose();
             _map = null;
@@ -164,8 +201,8 @@ public class MapRenderService : IDisposable
     public delegate Task RefreshMapImage(byte[] data);
     public event RefreshMapImage? OnRefreshMapImage;
 
-    public void FireRefreshMapImage(byte[]? data) 
-        => OnRefreshMapImage?.Invoke(data); 
+    public void FireRefreshMapImage(byte[]? data)
+        => OnRefreshMapImage?.Invoke(data);
 
     #endregion
 

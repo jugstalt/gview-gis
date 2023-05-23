@@ -12,7 +12,7 @@
             <MudTabPanel Text="@tabPage.Title"
                            Activated="async () => await OnShowTabPage(tabPage)"
                            ToolTip=""
-                          Style="">
+                           Style="">
                 <DynamicComponent Type="@(tabPage.RazorComponent)"
                                    Parameters="@(new Dictionary<string, object?>() { ["FrameworkElement"] = tabPage, ["CurrentExplorerObject"] = CurrentExplorerObject })" />
             </MudTabPanel>

@@ -7,7 +7,7 @@ namespace gView.Razor.Base;
 public class ModalDialogFormBase<T> : ModalDialogForm
     where T : IDialogResultItem
 {
-    [Parameter] public EventCallback<gView.Blazor.Models.Dialogs.DialogResult> OnDialogClose { get; set; }
+    [Parameter] public EventCallback<DialogResult> OnDialogClose { get; set; }
     [Parameter] public T Model { get; set; } = Activator.CreateInstance<T>();
 
     override protected Task Submit()

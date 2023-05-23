@@ -34,10 +34,7 @@ public class ComputerObject : ExplorerParentObject, IExplorerObject
 
     public string Icon => "basic:monitor";
 
-    public Task<object?> GetInstanceAsync()
-    {
-        return Task.FromResult<object?>(null);
-    }
+    public Task<object?> GetInstanceAsync() => Task.FromResult<object?>(null);
 
     #endregion
 

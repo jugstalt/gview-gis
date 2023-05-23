@@ -22,7 +22,7 @@
                     <MudTd Class="@(selectedExplorerObjects?.Contains(context.ExplorerObject) == true ? "context-selected" : "")">
                        <div style="vertical-align:top;display:inline-flex;width:100%;cursor:pointer"
                         @onclick="@((mEvent) => OnRowCLickAsync(mEvent, context))" @onclick:stopPropagation="true"
-                            @ondblclick="@((x) => OnRowDoubleCLick(context))">
+                            @ondblclick="@(() => OnRowDoubleCLick(context))">
                             @if (first == true && !String.IsNullOrEmpty(context.Icon))
                             {
                                 <MudIcon Icon="@Icons.FromString(context.Icon)" />
@@ -84,15 +84,29 @@
                             { ShiftKey: true } => GenericAddToStrategy.AddAllBetweenLastItem,
                             { CtrlKey: true } => GenericAddToStrategy.AddOrRemoveIfExists,
                             _ => GenericAddToStrategy.RemoveOthers
-                    })!));
+                        })!));
 
-    private void OnRowDoubleCLick(RowItem row)
-    {
-        if (row.ExplorerObject != null)
+    private Task OnRowDoubleCLick(RowItem row)
+        => HandleAsync(async () =>
         {
-            EventBus.SetCurrentExplorerObjectAsync(row.ExplorerObject);
-        }
-    }
+            if (row.ExplorerObject != null)
+            {
+                if (row.ExplorerObject is IExplorerObjectDoubleClick)
+                {
+                    var args = new Framework.DataExplorer.Events.ExplorerObjectEventArgs();
+
+                    await ((IExplorerObjectDoubleClick)row.ExplorerObject).ExplorerObjectDoubleClick(Scope, args);
+                    if(args.NewExplorerObject!=null)
+                    {
+                        await EventBus.FireFreshContentAsync();
+                    }
+                }
+                else
+                {
+                    await EventBus.SetCurrentExplorerObjectAsync(row.ExplorerObject);
+                }
+            }
+        });
 
     private Task RefreshContentAsync()
        => base.HandleAsync(async () =>

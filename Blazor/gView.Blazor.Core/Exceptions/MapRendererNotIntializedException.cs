@@ -1,13 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Runtime.CompilerServices;
-using System.Text;
+using System.Diagnostics.CodeAnalysis;
 
 namespace gView.Blazor.Core.Exceptions;
 internal class MapRendererNotIntializedException : Exception
 {
-    static public void ThrowIfNull(object? obj)
+    static public void ThrowIfNull([NotNull] object? obj)
     {
-        if(obj == null) throw new MapRendererNotIntializedException();
+        if (obj == null) throw new MapRendererNotIntializedException();
     }
 }

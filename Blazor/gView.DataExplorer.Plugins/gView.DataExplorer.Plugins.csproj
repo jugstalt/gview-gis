@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\gView.DataSources.Fdb.SQLite\gView.DataSources.Fdb.SQLite.csproj" />
+    <ProjectReference Include="..\..\gView.DataSources.PostGIS\gView.DataSources.PostGIS.csproj" />
     <ProjectReference Include="..\..\gView.DataSources.Shape\gView.DataSources.Shape.csproj" />
     <ProjectReference Include="..\gView.Blazor.Core\gView.Blazor.Core.csproj" />
     <ProjectReference Include="..\gView.Blazor.Models\gView.Blazor.Models.csproj" />
