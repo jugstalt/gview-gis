@@ -1,10 +1,12 @@
 ﻿using gView.DataExplorer.Plugins.ExplorerObjects.Base;
+using gView.DataExplorer.Plugins.ExplorerObjects.Fdb.ContextTools;
 using gView.DataSources.PostGIS;
 using gView.Framework.Data;
 using gView.Framework.DataExplorer.Abstraction;
 using gView.Framework.DataExplorer.Events;
 using gView.Framework.Db;
 using gView.Framework.IO;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -14,13 +16,13 @@ public class PostGISExplorerObject : ExplorerParentObject,
                                      IExplorerSimpleObject, 
                                      IExplorerObjectDeletable, 
                                      IExplorerObjectRenamable, 
-                                     ISerializableExplorerObject 
-                                     //,IExplorerObjectContextMenu
+                                     ISerializableExplorerObject,
+                                     IExplorerObjectContextTools
 {
     private string _server = "";
     private IFeatureDataset? _dataset;
     private DbConnectionString? _connectionString;
-    //private ToolStripItem[] _contextItems = null;
+    private IEnumerable<IExplorerObjectContextTool>? _contextTools = null;
 
     public PostGISExplorerObject() : base(null, typeof(IFeatureDataset), 0) { }
     public PostGISExplorerObject(IExplorerObject parent, string server, DbConnectionString connectionString)
@@ -29,13 +31,10 @@ public class PostGISExplorerObject : ExplorerParentObject,
         _server = server;
         _connectionString = connectionString;
 
-        // ToDo:
-        //List<ToolStripMenuItem> items = new List<ToolStripMenuItem>();
-        //ToolStripMenuItem item = new ToolStripMenuItem(LocalizedResources.GetResString("Menu.ConnectionProperties", "Connection Properties..."));
-        //item.Click += new EventHandler(ConnectionProperties_Click);
-        //items.Add(item);
-
-        //_contextItems = items.ToArray();
+        _contextTools = new IExplorerObjectContextTool[]
+        {
+            new UpdateConnectionString()
+        };
     }
 
     //void ConnectionProperties_Click(object sender, EventArgs e)
@@ -62,6 +61,11 @@ public class PostGISExplorerObject : ExplorerParentObject,
 
     internal string ConnectionString => _connectionString.ConnectionString;
 
+    #region IExplorerObjectContextTools
+
+    public IEnumerable<IExplorerObjectContextTool> ContextTools => _contextTools ?? Array.Empty<IExplorerObjectContextTool>();
+
+    #endregion
 
     #region IExplorerObject Members
 

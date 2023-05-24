@@ -2,7 +2,7 @@
 {
     public interface IExplorerGroupObject : IExplorerObject
     {
-
+        public void SetParentExplorerObject(IExplorerObject parentExplorerObject);
     }
 
 }

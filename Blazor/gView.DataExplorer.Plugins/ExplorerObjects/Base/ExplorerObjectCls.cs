@@ -5,7 +5,7 @@ namespace gView.DataExplorer.Plugins.ExplorerObjects.Base;
 
 public class ExplorerObjectCls
 {
-    private IExplorerObject? _parent;
+    protected IExplorerObject? _parent;
     private Type? _type = typeof(object);
 
     public ExplorerObjectCls(IExplorerObject? parent, Type? type, int priority)

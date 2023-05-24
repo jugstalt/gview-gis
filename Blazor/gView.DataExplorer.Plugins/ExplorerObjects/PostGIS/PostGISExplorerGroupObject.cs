@@ -86,4 +86,13 @@ public class PostGISExplorerGroupObject : ExplorerParentObject, IOgcGroupExplore
     }
 
     #endregion
+
+    #region IOgcGroupExplorerObject
+
+    public void SetParentExplorerObject(IExplorerObject parentExplorerObject)
+    {
+        base._parent = parentExplorerObject;
+    }
+
+    #endregion
 }

@@ -14,6 +14,11 @@ public class OGCExplorerGroupObject : ExplorerParentObject, IExplorerGroupObject
 
     public string Icon => "basic:globe-table";
 
+    public void SetParentExplorerObject(IExplorerObject parentExplorerObject)
+    {
+        base._parent = parentExplorerObject;
+    }
+
     #endregion
 
     #region IExplorerObject Members
@@ -42,6 +47,8 @@ public class OGCExplorerGroupObject : ExplorerParentObject, IExplorerGroupObject
             {
                 continue;
             }
+
+            ((IOgcGroupExplorerObject)exObject).SetParentExplorerObject(this);
 
             base.AddChildObject(exObject);
         }

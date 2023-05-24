@@ -5,6 +5,8 @@ using gView.Framework.Blazor;
 using gView.Framework.Blazor.Services.Abstraction;
 using gView.Framework.DataExplorer.Abstraction;
 using gView.Framework.DataExplorer.Events;
+using gView.Framework.Db;
+using gView.Framework.IO;
 using gView.Framework.Network;
 using gView.Framework.system;
 using System.Threading.Tasks;
@@ -54,25 +56,20 @@ public class PostGISNewConnectionObject : ExplorerObjectCls, IExplorerSimpleObje
     async public Task ExplorerObjectDoubleClick(IApplicationScope appScope, ExplorerObjectEventArgs e)
     {
         var model = await appScope.ToScopeService().ShowKnownDialog(KnownDialogs.ConnectionString,
-                                                                    model: new ConnectionStringModel("postgre"));
+                                                                    model: new ConnectionStringModel("postgre", false));
 
-        // ToDo:
-        //FormConnectionString dlg = new FormConnectionString();
-        //dlg.ProviderID = "postgre";
-        //dlg.UseProviderInConnectionString = false;
+        if (model != null)
+        {
+            DbConnectionString dbConnStr = model.DbConnectionString;
+            ConfigConnections connStream = new ConfigConnections("postgis", "546B0513-D71D-4490-9E27-94CD5D72C64A");
 
-        //if (dlg.ShowDialog() == System.Windows.Forms.DialogResult.OK)
-        //{
-        //    DbConnectionString dbConnStr = dlg.DbConnectionString;
-        //    ConfigConnections connStream = new ConfigConnections("postgis", "546B0513-D71D-4490-9E27-94CD5D72C64A");
+            string connectionString = dbConnStr.ConnectionString;
+            string id = ConfigTextStream.ExtractValue(connectionString, "database");
+            id = connStream.GetName(id);
+            connStream.Add(id, dbConnStr.ToString());
 
-        //    string connectionString = dbConnStr.ConnectionString;
-        //    string id = ConfigTextStream.ExtractValue(connectionString, "database");
-        //    id = connStream.GetName(id);
-        //    connStream.Add(id, dbConnStr.ToString());
-
-        //    e.NewExplorerObject = new PostGISExplorerObject(this.ParentExplorerObject, id, dbConnStr);
-        //}
+            e.NewExplorerObject = new PostGISExplorerObject(this.ParentExplorerObject, id, dbConnStr);
+        }
     }
 
     #endregion

@@ -2,34 +2,132 @@
 @inject IconService Icons
 @inject IExplorerApplicationService ExplorerApplication
 
-<ModalDialogFormBase T="ConnectionStringModel"
-                      OnDialogClose="base.OnDialogClose"
-                      Model="base.Model">
-    <DialogBody>
-        <MudSelect Label="Provider" T="string"
-                    Variant="Variant.Outlined"
-                    Dense="true">
-                    @foreach (var provider in _providers)
+@if (_commondDbConnections?.Providers != null)
+{
+
+    <ModalDialogFormBase T="ConnectionStringModel"
+                          OnDialogClose="base.OnDialogClose"
+                          Model="base.Model">
+        <DialogBody>
+            <MudSelect Label="Provider" T="string" Style="min-width:280px;display:none" 
+                        @bind-Value="_currentProvider"
+                        Variant="Variant.Outlined"
+                        Dense="true">
+                @foreach (var provider in _commondDbConnections.Providers)
+                {
+                    <MudSelectItem Value="@provider.Id">
+                        @provider.Name
+                    </MudSelectItem>
+                }
+            </MudSelect>
+
+            @{
+                var schemes = _commondDbConnections.Providers.Where(p => p.Id == _currentProvider).FirstOrDefault().Schemes;
+                if(schemes?.Where(s=>s.Name==_currentScheme).Any() != true)
+                {
+                    _currentScheme = schemes?.FirstOrDefault()?.Name;
+                }
+            }
+            @if (schemes != null)
+            {
+                <MudSelect Label="Connection Type" T="string"
+                           @bind-Value="_currentScheme" 
+                           Variant="Variant.Text"
+                           Dense="true">
+                    @foreach (var scheme in _commondDbConnections.Providers.Where(p => p.Id == _currentProvider).First().Schemes)
                     {
-                        <MudSelectItem Value="@provider.Key">
-                            <div>
-                                <MudText>@provider.Value</MudText>
-                            </div>
+                        <MudSelectItem Value="scheme.Name"> 
+                            @scheme.Name
                         </MudSelectItem>
                     }
-        </MudSelect>
-    </DialogBody>
+                </MudSelect>
+            }
 
-</ModalDialogFormBase>
+            @{
+                var scheme = schemes?.Where(s => s.Name == _currentScheme).FirstOrDefault();
+            }
+
+            @if(scheme != null)
+            {
+                <MudGrid>
+                    @foreach(var parameter in ConnectionStringParameters(_connectionString = scheme.ConnectionString))
+                    {
+                        if(!_parameters.ContainsKey(parameter))
+                        {
+                            _parameters.Add(parameter, "");
+                        }
+                        <MudItem xs="12" sm="6" md="6">
+                            <MudTextField Label="@parameter" T="string"
+                                          @bind-Value="_parameters[parameter]"
+                                          InputType="GetInputType(parameter)"
+                                          Variant="Variant.Text"></MudTextField>
+                        </MudItem>
+                    }
+                </MudGrid>
+            }
+
+        </DialogBody>
+        <DialogButtons>
+            <MudButton Variant="Variant.Filled"
+                       Color="Color.Default"
+                       OnClick="TestConnection">Test Connection</MudButton>
+            <MudButton Variant="Variant.Filled"
+                       Color="Color.Primary"
+                       OnClick="SetConnection">Confirm</MudButton>
+        </DialogButtons>
+    </ModalDialogFormBase>
+}
 
 @code{
-    private Dictionary<string, string> _providers = new Dictionary<string, string>();
-    private Dictionary<string, string> _connections = new Dictionary<string, string>();
+    private string _currentProvider = string.Empty;
+    private string? _currentScheme = string.Empty;
 
-    protected override void OnInitialized()
+    private string _connectionString = string.Empty;
+    private Dictionary<string, string> _parameters = new Dictionary<string, string>();
+
+    async protected override Task OnInitializedAsync()
     {
-        base.OnInitialized();
+        await base.OnInitializedAsync();
 
-        LoadXml();  // intialize Conenctions/Providers
+        await LoadConnectionStringsModel();  // intialize Conenctions/Providers
+
+        _currentProvider = Model.ProviderId;
+        if (!String.IsNullOrEmpty(_currentProvider) && _commondDbConnections?.Providers != null)
+        {
+            _commondDbConnections.Providers = _commondDbConnections.Providers.Where(p => p.Id == _currentProvider).ToArray();
+        }
     }
+
+    private void TestConnection()
+    {
+
+    }
+
+    protected Task SetConnection()
+    {
+        string connectionString = _connectionString;
+        foreach(var parameter in _parameters.Keys)
+        {
+            connectionString = connectionString.Replace($"[{parameter}]", _parameters[parameter]);
+        }
+
+        Model.DbConnectionString.ProviderID = _currentProvider;
+        Model.DbConnectionString.SchemaName = _currentScheme;
+        Model.DbConnectionString.TryFromConnectionString(_currentProvider, connectionString);
+
+        return base.Submit();
+    }
+
+    #region Helper
+
+    private InputType GetInputType(string parameter)
+    => base.HandleFunc(() => parameter.ToLower() switch
+                                {
+                                    "password" => InputType.Password,
+                                    "port" => InputType.Number,
+                                    _ => InputType.Text
+                                });
+
+
+    #endregion
 }

@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Xml;
+using System.Text.Json;
 
 namespace gView.Framework.Db
 {
@@ -39,35 +39,37 @@ namespace gView.Framework.Db
             {
                 try
                 {
-                    XmlDocument doc = new XmlDocument();
-                    doc.Load(SystemVariables.ApplicationDirectory + @"/gview.db.ui.xml");
+                    string configPath = Path.Combine(SystemVariables.ApplicationDirectory, "gView.DB.UI.json");
 
-                    XmlNode providerNode = doc.SelectSingleNode("//connectionStrings/provider[@id='" + _providerID + "']");
-                    if (providerNode == null)
+                    var commondDbConnections = JsonSerializer.Deserialize<CommonDbConnectionsModelModel>(File.ReadAllText(configPath),
+                        new JsonSerializerOptions
+                        {
+                            PropertyNameCaseInsensitive = true
+                        });
+
+                    var provider = commondDbConnections?.Providers?.Where(p => p.Id == _providerID).FirstOrDefault();
+                    if (provider == null)
                     {
                         return String.Empty;
                     }
 
-                    XmlNode schemaNode = providerNode.SelectSingleNode("schema[@name='" + _schemaName + "']");
-                    if (schemaNode == null)
+                    var scheme = provider.Schemes?.Where(s => s.Name == _schemaName).FirstOrDefault();
+                    if (scheme == null)
                     {
-                        return string.Empty;
+                        return String.Empty;
                     }
 
-                    string connectionString = schemaNode.InnerText.Trim();
-                    if (providerNode.Attributes["provider"] != null &&
-                        !String.IsNullOrEmpty(providerNode.Attributes["provider"].Value))
+                    string connectionString = scheme.ConnectionString;
+
+                    if (_useProvider)
                     {
-                        if (_useProvider)
-                        {
-                            connectionString = providerNode.Attributes["provider"].Value + ":" + connectionString;
-                        }
+                        connectionString = $"{provider.Id}:{connectionString}";
                     }
 
                     foreach (string key in this.UserDataTypes)
                     {
                         string val = (this.GetUserData(key) != null) ? this.GetUserData(key).ToString() : String.Empty;
-                        connectionString = connectionString.Replace("[" + key + "]", val);
+                        connectionString = connectionString.Replace($"[{key}]", val);
                     }
 
                     return connectionString;
@@ -196,10 +198,13 @@ namespace gView.Framework.Db
         {
             try
             {
-                string appPath = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly().Location);
+                string configPath = Path.Combine(SystemVariables.ApplicationDirectory, "gView.DB.UI.json");
 
-                XmlDocument doc = new XmlDocument();
-                doc.Load(appPath + @"/gview.db.ui.xml");
+                var commondDbConnections = JsonSerializer.Deserialize<CommonDbConnectionsModelModel>(File.ReadAllText(configPath),
+                    new JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true
+                    });
 
                 while (connectionString.EndsWith(";"))
                 {
@@ -208,22 +213,28 @@ namespace gView.Framework.Db
 
                 Dictionary<string, string> connStrDic = ConfigTextStream.Extract(connectionString.Trim());
 
-                XmlNode providerNode = doc.SelectSingleNode("configuration/connectionStrings/provider[@id='" + providerId + "']");
-                foreach (XmlNode schemaNode in providerNode.SelectNodes("schema[@name]"))
+                var provider = commondDbConnections?.Providers?.Where(p => p.Id == providerId).FirstOrDefault();
+                if (provider?.Schemes == null)
                 {
-                    string schema = schemaNode.InnerText.Trim();
-                    while (schema.EndsWith(";"))
+                    return false;
+                }
+
+                foreach (var scheme in provider.Schemes)
+                {
+                    var schemeName = scheme.Name;
+                    while (schemeName.EndsWith(";"))
                     {
-                        schema = schema.Substring(0, schema.Length - 1).Trim();
+                        schemeName = schemeName.Substring(0, schemeName.Length - 1).Trim();
                     }
 
-                    Dictionary<string, string> schemaDic = ConfigTextStream.Extract(schema);
+                    Dictionary<string, string> schemaDic = ConfigTextStream.Extract(scheme.ConnectionString);
 
                     if (CompareConnectionStringDictionary(connStrDic, schemaDic))
                     {
                         SetUserParameters(connStrDic, schemaDic);
-                        _providerID = providerId;
-                        _schemaName = schemaNode.Attributes["name"].Value;
+                        _providerID = provider.Id;
+                        _schemaName = schemeName;
+
                         return true;
                     }
                 }
@@ -235,6 +246,7 @@ namespace gView.Framework.Db
         }
 
         #region Helper
+
         private void SetUserParameters(
             Dictionary<string, string> connStrDic,
             Dictionary<string, string> schemaDic)
@@ -294,6 +306,7 @@ namespace gView.Framework.Db
             }
             return true;
         }
+
         private string DictionaryKey(Dictionary<string, string> dic, int index)
         {
             int i = 0;
@@ -308,6 +321,7 @@ namespace gView.Framework.Db
             }
             return String.Empty;
         }
+
         #endregion
 
         #region Static Members

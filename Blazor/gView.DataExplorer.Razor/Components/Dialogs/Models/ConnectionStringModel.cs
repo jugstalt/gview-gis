@@ -14,6 +14,13 @@ public class ConnectionStringModel : IDialogResultItem
     }
 
     public ConnectionStringModel(string providerId,
+                                 bool UseProviderInConnectionString)
+    {
+        _providerId = providerId;
+        _dbConnectionString = new DbConnectionString() { UseProviderInConnectionString = false };
+    }
+
+    public ConnectionStringModel(string providerId,
                                  DbConnectionString? dbConnectionString = null)
     {
         _providerId = providerId;

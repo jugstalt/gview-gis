@@ -90,6 +90,7 @@ public class ComputerObject : ExplorerParentObject, IExplorerObject
                 continue;
             }
 
+            ((IExplorerGroupObject)exObject).SetParentExplorerObject(this);
             base.AddChildObject(exObject);
         }
 
