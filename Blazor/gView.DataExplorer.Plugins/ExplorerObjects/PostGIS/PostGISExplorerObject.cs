@@ -1,5 +1,6 @@
-﻿using gView.DataExplorer.Plugins.ExplorerObjects.Base;
-using gView.DataExplorer.Plugins.ExplorerObjects.Fdb.ContextTools;
+﻿using gView.Blazor.Core.Exceptions;
+using gView.DataExplorer.Plugins.ExplorerObjects.Base;
+using gView.DataExplorer.Plugins.ExplorerObjects.Base.ContextTools;
 using gView.DataSources.PostGIS;
 using gView.Framework.Data;
 using gView.Framework.DataExplorer.Abstraction;
@@ -12,12 +13,13 @@ using System.Threading.Tasks;
 
 namespace gView.DataExplorer.Plugins.ExplorerObjects.PostGIS;
 
-public class PostGISExplorerObject : ExplorerParentObject, 
-                                     IExplorerSimpleObject, 
-                                     IExplorerObjectDeletable, 
-                                     IExplorerObjectRenamable, 
+public class PostGISExplorerObject : ExplorerParentObject,
+                                     IExplorerSimpleObject,
+                                     IExplorerObjectDeletable,
+                                     IExplorerObjectRenamable,
                                      ISerializableExplorerObject,
-                                     IExplorerObjectContextTools
+                                     IExplorerObjectContextTools,
+                                     IUpdateConnectionString
 {
     private string _server = "";
     private IFeatureDataset? _dataset;
@@ -37,29 +39,30 @@ public class PostGISExplorerObject : ExplorerParentObject,
         };
     }
 
-    //void ConnectionProperties_Click(object sender, EventArgs e)
-    //{
-    //    if (_connectionString == null)
-    //    {
-    //        return;
-    //    }
+    #region IUpdateConnectionString
 
-    //    FormConnectionString dlg = new FormConnectionString(_connectionString);
-    //    dlg.ProviderID = "postgre";
-    //    dlg.UseProviderInConnectionString = false;
+    public DbConnectionString GetDbConnectionString()
+    {
+        if (_connectionString == null)
+        {
+            throw new GeneralException("Error: connection string not set already for this item");
+        }
 
-    //    if (dlg.ShowDialog() == DialogResult.OK)
-    //    {
-    //        DbConnectionString dbConnStr = dlg.DbConnectionString;
+        return _connectionString.Clone();
+    }
+    public Task<bool> UpdateDbConnectionString(DbConnectionString dbConnnectionString)
+    {
+        ConfigConnections connStream = new ConfigConnections("postgis", "546B0513-D71D-4490-9E27-94CD5D72C64A");
+        connStream.Add(_server, dbConnnectionString.ToString());
 
-    //        ConfigConnections connStream = new ConfigConnections("postgis", "546B0513-D71D-4490-9E27-94CD5D72C64A");
-    //        connStream.Add(_server, dbConnStr.ToString());
+        _connectionString = dbConnnectionString;
 
-    //        _connectionString = dbConnStr;
-    //    }
-    //}
+        return Task.FromResult(true);
+    }
 
-    internal string ConnectionString => _connectionString.ConnectionString;
+    #endregion
+
+    internal string ConnectionString => _connectionString?.ConnectionString ?? String.Empty;
 
     #region IExplorerObjectContextTools
 
@@ -73,7 +76,7 @@ public class PostGISExplorerObject : ExplorerParentObject,
 
     public string FullName => @"OGC\PostGIS\" + _server;
 
-    public string Type=>"PostGIS Database";
+    public string Type => "PostGIS Database";
 
     public string Icon => "basic:database";
 
@@ -207,13 +210,4 @@ public class PostGISExplorerObject : ExplorerParentObject,
     }
 
     #endregion
-
-    //#region IExplorerObjectContextMenu Member
-
-    //public ToolStripItem[] ContextMenuItems
-    //{
-    //    get { return _contextItems; }
-    //}
-
-    //#endregion
 }

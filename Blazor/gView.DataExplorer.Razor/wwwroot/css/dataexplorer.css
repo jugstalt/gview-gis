@@ -104,7 +104,7 @@
         position: absolute;
         left: 0px;
         top: 144px;
-        bottom: 0px;
+        bottom: 27px;
         width: 300px;
         background: #fff;
         overflow: auto;
@@ -115,7 +115,7 @@
         left: 302px;
         top: 144px;
         right: 0px;
-        bottom: 0px;
+        bottom: 27px;
         background: #efefef;
         overflow: auto;
         padding:0px;
@@ -133,6 +133,16 @@
                 .dataexplorer-main .content .mud-tabs .mud-tabs-panels .mud-table-container {
                     overflow: unset !important;
                 }
+
+    .dataexplorer-main .status-bar {
+        position: absolute;
+        left: 0px;
+        bottom: 0px;
+        right: 0px;
+        height: 25px;
+        background: #aaa;
+        overflow: hidden;
+    }
 
 .table-column-icon {
     width: 30px;

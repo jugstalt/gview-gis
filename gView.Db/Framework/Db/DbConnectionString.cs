@@ -15,7 +15,7 @@ namespace gView.Framework.Db
         private string _schemaName = String.Empty;
         private bool _useProvider = true;
 
-        public string ProviderID
+        public string ProviderId
         {
             get { return _providerID; }
             set { _providerID = value; }
@@ -176,6 +176,7 @@ namespace gView.Framework.Db
 
             #endregion
         }
+
         #endregion
 
         public override string ToString()
@@ -245,6 +246,19 @@ namespace gView.Framework.Db
             return false;
         }
 
+        public DbConnectionString Clone()
+        {
+            var clone = DbConnectionString.Build(_providerID, _useProvider);
+            clone._schemaName = _schemaName;
+
+            foreach (var key in this.UserDataTypes)
+            {
+                clone.SetUserData(key, this.GetUserData(key));
+            }
+
+            return clone;
+        }
+
         #region Helper
 
         private void SetUserParameters(
@@ -266,7 +280,8 @@ namespace gView.Framework.Db
                 if (schemaValue.StartsWith("[") &&
                     schemaValue.EndsWith("]"))
                 {
-                    this.SetUserData(schemaKey, connStrValue);
+                    //this.SetUserData(schemaKey, connStrValue);
+                    this.SetUserData(schemaValue.Substring(1, schemaValue.Length - 2), connStrValue);
                 }
             }
         }
@@ -374,6 +389,24 @@ namespace gView.Framework.Db
             }
 
             return sb.ToString();
+        }
+
+        static public DbConnectionString Build(string providerId,
+                                               bool useProviderInConnectinString = true,
+                                               string connectionString = null)
+        {
+            var dbConnectionString = new DbConnectionString()
+            {
+                ProviderId = providerId,
+                UseProviderInConnectionString = useProviderInConnectinString
+            };
+
+            if (connectionString != null)
+            {
+                dbConnectionString.TryFromConnectionString(providerId, connectionString);
+            }
+
+            return dbConnectionString;
         }
 
         #endregion

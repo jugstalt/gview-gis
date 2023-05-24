@@ -70,6 +70,8 @@ namespace gView.Framework.Db
                             sqlConnection.Close();
                         }
                         break;
+                    case "postgre":
+                    case "postgis":
                     case "npgsql":
                         try
                         {

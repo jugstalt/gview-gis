@@ -12,4 +12,6 @@ public interface IApplicationScope : IDisposable
     Task<T?> ShowKnownDialog<T>(KnownDialogs dialog,
                                              string? title = null,
                                              T? model = default);
+
+    Task<IAsyncDisposable> RegisterBusyTaskAsync(string task);
 }

@@ -5,6 +5,7 @@ using gView.DataExplorer.Core.Services;
 using gView.Framework.Blazor;
 using gView.Framework.Blazor.Services.Abstraction;
 using gView.Framework.DataExplorer.Abstraction;
+using gView.Framework.system;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
 using System;
@@ -133,4 +134,56 @@ public class ExplorerApplicationScopeService : IApplicationScope
 
         return await ShowModalDialog(knownDialog.RazorType, title ?? knownDialog.Title, model);
     }
+
+    #region Busy Context
+
+    private int _runningBusyTasks = 0;
+
+    public async Task<IAsyncDisposable> RegisterBusyTaskAsync(string task)
+    {
+        using (var mutex = await FuzzyMutexAsync.LockAsync("busy"))
+        {
+            _runningBusyTasks++;
+            await _eventBus.FireBusyStatusChanged(true, task);
+            return new BusyTask(this, task);
+        }
+    }
+
+    async private Task ReleaseBusyTaskAsync(BusyTask busyTask)
+    {
+        using (var mutex = await FuzzyMutexAsync.LockAsync("busy"))
+        {
+            //--_runningBusyTasks;
+            await _eventBus.FireBusyStatusChanged(_runningBusyTasks > 0, String.Empty);
+        }
+    }
+
+    #region Classes
+
+    private class BusyTask : IAsyncDisposable
+    {
+        private readonly ExplorerApplicationScopeService _appScope;
+        private readonly string _task;
+
+        public BusyTask(ExplorerApplicationScopeService app, string task)
+        {
+            _appScope = app;
+            _task = task;
+        }
+
+        public string Task => _task;
+
+        #region IDisposable
+
+        async public ValueTask DisposeAsync()
+        {
+            await _appScope.ReleaseBusyTaskAsync(this);
+        }
+
+        #endregion
+    }
+
+    #endregion
+
+    #endregion
 }

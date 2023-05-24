@@ -1,33 +1,30 @@
 ﻿using gView.Blazor.Models.Dialogs;
 using gView.Framework.Db;
+using Newtonsoft.Json.Converters;
 
 namespace gView.DataExplorer.Razor.Components.Dialogs.Models;
 
 public class ConnectionStringModel : IDialogResultItem
 {
-    private readonly string _providerId;
     private readonly DbConnectionString _dbConnectionString;
 
     public ConnectionStringModel() 
-        : this("")
+        : this("", true)
     {
     }
 
     public ConnectionStringModel(string providerId,
                                  bool UseProviderInConnectionString)
     {
-        _providerId = providerId;
-        _dbConnectionString = new DbConnectionString() { UseProviderInConnectionString = false };
+        _dbConnectionString = DbConnectionString.Build(providerId, UseProviderInConnectionString);
     }
 
-    public ConnectionStringModel(string providerId,
-                                 DbConnectionString? dbConnectionString = null)
+    public ConnectionStringModel(DbConnectionString dbConnectionString)
     {
-        _providerId = providerId;
-        _dbConnectionString = dbConnectionString ?? new DbConnectionString();
+        _dbConnectionString = dbConnectionString;
     }
 
-    public string ProviderId => _providerId;
+    public string ProviderId => _dbConnectionString.ProviderId;
 
     public DbConnectionString DbConnectionString => _dbConnectionString;
 }

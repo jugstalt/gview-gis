@@ -27,4 +27,8 @@ public class EventBusService
     public event Func<IExplorerTabPage?, IExplorerTabPage?, Task>? OnExplorerTabPageChanged;
     public Task FireExplorerTabPageChanged(IExplorerTabPage? newTabPage, IExplorerTabPage? oldTabPage)
         => OnExplorerTabPageChanged?.FireAsync(newTabPage, oldTabPage) ?? Task.CompletedTask;
+
+    public event Func<bool, string, Task>? OnBusyStatusChangedAsync;
+    public Task FireBusyStatusChanged(bool isBusy, string statusText)
+        => OnBusyStatusChangedAsync?.FireAsync(isBusy, statusText) ?? Task.CompletedTask;
 }
