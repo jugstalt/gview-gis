@@ -1,26 +1,24 @@
 ﻿using gView.Blazor.Core.Exceptions;
 using gView.DataExplorer.Plugins.ExplorerObjects.Base;
-using gView.DataSources.PostGIS;
 using gView.Framework.Data;
 using gView.Framework.DataExplorer.Abstraction;
 using gView.Framework.DataExplorer.Events;
 using gView.Framework.FDB;
 using gView.Framework.Geometry;
-using gView.Framework.system;
 using System.Threading.Tasks;
 
-namespace gView.DataExplorer.Plugins.ExplorerObjects.PostGIS;
+namespace gView.DataExplorer.Plugins.ExplorerObjects.MsSqlSpatial.Sde;
 
-[RegisterPlugIn("56E94E3B-CB00-4481-9293-AE45E2E360D2")]
-public class PostGISFeatureClassExplorerObject : ExplorerObjectCls, IExplorerSimpleObject, ISerializableExplorerObject, IExplorerObjectDeletable, IPlugInDependencies
+[gView.Framework.system.RegisterPlugIn("D159CD92-7872-48F0-81BF-938543C5C2C1")]
+public class MsSqlSpatialSdeFeatureClassExplorerObject : ExplorerObjectCls, IExplorerSimpleObject, ISerializableExplorerObject, IExplorerObjectDeletable
 {
     private string _icon = "";
     private string _fcname = "", _type = "";
     private IFeatureClass? _fc = null;
-    private PostGISExplorerObject? _parent = null;
+    private MsSqlSpatialSdeExplorerObject? _parent = null;
 
-    public PostGISFeatureClassExplorerObject() : base(null, typeof(IFeatureClass), 1) { }
-    public PostGISFeatureClassExplorerObject(PostGISExplorerObject parent, IDatasetElement element)
+    public MsSqlSpatialSdeFeatureClassExplorerObject() : base(null, typeof(IFeatureClass), 1) { }
+    public MsSqlSpatialSdeFeatureClassExplorerObject(MsSqlSpatialSdeExplorerObject parent, IDatasetElement element)
         : base(parent, typeof(IFeatureClass), 1)
     {
         if (element == null || !(element.Class is IFeatureClass))
@@ -60,10 +58,7 @@ public class PostGISFeatureClassExplorerObject : ExplorerObjectCls, IExplorerSim
 
     #region IExplorerObject Members
 
-    public string Name
-    {
-        get { return _fcname; }
-    }
+    public string Name => _fcname;
 
     public string FullName
     {
@@ -78,8 +73,8 @@ public class PostGISFeatureClassExplorerObject : ExplorerObjectCls, IExplorerSim
         }
     }
     public string Type => _type;
-
     public string Icon => _icon;
+
     public void Dispose()
     {
         if (_fc != null)
@@ -110,20 +105,14 @@ public class PostGISFeatureClassExplorerObject : ExplorerObjectCls, IExplorerSim
         string dsName = FullName.Substring(0, lastIndex);
         string fcName = FullName.Substring(lastIndex + 1, FullName.Length - lastIndex - 1);
 
-        PostGISExplorerObject? dsObject = new PostGISExplorerObject();
-        dsObject = await dsObject.CreateInstanceByFullName(dsName, cache) as PostGISExplorerObject;
-        if (dsObject == null)
+        MsSqlSpatialSdeExplorerObject? dsObject = new MsSqlSpatialSdeExplorerObject();
+        dsObject = await dsObject.CreateInstanceByFullName(dsName, cache) as MsSqlSpatialSdeExplorerObject;
+        if (dsObject == null || await dsObject.ChildObjects() == null)
         {
             return null;
         }
 
-        var childObjects = await dsObject.ChildObjects();
-        if (childObjects == null)
-        {
-            return null;
-        }
-
-        foreach (IExplorerObject exObject in childObjects)
+        foreach (IExplorerObject exObject in await dsObject.ChildObjects())
         {
             if (exObject.Name == fcName)
             {
@@ -142,12 +131,7 @@ public class PostGISFeatureClassExplorerObject : ExplorerObjectCls, IExplorerSim
 
     async public Task<bool> DeleteExplorerObject(ExplorerObjectEventArgs e)
     {
-        if (_parent==null)
-        {
-            return false;
-        }
-
-        var instance = await _parent.GetInstanceAsync();
+        var instance = await this.GetInstanceAsync();
         if (instance is IFeatureDatabase)
         {
             if (await ((IFeatureDatabase)instance).DeleteFeatureClass(this.Name))
@@ -165,15 +149,6 @@ public class PostGISFeatureClassExplorerObject : ExplorerObjectCls, IExplorerSim
             }
         }
         return false;
-    }
-
-    #endregion
-
-    #region IPlugInDependencies Member
-
-    public bool HasUnsolvedDependencies()
-    {
-        return PostGISDataset.hasUnsolvedDependencies;
     }
 
     #endregion

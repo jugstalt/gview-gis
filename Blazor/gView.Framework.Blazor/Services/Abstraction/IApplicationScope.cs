@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 
 namespace gView.Framework.Blazor.Services.Abstraction;
 
-public interface IApplicationScope : IDisposable
+public interface IApplicationScope : IApplicationBusyHandling, IDisposable
 {
     Task<T?> ShowModalDialog<T>(Type razorComponent,
                                 string title,
@@ -13,5 +13,5 @@ public interface IApplicationScope : IDisposable
                                              string? title = null,
                                              T? model = default);
 
-    Task<IAsyncDisposable> RegisterBusyTaskAsync(string task);
+    
 }

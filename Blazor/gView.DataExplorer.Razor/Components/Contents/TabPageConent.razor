@@ -2,7 +2,7 @@
 @implements IDisposable
 @inject IconService Icons
 @inject EventBusService EventBus 
-@inject IApplicationScope Scope
+@inject IApplicationScope AppScope
 
 @if (table != null)
 {
@@ -66,50 +66,50 @@
         });
     }
 
-    private Task OnRefreshContentAsync()
-        => base.HandleAsync(async () =>
-            {
-                await RefreshContentAsync();
-                StateHasChanged();
-            });
+    private Task OnRefreshContentAsync() => base.HandleAsync(async () =>
+    {
+        await RefreshContentAsync();
+        StateHasChanged();
+    });
 
-    private Task OnRowCLickAsync(MouseEventArgs mEvent, RowItem row)
-        => HandleAsync(()
-            => EventBus.FireContextExplorerObjectsChanged(selectedExplorerObjects =
-                    row.ExplorerObject.AddToSelection(
-                        selectedExplorerObjects,
-                        table?.Rows.Select(r=>r.ExplorerObject),
-                        mEvent switch
-                        {
-                            { ShiftKey: true } => GenericAddToStrategy.AddAllBetweenLastItem,
-                            { CtrlKey: true } => GenericAddToStrategy.AddOrRemoveIfExists,
-                            _ => GenericAddToStrategy.RemoveOthers
-                        })!));
+    private Task OnRowCLickAsync(MouseEventArgs mEvent, RowItem row) => HandleAsync(()
+        => EventBus.FireContextExplorerObjectsChanged(selectedExplorerObjects =
+                        row.ExplorerObject is IExplorerObjectDoubleClick ?
+                            Array.Empty<IExplorerObject>() : 
+                            row.ExplorerObject.AddToSelection(
+                                selectedExplorerObjects,
+                                table?.Rows.Select(r=>r.ExplorerObject),
+                                mEvent switch
+                                {
+                                    { ShiftKey: true } => GenericAddToStrategy.AddAllBetweenLastItem,
+                                    { CtrlKey: true } => GenericAddToStrategy.AddOrRemoveIfExists,
+                                    _ => GenericAddToStrategy.RemoveOthers
+                                })!));
 
-    private Task OnRowDoubleCLick(RowItem row)
-        => HandleAsync(async () =>
+    private Task OnRowDoubleCLick(RowItem row) => HandleAsync(async () =>
+    {
+        if (row.ExplorerObject != null)
         {
-            if (row.ExplorerObject != null)
+            if (row.ExplorerObject is IExplorerObjectDoubleClick)
             {
-                if (row.ExplorerObject is IExplorerObjectDoubleClick)
-                {
-                    var args = new Framework.DataExplorer.Events.ExplorerObjectEventArgs();
+                var args = new Framework.DataExplorer.Events.ExplorerObjectEventArgs();
 
-                    await ((IExplorerObjectDoubleClick)row.ExplorerObject).ExplorerObjectDoubleClick(Scope, args);
-                    if(args.NewExplorerObject!=null)
-                    {
-                        await EventBus.FireFreshContentAsync();
-                    }
-                }
-                else
+                await ((IExplorerObjectDoubleClick)row.ExplorerObject).ExplorerObjectDoubleClick(AppScope, args);
+                if (args.NewExplorerObject != null)
                 {
-                    await EventBus.SetCurrentExplorerObjectAsync(row.ExplorerObject);
+                    await EventBus.FireFreshContentAsync();
                 }
             }
-        });
+            else
+            {
+                await EventBus.SetCurrentExplorerObjectAsync(row.ExplorerObject);
+            }
+        }
+    });
 
-    private Task RefreshContentAsync()
-       => base.HandleAsync(async () =>
+    private Task RefreshContentAsync() => base.HandleAsync(async () =>
+    {
+        await using (var busy = await AppScope.RegisterBusyTaskAsync($"Refresh content"))
         {
             if (FrameworkElement?.GetExplorerObject() != null /*&&
                 await FrameworkElement.GetExplorerObject()!.SecureRefresh() == true*/)
@@ -117,7 +117,8 @@
                 var result = await FrameworkElement.RefreshContents();
                 table = result.Item as TableItem;
             }
-        });
+        }
+    });
 
     public void Dispose()
     {

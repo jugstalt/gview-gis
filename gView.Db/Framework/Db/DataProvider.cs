@@ -63,6 +63,7 @@ namespace gView.Framework.Db
                         break;
                     case "sqlclient":
                     case "sql":
+                    case "mssql":
                         sqlConnection = new SqlConnection(connStr);
                         if (testIt)
                         {

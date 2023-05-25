@@ -1,12 +1,12 @@
-﻿using gView.Blazor.Core;
-using gView.Blazor.Core.Exceptions;
+﻿using gView.Blazor.Core.Exceptions;
 using gView.Blazor.Core.Services.Abstraction;
 using gView.DataExplorer.Core.Services;
 using gView.Framework.Blazor;
+using gView.Framework.Blazor.Services;
 using gView.Framework.Blazor.Services.Abstraction;
 using gView.Framework.DataExplorer.Abstraction;
-using gView.Framework.system;
 using Microsoft.AspNetCore.Components;
+using Microsoft.JSInterop;
 using MudBlazor;
 using System;
 using System.Collections.Generic;
@@ -15,19 +15,22 @@ using System.Threading.Tasks;
 
 namespace gView.DataExplorer.Plugins.Services;
 
-public class ExplorerApplicationScopeService : IApplicationScope
+public class ExplorerApplicationScopeService : ApplictionBusyHandler, IApplicationScope
 {
     private readonly IDialogService _dialogService;
     IEnumerable<IKnownDialogService> _knownDialogs;
     private readonly EventBusService _eventBus;
+    private readonly IJSRuntime _jsRuntime;
 
     public ExplorerApplicationScopeService(IDialogService dialogService,
                                            IEnumerable<IKnownDialogService> knownDialogs,
-                                           EventBusService eventBus)
+                                           EventBusService eventBus,
+                                           IJSRuntime jsRuntime)
     {
         _dialogService = dialogService;
         _knownDialogs = knownDialogs;
         _eventBus = eventBus;
+        _jsRuntime = jsRuntime;
 
         _eventBus.OnCurrentExplorerObjectChanged += EventBus_OnTreeItemClickAsync;
         _eventBus.OnContextExplorerObjectsChanged += EventBus_OnContextExplorerObjectsChanged;
@@ -137,53 +140,25 @@ public class ExplorerApplicationScopeService : IApplicationScope
 
     #region Busy Context
 
-    private int _runningBusyTasks = 0;
+    override protected Task HandleBusyStatusChanged(bool isBussy, string message)
+        => _eventBus.FireBusyStatusChanged(isBussy, message);
 
-    public async Task<IAsyncDisposable> RegisterBusyTaskAsync(string task)
+    override async protected ValueTask SetBusyCursor()
     {
-        using (var mutex = await FuzzyMutexAsync.LockAsync("busy"))
+        try
         {
-            _runningBusyTasks++;
-            await _eventBus.FireBusyStatusChanged(true, task);
-            return new BusyTask(this, task);
+            await _jsRuntime.InvokeVoidAsyncIgnoreErrors("window.gview_base.setCursor", "wait");
         }
+        catch { }
     }
-
-    async private Task ReleaseBusyTaskAsync(BusyTask busyTask)
+    override async protected ValueTask SetDefaultCursor()
     {
-        using (var mutex = await FuzzyMutexAsync.LockAsync("busy"))
+        try
         {
-            //--_runningBusyTasks;
-            await _eventBus.FireBusyStatusChanged(_runningBusyTasks > 0, String.Empty);
+            await _jsRuntime.InvokeVoidAsyncIgnoreErrors("window.gview_base.setCursor", "default");
         }
+        catch { }
     }
-
-    #region Classes
-
-    private class BusyTask : IAsyncDisposable
-    {
-        private readonly ExplorerApplicationScopeService _appScope;
-        private readonly string _task;
-
-        public BusyTask(ExplorerApplicationScopeService app, string task)
-        {
-            _appScope = app;
-            _task = task;
-        }
-
-        public string Task => _task;
-
-        #region IDisposable
-
-        async public ValueTask DisposeAsync()
-        {
-            await _appScope.ReleaseBusyTaskAsync(this);
-        }
-
-        #endregion
-    }
-
-    #endregion
 
     #endregion
 }

@@ -1,7 +1,7 @@
 ﻿using gView.Blazor.Core.Exceptions;
 using gView.DataExplorer.Plugins.ExplorerObjects.Base;
 using gView.DataExplorer.Plugins.ExplorerObjects.Base.ContextTools;
-using gView.DataSources.PostGIS;
+using gView.DataSources.MSSqlSpatial;
 using gView.Framework.Data;
 using gView.Framework.DataExplorer.Abstraction;
 using gView.Framework.DataExplorer.Events;
@@ -11,23 +11,23 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace gView.DataExplorer.Plugins.ExplorerObjects.PostGIS;
+namespace gView.DataExplorer.Plugins.ExplorerObjects.MsSqlSpatial.Geography;
 
-public class PostGISExplorerObject : ExplorerParentObject,
-                                     IExplorerSimpleObject,
-                                     IExplorerObjectDeletable,
-                                     IExplorerObjectRenamable,
-                                     ISerializableExplorerObject,
-                                     IExplorerObjectContextTools,
-                                     IUpdateConnectionString
+public class MsSqlSpatialExplorerObject : ExplorerParentObject,
+                                          IExplorerSimpleObject,
+                                          IExplorerObjectDeletable,
+                                          IExplorerObjectRenamable,
+                                          ISerializableExplorerObject,
+                                          IExplorerObjectContextTools,
+                                          IUpdateConnectionString
 {
     private string _server = "";
-    private IFeatureDataset? _dataset;
     private DbConnectionString? _connectionString;
+    private IFeatureDataset? _dataset;
     private IEnumerable<IExplorerObjectContextTool>? _contextTools = null;
 
-    public PostGISExplorerObject() : base(null, typeof(IFeatureDataset), 0) { }
-    public PostGISExplorerObject(IExplorerObject parent, string server, DbConnectionString connectionString)
+    public MsSqlSpatialExplorerObject() : base(null, typeof(IFeatureDataset), 0) { }
+    public MsSqlSpatialExplorerObject(IExplorerObject parent, string server, DbConnectionString connectionString)
         : base(parent, typeof(IFeatureDataset), 0)
     {
         _server = server;
@@ -38,6 +38,8 @@ public class PostGISExplorerObject : ExplorerParentObject,
             new UpdateConnectionString()
         };
     }
+
+    internal string ConnectionString => _connectionString?.ConnectionString ?? String.Empty;
 
     #region IUpdateConnectionString
 
@@ -52,7 +54,7 @@ public class PostGISExplorerObject : ExplorerParentObject,
     }
     public Task<bool> UpdateDbConnectionString(DbConnectionString dbConnnectionString)
     {
-        ConfigConnections connStream = new ConfigConnections("postgis", "546B0513-D71D-4490-9E27-94CD5D72C64A");
+        ConfigConnections connStream = new ConfigConnections("mssql-geography", "546B0513-D71D-4490-9E27-94CD5D72C64A");
         connStream.Add(_server, dbConnnectionString.ToString());
 
         _connectionString = dbConnnectionString;
@@ -61,8 +63,6 @@ public class PostGISExplorerObject : ExplorerParentObject,
     }
 
     #endregion
-
-    internal string ConnectionString => _connectionString?.ConnectionString ?? String.Empty;
 
     #region IExplorerObjectContextTools
 
@@ -74,10 +74,9 @@ public class PostGISExplorerObject : ExplorerParentObject,
 
     public string Name => _server;
 
-    public string FullName => @"OGC\PostGIS\" + _server;
+    public string FullName => @$"OGC\MsSqlSpatialGeography\{_server}";
 
-    public string Type => "PostGIS Database";
-
+    public string Type => "MsSqlSpatial Database";
     public string Icon => "basic:database";
 
     async public Task<object?> GetInstanceAsync()
@@ -87,14 +86,13 @@ public class PostGISExplorerObject : ExplorerParentObject,
             return null;
         }
 
-        if (_dataset != null)
+        if (_dataset == null)
         {
-            _dataset.Dispose();
+            _dataset = new GeographyDataset();
+            await _dataset.SetConnectionString(_connectionString.ConnectionString);
+            await _dataset.Open();
         }
 
-        _dataset = new PostGISDataset();
-        await _dataset.SetConnectionString(_connectionString.ConnectionString);
-        await _dataset.Open();
         return _dataset;
     }
 
@@ -110,7 +108,7 @@ public class PostGISExplorerObject : ExplorerParentObject,
             return false;
         }
 
-        PostGISDataset dataset = new PostGISDataset();
+        GeographyDataset dataset = new GeographyDataset();
         await dataset.SetConnectionString(_connectionString.ConnectionString);
         await dataset.Open();
 
@@ -125,7 +123,7 @@ public class PostGISExplorerObject : ExplorerParentObject,
         {
             if (element.Class is IFeatureClass)
             {
-                base.AddChildObject(new PostGISFeatureClassExplorerObject(this, element));
+                base.AddChildObject(new MsSqlSpatialFeatureClassExplorerObject(this, element));
             }
         }
 
@@ -143,13 +141,13 @@ public class PostGISExplorerObject : ExplorerParentObject,
             return cache[FullName];
         }
 
-        PostGISExplorerGroupObject? group = new PostGISExplorerGroupObject();
+        MsSqlSpatialExplorerGroupObject? group = new MsSqlSpatialExplorerGroupObject();
         if (FullName.IndexOf(group.FullName) != 0 || FullName.Length < group.FullName.Length + 2)
         {
             return null;
         }
 
-        group = (PostGISExplorerGroupObject?)((cache.Contains(group.FullName)) ? cache[group.FullName] : group);
+        group = (MsSqlSpatialExplorerGroupObject?)((cache.Contains(group.FullName)) ? cache[group.FullName] : group);
 
         if (group != null)
         {
@@ -177,7 +175,7 @@ public class PostGISExplorerObject : ExplorerParentObject,
         bool ret = false;
         if (_connectionString != null)
         {
-            ConfigConnections stream = new ConfigConnections("postgis", "546B0513-D71D-4490-9E27-94CD5D72C64A");
+            ConfigConnections stream = new ConfigConnections("mssql-geography", "546B0513-D71D-4490-9E27-94CD5D72C64A");
             ret = stream.Remove(_server);
         }
 
@@ -200,7 +198,7 @@ public class PostGISExplorerObject : ExplorerParentObject,
         bool ret = false;
         if (_connectionString != null)
         {
-            ConfigConnections stream = new ConfigConnections("postgis", "546B0513-D71D-4490-9E27-94CD5D72C64A");
+            ConfigConnections stream = new ConfigConnections("mssql-geography", "546B0513-D71D-4490-9E27-94CD5D72C64A");
             ret = stream.Rename(_server, newName);
         }
         if (ret == true)

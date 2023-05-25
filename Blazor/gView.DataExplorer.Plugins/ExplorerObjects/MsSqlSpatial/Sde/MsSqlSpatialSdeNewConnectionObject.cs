@@ -7,22 +7,20 @@ using gView.Framework.DataExplorer.Abstraction;
 using gView.Framework.DataExplorer.Events;
 using gView.Framework.Db;
 using gView.Framework.IO;
-using gView.Framework.system;
 using System;
-using System.Collections.Immutable;
 using System.Threading.Tasks;
 
-namespace gView.DataExplorer.Plugins.ExplorerObjects.PostGIS;
+namespace gView.DataExplorer.Plugins.ExplorerObjects.MsSqlSpatial.Sde;
 
-[RegisterPlugIn("003ED96C-4041-4657-A544-E92A3B7A96BF")]
-public class PostGISNewConnectionObject : ExplorerObjectCls, IExplorerSimpleObject, IExplorerObjectDoubleClick, IExplorerObjectCreatable
+[gView.Framework.system.RegisterPlugIn("0B552B1D-49EF-4065-BB93-5F63517161A4")]
+public class MsSqlSpatialSdeNewConnectionObject : ExplorerObjectCls, IExplorerSimpleObject, IExplorerObjectDoubleClick, IExplorerObjectCreatable
 {
-    public PostGISNewConnectionObject()
+    public MsSqlSpatialSdeNewConnectionObject()
         : base(null, null, 0)
     {
     }
 
-    public PostGISNewConnectionObject(IExplorerObject parent)
+    public MsSqlSpatialSdeNewConnectionObject(IExplorerObject parent)
         : base(parent, null, 0)
     {
     }
@@ -37,9 +35,12 @@ public class PostGISNewConnectionObject : ExplorerObjectCls, IExplorerSimpleObje
 
     public string Name => "New Connection...";
 
-    public string FullName => "";
+    public string FullName
+    {
+        get { return ""; }
+    }
 
-    public string Type => "New PostGIS Connection";
+    public string Type => "New MsSql Spatial ArcSde Connection";
 
     public void Dispose()
     {
@@ -48,8 +49,6 @@ public class PostGISNewConnectionObject : ExplorerObjectCls, IExplorerSimpleObje
 
     public Task<object?> GetInstanceAsync() => Task.FromResult<object?>(null);
 
-    public Task<IExplorerObject?> CreateInstanceByFullName(string FullName) => Task.FromResult<IExplorerObject?>(null);
-
     #endregion
 
     #region IExplorerObjectDoubleClick Members
@@ -57,19 +56,24 @@ public class PostGISNewConnectionObject : ExplorerObjectCls, IExplorerSimpleObje
     async public Task ExplorerObjectDoubleClick(IApplicationScope appScope, ExplorerObjectEventArgs e)
     {
         var model = await appScope.ToScopeService().ShowKnownDialog(KnownDialogs.ConnectionString,
-                                                                    model: new ConnectionStringModel("postgre", false));
+                                                                    model: new ConnectionStringModel("mssql", false));
 
         if (model != null)
         {
             DbConnectionString dbConnStr = model.DbConnectionString;
-            ConfigConnections connStream = new ConfigConnections("postgis", "546B0513-D71D-4490-9E27-94CD5D72C64A");
+            ConfigConnections connStream = new ConfigConnections("mssql-sde", "546B0513-D71D-4490-9E27-94CD5D72C64A");
 
             string connectionString = dbConnStr.ConnectionString;
-            string id = ConfigTextStream.ExtractValue(connectionString, "database");
-            id = connStream.GetName(String.IsNullOrWhiteSpace(id) ? "postgis-database" : id.Trim());
+            string id = ConfigTextStream.ExtractValue(connectionString, "Database");
+            id += "@" + ConfigTextStream.ExtractValue(connectionString, "Server");
+            if (id == "@")
+            {
+                id = "MsSql Spatial ArcSde Connection";
+            }
+            id = connStream.GetName(String.IsNullOrWhiteSpace(id) ? "mssql-database" : id.Trim());
             connStream.Add(id, dbConnStr.ToString());
 
-            e.NewExplorerObject = new PostGISExplorerObject(this.ParentExplorerObject, id, dbConnStr);
+            e.NewExplorerObject = new MsSqlSpatialSdeExplorerObject(this.ParentExplorerObject, id, dbConnStr);
         }
     }
 
@@ -93,7 +97,7 @@ public class PostGISNewConnectionObject : ExplorerObjectCls, IExplorerSimpleObje
 
     public bool CanCreate(IExplorerObject parentExObject)
     {
-        return (parentExObject is PostGISExplorerGroupObject);
+        return (parentExObject is MsSqlSpatialSdeExplorerGroupObject);
     }
 
     async public Task<IExplorerObject?> CreateExplorerObjectAsync(IApplicationScope appScope, IExplorerObject parentExObject)

@@ -6,4 +6,8 @@
 	  <LangVersion>10</LangVersion>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\gView.System\gView.System.csproj" />
+  </ItemGroup>
+
 </Project>

@@ -53,56 +53,68 @@
 
     private Task OnNodeExpandedChanged(ExplorerTreeNode node, bool expanded) => base.HandleAsync(async () =>
     {
-        node.IsExpanded = expanded;
-        if (expanded)
+        await using (var busy = await AppScope.RegisterBusyTaskAsync($"Load: {node.Text}"))
         {
-            await LoadServerData(node);
+            node.IsExpanded = expanded;
+            if (expanded)
+            {
+                await LoadServerData(node);
+            }
         }
     });
 
     private Task OnNodeClickAsync(ExplorerTreeNode node) => base.HandleAsync(async () =>
     {
-        if (node.IsServerLoaded == false)
+        await using (var busy = await AppScope.RegisterBusyTaskAsync($"Load: {node.Text}"))
         {
-            await LoadServerData(node);
+            if (node.IsServerLoaded == false)
+            {
+                await LoadServerData(node);
+            }
+
+            _selected = node;
+
+            await RefreshCurrentNodeAsync();
+            await EventBus.FireCurrentExplorerObjectChanged(node.ExObject);
         }
-
-        _selected = node;
-
-        await RefreshCurrentNodeAsync();
-        await EventBus.FireCurrentExplorerObjectChanged(node.ExObject);
     });
 
 
     private Task OnRefreshContentAsync() => base.HandleAsync(async () =>
     {
-        if (await RefreshCurrentNodeAsync())
+        await using (var busy = await AppScope.RegisterBusyTaskAsync($"Refresh TreeView"))
         {
-            StateHasChanged();
+            if (await RefreshCurrentNodeAsync())
+            {
+                StateHasChanged();
+            }
         }
     });
 
     private Task HandleSetCurrentExplorerObjectAsync(IExplorerObject? exObject) => base.HandleAsync(async () =>
     {
-        var exObjects = exObject?.GetAncestors(true);
-        if (exObjects == null)
+        await using (var busy = await AppScope.RegisterBusyTaskAsync($"Load: {exObject?.Name ?? String.Empty}"))
         {
-            return;
-        }
-
-        var node = await SelectTreeNode(0, exObjects.ToArray());
-
-        if (node != null)
-        {
-            _selected = node;
-
-            if (await RefreshCurrentNodeAsync())
+            var exObjects = exObject?.GetAncestors(true);
+            if (exObjects == null)
             {
-                _selected.IsExpanded = true;
-                StateHasChanged();
+                return;
             }
 
-            await OnNodeClickAsync(node);
+            var node = await SelectTreeNode(0, exObjects.ToArray());
+
+            if (node != null)
+            {
+                _selected = node;
+
+                if (await RefreshCurrentNodeAsync())
+                {
+                    _selected.IsExpanded = true;
+                    StateHasChanged();
+                }
+
+                await OnNodeClickAsync(node);
+            }
         }
     });
 
@@ -180,29 +192,30 @@
 
     public Task<HashSet<ExplorerTreeNode>?> LoadServerData(ExplorerTreeNode parentNode) => base.HandleFuncAsync(async () =>
     {
-        await using (var busy = await AppScope.RegisterBusyTaskAsync($"Load: {parentNode.Text}"))
+        if (parentNode.IsServerLoaded)
         {
-            if (parentNode.IsServerLoaded)
-            {
-                return parentNode.Children;
-            }
-
-            var exObject = parentNode.ExObject;
-
-            parentNode.Children = new HashSet<ExplorerTreeNode>();
-
-            if (exObject is IExplorerParentObject)
-            {
-                var exParent = (IExplorerParentObject)exObject;
-
-                foreach (var childObject in await exParent.ChildObjects())
-                {
-                    parentNode.Children.Add(new ExplorerTreeNode(childObject));
-                }
-            }
-
             return parentNode.Children;
         }
+
+        var exObject = parentNode.ExObject;
+
+        parentNode.Children = new HashSet<ExplorerTreeNode>();
+
+        if (exObject is IExplorerParentObject)
+        {
+            var exParent = (IExplorerParentObject)exObject;
+
+            foreach (var childObject in await exParent.ChildObjects())
+            {
+                if (childObject is IExplorerObjectDoubleClick)  // don't show "new database connection" icons, etc. The are only visible in the content list
+                {
+                    continue;
+                }
+                parentNode.Children.Add(new ExplorerTreeNode(childObject));
+            }
+        }
+
+        return parentNode.Children;
     });
 
 
