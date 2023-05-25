@@ -15,7 +15,7 @@ public class MsSqlSpatialSdeFeatureClassExplorerObject : ExplorerObjectCls, IExp
     private string _icon = "";
     private string _fcname = "", _type = "";
     private IFeatureClass? _fc = null;
-    private MsSqlSpatialSdeExplorerObject? _parent = null;
+    new private MsSqlSpatialSdeExplorerObject? _parent = null;
 
     public MsSqlSpatialSdeFeatureClassExplorerObject() : base(null, typeof(IFeatureClass), 1) { }
     public MsSqlSpatialSdeFeatureClassExplorerObject(MsSqlSpatialSdeExplorerObject parent, IDatasetElement element)
