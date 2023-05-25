@@ -4,6 +4,7 @@ using gView.Framework.Data;
 using gView.Framework.Geometry;
 using gView.Framework.system;
 using gView.GraphicsEngine.Abstraction;
+using Microsoft.SqlServer.Management.SqlParser.SqlCodeDom;
 using System;
 using System.IO;
 using System.Threading.Tasks;
@@ -93,14 +94,28 @@ public class MapRenderService : IDisposable
 
     #endregion
 
-    public void AddFeatureClass(IFeatureClass featureClass)
+    public bool AddFeatureClass(IFeatureClass featureClass)
     {
         MapRendererNotIntializedException.ThrowIfNull(_map);
-
-        _map!.AddLayer(LayerFactory.Create(featureClass));
+        _map.AddLayer(LayerFactory.Create(featureClass));
+        return true;
     }
 
-    async public Task AddFeatureDataset(IFeatureDataset featureDataset)
+    public bool AddRasterClass(IRasterClass rasterClass)
+    {
+        MapRendererNotIntializedException.ThrowIfNull(_map);
+        _map.AddLayer(LayerFactory.Create(rasterClass));
+        return true;
+    }
+
+    public bool AddWebServiceClass(IWebServiceClass webServiceClass)
+    {
+        MapRendererNotIntializedException.ThrowIfNull(_map);
+        _map.AddLayer(LayerFactory.Create(webServiceClass));
+        return true;
+    }
+
+    async public Task<bool> AddFeatureDataset(IFeatureDataset featureDataset)
     {
         MapRendererNotIntializedException.ThrowIfNull(_map);
 
@@ -111,6 +126,8 @@ public class MapRenderService : IDisposable
                 AddFeatureClass((IFeatureClass)datasetElement.Class);
             }
         }
+
+        return true;
     }
 
     public void BeginRender()

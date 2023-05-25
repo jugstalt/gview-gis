@@ -60,18 +60,14 @@
 
             MapRenderer.InitMap(_mapSRef);
 
-            if (dataInstance is IFeatureClass)
+            var layerAdded = dataInstance switch
             {
-                MapRenderer.AddFeatureClass((IFeatureClass)dataInstance);
-            }
-            else if (dataInstance is IFeatureDataset)
-            {
-                await MapRenderer.AddFeatureDataset((IFeatureDataset)dataInstance);
-            }
-            else
-            {
-                throw new GeneralException($"Can't show spatial data from {dataInstance.GetType()}");
-            }
+                IFeatureClass => MapRenderer.AddFeatureClass((IFeatureClass)dataInstance),
+                IRasterClass => MapRenderer.AddRasterClass((IRasterClass)dataInstance),
+                IWebServiceClass => MapRenderer.AddWebServiceClass((IWebServiceClass)dataInstance),
+                IFeatureDataset => await MapRenderer.AddFeatureDataset((IFeatureDataset)dataInstance),
+                _ => throw new GeneralException($"Can't show spatial data from {dataInstance.GetType()}")
+            };
 
             await FrameworkElement.SetExplorerObjectAsync(CurrentExplorerObject);
             CreateMapControl();
@@ -159,6 +155,8 @@
                 dataEnvelope = instance switch
                 {
                     IFeatureClass fc => fc.Envelope,
+                    IRasterClass rc => rc.Polygon?.Envelope,
+                    IWebServiceClass wc => wc.Envelope,
                     IFeatureDataset ds => await ds.Envelope(),
                     _ => null
                 };
@@ -166,6 +164,8 @@
                 dataSRef = instance switch
                 {
                     IFeatureClass fc => fc.SpatialReference,
+                    IRasterClass rc => rc.SpatialReference,
+                    IWebServiceClass wc => wc.SpatialReference,
                     IFeatureDataset ds => await ds.GetSpatialReference(),
                     _ => null
                 };

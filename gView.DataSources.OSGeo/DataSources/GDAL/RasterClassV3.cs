@@ -4,6 +4,7 @@ using gView.Framework.Geometry;
 using gView.Framework.IO;
 using gView.Framework.LinAlg;
 using gView.Framework.system;
+using gView.Geometry.Framework.Geometry.Extesnsions;
 using gView.GraphicsEngine;
 using System;
 using System.Collections.Generic;
@@ -155,27 +156,7 @@ namespace gView.DataSources.GDAL
                         }
 
                     }
-                    FileInfo fiPrj = new FileInfo(fi.FullName.Substring(0, fi.FullName.Length - fi.Extension.Length) + ".prj");
-                    if (fiPrj.Exists)
-                    {
-                        StreamReader sr = new StreamReader(fiPrj.FullName);
-                        string wkt = sr.ReadToEnd();
-                        sr.Close();
-
-                        _sRef = gView.Framework.Geometry.SpatialReference.FromWKT(wkt);
-                    }
-                    else
-                    {
-                        fiPrj = new FileInfo(fi.FullName.Substring(0, fi.FullName.Length - fi.Extension.Length) + ".wkt");
-                        if (fiPrj.Exists)
-                        {
-                            StreamReader sr = new StreamReader(fiPrj.FullName);
-                            string wkt = sr.ReadToEnd();
-                            sr.Close();
-
-                            _sRef = gView.Framework.Geometry.SpatialReference.FromWKT(wkt);
-                        }
-                    }
+                    _sRef = fi.FileSpatialReference();
                     if (polygon != null)
                     {
                         _polygon = polygon;

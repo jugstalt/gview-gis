@@ -141,7 +141,9 @@
             return null;
         }
 
-        currentNode = treeNodes.Where(t => t.ExObject?.FullName == exObjects[index].FullName).FirstOrDefault();
+        currentNode = treeNodes.Where(t => t.ExObject?.FullName == exObjects[index].FullName &&  // Compare Fullname & type
+                                           t.ExObject?.Type == exObjects[index].Type)            // there may be objects wih same name in folder, eg Images - one with MrSid and one with GDAL 
+                                .FirstOrDefault();
         if(currentNode == null)
         {
             return null;
