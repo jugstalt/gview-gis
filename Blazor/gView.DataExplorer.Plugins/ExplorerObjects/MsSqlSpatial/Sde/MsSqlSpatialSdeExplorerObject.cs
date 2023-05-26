@@ -15,12 +15,12 @@ using System.Threading.Tasks;
 namespace gView.DataExplorer.Plugins.ExplorerObjects.MsSqlSpatial.Sde;
 
 public class MsSqlSpatialSdeExplorerObject : ExplorerParentObject,
-                                                 IExplorerSimpleObject,
-                                                 IExplorerObjectDeletable,
-                                                 IExplorerObjectRenamable,
-                                                 ISerializableExplorerObject,
-                                                 IExplorerObjectContextTools,
-                                                 IUpdateConnectionString
+                                             IExplorerSimpleObject,
+                                             IExplorerObjectDeletable,
+                                             IExplorerObjectRenamable,
+                                             ISerializableExplorerObject,
+                                             IExplorerObjectContextTools,
+                                             IUpdateConnectionString
 {
     private string _server = "";
     private DbConnectionString? _connectionString;
