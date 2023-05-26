@@ -1,4 +1,6 @@
 ﻿using gView.DataExplorer.Plugins.ExplorerObjects.Base;
+using gView.DataExplorer.Plugins.Extensions;
+using gView.DataExplorer.Razor.Components.Dialogs.Models;
 using gView.Framework.Blazor.Services.Abstraction;
 using gView.Framework.DataExplorer.Abstraction;
 using gView.Framework.DataExplorer.Events;
@@ -44,9 +46,12 @@ public class EventTableNewConnectionObject : ExplorerObjectCls, IExplorerSimpleO
 
     #region IExplorerObjectDoubleClick Members
 
-    public Task ExplorerObjectDoubleClick(IApplicationScope appScope, ExplorerObjectEventArgs e)
+    async public Task ExplorerObjectDoubleClick(IApplicationScope appScope, ExplorerObjectEventArgs e)
     {
-        return Task.CompletedTask;
+        var model = await appScope.ToScopeService().ShowModalDialog(typeof(gView.DataExplorer.Razor.Components.Dialogs.EventTableConnection),
+                                                                    "EventTable Connection",
+                                                                    new EventTableConnectionModel());
+
         // ToDo:
         //FormEventTableConnection dlg = new FormEventTableConnection();
 

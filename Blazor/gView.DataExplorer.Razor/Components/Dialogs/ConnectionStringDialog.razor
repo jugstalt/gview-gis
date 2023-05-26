@@ -10,7 +10,7 @@
                           OnDialogClose="base.OnDialogClose"
                           Model="base.Model">
         <DialogBody>
-            <MudSelect Label="Provider" T="string" Style="min-width:280px;display:none" 
+            <MudSelect Label="Provider" T="string" Style='min-width:280px;' 
                         @bind-Value="_currentProvider"
                         Variant="Variant.Outlined"
                         Dense="true">
@@ -23,7 +23,7 @@
             </MudSelect>
 
             @{
-                var schemes = _commondDbConnections.Providers.Where(p => p.Id == _currentProvider).FirstOrDefault().Schemes;
+                var schemes = _commondDbConnections.Providers.Where(p => p.Id == _currentProvider).FirstOrDefault()?.Schemes;
                 if(schemes?.Where(s=>s.Name==_currentScheme).Any() != true)
                 {
                     _currentScheme = schemes?.FirstOrDefault()?.Name;

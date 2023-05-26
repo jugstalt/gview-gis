@@ -23,7 +23,7 @@ public class EventTableGroupObject : ExplorerParentObject, IExplorerGroupObject
 
     public string Type => "Eventtable Connections";
 
-    public string Icon => "basic:binoculars";
+    public string Icon => "webgis:coordinates2d";
 
     public Task<object?> GetInstanceAsync() => Task.FromResult<object?>(null);
 

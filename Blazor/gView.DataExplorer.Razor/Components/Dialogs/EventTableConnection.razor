@@ -1,0 +1,19 @@
+@inherits ModalDialogFormBase<EventTableConnectionModel>
+@inject IApplicationScope AppScope
+
+<ModalDialogFormBase T="EventTableConnectionModel"
+                          OnDialogClose="base.OnDialogClose"
+                          Model="base.Model">
+    <DialogBody>
+        <MudButton ButtonType="ButtonType.Button" OnClick="GetConnectionString">
+            Database Connection
+        </MudButton>
+    </DialogBody>
+</ModalDialogFormBase>
+
+@code{
+    async private Task GetConnectionString()
+    {
+        var model = await AppScope.ShowKnownDialog(Framework.Blazor.KnownDialogs.ConnectionString, model: new ConnectionStringModel(Model.ConnectionString));
+    }
+}
