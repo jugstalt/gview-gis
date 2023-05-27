@@ -1,43 +1,46 @@
 @inherits BaseHandler
 @inject IApplicationScope AppScope
 
-<MudPaper Elevation="2">
-    <MudCard>
-        <MudCardContent>
-            <MudText Typo="Typo.h6">Coordinate System/Projection</MudText>
-            @if (SpatialReference != null)
-            {
-                <MudText Typo="Typo.body2">@SpatialReference.Name</MudText>
-                <MudText Typo="Typo.body2">@SpatialReference.Description</MudText>
-                <MudText Typo="Typo.caption">@String.Join(" ", SpatialReference.Parameters)</MudText>
-            }
-        </MudCardContent>
-        <MudCardActions>
-            <MudButton Variant="Variant.Text" 
-                        Color="Color.Primary"
-                        OnClick="SelectProjection">Select</MudButton>
-        </MudCardActions>
-    </MudCard>
-
-    @if (SpatialReference != null)
-    {
-        <MudCard>
+<MudGrid Spacing="2" Justify="Justify.Center">
+    <MudItem xs="12">
+        <MudCard Elevation="2">
             <MudCardContent>
-                <MudText Typo="Typo.h6">Geodetic Datum</MudText>
-                @if (SpatialReference.Datum != null)
+                <MudText Typo="Typo.h6">Coordinate System/Projection</MudText>
+                @if (SpatialReference != null)
                 {
-                    <MudText Typo="Typo.body2">@SpatialReference.Datum.Name</MudText>
-                    <MudText Typo="Typo.caption">@SpatialReference.Datum.Parameter</MudText>
+                    <MudText Typo="Typo.body2">@SpatialReference.Name</MudText>
+                    <MudText Typo="Typo.body2">@SpatialReference.Description</MudText>
+                    <MudText Typo="Typo.caption">@String.Join(" ", SpatialReference.Parameters)</MudText>
                 }
             </MudCardContent>
             <MudCardActions>
-                <MudButton Variant="Variant.Text"
-                           Color="Color.Primary"
-                           OnClick="SelectDatum">Select</MudButton>
+                <MudButton Variant="Variant.Text" 
+                            Color="Color.Primary"
+                            OnClick="SelectProjection">Select</MudButton>
             </MudCardActions>
         </MudCard>
+    </MudItem>
+    @if (SpatialReference != null)
+    {
+        <MudItem xs="12">
+            <MudCard Elevation="2">
+                <MudCardContent>
+                    <MudText Typo="Typo.h6">Geodetic Datum</MudText>
+                    @if (SpatialReference.Datum != null)
+                    {
+                        <MudText Typo="Typo.body2">@SpatialReference.Datum.Name</MudText>
+                        <MudText Typo="Typo.caption">@SpatialReference.Datum.Parameter</MudText>
+                    }
+                </MudCardContent>
+                <MudCardActions>
+                    <MudButton Variant="Variant.Text"
+                               Color="Color.Primary"
+                               OnClick="SelectDatum">Select</MudButton>
+                </MudCardActions>
+            </MudCard>
+        </MudItem>
     }
-</MudPaper>
+</MudGrid>
 
 @code{
     [Parameter] public ISpatialReference? SpatialReference{ get; set; }

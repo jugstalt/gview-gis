@@ -58,8 +58,8 @@ public class EventTableGroupObject : ExplorerParentObject, IExplorerGroupObject
 
         base.AddChildObject(new EventTableNewConnectionObject(this));
 
-        ConfigConnections conStream = new ConfigConnections("eventtable", "546B0513-D71D-4490-9E27-94CD5D72C64A");
-        Dictionary<string, string> DbConnectionStrings = conStream.Connections;
+        ConfigConnections configStream = new ConfigConnections("eventtable", "546B0513-D71D-4490-9E27-94CD5D72C64A");
+        Dictionary<string, string> DbConnectionStrings = configStream.Connections;
         foreach (string DbConnName in DbConnectionStrings.Keys)
         {
             EventTableConnection dbConn = new EventTableConnection();

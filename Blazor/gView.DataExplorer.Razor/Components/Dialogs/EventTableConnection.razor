@@ -6,97 +6,106 @@
                           OnDialogClose="base.OnDialogClose"
                           Model="base.Model">
     <DialogBody>
-        <MudCard>
-            <MudCardContent>
-                <MudText Typo="Typo.h6">Database Connection</MudText>
-                @if(!String.IsNullOrEmpty(Model.ConnectionString.ProviderId))
-                {
-                    <MudText Typo="Typo.body2">@Model.ConnectionString.ProviderId</MudText>
-                }
-                <MudCardActions>
-                    <MudButton Variant="Variant.Text"
-                                Color="Color.Primary"
-                                OnClick="SelectConnectionString">
-                        Select
-                    </MudButton>
-                </MudCardActions>
-            </MudCardContent>
-        </MudCard>
-        
+        <MudGrid Spacing="2" Justify="Justify.Center">
+            <MudItem xs="6">
+                <MudCard Elevation="2" Height="160" >
+                    <MudCardContent>
+                        <MudText Typo="Typo.h6">Database Connection</MudText>
+                        @if(!String.IsNullOrEmpty(Model.ConnectionString.ProviderId))
+                        {
+                            <MudText Typo="Typo.body2">@Model.ConnectionString.ProviderId</MudText>
+                        }
+                        <MudCardActions>
+                            <MudButton Variant="Variant.Text"
+                                        Color="Color.Primary"
+                                        OnClick="SelectConnectionString">
+                                Select
+                            </MudButton>
+                        </MudCardActions>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+
+            <MudItem xs="6">
+                <MudCard Elevation="2" Height="160">
+                    <MudCardContent>
+                        <MudText Typo="Typo.h6">Coordinate System/Projection</MudText>
+                        @if (Model.SpatialReference != null)
+                        {
+                            <MudText Typo="Typo.body2">@Model.SpatialReference.Name</MudText>
+                            <MudText Typo="Typo.body2">@Model.SpatialReference.Description</MudText>
+                        }
+                        <MudCardActions>
+                            <MudButton Variant="Variant.Text"
+                                       Color="Color.Primary"
+                                       OnClick="SelectSpatialReference">
+                                Select
+                            </MudButton>
+                        </MudCardActions>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+
         @if(_tableNames != null && _tableNames.Count()>0)
         {
-            <MudCard>
-                <MudCardContent>
-                    <MudText Typo="Typo.h6">Database Table</MudText>
-                    <MudSelect T="string"
-                               Label="Name:"
-                               ValueChanged="(val) => OnTableNameChanged(val)"
-                               Value="Model.TableName"
-                               Variant="Variant.Text">
-                        @foreach (var tableName in _tableNames)
+                <MudItem xs="12">
+                    <MudCard Elevation="2">
+                    <MudCardContent>
+                        <MudText Typo="Typo.h6">Database Table</MudText>
+                        <MudSelect T="string"
+                                   Label="Name:"
+                                   ValueChanged="(val) => OnTableNameChanged(val)"
+                                   Value="Model.TableName"
+                                   Variant="Variant.Text">
+                            @foreach (var tableName in _tableNames)
+                            {
+                                <MudSelectItem Value="@tableName">@tableName</MudSelectItem>
+                            }
+                        </MudSelect>
+
+                        @if (_idTypeFields != null)
                         {
-                            <MudSelectItem Value="@tableName">@tableName</MudSelectItem>
+                            <MudSelect T="string"
+                                        Label = "ID Field"
+                                        @bind-Value="Model.IdFieldName"
+                                        Variant="Variant.Text">
+                                @foreach (var field in _idTypeFields)
+                                {
+                                    <MudSelectItem Value="@field.name">@field.name</MudSelectItem>
+                                }        
+                            </MudSelect>
                         }
-                    </MudSelect>
 
-                    @if (_idTypeFields != null)
-                    {
-                        <MudSelect T="string"
-                                    Label = "ID Field"
-                                    @bind-Value="Model.IdFieldName"
-                                    Variant="Variant.Text">
-                            @foreach (var field in _idTypeFields)
-                            {
-                                <MudSelectItem Value="@field.name">@field.name</MudSelectItem>
-                            }        
-                        </MudSelect>
-                    }
+                        @if (_coordinageTypeFields != null)
+                        {
+                            <MudSelect T="string"
+                                       Label="X Field"
+                                       @bind-Value="Model.XFieldName"
+                                       Variant="Variant.Text">
+                                @foreach (var field in _coordinageTypeFields)
+                                {
+                                    <MudSelectItem Value="@field.name">@field.name</MudSelectItem>
+                                }
+                            </MudSelect>
 
-                    @if (_coordinageTypeFields != null)
-                    {
-                        <MudSelect T="string"
-                                   Label="X Field"
-                                   @bind-Value="Model.XFieldName"
-                                   Variant="Variant.Text">
-                            @foreach (var field in _coordinageTypeFields)
-                            {
-                                <MudSelectItem Value="@field.name">@field.name</MudSelectItem>
-                            }
-                        </MudSelect>
+                            <MudSelect T="string"
+                                       Label="Y Field"
+                                       @bind-Value="Model.YFieldName"
+                                       Variant="Variant.Text">
+                                @foreach (var field in _coordinageTypeFields)
+                                {
+                                    <MudSelectItem Value="@field.name">@field.name</MudSelectItem>
+                                }
+                            </MudSelect>
+                        }
 
-                        <MudSelect T="string"
-                                   Label="Y Field"
-                                   @bind-Value="Model.YFieldName"
-                                   Variant="Variant.Text">
-                            @foreach (var field in _coordinageTypeFields)
-                            {
-                                <MudSelectItem Value="@field.name">@field.name</MudSelectItem>
-                            }
-                        </MudSelect>
-                    }
-
-                </MudCardContent>
-            </MudCard> 
-            
+                    </MudCardContent>
+                </MudCard> 
+            </MudItem>
         }
 
-        <MudCard>
-            <MudCardContent>
-                <MudText Typo="Typo.h6">Coordinate System/Projection</MudText>
-                @if (Model.SpatialReference != null)
-                {
-                    <MudText Typo="Typo.body2">@Model.SpatialReference.Name</MudText>
-                    <MudText Typo="Typo.body2">@Model.SpatialReference.Description</MudText>
-                }
-                <MudCardActions>
-                    <MudButton Variant="Variant.Text"
-                               Color="Color.Primary"
-                               OnClick="SelectSpatialReference">
-                        Select
-                    </MudButton>
-                </MudCardActions>
-            </MudCardContent>
-        </MudCard>
+            
+        </MudGrid>
     </DialogBody>
 </ModalDialogFormBase>
 
