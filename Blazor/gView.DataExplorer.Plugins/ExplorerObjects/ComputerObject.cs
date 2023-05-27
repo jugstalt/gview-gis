@@ -40,7 +40,7 @@ public class ComputerObject : ExplorerParentObject, IExplorerObject
 
     #region ISerializableExplorerObject Member
 
-    public Task<IExplorerObject?> CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache cache)
+    public Task<IExplorerObject?> CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache? cache)
     {
         if (FullName == String.Empty)
         {

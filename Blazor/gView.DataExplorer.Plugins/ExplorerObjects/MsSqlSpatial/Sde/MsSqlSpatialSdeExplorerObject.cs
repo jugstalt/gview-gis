@@ -28,7 +28,7 @@ public class MsSqlSpatialSdeExplorerObject : ExplorerParentObject,
     private IEnumerable<IExplorerObjectContextTool>? _contextTools = null;
 
     public MsSqlSpatialSdeExplorerObject() : base(null, typeof(IFeatureDataset), 0) { }
-    public MsSqlSpatialSdeExplorerObject(IExplorerObject parent, string server, DbConnectionString connectionString)
+    public MsSqlSpatialSdeExplorerObject(IExplorerObject? parent, string server, DbConnectionString connectionString)
         : base(parent, typeof(IFeatureDataset), 0)
     {
         _server = server;
@@ -75,7 +75,7 @@ public class MsSqlSpatialSdeExplorerObject : ExplorerParentObject,
 
     public string Name => _server;
 
-    public string FullName => @$"OGC\MsSqlSpatialSde\{_server}";
+    public string FullName => @$"ESRI\MsSqlSpatialSde\{_server}";
 
     public string Type => "MsSql Spatial ArcSde Database";
 
@@ -136,9 +136,9 @@ public class MsSqlSpatialSdeExplorerObject : ExplorerParentObject,
 
     #region ISerializableExplorerObject Member
 
-    async public Task<IExplorerObject?> CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache cache)
+    async public Task<IExplorerObject?> CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache? cache)
     {
-        if (cache.Contains(FullName))
+        if (cache != null && cache.Contains(FullName))
         {
             return cache[FullName];
         }
@@ -157,7 +157,7 @@ public class MsSqlSpatialSdeExplorerObject : ExplorerParentObject,
             {
                 if (exObject.FullName == FullName)
                 {
-                    cache.Append(exObject);
+                    cache?.Append(exObject);
                     return exObject;
                 }
             }

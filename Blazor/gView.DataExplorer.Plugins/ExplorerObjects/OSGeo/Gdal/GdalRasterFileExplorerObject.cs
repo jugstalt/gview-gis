@@ -15,7 +15,7 @@ public class GDALRasterFileExplorerObject : ExplorerObjectCls, IExplorerFileObje
     private IRasterClass? _class = null;
 
     public GDALRasterFileExplorerObject() : base(null, typeof(RasterClassV1), 2) { }
-    private GDALRasterFileExplorerObject(IExplorerObject parent, string filename)
+    private GDALRasterFileExplorerObject(IExplorerObject? parent, string filename)
         : base(parent, typeof(RasterClassV1), 2)
     {
         _filename = filename;
@@ -111,9 +111,9 @@ public class GDALRasterFileExplorerObject : ExplorerObjectCls, IExplorerFileObje
 
     #region ISerializableExplorerObject Member
 
-    async public Task<IExplorerObject?> CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache cache)
+    async public Task<IExplorerObject?> CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache? cache)
     {
-        if (cache.Contains(FullName))
+        if (cache != null && cache.Contains(FullName))
         {
             return cache[FullName];
         }
@@ -129,7 +129,7 @@ public class GDALRasterFileExplorerObject : ExplorerObjectCls, IExplorerFileObje
             GDALRasterFileExplorerObject rObject = new GDALRasterFileExplorerObject(null, FullName);
             if (await rObject.GetInstanceAsync() is IRasterClass)
             {
-                cache.Append(rObject);
+                cache?.Append(rObject);
                 return rObject;
             }
             return null;

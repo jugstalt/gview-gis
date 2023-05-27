@@ -27,7 +27,7 @@ public class MsSqlSpatialExplorerObject : ExplorerParentObject,
     private IEnumerable<IExplorerObjectContextTool>? _contextTools = null;
 
     public MsSqlSpatialExplorerObject() : base(null, typeof(IFeatureDataset), 0) { }
-    public MsSqlSpatialExplorerObject(IExplorerObject parent, string server, DbConnectionString connectionString)
+    public MsSqlSpatialExplorerObject(IExplorerObject? parent, string server, DbConnectionString connectionString)
         : base(parent, typeof(IFeatureDataset), 0)
     {
         _server = server;
@@ -134,9 +134,9 @@ public class MsSqlSpatialExplorerObject : ExplorerParentObject,
 
     #region ISerializableExplorerObject Member
 
-    async public Task<IExplorerObject?> CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache cache)
+    async public Task<IExplorerObject?> CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache? cache)
     {
-        if (cache.Contains(FullName))
+        if (cache != null && cache.Contains(FullName))
         {
             return cache[FullName];
         }
@@ -155,7 +155,7 @@ public class MsSqlSpatialExplorerObject : ExplorerParentObject,
             {
                 if (exObject.FullName == FullName)
                 {
-                    cache.Append(exObject);
+                    cache?.Append(exObject);
                     return exObject;
                 }
             }

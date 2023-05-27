@@ -1,5 +1,5 @@
 ﻿using gView.DataExplorer.Plugins.ExplorerObjects.Base;
-using gView.DataExplorer.Plugins.ExplorerObjects.Ogc;
+using gView.DataExplorer.Plugins.ExplorerObjects.Esri;
 using gView.Framework.DataExplorer.Abstraction;
 using gView.Framework.Db;
 using gView.Framework.IO;
@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 namespace gView.DataExplorer.Plugins.ExplorerObjects.MsSqlSpatial.Sde;
 
 [gView.Framework.system.RegisterPlugIn("55AF4451-7A67-48C8-8F41-F2E3A6DA7EB1")]
-public class MsSqlSpatialSdeExplorerGroupObject : ExplorerParentObject, IOgcGroupExplorerObject
+public class MsSqlSpatialSdeExplorerGroupObject : ExplorerParentObject, IEsriGroupExplorerObject
 {
     public MsSqlSpatialSdeExplorerGroupObject()
         : base(null, null, 0)
@@ -25,7 +25,7 @@ public class MsSqlSpatialSdeExplorerGroupObject : ExplorerParentObject, IOgcGrou
 
     public string Name => "MsSql Spatial Geometry (ArcSde)";
 
-    public string FullName => @"OGC\MsSqlSpatialSde";
+    public string FullName => @"ESRI\MsSqlSpatialSde";
     public string Type => "MsSql Spatial ArcSde Connection";
     public Task<object?> GetInstanceAsync() => Task.FromResult<object?>(null);
 
@@ -55,9 +55,9 @@ public class MsSqlSpatialSdeExplorerGroupObject : ExplorerParentObject, IOgcGrou
 
     #region ISerializableExplorerObject Member
 
-    public Task<IExplorerObject?> CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache cache)
+    public Task<IExplorerObject?> CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache? cache)
     {
-        if (cache.Contains(FullName))
+        if (cache != null && cache.Contains(FullName))
         {
             return Task.FromResult<IExplorerObject?>(cache[FullName]);
         }
@@ -65,7 +65,7 @@ public class MsSqlSpatialSdeExplorerGroupObject : ExplorerParentObject, IOgcGrou
         if (this.FullName == FullName)
         {
             MsSqlSpatialSdeExplorerGroupObject exObject = new MsSqlSpatialSdeExplorerGroupObject();
-            cache.Append(exObject);
+            cache?.Append(exObject);
             return Task.FromResult<IExplorerObject?>(exObject);
         }
 
@@ -74,7 +74,7 @@ public class MsSqlSpatialSdeExplorerGroupObject : ExplorerParentObject, IOgcGrou
 
     #endregion
 
-    #region IOgcGroupExplorerObject
+    #region IEsriGroupExplorerObject
 
     public void SetParentExplorerObject(IExplorerObject parentExplorerObject)
     {

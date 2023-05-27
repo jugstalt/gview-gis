@@ -199,9 +199,9 @@ public class SqLiteFdbDatasetExplorerObject : ExplorerObjectFeatureClassImport,
 
     #region ISerializableExplorerObject Member
 
-    async public Task<IExplorerObject?> CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache cache)
+    async public Task<IExplorerObject?> CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache? cache)
     {
-        if (cache.Contains(FullName))
+        if (cache != null && cache.Contains(FullName))
         {
             return cache[FullName];
         }
@@ -227,7 +227,7 @@ public class SqLiteFdbDatasetExplorerObject : ExplorerObjectFeatureClassImport,
         {
             if (exObject.Name == dsName)
             {
-                cache.Append(exObject);
+                cache?.Append(exObject);
                 return exObject;
             }
         }

@@ -182,13 +182,15 @@ internal class SqLiteFdbExplorerObject : ExplorerParentObject,
 
     #region ISerializableExplorerObject Member
 
-    async public Task<IExplorerObject?> CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache cache)
+    async public Task<IExplorerObject?> CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache? cache)
     {
-        IExplorerObject? obj = (cache.Contains(FullName)) ? cache[FullName] : await CreateInstance(null, FullName);
+        IExplorerObject? obj = (cache != null && cache.Contains(FullName)) ?
+            cache[FullName] : 
+            await CreateInstance(null, FullName);
 
         if (obj != null)
         {
-            cache.Append(obj);
+            cache?.Append(obj);
         }
 
         return obj;

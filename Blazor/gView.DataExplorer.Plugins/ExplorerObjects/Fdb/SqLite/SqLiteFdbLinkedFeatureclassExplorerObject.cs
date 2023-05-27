@@ -128,7 +128,7 @@ public class SqLiteFdbLinkedFeatureclassExplorerObject : IExplorerSimpleObject,
 
     #region ISerializableExplorerObject Member
 
-    public Task<IExplorerObject?> CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache cache)
+    public Task<IExplorerObject?> CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache? cache)
     {
         return Task.FromResult<IExplorerObject?>(null);
     }

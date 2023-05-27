@@ -1,30 +1,25 @@
 ﻿using gView.DataExplorer.Plugins.ExplorerObjects.Base;
-using gView.DataExplorer.Plugins.ExplorerObjects.Ogc;
+using gView.DataExplorer.Plugins.ExplorerObjects.Esri;
 using gView.Framework.DataExplorer.Abstraction;
 using gView.Framework.IO;
-using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 
-namespace gView.DataExplorer.Plugins.ExplorerObjects.Web.Wms;
+namespace gView.DataExplorer.Plugins.ExplorerObjects.Web.GeoServices;
 
-[gView.Framework.system.RegisterPlugIn("41C75FD2-9AD0-4457-8248-E55EDA0C114E")]
-public class WmsExplorerObject : ExplorerParentObject, IOgcGroupExplorerObject
+[gView.Framework.system.RegisterPlugIn("517DEC80-F6A5-44BC-95EF-9A56543C373B")]
+public class GeoServicesExplorerObjects : ExplorerParentObject, IEsriGroupExplorerObject
 {
-    public WmsExplorerObject() : base(null, null, 0) { }
-    public WmsExplorerObject(IExplorerObject? parent)
-        : base(parent, null, 0)
-    {
-    }
+    public GeoServicesExplorerObjects() : base(null, null, 0) { }
 
     #region IExplorerObject Member
 
-    public string Name => "Web Services";
+    public string Name => "ESRI GeoServices";
 
-    public string FullName => "OGC/Web";
 
-    public string Type => "OGC.WMS Connections";
+    public string FullName => @"ESRI\gView.GeoServices";
+
+    public string Type => "gView.GeoServices Connections";
 
     public string Icon => "basic:globe";
 
@@ -37,14 +32,14 @@ public class WmsExplorerObject : ExplorerParentObject, IOgcGroupExplorerObject
     async public override Task<bool> Refresh()
     {
         await base.Refresh();
-        base.AddChildObject(new WmsNewConnectionExplorerObject(this));
+        base.AddChildObject(new GeoServicesNewConnectionExplorerObject(this));
 
-        ConfigConnections configStream = new ConfigConnections("ogc_web_connection", "546B0513-D71D-4490-9E27-94CD5D72C64A");
+        ConfigConnections configConnections = new ConfigConnections("geoservices_connection", "546B0513-D71D-4490-9E27-94CD5D72C64A");
 
-        Dictionary<string, string> connections= configStream.Connections;
+        Dictionary<string, string> connections = configConnections.Connections;
         foreach (string name in connections.Keys)
         {
-            base.AddChildObject(new WmsServiceExplorerObject(this, name, connections[name]));
+            base.AddChildObject(new GeoServicesConnectionExplorerObject(this, name, connections[name]));
         }
 
         return true;
@@ -63,7 +58,7 @@ public class WmsExplorerObject : ExplorerParentObject, IOgcGroupExplorerObject
 
         if (FullName == this.FullName)
         {
-            WmsExplorerObject exObject = new WmsExplorerObject(this.ParentExplorerObject);
+            GeoServicesExplorerObjects exObject = new GeoServicesExplorerObjects();
             cache?.Append(exObject);
             return Task.FromResult<IExplorerObject?>(exObject);
         }
@@ -72,7 +67,7 @@ public class WmsExplorerObject : ExplorerParentObject, IOgcGroupExplorerObject
 
     #endregion
 
-    #region IOgcGroupExplorerObject
+    #region IEsriGroupExplorerObject
 
     public void SetParentExplorerObject(IExplorerObject parentExplorerObject)
     {

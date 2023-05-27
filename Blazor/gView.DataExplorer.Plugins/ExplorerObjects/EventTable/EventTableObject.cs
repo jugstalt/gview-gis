@@ -126,7 +126,7 @@ public class EventTableObject : ExplorerObjectCls,
 
     async public Task<IExplorerObject?> CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache cache)
     {
-        if (cache.Contains(FullName))
+        if (cache != null && cache.Contains(FullName))
         {
             return cache[FullName];
         }
@@ -138,7 +138,7 @@ public class EventTableObject : ExplorerObjectCls,
             {
                 if (exObject.FullName == FullName)
                 {
-                    cache.Append(exObject);
+                    cache?.Append(exObject);
                     return exObject;
                 }
             }

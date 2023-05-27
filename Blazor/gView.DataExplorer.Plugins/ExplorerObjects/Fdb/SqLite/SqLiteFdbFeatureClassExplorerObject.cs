@@ -26,7 +26,7 @@ public class SqLiteFdbFeatureClassExplorerObject : ExplorerObjectCls,
     private string _icon = "";
     private IFeatureClass? _fc = null;
     private IRasterClass? _rc = null;
-    private SqLiteFdbDatasetExplorerObject? _parent = null;
+    new private SqLiteFdbDatasetExplorerObject? _parent = null;
     private bool _isNetwork = false;
 
     public SqLiteFdbFeatureClassExplorerObject() :
@@ -191,9 +191,9 @@ public class SqLiteFdbFeatureClassExplorerObject : ExplorerObjectCls,
 
     #region ISerializableExplorerObject Member
 
-    async public Task<IExplorerObject?> CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache cache)
+    async public Task<IExplorerObject?> CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache? cache)
     {
-        if (cache.Contains(FullName))
+        if (cache != null && cache.Contains(FullName))
         {
             return cache[FullName];
         }
@@ -219,7 +219,7 @@ public class SqLiteFdbFeatureClassExplorerObject : ExplorerObjectCls,
         {
             if (exObject.Name == fcName)
             {
-                cache.Append(exObject);
+                cache?.Append(exObject);
                 return exObject;
             }
         }

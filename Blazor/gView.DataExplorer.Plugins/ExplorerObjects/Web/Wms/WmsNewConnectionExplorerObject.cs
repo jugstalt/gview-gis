@@ -86,7 +86,7 @@ public class WmsNewConnectionExplorerObject : ExplorerObjectCls,
                 id = $"{model.ServiceName}@{id}";
             }
 
-            connStream.Add(connStream.GetName(id), connectionString);
+            connStream.Add(id = connStream.GetName(id), connectionString);
 
             e.NewExplorerObject = new WmsServiceExplorerObject(_parent, id, connectionString);
         }
@@ -96,9 +96,9 @@ public class WmsNewConnectionExplorerObject : ExplorerObjectCls,
 
     #region ISerializableExplorerObject Member
 
-    public Task<IExplorerObject?> CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache cache)
+    public Task<IExplorerObject?> CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache? cache)
     {
-        if (cache.Contains(FullName))
+        if (cache != null && cache.Contains(FullName))
         {
             return Task.FromResult<IExplorerObject?>(cache[FullName]);
         }
@@ -115,11 +115,11 @@ public class WmsNewConnectionExplorerObject : ExplorerObjectCls,
         return (parentExObject is WmsExplorerObject);
     }
 
-    public Task<IExplorerObject?> CreateExplorerObjectAsync(IApplicationScope appScope, IExplorerObject parentExObject)
+    async public Task<IExplorerObject?> CreateExplorerObjectAsync(IApplicationScope appScope, IExplorerObject parentExObject)
     {
         ExplorerObjectEventArgs e = new ExplorerObjectEventArgs();
-        ExplorerObjectDoubleClick(appScope, e);
-        return Task.FromResult(e.NewExplorerObject);
+        await ExplorerObjectDoubleClick(appScope, e);
+        return e.NewExplorerObject;
     }
 
     #endregion

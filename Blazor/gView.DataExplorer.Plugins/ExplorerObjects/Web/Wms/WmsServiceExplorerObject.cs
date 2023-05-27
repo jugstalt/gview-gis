@@ -60,8 +60,8 @@ public class WmsServiceExplorerObject : ExplorerObjectCls,
 
     internal Task<bool> UpdateConnectionString(string connectionString)
     {
-        ConfigConnections connStream = new ConfigConnections("ogc_web_connection", "546B0513-D71D-4490-9E27-94CD5D72C64A");
-        connStream.Add(_name, connectionString);
+        ConfigConnections configConnections = new ConfigConnections("ogc_web_connection", "546B0513-D71D-4490-9E27-94CD5D72C64A");
+        configConnections.Add(_name, connectionString);
 
         _connectionString = connectionString;
 
@@ -129,9 +129,9 @@ public class WmsServiceExplorerObject : ExplorerObjectCls,
 
     #region ISerializableExplorerObject Member
 
-    async public Task<IExplorerObject?> CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache cache)
+    async public Task<IExplorerObject?> CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache? cache)
     {
-        if (cache.Contains(FullName))
+        if (cache != null && cache.Contains(FullName))
         {
             return cache[FullName];
         }
@@ -157,7 +157,7 @@ public class WmsServiceExplorerObject : ExplorerObjectCls,
         {
             if (exObject.Name == svName)
             {
-                cache.Append(exObject);
+                cache?.Append(exObject);
                 return exObject;
             }
         }
@@ -172,10 +172,8 @@ public class WmsServiceExplorerObject : ExplorerObjectCls,
 
     public Task<bool> DeleteExplorerObject(ExplorerObjectEventArgs e)
     {
-        ConfigTextStream stream = new ConfigTextStream("ogc_connections", true, true);
-
-        stream.Remove(this.Name, _connectionString);
-        stream.Close();
+        ConfigConnections configConnections = new ConfigConnections("ogc_web_connection", "546B0513-D71D-4490-9E27-94CD5D72C64A");
+        bool ret = configConnections.Remove(_name);
         
         if (ExplorerObjectDeleted != null)
         {
@@ -193,11 +191,8 @@ public class WmsServiceExplorerObject : ExplorerObjectCls,
 
     public Task<bool> RenameExplorerObject(string newName)
     {
-        var result = false;
-        ConfigTextStream stream = new ConfigTextStream("ogc_connections", true, true);
-        
-        result = stream.ReplaceHoleLine(ConfigTextStream.BuildLine(this.Name, _connectionString), ConfigTextStream.BuildLine(newName, _connectionString));
-        stream.Close();
+        ConfigConnections configConnections = new ConfigConnections("ogc_web_connection", "546B0513-D71D-4490-9E27-94CD5D72C64A");
+        bool result = configConnections.Rename(_name, newName);
 
         if (result == true)
         {

@@ -16,7 +16,7 @@ public class MsSqlSpatialFeatureClassExplorerObject : ExplorerObjectCls, IExplor
     private string _icon = "";
     private string _fcname = "", _type = "";
     private IFeatureClass? _fc = null;
-    private MsSqlSpatialExplorerObject? _parent = null;
+    new private MsSqlSpatialExplorerObject? _parent = null;
 
     public MsSqlSpatialFeatureClassExplorerObject() : base(null, typeof(IFeatureClass), 1) { }
     public MsSqlSpatialFeatureClassExplorerObject(MsSqlSpatialExplorerObject parent, IDatasetElement element)
@@ -91,9 +91,9 @@ public class MsSqlSpatialFeatureClassExplorerObject : ExplorerObjectCls, IExplor
 
     #region ISerializableExplorerObject Member
 
-    async public Task<IExplorerObject?> CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache cache)
+    async public Task<IExplorerObject?> CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache? cache)
     {
-        if (cache.Contains(FullName))
+        if (cache != null && cache.Contains(FullName))
         {
             return cache[FullName];
         }
@@ -119,7 +119,7 @@ public class MsSqlSpatialFeatureClassExplorerObject : ExplorerObjectCls, IExplor
         {
             if (exObject.Name == fcName)
             {
-                cache.Append(exObject);
+                cache?.Append(exObject);
                 return exObject;
             }
         }

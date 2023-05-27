@@ -59,9 +59,9 @@ public class PostGISExplorerGroupObject : ExplorerParentObject, IOgcGroupExplore
 
     #region ISerializableExplorerObject Member
 
-    public Task<IExplorerObject?> CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache cache)
+    public Task<IExplorerObject?> CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache? cache)
     {
-        if (cache.Contains(FullName))
+        if (cache != null && cache.Contains(FullName))
         {
             return Task.FromResult<IExplorerObject?>(cache[FullName]);
         }
@@ -69,7 +69,7 @@ public class PostGISExplorerGroupObject : ExplorerParentObject, IOgcGroupExplore
         if (this.FullName == FullName)
         {
             PostGISExplorerGroupObject exObject = new PostGISExplorerGroupObject();
-            cache.Append(exObject);
+            cache?.Append(exObject);
             return Task.FromResult<IExplorerObject?>(exObject);
         }
 

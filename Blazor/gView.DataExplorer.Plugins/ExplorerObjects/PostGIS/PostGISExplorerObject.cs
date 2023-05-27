@@ -27,7 +27,7 @@ public class PostGISExplorerObject : ExplorerParentObject,
     private IEnumerable<IExplorerObjectContextTool>? _contextTools = null;
 
     public PostGISExplorerObject() : base(null, typeof(IFeatureDataset), 0) { }
-    public PostGISExplorerObject(IExplorerObject parent, string server, DbConnectionString connectionString)
+    public PostGISExplorerObject(IExplorerObject? parent, string server, DbConnectionString connectionString)
         : base(parent, typeof(IFeatureDataset), 0)
     {
         _server = server;
@@ -136,9 +136,9 @@ public class PostGISExplorerObject : ExplorerParentObject,
 
     #region ISerializableExplorerObject Member
 
-    async public Task<IExplorerObject?> CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache cache)
+    async public Task<IExplorerObject?> CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache? cache)
     {
-        if (cache.Contains(FullName))
+        if (cache != null && cache.Contains(FullName))
         {
             return cache[FullName];
         }
@@ -157,7 +157,7 @@ public class PostGISExplorerObject : ExplorerParentObject,
             {
                 if (exObject.FullName == FullName)
                 {
-                    cache.Append(exObject);
+                    cache?.Append(exObject);
                     return exObject;
                 }
             }

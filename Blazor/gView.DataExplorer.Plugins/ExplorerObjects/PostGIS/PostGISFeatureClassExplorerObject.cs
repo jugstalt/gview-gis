@@ -17,7 +17,7 @@ public class PostGISFeatureClassExplorerObject : ExplorerObjectCls, IExplorerSim
     private string _icon = "";
     private string _fcname = "", _type = "";
     private IFeatureClass? _fc = null;
-    private PostGISExplorerObject? _parent = null;
+    new private PostGISExplorerObject? _parent = null;
 
     public PostGISFeatureClassExplorerObject() : base(null, typeof(IFeatureClass), 1) { }
     public PostGISFeatureClassExplorerObject(PostGISExplorerObject parent, IDatasetElement element)
@@ -93,9 +93,9 @@ public class PostGISFeatureClassExplorerObject : ExplorerObjectCls, IExplorerSim
 
     #region ISerializableExplorerObject Member
 
-    async public Task<IExplorerObject?> CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache cache)
+    async public Task<IExplorerObject?> CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache? cache)
     {
-        if (cache.Contains(FullName))
+        if (cache != null && cache.Contains(FullName))
         {
             return cache[FullName];
         }
@@ -127,7 +127,7 @@ public class PostGISFeatureClassExplorerObject : ExplorerObjectCls, IExplorerSim
         {
             if (exObject.Name == fcName)
             {
-                cache.Append(exObject);
+                cache?.Append(exObject);
                 return exObject;
             }
         }

@@ -1,14 +1,18 @@
 ﻿using gView.DataExplorer.Plugins.ExplorerObjects.Base;
 using gView.Framework.DataExplorer.Abstraction;
 using gView.Framework.system;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 
-namespace gView.DataExplorer.Plugins.ExplorerObjects.Ogc;
+namespace gView.DataExplorer.Plugins.ExplorerObjects.Esri;
 
-[gView.Framework.system.RegisterPlugIn("D6038DDE-DCB9-4cab-ADAC-C80EA323527D")]
-public class OGCExplorerGroupObject : ExplorerParentObject, IExplorerGroupObject
+[gView.Framework.system.RegisterPlugIn("3DB3E792-AF34-4539-B68A-07007CE9BAEE")]
+public class EsriExplorerGroupObject : ExplorerParentObject, IExplorerGroupObject
 {
-    public OGCExplorerGroupObject() : base(null, null, 0) { }
+    public EsriExplorerGroupObject() : base(null, null, 0) { }
 
     #region IExplorerGroupObject Members
 
@@ -23,11 +27,11 @@ public class OGCExplorerGroupObject : ExplorerParentObject, IExplorerGroupObject
 
     #region IExplorerObject Members
 
-    public string Name => "OGC";
+    public string Name => "ESRI";
 
-    public string FullName => "OGC";
+    public string FullName => "ESRI";
 
-    public string Type => "OGC Connections";
+    public string Type => "ESRI Connections";
 
     public Task<object?> GetInstanceAsync() => Task.FromResult<object?>(null);
 
@@ -43,12 +47,12 @@ public class OGCExplorerGroupObject : ExplorerParentObject, IExplorerGroupObject
         foreach (var compType in compMan.GetPlugins(gView.Framework.system.Plugins.Type.IExplorerObject))
         {
             IExplorerObject exObject = compMan.CreateInstance<IExplorerObject>(compType);
-            if (!(exObject is IOgcGroupExplorerObject))
+            if (!(exObject is IEsriGroupExplorerObject))
             {
                 continue;
             }
 
-            ((IOgcGroupExplorerObject)exObject).SetParentExplorerObject(this);
+            ((IEsriGroupExplorerObject)exObject).SetParentExplorerObject(this);
 
             base.AddChildObject(exObject);
         }
@@ -62,14 +66,14 @@ public class OGCExplorerGroupObject : ExplorerParentObject, IExplorerGroupObject
 
     public Task<IExplorerObject?> CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache? cache)
     {
-        if (cache != null && cache.Contains(FullName))
+        if (cache!=null && cache.Contains(FullName))
         {
             return Task.FromResult<IExplorerObject?>(cache[FullName]);
         }
 
         if (this.FullName == FullName)
         {
-            OGCExplorerGroupObject exObject = new OGCExplorerGroupObject();
+            EsriExplorerGroupObject exObject = new EsriExplorerGroupObject();
             cache?.Append(exObject);
             return Task.FromResult<IExplorerObject?>(exObject);
         }

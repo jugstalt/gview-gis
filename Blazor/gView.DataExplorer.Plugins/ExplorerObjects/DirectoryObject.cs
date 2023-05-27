@@ -173,9 +173,9 @@ public class DirectoryObject : ExplorerParentObject,
 
     #region ISerializableExplorerObject Member
 
-    public Task<IExplorerObject?> CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache cache)
+    public Task<IExplorerObject?> CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache? cache)
     {
-        if (cache.Contains(FullName))
+        if (cache != null && cache.Contains(FullName))
         {
             return Task.FromResult<IExplorerObject?>(cache[FullName]);
         }
@@ -189,7 +189,7 @@ public class DirectoryObject : ExplorerParentObject,
             }
 
             DirectoryObject dObject = new DirectoryObject(this, FullName);
-            cache.Append(dObject);
+            cache?.Append(dObject);
             return Task.FromResult<IExplorerObject?>(dObject);
         }
         catch

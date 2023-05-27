@@ -20,7 +20,7 @@ class DummyExplorerObject : IExplorerObject
 
     public int Priority => 0;
 
-    public Task<IExplorerObject?> CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache cache)
+    public Task<IExplorerObject?> CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache? cache)
     {
         return Task.FromResult<IExplorerObject?>(null);
     }
