@@ -1,9 +1,11 @@
 ﻿using gView.DataExplorer.Plugins.ExplorerObjects.Base;
 using gView.DataExplorer.Plugins.Extensions;
 using gView.DataExplorer.Razor.Components.Dialogs.Models;
+using gView.DataSources.EventTable;
 using gView.Framework.Blazor.Services.Abstraction;
 using gView.Framework.DataExplorer.Abstraction;
 using gView.Framework.DataExplorer.Events;
+using gView.Framework.IO;
 using System.Threading.Tasks;
 
 namespace gView.DataExplorer.Plugins.ExplorerObjects.EventTable;
@@ -52,24 +54,21 @@ public class EventTableNewConnectionObject : ExplorerObjectCls, IExplorerSimpleO
                                                                     "EventTable Connection",
                                                                     new EventTableConnectionModel());
 
-        // ToDo:
-        //FormEventTableConnection dlg = new FormEventTableConnection();
+        if (!string.IsNullOrWhiteSpace(model?.TableName))
+        {
+            ConfigConnections connStream = new ConfigConnections("eventtable", "546B0513-D71D-4490-9E27-94CD5D72C64A");
 
-        //if (dlg.ShowDialog() == System.Windows.Forms.DialogResult.OK)
-        //{
-        //    ConfigConnections connStream = new ConfigConnections("eventtable", "546B0513-D71D-4490-9E27-94CD5D72C64A");
+            EventTableConnection etconn = new EventTableConnection(
+                model.ConnectionString,
+                model.TableName,
+                model.IdFieldName, model.XFieldName, model.YFieldName,
+                model.SpatialReference);
 
-        //    EventTableConnection etconn = new EventTableConnection(
-        //        dlg.DbConnectionString,
-        //        dlg.TableName,
-        //        dlg.IdField, dlg.XField, dlg.YField,
-        //        dlg.SpatialReference);
+            string id = connStream.GetName(model.TableName);
+            connStream.Add(id, etconn.ToXmlString());
 
-        //    string id = connStream.GetName(dlg.TableName);
-        //    connStream.Add(id, etconn.ToXmlString());
-
-        //    e.NewExplorerObject = new EventTableObject(this.ParentExplorerObject, id, etconn);
-        //}
+            e.NewExplorerObject = new EventTableObject(this.ParentExplorerObject, id, etconn);
+        }
     }
 
     #endregion

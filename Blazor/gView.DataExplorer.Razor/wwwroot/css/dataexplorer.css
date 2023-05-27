@@ -165,6 +165,12 @@
     background: #0078d476 !important;
 }
 
+/* Icons */
+.sketchpen-icon-basic-bg-light-24 {
+    margin-top: 0px;
+    margin-bottom: 0px;
+}
+
 /* MudBlazor overrides */
 .mud-select-input > .explorer-dialog-root-select-item {
     padding-left: 0px !important;

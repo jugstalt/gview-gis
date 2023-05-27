@@ -51,6 +51,7 @@ public class EventTableGroupObject : ExplorerParentObject, IExplorerGroupObject
     #endregion
 
     #region IExplorerParentObject Members
+
     async public override Task<bool> Refresh()
     {
         await base.Refresh();
@@ -64,12 +65,12 @@ public class EventTableGroupObject : ExplorerParentObject, IExplorerGroupObject
             EventTableConnection dbConn = new EventTableConnection();
             dbConn.FromXmlString(DbConnectionStrings[DbConnName]);
             
-            // ToDo:
-            //base.AddChildObject(new EventTableObject(this, DbConnName, dbConn));
+            base.AddChildObject(new EventTableObject(this, DbConnName, dbConn));
         }
 
         return true;
     }
+    
     #endregion
 
     #region IOgcGroupExplorerObject

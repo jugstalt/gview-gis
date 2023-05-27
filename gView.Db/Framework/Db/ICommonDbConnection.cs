@@ -57,6 +57,6 @@ namespace gView.Framework.Db
         dataType getFieldType(string fieldname);
         int getFieldSize(string fieldname);
 
-        string[] TableNames();
+        string[] TableNames(bool appendViews = false);
     }
 }

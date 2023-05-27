@@ -1,5 +1,5 @@
 ﻿using gView.DataExplorer.Plugins.ExplorerObjects.Base;
-using gView.DataExplorer.Plugins.ExplorerObjects.Base.ContextTools;
+using gView.DataExplorer.Plugins.ExplorerObjects.EventTable.ContextTools;
 using gView.DataSources.EventTable;
 using gView.Framework.Data;
 using gView.Framework.DataExplorer.Abstraction;
@@ -17,7 +17,6 @@ public class EventTableObject : ExplorerObjectCls,
                                 IExplorerObjectDeletable, 
                                 IExplorerObjectRenamable,
                                 IExplorerObjectContextTools
-                                //,IUpdateConnectionString
 {
     private EventTableConnection? _etconn = null;
     private string _name = String.Empty;
@@ -37,34 +36,16 @@ public class EventTableObject : ExplorerObjectCls,
         };
     }
 
-    //void ConnectionProperties_Click(object sender, EventArgs e)
-    //{
-    //    if (_etconn == null)
-    //    {
-    //        return;
-    //    }
+    public EventTableConnection? GetEventTableConnection() => _etconn;
+    public Task<bool> UpdateEventTableConnection(EventTableConnection etconn)
+    {
+        _etconn = etconn;
 
-    //    FormEventTableConnection dlg = new FormEventTableConnection();
-    //    dlg.DbConnectionString = _etconn.DbConnectionString;
-    //    dlg.TableName = _etconn.TableName;
-    //    dlg.IdField = _etconn.IdFieldName;
-    //    dlg.XField = _etconn.XFieldName;
-    //    dlg.YField = _etconn.YFieldName;
-    //    dlg.SpatialReference = _etconn.SpatialReference;
+        ConfigConnections connStream = new ConfigConnections("eventtable", "546B0513-D71D-4490-9E27-94CD5D72C64A");
+        connStream.Add(_name, etconn.ToXmlString());
 
-    //    if (dlg.ShowDialog() == DialogResult.OK)
-    //    {
-    //        EventTableConnection etcon = new EventTableConnection(
-    //            dlg.DbConnectionString,
-    //            dlg.TableName,
-    //            dlg.IdField, dlg.XField, dlg.YField,
-    //            dlg.SpatialReference);
-
-    //        ConfigConnections connStream = new ConfigConnections("eventtable", "546B0513-D71D-4490-9E27-94CD5D72C64A");
-    //        connStream.Add(dlg.TableName, etcon.ToXmlString());
-    //        _etconn = etcon;
-    //    }
-    //}
+        return Task.FromResult(true);
+    }
 
     #region IExplorerObject Member
 

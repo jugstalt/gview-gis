@@ -19,32 +19,10 @@
       "id": "oracle",
       "name": "Oracle",
       "provider": "OracleClient",
-      "schemas": [
+      "schemes": [
         {
           "name": "Omiting tnsnames.ora",
           "connectionString": "Data Source=(DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL=TCP)(HOST=[Host])(PORT=[Port])))(CONNECT_DATA=(SERVER=DEDICATED)(SERVICE_NAME=[OracleSID])));User Id=[User];Password=[Password];"
-        }
-      ]
-    },
-    {
-      "id": "oledb",
-      "name": "Ole DB",
-      "provider": "OleDB",
-      "schemes": [
-        {
-          "name": "MS Access: Standard security",
-          "fileFilter": "MS Access|*.mdb",
-          "connectionString": "Provider=Microsoft.Jet.OLEDB.4.0;Data Source=[File];"
-        },
-        {
-          "name": "MS Access: Use password",
-          "fileFilter": "MS Access|*.mdb",
-          "connectionString": "Provider=Microsoft.Jet.OLEDB.4.0;Data Source=[File];Jet OLEDB:Database Password=[Password];"
-        },
-        {
-          "name": "Excel 12.0",
-          "fileFilter": "MS Excel|*.xls",
-          "connectionString": "Provider=Microsoft.Jet.OLEDB.4.0;Data Source=[File];Extended Properties=\"Excel 8.0;HDR=Yes;IMEX=1\";"
         }
       ]
     },

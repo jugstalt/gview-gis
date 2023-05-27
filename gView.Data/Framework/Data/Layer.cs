@@ -645,6 +645,8 @@ namespace gView.Framework.Data
             }
         }
 
+        public IField[] ToArray() => _fields.ToArray();
+
         #region IFields Member
         public IField FindField(string aliasname)
         {
