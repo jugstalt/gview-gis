@@ -149,7 +149,7 @@ public class MsSqlSpatialSdeExplorerObject : ExplorerParentObject<IExplorerObjec
             return null;
         }
 
-        group = (MsSqlSpatialSdeExplorerGroupObject?)((cache.Contains(group.FullName)) ? cache[group.FullName] : group);
+        group = (MsSqlSpatialSdeExplorerGroupObject?)((cache?.Contains(group.FullName) == true) ? cache[group.FullName] : group);
 
         if (group != null)
         {

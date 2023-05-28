@@ -96,17 +96,25 @@ public class ArcImsConnectionExplorerObject : ExplorerParentObject<IExplorerObje
             XmlDocument doc = new XmlDocument();
             doc.LoadXml(axl);
 
-            foreach (XmlNode mapService in doc.SelectNodes("//SERVICE[@name]"))
+            var serviceNodes1 = doc.SelectNodes("//SERVICE[@name]");
+            var serviceNodes2 = doc.SelectNodes("//SERVICE[@NAME]");
+
+            if (serviceNodes1 != null)
             {
-                base.AddChildObject(new ArcImsServiceExplorerObject(this, mapService.Attributes["name"].Value, _connectionString));
-            }
-            if (doc.SelectNodes("//SERVICE[@name]").Count == 0)
-            {
-                foreach (XmlNode mapService in doc.SelectNodes("//SERVICE[@NAME]"))
+                foreach (XmlNode mapService in serviceNodes1)
                 {
-                    base.AddChildObject(new ArcImsServiceExplorerObject(this, mapService.Attributes["NAME"].Value, _connectionString));
+                    base.AddChildObject(new ArcImsServiceExplorerObject(this, mapService.Attributes!["name"]!.Value, _connectionString));
                 }
             }
+
+            if (serviceNodes2 != null)
+            {
+                foreach (XmlNode mapService in serviceNodes2)
+                {
+                    base.AddChildObject(new ArcImsServiceExplorerObject(this, mapService.Attributes!["NAME"]!.Value, _connectionString));
+                }
+            }
+
 
             return true;
         }
@@ -133,7 +141,7 @@ public class ArcImsConnectionExplorerObject : ExplorerParentObject<IExplorerObje
             return null;
         }
 
-        group = (ArcImsExplorerObjects?)((cache.Contains(group.FullName)) ? cache[group.FullName] : group);
+        group = (ArcImsExplorerObjects?)((cache?.Contains(group.FullName) != null) ? cache[group.FullName] : group);
 
         if (group != null)
         {

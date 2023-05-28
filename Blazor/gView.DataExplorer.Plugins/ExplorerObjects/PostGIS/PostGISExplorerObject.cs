@@ -149,7 +149,7 @@ public class PostGISExplorerObject : ExplorerParentObject<IExplorerObject, IFeat
             return null;
         }
 
-        group = (PostGISExplorerGroupObject?)((cache.Contains(group.FullName)) ? cache[group.FullName] : group);
+        group = (PostGISExplorerGroupObject?)((cache?.Contains(group.FullName) == true) ? cache[group.FullName] : group);
 
         if (group != null)
         {

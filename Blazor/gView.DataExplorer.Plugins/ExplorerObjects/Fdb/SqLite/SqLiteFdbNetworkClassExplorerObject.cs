@@ -71,11 +71,11 @@ public class SqLiteFdbNetworkClassExplorerObject : ExplorerObjectCls<IExplorerOb
         return false;
     }
 
-    async public Task<IExplorerObject?> CreateExplorerObjectAsync(IApplicationScope scope, IExplorerObject? parentExObject)
+    public Task<IExplorerObject?> CreateExplorerObjectAsync(IApplicationScope scope, IExplorerObject? parentExObject)
     {
         if (!(parentExObject is SqLiteFdbDatasetExplorerObject))
         {
-            return null;
+            return Task.FromResult<IExplorerObject?>(null);
         }
 
         SqLiteFdbDatasetExplorerObject parent = (SqLiteFdbDatasetExplorerObject)parentExObject;

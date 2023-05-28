@@ -132,26 +132,28 @@ public class GeoServicesServiceExplorerObject : ExplorerParentObject<IExplorerOb
 
         string name = fullName.Substring(connectionExObject.FullName.Length + 1), folderName = "";
 
-        IExplorerObject? parentExObject = null;
+        IExplorerObject? parentExObject;
 
         if (name.Contains(@"\"))
         {
             folderName = name.Substring(0, name.LastIndexOf(@"\"));
             name = name.Substring(name.LastIndexOf(@"\") + 1);
-            parentExObject = await new GeoServicesFolderExplorerObject(null, String.Empty, String.Empty).CreateInstanceByFullName($@"{connectionExObject.FullName}\{folderName}", null);
+            parentExObject = await new GeoServicesFolderExplorerObject(new GeoServicesConnectionExplorerObject(), String.Empty, String.Empty).CreateInstanceByFullName($@"{connectionExObject.FullName}\{folderName}", null);
         }
         else
         {
             parentExObject = connectionExObject;
         }
 
-
-        var serviceExObject = new GeoServicesServiceExplorerObject(parentExObject, name, folderName, connectionExObject._connectionString);
-        if (serviceExObject != null)
+        if (parentExObject != null)
         {
-            cache?.Append(serviceExObject);
+            var serviceExObject = new GeoServicesServiceExplorerObject(parentExObject, name, folderName, connectionExObject._connectionString);
+            if (serviceExObject != null)
+            {
+                cache?.Append(serviceExObject);
 
-            return serviceExObject;
+                return serviceExObject;
+            }
         }
 
         return null;

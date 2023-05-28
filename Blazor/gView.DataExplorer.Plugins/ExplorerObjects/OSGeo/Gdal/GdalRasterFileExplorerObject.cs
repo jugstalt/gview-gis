@@ -90,11 +90,6 @@ public class GDALRasterFileExplorerObject :
         return Task.FromResult<object?>(_class);
     }
 
-    async public Task<IExplorerObject> CreateInstanceByFullName(IExplorerObject parent, string FullName)
-    {
-        var instance = await CreateInstance(parent, FullName);
-        return instance;
-    }
     public Task<IExplorerFileObject?> CreateInstance(IExplorerObject parent, string filename)
     {
         try

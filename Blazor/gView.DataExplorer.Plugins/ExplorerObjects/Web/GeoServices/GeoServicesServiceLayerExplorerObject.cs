@@ -1,4 +1,5 @@
 ﻿using gView.DataExplorer.Plugins.ExplorerObjects.Base;
+using gView.DataExplorer.Plugins.ExplorerObjects.Extensions;
 using gView.Framework.DataExplorer.Abstraction;
 using gView.Interoperability.GeoServices.Dataset;
 using System;
@@ -10,7 +11,6 @@ namespace gView.DataExplorer.Plugins.ExplorerObjects.Web.GeoServices;
 public class GeoServicesServiceLayerExplorerObject : ExplorerObjectCls<IExplorerObject, GeoServicesFeatureClass>,
                                                      IExplorerSimpleObject
 {
-    new private IExplorerObject? _parent;
     private readonly GeoServicesFeatureClass? _fc;
 
     public GeoServicesServiceLayerExplorerObject()
@@ -21,7 +21,6 @@ public class GeoServicesServiceLayerExplorerObject : ExplorerObjectCls<IExplorer
     public GeoServicesServiceLayerExplorerObject(IExplorerObject parent, GeoServicesFeatureClass featureClass)
         : base(parent, 1)
     {
-        _parent = parent;
         _fc = featureClass;
     }
 
@@ -31,12 +30,12 @@ public class GeoServicesServiceLayerExplorerObject : ExplorerObjectCls<IExplorer
     {
         get
         {
-            if (_parent == null || _fc == null)
+            if (base.Parent.IsNull() || _fc == null)
             {
                 return "";
             }
 
-            return _parent.FullName +
+            return base.Parent.FullName +
                 $@"\{_fc.ID}";
         }
     }
@@ -64,8 +63,8 @@ public class GeoServicesServiceLayerExplorerObject : ExplorerObjectCls<IExplorer
         string parentFullName = fullName.Substring(0, pos);
 
         var parentObject =
-            (IExplorerParentObject)(await new GeoServicesFolderExplorerObject(new GeoServicesConnectionExplorerObject(), String.Empty, String.Empty).CreateInstanceByFullName(parentFullName, null)) ??
-            (IExplorerParentObject)(await new GeoServicesServiceExplorerObject(new NullParentExplorerObject(), String.Empty, String.Empty, String.Empty).CreateInstanceByFullName(parentFullName, null));
+            (IExplorerParentObject?)(await new GeoServicesFolderExplorerObject(new GeoServicesConnectionExplorerObject(), String.Empty, String.Empty).CreateInstanceByFullName(parentFullName, null)) ??
+            (IExplorerParentObject?)(await new GeoServicesServiceExplorerObject(new NullParentExplorerObject(), String.Empty, String.Empty, String.Empty).CreateInstanceByFullName(parentFullName, null));
 
         if (parentObject != null)
         {

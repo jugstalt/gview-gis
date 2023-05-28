@@ -64,7 +64,7 @@ public class ArcImsNewConnectionExplorerObject : ExplorerObjectCls<IExplorerObje
             string id = connStream.GetName(ConfigTextStream.ExtractValue(connectionString, "server").UrlToConfigId());
             connStream.Add(id, connectionString);
 
-            e.NewExplorerObject = new ArcImsConnectionExplorerObject(this.ParentExplorerObject, id, connectionString);
+            e.NewExplorerObject = new ArcImsConnectionExplorerObject(Parent, id, connectionString);
         }
     }
 

@@ -1,4 +1,5 @@
 ﻿using gView.DataExplorer.Plugins.ExplorerObjects.Base;
+using gView.DataExplorer.Plugins.ExplorerObjects.Extensions;
 using gView.DataSources.Fdb;
 using gView.DataSources.Fdb.SQLite;
 using gView.Framework.Blazor.Services.Abstraction;
@@ -26,7 +27,6 @@ public class SqLiteFdbFeatureClassExplorerObject : ExplorerObjectCls<SqLiteFdbDa
     private string _icon = "";
     private IFeatureClass? _fc = null;
     private IRasterClass? _rc = null;
-    new private SqLiteFdbDatasetExplorerObject? _parent = null;
     private bool _isNetwork = false;
 
     public SqLiteFdbFeatureClassExplorerObject() :
@@ -41,7 +41,6 @@ public class SqLiteFdbFeatureClassExplorerObject : ExplorerObjectCls<SqLiteFdbDa
             return;
         }
 
-        _parent = parent;
         _filename = filename;
         _dsname = dsname;
         _fcname = element.Title;
@@ -117,8 +116,8 @@ public class SqLiteFdbFeatureClassExplorerObject : ExplorerObjectCls<SqLiteFdbDa
             }
         }
 
-        //if (!_isNetwork)
-        //{
+        if (!_isNetwork)
+        {
         //    _contextItems = new ToolStripItem[1];
         //    _contextItems[0] = new ToolStripMenuItem("Tasks");
 
@@ -138,7 +137,7 @@ public class SqLiteFdbFeatureClassExplorerObject : ExplorerObjectCls<SqLiteFdbDa
         //    item = new ToolStripMenuItem("Truncate");
         //    item.Click += new EventHandler(Truncate_Click);
         //    ((ToolStripMenuItem)_contextItems[0]).DropDownItems.Add(item);
-        //}
+        }
     }
 
     #region IExplorerObject Members
@@ -254,7 +253,7 @@ public class SqLiteFdbFeatureClassExplorerObject : ExplorerObjectCls<SqLiteFdbDa
         //rebuilder.RebuildIndices(classes);
     }
 
-    async void SpatialIndexDef_Click(object sender, EventArgs e)
+    void SpatialIndexDef_Click(object sender, EventArgs e)
     {
         if (_fc == null || _fc.Dataset == null || !(_fc.Dataset.Database is SQLiteFDB))
         {
@@ -296,12 +295,12 @@ public class SqLiteFdbFeatureClassExplorerObject : ExplorerObjectCls<SqLiteFdbDa
 
     async public Task<bool> DeleteExplorerObject(ExplorerObjectEventArgs e)
     {
-        if (_parent == null)
+        if (base.TypedParent.IsNull())
         {
             return false;
         }
 
-        if (await _parent.DeleteFeatureClass(_fcname))
+        if (await base.TypedParent.DeleteFeatureClass(_fcname))
         {
             if (ExplorerObjectDeleted != null)
             {

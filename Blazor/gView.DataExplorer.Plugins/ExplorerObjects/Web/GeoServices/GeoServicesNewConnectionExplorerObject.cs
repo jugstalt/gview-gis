@@ -63,7 +63,7 @@ public class GeoServicesNewConnectionExplorerObject : ExplorerObjectCls<IExplore
             string id = connStream.GetName(ConfigTextStream.ExtractValue(connectionString, "services").UrlToConfigId());
             connStream.Add(id, connectionString);
 
-            e.NewExplorerObject = new GeoServicesConnectionExplorerObject(this.ParentExplorerObject, id, connectionString);
+            e.NewExplorerObject = new GeoServicesConnectionExplorerObject(base.Parent, id, connectionString);
         }
     }
 

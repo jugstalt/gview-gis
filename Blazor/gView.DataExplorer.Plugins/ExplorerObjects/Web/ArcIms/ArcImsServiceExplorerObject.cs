@@ -1,4 +1,5 @@
 ﻿using gView.DataExplorer.Plugins.ExplorerObjects.Base;
+using gView.DataExplorer.Plugins.ExplorerObjects.Extensions;
 using gView.Framework.DataExplorer.Abstraction;
 using gView.Interoperability.ArcXML.Dataset;
 using System.Threading.Tasks;
@@ -11,14 +12,12 @@ public class ArcImsServiceExplorerObject :
 {
     private string _name = "", _connectionString = "";
     private ArcIMSClass? _class = null;
-    new private ArcImsConnectionExplorerObject? _parent = null;
 
     internal ArcImsServiceExplorerObject(ArcImsConnectionExplorerObject parent, string name, string connectionString)
         : base(parent, 1)
     {
         _name = name;
         _connectionString = connectionString;
-        _parent = parent;
     }
 
     #region IExplorerObject Member
@@ -29,12 +28,12 @@ public class ArcImsServiceExplorerObject :
     {
         get
         {
-            if (_parent == null)
+            if (base.Parent.IsNull())
             {
                 return "";
             }
 
-            return @$"{_parent.FullName}\{_name}";
+            return @$"{base.Parent.FullName}\{_name}";
         }
     }
 

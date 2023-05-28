@@ -9,6 +9,7 @@ using gView.Framework.Db;
 using gView.Framework.IO;
 using gView.Framework.system;
 using System;
+using System.Drawing.Printing;
 using System.Threading.Tasks;
 
 namespace gView.DataExplorer.Plugins.ExplorerObjects.MsSqlSpatial.Geography;
@@ -79,7 +80,7 @@ public class MsSqlSpatialNewConnectionObject :
             id = connStream.GetName(String.IsNullOrWhiteSpace(id) ? "mssql-database" : id.Trim());
             connStream.Add(id, dbConnStr.ToString());
 
-            e.NewExplorerObject = new MsSqlSpatialExplorerObject(this.ParentExplorerObject, id, dbConnStr);
+            e.NewExplorerObject = new MsSqlSpatialExplorerObject(base.Parent, id, dbConnStr);
         }
     }
 

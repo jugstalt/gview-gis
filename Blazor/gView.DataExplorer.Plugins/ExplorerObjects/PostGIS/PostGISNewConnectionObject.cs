@@ -72,7 +72,7 @@ public class PostGISNewConnectionObject :
             id = connStream.GetName(String.IsNullOrWhiteSpace(id) ? "postgis-database" : id.Trim());
             connStream.Add(id, dbConnStr.ToString());
 
-            e.NewExplorerObject = new PostGISExplorerObject(this.ParentExplorerObject, id, dbConnStr);
+            e.NewExplorerObject = new PostGISExplorerObject(base.Parent, id, dbConnStr);
         }
     }
 

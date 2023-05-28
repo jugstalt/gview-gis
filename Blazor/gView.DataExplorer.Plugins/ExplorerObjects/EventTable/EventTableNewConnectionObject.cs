@@ -71,7 +71,7 @@ public class EventTableNewConnectionObject :
             string id = connStream.GetName(model.TableName);
             connStream.Add(id, etconn.ToXmlString());
 
-            e.NewExplorerObject = new EventTableObject(this.ParentExplorerObject, id, etconn);
+            e.NewExplorerObject = new EventTableObject(Parent, id, etconn);
         }
     }
 
@@ -79,9 +79,9 @@ public class EventTableNewConnectionObject :
 
     #region ISerializableExplorerObject Member
 
-    public Task<IExplorerObject?> CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache cache)
+    public Task<IExplorerObject?> CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache? cache)
     {
-        if (cache.Contains(FullName))
+        if (cache != null && cache.Contains(FullName))
         {
             return Task.FromResult<IExplorerObject?>(cache[FullName]);
         }

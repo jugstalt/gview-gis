@@ -38,7 +38,7 @@ namespace gView.DataExplorer.Plugins.ExplorerObjects.ShapeFiles
             }
         }
 
-        public Task<IExplorerFileObject?> CreateInstance(IExplorerObject? parent, string filename)
+        public Task<IExplorerFileObject?> CreateInstance(IExplorerObject parent, string filename)
         {
             try
             {
@@ -128,7 +128,7 @@ namespace gView.DataExplorer.Plugins.ExplorerObjects.ShapeFiles
         {
             IExplorerObject? obj = (cache != null && cache.Contains(FullName)) ? 
                 cache[FullName] : 
-                await CreateInstance(null, FullName);
+                await CreateInstance(Parent, FullName);
 
             if (obj != null)
             {

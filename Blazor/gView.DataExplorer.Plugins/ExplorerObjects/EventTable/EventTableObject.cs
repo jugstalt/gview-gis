@@ -124,7 +124,7 @@ public class EventTableObject : ExplorerObjectCls<IExplorerObject, IFeatureClass
 
     #region ISerializableExplorerObject Member
 
-    async public Task<IExplorerObject?> CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache cache)
+    async public Task<IExplorerObject?> CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache? cache)
     {
         if (cache != null && cache.Contains(FullName))
         {

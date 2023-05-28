@@ -269,11 +269,11 @@ public class SqLiteFdbDatasetExplorerObject : ExplorerObjectFeatureClassImport<I
     public bool CanCreate(IExplorerObject? parentExObject)
         => parentExObject is SqLiteFdbExplorerObject;
 
-    async public Task<IExplorerObject?> CreateExplorerObjectAsync(IApplicationScope scope, IExplorerObject? parentExObject)
+    public Task<IExplorerObject?> CreateExplorerObjectAsync(IApplicationScope scope, IExplorerObject? parentExObject)
     {
         if (!CanCreate(parentExObject))
         {
-            return null;
+            return Task.FromResult<IExplorerObject?>(null);
         }
 
         throw new NotImplementedException();

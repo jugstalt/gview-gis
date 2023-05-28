@@ -79,7 +79,7 @@ public class MsSqlSpatialNewConnectionObject :
             id = connStream.GetName(String.IsNullOrWhiteSpace(id) ? "mssql-database" : id.Trim());
             connStream.Add(id, dbConnStr.ToString());
 
-            e.NewExplorerObject = new MsSqlSpatialExplorerObject(this.ParentExplorerObject, id, dbConnStr);
+            e.NewExplorerObject = new MsSqlSpatialExplorerObject(base.Parent, id, dbConnStr);
         }
     }
 

@@ -71,7 +71,7 @@ internal class SqLiteFdbExplorerObject : ExplorerParentObject<IExplorerObject>,
         return Task.FromResult<object?>(null);
     }
 
-    async public Task<IExplorerFileObject?> CreateInstance(IExplorerObject? parent, string filename)
+    async public Task<IExplorerFileObject?> CreateInstance(IExplorerObject parent, string filename)
     {
         string f = filename.ToLower();
         if (!f.ToLower().EndsWith(".fdb"))
@@ -186,7 +186,7 @@ internal class SqLiteFdbExplorerObject : ExplorerParentObject<IExplorerObject>,
     {
         IExplorerObject? obj = (cache != null && cache.Contains(FullName)) ?
             cache[FullName] : 
-            await CreateInstance(null, FullName);
+            await CreateInstance(Parent, FullName);
 
         if (obj != null)
         {
