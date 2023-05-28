@@ -8,9 +8,11 @@ using System.Threading.Tasks;
 namespace gView.DataExplorer.Plugins.ExplorerObjects.Web.ArcIms;
 
 [gView.Framework.system.RegisterPlugIn("FEEFD2E9-D0DD-4850-BCD6-86D88B543DB3")]
-public class ArcImsExplorerObjects : ExplorerParentObject, IEsriGroupExplorerObject
+public class ArcImsExplorerObjects :
+                    ExplorerParentObject, 
+                    IEsriGroupExplorerObject
 {
-    public ArcImsExplorerObjects() : base(null, null, 0) { }
+    public ArcImsExplorerObjects() : base() { }
 
     #region IExplorerObject Member
 
@@ -70,7 +72,7 @@ public class ArcImsExplorerObjects : ExplorerParentObject, IEsriGroupExplorerObj
 
     public void SetParentExplorerObject(IExplorerObject parentExplorerObject)
     {
-        _parent = parentExplorerObject;
+        base.Parent = parentExplorerObject;
     }
 
     #endregion

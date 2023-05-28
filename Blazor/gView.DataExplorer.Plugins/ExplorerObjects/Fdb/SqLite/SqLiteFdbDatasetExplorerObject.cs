@@ -14,7 +14,7 @@ using System.Threading.Tasks;
 namespace gView.DataExplorer.Plugins.ExplorerObjects.Fdb.SqLite;
 
 [RegisterPlugIn("E76179C7-FD21-4C0F-ADA0-1DC260E8C50E")]
-public class SqLiteFdbDatasetExplorerObject : ExplorerObjectFeatureClassImport,
+public class SqLiteFdbDatasetExplorerObject : ExplorerObjectFeatureClassImport<IExplorerObject, SQLiteFDBDataset>,
                                               IExplorerSimpleObject,
                                               IExplorerObjectCommandParameters,
                                               ISerializableExplorerObject,
@@ -28,10 +28,10 @@ public class SqLiteFdbDatasetExplorerObject : ExplorerObjectFeatureClassImport,
     private IEnumerable<IExplorerObjectContextTool>? _contextTools = null;
     private bool _isImageDataset = false;
 
-    public SqLiteFdbDatasetExplorerObject() : base(null, typeof(SQLiteFDBDataset)) { }
+    public SqLiteFdbDatasetExplorerObject() : base() { }
 
     public SqLiteFdbDatasetExplorerObject(IExplorerObject parent, string filename, string dsname)
-        : base(parent, typeof(SQLiteFDBDataset))
+        : base(parent)
     {
         _filename = filename;
 

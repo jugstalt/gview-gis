@@ -6,25 +6,29 @@ using System.Threading.Tasks;
 
 namespace gView.DataExplorer.Plugins.ExplorerObjects.Base;
 
-public class ExplorerParentObject : ExplorerObjectCls, IExplorerParentObject
+public class ExplorerParentObject<TParent, TObjectType> : 
+                                    ExplorerObjectCls<TParent, TObjectType>, 
+                                    IExplorerParentObject
+    where TParent : IExplorerObject
 {
-    private List<IExplorerObject>? _childObjects = null;
+    private ICollection<IExplorerObject>? _childObjects = null;
 
-    public ExplorerParentObject(IExplorerObject? parent, Type? type, int priority)
-        : base(parent, type, priority)
+    public ExplorerParentObject() : base() { }
+    public ExplorerParentObject(TParent parent, int priority)
+        : base(parent, priority)
     {
     }
 
     #region IExplorerParentObject Member
 
-    async virtual public Task<List<IExplorerObject>> ChildObjects()
+    async virtual public Task<IEnumerable<IExplorerObject>> ChildObjects()
     {
         if (_childObjects == null)
         {
             await Refresh();
         }
 
-        return _childObjects ?? new List<IExplorerObject>();
+        return _childObjects ?? Array.Empty<IExplorerObject>();
     }
 
     async virtual public Task<bool> Refresh()
@@ -86,15 +90,6 @@ public class ExplorerParentObject : ExplorerObjectCls, IExplorerParentObject
         _childObjects.Add(child);
     }
 
-    protected void SortChildObjects(IComparer<IExplorerObject> comparer)
-    {
-        if (_childObjects == null || comparer == null)
-        {
-            return;
-        }
-
-        _childObjects.Sort(comparer);
-    }
     void Child_ExplorerObjectDeleted(IExplorerObject exObject)
     {
         IExplorerObject? delExObject = null;
@@ -121,4 +116,21 @@ public class ExplorerParentObject : ExplorerObjectCls, IExplorerParentObject
     {
         DiposeChildObjects();
     }
+}
+
+public class ExplorerParentObject<TParent>
+    : ExplorerParentObject<TParent, UnknownObjectType> 
+    where TParent : IExplorerObject
+{
+    public ExplorerParentObject() : base() { }
+    public ExplorerParentObject(TParent parent, int priority)
+        : base(parent, priority)
+    {
+    }
+}
+
+public class ExplorerParentObject
+     : ExplorerParentObject<IExplorerObject, UnknownObjectType>
+{
+    public ExplorerParentObject() : base() { }
 }

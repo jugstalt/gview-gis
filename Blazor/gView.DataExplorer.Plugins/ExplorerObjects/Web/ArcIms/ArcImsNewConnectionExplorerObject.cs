@@ -13,18 +13,18 @@ using gView.Framework.system;
 namespace gView.DataExplorer.Plugins.ExplorerObjects.Web.ArcIms;
 
 [gView.Framework.system.RegisterPlugIn("1B6F2AF5-9146-498C-9C71-8C69E153FD35")]
-public class ArcImsNewConnectionExplorerObject : ExplorerObjectCls,
+public class ArcImsNewConnectionExplorerObject : ExplorerObjectCls<IExplorerObject>,
                                                  IExplorerSimpleObject,
                                                  IExplorerObjectDoubleClick,
                                                  IExplorerObjectCreatable
 {
     public ArcImsNewConnectionExplorerObject()
-        : base(null, null, 0)
+        : base()
     {
     }
 
     public ArcImsNewConnectionExplorerObject(IExplorerObject parent)
-        : base(parent, null, 0)
+        : base(parent, 0)
     {
     }
 

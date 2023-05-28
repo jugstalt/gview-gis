@@ -1,5 +1,6 @@
 ﻿using gView.Blazor.Core.Exceptions;
 using gView.DataExplorer.Plugins.ExplorerObjects.Base;
+using gView.DataExplorer.Plugins.ExplorerObjects.Extensions;
 using gView.Framework.Data;
 using gView.Framework.DataExplorer.Abstraction;
 using gView.Framework.DataExplorer.Events;
@@ -11,23 +12,25 @@ using System.Threading.Tasks;
 namespace gView.DataExplorer.Plugins.ExplorerObjects.MsSqlSpatial.Geometry;
 
 [RegisterPlugIn("BAC5EF61-8E60-48D5-9744-4260BDCDBD56")]
-public class MsSqlSpatialFeatureClassExplorerObject : ExplorerObjectCls, IExplorerSimpleObject, ISerializableExplorerObject, IExplorerObjectDeletable
+public class MsSqlSpatialFeatureClassExplorerObject : 
+                ExplorerObjectCls<MsSqlSpatialExplorerObject, IFeatureClass>, 
+                IExplorerSimpleObject, 
+                ISerializableExplorerObject, 
+                IExplorerObjectDeletable
 {
     private string _icon = "";
     private string _fcname = "", _type = "";
     private IFeatureClass? _fc = null;
-    new private MsSqlSpatialExplorerObject? _parent = null;
 
-    public MsSqlSpatialFeatureClassExplorerObject() : base(null, typeof(IFeatureClass), 1) { }
+    public MsSqlSpatialFeatureClassExplorerObject() : base() { }
     public MsSqlSpatialFeatureClassExplorerObject(MsSqlSpatialExplorerObject parent, IDatasetElement element)
-        : base(parent, typeof(IFeatureClass), 1)
+        : base(parent, 1)
     {
         if (element == null || !(element.Class is IFeatureClass))
         {
             return;
         }
 
-        _parent = parent;
         _fcname = element.Title;
 
         if (element.Class is IFeatureClass)
@@ -65,12 +68,12 @@ public class MsSqlSpatialFeatureClassExplorerObject : ExplorerObjectCls, IExplor
     {
         get
         {
-            if (_parent == null)
+            if (base.Parent.IsNull())
             {
                 return "";
             }
 
-            return _parent.FullName + @"\" + this.Name;
+            return base.Parent.FullName + @"\" + this.Name;
         }
     }
     public string Type=> _type;

@@ -8,21 +8,20 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using gView.Framework.system;
+using gView.DataExplorer.Plugins.ExplorerObjects.Extensions;
 
 namespace gView.DataExplorer.Plugins.ExplorerObjects.Web.GeoServices;
 
-public class GeoServicesFolderExplorerObject : ExplorerParentObject, 
+public class GeoServicesFolderExplorerObject : ExplorerParentObject<GeoServicesConnectionExplorerObject>, 
                                                IExplorerSimpleObject
 {
     private string _name = "", _connectionString = "";
-    new private GeoServicesConnectionExplorerObject? _parent = null;
 
-    internal GeoServicesFolderExplorerObject(GeoServicesConnectionExplorerObject? parent, string name, string connectionString)
-        : base(parent, null, 1)
+    internal GeoServicesFolderExplorerObject(GeoServicesConnectionExplorerObject parent, string name, string connectionString)
+        : base(parent,  1)
     {
         _name = name;
         _connectionString = connectionString;
-        _parent = parent;
     }
 
     #region IExplorerParentObject Member
@@ -57,7 +56,7 @@ public class GeoServicesFolderExplorerObject : ExplorerParentObject,
                     {
                         base.AddChildObject(
                             new GeoServicesFolderExplorerObject(
-                                this._parent,
+                                base.TypedParent,
                                 this._name.UrlAppendPath(folder),
                                 _connectionString)
                             );
@@ -95,12 +94,12 @@ public class GeoServicesFolderExplorerObject : ExplorerParentObject,
     {
         get
         {
-            if (_parent == null)
+            if (base.Parent.IsNull())
             {
                 return "";
             }
 
-            return @$"{_parent.FullName}\{_name}";
+            return @$"{base.Parent.FullName}\{_name}";
         }
     }
 

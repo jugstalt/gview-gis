@@ -8,10 +8,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System;
 using System.Threading.Tasks;
+using gView.DataExplorer.Plugins.ExplorerObjects.Extensions;
 
 namespace gView.DataExplorer.Plugins.ExplorerObjects.Web.Wms;
 
-public class WmsServiceExplorerObject : ExplorerObjectCls, 
+public class WmsServiceExplorerObject : ExplorerObjectCls<WmsExplorerObject, WMSClass>, 
                                         IExplorerSimpleObject, 
                                         IExplorerObjectDeletable, 
                                         IExplorerObjectRenamable,
@@ -20,12 +21,11 @@ public class WmsServiceExplorerObject : ExplorerObjectCls,
     private string _icon = "webgis:globe";
     private string _name = "", _connectionString = "";
     private WMSClass? _class = null;
-    new private IExplorerParentObject? _parent;
     private string _type = "OGC WMS Service";
     private IEnumerable<IExplorerObjectContextTool>? _contextTools = null;
 
-    internal WmsServiceExplorerObject(IExplorerParentObject parent, string name, string connectionString)
-        : base(parent as IExplorerObject, typeof(WMSClass), 1)
+    internal WmsServiceExplorerObject(WmsExplorerObject parent, string name, string connectionString)
+        : base(parent, 1)
     {
         _name = name;
         _connectionString = connectionString;
@@ -48,7 +48,6 @@ public class WmsServiceExplorerObject : ExplorerObjectCls,
                 _type = "Unknown OGC Service Type!!";
                 break;
         }
-        _parent = parent;
 
         _contextTools = new IExplorerObjectContextTool[]
         {
@@ -75,12 +74,12 @@ public class WmsServiceExplorerObject : ExplorerObjectCls,
     {
         get
         {
-            if (!(_parent is IExplorerObject))
+            if (base.Parent.IsNull())
             {
                 return "";
             }
 
-            return @$"{((IExplorerObject)_parent).FullName}\{_name}";
+            return @$"{base.Parent.FullName}\{_name}";
         }
     }
 

@@ -8,9 +8,10 @@ using System.Threading.Tasks;
 namespace gView.DataExplorer.Plugins.ExplorerObjects.Web.GeoServices;
 
 [gView.Framework.system.RegisterPlugIn("517DEC80-F6A5-44BC-95EF-9A56543C373B")]
-public class GeoServicesExplorerObjects : ExplorerParentObject, IEsriGroupExplorerObject
+public class GeoServicesExplorerObjects : ExplorerParentObject, 
+                                          IEsriGroupExplorerObject
 {
-    public GeoServicesExplorerObjects() : base(null, null, 0) { }
+    public GeoServicesExplorerObjects() : base() { }
 
     #region IExplorerObject Member
 
@@ -71,7 +72,7 @@ public class GeoServicesExplorerObjects : ExplorerParentObject, IEsriGroupExplor
 
     public void SetParentExplorerObject(IExplorerObject parentExplorerObject)
     {
-        _parent = parentExplorerObject;
+        base.Parent = parentExplorerObject;
     }
 
     #endregion

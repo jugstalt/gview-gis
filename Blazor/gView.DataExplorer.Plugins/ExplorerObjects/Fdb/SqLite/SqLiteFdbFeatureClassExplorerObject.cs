@@ -14,7 +14,7 @@ using System.Threading.Tasks;
 namespace gView.DataExplorer.Plugins.ExplorerObjects.Fdb.SqLite;
 
 [RegisterPlugIn("16DB07EC-5C30-4C2E-85AC-B49A44188B1A")]
-public class SqLiteFdbFeatureClassExplorerObject : ExplorerObjectCls,
+public class SqLiteFdbFeatureClassExplorerObject : ExplorerObjectCls<SqLiteFdbDatasetExplorerObject, FeatureClass>,
                                                    IExplorerSimpleObject,
                                                    ISerializableExplorerObject,
                                                    IExplorerObjectDeletable
@@ -30,11 +30,11 @@ public class SqLiteFdbFeatureClassExplorerObject : ExplorerObjectCls,
     private bool _isNetwork = false;
 
     public SqLiteFdbFeatureClassExplorerObject() :
-        base(null, typeof(FeatureClass), 1)
+        base()
     {
     }
     public SqLiteFdbFeatureClassExplorerObject(SqLiteFdbDatasetExplorerObject parent, string filename, string dsname, IDatasetElement element)
-        : base(parent, typeof(FeatureClass), 1)
+        : base(parent, 1)
     {
         if (element == null)
         {

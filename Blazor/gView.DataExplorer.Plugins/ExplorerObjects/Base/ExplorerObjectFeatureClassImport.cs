@@ -10,15 +10,19 @@ using System.Threading.Tasks;
 
 namespace gView.DataExplorer.Plugins.ExplorerObjects.Base;
 
-public abstract class ExplorerObjectFeatureClassImport : ExplorerParentObject
+public abstract class ExplorerObjectFeatureClassImport<TParent, TObjectType> : 
+                      ExplorerParentObject<TParent, TObjectType>
+    where TParent : IExplorerObject
 {
     protected AccessFDB? _fdb = null;
     protected string _dsname = "";
     protected IFeatureDataset? _dataset;
     private FeatureImportService? _import = null;
 
-    public ExplorerObjectFeatureClassImport(IExplorerObject? parent, Type type)
-       : base(parent, type, 0)
+    public ExplorerObjectFeatureClassImport() : base() { }
+
+    public ExplorerObjectFeatureClassImport(TParent parent)
+       : base(parent, 0)
     {
     }
 

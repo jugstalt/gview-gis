@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace gView.DataExplorer.Plugins.ExplorerObjects.MsSqlSpatial.Geometry;
 
-public class MsSqlSpatialExplorerObject : ExplorerParentObject,
+public class MsSqlSpatialExplorerObject : ExplorerParentObject<IExplorerObject, IFeatureDataset>,
                                           IExplorerSimpleObject,
                                           IExplorerObjectDeletable,
                                           IExplorerObjectRenamable,
@@ -26,9 +26,9 @@ public class MsSqlSpatialExplorerObject : ExplorerParentObject,
     private IFeatureDataset? _dataset;
     private IEnumerable<IExplorerObjectContextTool>? _contextTools = null;
 
-    public MsSqlSpatialExplorerObject() : base(null, typeof(IFeatureDataset), 0) { }
+    public MsSqlSpatialExplorerObject() : base() { }
     public MsSqlSpatialExplorerObject(IExplorerObject parent, string server, DbConnectionString connectionString)
-        : base(parent, typeof(IFeatureDataset), 0)
+        : base(parent, 0)
     {
         _server = server;
         _connectionString = connectionString;

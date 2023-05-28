@@ -1,5 +1,6 @@
 ﻿using gView.Blazor.Core.Exceptions;
 using gView.DataExplorer.Plugins.ExplorerObjects.Base;
+using gView.DataExplorer.Plugins.ExplorerObjects.Extensions;
 using gView.Framework.Data;
 using gView.Framework.DataExplorer.Abstraction;
 using gView.Framework.DataExplorer.Events;
@@ -10,23 +11,25 @@ using System.Threading.Tasks;
 namespace gView.DataExplorer.Plugins.ExplorerObjects.MsSqlSpatial.Sde;
 
 [gView.Framework.system.RegisterPlugIn("D159CD92-7872-48F0-81BF-938543C5C2C1")]
-public class MsSqlSpatialSdeFeatureClassExplorerObject : ExplorerObjectCls, IExplorerSimpleObject, ISerializableExplorerObject, IExplorerObjectDeletable
+public class MsSqlSpatialSdeFeatureClassExplorerObject : 
+                ExplorerObjectCls<MsSqlSpatialSdeExplorerObject, IFeatureClass>, 
+                IExplorerSimpleObject, 
+                ISerializableExplorerObject, 
+                IExplorerObjectDeletable
 {
     private string _icon = "";
     private string _fcname = "", _type = "";
     private IFeatureClass? _fc = null;
-    new private MsSqlSpatialSdeExplorerObject? _parent = null;
 
-    public MsSqlSpatialSdeFeatureClassExplorerObject() : base(null, typeof(IFeatureClass), 1) { }
+    public MsSqlSpatialSdeFeatureClassExplorerObject() : base() { }
     public MsSqlSpatialSdeFeatureClassExplorerObject(MsSqlSpatialSdeExplorerObject parent, IDatasetElement element)
-        : base(parent, typeof(IFeatureClass), 1)
+        : base(parent, 1)
     {
         if (element == null || !(element.Class is IFeatureClass))
         {
             return;
         }
 
-        _parent = parent;
         _fcname = element.Title;
 
         if (element.Class is IFeatureClass)
@@ -64,12 +67,12 @@ public class MsSqlSpatialSdeFeatureClassExplorerObject : ExplorerObjectCls, IExp
     {
         get
         {
-            if (_parent == null)
+            if (base.Parent.IsNull())
             {
                 return "";
             }
 
-            return _parent.FullName + @"\" + this.Name;
+            return base.Parent.FullName + @"\" + this.Name;
         }
     }
     public string Type => _type;

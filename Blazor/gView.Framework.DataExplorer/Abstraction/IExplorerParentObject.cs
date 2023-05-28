@@ -7,7 +7,7 @@ namespace gView.Framework.DataExplorer.Abstraction;
 
 public interface IExplorerParentObject
 {
-    Task<List<IExplorerObject>> ChildObjects();
+    Task<IEnumerable<IExplorerObject>> ChildObjects();
     Task<bool> Refresh();
     Task<bool> DiposeChildObjects();
 }

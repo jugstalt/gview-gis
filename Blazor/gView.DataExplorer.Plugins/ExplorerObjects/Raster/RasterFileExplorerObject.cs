@@ -2,24 +2,22 @@
 using gView.DataSources.Raster.File;
 using gView.Framework.Data;
 using gView.Framework.DataExplorer.Abstraction;
-using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace gView.DataExplorer.Plugins.ExplorerObjects.Raster;
 
 [gView.Framework.system.RegisterPlugIn("6F0051F0-F3C7-4eee-BE4B-45340F684FAA")]
-public class RasterFileExplorerObject : ExplorerObjectCls, IExplorerFileObject
+public class RasterFileExplorerObject :
+                    ExplorerObjectCls<IExplorerObject, IRasterClass>,
+                    IExplorerFileObject
 {
     private string _filename = "";
     private IRasterClass? _class = null;
 
-    public RasterFileExplorerObject() : base(null, typeof(IRasterClass), 2) { }
+    public RasterFileExplorerObject() : base() { }
     private RasterFileExplorerObject(IExplorerObject parent, string filename)
-        : base(parent, typeof(IRasterClass), 2)
+        : base(parent, 2)
     {
         _filename = filename;
     }

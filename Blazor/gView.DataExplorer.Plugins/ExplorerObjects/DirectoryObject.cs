@@ -17,7 +17,7 @@ using System.Threading.Tasks;
 namespace gView.DataExplorer.Plugins.ExplorerObjects;
 
 [RegisterPlugIn("458E62A0-4A93-45cf-B14D-2F958D67E522")]
-public class DirectoryObject : ExplorerParentObject,
+public class DirectoryObject : ExplorerParentObject<IExplorerObject>,
                                IExplorerObject,
                                IExplorerObjectCommandParameters,
                                ISerializableExplorerObject,
@@ -27,9 +27,9 @@ public class DirectoryObject : ExplorerParentObject,
 {
     string _path = "";
 
-    public DirectoryObject() : base(null, null, 1) { }
+    public DirectoryObject() : base() { }
     public DirectoryObject(IExplorerObject parent, string path)
-        : base(parent, null, 1)
+        : base(parent, 1)
     {
         _path = path;
     }

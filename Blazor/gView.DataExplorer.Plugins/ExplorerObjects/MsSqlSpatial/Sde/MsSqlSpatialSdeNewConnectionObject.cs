@@ -13,15 +13,19 @@ using System.Threading.Tasks;
 namespace gView.DataExplorer.Plugins.ExplorerObjects.MsSqlSpatial.Sde;
 
 [gView.Framework.system.RegisterPlugIn("0B552B1D-49EF-4065-BB93-5F63517161A4")]
-public class MsSqlSpatialSdeNewConnectionObject : ExplorerObjectCls, IExplorerSimpleObject, IExplorerObjectDoubleClick, IExplorerObjectCreatable
+public class MsSqlSpatialSdeNewConnectionObject : 
+                    ExplorerObjectCls<IExplorerObject>, 
+                    IExplorerSimpleObject, 
+                    IExplorerObjectDoubleClick, 
+                    IExplorerObjectCreatable
 {
     public MsSqlSpatialSdeNewConnectionObject()
-        : base(null, null, 0)
+        : base()
     {
     }
 
     public MsSqlSpatialSdeNewConnectionObject(IExplorerObject parent)
-        : base(parent, null, 0)
+        : base(parent, 0)
     {
     }
 

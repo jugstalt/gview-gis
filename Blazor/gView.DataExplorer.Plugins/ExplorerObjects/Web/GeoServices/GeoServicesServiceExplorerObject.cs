@@ -1,4 +1,5 @@
 ﻿using gView.DataExplorer.Plugins.ExplorerObjects.Base;
+using gView.DataExplorer.Plugins.ExplorerObjects.Extensions;
 using gView.Framework.DataExplorer.Abstraction;
 using gView.Interoperability.GeoServices.Dataset;
 using System;
@@ -7,20 +8,18 @@ using System.Threading.Tasks;
 
 namespace gView.DataExplorer.Plugins.ExplorerObjects.Web.GeoServices;
 
-public class GeoServicesServiceExplorerObject : ExplorerParentObject, 
+public class GeoServicesServiceExplorerObject : ExplorerParentObject<IExplorerObject, GeoServicesClass>, 
                                                 IExplorerSimpleObject
 {
     private string _name = "", _connectionString = "", _folder = "";
     private GeoServicesClass? _class = null;
-    new private IExplorerObject? _parent = null;
 
-    internal GeoServicesServiceExplorerObject(IExplorerObject? parent, string name, string folder, string connectionString)
-        : base(parent, typeof(GeoServicesClass), 1)
+    internal GeoServicesServiceExplorerObject(IExplorerObject parent, string name, string folder, string connectionString)
+        : base(parent, 1)
     {
         _name = name;
         _folder = folder;
         _connectionString = connectionString;
-        _parent = parent;
     }
 
     #region IExplorerObject Member
@@ -31,12 +30,12 @@ public class GeoServicesServiceExplorerObject : ExplorerParentObject,
     {
         get
         {
-            if (_parent == null)
+            if (base.Parent.IsNull())
             {
                 return "";
             }
 
-            return _parent.FullName +
+            return base.Parent.FullName +
                 $@"\{_name}";
         }
     }

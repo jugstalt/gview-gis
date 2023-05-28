@@ -12,18 +12,18 @@ using System.Threading.Tasks;
 namespace gView.DataExplorer.Plugins.ExplorerObjects.Web.GeoServices;
 
 [gView.Framework.system.RegisterPlugIn("573EA02F-778C-4F9A-9DA6-DF9DBE3978D6")]
-public class GeoServicesNewConnectionExplorerObject : ExplorerObjectCls,
+public class GeoServicesNewConnectionExplorerObject : ExplorerObjectCls<IExplorerObject>,
                                                       IExplorerSimpleObject,
                                                       IExplorerObjectDoubleClick,
                                                       IExplorerObjectCreatable
 {
     public GeoServicesNewConnectionExplorerObject()
-        : base(null, null, 0)
+        : base()
     {
     }
 
     public GeoServicesNewConnectionExplorerObject(IExplorerObject parent)
-        : base(parent, null, 0)
+        : base(parent, 0)
     {
     }
 

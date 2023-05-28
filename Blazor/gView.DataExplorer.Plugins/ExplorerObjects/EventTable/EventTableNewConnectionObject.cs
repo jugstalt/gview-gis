@@ -11,15 +11,19 @@ using System.Threading.Tasks;
 namespace gView.DataExplorer.Plugins.ExplorerObjects.EventTable;
 
 [gView.Framework.system.RegisterPlugIn("F45B7E98-B20A-47bf-A45D-E78D52F36314")]
-public class EventTableNewConnectionObject : ExplorerObjectCls, IExplorerSimpleObject, IExplorerObjectDoubleClick, IExplorerObjectCreatable
+public class EventTableNewConnectionObject : 
+                ExplorerObjectCls<IExplorerObject>, 
+                IExplorerSimpleObject, 
+                IExplorerObjectDoubleClick, 
+                IExplorerObjectCreatable
 {
     public EventTableNewConnectionObject()
-        : base(null, null, 1)
+        : base()
     {
     }
 
     public EventTableNewConnectionObject(IExplorerObject parent)
-        : base(parent, null, 1)
+        : base(parent, 1)
     {
     }
 

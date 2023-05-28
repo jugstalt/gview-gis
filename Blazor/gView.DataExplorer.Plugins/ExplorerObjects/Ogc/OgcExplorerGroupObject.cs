@@ -6,9 +6,11 @@ using System.Threading.Tasks;
 namespace gView.DataExplorer.Plugins.ExplorerObjects.Ogc;
 
 [gView.Framework.system.RegisterPlugIn("D6038DDE-DCB9-4cab-ADAC-C80EA323527D")]
-public class OGCExplorerGroupObject : ExplorerParentObject, IExplorerGroupObject
+public class OGCExplorerGroupObject : 
+                    ExplorerParentObject, 
+                    IExplorerGroupObject
 {
-    public OGCExplorerGroupObject() : base(null, null, 0) { }
+    public OGCExplorerGroupObject() : base() { }
 
     #region IExplorerGroupObject Members
 
@@ -16,7 +18,7 @@ public class OGCExplorerGroupObject : ExplorerParentObject, IExplorerGroupObject
 
     public void SetParentExplorerObject(IExplorerObject parentExplorerObject)
     {
-        base._parent = parentExplorerObject;
+        base.Parent = parentExplorerObject;
     }
 
     #endregion

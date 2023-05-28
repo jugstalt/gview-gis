@@ -9,10 +9,12 @@ using System.Threading.Tasks;
 
 namespace gView.DataExplorer.Plugins.ExplorerObjects.MsSqlSpatial.Geography;
 [RegisterPlugIn("BCD1A95C-CD4C-4EFA-B065-1A08B533CC4C")]
-public class MsSqlSpatialExplorerGroupObject : ExplorerParentObject, IOgcGroupExplorerObject
+public class MsSqlSpatialExplorerGroupObject : 
+    ExplorerParentObject, 
+    IOgcGroupExplorerObject
 {
     public MsSqlSpatialExplorerGroupObject()
-        : base(null, null, 0)
+        : base()
     { }
 
     #region IExplorerGroupObject Members
@@ -80,7 +82,7 @@ public class MsSqlSpatialExplorerGroupObject : ExplorerParentObject, IOgcGroupEx
 
     public void SetParentExplorerObject(IExplorerObject parentExplorerObject)
     {
-        base._parent = parentExplorerObject;
+        base.Parent = parentExplorerObject;
     }
 
     #endregion

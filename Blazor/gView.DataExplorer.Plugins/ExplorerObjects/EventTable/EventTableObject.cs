@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 namespace gView.DataExplorer.Plugins.ExplorerObjects.EventTable;
 
 [gView.Framework.system.RegisterPlugIn("B498C801-D7F2-4e1d-AA09-7A3599549DD8")]
-public class EventTableObject : ExplorerObjectCls, 
+public class EventTableObject : ExplorerObjectCls<IExplorerObject, IFeatureClass>, 
                                 IExplorerSimpleObject, 
                                 IExplorerObjectDeletable, 
                                 IExplorerObjectRenamable,
@@ -23,9 +23,9 @@ public class EventTableObject : ExplorerObjectCls,
     private IFeatureClass? _fc = null;
     private IEnumerable<IExplorerObjectContextTool>? _contextTools = null;
 
-    public EventTableObject() : base(null, typeof(IFeatureClass), 1) { }
+    public EventTableObject() : base() { }
     public EventTableObject(IExplorerObject parent, string name, EventTableConnection etconn)
-        : base(parent, typeof(IFeatureClass), 1)
+        : base(parent, 1)
     {
         _name = name;
         _etconn = etconn;

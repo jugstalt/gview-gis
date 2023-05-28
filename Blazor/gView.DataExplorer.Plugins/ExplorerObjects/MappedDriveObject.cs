@@ -5,7 +5,8 @@ using System.Threading.Tasks;
 
 namespace gView.DataExplorer.Plugins.ExplorerObjects;
 
-internal class MappedDriveObject : DriveObject, IExplorerObjectDeletable
+internal class MappedDriveObject : DriveObject, 
+                                   IExplorerObjectDeletable
 {
     public MappedDriveObject(IExplorerObject parent, string drive)
         : base(parent, drive, 999)

@@ -7,19 +7,19 @@ using System.Threading.Tasks;
 namespace gView.DataExplorer.Plugins.ExplorerObjects.Web.GeoServices;
 
 [gView.Framework.system.RegisterPlugIn("5133CFA1-AA5E-47FC-990A-462772158CA5")]
-public class GeoServicesServiceLayerExplorerObject : ExplorerObjectCls,
+public class GeoServicesServiceLayerExplorerObject : ExplorerObjectCls<IExplorerObject, GeoServicesFeatureClass>,
                                                      IExplorerSimpleObject
 {
     new private IExplorerObject? _parent;
     private readonly GeoServicesFeatureClass? _fc;
 
     public GeoServicesServiceLayerExplorerObject()
-        : base(null, typeof(GeoServicesFeatureClass), 1)
+        : base()
     {
     }
 
     public GeoServicesServiceLayerExplorerObject(IExplorerObject parent, GeoServicesFeatureClass featureClass)
-        : base(parent, typeof(GeoServicesFeatureClass), 1)
+        : base(parent, 1)
     {
         _parent = parent;
         _fc = featureClass;
@@ -64,8 +64,8 @@ public class GeoServicesServiceLayerExplorerObject : ExplorerObjectCls,
         string parentFullName = fullName.Substring(0, pos);
 
         var parentObject =
-            (IExplorerParentObject)(await new GeoServicesFolderExplorerObject(null, String.Empty, String.Empty).CreateInstanceByFullName(parentFullName, null)) ??
-            (IExplorerParentObject)(await new GeoServicesServiceExplorerObject(null, String.Empty, String.Empty, String.Empty).CreateInstanceByFullName(parentFullName, null));
+            (IExplorerParentObject)(await new GeoServicesFolderExplorerObject(new GeoServicesConnectionExplorerObject(), String.Empty, String.Empty).CreateInstanceByFullName(parentFullName, null)) ??
+            (IExplorerParentObject)(await new GeoServicesServiceExplorerObject(new NullParentExplorerObject(), String.Empty, String.Empty, String.Empty).CreateInstanceByFullName(parentFullName, null));
 
         if (parentObject != null)
         {

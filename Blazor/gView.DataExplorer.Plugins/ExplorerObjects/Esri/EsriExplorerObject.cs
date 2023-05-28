@@ -10,9 +10,11 @@ using System.Threading.Tasks;
 namespace gView.DataExplorer.Plugins.ExplorerObjects.Esri;
 
 [gView.Framework.system.RegisterPlugIn("3DB3E792-AF34-4539-B68A-07007CE9BAEE")]
-public class EsriExplorerGroupObject : ExplorerParentObject, IExplorerGroupObject
+public class EsriExplorerGroupObject : 
+        ExplorerParentObject, 
+        IExplorerGroupObject
 {
-    public EsriExplorerGroupObject() : base(null, null, 0) { }
+    public EsriExplorerGroupObject() : base() { }
 
     #region IExplorerGroupObject Members
 
@@ -20,7 +22,7 @@ public class EsriExplorerGroupObject : ExplorerParentObject, IExplorerGroupObjec
 
     public void SetParentExplorerObject(IExplorerObject parentExplorerObject)
     {
-        base._parent = parentExplorerObject;
+        base.Parent = parentExplorerObject;
     }
 
     #endregion

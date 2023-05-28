@@ -14,19 +14,19 @@ using gView.DataExplorer.Plugins.ExplorerObjects.Web.GeoServices.ContextTools;
 
 namespace gView.DataExplorer.Plugins.ExplorerObjects.Web.GeoServices;
 
-internal class GeoServicesConnectionExplorerObject : ExplorerParentObject, 
-                                                     IExplorerSimpleObject, 
-                                                     IExplorerObjectDeletable, 
-                                                     IExplorerObjectRenamable,
-                                                     IExplorerObjectContextTools
+public class GeoServicesConnectionExplorerObject : ExplorerParentObject<IExplorerObject>, 
+                                                   IExplorerSimpleObject, 
+                                                   IExplorerObjectDeletable, 
+                                                   IExplorerObjectRenamable,
+                                                   IExplorerObjectContextTools
 {
     private string _name = "";
     internal string _connectionString = "";
     private IEnumerable<IExplorerObjectContextTool>? _contextTools = null;
 
-    public GeoServicesConnectionExplorerObject() : base(null, null, 0) { }
+    public GeoServicesConnectionExplorerObject() : base() { }
     internal GeoServicesConnectionExplorerObject(IExplorerObject parent, string name, string connectionString)
-        : base(parent, null, 0)
+        : base(parent, 0)
     {
         _name = name;
         _connectionString = connectionString;

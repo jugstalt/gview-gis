@@ -14,7 +14,7 @@ using System.Threading.Tasks;
 
 namespace gView.DataExplorer.Plugins.ExplorerObjects.MsSqlSpatial.Sde;
 
-public class MsSqlSpatialSdeExplorerObject : ExplorerParentObject,
+public class MsSqlSpatialSdeExplorerObject : ExplorerParentObject<IExplorerObject, IFeatureDataset>,
                                              IExplorerSimpleObject,
                                              IExplorerObjectDeletable,
                                              IExplorerObjectRenamable,
@@ -27,9 +27,9 @@ public class MsSqlSpatialSdeExplorerObject : ExplorerParentObject,
     private IFeatureDataset? _dataset;
     private IEnumerable<IExplorerObjectContextTool>? _contextTools = null;
 
-    public MsSqlSpatialSdeExplorerObject() : base(null, typeof(IFeatureDataset), 0) { }
-    public MsSqlSpatialSdeExplorerObject(IExplorerObject? parent, string server, DbConnectionString connectionString)
-        : base(parent, typeof(IFeatureDataset), 0)
+    public MsSqlSpatialSdeExplorerObject() : base() { }
+    public MsSqlSpatialSdeExplorerObject(IExplorerObject parent, string server, DbConnectionString connectionString)
+        : base(parent, 0)
     {
         _server = server;
         _connectionString = connectionString;

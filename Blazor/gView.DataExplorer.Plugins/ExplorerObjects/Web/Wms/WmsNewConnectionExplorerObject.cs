@@ -13,22 +13,18 @@ using System.Threading.Tasks;
 namespace gView.DataExplorer.Plugins.ExplorerObjects.Web.Wms;
 
 [gView.Framework.system.RegisterPlugIn("4C8FC31A-D988-4D6A-94C5-849237FB8E70")]
-public class WmsNewConnectionExplorerObject : ExplorerObjectCls, 
+public class WmsNewConnectionExplorerObject : ExplorerObjectCls<WmsExplorerObject>, 
                                               IExplorerSimpleObject, 
                                               IExplorerObjectDoubleClick, 
                                               IExplorerObjectCreatable
 {
-    new private IExplorerParentObject? _parent;
-
     public WmsNewConnectionExplorerObject()
-        : base(null, null, 0)
+        : base()
     {
-        _parent = null;
     }
-    public WmsNewConnectionExplorerObject(IExplorerParentObject parent)
-        : base(parent as IExplorerObject, null, 0)
+    public WmsNewConnectionExplorerObject(WmsExplorerObject parent)
+        : base(parent, 0)
     {
-        _parent = parent;
     }
 
     #region IExplorerObject Member
@@ -88,7 +84,7 @@ public class WmsNewConnectionExplorerObject : ExplorerObjectCls,
 
             connStream.Add(id = connStream.GetName(id), connectionString);
 
-            e.NewExplorerObject = new WmsServiceExplorerObject(_parent, id, connectionString);
+            e.NewExplorerObject = new WmsServiceExplorerObject(base.TypedParent, id, connectionString);
         }
     }
 

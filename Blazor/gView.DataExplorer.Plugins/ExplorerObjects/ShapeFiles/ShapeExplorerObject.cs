@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 namespace gView.DataExplorer.Plugins.ExplorerObjects.ShapeFiles
 {
     [gView.Framework.system.RegisterPlugIn("665E0CD5-B3DF-436c-91B4-D4C0B3ECA5B9")]
-    public class ShapeFileExplorerObject : ExplorerObjectCls, 
+    public class ShapeFileExplorerObject : ExplorerObjectCls<IExplorerObject, IFeatureClass>, 
                                            IExplorerFileObject, 
                                            ISerializableExplorerObject, 
                                            IExplorerObjectRenamable, 
@@ -20,9 +20,9 @@ namespace gView.DataExplorer.Plugins.ExplorerObjects.ShapeFiles
         private ShapeDataset? _shapeDataset = null;
         private IDatasetElement? _shape = null;
 
-        public ShapeFileExplorerObject() : base(null, typeof(IFeatureClass), 2) { }
-        public ShapeFileExplorerObject(IExplorerObject? parent, string filename)
-            : base(parent, typeof(IFeatureClass), 2)
+        public ShapeFileExplorerObject() : base() { }
+        public ShapeFileExplorerObject(IExplorerObject parent, string filename)
+            : base(parent, 2)
         {
             _filename = filename;
             OpenShape().Wait();

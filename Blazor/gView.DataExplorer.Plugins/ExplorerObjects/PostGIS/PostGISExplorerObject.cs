@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace gView.DataExplorer.Plugins.ExplorerObjects.PostGIS;
 
-public class PostGISExplorerObject : ExplorerParentObject,
+public class PostGISExplorerObject : ExplorerParentObject<IExplorerObject, IFeatureDataset>,
                                      IExplorerSimpleObject,
                                      IExplorerObjectDeletable,
                                      IExplorerObjectRenamable,
@@ -26,9 +26,9 @@ public class PostGISExplorerObject : ExplorerParentObject,
     private DbConnectionString? _connectionString;
     private IEnumerable<IExplorerObjectContextTool>? _contextTools = null;
 
-    public PostGISExplorerObject() : base(null, typeof(IFeatureDataset), 0) { }
-    public PostGISExplorerObject(IExplorerObject? parent, string server, DbConnectionString connectionString)
-        : base(parent, typeof(IFeatureDataset), 0)
+    public PostGISExplorerObject() : base() { }
+    public PostGISExplorerObject(IExplorerObject parent, string server, DbConnectionString connectionString)
+        : base(parent, 0)
     {
         _server = server;
         _connectionString = connectionString;

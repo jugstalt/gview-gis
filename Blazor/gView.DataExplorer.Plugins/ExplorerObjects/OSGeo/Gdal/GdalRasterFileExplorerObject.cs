@@ -8,15 +8,18 @@ using System.Threading.Tasks;
 
 namespace gView.DataExplorer.Plugins.ExplorerObjects.OSGeo.Gdal;
 
-[gView.Framework.system.RegisterPlugIn("BCBE95C6-95C5-432c-8045-918A8B17D270")]
-public class GDALRasterFileExplorerObject : ExplorerObjectCls, IExplorerFileObject, IPlugInDependencies
+[RegisterPlugIn("BCBE95C6-95C5-432c-8045-918A8B17D270")]
+public class GDALRasterFileExplorerObject : 
+            ExplorerObjectCls<IExplorerObject, RasterClassV1>, 
+            IExplorerFileObject, 
+            IPlugInDependencies
 {
     private string _filename = "";
     private IRasterClass? _class = null;
 
-    public GDALRasterFileExplorerObject() : base(null, typeof(RasterClassV1), 2) { }
-    private GDALRasterFileExplorerObject(IExplorerObject? parent, string filename)
-        : base(parent, typeof(RasterClassV1), 2)
+    public GDALRasterFileExplorerObject() : base() { }
+    private GDALRasterFileExplorerObject(IExplorerObject parent, string filename)
+        : base(parent, 2)
     {
         _filename = filename;
     }
@@ -126,7 +129,7 @@ public class GDALRasterFileExplorerObject : ExplorerObjectCls, IExplorerFileObje
                 return null;
             }
 
-            GDALRasterFileExplorerObject rObject = new GDALRasterFileExplorerObject(null, FullName);
+            GDALRasterFileExplorerObject rObject = new GDALRasterFileExplorerObject(new NullParentExplorerObject(), FullName);
             if (await rObject.GetInstanceAsync() is IRasterClass)
             {
                 cache?.Append(rObject);

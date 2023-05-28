@@ -6,7 +6,8 @@ using System.Linq;
 
 namespace gView.DataExplorer.Plugins.ExplorerObjects;
 
-public class DriveObject : ExplorerParentObject, IExplorerObject
+public class DriveObject : ExplorerParentObject<IExplorerObject>, 
+                           IExplorerObject
 {
     private readonly string _drive = "";
     private readonly string _icon;
@@ -14,7 +15,7 @@ public class DriveObject : ExplorerParentObject, IExplorerObject
     private readonly string _name = "";
 
     public DriveObject(IExplorerObject parent, string drive, uint type)
-        : base(parent, null, -1)
+        : base(parent, -1)
     {
         _drive = drive;
         switch (type)

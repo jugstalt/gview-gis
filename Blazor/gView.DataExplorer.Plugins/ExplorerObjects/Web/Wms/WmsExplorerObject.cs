@@ -10,11 +10,12 @@ using System.Threading.Tasks;
 namespace gView.DataExplorer.Plugins.ExplorerObjects.Web.Wms;
 
 [gView.Framework.system.RegisterPlugIn("41C75FD2-9AD0-4457-8248-E55EDA0C114E")]
-public class WmsExplorerObject : ExplorerParentObject, IOgcGroupExplorerObject
+public class WmsExplorerObject : ExplorerParentObject, 
+                                 IOgcGroupExplorerObject
 {
-    public WmsExplorerObject() : base(null, null, 0) { }
+    public WmsExplorerObject() : base() { }
     public WmsExplorerObject(IExplorerObject? parent)
-        : base(parent, null, 0)
+        : base()
     {
     }
 
@@ -76,7 +77,7 @@ public class WmsExplorerObject : ExplorerParentObject, IOgcGroupExplorerObject
 
     public void SetParentExplorerObject(IExplorerObject parentExplorerObject)
     {
-        _parent = parentExplorerObject;
+        base.Parent = parentExplorerObject;
     }
 
     #endregion

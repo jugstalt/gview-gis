@@ -11,10 +11,13 @@ using System.Threading.Tasks;
 namespace gView.DataExplorer.Plugins.ExplorerObjects.PostGIS;
 
 [RegisterPlugIn("9F42DCF6-920E-433f-9D3C-610E4350EE35")]
-public class PostGISExplorerGroupObject : ExplorerParentObject, IOgcGroupExplorerObject, IPlugInDependencies
+public class PostGISExplorerGroupObject : 
+                    ExplorerParentObject, 
+                    IOgcGroupExplorerObject, 
+                    IPlugInDependencies
 {
 
-    public PostGISExplorerGroupObject() : base(null, null, 0) { }
+    public PostGISExplorerGroupObject() : base() { }
 
     #region IExplorerGroupObject Members
 
@@ -91,7 +94,7 @@ public class PostGISExplorerGroupObject : ExplorerParentObject, IOgcGroupExplore
 
     public void SetParentExplorerObject(IExplorerObject parentExplorerObject)
     {
-        base._parent = parentExplorerObject;
+        base.Parent = parentExplorerObject;
     }
 
     #endregion

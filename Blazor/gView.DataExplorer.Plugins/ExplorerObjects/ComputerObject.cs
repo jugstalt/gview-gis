@@ -8,10 +8,11 @@ using System.Threading.Tasks;
 
 namespace gView.DataExplorer.Plugins.ExplorerObjects;
 
-public class ComputerObject : ExplorerParentObject, IExplorerObject
+public class ComputerObject : ExplorerParentObject, 
+                              IExplorerObject
 {
     public ComputerObject()
-        : base(null, null, 0)
+        : base()
     {
     }
 

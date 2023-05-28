@@ -41,7 +41,7 @@ public class ContentTabPage : IExplorerTabPage
 
         if (_exObject is IExplorerParentObject)
         {
-            List<IExplorerObject> childs = await ((IExplorerParentObject)_exObject).ChildObjects();
+            var childs = await ((IExplorerParentObject)_exObject).ChildObjects();
 
             if (childs != null)
             {

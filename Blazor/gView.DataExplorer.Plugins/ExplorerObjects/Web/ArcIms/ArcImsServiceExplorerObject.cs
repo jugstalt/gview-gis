@@ -5,14 +5,16 @@ using System.Threading.Tasks;
 
 namespace gView.DataExplorer.Plugins.ExplorerObjects.Web.ArcIms;
 
-public class ArcImsServiceExplorerObject : ExplorerObjectCls, IExplorerSimpleObject
+public class ArcImsServiceExplorerObject : 
+                ExplorerObjectCls<ArcImsConnectionExplorerObject, ArcIMSClass>, 
+                IExplorerSimpleObject
 {
     private string _name = "", _connectionString = "";
     private ArcIMSClass? _class = null;
     new private ArcImsConnectionExplorerObject? _parent = null;
 
     internal ArcImsServiceExplorerObject(ArcImsConnectionExplorerObject parent, string name, string connectionString)
-        : base(parent, typeof(ArcIMSClass), 1)
+        : base(parent, 1)
     {
         _name = name;
         _connectionString = connectionString;

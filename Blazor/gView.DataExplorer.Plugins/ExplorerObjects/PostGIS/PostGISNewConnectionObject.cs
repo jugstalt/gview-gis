@@ -9,21 +9,24 @@ using gView.Framework.Db;
 using gView.Framework.IO;
 using gView.Framework.system;
 using System;
-using System.Collections.Immutable;
 using System.Threading.Tasks;
 
 namespace gView.DataExplorer.Plugins.ExplorerObjects.PostGIS;
 
 [RegisterPlugIn("003ED96C-4041-4657-A544-E92A3B7A96BF")]
-public class PostGISNewConnectionObject : ExplorerObjectCls, IExplorerSimpleObject, IExplorerObjectDoubleClick, IExplorerObjectCreatable
+public class PostGISNewConnectionObject :
+                ExplorerObjectCls<IExplorerObject>,
+                IExplorerSimpleObject,
+                IExplorerObjectDoubleClick,
+                IExplorerObjectCreatable
 {
     public PostGISNewConnectionObject()
-        : base(null, null, 0)
+        : base()
     {
     }
 
     public PostGISNewConnectionObject(IExplorerObject parent)
-        : base(parent, null, 0)
+        : base(parent, 0)
     {
     }
 

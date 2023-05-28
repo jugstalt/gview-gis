@@ -11,18 +11,18 @@ using System.Xml;
 
 namespace gView.DataExplorer.Plugins.ExplorerObjects.Web.ArcIms;
 
-internal class ArcImsConnectionExplorerObject : ExplorerParentObject,
-                                                IExplorerSimpleObject,
-                                                IExplorerObjectDeletable,
-                                                IExplorerObjectRenamable,
-                                                IExplorerObjectContextTools
+public class ArcImsConnectionExplorerObject : ExplorerParentObject<IExplorerObject>,
+                                              IExplorerSimpleObject,
+                                              IExplorerObjectDeletable,
+                                              IExplorerObjectRenamable,
+                                              IExplorerObjectContextTools
 {
     private string _name = "", _connectionString = "";
     private IEnumerable<IExplorerObjectContextTool>? _contextTools = null;
 
-    public ArcImsConnectionExplorerObject() : base(null, null, 0) { }
+    public ArcImsConnectionExplorerObject() : base() { }
     internal ArcImsConnectionExplorerObject(IExplorerObject parent, string name, string connectionString)
-        : base(parent, null, 0)
+        : base(parent, 0)
     {
         _name = name;
         _connectionString = connectionString;
