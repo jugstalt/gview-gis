@@ -198,7 +198,9 @@ namespace gView.Framework.Carto
                             //Thread thread = new Thread(new ThreadStart(srt.ImageRequest));
                             m_imageMerger.max++;
                             //thread.Start();
-                            var task = srt.ImageRequest();  // start the task...
+                            var task = Task.Run(async () => await srt.ImageRequest());  // start the task..
+                            //var task = srt.ImageRequest();  // start the task...
+                            //await srt.ImageRequest();
                         }
 
                         #endregion

@@ -24,7 +24,9 @@
             if (Model.Mode == ExploerDialogMode.Save)
             {
                 placeToSave = (selectedFilter != null && selectedRoot != null && selectedFilter.Match(selectedRoot).Result == true);
-                Model.Result.ExplorerObjects.ReplaceItems(placeToSave ? new[] { selectedRoot } : Array.Empty<IExplorerObject>());
+                Model.Result.ExplorerObjects.ReplaceItems(placeToSave && selectedRoot != null ? 
+                        new[] { selectedRoot } : 
+                        Array.Empty<IExplorerObject>());
             }
 
                 <MudSelect @bind-Value="@selectedRoot"
@@ -45,7 +47,7 @@
 
                 <MudPaper Elevation="2">
                     <MudList Clickable="true" Style=" min-height:600px;min-width:900px;overflow:auto" Dense="true">
-                        @if (levels[selectedRoot] > 0)
+                        @if (selectedRoot != null && levels[selectedRoot] > 0)
                         {
                             <MudListItem OnClick="MoveUp">
                                 <div style="display: flex; align-items: center;">
@@ -152,7 +154,7 @@
         });
 
     private void ListItemDoubleClick(IExplorerObject exObject)
-        => Handle(async () =>
+        => Handle(() =>
         {
             if (exObject is IExplorerParentObject)
             {

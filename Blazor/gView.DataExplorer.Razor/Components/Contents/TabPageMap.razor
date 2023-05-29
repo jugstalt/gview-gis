@@ -60,8 +60,15 @@
 
             MapRenderer.InitMap(_mapSRef);
 
+            // IWebServiceClass? webServiceClass = null;
+            // if (dataInstance is IWebFeatureClass && CurrentExplorerObject?.ParentExplorerObject != null)
+            // {
+            //     webServiceClass = (await CurrentExplorerObject.ParentExplorerObject.GetInstanceAsync()) as IWebServiceClass;
+            // }
+
             var layerAdded = dataInstance switch
             {
+                //IWebFeatureClass => MapRenderer.AddWebFeatureClass((IWebFeatureClass)dataInstance, webServiceClass,
                 IFeatureClass => MapRenderer.AddFeatureClass((IFeatureClass)dataInstance),
                 IRasterClass => MapRenderer.AddRasterClass((IRasterClass)dataInstance),
                 IWebServiceClass => MapRenderer.AddWebServiceClass((IWebServiceClass)dataInstance),

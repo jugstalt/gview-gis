@@ -94,6 +94,14 @@ public class MapRenderService : IDisposable
 
     #endregion
 
+    public bool AddWebFeatureClass(IWebFeatureClass webFeatureClass,IWebServiceClass webServiceClass)
+    {
+        MapRendererNotIntializedException.ThrowIfNull(_map);
+        _map.AddLayer(LayerFactory.Create(webServiceClass));
+        _map.AddLayer(LayerFactory.Create(webFeatureClass, webServiceClass));
+        return true;
+    }
+
     public bool AddFeatureClass(IFeatureClass featureClass)
     {
         MapRendererNotIntializedException.ThrowIfNull(_map);
@@ -219,7 +227,7 @@ public class MapRenderService : IDisposable
     public event RefreshMapImage? OnRefreshMapImage;
 
     public void FireRefreshMapImage(byte[]? data)
-        => OnRefreshMapImage?.Invoke(data);
+        => OnRefreshMapImage?.Invoke(data ?? Array.Empty<byte>());
 
     #endregion
 

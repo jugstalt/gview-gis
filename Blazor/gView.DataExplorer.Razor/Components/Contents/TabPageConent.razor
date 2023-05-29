@@ -21,7 +21,7 @@
                 {
                     <MudTd Class="@(selectedExplorerObjects?.Contains(context.ExplorerObject) == true ? "context-selected" : "")">
                        <div style="vertical-align:top;display:inline-flex;width:100%;cursor:pointer"
-                        @onclick="@((mEvent) => OnRowCLickAsync(mEvent, context))" @onclick:stopPropagation="true"
+                        @onclick="@((mEvent) => OnRowClickAsync(mEvent, context))" @onclick:stopPropagation="true"
                             @ondblclick="@(() => OnRowDoubleCLick(context))">
                             @if (first == true && !String.IsNullOrEmpty(context.Icon))
                             {
@@ -72,19 +72,30 @@
         StateHasChanged();
     });
 
-    private Task OnRowCLickAsync(MouseEventArgs mEvent, RowItem row) => HandleAsync(()
-        => EventBus.FireContextExplorerObjectsChanged(selectedExplorerObjects =
-                        row.ExplorerObject is IExplorerObjectDoubleClick ?
-                            Array.Empty<IExplorerObject>() : 
-                            row.ExplorerObject.AddToSelection(
-                                selectedExplorerObjects,
-                                table?.Rows.Select(r=>r.ExplorerObject),
-                                mEvent switch
-                                {
-                                    { ShiftKey: true } => GenericAddToStrategy.AddAllBetweenLastItem,
-                                    { CtrlKey: true } => GenericAddToStrategy.AddOrRemoveIfExists,
-                                    _ => GenericAddToStrategy.RemoveOthers
-                                })!));
+
+    private Task OnRowClickAsync(MouseEventArgs mEvent, RowItem row) => HandleAsync(async () =>
+    {
+        if (table == null || row.ExplorerObject == null)
+        {
+            return;
+        }
+
+        selectedExplorerObjects = row.ExplorerObject switch
+        {
+            IExplorerObjectDoubleClick => Array.Empty<IExplorerObject>(),
+            _ => row.ExplorerObject.AddToSelection(
+                    selectedExplorerObjects ?? Array.Empty<IExplorerObject>(),
+                    table.Rows.Where(r => r.ExplorerObject != null).Select(r => r.ExplorerObject!),
+                    mEvent switch
+                    {
+                        { ShiftKey: true } => GenericAddToStrategy.AddAllBetweenLastItem,
+                        { CtrlKey: true } => GenericAddToStrategy.AddOrRemoveIfExists,
+                        _ => GenericAddToStrategy.RemoveOthers
+                    })
+        };
+
+        await EventBus.FireContextExplorerObjectsChanged(selectedExplorerObjects);
+    });
 
     private Task OnRowDoubleCLick(RowItem row) => HandleAsync(async () =>
     {

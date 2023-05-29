@@ -51,6 +51,11 @@ public class MapTabPage : IExplorerTabPage
             return Task.FromResult(false);
         }
 
+        if(TypeHelper.Match(exObject.ObjectType, typeof(IWebFeatureClass)))
+        {
+            return Task.FromResult(false);
+        }
+
         return Task.FromResult(
             TypeHelper.Match(exObject.ObjectType, typeof(IFeatureClass)) ||
             TypeHelper.Match(exObject.ObjectType, typeof(IRasterClass)) ||

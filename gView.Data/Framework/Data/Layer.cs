@@ -2530,7 +2530,6 @@ namespace gView.Framework.Data
                 return layer;
             }
 
-
             return null;
         }
 
