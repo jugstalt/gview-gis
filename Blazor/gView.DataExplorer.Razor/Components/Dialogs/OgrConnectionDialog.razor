@@ -9,6 +9,11 @@
                        InputType="InputType.Text"
                        Variant="Variant.Text"></MudTextField>
     </DialogBody>
+    <InfoContent>
+        <MudText Typo="Typo.body1">Examples for Connectionstring:</MudText>
+        <MudText Typo="Typo.body2">Shapefiles: Path of folder containing shapefiles</MudText>
+        <MudText Typo="Typo.body2">GeoPackage, GDB: File path and filename of the *.gpkg/*.gdb file</MudText>
+    </InfoContent>
     <DialogButtons>
         @if (_isBusy)
         {
@@ -38,7 +43,7 @@
     private string _connectionSuccessMessage = string.Empty;
 
     private bool _isBusy = false;
-    private Task TestConnection() => HandleAsync(async () =>
+    private Task TestConnection() => HandleAsync(() =>
     {
         _isBusy = true;
         _connectionErrorMessage = "";
@@ -103,6 +108,8 @@
         {
             _isBusy = false;
         }
+
+        return Task.CompletedTask;
     });
 
     protected Task SetConnection() => HandleAsync(() =>
