@@ -1,5 +1,5 @@
 ﻿using gView.DataExplorer.Plugins.ExplorerObjects.Base;
-using gView.DataExplorer.Plugins.ExplorerObjects.Ogc;
+using gView.DataExplorer.Plugins.ExplorerObjects.Databases;
 using gView.DataSources.PostGIS;
 using gView.Framework.DataExplorer.Abstraction;
 using gView.Framework.Db;
@@ -11,9 +11,9 @@ using System.Threading.Tasks;
 namespace gView.DataExplorer.Plugins.ExplorerObjects.PostGIS;
 
 [RegisterPlugIn("9F42DCF6-920E-433f-9D3C-610E4350EE35")]
-public class PostGISExplorerGroupObject : 
-                    ExplorerParentObject, 
-                    IOgcGroupExplorerObject, 
+public class PostGISExplorerGroupObject :
+                    ExplorerParentObject,
+                    IDatabasesExplorerGroupObject,
                     IPlugInDependencies
 {
 
@@ -30,7 +30,7 @@ public class PostGISExplorerGroupObject :
     public string Name => "PostGIS";
 
 
-    public string FullName => @"OGC\PostGIS";
+    public string FullName => @"Databases\PostGIS";
 
     public string Type => "PostGIS Connection";
 

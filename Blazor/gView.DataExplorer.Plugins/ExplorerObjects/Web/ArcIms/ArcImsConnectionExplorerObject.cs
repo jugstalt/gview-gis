@@ -49,7 +49,7 @@ public class ArcImsConnectionExplorerObject : ExplorerParentObject<IExplorerObje
 
     public string Name => _name;
 
-    public string FullName => @"ESRI\ArcIMS\" + _name;
+    public string FullName => @"WebServices\ArcIMS\" + _name;
 
     public string Type
     {

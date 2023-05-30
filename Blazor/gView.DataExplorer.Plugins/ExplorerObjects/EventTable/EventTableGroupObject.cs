@@ -1,4 +1,5 @@
 ﻿using gView.DataExplorer.Plugins.ExplorerObjects.Base;
+using gView.DataExplorer.Plugins.ExplorerObjects.VectorData;
 using gView.DataSources.EventTable;
 using gView.Framework.DataExplorer.Abstraction;
 using gView.Framework.IO;
@@ -10,7 +11,7 @@ namespace gView.DataExplorer.Plugins.ExplorerObjects.EventTable;
 [gView.Framework.system.RegisterPlugIn("653DA8F8-D321-4701-861F-23317E9FEC4D")]
 public class EventTableGroupObject : 
         ExplorerParentObject, 
-        IExplorerGroupObject
+        IVectorDataExplorerGroupObject
 {
     public EventTableGroupObject()
         : base()
@@ -21,7 +22,7 @@ public class EventTableGroupObject :
 
     public string Name => "Eventtable Connections";
 
-    public string FullName => "EventTableConnections";
+    public string FullName => @"VectorData\EventTableConnections";
 
     public string Type => "Eventtable Connections";
 

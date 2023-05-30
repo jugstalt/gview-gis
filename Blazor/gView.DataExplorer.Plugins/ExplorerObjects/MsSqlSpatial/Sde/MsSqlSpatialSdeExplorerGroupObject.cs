@@ -1,5 +1,5 @@
 ﻿using gView.DataExplorer.Plugins.ExplorerObjects.Base;
-using gView.DataExplorer.Plugins.ExplorerObjects.Esri;
+using gView.DataExplorer.Plugins.ExplorerObjects.Databases;
 using gView.Framework.DataExplorer.Abstraction;
 using gView.Framework.Db;
 using gView.Framework.IO;
@@ -9,9 +9,9 @@ using System.Threading.Tasks;
 namespace gView.DataExplorer.Plugins.ExplorerObjects.MsSqlSpatial.Sde;
 
 [gView.Framework.system.RegisterPlugIn("55AF4451-7A67-48C8-8F41-F2E3A6DA7EB1")]
-public class MsSqlSpatialSdeExplorerGroupObject : 
-                ExplorerParentObject, 
-                IEsriGroupExplorerObject
+public class MsSqlSpatialSdeExplorerGroupObject :
+                ExplorerParentObject,
+                IDatabasesExplorerGroupObject
 {
     public MsSqlSpatialSdeExplorerGroupObject()
         : base()
@@ -27,7 +27,7 @@ public class MsSqlSpatialSdeExplorerGroupObject :
 
     public string Name => "MsSql Spatial Geometry (ArcSde)";
 
-    public string FullName => @"ESRI\MsSqlSpatialSde";
+    public string FullName => @"Databases\MsSqlSpatialSde";
     public string Type => "MsSql Spatial ArcSde Connection";
     public Task<object?> GetInstanceAsync() => Task.FromResult<object?>(null);
 

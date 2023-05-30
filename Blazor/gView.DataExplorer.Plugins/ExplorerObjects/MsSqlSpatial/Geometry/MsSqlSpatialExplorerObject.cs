@@ -74,7 +74,7 @@ public class MsSqlSpatialExplorerObject : ExplorerParentObject<IExplorerObject, 
 
     public string Name => _server;
 
-    public string FullName => @$"OGC\MsSqlSpatialGeometry\{_server}";
+    public string FullName => @$"Databases\MsSqlSpatialGeometry\{_server}";
 
     public string Type => "MsSqlSpatial Geometry Database";
     public string Icon => "basic:database";

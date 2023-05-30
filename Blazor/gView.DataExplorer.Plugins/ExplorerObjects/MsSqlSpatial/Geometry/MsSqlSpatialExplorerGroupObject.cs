@@ -1,5 +1,5 @@
 ﻿using gView.DataExplorer.Plugins.ExplorerObjects.Base;
-using gView.DataExplorer.Plugins.ExplorerObjects.Ogc;
+using gView.DataExplorer.Plugins.ExplorerObjects.Databases;
 using gView.Framework.DataExplorer.Abstraction;
 using gView.Framework.Db;
 using gView.Framework.IO;
@@ -9,9 +9,9 @@ using System.Threading.Tasks;
 
 namespace gView.DataExplorer.Plugins.ExplorerObjects.MsSqlSpatial.Geometry;
 [RegisterPlugIn("25F9A2DE-D54F-4DCD-832A-C2EFB544CF8F")]
-public class MsSqlSpatialExplorerGroupObject : 
-                    ExplorerParentObject, 
-                    IOgcGroupExplorerObject
+public class MsSqlSpatialExplorerGroupObject :
+                    ExplorerParentObject,
+                    IDatabasesExplorerGroupObject
 {
     public MsSqlSpatialExplorerGroupObject()
         : base()
@@ -27,7 +27,7 @@ public class MsSqlSpatialExplorerGroupObject :
 
     public string Name => "MsSql Spatial Geometry";
 
-    public string FullName => @"OGC\MsSqlSpatialGeometry";
+    public string FullName => @"Databases\MsSqlSpatialGeometry";
 
     public string Type => "MsSql Spatial Geometry Connection";
 

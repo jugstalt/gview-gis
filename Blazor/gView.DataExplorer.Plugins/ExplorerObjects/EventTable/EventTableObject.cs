@@ -71,7 +71,7 @@ public class EventTableObject : ExplorerObjectCls<IExplorerObject, IFeatureClass
                 return "???";
             }
 
-            return @$"EventTableConnections\{_name}";
+            return @$"VectorData\EventTableConnections\{_name}";
         }
     }
 

@@ -74,7 +74,7 @@ public class PostGISExplorerObject : ExplorerParentObject<IExplorerObject, IFeat
 
     public string Name => _server;
 
-    public string FullName => @"OGC\PostGIS\" + _server;
+    public string FullName => @"Databases\PostGIS\" + _server;
 
     public string Type => "PostGIS Database";
 

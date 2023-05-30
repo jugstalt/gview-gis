@@ -1,4 +1,5 @@
 ﻿using gView.DataExplorer.Plugins.ExplorerObjects.Base;
+using gView.DataExplorer.Plugins.ExplorerObjects.VectorData;
 using gView.Framework.DataExplorer.Abstraction;
 using gView.Framework.IO;
 using gView.Framework.system;
@@ -9,7 +10,7 @@ namespace gView.DataExplorer.Plugins.ExplorerObjects.GeoJson
 {
     [RegisterPlugIn("57AF3D70-6BAD-4284-B2F7-9C0362D5F7F5")]
     public class GeoJsonServiceGroupObject : ExplorerParentObject,
-                                             IExplorerGroupObject
+                                             IVectorDataExplorerGroupObject
     {
         internal const string ConfigName = "GeoJsonService";
         internal const string EncKey = "546B0513-D71D-4490-9E27-94CD5D72C64A";
@@ -23,7 +24,7 @@ namespace gView.DataExplorer.Plugins.ExplorerObjects.GeoJson
 
         public string Name => "GeoJson Service Connections";
 
-        public string FullName => "GeoJsonServiceConnections";
+        public string FullName => @"VectorData\GeoJsonServiceConnections";
 
         public string Type => "GeoJson Service Connections";
 

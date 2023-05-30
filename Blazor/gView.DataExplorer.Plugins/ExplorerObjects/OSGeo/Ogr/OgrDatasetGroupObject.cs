@@ -1,4 +1,5 @@
 ﻿using gView.DataExplorer.Plugins.ExplorerObjects.Base;
+using gView.DataExplorer.Plugins.ExplorerObjects.VectorData;
 using gView.DataSources.OGR;
 using gView.Framework.DataExplorer.Abstraction;
 using gView.Framework.IO;
@@ -11,7 +12,7 @@ namespace gView.DataExplorer.Plugins.ExplorerObjects.OSGeo.Ogr;
 [RegisterPlugIn("d621846b-959b-4285-8506-908b527f0722")]
 public class OgrDatasetGroupObject : ExplorerParentObject,
                                      IPlugInDependencies,
-                                     IExplorerGroupObject
+                                     IVectorDataExplorerGroupObject
 {
     public OgrDatasetGroupObject()
         : base()
@@ -31,7 +32,7 @@ public class OgrDatasetGroupObject : ExplorerParentObject,
 
     public string Name => "OGR Simple Feature Library";
 
-    public string FullName => "OGR";
+    public string FullName => @"VectorData\OGR";
 
 
     public string Type => "OGR Connections";

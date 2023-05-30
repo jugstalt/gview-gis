@@ -1,8 +1,8 @@
 ﻿using gView.Framework.DataExplorer.Abstraction;
 
-namespace gView.DataExplorer.Plugins.ExplorerObjects.Ogc;
+namespace gView.DataExplorer.Plugins.ExplorerObjects.Databases;
 
-public interface IOgcGroupExplorerObject : IExplorerObject
+public interface IDatabasesExplorerGroupObject : IExplorerObject
 {
     void SetParentExplorerObject(IExplorerObject parentExplorerObject);
 }

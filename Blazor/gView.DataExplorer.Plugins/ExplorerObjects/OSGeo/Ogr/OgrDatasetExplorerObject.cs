@@ -70,7 +70,7 @@ public class OgrDatasetExplorerObject : ExplorerParentObject<OgrDatasetGroupObje
 
     public string Name => _name;
 
-    public string FullName => @$"OGR\{_name}";
+    public string FullName => @$"VectorData\OGR\{_name}";
 
     public string Type => "Ogr Dataset";
 

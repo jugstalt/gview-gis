@@ -1,5 +1,5 @@
 ﻿using gView.DataExplorer.Plugins.ExplorerObjects.Base;
-using gView.DataExplorer.Plugins.ExplorerObjects.Esri;
+using gView.DataExplorer.Plugins.ExplorerObjects.WebServices;
 using gView.Framework.DataExplorer.Abstraction;
 using gView.Framework.IO;
 using System.Collections.Generic;
@@ -8,8 +8,8 @@ using System.Threading.Tasks;
 namespace gView.DataExplorer.Plugins.ExplorerObjects.Web.GeoServices;
 
 [gView.Framework.system.RegisterPlugIn("517DEC80-F6A5-44BC-95EF-9A56543C373B")]
-public class GeoServicesExplorerObjects : ExplorerParentObject, 
-                                          IEsriGroupExplorerObject
+public class GeoServicesExplorerObjects : ExplorerParentObject,
+                                          IWebServicesExplorerGroupObject
 {
     public GeoServicesExplorerObjects() : base() { }
 
@@ -18,7 +18,7 @@ public class GeoServicesExplorerObjects : ExplorerParentObject,
     public string Name => "ESRI GeoServices";
 
 
-    public string FullName => @"ESRI\gView.GeoServices";
+    public string FullName => @"WebServices\gView.GeoServices";
 
     public string Type => "gView.GeoServices Connections";
 

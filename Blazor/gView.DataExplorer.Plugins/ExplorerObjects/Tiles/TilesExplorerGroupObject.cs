@@ -1,24 +1,20 @@
 ﻿using gView.DataExplorer.Plugins.ExplorerObjects.Base;
 using gView.Framework.DataExplorer.Abstraction;
 using gView.Framework.system;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
-namespace gView.DataExplorer.Plugins.ExplorerObjects.Esri;
+namespace gView.DataExplorer.Plugins.ExplorerObjects.Tiles;
 
-[gView.Framework.system.RegisterPlugIn("3DB3E792-AF34-4539-B68A-07007CE9BAEE")]
-public class EsriExplorerGroupObject : 
-        ExplorerParentObject, 
-        IExplorerGroupObject
+[RegisterPlugIn("B57956A7-A49A-4821-A6B2-83CFB97B1373")]
+public class TilesExplorerGroupObject :
+                ExplorerParentObject,
+                IExplorerGroupObject
 {
-    public EsriExplorerGroupObject() : base() { }
+    public TilesExplorerGroupObject() : base() { }
 
     #region IExplorerGroupObject Members
 
-    public string Icon => "basic:globe-table";
+    public string Icon => "webgis:tiles";
 
     public void SetParentExplorerObject(IExplorerObject parentExplorerObject)
     {
@@ -29,11 +25,11 @@ public class EsriExplorerGroupObject :
 
     #region IExplorerObject Members
 
-    public string Name => "ESRI";
+    public string Name => "Tiles";
 
-    public string FullName => "ESRI";
+    public string FullName => "Tiles";
 
-    public string Type => "ESRI Connections";
+    public string Type => "Tile Caches";
 
     public Task<object?> GetInstanceAsync() => Task.FromResult<object?>(null);
 
@@ -49,12 +45,12 @@ public class EsriExplorerGroupObject :
         foreach (var compType in compMan.GetPlugins(gView.Framework.system.Plugins.Type.IExplorerObject))
         {
             IExplorerObject exObject = compMan.CreateInstance<IExplorerObject>(compType);
-            if (!(exObject is IEsriGroupExplorerObject))
+            if (!(exObject is ITilesExplorerGroupObject))
             {
                 continue;
             }
 
-            ((IEsriGroupExplorerObject)exObject).SetParentExplorerObject(this);
+            ((ITilesExplorerGroupObject)exObject).SetParentExplorerObject(this);
 
             base.AddChildObject(exObject);
         }
@@ -68,14 +64,14 @@ public class EsriExplorerGroupObject :
 
     public Task<IExplorerObject?> CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache? cache)
     {
-        if (cache!=null && cache.Contains(FullName))
+        if (cache != null && cache.Contains(FullName))
         {
             return Task.FromResult<IExplorerObject?>(cache[FullName]);
         }
 
         if (this.FullName == FullName)
         {
-            EsriExplorerGroupObject exObject = new EsriExplorerGroupObject();
+            TilesExplorerGroupObject exObject = new TilesExplorerGroupObject();
             cache?.Append(exObject);
             return Task.FromResult<IExplorerObject?>(exObject);
         }

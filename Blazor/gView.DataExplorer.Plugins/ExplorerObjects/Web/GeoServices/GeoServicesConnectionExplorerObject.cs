@@ -54,7 +54,7 @@ public class GeoServicesConnectionExplorerObject : ExplorerParentObject<IExplore
     public string Name=>_name;
 
 
-    public string FullName => @$"ESRI\gView.GeoServices\{_name}";
+    public string FullName => @$"WebServices\gView.GeoServices\{_name}";
 
     public string Type => "gView.GeoServices Connection";
 

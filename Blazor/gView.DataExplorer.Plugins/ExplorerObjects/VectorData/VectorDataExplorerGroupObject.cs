@@ -3,18 +3,18 @@ using gView.Framework.DataExplorer.Abstraction;
 using gView.Framework.system;
 using System.Threading.Tasks;
 
-namespace gView.DataExplorer.Plugins.ExplorerObjects.Ogc;
+namespace gView.DataExplorer.Plugins.ExplorerObjects.VectorData;
 
-[gView.Framework.system.RegisterPlugIn("D6038DDE-DCB9-4cab-ADAC-C80EA323527D")]
-public class OGCExplorerGroupObject : 
-                    ExplorerParentObject, 
-                    IExplorerGroupObject
+[RegisterPlugIn("7633E43A-FDBF-464A-B332-139C46A6B582")]
+public class VectorDataExplorerGroupObject :
+                ExplorerParentObject,
+                IExplorerGroupObject
 {
-    public OGCExplorerGroupObject() : base() { }
+    public VectorDataExplorerGroupObject() : base() { }
 
     #region IExplorerGroupObject Members
 
-    public string Icon => "basic:globe-table";
+    public string Icon => "webgis:construct-ortho";
 
     public void SetParentExplorerObject(IExplorerObject parentExplorerObject)
     {
@@ -25,11 +25,11 @@ public class OGCExplorerGroupObject :
 
     #region IExplorerObject Members
 
-    public string Name => "OGC";
+    public string Name => "Vector Data";
 
-    public string FullName => "OGC";
+    public string FullName => "VectorData";
 
-    public string Type => "OGC Connections";
+    public string Type => "Vector Data Sources";
 
     public Task<object?> GetInstanceAsync() => Task.FromResult<object?>(null);
 
@@ -45,12 +45,12 @@ public class OGCExplorerGroupObject :
         foreach (var compType in compMan.GetPlugins(gView.Framework.system.Plugins.Type.IExplorerObject))
         {
             IExplorerObject exObject = compMan.CreateInstance<IExplorerObject>(compType);
-            if (!(exObject is IOgcGroupExplorerObject))
+            if (!(exObject is IVectorDataExplorerGroupObject))
             {
                 continue;
             }
 
-            ((IOgcGroupExplorerObject)exObject).SetParentExplorerObject(this);
+            ((IVectorDataExplorerGroupObject)exObject).SetParentExplorerObject(this);
 
             base.AddChildObject(exObject);
         }
@@ -71,7 +71,7 @@ public class OGCExplorerGroupObject :
 
         if (this.FullName == FullName)
         {
-            OGCExplorerGroupObject exObject = new OGCExplorerGroupObject();
+            VectorDataExplorerGroupObject exObject = new VectorDataExplorerGroupObject();
             cache?.Append(exObject);
             return Task.FromResult<IExplorerObject?>(exObject);
         }

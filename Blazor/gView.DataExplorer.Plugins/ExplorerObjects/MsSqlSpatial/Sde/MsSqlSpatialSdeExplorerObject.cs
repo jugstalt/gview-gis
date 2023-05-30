@@ -75,7 +75,7 @@ public class MsSqlSpatialSdeExplorerObject : ExplorerParentObject<IExplorerObjec
 
     public string Name => _server;
 
-    public string FullName => @$"ESRI\MsSqlSpatialSde\{_server}";
+    public string FullName => @$"Databases\MsSqlSpatialSde\{_server}";
 
     public string Type => "MsSql Spatial ArcSde Database";
 

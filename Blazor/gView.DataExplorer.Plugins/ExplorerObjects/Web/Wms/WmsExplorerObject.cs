@@ -1,17 +1,15 @@
 ﻿using gView.DataExplorer.Plugins.ExplorerObjects.Base;
-using gView.DataExplorer.Plugins.ExplorerObjects.Ogc;
+using gView.DataExplorer.Plugins.ExplorerObjects.WebServices;
 using gView.Framework.DataExplorer.Abstraction;
 using gView.Framework.IO;
-using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace gView.DataExplorer.Plugins.ExplorerObjects.Web.Wms;
 
 [gView.Framework.system.RegisterPlugIn("41C75FD2-9AD0-4457-8248-E55EDA0C114E")]
-public class WmsExplorerObject : ExplorerParentObject, 
-                                 IOgcGroupExplorerObject
+public class WmsExplorerObject : ExplorerParentObject,
+                                 IWebServicesExplorerGroupObject
 {
     public WmsExplorerObject() : base() { }
     public WmsExplorerObject(IExplorerObject? parent)
@@ -21,9 +19,9 @@ public class WmsExplorerObject : ExplorerParentObject,
 
     #region IExplorerObject Member
 
-    public string Name => "Web Services";
+    public string Name => "OGC Web Services (WMS/WFS)";
 
-    public string FullName => "OGC/Web";
+    public string FullName => @"WebServices\Web";
 
     public string Type => "OGC.WMS Connections";
 
@@ -42,7 +40,7 @@ public class WmsExplorerObject : ExplorerParentObject,
 
         ConfigConnections configStream = new ConfigConnections("ogc_web_connection", "546B0513-D71D-4490-9E27-94CD5D72C64A");
 
-        Dictionary<string, string> connections= configStream.Connections;
+        Dictionary<string, string> connections = configStream.Connections;
         foreach (string name in connections.Keys)
         {
             base.AddChildObject(new WmsServiceExplorerObject(this, name, connections[name]));
