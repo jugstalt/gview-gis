@@ -12,7 +12,7 @@ internal class ExplorerDesktopApplicationService : IExplorerApplicationService
 
     public ExplorerDesktopApplicationService()
     {
-        _rootExplorerObject = new ComputerObject();
+        _rootExplorerObject = new StartObject();
     }
 
     public IExplorerObject RootExplorerObject => _rootExplorerObject;    

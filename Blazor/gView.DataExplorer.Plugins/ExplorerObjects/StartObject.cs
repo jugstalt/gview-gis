@@ -4,15 +4,15 @@ using gView.Framework.IO;
 using gView.Framework.system;
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace gView.DataExplorer.Plugins.ExplorerObjects;
-
-[RegisterPlugIn("2453E8C6-E52F-4D17-9DE0-9EAC8343B66B")]
-public class ComputerObject : ExplorerParentObject,
-                              IExplorerGroupObject
+internal class StartObject : ExplorerParentObject,
+                              IExplorerObject
 {
-    public ComputerObject()
+    public StartObject()
         : base()
     {
     }
@@ -21,7 +21,7 @@ public class ComputerObject : ExplorerParentObject,
 
     public string Name
     {
-        get { return "Computer"; }
+        get { return "Start"; }
     }
 
     public string FullName
@@ -34,7 +34,7 @@ public class ComputerObject : ExplorerParentObject,
         get { return ""; }
     }
 
-    public string Icon => "basic:monitor";
+    public string Icon => "basic:home";
 
     public Task<object?> GetInstanceAsync() => Task.FromResult<object?>(null);
 
@@ -46,7 +46,7 @@ public class ComputerObject : ExplorerParentObject,
     {
         if (FullName == String.Empty)
         {
-            return Task.FromResult<IExplorerObject?>(new ComputerObject());
+            return Task.FromResult<IExplorerObject?>(new StartObject());
         }
 
         return Task.FromResult<IExplorerObject?>(null);
@@ -60,26 +60,6 @@ public class ComputerObject : ExplorerParentObject,
     {
         await base.Refresh();
 
-        string[] drives = System.IO.Directory.GetLogicalDrives();
-
-        foreach (string drive in drives)
-        {
-            System.IO.DriveInfo info = new System.IO.DriveInfo(drive);
-
-            DriveObject exObject = new DriveObject(this, info.Name.Replace("\\", ""), (uint)info.DriveType);
-            base.AddChildObject(exObject);
-        }
-
-        ConfigConnections configStream = new ConfigConnections("directories");
-        Dictionary<string, string> networkDirectories = configStream.Connections;
-        if (networkDirectories != null)
-        {
-            foreach (string dir in networkDirectories.Keys)
-            {
-                MappedDriveObject exObject = new MappedDriveObject(this, networkDirectories[dir]);
-                base.AddChildObject(exObject);
-            }
-        }
 
         PlugInManager compMan = new PlugInManager();
 
@@ -97,15 +77,6 @@ public class ComputerObject : ExplorerParentObject,
         }
 
         return true;
-    }
-
-    #endregion
-
-    #region IExplorerGroupObject
-
-    public void SetParentExplorerObject(IExplorerObject parentExplorerObject)
-    {
-        base.Parent = parentExplorerObject;
     }
 
     #endregion
