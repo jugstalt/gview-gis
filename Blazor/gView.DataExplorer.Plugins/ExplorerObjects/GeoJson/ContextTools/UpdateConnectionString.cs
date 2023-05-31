@@ -28,7 +28,7 @@ internal class UpdateConnectionString : IExplorerObjectContextTool
 
         if (model != null)
         {
-            return await ((GeoJsonServiceExplorerObject)exObject).UpdateGetConnectionString(model.ToConnectionString());
+            return await ((GeoJsonServiceExplorerObject)exObject).UpdateConnectionString(model.ToConnectionString());
         }
 
         return false;

@@ -207,7 +207,7 @@
         {
             var exParent = (IExplorerParentObject)exObject;
 
-            foreach (var childObject in await exParent.ChildObjects())
+            foreach (var childObject in (await exParent.ChildObjects()).OrderBy(c => c.Priority))
             {
                 if (childObject is IExplorerObjectDoubleClick)  // don't show "new database connection" icons, etc. The are only visible in the content list
                 {

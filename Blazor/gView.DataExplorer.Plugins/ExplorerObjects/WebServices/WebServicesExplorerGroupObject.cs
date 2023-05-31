@@ -10,7 +10,7 @@ public class WebServicesExplorerGroupObject :
                     ExplorerParentObject,
                     IExplorerGroupObject
 {
-    public WebServicesExplorerGroupObject() : base() { }
+    public WebServicesExplorerGroupObject() : base(20) { }
 
     #region IExplorerGroupObject Members
 

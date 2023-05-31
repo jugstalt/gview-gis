@@ -9,7 +9,7 @@ namespace gView.DataExplorer.Plugins.ExplorerObjects.Databases;
 internal class DatabasesExplorerGroupObject : ExplorerParentObject,
                                               IExplorerGroupObject
 {
-    public DatabasesExplorerGroupObject() : base() { }
+    public DatabasesExplorerGroupObject() : base(10) { }
 
     #region IExplorerGroupObject Members
 

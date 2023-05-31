@@ -14,6 +14,9 @@ public class ExplorerParentObject<TParent, TObjectType> :
     private ICollection<IExplorerObject>? _childObjects = null;
 
     public ExplorerParentObject() : base() { }
+
+    public ExplorerParentObject(int priority) : base(priority) { }
+
     public ExplorerParentObject(TParent parent, int priority)
         : base(parent, priority)
     {
@@ -118,19 +121,19 @@ public class ExplorerParentObject<TParent, TObjectType> :
     }
 }
 
-public class ExplorerParentObject<TParent>
-    : ExplorerParentObject<TParent, UnknownObjectType> 
+public class ExplorerParentObject<TParent> : ExplorerParentObject<TParent, UnknownObjectType> 
     where TParent : IExplorerObject
 {
     public ExplorerParentObject() : base() { }
+    public ExplorerParentObject(int priority) : base(priority) { }
     public ExplorerParentObject(TParent parent, int priority)
         : base(parent, priority)
     {
     }
 }
 
-public class ExplorerParentObject
-     : ExplorerParentObject<IExplorerObject, UnknownObjectType>
+public class ExplorerParentObject : ExplorerParentObject<IExplorerObject, UnknownObjectType>
 {
     public ExplorerParentObject() : base() { }
+    public ExplorerParentObject(int priority) : base(priority) { }
 }

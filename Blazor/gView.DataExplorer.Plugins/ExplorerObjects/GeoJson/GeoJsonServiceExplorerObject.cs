@@ -43,7 +43,7 @@ namespace gView.DataExplorer.Plugins.ExplorerObjects.GeoJson
             return _connectionString;
         }
 
-        internal Task<bool> UpdateGetConnectionString(string connectionString)
+        internal Task<bool> UpdateConnectionString(string connectionString)
         {
             ConfigConnections connStream = new ConfigConnections(GeoJsonServiceGroupObject.ConfigName, GeoJsonServiceGroupObject.EncKey);
             connStream.Add(_name, connectionString);

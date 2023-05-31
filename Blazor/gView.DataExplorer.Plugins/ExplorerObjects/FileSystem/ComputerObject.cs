@@ -6,14 +6,14 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace gView.DataExplorer.Plugins.ExplorerObjects;
+namespace gView.DataExplorer.Plugins.ExplorerObjects.FileSystem;
 
 [RegisterPlugIn("2453E8C6-E52F-4D17-9DE0-9EAC8343B66B")]
 public class ComputerObject : ExplorerParentObject,
                               IExplorerGroupObject
 {
     public ComputerObject()
-        : base()
+        : base(0)
     {
     }
 
@@ -44,7 +44,7 @@ public class ComputerObject : ExplorerParentObject,
 
     public Task<IExplorerObject?> CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache? cache)
     {
-        if (FullName == String.Empty)
+        if (FullName == string.Empty)
         {
             return Task.FromResult<IExplorerObject?>(new ComputerObject());
         }
@@ -67,7 +67,7 @@ public class ComputerObject : ExplorerParentObject,
             System.IO.DriveInfo info = new System.IO.DriveInfo(drive);
 
             DriveObject exObject = new DriveObject(this, info.Name.Replace("\\", ""), (uint)info.DriveType);
-            base.AddChildObject(exObject);
+            AddChildObject(exObject);
         }
 
         ConfigConnections configStream = new ConfigConnections("directories");
@@ -77,23 +77,8 @@ public class ComputerObject : ExplorerParentObject,
             foreach (string dir in networkDirectories.Keys)
             {
                 MappedDriveObject exObject = new MappedDriveObject(this, networkDirectories[dir]);
-                base.AddChildObject(exObject);
+                AddChildObject(exObject);
             }
-        }
-
-        PlugInManager compMan = new PlugInManager();
-
-        foreach (var exObjectType in compMan.GetPlugins(Framework.system.Plugins.Type.IExplorerObject))
-        {
-            var exObject = compMan.CreateInstance<IExplorerObject>(exObjectType);
-
-            if (!(exObject is IExplorerGroupObject))
-            {
-                continue;
-            }
-
-            ((IExplorerGroupObject)exObject).SetParentExplorerObject(this);
-            base.AddChildObject(exObject);
         }
 
         return true;
@@ -105,7 +90,7 @@ public class ComputerObject : ExplorerParentObject,
 
     public void SetParentExplorerObject(IExplorerObject parentExplorerObject)
     {
-        base.Parent = parentExplorerObject;
+        Parent = parentExplorerObject;
     }
 
     #endregion

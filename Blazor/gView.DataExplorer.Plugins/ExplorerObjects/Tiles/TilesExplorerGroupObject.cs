@@ -10,7 +10,7 @@ public class TilesExplorerGroupObject :
                 ExplorerParentObject,
                 IExplorerGroupObject
 {
-    public TilesExplorerGroupObject() : base() { }
+    public TilesExplorerGroupObject() : base(40) { }
 
     #region IExplorerGroupObject Members
 

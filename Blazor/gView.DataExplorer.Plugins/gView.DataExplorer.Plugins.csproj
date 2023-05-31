@@ -14,6 +14,7 @@
     <ProjectReference Include="..\..\gView.DataSources.OSGeo\gView.DataSources.OSGeo.csproj" />
     <ProjectReference Include="..\..\gView.DataSources.PostGIS\gView.DataSources.PostGIS.csproj" />
     <ProjectReference Include="..\..\gView.DataSources.Shape\gView.DataSources.Shape.csproj" />
+    <ProjectReference Include="..\..\gView.DataSources.VectorTileCache\gView.DataSources.VectorTileCache.csproj" />
     <ProjectReference Include="..\..\gView.Interoperability.ArcXML\gView.Interoperability.ArcXML.csproj" />
     <ProjectReference Include="..\..\gView.Interoperability.GeoServices\gView.Interoperability.GeoServices.csproj" />
     <ProjectReference Include="..\..\gView.Interoperability.OGC\gView.Interoperability.OGC.csproj" />

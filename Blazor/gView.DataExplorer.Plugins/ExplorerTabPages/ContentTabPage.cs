@@ -4,6 +4,7 @@ using gView.Blazor.Models.Table;
 using gView.Framework.DataExplorer.Abstraction;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace gView.DataExplorer.Plugins.ExplorerTabPages;
@@ -45,7 +46,7 @@ public class ContentTabPage : IExplorerTabPage
 
             if (childs != null)
             {
-                foreach (var child in childs)
+                foreach (var child in childs.OrderBy(c => c.Priority))
                 {
                     table.AddRow()
                         .SetExplorerObject(child)

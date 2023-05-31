@@ -14,7 +14,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 
-namespace gView.DataExplorer.Plugins.ExplorerObjects;
+namespace gView.DataExplorer.Plugins.ExplorerObjects.FileSystem;
 
 [RegisterPlugIn("458E62A0-4A93-45cf-B14D-2F958D67E522")]
 public class DirectoryObject : ExplorerParentObject<IExplorerObject>,
@@ -76,7 +76,7 @@ public class DirectoryObject : ExplorerParentObject<IExplorerObject>,
     {
         try
         {
-            if (!(new DirectoryInfo(FullName)).Exists)
+            if (!new DirectoryInfo(FullName).Exists)
             {
                 return null;
             }
@@ -107,7 +107,7 @@ public class DirectoryObject : ExplorerParentObject<IExplorerObject>,
     async public override Task<bool> Refresh()
     {
         await base.Refresh();
-        List<IExplorerObject> childs = await DirectoryObject.Refresh(this, this.FullName);
+        List<IExplorerObject> childs = await Refresh(this, FullName);
         if (childs == null)
         {
             return false;
@@ -115,7 +115,7 @@ public class DirectoryObject : ExplorerParentObject<IExplorerObject>,
 
         foreach (IExplorerObject child in childs)
         {
-            base.AddChildObject(child);
+            AddChildObject(child);
         }
 
         return true;
@@ -142,7 +142,7 @@ public class DirectoryObject : ExplorerParentObject<IExplorerObject>,
             throw;
         }
 
-        gView.Framework.system.PlugInManager manager = new gView.Framework.system.PlugInManager();
+        PlugInManager manager = new PlugInManager();
 
         foreach (var exObjectType in manager.GetPlugins(Framework.system.Plugins.Type.IExplorerObject))
         {
@@ -177,7 +177,7 @@ public class DirectoryObject : ExplorerParentObject<IExplorerObject>,
     {
         if (cache != null && cache.Contains(FullName))
         {
-            return Task.FromResult<IExplorerObject?>(cache[FullName]);
+            return Task.FromResult(cache[FullName]);
         }
 
         try
@@ -276,13 +276,13 @@ public class DirectoryObject : ExplorerParentObject<IExplorerObject>,
                                                             IExplorerObject parentExObject)
     {
         var model = await scope.ToScopeService().ShowModalDialog(
-            typeof(gView.DataExplorer.Razor.Components.Dialogs.InputBoxDialog),
+            typeof(Razor.Components.Dialogs.InputBoxDialog),
             "Create",
             new InputBoxModel()
             {
                 Value = "",
-                Icon = this.Icon,
-                Name = this.Type ?? String.Empty,
+                Icon = Icon,
+                Name = Type ?? string.Empty,
                 Label = "Name",
                 Prompt = "Enter new directory name"
             });
@@ -290,13 +290,13 @@ public class DirectoryObject : ExplorerParentObject<IExplorerObject>,
         if (model != null)
         {
             string newName = model.Value.Trim();
-            if (String.IsNullOrEmpty(newName))
+            if (string.IsNullOrEmpty(newName))
             {
                 return null;
             }
 
             DirectoryInfo di = new DirectoryInfo(Path.Combine(parentExObject.FullName, newName));
-            if(di.Exists)
+            if (di.Exists)
             {
                 throw new GeneralException($"Directory {newName} alread exists!");
             }

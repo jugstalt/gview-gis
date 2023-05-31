@@ -4,9 +4,9 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Linq;
 
-namespace gView.DataExplorer.Plugins.ExplorerObjects;
+namespace gView.DataExplorer.Plugins.ExplorerObjects.FileSystem;
 
-public class DriveObject : ExplorerParentObject<IExplorerObject>, 
+public class DriveObject : ExplorerParentObject<IExplorerObject>,
                            IExplorerObject
 {
     private readonly string _drive = "";
@@ -89,7 +89,7 @@ public class DriveObject : ExplorerParentObject<IExplorerObject>,
     async public override Task<bool> Refresh()
     {
         await base.Refresh();
-        List<IExplorerObject> childs = await DirectoryObject.Refresh(this, this.FullName);
+        List<IExplorerObject> childs = await DirectoryObject.Refresh(this, FullName);
         if (childs == null)
         {
             return false;
@@ -97,7 +97,7 @@ public class DriveObject : ExplorerParentObject<IExplorerObject>,
 
         foreach (IExplorerObject child in childs)
         {
-            base.AddChildObject(child);
+            AddChildObject(child);
         }
 
         return true;
@@ -109,7 +109,7 @@ public class DriveObject : ExplorerParentObject<IExplorerObject>,
 
     public Task<IExplorerObject?> CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache? cache)
     {
-        if (cache!=null && cache.Contains(FullName))
+        if (cache != null && cache.Contains(FullName))
         {
             return Task.FromResult(cache[FullName]);
         }

@@ -10,7 +10,7 @@ public class VectorDataExplorerGroupObject :
                 ExplorerParentObject,
                 IExplorerGroupObject
 {
-    public VectorDataExplorerGroupObject() : base() { }
+    public VectorDataExplorerGroupObject() : base(30) { }
 
     #region IExplorerGroupObject Members
 
