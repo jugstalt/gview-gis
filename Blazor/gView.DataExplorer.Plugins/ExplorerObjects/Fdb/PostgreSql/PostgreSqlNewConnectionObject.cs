@@ -1,66 +1,70 @@
 ﻿using gView.DataExplorer.Plugins.ExplorerObjects.Base;
-using gView.DataExplorer.Plugins.ExplorerObjects.Databases;
-using gView.DataExplorer.Razor;
+using gView.Framework.Blazor.Services.Abstraction;
 using gView.Framework.DataExplorer.Abstraction;
-using gView.Framework.Db;
-using gView.Framework.IO;
+using gView.Framework.DataExplorer.Events;
 using gView.Framework.system;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
-namespace gView.DataExplorer.Plugins.ExplorerObjects.Fdb.MsSql;
+namespace gView.DataExplorer.Plugins.ExplorerObjects.Fdb.PostgreSql;
 
-[RegisterPlugIn("3453D3AA-5A41-4b88-895E-B5DC7CA8B5B5")]
-public class SqlFdbExplorerGroupObject : ExplorerParentObject, 
-                                         IDatabasesExplorerGroupObject
+[RegisterPlugIn("C6BCD1F5-EBE3-4142-95E3-EE91B5EB35BB")]
+public class PostgreSqlNewConnectionObject : ExplorerObjectCls<PostgreSqlExplorerGroupObject>, 
+                                   IExplorerSimpleObject, 
+                                   IExplorerObjectDoubleClick,
+                                   IExplorerObjectCreatable
 {
-    public SqlFdbExplorerGroupObject() : base() { }
+    public PostgreSqlNewConnectionObject() : base() { }
 
-    #region IExplorerGroupObject Members
+    #region IExplorerSimpleObject Members
 
-    public string Icon=> "basic:edit-database";
+    public string Icon => "basic:round-plus";
 
     #endregion
 
     #region IExplorerObject Members
 
-    public string Name => "gView Feature Database Connections (MS-SQL Server)";
+    public string Name => "New Connection...";
 
-    public string FullName => @"Databases\SqlFDBConnections";
+    public string FullName => "";
 
-    public string Type=> "SqlFDB Connections";
+    public string Type => "New PostgreFDB Connection";
 
-    public Task<object?> GetInstanceAsync()=>Task.FromResult<object?>(null);
+    public void Dispose()
+    {
 
+    }
+
+    public Task<object?> GetInstanceAsync() => Task.FromResult<object?>(null);
+    
     #endregion
 
-    #region IExplorerParentObject Members
+    #region IExplorerObjectDoubleClick Members
 
-    async public override Task<bool> Refresh()
+    public Task ExplorerObjectDoubleClick(IApplicationScope appScope, ExplorerObjectEventArgs e)
     {
-        await base.Refresh();
-        base.AddChildObject(new SqlFdbNewConnectionObject(this));
+        return Task.CompletedTask;
+        //FormConnectionString dlg = new FormConnectionString();
+        //dlg.ProviderID = "postgre";
+        //dlg.UseProviderInConnectionString = false;
 
-        ConfigTextStream stream = new ConfigTextStream("sqlfdb_connections");
-        string connStr, id;
-        while ((connStr = stream.Read(out id)) != null)
-        {
-            base.AddChildObject(new SqlFdbExplorerObject(this, id, connStr));
-        }
-        stream.Close();
+        //if (dlg.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+        //{
+        //    DbConnectionString dbConnStr = dlg.DbConnectionString;
+        //    ConfigConnections connStream = new ConfigConnections("postgrefdb", "546B0513-D71D-4490-9E27-94CD5D72C64A");
 
-        ConfigConnections conStream = new ConfigConnections("sqlfdb", "546B0513-D71D-4490-9E27-94CD5D72C64A");
-        Dictionary<string, string> DbConnectionStrings = conStream.Connections;
-        foreach (string DbConnName in DbConnectionStrings.Keys)
-        {
-            DbConnectionString dbConn = new DbConnectionString();
-            dbConn.FromString(DbConnectionStrings[DbConnName]);
-            base.AddChildObject(new SqlFdbExplorerObject(this, DbConnName, dbConn));
-        }
+        //    string connectionString = dbConnStr.ConnectionString;
+        //    string id = ConfigTextStream.ExtractValue(connectionString, "database");
+        //    id += "@" + ConfigTextStream.ExtractValue(connectionString, "server");
+        //    if (id == "@")
+        //    {
+        //        id = "PostgreFDB Connection";
+        //    }
 
-        return true;
+        //    id = connStream.GetName(id);
+
+        //    connStream.Add(id, dbConnStr.ToString());
+        //    e.NewExplorerObject = new ExplorerObject(this, id, dbConnStr);
+        //}
     }
 
     #endregion
@@ -74,34 +78,32 @@ public class SqlFdbExplorerGroupObject : ExplorerParentObject,
             return Task.FromResult<IExplorerObject?>(cache[FullName]);
         }
 
-        if (this.FullName == FullName)
-        {
-            SqlFdbExplorerGroupObject exObject = new SqlFdbExplorerGroupObject();
-            cache?.Append(exObject);
-            return Task.FromResult<IExplorerObject?>(exObject);
-        }
-
         return Task.FromResult<IExplorerObject?>(null);
     }
 
     #endregion
 
-    #region IDatabasesExplorerGroupObject
+    #region IExplorerObjectCreatable Member
 
-    public void SetParentExplorerObject(IExplorerObject parentExplorerObject)
+    public bool CanCreate(IExplorerObject parentExObject)
     {
-        base.Parent = parentExplorerObject;
+        return (parentExObject is PostgreSqlExplorerGroupObject);
+    }
+
+    async public Task<IExplorerObject?> CreateExplorerObjectAsync(IApplicationScope appScope, IExplorerObject parentExObject)
+    {
+        ExplorerObjectEventArgs e = new ExplorerObjectEventArgs();
+        await ExplorerObjectDoubleClick(appScope, e);
+        return e.NewExplorerObject;
     }
 
     #endregion
 }
 
-//[RegisterPlugIn("97914E6A-3084-4fc0-8B31-4A6D2C990F72")]
-//public class SqlFDBNetworkClassExplorerObject : ExplorerObjectCls, 
-//                                                IExplorerSimpleObject, 
-//                                                IExplorerObjectCreatable
+//[RegisterPlugIn("18830A3E-FFEA-477c-B3E1-E4624F828034")]
+//public class NetworkClassExplorerObject : ExplorerObjectCls, IExplorerSimpleObject, IExplorerObjectCreatable
 //{
-//    public SqlFDBNetworkClassExplorerObject() : base(null, typeof(SqlFDBNetworkFeatureclass), 0) { }
+//    public NetworkClassExplorerObject() : base(null, typeof(pgFeatureClass), 1) { }
 
 //    #region IExplorerObject Member
 
@@ -122,7 +124,10 @@ public class SqlFdbExplorerGroupObject : ExplorerParentObject,
 
 //    public IExplorerIcon Icon
 //    {
-//        get { return new AccessFDBNetworkIcon(); }
+//        get
+//        {
+//            return new gView.DataSources.Fdb.UI.MSAccess.AccessFDBNetworkIcon();
+//        }
 //    }
 
 //    public Task<object> GetInstanceAsync()
@@ -154,7 +159,7 @@ public class SqlFdbExplorerGroupObject : ExplorerParentObject,
 
 //    public bool CanCreate(IExplorerObject parentExObject)
 //    {
-//        if (parentExObject is SqlFDBDatasetExplorerObject)
+//        if (parentExObject is DatasetExplorerObject)
 //        {
 //            return true;
 //        }
@@ -164,14 +169,13 @@ public class SqlFdbExplorerGroupObject : ExplorerParentObject,
 
 //    async public Task<IExplorerObject> CreateExplorerObject(IExplorerObject parentExObject)
 //    {
-//        if (!(parentExObject is SqlFDBDatasetExplorerObject))
+//        if (!(parentExObject is DatasetExplorerObject))
 //        {
 //            return null;
 //        }
 
-//        var instance = await parentExObject.GetInstanceAsync();
-//        IFeatureDataset dataset = (SqlFDBDatasetExplorerObject)instance as IFeatureDataset;
-//        if (dataset == null || !(dataset.Database is SqlFDB))
+//        IFeatureDataset dataset = await ((DatasetExplorerObject)parentExObject).GetInstanceAsync() as IFeatureDataset;
+//        if (dataset == null || !(dataset.Database is pgFDB))
 //        {
 //            return null;
 //        }
@@ -195,9 +199,9 @@ public class SqlFdbExplorerGroupObject : ExplorerParentObject,
 //        FormTaskProgress progress = new FormTaskProgress();
 //        progress.ShowProgressDialog(creator, creator.Run());
 
-//        IDatasetElement element = await ((IFeatureDataset)instance).Element(dlg.NetworkName);
-//        return new SqlFDBFeatureClassExplorerObject(
-//            parentExObject as SqlFDBDatasetExplorerObject,
+//        IDatasetElement element = await dataset.Element(dlg.NetworkName);
+//        return new FeatureClassExplorerObject(
+//            parentExObject as DatasetExplorerObject,
 //            parentExObject.Name,
 //            element);
 //    }
@@ -205,19 +209,19 @@ public class SqlFdbExplorerGroupObject : ExplorerParentObject,
 //    #endregion
 //}
 
-//[RegisterPlugIn("11D0739F-66FC-4ca7-BA58-887DBB6F088C")]
-//public class SqlFDBGeographicViewExplorerObject : IExplorerSimpleObject, IExplorerObjectCreatable
+//[RegisterPlugIn("af5f4d50-745b-11e1-b0c4-0800200c9a66")]
+//public class GeographicViewExplorerObject : IExplorerSimpleObject, IExplorerObjectCreatable
 //{
 //    #region IExplorerObjectCreatable Member
 
 //    public bool CanCreate(IExplorerObject parentExObject)
 //    {
-//        return parentExObject is SqlFDBDatasetExplorerObject;
+//        return parentExObject is DatasetExplorerObject;
 //    }
 
 //    async public Task<IExplorerObject> CreateExplorerObject(IExplorerObject parentExObject)
 //    {
-//        SqlFDBDatasetExplorerObject parent = (SqlFDBDatasetExplorerObject)parentExObject;
+//        DatasetExplorerObject parent = (DatasetExplorerObject)parentExObject;
 
 //        IFeatureDataset dataset = await parent.GetInstanceAsync() as IFeatureDataset;
 //        if (dataset == null)
@@ -231,14 +235,14 @@ public class SqlFdbExplorerGroupObject : ExplorerParentObject,
 //            return null;
 //        }
 
-//        FormRegisterGeographicView dlg = await FormRegisterGeographicView.CreateAsync(dataset as IFeatureDataset);
+//        FormRegisterGeographicView dlg = await FormRegisterGeographicView.CreateAsync(dataset);
 //        if (dlg.ShowDialog() == DialogResult.OK)
 //        {
 //            int fc_id = await fdb.CreateSpatialView(dataset.DatasetName, dlg.SpatialViewAlias);
 
 //            IDatasetElement element = await dataset.Element(dlg.SpatialViewAlias);
-//            return new SqlFDBFeatureClassExplorerObject(
-//                parentExObject as SqlFDBDatasetExplorerObject,
+//            return new FeatureClassExplorerObject(
+//                parentExObject as DatasetExplorerObject,
 //                parentExObject.Name,
 //                element);
 //        }
@@ -307,19 +311,19 @@ public class SqlFdbExplorerGroupObject : ExplorerParentObject,
 //    #endregion
 //}
 
-//[RegisterPlugIn("19AF8E6C-8324-4290-AF7C-5B19E31A952E")]
-//public class SqlFDBLinkedFeatureclassExplorerObject : IExplorerSimpleObject, IExplorerObjectCreatable
+//[RegisterPlugIn("D320CA4D-E63F-4DD4-96F4-CA11DC95A39E")]
+//public class LinkedFeatureclassExplorerObject : IExplorerSimpleObject, IExplorerObjectCreatable
 //{
 //    #region IExplorerObjectCreatable Member
 
 //    public bool CanCreate(IExplorerObject parentExObject)
 //    {
-//        return parentExObject is SqlFDBDatasetExplorerObject;
+//        return parentExObject is DatasetExplorerObject;
 //    }
 
 //    async public Task<IExplorerObject> CreateExplorerObject(IExplorerObject parentExObject)
 //    {
-//        SqlFDBDatasetExplorerObject parent = (SqlFDBDatasetExplorerObject)parentExObject;
+//        DatasetExplorerObject parent = (DatasetExplorerObject)parentExObject;
 
 //        IFeatureDataset dataset = await parent.GetInstanceAsync() as IFeatureDataset;
 //        if (dataset == null)
@@ -345,21 +349,17 @@ public class SqlFdbExplorerGroupObject : ExplorerParentObject,
 //            foreach (IExplorerObject exObj in dlg.ExplorerObjects)
 //            {
 //                var exObjectInstance = await exObj?.GetInstanceAsync();
+
 //                if (exObjectInstance is IFeatureClass)
 //                {
 //                    int fcid = await fdb.CreateLinkedFeatureClass(dataset.DatasetName, (IFeatureClass)exObjectInstance);
-//                    if (fcid < 0)
-//                    {
-//                        MessageBox.Show(fdb.LastErrorMessage, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-//                        continue;
-//                    }
 //                    if (ret == null)
 //                    {
 //                        IDatasetElement element = await dataset.Element(((IFeatureClass)exObjectInstance).Name);
 //                        if (element != null)
 //                        {
-//                            ret = new SqlFDBFeatureClassExplorerObject(
-//                                parentExObject as SqlFDBDatasetExplorerObject,
+//                            ret = new FeatureClassExplorerObject(
+//                                parentExObject as DatasetExplorerObject,
 //                                parentExObject.Name,
 //                                element);
 //                        }
@@ -432,7 +432,7 @@ public class SqlFdbExplorerGroupObject : ExplorerParentObject,
 //    #endregion
 //}
 
-////[RegisterPlugIn("C3D1F9CA-69B5-46e9-B4DB-05534512F8B9")]
+////[gView.Framework.system.RegisterPlugIn("9B5B718C-2ECA-47ee-851F-9D33E3D82C55")]
 //public class SqlFDBTileGridClassExplorerObject : ExplorerObjectCls, IExplorerSimpleObject, IExplorerObjectCreatable
 //{
 //    public SqlFDBTileGridClassExplorerObject() : base(null, null, 1) { }
@@ -456,13 +456,18 @@ public class SqlFdbExplorerGroupObject : ExplorerParentObject,
 
 //    public IExplorerIcon Icon
 //    {
-//        get { return new AccessFDBRasterIcon(); }
+//        get
+//        {
+//            return new gView.DataSources.Fdb.UI.MSAccess.AccessFDBRasterIcon();
+//        }
 //    }
 
 //    public Task<object> GetInstanceAsync()
 //    {
 //        return Task.FromResult<object>(null);
 //    }
+
+//    public new int Priority { get { return 1; } }
 
 //    #endregion
 
@@ -488,7 +493,7 @@ public class SqlFdbExplorerGroupObject : ExplorerParentObject,
 
 //    public bool CanCreate(IExplorerObject parentExObject)
 //    {
-//        if (parentExObject is SqlFDBDatasetExplorerObject)
+//        if (parentExObject is DatasetExplorerObject)
 //        {
 //            return true;
 //        }
@@ -498,13 +503,12 @@ public class SqlFdbExplorerGroupObject : ExplorerParentObject,
 
 //    async public Task<IExplorerObject> CreateExplorerObject(IExplorerObject parentExObject)
 //    {
-//        if (!(parentExObject is SqlFDBDatasetExplorerObject))
+//        if (!(parentExObject is DatasetExplorerObject))
 //        {
 //            return null;
 //        }
 
-//        var instance = await ((SqlFDBDatasetExplorerObject)parentExObject).GetInstanceAsync();
-//        IFeatureDataset dataset = (SqlFDBDatasetExplorerObject)instance as IFeatureDataset;
+//        IFeatureDataset dataset = await ((DatasetExplorerObject)parentExObject).GetInstanceAsync() as IFeatureDataset;
 //        if (dataset == null || !(dataset.Database is SqlFDB))
 //        {
 //            return null;
@@ -530,9 +534,9 @@ public class SqlFdbExplorerGroupObject : ExplorerParentObject,
 //        FormTaskProgress progress = new FormTaskProgress();
 //        progress.ShowProgressDialog(creator, creator.RunTask());
 
-//        IDatasetElement element = await ((IFeatureDataset)instance).Element(dlg.GridName);
-//        return new SqlFDBFeatureClassExplorerObject(
-//            parentExObject as SqlFDBDatasetExplorerObject,
+//        IDatasetElement element = await dataset.Element(dlg.GridName);
+//        return new FeatureClassExplorerObject(
+//            parentExObject as DatasetExplorerObject,
 //            parentExObject.Name,
 //            element);
 //    }

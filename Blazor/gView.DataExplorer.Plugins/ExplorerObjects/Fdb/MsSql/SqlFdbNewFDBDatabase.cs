@@ -1,66 +1,59 @@
 ﻿using gView.DataExplorer.Plugins.ExplorerObjects.Base;
-using gView.DataExplorer.Plugins.ExplorerObjects.Databases;
-using gView.DataExplorer.Razor;
+using gView.Framework.Blazor.Services.Abstraction;
 using gView.Framework.DataExplorer.Abstraction;
-using gView.Framework.Db;
-using gView.Framework.IO;
 using gView.Framework.system;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace gView.DataExplorer.Plugins.ExplorerObjects.Fdb.MsSql;
 
-[RegisterPlugIn("3453D3AA-5A41-4b88-895E-B5DC7CA8B5B5")]
-public class SqlFdbExplorerGroupObject : ExplorerParentObject, 
-                                         IDatabasesExplorerGroupObject
+[RegisterPlugIn("320E7A05-ACC5-4229-A989-2BF6D7CC62BF")]
+public class SqlFdbNewFDBDatabase : ExplorerObjectCls<SqlFdbExplorerGroupObject>, 
+                                    IExplorerObject, 
+                                    IExplorerObjectCreatable
 {
-    public SqlFdbExplorerGroupObject() : base() { }
-
-    #region IExplorerGroupObject Members
-
-    public string Icon=> "basic:edit-database";
-
-    #endregion
-
-    #region IExplorerObject Members
-
-    public string Name => "gView Feature Database Connections (MS-SQL Server)";
-
-    public string FullName => @"Databases\SqlFDBConnections";
-
-    public string Type=> "SqlFDB Connections";
-
-    public Task<object?> GetInstanceAsync()=>Task.FromResult<object?>(null);
-
-    #endregion
-
-    #region IExplorerParentObject Members
-
-    async public override Task<bool> Refresh()
+    public SqlFdbNewFDBDatabase()
+        : base()
     {
-        await base.Refresh();
-        base.AddChildObject(new SqlFdbNewConnectionObject(this));
+    }
 
-        ConfigTextStream stream = new ConfigTextStream("sqlfdb_connections");
-        string connStr, id;
-        while ((connStr = stream.Read(out id)) != null)
-        {
-            base.AddChildObject(new SqlFdbExplorerObject(this, id, connStr));
-        }
-        stream.Close();
+    public SqlFdbNewFDBDatabase(SqlFdbExplorerGroupObject parent)
+        : base(parent, 0)
+    {
+    }
 
-        ConfigConnections conStream = new ConfigConnections("sqlfdb", "546B0513-D71D-4490-9E27-94CD5D72C64A");
-        Dictionary<string, string> DbConnectionStrings = conStream.Connections;
-        foreach (string DbConnName in DbConnectionStrings.Keys)
-        {
-            DbConnectionString dbConn = new DbConnectionString();
-            dbConn.FromString(DbConnectionStrings[DbConnName]);
-            base.AddChildObject(new SqlFdbExplorerObject(this, DbConnName, dbConn));
-        }
+    #region IExplorerObject Member
 
-        return true;
+    public string Name => "SQL-Server Feature-Database";
+
+    public string FullName => "";
+
+    public string Type=> "SQL Server Feature database"; 
+
+    public string Icon => "basic:screw-wrench-double";
+
+    public void Dispose()
+    {
+
+    }
+
+    public Task<object?> GetInstanceAsync() => Task.FromResult<object?>(null);
+    
+
+    #endregion
+
+    #region IExplorerObjectCreatable Member
+
+    public bool CanCreate(IExplorerObject parentExObject)
+    {
+        return (parentExObject is SqlFdbExplorerGroupObject);
+    }
+
+    public Task<IExplorerObject?> CreateExplorerObjectAsync(IApplicationScope appScope, IExplorerObject parentExObject)
+    {
+        return Task.FromResult<IExplorerObject?>(null);
+        //FormCreateSQLFeatureDatabase dlg = new FormCreateSQLFeatureDatabase();
+        //dlg.ShowDialog();
+        //return Task.FromResult(dlg.ResultExplorerObject);
     }
 
     #endregion
@@ -74,23 +67,7 @@ public class SqlFdbExplorerGroupObject : ExplorerParentObject,
             return Task.FromResult<IExplorerObject?>(cache[FullName]);
         }
 
-        if (this.FullName == FullName)
-        {
-            SqlFdbExplorerGroupObject exObject = new SqlFdbExplorerGroupObject();
-            cache?.Append(exObject);
-            return Task.FromResult<IExplorerObject?>(exObject);
-        }
-
         return Task.FromResult<IExplorerObject?>(null);
-    }
-
-    #endregion
-
-    #region IDatabasesExplorerGroupObject
-
-    public void SetParentExplorerObject(IExplorerObject parentExplorerObject)
-    {
-        base.Parent = parentExplorerObject;
     }
 
     #endregion

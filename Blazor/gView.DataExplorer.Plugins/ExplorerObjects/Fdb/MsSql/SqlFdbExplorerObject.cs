@@ -1,96 +1,370 @@
-﻿using gView.DataExplorer.Plugins.ExplorerObjects.Base;
-using gView.DataExplorer.Plugins.ExplorerObjects.Databases;
-using gView.DataExplorer.Razor;
+﻿using gView.Blazor.Core.Exceptions;
+using gView.DataExplorer.Plugins.ExplorerObjects.Base;
+using gView.DataSources.Fdb.MSSql;
 using gView.Framework.DataExplorer.Abstraction;
+using gView.Framework.DataExplorer.Events;
 using gView.Framework.Db;
 using gView.Framework.IO;
-using gView.Framework.system;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System;
 using System.Threading.Tasks;
 
 namespace gView.DataExplorer.Plugins.ExplorerObjects.Fdb.MsSql;
 
-[RegisterPlugIn("3453D3AA-5A41-4b88-895E-B5DC7CA8B5B5")]
-public class SqlFdbExplorerGroupObject : ExplorerParentObject, 
-                                         IDatabasesExplorerGroupObject
+public class SqlFdbExplorerObject : ExplorerParentObject<SqlFdbExplorerGroupObject>, 
+                                    IExplorerSimpleObject, 
+                                    IExplorerObjectDeletable, 
+                                    IExplorerObjectRenamable, 
+                                    ISerializableExplorerObject
+                                    //, IExplorerObjectContextMenu
 {
-    public SqlFdbExplorerGroupObject() : base() { }
+    private string _server = "", _connectionString = "", _errMsg = "";
+    private DbConnectionString? _dbConnectionString = null;
 
-    #region IExplorerGroupObject Members
+    public SqlFdbExplorerObject()
+        : base() { }
+    public SqlFdbExplorerObject(SqlFdbExplorerGroupObject parent, string server, string connectionString)
+        : base(parent, 1)
+    {
+        _server = server;
+        _connectionString = connectionString;
 
-    public string Icon=> "basic:edit-database";
+        //_contextItems = new ToolStripItem[1];
+        //_contextItems[0] = new ToolStripMenuItem("Tasks");
 
-    #endregion
+        //ToolStripMenuItem item = new ToolStripMenuItem("Shrink database");
+        //item.Click += new EventHandler(ShrinkDatabase_Click);
+        //((ToolStripMenuItem)_contextItems[0]).DropDownItems.Add(item);
+        //((ToolStripMenuItem)_contextItems[0]).DropDownItems.Add(new ToolStripSeparator());
+
+        //item = new ToolStripMenuItem("Check SpatialEngine Version");
+        //item.Click += new EventHandler(CheckSpatialEngineVersion_Click);
+        //((ToolStripMenuItem)_contextItems[0]).DropDownItems.Add(item);
+        //item = new ToolStripMenuItem("Create Spatial Engine");
+        //item.Click += new EventHandler(CreateSpatialEngine_Click);
+        //((ToolStripMenuItem)_contextItems[0]).DropDownItems.Add(item);
+        //item = new ToolStripMenuItem("Drop Spatial Engine");
+        //item.Click += new EventHandler(DropSpatialEngine_Click);
+        //((ToolStripMenuItem)_contextItems[0]).DropDownItems.Add(item);
+    }
+    public SqlFdbExplorerObject(SqlFdbExplorerGroupObject parent, string server, DbConnectionString dbConnectionString)
+        : this(parent, server, (dbConnectionString != null) ? dbConnectionString.ConnectionString : String.Empty)
+    {
+        _dbConnectionString = dbConnectionString;
+
+        //List<ToolStripMenuItem> items = new List<ToolStripMenuItem>();
+        //if (_contextItems != null)
+        //{
+        //    foreach (ToolStripMenuItem i in _contextItems)
+        //    {
+        //        items.Add(i);
+        //    }
+        //}
+
+        //ToolStripMenuItem item = new ToolStripMenuItem(LocalizedResources.GetResString("Menu.ConnectionProperties", "Connection Properties..."));
+        //item.Click += new EventHandler(ConnectionProperties_Click);
+        //items.Add(item);
+
+        //_contextItems = items.ToArray();
+    }
+
+    //void CheckSpatialEngineVersion_Click(object sender, EventArgs e)
+    //{
+    //    try
+    //    {
+    //        using (SqlConnection connection = new SqlConnection(_connectionString))
+    //        {
+    //            connection.Open();
+
+    //            DataTable tab = new DataTable("ASSEMBLIES");
+    //            SqlDataAdapter adapter = new SqlDataAdapter("select * from sys.assemblies where name='MSSqlSpatialEngine'", connection);
+    //            adapter.Fill(tab);
+
+    //            if (tab.Rows.Count == 0)
+    //            {
+    //                MessageBox.Show("SpatialEngine is not installed for this database...");
+    //                return;
+    //            }
+    //            adapter.Dispose();
+
+    //            string clr_name = tab.Rows[0]["clr_name"].ToString().Replace(",", ";");
+    //            string version = ConfigTextStream.ExtractValue(clr_name, "version");
+    //            MessageBox.Show("SpatialEngine is installed on this database.\nVersion: " + version);
+
+    //            connection.Close();
+    //        }
+    //    }
+    //    catch (Exception ex)
+    //    {
+    //        MessageBox.Show("ERROR: " + ex.Message);
+    //    }
+    //}
+
+    //private bool ExecuteQueries(SqlConnection connection, StreamReader reader)
+    //{
+    //    string line = "";
+    //    StringBuilder sql = new StringBuilder();
+    //    while ((line = reader.ReadLine()) != null)
+    //    {
+    //        if (line.Trim().ToLower() == "go")
+    //        {
+    //            SqlCommand command = new SqlCommand(sql.ToString(), connection);
+    //            try
+    //            {
+    //                command.ExecuteNonQuery();
+    //                sql = new StringBuilder();
+    //            }
+    //            catch (Exception ex)
+    //            {
+    //                MessageBox.Show(ex.Message);
+    //                return false;
+    //            }
+    //        }
+    //        else
+    //        {
+    //            sql.Append(line + " ");
+    //        }
+    //    }
+    //    return true;
+    //}
+
+    //void DropSpatialEngine_Click(object sender, EventArgs e)
+    //{
+    //    SqlCommandInterpreter interpreter = new SqlCommandInterpreter(_connectionString, SystemVariables.ApplicationDirectory + @"/sql/sqlFDB/dropSpatialEngine.sql");
+    //    SqlCommandProgressReporter reporter = new SqlCommandProgressReporter(interpreter);
+
+    //    FormTaskProgress progress = new FormTaskProgress(reporter, interpreter.Exectue(null));
+    //    progress.Text = "Execute Commands:";
+    //    progress.Mode = ProgressMode.ProgressDisk;
+    //    progress.ShowDialog();
+    //}
+
+    //void CreateSpatialEngine_Click(object sender, EventArgs e)
+    //{
+    //    DropSpatialEngine_Click(sender, e);
+
+    //    SqlCommandInterpreter interpreter = new SqlCommandInterpreter(_connectionString, SystemVariables.ApplicationDirectory + @"/sql/sqlFDB/createSpatialEngine.sql");
+    //    SqlCommandProgressReporter reporter = new SqlCommandProgressReporter(interpreter);
+
+    //    FormTaskProgress progress = new FormTaskProgress(reporter, interpreter.Exectue(null));
+    //    progress.Text = "Execute Commands:";
+    //    progress.Mode = ProgressMode.ProgressDisk;
+    //    progress.ShowDialog();
+    //}
+
+    //void ShrinkDatabase_Click(object sender, EventArgs e)
+    //{
+    //    SqlCommandInterpreter interpreter = new SqlCommandInterpreter(_connectionString, SystemVariables.ApplicationDirectory + @"/sql/sqlFDB/shrinkDatabase.sql");
+    //    interpreter.DatabaseName = ConfigTextStream.ExtractValue(_connectionString, "database"); ;
+    //    SqlCommandProgressReporter reporter = new SqlCommandProgressReporter(interpreter);
+
+    //    FormTaskProgress progress = new FormTaskProgress(reporter, interpreter.Exectue(null));
+    //    progress.Text = "Execute Commands:";
+    //    progress.Mode = ProgressMode.ProgressDisk;
+    //    progress.ShowDialog();
+    //}
+
+    //void ConnectionProperties_Click(object sender, EventArgs e)
+    //{
+    //    if (_dbConnectionString == null)
+    //    {
+    //        return;
+    //    }
+
+    //    FormConnectionString dlg = new FormConnectionString(_dbConnectionString);
+    //    dlg.ProviderID = "mssql";
+    //    dlg.UseProviderInConnectionString = false;
+
+    //    if (dlg.ShowDialog() == DialogResult.OK)
+    //    {
+    //        DbConnectionString dbConnStr = dlg.DbConnectionString;
+
+    //        ConfigConnections connStream = new ConfigConnections("sqlfdb", "546B0513-D71D-4490-9E27-94CD5D72C64A");
+    //        connStream.Add(_server, dbConnStr.ToString());
+
+    //        _dbConnectionString = dbConnStr;
+    //        _connectionString = dbConnStr.ConnectionString;
+    //    }
+    //}
+
+    internal string ConnectionString=>_connectionString;
 
     #region IExplorerObject Members
 
-    public string Name => "gView Feature Database Connections (MS-SQL Server)";
+    public string Name=> _server;
 
-    public string FullName => @"Databases\SqlFDBConnections";
+    public string FullName=> @$"Databases\SqlFDBConnections\{_server}";
 
-    public string Type=> "SqlFDB Connections";
+    public string Type=> "Sql Feature Database";
 
-    public Task<object?> GetInstanceAsync()=>Task.FromResult<object?>(null);
+    public string Icon => "basic:database";
+
+
+    public Task<object?> GetInstanceAsync() => Task.FromResult<object?>(null);
 
     #endregion
+
+    async private Task<string[]?> DatasetNames()
+    {
+        try
+        {
+            SqlFDB fdb = new SqlFDB();
+            if (!await fdb.Open(_connectionString))
+            {
+                _errMsg = fdb.LastErrorMessage;
+                return null;
+            }
+            if (fdb.LastException != null)
+            {
+                throw new GeneralException(fdb.LastErrorMessage);
+            }
+            string[] ds = await fdb.DatasetNames();
+            string[] dsMod = new string[ds.Length];
+
+            int i = 0;
+            foreach (string dsname in ds)
+            {
+                var isImageDatasetResult = await fdb.IsImageDataset(dsname);
+                string imageSpace = isImageDatasetResult.imageSpace;
+                if (isImageDatasetResult.isImageDataset)
+                {
+                    dsMod[i++] = "#" + dsname;
+                }
+                else
+                {
+                    dsMod[i++] = dsname;
+                }
+            }
+            if (ds == null)
+            {
+                _errMsg = fdb.LastErrorMessage;
+            }
+
+            fdb.Dispose();
+
+            return dsMod;
+        }
+        catch (Exception ex)
+        {
+            _errMsg = ex.Message;
+            return null;
+        }
+    }
 
     #region IExplorerParentObject Members
 
     async public override Task<bool> Refresh()
     {
         await base.Refresh();
-        base.AddChildObject(new SqlFdbNewConnectionObject(this));
-
-        ConfigTextStream stream = new ConfigTextStream("sqlfdb_connections");
-        string connStr, id;
-        while ((connStr = stream.Read(out id)) != null)
+        string[]? ds = await DatasetNames();
+        if (ds == null)
         {
-            base.AddChildObject(new SqlFdbExplorerObject(this, id, connStr));
+            throw new GeneralException(_errMsg);
         }
-        stream.Close();
-
-        ConfigConnections conStream = new ConfigConnections("sqlfdb", "546B0513-D71D-4490-9E27-94CD5D72C64A");
-        Dictionary<string, string> DbConnectionStrings = conStream.Connections;
-        foreach (string DbConnName in DbConnectionStrings.Keys)
+        else
         {
-            DbConnectionString dbConn = new DbConnectionString();
-            dbConn.FromString(DbConnectionStrings[DbConnName]);
-            base.AddChildObject(new SqlFdbExplorerObject(this, DbConnName, dbConn));
+            foreach (string dsname in ds)
+            {
+                if (dsname == "")
+                {
+                    continue;
+                }
+
+                base.AddChildObject(new SqlFdbDatasetExplorerObject(this, dsname));
+            }
         }
 
         return true;
     }
-
     #endregion
 
     #region ISerializableExplorerObject Member
 
-    public Task<IExplorerObject?> CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache? cache)
+    async public Task<IExplorerObject?> CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache? cache)
     {
         if (cache?.Contains(FullName) == true)
         {
-            return Task.FromResult<IExplorerObject?>(cache[FullName]);
+            return cache[FullName];
         }
 
-        if (this.FullName == FullName)
+        SqlFdbExplorerGroupObject? group = new SqlFdbExplorerGroupObject();
+        if (FullName.IndexOf(group.FullName) != 0 || FullName.Length < group.FullName.Length + 2)
         {
-            SqlFdbExplorerGroupObject exObject = new SqlFdbExplorerGroupObject();
-            cache?.Append(exObject);
-            return Task.FromResult<IExplorerObject?>(exObject);
+            return null;
         }
 
-        return Task.FromResult<IExplorerObject?>(null);
+        group = (SqlFdbExplorerGroupObject?)((cache?.Contains(group.FullName) == true) ? cache[group.FullName] : group);
+
+        if (group != null)
+        {
+            foreach (IExplorerObject exObject in await group.ChildObjects())
+            {
+                if (exObject.FullName == FullName)
+                {
+                    cache?.Append(exObject);
+                    return exObject;
+                }
+            }
+        }
+
+        return null;
     }
 
     #endregion
 
-    #region IDatabasesExplorerGroupObject
+    #region IExplorerObjectDeletable Member
 
-    public void SetParentExplorerObject(IExplorerObject parentExplorerObject)
+    public event ExplorerObjectDeletedEvent? ExplorerObjectDeleted;
+
+    public Task<bool> DeleteExplorerObject(ExplorerObjectEventArgs e)
     {
-        base.Parent = parentExplorerObject;
+        if (_dbConnectionString != null)
+        {
+            ConfigConnections stream = new ConfigConnections("sqlfdb", "546B0513-D71D-4490-9E27-94CD5D72C64A");
+            stream.Remove(_server);
+        }
+        else
+        {
+            ConfigTextStream stream = new ConfigTextStream("sqlfdb_connections", true, true);
+            stream.Remove(this.Name, _connectionString);
+            stream.Close();
+        }
+        if (ExplorerObjectDeleted != null)
+        {
+            ExplorerObjectDeleted(this);
+        }
+
+        return Task.FromResult(true);
+    }
+
+    #endregion
+
+    #region IExplorerObjectRenamable Member
+
+    public event ExplorerObjectRenamedEvent? ExplorerObjectRenamed;
+
+    public Task<bool> RenameExplorerObject(string newName)
+    {
+        bool ret = false;
+        if (_dbConnectionString != null)
+        {
+            ConfigConnections stream = new ConfigConnections("sqlfdb", "546B0513-D71D-4490-9E27-94CD5D72C64A");
+            ret = stream.Rename(_server, newName);
+        }
+        else
+        {
+            ConfigTextStream stream = new ConfigTextStream("sqlfdb_connections", true, true);
+            ret = stream.ReplaceHoleLine(ConfigTextStream.BuildLine(_server, _connectionString), ConfigTextStream.BuildLine(newName, _connectionString));
+            stream.Close();
+        }
+        if (ret == true)
+        {
+            _server = newName;
+            if (ExplorerObjectRenamed != null)
+            {
+                ExplorerObjectRenamed(this);
+            }
+        }
+        return Task.FromResult(ret);
     }
 
     #endregion

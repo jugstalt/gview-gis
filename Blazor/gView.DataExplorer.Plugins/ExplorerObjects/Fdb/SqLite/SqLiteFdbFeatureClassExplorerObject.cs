@@ -74,7 +74,7 @@ public class SqLiteFdbFeatureClassExplorerObject : ExplorerObjectCls<SqLiteFdbDa
                 case GeometryType.Polygon:
                     if (isLinked)
                     {
-                        _icon = "webgis:shape-polygon";
+                        _icon = "basic:explode";
                     }
                     else
                     {
@@ -87,7 +87,7 @@ public class SqLiteFdbFeatureClassExplorerObject : ExplorerObjectCls<SqLiteFdbDa
                 case GeometryType.Point:
                     if (isLinked)
                     {
-                        _icon = "basic:dot-filled";
+                        _icon = "basic:explode";
                     }
                     else
                     {
@@ -99,7 +99,7 @@ public class SqLiteFdbFeatureClassExplorerObject : ExplorerObjectCls<SqLiteFdbDa
                 case GeometryType.Polyline:
                     if (isLinked)
                     {
-                        _icon = "webgis:shape-polyline";
+                        _icon = "basic:explode";
                     }
                     else
                     {

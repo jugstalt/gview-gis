@@ -1,66 +1,85 @@
 ﻿using gView.DataExplorer.Plugins.ExplorerObjects.Base;
-using gView.DataExplorer.Plugins.ExplorerObjects.Databases;
-using gView.DataExplorer.Razor;
+using gView.Framework.Blazor.Services.Abstraction;
 using gView.Framework.DataExplorer.Abstraction;
-using gView.Framework.Db;
-using gView.Framework.IO;
+using gView.Framework.DataExplorer.Events;
 using gView.Framework.system;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace gView.DataExplorer.Plugins.ExplorerObjects.Fdb.MsSql;
 
-[RegisterPlugIn("3453D3AA-5A41-4b88-895E-B5DC7CA8B5B5")]
-public class SqlFdbExplorerGroupObject : ExplorerParentObject, 
-                                         IDatabasesExplorerGroupObject
+[RegisterPlugIn("8368C71F-51CE-42E8-B167-BE9AE414C1C8")]
+public class SqlFdbNewConnectionObject : ExplorerObjectCls<SqlFdbExplorerGroupObject>,
+                                         IExplorerSimpleObject, 
+                                         IExplorerObjectDoubleClick, 
+                                         IExplorerObjectCreatable
 {
-    public SqlFdbExplorerGroupObject() : base() { }
+    public SqlFdbNewConnectionObject()
+        : base() { }
+    public SqlFdbNewConnectionObject(SqlFdbExplorerGroupObject parent)
+        : base(parent, 0) { }
 
-    #region IExplorerGroupObject Members
+    #region IExplorerSimpleObject Members
 
-    public string Icon=> "basic:edit-database";
+    public string Icon => "basic:round-plus";
 
     #endregion
 
     #region IExplorerObject Members
 
-    public string Name => "gView Feature Database Connections (MS-SQL Server)";
+    public string Name=> "New Connection...";
 
-    public string FullName => @"Databases\SqlFDBConnections";
+    public string FullName => "";
 
-    public string Type=> "SqlFDB Connections";
+    public string Type => "New SqlFDB Connection";
 
-    public Task<object?> GetInstanceAsync()=>Task.FromResult<object?>(null);
+    public void Dispose()
+    {
+
+    }
+
+    public Task<object?> GetInstanceAsync() => Task.FromResult<object?>(null);
 
     #endregion
 
-    #region IExplorerParentObject Members
+    #region IExplorerObjectDoubleClick Members
 
-    async public override Task<bool> Refresh()
+    public Task ExplorerObjectDoubleClick(IApplicationScope appScope, ExplorerObjectEventArgs e)
     {
-        await base.Refresh();
-        base.AddChildObject(new SqlFdbNewConnectionObject(this));
+        return Task.CompletedTask;
+        /*
+        FormConnectionString dlg = new FormConnectionString();
+        dlg.ProviderID = "mssql";
+        dlg.UseProviderInConnectionString = false;
 
-        ConfigTextStream stream = new ConfigTextStream("sqlfdb_connections");
-        string connStr, id;
-        while ((connStr = stream.Read(out id)) != null)
+        if (dlg.ShowDialog() == System.Windows.Forms.DialogResult.OK)
         {
-            base.AddChildObject(new SqlFdbExplorerObject(this, id, connStr));
-        }
-        stream.Close();
+            DbConnectionString dbConnStr = dlg.DbConnectionString;
+            ConfigConnections connStream = new ConfigConnections("sqlfdb", "546B0513-D71D-4490-9E27-94CD5D72C64A");
 
-        ConfigConnections conStream = new ConfigConnections("sqlfdb", "546B0513-D71D-4490-9E27-94CD5D72C64A");
-        Dictionary<string, string> DbConnectionStrings = conStream.Connections;
-        foreach (string DbConnName in DbConnectionStrings.Keys)
-        {
-            DbConnectionString dbConn = new DbConnectionString();
-            dbConn.FromString(DbConnectionStrings[DbConnName]);
-            base.AddChildObject(new SqlFdbExplorerObject(this, DbConnName, dbConn));
-        }
+            string connectionString = dbConnStr.ConnectionString;
+            string id = ConfigTextStream.ExtractValue(connectionString, "database");
+            id += "@" + ConfigTextStream.ExtractValue(connectionString, "server");
+            if (id == "@")
+            {
+                id = "SqlFDB Connection";
+            }
 
-        return true;
+            id = connStream.GetName(id);
+
+            connStream.Add(id, dbConnStr.ToString());
+            e.NewExplorerObject = new SqlFDBExplorerObject(this.ParentExplorerObject, id, dbConnStr);
+
+            //string connStr = dlg.ConnectionString;
+            //ConfigTextStream stream = new ConfigTextStream("sqlfdb_connections", true, true);
+            //string id = ConfigTextStream.ExtractValue(connStr, "database");
+            //id += "@" + ConfigTextStream.ExtractValue(connStr, "server");
+            //if (id == "@") id = "SqlFDB Connection";
+            //stream.Write(connStr, ref id);
+            //stream.Close();
+
+            //e.NewExplorerObject = new SqlFDBExplorerObject(id, dlg.ConnectionString);
+        }
+        */
     }
 
     #endregion
@@ -74,23 +93,23 @@ public class SqlFdbExplorerGroupObject : ExplorerParentObject,
             return Task.FromResult<IExplorerObject?>(cache[FullName]);
         }
 
-        if (this.FullName == FullName)
-        {
-            SqlFdbExplorerGroupObject exObject = new SqlFdbExplorerGroupObject();
-            cache?.Append(exObject);
-            return Task.FromResult<IExplorerObject?>(exObject);
-        }
-
         return Task.FromResult<IExplorerObject?>(null);
     }
 
     #endregion
 
-    #region IDatabasesExplorerGroupObject
+    #region IExplorerObjectCreatable Member
 
-    public void SetParentExplorerObject(IExplorerObject parentExplorerObject)
+    public bool CanCreate(IExplorerObject parentExObject)
     {
-        base.Parent = parentExplorerObject;
+        return (parentExObject is SqlFdbExplorerGroupObject);
+    }
+
+    async public Task<IExplorerObject?> CreateExplorerObjectAsync(IApplicationScope appScope, IExplorerObject parentExObject)
+    {
+        ExplorerObjectEventArgs e = new ExplorerObjectEventArgs();
+        await ExplorerObjectDoubleClick(appScope, e);
+        return e.NewExplorerObject;
     }
 
     #endregion

@@ -1,63 +1,339 @@
-﻿using gView.DataExplorer.Plugins.ExplorerObjects.Base;
-using gView.DataExplorer.Plugins.ExplorerObjects.Databases;
-using gView.DataExplorer.Razor;
+﻿using gView.Blazor.Core.Exceptions;
+using gView.DataExplorer.Plugins.ExplorerObjects.Base;
+using gView.DataSources.Fdb;
+using gView.DataSources.Fdb.MSAccess;
+using gView.DataSources.Fdb.MSSql;
+using gView.Framework.Blazor.Services.Abstraction;
+using gView.Framework.Data;
 using gView.Framework.DataExplorer.Abstraction;
-using gView.Framework.Db;
-using gView.Framework.IO;
+using gView.Framework.DataExplorer.Events;
+using gView.Framework.Geometry;
 using gView.Framework.system;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System;
 using System.Threading.Tasks;
 
 namespace gView.DataExplorer.Plugins.ExplorerObjects.Fdb.MsSql;
 
-[RegisterPlugIn("3453D3AA-5A41-4b88-895E-B5DC7CA8B5B5")]
-public class SqlFdbExplorerGroupObject : ExplorerParentObject, 
-                                         IDatabasesExplorerGroupObject
+[RegisterPlugIn("FE6E1EA7-1300-400c-8674-68465859E991")]
+public class SqlFdbFeatureClassExplorerObject : ExplorerObjectCls<SqlFdbDatasetExplorerObject, _IMClass>, 
+                                                IExplorerSimpleObject, 
+                                                IExplorerObjectDeletable, 
+                                                ISerializableExplorerObject,
+                                                //, IExplorerObjectContextMenu,
+                                                IExplorerObjectRenamable, 
+                                                IExplorerObjectCreatable, 
+                                                IExporerOjectSchema
 {
-    public SqlFdbExplorerGroupObject() : base() { }
+    private string _dsname = "", _fcname = "", _type = "", _icon = "";
+    private IFeatureClass? _fc = null;
+    private IRasterClass? _rc = null;
+    private bool _isNetwork = false;
 
-    #region IExplorerGroupObject Members
+    public SqlFdbFeatureClassExplorerObject() : base() { }
+    public SqlFdbFeatureClassExplorerObject(SqlFdbDatasetExplorerObject parent, string dsname, IDatasetElement element)
+        : base(parent, 1)
+    {
+        if (element == null)
+        {
+            return;
+        }
 
-    public string Icon=> "basic:edit-database";
+        _dsname = dsname;
+        _fcname = element.Title;
 
-    #endregion
+        string typePrefix = String.Empty;
+        bool isLinked = false;
+        if (element.Class is LinkedFeatureClass)
+        {
+            typePrefix = "Linked ";
+            isLinked = true;
+        }
+
+        if (element.Class is IRasterCatalogClass)
+        {
+            _icon = "webgis:tiles";
+            _type = typePrefix + "Raster Catalog Layer";
+            _rc = (IRasterClass)element.Class;
+        }
+        else if (element.Class is IRasterClass)
+        {
+            _icon = "webgis:tiles";
+            _type = typePrefix + "Raster Layer";
+            _rc = (IRasterClass)element.Class;
+        }
+        else if (element.Class is IFeatureClass)
+        {
+            _fc = (IFeatureClass)element.Class;
+            switch (_fc.GeometryType)
+            {
+                case GeometryType.Envelope:
+                case GeometryType.Polygon:
+                    if (isLinked)
+                    {
+                        _icon = "basic:explode";
+                    }
+                    else
+                    {
+                        _icon = "webgis:shape-polygon";
+                    }
+
+                    _type = typePrefix + "Polygon Featureclass";
+                    break;
+                case GeometryType.Multipoint:
+                case GeometryType.Point:
+                    if (isLinked)
+                    {
+                        _icon = "basic:explode";
+                    }
+                    else
+                    {
+                        _icon = "basic:dot-filled";
+                    }
+
+                    _type = typePrefix + "Point Featureclass";
+                    break;
+                case GeometryType.Polyline:
+                    if (isLinked)
+                    {
+                        _icon = "basic:explode";
+                    }
+                    else
+                    {
+                        _icon = "webgis:shape-polyline";
+                    }
+
+                    _type = typePrefix + "Polyline Featureclass";
+                    break;
+                case GeometryType.Network:
+                    _icon = "webgis:construct-edge-intersect";
+                    _type = "Networkclass";
+                    _isNetwork = true;
+                    break;
+            }
+
+        }
+    }
+
+    internal string ConnectionString
+    {
+        get
+        {
+            if (TypedParent == null)
+            {
+                return "";
+            }
+
+            return TypedParent.ConnectionString;
+        }
+    }
 
     #region IExplorerObject Members
 
-    public string Name => "gView Feature Database Connections (MS-SQL Server)";
+    public string Name=> _fcname; 
 
-    public string FullName => @"Databases\SqlFDBConnections";
+    public string FullName
+    {
+        get
+        {
+            if (Parent == null)
+            {
+                return "";
+            }
 
-    public string Type=> "SqlFDB Connections";
+            return $@"{Parent.FullName}\{this.Name}";
+        }
+    }
+    public string Type
+    {
+        get { return _type != "" ? _type : "SqlFDB Featureclass"; }
+    }
 
-    public Task<object?> GetInstanceAsync()=>Task.FromResult<object?>(null);
+    public string Icon => _icon;
+
+    public void Dispose()
+    {
+        if (_fc != null)
+        {
+            _fc = null;
+        }
+        if (_rc != null)
+        {
+            _rc = null;
+        }
+    }
+    public Task<object?> GetInstanceAsync()
+    {
+        if (_fc != null)
+        {
+            return Task.FromResult<object?>(_fc);
+        }
+
+        if (_rc != null)
+        {
+            return Task.FromResult<object?>(_rc);
+        }
+
+        return Task.FromResult<object?>(null);
+    }
 
     #endregion
 
-    #region IExplorerParentObject Members
+    #region ISerializableExplorerObject Member
 
-    async public override Task<bool> Refresh()
+    async public Task<IExplorerObject?> CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache? cache)
     {
-        await base.Refresh();
-        base.AddChildObject(new SqlFdbNewConnectionObject(this));
-
-        ConfigTextStream stream = new ConfigTextStream("sqlfdb_connections");
-        string connStr, id;
-        while ((connStr = stream.Read(out id)) != null)
+        if (cache?.Contains(FullName) == true)
         {
-            base.AddChildObject(new SqlFdbExplorerObject(this, id, connStr));
+            return cache[FullName];
         }
-        stream.Close();
 
-        ConfigConnections conStream = new ConfigConnections("sqlfdb", "546B0513-D71D-4490-9E27-94CD5D72C64A");
-        Dictionary<string, string> DbConnectionStrings = conStream.Connections;
-        foreach (string DbConnName in DbConnectionStrings.Keys)
+        FullName = FullName.Replace("/", @"\");
+        int lastIndex = FullName.LastIndexOf(@"/");
+        if (lastIndex == -1)
         {
-            DbConnectionString dbConn = new DbConnectionString();
-            dbConn.FromString(DbConnectionStrings[DbConnName]);
-            base.AddChildObject(new SqlFdbExplorerObject(this, DbConnName, dbConn));
+            return null;
+        }
+
+        string dsName = FullName.Substring(0, lastIndex);
+        string fcName = FullName.Substring(lastIndex + 1, FullName.Length - lastIndex - 1);
+
+        SqlFdbDatasetExplorerObject? dsObject = new SqlFdbDatasetExplorerObject();
+        dsObject = (SqlFdbDatasetExplorerObject?)await dsObject.CreateInstanceByFullName(dsName, cache);
+        if (dsObject == null || await dsObject.ChildObjects() == null)
+        {
+            return null;
+        }
+
+        foreach (IExplorerObject exObject in await dsObject.ChildObjects())
+        {
+            if (exObject.Name == fcName)
+            {
+                cache?.Append(exObject);
+                return exObject;
+            }
+        }
+        return null;
+    }
+
+    #endregion
+
+    //async void ShrinkSpatialIndex_Click(object sender, EventArgs e)
+    //{
+    //    if (_fc == null || _fc.Dataset == null || !(_fc.Dataset.Database is AccessFDB))
+    //    {
+    //        MessageBox.Show("Can't shrink index...\nUncorrect feature class !!!");
+    //        return;
+    //    }
+
+    //    List<IClass> classes = new List<IClass>();
+    //    classes.Add(_fc);
+
+    //    SpatialIndexShrinker rebuilder = new SpatialIndexShrinker();
+    //    rebuilder.RebuildIndices(classes);
+    //    await _fc.Dataset.RefreshClasses();
+    //}
+
+    //async void SpatialIndexDef_Click(object sender, EventArgs e)
+    //{
+    //    if (_fc == null || _fc.Dataset == null || !(_fc.Dataset.Database is AccessFDB))
+    //    {
+    //        MessageBox.Show("Can't show spatial index definition...\nUncorrect feature class !!!");
+    //        return;
+    //    }
+
+    //    FormRebuildSpatialIndexDef dlg = await FormRebuildSpatialIndexDef.Create((AccessFDB)_fc.Dataset.Database, _fc);
+    //    if (dlg.ShowDialog() == DialogResult.OK)
+    //    {
+    //    }
+    //}
+
+    //void RepairSpatialIndex_Click(object sender, EventArgs e)
+    //{
+    //    if (_fc == null || _fc.Dataset == null || !(_fc.Dataset.Database is AccessFDB))
+    //    {
+    //        MessageBox.Show("Can't show spatial index definition...\nUncorrect feature class !!!");
+    //        return;
+    //    }
+
+    //    FormRepairSpatialIndexProgress dlg = new FormRepairSpatialIndexProgress((AccessFDB)_fc.Dataset.Database, _fc);
+    //    if (dlg.ShowDialog() == DialogResult.OK)
+    //    {
+    //    }
+    //}
+
+    //void Truncate_Click(object sender, EventArgs e)
+    //{
+    //    if (_fc == null || _fc.Dataset == null || !(_fc.Dataset.Database is AccessFDB))
+    //    {
+    //        MessageBox.Show("Can't rebuild index...\nUncorrect feature class !!!");
+    //        return;
+    //    }
+
+    //    ((AccessFDB)_fc.Dataset.Database).TruncateTable(_fc.Name);
+    //    _fc.Dataset.RefreshClasses();
+    //}
+
+    //void Altertable_Click(object sender, EventArgs e)
+    //{
+    //    //if (_fc == null || _fc.Dataset == null || !(_fc.Dataset.Database is AccessFDB))
+    //    //{
+    //    //    MessageBox.Show("Can't rebuild index...\nUncorrect feature class !!!");
+    //    //    return;
+    //    //}
+
+    //    //if (_fc == null) return;
+    //    //FormNewFeatureclass dlg = new FormNewFeatureclass(_fc);
+    //    //if(dlg.ShowDialog()!=DialogResult.OK) return;
+
+    //    //((AccessFDB)_fc.Dataset.Database).AlterTable(_fc.Name, dlg.Fields);
+    //}
+
+    #region IExplorerObjectDeletable Member
+
+    public event ExplorerObjectDeletedEvent? ExplorerObjectDeleted;
+
+    async public Task<bool> DeleteExplorerObject(ExplorerObjectEventArgs e)
+    {
+        if (TypedParent == null)
+        {
+            return false;
+        }
+
+        if (await TypedParent.DeleteFeatureClass(_fcname))
+        {
+            if (ExplorerObjectDeleted != null)
+            {
+                ExplorerObjectDeleted(this);
+            }
+
+            return true;
+        }
+        return false;
+    }
+
+    #endregion
+
+    #region IExplorerObjectRenamable Member
+
+    public event ExplorerObjectRenamedEvent? ExplorerObjectRenamed;
+
+    async public Task<bool> RenameExplorerObject(string newName)
+    {
+        if (_fc == null || _fc.Dataset == null || !(_fc.Dataset.Database is AccessFDB))
+        {
+            throw new GeneralException("Can't rename featureclass...\nUncorrect feature class !!!");
+        }
+
+        if (!await ((AccessFDB)_fc.Dataset.Database).RenameFeatureClass(this.Name, newName))
+        {
+            throw new GeneralException("Can't rename featureclass...\n" + ((AccessFDB)_fc.Dataset.Database).LastErrorMessage);
+        }
+
+        _fcname = newName;
+
+        if (ExplorerObjectRenamed != null)
+        {
+            ExplorerObjectRenamed(this);
         }
 
         return true;
@@ -65,32 +341,90 @@ public class SqlFdbExplorerGroupObject : ExplorerParentObject,
 
     #endregion
 
-    #region ISerializableExplorerObject Member
+    #region IExplorerObjectCreatable Member
 
-    public Task<IExplorerObject?> CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache? cache)
+    public bool CanCreate(IExplorerObject parentExObject)
     {
-        if (cache?.Contains(FullName) == true)
+        if (parentExObject is SqlFdbDatasetExplorerObject &&
+            !((SqlFdbDatasetExplorerObject)parentExObject).IsImageDataset)
         {
-            return Task.FromResult<IExplorerObject?>(cache[FullName]);
+            return true;
         }
 
-        if (this.FullName == FullName)
+        return false;
+    }
+
+    async public Task<IExplorerObject?> CreateExplorerObjectAsync(IApplicationScope appScope, IExplorerObject parentExObject)
+    {
+        if (!CanCreate(parentExObject))
         {
-            SqlFdbExplorerGroupObject exObject = new SqlFdbExplorerGroupObject();
-            cache?.Append(exObject);
-            return Task.FromResult<IExplorerObject?>(exObject);
+            return null;
         }
 
-        return Task.FromResult<IExplorerObject?>(null);
+        var instance = await parentExObject.GetInstanceAsync();
+        if (!(instance is IFeatureDataset) || !(((IDataset)instance).Database is SqlFDB))
+        {
+            return null;
+        }
+        SqlFDB? fdb = ((IDataset)instance).Database as SqlFDB;
+
+        return null;
+
+        //FormNewFeatureclass dlg = await FormNewFeatureclass.Create(instance as IFeatureDataset);
+        //if (dlg.ShowDialog() != DialogResult.OK)
+        //{
+        //    return null;
+        //}
+
+        //IGeometryDef gDef = dlg.GeometryDef;
+
+        //int FCID = await fdb.CreateFeatureClass(
+        //    parentExObject.Name,
+        //    dlg.FeatureclassName,
+        //    gDef,
+        //    dlg.Fields);
+
+        //if (FCID < 0)
+        //{
+        //    MessageBox.Show("ERROR: " + fdb.LastErrorMessage);
+        //    return null;
+        //}
+
+        //ISpatialIndexDef sIndexDef = await fdb.SpatialIndexDef(parentExObject.Name);
+        //if (fdb is SqlFDB &&
+        //    (sIndexDef.GeometryType == GeometryFieldType.MsGeometry ||
+        //     sIndexDef.GeometryType == GeometryFieldType.MsGeography))
+        //{
+        //    MSSpatialIndex index = dlg.MSSpatialIndexDef;
+        //    fdb.SetMSSpatialIndex(index, dlg.FeatureclassName);
+        //}
+        //else
+        //{
+        //    await fdb.SetSpatialIndexBounds(dlg.FeatureclassName, "BinaryTree2", dlg.SpatialIndexExtents, 0.55, 200, dlg.SpatialIndexLevels);
+        //}
+
+        //IDatasetElement element = await ((IFeatureDataset)instance).Element(dlg.FeatureclassName);
+        //return new SqlFDBFeatureClassExplorerObject(
+        //    parentExObject as SqlFDBDatasetExplorerObject,
+        //    parentExObject.Name,
+        //    element);
     }
 
     #endregion
 
-    #region IDatabasesExplorerGroupObject
+    #region IExporerOjectSchema Member
 
-    public void SetParentExplorerObject(IExplorerObject parentExplorerObject)
+    public string Schema
     {
-        base.Parent = parentExplorerObject;
+        get
+        {
+            if (_fc is SqlFDBFeatureClass)
+            {
+                return ((SqlFDBFeatureClass)_fc).DbSchema;
+            }
+
+            return String.Empty;
+        }
     }
 
     #endregion
