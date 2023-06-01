@@ -36,7 +36,7 @@
                     <MudTabPanel Text="Spatial Reference">
                             <MudGrid Spacing="2" Justify="Justify.FlexEnd">
                                 <MudItem xs="12">
-                                    <SpatialReferenceControl SpatialReference="Model.SpatialReference" />
+                                    <SpatialReferenceControl SpatialReference="Model.SpatialReference" SRefChanged="OnSRefChanged" />
                                 </MudItem>
                             </MudGrid>
                     </MudTabPanel>
@@ -103,9 +103,9 @@
                                         <MudItem xs="10">
                                             <MudTextField Label="Text"
                                                             @bind-Value="Model.CopyrightInformation"
-                                                          T="string" Immediate="true"
-                                                          InputType="InputType.Text" Step="1"
-                                                          Variant="Variant.Text"></MudTextField>
+                                                           T="string" Immediate="true"
+                                                           InputType="InputType.Text" Step="1"
+                                                           Variant="Variant.Text"></MudTextField>
                                         </MudItem>
                              
                                     </MudGrid>
@@ -119,3 +119,10 @@
         </div>
     </DialogBody>
 </ModalDialogFormBase>
+
+@code{
+    private void OnSRefChanged(ISpatialReference sRef)
+    {
+        Model.SpatialReference = sRef;
+    }
+}

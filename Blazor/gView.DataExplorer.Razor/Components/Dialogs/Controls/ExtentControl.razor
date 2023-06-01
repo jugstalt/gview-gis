@@ -1,12 +1,12 @@
 <MudCard Elevation="2">
     <MudCardContent>
     <MudText Typo="Typo.h6">Extent</MudText>
-        <MudGrid>
+        <MudGrid Justify="Justify.Center">
             <MudItem xs="4"></MudItem>
             <MudItem xs="4">
                 <MudTextField Label="Top" 
                                @bind-Value="Extent.maxy"
-                                  Format="N6" Culture="@_en" T="double" Immediate="true"
+                               Format="#.00000" Culture="@_en" T="double" Immediate="false"
                                InputType="InputType.Number" Step="0.1"
                                Variant="Variant.Text"></MudTextField>
             </MudItem>
@@ -15,8 +15,8 @@
                 <MudItem xs="1"></MudItem>
                 <MudItem xs="4">
                     <MudTextField Label="Left"
-                        @bind-Value="Extent.minx"
-                                      Format="N6" Culture="@_en" T="double" Immediate="true"
+                                  @bind-Value="Extent.minx"
+                                  Format="#.00000" Culture="@_en" T="double" Immediate="false"
                                   InputType="InputType.Number" Step="0.1"
                                   Variant="Variant.Text"></MudTextField>
                 </MudItem>
@@ -24,7 +24,7 @@
                 <MudItem xs="4">
                     <MudTextField Label="Right" 
                                   @bind-Value="Extent.maxx"
-                                      Format="N6" Culture="@_en" T="double" Immediate="true"
+                                  Format="#.00000" Culture="@_en" T="double" Immediate="false"
                                   InputType="InputType.Number" Step="0.1"
                                   Variant="Variant.Text"></MudTextField>
                 </MudItem>
@@ -34,7 +34,7 @@
             <MudItem xs="4">
                 <MudTextField Label="Bottom"
                               @bind-Value="Extent.miny"
-                                  Format="N6" Culture="@_en" T="double" Immediate="true"
+                              Format="#.00000" Culture="@_en" T="double" Immediate="false"
                               InputType="InputType.Number" Step="0.000001"
                               Variant="Variant.Text"></MudTextField>
             </MudItem>
@@ -45,6 +45,12 @@
 
 @code {
     [Parameter] public IEnvelope Extent { get; set; } = Envelope.Null();
+    [Parameter] public EventCallback<ISpatialReference> ExtentChanged { get; set; }
 
     public System.Globalization.CultureInfo _en = System.Globalization.CultureInfo.GetCultureInfo("en-US");
+
+    private void OnExtentChanged()
+    {
+        
+    }
 }

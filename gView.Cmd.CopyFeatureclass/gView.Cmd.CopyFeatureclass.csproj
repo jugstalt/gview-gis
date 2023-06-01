@@ -17,6 +17,7 @@
     <ProjectReference Include="..\gView.Carto\gView.Carto.csproj" />
     <ProjectReference Include="..\gView.DataSources.Fdb.PostgreSql\gView.DataSources.Fdb.PostgreSql.csproj" />
     <ProjectReference Include="..\gView.DataSources.Fdb.SQLite\gView.DataSources.Fdb.SQLite.csproj" />
+    <ProjectReference Include="..\gView.DataSources.Fdb.SqlServer\gView.DataSources.Fdb.SqlServer.csproj" />
     <ProjectReference Include="..\gView.DataSources.Fdb\gView.DataSources.Fdb.csproj" />
     <ProjectReference Include="..\gView.Data\gView.Data.csproj" />
     <ProjectReference Include="..\gView.Editor.Core\gView.Editor.Core.csproj" />

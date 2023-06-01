@@ -1,7 +1,18 @@
-﻿using System;
+﻿using gView.Cmd.CopyFeatureclass.Fdb;
+using gView.Cmd.CopyFeatureclass.Features;
+using gView.DataSources.Fdb.MSAccess;
+using gView.Framework.Data;
+using gView.Framework.FDB;
+using gView.Framework.Geometry;
+using gView.Framework.Offline;
+using gView.Framework.system;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace gView.Cmd.CopyFeatureclass
 {
+    /*
     class Program
     {
         static int Main(string[] args)
@@ -10,7 +21,7 @@ namespace gView.Cmd.CopyFeatureclass
             return 1;
         }
     }
-    /*
+    */
     class Program
     {
         async static Task<int> Main(string[] args)
@@ -25,7 +36,7 @@ namespace gView.Cmd.CopyFeatureclass
             string parent_rights = "iud";
             string conflict_handling = "normal";
             ISpatialIndexDef treeDef = null;
-            geometryType? sourceGeometryType = null;
+            GeometryType? sourceGeometryType = null;
 
             for (int i = 0; i < args.Length - 1; i++)
             {
@@ -60,8 +71,8 @@ namespace gView.Cmd.CopyFeatureclass
                 }
                 else if (args[i] == "-source_geometrytype")
                 {
-                    geometryType geomType;
-                    if (Enum.TryParse<geometryType>(args[++i], out geomType))
+                    GeometryType geomType;
+                    if (Enum.TryParse<GeometryType>(args[++i], out geomType))
                     {
                         sourceGeometryType = geomType;
                         Console.WriteLine("Source geometry type: " + sourceGeometryType);
@@ -249,9 +260,9 @@ namespace gView.Cmd.CopyFeatureclass
                     //Console.WriteLine("-----------------------------------------------------");
 
 
-                    FDBImport import = new FDBImport(((IFeatureUpdater)destDS.Database).SuggestedInsertFeatureCountPerTransaction);
-                    import.ReportAction += new FDBImport.ReportActionEvent(import_ReportAction);
-                    import.ReportProgress += new FDBImport.ReportProgressEvent(import_ReportProgress);
+                    FdbImport import = new FdbImport(((IFeatureUpdater)destDS.Database).SuggestedInsertFeatureCountPerTransaction);
+                    import.ReportAction += new FdbImport.ReportActionEvent(import_ReportAction);
+                    import.ReportProgress += new FdbImport.ReportProgressEvent(import_ReportProgress);
 
                     if (checkout)
                     {
@@ -267,7 +278,7 @@ namespace gView.Cmd.CopyFeatureclass
                         }
                     }
 
-                    if (!import.ImportToNewFeatureclass((IFeatureDatabase)destDS.Database, destDS.DatasetName, dest_fc, sourceFC, fieldTranslation, true, null, treeDef,
+                    if (!await import.ImportToNewFeatureclass((IFeatureDatabase)destDS.Database, destDS.DatasetName, dest_fc, sourceFC, fieldTranslation, true, null, treeDef,
                         sourceGeometryType: sourceGeometryType))
                     {
                         Console.WriteLine("ERROR: " + import.lastErrorMsg);
@@ -284,7 +295,7 @@ namespace gView.Cmd.CopyFeatureclass
                     import.ReportAction += new FeatureImport.ReportActionEvent(import_ReportAction2);
                     import.ReportProgress += new FeatureImport.ReportProgressEvent(import_ReportProgress2);
 
-                    if (!import.ImportToNewFeatureclass(destDS, dest_fc, sourceFC, fieldTranslation, true,
+                    if (!await import.ImportToNewFeatureclass(destDS, dest_fc, sourceFC, fieldTranslation, true,
                         sourceGeometryType: sourceGeometryType))
                     {
                         Console.WriteLine("ERROR: " + import.lastErrorMsg);
@@ -373,13 +384,13 @@ namespace gView.Cmd.CopyFeatureclass
         }
 
         static bool newLine = false;
-        static void import_ReportProgress(FDBImport sender, int progress)
+        static void import_ReportProgress(FdbImport sender, int progress)
         {
             Console.Write("..." + progress);
             newLine = true;
         }
 
-        static void import_ReportAction(FDBImport sender, string action)
+        static void import_ReportAction(FdbImport sender, string action)
         {
             if (newLine)
             {
@@ -421,22 +432,5 @@ namespace gView.Cmd.CopyFeatureclass
 
             return null;
         }
-    }
-
-    class SystemInformation
-    {
-        public static string Replace(string str)
-        {
-            return str.Replace("[MACHINENAME]", MachineName).Replace("[USER]", UserName);
-        }
-        public static string MachineName
-        {
-            get { return System.Environment.MachineName; }
-        }
-        public static string UserName
-        {
-            get { return System.Environment.UserName; }
-        }
-    }
-    */
+    }    
 }
