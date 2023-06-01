@@ -9,6 +9,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\gView.DataSources.EventTable\gView.DataSources.EventTable.csproj" />
     <ProjectReference Include="..\..\gView.DataSources.Fdb.SQLite\gView.DataSources.Fdb.SQLite.csproj" />
+    <ProjectReference Include="..\..\gView.DataSources.Fdb.SqlServer\gView.DataSources.Fdb.SqlServer.csproj" />
     <ProjectReference Include="..\..\gView.DataSources.GeoJson\gView.DataSources.GeoJson.csproj" />
     <ProjectReference Include="..\..\gView.DataSources.MSSqlSpatial\gView.DataSources.MSSqlSpatial.csproj" />
     <ProjectReference Include="..\..\gView.DataSources.OSGeo\gView.DataSources.OSGeo.csproj" />

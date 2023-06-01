@@ -1,0 +1,50 @@
+<MudCard Elevation="2">
+    <MudCardContent>
+    <MudText Typo="Typo.h6">Extent</MudText>
+        <MudGrid>
+            <MudItem xs="4"></MudItem>
+            <MudItem xs="4">
+                <MudTextField Label="Top" 
+                               @bind-Value="Extent.maxy"
+                                  Format="N6" Culture="@_en" T="double" Immediate="true"
+                               InputType="InputType.Number" Step="0.1"
+                               Variant="Variant.Text"></MudTextField>
+            </MudItem>
+            <MudItem xs="4"></MudItem>
+
+                <MudItem xs="1"></MudItem>
+                <MudItem xs="4">
+                    <MudTextField Label="Left"
+                        @bind-Value="Extent.minx"
+                                      Format="N6" Culture="@_en" T="double" Immediate="true"
+                                  InputType="InputType.Number" Step="0.1"
+                                  Variant="Variant.Text"></MudTextField>
+                </MudItem>
+                <MudItem xs="2"></MudItem>
+                <MudItem xs="4">
+                    <MudTextField Label="Right" 
+                                  @bind-Value="Extent.maxx"
+                                      Format="N6" Culture="@_en" T="double" Immediate="true"
+                                  InputType="InputType.Number" Step="0.1"
+                                  Variant="Variant.Text"></MudTextField>
+                </MudItem>
+                <MudItem xs="1"></MudItem>
+
+            <MudItem xs="4"></MudItem>
+            <MudItem xs="4">
+                <MudTextField Label="Bottom"
+                              @bind-Value="Extent.miny"
+                                  Format="N6" Culture="@_en" T="double" Immediate="true"
+                              InputType="InputType.Number" Step="0.000001"
+                              Variant="Variant.Text"></MudTextField>
+            </MudItem>
+            <MudItem xs="4"></MudItem>
+        </MudGrid>
+    </MudCardContent>
+</MudCard>
+
+@code {
+    [Parameter] public IEnvelope Extent { get; set; } = Envelope.Null();
+
+    public System.Globalization.CultureInfo _en = System.Globalization.CultureInfo.GetCultureInfo("en-US");
+}

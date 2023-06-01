@@ -1,0 +1,121 @@
+@inherits ModalDialogFormBase<RasterTileCacheConnectionModel>
+@inject IApplicationScope AppScope
+
+<ModalDialogFormBase T="RasterTileCacheConnectionModel"
+                     OnDialogClose="base.OnDialogClose"
+                     Model="base.Model">
+    <DialogBody>
+        <div style="max-width:800px">
+        <MudGrid Spacing="2" Justify="Justify.FlexEnd">
+            <MudItem xs="12">
+                <MudCard Elevation="2">
+                    <MudCardContent>
+
+                        <MudText Typo="Typo.h6">Service</MudText>
+
+                        <MudTextField @bind-Value="Model.Name"
+                                       Label="Name (any)" />
+
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+
+            <MudItem xs="12">
+                <MudTabs Elevation="1" Rounded="true" PanelClass="pa-6" ApplyEffectsToContainer="true">
+                    <MudTabPanel Text="Cache Extent/Origin">
+                         <MudGrid Spacing="2" Justify="Justify.FlexEnd">
+                                <MudItem xs="12">
+                                    <ExtentControl Extent="Model.Extent" />
+                                </MudItem>
+                                <MudItem xs="12">
+                                    <TileOriginControl Model="Model.TileOrigin" />
+                                </MudItem>
+                        </MudGrid>
+                    </MudTabPanel>
+
+                    <MudTabPanel Text="Spatial Reference">
+                            <MudGrid Spacing="2" Justify="Justify.FlexEnd">
+                                <MudItem xs="12">
+                                    <SpatialReferenceControl SpatialReference="Model.SpatialReference" />
+                                </MudItem>
+                            </MudGrid>
+                    </MudTabPanel>
+
+                    <MudTabPanel Text="Scales/Levels">
+                            <MudGrid Spacing="2" Justify="Justify.FlexEnd">
+                                <MudItem xs="12">
+                                   <TileScalesControl Model="Model.TileScales" />
+                                </MudItem>
+                            </MudGrid>
+                    </MudTabPanel>
+
+                    <MudTabPanel Text="Tile Size/Url">
+                                    <MudCard Elevation="2">
+                                        <MudCardContent>
+                                            <MudText Typo="Typo.h6">Tile Size</MudText>
+                                             <MudGrid Justify="Justify.Center">
+                                                <MudItem xs="5">
+                                                    <MudTextField Label="Width"
+                                                    @bind-Value="Model.TileWidth"
+                                                                  T="int" Immediate="true"
+                                                                  InputType="InputType.Number" Step="1"
+                                                                  Variant="Variant.Text"></MudTextField>
+                                                </MudItem>
+                                                <MudItem xs="5">
+                                                    <MudTextField Label="Height" 
+                                                                   @bind-Value="Model.TileHeight"
+                                                                   T="int" Immediate="true"
+                                                                   InputType="InputType.Number" Step="1"
+                                                                   Variant="Variant.Text"></MudTextField>
+                                                </MudItem>
+                                            </MudGrid>
+                                        </MudCardContent>
+                                    </MudCard>
+                                    <MudCard Elevation="2">
+                                        <MudCardContent>
+                                            <MudText Typo="Typo.h6">Tile Url</MudText>
+                                                 <MudGrid Justify="Justify.Center">
+                                                    <MudItem xs="10">
+                                                        <MudTextField Label="Url"
+                                                                      @bind-Value="Model.TileUrl"
+                                                                      T="string" Immediate="true"
+                                                                      InputType="InputType.Text" Step="1"
+                                                                      Variant="Variant.Text"></MudTextField>
+                                                    </MudItem>
+                                                    <MudItem xs="10">
+                                                        <MudAlert Severity="Severity.Info" Dense="true">
+                                                            <div>Use the following placeholders:</div>
+                                                            <div>{0},{1} ... integer number of column, row</div>
+                                                            <div>{2} ... integer number of level</div>
+                                                            <div>{3} ... Bing Maps Quadkey (optional)</div>
+                                                        </MudAlert>
+                                                    </MudItem>
+                                                </MudGrid>
+                                        </MudCardContent>
+                                    </MudCard>
+                     </MudTabPanel>
+
+                        <MudTabPanel Text="Copyright Info">
+                            <MudCard Elevation="2">
+                                <MudCardContent>
+                                    <MudText Typo="Typo.h6">Copyright Infofmation</MudText>
+                                    <MudGrid Justify="Justify.Center">
+                                        <MudItem xs="10">
+                                            <MudTextField Label="Text"
+                                                            @bind-Value="Model.CopyrightInformation"
+                                                          T="string" Immediate="true"
+                                                          InputType="InputType.Text" Step="1"
+                                                          Variant="Variant.Text"></MudTextField>
+                                        </MudItem>
+                             
+                                    </MudGrid>
+                                </MudCardContent>
+                            </MudCard>
+                        </MudTabPanel>
+                </MudTabs>
+            </MudItem>
+
+        </MudGrid>
+        </div>
+    </DialogBody>
+</ModalDialogFormBase>

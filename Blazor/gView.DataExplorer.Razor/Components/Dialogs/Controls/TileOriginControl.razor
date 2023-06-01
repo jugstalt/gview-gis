@@ -1,0 +1,44 @@
+<MudCard Elevation="2">
+    <MudCardContent>
+        <MudText Typo="Typo.h6">Origin</MudText>
+        <MudGrid>
+            <MudItem xs="1"></MudItem>
+            <MudItem xs="10">
+                <MudSelect Label=""
+                            @bind-Value="Model.TileOrigin"
+                            Variant="Variant.Outlined">
+                    @foreach (TileOrigin val in Enum.GetValues<TileOrigin>())
+                    {
+                        <MudSelectItem Value="val">@val.ToString()</MudSelectItem>
+                    }
+                </MudSelect>
+
+            </MudItem>
+            <MudItem xs="1"></MudItem>
+
+            <MudItem xs="1"></MudItem>
+            <MudItem xs="4">
+                <MudTextField Label="Origin X"
+                               @bind-Value="Model.Origin.X"
+                              Format="N6" Culture="@_en" T="double" Immediate="true"
+                              InputType="InputType.Number" Step="0.1"
+                              Variant="Variant.Text"></MudTextField>
+            </MudItem>
+            <MudItem xs="2"></MudItem>
+            <MudItem xs="4">
+                <MudTextField Label="Origin Y"
+                              @bind-Value="Model.Origin.Y"
+                              Format="N6" Culture="@_en" T="double" Immediate="true"
+                              InputType="InputType.Number" Step="0.1"
+                              Variant="Variant.Text"></MudTextField>
+            </MudItem>
+            <MudItem xs="1"></MudItem>
+        </MudGrid>
+    </MudCardContent>
+</MudCard>
+
+@code {
+    [Parameter] public TileOriginModel Model { get; set; } = new TileOriginModel();
+
+    public System.Globalization.CultureInfo _en = System.Globalization.CultureInfo.GetCultureInfo("en-US");
+}

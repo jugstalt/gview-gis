@@ -1,4 +1,5 @@
 ﻿using gView.DataExplorer.Plugins.ExplorerObjects.Base;
+using gView.DataExplorer.Plugins.ExplorerObjects.Tiles.Raster.ContextTools;
 using gView.DataSources.TileCache;
 using gView.Framework.Data;
 using gView.Framework.DataExplorer.Abstraction;
@@ -6,6 +7,7 @@ using gView.Framework.DataExplorer.Events;
 using gView.Framework.IO;
 using gView.Framework.system;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace gView.DataExplorer.Plugins.ExplorerObjects.Tiles.Raster;
@@ -15,47 +17,41 @@ public class TileCacheDatasetExplorerObject : ExplorerParentObject<TileCacheGrou
                                               IExplorerSimpleObject,
                                               IExplorerObjectDeletable,
                                               IExplorerObjectRenamable,
-                                              ISerializableExplorerObject
-                                               //, IExplorerObjectContextMenu
+                                              ISerializableExplorerObject,
+                                              IExplorerObjectContextTools
 {
     private string _name = String.Empty, _connectionString = String.Empty;
     private Dataset? _dataset = null;
+    private IEnumerable<IExplorerObjectContextTool>? _contextTools = null;
 
     public TileCacheDatasetExplorerObject()
-        : base() { }
+            : base() { }
     public TileCacheDatasetExplorerObject(TileCacheGroupExplorerObject parent, string name, string connectionString)
         : base(parent, 2)
     {
         _name = name;
         _connectionString = connectionString;
+
+        _contextTools = new IExplorerObjectContextTool[]
+        {
+            new UpdateConnectionString()
+        };
     }
 
-    /*
-    void ConnectionProperties_Click(object sender, EventArgs e)
+    internal string GetConnectionString() => _connectionString;
+    internal Task<bool> UpdateConnectionString(string connectionString)
     {
-        FormTileCacheConnection dlg = new FormTileCacheConnection();
-        dlg.ConnectionString = _connectionString;
+        ConfigConnections connStream = new ConfigConnections("TileCache", "b9d6ae5b-9ca1-4a52-890f-caa4009784d4");
+        connStream.Add(_name, _connectionString = connectionString);
 
-        if (dlg.ShowDialog() == DialogResult.OK)
-        {
-            ConfigConnections connStream = new ConfigConnections("TileCache", "b9d6ae5b-9ca1-4a52-890f-caa4009784d4");
-            connStream.Add(_name, this.ConnectionString = dlg.ConnectionString);
-        }
+        return Task.FromResult(true);
     }
-    */
 
-    internal string ConnectionString
-    {
-        get
-        {
-            return _connectionString;
-        }
-        set
-        {
-            _connectionString = value;
-            _dataset = null;
-        }
-    }
+    #region IExplorerObjectContextTools
+
+    public IEnumerable<IExplorerObjectContextTool> ContextTools => _contextTools ?? Array.Empty<IExplorerObjectContextTool>();
+
+    #endregion
 
     #region IExplorerObject Members
 

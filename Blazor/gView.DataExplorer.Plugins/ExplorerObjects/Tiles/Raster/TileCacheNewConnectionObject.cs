@@ -1,7 +1,11 @@
 ﻿using gView.DataExplorer.Plugins.ExplorerObjects.Base;
+using gView.DataExplorer.Plugins.Extensions;
+using gView.DataExplorer.Razor.Components.Dialogs.Models;
+using gView.DataExplorer.Razor.Components.Dialogs.Models.Extensions;
 using gView.Framework.Blazor.Services.Abstraction;
 using gView.Framework.DataExplorer.Abstraction;
 using gView.Framework.DataExplorer.Events;
+using gView.Framework.IO;
 using System.Threading.Tasks;
 
 namespace gView.DataExplorer.Plugins.ExplorerObjects.Tiles.Raster;
@@ -42,24 +46,24 @@ public class TileCacheNewConnectionObject : ExplorerObjectCls<TileCacheGroupExpl
 
     #region IExplorerObjectDoubleClick Members
 
-    public Task ExplorerObjectDoubleClick(IApplicationScope appScope, ExplorerObjectEventArgs e)
+    async public Task ExplorerObjectDoubleClick(IApplicationScope appScope, ExplorerObjectEventArgs e)
     {
-        return Task.CompletedTask;
-        /*
-        FormTileCacheConnection dlg = new FormTileCacheConnection();
+        var model = await appScope.ToScopeService().ShowModalDialog(
+                               typeof(gView.DataExplorer.Razor.Components.Dialogs.RasterTileCacheConnectionDialog),
+                               "Raster-Tile-Cache Connection",
+                               new RasterTileCacheConnectionModel());
 
-        if (dlg.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+        if (model != null)
         {
             ConfigConnections connStream = new ConfigConnections("TileCache", "b9d6ae5b-9ca1-4a52-890f-caa4009784d4");
 
-            string connectionString = dlg.ConnectionString;
-            string id = dlg.TileCacheName;
+            string connectionString = model.ToConnectionString();
+            string id = model.Name;
             id = connStream.GetName(id);
 
             connStream.Add(id, connectionString);
-            e.NewExplorerObject = new TileCacheDatasetExplorerObject(this.ParentExplorerObject, id, connectionString);
+            e.NewExplorerObject = new TileCacheDatasetExplorerObject(this.TypedParent, id, connectionString);
         }
-        */
     }
 
     #endregion
