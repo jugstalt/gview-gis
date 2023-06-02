@@ -1,7 +1,11 @@
 ﻿using gView.DataExplorer.Plugins.ExplorerObjects.Base;
+using gView.DataExplorer.Plugins.Extensions;
+using gView.DataExplorer.Razor.Components.Dialogs.Models;
+using gView.DataSources.TileCache;
 using gView.Framework.Blazor.Services.Abstraction;
 using gView.Framework.DataExplorer.Abstraction;
 using gView.Framework.DataExplorer.Events;
+using gView.Framework.system;
 using System.Threading.Tasks;
 
 namespace gView.DataExplorer.Plugins.ExplorerObjects.Tiles.Raster;
@@ -42,18 +46,22 @@ public class TileCacheLocalCacheProperties : ExplorerObjectCls<TileCacheGroupExp
 
     #region IExplorerObjectDoubleClick Members
 
-    public Task ExplorerObjectDoubleClick(IApplicationScope appScope, ExplorerObjectEventArgs e)
+    async public Task ExplorerObjectDoubleClick(IApplicationScope appScope, ExplorerObjectEventArgs e)
     {
-        return Task.CompletedTask;
+        var model = await appScope.ToScopeService().ShowModalDialog(typeof(gView.DataExplorer.Razor.Components.Dialogs.RasterTileCacheLocalPropertiesDialog),
+                                                                    "Import from Template",
+                                                                    new RasterTileCacheLocalPropertiesModel()
+                                                                    {
+                                                                        LocalCacheFolder = LocalCachingSettings.LocalCachingFolder,
+                                                                        UseLocalCache = LocalCachingSettings.UseLocalCaching
+                                                                    });
 
-        /*
-        FormLocalCacheProperties dlg = new FormLocalCacheProperties();
-
-        if (dlg.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+        if (model != null)
         {
-     
+            LocalCachingSettings.LocalCachingFolder = model.LocalCacheFolder;
+            LocalCachingSettings.UseLocalCaching = model.UseLocalCache;
+            LocalCachingSettings.Commit();
         }
-        */
     }
 
     #endregion

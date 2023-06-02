@@ -192,7 +192,7 @@
 
             if (lMapBounds != null)
             {
-                if (!Envelope.IsNull(MapRenderer.Bounds))
+                if (MapRenderer.BoundsIntialized())
                 {
                     var rendererBounds = GeoTransformer.ToWGS84(new Envelope(MapRenderer.Bounds), MapRenderer.SpatialReference).Envelope;
                     if (lMapBounds.Contains(rendererBounds)) // stay in same Extent/Zoom

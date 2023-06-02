@@ -90,6 +90,13 @@ public class MapRenderService : IDisposable
     public IEnvelope Bounds => _map?.Envelope ?? Envelope.Null();
     public int ImageWidth => _map?.iWidth ?? 0;
     public int ImageHeight=> _map?.iHeight ?? 0;
+    public bool BoundsIntialized() => _map != null &&
+        _map?.Envelope != null &&
+        !Envelope.IsNull(_map?.Envelope) &&
+        _map.Envelope.Width > 0 &&
+        _map.Envelope.Height > 0 &&
+        ImageWidth > 0 && ImageHeight > 0;
+
     public ISpatialReference SpatialReference => _map?.SpatialReference ?? new SpatialReference("wgs:3857");
 
     #endregion

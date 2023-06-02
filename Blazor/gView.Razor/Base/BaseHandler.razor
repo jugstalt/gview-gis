@@ -9,7 +9,7 @@
         }
         catch (Exception ex)
         {
-            HandleException(ex).Wait();
+            Task.Run(async () => await HandleException(ex));  // run & forget => otherweise its blocked and never showed
         }
     }
 
@@ -33,7 +33,7 @@
         }
         catch (Exception ex)
         {
-            HandleException(ex).Wait();
+            Task.Run(async () => await HandleException(ex));  // run & forget => otherweise its blocked and never showed
             return default(T);
         }
     }
