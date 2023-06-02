@@ -1,8 +1,10 @@
-﻿using gView.DataSources.Fdb.MSAccess;
+﻿using gView.DataExplorer.Plugins.Extensions;
+using gView.DataExplorer.Razor.Components.Dialogs.Filters;
+using gView.DataExplorer.Razor.Components.Dialogs.Models;
+using gView.DataSources.Fdb.MSAccess;
 using gView.Framework.Blazor.Services.Abstraction;
 using gView.Framework.Data;
 using gView.Framework.DataExplorer.Abstraction;
-using gView.Framework.Network;
 using gView.Framework.system;
 using System;
 using System.Collections.Generic;
@@ -11,7 +13,7 @@ using System.Threading.Tasks;
 namespace gView.DataExplorer.Plugins.ExplorerObjects.Fdb.SqLite;
 
 [RegisterPlugIn("EEDCCBB2-588E-418A-B048-4B6C210A25AE")]
-public class SqLiteFdbLinkedFeatureclassExplorerObject : IExplorerSimpleObject, 
+public class SqLiteFdbLinkedFeatureclassExplorerObject : IExplorerSimpleObject,
                                                          IExplorerObjectCreatable
 {
     #region IExplorerObjectCreatable Member
@@ -41,40 +43,33 @@ public class SqLiteFdbLinkedFeatureclassExplorerObject : IExplorerSimpleObject,
             return null;
         }
 
-        throw new KeyNotFoundException();
+        var model = await scope.ToScopeService().ShowKnownDialog(
+            Framework.Blazor.KnownDialogs.ExplorerDialog,
+            model: new ExplorerDialogModel()
+            {
+                Filters = new List<ExplorerDialogFilter> {
+                    new OpenFeatureclassFilter()
+                },
+                Mode = ExploerDialogMode.Open
+            });
 
-        //List<ExplorerDialogFilter> filters = new List<ExplorerDialogFilter>();
-        //filters.Add(new OpenFeatureclassFilter());
-        //ExplorerDialog dlg = new ExplorerDialog("Select Featureclass", filters, true);
+        if (model?.Result?.ExplorerObjects != null )
+        {
+            //IExplorerObject? ret = null;
 
-        //IExplorerObject ret = null;
+            foreach (var exObject in model.Result.ExplorerObjects)
+            {
+                var exObjectInstance = await exObject.GetInstanceAsync();
+                if (exObjectInstance is IFeatureClass)
+                {
+                    int fcid = await fdb.CreateLinkedFeatureClass(dataset.DatasetName, (IFeatureClass)exObjectInstance);
+                }
+            }
 
-        //if (dlg.ShowDialog() == DialogResult.OK &&
-        //    dlg.ExplorerObjects != null)
-        //{
-        //    foreach (IExplorerObject exObj in dlg.ExplorerObjects)
-        //    {
-        //        var exObjectInstance = await exObj?.GetInstanceAsync();
-        //        if (exObjectInstance is IFeatureClass)
-        //        {
-        //            int fcid = await fdb.CreateLinkedFeatureClass(dataset.DatasetName, (IFeatureClass)exObjectInstance);
-        //            if (ret == null)
-        //            {
-        //                IDatasetElement element = await dataset.Element(((IFeatureClass)exObjectInstance).Name);
-        //                if (element != null)
-        //                {
-        //                    ret = new SqLiteFdbFeatureClassExplorerObject(
-        //                        parent,
-        //                        parent.FileName,
-        //                        parent.Name,
-        //                        element);
-        //                }
+            await scope.ToScopeService().EventBus.FireFreshContentAsync();
+        }
 
-        //            }
-        //        }
-        //    }
-        //}
-        //return ret;
+        return null;
     }
 
     #endregion
@@ -93,7 +88,7 @@ public class SqLiteFdbLinkedFeatureclassExplorerObject : IExplorerSimpleObject,
 
     public string Type
     {
-        get { return String.Empty; }
+        get { return "Linked Featureclass"; }
     }
 
     public string Icon => "basic:open-in-window";

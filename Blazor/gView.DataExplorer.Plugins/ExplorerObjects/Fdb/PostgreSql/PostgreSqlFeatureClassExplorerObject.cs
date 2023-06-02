@@ -69,7 +69,7 @@ public class PostgreSqlFeatureClassExplorerObject : ExplorerObjectCls<PostgreSql
                 case GeometryType.Polygon:
                     if (isLinked)
                     {
-                        _icon = "basic:explode";
+                        _icon = "basic:open-in-window";
                     }
                     else
                     {
@@ -82,7 +82,7 @@ public class PostgreSqlFeatureClassExplorerObject : ExplorerObjectCls<PostgreSql
                 case GeometryType.Point:
                     if (isLinked)
                     {
-                        _icon = "basic:explode";
+                        _icon = "basic:open-in-window";
                     }
                     else
                     {
@@ -94,7 +94,7 @@ public class PostgreSqlFeatureClassExplorerObject : ExplorerObjectCls<PostgreSql
                 case GeometryType.Polyline:
                     if (isLinked)
                     {
-                        _icon = "basic:explode";
+                        _icon = "basic:open-in-window";
                     }
                     else
                     {

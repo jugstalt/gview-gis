@@ -24,7 +24,7 @@ public class SqLiteFdbFeatureClassExplorerObject : ExplorerObjectCls<SqLiteFdbDa
                                                    IExplorerObjectCreatable
 {
     private string _filename = "", _dsname = "", _fcname = "", _type = "";
-    private string _icon = "";
+    private string _icon = "basic:table";
     private IFeatureClass? _fc = null;
     private IRasterClass? _rc = null;
     private bool _isNetwork = false;
@@ -74,7 +74,7 @@ public class SqLiteFdbFeatureClassExplorerObject : ExplorerObjectCls<SqLiteFdbDa
                 case GeometryType.Polygon:
                     if (isLinked)
                     {
-                        _icon = "basic:explode";
+                        _icon = "basic:open-in-window";
                     }
                     else
                     {
@@ -87,7 +87,7 @@ public class SqLiteFdbFeatureClassExplorerObject : ExplorerObjectCls<SqLiteFdbDa
                 case GeometryType.Point:
                     if (isLinked)
                     {
-                        _icon = "basic:explode";
+                        _icon = "basic:open-in-window";
                     }
                     else
                     {
@@ -99,7 +99,7 @@ public class SqLiteFdbFeatureClassExplorerObject : ExplorerObjectCls<SqLiteFdbDa
                 case GeometryType.Polyline:
                     if (isLinked)
                     {
-                        _icon = "basic:explode";
+                        _icon = "basic:open-in-window";
                     }
                     else
                     {
