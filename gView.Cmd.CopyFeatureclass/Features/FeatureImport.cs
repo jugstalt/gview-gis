@@ -14,10 +14,10 @@ public class FeatureImport
 {
     public delegate void ReportActionEvent(FeatureImport sender, string action);
     public delegate void ReportProgressEvent(FeatureImport sender, int progress);
-    public delegate void ReportRequestEvent(FeatureImport sender, RequestArgs args);
+    //public delegate void ReportRequestEvent(FeatureImport sender, RequestArgs args);
     public event ReportActionEvent ReportAction; // { add { throw new NotSupportedException(); } remove { } }
     public event ReportProgressEvent ReportProgress = null;
-    public event ReportRequestEvent ReportRequest = null;
+    //public event ReportRequestEvent ReportRequest = null;
     private string _errMsg = "";
     private ICancelTracker _cancelTracker;
     private IGeometricTransformer _transformer = null;
@@ -143,22 +143,23 @@ public class FeatureImport
             IDatasetElement destLayer = await destDS.Element(fcname);
             if (destLayer != null)
             {
-                if (ReportRequest != null)
-                {
-                    RequestArgs args = new RequestArgs(
-                        "Featureclass " + fcname + " already exists in database\nDo want to replace it?",
-                        MessageBoxButtons.YesNoCancel,
-                        DialogResult.Cancel);
-                    ReportRequest(this, args);
-                    switch (args.Result)
-                    {
-                        case DialogResult.No:
-                            return true;
-                        case DialogResult.Cancel:
-                            _errMsg = "Import is canceled by the user...";
-                            return false;
-                    }
-                }
+                throw new Exception($"Destination layer {destLayer.Title} already exists.");
+                //if (ReportRequest != null)
+                //{
+                //    RequestArgs args = new RequestArgs(
+                //        "Featureclass " + fcname + " already exists in database\nDo want to replace it?",
+                //        MessageBoxButtons.YesNoCancel,
+                //        DialogResult.Cancel);
+                //    ReportRequest(this, args);
+                //    switch (args.Result)
+                //    {
+                //        case DialogResult.No:
+                //            return true;
+                //        case DialogResult.Cancel:
+                //            _errMsg = "Import is canceled by the user...";
+                //            return false;
+                //    }
+                //}
             }
 
             if (destLayer != null)

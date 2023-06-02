@@ -19,10 +19,10 @@ public class FdbImport
 
     public delegate void ReportActionEvent(FdbImport sender, string action);
     public delegate void ReportProgressEvent(FdbImport sender, int progress);
-    public delegate void ReportRequestEvent(FdbImport sender, RequestArgs args);
+    //public delegate void ReportRequestEvent(FdbImport sender, RequestArgs args);
     public event ReportActionEvent ReportAction = null;
     public event ReportProgressEvent ReportProgress = null;
-    public event ReportRequestEvent ReportRequest = null;
+    //public event ReportRequestEvent ReportRequest = null;
     private string _errMsg = "";
     private ICancelTracker _cancelTracker;
     private IGeometricTransformer _transformer = null;
@@ -127,22 +127,23 @@ public class FdbImport
             IDatasetElement destLayer = await destDS.Element(fcname);
             if (destLayer != null)
             {
-                if (ReportRequest != null)
-                {
-                    RequestArgs args = new RequestArgs(
-                        "Featureclass " + fcname + " already exists in " + dsname + "\nDo want to replace it?",
-                        MessageBoxButtons.YesNoCancel,
-                        DialogResult.Cancel);
-                    ReportRequest(this, args);
-                    switch (args.Result)
-                    {
-                        case DialogResult.No:
-                            return true;
-                        case DialogResult.Cancel:
-                            _errMsg = "Import is canceled by the user...";
-                            return false;
-                    }
-                }
+                throw new Exception($"Destination layer {destLayer.Title} already exists.");
+                //if (ReportRequest != null)
+                //{
+                //    RequestArgs args = new RequestArgs(
+                //        "Featureclass " + fcname + " already exists in " + dsname + "\nDo want to replace it?",
+                //        MessageBoxButtons.YesNoCancel,
+                //        DialogResult.Cancel);
+                //    ReportRequest(this, args);
+                //    switch (args.Result)
+                //    {
+                //        case DialogResult.No:
+                //            return true;
+                //        case DialogResult.Cancel:
+                //            _errMsg = "Import is canceled by the user...";
+                //            return false;
+                //    }
+                //}
             }
 
             GeometryDef geomDef = new GeometryDef(sourceFC);
