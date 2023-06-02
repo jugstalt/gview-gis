@@ -60,7 +60,7 @@
                         {
                             <MudListItem @ondblclick="() => ListItemDoubleClick(exObject)"
                                          Class="@($"explorer-dialog-item {(Model.Result.ExplorerObjects.Contains(exObject) ? "selected" : "")}")"
-                                         OnClick="async (mEvent) => await ListItemCLick(mEvent, exObject)">
+                                         OnClick="async (mEvent) => await ListItemClick(mEvent, exObject)">
                                 <div style="display: flex; align-items: center;" >
                                     <MudIcon Icon="@Icons.FromString(exObject.Icon)" Style="margin-right: 6px;" />
                                     <MudText>@exObject.Name</MudText>
@@ -106,7 +106,7 @@
     </DialogButtons>
 </ModalDialogFormBase>
 
-@code {
+    @code {
     //public ExplorerDialogModel Model = new()
     //    {
     //        Filters = new List<ExplorerDialogFilter> { 
@@ -163,7 +163,7 @@
             }
         });
 
-    private Task ListItemCLick(MouseEventArgs mEvent, IExplorerObject exObject)
+    private Task ListItemClick(MouseEventArgs mEvent, IExplorerObject exObject)
     {
         return HandleAsync(async () =>
         {
@@ -206,26 +206,25 @@
         });
     }
 
-    private void MoveUp()
-    => Handle(() =>
+    private void MoveUp() => Handle(() =>
+    {
+        if (selectedRoot != null)
         {
-            if (selectedRoot != null)
-            {
-                var currentLevel = levels[selectedRoot];
-                var currentIndex = rootExplorerObjects.IndexOf(selectedRoot);
+            var currentLevel = levels[selectedRoot];
+            var currentIndex = rootExplorerObjects.IndexOf(selectedRoot);
 
-                for (int i = currentIndex - 1; i >= 0; i--)
+            for (int i = currentIndex - 1; i >= 0; i--)
+            {
+                if (levels[rootExplorerObjects[i]] < currentLevel)
                 {
-                    if (levels[rootExplorerObjects[i]] < currentLevel)
-                    {
-                        selectedRoot = rootExplorerObjects[i];
-                        break;
-                    }
+                    selectedRoot = rootExplorerObjects[i];
+                    break;
                 }
             }
+        }
 
-            Model.Result.ExplorerObjects.Clear();
-        });
+        Model.Result.ExplorerObjects.Clear();
+    });
 
     private void FilterSelectionChanged(ExplorerDialogFilter filter)
     {
