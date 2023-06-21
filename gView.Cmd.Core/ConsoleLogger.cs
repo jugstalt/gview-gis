@@ -1,10 +1,8 @@
 ﻿using gView.Cmd.Core.Abstraction;
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace gView.Cmd.Core;
-internal class ConsoleLogger : ICommandLogger
+public class ConsoleLogger : ICommandLogger
 {
     public void Log(string message)
     {

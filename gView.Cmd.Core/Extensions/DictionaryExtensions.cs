@@ -47,7 +47,7 @@ static public class DictionaryExtensions
         }
     }
 
-    static public IDictionary<string, object> ParseCommandLineArguments(string[] args)
+    static public IDictionary<string, object> ParseCommandLineArguments(this string[] args)
     {
         Dictionary<string, object> parameters = new Dictionary<string, object>();
 
@@ -117,7 +117,7 @@ static public class DictionaryExtensions
             catch (Exception ex)
             {
                 logger?.LogLine($"Exception: Parameter {parameterDescription.Name}");
-                logger?.LogLine(ex.ToString());
+                logger?.LogLine(ex.Message);
 
                 return false;
             }

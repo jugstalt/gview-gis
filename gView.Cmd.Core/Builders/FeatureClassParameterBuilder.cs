@@ -17,18 +17,18 @@ public class FeatureClassParameterBuilder : ICommandPararmeterBuilder
         _parameterPrefix = parameterPrefix;
     }
 
-    public IEnumerable<ICommandParameterDescription> ParameterDescriptions { get; set; }
-      = new ICommandParameterDescription[]
+    public IEnumerable<ICommandParameterDescription> ParameterDescriptions
+      => new ICommandParameterDescription[]
         {
-            new RequiredCommandParameter<string>("connstr")
+            new RequiredCommandParameter<string>("connstr".PrependPrefix(_parameterPrefix))
             {
                 Description="ConnectionString to dataset"
             },
-            new RequiredCommandParameter<Guid>("guid")
+            new RequiredCommandParameter<Guid>("guid".PrependPrefix(_parameterPrefix))
             {
                 Description="Plugin Guid of dataset plugin"
             },
-            new RequiredCommandParameter<string>("fc")
+            new RequiredCommandParameter<string>("fc".PrependPrefix(_parameterPrefix))
             {
                 Description="Name of the FeatureClass"
             }
