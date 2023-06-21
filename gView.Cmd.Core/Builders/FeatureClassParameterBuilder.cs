@@ -2,12 +2,10 @@
 using gView.Cmd.Core.Extensions;
 using gView.Framework.Data;
 using gView.Framework.FDB;
-using gView.Framework.Network;
 using gView.Framework.system;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using System.Xml.Linq;
 
 namespace gView.Cmd.Core.Builders;
 public class FeatureClassParameterBuilder : ICommandPararmeterBuilder
@@ -19,7 +17,7 @@ public class FeatureClassParameterBuilder : ICommandPararmeterBuilder
         _parameterPrefix = parameterPrefix;
     }
 
-    public IEnumerable<ICommandParameterDescription> Parameters { get; set; }
+    public IEnumerable<ICommandParameterDescription> ParameterDescriptions { get; set; }
       = new ICommandParameterDescription[]
         {
             new RequiredCommandParameter<string>("connstr")
@@ -96,7 +94,7 @@ public class FeatureClassParameterBuilder : ICommandPararmeterBuilder
             {
                 throw new Exception("Error opening destination database:" + fileDB.LastErrorMessage);
             }
-            
+
             dataset = await fileDB.GetDataset(connetionString);
         }
         else if (plugin is IFeatureDataset)
@@ -123,13 +121,18 @@ public class FeatureClassParameterBuilder : ICommandPararmeterBuilder
 
         IDatasetElement? element = await ds.Element(fcName);
         if (element != null && element.Class is IFeatureClass)
+        {
             return (IFeatureClass)element.Class;
+        }
 
         foreach (IDatasetElement element2 in await ds.Elements())
         {
             if (element2.Class is IFeatureClass)
             {
-                if (element2.Class.Name == fcName) return (IFeatureClass)element2.Class;
+                if (element2.Class.Name == fcName)
+                {
+                    return (IFeatureClass)element2.Class;
+                }
             }
         }
 

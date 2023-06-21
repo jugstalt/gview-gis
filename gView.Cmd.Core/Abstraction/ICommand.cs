@@ -8,7 +8,7 @@ public interface ICommand
     string Name { get; }
     string Description { get; }
 
-    IEnumerable<ICommandParameterDescription> Paramters { get; }
+    IEnumerable<ICommandParameterDescription> ParameterDescriptions { get; }
 
     Task<bool> Run(IDictionary<string, object> parameters, ICommandLogger? logger = null);
 }

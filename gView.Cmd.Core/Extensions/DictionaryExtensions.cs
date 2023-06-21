@@ -1,4 +1,5 @@
-﻿using System;
+﻿using gView.Cmd.Core.Abstraction;
+using System;
 using System.Collections.Generic;
 
 namespace gView.Cmd.Core.Extensions;
@@ -81,5 +82,47 @@ static public class DictionaryExtensions
         }
 
         return parameters;
+    }
+
+    static public bool VerifyParameters(this IDictionary<string, object> parameters, IEnumerable<ICommandParameterDescription> parameterDescriptions, ICommandLogger? logger = null)
+    {
+        foreach (var parameterDescription in parameterDescriptions)
+        {
+            if (parameterDescription.IsRequired == false)
+            {
+                continue;
+            }
+
+            try
+            {
+                if (parameterDescription.ParameterType.IsValueType == true || parameterDescription.ParameterType == typeof(string))
+                {
+
+                    if (!parameters.ContainsKey(parameterDescription.Name) ||
+                        string.IsNullOrEmpty(parameters[parameterDescription.Name]?.ToString()) ||
+                        Convert.ChangeType(parameters[parameterDescription.Name], parameterDescription.ParameterType) == null)
+                    {
+                        throw new Exception("Value is required");
+                    }
+
+                }
+                else
+                {
+                    ICommandPararmeterBuilder parameterBuilder = parameterDescription.GetBuilder();
+
+                    return parameters.VerifyParameters(parameterBuilder.ParameterDescriptions, logger);
+
+                }
+            }
+            catch (Exception ex)
+            {
+                logger?.LogLine($"Exception: Parameter {parameterDescription.Name}");
+                logger?.LogLine(ex.ToString());
+
+                return false;
+            }
+        }
+
+        return true;
     }
 }

@@ -21,7 +21,7 @@ public class CopyFeatureClassCommand : ICommand
 
     public string Description => "Copies a featureclass from one datasoure to another";
 
-    public IEnumerable<ICommandParameterDescription> Paramters => new ICommandParameterDescription[]
+    public IEnumerable<ICommandParameterDescription> ParameterDescriptions => new ICommandParameterDescription[]
     {
         new RequiredCommandParameter<IFeatureClass>("source")
         {

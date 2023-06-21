@@ -2,9 +2,9 @@
 using System.Threading.Tasks;
 
 namespace gView.Cmd.Core.Abstraction;
-internal interface ICommandPararmeterBuilder
+public interface ICommandPararmeterBuilder
 {
-    IEnumerable<ICommandParameterDescription> Parameters { get; }
+    IEnumerable<ICommandParameterDescription> ParameterDescriptions { get; }
 
     Task<T> Build<T>(IDictionary<string, object> parameters); 
 }
