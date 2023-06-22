@@ -22,6 +22,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\gView.Cmd.Core\gView.Cmd.Core.csproj" />
     <ProjectReference Include="..\..\gView.DataSources.OSGeo\gView.DataSources.OSGeo.csproj" />
     <ProjectReference Include="..\..\gView.DataSources.TileCache\gView.DataSources.TileCache.csproj" />
     <ProjectReference Include="..\gView.Blazor.Core\gView.Blazor.Core.csproj" />

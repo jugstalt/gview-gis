@@ -1,4 +1,6 @@
-﻿using System;
+﻿using gView.Framework.Blazor.Models;
+using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace gView.Framework.Blazor.Services.Abstraction;
@@ -13,5 +15,7 @@ public interface IApplicationScope : IApplicationBusyHandling, IDisposable
                                              string? title = null,
                                              T? model = default);
 
-    
+    void SetClipboardItem(ClipboardItem item);
+    Type? GetClipboardItemType();
+    IEnumerable<T> GetClipboardElements<T>();
 }

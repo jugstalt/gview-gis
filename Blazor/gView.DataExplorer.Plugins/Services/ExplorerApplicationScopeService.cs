@@ -2,6 +2,7 @@
 using gView.Blazor.Core.Services.Abstraction;
 using gView.DataExplorer.Core.Services;
 using gView.Framework.Blazor;
+using gView.Framework.Blazor.Models;
 using gView.Framework.Blazor.Services;
 using gView.Framework.Blazor.Services.Abstraction;
 using gView.Framework.DataExplorer.Abstraction;
@@ -21,11 +22,13 @@ public class ExplorerApplicationScopeService : ApplictionBusyHandler, IApplicati
     IEnumerable<IKnownDialogService> _knownDialogs;
     private readonly EventBusService _eventBus;
     private readonly IJSRuntime _jsRuntime;
+    private readonly ISnackbar _snackbar;
 
     public ExplorerApplicationScopeService(IDialogService dialogService,
                                            IEnumerable<IKnownDialogService> knownDialogs,
                                            EventBusService eventBus,
-                                           IJSRuntime jsRuntime)
+                                           IJSRuntime jsRuntime,
+                                           ISnackbar snackbar)
     {
         _dialogService = dialogService;
         _knownDialogs = knownDialogs;
@@ -34,6 +37,7 @@ public class ExplorerApplicationScopeService : ApplictionBusyHandler, IApplicati
 
         _eventBus.OnCurrentExplorerObjectChanged += EventBus_OnTreeItemClickAsync;
         _eventBus.OnContextExplorerObjectsChanged += EventBus_OnContextExplorerObjectsChanged;
+        _snackbar = snackbar;
     }
 
 
@@ -137,6 +141,31 @@ public class ExplorerApplicationScopeService : ApplictionBusyHandler, IApplicati
 
         return await ShowModalDialog(knownDialog.RazorType, title ?? knownDialog.Title, model);
     }
+
+    public void AddToSnackbar(string message)
+    {
+        _snackbar.Add(message);
+    }
+
+    #region Clipboard
+
+    private ClipboardItem? _clipboardItem = null;
+    public void SetClipboardItem(ClipboardItem? item)
+    {
+        _clipboardItem = item;
+    }
+    public Type? GetClipboardItemType() => _clipboardItem?.ElementType;
+    public IEnumerable<T> GetClipboardElements<T>()
+    {
+        if (_clipboardItem?.Elements == null)
+        {
+            return Array.Empty<T>();
+        }
+
+        return _clipboardItem.Elements.OfType<T>();
+    }
+
+    #endregion
 
     #region Busy Context
 

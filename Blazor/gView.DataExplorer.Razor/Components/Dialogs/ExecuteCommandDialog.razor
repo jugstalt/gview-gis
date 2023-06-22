@@ -1,0 +1,75 @@
+@inherits ModalDialogFormBase<ExecuteCommandModel>
+
+<ModalDialogFormBase T="ExecuteCommandModel"
+                     OnDialogClose="base.OnDialogClose"
+                     Model="base.Model">
+    <FormContent>
+        <pre style="width:800px;height:500px;background-color:#333;color:#eee;padding:8px;white-space:pre-wrap">
+            @LoggerOutput.ToString()
+        </pre>
+    </FormContent>
+    <DialogButtons>
+
+    </DialogButtons>
+</ModalDialogFormBase>
+
+@code {
+    private System.Text.StringBuilder LoggerOutput = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+
+        var task = Task.Run(async () =>
+        {
+            var logger = new Logger(this);
+
+            Model.Result = await Model.Command.Run(Model.Parameters, logger);
+
+            logger.LogLine($"Finished {(Model.Result ? "successful" : "with errors")}");
+
+            if(Model.Result==true)
+            {
+                await Task.Delay(2000);
+                await base.Close();
+            }
+        });
+    }
+
+    private void Refresh()
+    {
+        InvokeAsync(StateHasChanged);
+    }
+
+    private class Logger : Cmd.Core.Abstraction.ICommandLogger
+    {
+        private bool _requireNewline=false;
+        private readonly ExecuteCommandDialog _parent;
+
+        public Logger(ExecuteCommandDialog parent)
+        {
+            _parent = parent;
+        }
+
+        public void Log(string message)
+        {
+            _parent.LoggerOutput.Append(message);
+            _requireNewline = true;
+
+            _parent.Refresh();
+        }
+
+        public void LogLine(string message)
+        {
+            if(_requireNewline)
+            {
+                _parent.LoggerOutput.AppendLine("");
+            }
+
+            _parent.LoggerOutput.AppendLine(message);
+            _requireNewline = false;
+
+            _parent.Refresh();
+        }
+    }
+}

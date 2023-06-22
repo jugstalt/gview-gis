@@ -204,7 +204,7 @@ public class CopyFeatureClassCommand : ICommand
 
                 FdbImport import = new FdbImport(((IFeatureUpdater)destDataset.Database).SuggestedInsertFeatureCountPerTransaction);
                 import.ReportAction += (sender, action) => logger?.LogLine(action);
-                import.ReportProgress += (sender, progress) => logger?.Log($"...{progress}");
+                import.ReportProgress += (sender, progress) => logger?.Log($" .. {progress}");
 
                 ISpatialIndexDef? treeDef = null;
 
@@ -367,12 +367,12 @@ public class CopyFeatureClassCommand : ICommand
         }
         finally
         {
-            if (sourceDataset != null)
+            if (sourceDataset is not null)
             {
                 sourceDataset.Dispose();
             }
 
-            if (destDataset != null)
+            if (destDataset is not null)
             {
                 destDataset.Dispose();
             }
