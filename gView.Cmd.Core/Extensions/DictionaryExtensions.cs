@@ -25,6 +25,12 @@ static public class DictionaryExtensions
             return default(T);
         }
 
+        if (typeof(T) == typeof(Guid))
+        {
+            object guid = new Guid(parameters[key].ToString());
+            return (T)guid;
+        }
+
         return (T)Convert.ChangeType(parameters[key], typeof(T));
     }
 
@@ -99,18 +105,25 @@ static public class DictionaryExtensions
                 {
 
                     if (!parameters.ContainsKey(parameterDescription.Name) ||
-                        string.IsNullOrEmpty(parameters[parameterDescription.Name]?.ToString()) ||
-                        Convert.ChangeType(parameters[parameterDescription.Name], parameterDescription.ParameterType) == null)
+                        string.IsNullOrEmpty(parameters[parameterDescription.Name]?.ToString()))
                     {
                         throw new Exception("Value is required");
                     }
 
+                    var val = parameterDescription.ParameterType switch
+                    {
+                        Type t when t == typeof(Guid) => new Guid(parameters[parameterDescription.Name].ToString()),
+                        _ => Convert.ChangeType(parameters[parameterDescription.Name], parameterDescription.ParameterType)
+                    };
                 }
                 else
                 {
                     ICommandPararmeterBuilder parameterBuilder = parameterDescription.GetBuilder();
 
-                    return parameters.VerifyParameters(parameterBuilder.ParameterDescriptions, logger);
+                    if(!parameters.VerifyParameters(parameterBuilder.ParameterDescriptions, logger))
+                    {
+                        return false;
+                    }
 
                 }
             }

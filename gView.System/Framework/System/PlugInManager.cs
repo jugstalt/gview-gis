@@ -81,6 +81,8 @@ namespace gView.Framework.system
                 _pluginTypes = new Dictionary<Guid, Type>();
                 FileInfo entryAssembly = new FileInfo(Assembly.GetEntryAssembly().Location);
 
+                Console.WriteLine($"Init PluginManager: {entryAssembly.Directory.FullName}");
+
                 foreach (FileInfo dll in entryAssembly.Directory.GetFiles("*.dll").Where(f => f.Name.ToLower().StartsWith("gview.")))
                 {
                     currentDll = dll.Name;
@@ -90,6 +92,7 @@ namespace gView.Framework.system
                     try
                     {
                         Assembly assembly = Assembly.LoadFrom(dll.FullName);
+
                         foreach (var pluginType in assembly.GetTypes())
                         {
                             var registerPluginAttribute = pluginType.GetCustomAttribute<RegisterPlugInAttribute>();
@@ -133,6 +136,11 @@ namespace gView.Framework.system
                         //    error.Append(Environment.NewLine);
                         //}
                     }
+                }
+
+                if (InitSilent == true)
+                {
+                    Console.WriteLine($"PluginManager: added {_pluginTypes.Count} plugins...");
                 }
             }
             catch (Exception ex)

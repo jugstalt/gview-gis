@@ -586,7 +586,9 @@ namespace gView.DataSources.Fdb.MSAccess
 
                 foreach (IField f in FieldsCopy.ToEnumerable())
                 {
-                    if (f.type == FieldType.ID || ColumnName(f.name) == ColumnName("FDB_OID"))
+                    if (f.type == FieldType.ID || ColumnName(f.name) == ColumnName("FDB_OID") || 
+                        f.name.Contains("(")  // Function like Shape.STArea(), ...
+                        )
                     {
                         fields.Remove(f);
                     }

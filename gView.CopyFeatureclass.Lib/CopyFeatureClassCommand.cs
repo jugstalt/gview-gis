@@ -275,7 +275,6 @@ public class CopyFeatureClassCommand : ICommand
                 }
                 IFeatureClass? destFC = element.Class as IFeatureClass;
 
-                string? errMsg;
                 if (!await Replication.InsertReplicationIDFieldname(destFC, replIDField))
                 {
                     throw new Exception("ERROR: at InsertReplicationIDFieldname");

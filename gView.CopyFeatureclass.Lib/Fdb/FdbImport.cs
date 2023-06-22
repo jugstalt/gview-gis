@@ -19,13 +19,13 @@ public class FdbImport
 
     public delegate void ReportActionEvent(FdbImport sender, string action);
     public delegate void ReportProgressEvent(FdbImport sender, int progress);
-    //public delegate void ReportRequestEvent(FdbImport sender, RequestArgs args);
-    public event ReportActionEvent ReportAction = null;
-    public event ReportProgressEvent ReportProgress = null;
-    //public event ReportRequestEvent ReportRequest = null;
+
+    public event ReportActionEvent? ReportAction = null;
+    public event ReportProgressEvent? ReportProgress = null;
+
     private string _errMsg = "";
     private ICancelTracker _cancelTracker;
-    private IGeometricTransformer _transformer = null;
+    private IGeometricTransformer? _transformer = null;
     private bool _schemaOnly = false;
 
     public FdbImport(int featureBufferSize = 1000)
@@ -62,7 +62,7 @@ public class FdbImport
     {
         return ImportToNewFeatureclass(fdb, dsname, fcname, sourceFC, fieldTranslation, true, null);
     }
-    public Task<bool> ImportToNewFeatureclass(IFeatureDatabase fdb, string dsname, string fcname, IFeatureClass sourceFC, FieldTranslation fieldTranslation, bool project, List<IQueryFilter> filters)
+    public Task<bool> ImportToNewFeatureclass(IFeatureDatabase fdb, string dsname, string fcname, IFeatureClass sourceFC, FieldTranslation fieldTranslation, bool project, List<IQueryFilter>? filters)
     {
         return ImportToNewFeatureclass(fdb, dsname, fcname, sourceFC, fieldTranslation, true, filters, null);
     }
@@ -199,7 +199,7 @@ public class FdbImport
                 destDS.Dispose();
                 return false;
             }
-            IFeatureClass destFC = destLayer.Class as IFeatureClass;
+            IFeatureClass destFC = (IFeatureClass)destLayer.Class;
 
             if (project && destFC.SpatialReference != null && !destFC.SpatialReference.Equals(sourceFC.SpatialReference))
             {
@@ -220,8 +220,8 @@ public class FdbImport
                 }
             }
 
-            DualTree tree = null;
-            BinaryTree2Builder tree2 = null;
+            DualTree? tree = null;
+            BinaryTree2Builder? treeBuilder = null;
 
             if (msSpatial)
             {
@@ -243,12 +243,12 @@ public class FdbImport
                     if (_schemaOnly && sourceFC.Dataset.Database is IImplementsBinarayTreeDef)
                     {
                         BinaryTreeDef tDef = await ((IImplementsBinarayTreeDef)sourceFC.Dataset.Database).BinaryTreeDef(sourceFC.Name);
-                        tree2 = new BinaryTree2Builder(tDef.Bounds, tDef.MaxLevel, tDef.MaxPerNode, tDef.SplitRatio);
+                        treeBuilder = new BinaryTree2Builder(tDef.Bounds, tDef.MaxLevel, tDef.MaxPerNode, tDef.SplitRatio);
                     }
                     else
                     {
-                        tree2 = await SpatialIndex2(fdb, sourceFC, sIndexDef, filters);
-                        if (tree2 == null)
+                        treeBuilder = await SpatialIndex2(fdb, sourceFC, sIndexDef, filters);
+                        if (treeBuilder == null)
                         {
                             return false;
                         }
@@ -257,7 +257,7 @@ public class FdbImport
 
                 // Vorab einmal alle "Bounds" festlegen, damit auch
                 // ein aufzubauender Layer geviewt werden kann
-                if (_treeVersion == TreeVersion.BinaryTree2 && fdb is AccessFDB)
+                if (_treeVersion == TreeVersion.BinaryTree2 && treeBuilder != null && fdb is AccessFDB)
                 {
                     if (ReportAction != null)
                     {
@@ -265,7 +265,7 @@ public class FdbImport
                     }
 
                     List<long> nids = new List<long>();
-                    foreach (BinaryTree2BuilderNode node in tree2.Nodes)
+                    foreach (BinaryTree2BuilderNode node in treeBuilder.Nodes)
                     {
                         nids.Add(node.Number);
                     }
@@ -276,8 +276,8 @@ public class FdbImport
                         ReportAction(this, "Set spatial index bounds");
                     }
                     //((AccessFDB)fdb).SetSpatialIndexBounds(fcname, "BinaryTree2", tree2.Bounds, sIndexDef.SplitRatio, sIndexDef.MaxPerNode, tree2.maxLevels);
-                    await ((AccessFDB)fdb).SetSpatialIndexBounds(fcname, "BinaryTree2", tree2.Bounds, tree2.SplitRatio, tree2.MaxPerNode, tree2.maxLevels);
-                    await ((AccessFDB)fdb).SetFeatureclassExtent(fcname, tree2.Bounds);
+                    await ((AccessFDB)fdb).SetSpatialIndexBounds(fcname, "BinaryTree2", treeBuilder.Bounds, treeBuilder.SplitRatio, treeBuilder.MaxPerNode, treeBuilder.maxLevels);
+                    await ((AccessFDB)fdb).SetFeatureclassExtent(fcname, treeBuilder.Bounds);
                 }
             }
             if (_cancelTracker.Continue)
@@ -308,7 +308,7 @@ public class FdbImport
                         }
                         else
                         {
-                            result = await CopyFeatures2(sourceFC, fdb, destFC, fieldTranslation, tree2);
+                            result = await CopyFeatures2(sourceFC, fdb, destFC, fieldTranslation, treeBuilder);
                         }
                     }
                     if (!result)
@@ -333,7 +333,7 @@ public class FdbImport
 
                 if (msSpatial == false)
                 {
-                    if (_treeVersion == TreeVersion.BinaryTree)
+                    if (_treeVersion == TreeVersion.BinaryTree && tree != null)
                     {
                         if (ReportAction != null)
                         {
@@ -369,7 +369,7 @@ public class FdbImport
         }
     }
 
-    async private Task<DualTree> SpatialIndex(IFeatureClass fc, int maxPerNode, List<IQueryFilter> filters)
+    async private Task<DualTree?> SpatialIndex(IFeatureClass fc, int maxPerNode, List<IQueryFilter>? filters)
     {
         if (fc == null || fc.Envelope == null)
         {
@@ -403,7 +403,7 @@ public class FdbImport
             IEnvelope fcEnvelope = fc.Envelope;
             if (_transformer != null)
             {
-                IGeometry geom = _transformer.Transform2D(fcEnvelope) as IGeometry;
+                IGeometry? geom = _transformer.Transform2D(fcEnvelope) as IGeometry;
                 if (geom == null)
                 {
                     _errMsg = "SpatialIndex: Can't project featureclass extent!";
@@ -424,7 +424,7 @@ public class FdbImport
 
                 SHPObject shpObj;
 
-                IGeometry shape = feat.Shape;
+                IGeometry? shape = feat.Shape;
                 if (_transformer != null)
                 {
                     shape = _transformer.Transform2D(shape) as IGeometry;
@@ -440,31 +440,28 @@ public class FdbImport
                 }
 
                 dualTree.AddShape(shpObj);
-                if ((counter % 1000) == 0 && ReportProgress != null)
+                if ((++counter % 1000) == 0)
                 {
-                    ReportProgress(this, counter);
+                    ReportProgress?.Invoke(this, counter);
                 }
                 counter++;
             }
+            ReportProgress?.Invoke(this, counter);
+
             dualTree.FinishIt();
             fCursor.Dispose();
-
-            if (ReportProgress != null)
-            {
-                ReportProgress(this, counter);
-            }
         }
         return dualTree;
     }
 
-    async private Task<BinaryTree2Builder> SpatialIndex2(IFeatureDatabase fdb, IFeatureClass fc, ISpatialIndexDef def, List<IQueryFilter> filters)
+    async private Task<BinaryTree2Builder?> SpatialIndex2(IFeatureDatabase fdb, IFeatureClass fc, ISpatialIndexDef def, List<IQueryFilter>? filters)
     {
         if (fc == null)
         {
             return null;
         }
 
-        IEnvelope bounds = null;
+        IEnvelope? bounds = null;
         if (fc.Envelope != null)
         {
             bounds = fc.Envelope;
@@ -481,7 +478,7 @@ public class FdbImport
 
         if (_transformer != null)
         {
-            IGeometry transBounds = _transformer.Transform2D(bounds) as IGeometry;
+            IGeometry? transBounds = _transformer.Transform2D(bounds) as IGeometry;
             if (transBounds != null)
             {
                 bounds = transBounds.Envelope;
@@ -521,7 +518,7 @@ public class FdbImport
                 IEnvelope fcEnvelope = bounds;
                 if (_transformer != null)
                 {
-                    IGeometry geom = _transformer.Transform2D(fcEnvelope) as IGeometry;
+                    IGeometry? geom = _transformer.Transform2D(fcEnvelope) as IGeometry;
                     if (geom == null)
                     {
                         _errMsg = "SpatialIndex: Can't project featureclass extent!";
@@ -540,7 +537,7 @@ public class FdbImport
                         break;
                     }
 
-                    IGeometry shape = feat.Shape;
+                    IGeometry? shape = feat.Shape;
                     if (_transformer != null)
                     {
                         shape = _transformer.Transform2D(shape) as IGeometry;
@@ -549,12 +546,13 @@ public class FdbImport
                     feat.Shape = shape;
                     treeBuilder.AddFeature(feat);
 
-                    if ((counter % 1000) == 0 && ReportProgress != null)
+                    if ((++counter % 1000) == 0)
                     {
-                        ReportProgress(this, counter);
+                        ReportProgress?.Invoke(this, counter);
                     }
-                    counter++;
                 }
+                ReportProgress?.Invoke(this, counter);
+
                 fCursor.Dispose();
             }
         }
@@ -563,7 +561,7 @@ public class FdbImport
         return treeBuilder;
     }
 
-    async private Task<bool> CopyFeatures(IFeatureClass source, IFeatureUpdater fdb, IFeatureClass dest, FieldTranslation fTrans, DualTree tree)
+    async private Task<bool> CopyFeatures(IFeatureClass source, IFeatureUpdater fdb, IFeatureClass dest, FieldTranslation? fTrans, DualTree? tree)
     {
         if (tree == null || tree.Nodes == null)
         {
@@ -613,7 +611,7 @@ public class FdbImport
         return true;
     }
 
-    async private Task<bool> CopyFeatures2(IFeatureClass source, IFeatureUpdater fdb, IFeatureClass dest, FieldTranslation fTrans, BinaryTree2Builder treeBuilder)
+    async private Task<bool> CopyFeatures2(IFeatureClass source, IFeatureUpdater fdb, IFeatureClass dest, FieldTranslation? fTrans, BinaryTree2Builder? treeBuilder)
     {
         List<BinaryTree2BuilderNode> nodes;
 
@@ -665,7 +663,7 @@ public class FdbImport
         return true;
     }
 
-    async private Task<int> CopyFeatures(IFeatureCursor fCursor, long NID, IFeatureUpdater fdb, IFeatureClass dest, FieldTranslation fTrans, int featcounter)
+    async private Task<int> CopyFeatures(IFeatureCursor fCursor, long NID, IFeatureUpdater fdb, IFeatureClass dest, FieldTranslation? fTrans, int featcounter)
     {
         IFeature feat;
 
@@ -720,7 +718,7 @@ public class FdbImport
         return featcounter;
     }
 
-    async private Task<bool> CopyFeatures(IFeatureClass source, IFeatureUpdater fdb, IFeatureClass dest, FieldTranslation fTrans, List<IQueryFilter> filters)
+    async private Task<bool> CopyFeatures(IFeatureClass source, IFeatureUpdater fdb, IFeatureClass dest, FieldTranslation? fTrans, List<IQueryFilter>? filters)
     {
         if (ReportAction != null)
         {

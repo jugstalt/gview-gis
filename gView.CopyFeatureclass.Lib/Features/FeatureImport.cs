@@ -14,13 +14,13 @@ public class FeatureImport
 {
     public delegate void ReportActionEvent(FeatureImport sender, string action);
     public delegate void ReportProgressEvent(FeatureImport sender, int progress);
-    //public delegate void ReportRequestEvent(FeatureImport sender, RequestArgs args);
-    public event ReportActionEvent ReportAction; // { add { throw new NotSupportedException(); } remove { } }
-    public event ReportProgressEvent ReportProgress = null;
-    //public event ReportRequestEvent ReportRequest = null;
+
+    public event ReportActionEvent? ReportAction;
+    public event ReportProgressEvent? ReportProgress = null;
+
     private string _errMsg = "";
     private ICancelTracker _cancelTracker;
-    private IGeometricTransformer _transformer = null;
+    private IGeometricTransformer? _transformer = null;
     private bool _schemaOnly = false;
 
     public FeatureImport(int featureBufferSize = 100)
@@ -58,7 +58,7 @@ public class FeatureImport
         return ImportToNewFeatureclass(destDS, fcname, sourceFC, fieldTranslation, project, null, sourceGeometryType);
     }
 
-    async public Task<bool> ImportToNewFeatureclass(IFeatureDataset destDS, string fcname, IFeatureClass sourceFC, FieldTranslation fieldTranslation, bool project, List<IQueryFilter> filters, GeometryType? sourceGeometryType = null)
+    async public Task<bool> ImportToNewFeatureclass(IFeatureDataset destDS, string fcname, IFeatureClass sourceFC, FieldTranslation fieldTranslation, bool project, List<IQueryFilter>? filters, GeometryType? sourceGeometryType = null)
     {
         if (destDS == null)
         {
@@ -96,7 +96,7 @@ public class FeatureImport
         return await ImportToNewFeatureclass(destDS, fcname, sourceFC, fieldTranslation, project, filters, nameCase, sourceGeometryType);
     }
 
-    async private Task<bool> ImportToNewFeatureclass(IFeatureDataset destDS, string fcname, IFeatureClass sourceFC, FieldTranslation fieldTranslation, bool project, List<IQueryFilter> filters, DatasetNameCase namecase, GeometryType? sourceGeometryType = null)
+    async private Task<bool> ImportToNewFeatureclass(IFeatureDataset destDS, string fcname, IFeatureClass sourceFC, FieldTranslation fieldTranslation, bool project, List<IQueryFilter>? filters, DatasetNameCase namecase, GeometryType? sourceGeometryType = null)
     {
         if (!_cancelTracker.Continue)
         {
@@ -133,7 +133,7 @@ public class FeatureImport
                 _errMsg = "Argument Exception";
                 return false;
             }
-            IFeatureDatabase fdb = destDS.Database as IFeatureDatabase;
+            IFeatureDatabase? fdb = destDS.Database as IFeatureDatabase;
             if (!(fdb is IFeatureUpdater))
             {
                 _errMsg = "Database don't implement IFeatureUpdater...";
@@ -194,7 +194,7 @@ public class FeatureImport
                 destDS.Dispose();
                 return false;
             }
-            IFeatureClass destFC = destLayer.Class as IFeatureClass;
+            IFeatureClass destFC = (IFeatureClass)destLayer.Class;
 
             if (project && destFC.SpatialReference != null && !destFC.SpatialReference.Equals(sourceFC.SpatialReference))
             {
@@ -269,15 +269,17 @@ public class FeatureImport
         }
     }
 
-    async private Task<bool> CopyFeatures(IFeatureClass source, IFeatureUpdater fdb, IFeatureClass dest, FieldTranslation fTrans, List<IQueryFilter> filters)
+    async private Task<bool> CopyFeatures(IFeatureClass source, IFeatureUpdater fdb, IFeatureClass dest, FieldTranslation? fTrans, List<IQueryFilter>? filters)
     {
         if (filters == null)
         {
             QueryFilter filter = new QueryFilter();
             filter.SubFields = "*";
 
-            filters = new List<IQueryFilter>();
-            filters.Add(filter);
+            filters = new List<IQueryFilter>
+            {
+                filter
+            };
         }
 
         int counter = 0;

@@ -38,8 +38,8 @@ public class FeatureClassParameterBuilder : ICommandPararmeterBuilder
     {
         return typeof(T) switch
         {
-            IFeatureClass => (T)await BuildFeatureClass(parameters),
-            IFeatureDataset => (T)await BuildFeatureDataset(parameters),
+            Type t when t == typeof(IFeatureClass) => (T)await BuildFeatureClass(parameters),
+            Type t when t == typeof(IFeatureDataset) => (T)await BuildFeatureDataset(parameters),
             _ => throw new ArgumentException($"Can't build type {typeof(T).Name}")
         };
     }
