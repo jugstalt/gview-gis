@@ -6,6 +6,7 @@
         SpatialReferenceDialog,
         GeographicProjectionSelectorDialog,
         GeographicDatumSelectorDialog,
-        ConnectionString
+        ConnectionString,
+        ExecuteCommand
     }
 }

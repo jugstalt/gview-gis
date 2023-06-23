@@ -9,7 +9,8 @@ public interface IApplicationScope : IApplicationBusyHandling, IDisposable
 {
     Task<T?> ShowModalDialog<T>(Type razorComponent,
                                 string title,
-                                T? model = default(T));
+                                T? model = default(T),
+                                ModalDialogOptions? modalDialogOptions = null);
 
     Task<T?> ShowKnownDialog<T>(KnownDialogs dialog,
                                              string? title = null,

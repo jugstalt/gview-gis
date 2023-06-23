@@ -1,6 +1,7 @@
 ﻿using gView.CopyFeatureclass.Lib;
 using gView.DataExplorer.Plugins.Extensions;
 using gView.DataExplorer.Razor.Components.Dialogs.Models;
+using gView.Framework.Blazor;
 using gView.Framework.Blazor.Services.Abstraction;
 using gView.Framework.Data;
 using gView.Framework.DataExplorer;
@@ -83,8 +84,8 @@ internal class Paste : IExplorerTool
                 });
             }
 
-            await scopeService.ShowModalDialog(
-                    typeof(gView.DataExplorer.Razor.Components.Dialogs.ExecuteCommandDialog),
+            await scopeService.ShowKnownDialog(
+                    KnownDialogs.ExecuteCommand,
                     $"Copy {commandItems.Count} FeatureClasses",
                     new ExecuteCommandModel() { CommandItems = commandItems });
 

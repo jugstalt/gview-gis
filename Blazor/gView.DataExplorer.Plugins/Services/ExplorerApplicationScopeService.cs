@@ -73,7 +73,8 @@ public class ExplorerApplicationScopeService : ApplictionBusyHandler, IApplicati
 
     async public Task<T?> ShowModalDialog<T>(Type razorComponent,
                                              string title,
-                                             T? model = default(T))
+                                             T? model = default(T),
+                                             ModalDialogOptions? modalDialogOptions = null)
     {
         IDialogReference? dialog = null;
         T? result = default(T);
@@ -92,8 +93,9 @@ public class ExplorerApplicationScopeService : ApplictionBusyHandler, IApplicati
         var dialogOptions = new DialogOptions()
         {
             DisableBackdropClick = true,
-            CloseButton = true,
+            CloseButton = modalDialogOptions?.ShowCloseButton ?? true,
             MaxWidth = MaxWidth.ExtraExtraLarge,
+            CloseOnEscapeKey = modalDialogOptions?.CloseOnEscapeKey ?? false,
             //FullWidth = true
         };
 
@@ -139,7 +141,7 @@ public class ExplorerApplicationScopeService : ApplictionBusyHandler, IApplicati
             throw new GeneralException($"Can't create dialog model");
         }
 
-        return await ShowModalDialog(knownDialog.RazorType, title ?? knownDialog.Title, model);
+        return await ShowModalDialog(knownDialog.RazorType, title ?? knownDialog.Title, model, knownDialog.DialogOptions);
     }
 
     public void AddToSnackbar(string message)

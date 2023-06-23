@@ -9,6 +9,7 @@ using gView.Framework.Data;
 using gView.Framework.FDB;
 using gView.Framework.Geometry;
 using gView.Framework.Offline;
+using gView.Framework.system;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,6 +21,8 @@ public class CopyFeatureClassCommand : ICommand
     public string Name => "CopyFeatureClass";
 
     public string Description => "Copies a featureclass from one datasoure to another";
+
+    public string ExecutableName => "gView.Cmd.CopyFeatureclass.exe";
 
     public IEnumerable<ICommandParameterDescription> ParameterDescriptions => new ICommandParameterDescription[]
     {
@@ -55,7 +58,7 @@ public class CopyFeatureClassCommand : ICommand
         }
     };
 
-    async public Task<bool> Run(IDictionary<string, object> parameters, ICommandLogger? logger = null)
+    async public Task<bool> Run(IDictionary<string, object> parameters, ICancelTracker? cancelTracker = null, ICommandLogger? logger = null)
     {
         var sourceBuilder = new FeatureClassParameterBuilder("source");
         var destBuilder = new FeatureClassParameterBuilder("dest");
@@ -202,7 +205,7 @@ public class CopyFeatureClassCommand : ICommand
             {
                 #region Copy to FDB
 
-                FdbImport import = new FdbImport(((IFeatureUpdater)destDataset.Database).SuggestedInsertFeatureCountPerTransaction);
+                FdbImport import = new FdbImport(cancelTracker, ((IFeatureUpdater)destDataset.Database).SuggestedInsertFeatureCountPerTransaction);
                 import.ReportAction += (sender, action) => logger?.LogLine(action);
                 import.ReportProgress += (sender, progress) => logger?.Log($" .. {progress}");
 
@@ -246,7 +249,7 @@ public class CopyFeatureClassCommand : ICommand
                 logger?.LogLine("Create: " + destFcName);
                 logger?.LogLine("-----------------------------------------------------");
 
-                FeatureImport import = new FeatureImport();
+                FeatureImport import = new FeatureImport(cancelTracker);
 
                 import.ReportAction += (sender, action) => logger?.LogLine(action);
                 import.ReportProgress += (sender, progress) => logger?.Log($"...{progress}");

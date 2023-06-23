@@ -23,17 +23,9 @@ public class FeatureImport
     private IGeometricTransformer? _transformer = null;
     private bool _schemaOnly = false;
 
-    public FeatureImport(int featureBufferSize = 100)
+    public FeatureImport(ICancelTracker? cancelTracker, int featureBufferSize = 100)
     {
-        _cancelTracker = new CancelTracker();
-        ((CancelTracker)_cancelTracker).Reset();
-
-        this.FeatureBufferSize = featureBufferSize > 0 ? featureBufferSize : 100;
-    }
-
-    public FeatureImport(ICancelTracker cancelTracker, int featureBufferSize = 100)
-    {
-        _cancelTracker = cancelTracker;
+        _cancelTracker = cancelTracker ?? new CancelTracker();
 
         this.FeatureBufferSize = featureBufferSize > 0 ? featureBufferSize : 100;
     }

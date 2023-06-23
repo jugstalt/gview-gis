@@ -29,6 +29,7 @@ static public class ServicesExtensions
             .AddTransient<IKnownDialogService, SpatialReferenceDialogService>()
             .AddTransient<IKnownDialogService, GeographicsProjectionSelectorDialogService>()
             .AddTransient<IKnownDialogService, GeographicsDatumSelectorDialogService>()
-            .AddTransient<IKnownDialogService, ConnectionStringDialogService>();
+            .AddTransient<IKnownDialogService, ConnectionStringDialogService>()
+            .AddTransient<IKnownDialogService, ExecuteCommandDialogService>();
     }
 }
