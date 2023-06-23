@@ -29,7 +29,7 @@ internal class Shrinker
                 continue;
             }
 
-            ReportAction?.Invoke(this, $"Shrink spatial index for featureclass {cl.Name}");
+            ReportAction?.Invoke(this, $"Shrink spatial index for featureclass {cl.Name}...");
 
             AccessFDB? fdb = cl.Dataset.Database as AccessFDB;
             if (fdb == null)
