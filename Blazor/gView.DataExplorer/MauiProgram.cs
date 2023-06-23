@@ -1,8 +1,8 @@
 ﻿using gView.Blazor.Core.Extensions.DependencyInjection;
 using gView.DataExplorer.Plugins.Extensions.DependencyInjection;
-using gView.DataExplorer.Core.Extensions.DependencyInjeftion;
 using gView.Razor.Leaflet.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using MudBlazor;
 using MudBlazor.Services;
 
 namespace gView.DataExplorer
@@ -26,7 +26,18 @@ namespace gView.DataExplorer
             builder.Logging.AddDebug();
 #endif
 
-            builder.Services.AddMudServices();
+            builder.Services.AddMudServices(config =>
+            {
+                config.SnackbarConfiguration.PositionClass = Defaults.Classes.Position.BottomLeft;
+
+                config.SnackbarConfiguration.PreventDuplicates = true;
+                config.SnackbarConfiguration.NewestOnTop = true;
+                config.SnackbarConfiguration.ShowCloseIcon = true;
+                config.SnackbarConfiguration.VisibleStateDuration = 10000;
+                config.SnackbarConfiguration.HideTransitionDuration = 500;
+                config.SnackbarConfiguration.ShowTransitionDuration = 500;
+                config.SnackbarConfiguration.SnackbarVariant = Variant.Filled;
+            });
 
             builder.Services.AddExplorerDesktopApplicationService();
             builder.Services.AddExplorerApplicationScopeService();

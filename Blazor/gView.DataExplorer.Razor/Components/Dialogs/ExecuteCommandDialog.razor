@@ -20,18 +20,18 @@
     {
         await base.OnInitializedAsync();
 
+        Model.Result = true;
+
         var task = Task.Run(async () =>
         {
             var logger = new Logger(this);
-
-            Model.Result = await Model.Command.Run(Model.Parameters, logger);
-
-            logger.LogLine($"Finished {(Model.Result ? "successful" : "with errors")}");
-
-            if(Model.Result==true)
+            
+            foreach(var commandItem in Model.CommandItems)
             {
-                await Task.Delay(2000);
-                await base.Close();
+                var result = await commandItem.Command.Run(commandItem.Parameters, logger);
+
+                logger.LogLine($"Finished {(result ? "successful" : "with errors")}");
+                Model.Result &= result;
             }
         });
     }

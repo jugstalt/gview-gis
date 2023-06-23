@@ -56,6 +56,8 @@ internal class Paste : IExplorerTool
                 throw new Exception("Current dataset no not a valid gView Plugin. Copy featuresclasses is only possible to dataset plugins!");
             }
 
+            List<CommandItem> commandItems = new();
+
             foreach (var featureClass in scopeService.GetClipboardElements<IFeatureClass>())
             {
                 var sourceDataset = featureClass.Dataset;
@@ -66,22 +68,25 @@ internal class Paste : IExplorerTool
                     continue;
                 }
 
-                var parameters = new Dictionary<string, object>()
+                commandItems.Add(new CommandItem()
                 {
-                    { "source_connstr", sourceDataset.ConnectionString },
-                    { "source_guid", sourceDatasetGuid.ToString() },
-                    { "source_fc", featureClass.Name },
-                    { "dest_connstr", destDataset.ConnectionString },
-                    { "dest_guid", destDatasetGuid.ToString() },
-                    { "dest_fc", featureClass.Name }
-                };
-
-                var command = new CopyFeatureClassCommand();
-                var model = await scopeService.ShowModalDialog(
-                    typeof(gView.DataExplorer.Razor.Components.Dialogs.ExecuteCommandDialog),
-                    command.Name,
-                    new ExecuteCommandModel() { Command = command, Parameters = parameters });
+                    Command = new CopyFeatureClassCommand(),
+                    Parameters = new Dictionary<string, object>()
+                    {
+                        { "source_connstr", sourceDataset.ConnectionString },
+                        { "source_guid", sourceDatasetGuid.ToString() },
+                        { "source_fc", featureClass.Name },
+                        { "dest_connstr", destDataset.ConnectionString },
+                        { "dest_guid", destDatasetGuid.ToString() },
+                        { "dest_fc", featureClass.Name }
+                    }
+                });
             }
+
+            await scopeService.ShowModalDialog(
+                    typeof(gView.DataExplorer.Razor.Components.Dialogs.ExecuteCommandDialog),
+                    $"Copy {commandItems.Count} FeatureClasses",
+                    new ExecuteCommandModel() { CommandItems = commandItems });
 
             await scopeService.EventBus.FireFreshContentAsync();
         }
