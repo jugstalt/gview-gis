@@ -1,5 +1,6 @@
 ﻿using gView.Blazor.Core.Exceptions;
 using gView.DataExplorer.Plugins.ExplorerObjects.Base;
+using gView.DataExplorer.Plugins.ExplorerObjects.Fdb.ContextTools;
 using gView.DataSources.Fdb.MSAccess;
 using gView.DataSources.Fdb.PostgreSql;
 using gView.Framework.Blazor.Services.Abstraction;
@@ -9,6 +10,7 @@ using gView.Framework.DataExplorer.Events;
 using gView.Framework.FDB;
 using gView.Framework.system;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace gView.DataExplorer.Plugins.ExplorerObjects.Fdb.PostgreSql;
@@ -19,12 +21,13 @@ public class PostgreSqlDatasetExplorerObject : ExplorerParentObject<PostgreSqlEx
                                             IExplorerObjectDeletable, 
                                             ISerializableExplorerObject, 
                                             IExplorerObjectCreatable,
-                                            //, IExplorerObjectContextMenu, 
+                                            IExplorerObjectContextTools,
                                             IExplorerObjectRenamable
 {
     private AccessFDB? _fdb = null;
     private string _dsname = "", _icon = "";
     private IFeatureDataset? _dataset;
+    private IEnumerable<IExplorerObjectContextTool>? _contextTools = null;
     private bool _isImageDataset = false;
 
     public PostgreSqlDatasetExplorerObject() : base() { }
@@ -45,60 +48,14 @@ public class PostgreSqlDatasetExplorerObject : ExplorerParentObject<PostgreSqlEx
         }
 
         _dsname = dsname;
+
+        _contextTools = new IExplorerObjectContextTool[]
+        {
+            new SetSpatialReference(),
+            new ShrinkSpatialIndices(),
+            new RepairSpatialIndex()
+        };
     }
-
-    //async void SpatialReference_Click(object sender, EventArgs e)
-    //{
-    //    if (_dataset == null || _fdb == null)
-    //    {
-    //        await Refresh();
-    //        if (_dataset == null || _fdb == null)
-    //        {
-    //            MessageBox.Show("Can't open dataset...");
-    //            return;
-    //        }
-    //    }
-
-    //    FormSpatialReference dlg = new FormSpatialReference(await _dataset.GetSpatialReference());
-
-    //    if (dlg.ShowDialog() == DialogResult.OK)
-    //    {
-    //        int id = await _fdb.CreateSpatialReference(dlg.SpatialReference);
-    //        if (id == -1)
-    //        {
-    //            MessageBox.Show("Can't create Spatial Reference!\n", _fdb.LastErrorMessage);
-    //            return;
-    //        }
-    //        if (!await _fdb.SetSpatialReferenceID(_dataset.DatasetName, id))
-    //        {
-    //            MessageBox.Show("Can't set Spatial Reference!\n", _fdb.LastErrorMessage);
-    //            return;
-    //        }
-    //        _dataset.SetSpatialReference(dlg.SpatialReference);
-    //    }
-    //}
-
-    //async void ShrinkSpatialIndices_Click(object sender, EventArgs e)
-    //{
-    //    if (_dataset == null)
-    //    {
-    //        return;
-    //    }
-
-    //    List<IClass> classes = new List<IClass>();
-    //    foreach (IDatasetElement element in await _dataset.Elements())
-    //    {
-    //        if (element == null || element.Class == null)
-    //        {
-    //            continue;
-    //        }
-
-    //        classes.Add(element.Class);
-    //    }
-
-    //    SpatialIndexShrinker rebuilder = new SpatialIndexShrinker();
-    //    rebuilder.RebuildIndices(classes);
-    //}
 
     internal string ConnectionString
     {
@@ -117,6 +74,14 @@ public class PostgreSqlDatasetExplorerObject : ExplorerParentObject<PostgreSqlEx
     {
         get { return _isImageDataset; }
     }
+
+    #region IExplorerObjectContextTools Member
+
+    public IEnumerable<IExplorerObjectContextTool> ContextTools
+        => _contextTools ?? Array.Empty<IExplorerObjectContextTool>();
+
+
+    #endregion
 
     #region IExplorerObject Members
 

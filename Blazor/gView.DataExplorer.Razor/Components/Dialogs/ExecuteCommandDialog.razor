@@ -6,7 +6,7 @@
     <FormContent>
         @if(_isStarted) {
             <pre style="width:800px;height:500px;background-color:#333;color:#eee;padding:8px;white-space:pre-wrap">
-                @foreach(var line in LoggerOutput.ToString().Split('\n'))
+                @foreach(var line in _logLines)
                 {
                     if (line.Contains("error", StringComparison.OrdinalIgnoreCase))
                     {
@@ -61,6 +61,7 @@
 
 @code {
     private System.Text.StringBuilder LoggerOutput = new();
+    private string[] _logLines= new string[0];
     private ICancelTracker _cancelTracker = new CancelTracker();
     private bool _isFinshed = false, _isStarted = false;
 
@@ -111,6 +112,7 @@
 
     private void Refresh()
     {
+        _logLines = LoggerOutput.ToString().Split('\n');
         InvokeAsync(StateHasChanged);
     }
 

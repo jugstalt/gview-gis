@@ -1,5 +1,6 @@
 ﻿using gView.DataExplorer.Plugins.ExplorerObjects.Base;
 using gView.DataExplorer.Plugins.ExplorerObjects.Extensions;
+using gView.DataExplorer.Plugins.ExplorerObjects.Fdb.ContextTools;
 using gView.DataSources.Fdb;
 using gView.DataSources.Fdb.SQLite;
 using gView.Framework.Blazor.Services.Abstraction;
@@ -8,6 +9,7 @@ using gView.Framework.DataExplorer.Abstraction;
 using gView.Framework.DataExplorer.Events;
 using gView.Framework.Geometry;
 using gView.Framework.system;
+using gView.Framework.UI;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -18,8 +20,8 @@ namespace gView.DataExplorer.Plugins.ExplorerObjects.Fdb.SqLite;
 public class SqLiteFdbFeatureClassExplorerObject : ExplorerObjectCls<SqLiteFdbDatasetExplorerObject, FeatureClass>,
                                                    IExplorerSimpleObject,
                                                    ISerializableExplorerObject,
-                                                   IExplorerObjectDeletable
-                                                   /*, IExplorerObjectContextMenu*/,
+                                                   IExplorerObjectDeletable,
+                                                   IExplorerObjectContextTools,
                                                    IExplorerObjectRenamable,
                                                    IExplorerObjectCreatable
 {
@@ -28,6 +30,7 @@ public class SqLiteFdbFeatureClassExplorerObject : ExplorerObjectCls<SqLiteFdbDa
     private IFeatureClass? _fc = null;
     private IRasterClass? _rc = null;
     private bool _isNetwork = false;
+    private IEnumerable<IExplorerObjectContextTool>? _contextTools = null;
 
     public SqLiteFdbFeatureClassExplorerObject() :
         base()
@@ -118,25 +121,11 @@ public class SqLiteFdbFeatureClassExplorerObject : ExplorerObjectCls<SqLiteFdbDa
 
         if (!_isNetwork)
         {
-        //    _contextItems = new ToolStripItem[1];
-        //    _contextItems[0] = new ToolStripMenuItem("Tasks");
-
-        //    //_contextItems = new ToolStripItem[1];
-        //    //_contextItems[0] = new ToolStripMenuItem("Rebuild Spatial Index...");
-        //    //_contextItems[0].Click += new EventHandler(RebuildSpatialIndex_Click);
-        //    ToolStripMenuItem item = new ToolStripMenuItem("Shrink Spatial Index...");
-        //    item.Click += new EventHandler(ShrinkSpatialIndex_Click);
-        //    ((ToolStripMenuItem)_contextItems[0]).DropDownItems.Add(item);
-        //    item = new ToolStripMenuItem("Spatial Index Definition...");
-        //    item.Click += new EventHandler(SpatialIndexDef_Click);
-        //    ((ToolStripMenuItem)_contextItems[0]).DropDownItems.Add(item);
-        //    item = new ToolStripMenuItem("Repair Spatial Index...");
-        //    item.Click += new EventHandler(RepairSpatialIndex_Click);
-        //    ((ToolStripMenuItem)_contextItems[0]).DropDownItems.Add(item);
-        //    ((ToolStripMenuItem)_contextItems[0]).DropDownItems.Add(new ToolStripSeparator());
-        //    item = new ToolStripMenuItem("Truncate");
-        //    item.Click += new EventHandler(Truncate_Click);
-        //    ((ToolStripMenuItem)_contextItems[0]).DropDownItems.Add(item);
+            _contextTools = new IExplorerObjectContextTool[]
+            {
+                new ShrinkSpatialIndices(),
+                new RepairSpatialIndex()
+            };
         }
     }
 
@@ -226,18 +215,6 @@ public class SqLiteFdbFeatureClassExplorerObject : ExplorerObjectCls<SqLiteFdbDa
     }
 
     #endregion
-
-    //#region IExplorerObjectContextMenu Member
-
-    //public ToolStripItem[] ContextMenuItems
-    //{
-    //    get
-    //    {
-    //        return _contextItems;
-    //    }
-    //}
-
-    //#endregion
 
     void ShrinkSpatialIndex_Click(object sender, EventArgs e)
     {
@@ -401,6 +378,14 @@ public class SqLiteFdbFeatureClassExplorerObject : ExplorerObjectCls<SqLiteFdbDa
 
         return null;
     }
+
+    #endregion
+
+    #region IExplorerObjectContextTools Member
+
+    public IEnumerable<IExplorerObjectContextTool> ContextTools
+        => _contextTools ?? Array.Empty<IExplorerObjectContextTool>();
+
 
     #endregion
 }

@@ -1,5 +1,6 @@
 ﻿using gView.Blazor.Core.Exceptions;
 using gView.DataExplorer.Plugins.ExplorerObjects.Base;
+using gView.DataExplorer.Plugins.ExplorerObjects.Fdb.ContextTools;
 using gView.DataSources.Fdb;
 using gView.DataSources.Fdb.PostgreSql;
 using gView.Framework.Blazor.Services.Abstraction;
@@ -9,6 +10,7 @@ using gView.Framework.DataExplorer.Events;
 using gView.Framework.Geometry;
 using gView.Framework.system;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace gView.DataExplorer.Plugins.ExplorerObjects.Fdb.PostgreSql;
@@ -20,13 +22,15 @@ public class PostgreSqlFeatureClassExplorerObject : ExplorerObjectCls<PostgreSql
                                                     ISerializableExplorerObject,    
                                                     IExplorerObjectRenamable, 
                                                     IExplorerObjectCreatable, 
-                                                    IExporerOjectSchema
+                                                    IExporerOjectSchema,
+                                                    IExplorerObjectContextTools
 {
     private string _dsname = String.Empty, _fcname = String.Empty, _type = String.Empty;
     private string _icon = "";
     private IFeatureClass? _fc = null;
     private IRasterClass? _rc = null;
     private bool _isNetwork = false;
+    private IEnumerable<IExplorerObjectContextTool>? _contextTools = null;
 
     public PostgreSqlFeatureClassExplorerObject() : base() { }
     public PostgreSqlFeatureClassExplorerObject(PostgreSqlDatasetExplorerObject parent, string dsname, IDatasetElement element)
@@ -111,6 +115,15 @@ public class PostgreSqlFeatureClassExplorerObject : ExplorerObjectCls<PostgreSql
             }
 
         }
+
+        if (!_isNetwork)
+        {
+            _contextTools = new IExplorerObjectContextTool[]
+            {
+                new ShrinkSpatialIndices(),
+                new RepairSpatialIndex()
+            };
+        }
     }
 
     internal string ConnectionString
@@ -125,6 +138,14 @@ public class PostgreSqlFeatureClassExplorerObject : ExplorerObjectCls<PostgreSql
             return TypedParent.ConnectionString;
         }
     }
+
+    #region IExplorerObjectContextTools Member
+
+    public IEnumerable<IExplorerObjectContextTool> ContextTools
+        => _contextTools ?? Array.Empty<IExplorerObjectContextTool>();
+
+
+    #endregion
 
     #region IExplorerObject Members
 
@@ -212,66 +233,6 @@ public class PostgreSqlFeatureClassExplorerObject : ExplorerObjectCls<PostgreSql
     }
 
     #endregion
-
-    //void ShrinkSpatialIndex_Click(object sender, EventArgs e)
-    //{
-    //    if (_fc == null || _fc.Dataset == null || !(_fc.Dataset.Database is pgFDB))
-    //    {
-    //        MessageBox.Show("Can't shrink index...\nUncorrect feature class !!!");
-    //        return;
-    //    }
-
-    //    List<IClass> classes = new List<IClass>();
-    //    classes.Add(_fc);
-
-    //    SpatialIndexShrinker rebuilder = new SpatialIndexShrinker();
-    //    rebuilder.RebuildIndices(classes);
-    //    _fc.Dataset.RefreshClasses();
-    //}
-
-    //async void SpatialIndexDef_Click(object sender, EventArgs e)
-    //{
-    //    if (_fc == null || _fc.Dataset == null || !(_fc.Dataset.Database is pgFDB))
-    //    {
-    //        MessageBox.Show("Can't show spatial index definition...\nUncorrect feature class !!!");
-    //        return;
-    //    }
-
-    //    FormRebuildSpatialIndexDef dlg = await FormRebuildSpatialIndexDef.Create((pgFDB)_fc.Dataset.Database, _fc);
-    //    if (dlg.ShowDialog() == DialogResult.OK)
-    //    {
-    //    }
-    //}
-
-    //void RepairSpatialIndex_Click(object sender, EventArgs e)
-    //{
-    //    if (_fc == null || _fc.Dataset == null || !(_fc.Dataset.Database is pgFDB))
-    //    {
-    //        MessageBox.Show("Can't show spatial index definition...\nUncorrect feature class !!!");
-    //        return;
-    //    }
-
-    //    FormRepairSpatialIndexProgress dlg = new FormRepairSpatialIndexProgress((pgFDB)_fc.Dataset.Database, _fc);
-    //    if (dlg.ShowDialog() == DialogResult.OK)
-    //    {
-    //    }
-    //}
-
-    //void Truncate_Click(object sender, EventArgs e)
-    //{
-    //    if (_fc == null || _fc.Dataset == null || !(_fc.Dataset.Database is pgFDB))
-    //    {
-    //        MessageBox.Show("Can't rebuild index...\nUncorrect feature class !!!");
-    //        return;
-    //    }
-
-    //    ((pgFDB)_fc.Dataset.Database).TruncateTable(_fc.Name);
-    //    _fc.Dataset.RefreshClasses();
-    //}
-
-    //void Altertable_Click(object sender, EventArgs e)
-    //{
-    //}
 
     #region IExplorerObjectDeletable Member
 

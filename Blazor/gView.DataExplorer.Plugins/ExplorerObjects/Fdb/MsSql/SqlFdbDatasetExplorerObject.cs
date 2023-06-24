@@ -1,5 +1,6 @@
 ﻿using gView.Blazor.Core.Exceptions;
 using gView.DataExplorer.Plugins.ExplorerObjects.Base;
+using gView.DataExplorer.Plugins.ExplorerObjects.Fdb.ContextTools;
 using gView.DataSources.Fdb.MSAccess;
 using gView.DataSources.Fdb.MSSql;
 using gView.Framework.Blazor.Services.Abstraction;
@@ -8,6 +9,9 @@ using gView.Framework.DataExplorer.Abstraction;
 using gView.Framework.DataExplorer.Events;
 using gView.Framework.FDB;
 using gView.Framework.system;
+using gView.Framework.UI;
+using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace gView.DataExplorer.Plugins.ExplorerObjects.Fdb.MsSql;
@@ -17,14 +21,16 @@ public class SqlFdbDatasetExplorerObject : ExplorerParentObject<SqlFdbExplorerOb
                                            IExplorerSimpleObject, 
                                            IExplorerObjectDeletable, 
                                            ISerializableExplorerObject, 
-                                           IExplorerObjectCreatable, 
-    IExplorerObjectRenamable
+                                           IExplorerObjectCreatable,
+                                           IExplorerObjectContextTools,
+                                           IExplorerObjectRenamable
 {
     public string _icon = "";
     private bool _isImageDataset = false;
     private AccessFDB? _fdb = null;
     private string _dsname = "";
     private IFeatureDataset? _dataset;
+    private IEnumerable<IExplorerObjectContextTool>? _contextTools = null;
 
     public SqlFdbDatasetExplorerObject() : base() { }
     public SqlFdbDatasetExplorerObject(SqlFdbExplorerObject parent, string dsname)
@@ -44,65 +50,21 @@ public class SqlFdbDatasetExplorerObject : ExplorerParentObject<SqlFdbExplorerOb
 
         _dsname = dsname;
 
-        //_contextItems = new ToolStripItem[2];
-        //_contextItems[0] = new ToolStripMenuItem("Spatial Reference...");
-        //_contextItems[0].Click += new EventHandler(SpatialReference_Click);
-        //_contextItems[1] = new ToolStripMenuItem("Shrink Spatial Indices...");
-        //_contextItems[1].Click += new EventHandler(ShrinkSpatialIndices_Click);
+        _contextTools = new IExplorerObjectContextTool[]
+        {
+            new SetSpatialReference(),
+            new ShrinkSpatialIndices(),
+            new RepairSpatialIndex()
+        };
     }
 
-    //async void SpatialReference_Click(object sender, EventArgs e)
-    //{
-    //    if (_dataset == null || _fdb == null)
-    //    {
-    //        await Refresh();
-    //        if (_dataset == null || _fdb == null)
-    //        {
-    //            MessageBox.Show("Can't open dataset...");
-    //            return;
-    //        }
-    //    }
+    #region IExplorerObjectContextTools Member
 
-    //    FormSpatialReference dlg = new FormSpatialReference(await _dataset.GetSpatialReference());
+    public IEnumerable<IExplorerObjectContextTool> ContextTools
+        => _contextTools ?? Array.Empty<IExplorerObjectContextTool>();
 
-    //    if (dlg.ShowDialog() == DialogResult.OK)
-    //    {
-    //        int id = await _fdb.CreateSpatialReference(dlg.SpatialReference);
-    //        if (id == -1)
-    //        {
-    //            MessageBox.Show("Can't create Spatial Reference!\n", _fdb.LastErrorMessage);
-    //            return;
-    //        }
-    //        if (!await _fdb.SetSpatialReferenceID(_dataset.DatasetName, id))
-    //        {
-    //            MessageBox.Show("Can't set Spatial Reference!\n", _fdb.LastErrorMessage);
-    //            return;
-    //        }
-    //        _dataset.SetSpatialReference(dlg.SpatialReference);
-    //    }
-    //}
 
-    //async void ShrinkSpatialIndices_Click(object sender, EventArgs e)
-    //{
-    //    if (_dataset == null)
-    //    {
-    //        return;
-    //    }
-
-    //    List<IClass> classes = new List<IClass>();
-    //    foreach (IDatasetElement element in await _dataset.Elements())
-    //    {
-    //        if (element == null || element.Class == null)
-    //        {
-    //            continue;
-    //        }
-
-    //        classes.Add(element.Class);
-    //    }
-
-    //    SpatialIndexShrinker rebuilder = new SpatialIndexShrinker();
-    //    rebuilder.RebuildIndices(classes);
-    //}
+    #endregion
 
     internal string ConnectionString
     {

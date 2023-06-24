@@ -1,5 +1,6 @@
 ﻿using gView.Blazor.Core.Exceptions;
 using gView.DataExplorer.Plugins.ExplorerObjects.Base;
+using gView.DataExplorer.Plugins.ExplorerObjects.Fdb.ContextTools;
 using gView.DataSources.Fdb;
 using gView.DataSources.Fdb.MSAccess;
 using gView.DataSources.Fdb.MSSql;
@@ -9,7 +10,9 @@ using gView.Framework.DataExplorer.Abstraction;
 using gView.Framework.DataExplorer.Events;
 using gView.Framework.Geometry;
 using gView.Framework.system;
+using gView.Framework.UI;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace gView.DataExplorer.Plugins.ExplorerObjects.Fdb.MsSql;
@@ -19,7 +22,7 @@ public class SqlFdbFeatureClassExplorerObject : ExplorerObjectCls<SqlFdbDatasetE
                                                 IExplorerSimpleObject, 
                                                 IExplorerObjectDeletable, 
                                                 ISerializableExplorerObject,
-                                                //, IExplorerObjectContextMenu,
+                                                IExplorerObjectContextTools,
                                                 IExplorerObjectRenamable, 
                                                 IExplorerObjectCreatable, 
                                                 IExporerOjectSchema
@@ -28,6 +31,7 @@ public class SqlFdbFeatureClassExplorerObject : ExplorerObjectCls<SqlFdbDatasetE
     private IFeatureClass? _fc = null;
     private IRasterClass? _rc = null;
     private bool _isNetwork = false;
+    private IEnumerable<IExplorerObjectContextTool>? _contextTools = null;
 
     public SqlFdbFeatureClassExplorerObject() : base() { }
     public SqlFdbFeatureClassExplorerObject(SqlFdbDatasetExplorerObject parent, string dsname, IDatasetElement element)
@@ -110,7 +114,15 @@ public class SqlFdbFeatureClassExplorerObject : ExplorerObjectCls<SqlFdbDatasetE
                     _isNetwork = true;
                     break;
             }
+        }
 
+        if (!_isNetwork)
+        {
+            _contextTools = new IExplorerObjectContextTool[]
+            {
+                new ShrinkSpatialIndices(),
+                new RepairSpatialIndex()
+            };
         }
     }
 
@@ -126,6 +138,14 @@ public class SqlFdbFeatureClassExplorerObject : ExplorerObjectCls<SqlFdbDatasetE
             return TypedParent.ConnectionString;
         }
     }
+
+    #region IExplorerObjectContextTools Member
+
+    public IEnumerable<IExplorerObjectContextTool> ContextTools
+        => _contextTools ?? Array.Empty<IExplorerObjectContextTool>();
+
+
+    #endregion
 
     #region IExplorerObject Members
 
@@ -216,77 +236,6 @@ public class SqlFdbFeatureClassExplorerObject : ExplorerObjectCls<SqlFdbDatasetE
     }
 
     #endregion
-
-    //async void ShrinkSpatialIndex_Click(object sender, EventArgs e)
-    //{
-    //    if (_fc == null || _fc.Dataset == null || !(_fc.Dataset.Database is AccessFDB))
-    //    {
-    //        MessageBox.Show("Can't shrink index...\nUncorrect feature class !!!");
-    //        return;
-    //    }
-
-    //    List<IClass> classes = new List<IClass>();
-    //    classes.Add(_fc);
-
-    //    SpatialIndexShrinker rebuilder = new SpatialIndexShrinker();
-    //    rebuilder.RebuildIndices(classes);
-    //    await _fc.Dataset.RefreshClasses();
-    //}
-
-    //async void SpatialIndexDef_Click(object sender, EventArgs e)
-    //{
-    //    if (_fc == null || _fc.Dataset == null || !(_fc.Dataset.Database is AccessFDB))
-    //    {
-    //        MessageBox.Show("Can't show spatial index definition...\nUncorrect feature class !!!");
-    //        return;
-    //    }
-
-    //    FormRebuildSpatialIndexDef dlg = await FormRebuildSpatialIndexDef.Create((AccessFDB)_fc.Dataset.Database, _fc);
-    //    if (dlg.ShowDialog() == DialogResult.OK)
-    //    {
-    //    }
-    //}
-
-    //void RepairSpatialIndex_Click(object sender, EventArgs e)
-    //{
-    //    if (_fc == null || _fc.Dataset == null || !(_fc.Dataset.Database is AccessFDB))
-    //    {
-    //        MessageBox.Show("Can't show spatial index definition...\nUncorrect feature class !!!");
-    //        return;
-    //    }
-
-    //    FormRepairSpatialIndexProgress dlg = new FormRepairSpatialIndexProgress((AccessFDB)_fc.Dataset.Database, _fc);
-    //    if (dlg.ShowDialog() == DialogResult.OK)
-    //    {
-    //    }
-    //}
-
-    //void Truncate_Click(object sender, EventArgs e)
-    //{
-    //    if (_fc == null || _fc.Dataset == null || !(_fc.Dataset.Database is AccessFDB))
-    //    {
-    //        MessageBox.Show("Can't rebuild index...\nUncorrect feature class !!!");
-    //        return;
-    //    }
-
-    //    ((AccessFDB)_fc.Dataset.Database).TruncateTable(_fc.Name);
-    //    _fc.Dataset.RefreshClasses();
-    //}
-
-    //void Altertable_Click(object sender, EventArgs e)
-    //{
-    //    //if (_fc == null || _fc.Dataset == null || !(_fc.Dataset.Database is AccessFDB))
-    //    //{
-    //    //    MessageBox.Show("Can't rebuild index...\nUncorrect feature class !!!");
-    //    //    return;
-    //    //}
-
-    //    //if (_fc == null) return;
-    //    //FormNewFeatureclass dlg = new FormNewFeatureclass(_fc);
-    //    //if(dlg.ShowDialog()!=DialogResult.OK) return;
-
-    //    //((AccessFDB)_fc.Dataset.Database).AlterTable(_fc.Name, dlg.Fields);
-    //}
 
     #region IExplorerObjectDeletable Member
 

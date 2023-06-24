@@ -22,7 +22,7 @@ class Program
             return 1;
         }
 
-        if(await command.Run(parameters, logger) == false)
+        if(await command.Run(parameters, null, logger) == false)
         {
             return 1;
         }

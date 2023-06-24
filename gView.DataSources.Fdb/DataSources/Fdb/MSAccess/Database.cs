@@ -2591,6 +2591,7 @@ namespace gView.DataSources.Fdb.MSAccess
                 if (tree == null)
                 {
                     _errMsg = "Can't get determine tree for featureclass '" + fcName + "'!";
+                    return false;
                 }
 
                 IFeatureClass fc = await this.GetFeatureclass(fcName);

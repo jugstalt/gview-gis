@@ -51,7 +51,8 @@ public class SqLiteFdbDatasetExplorerObject : ExplorerObjectFeatureClassImport<I
         _contextTools = new IExplorerObjectContextTool[]
         {
             new SetSpatialReference(),
-            new ShrinkSpatialIndices()
+            new ShrinkSpatialIndices(),
+            new RepairSpatialIndex()
         };
     }
 

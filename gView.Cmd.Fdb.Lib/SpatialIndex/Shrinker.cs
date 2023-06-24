@@ -20,7 +20,9 @@ internal class Shrinker
         _cancelTracker = cancelTracker ?? new CancelTracker();
     }
 
-    async public Task RebuildIndicesAsync(List<IClass> classes)
+    public Task RebuildIndicesAsync(IClass @class) => RebuildIndicesAsync(new[] { @class });
+
+    async public Task RebuildIndicesAsync(IEnumerable<IClass> classes)
     {
         foreach (IClass cl in classes)
         {

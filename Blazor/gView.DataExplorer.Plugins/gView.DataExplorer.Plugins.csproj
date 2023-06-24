@@ -7,6 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\gView.Cmd.Fdb.Lib\gView.Cmd.Fdb.Lib.csproj" />
     <ProjectReference Include="..\..\gView.CopyFeatureclass.Lib\gView.CopyFeatureclass.Lib.csproj" />
     <ProjectReference Include="..\..\gView.DataSources.EventTable\gView.DataSources.EventTable.csproj" />
     <ProjectReference Include="..\..\gView.DataSources.Fdb.PostgreSql\gView.DataSources.Fdb.PostgreSql.csproj" />
