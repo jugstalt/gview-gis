@@ -9,7 +9,6 @@ using gView.Framework.DataExplorer.Abstraction;
 using gView.Framework.DataExplorer.Events;
 using gView.Framework.FDB;
 using gView.Framework.system;
-using gView.Framework.UI;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -17,10 +16,10 @@ using System.Threading.Tasks;
 namespace gView.DataExplorer.Plugins.ExplorerObjects.Fdb.MsSql;
 
 [RegisterPlugIn("42610C64-F3A9-4241-A7A8-1FEE4A4FE9FE")]
-public class SqlFdbDatasetExplorerObject : ExplorerParentObject<SqlFdbExplorerObject, SqlFDBDataset>, 
-                                           IExplorerSimpleObject, 
-                                           IExplorerObjectDeletable, 
-                                           ISerializableExplorerObject, 
+public class SqlFdbDatasetExplorerObject : ExplorerParentObject<SqlFdbExplorerObject, SqlFDBDataset>,
+                                           IExplorerSimpleObject,
+                                           IExplorerObjectDeletable,
+                                           ISerializableExplorerObject,
                                            IExplorerObjectCreatable,
                                            IExplorerObjectContextTools,
                                            IExplorerObjectRenamable
@@ -79,11 +78,11 @@ public class SqlFdbDatasetExplorerObject : ExplorerParentObject<SqlFdbExplorerOb
         }
     }
 
-    internal bool IsImageDataset=> _isImageDataset; 
+    internal bool IsImageDataset => _isImageDataset;
 
     #region IExplorerObject Members
 
-    public string Name=> _dsname; 
+    public string Name => _dsname;
 
     public string FullName
     {
@@ -97,7 +96,7 @@ public class SqlFdbDatasetExplorerObject : ExplorerParentObject<SqlFdbExplorerOb
             return @$"{Parent.FullName}\{this.Name}";
         }
     }
-    public string Type=> "Sql Feature Database Dataset";
+    public string Type => "Sql Feature Database Dataset";
     public string Icon => _icon;
     public override void Dispose()
     {
