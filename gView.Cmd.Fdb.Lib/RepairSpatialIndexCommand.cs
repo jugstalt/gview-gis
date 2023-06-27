@@ -46,11 +46,18 @@ public class RepairSpatialIndexCommand : ICommand
         logger?.LogLine($"Repair spatial index: {featureClass.Name}");
 
         int wrongNids = 0, lastPercent = 0;
+        bool firstCheck = true, firstUpdate = true;
         if (await fdb.RepairSpatialIndex(featureClass.Name, (sender, args) =>
         {
             if (args is RepairSICheckNodes)
             {
                 var checkArgs = (RepairSICheckNodes)args;
+
+                if (firstCheck)
+                {
+                    logger?.LogLine($"Check {checkArgs.Count} features/nodes...");
+                    firstCheck = false;
+                }
 
                 wrongNids = checkArgs.WrongNIDs;
 
@@ -65,12 +72,13 @@ public class RepairSpatialIndexCommand : ICommand
             {
                 var updateArgs = (RepairSIUpdateNodes)args;
 
-                int percent = updateArgs.Pos * 100 / updateArgs.Count;
-                if (percent != lastPercent)
+                if(firstUpdate)
                 {
-                    logger?.Log($" .. {percent}%");
-                    lastPercent = percent;
+                    logger?.LogLine($"Repair {updateArgs.Count} features/nodes...");
+                    firstUpdate = false;
                 }
+
+                logger?.Log($" .. {updateArgs.Pos / updateArgs.Count}");
             }
         }) == false)
         {

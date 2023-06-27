@@ -68,12 +68,17 @@
         @if (contextExplorerObject is IExplorerObjectContextTools)
         {
             <div class="explorer-tool-sub-box">
-                @foreach (var contextTool in ((IExplorerObjectContextTools)contextExplorerObject).ContextTools)
+                @foreach (var contextToolChunks in ((IExplorerObjectContextTools)contextExplorerObject).ContextTools.Chunk(2)) 
                 {
-                    <div class="explorer-context-tool"
-                         @onclick="async () => await ContextToolClickAsync(contextTool)">
-                        <div class=@Icons.FromString(contextTool.Icon)></div>
-                        <div class="title">@contextTool.Name</div>
+                    <div style="display:inline-block;vertical-align:top;">
+                    @foreach(var contextTool in contextToolChunks)
+                    {
+                        <div class="explorer-context-tool"
+                             @onclick="async () => await ContextToolClickAsync(contextTool)">
+                            <div class=@Icons.FromString(contextTool.Icon)></div>
+                            <div class="title">@contextTool.Name</div>
+                        </div>
+                    }
                     </div>
                 }
                 <div class="title">Context: @contextExplorerObject.Name</div>
