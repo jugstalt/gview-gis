@@ -1,0 +1,10 @@
+<MudCard Elevation="0">
+    @if (SpatialIndexDef != null)
+    {
+        <ExtentControl Extent="null"></ExtentControl>
+    }
+</MudCard>
+
+@code{
+    [Parameter] public BinarySearchTree? SpatialIndexDef{ get; set; }
+}
