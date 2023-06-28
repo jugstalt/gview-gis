@@ -1,10 +1,30 @@
 <MudCard Elevation="0">
-    @if (SpatialIndexDef != null)
+    @if (BinaryTreeDef != null)
     {
-        <ExtentControl Extent="null"></ExtentControl>
+        <ExtentControl Extent="_bounds"></ExtentControl>
+
+        <MudCard Elevation="2">
+            <MudNumericField @bind-value="_maxLevel"
+                              Label="Max Level" 
+                              Min="0" Max="64" />
+        </MudCard>
     }
 </MudCard>
 
 @code{
-    [Parameter] public BinarySearchTree? SpatialIndexDef{ get; set; }
+    [Parameter] public BinaryTreeDef? BinaryTreeDef { get; set; }
+
+    private IEnvelope? _bounds = null;
+    private int _maxLevel;
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+
+        if (BinaryTreeDef != null)
+        {
+            _bounds = BinaryTreeDef.Bounds;
+            _maxLevel = BinaryTreeDef.MaxLevel;
+        }
+    }
 }
