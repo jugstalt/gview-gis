@@ -124,7 +124,8 @@ public class SqLiteFdbFeatureClassExplorerObject : ExplorerObjectCls<SqLiteFdbDa
             _contextTools = new IExplorerObjectContextTool[]
             {
                 new ShrinkSpatialIndices(),
-                new RepairSpatialIndex()
+                new RepairSpatialIndex(),
+                new SpatialIndexDefinition()
             };
         }
     }
@@ -215,46 +216,6 @@ public class SqLiteFdbFeatureClassExplorerObject : ExplorerObjectCls<SqLiteFdbDa
     }
 
     #endregion
-
-    void ShrinkSpatialIndex_Click(object sender, EventArgs e)
-    {
-        if (_fc == null || _fc.Dataset == null || !(_fc.Dataset.Database is SQLiteFDB))
-        {
-            throw new Exception("Can't rebuild index...\nUncorrect feature class !!!");
-        }
-
-        List<IClass> classes = new List<IClass>();
-        classes.Add(_fc);
-
-        //SpatialIndexShrinker rebuilder = new SpatialIndexShrinker();
-        //rebuilder.RebuildIndices(classes);
-    }
-
-    void SpatialIndexDef_Click(object sender, EventArgs e)
-    {
-        if (_fc == null || _fc.Dataset == null || !(_fc.Dataset.Database is SQLiteFDB))
-        {
-            throw new Exception("Can't show spatial index definition...\nUncorrect feature class !!!");
-        }
-
-        //FormRebuildSpatialIndexDef dlg = await FormRebuildSpatialIndexDef.Create((SQLiteFDB)_fc.Dataset.Database, _fc);
-        //if (dlg.ShowDialog() == DialogResult.OK)
-        //{
-        //}
-    }
-
-    void RepairSpatialIndex_Click(object sender, EventArgs e)
-    {
-        if (_fc == null || _fc.Dataset == null || !(_fc.Dataset.Database is SQLiteFDB))
-        {
-            throw new Exception("Can't show spatial index definition...\nUncorrect feature class !!!");
-        }
-
-        //FormRepairSpatialIndexProgress dlg = new FormRepairSpatialIndexProgress((SQLiteFDB)_fc.Dataset.Database, _fc);
-        //if (dlg.ShowDialog() == DialogResult.OK)
-        //{
-        //}
-    }
 
     void Truncate_Click(object sender, EventArgs e)
     {

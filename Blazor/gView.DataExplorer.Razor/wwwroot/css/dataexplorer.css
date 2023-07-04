@@ -62,6 +62,9 @@
                 text-align: center;
                 color: #888;
                 font-size: 11px;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
             }
 
             .dataexplorer-main .toolbar .explorer-tool-box .explorer-tool-sub-box .explorer-tool {

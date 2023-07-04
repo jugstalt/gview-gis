@@ -1,12 +1,14 @@
 <MudCard Elevation="0">
     @if (BinaryTreeDef != null)
     {
-        <ExtentControl Extent="_bounds"></ExtentControl>
+        <ExtentControl Extent="_bounds" ExtentChanged="ExtentChanged"></ExtentControl>
 
         <MudCard Elevation="2">
-            <MudNumericField @bind-value="_maxLevel"
+            <MudNumericField T="int" ValueChanged="(val) => MaxLabelChanged(val)"
                               Label="Max Level" 
                               Min="0" Max="64" />
+            <MudNumericField @bind-Value="_cellSize" T="double" ReadOnly="true"
+                              Label="Cellsize" />
         </MudCard>
     }
 </MudCard>
@@ -16,6 +18,7 @@
 
     private IEnvelope? _bounds = null;
     private int _maxLevel;
+    private double _cellSize;
 
     protected override void OnInitialized()
     {
@@ -25,6 +28,35 @@
         {
             _bounds = BinaryTreeDef.Bounds;
             _maxLevel = BinaryTreeDef.MaxLevel;
+        }
+
+        CalcCellSize();
+    }
+
+    protected void MaxLabelChanged(int value)
+    {
+        _maxLevel = value;
+
+        this.BinaryTreeDef = new BinaryTreeDef(_bounds, _maxLevel);
+
+        CalcCellSize();
+    }
+
+    protected void ExtentChanged()
+    {
+        this.BinaryTreeDef = new BinaryTreeDef(_bounds, _maxLevel);
+
+        CalcCellSize();
+    }
+
+    private void CalcCellSize()
+    {
+        if (_bounds != null)
+        {
+            var tree = new BinaryTree2(_bounds, _maxLevel, 100);
+
+            IEnvelope cell = tree[_maxLevel];
+            _cellSize = Math.Sqrt(cell.Width * cell.Width + cell.Height * cell.Height);
         }
     }
 }
