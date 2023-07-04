@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
+using System.Threading;
 
 namespace gView.Cmd.Fdb.Lib;
 
@@ -22,10 +23,10 @@ internal class RebuildSpatiallIndexDefCommand : ICommand
 
     public IEnumerable<ICommandParameterDescription> ParameterDescriptions => new ICommandParameterDescription[]
     {
-    new RequiredCommandParameter<IFeatureClass>("dataset")
-    {
-        Description="FDB Featureclass"
-    }
+        new RequiredCommandParameter<IFeatureClass>("dataset")
+        {
+            Description="FDB Featureclass"
+        }
     };
 
     async public Task<bool> Run(IDictionary<string, object> parameters, ICancelTracker? cancelTracker = null, ICommandLogger? logger = null)
@@ -43,12 +44,14 @@ internal class RebuildSpatiallIndexDefCommand : ICommand
             throw new Exception("Dataset is not a gView FDB Dataset");
         }
 
+        var binaryTreeDef = new BinaryTreeDef();
+
         var rebuilder = new Rebuilder(cancelTracker);
         rebuilder.ReportAction += (sender, message) =>
         {
             logger?.LogLine(message);
         };
-        await rebuilder.RebuildIndicesAsync(featureClass);
+        await rebuilder.RebuildIndicesAsync(featureClass, binaryTreeDef);
 
         return true;
     }
