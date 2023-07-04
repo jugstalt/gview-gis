@@ -1,19 +1,19 @@
-﻿using gView.Cmd.Core.Abstraction;
+﻿using gView.Cmd.Core;
+using gView.Cmd.Core.Abstraction;
 using gView.Cmd.Core.Builders;
-using gView.Cmd.Core;
+using gView.Cmd.Core.Extensions;
 using gView.Cmd.Fdb.Lib.SpatialIndex;
 using gView.DataSources.Fdb.MSAccess;
 using gView.Framework.Data;
+using gView.Framework.Geometry;
 using gView.Framework.system;
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
-using System.Threading;
 
 namespace gView.Cmd.Fdb.Lib;
 
-internal class RebuildSpatiallIndexDefCommand : ICommand
+public class RebuildSpatiallIndexDefCommand : ICommand
 {
     public string Name => "FDB.RebuildSpatiallIndexDef";
 
@@ -26,6 +26,14 @@ internal class RebuildSpatiallIndexDefCommand : ICommand
         new RequiredCommandParameter<IFeatureClass>("dataset")
         {
             Description="FDB Featureclass"
+        },
+        new RequiredCommandParameter<IEnvelope>("bounds")
+        {
+            Description="Spatial Index Bounds"
+        },
+        new RequiredCommandParameter<int>("max_levels")
+        {
+            Description="Maximal Spatial Index Levels"
         }
     };
 
@@ -44,11 +52,21 @@ internal class RebuildSpatiallIndexDefCommand : ICommand
             throw new Exception("Dataset is not a gView FDB Dataset");
         }
 
-        var binaryTreeDef = new BinaryTreeDef();
+        var envelopeBuilder = new EnvelopeParameterBuilder("bounds");
+        var bounds = await envelopeBuilder.Build<IEnvelope>(parameters);
+
+        var maxLevels = parameters.GetRequiredValue<int>("max_levels");
+
+        var binaryTreeDef = new BinaryTreeDef(bounds, maxLevels);
 
         var rebuilder = new Rebuilder(cancelTracker);
         rebuilder.ReportAction += (sender, message) =>
         {
+            if (message.Contains("%"))
+            {
+                logger?.Log(message);
+            }
+            logger?.LogLine("");
             logger?.LogLine(message);
         };
         await rebuilder.RebuildIndicesAsync(featureClass, binaryTreeDef);

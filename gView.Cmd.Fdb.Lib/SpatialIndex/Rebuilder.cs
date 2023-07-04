@@ -38,9 +38,27 @@ internal class Rebuilder
             {
                 throw new Exception("Database is not and gView FeatureDatabase");
             }
+
+            bool calc = false, update = false;
             if (!await fdb.RebuildSpatialIndexDef(cl.Name, binaryTreeDef, (sender, args) =>
                         {
-                            
+                            if (calc == false && args is UpdateSICalculateNodes)
+                            {
+                                calc = true;
+                                ReportAction?.Invoke(this, "Calculate SI Nodes");
+                            }
+                            else if(update==false && args is UpdateSIUpdateNodes)
+                            {
+                                update = true;
+                                ReportAction?.Invoke(this, "Update SI Nodes");
+                            }
+
+                            var message = args switch
+                            {
+                                UpdateSICalculateNodes cn => $" .. {cn.Pos * 100 / cn.Count}%",
+                                UpdateSIUpdateNodes un => $" .. {un.Pos * 100 / un.Count}%",
+                                _ => ""
+                            };
                         }))
             {
                 throw new Exception($"Error rebuilding {cl.Name} index:\n{fdb.LastErrorMessage}");

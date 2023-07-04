@@ -1,10 +1,16 @@
-﻿using gView.DataExplorer.Plugins.Extensions;
+﻿using gView.Cmd.Core.Abstraction;
+using gView.Cmd.Fdb.Lib;
+using gView.DataExplorer.Plugins.Extensions;
+using gView.DataExplorer.Razor.Components.Dialogs.Models;
 using gView.DataSources.Fdb.MSAccess;
+using gView.Framework.Blazor;
 using gView.Framework.Blazor.Services.Abstraction;
 using gView.Framework.Data;
 using gView.Framework.DataExplorer.Abstraction;
+using gView.Framework.system;
 using gView.Razor.Base;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace gView.DataExplorer.Plugins.ExplorerObjects.Fdb.ContextTools;
@@ -36,60 +42,45 @@ internal class SpatialIndexDefinition : IExplorerObjectContextTool
                                            "Spatial Index Definition",
                                            new BaseDialogModel<BinaryTreeDef>() { Value = binarayTreeDef });
 
-        if (model == null)
+        if (model?.Value?.Bounds == null)
         {
             return false;
         }
 
 
-        //IDictionary<string, object>? parameters = null;
-        //ICommand? command = null;
+        IDictionary<string, object>? parameters = null;
+        ICommand? command = null;
 
-        //if (instance is IFeatureDataset)
-        //{
-        //    var featureDataset = (IFeatureDataset)instance;
-        //    var featureDatasetGuid = PlugInManager.PlugInID(featureDataset);
+        var featureDataset = featureClass.Dataset;
+        var featureDatasetGuid = PlugInManager.PlugInID(featureDataset);
 
-        //    command = new ShrinkDatasetSpatialIndexCommand();
-        //    parameters = new Dictionary<string, object>()
-        //    {
-        //        { "dataset_connstr", featureDataset.ConnectionString },
-        //        { "dataset_guid", featureDatasetGuid.ToString() }
-        //    };
-        //}
-        //else if (instance is IFeatureClass)
-        //{
-        //    var featureClass = (IFeatureClass)instance;
-        //    var featureDataset = featureClass.Dataset;
-        //    var featureDatasetGuid = PlugInManager.PlugInID(featureDataset);
+        command = new RebuildSpatiallIndexDefCommand();
+        parameters = new Dictionary<string, object>()
+            {
+                { "dataset_connstr", featureDataset.ConnectionString },
+                { "dataset_guid", featureDatasetGuid.ToString() },
+                { "dataset_fc", featureClass.Name },
+                { "bounds_minx", model.Value.Bounds.minx },
+                { "bounds_miny", model.Value.Bounds.miny },
+                { "bounds_maxx", model.Value.Bounds.maxx },
+                { "bounds_maxy", model.Value.Bounds.maxy },
+                { "max_levels", model.Value.MaxLevel }
+            };
 
-        //    command = new ShrinkFeatureClassSpatialIndexCommand();
-        //    parameters = new Dictionary<string, object>()
-        //    {
-        //        { "dataset_connstr", featureDataset.ConnectionString },
-        //        { "dataset_guid", featureDatasetGuid.ToString() },
-        //        { "dataset_fc", featureClass.Name },
-        //    };
-        //}
-        //else
-        //{
-        //    return false;
-        //}
-
-        //await scopeService.ShowKnownDialog(
-        //            KnownDialogs.ExecuteCommand,
-        //            $"Shrink spatial index",
-        //            new ExecuteCommandModel()
-        //            {
-        //                CommandItems = new[]
-        //                {
-        //                    new CommandItem()
-        //                    {
-        //                        Command = command,
-        //                        Parameters = parameters
-        //                    }
-        //                }
-        //            });
+        await scopeService.ShowKnownDialog(
+                    KnownDialogs.ExecuteCommand,
+                    $"Rebuild spatial index",
+                    new ExecuteCommandModel()
+                    {
+                        CommandItems = new[]
+                        {
+                            new CommandItem()
+                            {
+                                Command = command,
+                                Parameters = parameters
+                            }
+                        }
+                    });
 
         return true;
     }

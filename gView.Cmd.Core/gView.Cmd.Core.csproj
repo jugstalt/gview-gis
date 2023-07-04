@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\gView.Core\gView.Core.csproj" />
+    <ProjectReference Include="..\gView.Geometry\gView.Geometry.csproj" />
     <ProjectReference Include="..\gView.System\gView.System.csproj" />
   </ItemGroup>
 
