@@ -133,7 +133,7 @@
 
             foreach(var parameter in commandItem.Parameters)
             {
-                sb.Append($" -{parameter.Key} \"{parameter.Value}\"");
+                sb.Append($" -{parameter.Key} \"{parameter.Value.ToInvariantString()}\"");
             }
             sb.AppendLine();
         }

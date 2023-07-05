@@ -57,6 +57,17 @@ namespace gView.Framework.system
             return String.IsNullOrEmpty(str) ? orTake : str;
         }
 
+        static public string ToInvariantString(this object obj)
+        {
+            if (obj is float)
+                return ((double)(float)obj).ToDoubleString();
+
+            if (obj is double)
+                return ((double)obj).ToDoubleString();
+
+            return obj?.ToString() ?? "";
+        }
+
         #region Numbers
 
         //static private IFormatProvider _nhi = System.Globalization.CultureInfo.InvariantCulture.NumberFormat;

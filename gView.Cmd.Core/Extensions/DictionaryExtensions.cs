@@ -1,4 +1,5 @@
 ﻿using gView.Cmd.Core.Abstraction;
+using gView.Framework.system;
 using System;
 using System.Collections.Generic;
 
@@ -27,8 +28,15 @@ static public class DictionaryExtensions
 
         if (typeof(T) == typeof(Guid))
         {
-            object guid = new Guid(parameters[key].ToString());
-            return (T)guid;
+            return (T)(object)new Guid(parameters[key].ToString());
+        }
+        else if (typeof(T) == typeof(float))
+        {
+            return (T)(object)parameters[key].ToString().ToFloat();
+        }
+        else if (typeof(T) == typeof(double))
+        {
+            return (T)(object)parameters[key].ToString().ToDouble();
         }
 
         return (T)Convert.ChangeType(parameters[key], typeof(T));

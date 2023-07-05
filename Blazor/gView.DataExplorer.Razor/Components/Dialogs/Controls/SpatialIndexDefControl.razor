@@ -4,7 +4,7 @@
         <ExtentControl Extent="_bounds" ExtentChanged="ExtentChanged"></ExtentControl>
 
         <MudCard Elevation="2">
-            <MudNumericField T="int" ValueChanged="(val) => MaxLabelChanged(val)"
+            <MudNumericField T="int" ValueChanged="(val) => MaxLabelChanged(val)" Value="_maxLevel"
                               Label="Max Level" 
                               Min="0" Max="64" />
             <MudNumericField @bind-Value="_cellSize" T="double" ReadOnly="true"

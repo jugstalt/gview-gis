@@ -66,8 +66,11 @@ public class RebuildSpatiallIndexDefCommand : ICommand
             {
                 logger?.Log(message);
             }
-            logger?.LogLine("");
-            logger?.LogLine(message);
+            else
+            {
+                logger?.LogLine("");
+                logger?.LogLine(message);
+            }
         };
         await rebuilder.RebuildIndicesAsync(featureClass, binaryTreeDef);
 

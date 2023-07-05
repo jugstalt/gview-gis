@@ -125,7 +125,8 @@ public class SqLiteFdbFeatureClassExplorerObject : ExplorerObjectCls<SqLiteFdbDa
             {
                 new ShrinkSpatialIndices(),
                 new RepairSpatialIndex(),
-                new SpatialIndexDefinition()
+                new SpatialIndexDefinition(),
+                new TruncateFeatureClass()
             };
         }
     }

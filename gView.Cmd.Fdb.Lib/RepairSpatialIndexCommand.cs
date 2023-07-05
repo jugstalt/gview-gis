@@ -78,7 +78,7 @@ public class RepairSpatialIndexCommand : ICommand
                     firstUpdate = false;
                 }
 
-                logger?.Log($" .. {updateArgs.Pos / updateArgs.Count}");
+                logger?.Log($" .. {updateArgs.Pos}");
             }
         }) == false)
         {

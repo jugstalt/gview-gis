@@ -1,6 +1,7 @@
 ﻿using gView.DataSources.Fdb.MSAccess;
 using gView.Framework.Data;
 using gView.Framework.system;
+using Microsoft.SqlServer.Management.SqlParser.SqlCodeDom;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -40,6 +41,7 @@ internal class Rebuilder
             }
 
             bool calc = false, update = false;
+            string lastMessage = "";
             if (!await fdb.RebuildSpatialIndexDef(cl.Name, binaryTreeDef, (sender, args) =>
                         {
                             if (calc == false && args is UpdateSICalculateNodes)
@@ -59,6 +61,11 @@ internal class Rebuilder
                                 UpdateSIUpdateNodes un => $" .. {un.Pos * 100 / un.Count}%",
                                 _ => ""
                             };
+
+                            if (lastMessage != message)
+                            {
+                                ReportAction?.Invoke(this, lastMessage = message);
+                            }
                         }))
             {
                 throw new Exception($"Error rebuilding {cl.Name} index:\n{fdb.LastErrorMessage}");

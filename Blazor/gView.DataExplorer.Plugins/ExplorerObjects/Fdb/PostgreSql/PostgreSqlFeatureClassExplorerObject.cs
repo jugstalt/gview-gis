@@ -121,7 +121,9 @@ public class PostgreSqlFeatureClassExplorerObject : ExplorerObjectCls<PostgreSql
             _contextTools = new IExplorerObjectContextTool[]
             {
                 new ShrinkSpatialIndices(),
-                new RepairSpatialIndex()
+                new RepairSpatialIndex(),
+                new SpatialIndexDefinition(),
+                new TruncateFeatureClass()
             };
         }
     }

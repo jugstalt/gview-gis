@@ -1,5 +1,4 @@
-﻿using gView.Blazor.Models.Content;
-using gView.Blazor.Models.Extensions;
+﻿using gView.Blazor.Models.Extensions;
 using gView.Blazor.Models.Table;
 using gView.Framework.Data;
 using gView.Framework.Data.Cursors;
@@ -76,7 +75,7 @@ public class DataTableTabPage : IExplorerTabPage
             }
 
             var count = 0;
-            while(true)
+            while (true)
             {
                 IRow? row = cursor switch
                 {
