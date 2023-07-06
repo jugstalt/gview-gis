@@ -1,10 +1,7 @@
 ﻿using gView.DataSources.Fdb.MSAccess;
 using gView.Framework.Data;
-using gView.Framework.FDB;
 using gView.Framework.Geometry;
 using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace gView.Cmd.Fdb.Lib.Data;
@@ -15,10 +12,11 @@ internal class CreateFeatureClass
 
     }
 
-    async public Task<bool> Create(IFeatureDataset featureDataset, 
+    async public Task<bool> Create(IFeatureDataset featureDataset,
                              string fcName,
                              IGeometryDef gDef,
-                             IFieldCollection fields)
+                             IFieldCollection fields,
+                             BinaryTreeDef binaryTreeDef)
     {
         var fdb = featureDataset.Database as AccessFDB;
 
@@ -35,7 +33,11 @@ internal class CreateFeatureClass
 
         if (fcId < 0)
         {
-            throw new Exception("ERROR: " + fdb.LastErrorMessage);
+            throw new Exception($"ERROR: {fdb.LastErrorMessage}");
         }
+
+        await fdb.SetSpatialIndexBounds(fcName, "BinaryTree2", binaryTreeDef.Bounds, 0.55, 200, binaryTreeDef.MaxPerNode);
+
+        return true;
     }
 }

@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿namespace gView.Cmd.Fdb.Lib;
 
-namespace gView.Cmd.Fdb.Lib;
 internal class CreateFeatureClassCommand
 {
 }
