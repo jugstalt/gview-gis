@@ -1,6 +1,8 @@
 ﻿using gView.Blazor.Core.Exceptions;
 using gView.DataExplorer.Plugins.ExplorerObjects.Base;
 using gView.DataExplorer.Plugins.ExplorerObjects.Fdb.ContextTools;
+using gView.DataExplorer.Plugins.Extensions;
+using gView.DataExplorer.Razor.Components.Dialogs.Models;
 using gView.DataSources.Fdb.MSAccess;
 using gView.DataSources.Fdb.PostgreSql;
 using gView.Framework.Blazor.Services.Abstraction;
@@ -240,6 +242,12 @@ public class PostgreSqlDatasetExplorerObject : ExplorerParentObject<PostgreSqlEx
         {
             return null;
         }
+
+        var model = appScope.ToScopeService()
+                           .ShowModalDialog(
+                                typeof(gView.DataExplorer.Razor.Components.Dialogs.NewFdbDataset),
+                                "New Dataset",
+                                new NewFdbDatasetModel());
 
         pgFDB fdb = new pgFDB();
         await fdb.Open(((PostgreSqlExplorerObject)parentExObject).ConnectionString);

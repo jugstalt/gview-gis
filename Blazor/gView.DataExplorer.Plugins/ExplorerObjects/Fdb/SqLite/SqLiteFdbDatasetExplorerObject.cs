@@ -1,5 +1,7 @@
 ﻿using gView.DataExplorer.Plugins.ExplorerObjects.Base;
 using gView.DataExplorer.Plugins.ExplorerObjects.Fdb.ContextTools;
+using gView.DataExplorer.Plugins.Extensions;
+using gView.DataExplorer.Razor.Components.Dialogs.Models;
 using gView.DataSources.Fdb.SQLite;
 using gView.Framework.Blazor.Services.Abstraction;
 using gView.Framework.Data;
@@ -270,24 +272,21 @@ public class SqLiteFdbDatasetExplorerObject : ExplorerObjectFeatureClassImport<I
     public bool CanCreate(IExplorerObject? parentExObject)
         => parentExObject is SqLiteFdbExplorerObject;
 
-    public Task<IExplorerObject?> CreateExplorerObjectAsync(IApplicationScope scope, IExplorerObject? parentExObject)
+    async public Task<IExplorerObject?> CreateExplorerObjectAsync(IApplicationScope appScope, IExplorerObject? parentExObject)
     {
-        if (!CanCreate(parentExObject))
+        if (parentExObject == null || !CanCreate(parentExObject))
         {
-            return Task.FromResult<IExplorerObject?>(null);
+            return null;
         }
 
-        throw new NotImplementedException();
+        var model = appScope.ToScopeService()
+                           .ShowModalDialog(
+                                typeof(gView.DataExplorer.Razor.Components.Dialogs.NewFdbDataset),
+                                "New Dataset",
+                                new NewFdbDatasetModel());
 
-        //FormNewDataset dlg = new FormNewDataset();
-        //dlg.IndexTypeIsEditable = false;
-        //if (dlg.ShowDialog() != DialogResult.OK)
-        //{
-        //    return null;
-        //}
-
-        //SQLiteFDB fdb = new SQLiteFDB();
-        //await fdb.Open(parentExObject.FullName);
+        SQLiteFDB fdb = new SQLiteFDB();
+        await fdb.Open(parentExObject.FullName);
         //int dsID = -1;
 
         //string datasetName = dlg.DatasetName;
@@ -309,6 +308,8 @@ public class SqLiteFdbDatasetExplorerObject : ExplorerObjectFeatureClassImport<I
         //}
 
         //return new SqLiteFdbDatasetExplorerObject(parentExObject, parentExObject.FullName, datasetName);
+
+        return null;
     }
 
     #endregion

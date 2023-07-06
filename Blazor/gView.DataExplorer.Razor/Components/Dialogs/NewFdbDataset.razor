@@ -1,0 +1,23 @@
+@inherits ModalDialogFormBase<NewFdbDatasetModel>
+@inject IApplicationScope AppScope
+
+<ModalDialogFormBase T="NewFdbDatasetModel"
+                     OnDialogClose="base.OnDialogClose"
+                     Model="base.Model">
+    <DialogBody>
+        <div style="max-width:800px">
+            <MudGrid Spacing="2" Justify="Justify.FlexEnd">
+                <MudItem xs="12">
+                    <MudCard Elevation="2">
+                        <MudCardContent>
+
+                            <MudTextField @bind-Value="Model.Name"
+                                           Label="Name" />
+
+                        </MudCardContent>
+                    </MudCard>
+                </MudItem>
+            </MudGrid>
+        </div>
+    </DialogBody>
+</ModalDialogFormBase>
