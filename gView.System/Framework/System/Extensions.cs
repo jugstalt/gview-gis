@@ -5,6 +5,7 @@ using gView.Framework.UI;
 using System;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace gView.Framework.system
 {
@@ -67,6 +68,17 @@ namespace gView.Framework.system
 
             return obj?.ToString() ?? "";
         }
+
+        #region Database
+
+        static public bool IsValidFieldName(this string columnName)
+        {
+            string pattern = @"^[a-zA-Z][a-zA-Z0-9_]*$";
+
+            return Regex.IsMatch(columnName, pattern);
+        }
+
+        #endregion
 
         #region Numbers
 

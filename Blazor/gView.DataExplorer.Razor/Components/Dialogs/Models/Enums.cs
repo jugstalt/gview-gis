@@ -11,3 +11,10 @@ public enum TileOrigin
     LowerLeft = 0,
     UpperLeft = 1
 }
+
+public enum NewFeatureClassGeometryType
+{
+    Point,
+    Polyline,
+    Polygon
+}

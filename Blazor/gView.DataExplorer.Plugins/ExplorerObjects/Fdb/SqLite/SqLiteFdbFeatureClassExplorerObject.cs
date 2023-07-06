@@ -1,6 +1,8 @@
 ﻿using gView.DataExplorer.Plugins.ExplorerObjects.Base;
 using gView.DataExplorer.Plugins.ExplorerObjects.Extensions;
 using gView.DataExplorer.Plugins.ExplorerObjects.Fdb.ContextTools;
+using gView.DataExplorer.Plugins.Extensions;
+using gView.DataExplorer.Razor.Components.Dialogs.Models;
 using gView.DataSources.Fdb;
 using gView.DataSources.Fdb.SQLite;
 using gView.Framework.Blazor.Services.Abstraction;
@@ -300,6 +302,11 @@ public class SqLiteFdbFeatureClassExplorerObject : ExplorerObjectCls<SqLiteFdbDa
         {
             return null;
         }
+
+        var model = scope.ToScopeService()
+                         .ShowModalDialog(typeof(gView.DataExplorer.Razor.Components.Dialogs.NewFdbFeatureClassDialog),
+                                          "New FeatureClass",
+                                          new NewFdbFeatureClassModel() { Name = "fc_1" });
 
         var instance = await parentExObject.GetInstanceAsync();
         if (!(instance is IFeatureDataset) || !(((IDataset)instance).Database is SQLiteFDB))
