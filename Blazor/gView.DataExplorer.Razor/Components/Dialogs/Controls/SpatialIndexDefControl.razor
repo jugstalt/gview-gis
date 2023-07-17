@@ -15,6 +15,7 @@
 
 @code{
     [Parameter] public BinaryTreeDef? BinaryTreeDef { get; set; }
+    [Parameter] public EventCallback<BinaryTreeDef> BinaryTreeDefChanged { get; set; }
 
     private IEnvelope? _bounds = null;
     private int _maxLevel;
@@ -33,20 +34,24 @@
         CalcCellSize();
     }
 
-    protected void MaxLabelChanged(int value)
+    async protected void MaxLabelChanged(int value)
     {
         _maxLevel = value;
 
         this.BinaryTreeDef = new BinaryTreeDef(_bounds, _maxLevel);
 
         CalcCellSize();
+
+        await BinaryTreeDefChanged.InvokeAsync(this.BinaryTreeDef);
     }
 
-    protected void ExtentChanged()
+    async protected void ExtentChanged()
     {
         this.BinaryTreeDef = new BinaryTreeDef(_bounds, _maxLevel);
 
         CalcCellSize();
+
+        await BinaryTreeDefChanged.InvokeAsync(this.BinaryTreeDef);
     }
 
     private void CalcCellSize()

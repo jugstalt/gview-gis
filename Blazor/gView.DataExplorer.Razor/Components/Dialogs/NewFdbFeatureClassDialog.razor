@@ -34,7 +34,7 @@
                                     </MudSelect>
                                 </MudItem>
                                 <MudItem xs="12">
-                                    <SpatialIndexDefControl BinaryTreeDef="Model.SpatialIndex" />
+                                    <SpatialIndexDefControl BinaryTreeDef="Model.SpatialIndex" BinaryTreeDefChanged="SpatialIndexDefChanged" />
                                 </MudItem>
                             </MudGrid>
                         </MudTabPanel>
@@ -179,5 +179,10 @@
         {
             Model.Fields[fieldName].size = size;
         }
+    }
+
+    private void SpatialIndexDefChanged(BinaryTreeDef binaryTreeDef)
+    {
+        Model.SpatialIndex = binaryTreeDef;
     }
 }

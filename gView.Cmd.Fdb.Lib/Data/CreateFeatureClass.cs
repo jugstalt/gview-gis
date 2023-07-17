@@ -33,10 +33,15 @@ internal class CreateFeatureClass
 
         if (fcId < 0)
         {
-            throw new Exception($"ERROR: {fdb.LastErrorMessage}");
+            throw new Exception(fdb.LastErrorMessage);
         }
 
-        await fdb.SetSpatialIndexBounds(fcName, "BinaryTree2", binaryTreeDef.Bounds, 0.55, 200, binaryTreeDef.MaxPerNode);
+        if(await fdb.SetSpatialIndexBounds(fcName, "BinaryTree2", binaryTreeDef.Bounds, 0.55, binaryTreeDef.MaxPerNode, binaryTreeDef.MaxLevel) == false)
+        {
+            await fdb.DeleteFeatureClass(fcName);
+
+            throw new Exception(fdb.LastErrorMessage);
+        }
 
         return true;
     }

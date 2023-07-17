@@ -48,52 +48,61 @@ public class CreateFeatureClassCommand : ICommand
 
     async public Task<bool> Run(IDictionary<string, object> parameters, ICancelTracker? cancelTracker = null, ICommandLogger? logger = null)
     {
-        #region Dataset/FeatureClass Name
-        
-        var datasetBuilder = new DatasetParameterBuilder("dataset");
-        var dataset = await datasetBuilder.Build<IFeatureDataset>(parameters);
+        try
+        {
+            #region Dataset/FeatureClass Name
 
-        var fcName = parameters.GetRequiredValue<string>("dataset_fc");
+            var datasetBuilder = new DatasetParameterBuilder("dataset");
+            var dataset = await datasetBuilder.Build<IFeatureDataset>(parameters);
 
-        #endregion
+            var fcName = parameters.GetRequiredValue<string>("dataset_fc");
 
-        #region geometryDef
+            #endregion
 
-        var geometryDef = new GeometryDef(
-            parameters.GetRequiredValue<string>("geometry_type").ToLower() switch
-            {
-                "point" => GeometryType.Point,
-                "polyline" => GeometryType.Polyline,
-                "polygon" => GeometryType.Polygon,
-                _ => throw new Exception($"Unknown geomtry type")
-            });
+            #region geometryDef
+
+            var geometryDef = new GeometryDef(
+                parameters.GetRequiredValue<string>("geometry_type").ToLower() switch
+                {
+                    "point" => GeometryType.Point,
+                    "polyline" => GeometryType.Polyline,
+                    "polygon" => GeometryType.Polygon,
+                    _ => throw new Exception($"Unknown geomtry type")
+                });
 
 
-        #endregion
+            #endregion
 
-        #region Fields
+            #region Fields
 
-        var fieldsBuilder = new FieldsParameterBuilder();
-        var fields = await fieldsBuilder.Build<IFieldCollection>(parameters);
+            var fieldsBuilder = new FieldsParameterBuilder();
+            var fields = await fieldsBuilder.Build<IFieldCollection>(parameters);
 
-        #endregion
+            #endregion
 
-        #region Spatial Index Def
+            #region Spatial Index Def
 
-        var envelopeBuilder = new EnvelopeParameterBuilder("bounds");
-        var bounds = await envelopeBuilder.Build<IEnvelope>(parameters);
+            var envelopeBuilder = new EnvelopeParameterBuilder("bounds");
+            var bounds = await envelopeBuilder.Build<IEnvelope>(parameters);
 
-        var maxLevels = parameters.GetRequiredValue<int>("max_levels");
+            var maxLevels = parameters.GetRequiredValue<int>("max_levels");
 
-        var binaryTreeDef = new BinaryTreeDef(bounds, maxLevels);
+            var binaryTreeDef = new BinaryTreeDef(bounds, maxLevels);
 
-        #endregion
+            #endregion
 
-        var creator = new CreateFeatureClass();
-        return await creator.Create(dataset,
-                                    fcName,
-                                    geometryDef,
-                                    fields,
-                                    binaryTreeDef);
+            var creator = new CreateFeatureClass();
+            return await creator.Create(dataset,
+                                        fcName,
+                                        geometryDef,
+                                        fields,
+                                        binaryTreeDef);
+        }
+        catch(Exception ex)
+        {
+            logger?.LogLine($"Error: {ex.Message}");
+
+            return false;
+        }
     }
 }

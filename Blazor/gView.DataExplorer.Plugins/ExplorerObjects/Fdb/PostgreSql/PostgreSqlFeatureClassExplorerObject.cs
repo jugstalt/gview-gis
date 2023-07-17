@@ -1,6 +1,8 @@
 ﻿using gView.Blazor.Core.Exceptions;
 using gView.DataExplorer.Plugins.ExplorerObjects.Base;
 using gView.DataExplorer.Plugins.ExplorerObjects.Fdb.ContextTools;
+using gView.DataExplorer.Plugins.ExplorerObjects.Fdb.Extensions;
+using gView.DataExplorer.Plugins.Extensions;
 using gView.DataSources.Fdb;
 using gView.DataSources.Fdb.PostgreSql;
 using gView.Framework.Blazor.Services.Abstraction;
@@ -16,12 +18,12 @@ using System.Threading.Tasks;
 namespace gView.DataExplorer.Plugins.ExplorerObjects.Fdb.PostgreSql;
 
 [RegisterPlugIn("ACFAD6F4-882D-4944-BD84-5B6080988717")]
-public class PostgreSqlFeatureClassExplorerObject : ExplorerObjectCls<PostgreSqlDatasetExplorerObject, pgFeatureClass>, 
-                                                    IExplorerSimpleObject, 
-                                                    IExplorerObjectDeletable, 
-                                                    ISerializableExplorerObject,    
-                                                    IExplorerObjectRenamable, 
-                                                    IExplorerObjectCreatable, 
+public class PostgreSqlFeatureClassExplorerObject : ExplorerObjectCls<PostgreSqlDatasetExplorerObject, pgFeatureClass>,
+                                                    IExplorerSimpleObject,
+                                                    IExplorerObjectDeletable,
+                                                    ISerializableExplorerObject,
+                                                    IExplorerObjectRenamable,
+                                                    IExplorerObjectCreatable,
                                                     IExporerOjectSchema,
                                                     IExplorerObjectContextTools
 {
@@ -151,7 +153,7 @@ public class PostgreSqlFeatureClassExplorerObject : ExplorerObjectCls<PostgreSql
 
     #region IExplorerObject Members
 
-    public string Name=> _fcname; 
+    public string Name => _fcname;
 
     public string FullName
     {
@@ -165,7 +167,7 @@ public class PostgreSqlFeatureClassExplorerObject : ExplorerObjectCls<PostgreSql
             return @$"{Parent.FullName}/{this.Name}";
         }
     }
-    public string Type=> _type != String.Empty ? _type : "PostgreFDB Featureclass";
+    public string Type => _type != String.Empty ? _type : "PostgreFDB Featureclass";
 
     public string Icon => _icon;
 
@@ -302,50 +304,30 @@ public class PostgreSqlFeatureClassExplorerObject : ExplorerObjectCls<PostgreSql
         return false;
     }
 
-    async public Task<IExplorerObject?> CreateExplorerObjectAsync(IApplicationScope appScope, IExplorerObject parentExObject)
+    async public Task<IExplorerObject?> CreateExplorerObjectAsync(IApplicationScope scope, IExplorerObject parentExObject)
     {
         if (!CanCreate(parentExObject))
         {
             return null;
         }
 
-        var instance = await parentExObject.GetInstanceAsync();
-        if (!(instance is IFeatureDataset) || !(((IDataset)instance).Database is pgFDB))
+        var scopeService = scope.ToScopeService();
+
+        var element = await scopeService.CreateCeatureClass(parentExObject);
+
+        if (parentExObject is PostgreSqlDatasetExplorerObject && element != null)
         {
+            return new PostgreSqlFeatureClassExplorerObject(
+                (PostgreSqlDatasetExplorerObject)parentExObject,
+                parentExObject.Name,
+                element);
+        }
+        else
+        {
+            await scopeService.EventBus.FireFreshContentAsync();
+
             return null;
         }
-        pgFDB? fdb = ((IDataset)instance).Database as pgFDB;
-
-        return null;
-
-        //FormNewFeatureclass dlg = await FormNewFeatureclass.Create(instance as IFeatureDataset);
-        //if (dlg.ShowDialog() != DialogResult.OK)
-        //{
-        //    return null;
-        //}
-
-        //IGeometryDef gDef = dlg.GeometryDef;
-
-        //int FCID = await fdb.CreateFeatureClass(
-        //    parentExObject.Name,
-        //    dlg.FeatureclassName,
-        //    gDef,
-        //    dlg.Fields);
-
-        //if (FCID < 0)
-        //{
-        //    MessageBox.Show("ERROR: " + fdb.LastErrorMessage);
-        //    return null;
-        //}
-
-        //ISpatialIndexDef sIndexDef = await fdb.SpatialIndexDef(parentExObject.Name);
-        //await fdb.SetSpatialIndexBounds(dlg.FeatureclassName, "BinaryTree2", dlg.SpatialIndexExtents, 0.55, 200, dlg.SpatialIndexLevels);
-
-        //IDatasetElement element = await ((IFeatureDataset)instance).Element(dlg.FeatureclassName);
-        //return new FeatureClassExplorerObject(
-        //    parentExObject as DatasetExplorerObject,
-        //    parentExObject.Name,
-        //    element);
     }
 
     #endregion

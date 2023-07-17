@@ -1,6 +1,8 @@
 ﻿using gView.Blazor.Core.Exceptions;
 using gView.DataExplorer.Plugins.ExplorerObjects.Base;
 using gView.DataExplorer.Plugins.ExplorerObjects.Fdb.ContextTools;
+using gView.DataExplorer.Plugins.ExplorerObjects.Fdb.Extensions;
+using gView.DataExplorer.Plugins.Extensions;
 using gView.DataSources.Fdb;
 using gView.DataSources.Fdb.MSAccess;
 using gView.DataSources.Fdb.MSSql;
@@ -10,7 +12,6 @@ using gView.Framework.DataExplorer.Abstraction;
 using gView.Framework.DataExplorer.Events;
 using gView.Framework.Geometry;
 using gView.Framework.system;
-using gView.Framework.UI;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -18,13 +19,13 @@ using System.Threading.Tasks;
 namespace gView.DataExplorer.Plugins.ExplorerObjects.Fdb.MsSql;
 
 [RegisterPlugIn("FE6E1EA7-1300-400c-8674-68465859E991")]
-public class SqlFdbFeatureClassExplorerObject : ExplorerObjectCls<SqlFdbDatasetExplorerObject, _IMClass>, 
-                                                IExplorerSimpleObject, 
-                                                IExplorerObjectDeletable, 
+public class SqlFdbFeatureClassExplorerObject : ExplorerObjectCls<SqlFdbDatasetExplorerObject, _IMClass>,
+                                                IExplorerSimpleObject,
+                                                IExplorerObjectDeletable,
                                                 ISerializableExplorerObject,
                                                 IExplorerObjectContextTools,
-                                                IExplorerObjectRenamable, 
-                                                IExplorerObjectCreatable, 
+                                                IExplorerObjectRenamable,
+                                                IExplorerObjectCreatable,
                                                 IExporerOjectSchema
 {
     private string _dsname = "", _fcname = "", _type = "", _icon = "";
@@ -151,7 +152,7 @@ public class SqlFdbFeatureClassExplorerObject : ExplorerObjectCls<SqlFdbDatasetE
 
     #region IExplorerObject Members
 
-    public string Name=> _fcname; 
+    public string Name => _fcname;
 
     public string FullName
     {
@@ -305,60 +306,30 @@ public class SqlFdbFeatureClassExplorerObject : ExplorerObjectCls<SqlFdbDatasetE
         return false;
     }
 
-    async public Task<IExplorerObject?> CreateExplorerObjectAsync(IApplicationScope appScope, IExplorerObject parentExObject)
+    async public Task<IExplorerObject?> CreateExplorerObjectAsync(IApplicationScope scope, IExplorerObject parentExObject)
     {
         if (!CanCreate(parentExObject))
         {
             return null;
         }
 
-        var instance = await parentExObject.GetInstanceAsync();
-        if (!(instance is IFeatureDataset) || !(((IDataset)instance).Database is SqlFDB))
+        var scopeService = scope.ToScopeService();
+
+        var element = await scopeService.CreateCeatureClass(parentExObject);
+
+        if (parentExObject is SqlFdbDatasetExplorerObject && element != null)
         {
+            return new SqlFdbFeatureClassExplorerObject(
+                (SqlFdbDatasetExplorerObject)parentExObject,
+                parentExObject.Name,
+                element);
+        }
+        else
+        {
+            await scopeService.EventBus.FireFreshContentAsync();
+
             return null;
         }
-        SqlFDB? fdb = ((IDataset)instance).Database as SqlFDB;
-
-        return null;
-
-        //FormNewFeatureclass dlg = await FormNewFeatureclass.Create(instance as IFeatureDataset);
-        //if (dlg.ShowDialog() != DialogResult.OK)
-        //{
-        //    return null;
-        //}
-
-        //IGeometryDef gDef = dlg.GeometryDef;
-
-        //int FCID = await fdb.CreateFeatureClass(
-        //    parentExObject.Name,
-        //    dlg.FeatureclassName,
-        //    gDef,
-        //    dlg.Fields);
-
-        //if (FCID < 0)
-        //{
-        //    MessageBox.Show("ERROR: " + fdb.LastErrorMessage);
-        //    return null;
-        //}
-
-        //ISpatialIndexDef sIndexDef = await fdb.SpatialIndexDef(parentExObject.Name);
-        //if (fdb is SqlFDB &&
-        //    (sIndexDef.GeometryType == GeometryFieldType.MsGeometry ||
-        //     sIndexDef.GeometryType == GeometryFieldType.MsGeography))
-        //{
-        //    MSSpatialIndex index = dlg.MSSpatialIndexDef;
-        //    fdb.SetMSSpatialIndex(index, dlg.FeatureclassName);
-        //}
-        //else
-        //{
-        //    await fdb.SetSpatialIndexBounds(dlg.FeatureclassName, "BinaryTree2", dlg.SpatialIndexExtents, 0.55, 200, dlg.SpatialIndexLevels);
-        //}
-
-        //IDatasetElement element = await ((IFeatureDataset)instance).Element(dlg.FeatureclassName);
-        //return new SqlFDBFeatureClassExplorerObject(
-        //    parentExObject as SqlFDBDatasetExplorerObject,
-        //    parentExObject.Name,
-        //    element);
     }
 
     #endregion
