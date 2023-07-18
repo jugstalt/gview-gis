@@ -35,11 +35,8 @@ static internal class ApplicationScopeServiceExtensions
         }
         var featureDatasetGuid = PlugInManager.PlugInID(featureDataset);
 
-        IDictionary<string, object>? parameters = null;
-        ICommand? command = null;
-
-        command = new CreateFeatureClassCommand();
-        parameters = new Dictionary<string, object>()
+        ICommand command = new CreateFeatureClassCommand();
+        var parameters = new Dictionary<string, object>()
             {
                 { "dataset_connstr", featureDataset.ConnectionString },
                 { "dataset_guid", featureDatasetGuid.ToString() },
@@ -84,4 +81,27 @@ static internal class ApplicationScopeServiceExtensions
 
         return createElement;
     }
+
+    async static public Task<IDataset?> CreateDataset(this ExplorerApplicationScopeService scopeService, IExplorerObject parentExObject)
+    {
+        var model = await scopeService
+                               .ShowModalDialog(typeof(gView.DataExplorer.Razor.Components.Dialogs.NewFdbDataset),
+                                          "New Dataset",
+                                          new NewFdbDatasetModel() { Name = "ds1" });
+        if (model == null)
+        {
+            return null;
+        }
+
+        var instance = 
+
+        ICommand command = new CreateFeatureClassCommand();  // ToDo: CreateDatasetCommand();
+        var parameters = new Dictionary<string, object>()
+        {
+
+        };
+
+        return null;
+    }
 }
+ 

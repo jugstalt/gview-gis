@@ -13,11 +13,94 @@
 
                             <MudTextField @bind-Value="Model.Name"
                                            Label="Name" />
-
+                            <MudSelect Label="Type"
+                                @bind-Value="Model.DatasetType"
+                                           Variant="Variant.Text">
+                                    @foreach (NewFdbDatasetType datasetType in Enum.GetValues<NewFdbDatasetType>())
+                                    {
+                                        <MudSelectItem Value="datasetType">@datasetType.ToString()</MudSelectItem>
+                                    }
+                            </MudSelect>
                         </MudCardContent>
                     </MudCard>
+                </MudItem>
+
+                <MudItem xs="12">
+                    <MudTabs Elevation="1" Rounded="true" PanelClass="pa-6" ApplyEffectsToContainer="true">
+                        <MudTabPanel Text="Spatial Reference">
+                            <MudGrid Spacing="2" Justify="Justify.FlexEnd">
+                                <MudItem xs="12">
+                                    <SpatialReferenceControl SpatialReference="Model.SpatialReference" SRefChanged="SpatialReferenceChanged" />
+                                </MudItem>
+                            </MudGrid>
+                        </MudTabPanel>
+                        @if (Model.DatasetType == NewFdbDatasetType.ImageDataset)
+                        {
+                            <MudTabPanel Text="Spatial Index">
+                                <MudGrid Spacing="2" Justify="Justify.FlexEnd">
+                                    <MudItem xs="12">
+                                        <SpatialIndexDefControl BinaryTreeDef="Model.SpatialIndex" BinaryTreeDefChanged="SpatialIndexDefChanged" />
+                                    </MudItem>
+                                </MudGrid>
+                            </MudTabPanel>
+
+                            @if (Model.AutoFields != null && Model.AutoFields.Any())
+                            {
+                                <MudTabPanel Text="Additional Fields">
+                                    <MudGrid Spacing="2" Justify="Justify.FlexEnd">
+                                        <MudItem xs="12">
+                                            <table>
+                                                @foreach (var autoField in Model.AutoFields.Keys)
+                                                {
+                                                    <tr>
+                                                        <td>
+                                                            <MudCheckBox Checked="Model.AutoFields[autoField]" T="bool"
+                                                                          CheckedChanged="(isChecked) => CheckAutoField(autoField, isChecked)"
+                                                                          Label="@autoField.AutoFieldDescription" />
+                                                        </td>
+                                                        <td>
+                                                            <MudTextField Value="autoField.name" T="string"
+                                                                           ValueChanged="(name) => SetAutoFieldName(autoField, name)" />
+                                                        </td>
+                                                    </tr>
+                                                    
+                                                }
+                                            </table>
+                                           
+                                        </MudItem>
+                                    </MudGrid>
+                                </MudTabPanel>
+                            }
+                        }
+                    </MudTabs>
                 </MudItem>
             </MudGrid>
         </div>
     </DialogBody>
 </ModalDialogFormBase>
+
+@code{
+
+    private void SpatialReferenceChanged(ISpatialReference sRef)
+    {
+        Model.SpatialReference = sRef;
+    }
+
+    private void SpatialIndexDefChanged(BinaryTreeDef binaryTreeDef)
+    {
+        Model.SpatialIndex = binaryTreeDef;
+    }
+
+    private void CheckAutoField(Framework.FDB.IAutoField autoField, bool isChecked)
+    {
+        Model.AutoFields[autoField] = isChecked;
+    }
+
+    private void SetAutoFieldName(Framework.FDB.IAutoField autoField, string name)
+    {
+        if(autoField is Field)
+        {
+            ((Field)autoField).name = name;
+        }
+    }
+}

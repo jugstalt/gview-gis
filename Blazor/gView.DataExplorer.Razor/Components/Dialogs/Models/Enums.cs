@@ -18,3 +18,9 @@ public enum NewFeatureClassGeometryType
     Polyline,
     Polygon
 }
+
+public enum NewFdbDatasetType
+{
+    FeatureDataset,
+    ImageDataset
+}
