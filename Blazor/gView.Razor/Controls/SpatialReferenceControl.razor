@@ -32,11 +32,14 @@
                         <MudText Typo="Typo.caption">@SpatialReference.Datum.Parameter</MudText>
                     }
                 </MudCardContent>
-                <MudCardActions>
-                    <MudButton Variant="Variant.Text"
+                @if (!EpsgOnly)
+                {
+                    <MudCardActions>
+                        <MudButton Variant="Variant.Text"
                                Color="Color.Primary"
                                OnClick="SelectDatum">Select</MudButton>
-                </MudCardActions>
+                    </MudCardActions>
+                }
             </MudCard>
         </MudItem>
     }
@@ -45,6 +48,7 @@
 @code{
     [Parameter] public ISpatialReference? SpatialReference{ get; set; }
     [Parameter] public EventCallback<ISpatialReference> SRefChanged { get; set; }
+    [Parameter] public bool EpsgOnly { get; set; } = false;
 
     private Task SelectProjection()
         => HandleAsync(async () =>

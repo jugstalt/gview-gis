@@ -1,6 +1,8 @@
 ﻿using gView.Blazor.Core.Exceptions;
 using gView.DataExplorer.Plugins.ExplorerObjects.Base;
 using gView.DataExplorer.Plugins.ExplorerObjects.Fdb.ContextTools;
+using gView.DataExplorer.Plugins.ExplorerObjects.Fdb.Extensions;
+using gView.DataExplorer.Plugins.Extensions;
 using gView.DataSources.Fdb.MSAccess;
 using gView.DataSources.Fdb.MSSql;
 using gView.Framework.Blazor.Services.Abstraction;
@@ -226,66 +228,29 @@ public class SqlFdbDatasetExplorerObject : ExplorerParentObject<SqlFdbExplorerOb
         return false;
     }
 
-    async public Task<IExplorerObject?> CreateExplorerObjectAsync(IApplicationScope appScope, IExplorerObject parentExObject)
+    async public Task<IExplorerObject?> CreateExplorerObjectAsync(IApplicationScope scope, IExplorerObject parentExObject)
     {
-        if (!CanCreate(parentExObject))
+        if (parentExObject == null || !CanCreate(parentExObject))
         {
             return null;
         }
 
-        return null;
+        var scopeService = scope.ToScopeService();
 
-        //SqlFDB fdb = new SqlFDB();
-        //await fdb.Open(((SqlFDBExplorerObject)parentExObject).ConnectionString);
+        var element = await scopeService.CreateDataset(parentExObject);
 
-        //FormNewDataset dlg = new FormNewDataset();
-        //if (fdb.FdbVersion >= new Version(1, 2, 0))
-        //{
-        //    dlg.ShowSpatialIndexTab = true;
-        //}
+        if (parentExObject is SqlFdbExplorerObject && element != null)
+        {
+            return new SqlFdbDatasetExplorerObject(
+                (SqlFdbExplorerObject)parentExObject,
+                element.DatasetName);
+        }
+        else
+        {
+            await scopeService.EventBus.FireFreshContentAsync();
 
-        //Version sqlVersion = fdb.SqlServerVersion;
-        //if (fdb.SqlServerVersion < new Version(10, 0))
-        //{
-        //    dlg.IndexTypeIsEditable = false;
-        //}
-
-        //if (dlg.ShowDialog() != DialogResult.OK)
-        //{
-        //    return null;
-        //}
-
-        //ISpatialReference sRef = dlg.SpatialReferene;
-        //ISpatialIndexDef sIndexDef = dlg.SpatialIndexDef;
-
-        //if (fdb.FdbVersion >= new Version(1, 2, 0) &&
-        //    sIndexDef is MSSpatialIndex &&
-        //    ((MSSpatialIndex)sIndexDef).GeometryType == GeometryFieldType.MsGeography)
-        //{
-        //    sRef = SpatialReference.FromID("epsg:4326");
-        //}
-
-        //int dsID = -1;
-
-        //string datasetName = dlg.DatasetName;
-        //switch (dlg.DatasetType)
-        //{
-        //    case FormNewDataset.datasetType.FeatureDataset:
-        //        dsID = await fdb.CreateDataset(datasetName, sRef, sIndexDef);
-        //        break;
-        //    case FormNewDataset.datasetType.ImageDataset:
-        //        dsID = await fdb.CreateImageDataset(datasetName, sRef, sIndexDef, dlg.ImageSpace, dlg.AdditionalFields);
-        //        datasetName = "#" + datasetName;
-        //        break;
-        //}
-
-        //if (dsID == -1)
-        //{
-        //    MessageBox.Show(fdb.LastErrorMessage, "ERROR", MessageBoxButtons.OK, MessageBoxIcon.Error);
-        //    return null;
-        //}
-
-        //return new SqlFDBDatasetExplorerObject((SqlFDBExplorerObject)parentExObject, datasetName);
+            return null;
+        }
     }
 
     #endregion

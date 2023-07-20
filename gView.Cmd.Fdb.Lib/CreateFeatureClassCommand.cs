@@ -1,16 +1,15 @@
-﻿using gView.Cmd.Core.Abstraction;
-using gView.Cmd.Core;
+﻿using gView.Cmd.Core;
+using gView.Cmd.Core.Abstraction;
+using gView.Cmd.Core.Builders;
+using gView.Cmd.Core.Extensions;
+using gView.Cmd.Fdb.Lib.Data;
 using gView.Framework.Data;
 using gView.Framework.Geometry;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using gView.Framework.system;
-using gView.Cmd.Core.Builders;
-using gView.DataSources.Fdb.MSAccess;
 using System;
-using gView.Cmd.Fdb.Lib.Data;
-using gView.Cmd.Core.Extensions;
+using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace gView.Cmd.Fdb.Lib;
 
@@ -98,7 +97,7 @@ public class CreateFeatureClassCommand : ICommand
                                         fields,
                                         binaryTreeDef);
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
             logger?.LogLine($"Error: {ex.Message}");
 

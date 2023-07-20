@@ -125,7 +125,7 @@ static internal class ApplicationScopeServiceExtensions
             throw new Exception(fdb.LastErrorMessage);
         }
         
-        ICommand command = new CreateFeatureClassCommand();  // ToDo: CreateDatasetCommand();
+        ICommand command = new CreateDatasetCommand();
         var parameters = new Dictionary<string, object>()
         {
             { "fdb", fdb.GetType().Name },
@@ -136,10 +136,41 @@ static internal class ApplicationScopeServiceExtensions
 
         if (model.SpatialReference != null)
         {
-            parameters.Add("sref", model.SpatialReference.EpsgCode);
+            parameters.Add("sref_epsg", model.SpatialReference.EpsgCode);
         }
 
-        if(model.DatasetType == NewFdbDatasetType)
+        if (model.DatasetType == NewFdbDatasetType.ImageDataset)
+        {
+            var pluginmananger = new PlugInManager();
+
+            parameters.Add("si_bounds_minx", model.SpatialIndex.Bounds.minx);
+            parameters.Add("si_bounds_miny", model.SpatialIndex.Bounds.miny);
+            parameters.Add("si_bounds_maxx", model.SpatialIndex.Bounds.maxx);
+            parameters.Add("si_bounds_maxy", model.SpatialIndex.Bounds.maxy);
+            parameters.Add("si_max_levels", model.SpatialIndex.MaxLevel);
+
+            parameters.Add("autofields",
+                JsonConvert.SerializeObject(model.AutoFields.Keys
+                    .Select(k => model.AutoFields[k] == true ? k : null)
+                    .Where(a => a != null)
+                    .Select(a => new AutoFieldModel() { Name = a!.name ?? a.AutoFieldPrimayName, PluginGuid = PlugInManager.PlugInID(a) })
+                    .ToArray()));
+        }
+
+        await scopeService.ShowKnownDialog(
+                    KnownDialogs.ExecuteCommand,
+                    $"Create FDB FeatureClass",
+                    new ExecuteCommandModel()
+                    {
+                        CommandItems = new[]
+                        {
+                            new CommandItem()
+                            {
+                                Command = command,
+                                Parameters = parameters
+                            }
+                        }
+                    });
 
         return null;
     }

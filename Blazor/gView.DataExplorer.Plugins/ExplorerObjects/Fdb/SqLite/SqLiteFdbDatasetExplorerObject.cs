@@ -1,5 +1,6 @@
 ﻿using gView.DataExplorer.Plugins.ExplorerObjects.Base;
 using gView.DataExplorer.Plugins.ExplorerObjects.Fdb.ContextTools;
+using gView.DataExplorer.Plugins.ExplorerObjects.Fdb.Extensions;
 using gView.DataExplorer.Plugins.Extensions;
 using gView.DataExplorer.Razor.Components.Dialogs.Models;
 using gView.DataSources.Fdb.SQLite;
@@ -12,6 +13,7 @@ using gView.Framework.system;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using static System.Formats.Asn1.AsnWriter;
 
 namespace gView.DataExplorer.Plugins.ExplorerObjects.Fdb.SqLite;
 
@@ -272,44 +274,30 @@ public class SqLiteFdbDatasetExplorerObject : ExplorerObjectFeatureClassImport<I
     public bool CanCreate(IExplorerObject? parentExObject)
         => parentExObject is SqLiteFdbExplorerObject;
 
-    async public Task<IExplorerObject?> CreateExplorerObjectAsync(IApplicationScope appScope, IExplorerObject? parentExObject)
+    async public Task<IExplorerObject?> CreateExplorerObjectAsync(IApplicationScope scope, IExplorerObject? parentExObject)
     {
         if (parentExObject == null || !CanCreate(parentExObject))
         {
             return null;
         }
 
-        var model = appScope.ToScopeService()
-                           .ShowModalDialog(
-                                typeof(gView.DataExplorer.Razor.Components.Dialogs.NewFdbDataset),
-                                "New Dataset",
-                                new NewFdbDatasetModel());
+        var scopeService = scope.ToScopeService();
 
-        SQLiteFDB fdb = new SQLiteFDB();
-        await fdb.Open(parentExObject.FullName);
-        //int dsID = -1;
+        var element = await scopeService.CreateDataset(parentExObject);
 
-        //string datasetName = dlg.DatasetName;
-        //switch (dlg.DatasetType)
-        //{
-        //    case FormNewDataset.datasetType.FeatureDataset:
-        //        dsID = await fdb.CreateDataset(datasetName, dlg.SpatialReferene);
-        //        break;
-        //    case FormNewDataset.datasetType.ImageDataset:
-        //        dsID = await fdb.CreateImageDataset(datasetName, dlg.SpatialReferene, null, dlg.ImageSpace, dlg.AdditionalFields);
-        //        datasetName = "#" + datasetName;
-        //        break;
-        //}
+        if (parentExObject is SqLiteFdbExplorerObject && element != null)
+        {
+            return new SqLiteFdbDatasetExplorerObject(
+                (SqLiteFdbExplorerObject)parentExObject,
+                element.ConnectionString,
+                element.DatasetName);
+        }
+        else
+        {
+            await scopeService.EventBus.FireFreshContentAsync();
 
-        //if (dsID == -1)
-        //{
-        //    MessageBox.Show(fdb.LastErrorMessage, "ERROR", MessageBoxButtons.OK, MessageBoxIcon.Error);
-        //    return null;
-        //}
-
-        //return new SqLiteFdbDatasetExplorerObject(parentExObject, parentExObject.FullName, datasetName);
-
-        return null;
+            return null;
+        }
     }
 
     #endregion

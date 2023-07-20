@@ -30,7 +30,9 @@
                         <MudTabPanel Text="Spatial Reference">
                             <MudGrid Spacing="2" Justify="Justify.FlexEnd">
                                 <MudItem xs="12">
-                                    <SpatialReferenceControl SpatialReference="Model.SpatialReference" SRefChanged="SpatialReferenceChanged" />
+                                    <SpatialReferenceControl SpatialReference="Model.SpatialReference" 
+                                                              SRefChanged="SpatialReferenceChanged"
+                                                              EpsgOnly="true" />
                                 </MudItem>
                             </MudGrid>
                         </MudTabPanel>

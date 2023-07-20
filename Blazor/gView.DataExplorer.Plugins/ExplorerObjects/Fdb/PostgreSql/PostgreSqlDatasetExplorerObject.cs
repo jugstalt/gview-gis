@@ -1,6 +1,7 @@
 ﻿using gView.Blazor.Core.Exceptions;
 using gView.DataExplorer.Plugins.ExplorerObjects.Base;
 using gView.DataExplorer.Plugins.ExplorerObjects.Fdb.ContextTools;
+using gView.DataExplorer.Plugins.ExplorerObjects.Fdb.Extensions;
 using gView.DataExplorer.Plugins.Extensions;
 using gView.DataExplorer.Razor.Components.Dialogs.Models;
 using gView.DataSources.Fdb.MSAccess;
@@ -236,64 +237,30 @@ public class PostgreSqlDatasetExplorerObject : ExplorerParentObject<PostgreSqlEx
         return false;
     }
 
-    async public Task<IExplorerObject?> CreateExplorerObjectAsync(IApplicationScope appScope, IExplorerObject parentExObject)
+    async public Task<IExplorerObject?> CreateExplorerObjectAsync(IApplicationScope scope, IExplorerObject parentExObject)
     {
-        if (!CanCreate(parentExObject))
+        if (parentExObject == null || !CanCreate(parentExObject))
         {
             return null;
         }
 
-        var model = appScope.ToScopeService()
-                           .ShowModalDialog(
-                                typeof(gView.DataExplorer.Razor.Components.Dialogs.NewFdbDataset),
-                                "New Dataset",
-                                new NewFdbDatasetModel());
+        var scopeService = scope.ToScopeService();
 
-        pgFDB fdb = new pgFDB();
-        await fdb.Open(((PostgreSqlExplorerObject)parentExObject).ConnectionString);
+        var element = await scopeService.CreateDataset(parentExObject);
 
-        //FormNewDataset dlg = new FormNewDataset();
-        //if (fdb.FdbVersion >= new Version(1, 2, 0))
-        //{
-        //    dlg.ShowSpatialIndexTab = true;
-        //}
+        if (parentExObject is PostgreSqlExplorerObject && element != null)
+        {
+            return new PostgreSqlDatasetExplorerObject(
+                (PostgreSqlExplorerObject)parentExObject,
+                element.DatasetName);
+        }
+        else
+        {
+            await scopeService.EventBus.FireFreshContentAsync();
 
-        //if (dlg.ShowDialog() != DialogResult.OK)
-        //{
-        //    return null;
-        //}
+            return null;
+        }
 
-        //ISpatialReference sRef = dlg.SpatialReferene;
-        //ISpatialIndexDef sIndexDef = dlg.SpatialIndexDef;
-
-        //if (fdb.FdbVersion >= new Version(1, 2, 0) &&
-        //    sIndexDef is MSSpatialIndex &&
-        //    ((MSSpatialIndex)sIndexDef).GeometryType == GeometryFieldType.MsGeography)
-        //{
-        //    sRef = SpatialReference.FromID("epsg:4326");
-        //}
-
-        //int dsID = -1;
-
-        //string datasetName = dlg.DatasetName;
-        //switch (dlg.DatasetType)
-        //{
-        //    case FormNewDataset.datasetType.FeatureDataset:
-        //        dsID = await fdb.CreateDataset(datasetName, sRef, sIndexDef);
-        //        break;
-        //    case FormNewDataset.datasetType.ImageDataset:
-        //        dsID = await fdb.CreateImageDataset(datasetName, sRef, sIndexDef, dlg.ImageSpace, dlg.AdditionalFields);
-        //        datasetName = "#" + datasetName;
-        //        break;
-        //}
-
-        //if (dsID == -1)
-        //{
-        //    MessageBox.Show(fdb.LastErrorMessage, "ERROR", MessageBoxButtons.OK, MessageBoxIcon.Error);
-        //    return null;
-        //}
-
-        return new PostgreSqlDatasetExplorerObject((PostgreSqlExplorerObject)parentExObject, /*datasetName*/"???");
     }
 
     #endregion
