@@ -2697,6 +2697,7 @@ namespace gView.DataSources.Fdb.MSAccess
             fields.Add(new Field(ColumnName("CELLX"), FieldType.Double));
             fields.Add(new Field(ColumnName("CELLY"), FieldType.Double));
             fields.Add(new Field(ColumnName("LEVELS"), FieldType.integer));
+            
             if (additionalFields != null)
             {
                 foreach (IField field in additionalFields.ToEnumerable())

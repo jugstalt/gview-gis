@@ -2,7 +2,6 @@
 using gView.DataExplorer.Plugins.ExplorerObjects.Fdb.ContextTools;
 using gView.DataExplorer.Plugins.ExplorerObjects.Fdb.Extensions;
 using gView.DataExplorer.Plugins.Extensions;
-using gView.DataExplorer.Razor.Components.Dialogs.Models;
 using gView.DataSources.Fdb.SQLite;
 using gView.Framework.Blazor.Services.Abstraction;
 using gView.Framework.Data;
@@ -13,7 +12,6 @@ using gView.Framework.system;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using static System.Formats.Asn1.AsnWriter;
 
 namespace gView.DataExplorer.Plugins.ExplorerObjects.Fdb.SqLite;
 
@@ -257,7 +255,11 @@ public class SqLiteFdbDatasetExplorerObject : ExplorerObjectFeatureClassImport<I
 
     async internal Task<bool> DeleteDataset(string dsname)
     {
-        if (_dataset == null || !(_dataset.Database is IFeatureDatabase))
+        if (_dataset == null)
+        {
+            await Refresh();
+        }
+        if (!(_dataset?.Database is IFeatureDatabase))
         {
             return false;
         }
@@ -306,7 +308,7 @@ public class SqLiteFdbDatasetExplorerObject : ExplorerObjectFeatureClassImport<I
 
     public IEnumerable<IExplorerObjectContextTool> ContextTools
         => _contextTools ?? Array.Empty<IExplorerObjectContextTool>();
-           
+
 
     #endregion
 

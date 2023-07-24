@@ -134,7 +134,7 @@ public class CreateDatasetCommand : ICommand
 
                 if (await fdb.CreateImageDataset(
                     parameters.GetRequiredValue<string>("ds_name"), 
-                    spatialReference, spatialIndexDef, string.Empty, null) < 0)
+                    spatialReference, spatialIndexDef, string.Empty, autoFields) < 0)
                 {
                     throw new Exception($"Unable to create dataset: {fdb.LastErrorMessage}");
                 }

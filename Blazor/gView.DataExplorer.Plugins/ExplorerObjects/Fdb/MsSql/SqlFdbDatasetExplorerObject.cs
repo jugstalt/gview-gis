@@ -165,7 +165,12 @@ public class SqlFdbDatasetExplorerObject : ExplorerParentObject<SqlFdbExplorerOb
 
     async internal Task<bool> DeleteDataset(string dsname)
     {
-        if (_dataset == null || !(_dataset.Database is IFeatureDatabase))
+        if (_dataset == null)
+        {
+            await Refresh();
+        }
+
+        if (!(_dataset?.Database is IFeatureDatabase))
         {
             return false;
         }
