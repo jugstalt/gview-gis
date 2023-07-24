@@ -7,7 +7,7 @@ namespace gView.Cmd.Fdb.Lib.Raster;
 
 internal class Truncate
 {
-    async static Task Run(IFeatureDataset ds, string fcname)
+    async public Task Run(IFeatureDataset ds, string fcname)
     {
         AccessFDB? fdb = ds.Database as AccessFDB;
 
@@ -18,9 +18,8 @@ internal class Truncate
 
         if (!fdb.TruncateTable(fcname))
         {
-            throw new Exception($"Error: {ds.LastErrorMessage}");
+            throw new Exception(ds.LastErrorMessage);
         }
-
 
         IFeatureClass fc = await fdb.GetFeatureclass(ds.DatasetName, $"{ds.DatasetName}_IMAGE_POLYGONS");
         await fdb.CalculateExtent(fc);
