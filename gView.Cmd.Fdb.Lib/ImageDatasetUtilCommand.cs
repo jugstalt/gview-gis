@@ -4,14 +4,13 @@ using gView.Cmd.Core.Builders;
 using gView.Cmd.Core.Extensions;
 using gView.Cmd.Fdb.Lib.Raster;
 using gView.Framework.Data;
-using gView.Framework.Network;
 using gView.Framework.system;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace gView.Cmd.Fdb.Lib;
-internal class ImageDatasetUtilCommand : ICommand
+public class ImageDatasetUtilCommand : ICommand
 {
     public string Name => "FDB.ImageDatasetUtil";
 
@@ -79,17 +78,17 @@ internal class ImageDatasetUtilCommand : ICommand
 
                     if (!String.IsNullOrEmpty(filename))
                     {
-                        await new Add(cancelTracker).RunAddFiles(dataset, new[] { filename! }, GetProviders(parameters));
+                        await new Add(cancelTracker).RunAddFiles(dataset, new[] { filename! }, GetProviders(parameters, logger));
                         break;
                     }
 
                     string? directory = parameters.GetValue<string>("directory");
-                    
+
                     if (!String.IsNullOrEmpty(directory))
                     {
                         string filters = parameters.GetRequiredValue<string>("filter");
 
-                        await new Add(cancelTracker).RunImportDirectory(dataset, new System.IO.DirectoryInfo(directory), filters.Split(';'), GetProviders(parameters));
+                        await new Add(cancelTracker).RunImportDirectory(dataset, new System.IO.DirectoryInfo(directory), filters.Split(';'), GetProviders(parameters, logger));
                         break;
                     }
 
@@ -109,7 +108,7 @@ internal class ImageDatasetUtilCommand : ICommand
 
     #region Helper
 
-    private Dictionary<string, Guid>? GetProviders(IDictionary<string, object> parameters)
+    private Dictionary<string, Guid>? GetProviders(IDictionary<string, object> parameters, ICommandLogger? logger)
     {
         string? provider = parameters.GetValue<string>("provider");
 
@@ -137,7 +136,7 @@ internal class ImageDatasetUtilCommand : ICommand
                 }
 
                 providers.Add(extension, PlugInManager.PlugInID(rds));
-                Console.WriteLine("Provider " + extension + ": " + rds.ToString() + " {" + PlugInManager.PlugInID(rds).ToString() + "}");
+                logger?.LogLine($"Provider {extension}: {rds.ToString()} - {PlugInManager.PlugInID(rds).ToString()}");
             }
         }
 
