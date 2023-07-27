@@ -1,0 +1,14 @@
+<MudGrid>
+    <MudItem xs="10">
+          <MudTextField Label="Folder"
+                        @bind-Value="Folder"
+                        Variant="Variant.Text"></MudTextField>      
+    </MudItem>
+    <MudItem xs="2">
+
+    </MudItem>
+</MudGrid>
+
+@code{
+    [Parameter] public string Folder{ get; set; }
+}
