@@ -1,21 +1,17 @@
-﻿using gView.Blazor.Models.Table;
+﻿using gView.Blazor.Models.Extensions;
+using gView.Blazor.Models.Table;
 using gView.DataSources.Fdb.MSSql;
 using gView.DataSources.Fdb.PostgreSql;
 using gView.DataSources.Fdb.SQLite;
 using gView.Framework.Data;
+using gView.Framework.Data.Cursors;
+using gView.Framework.Data.Filters;
 using gView.Framework.DataExplorer.Abstraction;
 using gView.Framework.system;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using gView.Blazor.Models.Extensions;
-using gView.Framework.Data.Cursors;
-using gView.Framework.Data.Filters;
-using MudBlazor.Extensions;
 using System.IO;
-using System.Security.AccessControl;
+using System.Threading.Tasks;
 
 namespace gView.DataExplorer.Plugins.ExplorerTabPages;
 
@@ -35,7 +31,7 @@ internal class ImageDatasetTapPage : IExplorerTabPage
 
     public void OnHide()
     {
-        
+
     }
 
     public Task<bool> OnShow()

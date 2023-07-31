@@ -2,9 +2,11 @@
 using gView.Cmd.Core.Abstraction;
 using gView.Cmd.Core.Builders;
 using gView.Cmd.Core.Extensions;
+using gView.Cmd.Fdb.Lib.Model;
 using gView.Cmd.Fdb.Lib.Raster;
 using gView.Framework.Data;
 using gView.Framework.system;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -110,33 +112,67 @@ public class ImageDatasetUtilCommand : ICommand
 
     private Dictionary<string, Guid>? GetProviders(IDictionary<string, object> parameters, ICommandLogger? logger)
     {
-        string? provider = parameters.GetValue<string>("provider");
+        string? providerType = parameters.GetValue<string>("provider")?.Trim();
 
-        IRasterFileDataset? rds = null;
-        if (provider == "gdal")
+        if (String.IsNullOrEmpty(providerType) || providerType == "first")
         {
-            rds = PlugInManager.Create(new Guid("43DFABF1-3D19-438c-84DA-F8BA0B266592")) as IRasterFileDataset;
-        }
-        else if (provider == "raster")
-        {
-            rds = PlugInManager.Create(new Guid("D4812641-3F53-48eb-A66C-FC0203980C79")) as IRasterFileDataset;
+            providerType = "gdal";  // default
         }
 
         Dictionary<string, Guid>? providers = new Dictionary<string, Guid>();
-        if (rds != null)
+
+        if (providerType!.StartsWith("[") && providerType.EndsWith("]"))
         {
-            foreach (string format in rds.SupportedFileFilter.Split('|'))
+            var providerModels = JsonConvert.DeserializeObject<RasterProviderModel[]>(providerType);
+
+            foreach (var providerModel in providerModels!)
             {
-                string extension = format;
+                var rds = PlugInManager.Create(providerModel.PluginGuid) as IRasterFileDataset;
 
-                int pos = format.LastIndexOf(".");
-                if (pos > 0)
+                if (rds != null)
                 {
-                    extension = format.Substring(pos, format.Length - pos);
-                }
+                    string extension = providerModel.Format;
 
-                providers.Add(extension, PlugInManager.PlugInID(rds));
-                logger?.LogLine($"Provider {extension}: {rds.ToString()} - {PlugInManager.PlugInID(rds).ToString()}");
+                    int pos = extension.LastIndexOf(".");
+                    if (pos > 0)
+                    {
+                        extension = extension.Substring(pos);
+                    }
+
+                    providers.Add(extension, PlugInManager.PlugInID(rds));
+                    logger?.LogLine($"Provider {extension}: {rds.ToString()} - {PlugInManager.PlugInID(rds).ToString()}");
+                }
+            }
+        }
+        else
+        {
+
+            IRasterFileDataset? rds = null;
+            if (providerType == "gdal")
+            {
+                rds = PlugInManager.Create(new Guid("43DFABF1-3D19-438c-84DA-F8BA0B266592")) as IRasterFileDataset;
+            }
+            else if (providerType == "raster")
+            {
+                rds = PlugInManager.Create(new Guid("D4812641-3F53-48eb-A66C-FC0203980C79")) as IRasterFileDataset;
+            }
+
+
+            if (rds != null)
+            {
+                foreach (string format in rds.SupportedFileFilter.Split('|'))
+                {
+                    string extension = format;
+
+                    int pos = format.LastIndexOf(".");
+                    if (pos > 0)
+                    {
+                        extension = format.Substring(pos);
+                    }
+
+                    providers.Add(extension, PlugInManager.PlugInID(rds));
+                    logger?.LogLine($"Provider {extension}: {rds.ToString()} - {PlugInManager.PlugInID(rds).ToString()}");
+                }
             }
         }
 

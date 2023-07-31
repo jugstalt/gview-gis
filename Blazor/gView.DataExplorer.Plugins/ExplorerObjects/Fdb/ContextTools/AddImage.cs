@@ -12,9 +12,7 @@ using gView.Framework.Blazor;
 using gView.Framework.Blazor.Services.Abstraction;
 using gView.Framework.Data;
 using gView.Framework.DataExplorer.Abstraction;
-using Microsoft.SqlServer.Management.SqlParser.SqlCodeDom;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Linq;
 using System.Threading.Tasks;
 

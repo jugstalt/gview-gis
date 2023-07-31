@@ -13,6 +13,14 @@
                     ((IExplorerParentObject)selectedRoot).ChildObjects().Result :
                     Array.Empty<IExplorerObject>());
 
+            if(Model.Filters!=null)
+            {
+                foreach(var filter in Model.Filters)
+                {
+                    currentListExplorerObjects = filter.FilterExplorerObjects(currentListExplorerObjects).ToList();
+                }
+            }
+
             @foreach (var childObject in currentListExplorerObjects.ToArray().Reverse())
             {
                 if (!rootExplorerObjects.Contains(childObject)) {
@@ -46,7 +54,7 @@
                 </MudSelect>
 
                 <MudPaper Elevation="2">
-                    <MudList Clickable="true" Style=" min-height:600px;min-width:900px;overflow:auto" Dense="true">
+                    <MudList Clickable="true" Style=" min-height:600px;min-width:900px;max-height:600px;overflow:auto" Dense="true">
                         @if (selectedRoot != null && levels[selectedRoot] > 0)
                         {
                             <MudListItem OnClick="MoveUp">

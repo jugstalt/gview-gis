@@ -1,14 +1,39 @@
+@inject IApplicationScope AppScope
+
 <MudGrid>
     <MudItem xs="10">
-          <MudTextField Label="Folder"
+        <MudTextField Label="@Label"
                         @bind-Value="Folder"
-                        Variant="Variant.Text"></MudTextField>      
+                        Variant="Variant.Text"></MudTextField>
     </MudItem>
     <MudItem xs="2">
-
+        <MudFab Color="Color.Primary" 
+                 OnClick="SelectFolder"
+                 StartIcon="@Icons.Material.Filled.FolderOpen" />
     </MudItem>
 </MudGrid>
 
-@code{
-    [Parameter] public string Folder{ get; set; }
+@code {
+    [Parameter] public string Label { get; set; } = "Folder";
+    [Parameter] public string Folder { get; set; } = string.Empty;
+    [Parameter] public EventCallback<string> FolderChanged { get; set; }
+
+    async private Task SelectFolder()
+    {
+        var model = await AppScope.ShowKnownDialog(Framework.Blazor.KnownDialogs.ExplorerDialog,
+                                                        model: new ExplorerDialogModel()
+                                                        {
+                                                                Filters = new List<ExplorerDialogFilter> {
+                                                                                    new OpenFolderFilter()
+                                                                },
+                                                                Mode = ExploerDialogMode.Open
+                                                        });
+
+        if (model != null && model.Result.ExplorerObjects.Count() == 1)
+        {
+            Folder = model.Result.ExplorerObjects.First().FullName;
+
+            await FolderChanged.InvokeAsync(Folder);
+        }
+    }
 }

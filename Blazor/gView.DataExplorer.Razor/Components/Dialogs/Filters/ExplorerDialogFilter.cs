@@ -51,4 +51,9 @@ public class ExplorerDialogFilter
     {
         get { return null; }
     }
+
+    public virtual IEnumerable<IExplorerObject> FilterExplorerObjects(IEnumerable<IExplorerObject> explorerObjects)
+    {
+        return explorerObjects;
+    }
 }
