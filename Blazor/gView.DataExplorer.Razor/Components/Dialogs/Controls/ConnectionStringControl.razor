@@ -1,36 +1,27 @@
-@using gView.Framework.Db
-@inherits ModalDialogFormBase<ConnectionStringModel>
-@inject IconService Icons
-@inject IExplorerApplicationService ExplorerApplication
+@using gView.Framework.Db;
 
 @if (_commonDbConnections?.Providers != null)
 {
+    <MudSelect Label="Provider" T="string" Style='min-width:280px;'
+                @bind-Value="_currentProvider"
+                Variant="Variant.Outlined"
+                Dense="true">
+                    @foreach (var provider in _commonDbConnections.Providers)
+                    {
+                        <MudSelectItem Value="@provider.Id">
+                            @provider.Name
+                        </MudSelectItem>
+                    }
+    </MudSelect>
 
-    <ModalDialogFormBase T="ConnectionStringModel"
-                          OnDialogClose="base.OnDialogClose"
-                          Model="base.Model">
-        <DialogBody>
-            <MudSelect Label="Provider" T="string" Style='min-width:280px;' 
-                        @bind-Value="_currentProvider"
-                        Variant="Variant.Outlined"
-                        Dense="true">
-                @foreach (var provider in _commonDbConnections.Providers)
-                {
-                    <MudSelectItem Value="@provider.Id">
-                        @provider.Name
-                    </MudSelectItem>
-                }
-            </MudSelect>
+    var schemes = _commonDbConnections.Providers.Where(p => p.Id == _currentProvider).FirstOrDefault()?.Schemes;
+    if(schemes?.Where(s=>s.Name==_currentScheme).Any() != true)
+    {
+        _currentScheme = schemes?.FirstOrDefault()?.Name;
+    }
 
-            @{
-                var schemes = _commonDbConnections.Providers.Where(p => p.Id == _currentProvider).FirstOrDefault()?.Schemes;
-                if(schemes?.Where(s=>s.Name==_currentScheme).Any() != true)
-                {
-                    _currentScheme = schemes?.FirstOrDefault()?.Name;
-                }
-            }
-            @if (schemes != null)
-            {
+     @if (schemes != null)
+     {
                 <MudSelect Label="Connection Type" T="string"
                            @bind-Value="_currentScheme" 
                            Variant="Variant.Text"
@@ -42,14 +33,12 @@
                         </MudSelectItem>
                     }
                 </MudSelect>
-            }
+     }
 
-            @{
-                var scheme = schemes?.Where(s => s.Name == _currentScheme).FirstOrDefault();
-            }
+     var scheme = schemes?.Where(s => s.Name == _currentScheme).FirstOrDefault();
 
-            @if(scheme != null)
-            {
+      @if(scheme != null)
+      {
                 <MudGrid>
                     @foreach(var parameter in ConnectionStringParameters(_connectionString = scheme.ConnectionString))
                     {
@@ -65,35 +54,17 @@
                         </MudItem>
                     }
                 </MudGrid>
-            }
+      }
 
-        </DialogBody>
-        <DialogButtons>
-            @if (_isBusy)
-            {
-                <MudProgressCircular Indeterminate="true" Size="MudBlazor.Size.Small" />
-            }
-            @if(!String.IsNullOrEmpty(_connectionSuccessMessage))
-            {
-                <MudAlert Severity="Severity.Success">@_connectionSuccessMessage</MudAlert>
-            }
-            @if(!String.IsNullOrEmpty(_connectionErrorMessage))
-            {
-                <MudAlert Severity="Severity.Error">@_connectionErrorMessage</MudAlert>
-            }
-            <MudButton Variant="Variant.Filled"
-                       Color="Color.Default"
-                       OnClick="TestConnection">
-                        Test Connection
-                   </MudButton>
-            <MudButton Variant="Variant.Filled"
-                       Color="Color.Primary"
-                       OnClick="SetConnection">Confirm</MudButton>
-        </DialogButtons>
-    </ModalDialogFormBase>
+
 }
 
-@code{
+@code {
+    [Parameter] public DbConnectionString? DbConnectionString { get; set; }
+    [Parameter] public string ProviderId { get; set; } = string.Empty;
+
+    //[Parameter] public RenderFragment? DialogButtons { get; set; }
+
     private string _currentProvider = string.Empty;
     private string? _currentScheme = string.Empty;
 
@@ -103,29 +74,29 @@
     private string _connectionErrorMessage = string.Empty;
     private string _connectionSuccessMessage = string.Empty;
 
-    protected override Task OnInitializedAsync() => HandleAsync(async () =>
+    async protected override Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
 
         await LoadConnectionStringsModel();  // intialize Conenctions/Providers
 
-        _currentProvider = Model.ProviderId;
+        _currentProvider = ProviderId;
         if (!String.IsNullOrEmpty(_currentProvider) && _commonDbConnections?.Providers != null)
         {
             _commonDbConnections.Providers = _commonDbConnections.Providers.Where(p => p.Id == _currentProvider).ToArray();
         }
 
-        if (Model.DbConnectionString != null)
+        if (DbConnectionString != null)
         {
-            foreach (var key in Model.DbConnectionString.UserDataTypes)
+            foreach (var key in DbConnectionString.UserDataTypes)
             {
-                _parameters[key] = Model.DbConnectionString.GetUserData(key)?.ToString() ?? "";
+                _parameters[key] = DbConnectionString.GetUserData(key)?.ToString() ?? "";
             }
         }
-    });
+    }
 
     private bool _isBusy = false;
-    private Task TestConnection() => HandleAsync(async () =>
+    async private Task TestConnection()
     {
         _isBusy = true;
 
@@ -133,7 +104,7 @@
         DataProvider dataProvider = new();
         try
         {
-            await Task.Delay(300); 
+            await Task.Delay(300);
 
             if (dataProvider.Open(BuildDbConnectionString(useProvider: true).ConnectionString, true))
             {
@@ -153,14 +124,14 @@
         {
             _isBusy = false;
         }
-    });
+    }
 
-    protected Task SetConnection() => HandleAsync(() =>
-    {
-        BuildDbConnectionString(Model.DbConnectionString);
+    // protected Task SetConnection()
+    // {
+    //     BuildDbConnectionString(DbConnectionString);
 
-        return base.Submit();
-    });
+    //     return base.Submit();
+    // };
 
     #region Helper
 
@@ -174,10 +145,10 @@
 
         if (proto == null)
         {
-            proto = DbConnectionString.Build(_currentProvider, 
-                                             useProvider.HasValue ? 
-                                                    useProvider.HasValue : 
-                                                    Model.DbConnectionString.UseProviderInConnectionString);
+            proto = DbConnectionString.Build(_currentProvider,
+                                             useProvider.HasValue ?
+                                                    useProvider.HasValue :
+                                                    DbConnectionString?.UseProviderInConnectionString ?? true);
         }
         else
         {
@@ -191,12 +162,12 @@
     }
 
     private InputType GetInputType(string parameter)
-            => base.HandleFunc(() => parameter.ToLower() switch
-                                {
-                                    "password" => InputType.Password,
-                                    "port" => InputType.Number,
-                                    _ => InputType.Text
-                                });
+            => parameter.ToLower() switch
+            {
+                "password" => InputType.Password,
+                "port" => InputType.Number,
+                _ => InputType.Text
+            };
 
 
     #endregion

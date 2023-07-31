@@ -3,9 +3,9 @@ using gView.Framework.system;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 
-namespace gView.DataExplorer.Razor.Components.Dialogs;
+namespace gView.DataExplorer.Razor.Components.Dialogs.Controls;
 
-public partial class ConnectionStringDialog
+public partial class ConnectionStringControl
 {
     private CommonDbConnectionsModelModel? _commonDbConnections;
 
@@ -37,7 +37,7 @@ public partial class ConnectionStringDialog
         }
         catch
         {
-            return Array.Empty<string>();   
+            return Array.Empty<string>();
         }
 
     }
