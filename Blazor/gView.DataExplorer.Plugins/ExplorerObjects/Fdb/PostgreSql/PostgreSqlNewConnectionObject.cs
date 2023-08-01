@@ -1,19 +1,27 @@
 ﻿using gView.DataExplorer.Plugins.ExplorerObjects.Base;
+using gView.DataExplorer.Plugins.ExplorerObjects.Fdb.PostgreSql.Extensions;
+using gView.DataExplorer.Plugins.Extensions;
+using gView.DataExplorer.Razor.Components.Dialogs.Models;
+using gView.Framework.Blazor;
 using gView.Framework.Blazor.Services.Abstraction;
 using gView.Framework.DataExplorer.Abstraction;
 using gView.Framework.DataExplorer.Events;
+using gView.Framework.Db;
+using gView.Framework.IO;
 using gView.Framework.system;
 using System.Threading.Tasks;
 
 namespace gView.DataExplorer.Plugins.ExplorerObjects.Fdb.PostgreSql;
 
 [RegisterPlugIn("C6BCD1F5-EBE3-4142-95E3-EE91B5EB35BB")]
-public class PostgreSqlNewConnectionObject : ExplorerObjectCls<PostgreSqlExplorerGroupObject>, 
-                                   IExplorerSimpleObject, 
-                                   IExplorerObjectDoubleClick,
-                                   IExplorerObjectCreatable
+public class PostgreSqlNewConnectionObject : ExplorerObjectCls<PostgreSqlExplorerGroupObject>,
+                                             IExplorerSimpleObject,
+                                             IExplorerObjectDoubleClick,
+                                             IExplorerObjectCreatable
 {
     public PostgreSqlNewConnectionObject() : base() { }
+    public PostgreSqlNewConnectionObject(PostgreSqlExplorerGroupObject parent)
+       : base(parent, 0) { }
 
     #region IExplorerSimpleObject Members
 
@@ -35,36 +43,20 @@ public class PostgreSqlNewConnectionObject : ExplorerObjectCls<PostgreSqlExplore
     }
 
     public Task<object?> GetInstanceAsync() => Task.FromResult<object?>(null);
-    
+
     #endregion
 
     #region IExplorerObjectDoubleClick Members
 
-    public Task ExplorerObjectDoubleClick(IApplicationScope appScope, ExplorerObjectEventArgs e)
+    async public Task ExplorerObjectDoubleClick(IApplicationScope appScope, ExplorerObjectEventArgs e)
     {
-        return Task.CompletedTask;
-        //FormConnectionString dlg = new FormConnectionString();
-        //dlg.ProviderID = "postgre";
-        //dlg.UseProviderInConnectionString = false;
+        var model = await appScope.ToScopeService().ShowKnownDialog(KnownDialogs.ConnectionString,
+                                                                    model: new ConnectionStringModel("postgre", false));
 
-        //if (dlg.ShowDialog() == System.Windows.Forms.DialogResult.OK)
-        //{
-        //    DbConnectionString dbConnStr = dlg.DbConnectionString;
-        //    ConfigConnections connStream = new ConfigConnections("postgrefdb", "546B0513-D71D-4490-9E27-94CD5D72C64A");
-
-        //    string connectionString = dbConnStr.ConnectionString;
-        //    string id = ConfigTextStream.ExtractValue(connectionString, "database");
-        //    id += "@" + ConfigTextStream.ExtractValue(connectionString, "server");
-        //    if (id == "@")
-        //    {
-        //        id = "PostgreFDB Connection";
-        //    }
-
-        //    id = connStream.GetName(id);
-
-        //    connStream.Add(id, dbConnStr.ToString());
-        //    e.NewExplorerObject = new ExplorerObject(this, id, dbConnStr);
-        //}
+        if (model != null)
+        {
+            e.NewExplorerObject = model.DbConnectionString.ToPostgreSqlExplorerObject(this.TypedParent);
+        }
     }
 
     #endregion

@@ -1,12 +1,12 @@
 ﻿namespace gView.DataExplorer.Razor.Components.Dialogs.Models;
-public class NewFdbModel : ConnectionStringModel
+public class CreateFdbModel : ConnectionStringModel
 {
-    public NewFdbModel()
+    public CreateFdbModel()
         : this("", true)
     {
     }
 
-    public NewFdbModel(string providerId,
+    public CreateFdbModel(string providerId,
                        bool UseProviderInConnectionString)
         : base(providerId, UseProviderInConnectionString)
     {

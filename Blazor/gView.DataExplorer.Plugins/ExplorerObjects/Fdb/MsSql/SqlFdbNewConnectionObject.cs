@@ -1,8 +1,15 @@
 ﻿using gView.DataExplorer.Plugins.ExplorerObjects.Base;
+using gView.DataExplorer.Plugins.ExplorerObjects.Fdb.MsSql.Extensions;
+using gView.DataExplorer.Plugins.Extensions;
+using gView.DataExplorer.Razor.Components.Dialogs.Models;
+using gView.Framework.Blazor;
 using gView.Framework.Blazor.Services.Abstraction;
 using gView.Framework.DataExplorer.Abstraction;
 using gView.Framework.DataExplorer.Events;
+using gView.Framework.Db;
+using gView.Framework.IO;
 using gView.Framework.system;
+using System;
 using System.Threading.Tasks;
 
 namespace gView.DataExplorer.Plugins.ExplorerObjects.Fdb.MsSql;
@@ -43,43 +50,15 @@ public class SqlFdbNewConnectionObject : ExplorerObjectCls<SqlFdbExplorerGroupOb
 
     #region IExplorerObjectDoubleClick Members
 
-    public Task ExplorerObjectDoubleClick(IApplicationScope appScope, ExplorerObjectEventArgs e)
+    async public Task ExplorerObjectDoubleClick(IApplicationScope appScope, ExplorerObjectEventArgs e)
     {
-        return Task.CompletedTask;
-        /*
-        FormConnectionString dlg = new FormConnectionString();
-        dlg.ProviderID = "mssql";
-        dlg.UseProviderInConnectionString = false;
+        var model = await appScope.ToScopeService().ShowKnownDialog(KnownDialogs.ConnectionString,
+                                                                    model: new ConnectionStringModel("mssql", false));
 
-        if (dlg.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+        if (model != null)
         {
-            DbConnectionString dbConnStr = dlg.DbConnectionString;
-            ConfigConnections connStream = new ConfigConnections("sqlfdb", "546B0513-D71D-4490-9E27-94CD5D72C64A");
-
-            string connectionString = dbConnStr.ConnectionString;
-            string id = ConfigTextStream.ExtractValue(connectionString, "database");
-            id += "@" + ConfigTextStream.ExtractValue(connectionString, "server");
-            if (id == "@")
-            {
-                id = "SqlFDB Connection";
-            }
-
-            id = connStream.GetName(id);
-
-            connStream.Add(id, dbConnStr.ToString());
-            e.NewExplorerObject = new SqlFDBExplorerObject(this.ParentExplorerObject, id, dbConnStr);
-
-            //string connStr = dlg.ConnectionString;
-            //ConfigTextStream stream = new ConfigTextStream("sqlfdb_connections", true, true);
-            //string id = ConfigTextStream.ExtractValue(connStr, "database");
-            //id += "@" + ConfigTextStream.ExtractValue(connStr, "server");
-            //if (id == "@") id = "SqlFDB Connection";
-            //stream.Write(connStr, ref id);
-            //stream.Close();
-
-            //e.NewExplorerObject = new SqlFDBExplorerObject(id, dlg.ConnectionString);
+            e.NewExplorerObject = model.DbConnectionString.ToSqlFdbExplorerObjectt(this.TypedParent);
         }
-        */
     }
 
     #endregion

@@ -1,4 +1,9 @@
 ﻿using gView.DataExplorer.Plugins.ExplorerObjects.Base;
+using gView.DataExplorer.Plugins.ExplorerObjects.Fdb.PostgreSql.Extensions;
+using gView.DataExplorer.Plugins.Extensions;
+using gView.DataExplorer.Razor.Components.Dialogs.Models;
+using gView.DataSources.Fdb.MSSql;
+using gView.DataSources.Fdb.PostgreSql;
 using gView.Framework.Blazor.Services.Abstraction;
 using gView.Framework.DataExplorer.Abstraction;
 using gView.Framework.system;
@@ -41,10 +46,26 @@ public class PostgreSqlNewFdbDatabase : ExplorerObjectCls<PostgreSqlExplorerGrou
 
     async public Task<IExplorerObject?> CreateExplorerObjectAsync(IApplicationScope appScope, IExplorerObject parentExObject)
     {
+        var scopeService = appScope.ToScopeService();
+
+        var model = await scopeService.ShowModalDialog(typeof(gView.DataExplorer.Razor.Components.Dialogs.CreateFdbDialog),
+                                                       "Create FDB",
+                                                       new CreateFdbModel("postgre@create", false));
+
+        if (model != null)
+        {
+            pgFDB fdb = new pgFDB();
+
+            await fdb.Open(model.DbConnectionString.ConnectionString);
+            if (!fdb.Create(model.DatabaseName))
+            {
+                throw new System.Exception(fdb.LastErrorMessage);
+            }
+
+            return model.DbConnectionString.ToPostgreSqlExplorerObject(this.TypedParent);
+        }
+
         return null;
-        //FormCreatePostgreFeatureDatabase dlg = new FormCreatePostgreFeatureDatabase();
-        //dlg.ShowDialog();
-        //return Task.FromResult(dlg.ResultExplorerObject);
     }
 
     #endregion

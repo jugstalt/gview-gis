@@ -92,6 +92,12 @@ public class PostgreSqlExplorerObject : ExplorerParentObject<PostgreSqlExplorerG
                 throw new GeneralException(_errMsg);
             }
             string[] ds = await fdb.DatasetNames();
+            if (ds == null)
+            {
+                _errMsg = fdb.LastErrorMessage;
+                throw new GeneralException(_errMsg);
+            }
+
             string[] dsMod = new string[ds.Length];
 
             int i = 0;
@@ -107,10 +113,6 @@ public class PostgreSqlExplorerObject : ExplorerParentObject<PostgreSqlExplorerG
                 {
                     dsMod[i++] = dsname;
                 }
-            }
-            if (ds == null)
-            {
-                _errMsg = fdb.LastErrorMessage;
             }
 
             fdb.Dispose();

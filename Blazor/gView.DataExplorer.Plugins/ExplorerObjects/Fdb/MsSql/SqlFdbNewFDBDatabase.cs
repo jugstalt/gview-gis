@@ -1,12 +1,15 @@
 ﻿using gView.DataExplorer.Plugins.ExplorerObjects.Base;
+using gView.DataExplorer.Plugins.ExplorerObjects.Fdb.MsSql.Extensions;
 using gView.DataExplorer.Plugins.Extensions;
 using gView.DataExplorer.Razor.Components.Dialogs.Models;
 using gView.DataSources.Fdb.MSSql;
 using gView.Framework.Blazor.Services.Abstraction;
 using gView.Framework.DataExplorer.Abstraction;
+using gView.Framework.IO;
 using gView.Framework.OGC.KML;
 using gView.Framework.system;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 
 namespace gView.DataExplorer.Plugins.ExplorerObjects.Fdb.MsSql;
 
@@ -56,9 +59,9 @@ public class SqlFdbNewFDBDatabase : ExplorerObjectCls<SqlFdbExplorerGroupObject>
     {
         var scopeService = appScope.ToScopeService();
 
-        var model = await scopeService.ShowModalDialog(typeof(gView.DataExplorer.Razor.Components.Dialogs.NewFdbDialog),
-                                                       "New FDB",
-                                                       new NewFdbModel("mssql@create", false));
+        var model = await scopeService.ShowModalDialog(typeof(gView.DataExplorer.Razor.Components.Dialogs.CreateFdbDialog),
+                                                       "Create FDB",
+                                                       new CreateFdbModel("mssql@create", false));
 
         if (model != null)
         {
@@ -69,12 +72,11 @@ public class SqlFdbNewFDBDatabase : ExplorerObjectCls<SqlFdbExplorerGroupObject>
             {
                 throw new System.Exception(fdb.LastErrorMessage);
             }
+
+            return model.DbConnectionString.ToSqlFdbExplorerObjectt(this.TypedParent);
         }
 
         return null;
-        //FormCreateSQLFeatureDatabase dlg = new FormCreateSQLFeatureDatabase();
-        //dlg.ShowDialog();
-        //return Task.FromResult(dlg.ResultExplorerObject);
     }
 
     #endregion

@@ -42,7 +42,7 @@ public class PostgreSqlExplorerGroupObject : ExplorerParentObject,
     async public override Task<bool> Refresh()
     {
         await base.Refresh();
-        base.AddChildObject(new PostgreSqlNewConnectionObject());
+        base.AddChildObject(new PostgreSqlNewConnectionObject(this));
 
         ConfigTextStream stream = new ConfigTextStream("postgrefdb_connections");
         string connStr, id;
