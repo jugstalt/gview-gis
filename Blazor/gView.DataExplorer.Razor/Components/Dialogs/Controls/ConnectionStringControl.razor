@@ -2,68 +2,108 @@
 
 @if (_commonDbConnections?.Providers != null)
 {
-    <MudSelect Label="Provider" T="string" Style='min-width:280px;'
-                @bind-Value="_currentProvider"
-                Variant="Variant.Outlined"
-                Dense="true">
-                    @foreach (var provider in _commonDbConnections.Providers)
-                    {
-                        <MudSelectItem Value="@provider.Id">
-                            @provider.Name
-                        </MudSelectItem>
-                    }
-    </MudSelect>
+    <MudCard Elevation="2">
+        <MudCardContent>
+            <MudSelect Label="Provider" T="string" Style='min-width:280px;'
+            @bind-Value="_currentProvider"
+                       Variant="Variant.Outlined"
+                       Dense="true">
+                @foreach (var provider in _commonDbConnections.Providers)
+                {
+                    <MudSelectItem Value="@provider.Id">
+                        @provider.Name
+                    </MudSelectItem>
+                }
+            </MudSelect>
+            @{
+                var schemes = _commonDbConnections.Providers.Where(p => p.Id == _currentProvider).FirstOrDefault()?.Schemes;
+                if(schemes?.Where(s=>s.Name==_currentScheme).Any() != true)
+                {
+                _currentScheme = schemes?.FirstOrDefault()?.Name;
+                }
+            }
 
-    var schemes = _commonDbConnections.Providers.Where(p => p.Id == _currentProvider).FirstOrDefault()?.Schemes;
-    if(schemes?.Where(s=>s.Name==_currentScheme).Any() != true)
-    {
-        _currentScheme = schemes?.FirstOrDefault()?.Name;
-    }
-
-     @if (schemes != null)
-     {
+            @if (schemes != null)
+            {
                 <MudSelect Label="Connection Type" T="string"
-                           @bind-Value="_currentScheme" 
+                @bind-Value="_currentScheme"
                            Variant="Variant.Text"
                            Dense="true">
                     @foreach (var scheme in _commonDbConnections.Providers.Where(p => p.Id == _currentProvider).First().Schemes)
                     {
-                        <MudSelectItem Value="scheme.Name"> 
+                        <MudSelectItem Value="scheme.Name">
                             @scheme.Name
                         </MudSelectItem>
                     }
                 </MudSelect>
-     }
+            }
 
-     var scheme = schemes?.Where(s => s.Name == _currentScheme).FirstOrDefault();
+            @{
+                var scheme = schemes?.Where(s => s.Name == _currentScheme).FirstOrDefault();
+            }
 
-      @if(scheme != null)
-      {
+            @if (scheme != null)
+            {
                 <MudGrid>
-                    @foreach(var parameter in ConnectionStringParameters(_connectionString = scheme.ConnectionString))
+                    @foreach (var parameter in ConnectionStringParameters(_connectionString = scheme.ConnectionString))
                     {
-                        if(!_parameters.ContainsKey(parameter))
+                        if (!_parameters.ContainsKey(parameter))
                         {
                             _parameters.Add(parameter, "");
                         }
                         <MudItem xs="12" sm="6" md="6">
                             <MudTextField Label="@parameter" T="string"
-                                          @bind-Value="_parameters[parameter]"
-                                          InputType="GetInputType(parameter)"
-                                          Variant="Variant.Text"></MudTextField>
+                                           @bind-Value="_parameters[parameter]"
+                                           InputType="GetInputType(parameter)"
+                                           Variant="Variant.Text"></MudTextField>
                         </MudItem>
                     }
                 </MudGrid>
-      }
+            }
+        </MudCardContent>
 
+    </MudCard>
 
+    if(CustomControls!=null)
+    {
+         <MudCard Elevation="2">
+            <MudCardContent>
+                @CustomControls
+            </MudCardContent>
+         </MudCard>
+    }
+
+    <br/>
+    <div class="mud-dialog-actions">
+            @if (_isBusy)
+            {
+                <MudProgressCircular Indeterminate="true" Size="MudBlazor.Size.Small" />
+            }
+            @if (!String.IsNullOrEmpty(_connectionSuccessMessage))
+            {
+                <MudAlert Severity="Severity.Success">@_connectionSuccessMessage</MudAlert>
+            }
+            @if (!String.IsNullOrEmpty(_connectionErrorMessage))
+            {
+                <MudAlert Severity="Severity.Error">@_connectionErrorMessage</MudAlert>
+            }
+            <MudButton Variant="Variant.Filled"
+                       Color="Color.Default"
+                       OnClick="TestConnection">
+                Test Connection
+            </MudButton>
+            <MudButton Variant="Variant.Filled"
+                       Color="Color.Primary"
+                       OnClick="SetConnection">Confirm</MudButton>
+
+        </div>
 }
 
 @code {
     [Parameter] public DbConnectionString? DbConnectionString { get; set; }
     [Parameter] public string ProviderId { get; set; } = string.Empty;
-
-    //[Parameter] public RenderFragment? DialogButtons { get; set; }
+    [Parameter] public EventCallback OnSubmit { get; set; }
+    [Parameter] public RenderFragment? CustomControls { get; set; }
 
     private string _currentProvider = string.Empty;
     private string? _currentScheme = string.Empty;
@@ -126,12 +166,14 @@
         }
     }
 
-    // protected Task SetConnection()
-    // {
-    //     BuildDbConnectionString(DbConnectionString);
+    async protected Task SetConnection()
+    {
+        BuildDbConnectionString(DbConnectionString);
 
-    //     return base.Submit();
-    // };
+        //return base.Submit();
+         await OnSubmit.InvokeAsync();
+        
+    }
 
     #region Helper
 

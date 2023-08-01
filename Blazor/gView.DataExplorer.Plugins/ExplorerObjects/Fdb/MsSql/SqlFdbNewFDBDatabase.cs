@@ -1,6 +1,10 @@
 ﻿using gView.DataExplorer.Plugins.ExplorerObjects.Base;
+using gView.DataExplorer.Plugins.Extensions;
+using gView.DataExplorer.Razor.Components.Dialogs.Models;
+using gView.DataSources.Fdb.MSSql;
 using gView.Framework.Blazor.Services.Abstraction;
 using gView.Framework.DataExplorer.Abstraction;
+using gView.Framework.OGC.KML;
 using gView.Framework.system;
 using System.Threading.Tasks;
 
@@ -48,9 +52,26 @@ public class SqlFdbNewFDBDatabase : ExplorerObjectCls<SqlFdbExplorerGroupObject>
         return (parentExObject is SqlFdbExplorerGroupObject);
     }
 
-    public Task<IExplorerObject?> CreateExplorerObjectAsync(IApplicationScope appScope, IExplorerObject parentExObject)
+    async public Task<IExplorerObject?> CreateExplorerObjectAsync(IApplicationScope appScope, IExplorerObject parentExObject)
     {
-        return Task.FromResult<IExplorerObject?>(null);
+        var scopeService = appScope.ToScopeService();
+
+        var model = await scopeService.ShowModalDialog(typeof(gView.DataExplorer.Razor.Components.Dialogs.NewFdbDialog),
+                                                       "New FDB",
+                                                       new NewFdbModel("mssql@create", false));
+
+        if (model != null)
+        {
+            SqlFDB fdb = new SqlFDB();
+
+            await fdb.Open(model.DbConnectionString.ConnectionString);
+            if(!fdb.Create(model.DatabaseName))
+            {
+                throw new System.Exception(fdb.LastErrorMessage);
+            }
+        }
+
+        return null;
         //FormCreateSQLFeatureDatabase dlg = new FormCreateSQLFeatureDatabase();
         //dlg.ShowDialog();
         //return Task.FromResult(dlg.ResultExplorerObject);

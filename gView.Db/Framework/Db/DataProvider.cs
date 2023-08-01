@@ -50,6 +50,11 @@ namespace gView.Framework.Db
                 string type = connectionString.Substring(0, pos);
                 string connStr = connectionString.Substring(pos + 1, connectionString.Length - pos - 1);
 
+                if(type.Contains("@"))
+                {
+                    type = type.Split('@')[0]; // mssql@create
+                }
+
                 switch (type.ToLower())
                 {
                     case "oracleclient":

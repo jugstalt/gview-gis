@@ -231,7 +231,7 @@ public class SqlFDBLinkedFeatureclassExplorerObject : IExplorerSimpleObject,
 
     public bool CanCreate(IExplorerObject parentExObject)
     {
-        return parentExObject is SqlFdbExplorerGroupObject;
+        return parentExObject is SqlFdbDatasetExplorerObject;
     }
 
     async public Task<IExplorerObject?> CreateExplorerObjectAsync(IApplicationScope scope, IExplorerObject parentExObject)
