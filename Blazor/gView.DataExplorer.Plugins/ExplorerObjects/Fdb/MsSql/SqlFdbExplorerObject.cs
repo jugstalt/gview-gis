@@ -213,11 +213,23 @@ public class SqlFdbExplorerObject : ExplorerParentObject<SqlFdbExplorerGroupObje
                 _errMsg = fdb.LastErrorMessage;
                 return null;
             }
+
             if (fdb.LastException != null)
             {
-                throw new GeneralException(fdb.LastErrorMessage);
+                throw new GeneralException(fdb.LastException.Message);
             }
             string[] ds = await fdb.DatasetNames();
+
+            if (ds == null)
+            {
+                if (String.IsNullOrEmpty(fdb.LastErrorMessage))
+                {
+                    return Array.Empty<string>();
+                }
+                _errMsg = fdb.LastErrorMessage;
+                throw new GeneralException(_errMsg);
+            }
+
             string[] dsMod = new string[ds.Length];
 
             int i = 0;
@@ -233,10 +245,6 @@ public class SqlFdbExplorerObject : ExplorerParentObject<SqlFdbExplorerGroupObje
                 {
                     dsMod[i++] = dsname;
                 }
-            }
-            if (ds == null)
-            {
-                _errMsg = fdb.LastErrorMessage;
             }
 
             fdb.Dispose();

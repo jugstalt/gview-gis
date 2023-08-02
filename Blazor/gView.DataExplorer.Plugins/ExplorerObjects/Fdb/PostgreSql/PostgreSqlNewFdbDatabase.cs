@@ -6,6 +6,7 @@ using gView.DataSources.Fdb.MSSql;
 using gView.DataSources.Fdb.PostgreSql;
 using gView.Framework.Blazor.Services.Abstraction;
 using gView.Framework.DataExplorer.Abstraction;
+using gView.Framework.IO;
 using gView.Framework.system;
 using System.Threading.Tasks;
 
@@ -50,19 +51,34 @@ public class PostgreSqlNewFdbDatabase : ExplorerObjectCls<PostgreSqlExplorerGrou
 
         var model = await scopeService.ShowModalDialog(typeof(gView.DataExplorer.Razor.Components.Dialogs.CreateFdbDialog),
                                                        "Create FDB",
-                                                       new CreateFdbModel("postgre@create", false));
+                                                       new CreateFdbModel("postgre", false));
 
         if (model != null)
         {
             pgFDB fdb = new pgFDB();
 
-            await fdb.Open(model.DbConnectionString.ConnectionString);
-            if (!fdb.Create(model.DatabaseName))
+            string connectionString = model.DbConnectionString.ConnectionString;
+            string databaseName = ConfigTextStream.ExtractValue(connectionString, "database");
+
+            UserData parameters = new UserData();// _advancedSettings.ToUserData();
+
+            if (model.CreateRepositoryOnly == false)
+            {
+                connectionString = ConfigTextStream.RemoveValue(connectionString, "database");
+            }
+            else
+            {
+                parameters.SetUserData("CreateDatabase", false);
+            }
+
+
+            await fdb.Open(connectionString);
+            if (!fdb.Create(databaseName, parameters))
             {
                 throw new System.Exception(fdb.LastErrorMessage);
             }
 
-            return model.DbConnectionString.ToPostgreSqlExplorerObject(this.TypedParent);
+            return model.DbConnectionString.ToPostgreSqlExplorerObject(this.TryGetParent() ?? new PostgreSqlExplorerGroupObject());
         }
 
         return null;

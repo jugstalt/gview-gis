@@ -1,10 +1,12 @@
 ﻿using gView.DataExplorer.Plugins.ExplorerObjects.Base;
 using gView.DataExplorer.Plugins.ExplorerObjects.Fdb.MsSql.Extensions;
+using gView.DataExplorer.Plugins.ExplorerObjects.Fdb.PostgreSql;
 using gView.DataExplorer.Plugins.Extensions;
 using gView.DataExplorer.Razor.Components.Dialogs.Models;
 using gView.DataSources.Fdb.MSSql;
 using gView.Framework.Blazor.Services.Abstraction;
 using gView.Framework.DataExplorer.Abstraction;
+using gView.Framework.Db;
 using gView.Framework.IO;
 using gView.Framework.OGC.KML;
 using gView.Framework.system;
@@ -61,19 +63,33 @@ public class SqlFdbNewFDBDatabase : ExplorerObjectCls<SqlFdbExplorerGroupObject>
 
         var model = await scopeService.ShowModalDialog(typeof(gView.DataExplorer.Razor.Components.Dialogs.CreateFdbDialog),
                                                        "Create FDB",
-                                                       new CreateFdbModel("mssql@create", false));
+                                                       new CreateFdbModel("mssql", false));
 
         if (model != null)
         {
+            string connectionString = model.DbConnectionString.ConnectionString;
+            string databaseName = ConfigTextStream.ExtractValue(connectionString, "database");
+
+            UserData parameters = new UserData(); // _advancedSettings.ToUserData();
+
+            if (model.CreateRepositoryOnly == false)
+            {
+                connectionString = ConfigTextStream.RemoveValue(connectionString, "database");
+            } 
+            else
+            {
+                parameters.SetUserData("CreateDatabase", false);
+            }
+
             SqlFDB fdb = new SqlFDB();
 
-            await fdb.Open(model.DbConnectionString.ConnectionString);
-            if(!fdb.Create(model.DatabaseName))
+            await fdb.Open(connectionString);
+            if(!fdb.Create(databaseName, parameters))
             {
                 throw new System.Exception(fdb.LastErrorMessage);
             }
 
-            return model.DbConnectionString.ToSqlFdbExplorerObjectt(this.TypedParent);
+            return model.DbConnectionString.ToSqlFdbExplorerObject(this.TryGetParent() ?? new SqlFdbExplorerGroupObject());
         }
 
         return null;

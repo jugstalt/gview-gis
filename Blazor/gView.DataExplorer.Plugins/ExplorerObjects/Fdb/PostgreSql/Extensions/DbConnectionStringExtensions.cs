@@ -16,8 +16,7 @@ static class DbConnectionStringExtensions
         ConfigConnections connStream = new ConfigConnections("postgrefdb", "546B0513-D71D-4490-9E27-94CD5D72C64A");
 
         string connectionString = dbConnectionString.ConnectionString;
-        string id = ConfigTextStream.ExtractValue(connectionString, "database");
-        id += "@" + ConfigTextStream.ExtractValue(connectionString, "server");
+        string id = $"{ConfigTextStream.ExtractValue(connectionString, "database")}@{ConfigTextStream.ExtractValue(connectionString, "server")}";
         if (id == "@")
         {
             id = "PostgreFDB Connection";

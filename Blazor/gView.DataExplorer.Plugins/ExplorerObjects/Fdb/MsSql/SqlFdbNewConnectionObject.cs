@@ -57,7 +57,7 @@ public class SqlFdbNewConnectionObject : ExplorerObjectCls<SqlFdbExplorerGroupOb
 
         if (model != null)
         {
-            e.NewExplorerObject = model.DbConnectionString.ToSqlFdbExplorerObjectt(this.TypedParent);
+            e.NewExplorerObject = model.DbConnectionString.ToSqlFdbExplorerObject(this.TypedParent);
         }
     }
 

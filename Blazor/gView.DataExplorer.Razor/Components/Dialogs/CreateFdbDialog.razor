@@ -11,9 +11,9 @@
                                     OnSubmit="CreateFdb">
         
             <CustomControls>
-                <MudTextField Label="Database Name"
+                @* <MudTextField Label="Database Name"
                                @bind-Value="@Model.DatabaseName"
-                               Variant="Variant.Text"></MudTextField>
+                               Variant="Variant.Text"></MudTextField> *@
 
                 <MudCheckBox Label="Create Repository in existing database"
                               @bind-Checked="@Model.CreateRepositoryOnly" />

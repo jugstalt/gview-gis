@@ -92,8 +92,13 @@ public class PostgreSqlExplorerObject : ExplorerParentObject<PostgreSqlExplorerG
                 throw new GeneralException(_errMsg);
             }
             string[] ds = await fdb.DatasetNames();
+
             if (ds == null)
             {
+                if (String.IsNullOrEmpty(fdb.LastErrorMessage))
+                {
+                    return Array.Empty<string>();
+                }
                 _errMsg = fdb.LastErrorMessage;
                 throw new GeneralException(_errMsg);
             }

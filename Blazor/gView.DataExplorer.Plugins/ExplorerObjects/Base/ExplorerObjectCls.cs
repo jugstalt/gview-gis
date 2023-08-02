@@ -56,6 +56,8 @@ public class ExplorerObjectCls<TParent, TObjectType>
         }
     }
 
+    protected TParent? TryGetParent() => _parent;
+
     protected IExplorerObject Parent
     {
         get

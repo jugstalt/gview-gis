@@ -12,6 +12,6 @@ public class CreateFdbModel : ConnectionStringModel
     {
     }
 
-    public string DatabaseName { get; set; }
+    //public string DatabaseName { get; set; }
     public bool CreateRepositoryOnly { get; set; }
 }
