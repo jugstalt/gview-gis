@@ -55,7 +55,7 @@
     [Parameter] public IEnvelope Extent { get; set; } = Envelope.Null();
     [Parameter] public EventCallback<IEnvelope> ExtentChanged { get; set; }
 
-    public System.Globalization.CultureInfo _en = System.Globalization.CultureInfo.GetCultureInfo("en-US");
+    private System.Globalization.CultureInfo _en = System.Globalization.CultureInfo.GetCultureInfo("en-US");
 
     async private Task OnExtentChanged()
     {

@@ -1,6 +1,9 @@
 ﻿using gView.DataExplorer.Plugins.ExplorerObjects.Base;
+using gView.DataExplorer.Plugins.Extensions;
+using gView.DataExplorer.Razor.Components.Dialogs.Models;
 using gView.DataSources.Fdb.SQLite;
 using gView.Framework.Blazor.Services.Abstraction;
+using gView.Framework.Data;
 using gView.Framework.DataExplorer.Abstraction;
 using gView.Framework.system;
 using System;
@@ -71,16 +74,30 @@ public class SqLiteFdbNetworkClassExplorerObject : ExplorerObjectCls<IExplorerOb
         return false;
     }
 
-    public Task<IExplorerObject?> CreateExplorerObjectAsync(IApplicationScope scope, IExplorerObject? parentExObject)
+    public async Task<IExplorerObject?> CreateExplorerObjectAsync(IApplicationScope scope, IExplorerObject? parentExObject)
     {
-        if (!(parentExObject is SqLiteFdbDatasetExplorerObject))
+        if (parentExObject == null)
         {
-            return Task.FromResult<IExplorerObject?>(null);
+            throw new ArgumentNullException(nameof(parentExObject));
         }
 
-        SqLiteFdbDatasetExplorerObject parent = (SqLiteFdbDatasetExplorerObject)parentExObject;
+        var scopeService = scope.ToScopeService();
+        var dataset = (await parentExObject.GetInstanceAsync()) as IFeatureDataset;
+        if (dataset == null)
+        {
+            throw new Exception("Can't determine feature dataset instance");
+        }
 
-        throw new NotImplementedException();
+        var model = await scopeService.ShowModalDialog(typeof(gView.DataExplorer.Razor.Components.Dialogs.CreateNetworkFeatureClassDialog),
+                                                       "Create Network FeatureClass",
+                                                       new CreateNetworkFeatureClassModel(dataset));
+
+        if (model == null)
+        {
+            return null;
+        }
+
+        return null;
 
         //IFeatureDataset dataset = await ((SqLiteFdbDatasetExplorerObject)parentExObject).GetInstanceAsync() as IFeatureDataset;
         //if (dataset == null || !(dataset.Database is SQLiteFDB))
