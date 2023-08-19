@@ -23,14 +23,70 @@
 
                             <tr>
                                 <td>
-                                    @propertyName
+                                    <MudText Typo="Typo.body1">@propertyName</MudText>
                                 </td>
                                 <td>
-                                    <MudTextField T="string"
+                                    @if(propertyInfo.CanWrite == false)
+                                    {
+                                        <MudTextField T="string" ReadOnly=true
+                                                      Value="properties[propertyInfo]?.ToString()"
+                                                      ValueChanged="(val) => PropertyChanged(category, propertyInfo, val)">
+
+                                        </MudTextField>
+                                    }
+                                    else if(propertyInfo.PropertyType == typeof(short))
+                                    {
+                                        <MudTextField T="short" Variant="Variant.Text"
+                                                      Value="(short)(properties[propertyInfo] ?? 0)"
+                                                      ValueChanged="(val) => PropertyChanged(category, propertyInfo, val)"
+                                                      Immediate="false"
+                                                      InputType="InputType.Number" Step="0.1">
+                                        </MudTextField>
+                                    }
+                                    else if(propertyInfo.PropertyType == typeof(int))
+                                    {
+                                        <MudTextField T="int" Variant="Variant.Text"
+                                                      Value="(int)(properties[propertyInfo] ?? 0)"
+                                                      ValueChanged="(val) => PropertyChanged(category, propertyInfo, val)"
+                                                      Immediate="false"
+                                                      InputType="InputType.Number" Step="1">
+                                        </MudTextField>
+                                    }
+                                    else if (propertyInfo.PropertyType == typeof(long))
+                                    {
+                                        <MudTextField T="long" Variant="Variant.Text"
+                                                      Value="(long)(properties[propertyInfo] ?? 0)"
+                                                      ValueChanged="(val) => PropertyChanged(category, propertyInfo, val)"
+                                                      Immediate="false"
+                                                      InputType="InputType.Number" Step="1">
+                                        </MudTextField>
+                                    }
+                                    else if(propertyInfo.PropertyType == typeof(float))
+                                    {
+                                        <MudTextField T="float" Variant="Variant.Text"
+                                                      Value="(float)(properties[propertyInfo] ?? 0f)"
+                                                      ValueChanged="(val) => PropertyChanged(category, propertyInfo, val)"
+                                                      Format="#.00" Culture="@_en" Immediate="false"
+                                                      InputType="InputType.Number" Step="1">
+                                        </MudTextField>
+                                    }
+                                    else if (propertyInfo.PropertyType == typeof(double))
+                                    {
+                                        <MudTextField T="double" Variant="Variant.Text"
+                                                       Value="(double)(properties[propertyInfo] ?? 0D)"
+                                                       ValueChanged="(val) => PropertyChanged(category, propertyInfo, val)"
+                                                       Format="#.00000" Culture="@_en" Immediate="false"
+                                                       InputType="InputType.Number" Step="0.1">
+                                         </MudTextField>
+                                    }
+                                    else 
+                                    {
+                                        <MudTextField T="string" Variant="Variant.Text"
                                                   Value="properties[propertyInfo]?.ToString()"
                                                   ValueChanged="(val) => PropertyChanged(category, propertyInfo, val)" >
 
-                                    </MudTextField>
+                                        </MudTextField>
+                                    }
                                 </td>
                             </tr>
                         }
@@ -46,6 +102,7 @@
 @code {
     [Parameter] public object Instance { get; set; } = new object();
 
+    private System.Globalization.CultureInfo _en = System.Globalization.CultureInfo.GetCultureInfo("en-US");
     private Dictionary<string, Dictionary<PropertyInfo, object?>> propertiesDict = new();
 
     protected override void OnInitialized()
@@ -86,6 +143,8 @@
            propertiesDict[category].ContainsKey(propertyInfo))
         {
             propertiesDict[category][propertyInfo] = val;
+
+            propertyInfo.SetValue(Instance, val);
         }
     }
 }
