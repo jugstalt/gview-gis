@@ -7,6 +7,7 @@
         GeographicProjectionSelectorDialog,
         GeographicDatumSelectorDialog,
         ConnectionString,
-        ExecuteCommand
+        ExecuteCommand,
+        PropertyGridDialog
     }
 }

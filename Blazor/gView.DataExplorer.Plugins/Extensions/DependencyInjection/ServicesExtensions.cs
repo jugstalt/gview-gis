@@ -4,7 +4,7 @@ using gView.DataExplorer.Core.Services.Abstraction;
 using gView.DataExplorer.Plugins.Services;
 using gView.DataExplorer.Plugins.Services.Dialogs;
 using gView.Framework.Blazor.Services.Abstraction;
-using gView.Framework.DataExplorer.Abstraction;
+using gView.Razor.Services;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace gView.DataExplorer.Plugins.Extensions.DependencyInjection;
@@ -15,7 +15,7 @@ static public class ServicesExtensions
         return services.AddSingleton<IExplorerApplicationService, ExplorerDesktopApplicationService>();
     }
 
-    static public IServiceCollection AddExplorerApplicationScopeService(this IServiceCollection services) 
+    static public IServiceCollection AddExplorerApplicationScopeService(this IServiceCollection services)
     {
         return services
             .AddEventBus()
@@ -30,6 +30,7 @@ static public class ServicesExtensions
             .AddTransient<IKnownDialogService, GeographicsProjectionSelectorDialogService>()
             .AddTransient<IKnownDialogService, GeographicsDatumSelectorDialogService>()
             .AddTransient<IKnownDialogService, ConnectionStringDialogService>()
-            .AddTransient<IKnownDialogService, ExecuteCommandDialogService>();
+            .AddTransient<IKnownDialogService, ExecuteCommandDialogService>()
+            .AddTransient<IKnownDialogService, PropertyGridDialogService>();
     }
 }

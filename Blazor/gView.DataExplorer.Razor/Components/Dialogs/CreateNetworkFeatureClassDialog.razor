@@ -1,3 +1,6 @@
+@using gView.Framework.Network.Algorthm;
+@using gView.Framework.Network;
+@using gView.Razor.Dialogs.Models;
 @inherits ModalDialogFormBase<CreateNetworkFeatureClassModel>
 @inject IApplicationScope AppScope
 
@@ -114,28 +117,108 @@
                 <strong>Weights</strong>
 
                 <table>
-                    <tr>
-                        <th>Name</th>
-                        <th></th>
-                    </tr>
-               
+                    @if(Model.Result.Weights.Count()>0) {
+                        <tr>
+                            <th>Name</th>
+                            <th></th>
+                            <th></th>
+                        </tr>
+                    }
                     @foreach (var weight in Model.Result.Weights)
                     {
                         <tr>
-                            <td>@weight.Name</td>
+                            <td>
+                                <MudTextField Label="Name" T="string"
+                                              @bind-Value="weight.Name" />
+                            </td>
                             <td>
                                 <MudFab Color="Color.Secondary" StartIcon="@Icons.Material.Filled.Remove" 
                                          Size="MudBlazor.Size.Small"
-                                         OnClick="() => RemoveWeight(weight)" />
+                                         OnClick="() => RemoveWeightClicked(weight)" />
                             </td>
                         </tr>   
+                        @if (weight.FeatureClasses.Count > 0)
+                        {
+                            @foreach (var weightFc in weight.FeatureClasses)
+                            {
+                                var fc = GetFeatureClass(weightFc.FcId).Result;
+                                
+                                @if (fc != null)
+                                {
+                                    <tr>
+                                        <td>
+                                            @if (weight.FeatureClasses.IndexOf(weightFc) == 0)
+                                            {
+                                                <MudFab Color="Color.Surface" StartIcon="@Icons.Material.Filled.Refresh"
+                                                               Size="MudBlazor.Size.Small"
+                                                               OnClick="() => RefreshWeightClicked(weight)" />
+                                            }
+                                        </td>
+                                        <td>
+                                            @fc.Name
+                                        </td>
+                                        <td>
+                                            <MudSelect T="string"
+                                                       Label=""
+                                                       @bind-Value="weightFc.FieldName">
+
+                                                <MudSelectItem Value="@String.Empty">
+                                                    none
+                                                </MudSelectItem>
+                                                @foreach (var field in fc.Fields.ToEnumerable())
+                                                {
+                                                    @if (field.type == Framework.Data.FieldType.integer ||
+                                                         field.type == Framework.Data.FieldType.smallinteger ||
+                                                         field.type == Framework.Data.FieldType.biginteger ||
+                                                         field.type == Framework.Data.FieldType.boolean)
+                                                    {
+                                                        <MudSelectItem Value="field.name">
+                                                            @field.name
+                                                        </MudSelectItem>
+                                                    }
+                                                }
+                                            </MudSelect>
+                                        </td>
+                                        <td>
+                                            <MudSelect T="ISimpleNumberCalculation"
+                                                       @bind-Value="weightFc.SimpleNumberCalculation" >
+                                                     
+                                                @*<MudSelectItem Value="@null">
+                                                    none
+                                                </MudSelectItem>*@
+                                                @foreach(var calculator in _calculators)
+                                                {
+                                                    var calcuatorInstance = 
+                                                        calculator.GetType().Equals(weightFc.SimpleNumberCalculation?.GetType()) ?
+                                                        calculator :
+                                                        Activator.CreateInstance(calculator.GetType());  
+
+                                                    <MudSelectItem Value="calculator">
+                                                        @calculator.Name
+                                                    </MudSelectItem>
+                                                }
+                                            </MudSelect>
+                                        </td>
+                                        <td>
+                                            @if (weightFc.SimpleNumberCalculation != null)
+                                            {
+                                                <MudFab Color="Color.Surface" 
+                                                StartIcon="@Icons.Material.Filled.More"
+                                                Size="MudBlazor.Size.Small" 
+                                                OnClick="() => EditCalculatorProperties(weightFc.SimpleNumberCalculation)"/>
+                                            }
+                                        </td>
+                                </tr>
+                                }
+                            }
+                            
+                        }
                     }
                     <tr>
-                        <td></td>
                         <td>
                             <MudFab Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" 
                                      Size="MudBlazor.Size.Small"
-                                     OnClick="AddWeight" />
+                                     OnClick="AddWeightClicked" />
                         </td>
                     </tr>
                 </table>
@@ -227,14 +310,39 @@
         }
     }
 
-    private void AddWeight()
+    async private Task AddWeightClicked()
     {
-        //Model.Result.Weights.Add()
+        GraphWeight weight = new GraphWeight(
+            $"Weight {Model.Result.Weights.Count()}", 
+            GraphWeightDataType.Double);
+        await RefreshWeight(weight);
+        Model.Result.Weights.Add(weight);
+
+        StateHasChanged();
     }
 
-    private void RemoveWeight(gView.Framework.Network.IGraphWeight weight)
+    async private Task RefreshWeightClicked(IGraphWeight weight)
+    {
+        await RefreshWeight(weight);
+
+        StateHasChanged();
+    }
+
+    private void RemoveWeightClicked(IGraphWeight weight)
     {
         Model.Result.Weights.Remove(weight);
+
+        StateHasChanged();
+    }
+
+    async private Task EditCalculatorProperties(ISimpleNumberCalculation calculator)
+    {
+        var model = await AppScope.ShowKnownDialog(Framework.Blazor.KnownDialogs.PropertyGridDialog,
+                                 calculator.Name,
+                                 new PropertyGridDialogModel()
+                                 {
+                                     Instance = calculator
+                                 });
     }
 
     private void GoNext()
@@ -253,4 +361,43 @@
     {
         return base.Submit();
     }
+
+    #region Helper
+
+    async private Task RefreshWeight(IGraphWeight weight)
+    {
+        var fdb = Model.FeatureDataset?.Database as DataSources.Fdb.MSAccess.AccessFDB;
+        if (fdb == null)
+        {
+            return;
+        }
+        var datasetId = await fdb.DatasetID(Model.FeatureDataset!.DatasetName);
+
+        if (polylineFeatureClasses != null)
+        {
+            foreach (var fc in polylineFeatureClasses.SelectedElements)
+            {
+                var fcId = await fdb.FeatureClassID(datasetId, fc.Name);
+
+                if (weight.FeatureClasses.Where(c => c.FcId == fcId).Any() == false)
+                {
+                    weight.FeatureClasses.Add(new GraphWeightFeatureClass(fcId));
+                }
+            }
+        }
+    }
+
+    async private Task<IFeatureClass?> GetFeatureClass(int fcId)
+    {
+        var fdb = Model.FeatureDataset?.Database as DataSources.Fdb.MSAccess.AccessFDB;
+        if (fdb == null)
+        {
+            return null;
+        }
+
+        var fc = await fdb.GetFeatureclass(fcId);
+        return fc;
+    }
+
+    #endregion
 }

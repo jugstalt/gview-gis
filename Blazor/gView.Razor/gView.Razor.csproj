@@ -19,6 +19,7 @@
   <ItemGroup>
     <None Include="Base\BaseHandler.razor" />
     <None Include="Controls\GeographicProjectionSelectorControl.razor" />
+    <None Include="Dialogs\PropertyGridDialog.razor" />
   </ItemGroup>
 
   <ItemGroup>

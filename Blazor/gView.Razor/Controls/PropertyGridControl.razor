@@ -1,0 +1,91 @@
+@using System.ComponentModel;
+@using System.Reflection;
+
+@inherits BaseHandler
+@inject IApplicationScope AppScope
+
+<MudGrid Spacing="2" Justify="Justify.Center">
+    @foreach(var category in propertiesDict.Keys)
+    {
+        var properties = propertiesDict[category];
+
+        <MudItem xs="12">
+            <MudCard Elevation="2">
+                <MudCardContent>
+                    <MudText Typo="Typo.h6">@category</MudText>
+
+                    <table>
+                        @foreach (var propertyInfo in properties.Keys)
+                        {
+                            var displayNameAttribute = propertyInfo.GetCustomAttribute<DisplayNameAttribute>();
+                            var propertyName = String.IsNullOrEmpty(displayNameAttribute?.DisplayName) ?
+                                                    propertyInfo.Name : displayNameAttribute.DisplayName;
+
+                            <tr>
+                                <td>
+                                    @propertyName
+                                </td>
+                                <td>
+                                    <MudTextField T="string"
+                                                  Value="properties[propertyInfo]?.ToString()"
+                                                  ValueChanged="(val) => PropertyChanged(category, propertyInfo, val)" >
+
+                                    </MudTextField>
+                                </td>
+                            </tr>
+                        }
+                    </table>
+                    
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+    
+    }
+</MudGrid>
+
+@code {
+    [Parameter] public object Instance { get; set; } = new object();
+
+    private Dictionary<string, Dictionary<PropertyInfo, object?>> propertiesDict = new();
+
+    protected override void OnInitialized()
+       => Handle(() =>
+       {
+           #region Prepare propertiesDict (Category:(PropertyInfo,value))
+
+           //var propertyInfos = Instance.GetType().GetProperties(System.Reflection.BindingFlags.Public);
+           var propertyInfos = Instance.GetType().GetProperties();
+
+
+           foreach (var propertyInfo in propertyInfos)
+           {
+               var browsableAttribute = propertyInfo.GetCustomAttribute<BrowsableAttribute>();
+               if (browsableAttribute?.Browsable == false)
+               {
+                   continue;
+               }
+
+               var categoryAttribute = propertyInfo.GetCustomAttribute<System.ComponentModel.CategoryAttribute>();
+               string category = String.IsNullOrEmpty(categoryAttribute?.Category) ?
+                                "General" : categoryAttribute.Category;
+
+               if (!propertiesDict.ContainsKey(category))
+               {
+                   propertiesDict.Add(category, new());
+               }
+
+               propertiesDict[category].Add(propertyInfo, propertyInfo.GetValue(Instance));
+           }
+
+           #endregion
+       });
+
+    private void PropertyChanged(string category, PropertyInfo propertyInfo, object? val)
+    {
+        if(propertiesDict.ContainsKey(category) &&
+           propertiesDict[category].ContainsKey(propertyInfo))
+        {
+            propertiesDict[category][propertyInfo] = val;
+        }
+    }
+}
