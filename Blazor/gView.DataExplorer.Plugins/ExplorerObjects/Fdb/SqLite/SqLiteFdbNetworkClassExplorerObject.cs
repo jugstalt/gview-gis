@@ -1,12 +1,16 @@
-﻿using gView.DataExplorer.Plugins.ExplorerObjects.Base;
+﻿using gView.Cmd.Fdb.Lib.Model;
+using gView.DataExplorer.Plugins.ExplorerObjects.Base;
 using gView.DataExplorer.Plugins.Extensions;
 using gView.DataExplorer.Razor.Components.Dialogs.Models;
 using gView.DataSources.Fdb.SQLite;
 using gView.Framework.Blazor.Services.Abstraction;
 using gView.Framework.Data;
 using gView.Framework.DataExplorer.Abstraction;
+using gView.Framework.IO;
 using gView.Framework.system;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace gView.DataExplorer.Plugins.ExplorerObjects.Fdb.SqLite;
@@ -96,6 +100,41 @@ public class SqLiteFdbNetworkClassExplorerObject : ExplorerObjectCls<IExplorerOb
         {
             return null;
         }
+
+        var commandModel = new CreateNetworkModel()
+        {
+            ConnectionString = dataset.ConnectionString,
+            DatasetGuid = PlugInManager.PlugInID(dataset),
+            DatasetName = dataset.DatasetName,
+            UseSnapTolerance = model.Result.UseSnapTolerance,
+            SnapTolerance=model.Result.SnapTolerance
+        };
+
+        var edges = new List<CreateNetworkModel.Edge>();
+        var nodes = new List<CreateNetworkModel.Node>();
+
+        foreach(var edgeFeatureClass in model.Result.EdgeFeatureClasses)
+        {
+            edges.Add(new CreateNetworkModel.Edge()
+            {
+                Name = edgeFeatureClass.Name,
+                IsComplexEdge = model.Result.ComplexEdges.Contains(edgeFeatureClass)
+            });
+        }
+        foreach (var nodeFeatureClass in model.Result.Nodes)
+        {
+            nodes.Add(new CreateNetworkModel.Node()
+            {
+                Name = nodeFeatureClass.FeatureClass.Name,
+                IsSwitch = nodeFeatureClass.IsSwitch,
+                Fieldname = nodeFeatureClass.Fieldname,
+                NodeType = nodeFeatureClass.NodeType
+            });
+        }
+
+        XmlStream xmlStream = new XmlStream("network");
+        commandModel.Save(xmlStream);
+        xmlStream.WriteStream(@$"C:\temp\{model.Result.Name}.xml");
 
         return null;
 

@@ -236,9 +236,11 @@
                         Color="Color.Primary"
                         OnClick="GoBack">Back</MudButton>
         }
-        @if(pageIndex == 10) 
+        @if(pageIndex == 6) 
         {
-            
+            <MudButton Variant="Variant.Filled"
+                       Color="Color.Primary"
+                       OnClick="OnSubmit">Commit</MudButton>
         } 
         else
         {
@@ -357,7 +359,7 @@
         StateHasChanged();
     }
 
-    private Task SubmitDialog()
+    private Task OnSubmit()
     {
         return base.Submit();
     }
