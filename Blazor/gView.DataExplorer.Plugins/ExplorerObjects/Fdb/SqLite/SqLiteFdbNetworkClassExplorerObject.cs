@@ -10,14 +10,13 @@ using gView.Framework.IO;
 using gView.Framework.system;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace gView.DataExplorer.Plugins.ExplorerObjects.Fdb.SqLite;
 
 [RegisterPlugIn("AFDE90FF-D063-4224-BD31-1B30C266D55B")]
-public class SqLiteFdbNetworkClassExplorerObject : ExplorerObjectCls<IExplorerObject, SQLiteFDBNetworkFeatureClass>, 
-                                                   IExplorerSimpleObject, 
+public class SqLiteFdbNetworkClassExplorerObject : ExplorerObjectCls<IExplorerObject, SQLiteFDBNetworkFeatureClass>,
+                                                   IExplorerSimpleObject,
                                                    IExplorerObjectCreatable
 {
     public SqLiteFdbNetworkClassExplorerObject() : base(1) { }
@@ -107,18 +106,18 @@ public class SqLiteFdbNetworkClassExplorerObject : ExplorerObjectCls<IExplorerOb
             DatasetGuid = PlugInManager.PlugInID(dataset),
             DatasetName = dataset.DatasetName,
             UseSnapTolerance = model.Result.UseSnapTolerance,
-            SnapTolerance=model.Result.SnapTolerance
+            SnapTolerance = model.Result.SnapTolerance
         };
 
         var edges = new List<CreateNetworkModel.Edge>();
         var nodes = new List<CreateNetworkModel.Node>();
 
-        foreach(var edgeFeatureClass in model.Result.EdgeFeatureClasses)
+        foreach (var edgeFeatureClass in model.Result.EdgeFeatureClasses)
         {
             edges.Add(new CreateNetworkModel.Edge()
             {
                 Name = edgeFeatureClass.Name,
-                IsComplexEdge = model.Result.ComplexEdges.Contains(edgeFeatureClass)
+                IsComplexEdge = model.Result.UseComplexEdges && model.Result.ComplexEdges.Contains(edgeFeatureClass)
             });
         }
         foreach (var nodeFeatureClass in model.Result.Nodes)
@@ -131,6 +130,9 @@ public class SqLiteFdbNetworkClassExplorerObject : ExplorerObjectCls<IExplorerOb
                 NodeType = nodeFeatureClass.NodeType
             });
         }
+
+        commandModel.Edges = edges;
+        commandModel.Nodes = nodes;
 
         XmlStream xmlStream = new XmlStream("network");
         commandModel.Save(xmlStream);

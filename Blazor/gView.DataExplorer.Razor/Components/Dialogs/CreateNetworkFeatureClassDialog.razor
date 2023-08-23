@@ -40,19 +40,25 @@
                 <MudCheckBox Label="Use Snap Tolerance"
                               @bind-Checked="Model.Result.UseSnapTolerance" />
 
-                <MudTextField Label="Snap Tolerance"
-                               @bind-Value="Model.Result.SnapTolerance"
-                               Format="#.00000" Culture="@_en" T="double" Immediate="false"
-                               InputType="InputType.Number" Step="0.1"
-                               Variant="Variant.Text" />
+                @if (Model.Result.UseSnapTolerance == true)
+                {
+                    <MudTextField Label="Snap Tolerance"
+                                   @bind-Value="Model.Result.SnapTolerance"
+                                   Format="#.00000" Culture="@_en" T="double" Immediate="false"
+                                   InputType="InputType.Number" Step="0.1"
+                                   Variant="Variant.Text" />
+                }
         }
             @if (pageIndex == 4)
             {
                 <strong>Complex Edges</strong>
-                @if (complexEdgesClasses != null)
+                <MudCheckBox Label="Use Complex Edges"
+                              @bind-Checked="Model.Result.UseComplexEdges" />
+
+                @if (Model.Result.UseComplexEdges && complexEdgesClasses != null)
                 {
                     <SelectableItemsControl ItemProperties="@(new[]{"Name"})"
-                                              SelectableItems="complexEdgesClasses" />
+                                              SelectableItems="complexEdgesClasses"/>
                 }
             }
             @if (pageIndex == 5)
@@ -361,6 +367,34 @@
 
     private Task OnSubmit()
     {
+        #region Edges
+
+        Model.Result.EdgeFeatureClasses.Clear();
+
+        Model.Result.EdgeFeatureClasses.Clear();
+        if (polylineFeatureClasses != null)
+        {
+            foreach (var polylineFeatureClass in polylineFeatureClasses.SelectedElements)
+            {
+                Model.Result.EdgeFeatureClasses.Add(polylineFeatureClass);
+            }
+        }
+
+        #endregion
+
+        #region ComplexEdges
+
+        Model.Result.ComplexEdges.Clear();
+        if (Model.Result.UseComplexEdges && complexEdgesClasses != null)
+        {   
+            foreach(var complexEdgeFeatureClass in complexEdgesClasses.SelectedElements)
+            {
+                Model.Result.ComplexEdges.Add(complexEdgeFeatureClass);
+            }
+        }
+
+        #endregion
+
         return base.Submit();
     }
 

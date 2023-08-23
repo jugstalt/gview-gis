@@ -6,13 +6,17 @@ using gView.DataExplorer.Plugins.Services.Dialogs;
 using gView.Framework.Blazor.Services.Abstraction;
 using gView.Razor.Services;
 using Microsoft.Extensions.DependencyInjection;
+using System;
 
 namespace gView.DataExplorer.Plugins.Extensions.DependencyInjection;
 static public class ServicesExtensions
 {
-    static public IServiceCollection AddExplorerDesktopApplicationService(this IServiceCollection services)
+    static public IServiceCollection AddExplorerDesktopApplicationService(this IServiceCollection services,
+                                                                          Action<ExplorerDesktopApplicationServiceOptions> configureOptions)
     {
-        return services.AddSingleton<IExplorerApplicationService, ExplorerDesktopApplicationService>();
+        return services
+            .Configure(configureOptions)
+            .AddSingleton<IExplorerApplicationService, ExplorerDesktopApplicationService>();
     }
 
     static public IServiceCollection AddExplorerApplicationScopeService(this IServiceCollection services)
