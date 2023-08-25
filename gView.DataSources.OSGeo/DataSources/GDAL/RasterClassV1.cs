@@ -796,7 +796,9 @@ namespace gView.DataSources.GDAL
 
         #region IPointIdentify Member
 
-        public Task<ICursor> PointQuery(gView.Framework.Carto.IDisplay display, IPoint point, ISpatialReference sRef, IUserData userdata)
+        public IPointIdentifyContext CreatePointIdentifyContext() => new DummyPointIdentifyContext();
+
+        public Task<ICursor> PointQuery(gView.Framework.Carto.IDisplay display, IPoint point, ISpatialReference sRef, IUserData userdata, IPointIdentifyContext context)
         {
             TFWFile tfw = this.WorldFile as TFWFile;
             if (tfw == null)

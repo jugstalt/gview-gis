@@ -2,8 +2,10 @@
 using gView.Framework.Geometry;
 using gView.OGC.Framework.OGC.DB;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Data.Common;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -12,6 +14,8 @@ namespace gView.DataSources.MSSqlSpatial.DataSources.Sde.Repo
     public class RepoProvider : IRepoProvider
     {
         private string _connectionString;
+        private Version _sqlServerVersion = new Version(0, 0, 0, 0);
+        private Version _sdeVersion = new Version(0, 0, 0, 0);
 
         async public Task<bool> Init(string connectionString)
         {
@@ -39,6 +43,9 @@ namespace gView.DataSources.MSSqlSpatial.DataSources.Sde.Repo
             {
                 throw new Exception("Can't determine sde db-schema");
             }
+
+            await DetermineSqlServerVersion();
+            await DetermineSdeVersion();
 
             using (DbConnection connection = providerFactory.CreateConnection())
             {
@@ -108,6 +115,9 @@ namespace gView.DataSources.MSSqlSpatial.DataSources.Sde.Repo
         private List<SdeGeometryColumn> SdeGeometryColumns = new List<SdeGeometryColumn>();
         private Dictionary<string, string> SdeLayerMultiversionViewNames = new Dictionary<string, string>();
 
+        public Version SqlServerVersion => _sqlServerVersion;
+        public Version SdeVersion => _sdeVersion;
+
         public IEnumerable<SdeLayer> Layers => this.SdeLayers.ToArray();
 
         public string TableSchemaName(string dbName)
@@ -170,6 +180,70 @@ SELECT @newid ""Next RowID""";
 
                 object newId = await command.ExecuteScalarAsync();
                 return Convert.ToInt32(newId);
+            }
+        }
+
+        async private Task DetermineSqlServerVersion()
+        {
+            try
+            {
+                var providerFactory = System.Data.SqlClient.SqlClientFactory.Instance;
+
+                using (DbConnection connection = providerFactory.CreateConnection())
+                {
+                    connection.ConnectionString = _connectionString;
+                    await connection.OpenAsync();
+
+                    using (var command = providerFactory.CreateCommand())
+                    {
+                        command.Connection = connection;
+                        command.CommandText = "SELECT SERVERPROPERTY('ProductVersion') AS SqlServerVersion";
+
+                        var reader = command.ExecuteReader();
+                        if (reader.Read())
+                        {
+                            string versionString = reader["SqlServerVersion"].ToString();
+                            _sqlServerVersion = new Version(versionString);
+                        }
+                        reader.Close();
+                    }
+                }
+            }
+            catch
+            {
+                _sqlServerVersion = new Version(0, 0, 0, 0);
+            }
+        }
+
+        async private Task DetermineSdeVersion()
+        {
+            try
+            {
+                var providerFactory = System.Data.SqlClient.SqlClientFactory.Instance;
+
+                using (DbConnection connection = providerFactory.CreateConnection())
+                {
+                    connection.ConnectionString = _connectionString;
+                    await connection.OpenAsync();
+
+                    using (var command = providerFactory.CreateCommand())
+                    {
+                        command.Connection = connection;
+                        command.CommandText = "SELECT CAST([MAJOR] AS VARCHAR) + '.' + CAST([MINOR] AS VARCHAR) + '.' + CAST([BUGFIX] AS VARCHAR) AS SDE_Version FROM sde.sde_version;";
+
+                        var reader = command.ExecuteReader();
+                        if (reader.Read())
+                        {
+                            string versionString = reader["SDE_Version"].ToString();
+                            _sdeVersion = new Version(versionString);
+                        }
+                        reader.Close();
+                    }
+                }
+            }
+            catch
+            {
+                _sdeVersion = new Version(0, 0, 0, 0);
             }
         }
 

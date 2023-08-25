@@ -735,9 +735,22 @@ namespace gView.Framework.Data
         void FireBeforePointIdentify(IDisplay display, ref IPoint point, ref ISpatialReference sRef, IUserData userdata);
     }
 
+    public interface IPointIdentifyContext : IDisposable
+    {
+       
+    }
+
+    public class DummyPointIdentifyContext : IPointIdentifyContext
+    {
+        public void Dispose()
+        {
+        }
+    }
+
     public interface IPointIdentify
     {
-        Task<ICursor> PointQuery(IDisplay display, IPoint point, ISpatialReference sRef, IUserData userdata);
+        IPointIdentifyContext CreatePointIdentifyContext();
+        Task<ICursor> PointQuery(IDisplay display, IPoint point, ISpatialReference sRef, IUserData userdata, IPointIdentifyContext context);
     }
 
     public interface IMulitPointIdentify

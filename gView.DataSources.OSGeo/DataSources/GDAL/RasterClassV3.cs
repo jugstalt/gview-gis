@@ -330,11 +330,11 @@ namespace gView.DataSources.GDAL
                         break;
                 }
 
-                if(rasterPaintContext != null )
+                if (rasterPaintContext != null)
                 {
                     rasterPaintContext.PicPoint1 = p1;
                     rasterPaintContext.PicPoint2 = p2;
-                    rasterPaintContext.PicPoint3 = p3; 
+                    rasterPaintContext.PicPoint3 = p3;
                 }
 
                 return Task.FromResult<IRasterPaintContext>(rasterPaintContext);
@@ -865,7 +865,18 @@ namespace gView.DataSources.GDAL
 
         #region IPointIdentify Member
 
-        public Task<ICursor> PointQuery(gView.Framework.Carto.IDisplay display, IPoint point, ISpatialReference sRef, IUserData userdata)
+        public IPointIdentifyContext CreatePointIdentifyContext()
+        {
+            switch (_type)
+            {
+                case RasterType.grid:
+                    return new GridPointIdentifyContext(this);
+                default:
+                    return new DummyPointIdentifyContext();
+            }
+        }
+
+        public Task<ICursor> PointQuery(gView.Framework.Carto.IDisplay display, IPoint point, ISpatialReference sRef, IUserData userdata, IPointIdentifyContext context)
         {
             TFWFile tfw = this.WorldFile as TFWFile;
             if (tfw == null)
@@ -903,11 +914,50 @@ namespace gView.DataSources.GDAL
                 case RasterType.image:
                     return Task.FromResult<ICursor>(QueryImage((int)Math.Floor(vecs[0].x), (int)Math.Floor(vecs[0].y)));
                 case RasterType.grid:
+                    if (context is GridPointIdentifyContext gridContext && gridContext.Band != null)
+                    {
+                        return Task.FromResult<ICursor>(QueryGrid((int)Math.Floor(vecs[0].x), (int)Math.Floor(vecs[0].y),
+                                                        gridContext.Band));
+                    }
                     return Task.FromResult<ICursor>(QueryGrid((int)Math.Floor(vecs[0].x), (int)Math.Floor(vecs[0].y)));
+
             }
 
-            return Task.FromResult<ICursor>(null); ;
+            return Task.FromResult<ICursor>(null);
         }
+
+        #region Classes
+
+        private class GridPointIdentifyContext : IPointIdentifyContext
+        {
+            private OSGeo_v3.GDAL.Dataset _dataset = null;
+            private OSGeo_v3.GDAL.Band _gridQueryBand = null;
+
+            public GridPointIdentifyContext(RasterClassV3 rasterClass)
+            {
+                _dataset = rasterClass.OpenGdalDataset();
+                _gridQueryBand = _dataset.GetRasterBand(1);
+            }
+
+            public OSGeo_v3.GDAL.Band Band => _gridQueryBand;
+
+            public void Dispose()
+            {
+                if (_gridQueryBand != null)
+                {
+                    _gridQueryBand.Dispose();
+                    _gridQueryBand = null;
+                }
+
+                if (_dataset != null)
+                {
+                    _dataset.Dispose();
+                    _dataset = null;
+                }
+            }
+        }
+
+        #endregion
 
         #endregion
 
@@ -1111,6 +1161,38 @@ namespace gView.DataSources.GDAL
 
                             return new QueryCursor(tags, values);
                         }
+                    }
+                }
+            }
+            finally
+            {
+            }
+        }
+
+        private ICursor QueryGrid(int x, int y, OSGeo_v3.GDAL.Band band)
+        {
+            try
+            {
+                unsafe
+                {
+                    var floatNodata = (float)_nodata;
+
+                    fixed (float* buf = new float[2])
+                    {
+                        band.ReadRaster(x, y, 1, 1,
+                            (IntPtr)buf,
+                            1, 1, OSGeo_v3.GDAL.DataType.GDT_CFloat32, 4, 0);
+
+                        if ((_hasNoDataVal != 0 && buf[0] == floatNodata) ||
+                            (_useIgnoreValue && buf[0] == _ignoreValue))
+                        {
+                            return null;
+                        }
+
+                        string[] tags = { "ImageX", "ImageY", "band1" };
+                        object[] values = { x, y, buf[0] };
+
+                        return new QueryCursor(tags, values);
                     }
                 }
             }

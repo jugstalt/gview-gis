@@ -1168,7 +1168,9 @@ namespace gView.Framework.XML
 
         #region IPointIdentify Member
 
-        async public Task<ICursor> PointQuery(gView.Framework.Carto.IDisplay display, IPoint point, ISpatialReference sRef, IUserData userdata)
+        public IPointIdentifyContext CreatePointIdentifyContext() => new DummyPointIdentifyContext();
+
+        async public Task<ICursor> PointQuery(gView.Framework.Carto.IDisplay display, IPoint point, ISpatialReference sRef, IUserData userdata, IPointIdentifyContext context)
         {
             if (point == null)
             {

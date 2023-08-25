@@ -512,7 +512,9 @@ namespace gView.DataSources.Fdb.SQLite
 
         #region IPointIdentify Member
 
-        async public Task<ICursor> PointQuery(gView.Framework.Carto.IDisplay display, IPoint point, ISpatialReference sRef, IUserData userdata)
+        public IPointIdentifyContext CreatePointIdentifyContext() => new DummyPointIdentifyContext();
+
+        async public Task<ICursor> PointQuery(gView.Framework.Carto.IDisplay display, IPoint point, ISpatialReference sRef, IUserData userdata, IPointIdentifyContext context)
         {
             PointCollection pColl = new PointCollection();
             pColl.AddPoint(point);
@@ -536,32 +538,37 @@ namespace gView.DataSources.Fdb.SQLite
 
             List<IRow> cursorRows = new List<IRow>();
 
-            for (int i = 0; i < mPoint.PointCount; i++)
+            using (var contextDict = new DisposableDictionary<IPointIdentify, IPointIdentifyContext>())
             {
-                IPoint point = mPoint[i];
-                foreach (IRasterLayer layer in layers)
+                for (int i = 0; i < mPoint.PointCount; i++)
                 {
-                    if (layer == null ||
-                        !(layer.Class is IRasterClass) ||
-                        !(layer.Class is IPointIdentify))
+                    IPoint point = mPoint[i];
+                    foreach (IRasterLayer layer in layers)
                     {
-                        continue;
-                    }
-
-                    if (gView.Framework.SpatialAlgorithms.Algorithm.Jordan(
-                        ((IRasterClass)layer.Class).Polygon,
-                        point.X, point.Y))
-                    {
-                        using (ICursor cursor = await ((IPointIdentify)layer.Class).PointQuery(dispaly, point, sRef, userdata))
+                        if (layer == null ||
+                            !(layer.Class is IRasterClass) ||
+                            !(layer.Class is IPointIdentify pointIdentifyClass))
                         {
-                            if (cursor is IRowCursor)
+                            continue;
+                        }
+
+                        if (gView.Framework.SpatialAlgorithms.Algorithm.Jordan(
+                            ((IRasterClass)layer.Class).Polygon,
+                            point.X, point.Y))
+                        {
+                            contextDict.AddIfNotExists(pointIdentifyClass, (c) => c.CreatePointIdentifyContext());
+
+                            using (ICursor cursor = await pointIdentifyClass.PointQuery(dispaly, point, sRef, userdata, contextDict[pointIdentifyClass]))
                             {
-                                IRow row;
-                                while ((row = await ((IRowCursor)cursor).NextRow()) != null)
+                                if (cursor is IRowCursor)
                                 {
-                                    row.Fields.Add(new FieldValue("x", point.X));
-                                    row.Fields.Add(new FieldValue("y", point.Y));
-                                    cursorRows.Add(row);
+                                    IRow row;
+                                    while ((row = await ((IRowCursor)cursor).NextRow()) != null)
+                                    {
+                                        row.Fields.Add(new FieldValue("x", point.X));
+                                        row.Fields.Add(new FieldValue("y", point.Y));
+                                        cursorRows.Add(row);
+                                    }
                                 }
                             }
                         }
