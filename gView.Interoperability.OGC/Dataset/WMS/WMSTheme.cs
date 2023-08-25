@@ -87,7 +87,8 @@ namespace gView.Interoperability.OGC.Dataset.WMS
 
         #region IPointIdentify Member
 
-        public Task<ICursor> PointQuery(gView.Framework.Carto.IDisplay display, gView.Framework.Geometry.IPoint point, ISpatialReference sRef, IUserData userdata)
+        public IPointIdentifyContext CreatePointIdentifyContext() => new DummyPointIdentifyContext();
+        public Task<ICursor> PointQuery(gView.Framework.Carto.IDisplay display, gView.Framework.Geometry.IPoint point, ISpatialReference sRef, IUserData userdata, IPointIdentifyContext context)
         {
             if (display == null || point == null)
             {

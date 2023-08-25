@@ -216,7 +216,8 @@ namespace gView.Plugins.MapTools
 
                         if (iPoint != null)
                         {
-                            using (ICursor cursor = await ((IPointIdentify)element.Class).PointQuery(map.Display, queryPoint, map.Display.SpatialReference, new UserData()))
+                            using (var pointIdentifyContext = ((IPointIdentify)element.Class).CreatePointIdentifyContext())
+                            using (ICursor cursor = await ((IPointIdentify)element.Class).PointQuery(map.Display, queryPoint, map.Display.SpatialReference, new UserData(), pointIdentifyContext))
                             {
                                 if (cursor is IRowCursor)
                                 {

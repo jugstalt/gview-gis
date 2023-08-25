@@ -1046,17 +1046,20 @@ namespace gView.Interoperability.ArcXML
                     }
                     else if (rasterClass is IPointIdentify)
                     {
-                        foreach (IPoint point in Points)
+                        using (IPointIdentifyContext pointIdentifyContext = ((IPointIdentify)rasterClass).CreatePointIdentifyContext())
                         {
-                            using (ICursor cursor = await ((IPointIdentify)rasterClass).PointQuery(Display, point, SpatialReference, UserData))
+                            foreach (IPoint point in Points)
                             {
-                                if (Compact)
+                                using (ICursor cursor = await ((IPointIdentify)rasterClass).PointQuery(Display, point, SpatialReference, UserData, pointIdentifyContext))
                                 {
-                                    await AddCompactRasterInfo(xWriter, cursor, point);
-                                }
-                                else
-                                {
-                                    await AddRasterInfo(xWriter, cursor, point);
+                                    if (Compact)
+                                    {
+                                        await AddCompactRasterInfo(xWriter, cursor, point);
+                                    }
+                                    else
+                                    {
+                                        await AddRasterInfo(xWriter, cursor, point);
+                                    }
                                 }
                             }
                         }

@@ -1035,7 +1035,10 @@ namespace gView.Interoperability.GeoServices.Request
                         }
                         else if (layer.Class is IPointIdentify)
                         {
-                            cursor = await ((IPointIdentify)layer.Class).PointQuery(serviceMap.Display, geometry.Envelope.Center, sRef, null);
+                            using (var pointIdentifyContext = ((IPointIdentify)layer.Class).CreatePointIdentifyContext())
+                            {
+                                cursor = await ((IPointIdentify)layer.Class).PointQuery(serviceMap.Display, geometry.Envelope.Center, sRef, null, pointIdentifyContext);
+                            }
                         }
 
                         if (cursor is IFeatureCursor)
