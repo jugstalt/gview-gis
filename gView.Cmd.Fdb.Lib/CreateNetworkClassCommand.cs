@@ -134,6 +134,10 @@ public class CreateNetworkClassCommand : ICommand
             {
                 creator.NodeTypeFcIds = nodeTypeFcIds;
             }
+            if (commandModel.Weights.Count > 0)
+            {
+                creator.GraphWeights = commandModel.Weights;
+            }
 
             if (logger != null)
             {

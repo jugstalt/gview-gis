@@ -16,17 +16,102 @@ using gView.Framework.Data;
 using gView.Framework.DataExplorer.Abstraction;
 using gView.Framework.IO;
 using gView.Framework.system;
-using MongoDB.Driver;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using static System.Formats.Asn1.AsnWriter;
 
 namespace gView.DataExplorer.Plugins.ExplorerObjects.Fdb.Extensions;
 static internal class ApplicationScopeServiceExtensions
 {
+    
+    async static public Task<IDataset?> CreateDataset(this ExplorerApplicationScopeService scopeService, IExplorerObject parentExObject)
+    {
+        var model = await scopeService
+                               .ShowModalDialog(typeof(gView.DataExplorer.Razor.Components.Dialogs.NewFdbDataset),
+                                          "New Dataset",
+                                          new NewFdbDatasetModel() { Name = "ds1" });
+        if (model == null)
+        {
+            return null;
+        }
+
+        AccessFDB? fdb = null;
+        bool opened;
+        switch (parentExObject)
+        {
+            case SqlFdbExplorerObject sqlExObject:
+                fdb = new SqlFDB();
+                opened = await fdb.Open(sqlExObject.ConnectionString);
+                break;
+            case PostgreSqlExplorerObject pgExObject:
+                fdb = new pgFDB();
+                opened = await fdb.Open(pgExObject.ConnectionString);
+                break;
+            case SqLiteFdbExplorerObject sqliteExObject:
+                fdb = new SQLiteFDB();
+                opened = await fdb.Open(sqliteExObject.FullName);
+                break;
+            default:
+                throw new Exception("Unknown FDB Engine");
+        }
+
+        if (!opened)
+        {
+            throw new Exception(fdb.LastErrorMessage);
+        }
+
+        ICommand command = new CreateDatasetCommand();
+        var parameters = new Dictionary<string, object>()
+        {
+            { "fdb", fdb.GetType().Name },
+            { "connection_string", fdb.ConnectionString },
+            { "ds_name", model.Name },
+            { "ds_type", model.DatasetType.ToString() }
+        };
+
+        if (model.SpatialReference != null)
+        {
+            parameters.Add("sref_epsg", model.SpatialReference.EpsgCode);
+        }
+
+        if (model.DatasetType == NewFdbDatasetType.ImageDataset)
+        {
+            var pluginmananger = new PlugInManager();
+
+            parameters.Add("si_bounds_minx", model.SpatialIndex.Bounds.minx);
+            parameters.Add("si_bounds_miny", model.SpatialIndex.Bounds.miny);
+            parameters.Add("si_bounds_maxx", model.SpatialIndex.Bounds.maxx);
+            parameters.Add("si_bounds_maxy", model.SpatialIndex.Bounds.maxy);
+            parameters.Add("si_max_levels", model.SpatialIndex.MaxLevel);
+
+            parameters.Add("autofields",
+                JsonConvert.SerializeObject(model.AutoFields.Keys
+                    .Select(k => model.AutoFields[k] == true ? k : null)
+                    .Where(a => a != null)
+                    .Select(a => new AutoFieldModel() { Name = a!.name ?? a.AutoFieldPrimayName, PluginGuid = PlugInManager.PlugInID(a) })
+                    .ToArray()));
+        }
+
+        await scopeService.ShowKnownDialog(
+                    KnownDialogs.ExecuteCommand,
+                    $"Create FDB FeatureClass",
+                    new ExecuteCommandModel()
+                    {
+                        CommandItems = new[]
+                        {
+                            new CommandItem()
+                            {
+                                Command = command,
+                                Parameters = parameters
+                            }
+                        }
+                    });
+
+        return null;
+    }
+
     async static public Task<IDatasetElement?> CreateCeatureClass(this ExplorerApplicationScopeService scopeService, IExplorerObject parentExObject)
     {
         var model = await scopeService
@@ -93,93 +178,7 @@ static internal class ApplicationScopeServiceExtensions
         return createElement;
     }
 
-    async static public Task<IDataset?> CreateDataset(this ExplorerApplicationScopeService scopeService, IExplorerObject parentExObject)
-    {
-        var model = await scopeService
-                               .ShowModalDialog(typeof(gView.DataExplorer.Razor.Components.Dialogs.NewFdbDataset),
-                                          "New Dataset",
-                                          new NewFdbDatasetModel() { Name = "ds1" });
-        if (model == null)
-        {
-            return null;
-        }
-
-        AccessFDB? fdb = null;
-        bool opened;
-        switch(parentExObject)
-        {
-            case SqlFdbExplorerObject sqlExObject:
-                fdb = new SqlFDB();
-                opened = await fdb.Open(sqlExObject.ConnectionString);
-                break;
-            case PostgreSqlExplorerObject pgExObject:
-                fdb = new pgFDB();
-                opened = await fdb.Open(pgExObject.ConnectionString);
-                break;
-            case SqLiteFdbExplorerObject sqliteExObject:
-                fdb = new SQLiteFDB();
-                opened = await fdb.Open(sqliteExObject.FullName);
-                break;
-            default:
-                throw new Exception("Unknown FDB Engine");
-        }
-
-        if (!opened)
-        {
-            throw new Exception(fdb.LastErrorMessage);
-        }
-        
-        ICommand command = new CreateDatasetCommand();
-        var parameters = new Dictionary<string, object>()
-        {
-            { "fdb", fdb.GetType().Name },
-            { "connection_string", fdb.ConnectionString },
-            { "ds_name", model.Name },
-            { "ds_type", model.DatasetType.ToString() }
-        };
-
-        if (model.SpatialReference != null)
-        {
-            parameters.Add("sref_epsg", model.SpatialReference.EpsgCode);
-        }
-
-        if (model.DatasetType == NewFdbDatasetType.ImageDataset)
-        {
-            var pluginmananger = new PlugInManager();
-
-            parameters.Add("si_bounds_minx", model.SpatialIndex.Bounds.minx);
-            parameters.Add("si_bounds_miny", model.SpatialIndex.Bounds.miny);
-            parameters.Add("si_bounds_maxx", model.SpatialIndex.Bounds.maxx);
-            parameters.Add("si_bounds_maxy", model.SpatialIndex.Bounds.maxy);
-            parameters.Add("si_max_levels", model.SpatialIndex.MaxLevel);
-
-            parameters.Add("autofields",
-                JsonConvert.SerializeObject(model.AutoFields.Keys
-                    .Select(k => model.AutoFields[k] == true ? k : null)
-                    .Where(a => a != null)
-                    .Select(a => new AutoFieldModel() { Name = a!.name ?? a.AutoFieldPrimayName, PluginGuid = PlugInManager.PlugInID(a) })
-                    .ToArray()));
-        }
-
-        await scopeService.ShowKnownDialog(
-                    KnownDialogs.ExecuteCommand,
-                    $"Create FDB FeatureClass",
-                    new ExecuteCommandModel()
-                    {
-                        CommandItems = new[]
-                        {
-                            new CommandItem()
-                            {
-                                Command = command,
-                                Parameters = parameters
-                            }
-                        }
-                    });
-
-        return null;
-    }
-
-    async static public Task<IDatasetElement?> CreateNetworkClass(this ExplorerApplicationScopeService scopeService, IExplorerObject parentExObject)
+    async static public Task<bool> CreateNetworkClass(this ExplorerApplicationScopeService scopeService, IExplorerObject parentExObject)
     {
         var dataset = (await parentExObject.GetInstanceAsync()) as IFeatureDataset;
         if (dataset == null)
@@ -193,7 +192,7 @@ static internal class ApplicationScopeServiceExtensions
 
         if (model == null)
         {
-            return null;
+            return false;
         }
 
         var commandModel = new CreateNetworkModel()
@@ -203,7 +202,8 @@ static internal class ApplicationScopeServiceExtensions
             DatasetGuid = PlugInManager.PlugInID(dataset),
             DatasetName = dataset.DatasetName,
             UseSnapTolerance = model.Result.UseSnapTolerance,
-            SnapTolerance = model.Result.SnapTolerance
+            SnapTolerance = model.Result.SnapTolerance,
+            Weights = model.Result.Weights
         };
 
         var edges = new List<CreateNetworkModel.Edge>();
@@ -261,7 +261,6 @@ static internal class ApplicationScopeServiceExtensions
                         }
                     });
 
-        return null;
+        return true;
     }
 }
- 

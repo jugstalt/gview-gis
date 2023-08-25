@@ -1,11 +1,6 @@
 ﻿using gView.DataExplorer.Core.Services.Abstraction;
 using gView.DataExplorer.Plugins.ExplorerObjects;
 using gView.Framework.DataExplorer.Abstraction;
-using Microsoft.Extensions.Options;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 
 namespace gView.DataExplorer.Plugins.Services;
 internal class ExplorerDesktopApplicationService : IExplorerApplicationService

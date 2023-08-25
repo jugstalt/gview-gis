@@ -1,21 +1,21 @@
 ﻿using gView.DataExplorer.Plugins.ExplorerObjects.Base;
 using gView.DataExplorer.Plugins.ExplorerObjects.Fdb.Extensions;
 using gView.DataExplorer.Plugins.Extensions;
-using gView.DataSources.Fdb.SQLite;
+using gView.DataSources.Fdb.MSSql;
 using gView.Framework.Blazor.Services.Abstraction;
 using gView.Framework.DataExplorer.Abstraction;
 using gView.Framework.system;
 using System;
 using System.Threading.Tasks;
 
-namespace gView.DataExplorer.Plugins.ExplorerObjects.Fdb.SqLite;
+namespace gView.DataExplorer.Plugins.ExplorerObjects.Fdb.MsSql;
 
-[RegisterPlugIn("AFDE90FF-D063-4224-BD31-1B30C266D55B")]
-public class SqLiteFdbNetworkClassExplorerObject : ExplorerObjectCls<IExplorerObject, SQLiteFDBNetworkFeatureClass>,
-                                                   IExplorerSimpleObject,
-                                                   IExplorerObjectCreatable
+[RegisterPlugIn("97914E6A-3084-4fc0-8B31-4A6D2C990F72")]
+public class SqlFdbNetworkClassExplorerObject : ExplorerObjectCls<IExplorerObject, SqlFDBNetworkFeatureclass>,
+                                                IExplorerSimpleObject,
+                                                IExplorerObjectCreatable
 {
-    public SqLiteFdbNetworkClassExplorerObject() : base(1) { }
+    public SqlFdbNetworkClassExplorerObject() : base(1) { }
 
     #region IExplorerObject Member
 
@@ -65,7 +65,7 @@ public class SqLiteFdbNetworkClassExplorerObject : ExplorerObjectCls<IExplorerOb
 
     public bool CanCreate(IExplorerObject parentExObject)
     {
-        if (parentExObject is SqLiteFdbDatasetExplorerObject)
+        if (parentExObject is SqlFdbDatasetExplorerObject)
         {
             return true;
         }

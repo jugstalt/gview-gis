@@ -1,21 +1,21 @@
 ﻿using gView.DataExplorer.Plugins.ExplorerObjects.Base;
 using gView.DataExplorer.Plugins.ExplorerObjects.Fdb.Extensions;
 using gView.DataExplorer.Plugins.Extensions;
-using gView.DataSources.Fdb.SQLite;
+using gView.DataSources.Fdb.PostgreSql;
 using gView.Framework.Blazor.Services.Abstraction;
 using gView.Framework.DataExplorer.Abstraction;
 using gView.Framework.system;
 using System;
 using System.Threading.Tasks;
 
-namespace gView.DataExplorer.Plugins.ExplorerObjects.Fdb.SqLite;
+namespace gView.DataExplorer.Plugins.ExplorerObjects.Fdb.PostgreSql;
 
-[RegisterPlugIn("AFDE90FF-D063-4224-BD31-1B30C266D55B")]
-public class SqLiteFdbNetworkClassExplorerObject : ExplorerObjectCls<IExplorerObject, SQLiteFDBNetworkFeatureClass>,
-                                                   IExplorerSimpleObject,
-                                                   IExplorerObjectCreatable
+[RegisterPlugIn("18830A3E-FFEA-477c-B3E1-E4624F828034")]
+public class PostgreSqlNetworkClassExplorerObject : ExplorerObjectCls<IExplorerObject, pgNetworkFeatureClass>,
+                                                    IExplorerSimpleObject,
+                                                    IExplorerObjectCreatable
 {
-    public SqLiteFdbNetworkClassExplorerObject() : base(1) { }
+    public PostgreSqlNetworkClassExplorerObject() : base(1) { }
 
     #region IExplorerObject Member
 
@@ -65,7 +65,7 @@ public class SqLiteFdbNetworkClassExplorerObject : ExplorerObjectCls<IExplorerOb
 
     public bool CanCreate(IExplorerObject parentExObject)
     {
-        if (parentExObject is SqLiteFdbDatasetExplorerObject)
+        if (parentExObject is PostgreSqlDatasetExplorerObject)
         {
             return true;
         }
@@ -92,3 +92,5 @@ public class SqLiteFdbNetworkClassExplorerObject : ExplorerObjectCls<IExplorerOb
 
     #endregion
 }
+
+

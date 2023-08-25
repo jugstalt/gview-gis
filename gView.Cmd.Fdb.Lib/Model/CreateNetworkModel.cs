@@ -1,6 +1,7 @@
 ﻿using gView.Framework.Data;
 using gView.Framework.IO;
 using gView.Framework.Network;
+using gView.Framework.Network.Algorthm;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,7 +22,7 @@ public class CreateNetworkModel : IPersistable
     public bool UseSnapTolerance { get; set; }
     public double SnapTolerance { get; set; } = 0D;
 
-    public GraphWeights Weights { get; } = new GraphWeights();
+    public GraphWeights Weights { get; set; } = new GraphWeights();
 
     #region IPersistable
 
@@ -74,6 +75,17 @@ public class CreateNetworkModel : IPersistable
         {
             this.Nodes = nodes;
         }
+
+        while (true)
+        {
+            IGraphWeight graphWeight = (IGraphWeight)stream.Load($"graphweight{this.Weights.Count()}", null, new GraphWeight());
+            if(graphWeight == null)
+            {
+                break;
+            }
+
+            this.Weights.Add(graphWeight);  
+        }
     }
 
     public void Save(IPersistStream stream)
@@ -107,6 +119,11 @@ public class CreateNetworkModel : IPersistable
 
         stream.Save("use_snap_tolerance", this.UseSnapTolerance);
         stream.Save("snap_tolerance", this.SnapTolerance);
+
+        for (int i = 0; i < Weights.Count(); i++)
+        {
+            stream.Save($"graphweight{i}", Weights[i]);
+        }
     }
 
     #endregion

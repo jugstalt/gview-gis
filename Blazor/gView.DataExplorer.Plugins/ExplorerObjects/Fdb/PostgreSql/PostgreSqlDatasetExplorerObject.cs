@@ -3,7 +3,6 @@ using gView.DataExplorer.Plugins.ExplorerObjects.Base;
 using gView.DataExplorer.Plugins.ExplorerObjects.Fdb.ContextTools;
 using gView.DataExplorer.Plugins.ExplorerObjects.Fdb.Extensions;
 using gView.DataExplorer.Plugins.Extensions;
-using gView.DataExplorer.Razor.Components.Dialogs.Models;
 using gView.DataSources.Fdb.MSAccess;
 using gView.DataSources.Fdb.PostgreSql;
 using gView.Framework.Blazor.Services.Abstraction;
@@ -19,10 +18,10 @@ using System.Threading.Tasks;
 namespace gView.DataExplorer.Plugins.ExplorerObjects.Fdb.PostgreSql;
 
 [RegisterPlugIn("E1A2BCA0-A6E1-47f2-8AA2-201D2CE21815")]
-public class PostgreSqlDatasetExplorerObject : ExplorerParentObject<PostgreSqlExplorerObject, pgDataset>, 
-                                            IExplorerSimpleObject, 
-                                            IExplorerObjectDeletable, 
-                                            ISerializableExplorerObject, 
+public class PostgreSqlDatasetExplorerObject : ExplorerParentObject<PostgreSqlExplorerObject, pgDataset>,
+                                            IExplorerSimpleObject,
+                                            IExplorerObjectDeletable,
+                                            ISerializableExplorerObject,
                                             IExplorerObjectCreatable,
                                             IExplorerObjectContextTools,
                                             IExplorerObjectRenamable
@@ -336,115 +335,6 @@ public class PostgreSqlDatasetExplorerObject : ExplorerParentObject<PostgreSqlEx
     }
     */
 }
-
-//[RegisterPlugIn("18830A3E-FFEA-477c-B3E1-E4624F828034")]
-//public class NetworkClassExplorerObject : ExplorerObjectCls, IExplorerSimpleObject, IExplorerObjectCreatable
-//{
-//    public NetworkClassExplorerObject() : base(null, typeof(pgFeatureClass), 1) { }
-
-//    #region IExplorerObject Member
-
-//    public string Name
-//    {
-//        get { return String.Empty; }
-//    }
-
-//    public string FullName
-//    {
-//        get { return String.Empty; }
-//    }
-
-//    public string Type
-//    {
-//        get { return "Network Class"; }
-//    }
-
-//    public IExplorerIcon Icon
-//    {
-//        get
-//        {
-//            return new gView.DataSources.Fdb.UI.MSAccess.AccessFDBNetworkIcon();
-//        }
-//    }
-
-//    public Task<object> GetInstanceAsync()
-//    {
-//        return Task.FromResult<object>(null);
-//    }
-
-//    #endregion
-
-//    #region IDisposable Member
-
-//    public void Dispose()
-//    {
-
-//    }
-
-//    #endregion
-
-//    #region ISerializableExplorerObject Member
-
-//    public Task<IExplorerObject> CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache cache)
-//    {
-//        return Task.FromResult<IExplorerObject>(null);
-//    }
-
-//    #endregion
-
-//    #region IExplorerObjectCreatable Member
-
-//    public bool CanCreate(IExplorerObject parentExObject)
-//    {
-//        if (parentExObject is DatasetExplorerObject)
-//        {
-//            return true;
-//        }
-
-//        return false;
-//    }
-
-//    async public Task<IExplorerObject> CreateExplorerObject(IExplorerObject parentExObject)
-//    {
-//        if (!(parentExObject is DatasetExplorerObject))
-//        {
-//            return null;
-//        }
-
-//        IFeatureDataset dataset = await ((DatasetExplorerObject)parentExObject).GetInstanceAsync() as IFeatureDataset;
-//        if (dataset == null || !(dataset.Database is pgFDB))
-//        {
-//            return null;
-//        }
-
-//        FormNewNetworkclass dlg = new FormNewNetworkclass(dataset, typeof(CreateFDBNetworkFeatureclass));
-//        if (dlg.ShowDialog() != DialogResult.OK)
-//        {
-//            return null;
-//        }
-
-//        CreateFDBNetworkFeatureclass creator = new CreateFDBNetworkFeatureclass(
-//            dataset, dlg.NetworkName,
-//            dlg.EdgeFeatureclasses,
-//            dlg.NodeFeatureclasses);
-//        creator.SnapTolerance = dlg.SnapTolerance;
-//        creator.ComplexEdgeFcIds = await dlg.ComplexEdgeFcIds();
-//        creator.GraphWeights = dlg.GraphWeights;
-//        creator.SwitchNodeFcIdAndFieldnames = dlg.SwitchNodeFcIds;
-//        creator.NodeTypeFcIds = dlg.NetworkNodeTypeFcIds;
-
-//        FormTaskProgress progress = new FormTaskProgress();
-//        progress.ShowProgressDialog(creator, creator.Run());
-
-//        IDatasetElement element = await dataset.Element(dlg.NetworkName);
-//        return new FeatureClassExplorerObject(
-//            parentExObject as DatasetExplorerObject,
-//            parentExObject.Name,
-//            element);
-//    }
-
-//    #endregion
-//}
 
 //[RegisterPlugIn("af5f4d50-745b-11e1-b0c4-0800200c9a66")]
 //public class GeographicViewExplorerObject : IExplorerSimpleObject, IExplorerObjectCreatable
