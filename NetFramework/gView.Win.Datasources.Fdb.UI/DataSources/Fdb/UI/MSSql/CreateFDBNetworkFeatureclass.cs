@@ -123,7 +123,7 @@ namespace gView.DataSources.Fdb.UI.MSSql
 
             IFeatureDatabaseReplication db = (IFeatureDatabaseReplication)_fdb;
 
-            if (_dataset.Element(_networkName) != null)
+            if (await _dataset.Element(_networkName) != null)
             {
                 MessageBox.Show("Featureclass '" + _networkName + "' already exists!");
                 return;
