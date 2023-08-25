@@ -11,17 +11,17 @@ using System;
 namespace gView.DataExplorer.Plugins.Extensions.DependencyInjection;
 static public class ServicesExtensions
 {
-    static public IServiceCollection AddExplorerDesktopApplicationService(this IServiceCollection services,
-                                                                          Action<ExplorerDesktopApplicationServiceOptions> configureOptions)
+    static public IServiceCollection AddExplorerDesktopApplicationService(this IServiceCollection services)
     {
         return services
-            .Configure(configureOptions)
             .AddSingleton<IExplorerApplicationService, ExplorerDesktopApplicationService>();
     }
 
-    static public IServiceCollection AddExplorerApplicationScopeService(this IServiceCollection services)
+    static public IServiceCollection AddExplorerApplicationScopeService(this IServiceCollection services,
+                                                                        Action<ExplorerApplicationScopeServiceOptions> configureOptions)
     {
         return services
+            .Configure(configureOptions)
             .AddEventBus()
             .AddScoped<IApplicationScope, ExplorerApplicationScopeService>();
     }

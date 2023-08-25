@@ -19,4 +19,7 @@ public interface IApplicationScope : IApplicationBusyHandling, IDisposable
     void SetClipboardItem(ClipboardItem item);
     Type? GetClipboardItemType();
     IEnumerable<T> GetClipboardElements<T>();
+
+    public string GetToolConfigFilename(params string[] paths);
+    public IEnumerable<string> GetToolConfigFiles(params string[] paths);
 }

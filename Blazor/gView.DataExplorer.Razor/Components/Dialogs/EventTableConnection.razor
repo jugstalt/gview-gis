@@ -114,19 +114,17 @@
     private IEnumerable<IField>? _idTypeFields;
     private IEnumerable<IField>? _coordinageTypeFields;
 
-    protected override Task OnInitializedAsync()
+    protected override Task OnInitializedAsync() => HandleAsync(async () =>
     {
-        base.OnInitializedAsync();
+        await base.OnInitializedAsync();
 
         OnConnectionStringChanged();
 
-        if(!String.IsNullOrWhiteSpace(Model.TableName))
+        if (!String.IsNullOrWhiteSpace(Model.TableName))
         {
             OnTableNameChanged(Model.TableName);
         }
-
-        return Task.CompletedTask;
-    }
+    });
 
     private Task SelectConnectionString() => HandleAsync(async () =>
     {

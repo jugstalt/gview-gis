@@ -267,7 +267,7 @@
     private SelectableEnumerable<IFeatureClass>? complexEdgesClasses;
     private List<ISimpleNumberCalculation> _calculators = new List<ISimpleNumberCalculation>();
 
-    async protected override Task OnInitializedAsync()
+    protected override Task OnInitializedAsync() => HandleAsync(async () =>
     {
         await base.OnInitializedAsync();
 
@@ -298,52 +298,52 @@
                 _calculators.Add(calc);
             }
         }
-    }
+    });
 
-    private void PolylineSelectionChanged()
+    private void PolylineSelectionChanged() => Handle(() =>
     {
         complexEdgesClasses = polylineFeatureClasses?.SelectedElements.ToSelectable();
-    }
+    });
 
-    private void PointSelectionChanged()
+    private void PointSelectionChanged() => Handle(() =>
     {
         if (pointFeatureClasses != null)
         {
             Model.Result.Nodes.Clear();
 
-            foreach(var nodeClass in pointFeatureClasses.SelectedElements)
+            foreach (var nodeClass in pointFeatureClasses.SelectedElements)
             {
                 Model.Result.Nodes.Add(new CreateNetworkFeatureClassModel.ResultClass.Node(nodeClass));
             }
         }
-    }
+    });
 
-    async private Task AddWeightClicked()
+    private Task AddWeightClicked() => HandleAsync(async () =>
     {
         GraphWeight weight = new GraphWeight(
-            $"Weight {Model.Result.Weights.Count()}", 
+            $"Weight {Model.Result.Weights.Count()}",
             GraphWeightDataType.Double);
         await RefreshWeight(weight);
         Model.Result.Weights.Add(weight);
 
         StateHasChanged();
-    }
+    });
 
-    async private Task RefreshWeightClicked(IGraphWeight weight)
+    private Task RefreshWeightClicked(IGraphWeight weight) => HandleAsync(async () =>
     {
         await RefreshWeight(weight);
 
         StateHasChanged();
-    }
+    });
 
-    private void RemoveWeightClicked(IGraphWeight weight)
+    private void RemoveWeightClicked(IGraphWeight weight) => Handle(() =>
     {
         Model.Result.Weights.Remove(weight);
 
         StateHasChanged();
-    }
+    });
 
-    async private Task EditCalculatorProperties(ISimpleNumberCalculation calculator)
+    private Task EditCalculatorProperties(ISimpleNumberCalculation calculator) => HandleAsync(async () =>
     {
         var model = await AppScope.ShowKnownDialog(Framework.Blazor.KnownDialogs.PropertyGridDialog,
                                  calculator.Name,
@@ -351,21 +351,21 @@
                                  {
                                      Instance = calculator
                                  });
-    }
+    });
 
-    private void GoNext()
+    private void GoNext() => Handle(() =>
     {
         pageIndex++;
         StateHasChanged();
-    }
+    });
 
-    private void GoBack()
+    private void GoBack() => Handle(() =>
     {
         pageIndex = Math.Max(pageIndex - 1, 0);
         StateHasChanged();
-    }
+    });
 
-    private Task OnSubmit()
+    private Task OnSubmit() => HandleAsync(() =>
     {
         #region Edges
 
@@ -396,7 +396,7 @@
         #endregion
 
         return base.Submit();
-    }
+    });
 
     #region Helper
 

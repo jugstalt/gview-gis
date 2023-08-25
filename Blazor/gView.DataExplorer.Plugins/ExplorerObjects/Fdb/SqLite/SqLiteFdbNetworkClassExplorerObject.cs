@@ -1,5 +1,6 @@
 ﻿using gView.Cmd.Fdb.Lib.Model;
 using gView.DataExplorer.Plugins.ExplorerObjects.Base;
+using gView.DataExplorer.Plugins.ExplorerObjects.Fdb.Extensions;
 using gView.DataExplorer.Plugins.Extensions;
 using gView.DataExplorer.Razor.Components.Dialogs.Models;
 using gView.DataSources.Fdb.SQLite;
@@ -85,58 +86,8 @@ public class SqLiteFdbNetworkClassExplorerObject : ExplorerObjectCls<IExplorerOb
         }
 
         var scopeService = scope.ToScopeService();
-        var dataset = (await parentExObject.GetInstanceAsync()) as IFeatureDataset;
-        if (dataset == null)
-        {
-            throw new Exception("Can't determine feature dataset instance");
-        }
 
-        var model = await scopeService.ShowModalDialog(typeof(gView.DataExplorer.Razor.Components.Dialogs.CreateNetworkFeatureClassDialog),
-                                                       "Create Network FeatureClass",
-                                                       new CreateNetworkFeatureClassModel(dataset));
-
-        if (model == null)
-        {
-            return null;
-        }
-
-        var commandModel = new CreateNetworkModel()
-        {
-            ConnectionString = dataset.ConnectionString,
-            DatasetGuid = PlugInManager.PlugInID(dataset),
-            DatasetName = dataset.DatasetName,
-            UseSnapTolerance = model.Result.UseSnapTolerance,
-            SnapTolerance = model.Result.SnapTolerance
-        };
-
-        var edges = new List<CreateNetworkModel.Edge>();
-        var nodes = new List<CreateNetworkModel.Node>();
-
-        foreach (var edgeFeatureClass in model.Result.EdgeFeatureClasses)
-        {
-            edges.Add(new CreateNetworkModel.Edge()
-            {
-                Name = edgeFeatureClass.Name,
-                IsComplexEdge = model.Result.UseComplexEdges && model.Result.ComplexEdges.Contains(edgeFeatureClass)
-            });
-        }
-        foreach (var nodeFeatureClass in model.Result.Nodes)
-        {
-            nodes.Add(new CreateNetworkModel.Node()
-            {
-                Name = nodeFeatureClass.FeatureClass.Name,
-                IsSwitch = nodeFeatureClass.IsSwitch,
-                Fieldname = nodeFeatureClass.Fieldname,
-                NodeType = nodeFeatureClass.NodeType
-            });
-        }
-
-        commandModel.Edges = edges;
-        commandModel.Nodes = nodes;
-
-        XmlStream xmlStream = new XmlStream("network");
-        commandModel.Save(xmlStream);
-        xmlStream.WriteStream(@$"C:\temp\{model.Result.Name}.xml");
+        var datasetElement = await scopeService.CreateNetworkClass(parentExObject);
 
         return null;
 

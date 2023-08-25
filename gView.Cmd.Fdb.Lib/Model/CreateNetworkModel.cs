@@ -10,6 +10,7 @@ namespace gView.Cmd.Fdb.Lib.Model;
 
 public class CreateNetworkModel : IPersistable
 {
+    public string Name { get; set; }=string.Empty;
     public string ConnectionString { get; set; } = string.Empty;    
     public Guid DatasetGuid { get; set; }
     public string DatasetName { get; set; } = string.Empty;
@@ -26,6 +27,7 @@ public class CreateNetworkModel : IPersistable
 
     public void Load(IPersistStream stream)
     {
+        this.Name = (string)stream.Load("name", string.Empty);
         this.ConnectionString = (string)stream.Load("connection_string", string.Empty);
         this.DatasetGuid = new Guid((string)stream.Load("dataset_guid", Guid.Empty.ToString()));
         this.DatasetName = (string)stream.Load("dataset_name", string.Empty);
@@ -63,10 +65,20 @@ public class CreateNetworkModel : IPersistable
             });
 
         }
+
+        if (edges.Count > 0)
+        {
+            this.Edges = edges;
+        }
+        if (nodes.Count > 0)
+        {
+            this.Nodes = nodes;
+        }
     }
 
     public void Save(IPersistStream stream)
     {
+        stream.Save("name", this.Name);
         stream.Save("connection_string", this.ConnectionString);
         stream.Save("dataset_guid", this.DatasetGuid.ToString());
         stream.Save("dataset_name", this.DatasetName);

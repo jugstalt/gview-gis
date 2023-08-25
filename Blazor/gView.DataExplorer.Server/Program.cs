@@ -22,11 +22,11 @@ builder.Services.AddMudServices(config => {
     config.SnackbarConfiguration.SnackbarVariant = Variant.Filled;
 });
 
-builder.Services.AddExplorerDesktopApplicationService(config =>
+builder.Services.AddExplorerDesktopApplicationService();
+builder.Services.AddExplorerApplicationScopeService(config =>
 {
-    config.ConfigRootPath = Path.Combine("C:\\tmep", "gview-explorer");
+    config.ConfigRootPath = Path.Combine("C:\\temp", "gview-explorer");
 });
-builder.Services.AddExplorerApplicationScopeService();
 builder.Services.AddKnownExplorerDialogsServices();
 builder.Services.AddFrameworkServices();
 builder.Services.AddIconService();

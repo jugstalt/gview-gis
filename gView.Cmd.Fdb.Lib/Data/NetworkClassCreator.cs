@@ -17,7 +17,7 @@ using System.Threading.Tasks;
 
 namespace gView.Cmd.Fdb.Lib.Data
 {
-    internal class CreateNetworkFeatureClass : IProgressReporter, INetworkCreator
+    internal class NetworkClassCreator : IProgressReporter, INetworkCreator
     {
         private IFeatureDataset? _dataset = null;
         private AccessFDB? _fdb = null;
@@ -31,10 +31,10 @@ namespace gView.Cmd.Fdb.Lib.Data
         private double _tolerance = double.Epsilon;
         private GraphWeights? _graphWeights = null;
 
-        public CreateNetworkFeatureClass() { }
-        public CreateNetworkFeatureClass(IFeatureDataset dataset,
-            string networkName,
-            List<IFeatureClass> edgeFcs, List<IFeatureClass> nodeFcs)
+        public NetworkClassCreator() { }
+        public NetworkClassCreator(IFeatureDataset dataset,
+                                   string networkName,
+                                   List<IFeatureClass> edgeFcs, List<IFeatureClass> nodeFcs)
         {
             if (dataset == null || !(dataset.Database is AccessFDB))
             {
@@ -122,7 +122,7 @@ namespace gView.Cmd.Fdb.Lib.Data
 
             IFeatureDatabaseReplication db = (IFeatureDatabaseReplication)_fdb;
 
-            if (_dataset.Element(_networkName) != null)
+            if (await _dataset.Element(_networkName) != null)
             {
                 throw new Exception($"Featureclass '{_networkName}' already exists!");
             }

@@ -7,10 +7,12 @@ using gView.Framework.Blazor.Services;
 using gView.Framework.Blazor.Services.Abstraction;
 using gView.Framework.DataExplorer.Abstraction;
 using Microsoft.AspNetCore.Components;
+using Microsoft.Extensions.Options;
 using Microsoft.JSInterop;
 using MudBlazor;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -23,12 +25,14 @@ public class ExplorerApplicationScopeService : ApplictionBusyHandler, IApplicati
     private readonly EventBusService _eventBus;
     private readonly IJSRuntime _jsRuntime;
     private readonly ISnackbar _snackbar;
+    private readonly ExplorerApplicationScopeServiceOptions _options;
 
     public ExplorerApplicationScopeService(IDialogService dialogService,
                                            IEnumerable<IKnownDialogService> knownDialogs,
                                            EventBusService eventBus,
                                            IJSRuntime jsRuntime,
-                                           ISnackbar snackbar)
+                                           ISnackbar snackbar,
+                                           IOptions<ExplorerApplicationScopeServiceOptions> options)
     {
         _dialogService = dialogService;
         _knownDialogs = knownDialogs;
@@ -38,6 +42,8 @@ public class ExplorerApplicationScopeService : ApplictionBusyHandler, IApplicati
         _eventBus.OnCurrentExplorerObjectChanged += EventBus_OnTreeItemClickAsync;
         _eventBus.OnContextExplorerObjectsChanged += EventBus_OnContextExplorerObjectsChanged;
         _snackbar = snackbar;
+
+        _options = options.Value;
     }
 
 
@@ -165,6 +171,30 @@ public class ExplorerApplicationScopeService : ApplictionBusyHandler, IApplicati
         }
 
         return _clipboardItem.Elements.OfType<T>();
+    }
+
+    public string GetToolConfigFilename(params string[] paths)
+    {
+        var fileInfo = new FileInfo(Path.Combine(_options.ConfigRootPath, Path.Combine(paths)));
+
+        if (fileInfo.Directory != null && !fileInfo.Directory.Exists)
+        {
+            fileInfo.Directory.Create();
+        }
+
+        return fileInfo.FullName;
+    }
+
+    public IEnumerable<string> GetToolConfigFiles(params string[] paths)
+    {
+        var directoryInfo = new DirectoryInfo(Path.Combine(_options.ConfigRootPath, Path.Combine(paths)));
+
+        if (!directoryInfo.Exists)
+        {
+            return Array.Empty<string>();
+        }
+
+        return directoryInfo.GetFiles().Select(f => f.FullName);
     }
 
     #endregion

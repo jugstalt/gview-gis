@@ -1,6 +1,7 @@
 ﻿using gView.Cmd.Core.Abstraction;
 using gView.Cmd.Core.Models;
 using gView.Cmd.Fdb.Lib;
+using gView.Cmd.Fdb.Lib.Model;
 using gView.DataExplorer.Plugins.ExplorerObjects.Fdb.MsSql;
 using gView.DataExplorer.Plugins.ExplorerObjects.Fdb.PostgreSql;
 using gView.DataExplorer.Plugins.ExplorerObjects.Fdb.SqLite;
@@ -13,12 +14,15 @@ using gView.DataSources.Fdb.SQLite;
 using gView.Framework.Blazor;
 using gView.Framework.Data;
 using gView.Framework.DataExplorer.Abstraction;
+using gView.Framework.IO;
 using gView.Framework.system;
+using MongoDB.Driver;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using static System.Formats.Asn1.AsnWriter;
 
 namespace gView.DataExplorer.Plugins.ExplorerObjects.Fdb.Extensions;
 static internal class ApplicationScopeServiceExtensions
@@ -160,6 +164,91 @@ static internal class ApplicationScopeServiceExtensions
         await scopeService.ShowKnownDialog(
                     KnownDialogs.ExecuteCommand,
                     $"Create FDB FeatureClass",
+                    new ExecuteCommandModel()
+                    {
+                        CommandItems = new[]
+                        {
+                            new CommandItem()
+                            {
+                                Command = command,
+                                Parameters = parameters
+                            }
+                        }
+                    });
+
+        return null;
+    }
+
+    async static public Task<IDatasetElement?> CreateNetworkClass(this ExplorerApplicationScopeService scopeService, IExplorerObject parentExObject)
+    {
+        var dataset = (await parentExObject.GetInstanceAsync()) as IFeatureDataset;
+        if (dataset == null)
+        {
+            throw new Exception("Can't determine feature dataset instance");
+        }
+
+        var model = await scopeService.ShowModalDialog(typeof(gView.DataExplorer.Razor.Components.Dialogs.CreateNetworkFeatureClassDialog),
+                                                       "Create Network FeatureClass",
+                                                       new CreateNetworkFeatureClassModel(dataset));
+
+        if (model == null)
+        {
+            return null;
+        }
+
+        var commandModel = new CreateNetworkModel()
+        {
+            Name = model.Result.Name,
+            ConnectionString = dataset.ConnectionString,
+            DatasetGuid = PlugInManager.PlugInID(dataset),
+            DatasetName = dataset.DatasetName,
+            UseSnapTolerance = model.Result.UseSnapTolerance,
+            SnapTolerance = model.Result.SnapTolerance
+        };
+
+        var edges = new List<CreateNetworkModel.Edge>();
+        var nodes = new List<CreateNetworkModel.Node>();
+
+        foreach (var edgeFeatureClass in model.Result.EdgeFeatureClasses)
+        {
+            edges.Add(new CreateNetworkModel.Edge()
+            {
+                Name = edgeFeatureClass.Name,
+                IsComplexEdge = model.Result.UseComplexEdges && model.Result.ComplexEdges.Contains(edgeFeatureClass)
+            });
+        }
+        foreach (var nodeFeatureClass in model.Result.Nodes)
+        {
+            nodes.Add(new CreateNetworkModel.Node()
+            {
+                Name = nodeFeatureClass.FeatureClass.Name,
+                IsSwitch = nodeFeatureClass.IsSwitch,
+                Fieldname = nodeFeatureClass.Fieldname,
+                NodeType = nodeFeatureClass.NodeType
+            });
+        }
+
+        commandModel.Edges = edges;
+        commandModel.Nodes = nodes;
+
+        XmlStream xmlStream = new XmlStream("network");
+        commandModel.Save(xmlStream);
+
+        string configFilename = scopeService.GetToolConfigFilename("network", "create",
+            parentExObject.FullName.ToLower().ToSHA256Hash(),
+            $"{model.Result.Name}.xml");
+
+        xmlStream.WriteStream(configFilename);
+
+        ICommand command = new CreateNetworkClassCommand();
+        var parameters = new Dictionary<string, object>()
+        {
+            { "config", configFilename }
+        };
+
+        await scopeService.ShowKnownDialog(
+                    KnownDialogs.ExecuteCommand,
+                    $"Create FDB NetworkClass",
                     new ExecuteCommandModel()
                     {
                         CommandItems = new[]
