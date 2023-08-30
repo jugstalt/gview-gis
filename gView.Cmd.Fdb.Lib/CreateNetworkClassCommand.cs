@@ -105,7 +105,7 @@ public class CreateNetworkClassCommand : ICommand
 
                     if (node.IsSwitch)
                     {
-                        switchNodeFcIdAndFieldnames.Add(await fdb.FeatureClassID(datasetId, nodeFc.Name), node.Fieldname);
+                        switchNodeFcIdAndFieldnames.Add(await fdb.FeatureClassID(datasetId, nodeFc.Name), node.FieldName);
                     }
                     if (node.NodeType != NetworkNodeType.Unknown)
                     {

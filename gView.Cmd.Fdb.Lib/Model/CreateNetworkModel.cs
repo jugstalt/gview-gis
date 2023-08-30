@@ -28,120 +28,198 @@ public class CreateNetworkModel : IPersistable
 
     public void Load(IPersistStream stream)
     {
-        this.Name = (string)stream.Load("name", string.Empty);
-        this.ConnectionString = (string)stream.Load("connection_string", string.Empty);
-        this.DatasetGuid = new Guid((string)stream.Load("dataset_guid", Guid.Empty.ToString()));
-        this.DatasetName = (string)stream.Load("dataset_name", string.Empty);
+        this.Name = (string)stream.Load("Name", string.Empty);
+        this.ConnectionString = (string)stream.Load("ConnectionString", string.Empty);
+        this.DatasetGuid = new Guid((string)stream.Load("DatasetGuid", Guid.Empty.ToString()));
+        this.DatasetName = (string)stream.Load("DatasetName", string.Empty);
 
-        var edges = new List<Edge>();
-        var nodes = new List<Node>();
-        while(true)
-        {
-            string edgeName = (string)stream.Load($"edge{edges.Count}_name", string.Empty);
-            if (string.IsNullOrEmpty(edgeName))
-            {
-                break;
-            }
+        var edges = (EdgeCollection?)stream.Load("Edges", null, new EdgeCollection());
+        var nodes = (NodeCollection?)stream.Load("Nodes", null, new NodeCollection());
 
-            edges.Add(new Edge()
-            {
-                Name = edgeName,
-                IsComplexEdge = (bool)stream.Load($"edge{edges.Count}_complex", false)
-            });
-        }
-        while (true)
-        {
-            string nodeName = (string)stream.Load($"node{nodes.Count}_name", string.Empty);
-            if (string.IsNullOrEmpty(nodeName))
-            {
-                break;
-            }
-
-            nodes.Add(new Node()
-            {
-                Name = nodeName,
-                IsSwitch = (bool)stream.Load($"node{nodes.Count}_is_switch", false),
-                Fieldname = (string)stream.Load($"node{nodes.Count}_fieldname", string.Empty),
-                NodeType = (NetworkNodeType)(int)stream.Load($"node{nodes.Count}_node_type", (int)NetworkNodeType.Unknown)
-            });
-
-        }
-
-        if (edges.Count > 0)
+        if (edges?.Count > 0)
         {
             this.Edges = edges;
         }
-        if (nodes.Count > 0)
+        if (nodes?.Count > 0)
         {
             this.Nodes = nodes;
         }
 
-        while (true)
-        {
-            IGraphWeight graphWeight = (IGraphWeight)stream.Load($"graphweight{this.Weights.Count()}", null, new GraphWeight());
-            if(graphWeight == null)
-            {
-                break;
-            }
+        this.UseSnapTolerance = (bool)stream.Load("UseSnapTolerance", false);
+        this.SnapTolerance = (double)stream.Load("SnapTolerance", 0D);
 
-            this.Weights.Add(graphWeight);  
+        var weights = (WeightCollection?)stream.Load("Weights", null, new WeightCollection());
+
+        if(weights?.Count > 0)
+        {
+            this.Weights.AddRange(weights);
         }
     }
 
     public void Save(IPersistStream stream)
     {
-        stream.Save("name", this.Name);
-        stream.Save("connection_string", this.ConnectionString);
-        stream.Save("dataset_guid", this.DatasetGuid.ToString());
-        stream.Save("dataset_name", this.DatasetName);
+        stream.Save("Name", this.Name);
+        stream.Save("ConnectionString", this.ConnectionString);
+        stream.Save("DatasetGuid", this.DatasetGuid.ToString());
+        stream.Save("DatasetName", this.DatasetName);
 
-        if (Edges != null)
-        {
-            var edges = Edges.ToArray();
-            for (int i = 0; i < edges.Length; i++)
-            {
-                stream.Save($"edge{i}_name", edges[i].Name);
-                stream.Save($"edge{i}_complex", edges[i].IsComplexEdge);
-            }
-        }
+        stream.Save("Edges", new EdgeCollection(Edges));
+        stream.Save("Nodes", new NodeCollection(Nodes));
 
-        if (Nodes != null)
-        {
-            var nodes = Nodes.ToArray();
-            for (int i = 0; i < nodes.Length; i++)
-            {
-                stream.Save($"node{i}_name", nodes[i].Name);
-                stream.Save($"node{i}_is_switch", nodes[i].IsSwitch);
-                stream.Save($"node{i}_fieldname", nodes[i].Fieldname);
-                stream.Save($"node{i}_node_type", (int)nodes[i].NodeType);
-            }
-        }
+        stream.Save("UseSnapTolerance", this.UseSnapTolerance);
+        stream.Save("SnapTolerance", this.SnapTolerance);
 
-        stream.Save("use_snap_tolerance", this.UseSnapTolerance);
-        stream.Save("snap_tolerance", this.SnapTolerance);
-
-        for (int i = 0; i < Weights.Count(); i++)
-        {
-            stream.Save($"graphweight{i}", Weights[i]);
-        }
+        stream.Save("Weights", new WeightCollection(Weights));
     }
 
     #endregion
 
     #region Classes
 
-    public class Edge 
+    public class Edge : IPersistable
     {
         public string Name { get; set; } = String.Empty;
         public bool IsComplexEdge { get; set; }
+
+        #region IPersistable
+
+        public void Load(IPersistStream stream)
+        {
+            this.Name = (string)stream.Load("Name", string.Empty);
+            this.IsComplexEdge = (bool)stream.Load("IsComplexEdge", false);
+        }
+
+        public void Save(IPersistStream stream)
+        {
+            stream.Save("Name", this.Name);
+            stream.Save("IsComplexEdge", this.IsComplexEdge);
+        }
+
+        #endregion
     }
 
-    public class Node
+    public class Node : IPersistable
     {
         public string Name { get; set; } = String.Empty;
         public bool IsSwitch { get; set; }
-        public string Fieldname { get; set; } = String.Empty;
+        public string FieldName { get; set; } = String.Empty;
         public NetworkNodeType NodeType { get; set; } = NetworkNodeType.Unknown;
+
+        #region IPersistable
+
+        public void Load(IPersistStream stream)
+        {
+            this.Name = (string)stream.Load("Name", string.Empty);
+            this.IsSwitch = (bool)stream.Load("IsSwitch", false);
+            this.FieldName = (string)stream.Load("FieldName", string.Empty);
+            this.NodeType=(NetworkNodeType)stream.Load("NodeType",(int)NetworkNodeType.Unknown);
+        }
+
+        public void Save(IPersistStream stream)
+        {
+            stream.Save("Name", this.Name);
+            stream.Save("IsSwitch", this.IsSwitch);
+            stream.Save("FieldName", this.FieldName);
+            stream.Save("NodeType", (int)this.NodeType);
+        }
+
+        #endregion
+    }
+
+    public class EdgeCollection : List<Edge>, IPersistable
+    {
+        public EdgeCollection(IEnumerable<Edge>? edges = null)
+        { 
+            if (edges != null)
+            {
+                this.AddRange(edges);
+            }
+        }
+
+        #region IPersistable
+
+        public void Load(IPersistStream stream)
+        {
+            Edge? edge;
+            while ((edge = (Edge?)stream.Load("Edge", null, new Edge())) != null)
+            {
+                this.Add(edge);
+            }
+        }
+
+        public void Save(IPersistStream stream)
+        {
+            foreach (var edge in this)
+            {
+                stream.Save("Edge", edge);
+            }
+        }
+
+        #endregion
+    }
+
+    public class NodeCollection : List<Node>, IPersistable
+    {
+        public NodeCollection(IEnumerable<Node>? nodes = null)
+        {
+            if (nodes != null)
+            {
+                this.AddRange(nodes);
+            }
+        }
+
+        #region IPersistable
+
+        public void Load(IPersistStream stream)
+        {
+            Node? node;
+            while ((node = (Node?)stream.Load("Node", null, new Node())) != null)
+            {
+                this.Add(node);
+            }
+        }
+
+        public void Save(IPersistStream stream)
+        {
+            foreach (var node in this)
+            {
+                stream.Save("Node", node);
+            }
+        }
+
+        #endregion
+    }
+
+    public class WeightCollection : List<IGraphWeight>, IPersistable
+    {
+        public WeightCollection(IEnumerable<IGraphWeight>? weights = null)
+        {
+            if (weights != null)
+            {
+                this.AddRange(weights);
+            }
+        }
+
+        #region IPersistable
+
+        public void Load(IPersistStream stream)
+        {
+            IGraphWeight? weight;
+            while ((weight = (IGraphWeight?)stream.Load("Weight", null, new GraphWeight())) != null)
+            {
+                this.Add(weight);
+            }
+        }
+
+        public void Save(IPersistStream stream)
+        {
+            foreach (var weight in this)
+            {
+                stream.Save("Weight", weight);
+            }
+        }
+
+        #endregion
     }
 
     #endregion

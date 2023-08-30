@@ -188,7 +188,7 @@ static internal class ApplicationScopeServiceExtensions
 
         var model = await scopeService.ShowModalDialog(typeof(gView.DataExplorer.Razor.Components.Dialogs.CreateNetworkFeatureClassDialog),
                                                        "Create Network FeatureClass",
-                                                       new CreateNetworkFeatureClassModel(dataset));
+                                                       new CreateNetworkFeatureClassModel(scopeService, parentExObject.FullName, dataset));
 
         if (model == null)
         {
@@ -223,7 +223,7 @@ static internal class ApplicationScopeServiceExtensions
             {
                 Name = nodeFeatureClass.FeatureClass.Name,
                 IsSwitch = nodeFeatureClass.IsSwitch,
-                Fieldname = nodeFeatureClass.Fieldname,
+                FieldName = nodeFeatureClass.Fieldname,
                 NodeType = nodeFeatureClass.NodeType
             });
         }

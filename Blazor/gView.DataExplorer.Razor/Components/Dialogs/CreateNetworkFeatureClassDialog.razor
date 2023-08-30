@@ -11,8 +11,20 @@
         <div style="min-width:800px; max-width:100%; min-height: 480px;">
             @if (pageIndex == 0)
             {
-                <MudTextField Label="Name"
-                               @bind-Value="Model.Result.Name" />
+                <MudCheckBox Label="Create New" @bind-Checked="createNew" T="bool" />
+                if (createNew) {
+                    <MudTextField Label="Name"
+                    @bind-Value="Model.Result.Name" />
+                }
+                else
+                {
+                    <MudSelect Label="Choose Existing" T="string" ValueChanged="async (value) => await LoadExisting(value)" >
+                        @foreach(var name in Model.GetExistingModelNames())
+                        {
+                            <MudSelectItem Value="name">@name</MudSelectItem>
+                        }
+                    </MudSelect>
+                }
             }
             @if (pageIndex == 1)
             {
@@ -260,6 +272,7 @@
 
 @code{
     private int pageIndex = 0;
+    private bool createNew = true;
     private System.Globalization.CultureInfo _en = System.Globalization.CultureInfo.GetCultureInfo("en-US");
 
     private SelectableEnumerable<IFeatureClass>? polylineFeatureClasses;
@@ -351,6 +364,36 @@
                                  {
                                      Instance = calculator
                                  });
+    });
+
+    private Task LoadExisting(string name) => HandleAsync(async () =>
+    {
+        await Model.LoadFromExisting(name);
+
+        if (polylineFeatureClasses != null)
+        {
+            foreach (var polyline in polylineFeatureClasses)
+            {
+                polyline.Selected = Model.Result.EdgeFeatureClasses.Any(fc => fc.Name == polyline.Item.Name);
+            }
+        }
+
+        complexEdgesClasses = polylineFeatureClasses?.SelectedElements.ToSelectable();
+        if (complexEdgesClasses != null)
+        {
+            foreach (var complexEdge in complexEdgesClasses)
+            {
+                complexEdge.Selected = Model.Result.ComplexEdges.Any(fc => fc.Name == complexEdge.Item.Name);
+            }
+        }
+
+        if (pointFeatureClasses != null)
+        {
+            foreach (var point in pointFeatureClasses)
+            {
+                point.Selected = Model.Result.NodeFeatureClasses.Any(fc => fc.Name == point.Item.Name);
+            }
+        }
     });
 
     private void GoNext() => Handle(() =>
