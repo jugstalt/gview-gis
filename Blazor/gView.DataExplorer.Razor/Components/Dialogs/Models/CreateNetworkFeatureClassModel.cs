@@ -41,6 +41,18 @@ public class CreateNetworkFeatureClassModel : IDialogResultItem
 
     #region Methods
 
+    public bool HasExistingModelNames()
+    {
+        if (String.IsNullOrEmpty(_exObjectFullname) || _applicationScope == null)
+        {
+            return false;
+        }
+
+        return _applicationScope.GetToolConfigFiles("network", "create",
+               _exObjectFullname.ToLower().ToSHA256Hash())
+               .Any();
+    }
+
     public IEnumerable<string> GetExistingModelNames()
     {
         if (String.IsNullOrEmpty(_exObjectFullname) || _applicationScope == null)
@@ -82,6 +94,7 @@ public class CreateNetworkFeatureClassModel : IDialogResultItem
 
         this.Result.Reset();
         this.Result.Name = name;
+        this.Result.DeleteExisting = commandModel.DeleteIfAlredyExists;
 
         if (commandModel.Edges != null)
         {
@@ -152,7 +165,7 @@ public class CreateNetworkFeatureClassModel : IDialogResultItem
     public class ResultClass
     {
         public string Name { get; set; } = "NET_NETWORK";
-
+        public bool DeleteExisting { get; set; }
         public ICollection<IFeatureClass> NodeFeatureClasses { get; } = new List<IFeatureClass>();
         public ICollection<IFeatureClass> EdgeFeatureClasses { get; } = new List<IFeatureClass>();
 

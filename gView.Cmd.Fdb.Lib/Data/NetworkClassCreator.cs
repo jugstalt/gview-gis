@@ -111,6 +111,9 @@ namespace gView.Cmd.Fdb.Lib.Data
             get { return _graphWeights; }
             set { _graphWeights = value; }
         }
+
+        public bool DeleteIfAlreadyExists { get; set; }
+
         #endregion
 
         async public Task Run()
@@ -124,7 +127,17 @@ namespace gView.Cmd.Fdb.Lib.Data
 
             if (await _dataset.Element(_networkName) != null)
             {
-                throw new Exception($"Featureclass '{_networkName}' already exists!");
+                if (DeleteIfAlreadyExists)
+                {
+                    if(await _fdb.DeleteFeatureClass(_networkName) == false)
+                    {
+                        throw new Exception(_fdb.LastErrorMessage);
+                    }
+                }
+                else
+                {
+                    throw new Exception($"Featureclass '{_networkName}' already exists!");
+                }
             }
             bool succeeded = false;
             List<int> FcIds = new List<int>();

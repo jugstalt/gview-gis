@@ -198,6 +198,7 @@ static internal class ApplicationScopeServiceExtensions
         var commandModel = new CreateNetworkModel()
         {
             Name = model.Result.Name,
+            DeleteIfAlredyExists = model.Result.DeleteExisting,
             ConnectionString = dataset.ConnectionString,
             DatasetGuid = PlugInManager.PlugInID(dataset),
             DatasetName = dataset.DatasetName,

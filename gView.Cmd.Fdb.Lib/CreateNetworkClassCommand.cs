@@ -117,6 +117,8 @@ public class CreateNetworkClassCommand : ICommand
             #endregion
 
             var creator = new NetworkClassCreator(dataset!, commandModel.Name, edges, nodes);
+            
+            creator.DeleteIfAlreadyExists = commandModel.DeleteIfAlredyExists;
 
             if (commandModel.UseSnapTolerance)
             {

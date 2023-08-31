@@ -9,24 +9,39 @@
                      Model="base.Model">
     <FormContent>
         <div style="min-width:800px; max-width:100%; min-height: 480px;">
-            @if (pageIndex == 0)
+            @if (pageIndex == Page.Name)
             {
-                <MudCheckBox Label="Create New" @bind-Checked="createNew" T="bool" />
-                if (createNew) {
-                    <MudTextField Label="Name"
-                    @bind-Value="Model.Result.Name" />
-                }
-                else
-                {
-                    <MudSelect Label="Choose Existing" T="string" ValueChanged="async (value) => await LoadExisting(value)" >
-                        @foreach(var name in Model.GetExistingModelNames())
+                if (showLoadExistingCombo) {
+                    
+                    <MudSelect Label="Choose Existing" T="string" ValueChanged="async (value) => await LoadExisting(value)">
+                        @foreach (var name in Model.GetExistingModelNames())
                         {
                             <MudSelectItem Value="name">@name</MudSelectItem>
                         }
                     </MudSelect>
+                    @if (Model.HasExistingModelNames())
+                    {
+                        <br />
+                        <MudButton Variant="Variant.Outlined"
+                                   OnClick="() => { showLoadExistingCombo=false; }">
+                            Create new Schema
+                        </MudButton>
+                    }
+                }
+                else
+                {
+                    <MudTextField Label="Name"
+                                   @bind-Value="Model.Result.Name" />
+                    <MudCheckBox Label="Delete network featureclass, if already exists"
+                                 @bind-Checked="Model.Result.DeleteExisting" />
+                    <br />
+                    <MudButton Variant="Variant.Outlined"
+                               OnClick="() => { showLoadExistingCombo=true; }">
+                        Load Existing Schema
+                    </MudButton>
                 }
             }
-            @if (pageIndex == 1)
+            @if (pageIndex == Page.Edges)
             {
                 <strong>Node Feature Classes</strong>
                 @if (polylineFeatureClasses != null)
@@ -36,7 +51,7 @@
                                               SelectionChanged="PolylineSelectionChanged" />
                 }
             }
-            @if (pageIndex == 2)
+            @if (pageIndex == Page.Nodes)
             {
                 <strong>Point Feature Classes</strong>
                 @if (pointFeatureClasses != null)
@@ -46,7 +61,7 @@
                                               SelectionChanged="PointSelectionChanged" />
                 }
             }
-            @if (pageIndex == 3)
+            @if (pageIndex == Page.Snapping)
             {
                 <strong>Snapping</strong>
                 <MudCheckBox Label="Use Snap Tolerance"
@@ -61,7 +76,7 @@
                                    Variant="Variant.Text" />
                 }
         }
-            @if (pageIndex == 4)
+            @if (pageIndex == Page.ComplexEdges)
             {
                 <strong>Complex Edges</strong>
                 <MudCheckBox Label="Use Complex Edges"
@@ -73,7 +88,7 @@
                                               SelectableItems="complexEdgesClasses"/>
                 }
             }
-            @if (pageIndex == 5)
+            @if (pageIndex == Page.Switches)
             {
                 <strong>Switches</strong>
                    
@@ -130,7 +145,7 @@
                 </table>
                 
             }
-            @if (pageIndex == 6)
+            @if (pageIndex == Page.Weights)
             {
                 <strong>Weights</strong>
 
@@ -206,12 +221,17 @@
                                                 </MudSelectItem>*@
                                                 @foreach(var calculator in _calculators)
                                                 {
-                                                    var calcuatorInstance = 
+                                                    @* var calcuatorInstance = 
                                                         calculator.GetType().Equals(weightFc.SimpleNumberCalculation?.GetType()) ?
                                                         calculator :
-                                                        Activator.CreateInstance(calculator.GetType());  
+                                                        Activator.CreateInstance(calculator.GetType()); *@
 
-                                                    <MudSelectItem Value="calculator">
+                                                  var calculatorInstance =
+                                                    calculator.GetType().Equals(weightFc.SimpleNumberCalculation?.GetType()) ?
+                                                    weightFc.SimpleNumberCalculation :
+                                                    Activator.CreateInstance(calculator.GetType()) as ISimpleNumberCalculation;
+
+                                                    <MudSelectItem Value="calculatorInstance">
                                                         @calculator.Name
                                                     </MudSelectItem>
                                                 }
@@ -254,7 +274,7 @@
                         Color="Color.Primary"
                         OnClick="GoBack">Back</MudButton>
         }
-        @if(pageIndex == 6) 
+        @if(pageIndex == Page.Weights) 
         {
             <MudButton Variant="Variant.Filled"
                        Color="Color.Primary"
@@ -271,8 +291,19 @@
 </ModalDialogFormBase>
 
 @code{
-    private int pageIndex = 0;
-    private bool createNew = true;
+    private enum Page
+    {
+        Name = 0,
+        Edges = 1,
+        Nodes = 2,
+        Snapping = 3,
+        ComplexEdges = 4,
+        Switches = 5,
+        Weights = 6
+    };
+
+    private Page pageIndex = Page.Name;
+    private bool showLoadExistingCombo = false;
     private System.Globalization.CultureInfo _en = System.Globalization.CultureInfo.GetCultureInfo("en-US");
 
     private SelectableEnumerable<IFeatureClass>? polylineFeatureClasses;
@@ -394,6 +425,22 @@
                 point.Selected = Model.Result.NodeFeatureClasses.Any(fc => fc.Name == point.Item.Name);
             }
         }
+
+        showLoadExistingCombo = false;
+
+        // foreach (var weight in Model.Result.Weights)
+        // {
+        //     foreach (var weightFc in weight.FeatureClasses)
+        //     {
+        //         foreach (var calculator in _calculators)
+        //         {
+        //             var calcuatorInstance =
+        //                 calculator.GetType().Equals(weightFc.SimpleNumberCalculation?.GetType()) ?
+        //                 calculator :
+        //                 Activator.CreateInstance(calculator.GetType());
+        //         }
+        //     }
+        // }
     });
 
     private void GoNext() => Handle(() =>
@@ -404,7 +451,7 @@
 
     private void GoBack() => Handle(() =>
     {
-        pageIndex = Math.Max(pageIndex - 1, 0);
+        pageIndex--;
         StateHasChanged();
     });
 
@@ -412,9 +459,7 @@
     {
         #region Edges
 
-        Model.Result.EdgeFeatureClasses.Clear();
-
-        Model.Result.EdgeFeatureClasses.Clear();
+         Model.Result.EdgeFeatureClasses.Clear();
         if (polylineFeatureClasses != null)
         {
             foreach (var polylineFeatureClass in polylineFeatureClasses.SelectedElements)
