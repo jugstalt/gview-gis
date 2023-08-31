@@ -52,4 +52,6 @@ public class SelectableEnumerable<T> : IEnumerable<SelectableItem<T>>
 
     public IEnumerable<T> SelectedElements =>
         _items.Where(i => i.Selected == true).Select(e => e.Item);
+
+    public bool HasSelected => _items.Any(i => i.Selected == true);
 }

@@ -43,7 +43,7 @@
             }
             @if (pageIndex == Page.Edges)
             {
-                <strong>Node Feature Classes</strong>
+                <strong>Edge Feature Classes</strong>
                 @if (polylineFeatureClasses != null)
                 {
                     <SelectableItemsControl ItemProperties="@(new[]{"Name"})" 
@@ -53,7 +53,7 @@
             }
             @if (pageIndex == Page.Nodes)
             {
-                <strong>Point Feature Classes</strong>
+                <strong>Node Feature Classes</strong>
                 @if (pointFeatureClasses != null)
                 {
                     <SelectableItemsControl ItemProperties="@(new[]{"Name"})"
@@ -266,23 +266,23 @@
 
     <DialogButtons>
         <MudButton Variant="Variant.Filled"
-                   Color="Color.Default"
+                   Color="Color.Secondary"
                    OnClick="Close">Cancel</MudButton>
         @if(pageIndex > 0)
         {
             <MudButton Variant="Variant.Filled"
-                        Color="Color.Primary"
+                       Color="Color.Surface"
                         OnClick="GoBack">Back</MudButton>
         }
         @if(pageIndex == Page.Weights) 
         {
             <MudButton Variant="Variant.Filled"
                        Color="Color.Primary"
-                       OnClick="OnSubmit">Commit</MudButton>
+                       OnClick="OnSubmit">Create Scheme</MudButton>
         } 
-        else
+        else if(CanGoNext())
         {
-            <MudButton Variant="Variant.Filled"
+            <MudButton Variant="Variant.Filled" 
                        Color="Color.Primary"
                        OnClick="GoNext">Next</MudButton>
         }
@@ -445,13 +445,46 @@
 
     private void GoNext() => Handle(() =>
     {
-        pageIndex++;
+        pageIndex = pageIndex switch
+        {
+            Page.Name when !String.IsNullOrWhiteSpace(Model.Result.Name) => Page.Edges,
+            Page.Edges when pointFeatureClasses != null && pointFeatureClasses.Any() => Page.Nodes,
+            Page.Edges => Page.Snapping,
+            Page.Nodes => Page.Snapping,
+            Page.Snapping => Page.ComplexEdges,
+            Page.ComplexEdges when pointFeatureClasses !=null && pointFeatureClasses.HasSelected => Page.Switches,
+            Page.ComplexEdges => Page.Weights,
+            Page.Switches => Page.Weights,
+            _ => Page.Name
+        };
+
         StateHasChanged();
     });
 
+    private bool CanGoNext() =>
+        pageIndex switch
+        {
+            Page.Name when String.IsNullOrWhiteSpace(Model.Result.Name) => false,
+            Page.Edges when polylineFeatureClasses == null || polylineFeatureClasses.HasSelected == false => false,
+            Page.Weights => false,
+            _ => true
+        };
+
     private void GoBack() => Handle(() =>
     {
-        pageIndex--;
+        pageIndex = pageIndex switch
+        {
+            Page.Edges => Page.Name,
+            Page.Nodes => Page.Edges,
+            Page.Snapping when pointFeatureClasses == null || pointFeatureClasses.Any() == false => Page.Edges,
+            Page.Snapping => Page.Nodes,
+            Page.ComplexEdges => Page.Snapping,
+            Page.Switches => Page.ComplexEdges,
+            Page.Weights when pointFeatureClasses == null || pointFeatureClasses.HasSelected == false => Page.ComplexEdges,
+            Page.Weights => Page.ComplexEdges,
+            _ => Page.Name
+        };
+
         StateHasChanged();
     });
 
