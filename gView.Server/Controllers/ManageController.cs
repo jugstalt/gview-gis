@@ -10,6 +10,7 @@ using gView.Server.Services.Security;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -358,6 +359,29 @@ namespace gView.Server.Controllers
                 });
             });
         }
+
+        [HttpGet]
+         public Task<IActionResult> ServiceMetadata(string service)
+            => SecureApiCall(async () =>
+            {
+                //FileInfo fi = new FileInfo((_mapServerService.Options.ServicesPath + @"/" + mapName + ".meta").ToPlatformPath());
+                //if (!fi.Exists)
+                //{
+                //    return String.Empty;
+                //}
+
+                //using (StreamReader sr = new StreamReader(fi.FullName.ToPlatformPath()))
+                //{
+                //    string ret = sr.ReadToEnd();
+                //    sr.Close();
+                //    return ret;
+                //}
+
+                return Json(new
+                {
+
+                });
+            });
 
         [HttpGet]
         async public Task<IActionResult> FolderSecurity(string folder)

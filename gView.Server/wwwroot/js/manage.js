@@ -359,6 +359,29 @@ window.gview.manage = (function() {
                 setServiceStatus(this, $(this).closest('.service'), 'stopped');
             });
         $('<div>')
+            .addClass('icon clickable log')
+            .appendTo($toolbar)
+            .click(function () {
+                var serviceName = $(this)
+                    .closest('.service')
+                    .attr('data-service');
+
+                modalDialog({
+                    title: service.name + ' (Security)',
+                    onLoad: function ($body) {
+                        $body.addClass('service-security');
+                        get({
+                            url: '/manage/servicemetadata?service=' + serviceName,
+                            success: function (result) {
+                                //renderSecurityTable($body, result);
+                            }
+                        });
+                    },
+                    onOk: function ($body) {
+                    }
+                });
+            });
+        $('<div>')
             .addClass('icon clickable refresh')
             .appendTo($toolbar)
             .click(function() {
