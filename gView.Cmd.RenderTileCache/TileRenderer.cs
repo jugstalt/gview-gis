@@ -81,7 +81,7 @@ namespace gView.Cmd.RenderTileCache
                 _orientation);
 
             int level = 0;
-            foreach (double scale in _metadata.Scales)
+            foreach (double scale in _metadata.Scales.InnerList)
             {
                 double res = scale / (96.0 / 0.0254) * dpu;
                 grid.AddLevel(level++, res);
@@ -94,7 +94,7 @@ namespace gView.Cmd.RenderTileCache
             #region Count Tiles
 
             int featureMax = 0;
-            foreach (double scale in _preRenderScales ?? _metadata.Scales)
+            foreach (double scale in _preRenderScales ?? _metadata.Scales.InnerList)
             {
                 double res = scale / (96.0 / 0.0254) * dpu;
                 int col0 = grid.TileColumn(_bbox.minx, res), col1 = grid.TileColumn(_bbox.maxx, res);
@@ -119,7 +119,7 @@ namespace gView.Cmd.RenderTileCache
                 thread.Start($"init/{_cacheFormat}/ll/{_epsg}/{_imageFormat.Replace(".", "")}");
             }
 
-            foreach (double scale in _preRenderScales ?? _metadata.Scales)
+            foreach (double scale in _preRenderScales ?? _metadata.Scales.InnerList)
             {
                 double res = scale / (96.0 / 0.0254) * dpu;
                 int col0 = grid.TileColumn(_bbox.minx, res), col1 = grid.TileColumn(_bbox.maxx, res);

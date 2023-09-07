@@ -133,7 +133,7 @@ namespace gView.Cmd.RenderTileCache
                     Console.WriteLine("Scales:");
                     if (metadata.Scales != null)
                     {
-                        foreach (var scale in metadata.Scales)
+                        foreach (var scale in metadata.Scales.InnerList)
                         {
                             Console.WriteLine($"  1 : {scale}");
                         }

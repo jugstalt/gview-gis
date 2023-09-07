@@ -1,4 +1,5 @@
 ﻿using gView.Core.Framework.Exceptions;
+using gView.Framework.IO;
 using gView.Framework.system;
 using gView.MapServer;
 using gView.Server.AppCode;
@@ -10,9 +11,10 @@ using gView.Server.Services.Security;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using YamlDotNet.Serialization;
+using YamlDotNet.Serialization.NamingConventions;
 
 namespace gView.Server.Controllers
 {
@@ -361,27 +363,70 @@ namespace gView.Server.Controllers
         }
 
         [HttpGet]
-         public Task<IActionResult> ServiceMetadata(string service)
+        public Task<IActionResult> ServiceMetadata(string service)
             => SecureApiCall(async () =>
             {
-                //FileInfo fi = new FileInfo((_mapServerService.Options.ServicesPath + @"/" + mapName + ".meta").ToPlatformPath());
-                //if (!fi.Exists)
-                //{
-                //    return String.Empty;
-                //}
+                var pluginManager = new PlugInManager();
+                var mapService = _mapServiceMananger.GetMapService(service);
+                var map = await _mapServiceMananger.Instance.GetServiceMapAsync(mapService);
+                Dictionary<string, string> meta = new Dictionary<string, string>();
 
-                //using (StreamReader sr = new StreamReader(fi.FullName.ToPlatformPath()))
-                //{
-                //    string ret = sr.ReadToEnd();
-                //    sr.Close();
-                //    return ret;
-                //}
-
-                return Json(new
+                if (map == null)
                 {
+                    return Json(meta);
+                }
 
-                });
+                var serializer = new SerializerBuilder()
+                    .WithNamingConvention(CamelCaseNamingConvention.Instance)
+                    .Build();
+
+                foreach (var metadataProviderType in pluginManager.GetPlugins(Framework.system.Plugins.Type.IMetadataProvider))
+                {
+                    var metadataProvider = (map.MetadataProvider(PlugInManager.PluginIDFromType(metadataProviderType))
+                        ?? Activator.CreateInstance(metadataProviderType)) as IMetadataProvider;
+
+                    if (metadataProvider is IPropertyObject && await metadataProvider.ApplyTo(map) == true)
+                    {
+                        var propertyObject = ((IPropertyObject)metadataProvider).GetPropertyObject();
+                        meta.Add(metadataProvider.Name, serializer.Serialize(propertyObject));
+                    }
+                }
+
+                return Json(meta);
             });
+
+        [HttpPost]
+        public Task<IActionResult> ServiceMetadata(string service, Dictionary<string, string> metadata) => SecureApiCall(async () =>
+        {
+            if(metadata == null && metadata.Keys.Count == 0)
+            {
+                return Json(new { success = false});
+            }
+
+            var pluginManager = new PlugInManager();
+            var mapService = _mapServiceMananger.GetMapService(service);
+            var map = await _mapServiceMananger.Instance.GetServiceMapAsync(mapService);
+
+            var deserializer = new DeserializerBuilder()
+                    .WithNamingConvention(CamelCaseNamingConvention.Instance)
+                    .Build();
+
+            foreach (var metadataProviderType in pluginManager.GetPlugins(Framework.system.Plugins.Type.IMetadataProvider))
+            {
+                var metadataProvider = (map.MetadataProvider(PlugInManager.PluginIDFromType(metadataProviderType))
+                    ?? Activator.CreateInstance(metadataProviderType)) as IMetadataProvider;
+
+                if (metadataProvider is IPropertyObject && 
+                    metadata.ContainsKey(metadataProvider.Name) &&
+                    await metadataProvider.ApplyTo(map) == true)
+                {
+                    var propertyObject = deserializer.Deserialize(metadata[metadataProvider.Name], 
+                                                                  ((IPropertyObject)metadataProvider).PropertyObjectType);
+                }
+            }
+
+            return Json(new { success = true }); ;
+        });
 
         [HttpGet]
         async public Task<IActionResult> FolderSecurity(string folder)

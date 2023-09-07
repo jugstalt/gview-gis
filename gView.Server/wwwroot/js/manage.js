@@ -149,10 +149,6 @@ window.gview.manage = (function() {
             .addClass('toolbar')
             .appendTo($service);
 
-        // ToDo: Edit Metadata???
-        //$("<div>")
-        //    .addClass('icon clickable settings')
-        //    .appendTo($toolbar);
         $('<div>')
             .addClass('icon clickable log')
             .appendTo($toolbar)
@@ -359,25 +355,68 @@ window.gview.manage = (function() {
                 setServiceStatus(this, $(this).closest('.service'), 'stopped');
             });
         $('<div>')
-            .addClass('icon clickable log')
+            .addClass('icon clickable settings')
             .appendTo($toolbar)
             .click(function () {
-                var serviceName = $(this)
+                let serviceName = $(this)
                     .closest('.service')
                     .attr('data-service');
 
+                let metadata = [];
+                let editor = null, currentSelected = null;
                 modalDialog({
-                    title: service.name + ' (Security)',
+                    title: service.name + ' (Metadata)',
                     onLoad: function ($body) {
                         $body.addClass('service-security');
                         get({
                             url: '/manage/servicemetadata?service=' + serviceName,
                             success: function (result) {
-                                //renderSecurityTable($body, result);
+                                metadata = result;
+
+                                let $select = $("<select>")
+                                    .css({ width: '100%', height: 25 })
+                                    .appendTo($body);
+                                for (var id in result) {
+                                    $("<option>")
+                                        .attr('value', id)
+                                        .text(id)
+                                        .appendTo($select);
+                                }
+
+                                let $editor = $("<div>")
+                                    .css({ width: '100%', height: 'calc(100% - 30px)' })
+                                    .appendTo($body);
+
+                                editor = monaco.editor.create($editor.get(0), {
+                                    language: 'yaml',
+                                    automaticLayout: true,
+                                    contextmenu: false,
+                                    theme: 'vs-dark'
+                                });
+
+                                $select.change(function () {
+                                    if (currentSelected) {
+                                        metadata[currentSelected] = editor.getValue();
+                                    }
+                                    currentSelected = $(this).val();
+                                    editor.setValue(metadata[currentSelected]);
+                                });
+                                $select.trigger('change');
                             }
                         });
                     },
                     onOk: function ($body) {
+                        if (editor && currentSelected) { // sumit current
+                            metadata[currentSelected] = editor.getValue();
+                        }
+                        get({
+                            url: '/manage/servicemetadata',
+                            type: 'post',
+                            data: {
+                                service: serviceName,
+                                metadata: metadata
+                            }
+                        })
                     }
                 });
             });
