@@ -385,9 +385,9 @@ namespace gView.Server.Controllers
                     var metadataProvider = (map.MetadataProvider(PlugInManager.PluginIDFromType(metadataProviderType))
                         ?? Activator.CreateInstance(metadataProviderType)) as IMetadataProvider;
 
-                    if (metadataProvider is IPropertyObject && await metadataProvider.ApplyTo(map) == true)
+                    if (metadataProvider is IPropertyModel && await metadataProvider.ApplyTo(map) == true)
                     {
-                        var propertyObject = ((IPropertyObject)metadataProvider).GetPropertyObject();
+                        var propertyObject = ((IPropertyModel)metadataProvider).GetPropertyModel();
                         meta.Add(metadataProvider.Name, serializer.Serialize(propertyObject));
                     }
                 }
@@ -416,12 +416,12 @@ namespace gView.Server.Controllers
                 var metadataProvider = (map.MetadataProvider(PlugInManager.PluginIDFromType(metadataProviderType))
                     ?? Activator.CreateInstance(metadataProviderType)) as IMetadataProvider;
 
-                if (metadataProvider is IPropertyObject && 
+                if (metadataProvider is IPropertyModel && 
                     metadata.ContainsKey(metadataProvider.Name) &&
                     await metadataProvider.ApplyTo(map) == true)
                 {
                     var propertyObject = deserializer.Deserialize(metadata[metadataProvider.Name], 
-                                                                  ((IPropertyObject)metadataProvider).PropertyObjectType);
+                                                                  ((IPropertyModel)metadataProvider).PropertyModelType);
                 }
             }
 

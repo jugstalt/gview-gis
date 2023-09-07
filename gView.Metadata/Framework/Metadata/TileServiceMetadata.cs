@@ -4,17 +4,15 @@ using gView.Framework.Geometry.Tiling;
 using gView.Framework.IO;
 using gView.Framework.system;
 using gView.Framework.UI;
-using Proj4Net.Core.Projection;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Reflection;
 using System.Threading.Tasks;
 
 namespace gView.Framework.Metadata
 {
     [RegisterPlugInAttribute("D33D3DD2-DD63-4a47-9F84-F840FE0D01C0")]
-    public class TileServiceMetadata : IMetadataProvider, IPropertyPage, IPropertyObject
+    public class TileServiceMetadata : IMetadataProvider, IPropertyPage, IPropertyModel
     {
         private PropertyObject _properties = new PropertyObject();
 
@@ -131,7 +129,11 @@ namespace gView.Framework.Metadata
         {
             get
             {
-                if (_doubleScales == null) _doubleScales = new DoubleScales(_properties.Scales);
+                if (_doubleScales == null)
+                {
+                    _doubleScales = new DoubleScales(_properties.Scales);
+                }
+
                 return _doubleScales;
             }
             set
@@ -404,17 +406,19 @@ namespace gView.Framework.Metadata
 
         #region IPropertyObject
 
-        public Type PropertyObjectType => typeof(PropertyObject);
+        public Type PropertyModelType => typeof(PropertyObject);
 
-        public object GetPropertyObject()
+        public object GetPropertyModel()
         {
             return _properties;
         }
 
-        public void SetPropertyObject(object propertyObject)
+        public void SetPropertyModel(object propertyObject)
         {
             if (propertyObject is PropertyObject)
+            {
                 _properties = (PropertyObject)propertyObject;
+            }
         }
 
         #endregion
@@ -424,8 +428,8 @@ namespace gView.Framework.Metadata
         public class DoubleScales
         {
             private readonly List<double> _scales;
-            public DoubleScales(List<double> scales) 
-            { 
+            public DoubleScales(List<double> scales)
+            {
                 _scales = scales;
             }
 
@@ -516,7 +520,7 @@ namespace gView.Framework.Metadata
                 }
                 public double MinX { get; set; }
                 public double MinY { get; set; }
-                public double MaxX { get; set; }    
+                public double MaxX { get; set; }
                 public double MaxY { get; set; }
 
                 public IEnvelope ToEnvelope() => new Envelope(MinX, MinY, MaxX, MaxY);
