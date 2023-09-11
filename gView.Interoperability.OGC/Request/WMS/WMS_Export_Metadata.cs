@@ -16,7 +16,7 @@ namespace gView.Interoperability.OGC
 
         #region IMetadataProvider Member
 
-        public Task<bool> ApplyTo(object Object)
+        public Task<bool> ApplyTo(object Object, bool setDefaults = false)
         {
             if (Object is IMap)
             {

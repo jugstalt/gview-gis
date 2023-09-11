@@ -14,6 +14,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.Intrinsics.X86;
 using System.Threading.Tasks;
 using YamlDotNet.Core;
 using YamlDotNet.Serialization;
@@ -383,16 +384,22 @@ namespace gView.Server.Controllers
                     .WithNamingConvention(CamelCaseNamingConvention.Instance)
                     .Build();
 
+                List<IMetadataProvider> metadataProviders = new List<IMetadataProvider>();
                 foreach (var metadataProviderType in pluginManager.GetPlugins(Framework.system.Plugins.Type.IMetadataProvider))
                 {
                     var metadataProvider = (map.MetadataProvider(PlugInManager.PluginIDFromType(metadataProviderType))
                         ?? Activator.CreateInstance(metadataProviderType)) as IMetadataProvider;
 
-                    if (metadataProvider is IPropertyModel && await metadataProvider.ApplyTo(map) == true)
+                    if (metadataProvider is IPropertyModel && await metadataProvider.ApplyTo(map, true) == true)
                     {
-                        var propertyObject = ((IPropertyModel)metadataProvider).GetPropertyModel();
-                        meta.Add(metadataProvider.Name, serializer.Serialize(propertyObject));
+                        metadataProviders.Add(metadataProvider);
                     }
+                }
+
+                foreach (var metadataProvider in metadataProviders.OrderBy(m => m.Name))
+                {
+                    var propertyObject = ((IPropertyModel)metadataProvider).GetPropertyModel();
+                    meta.Add(metadataProvider.Name, serializer.Serialize(propertyObject));
                 }
 
                 return Json(meta);
@@ -424,11 +431,19 @@ namespace gView.Server.Controllers
                     metadata.ContainsKey(metadataProvider.Name) &&
                     await metadataProvider.ApplyTo(map) == true)
                 {
-                    var propertyObject = deserializer.Deserialize(metadata[metadataProvider.Name], 
-                                                                  ((IPropertyModel)metadataProvider).PropertyModelType);
+                    try
+                    {
+                        var propertyObject = deserializer.Deserialize(metadata[metadataProvider.Name],
+                                                                      ((IPropertyModel)metadataProvider).PropertyModelType);
+                   
+                        ((IPropertyModel)metadataProvider).SetPropertyModel(propertyObject);
+                        metadataProviders.Add(metadataProvider);
 
-                    ((IPropertyModel)metadataProvider).SetPropertyModel(propertyObject);
-                    metadataProviders.Add(metadataProvider);
+                    }
+                    catch (YamlException see)
+                    {
+                        throw new MapServerException($"Syntax Error ({metadataProvider.Name}): {see.InnerException?.Message ?? see.Message} in Line: {see.End.Line} Column: {see.End.Column}");
+                    }
                 }
             }
 
@@ -674,9 +689,9 @@ namespace gView.Server.Controllers
             {
                 return Json(new { success = false, error = mse.Message });
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return Json(new { success = false, error = "unknown error" });
+                return Json(new { success = false, error = $"unknown error" });
             }
         }
 

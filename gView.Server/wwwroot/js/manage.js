@@ -67,14 +67,14 @@ window.gview.manage = (function() {
     // UI Elements
     //
 
-    var modalDialog = function(options) {
+    var modalDialog = function (options) {
         var $blocker = $('<div>')
             .addClass('gview5-modal-blocker')
             .appendTo($('body'))
-            .click(function(e) {
-                $(this)
-                    .find('.button-close')
-                    .trigger('click');
+            .click(function (e) {
+                //$(this)
+                //    .find('.button-close')
+                //    .trigger('click');
             });
 
         var $modal = $('<div>')
@@ -112,10 +112,17 @@ window.gview.manage = (function() {
                 .appendTo($footer)
                 .click(function(e) {
                     e.stopPropagation();
-                    if (options.onOk) options.onOk($body);
-                    $(this)
-                        .closest('.gview5-modal-blocker')
-                        .remove();
+
+                    var autoClose = options.autoClose === false ? false : true;
+                    if (options.onOk) {
+                        var ret = options.onOk($body);
+                        autoClose = autoClose || ret;
+                    }
+                    if (autoClose === true) {
+                        $(this)
+                            .closest('.gview5-modal-blocker')
+                            .remove();
+                    }
                 });
         }
 
@@ -366,6 +373,7 @@ window.gview.manage = (function() {
                 let editor = null, currentSelected = null;
                 modalDialog({
                     title: service.name + ' (Metadata)',
+                    autoClose: false,
                     onLoad: function ($body) {
                         $body.addClass('service-security');
                         get({
@@ -415,8 +423,17 @@ window.gview.manage = (function() {
                             data: {
                                 service: serviceName,
                                 metadata: metadata
+                            },
+                            success: function (result) {
+                                if (!result.success) {
+                                    alert(result.error);
+                                } else {
+                                    $('.gview5-modal-blocker').remove();
+                                }
                             }
-                        })
+                        });
+
+                        return false;
                     }
                 });
             });

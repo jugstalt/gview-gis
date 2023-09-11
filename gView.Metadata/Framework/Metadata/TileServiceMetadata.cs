@@ -6,6 +6,7 @@ using gView.Framework.system;
 using gView.Framework.UI;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 
@@ -204,11 +205,35 @@ namespace gView.Framework.Metadata
 
         #region IMetadataProvider Member
 
-        public Task<bool> ApplyTo(object Object)
+        public Task<bool> ApplyTo(object Object, bool setDefaults = false)
         {
             if (Object == null)
             {
                 return Task.FromResult(false);
+            }
+
+            if (setDefaults)
+            {
+                if (_properties.Scales?.Count == 0)
+                {
+                    _properties.Scales.Add(0);
+                }
+                if (_properties.EpsgCodes?.Count == 0)
+                {
+                    _properties.EpsgCodes.Add(0);
+                }
+                if (_properties.Extents?.Count == 0)
+                {
+                    _properties.Extents.Add(0, new PropertyObject.EnvelopeModel());
+                }
+                if (_properties.OriginLowerLeft?.Count == 0)
+                {
+                    _properties.OriginLowerLeft.Add(0, new PropertyObject.PointModel());
+                }
+                if (_properties.OriginUpperLeft?.Count == 0)
+                {
+                    _properties.OriginUpperLeft.Add(0, new PropertyObject.PointModel());
+                }
             }
 
             return Task.FromResult(Object is IMap);
@@ -226,68 +251,68 @@ namespace gView.Framework.Metadata
 
         public void Load(IPersistStream stream)
         {
-            //_properties.Use = (bool)stream.Load("use", false);
+            _properties.Use = (bool)stream.Load("use", false);
 
-            //_properties.TileWidth = (int)stream.Load("tile_width", 256);
-            //_properties.TileHeight = (int)stream.Load("tile_height", 256);
+            _properties.TileWidth = (int)stream.Load("tile_width", 256);
+            _properties.TileHeight = (int)stream.Load("tile_height", 256);
 
-            //_properties.UseUpperLeft = (bool)stream.Load("upperleft", true);
-            //_properties.UseLowerLeft = (bool)stream.Load("lowerleft", true);
-            //_properties.CacheUpperLeftTiles = (bool)stream.Load("upperleftcachetiles", true);
-            //_properties.CacheLowerLeftTiles = (bool)stream.Load("lowerleftcachetiles", true);
+            _properties.UseUpperLeft = (bool)stream.Load("upperleft", true);
+            _properties.UseLowerLeft = (bool)stream.Load("lowerleft", true);
+            _properties.CacheUpperLeftTiles = (bool)stream.Load("upperleftcachetiles", true);
+            _properties.CacheLowerLeftTiles = (bool)stream.Load("lowerleftcachetiles", true);
 
-            //_properties.SupportPng = (bool)stream.Load("formatpng", true);
-            //_properties.SupportJpg = (bool)stream.Load("formatjpg", true);
-            //this.MakeTransparentPng = (bool)stream.Load("maketransparentpng", false);
+            _properties.SupportPng = (bool)stream.Load("formatpng", true);
+            _properties.SupportJpg = (bool)stream.Load("formatjpg", true);
+            this.MakeTransparentPng = (bool)stream.Load("maketransparentpng", false);
 
-            //_properties.Dpi = (double)stream.Load("dpi", Const.TilesDpi);
+            _properties.Dpi = (double)stream.Load("dpi", Const.TilesDpi);
 
-            //this.RenderTilesOnTheFly = (bool)stream.Load("rendertilesonthefly", false);
+            this.RenderTilesOnTheFly = (bool)stream.Load("rendertilesonthefly", false);
 
-            //_properties.Scales.Clear();
-            //int scales_count = (int)stream.Load("scales_count", 0);
-            //for (int i = 0; i < scales_count; i++)
-            //{
-            //    double scale = Convert.ToDouble(stream.Load("scale" + i, 0.0));
-            //    if (scale <= 0.0)
-            //    {
-            //        continue;
-            //    }
+            _properties.Scales.Clear();
+            int scales_count = (int)stream.Load("scales_count", 0);
+            for (int i = 0; i < scales_count; i++)
+            {
+                double scale = Convert.ToDouble(stream.Load("scale" + i, 0.0));
+                if (scale <= 0.0)
+                {
+                    continue;
+                }
 
-            //    _properties.Scales.Add(scale);
-            //}
+                _properties.Scales.Add(scale);
+            }
 
-            //_properties.Extents.Clear();
-            //_properties.EpsgCodes.Clear();
-            //_properties.OriginUpperLeft.Clear();
-            //_properties.OriginLowerLeft.Clear();
-            //int epsg_count = (int)stream.Load("epsg_count", 0);
-            //for (int i = 0; i < epsg_count; i++)
-            //{
-            //    int epsg = (int)stream.Load("epsg" + i, 0);
-            //    if (epsg == 0 || _properties.Extents.ContainsKey(epsg))
-            //    {
-            //        continue;
-            //    }
+            _properties.Extents.Clear();
+            _properties.EpsgCodes.Clear();
+            _properties.OriginUpperLeft.Clear();
+            _properties.OriginLowerLeft.Clear();
+            int epsg_count = (int)stream.Load("epsg_count", 0);
+            for (int i = 0; i < epsg_count; i++)
+            {
+                int epsg = (int)stream.Load("epsg" + i, 0);
+                if (epsg == 0 || _properties.Extents.ContainsKey(epsg))
+                {
+                    continue;
+                }
 
-            //    _properties.EpsgCodes.Add((int)stream.Load("epsg" + i, epsg));
-            //    _properties.Extents.Add(epsg,
-            //                 new PropertyObject.EnvelopeModel(new Envelope(
-            //        (double)stream.Load("extent_minx" + i, 0.0),
-            //        (double)stream.Load("extent_miny" + i, 0.0),
-            //        (double)stream.Load("extent_maxx" + i, 0.0),
-            //        (double)stream.Load("extent_maxy" + i, 0.0))));
+                _properties.EpsgCodes.Add((int)stream.Load("epsg" + i, epsg));
+                _properties.Extents.Add(epsg,
+                             new PropertyObject.EnvelopeModel(new Envelope(
+                    (double)stream.Load("extent_minx" + i, 0.0),
+                    (double)stream.Load("extent_miny" + i, 0.0),
+                    (double)stream.Load("extent_maxx" + i, 0.0),
+                    (double)stream.Load("extent_maxy" + i, 0.0))));
 
-            //    _properties.OriginUpperLeft.Add(epsg, new PropertyObject.PointModel(new Point(
-            //        (double)stream.Load("origin_ul_x" + i, GetOriginUpperLeft(epsg)?.X ?? 0D),
-            //        (double)stream.Load("origin_ul_y" + i, GetOriginUpperLeft(epsg)?.Y ?? 0D)
-            //        )));
+                _properties.OriginUpperLeft.Add(epsg, new PropertyObject.PointModel(new Point(
+                    (double)stream.Load("origin_ul_x" + i, GetOriginUpperLeft(epsg)?.X ?? 0D),
+                    (double)stream.Load("origin_ul_y" + i, GetOriginUpperLeft(epsg)?.Y ?? 0D)
+                    )));
 
-            //    _properties.OriginLowerLeft.Add(epsg, new PropertyObject.PointModel(new Point(
-            //        (double)stream.Load("origin_ll_x" + i, GetOriginLowerLeft(epsg)?.X ?? 0D),
-            //        (double)stream.Load("origin_ll_y" + i, GetOriginLowerLeft(epsg)?.Y ?? 0D)
-            //        )));
-            //}
+                _properties.OriginLowerLeft.Add(epsg, new PropertyObject.PointModel(new Point(
+                    (double)stream.Load("origin_ll_x" + i, GetOriginLowerLeft(epsg)?.X ?? 0D),
+                    (double)stream.Load("origin_ll_y" + i, GetOriginLowerLeft(epsg)?.Y ?? 0D)
+                    )));
+            }
         }
 
         public void Save(IPersistStream stream)
@@ -404,7 +429,7 @@ namespace gView.Framework.Metadata
 
         #endregion
 
-        #region IPropertyObject
+        #region IPropertyModel
 
         public Type PropertyModelType => typeof(PropertyObject);
 
