@@ -1,6 +1,7 @@
 ﻿using gView.Core.Framework.Exceptions;
 using gView.Framework.IO;
 using gView.Framework.system;
+using gView.Interoperability.ArcXML.Dataset;
 using gView.MapServer;
 using gView.Server.AppCode;
 using gView.Server.AppCode.Extensions;
@@ -11,8 +12,10 @@ using gView.Server.Services.Security;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using YamlDotNet.Core;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
 
@@ -410,6 +413,7 @@ namespace gView.Server.Controllers
             var deserializer = new DeserializerBuilder()
                     .WithNamingConvention(CamelCaseNamingConvention.Instance)
                     .Build();
+            var metadataProviders = new List<IMetadataProvider>();
 
             foreach (var metadataProviderType in pluginManager.GetPlugins(Framework.system.Plugins.Type.IMetadataProvider))
             {
@@ -422,10 +426,21 @@ namespace gView.Server.Controllers
                 {
                     var propertyObject = deserializer.Deserialize(metadata[metadataProvider.Name], 
                                                                   ((IPropertyModel)metadataProvider).PropertyModelType);
+
+                    ((IPropertyModel)metadataProvider).SetPropertyModel(propertyObject);
+                    metadataProviders.Add(metadataProvider);
                 }
             }
 
-            return Json(new { success = true }); ;
+            var meta = new gView.Framework.Data.Metadata.Metadata();
+            await meta.SetMetadataProviders(metadataProviders, map);
+            XmlStream xmlStream = new XmlStream("");
+            await meta.WriteMetadata(xmlStream);
+
+            FileInfo fi = new FileInfo($"{_mapServiceMananger.Options.ServicesPath}/{service}.meta");
+            xmlStream.WriteStream(fi.FullName);
+
+            return Json(new { success = true });
         });
 
         [HttpGet]

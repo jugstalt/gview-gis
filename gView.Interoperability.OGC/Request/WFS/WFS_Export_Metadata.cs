@@ -88,6 +88,8 @@ namespace gView.Interoperability.OGC
                 SetDefaultEPSGCodes();
             }
 
+            public Metadata() { }
+
             public string[] EPSGCodes
             {
                 get
