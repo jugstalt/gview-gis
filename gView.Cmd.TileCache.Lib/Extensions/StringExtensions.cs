@@ -1,6 +1,10 @@
-﻿namespace gView.Cmd.RenderTileCache.Extensions
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
+
+namespace gView.Cmd.TileCache.Lib.Extensions
 {
-    static class StringExtensions
+    public static class StringExtensions
     {
         static public string ToWmtsUrl(this string server, string service, string request = "GetCapabilities")
         {

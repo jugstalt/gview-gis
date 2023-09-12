@@ -38,8 +38,22 @@ static public class DictionaryExtensions
         {
             return (T)(object)parameters[key].ToString().ToDouble();
         }
+        else if (typeof(T).IsEnum)
+        {
+            return (T)Enum.Parse(typeof(T), parameters[key].ToString());
+        }
 
         return (T)Convert.ChangeType(parameters[key], typeof(T));
+    }
+
+    static public T GetValueOrDefault<T>(this IDictionary<string, object> parameters, string key, T defaultValue)
+    {
+        if (parameters == null || !parameters.ContainsKey(key))
+        {
+            return defaultValue;
+        }
+
+        return parameters.GetValue<T>(key) ?? defaultValue;
     }
 
     static public T GetRequiredValue<T>(this IDictionary<string, object> parameters, string key)

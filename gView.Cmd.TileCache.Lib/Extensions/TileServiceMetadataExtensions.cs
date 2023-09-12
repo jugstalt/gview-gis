@@ -3,9 +3,9 @@ using gView.Framework.Metadata;
 using System;
 using System.Net.Http;
 
-namespace gView.Cmd.RenderTileCache.Extensions
+namespace gView.Cmd.TileCache.Lib.Extensions
 {
-    static class TileServiceMetadataExtensions
+    public static class TileServiceMetadataExtensions
     {
         public static TileServiceMetadata FromService(this TileServiceMetadata metadata, string server, string service)
         {

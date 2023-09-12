@@ -9,9 +9,9 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading;
 
-namespace gView.Cmd.RenderTileCache
+namespace gView.Cmd.TileCache.Lib.Tools
 {
-    class TileRenderer
+    public class TileRenderer
     {
         private readonly TileServiceMetadata _metadata;
         private readonly int _epsg;
@@ -181,12 +181,12 @@ namespace gView.Cmd.RenderTileCache
 
         private class RenderTileThreadPool
         {
-            ServerConnection _connector;
-            string _service, _user, _pwd;
-            int _size;
-            StringBuilder _exceptions = new StringBuilder();
+            private ServerConnection _connector;
+            private string _service, _user, _pwd;
+            private int _size;
+            private StringBuilder _exceptions = new StringBuilder();
 
-            List<Thread> _threads = new List<Thread>();
+            private readonly Thread[] _threads;
 
             public RenderTileThreadPool(ServerConnection connector, string service, string user, string pwd, int size)
             {
@@ -196,7 +196,7 @@ namespace gView.Cmd.RenderTileCache
                 _pwd = pwd;
 
                 _size = size;
-
+                _threads = new Thread[size];
                 _connector.Timeout = 3600; // 1h
             }
 
@@ -221,17 +221,11 @@ namespace gView.Cmd.RenderTileCache
             {
                 get
                 {
-                    if (_threads.Count < _size)
+                    for (int i = 0; i < _threads.Length; i++)
                     {
-                        Thread thread = new Thread(new ParameterizedThreadStart(this.Run), 1024);
-                        _threads.Add(thread);
-                        return thread;
-                    }
-                    for (int i = 0; i < _threads.Count; i++)
-                    {
-                        if (!_threads[i].IsAlive)
+                        if (_threads[i] == null || !_threads[i].IsAlive)
                         {
-                            _threads[i] = new Thread(new ParameterizedThreadStart(this.Run), 1024);
+                            _threads[i] = new Thread(new ParameterizedThreadStart(this.Run));
                             return _threads[i];
                         }
                     }
@@ -243,9 +237,9 @@ namespace gView.Cmd.RenderTileCache
             {
                 get
                 {
-                    for (int i = 0; i < _threads.Count; i++)
+                    for (int i = 0; i < _threads.Length; i++)
                     {
-                        if (_threads[i].IsAlive)
+                        if (_threads != null && _threads[i].IsAlive)
                         {
                             return false;
                         }

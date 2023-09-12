@@ -1,11 +1,12 @@
-﻿using gView.Cmd.RenderTileCache.Extensions;
-using gView.Framework.Geometry;
+﻿using gView.Framework.Geometry;
 using gView.Framework.Geometry.Tiling;
 using gView.Framework.Metadata;
 using gView.Framework.system;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using gView.Cmd.TileCache.Lib.Extensions;
+using gView.Cmd.TileCache.Lib.Tools;
 
 namespace gView.Cmd.RenderTileCache
 {
