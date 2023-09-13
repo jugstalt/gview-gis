@@ -1,30 +1,17 @@
 ﻿using gView.Framework.IO;
 using gView.Framework.Metadata;
+using gView.Server.Clients;
 using System;
 using System.Net.Http;
+using System.Threading.Tasks;
 
 namespace gView.Cmd.TileCache.Lib.Extensions
 {
     public static class TileServiceMetadataExtensions
     {
-        public static TileServiceMetadata FromService(this TileServiceMetadata metadata, string server, string service)
+        public static Task<TileServiceMetadata?> FromService(this TileServiceMetadata metadata, string server, string service)
         {
-            var url = server.ToWmtsUrl(service, "GetMetadata");
-
-            using (var client = new HttpClient())
-            {
-                var response = client.GetAsync(url).Result;
-                if (!response.IsSuccessStatusCode)
-                {
-                    throw new Exception($"{url} return with status code {response.StatusCode}");
-                }
-
-                var responseStream = response.Content.ReadAsStreamAsync().Result;
-                XmlStream xmlStream = new XmlStream("WmtsMetadata");
-                xmlStream.ReadStream(responseStream);
-
-                return xmlStream.Load("TileServiceMetadata") as TileServiceMetadata;
-            }
+            return new MapServerClient(server).GetTileServiceMetadata(service);
         }
     }
 }

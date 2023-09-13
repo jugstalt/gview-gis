@@ -1,5 +1,6 @@
 ﻿using gView.Cmd.Core;
 using gView.Cmd.Core.Abstraction;
+using gView.Cmd.Core.Builders;
 using gView.Cmd.Core.Extensions;
 using gView.Cmd.TileCache.Lib.Extensions;
 using gView.Cmd.TileCache.Lib.Tools;
@@ -58,7 +59,7 @@ namespace gView.Cmd.TileCache.Lib
             }
         };
 
-        public Task<bool> Run(IDictionary<string, object> parameters, ICancelTracker cancelTracker = null, ICommandLogger logger = null)
+        async public Task<bool> Run(IDictionary<string, object> parameters, ICancelTracker? cancelTracker = null, ICommandLogger? logger = null)
         {
             try
             {
@@ -67,7 +68,7 @@ namespace gView.Cmd.TileCache.Lib
 
                 #region Read Metadata
 
-                var metadata = new TileServiceMetadata().FromService(server, service);
+                var metadata = await new TileServiceMetadata().FromService(server, service);
                 if (metadata == null)
                 {
                     throw new Exception("Can't read metadata from server. Are you sure that ervice is a gView WMTS service?");
@@ -78,29 +79,39 @@ namespace gView.Cmd.TileCache.Lib
                 int epsg = parameters.GetValueOrDefault<int>("epsg", metadata.EPSGCodes.First());
                 var orientation = parameters.GetValueOrDefault<GridOrientation>("orientation", GridOrientation.UpperLeft);
                 bool compact = parameters.HasKey("compact");
-                IEnumerable<double> scales = parameters.GetValueOrDefault<string>("scales", null)?
+                IEnumerable<double>? scales = parameters.GetValueOrDefault<string>("scales", null)?
                     .Split(',')
                     .Select(s => double.Parse(s, System.Globalization.NumberFormatInfo.InvariantInfo))
                     .ToArray();
+
+                IEnvelope? bbox = null;
+
+                if (parameters.ContainsKey("bbox_minx"))
+                {
+                    var envelopeBuilder = new EnvelopeParameterBuilder("bbox");
+                    bbox = await envelopeBuilder.Build<IEnvelope>(parameters);
+                }
+
                 int threads = parameters.GetValueOrDefault<int>("threads", 1);
 
                 var tileRender = new TileRenderer(metadata,
                                                   epsg > 0 ? epsg : metadata.EPSGCodes.First(),
                                                   cacheFormat: compact ? "compact" : "",
                                                   orientation: orientation,
-                                                  bbox: null,
+                                                  bbox: bbox,
                                                   preRenderScales: scales?.Count() > 0 ? scales : null,
-                                                  maxParallelRequests: threads);
+                                                  maxParallelRequests: threads,
+                                                  cancelTracker: cancelTracker);
 
-                tileRender.Renderer(server, service);
+                tileRender.Renderer(server, service, logger);
 
-                return Task.FromResult(true);
+                return true;
             }
             catch (Exception ex)
             {
                 logger?.LogLine($"ERROR: {ex.Message}");
 
-                return Task.FromResult(false);
+                return false;
             }
         }
     }

@@ -1,4 +1,5 @@
-﻿using gView.Framework.Carto;
+﻿using gView.Cmd.Core.Abstraction;
+using gView.Framework.Carto;
 using gView.Framework.Geometry;
 using gView.Framework.Geometry.Tiling;
 using gView.Framework.Metadata;
@@ -17,19 +18,21 @@ namespace gView.Cmd.TileCache.Lib.Tools
         private readonly int _epsg;
         private readonly GridOrientation _orientation;
         private readonly string _cacheFormat;
-        private readonly IEnumerable<double> _preRenderScales;
+        private readonly IEnumerable<double>? _preRenderScales;
         private readonly string _imageFormat;
         private readonly int _maxParallelRequests;
-        private IEnvelope _bbox = null;
+        private IEnvelope? _bbox = null;
+        private ICancelTracker _cancelTracker;
 
         public TileRenderer(TileServiceMetadata metadata,
                             int epsg,
                             GridOrientation orientation = GridOrientation.UpperLeft,
                             string cacheFormat = "compact",
                             string imageFormat = ".png",
-                            IEnvelope bbox = null,
-                            IEnumerable<double> preRenderScales = null,
-                            int maxParallelRequests = 1)
+                            IEnvelope? bbox = null,
+                            IEnumerable<double>? preRenderScales = null,
+                            int maxParallelRequests = 1,
+                            ICancelTracker? cancelTracker = null)
         {
             _metadata = metadata;
             _epsg = epsg;
@@ -39,9 +42,10 @@ namespace gView.Cmd.TileCache.Lib.Tools
             _bbox = bbox;
             _preRenderScales = preRenderScales;
             _maxParallelRequests = maxParallelRequests;
+            _cancelTracker = cancelTracker ?? new CancelTracker();
         }
 
-        public void Renderer(string server, string service, string user = "", string pwd = "")
+        public void Renderer(string server, string service, ICommandLogger? logger, string user = "", string pwd = "")
         {
             ISpatialReference sRef = SpatialReference.FromID($"epsg:{_epsg}");
             if (sRef == null)
@@ -105,11 +109,11 @@ namespace gView.Cmd.TileCache.Lib.Tools
 
             #endregion
 
-            Console.WriteLine($"TilesCount: {featureMax}");
+            logger?.LogLine($"TilesCount: {featureMax}");
 
             RenderTileThreadPool threadPool = new RenderTileThreadPool(connector, service, user, pwd, _maxParallelRequests);
 
-            var thread = threadPool.FreeThread;
+            var thread = threadPool.FreeThread!;
             if (_orientation == GridOrientation.UpperLeft)
             {
                 thread.Start($"init/{_cacheFormat}/ul/{_epsg}/{_imageFormat.Replace(".", "")}");
@@ -130,8 +134,8 @@ namespace gView.Cmd.TileCache.Lib.Tools
                 row0 = Math.Min(row0, row1);
 
                 int tilePos = 0;
-                Console.WriteLine();
-                Console.WriteLine("Scale: " + scale.ToString() + " - " + Math.Max(1, (rows * cols) / step / step).ToString() + " tiles...");
+                logger?.LogLine("");
+                logger?.LogLine("Scale: " + scale.ToString() + " - " + Math.Max(1, (rows * cols) / step / step).ToString() + " tiles...");
 
                 string boundingTiles = _cacheFormat == "compact" ? "/" + row0 + "|" + (row0 + rows) + "|" + col0 + "|" + (col0 + cols) : String.Empty;
 
@@ -142,8 +146,8 @@ namespace gView.Cmd.TileCache.Lib.Tools
                         while ((thread = threadPool.FreeThread) == null)
                         {
                             Thread.Sleep(50);
-                            //if (!_cancelTracker.Continue)
-                            //    return;
+                            if (!_cancelTracker.Continue)
+                                return;
                         }
                         if (_orientation == GridOrientation.UpperLeft)
                         {
@@ -157,11 +161,11 @@ namespace gView.Cmd.TileCache.Lib.Tools
                         tilePos++;
                         if (tilePos % 5 == 0 || _cacheFormat == "compact")
                         {
-                            Console.Write($"...{tilePos}");
+                            logger?.Log($"...{tilePos}");
                         }
 
-                        //if (!_cancelTracker.Continue)
-                        //    return;
+                        if (!_cancelTracker.Continue)
+                            return;
                     }
                 }
             }
@@ -217,7 +221,7 @@ namespace gView.Cmd.TileCache.Lib.Tools
                 }
             }
 
-            public Thread FreeThread
+            public Thread? FreeThread
             {
                 get
                 {
@@ -237,7 +241,7 @@ namespace gView.Cmd.TileCache.Lib.Tools
             {
                 get
                 {
-                    for (int i = 0; i < _threads.Length; i++)
+                    for (int i = 0; i < _threads!.Length; i++)
                     {
                         if (_threads != null && _threads[i].IsAlive)
                         {

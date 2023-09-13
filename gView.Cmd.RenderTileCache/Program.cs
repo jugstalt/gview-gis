@@ -7,6 +7,8 @@ using System.Collections.Generic;
 using System.Linq;
 using gView.Cmd.TileCache.Lib.Extensions;
 using gView.Cmd.TileCache.Lib.Tools;
+using gView.Cmd.Core;
+using System.Threading.Tasks;
 
 namespace gView.Cmd.RenderTileCache
 {
@@ -19,7 +21,7 @@ namespace gView.Cmd.RenderTileCache
             Render = 2
         };
 
-        static int Main(string[] args)
+        async static Task<int> Main(string[] args)
         {
             try
             {
@@ -104,7 +106,7 @@ namespace gView.Cmd.RenderTileCache
 
                 #region Read Metadata
 
-                var metadata = new TileServiceMetadata().FromService(server, service);
+                var metadata = await new TileServiceMetadata().FromService(server, service);
                 if (metadata == null)
                 {
                     throw new Exception("Can't read metadata from server. Are you sure that ervice is a gView WMTS service?");
@@ -203,7 +205,7 @@ namespace gView.Cmd.RenderTileCache
                                                       preRenderScales: preRenderScales.Count > 0 ? preRenderScales : null,
                                                       maxParallelRequests: maxParallelRequests);
 
-                    tileRender.Renderer(server, service);
+                    tileRender.Renderer(server, service, new ConsoleLogger());
 
                     Console.WriteLine();
                     Console.WriteLine($"Finished: {Math.Round((DateTime.Now - startTime).TotalSeconds)}sec");

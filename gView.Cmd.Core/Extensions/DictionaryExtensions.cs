@@ -46,7 +46,7 @@ static public class DictionaryExtensions
         return (T)Convert.ChangeType(parameters[key], typeof(T));
     }
 
-    static public T GetValueOrDefault<T>(this IDictionary<string, object> parameters, string key, T defaultValue)
+    static public T? GetValueOrDefault<T>(this IDictionary<string, object> parameters, string key, T? defaultValue)
     {
         if (parameters == null || !parameters.ContainsKey(key))
         {

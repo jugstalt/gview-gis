@@ -521,6 +521,7 @@ namespace gView.Framework.system
             ITool,
             IExTool,
             IExplorerTool,
+            IExplorerToolCommand,
             IDatasetElementContextMenuItem,
             IMapContextMenuItem,
             IFeatureRenderer,
