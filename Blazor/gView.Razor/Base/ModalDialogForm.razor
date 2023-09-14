@@ -2,22 +2,24 @@
 
 <MudDialog>
     <DialogContent>
-        @if (DialogBody != null)
-        {
-            @DialogBody
-        }
-        else if (FormContent != null)
-        {
-            <MudForm @ref="_form">
-                @FormContent
-            </MudForm>
-        }
-        @if (InfoContent != null)
-        {
-            <MudAlert Severity="Severity.Info" Dense="true">
-                @InfoContent
-            </MudAlert>
-        }
+        <div class="gview-razor-dialog-content @ContentStyle.ToString().ToLower()">
+            @if (DialogBody != null)
+            {
+                @DialogBody
+            }
+            else if (FormContent != null)
+            {
+                <MudForm @ref="_form">
+                    @FormContent
+                </MudForm>
+            }
+            @if (InfoContent != null)
+            {
+                <MudAlert Severity="Severity.Info" Dense="true">
+                    @InfoContent
+                </MudAlert>
+            }
+        </div>
     </DialogContent>
     <DialogActions>
         @if (DialogButtons != null)
@@ -39,6 +41,7 @@
     [Parameter] public RenderFragment? FormContent { get; set; }
     [Parameter] public RenderFragment? InfoContent { get; set; }
     [Parameter] public RenderFragment? DialogButtons { get; set; }
+    [Parameter] public DialogContentStyle ContentStyle { get; set; } = DialogContentStyle.Normal;
 
     protected MudForm? _form;
 

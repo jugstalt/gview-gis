@@ -1,3 +1,21 @@
 .gview-razor-wait-cursor * {
     cursor: wait !important;
 }
+
+.gview-razor-dialog-content {
+    max-width: 100%;
+}
+    .gview-razor-dialog-content.normal {
+        width: 800px;
+        min-height: 480px;
+    }
+
+    .gview-razor-dialog-content.narrow {
+        width: 400px;
+        min-height: 400px;
+    }
+
+    .gview-razor-dialog-content.full {
+        width: 1920px;
+        min-height: 400px;
+    }
