@@ -6,6 +6,8 @@ public class SelectMapServerServiceModel : IDialogResultItem
     public string Server { get; set; } = "";
     public string Service { get; set; } = "";
 
-    public string? Username { get; set; }
-    public string? Password { get; set; }
+    public bool UseAuthentication { get; set; }
+
+    public string? Client { get; set; }
+    public string? Secret { get; set; }
 }

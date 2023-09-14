@@ -28,7 +28,7 @@ namespace gView.Cmd.TileCache.Lib.Tools
                             int epsg,
                             GridOrientation orientation = GridOrientation.UpperLeft,
                             string cacheFormat = "compact",
-                            string imageFormat = ".png",
+                            TileImageFormat imageFormat = TileImageFormat.png,
                             IEnvelope? bbox = null,
                             IEnumerable<double>? preRenderScales = null,
                             int maxParallelRequests = 1,
@@ -38,7 +38,7 @@ namespace gView.Cmd.TileCache.Lib.Tools
             _epsg = epsg;
             _orientation = orientation;
             _cacheFormat = cacheFormat;
-            _imageFormat = imageFormat;
+            _imageFormat = imageFormat.ToString().ToLower();
             _bbox = bbox;
             _preRenderScales = preRenderScales;
             _maxParallelRequests = maxParallelRequests;
@@ -116,11 +116,11 @@ namespace gView.Cmd.TileCache.Lib.Tools
             var thread = threadPool.FreeThread!;
             if (_orientation == GridOrientation.UpperLeft)
             {
-                thread.Start($"init/{_cacheFormat}/ul/{_epsg}/{_imageFormat.Replace(".", "")}");
+                thread.Start($"init/{_cacheFormat}/ul/{_epsg}/{_imageFormat}");
             }
             else
             {
-                thread.Start($"init/{_cacheFormat}/ll/{_epsg}/{_imageFormat.Replace(".", "")}");
+                thread.Start($"init/{_cacheFormat}/ll/{_epsg}/{_imageFormat}");
             }
 
             foreach (double scale in _preRenderScales ?? _metadata.Scales.InnerList)
@@ -151,17 +151,17 @@ namespace gView.Cmd.TileCache.Lib.Tools
                         }
                         if (_orientation == GridOrientation.UpperLeft)
                         {
-                            thread.Start("tile:render/" + _cacheFormat + "/ul/" + _epsg + "/" + scale.ToDoubleString() + "/" + row + "/" + col + _imageFormat + boundingTiles);
+                            thread.Start($"tile:render/{_cacheFormat}/ul/{_epsg}/{scale.ToDoubleString()}/{row}/{col}.{_imageFormat}{boundingTiles}");
                         }
                         else
                         {
-                            thread.Start("tile:render/" + _cacheFormat + "/ll/" + _epsg + "/" + scale.ToDoubleString() + "/" + row + "/" + col + _imageFormat + boundingTiles);
+                            thread.Start($"tile:render/{_cacheFormat}/ll/{_epsg}/{scale.ToDoubleString()}/{row}/{col}.{_imageFormat}{boundingTiles}");
                         }
 
                         tilePos++;
                         if (tilePos % 5 == 0 || _cacheFormat == "compact")
                         {
-                            logger?.Log($"...{tilePos}");
+                            logger?.Log($" ..{tilePos}");
                         }
 
                         if (!_cancelTracker.Continue)

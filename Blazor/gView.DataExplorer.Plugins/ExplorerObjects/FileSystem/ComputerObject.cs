@@ -30,7 +30,7 @@ public class ComputerObject : ExplorerParentObject,
 
     public string? Type
     {
-        get { return ""; }
+        get { return "Filesystem"; }
     }
 
     public string Icon => "basic:monitor";

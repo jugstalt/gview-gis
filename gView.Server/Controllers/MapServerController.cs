@@ -7,6 +7,8 @@ using gView.Server.Models;
 using gView.Server.Services.MapServer;
 using gView.Server.Services.Security;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.SqlServer.Management.SqlParser.SqlCodeDom;
+using NuGet.Protocol.Plugins;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -109,15 +111,9 @@ namespace gView.Server.Controllers
                     throw new Exception("Unknown format");
                 }
             }
-            catch (UnauthorizedAccessException)
+            catch (NotAuthorizedException)
             {
-                if ("xml".Equals(format, StringComparison.InvariantCultureIgnoreCase))
-                {
-                    return WriteUnauthorized();
-                }
-
-                this.Response.StatusCode = 401;
-                
+                return Unauthorized();
             }
             catch (Exception ex)
             {
@@ -125,8 +121,6 @@ namespace gView.Server.Controllers
                 {
                     return WriteError(ex.Message);
                 }
-
-                this.Response.StatusCode = 401;
             }
 
             return null;

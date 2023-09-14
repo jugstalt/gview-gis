@@ -11,16 +11,16 @@
                       Required="true" />
 
         
-            <MudCheckBox @bind-Checked="this._withAuth"
+            <MudCheckBox @bind-Checked="Model.UseAuthentication"
                          Label="Use Authentication" />
 
-            @if(this._withAuth == true)
+            @if(Model.UseAuthentication)
             {
-                <MudTextField @bind-Value="Model.Username"
-                              Label="Username" />
+                <MudTextField @bind-Value="Model.Client"
+                              Label="Client" />
 
-                <MudTextField @bind-Value="Model.Password" InputType="InputType.Password"
-                              Label="Username" />
+                <MudTextField @bind-Value="Model.Secret" InputType="InputType.Password"
+                              Label="Secret" />
             }
 
             <MudButton Variant="Variant.Filled"
@@ -44,7 +44,6 @@
 </ModalDialogFormBase>
 
 @code{
-    private bool _withAuth = false;
     private List<string> _serviceNames = new List<string>();
     private string _lastErrorMessage = "";
 
@@ -55,7 +54,7 @@
             _lastErrorMessage = "";
 
             var mapServerClient = new MapServerClient(Model.Server);
-            var mapServices = await mapServerClient.GetServices(Model.Username, Model.Password);
+            var mapServices = await mapServerClient.GetServices(Model.Client, Model.Secret);
 
             _serviceNames.Clear();
             if (mapServices?.Services != null)

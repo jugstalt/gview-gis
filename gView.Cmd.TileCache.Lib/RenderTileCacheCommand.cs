@@ -15,7 +15,7 @@ using System.Threading.Tasks;
 
 namespace gView.Cmd.TileCache.Lib
 {
-    internal class RenderTileCacheCommand : ICommand
+    public class RenderTileCacheCommand : ICommand
     {
         public string Name => "TileCache.Render";
 
@@ -44,6 +44,10 @@ namespace gView.Cmd.TileCache.Lib
             new CommandParameter<GridOrientation>("orientation")
             {
                 Description = "Orientation of origin [default: UpperLeft]"
+            },
+            new CommandParameter<TileImageFormat>("imageformat")
+            {
+                Description = "Imageformat: <png|jpg>"
             },
             new CommandParameter<IEnvelope>("bbox")
             {
@@ -76,13 +80,14 @@ namespace gView.Cmd.TileCache.Lib
 
                 #endregion
 
-                int epsg = parameters.GetValueOrDefault<int>("epsg", metadata.EPSGCodes.First());
-                var orientation = parameters.GetValueOrDefault<GridOrientation>("orientation", GridOrientation.UpperLeft);
+                int epsg = parameters.GetValueOrDefault("epsg", metadata.EPSGCodes.First());
+                var orientation = parameters.GetValueOrDefault("orientation", GridOrientation.UpperLeft);
                 bool compact = parameters.HasKey("compact");
                 IEnumerable<double>? scales = parameters.GetValueOrDefault<string>("scales", null)?
                     .Split(',')
                     .Select(s => double.Parse(s, System.Globalization.NumberFormatInfo.InvariantInfo))
                     .ToArray();
+                var imageFormat = parameters.GetValueOrDefault("imageformat", metadata.FormatPng ? TileImageFormat.png : TileImageFormat.jpg);
 
                 IEnvelope? bbox = null;
 
@@ -98,6 +103,7 @@ namespace gView.Cmd.TileCache.Lib
                                                   epsg > 0 ? epsg : metadata.EPSGCodes.First(),
                                                   cacheFormat: compact ? "compact" : "",
                                                   orientation: orientation,
+                                                  imageFormat: imageFormat,
                                                   bbox: bbox,
                                                   preRenderScales: scales?.Count() > 0 ? scales : null,
                                                   maxParallelRequests: threads,

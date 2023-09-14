@@ -22,20 +22,11 @@ internal class ToolsObject : ExplorerParentObject,
 
     #region IExplorerObject Member
 
-    public string Name
-    {
-        get { return "Tools"; }
-    }
+    public string Name => "Tools";
 
-    public string FullName
-    {
-        get { return ""; }
-    }
+    public string FullName => "Tools";
 
-    public string? Type
-    {
-        get { return ""; }
-    }
+    public string? Type => "Command Tools";
 
     public string Icon => "basic:package";
 

@@ -31,6 +31,8 @@ namespace gView.Cmd.RenderTileCache
                 string server = String.Empty, service = String.Empty, cacheFormat = "normal";
                 int epsg = 0, maxParallelRequests = 1;
                 GridOrientation orientation = GridOrientation.UpperLeft;
+                TileImageFormat imageFormat = TileImageFormat.png;
+                string imageFormatString = "";
                 IEnvelope bbox = null;
                 List<int> scales = new List<int>();
 
@@ -82,6 +84,19 @@ namespace gView.Cmd.RenderTileCache
                     {
                         scales.AddRange(args[++i].Split(',').Select(v => int.Parse(v)));
                     }
+                    if (args[i] == "-imageformat")
+                    {
+                        imageFormatString = args[++i].ToLower();
+                        switch(imageFormatString)
+                        {
+                            case "jpg":
+                                imageFormat = TileImageFormat.jpg;
+                                break;
+                            default:
+                                imageFormat = TileImageFormat.png;
+                                break;
+                        }
+                    }
                     if (args[i] == "-threads")
                     {
                         maxParallelRequests = int.Parse(args[++i]);
@@ -97,6 +112,7 @@ namespace gView.Cmd.RenderTileCache
                     Console.WriteLine("       optional paramters: -epsg <epsg-code>                            [default: first]");
                     Console.WriteLine("                           -compact ... create a compact tile cache");
                     Console.WriteLine("                           -orientation <ul|ll|upperleft|lowerleft>     [default: upperleft]");
+                    Console.WriteLine("                           -imageformat <png|jpg>                       [default: png | jpg (if png not supported)");
                     Console.WriteLine("                           -bbox <minx,miny,maxx,maxy>                  [default: fullextent]");
                     Console.WriteLine("                           -scales <scale1,scale2,...>                  [default: empty => all scales");
                     Console.WriteLine("                           -threads <max-parallel-requests>             [default: 1]");
@@ -197,10 +213,16 @@ namespace gView.Cmd.RenderTileCache
                         preRenderScales.AddRange(scales.Where(s => metadata.Scales.Contains(s)).Select(s => (double)s));
                     }
 
+                    if (string.IsNullOrEmpty(imageFormatString))
+                    {
+                        imageFormat = metadata.FormatPng ? TileImageFormat.png : TileImageFormat.jpg;
+                    }
+
                     var tileRender = new TileRenderer(metadata,
                                                       epsg > 0 ? epsg : metadata.EPSGCodes.First(),
                                                       cacheFormat: cacheFormat,
                                                       orientation: orientation,
+                                                      imageFormat: imageFormat,
                                                       bbox: bbox,
                                                       preRenderScales: preRenderScales.Count > 0 ? preRenderScales : null,
                                                       maxParallelRequests: maxParallelRequests);

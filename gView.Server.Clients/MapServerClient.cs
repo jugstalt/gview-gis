@@ -41,7 +41,7 @@ public class MapServerClient
             var response = await _httpClient!.SendAsync(requestMessage);
             if (!response.IsSuccessStatusCode)
             {
-                throw new Exception($"{url} return with status code {response.StatusCode}");
+                throw new Exception($"Error: StatusCode {response.StatusCode}");
             }
 
             var responseString = await response.Content.ReadAsStringAsync();
