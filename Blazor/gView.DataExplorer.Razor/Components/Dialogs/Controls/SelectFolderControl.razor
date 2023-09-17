@@ -1,17 +1,17 @@
 @inject IApplicationScope AppScope
 
-<MudGrid>
-    <MudItem xs="10">
+<GvGrid ColumnCount="6">
+    <GvGridItem Span="5">
         <MudTextField Label="@Label"
                         @bind-Value="Folder"
                         Variant="Variant.Text"></MudTextField>
-    </MudItem>
-    <MudItem xs="2">
+    </GvGridItem>
+    <GvGridItem>
         <MudFab Color="Color.Primary" 
                  OnClick="SelectFolder"
                  StartIcon="@Icons.Material.Filled.FolderOpen" />
-    </MudItem>
-</MudGrid>
+    </GvGridItem>
+</GvGrid>
 
 @code {
     [Parameter] public string Label { get; set; } = "Folder";

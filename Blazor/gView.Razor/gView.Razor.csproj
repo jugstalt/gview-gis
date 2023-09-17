@@ -20,6 +20,7 @@
     <None Include="Base\BaseHandler.razor" />
     <None Include="Controls\GeographicProjectionSelectorControl.razor" />
     <None Include="Dialogs\PropertyGridDialog.razor" />
+    <None Include="Layout\GvCard.razor" />
   </ItemGroup>
 
   <ItemGroup>

@@ -4,15 +4,14 @@
 @inherits BaseHandler
 @inject IApplicationScope AppScope
 
-<MudGrid Spacing="2" Justify="Justify.Center">
+<GvGrid ColumnCount="1">
     @foreach(var category in propertiesDict.Keys)
     {
         var properties = propertiesDict[category];
 
-        <MudItem xs="12">
-            <MudCard Elevation="2">
-                <MudCardContent>
-                    <MudText Typo="Typo.h6">@category</MudText>
+        <GvGridItem>
+            <GvCard Title="@category">
+                <GvCardContent>
 
                     <table>
                         @foreach (var propertyInfo in properties.Keys)
@@ -92,12 +91,12 @@
                         }
                     </table>
                     
-                </MudCardContent>
-            </MudCard>
-        </MudItem>
+                </GvCardContent>
+            </GvCard>
+        </GvGridItem>
     
     }
-</MudGrid>
+</GvGrid>
 
 @code {
     [Parameter] public object Instance { get; set; } = new object();

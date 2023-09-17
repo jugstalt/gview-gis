@@ -1,17 +1,22 @@
-<MudCard Elevation="0">
-    @if (BinaryTreeDef != null)
-    {
-        <ExtentControl Extent="_bounds" ExtentChanged="ExtentChanged"></ExtentControl>
+<GvGrid ColumnCount="1">
+    <GvGridItem>
+        @if (BinaryTreeDef != null)
+        {
+            <ExtentControl Extent="_bounds" ExtentChanged="ExtentChanged"></ExtentControl>
 
-        <MudCard Elevation="2">
-            <MudNumericField T="int" ValueChanged="(val) => MaxLabelChanged(val)" Value="_maxLevel"
-                              Label="Max Level" 
-                              Min="0" Max="64" />
-            <MudNumericField @bind-Value="_cellSize" T="double" ReadOnly="true"
-                              Label="Cellsize" />
-        </MudCard>
-    }
-</MudCard>
+            <GvCard>
+                <GvCardContent>
+                    <MudNumericField T="int" ValueChanged="(val) => MaxLabelChanged(val)" Value="_maxLevel"
+                                     Label="Max Level"
+                                     Min="0" Max="64" />
+                    <MudNumericField @bind-Value="_cellSize" T="double" ReadOnly="true"
+                                     Label="Cellsize" />
+                </GvCardContent>
+            
+            </GvCard>
+        }
+    </GvGridItem>
+</GvGrid>
 
 @code{
     [Parameter] public BinaryTreeDef? BinaryTreeDef { get; set; }

@@ -5,12 +5,10 @@
                      OnDialogClose="base.OnDialogClose"
                      Model="base.Model">
     <DialogBody>
-        <MudGrid Spacing="2" Justify="Justify.FlexEnd">
-            <MudItem xs="12">
-                <MudCard Elevation="2">
-                    <MudCardContent>
-
-                        <MudText Typo="Typo.h6">Properties</MudText>
+        <GvGrid ColumnCount="1">
+            <GvGridItem>
+                <GvCard Title="Properties">
+                    <GvCardContent>
 
                         <MudCheckBox @bind-Checked="Model.UseLocalCache" 
                                      Color="Color.Primary">
@@ -20,12 +18,11 @@
                         <MudTextField @bind-Value="Model.LocalCacheFolder"
                                       Label="Local Cache Folder" />
 
-                    </MudCardContent>
-                </MudCard>
+                    </GvCardContent>
+                </GvCard>
 
-                 <MudCard Elevation="2">
-                      <MudCardContent>
-                        <MudText Typo="Typo.h6">Local Caches</MudText>
+                <GvCard Title="Local Caches">
+                      <GvCardContent>
                         @if (_caches != null)
                         {
                             <MudTable Items="_caches" MultiSelection="false">
@@ -48,10 +45,10 @@
                                 </RowTemplate>
                             </MudTable>
                         }
-                    </MudCardContent>
-                </MudCard>
-            </MudItem>
-        </MudGrid>
+                    </GvCardContent>
+                </GvCard>
+            </GvGridItem>
+        </GvGrid>
     </DialogBody>
 </ModalDialogFormBase>
 

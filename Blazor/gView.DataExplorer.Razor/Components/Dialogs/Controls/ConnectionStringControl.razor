@@ -2,8 +2,8 @@
 
 @if (_commonDbConnections?.Providers != null)
 {
-    <MudCard Elevation="2">
-        <MudCardContent>
+    <GvCard>
+        <GvCardContent>
             <MudSelect Label="Provider" T="string" Style='min-width:280px;'
             @bind-Value="_currentProvider"
                        Variant="Variant.Outlined"
@@ -44,34 +44,34 @@
 
             @if (scheme != null)
             {
-                <MudGrid>
+                <GvGrid ColumnCount="2">
                     @foreach (var parameter in ConnectionStringParameters(_connectionString = scheme.ConnectionString))
                     {
                         if (!_parameters.ContainsKey(parameter))
                         {
                             _parameters.Add(parameter, "");
                         }
-                        <MudItem xs="12" sm="6" md="6">
+                        <GvGridItem>
                             <MudTextField Label="@parameter" T="string"
                                            @bind-Value="_parameters[parameter]"
                                            InputType="GetInputType(parameter)"
                                            Variant="Variant.Text"></MudTextField>
-                        </MudItem>
+                        </GvGridItem>
                     }
-                </MudGrid>
+                </GvGrid>
             }
-        </MudCardContent>
+        </GvCardContent>
 
-    </MudCard>
+    </GvCard>
 
     if(CustomControls!=null)
     {
         <br/>
-        <MudCard Elevation="2">
-            <MudCardContent>
+        <GvCard>
+            <GvCardContent>
                 @CustomControls
-            </MudCardContent>
-        </MudCard>
+            </GvCardContent>
+        </GvCard>
     }
 
     <br/>

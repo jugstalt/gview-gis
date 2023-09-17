@@ -5,23 +5,22 @@
                      OnDialogClose="base.OnDialogClose"
                      Model="base.Model">
     <FormContent>
-        <MudGrid Spacing="2" Justify="Justify.FlexEnd">
-            <MudItem xs="12">
-                <MudCard Elevation="2">
-                    <MudCardContent>
+        <GvGrid ColumnCount="1">
+            <GvGridItem>
+                <GvCard Title="Service">
+                    <GvCardContent>
 
-                        <MudText Typo="Typo.h6">Service</MudText>
 
                         <MudTextField @bind-Value="Model.Name"
                                       Label="Name (any)" />
                         <MudTextField @bind-Value="Model.Source"
                                       Label="Url or path to Vector-Tile-Cache Capabilities JSON" />
 
-                    </MudCardContent>
-                </MudCard>
-            </MudItem>
+                    </GvCardContent>
+                </GvCard>
+            </GvGridItem>
 
-        </MudGrid>
+        </GvGrid>
     </FormContent>
 
 </ModalDialogFormBase>

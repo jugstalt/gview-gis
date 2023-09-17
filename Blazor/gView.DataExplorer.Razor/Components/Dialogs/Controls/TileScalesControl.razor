@@ -1,32 +1,36 @@
 @if (Model != null)
 {
-
-    <MudCard Elevation="2">
-        <MudCardContent>
-            <MudText Typo="Typo.h6">Scales</MudText>
-            <MudGrid>
-                <MudItem xs="10">
+    <GvCard Title="Scales">
+        <GvCardContent>
+            <GvGrid ColumnCount="6">
+                <GvGridItem Span="5">
                     <MudTextField Label="New Scale" @ref="_addScaleInput"
                                   Format="N6" T="double" Immediate="true"
                                   InputType="InputType.Number" Step="0.1"
                                   Variant="Variant.Text"></MudTextField>
-                </MudItem>
-                <MudItem xs="2">
-                    <MudButton OnClick="AddScale" Variant="Variant.Filled" Color="Color.Primary" Size="MudBlazor.Size.Small">Add</MudButton>
-                </MudItem>
+                </GvGridItem>
+                <GvGridItem Span="1">
+                    <MudButton OnClick="AddScale" 
+                               Variant="Variant.Filled" 
+                               Color="Color.Primary" 
+                               Size="MudBlazor.Size.Small">Add</MudButton>
+                </GvGridItem>
 
                 @foreach (var scale in Model.Scales.OrderDescending())
                 {
-                    <MudItem xs="10">
+                    <GvGridItem Span="5">
                         <MudText Typo="Typo.body2">@scale.ToString()</MudText>
-                    </MudItem>
-                    <MudItem xs="2">
-                        <MudButton Variant="Variant.Filled" Color="Color.Secondary" Size="MudBlazor.Size.Small">Remove</MudButton>
-                    </MudItem>
+                    </GvGridItem>
+                    <GvGridItem Span="1">
+                        <MudButton OnClick="() => RemoveScale(scale)"
+                                   Variant="Variant.Filled" 
+                                   Color="Color.Secondary" 
+                                   Size="MudBlazor.Size.Small">Remove</MudButton>
+                    </GvGridItem>
                 }
-            </MudGrid>
-        </MudCardContent>
-    </MudCard>
+            </GvGrid>
+        </GvCardContent>
+    </GvCard>
 }
 
 @code{
@@ -35,10 +39,18 @@
 
     private void AddScale()
     {
-        if(_addScaleInput!=null && Model!=null)
+        if (_addScaleInput != null && Model != null && !Model.Scales.Contains(_addScaleInput.Value))
         {
             Model.Scales.Add(_addScaleInput.Value);
             _addScaleInput.Value = 0D;
+        }
+    }
+
+    private void RemoveScale(double scale)
+    {
+        if (Model != null && Model.Scales.Contains(scale))
+        {
+            Model.Scales.Remove(scale);
         }
     }
 }

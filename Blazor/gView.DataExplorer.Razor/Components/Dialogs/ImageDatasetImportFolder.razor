@@ -7,14 +7,14 @@
     <FormContent>
         <SelectFolderControl @bind-Folder="Model.Folder" Label="Root Folder" />
 
-        <MudGrid>
-            <MudItem xs="12">
+        <GvGrid ColumnCount="1">
+            <GvGridItem>
                 <MudTextField Label="Filter (optional)"
                              @bind-Value="Model.Filter"
                              Variant="Variant.Text"></MudTextField>
-            </MudItem>
+            </GvGridItem>
             
-            <MudItem xs="12">
+            <GvGridItem>
                 @if (Model.Providers != null)
                 {
                     <div style="min-width:450px; max-width:100%; max-height:300px; overflow:auto">
@@ -35,8 +35,8 @@
                         </table>
                     </div>
                 }
-            </MudItem>
-        </MudGrid>
+            </GvGridItem>
+        </GvGrid>
     </FormContent>
     
 </ModalDialogFormBase>

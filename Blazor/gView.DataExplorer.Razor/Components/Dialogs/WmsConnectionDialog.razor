@@ -6,11 +6,10 @@
                        Model="base.Model">
     <FormContent>
 
-        <MudGrid Spacing="2" Justify="Justify.FlexEnd">
-            <MudItem xs="8">
-                <MudCard Elevation="2">
-                    <MudCardContent>
-                        <MudText Typo="Typo.h6">Service</MudText>
+        <GvGrid ColumnCount="3">
+            <GvGridItem Span="2">
+                <GvCard Title="Service">
+                    <GvCardContent>
                         <MudSelect Variant="Variant.Filled"
                                     T="WmsConnectionType"
                                     @bind-Value="Model.ConnectionType">
@@ -37,24 +36,23 @@
                         <MudTextField @bind-Value="Model.ServiceName"
                                       Label="Service Name (optional)" />
 
-                    </MudCardContent>
-                </MudCard>
-            </MudItem>
+                    </GvCardContent>
+                </GvCard>
+            </GvGridItem>
 
-            <MudItem xs="4">
-                <MudCard Elevation="2">
-                    <MudCardContent>
-                        <MudText Typo="Typo.h6">Credentials (optional)</MudText>
+            <GvGridItem>
+                <GvCard Title="Credentials (optional)">
+                    <GvCardContent>
                         <MudTextField @bind-Value="Model.Username"
                                       Label="Username" />
 
                         <MudTextField @bind-Value="Model.Password"
                                       InputType="InputType.Password"
                                           Label="Password" />
-                    </MudCardContent>
-                </MudCard>
-            </MudItem>
-        </MudGrid>
+                    </GvCardContent>
+                </GvCard>
+            </GvGridItem>
+        </GvGrid>
 
     </FormContent>
 </ModalDialogFormBase>

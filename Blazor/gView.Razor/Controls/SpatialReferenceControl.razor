@@ -1,49 +1,49 @@
 @inherits BaseHandler
 @inject IApplicationScope AppScope
 
-<MudGrid Spacing="2" Justify="Justify.Center">
-    <MudItem xs="12">
-        <MudCard Elevation="2">
-            <MudCardContent>
-                <MudText Typo="Typo.h6">Coordinate System/Projection</MudText>
+<GvGrid ColumnCount="1">
+    <GvGridItem>
+        <GvCard Title="Coordinate System/Projection">
+            <GvCardContent>
                 @if (SpatialReference != null)
                 {
                     <MudText Typo="Typo.body2">@SpatialReference.Name</MudText>
                     <MudText Typo="Typo.body2">@SpatialReference.Description</MudText>
                     <MudText Typo="Typo.caption">@String.Join(" ", SpatialReference.Parameters)</MudText>
                 }
-            </MudCardContent>
-            <MudCardActions>
+            </GvCardContent>
+            <GvCardActions>
                 <MudButton Variant="Variant.Text" 
                             Color="Color.Primary"
                             OnClick="SelectProjection">Select</MudButton>
-            </MudCardActions>
-        </MudCard>
-    </MudItem>
+            </GvCardActions>
+        </GvCard>
+    </GvGridItem>
     @if (SpatialReference != null)
     {
-        <MudItem xs="12">
-            <MudCard Elevation="2">
-                <MudCardContent>
+        <GvGridItem>
+            <GvCard Title="Geodetic Datum">
+                <GvCardContent>
                     <MudText Typo="Typo.h6">Geodetic Datum</MudText>
                     @if (SpatialReference.Datum != null)
                     {
                         <MudText Typo="Typo.body2">@SpatialReference.Datum.Name</MudText>
                         <MudText Typo="Typo.caption">@SpatialReference.Datum.Parameter</MudText>
                     }
-                </MudCardContent>
+                </GvCardContent>
+
                 @if (!EpsgOnly)
                 {
-                    <MudCardActions>
+                    <GvCardActions>
                         <MudButton Variant="Variant.Text"
                                Color="Color.Primary"
                                OnClick="SelectDatum">Select</MudButton>
-                    </MudCardActions>
+                    </GvCardActions>
                 }
-            </MudCard>
-        </MudItem>
+            </GvCard>
+        </GvGridItem>
     }
-</MudGrid>
+</GvGrid>
 
 @code{
     [Parameter] public ISpatialReference? SpatialReference{ get; set; }

@@ -6,11 +6,10 @@
                       Model="base.Model">
     <FormContent>
             @if(Model.Metadata!=null) {
-                <MudGrid Spacing="2" Justify="Justify.FlexEnd">
-                    <MudItem xs="6">
-                        <MudCard Elevation="2">
-                            <MudCardContent>
-                                <MudText Typo="Typo.h6">General</MudText>
+                <GvGrid ColumnCount="2">
+                    <GvGridItem>
+                        <GvCard Title="General">
+                            <GvCardContent>
                                 <MudSelect T="int" @bind-Value="Model.EpsgCode" Label="EPSG Code" Variant="Variant.Text" >
                                     @if (Model.Metadata.EPSGCodes != null)
                                     {
@@ -44,33 +43,30 @@
                                 <MudTextField T="int" InputType="InputType.Number"
                                                @bind-Value="Model.ThreadCount"
                                                Label="Maximum parallel threads" />
-                            </MudCardContent>
-                        </MudCard>
-                        <MudCard Elevation="2">
-                            <MudCardContent>        
-                                <MudText Typo="Typo.h6">Extend</MudText>
-                            </MudCardContent>
-                        </MudCard>
-                    </MudItem>
-                    <MudItem xs="6">
-                        <MudCard Elevation="2">
-                            <MudCardContent>
-                                <div style="max-height:400px;overflow-y:auto">
-                                    <MudText Typo="Typo.h6">Scales</MudText>
-                                    @if(Model.Metadata.Scales != null)
+                            </GvCardContent>
+                        </GvCard>
+                        <GvCard Title="Bounding Box">
+                            <GvCardContent>        
+                                
+                            </GvCardContent>
+                        </GvCard>
+                    </GvGridItem>
+                    <GvGridItem>
+                        <GvCard Title="Scales">
+                            <GvCardContent MaxHeight="400px">
+                                @if(Model.Metadata.Scales != null)
+                                {
+                                    foreach(var scale in Model.Metadata.Scales.InnerList)
                                     {
-                                        foreach(var scale in Model.Metadata.Scales.InnerList)
-                                        {
-                                            <MudCheckBox Checked="Model.Scales.Contains(scale)" T="bool"
-                                                          CheckedChanged="(add) => ScaleChecked(scale, add)" 
-                                                          Label="@($"1:{String.Format("{0:0,0}", @scale)}")" /> 
-                                        }
+                                        <MudCheckBox Checked="Model.Scales.Contains(scale)" T="bool"
+                                                      CheckedChanged="(add) => ScaleChecked(scale, add)" 
+                                                      Label="@($"1:{String.Format("{0:0,0}", @scale)}")" /> 
                                     }
-                                </div>
-                            </MudCardContent>
-                        </MudCard>
-                    </MudItem>
-                </MudGrid>
+                                }
+                            </GvCardContent>
+                        </GvCard>
+                    </GvGridItem>
+                </GvGrid>
             }
     </FormContent>
 </ModalDialogFormBase>

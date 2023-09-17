@@ -1,9 +1,8 @@
-<MudCard Elevation="2">
-    <MudCardContent>
-    <MudText Typo="Typo.h6">Extent</MudText>
-        <MudGrid Justify="Justify.Center">
-            <MudItem xs="4"></MudItem>
-            <MudItem xs="4">
+<GvCard Title="Extent">
+    <GvCardContent>
+        <GvGrid ColumnCount="12">
+            <GvGridItem Span="4"></GvGridItem>
+            <GvGridItem Span="4">
                 <MudTextField Label="Top" 
                                @bind-Value_="Extent.maxy"
                                Value="Extent.maxy"
@@ -11,11 +10,11 @@
                                Format="#.00000" Culture="@_en" T="double" Immediate="false"
                                InputType="InputType.Number" Step="0.1"
                                Variant="Variant.Text"></MudTextField>
-            </MudItem>
-            <MudItem xs="4"></MudItem>
+            </GvGridItem>
+            <GvGridItem Span="4"></GvGridItem>
 
-                <MudItem xs="1"></MudItem>
-                <MudItem xs="4">
+            <GvGridItem Span="1"></GvGridItem>
+            <GvGridItem Span="4">
                     <MudTextField Label="Left"
                                   @bind-Value_="Extent.minx"
                                   Value="Extent.minx"
@@ -23,9 +22,9 @@
                                   Format="#.00000" Culture="@_en" T="double" Immediate="false"
                                   InputType="InputType.Number" Step="0.1"
                                   Variant="Variant.Text"></MudTextField>
-                </MudItem>
-                <MudItem xs="2"></MudItem>
-                <MudItem xs="4">
+                </GvGridItem>
+            <GvGridItem Span="2"></GvGridItem>
+            <GvGridItem Span="4">
                     <MudTextField Label="Right" 
                                   @bind-Value_="Extent.maxx"
                                   Value="Extent.maxx"
@@ -33,11 +32,11 @@
                                   Format="#.00000" Culture="@_en" T="double" Immediate="false"
                                   InputType="InputType.Number" Step="0.1"
                                   Variant="Variant.Text"></MudTextField>
-                </MudItem>
-                <MudItem xs="1"></MudItem>
+                </GvGridItem>
+            <GvGridItem Span="1"></GvGridItem>
 
-            <MudItem xs="4"></MudItem>
-            <MudItem xs="4">
+            <GvGridItem Span="4"></GvGridItem>
+            <GvGridItem Span="4">
                 <MudTextField Label="Bottom"
                               @bind-Value_="Extent.miny" 
                               Value="Extent.miny"
@@ -45,11 +44,11 @@
                               Format="#.00000" Culture="@_en" T="double" Immediate="false"
                               InputType="InputType.Number" Step="0.000001"
                               Variant="Variant.Text"></MudTextField>
-            </MudItem>
-            <MudItem xs="4"></MudItem>
-        </MudGrid>
-    </MudCardContent>
-</MudCard>
+            </GvGridItem>
+            <GvGridItem Span="4"></GvGridItem>
+        </GvGrid>
+    </GvCardContent>
+</GvCard>
 
 @code {
     [Parameter] public IEnvelope Extent { get; set; } = Envelope.Null();

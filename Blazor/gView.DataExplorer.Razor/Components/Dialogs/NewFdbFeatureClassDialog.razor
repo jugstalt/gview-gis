@@ -5,25 +5,23 @@
                      OnDialogClose="base.OnDialogClose"
                      Model="base.Model">
     <DialogBody>
-        <div style="max-width:800px">
-            <MudGrid Spacing="2" Justify="Justify.FlexEnd">
-                
-                <MudItem xs="12">
-                    <MudCard Elevation="2">
-                        <MudCardContent>
+            <GvGrid ColumnCount="1">
+                <GvGridItem>
+                    <GvCard>
+                        <GvCardContent>
 
                             <MudTextField @bind-Value="Model.Name"
                                            Label="Name (any)" />
 
-                        </MudCardContent>
-                    </MudCard>
-                </MudItem>
+                        </GvCardContent>
+                    </GvCard>
+                </GvGridItem>
 
-                <MudItem xs="12">
+                <GvGridItem>
                      <MudTabs Elevation="1" Rounded="true" PanelClass="pa-6" ApplyEffectsToContainer="true">
                         <MudTabPanel Text="Gemetry/Index">
-                            <MudGrid Spacing="2" Justify="Justify.FlexEnd">
-                                <MudItem xs="12">
+                            <GvGrid ColumnCount="1">
+                                <GvGridItem>
                                     <MudSelect Label=""
                                                 @bind-Value="Model.GeometryType"
                                                 Variant="Variant.Outlined">
@@ -32,11 +30,11 @@
                                                     <MudSelectItem Value="geomtryType">@geomtryType.ToString()</MudSelectItem>
                                                 }
                                     </MudSelect>
-                                </MudItem>
-                                <MudItem xs="12">
+                                </GvGridItem>
+                                <GvGridItem>
                                     <SpatialIndexDefControl BinaryTreeDef="Model.SpatialIndex" BinaryTreeDefChanged="SpatialIndexDefChanged" />
-                                </MudItem>
-                            </MudGrid>
+                                </GvGridItem>
+                            </GvGrid>
                         </MudTabPanel>
 
                         <MudTabPanel Text="Data">
@@ -115,10 +113,9 @@
                     {
                         <MudAlert Severity="Severity.Error">@lastErrorMessage</MudAlert>
                     }
-                </MudItem>
+                </GvGridItem>
 
-            </MudGrid>
-        </div>
+            </GvGrid>
     </DialogBody>
 </ModalDialogFormBase>
 

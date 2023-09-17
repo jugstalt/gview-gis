@@ -5,11 +5,10 @@
                      OnDialogClose="base.OnDialogClose"
                      Model="base.Model">
     <DialogBody>
-        <div style="max-width:800px">
-            <MudGrid Spacing="2" Justify="Justify.FlexEnd">
-                <MudItem xs="12">
-                    <MudCard Elevation="2">
-                        <MudCardContent>
+            <GvGrid ColumnCount="1">
+                <GvGridItem>
+                    <GvCard>
+                        <GvCardContent>
 
                             <MudTextField @bind-Value="Model.Name"
                                            Label="Name" />
@@ -21,36 +20,36 @@
                                         <MudSelectItem Value="datasetType">@datasetType.ToString()</MudSelectItem>
                                     }
                             </MudSelect>
-                        </MudCardContent>
-                    </MudCard>
-                </MudItem>
+                        </GvCardContent>
+                    </GvCard>
+                </GvGridItem>
 
-                <MudItem xs="12">
+                <GvGridItem>
                     <MudTabs Elevation="1" Rounded="true" PanelClass="pa-6" ApplyEffectsToContainer="true">
                         <MudTabPanel Text="Spatial Reference">
-                            <MudGrid Spacing="2" Justify="Justify.FlexEnd">
-                                <MudItem xs="12">
+                            <GvGrid ColumnCount="1">
+                                <GvGridItem>
                                     <SpatialReferenceControl SpatialReference="Model.SpatialReference" 
                                                               SRefChanged="SpatialReferenceChanged"
                                                               EpsgOnly="true" />
-                                </MudItem>
-                            </MudGrid>
+                                </GvGridItem>
+                            </GvGrid>
                         </MudTabPanel>
                         @if (Model.DatasetType == NewFdbDatasetType.ImageDataset)
                         {
                             <MudTabPanel Text="Spatial Index">
-                                <MudGrid Spacing="2" Justify="Justify.FlexEnd">
-                                    <MudItem xs="12">
+                                <GvGrid ColumnCount="1">
+                                    <GvGridItem>
                                         <SpatialIndexDefControl BinaryTreeDef="Model.SpatialIndex" BinaryTreeDefChanged="SpatialIndexDefChanged" />
-                                    </MudItem>
-                                </MudGrid>
+                                    </GvGridItem>
+                                </GvGrid>
                             </MudTabPanel>
 
                             @if (Model.AutoFields != null && Model.AutoFields.Any())
                             {
                                 <MudTabPanel Text="Additional Fields">
-                                    <MudGrid Spacing="2" Justify="Justify.FlexEnd">
-                                        <MudItem xs="12">
+                                    <GvGrid ColumnCount="1">
+                                        <GvGridItem>
                                             <table>
                                                 @foreach (var autoField in Model.AutoFields.Keys)
                                                 {
@@ -69,15 +68,14 @@
                                                 }
                                             </table>
                                            
-                                        </MudItem>
-                                    </MudGrid>
+                                        </GvGridItem>
+                                    </GvGrid>
                                 </MudTabPanel>
                             }
                         }
                     </MudTabs>
-                </MudItem>
-            </MudGrid>
-        </div>
+                </GvGridItem>
+            </GvGrid>
     </DialogBody>
 </ModalDialogFormBase>
 

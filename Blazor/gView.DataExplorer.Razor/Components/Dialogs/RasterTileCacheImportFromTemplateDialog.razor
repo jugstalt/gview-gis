@@ -5,12 +5,10 @@
                      OnDialogClose="base.OnDialogClose"
                      Model="base.Model">
     <DialogBody>
-        <MudGrid Spacing="2" Justify="Justify.FlexEnd">
-            <MudItem xs="12">
-                <MudCard Elevation="2">
-                    <MudCardContent>
-
-                        <MudText Typo="Typo.h6">Service</MudText>
+        <GvGrid ColumnCount="1">
+            <GvGridItem>
+                <GvCard Title="Service">
+                    <GvCardContent>
 
                         <MudTextField @bind-Value="Model.Name"
                                        Label="Name (any)" />
@@ -26,10 +24,10 @@
                             }
                         </MudSelect>
                         
-                    </MudCardContent>
-                </MudCard>
-            </MudItem>
-        </MudGrid>
+                    </GvCardContent>
+                </GvCard>
+            </GvGridItem>
+        </GvGrid>
     </DialogBody>
 </ModalDialogFormBase>
 

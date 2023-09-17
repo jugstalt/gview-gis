@@ -6,52 +6,50 @@
                           OnDialogClose="base.OnDialogClose"
                           Model="base.Model">
     <DialogBody>
-        <MudGrid Spacing="2" Justify="Justify.Center">
-            <MudItem xs="6">
-                <MudCard Elevation="2" Height="160" >
-                    <MudCardContent>
-                        <MudText Typo="Typo.h6">Database Connection</MudText>
+        <GvGrid ColumnCount="2">
+            <GvGridItem>
+                <GvCard Title="Database Connection" Height="160">
+                    <GvCardContent>
                         @if(!String.IsNullOrEmpty(Model.ConnectionString.ProviderId))
                         {
                             <MudText Typo="Typo.body2">@Model.ConnectionString.ProviderId</MudText>
                         }
-                        <MudCardActions>
-                            <MudButton Variant="Variant.Text"
-                                        Color="Color.Primary"
-                                        OnClick="SelectConnectionString">
-                                Select
-                            </MudButton>
-                        </MudCardActions>
-                    </MudCardContent>
-                </MudCard>
-            </MudItem>
+                        
+                    </GvCardContent>
+                    <GvCardActions>
+                         <MudButton Variant="Variant.Text"
+                                     Color="Color.Primary"
+                                     OnClick="SelectConnectionString">
+                             Select
+                         </MudButton>
+                    </GvCardActions>
+                </GvCard>
+            </GvGridItem>
 
-            <MudItem xs="6">
-                <MudCard Elevation="2" Height="160">
-                    <MudCardContent>
-                        <MudText Typo="Typo.h6">Coordinate System/Projection</MudText>
+            <GvGridItem>
+                <GvCard Title="Coordinate System/Projection" Height="160">
+                    <GvCardContent>
                         @if (Model.SpatialReference != null)
                         {
                             <MudText Typo="Typo.body2">@Model.SpatialReference.Name</MudText>
                             <MudText Typo="Typo.body2">@Model.SpatialReference.Description</MudText>
                         }
-                        <MudCardActions>
-                            <MudButton Variant="Variant.Text"
-                                       Color="Color.Primary"
-                                       OnClick="SelectSpatialReference">
-                                Select
-                            </MudButton>
-                        </MudCardActions>
-                    </MudCardContent>
-                </MudCard>
-            </MudItem>
+                    </GvCardContent>
+                    <GvCardActions>
+                        <MudButton Variant="Variant.Text"
+                                   Color="Color.Primary"
+                                   OnClick="SelectSpatialReference">
+                            Select
+                        </MudButton>
+                    </GvCardActions>
+                </GvCard>
+            </GvGridItem>
 
         @if(_tableNames != null && _tableNames.Count()>0)
         {
-                <MudItem xs="12">
-                    <MudCard Elevation="2">
-                    <MudCardContent>
-                        <MudText Typo="Typo.h6">Database Table</MudText>
+            <GvGridItem Span="2">
+                <GvCard Title="Database Table">
+                    <GvCardContent>
                         <MudSelect T="string"
                                    Label="Name:"
                                    ValueChanged="(val) => OnTableNameChanged(val)"
@@ -99,13 +97,13 @@
                             </MudSelect>
                         }
 
-                    </MudCardContent>
-                </MudCard> 
-            </MudItem>
+                    </GvCardContent>
+                </GvCard> 
+            </GvGridItem>
         }
 
             
-        </MudGrid>
+        </GvGrid>
     </DialogBody>
 </ModalDialogFormBase>
 
