@@ -1,7 +1,8 @@
-<div class="dataexplorer-main">
-
+<div class="dataexplorer-main @(_isDarkMode ? "dark": "light")">
+    <MudThemeProvider @bind-IsDarkMode="@_isDarkMode" Theme="_theme" />
+    
     <MudPaper Class="toolbar" Elevation="2">
-        <ToolRibbon />
+        <ToolRibbon ToggleDarkmode="ToggleDarkmode" />
     </MudPaper>
 
     <MudPaper Class="navigation-bar" Elevation="2">
@@ -23,5 +24,11 @@
 </div>
 
 @code{
-   
+    private MudTheme _theme = new();
+    private bool _isDarkMode = true;
+
+    private void ToggleDarkmode()
+    {
+        _isDarkMode = !_isDarkMode;
+    }
 }

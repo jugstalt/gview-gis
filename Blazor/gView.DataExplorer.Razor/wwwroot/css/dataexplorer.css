@@ -109,7 +109,7 @@
         top: 144px;
         bottom: 27px;
         width: 300px;
-        background: #fff;
+        /*background: #fff;*/
         overflow: auto;
     }
 
@@ -164,9 +164,56 @@
     background: #0078d476;
 }
 
+/**** Darkmode ****/
+.dataexplorer-main.dark .content{
+    background:#333;
+}
+
 .explorer-dialog-item.selected {
     background: #0078d476 !important;
 }
+
+.dataexplorer-main.dark .toolbar {
+    background: #333;
+}
+
+.dataexplorer-main.dark .navigation-bar {
+    background: #1e5684;
+}
+
+.dataexplorer-main.dark .context-selected {
+    background: #555500a9;
+}
+
+.dataexplorer-main.dark .sketchpen-icon-basic-bg-light-24 {
+    background-image: url(../../../sketchpen/basic/content/img/sketchpen/bg-dark/24/1/sprite.png) !important;
+}
+
+.dataexplorer-main.dark .sketchpen-icon-webgis-bg-light-24 {
+    background-image: url(../../../sketchpen/webgis/content/img/sketchpen/bg-dark/24/1/sprite.png) !important;
+}
+
+
+@media (-webkit-min-device-pixel-ratio: 1.5), (min-resolution: 144dpi) {
+
+    .dataexplorer-main.dark .sketchpen-icon-basic-bg-light-24 {
+        background-image: url("../../../sketchpen/basic/content/img/sketchpen/bg-dark/24/1.5/sprite.png") !important;
+    }
+    .dataexplorer-main.dark .sketchpen-icon-webgis-bg-light-24 {
+        background-image: url("../../../sketchpen/webgis/content/img/sketchpen/bg-dark/24/1.5/sprite.png") !important;
+    }
+}
+
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+
+    .dataexplorer-main.dark .sketchpen-icon-basic-bg-light-24 {
+        background-image: url("../../../sketchpen/basic/content/img/sketchpen/bg-dark/24/2/sprite.png") !important;
+    }
+    .dataexplorer-main.dark .sketchpen-icon-webgis-bg-light-24 {
+        background-image: url("../../../sketchpen/webgis/content/img/sketchpen/bg-dark/24/2/sprite.png") !important;
+    }
+}
+
 
 /* Icons */
 .sketchpen-icon-basic-bg-light-24 {
