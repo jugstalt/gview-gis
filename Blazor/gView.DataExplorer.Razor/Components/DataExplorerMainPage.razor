@@ -9,12 +9,14 @@
         <NavBar />
     </MudPaper>
 
-    <MudPaper Class="content" Elevation="2">
-        <ContentView />
-    </MudPaper>
-
     <MudPaper Class="tree" Elevation="2">
         <NavTree />
+    </MudPaper>
+
+    <div class="tree-content-splitter"></div>
+
+    <MudPaper Class="content" Elevation="2">
+        <ContentView />
     </MudPaper>
 
     <MudPaper Class="status-bar" Elevation="2">
@@ -22,6 +24,8 @@
     </MudPaper>
 
 </div>
+
+<script src="_content/gView.DataExplorer.Razor/src/dataexplorer.js"></script>
 
 @code{
     private MudTheme _theme = new();

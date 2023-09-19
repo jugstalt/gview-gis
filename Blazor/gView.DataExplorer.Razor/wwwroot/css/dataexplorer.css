@@ -113,9 +113,18 @@
         overflow: auto;
     }
 
+    .dataexplorer-main .tree-content-splitter {
+        position: absolute;
+        left: 300px;
+        width: 5px;
+        top: 114px;
+        bottom: 27px;
+        cursor: w-resize;
+    }
+
     .dataexplorer-main .content {
         position: absolute;
-        left: 302px;
+        left: 305px;
         top: 144px;
         right: 0px;
         bottom: 27px;

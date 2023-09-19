@@ -121,6 +121,13 @@ var gViewLeaflet = new function () {
             "contextmenu": "NotifyContextMenu",
         });
     };
+
+    this.resizeAllMaps = function () {
+        for (var mapId in this.maps) {
+            console.log('refresh ' + mapId);
+            this.maps[mapId].invalidateSize();
+        }
+    }
 }();
 
 window.gViewLeafletInterops = {
