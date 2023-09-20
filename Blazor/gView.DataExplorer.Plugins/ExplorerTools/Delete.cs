@@ -59,7 +59,7 @@ namespace gView.DataExplorer.Plugins.ExplorerTools
                     }
                 }
 
-                await scopeService.EventBus.FireFreshContentAsync();
+                await scopeService.ForceContentRefresh();
             }
 
             return true;

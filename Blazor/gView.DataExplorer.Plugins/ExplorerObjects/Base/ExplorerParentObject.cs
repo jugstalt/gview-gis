@@ -33,6 +33,18 @@ public class ExplorerParentObject<TParent, TObjectType> :
 
         return _childObjects ?? Array.Empty<IExplorerObject>();
     }
+   
+    virtual public bool RequireRefresh()
+    {
+        return _childObjects == null || _childObjects.Count == 0;
+    }
+
+    virtual public bool HandleRefreshException(Exception exception)
+    {
+        AddChildObject(new ExceptionObject(exception));
+
+        return true;
+    }
 
     async virtual public Task<bool> Refresh()
     {

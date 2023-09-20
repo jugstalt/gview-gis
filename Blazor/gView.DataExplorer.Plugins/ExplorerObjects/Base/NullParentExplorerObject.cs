@@ -49,6 +49,10 @@ public class NullParentExplorerObject : IExplorerParentObject,
     public Task<bool> Refresh()
         => Task.FromResult(true);
 
+    public bool RequireRefresh() => false;
+
+    public bool HandleRefreshException(Exception exception) => true;
+
     #endregion
 
 }

@@ -89,7 +89,7 @@ internal class Paste : IExplorerTool
                     $"Copy {commandItems.Count} FeatureClasses",
                     new ExecuteCommandModel() { CommandItems = commandItems });
 
-            await scopeService.EventBus.FireFreshContentAsync();
+            await scopeService.ForceContentRefresh();
         }
 
         return false;

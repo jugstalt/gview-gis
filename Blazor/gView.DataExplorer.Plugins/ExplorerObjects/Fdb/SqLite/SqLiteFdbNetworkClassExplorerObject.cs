@@ -84,7 +84,7 @@ public class SqLiteFdbNetworkClassExplorerObject : ExplorerObjectCls<IExplorerOb
 
         if (await scopeService.CreateNetworkClass(parentExObject))
         {
-            await scopeService.EventBus.FireFreshContentAsync();
+            await scopeService.ForceContentRefresh();
         }
 
         return null;

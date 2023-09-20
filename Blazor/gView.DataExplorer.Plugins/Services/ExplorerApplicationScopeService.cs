@@ -155,6 +155,16 @@ public class ExplorerApplicationScopeService : ApplictionBusyHandler, IApplicati
         _snackbar.Add(message);
     }
 
+    async public Task ForceContentRefresh()
+    {
+        if (this.CurrentExplorerObject is IExplorerParentObject parentExObject)
+        {
+            await parentExObject.DiposeChildObjects();
+        }
+
+        await _eventBus.FireSoftRefreshContentAsync();
+    }
+
     #region Clipboard
 
     private ClipboardItem? _clipboardItem = null;

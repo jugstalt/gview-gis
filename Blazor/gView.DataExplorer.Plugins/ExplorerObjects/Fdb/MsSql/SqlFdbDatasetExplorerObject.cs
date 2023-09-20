@@ -252,7 +252,7 @@ public class SqlFdbDatasetExplorerObject : ExplorerParentObject<SqlFdbExplorerOb
         }
         else
         {
-            await scopeService.EventBus.FireFreshContentAsync();
+            await scopeService.ForceContentRefresh();
 
             return null;
         }

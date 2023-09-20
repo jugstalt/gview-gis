@@ -324,7 +324,7 @@ public class PostgreSqlFeatureClassExplorerObject : ExplorerObjectCls<PostgreSql
         }
         else
         {
-            await scopeService.EventBus.FireFreshContentAsync();
+            await scopeService.ForceContentRefresh();
 
             return null;
         }

@@ -108,7 +108,11 @@
                 await ((IExplorerObjectDoubleClick)row.ExplorerObject).ExplorerObjectDoubleClick(AppScope, args);
                 if (args.NewExplorerObject != null)
                 {
-                    await EventBus.FireFreshContentAsync();
+                    if (CurrentExplorerObject is IExplorerParentObject)
+                    {
+                        await ((IExplorerParentObject)CurrentExplorerObject).DiposeChildObjects();  // remove all children => Force refresh
+                    }
+                    await EventBus.FireSoftRefreshContentAsync();
                 }
             }
             else

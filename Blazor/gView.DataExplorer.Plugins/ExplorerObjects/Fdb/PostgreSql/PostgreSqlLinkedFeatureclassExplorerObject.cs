@@ -271,7 +271,7 @@ public class PostgreSqlLinkedFeatureclassExplorerObject : IExplorerSimpleObject,
                 }
             }
 
-            await scope.ToScopeService().EventBus.FireFreshContentAsync();
+            await scope.ToScopeService().ForceContentRefresh();
         }
 
         return null;

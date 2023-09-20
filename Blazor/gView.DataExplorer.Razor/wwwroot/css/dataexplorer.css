@@ -194,6 +194,11 @@
     background: #555500a9;
 }
 
+.dataexplorer-main.dark .status-bar {
+    background: #333;
+
+}
+
 .dataexplorer-main.dark .sketchpen-icon-basic-bg-light-24 {
     background-image: url(../../../sketchpen/basic/content/img/sketchpen/bg-dark/24/1/sprite.png) !important;
 }

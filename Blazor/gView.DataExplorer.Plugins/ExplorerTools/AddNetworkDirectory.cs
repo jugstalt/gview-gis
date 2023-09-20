@@ -49,7 +49,7 @@ internal class AddNetworkDirectory : IExplorerTool
             ConfigConnections connStream = new ConfigConnections("directories");
             connStream.Add(model.FolderPath.Trim(), model.FolderPath.Trim());
 
-            await scopeService.EventBus.FireFreshContentAsync();
+            await scopeService.ForceContentRefresh();
         }
 
         return true;

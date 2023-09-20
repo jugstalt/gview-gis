@@ -296,7 +296,7 @@ public class SqLiteFdbDatasetExplorerObject : ExplorerObjectFeatureClassImport<I
         }
         else
         {
-            await scopeService.EventBus.FireFreshContentAsync();
+            await scopeService.ForceContentRefresh();
 
             return null;
         }

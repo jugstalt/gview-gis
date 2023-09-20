@@ -1,5 +1,6 @@
 ﻿using gView.Framework.DataExplorer.Abstraction;
 using gView.Framework.system;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -27,13 +28,28 @@ static public class ExplorerObjectExtensions
 
     async static public Task<bool> SecureRefresh(this IExplorerObject exObject)
     {
-        if (exObject is IExplorerParentObject)
+        if (exObject is IExplorerParentObject parentExObject)
         {
             using (var mutex = await FuzzyMutexAsync.LockAsync(exObject.GetHashCode().ToString()))
             {
+                if (parentExObject.RequireRefresh() == false)
+                {
+                    return true;
+                }
+
                 if (mutex.WasBlocked == false)
                 {
-                    await ((IExplorerParentObject)exObject).Refresh();
+                    try
+                    {
+                        await parentExObject.Refresh();
+                    }
+                    catch (Exception ex)
+                    {
+                        if (!parentExObject.HandleRefreshException(ex))
+                        {
+                            throw;
+                        }
+                    }
                 }
             }
 

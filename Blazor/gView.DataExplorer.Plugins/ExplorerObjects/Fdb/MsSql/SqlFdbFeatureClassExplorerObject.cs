@@ -326,7 +326,7 @@ public class SqlFdbFeatureClassExplorerObject : ExplorerObjectCls<SqlFdbDatasetE
         }
         else
         {
-            await scopeService.EventBus.FireFreshContentAsync();
+            await scopeService.ForceContentRefresh();
 
             return null;
         }

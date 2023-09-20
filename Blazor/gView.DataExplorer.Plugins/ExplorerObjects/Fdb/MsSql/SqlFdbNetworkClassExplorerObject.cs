@@ -84,7 +84,7 @@ public class SqlFdbNetworkClassExplorerObject : ExplorerObjectCls<IExplorerObjec
 
         if (await scopeService.CreateNetworkClass(parentExObject))
         {
-            await scopeService.EventBus.FireFreshContentAsync();
+            await scopeService.ForceContentRefresh();
         }
 
         return null;

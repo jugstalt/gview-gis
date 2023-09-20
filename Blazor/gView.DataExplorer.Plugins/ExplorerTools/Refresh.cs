@@ -23,26 +23,9 @@ public class Refresh : IExplorerTool
 
     async public Task<bool> OnEvent(IApplicationScope scope)
     {
-        //var model = await scope.ToScopeService().ShowKnownDialog(
-        //    Framework.Blazor.KnownDialogs.ExplorerDialog,
-        //    model: new ExplorerDialogModel()
-        //    {
-        //        Filters = new List<ExplorerDialogFilter> {
-        //            new OpenFDBFeatureclassFilter(),
-        //            new OpenShapeFilter()
-        //        },
-        //        Mode = ExploerDialogMode.Open
-        //    });
+        var scopeService = scope.ToScopeService();
 
-        //var model2 = await scope.ToScopeService().ShowKnownDialog(
-        //    Framework.Blazor.KnownDialogs.ExplorerDialog,
-        //    model: new ExplorerDialogModel()
-        //    {
-        //        Filters = SaveFeatureClassFilters.DatabaseFilters,
-        //        Mode = ExploerDialogMode.Save
-        //    });
-
-        await scope.ToScopeService().EventBus.FireFreshContentAsync();
+        await scopeService.ForceContentRefresh();
 
         return true;
     }

@@ -60,7 +60,7 @@ public class GeoServicesNewConnectionExplorerObject : ExplorerObjectCls<IExplore
             var connectionString = model.ToConnectionString();
             ConfigConnections connStream = new ConfigConnections("geoservices_connection", "546B0513-D71D-4490-9E27-94CD5D72C64A");
 
-            string id = connStream.GetName(ConfigTextStream.ExtractValue(connectionString, "services").UrlToConfigId());
+            string id = connStream.GetName(ConfigTextStream.ExtractValue(connectionString, "server").UrlToConfigId());
             connStream.Add(id, connectionString);
 
             e.NewExplorerObject = new GeoServicesConnectionExplorerObject(base.Parent, id, connectionString);

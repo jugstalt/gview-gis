@@ -12,7 +12,7 @@
     <div class="explorer-tool-box">
         <div class="explorer-tool" @onclick="()=>DarkmodeClick()">
             <div class=@Icons.FromString("basic:darkmode")></div>
-            <div class="title">Color Mode</div>
+            <div class="title">Color Scheme</div>
         </div>
 
         @foreach (var exTool in exTools
@@ -147,7 +147,7 @@
                 var newExObject = await creatable.CreateExplorerObjectAsync(AppScope, currentExplorerObject);
                 if (newExObject != null)
                 {
-                    await EventBus.FireFreshContentAsync();
+                    await EventBus.FireSoftRefreshContentAsync();
                 }
             }
         });

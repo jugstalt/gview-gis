@@ -52,7 +52,7 @@ public class Rename : IExplorerTool
                 await (exObject as IExplorerObjectRenamable)!
                              .RenameExplorerObject(model.NewName);
 
-                await scopeService.EventBus.FireFreshContentAsync();
+                await scopeService.ForceContentRefresh();
             }
         }
 
