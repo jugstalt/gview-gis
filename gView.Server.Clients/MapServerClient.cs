@@ -4,9 +4,10 @@ using gView.Server.Clients.Extensions;
 using gView.Server.Models;
 using Newtonsoft.Json;
 using System;
+using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
-using System.Transactions;
+using System.Xml.Linq;
 
 namespace gView.Server.Clients;
 
@@ -25,13 +26,13 @@ public class MapServerClient
         _server = server;
     }
 
-    async public Task<ServicesModel?> GetServices(string? username = null, string? password = null)
+    async public Task<ServicesModel?> GetServices(string? username = null, string? password = null, string requestFormat = "xml")
     {
-        string url = $"{_server}/mapserver/catalog?format=json";
+        string url = $"{_server}/mapserver/catalog?format={requestFormat}";
 
         using (var requestMessage = new HttpRequestMessage(HttpMethod.Get, url))
         {
-            if(!String.IsNullOrEmpty(username) && !String.IsNullOrEmpty(password))
+            if (!String.IsNullOrEmpty(username) && !String.IsNullOrEmpty(password))
             {
                 var authenticationString = $"{username}:{password}";
                 var base64EncodedAuthenticationString = Convert.ToBase64String(System.Text.ASCIIEncoding.UTF8.GetBytes(authenticationString));
@@ -45,7 +46,23 @@ public class MapServerClient
             }
 
             var responseString = await response.Content.ReadAsStringAsync();
-            return JsonConvert.DeserializeObject<ServicesModel>(responseString);
+
+            if ("json".Equals(responseString, StringComparison.OrdinalIgnoreCase))
+            {
+                return JsonConvert.DeserializeObject<ServicesModel>(responseString);
+            }
+
+            // xml
+            XElement root = XElement.Parse(responseString);
+            var services = root.Descendants("SERVICE")
+                               .Select(x => new ServiceModel
+                               {
+                                   Name = (string)x.Attribute("name"),
+                                   Type = (string)x.Attribute("type")
+                               })
+                               .ToList();
+
+            return new ServicesModel { Services = services };
         }
     }
 
