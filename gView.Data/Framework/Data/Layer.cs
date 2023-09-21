@@ -1016,7 +1016,7 @@ namespace gView.Framework.Data
             FieldCollection newFields = new FieldCollection();
             if (_class is ITableClass)
             {
-                foreach (IField field in ((ITableClass)_class).Fields.ToEnumerable())
+                foreach (IField field in ((ITableClass)_class).Fields?.ToEnumerable() ?? Array.Empty<IField>())
                 {
                     Field f = new Field(field);
                     newFields.Add(f);
@@ -1025,7 +1025,7 @@ namespace gView.Framework.Data
                         newFields.PrimaryDisplayField = f;
                     }
                 }
-                if (newFields.PrimaryDisplayField == null)
+                if (newFields.PrimaryDisplayField == null && _fields != null)
                 {
                     foreach (IField field in _fields.ToEnumerable())
                     {

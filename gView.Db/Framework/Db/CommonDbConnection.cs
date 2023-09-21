@@ -171,7 +171,7 @@ namespace gView.Framework.Db
             }
         }
         public string errorMessage { get { return m_errMsg; } }
-        public Exception lastException { get { return _lastException; } }
+        public Exception LastException { get { return _lastException; } }
 
         async public Task<bool> SQLQuery(DataSet ds, string sql, string table, bool writeable)
         {

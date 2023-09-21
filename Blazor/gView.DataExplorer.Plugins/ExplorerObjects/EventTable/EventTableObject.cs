@@ -91,14 +91,21 @@ public class EventTableObject : ExplorerObjectCls<IExplorerObject, IFeatureClass
             try
             {
                 Dataset ds = new Dataset();
+
                 await ds.SetConnectionString(_etconn.ToXmlString());
-                await ds.Open();
+                if(!await ds.Open())
+                {
+                    throw new Exception($"Can't open dataset: {ds.LastErrorMessage}");
+                }
                 _fc = (await ds.Elements())[0].Class as IFeatureClass;
+                
                 return _fc;
             }
-            catch
+            catch(Exception)  
             {
                 _fc = null;
+
+                throw;
             }
         }
 

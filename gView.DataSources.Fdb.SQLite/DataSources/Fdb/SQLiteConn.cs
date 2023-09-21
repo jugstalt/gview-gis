@@ -81,7 +81,7 @@ namespace gView.DataSources.Fdb.Sqlite
             get { return _errMsg; }
         }
 
-        public Exception lastException
+        public Exception LastException
         {
             get { return _lastException; }
         }

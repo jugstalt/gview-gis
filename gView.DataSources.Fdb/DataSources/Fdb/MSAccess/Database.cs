@@ -304,7 +304,7 @@ namespace gView.DataSources.Fdb.MSAccess
         }
 
         public string LastErrorMessage { get { return _errMsg; } set { _errMsg = value; } }
-        public Exception LastException { get { return (_conn != null ? _conn.lastException : null); } }
+        public Exception LastException { get { return (_conn != null ? _conn.LastException : null); } }
 
         virtual public Task<int> CreateDataset(string name, ISpatialReference sRef)
         {

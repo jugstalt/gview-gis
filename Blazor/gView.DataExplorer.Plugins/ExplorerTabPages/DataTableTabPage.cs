@@ -55,11 +55,13 @@ public class DataTableTabPage : IExplorerTabPage
         }
 
         var instance = await _exObject.GetInstanceAsync();
-        if (instance is ITableClass)
+        if (instance is ITableClass tableClass)
         {
-            var tableClass = (ITableClass)instance;
-
-            var fieldNames = tableClass.Fields.ToEnumerable().Select(f => f.name).ToArray();
+            var fieldNames = tableClass.Fields?
+                                       .ToEnumerable()
+                                       .Select(f => f.name)
+                                       .ToArray() ?? Array.Empty<string>();
+            
             var table = new TableItem(fieldNames);
 
             var filter = new QueryFilter()

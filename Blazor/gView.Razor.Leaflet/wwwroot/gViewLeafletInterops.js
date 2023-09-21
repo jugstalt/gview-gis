@@ -124,8 +124,10 @@ var gViewLeaflet = new function () {
 
     this.resizeAllMaps = function () {
         for (var mapId in this.maps) {
-            console.log('refresh ' + mapId);
-            this.maps[mapId].invalidateSize();
+            //console.log('refresh ' + mapId);
+            if (this.maps[mapId]) {
+                this.maps[mapId].invalidateSize();
+            }
         }
     }
 }();
