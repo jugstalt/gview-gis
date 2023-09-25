@@ -6,6 +6,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <title>gView.Carto</title>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <base href="~/" />
@@ -13,6 +14,14 @@
     <link href="css/site.css" rel="stylesheet" />
     <link href="gView.Carto.Server.styles.css" rel="stylesheet" />
     <link rel="icon" type="image/png" href="favicon.png"/>
+    <link href="_content/MudBlazor/MudBlazor.min.css" rel="stylesheet" />
+    <link href="_content/gView.Carto.Razor/css/carto.css" rel="stylesheet" />
+    <link href="sketchpen/basic/content/css/sketchpen-basic-bg-light.css" rel="stylesheet" />
+    <link href="sketchpen/webgis/content/css/sketchpen-webgis-bg-light.css" rel="stylesheet" />
+    <link href="sketchpen/basic/content/css/sketchpen-basic-bg-dark.css" rel="stylesheet" />
+    <link href="sketchpen/webgis/content/css/sketchpen-webgis-bg-dark.css" rel="stylesheet" />
+    <link href="_content/gView.Razor.Leaflet/lib/leaflet/leaflet.min.css" rel="stylesheet" />
+    <link href="_content/gView.Razor/gview-razor-base.css" rel="stylesheet" />
     <component type="typeof(HeadOutlet)" render-mode="ServerPrerendered" />
 </head>
 <body>
@@ -30,5 +39,10 @@
     </div>
 
     <script src="_framework/blazor.server.js"></script>
+    <script src="_content/MudBlazor/MudBlazor.min.js"></script>
+
+    <script src="_content/gView.Razor.Leaflet/lib/leaflet/leaflet.min.js"></script>
+    <script src="_content/gView.Razor.Leaflet/gViewLeafletInterops.js"></script>
+    <script src="_content/gView.Razor/gview-razor-base.js"></script>
 </body>
 </html>

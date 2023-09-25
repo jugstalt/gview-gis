@@ -10,6 +10,7 @@ using gView.Framework.IO;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using gView.Framework.system;
 
 namespace gView.DataExplorer.Plugins.ExplorerObjects.PostGIS;
 
@@ -116,12 +117,12 @@ public class PostGISExplorerObject : ExplorerParentObject<IExplorerObject, IFeat
 
         List<IDatasetElement> elements = await dataset.Elements();
 
-        if (elements == null)
+        if(!String.IsNullOrEmpty(dataset.LastErrorMessage))
         {
-            return false;
+            throw new Exception($"Can't open dataset: {dataset.LastErrorMessage}");
         }
 
-        foreach (IDatasetElement element in elements)
+        foreach (IDatasetElement element in elements.OrEmpty())
         {
             if (element.Class is IFeatureClass)
             {

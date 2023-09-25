@@ -3,6 +3,7 @@ using gView.Framework.Data;
 using gView.Framework.IO;
 using gView.Framework.UI;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
@@ -69,6 +70,9 @@ namespace gView.Framework.system
 
             return obj?.ToString() ?? "";
         }
+
+        static public IEnumerable<T> OrEmpty<T>(this IEnumerable<T> list)
+            => list ?? Array.Empty<T>();
 
         public static string ToSHA256Hash(this string input)
         {

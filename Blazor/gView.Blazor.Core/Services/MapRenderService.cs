@@ -134,7 +134,7 @@ public class MapRenderService : IDisposable
     {
         MapRendererNotIntializedException.ThrowIfNull(_map);
 
-        foreach (var datasetElement in await featureDataset.Elements())
+        foreach (var datasetElement in (await featureDataset.Elements()).OrEmpty())
         {
             if (datasetElement?.Class is IFeatureClass)
             {
