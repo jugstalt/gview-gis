@@ -9,7 +9,12 @@
         }
         catch (Exception ex)
         {
-            Task.Run(async () => await HandleException(ex));  // run & forget => otherweise its blocked and never showed
+            //Task.Run(async () => await HandleException(ex));  // run & forget => otherweise its blocked and never showed
+            var awaiter = HandleException(ex).ConfigureAwait(false).GetAwaiter();
+            // awaiter.OnCompleted(() =>
+            // {
+            //     // do nothing
+            // });
         }
     }
 
@@ -33,7 +38,13 @@
         }
         catch (Exception ex)
         {
-            Task.Run(async () => await HandleException(ex));  // run & forget => otherweise its blocked and never showed
+            //Task.Run(async () => await HandleException(ex));  // run & forget => otherweise its blocked and never showed
+            var awaiter = HandleException(ex).ConfigureAwait(false).GetAwaiter();
+            // awaiter.OnCompleted(() =>
+            // {
+            //     // do nothing
+            // });
+            
             return default(T);
         }
     }
@@ -53,36 +64,8 @@
 
     async private Task HandleException(Exception ex)
     {
-        //if(ex is ShowDialogException)
-        //{
-        //    DialogReference? dialog = null;
-        //    var parameters = new DialogParameters();
-        //    parameters.Add("OnDialogClose", new EventCallback<Blazor.Models.Dialogs.DialogResult>(this, OnDialogClose));
-
-        //    dialog = (await DialogService.ShowAsync(((ShowDialogException)ex).RazorType, "Dialog Title", parameters)) as DialogReference;
-        //    //var result = await dialog?.Result;
-
-        //    //if(result != null && !result.Canceled)
-        //    //{
-        //    //    var data = result.Data;
-        //    //}
-
-        //    void OnDialogClose(Blazor.Models.Dialogs.DialogResult data)
-        //    {
-        //        if(dialog!=null)
-        //        {
-        //            dialog.Close();
-        //        }
-
-        //        ((ShowDialogException)ex).Callback?.Invoke(data.Result);
-        //        // Hier können Sie auf die Daten zugreifen, die vom Dialog zurückgegeben wurden
-        //    }
-        //}
-        //else
-        {
-            bool? result = await DialogService.ShowMessageBox(
+        await DialogService.ShowMessageBox(
                 "Error",
                 ex.Message);
-        }
     }
 }
