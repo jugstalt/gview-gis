@@ -6,4 +6,12 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\gView.Blazor.Core\gView.Blazor.Core.csproj" />
+    <ProjectReference Include="..\gView.Carto.Plugins\gView.Carto.Plugins.csproj" />
+    <ProjectReference Include="..\gView.Carto.Razor\gView.Carto.Razor.csproj" />
+    <ProjectReference Include="..\gView.DataExplorer.Plugins\gView.DataExplorer.Plugins.csproj" />
+    <ProjectReference Include="..\gView.Razor.Leaflet\gView.Razor.Leaflet.csproj" />
+  </ItemGroup>
+
 </Project>

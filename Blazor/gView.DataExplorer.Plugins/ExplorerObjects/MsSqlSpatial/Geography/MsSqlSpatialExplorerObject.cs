@@ -7,6 +7,7 @@ using gView.Framework.DataExplorer.Abstraction;
 using gView.Framework.DataExplorer.Events;
 using gView.Framework.Db;
 using gView.Framework.IO;
+using gView.Framework.system;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -114,12 +115,12 @@ public class MsSqlSpatialExplorerObject : ExplorerParentObject<IExplorerObject, 
 
         List<IDatasetElement> elements = await dataset.Elements();
 
-        if (elements == null)
+        if (!String.IsNullOrEmpty(dataset.LastErrorMessage))
         {
-            return false;
+            throw new Exception($"Can't open dataset: {dataset.LastErrorMessage}");
         }
 
-        foreach (IDatasetElement element in elements)
+        foreach (IDatasetElement element in elements.OrEmpty())
         {
             if (element.Class is IFeatureClass)
             {
