@@ -50,7 +50,7 @@ public class PostgreSqlNewConnectionObject : ExplorerObjectCls<PostgreSqlExplore
 
     async public Task ExplorerObjectDoubleClick(IApplicationScope appScope, ExplorerObjectEventArgs e)
     {
-        var model = await appScope.ToScopeService().ShowKnownDialog(KnownDialogs.ConnectionString,
+        var model = await appScope.ToExplorerScopeService().ShowKnownDialog(KnownDialogs.ConnectionString,
                                                                     model: new ConnectionStringModel("postgre", false));
 
         if (model != null)

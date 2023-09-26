@@ -322,7 +322,7 @@ public class SqLiteFdbFeatureClassExplorerObject : ExplorerObjectCls<SqLiteFdbDa
             return null;
         }
 
-        var scopeService = scope.ToScopeService();
+        var scopeService = scope.ToExplorerScopeService();
 
         var element = await scopeService.CreateCeatureClass(parentExObject);
 

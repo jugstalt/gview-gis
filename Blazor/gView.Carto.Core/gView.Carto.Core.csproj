@@ -3,6 +3,11 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
     <Nullable>enable</Nullable>
+    <LangVersion>10</LangVersion>
   </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\gView.Blazor.Core\gView.Blazor.Core.csproj" />
+  </ItemGroup>
 
 </Project>

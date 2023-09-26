@@ -28,7 +28,7 @@ internal class AddNetworkDirectory : IExplorerTool
     public async Task<bool> OnEvent(IApplicationScope scope)
     {
         MapNetworkFolderModel? model = null;
-        var scopeService = scope.ToScopeService();
+        var scopeService = scope.ToExplorerScopeService();
 
         if (scopeService.CurrentExplorerObject is DirectoryObject)
         {

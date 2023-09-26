@@ -22,7 +22,7 @@ public class UpdateConnectionString : IExplorerObjectContextTool
     {
         var dbConnectionString = ((IUpdateConnectionString)exObject).GetDbConnectionString();
 
-        var model = await scope.ToScopeService().ShowKnownDialog(Framework.Blazor.KnownDialogs.ConnectionString,
+        var model = await scope.ToExplorerScopeService().ShowKnownDialog(Framework.Blazor.KnownDialogs.ConnectionString,
                                                                  model: new ConnectionStringModel(dbConnectionString));
 
         if (model != null)

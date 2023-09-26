@@ -35,7 +35,7 @@ internal class SetSpatialReference : IExplorerObjectContextTool
             throw new GeneralException("Database is not a gView FeatureDatabase");
         }
 
-        var model = await scope.ToScopeService().ShowKnownDialog(
+        var model = await scope.ToExplorerScopeService().ShowKnownDialog(
             Framework.Blazor.KnownDialogs.SpatialReferenceDialog,
             model: new BaseDialogModel<ISpatialReference>()
                            {

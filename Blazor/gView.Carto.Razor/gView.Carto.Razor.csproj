@@ -6,6 +6,10 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
+  <ItemGroup>
+    <None Include="Components\Dialogs\NewMapDialog.razor" />
+  </ItemGroup>
+
 
   <ItemGroup>
     <SupportedPlatform Include="browser" />
@@ -18,10 +22,12 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\gView.Cmd.Core\gView.Cmd.Core.csproj" />
+    <ProjectReference Include="..\..\gView.System\gView.System.csproj" />
     <ProjectReference Include="..\gView.Blazor.Core\gView.Blazor.Core.csproj" />
     <ProjectReference Include="..\gView.Blazor.Models\gView.Blazor.Models.csproj" />
     <ProjectReference Include="..\gView.DataExplorer.Core\gView.DataExplorer.Core.csproj" />
     <ProjectReference Include="..\gView.DataExplorer.Razor\gView.DataExplorer.Razor.csproj" />
+    <ProjectReference Include="..\gView.Framework.Carto\gView.Framework.Carto.csproj" />
     <ProjectReference Include="..\gView.Razor.Leaflet\gView.Razor.Leaflet.csproj" />
     <ProjectReference Include="..\gView.Razor\gView.Razor.csproj" />
   </ItemGroup>

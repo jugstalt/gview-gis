@@ -55,7 +55,7 @@ namespace gView.DataExplorer.Plugins.ExplorerObjects.GeoJson
 
         async public Task ExplorerObjectDoubleClick(IApplicationScope appScope, ExplorerObjectEventArgs e)
         {
-            var model = await appScope.ToScopeService().ShowModalDialog(typeof(gView.DataExplorer.Razor.Components.Dialogs.GeoJsonConnectionDialog),
+            var model = await appScope.ToExplorerScopeService().ShowModalDialog(typeof(gView.DataExplorer.Razor.Components.Dialogs.GeoJsonConnectionDialog),
                                                                     "GeoJson Connection",
                                                                     new GeoJsonConnectionModel());
 

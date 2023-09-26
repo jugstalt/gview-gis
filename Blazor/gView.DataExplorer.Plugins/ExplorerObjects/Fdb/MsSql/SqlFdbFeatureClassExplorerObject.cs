@@ -313,7 +313,7 @@ public class SqlFdbFeatureClassExplorerObject : ExplorerObjectCls<SqlFdbDatasetE
             return null;
         }
 
-        var scopeService = scope.ToScopeService();
+        var scopeService = scope.ToExplorerScopeService();
 
         var element = await scopeService.CreateCeatureClass(parentExObject);
 

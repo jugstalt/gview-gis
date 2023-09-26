@@ -1,4 +1,5 @@
 using gView.Blazor.Core.Extensions.DependencyInjection;
+using gView.Carto.Plugins.Extensions.DependencyInjection;
 using gView.DataExplorer.Plugins.Extensions.DependencyInjection;
 using gView.Razor.Leaflet.Extensions.DependencyInjection;
 using MudBlazor;
@@ -10,7 +11,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 
-builder.Services.AddMudServices(config => {
+builder.Services.AddMudServices(config =>
+{
     config.SnackbarConfiguration.PositionClass = Defaults.Classes.Position.BottomLeft;
 
     config.SnackbarConfiguration.PreventDuplicates = true;
@@ -22,6 +24,12 @@ builder.Services.AddMudServices(config => {
     config.SnackbarConfiguration.SnackbarVariant = Variant.Filled;
 });
 
+builder.Services.AddExplorerDesktopApplicationService();
+builder.Services.AddCartoDesktopApplicationService();
+builder.Services.AddCartoApplicationScopeService(config =>
+{
+    config.ConfigRootPath = Path.Combine("C:\\temp", "gview-explorer");
+});
 
 builder.Services.AddKnownExplorerDialogsServices();
 builder.Services.AddFrameworkServices();
@@ -46,5 +54,9 @@ app.UseRouting();
 
 app.MapBlazorHub();
 app.MapFallbackToPage("/_Host");
+
+gView.GraphicsEngine.Current.Engine = new gView.GraphicsEngine.Skia.SkiaGraphicsEngine(96.0f);
+//gView.GraphicsEngine.Current.Encoder = new gView.GraphicsEngine.GdiPlus.GdiBitmapEncoding();
+gView.GraphicsEngine.Current.Encoder = new gView.GraphicsEngine.Skia.SkiaBitmapEncoding();
 
 app.Run();

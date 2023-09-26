@@ -23,7 +23,7 @@ public class Refresh : IExplorerTool
 
     async public Task<bool> OnEvent(IApplicationScope scope)
     {
-        var scopeService = scope.ToScopeService();
+        var scopeService = scope.ToExplorerScopeService();
 
         await scopeService.ForceContentRefresh();
 

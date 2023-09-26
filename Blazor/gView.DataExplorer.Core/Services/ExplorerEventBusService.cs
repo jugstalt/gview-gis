@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace gView.DataExplorer.Core.Services;
 
-public class EventBusService
+public class ExplorerEventBusService
 {
     public event Func<Task>? OnRefreshContentAsync;
     public Task FireSoftRefreshContentAsync()

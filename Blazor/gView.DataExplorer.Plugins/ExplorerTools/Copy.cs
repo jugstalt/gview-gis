@@ -23,7 +23,7 @@ internal class Copy : IExplorerTool
 
     public bool IsEnabled(IApplicationScope scope)
     {
-        var scopeService = scope.ToScopeService();
+        var scopeService = scope.ToExplorerScopeService();
 
         return scopeService.ContextExplorerObjects?
             .Where(e => e.ObjectType != null && e.ObjectType.IsAssignableTo(typeof(IFeatureClass)))
@@ -32,7 +32,7 @@ internal class Copy : IExplorerTool
 
     public Task<bool> OnEvent(IApplicationScope scope)
     {
-        var scopeService = scope.ToScopeService();
+        var scopeService = scope.ToExplorerScopeService();
 
         var featureClasses = scopeService.ContextExplorerObjects?
             .Where(e => e.ObjectType != null && (e.ObjectType is IFeatureClass || e.ObjectType.IsAssignableTo(typeof(IFeatureClass))))

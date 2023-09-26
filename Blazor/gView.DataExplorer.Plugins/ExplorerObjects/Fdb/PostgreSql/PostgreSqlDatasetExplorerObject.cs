@@ -248,7 +248,7 @@ public class PostgreSqlDatasetExplorerObject : ExplorerParentObject<PostgreSqlEx
             return null;
         }
 
-        var scopeService = scope.ToScopeService();
+        var scopeService = scope.ToExplorerScopeService();
 
         var element = await scopeService.CreateDataset(parentExObject);
 

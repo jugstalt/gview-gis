@@ -7,6 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\gView.GraphicsEngine.Default\gView.GraphicsEngine.Default.csproj" />
+    <ProjectReference Include="..\..\gView.GraphicsEngine.GdiPlus\gView.GraphicsEngine.GdiPlus.csproj" />
+    <ProjectReference Include="..\..\gView.GraphicsEngine.Skia\gView.GraphicsEngine.Skia.csproj" />
+    <ProjectReference Include="..\..\gView.GraphicsEngine\gView.GraphicsEngine.csproj" />
     <ProjectReference Include="..\gView.Blazor.Core\gView.Blazor.Core.csproj" />
     <ProjectReference Include="..\gView.Carto.Plugins\gView.Carto.Plugins.csproj" />
     <ProjectReference Include="..\gView.Carto.Razor\gView.Carto.Razor.csproj" />

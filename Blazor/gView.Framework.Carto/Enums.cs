@@ -8,3 +8,8 @@ public enum ToolType
     Sketch,
     Userdefined
 }
+
+public enum CartoToolTarget
+{
+    General
+}

@@ -27,7 +27,7 @@ internal class SpatialIndexDefinition : IExplorerObjectContextTool
 
     async public Task<bool> OnEvent(IApplicationScope scope, IExplorerObject exObject)
     {
-        var scopeService = scope.ToScopeService();
+        var scopeService = scope.ToExplorerScopeService();
         var featureClass = await exObject.GetInstanceAsync() as IFeatureClass;
         var fdb = featureClass?.Dataset?.Database as AccessFDB;
 

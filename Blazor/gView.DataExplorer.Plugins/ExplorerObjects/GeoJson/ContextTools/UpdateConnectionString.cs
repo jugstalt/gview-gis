@@ -22,7 +22,7 @@ internal class UpdateConnectionString : IExplorerObjectContextTool
     {
         var connectionString = ((GeoJsonServiceExplorerObject)exObject).GetConnectionString();
 
-        var model = await scope.ToScopeService().ShowModalDialog(typeof(gView.DataExplorer.Razor.Components.Dialogs.GeoJsonConnectionDialog),
+        var model = await scope.ToExplorerScopeService().ShowModalDialog(typeof(gView.DataExplorer.Razor.Components.Dialogs.GeoJsonConnectionDialog),
                                                                  "GeoJson Connection",
                                                                  connectionString.ToGeoJsonConnectionModel());
 

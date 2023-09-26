@@ -1,15 +1,46 @@
 @inherits BaseHandler
+@inject PluginManagerService PluginManager
+@inject IApplicationScope AppScope
 @inject IconService Icons
 
-<div class="carto-tool-box">
-    <div class="carto-tool" @onclick="() => DarkmodeClick()">
-        <div class=@Icons.FromString("basic:darkmode")></div>
-        <div class="title">Color Scheme</div>
+@if(cartoTools != null)
+{
+    <div class="carto-tool-box">
+        <div class="carto-tool" @onclick="() => DarkmodeClick()">
+            <div class=@Icons.FromString("basic:darkmode")></div>
+            <div class="title">Color Scheme</div>
+        </div>
+    
+
+        @foreach(var cartoTool in cartoTools
+                                       .Where(t => t.Target == CartoToolTarget.General)
+                                       .Where(t => t.IsEnabled(AppScope))
+                                       .OrderBy(t => t.SortOrder))
+        {
+            <div class="carto-tool"
+                 alt="@cartoTool.ToolTip"
+                 @onclick="async () => await ToolClickAsync(cartoTool)">
+                <div class=@Icons.FromString(cartoTool.Icon)></div>
+                <div class="title">@cartoTool.Name</div>
+            </div>
+        }
     </div>
-</div>
+}
+
+
 
 @code{
+    private ICartoTool[]? cartoTools;
+
     [Parameter] public EventCallback ToggleDarkmode { get; set; }
+
+    protected override void OnInitialized() => base.Handle(() =>
+    {
+        cartoTools = PluginManager.GetPlugins<ICartoTool>(gView.Framework.system.Plugins.Type.ICartoTool).ToArray();
+    });
+
+    private Task ToolClickAsync(ICartoTool cartoTool)
+       => base.HandleAsync(() => cartoTool.OnEvent(AppScope));
 
     async private Task DarkmodeClick()
     {

@@ -21,7 +21,7 @@ public class UpdateConnectionString : IExplorerObjectContextTool
 
     async public Task<bool> OnEvent(IApplicationScope scope, IExplorerObject exObject)
     {
-        var model = await scope.ToScopeService().ShowModalDialog(typeof(gView.DataExplorer.Razor.Components.Dialogs.OgrConnectionDialog),
+        var model = await scope.ToExplorerScopeService().ShowModalDialog(typeof(gView.DataExplorer.Razor.Components.Dialogs.OgrConnectionDialog),
                                                                  "EventTable Connection",
                                                                   new OgrConnectionModel()
                                                                   {

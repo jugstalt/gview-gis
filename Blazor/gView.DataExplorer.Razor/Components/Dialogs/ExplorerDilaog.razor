@@ -13,12 +13,9 @@
                     ((IExplorerParentObject)selectedRoot).ChildObjects().Result :
                     Array.Empty<IExplorerObject>());
 
-            if(Model.Filters!=null)
+            if(selectedFilter != null)
             {
-                foreach(var filter in Model.Filters)
-                {
-                    currentListExplorerObjects = filter.FilterExplorerObjects(currentListExplorerObjects).ToList();
-                }
+                currentListExplorerObjects = selectedFilter.FilterExplorerObjects(currentListExplorerObjects).ToList();
             }
 
             @foreach (var childObject in currentListExplorerObjects.ToArray().Reverse())
@@ -37,23 +34,34 @@
                         Array.Empty<IExplorerObject>());
             }
 
-                <MudSelect @bind-Value="@selectedRoot"
+            <MudSelect @bind-Value="@selectedRoot"
                             Label="Folder/Path"
                             Class="explorer-dialog-root-select"
                             Variant="Variant.Outlined"
                             Dense="true">
-                    @foreach (var rootExplorerObject in rootExplorerObjects)
+                @foreach (var rootExplorerObject in rootExplorerObjects)
+                {
+                    if (rootExplorerObject != ExplorerApplication.RootExplorerObject)
                     {
-                        <MudSelectItem Value="@rootExplorerObject">
-                            <div class="explorer-dialog-root-select-item" style="display: flex; align-items: center; padding-left:@(levels[rootExplorerObject]*24)px">
-                                <MudIcon Icon="@Icons.FromString(rootExplorerObject.Icon)" Style="margin-right: 6px;" />
-                                <MudText>@rootExplorerObject.Name</MudText>
-                            </div>
-                        </MudSelectItem>
+                        if(!(rootExplorerObject is IExplorerParentObject))
+                        {
+                            continue;
+                        }
+                        if (selectedFilter != null && selectedFilter.FilterExplorerObjects(new[] { rootExplorerObject }).Any() == false)
+                        {
+                            continue;
+                        }
                     }
-                </MudSelect>
+                    <MudSelectItem Value="@rootExplorerObject">
+                        <div class="explorer-dialog-root-select-item" style="display: flex; align-items: center; padding-left:@(levels[rootExplorerObject]*24)px">
+                            <MudIcon Icon="@Icons.FromString(rootExplorerObject.Icon)" Style="margin-right: 6px;" />
+                            <MudText>@rootExplorerObject.Name</MudText>
+                        </div>
+                    </MudSelectItem>
+                }
+            </MudSelect>
 
-                <MudPaper Elevation="2">
+            <MudPaper Elevation="2">
                     <MudList Clickable="true" Style=" min-height:600px;min-width:900px;max-height:600px;overflow:auto" Dense="true">
                         @if (selectedRoot != null && levels[selectedRoot] > 0)
                         {
@@ -76,31 +84,38 @@
                             </MudListItem>
                         }
                     </MudList>
-                </MudPaper>
+            </MudPaper>
 
-                @if(Model.Mode == ExploerDialogMode.Open) 
-                {
+            @if(Model.Mode == ExploerDialogMode.Open) 
+            {
                     <MudTextField Value="@String.Join(", ",Model.Result.ExplorerObjects.Select(e=>e.Name))" 
                                   Label="Selected"
                                   Required="true"
                                   ReadOnly="true" 
                                   Variant="Variant.Filled" />
-                } 
-                else if(Model.Mode == ExploerDialogMode.Save)
-                {
+            } 
+            else if(Model.Mode == ExploerDialogMode.Save)
+            {
                     <MudTextField @bind-Value = "Model.Result.Name" 
                                   Required = "true"
                                   Label = "Name"
                                   Disabled = "@(!placeToSave)"
                                   Variant = "Variant.Outlined" />
-                }
+            }
 
-                <MudSelect T="ExplorerDialogFilter" Variant="Variant.Outlined" Label="Filter" ValueChanged="(value) => FilterSelectionChanged(value)">
-                @foreach(var filter in Model.Filters)
-                {
-                     <MudSelectItem Value="@filter" />
-                }
+            @if (Model.Filters != null && Model.Filters.Any())
+            {
+                <MudSelect T="ExplorerDialogFilter" 
+                           Value="selectedFilter"
+                           Variant="Variant.Outlined" 
+                           Label="Filter" 
+                           ValueChanged="(value) => FilterSelectionChanged(value)">
+                    @foreach (var filter in Model.Filters)
+                    {
+                        <MudSelectItem Value="@filter" />
+                    }
                 </MudSelect>
+            }
         }
     </DialogBody>
     <DialogButtons>

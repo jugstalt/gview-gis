@@ -48,7 +48,7 @@ public class TileCacheLocalCacheProperties : ExplorerObjectCls<TileCacheGroupExp
 
     async public Task ExplorerObjectDoubleClick(IApplicationScope appScope, ExplorerObjectEventArgs e)
     {
-        var model = await appScope.ToScopeService().ShowModalDialog(typeof(gView.DataExplorer.Razor.Components.Dialogs.RasterTileCacheLocalPropertiesDialog),
+        var model = await appScope.ToExplorerScopeService().ShowModalDialog(typeof(gView.DataExplorer.Razor.Components.Dialogs.RasterTileCacheLocalPropertiesDialog),
                                                                     "Import from Template",
                                                                     new RasterTileCacheLocalPropertiesModel()
                                                                     {

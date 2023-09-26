@@ -54,7 +54,7 @@ public class EventTableNewConnectionObject :
 
     async public Task ExplorerObjectDoubleClick(IApplicationScope appScope, ExplorerObjectEventArgs e)
     {
-        var model = await appScope.ToScopeService().ShowModalDialog(typeof(gView.DataExplorer.Razor.Components.Dialogs.EventTableConnection),
+        var model = await appScope.ToExplorerScopeService().ShowModalDialog(typeof(gView.DataExplorer.Razor.Components.Dialogs.EventTableConnection),
                                                                     "EventTable Connection",
                                                                     new EventTableConnectionModel());
 

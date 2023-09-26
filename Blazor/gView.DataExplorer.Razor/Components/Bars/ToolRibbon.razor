@@ -3,9 +3,7 @@
 @inject PluginManagerService PluginManager
 @inject IconService Icons
 @inject IApplicationScope AppScope
-@inject EventBusService EventBus
-
-@inject IDialogService DialogService;  // test
+@inject ExplorerEventBusService EventBus
  
 @if (exTools != null)
 {
@@ -100,20 +98,17 @@
 
     [Parameter] public EventCallback ToggleDarkmode { get; set; }
 
-    protected override void OnInitialized()
+    protected override void OnInitialized() => base.Handle(() =>
     {
-        base.Handle(() =>
-        {
-            exTools = PluginManager.GetPlugins<IExplorerTool>(Framework.system.Plugins.Type.IExplorerTool).ToArray();
-            creatableExplorerTools = PluginManager.GetPlugins<IExplorerObject>(Framework.system.Plugins.Type.IExplorerObject)
-                                                .Where(e => e is IExplorerObjectCreatable)
-                                                .Select(e => (IExplorerObjectCreatable)e)
-                                                .ToArray();
+        exTools = PluginManager.GetPlugins<IExplorerTool>(Framework.system.Plugins.Type.IExplorerTool).ToArray();
+        creatableExplorerTools = PluginManager.GetPlugins<IExplorerObject>(Framework.system.Plugins.Type.IExplorerObject)
+                                              .Where(e => e is IExplorerObjectCreatable)
+                                              .Select(e => (IExplorerObjectCreatable)e)
+                                              .ToArray();
 
-            EventBus.OnContextExplorerObjectsChanged += OnContextExplorerObjectsChanged;
-            EventBus.OnCurrentExplorerObjectChanged += OnCurrentExplorerObjectChanged;
-        });
-    }
+        EventBus.OnContextExplorerObjectsChanged += OnContextExplorerObjectsChanged;
+        EventBus.OnCurrentExplorerObjectChanged += OnCurrentExplorerObjectChanged;
+    });
 
     private Task OnContextExplorerObjectsChanged(IEnumerable<IExplorerObject>? contextExplorerObjects)
     {

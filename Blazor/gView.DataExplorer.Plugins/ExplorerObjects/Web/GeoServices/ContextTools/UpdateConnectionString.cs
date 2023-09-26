@@ -23,7 +23,7 @@ internal class UpdateConnectionString : IExplorerObjectContextTool
     {
         var connectionString = ((GeoServicesConnectionExplorerObject)exObject).GetConnectionString();
 
-        var model = await scope.ToScopeService().ShowModalDialog(typeof(gView.DataExplorer.Razor.Components.Dialogs.GeoServicesConnectionDialog),
+        var model = await scope.ToExplorerScopeService().ShowModalDialog(typeof(gView.DataExplorer.Razor.Components.Dialogs.GeoServicesConnectionDialog),
                                                                  "GeoServices Connection",
                                                                   connectionString.ToGeoServicesConnectionModel());
 

@@ -250,7 +250,7 @@ public class SqlFDBLinkedFeatureclassExplorerObject : IExplorerSimpleObject,
             return null;
         }
 
-        var model = await scope.ToScopeService().ShowKnownDialog(
+        var model = await scope.ToExplorerScopeService().ShowKnownDialog(
            Framework.Blazor.KnownDialogs.ExplorerDialog,
            model: new ExplorerDialogModel()
            {
@@ -271,7 +271,7 @@ public class SqlFDBLinkedFeatureclassExplorerObject : IExplorerSimpleObject,
                 }
             }
 
-            await scope.ToScopeService().ForceContentRefresh();
+            await scope.ToExplorerScopeService().ForceContentRefresh();
         }
 
         return null;

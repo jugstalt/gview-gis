@@ -30,7 +30,7 @@ internal class AddImage : IExplorerObjectContextTool
 
     async public Task<bool> OnEvent(IApplicationScope scope, IExplorerObject exObject)
     {
-        var scopeService = scope.ToScopeService();
+        var scopeService = scope.ToExplorerScopeService();
         var instance = await exObject.GetInstanceAsync() as IRasterCatalogClass;
 
         var model = await scopeService.ShowKnownDialog(Framework.Blazor.KnownDialogs.ExplorerDialog,

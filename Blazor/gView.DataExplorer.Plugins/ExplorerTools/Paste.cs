@@ -26,7 +26,7 @@ internal class Paste : IExplorerTool
 
     public bool IsEnabled(IApplicationScope scope)
     {
-        var scopeService = scope.ToScopeService();
+        var scopeService = scope.ToExplorerScopeService();
 
         if (scopeService.GetClipboardItemType() == typeof(IFeatureClass))
         {
@@ -39,7 +39,7 @@ internal class Paste : IExplorerTool
 
     async public Task<bool> OnEvent(IApplicationScope scope)
     {
-        var scopeService = scope.ToScopeService();
+        var scopeService = scope.ToExplorerScopeService();
 
         if (scopeService.CurrentExplorerObject is null)
         {

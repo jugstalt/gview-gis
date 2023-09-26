@@ -27,7 +27,7 @@ public class UpdateConnectionString : IExplorerObjectContextTool
             return false;
         }
 
-        var model = await scope.ToScopeService().ShowModalDialog(typeof(gView.DataExplorer.Razor.Components.Dialogs.EventTableConnection),
+        var model = await scope.ToExplorerScopeService().ShowModalDialog(typeof(gView.DataExplorer.Razor.Components.Dialogs.EventTableConnection),
                                                                  "EventTable Connection",
                                                                   new EventTableConnectionModel()
                                                                   {

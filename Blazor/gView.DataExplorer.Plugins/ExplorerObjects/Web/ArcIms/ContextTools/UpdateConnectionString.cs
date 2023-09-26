@@ -27,7 +27,7 @@ internal class UpdateConnectionString : IExplorerObjectContextTool
     {
         var connectionString = ((ArcImsConnectionExplorerObject)exObject).GetConnectionString();
 
-        var model = await scope.ToScopeService().ShowModalDialog(typeof(gView.DataExplorer.Razor.Components.Dialogs.ArcImsConnectionDialog),
+        var model = await scope.ToExplorerScopeService().ShowModalDialog(typeof(gView.DataExplorer.Razor.Components.Dialogs.ArcImsConnectionDialog),
                                                                  "ArcIMS Connection",
                                                                  connectionString.ToArcImsConnectionModel());
 

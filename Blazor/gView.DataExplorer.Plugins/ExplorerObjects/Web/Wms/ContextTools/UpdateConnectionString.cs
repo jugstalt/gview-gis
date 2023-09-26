@@ -23,7 +23,7 @@ public class UpdateConnectionString : IExplorerObjectContextTool
     {
         var connectionString = ((WmsServiceExplorerObject)exObject).GetConnectionString();
 
-        var model = await scope.ToScopeService().ShowModalDialog(typeof(gView.DataExplorer.Razor.Components.Dialogs.WmsConnectionDialog),
+        var model = await scope.ToExplorerScopeService().ShowModalDialog(typeof(gView.DataExplorer.Razor.Components.Dialogs.WmsConnectionDialog),
                                                                  "WMS/WFS Connection",
                                                                   connectionString.ToWmsConnectionModel());
 

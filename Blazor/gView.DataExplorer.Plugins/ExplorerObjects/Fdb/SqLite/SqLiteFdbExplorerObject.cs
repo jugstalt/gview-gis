@@ -220,7 +220,7 @@ internal class SqLiteFdbExplorerObject : ExplorerParentObject<IExplorerObject>,
             return null;
         }
 
-        var model = await scope.ToScopeService().ShowModalDialog(
+        var model = await scope.ToExplorerScopeService().ShowModalDialog(
             typeof(gView.DataExplorer.Razor.Components.Dialogs.InputBoxDialog),
             "Create",
             new InputBoxModel()

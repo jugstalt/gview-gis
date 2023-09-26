@@ -26,7 +26,7 @@ internal class RenderTileCache : IExplorerToolCommand
 
     async public Task<bool> OnEvent(IApplicationScope scope)
     {
-        var scopeService = scope.ToScopeService();
+        var scopeService = scope.ToExplorerScopeService();
 
         #region Select Server/Service
 

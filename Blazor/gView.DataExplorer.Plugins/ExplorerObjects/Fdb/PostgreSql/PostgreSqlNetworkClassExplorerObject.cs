@@ -80,7 +80,7 @@ public class PostgreSqlNetworkClassExplorerObject : ExplorerObjectCls<IExplorerO
             throw new ArgumentNullException(nameof(parentExObject));
         }
 
-        var scopeService = scope.ToScopeService();
+        var scopeService = scope.ToExplorerScopeService();
 
         if (await scopeService.CreateNetworkClass(parentExObject))
         {

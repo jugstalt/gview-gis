@@ -144,10 +144,10 @@ public class DirectoryObject : ExplorerParentObject<IExplorerObject>,
 
         PlugInManager manager = new PlugInManager();
 
-        foreach (var exObjectType in manager.GetPlugins(Framework.system.Plugins.Type.IExplorerObject))
+        foreach (var exObjectType in manager.GetPlugins(Framework.system.Plugins.Type.IExplorerFileObject))
         {
-            var exObj = manager.CreateInstance<IExplorerObject>(exObjectType);
-            if (!(exObj is IExplorerFileObject))
+            var exObj = manager.CreateInstance<IExplorerFileObject>(exObjectType);
+            if (exObj == null)
             {
                 continue;
             }
@@ -275,7 +275,7 @@ public class DirectoryObject : ExplorerParentObject<IExplorerObject>,
     public async Task<IExplorerObject?> CreateExplorerObjectAsync(IApplicationScope scope,
                                                             IExplorerObject parentExObject)
     {
-        var model = await scope.ToScopeService().ShowModalDialog(
+        var model = await scope.ToExplorerScopeService().ShowModalDialog(
             typeof(Razor.Components.Dialogs.InputBoxDialog),
             "Create",
             new InputBoxModel()

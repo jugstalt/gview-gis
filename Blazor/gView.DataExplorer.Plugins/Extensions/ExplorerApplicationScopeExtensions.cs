@@ -6,7 +6,7 @@ namespace gView.DataExplorer.Plugins.Extensions;
 
 static public class ExplorerApplicationScopeExtensions
 {
-    static public ExplorerApplicationScopeService ToScopeService(this IApplicationScope appScope)
+    static public ExplorerApplicationScopeService ToExplorerScopeService(this IApplicationScope appScope)
         => appScope is ExplorerApplicationScopeService ?
             (ExplorerApplicationScopeService)appScope :
             throw new Exception("AppScope is not an Service. Appliation Service not registered correctly");

@@ -8,6 +8,6 @@ static public class ServicesExtensions
     static public IServiceCollection AddEventBus(this IServiceCollection services)
     {
         return services
-            .AddScoped<EventBusService>();
+            .AddScoped<ExplorerEventBusService>();
     }
 }

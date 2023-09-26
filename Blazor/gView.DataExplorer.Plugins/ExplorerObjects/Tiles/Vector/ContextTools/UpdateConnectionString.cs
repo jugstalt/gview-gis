@@ -23,7 +23,7 @@ public class UpdateConnectionString : IExplorerObjectContextTool
     {
         var connectionString = ((VectorTileCacheDatasetExplorerObject)exObject).GetConnectionString();
 
-        var model = await scope.ToScopeService().ShowModalDialog(typeof(gView.DataExplorer.Razor.Components.Dialogs.VectorTileCacheConnectionDialog),
+        var model = await scope.ToExplorerScopeService().ShowModalDialog(typeof(gView.DataExplorer.Razor.Components.Dialogs.VectorTileCacheConnectionDialog),
                                                                  "Vector-Tile-Cache Connection",
                                                                  connectionString.ToVectorTileCacheConnectionModel());
 

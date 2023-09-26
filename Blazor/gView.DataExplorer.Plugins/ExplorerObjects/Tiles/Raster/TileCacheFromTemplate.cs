@@ -60,7 +60,7 @@ public class TileCacheFromTemplate : ExplorerObjectCls<TileCacheGroupExplorerObj
 
     async public Task<IExplorerObject?> CreateExplorerObjectAsync(IApplicationScope appScope, IExplorerObject parentExObject)
     {
-        var model = await appScope.ToScopeService().ShowModalDialog(typeof(gView.DataExplorer.Razor.Components.Dialogs.RasterTileCacheImportFromTemplateDialog),
+        var model = await appScope.ToExplorerScopeService().ShowModalDialog(typeof(gView.DataExplorer.Razor.Components.Dialogs.RasterTileCacheImportFromTemplateDialog),
                                                                     "Import from Template",
                                                                     new RasterTileCacheImportFromTemplateModel()
                                                                     {

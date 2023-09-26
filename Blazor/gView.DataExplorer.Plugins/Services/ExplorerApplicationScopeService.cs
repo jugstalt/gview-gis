@@ -21,15 +21,15 @@ namespace gView.DataExplorer.Plugins.Services;
 public class ExplorerApplicationScopeService : ApplictionBusyHandler, IApplicationScope
 {
     private readonly IDialogService _dialogService;
-    IEnumerable<IKnownDialogService> _knownDialogs;
-    private readonly EventBusService _eventBus;
+    private readonly IEnumerable<IKnownDialogService> _knownDialogs;
+    private readonly ExplorerEventBusService _eventBus;
     private readonly IJSRuntime _jsRuntime;
     private readonly ISnackbar _snackbar;
     private readonly ExplorerApplicationScopeServiceOptions _options;
 
     public ExplorerApplicationScopeService(IDialogService dialogService,
                                            IEnumerable<IKnownDialogService> knownDialogs,
-                                           EventBusService eventBus,
+                                           ExplorerEventBusService eventBus,
                                            IJSRuntime jsRuntime,
                                            ISnackbar snackbar,
                                            IOptions<ExplorerApplicationScopeServiceOptions> options)
@@ -75,7 +75,7 @@ public class ExplorerApplicationScopeService : ApplictionBusyHandler, IApplicati
     public IExplorerObject? CurrentExplorerObject { get; private set; }
     public IEnumerable<IExplorerObject>? ContextExplorerObjects { get; private set; }
 
-    public EventBusService EventBus => _eventBus;
+    public ExplorerEventBusService EventBus => _eventBus;
 
     async public Task<T?> ShowModalDialog<T>(Type razorComponent,
                                              string title,

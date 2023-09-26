@@ -26,7 +26,7 @@ internal class RepairSpatialIndex : IExplorerObjectContextTool
 
     async public Task<bool> OnEvent(IApplicationScope scope, IExplorerObject exObject)
     {
-        var scopeService = scope.ToScopeService();
+        var scopeService = scope.ToExplorerScopeService();
         var instance = await exObject.GetInstanceAsync();
 
         List<CommandItem> commandItems = new();

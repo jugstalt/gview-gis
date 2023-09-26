@@ -23,7 +23,7 @@ public class Rename : IExplorerTool
 
     public bool IsEnabled(IApplicationScope scope)
     {
-        var scopeService = scope.ToScopeService();
+        var scopeService = scope.ToExplorerScopeService();
 
         return scopeService.ContextExplorerObjects?
             .Where(e => e is IExplorerObjectRenamable)
@@ -32,7 +32,7 @@ public class Rename : IExplorerTool
 
     async public Task<bool> OnEvent(IApplicationScope scope)
     {
-        var scopeService = scope.ToScopeService();
+        var scopeService = scope.ToExplorerScopeService();
 
         var exObject = scopeService.ContextExplorerObjects?
             .Where(e => e is IExplorerObjectRenamable)

@@ -26,7 +26,7 @@ internal class ObjectInfo : IExplorerTool
 
     public bool IsEnabled(IApplicationScope scope)
     {
-        var scopeService = scope.ToScopeService();
+        var scopeService = scope.ToExplorerScopeService();
 
         if (scopeService.ContextExplorerObjects != null &&
             scopeService.ContextExplorerObjects.Count() == 1)
@@ -44,7 +44,7 @@ internal class ObjectInfo : IExplorerTool
 
     async public Task<bool> OnEvent(IApplicationScope scope)
     {
-        var scopeService = scope.ToScopeService();
+        var scopeService = scope.ToExplorerScopeService();
 
         if (scopeService.ContextExplorerObjects is not null &&
             scopeService.ContextExplorerObjects.Count() == 1)

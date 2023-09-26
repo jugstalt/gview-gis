@@ -32,7 +32,7 @@ internal class AddImages : IExplorerObjectContextTool
 
     async public Task<bool> OnEvent(IApplicationScope scope, IExplorerObject exObject)
     {
-        var scopeService = scope.ToScopeService();
+        var scopeService = scope.ToExplorerScopeService();
         var instance = await exObject.GetInstanceAsync() as IRasterCatalogClass;
 
         var model = await scopeService.ShowModalDialog(typeof(gView.DataExplorer.Razor.Components.Dialogs.ImageDatasetImportFolder),

@@ -23,7 +23,7 @@ namespace gView.DataExplorer.Plugins.ExplorerTools
 
         public bool IsEnabled(IApplicationScope scope)
         {
-            var scopeService = scope.ToScopeService();
+            var scopeService = scope.ToExplorerScopeService();
 
             return scopeService.ContextExplorerObjects?
                 .Where(e => e is IExplorerObjectDeletable)
@@ -32,7 +32,7 @@ namespace gView.DataExplorer.Plugins.ExplorerTools
 
         async public Task<bool> OnEvent(IApplicationScope scope)
         {
-            var scopeService = scope.ToScopeService();
+            var scopeService = scope.ToExplorerScopeService();
 
             if (scopeService.ContextExplorerObjects != null && scopeService.ContextExplorerObjects.Any())
             {

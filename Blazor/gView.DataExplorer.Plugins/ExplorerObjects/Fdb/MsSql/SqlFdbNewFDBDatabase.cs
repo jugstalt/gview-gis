@@ -59,7 +59,7 @@ public class SqlFdbNewFDBDatabase : ExplorerObjectCls<SqlFdbExplorerGroupObject>
 
     async public Task<IExplorerObject?> CreateExplorerObjectAsync(IApplicationScope appScope, IExplorerObject parentExObject)
     {
-        var scopeService = appScope.ToScopeService();
+        var scopeService = appScope.ToExplorerScopeService();
 
         var model = await scopeService.ShowModalDialog(typeof(gView.DataExplorer.Razor.Components.Dialogs.CreateFdbDialog),
                                                        "Create FDB",

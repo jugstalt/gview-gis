@@ -51,7 +51,7 @@ public class ArcImsNewConnectionExplorerObject : ExplorerObjectCls<IExplorerObje
 
     async public Task ExplorerObjectDoubleClick(IApplicationScope appScope, ExplorerObjectEventArgs e)
     {
-        var model = await appScope.ToScopeService().ShowModalDialog(
+        var model = await appScope.ToExplorerScopeService().ShowModalDialog(
             typeof(gView.DataExplorer.Razor.Components.Dialogs.ArcImsConnectionDialog),
             "GeoServices Connection",
             new ArcImsConnectionModel());

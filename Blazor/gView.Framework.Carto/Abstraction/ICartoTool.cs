@@ -1,4 +1,5 @@
 ﻿using gView.Framework.Blazor.Services.Abstraction;
+using gView.Framework.UI;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -6,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace gView.Framework.Carto.Abstraction;
 
-public interface ICartoTool
+public interface ICartoTool : IOrder, IDisposable
 {
     string Name { get; }
 
@@ -16,9 +17,9 @@ public interface ICartoTool
 
     ToolType ToolType { get; }
 
-    string Image { get; }
+    string Icon { get; }
 
-    void OnCreate(object hook);
+    CartoToolTarget Target { get; }
 
     Task<bool> OnEvent(IApplicationScope scope);
 }

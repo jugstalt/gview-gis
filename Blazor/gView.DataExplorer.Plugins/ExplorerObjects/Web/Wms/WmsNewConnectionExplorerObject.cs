@@ -54,7 +54,7 @@ public class WmsNewConnectionExplorerObject : ExplorerObjectCls<WmsExplorerObjec
 
     async public Task ExplorerObjectDoubleClick(IApplicationScope appScope, ExplorerObjectEventArgs e)
     {
-        var model = await appScope.ToScopeService().ShowModalDialog(
+        var model = await appScope.ToExplorerScopeService().ShowModalDialog(
             typeof(gView.DataExplorer.Razor.Components.Dialogs.WmsConnectionDialog),
             "WMS/WFS Connection",
             new WmsConnectionModel());

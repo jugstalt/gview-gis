@@ -22,7 +22,7 @@ internal class UpdateConnectionString : IExplorerObjectContextTool
     {
         var connectionString = ((TileCacheDatasetExplorerObject)exObject).GetConnectionString();
 
-        var model = await scope.ToScopeService().ShowModalDialog(typeof(gView.DataExplorer.Razor.Components.Dialogs.RasterTileCacheConnectionDialog),
+        var model = await scope.ToExplorerScopeService().ShowModalDialog(typeof(gView.DataExplorer.Razor.Components.Dialogs.RasterTileCacheConnectionDialog),
                                                                  "Raster-Tile-Cache Connection",
                                                                  connectionString.ToRasterTileCacheConnectionModel());
 

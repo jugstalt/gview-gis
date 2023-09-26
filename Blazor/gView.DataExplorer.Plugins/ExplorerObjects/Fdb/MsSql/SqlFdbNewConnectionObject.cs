@@ -52,7 +52,7 @@ public class SqlFdbNewConnectionObject : ExplorerObjectCls<SqlFdbExplorerGroupOb
 
     async public Task ExplorerObjectDoubleClick(IApplicationScope appScope, ExplorerObjectEventArgs e)
     {
-        var model = await appScope.ToScopeService().ShowKnownDialog(KnownDialogs.ConnectionString,
+        var model = await appScope.ToExplorerScopeService().ShowKnownDialog(KnownDialogs.ConnectionString,
                                                                     model: new ConnectionStringModel("mssql", false));
 
         if (model != null)

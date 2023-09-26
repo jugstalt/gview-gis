@@ -49,7 +49,7 @@ public class OgrNewConnectionObject : ExplorerObjectCls<OgrDatasetGroupObject>,
 
     async public Task ExplorerObjectDoubleClick(IApplicationScope appScope, ExplorerObjectEventArgs e)
     {
-        var model = await appScope.ToScopeService().ShowModalDialog(typeof(gView.DataExplorer.Razor.Components.Dialogs.OgrConnectionDialog),
+        var model = await appScope.ToExplorerScopeService().ShowModalDialog(typeof(gView.DataExplorer.Razor.Components.Dialogs.OgrConnectionDialog),
                                                                     "EventTable Connection",
                                                                     new OgrConnectionModel());
 
