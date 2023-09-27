@@ -1,4 +1,8 @@
-﻿using gView.Framework.Blazor.Services.Abstraction;
+﻿using gView.Carto.Plugins.Extensions;
+using gView.DataExplorer.Razor.Components.Dialogs.Filters;
+using gView.DataExplorer.Razor.Components.Dialogs.Models;
+using gView.Framework.Blazor;
+using gView.Framework.Blazor.Services.Abstraction;
 using gView.Framework.Carto;
 using gView.Framework.Carto.Abstraction;
 using gView.Framework.system;
@@ -30,8 +34,26 @@ public class SaveAsMap : ICartoTool
         return true;
     }
 
-    public Task<bool> OnEvent(IApplicationScope scope)
+    async public Task<bool> OnEvent(IApplicationScope scope)
     {
-        return Task.FromResult(true);
+        var scopeService = scope.ToCartoScopeService();
+
+        var model = await scopeService.ShowKnownDialog(KnownDialogs.ExplorerDialog,
+                                                       title: "Save current map",
+                                                       model: new ExplorerDialogModel()
+                                                       {
+                                                           Filters = new List<ExplorerDialogFilter> {
+                                                                new SaveFileFilter("Map", "*.mxl")
+                                                           },
+                                                           Mode = ExploerDialogMode.Save
+                                                       });
+
+        string? mxlFilename = model?.Result.ExplorerObjects.FirstOrDefault()?.FullName;
+        if (!String.IsNullOrEmpty(mxlFilename))
+        {
+
+        }
+
+        return true;
     }
 }

@@ -122,29 +122,24 @@
         <MudButton Variant="Variant.Filled"
                    Color="Color.Default"
                    OnClick="Close">Cancel</MudButton>
-        <MudButton Variant="Variant.Filled"
-                   Disabled="Model.Result.ExplorerObjects.Count == 0"
-                   Color="Color.Primary"
-                   OnClick="Submit">@(Model.Mode == ExploerDialogMode.Save ? "Create" : "Open")</MudButton>
+        @if(Model.Mode == ExploerDialogMode.Save)
+        {
+            <MudButton Variant="Variant.Filled"
+                       Disabled="!placeToSave"
+                       Color="Color.Primary"
+                       OnClick="Submit">Create</MudButton>
+        } 
+        else 
+        {
+            <MudButton Variant="Variant.Filled"
+                        Disabled="Model.Result.ExplorerObjects.Count == 0"
+                        Color="Color.Primary"
+                        OnClick="Submit">Open</MudButton>
+        }
     </DialogButtons>
 </ModalDialogFormBase>
 
-    @code {
-    //public ExplorerDialogModel Model = new()
-    //    {
-    //        Filters = new List<ExplorerDialogFilter> { 
-    //            new OpenFDBFeatureclassFilter(),
-    //            new OpenShapeFilter() 
-    //        },
-    //        Mode = ExploerDialogMode.Open
-    //    };
-
-    // public ExplorerDialogModel Model = new()
-    //     {
-    //         Filters = SaveFeatureClassFilters.DatabaseFilters,
-    //         Mode = ExploerDialogMode.Save
-    //     };
-
+ @code {
     private List<IExplorerObject> rootExplorerObjects = new();
     private List<IExplorerObject> currentListExplorerObjects = new();
     private Dictionary<IExplorerObject, int> levels = new();
