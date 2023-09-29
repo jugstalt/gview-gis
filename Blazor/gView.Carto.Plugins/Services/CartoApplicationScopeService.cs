@@ -1,5 +1,7 @@
 ﻿using gView.Blazor.Core.Exceptions;
 using gView.Blazor.Core.Services.Abstraction;
+using gView.Carto.Core;
+using gView.Carto.Core.Abstractions;
 using gView.Carto.Core.Services;
 using gView.Framework.Blazor;
 using gView.Framework.Blazor.Models;
@@ -36,12 +38,12 @@ public class CartoApplicationScopeService : ApplictionBusyHandler, IApplicationS
         _snackbar = snackbar;
         _options = options.Value;
 
-        this.Map = new Map();
+        this.Document = new CartoDocument();
     }
 
     public CartoEventBusService EventBus => _eventBus;
 
-    public IMap Map { get; set; }
+    public ICartoDocument Document { get; set; }
 
 
     #region IDisposable

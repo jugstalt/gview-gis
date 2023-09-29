@@ -1,4 +1,5 @@
-﻿using gView.Carto.Plugins.Extensions;
+﻿using gView.Carto.Core;
+using gView.Carto.Plugins.Extensions;
 using gView.Framework.Blazor.Services.Abstraction;
 using gView.Framework.Carto;
 using gView.Framework.Carto.Abstraction;
@@ -7,7 +8,7 @@ using gView.Framework.system;
 namespace gView.Carto.Plugins.CartoTools;
 
 [RegisterPlugIn("D6A44B2E-1883-4D69-984B-2468E98216CD")]
-public class NewMap : ICartoTool
+public class NewDocument : ICartoTool
 {
     public string Name => "New Map";
 
@@ -41,7 +42,7 @@ public class NewMap : ICartoTool
 
         if (model != null)
         {
-            scope.ToCartoScopeService().Map = new Map() { Name = model.Name };
+            scope.ToCartoScopeService().Document = new CartoDocument(model.Name.Trim());
         }
 
         return true;

@@ -1,12 +1,14 @@
-﻿using gView.Framework.Blazor.Services.Abstraction;
+﻿using gView.Carto.Plugins.Extensions;
+using gView.Framework.Blazor.Services.Abstraction;
 using gView.Framework.Carto;
 using gView.Framework.Carto.Abstraction;
+using gView.Framework.IO;
 using gView.Framework.system;
 
 namespace gView.Carto.Plugins.CartoTools;
 
 [RegisterPlugIn("540E07A0-B783-4D6D-AF65-3BC63740A3E9")]
-public class SaveMap : ICartoTool
+public class SaveDocument : ICartoTool
 {
     public string Name => "Save Map";
 
@@ -27,11 +29,23 @@ public class SaveMap : ICartoTool
 
     public bool IsEnabled(IApplicationScope scope)
     {
-        return true;
+        return !String.IsNullOrEmpty(scope.ToCartoScopeService().Document.FilePath);
     }
 
     public Task<bool> OnEvent(IApplicationScope scope)
     {
-        return Task.FromResult(true);
+        var scopeService = scope.ToCartoScopeService();
+
+        if (File.Exists(scopeService.Document.FilePath))
+        {
+            XmlStream stream = new XmlStream("MapApplication", true);
+            stream.Save("MapDocument", scopeService.Document);
+
+            stream.WriteStream(scopeService.Document.FilePath);
+
+            return Task.FromResult(true);
+        }
+
+        return Task.FromResult(false);
     }
 }

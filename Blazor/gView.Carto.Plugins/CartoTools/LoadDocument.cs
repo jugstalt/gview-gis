@@ -1,28 +1,30 @@
-﻿using gView.Carto.Plugins.Extensions;
+﻿using gView.Carto.Core;
+using gView.Carto.Plugins.Extensions;
 using gView.DataExplorer.Razor.Components.Dialogs.Filters;
 using gView.DataExplorer.Razor.Components.Dialogs.Models;
 using gView.Framework.Blazor;
 using gView.Framework.Blazor.Services.Abstraction;
 using gView.Framework.Carto;
 using gView.Framework.Carto.Abstraction;
+using gView.Framework.IO;
 using gView.Framework.system;
 
 namespace gView.Carto.Plugins.CartoTools;
 
-[RegisterPlugIn("1CA4CC29-FA96-4E0B-862F-C1D8CEDA7335")]
-public class SaveAsMap : ICartoTool
+[RegisterPlugIn("891D1698-1D8C-4785-9197-D8EFD8492C23")]
+public class LoadDocument : ICartoTool
 {
-    public string Name => "Save As ...";
+    public string Name => "Open Map";
 
-    public string ToolTip => "Save the current map under a new filename";
+    public string ToolTip => "Open an existing map document";
 
     public ToolType ToolType => ToolType.Command;
 
-    public string Icon => "basic:disks-white";
+    public string Icon => "basic:folder-white";
 
     public CartoToolTarget Target => CartoToolTarget.General;
 
-    public int SortOrder => 3;
+    public int SortOrder => 1;
 
     public void Dispose()
     {
@@ -39,19 +41,29 @@ public class SaveAsMap : ICartoTool
         var scopeService = scope.ToCartoScopeService();
 
         var model = await scopeService.ShowKnownDialog(KnownDialogs.ExplorerDialog,
-                                                       title: "Save current map",
+                                                       title: "Load existing map",
                                                        model: new ExplorerDialogModel()
                                                        {
                                                            Filters = new List<ExplorerDialogFilter> {
-                                                                new SaveFileFilter("Map", "*.mxl")
+                                                                new OpenFileFilter("Map", "*.mxl")
                                                            },
-                                                           Mode = ExploerDialogMode.Save
+                                                           Mode = ExploerDialogMode.Open
                                                        });
 
-        string? mxlFilename = model?.Result.ExplorerObjects.FirstOrDefault()?.FullName;
-        if (!String.IsNullOrEmpty(mxlFilename))
+        string? mxlFilePath = model?.Result.ExplorerObjects.FirstOrDefault()?.FullName;
+        if(!String.IsNullOrEmpty(mxlFilePath))
         {
+            XmlStream stream = new XmlStream("");
+            stream.ReadStream(mxlFilePath);
 
+            var cartoDocument = new CartoDocument()
+            {
+                FilePath = mxlFilePath
+            };
+
+            await stream.LoadAsync("MapDocument", cartoDocument);
+
+            scopeService.Document = cartoDocument;
         }
 
         return true;
