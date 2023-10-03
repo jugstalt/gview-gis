@@ -7,13 +7,13 @@
 @inject ExplorerEventBusService EventBus
 
 
-    <MudTreeView @ref="treeView"
-                  Items="TreeNodes" 
+    <MudTreeView  Items="TreeNodes" 
                   ExpandOnDoubleClick="true" 
                   MultiSelection="false"
                   Hover="true" Dense="true">
         <ItemTemplate>
-            <div style="white-space:nowrap; overflow-x:hidden;" class="treenode @((context == _selected) ? "selected" : "")">
+            <div style="white-space:nowrap; overflow-x:hidden;" 
+                 class="treenode @((context == _selected) ? "selected" : "")">
                <MudTreeViewItem  Value="@context"
                                   Icon=@Icons.FromString(context.Icon)
                                   Items="@context.Children"
@@ -28,7 +28,6 @@
     </MudTreeView>
 
 @code {
-    private MudTreeView<ExplorerTreeNode>? treeView;
     private HashSet<ExplorerTreeNode> TreeNodes { get; set; } = new HashSet<ExplorerTreeNode>();
     private ExplorerTreeNode? _selected = null;
 
