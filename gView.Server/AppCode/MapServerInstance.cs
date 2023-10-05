@@ -99,7 +99,7 @@ public class MapServerInstance : IMapServer
         }
         catch (MapServerException mse)
         {
-            throw mse;
+            throw;
         }
         catch (Exception ex)
         {
@@ -132,7 +132,7 @@ public class MapServerInstance : IMapServer
         }
         catch (MapServerException mse)
         {
-            throw mse;
+            throw;
         }
         catch (Exception ex)
         {
@@ -174,7 +174,7 @@ public class MapServerInstance : IMapServer
         }
         catch (MapServerException mse)
         {
-            throw mse;
+            throw;
         }
         catch (Exception ex)
         {

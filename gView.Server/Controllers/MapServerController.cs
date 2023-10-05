@@ -6,6 +6,7 @@ using gView.Server.AppCode.Extensions;
 using gView.Server.Models;
 using gView.Server.Services.MapServer;
 using gView.Server.Services.Security;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.SqlServer.Management.SqlParser.SqlCodeDom;
 using NuGet.Protocol.Plugins;
@@ -437,9 +438,9 @@ namespace gView.Server.Controllers
 
         private new void AppendEtag(DateTime expires)
         {
-            this.Request.Headers.Add("ETag", expires.Ticks.ToString());
-            this.Request.Headers.Add("Last-Modified", DateTime.UtcNow.ToString("R"));
-            this.Request.Headers.Add("Expires", expires.ToString("R"));
+            this.Request.Headers.Append("ETag", expires.Ticks.ToString());
+            this.Request.Headers.Append("Last-Modified", DateTime.UtcNow.ToString("R"));
+            this.Request.Headers.Append("Expires", expires.ToString("R"));
 
             //this.Response.CacheControl = "private";
             //this.Response.Cache.SetMaxAge(new TimeSpan(24, 0, 0));

@@ -148,10 +148,10 @@ namespace gView.Server.AppCode
 
         public void AppendEtag(DateTime expires)
         {
-            this.Response.Headers.Add("ETag", expires.Ticks.ToString());
-            this.Response.Headers.Add("Last-Modified", DateTime.UtcNow.ToString("R"));
-            this.Response.Headers.Add("Expires", expires.ToString("R"));
-            this.Response.Headers.Add("Cache-Control", "private, max-age=" + (int)(new TimeSpan(24, 0, 0)).TotalSeconds);
+            this.Response.Headers.Append("ETag", expires.Ticks.ToString());
+            this.Response.Headers.Append("Last-Modified", DateTime.UtcNow.ToString("R"));
+            this.Response.Headers.Append("Expires", expires.ToString("R"));
+            this.Response.Headers.Append("Cache-Control", "private, max-age=" + (int)(new TimeSpan(24, 0, 0)).TotalSeconds);
         }
 
         #endregion

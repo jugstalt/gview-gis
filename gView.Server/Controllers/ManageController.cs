@@ -689,7 +689,7 @@ namespace gView.Server.Controllers
             {
                 return Json(new { success = false, error = mse.Message });
             }
-            catch (Exception ex)
+            catch (Exception/* ex*/)
             {
                 return Json(new { success = false, error = $"unknown error" });
             }
