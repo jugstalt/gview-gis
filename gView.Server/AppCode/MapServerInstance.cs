@@ -97,7 +97,7 @@ public class MapServerInstance : IMapServer
                 return await FindServiceMap(name, alias, context);
             }
         }
-        catch (MapServerException mse)
+        catch (MapServerException/* mse*/)
         {
             throw;
         }
@@ -130,7 +130,7 @@ public class MapServerInstance : IMapServer
 
             return services;
         }
-        catch (MapServerException mse)
+        catch (MapServerException/* mse*/)
         {
             throw;
         }
@@ -172,7 +172,7 @@ public class MapServerInstance : IMapServer
 
             return map;
         }
-        catch (MapServerException mse)
+        catch (MapServerException/* mse*/)
         {
             throw;
         }
