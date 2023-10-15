@@ -1,7 +1,13 @@
 (function () {
     let isResizing = false;
-    document.querySelector('.toc-content-splitter').addEventListener('mousedown', function (e) {
-        isResizing = true;
+    //document.querySelector('.toc-content-splitter').addEventListener('mousedown', function (e) {
+    //    isResizing = true;
+    //});
+
+    window.addEventListener('mousedown', function (e) {
+        if (e.target.classList.contains('toc-content-splitter')) {
+            isResizing = true;
+        }
     });
 
     window.addEventListener('mousemove', function (e) {

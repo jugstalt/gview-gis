@@ -1,7 +1,19 @@
 (function () {
     let isResizing = false;
-    document.querySelector('.tree-content-splitter').addEventListener('mousedown', function (e) {
-        isResizing = true;
+
+    //document.addEventListener('DOMContentLoaded', function () {
+    //    document.querySelector('.tree-content-splitter').addEventListener('mousedown', function (e) {
+    //        isResizing = true;
+    //    });
+    //});
+
+    //let splitterElement = document.querySelector('.tree-content-splitter');
+
+    window.addEventListener('mousedown', function (e) {
+        //if (e.target === splitterElement) {
+        if (e.target.classList.contains('tree-content-splitter')) {
+            isResizing = true;
+        }
     });
 
     window.addEventListener('mousemove', function (e) {
