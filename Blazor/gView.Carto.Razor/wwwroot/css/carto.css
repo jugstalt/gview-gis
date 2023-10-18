@@ -93,14 +93,14 @@
         left: 0px;
         top: 102px;
         bottom: 27px;
-        width: 300px;
+        width: 325px;
         /*background: #fff;*/
         overflow: auto;
     }
 
     .carto-main .toc-content-splitter {
         position: absolute;
-        left: 300px;
+        left: 325px;
         width: 5px;
         top: 102px;
         bottom: 27px;
@@ -109,7 +109,7 @@
 
     .carto-main .content {
         position: absolute;
-        left: 305px;
+        left: 330px;
         top: 102px;
         right: 0px;
         bottom: 27px;
