@@ -34,7 +34,9 @@
     {
         await base.OnInitializedAsync();
 
-        TreeNodes.Add(new TocMapNode((ICartoApplicationScopeService)AppScope));
+        var tocMapNode = new TocMapNode((ICartoApplicationScopeService)AppScope);
+        TreeNodes.Add(tocMapNode);
+        await tocMapNode.Rebuild();
 
         EventBus.OnRefreshContentTreeAsync += RefreshContentTree;
     }
