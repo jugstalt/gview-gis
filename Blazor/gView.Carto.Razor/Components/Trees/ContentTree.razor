@@ -19,6 +19,7 @@
                               Items="@context.Children"
                               CanExpand="@context.HasChildren"
                               Expanded="@context.IsExpanded"
+                              ExpandedChanged="@((expanded) => OnNodeExpandedChanged(context, expanded))"
                               Text="@context.Text" 
                               @onclick="@(() => OnNodeClickAsync(context))">      
             </MudTreeViewItem>
@@ -37,6 +38,11 @@
 
         EventBus.OnRefreshContentTreeAsync += RefreshContentTree;
     }
+
+    private Task OnNodeExpandedChanged(TocTreeNode node, bool expanded) => base.HandleAsync(async () =>
+    {
+        node.IsExpanded = expanded;
+    });
 
     private Task OnNodeClickAsync(TocTreeNode node) => base.HandleAsync(async () =>
     {
