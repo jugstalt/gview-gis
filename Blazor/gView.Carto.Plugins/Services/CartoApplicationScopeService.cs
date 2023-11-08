@@ -3,19 +3,18 @@ using gView.Blazor.Core.Services.Abstraction;
 using gView.Carto.Core;
 using gView.Carto.Core.Abstractions;
 using gView.Carto.Core.Services;
+using gView.Carto.Core.Services.Abstraction;
 using gView.Framework.Blazor;
 using gView.Framework.Blazor.Models;
 using gView.Framework.Blazor.Services;
 using gView.Framework.Blazor.Services.Abstraction;
-using gView.Framework.Carto;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Options;
 using Microsoft.JSInterop;
 using MudBlazor;
-using System.Runtime.CompilerServices;
 
 namespace gView.Carto.Plugins.Services;
-public class CartoApplicationScopeService : ApplictionBusyHandler, IApplicationScope
+public class CartoApplicationScopeService : ApplictionBusyHandler, IApplicationScope, ICartoApplicationScopeService
 {
     private readonly IDialogService _dialogService;
     private readonly IEnumerable<IKnownDialogService> _knownDialogs;
@@ -23,6 +22,7 @@ public class CartoApplicationScopeService : ApplictionBusyHandler, IApplicationS
     private readonly IJSRuntime _jsRuntime;
     private readonly ISnackbar _snackbar;
     private readonly CartoApplicationScopeServiceOptions _options;
+    private ICartoDocument _cartoDocument;
 
     public CartoApplicationScopeService(IDialogService dialogService,
                                         IEnumerable<IKnownDialogService> knownDialogs,
@@ -32,25 +32,37 @@ public class CartoApplicationScopeService : ApplictionBusyHandler, IApplicationS
                                         IOptions<CartoApplicationScopeServiceOptions> options)
     {
         _dialogService = dialogService;
-        _knownDialogs = knownDialogs;   
+        _knownDialogs = knownDialogs;
         _eventBus = eventBus;
         _jsRuntime = jsRuntime;
         _snackbar = snackbar;
         _options = options.Value;
 
-        this.Document = new CartoDocument();
+        _cartoDocument = this.Document = new CartoDocument();
     }
 
     public CartoEventBusService EventBus => _eventBus;
 
-    public ICartoDocument Document { get; set; }
+    public ICartoDocument Document
+    {
+        get
+        {
+            return _cartoDocument;
+        }
+        set
+        {
+            _cartoDocument = value;
+
+            _eventBus.FireCartoDocumentLoadedAsync(value);
+        }
+    }
 
 
     #region IDisposable
 
     public void Dispose()
     {
-        
+
     }
 
     #endregion

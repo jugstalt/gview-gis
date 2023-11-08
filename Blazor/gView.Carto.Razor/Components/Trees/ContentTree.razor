@@ -5,8 +5,9 @@
 @inject ICartoApplicationService CartoApplication
 @inject IApplicationScope AppScope
 @inject PluginManagerService PluginManager
+@inject CartoEventBusService EventBus
 
-<MudTreeView  Items="TreeNodes" 
+<MudTreeView  Items="TreeNodes"
               ExpandOnClick="true" 
               MultiSelection="false"
               Hover="true" Dense="true">
@@ -14,11 +15,12 @@
         <div style="white-space:nowrap; overflow-x:hidden;"
              class="treenode">
             <MudTreeViewItem Value="@context"
-                             Icon=@Icons.FromString(context.Icon)
-                             Items="@context.Children"
-                             CanExpand="@context.HasChildren"
-                             Expanded="@context.IsExpanded"
-                             Text="@context.Text" >      
+                              Icon=@Icons.FromString(context.Icon)
+                              Items="@context.Children"
+                              CanExpand="@context.HasChildren"
+                              Expanded="@context.IsExpanded"
+                              Text="@context.Text" 
+                              @onclick="@(() => OnNodeClickAsync(context))">      
             </MudTreeViewItem>
         </div>
     </ItemTemplate>
@@ -31,11 +33,30 @@
     {
         await base.OnInitializedAsync();
 
-        TreeNodes.Add(new TocMapNode() { Text = "Map" });
+        TreeNodes.Add(new TocMapNode((ICartoApplicationScopeService)AppScope));
+
+        EventBus.OnRefreshContentTreeAsync += RefreshContentTree;
     }
+
+    private Task OnNodeClickAsync(TocTreeNode node) => base.HandleAsync(async () =>
+    {
+        await EventBus.FireSelectedTocTreeNodeChanged(node);
+    });
+
+    private Task RefreshContentTree()
+        => this.InvokeAsync(() =>
+        {
+            StateHasChanged();
+        });
+   
 
     public void Dispose()
     {
-        
+        EventBus.OnRefreshContentTreeAsync -= RefreshContentTree;
+
+        foreach(var treeNode in TreeNodes)
+        {
+            treeNode?.Dispose();
+        }
     }
 }

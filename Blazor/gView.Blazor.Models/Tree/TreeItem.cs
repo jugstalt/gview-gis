@@ -1,8 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace gView.Blazor.Models.Tree;
 
-public class TreeItem<T>
+abstract public class TreeItem<T> : IDisposable
     where T : TreeItem<T>
 {
     public string Text { get; set; } = string.Empty;
@@ -12,4 +13,6 @@ public class TreeItem<T>
     public HashSet<T>? Children { get; set; }
 
     public object? RefObject { get; set; }
+
+    public abstract void Dispose();
 }

@@ -30,4 +30,9 @@ public class ExplorerTreeNode : TreeItem<ExplorerTreeNode>
 
     public bool IsServerLoaded
         => (this.Children == null || this.Children.FirstOrDefault()?.ExObject is DummyExplorerObject) == false;
+
+    public override void Dispose()
+    {
+        
+    }
 }
