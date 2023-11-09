@@ -9,13 +9,13 @@
 
 <MudTreeView  Items="TreeNodes"
               ExpandOnClick="true" 
-              MultiSelection="false"
+              MultiSelection="true"
               Hover="true" Dense="true">
     <ItemTemplate>
         <div style="white-space:nowrap; overflow-x:hidden;"
              class="treenode">
             <MudTreeViewItem Value="@context"
-                              Icon=@Icons.FromString(context.Icon)
+                             
                               Items="@context.Children"
                               CanExpand="@context.HasChildren"
                               Expanded="@context.IsExpanded"
@@ -35,6 +35,7 @@
         await base.OnInitializedAsync();
 
         TreeNodes.Add(new TocMapNode((ICartoApplicationScopeService)AppScope));
+        SetAppScope((ICartoApplicationScopeService)AppScope);
 
         EventBus.OnRefreshContentTreeAsync += RefreshContentTree;
     }
