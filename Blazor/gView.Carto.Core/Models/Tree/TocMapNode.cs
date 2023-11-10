@@ -1,4 +1,5 @@
 ﻿using gView.Carto.Core.Services.Abstraction;
+using gView.Framework.Carto;
 using gView.Framework.Data;
 using gView.Framework.UI;
 using System.Collections.Generic;
@@ -25,14 +26,20 @@ public class TocMapNode : TocTreeNode
 
     private Task OnCartoDocumentLoadedAsync(Abstractions.ICartoDocument arg)
     {
-        var map = _cartoScope.Document?.Map;
         base.Text = _cartoScope.Document?.Map?.Name ?? "Map";
 
+        return Rebuild();
+    }
+
+    public Task Rebuild()
+    {
         this.Children = new HashSet<TocTreeNode>();
+
+        var map = _cartoScope.Document?.Map;
 
         if (map?.TOC.Elements != null)
         {
-            foreach(var tocElement in map.TOC.Elements)
+            foreach (var tocElement in map.TOC.Elements)
             {
                 TocTreeNode? childTreeNode = tocElement.ElementType switch
                 {
@@ -55,7 +62,7 @@ public class TocMapNode : TocTreeNode
                         var parentTocTreeNode = _treeNodes.FirstOrDefault(t => t.TocElement == tocElement.ParentGroup);
                         if (parentTocTreeNode != null)
                         {
-                            parentTocTreeNode.Children = parentTocTreeNode?.Children ?? new HashSet<TocTreeNode>();
+                            parentTocTreeNode.Children = parentTocTreeNode.Children ?? new HashSet<TocTreeNode>();
                             parentTocTreeNode.Children.Add(childTreeNode);
                         }
                     }
@@ -79,6 +86,19 @@ public class TocParentNode : TocTreeNode
     public TocParentNode(ITOCElement tocElement) : base(tocElement)
     {
         this.Icon = "basic:checkbox-unchecked";
+    }
+
+    public override bool IsExpanded 
+    {
+        get => base.TocElement?.ElementType switch {
+            TOCElementType.ClosedGroup => false,
+            TOCElementType.OpenedGroup => true,
+            _ => false
+        };
+        set 
+        {
+            base.TocElement?.OpenCloseGroup(value);
+        }
     }
 }
 

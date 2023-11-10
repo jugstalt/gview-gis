@@ -8,7 +8,7 @@ abstract public class TreeItem<T> : IDisposable
 {
     public string Text { get; set; } = string.Empty;
     public string Icon { get; set; } = string.Empty;
-    public bool IsExpanded { get; set; }
+    virtual public bool IsExpanded { get; set; }
     public bool HasChildren { get; set; }
     public HashSet<T>? Children { get; set; }
 
