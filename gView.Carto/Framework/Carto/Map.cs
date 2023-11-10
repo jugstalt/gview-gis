@@ -139,7 +139,7 @@ namespace gView.Framework.Carto
                         layer = LayerFactory.Create(wClass, element as ILayer);
                         layer.ID = _layerIDSequece.Number;
 
-                        ITOCElement tocElement = _toc.GetTOCElement(element as ILayer);
+                        ITocElement tocElement = _toc.GetTOCElement(element as ILayer);
                         if (tocElement != null)
                         {
                             tocElement.RemoveLayer(element as ILayer);
@@ -177,7 +177,7 @@ namespace gView.Framework.Carto
 
                         layer.ID = _layerIDSequece.Number;
 
-                        ITOCElement tocElement = _toc.GetTOCElement(element as ILayer);
+                        ITocElement tocElement = _toc.GetTOCElement(element as ILayer);
                         if (tocElement != null)
                         {
                             tocElement.RemoveLayer(element as ILayer);
@@ -204,8 +204,8 @@ namespace gView.Framework.Carto
                         continue;
                     }
 
-                    ITOCElement newTocElement = _toc.GetTOCElement(layer);
-                    ITOCElement oriTocElement = map.TOC.GetTOCElement(element as ILayer);
+                    ITocElement newTocElement = _toc.GetTOCElement(layer);
+                    ITocElement oriTocElement = map.TOC.GetTOCElement(element as ILayer);
                     if (newTocElement != null && oriTocElement != null)
                     {
                         _toc.RenameElement(newTocElement, oriTocElement.Name);
@@ -218,7 +218,7 @@ namespace gView.Framework.Carto
                             IGroupLayer newGroupLayer;
                             if (groupLayers.TryGetValue(oriTocElement.ParentGroup.Layers[0] as IGroupLayer, out newGroupLayer))
                             {
-                                ITOCElement newGroupElement = _toc.GetTOCElement(newGroupLayer);
+                                ITocElement newGroupElement = _toc.GetTOCElement(newGroupLayer);
                                 if (newGroupLayer != null)
                                 {
                                     _toc.Add2Group(newTocElement, newGroupElement);
@@ -980,7 +980,7 @@ namespace gView.Framework.Carto
             mapRenderInstance.HighlightGeometry(geometry, milliseconds);
         }
 
-        public ITOC TOC
+        public IToc TOC
         {
             get
             {
@@ -1439,7 +1439,7 @@ namespace gView.Framework.Carto
             }
 
             stream.Load("IClasses", null, new PersistableClasses(_layers));
-            _toc = (TOC)await stream.LoadAsync<ITOC>("ITOC", new TOC(this));
+            _toc = (TOC)await stream.LoadAsync<IToc>("ITOC", new TOC(this));
 
             stream.Load("IGraphicsContainer", null, this.GraphicsContainer);
 
@@ -1752,7 +1752,7 @@ namespace gView.Framework.Carto
                 }
             }
         }
-        public ITOC PublicTOC
+        public IToc PublicTOC
         {
             get { return _toc; }
         }

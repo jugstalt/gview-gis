@@ -387,7 +387,7 @@ namespace gView.Interoperability.ArcXML
                 // Besser layer als layer.Class verwendenden, weil Class von mehrerenen Layern
                 // verwendet werden kann zB bei gesplitteten Layern...
                 //ITOCElement tocElement = map.TOC.GetTOCElement(layer.Class);
-                ITOCElement tocElement = map.TOC.GetTOCElement(layer);
+                ITocElement tocElement = map.TOC.GetTOCElement(layer);
                 if (tocElement != null)
                 {
                     return tocElement.Name;

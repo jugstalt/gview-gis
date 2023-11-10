@@ -162,8 +162,8 @@ namespace gView.Plugins.DbTools.Migrate
 
                     migMap.AddLayer(layer);
 
-                    ITOCElement tocElement = migMap.TOC.GetTOCElement(layer);
-                    ITOCElement sourceTocElement = _map.TOC.GetTOCElement(sourceLayer);
+                    ITocElement tocElement = migMap.TOC.GetTOCElement(layer);
+                    ITocElement sourceTocElement = _map.TOC.GetTOCElement(sourceLayer);
                     if (tocElement != null && sourceTocElement != null)
                     {
                         tocElement.Name = sourceTocElement.Name;

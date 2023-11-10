@@ -544,7 +544,7 @@ namespace gView.Plugins.Editor
                 // Besser layer als layer.Class verwendenden, weil Class von mehrerenen Layern
                 // verwendet werden kann zB bei gesplitteten Layern...
                 //ITOCElement tocElement = map.TOC.GetTOCElement(editLayer.FeatureLayer.FeatureClass);
-                ITOCElement tocElement = map.TOC.GetTOCElement(editLayer.FeatureLayer);
+                ITocElement tocElement = map.TOC.GetTOCElement(editLayer.FeatureLayer);
                 if (tocElement == null)
                 {
                     continue;

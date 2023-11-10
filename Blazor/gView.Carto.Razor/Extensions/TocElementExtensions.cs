@@ -6,12 +6,12 @@ namespace gView.Carto.Razor.Extensions;
 
 static internal class TocElementExtensions
 {
-    static public bool HasLegendItems(this ITOCElement tocElement)
+    static public bool HasLegendItems(this ITocElement tocElement)
         => tocElement?.Layers?.Any(l =>
                 l is IFeatureLayer fLayer
                 && fLayer.FeatureRenderer?.Symbols?.Any() == true) == true;
 
-    static public IEnumerable<ISymbol> GetLegendItems(this ITOCElement tocElement)
+    static public IEnumerable<ISymbol> GetLegendItems(this ITocElement tocElement)
     {
         List<ISymbol> items = new List<ISymbol>();
 

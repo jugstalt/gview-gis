@@ -18,7 +18,7 @@ namespace gView.Framework.Carto
         string Name { get; }
         string Title { get; }
         IDisplay Display { get; }
-        ITOC TOC { get; }
+        IToc TOC { get; }
 
         List<IDatasetElement> MapElements { get; }
 

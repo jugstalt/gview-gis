@@ -411,7 +411,7 @@ namespace gView.Interoperability.GeoServices.Request
             }
         }
 
-        private bool LayerAndParentIsInArray(IServiceMap map, ITOCElement tocElement, int[] layerIds)
+        private bool LayerAndParentIsInArray(IServiceMap map, ITocElement tocElement, int[] layerIds)
         {
             if (tocElement == null)
             {
@@ -436,7 +436,7 @@ namespace gView.Interoperability.GeoServices.Request
             return true;
         }
 
-        private bool LayerOrParentIsInArray(IServiceMap map, ITOCElement tocElement, int[] layerIds)
+        private bool LayerOrParentIsInArray(IServiceMap map, ITocElement tocElement, int[] layerIds)
         {
             while (tocElement != null)
             {

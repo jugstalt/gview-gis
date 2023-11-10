@@ -6,9 +6,9 @@ namespace gView.Carto.Core.Models.Tree;
 
 public class TocTreeNode : TreeItem<TocTreeNode>
 {
-    private readonly ITOCElement _tocElement;
+    private readonly ITocElement _tocElement;
 
-    public TocTreeNode(ITOCElement tocElement)
+    public TocTreeNode(ITocElement tocElement)
     {
         _tocElement = tocElement;
 
@@ -18,7 +18,7 @@ public class TocTreeNode : TreeItem<TocTreeNode>
         }
     }
 
-    public ITOCElement TocElement => _tocElement;
+    public ITocElement TocElement => _tocElement;
 
     public override void Dispose()
     {

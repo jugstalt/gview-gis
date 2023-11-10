@@ -194,7 +194,7 @@ namespace gView.Server.AppCode
         }
         async public Task<IBitmap> Legend()
         {
-            ITOC toc = _toc.Clone(this) as ITOC;
+            IToc toc = _toc.Clone(this) as IToc;
 
             #region WebServiceLayer
             List<IWebServiceLayer> webServices;
@@ -242,7 +242,7 @@ namespace gView.Server.AppCode
                     // Besser layer als layer.Class verwendenden, weil Class von mehrerenen Layern
                     // verwendet werden kann zB bei gesplitteten Layern...
                     //ITOCElement tocElement = toc.GetTOCElement(element.Class);
-                    ITOCElement tocElement = toc.GetTOCElement(element);
+                    ITocElement tocElement = toc.GetTOCElement(element);
                     tocElement.RemoveLayer(element);
                     tocElement.AddLayer(wsLayer);
 
@@ -324,7 +324,7 @@ namespace gView.Server.AppCode
                         // Besser layer als layer.Class verwendenden, weil Class von mehrerenen Layern
                         // verwendet werden kann zB bei gesplitteten Layern...
                         //ITOCElement tocElement = toc.GetTOCElement(layer.Class);
-                        ITOCElement tocElement = toc.GetTOCElement(layer);
+                        ITocElement tocElement = toc.GetTOCElement(layer);
                         tocElement.RemoveLayer(element as ILayer);
                         tocElement.AddLayer(newLayer);
                     }

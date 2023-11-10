@@ -5,7 +5,7 @@ namespace gView.Carto.Core.Models.Tree;
 
 public class TocParentNode : TocTreeNode
 {
-    public TocParentNode(ITOCElement tocElement) : base(tocElement)
+    public TocParentNode(ITocElement tocElement) : base(tocElement)
     {
         this.Icon = "basic:checkbox-unchecked";
     }
@@ -14,8 +14,8 @@ public class TocParentNode : TocTreeNode
     {
         get => base.TocElement?.ElementType switch
         {
-            TOCElementType.ClosedGroup => false,
-            TOCElementType.OpenedGroup => true,
+            TocElementType.ClosedGroup => false,
+            TocElementType.OpenedGroup => true,
             _ => false
         };
         set

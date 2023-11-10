@@ -374,7 +374,7 @@ public class MapServerInstance : IMapServer
                 // alle webServiceThemes im TOC vereinigen...
                 if (newMap.TOC != null)
                 {
-                    foreach (ITOCElement tocElement in newMap.TOC.Elements)
+                    foreach (ITocElement tocElement in newMap.TOC.Elements)
                     {
                         if (tocElement == null ||
                             tocElement.Layers == null)

@@ -295,7 +295,7 @@ namespace gView.Plugins.MapTools
 
                     if (map.TOC != null)
                     {
-                        ITOCElement tocElement = map.TOC.GetTOCElement(layer);
+                        ITocElement tocElement = map.TOC.GetTOCElement(layer);
                         if (tocElement != null)
                         {
                             title = tocElement.Name;
@@ -417,7 +417,7 @@ namespace gView.Plugins.MapTools
 
                             if (map.TOC != null)
                             {
-                                ITOCElement tocElement = map.TOC.GetTOCElement(layer);
+                                ITocElement tocElement = map.TOC.GetTOCElement(layer);
                                 if (tocElement != null)
                                 {
                                     title = tocElement.Name;

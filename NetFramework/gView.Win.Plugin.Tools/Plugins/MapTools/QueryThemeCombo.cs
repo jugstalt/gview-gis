@@ -59,7 +59,7 @@ namespace gView.Plugins.MapTools
         }
         private void RebuildDefaultCombo()
         {
-            ITOCElement selectedElement = null;
+            ITocElement selectedElement = null;
             if (_dropDown.SelectedItem is TOCElementItem)
             {
                 selectedElement = ((TOCElementItem)_dropDown.SelectedItem).Element;
@@ -73,7 +73,7 @@ namespace gView.Plugins.MapTools
 
             if (_doc != null && _doc.FocusMap != null && _doc.FocusMap.TOC != null)
             {
-                foreach (ITOCElement element in _doc.FocusMap.TOC.Elements)
+                foreach (ITocElement element in _doc.FocusMap.TOC.Elements)
                 {
                     foreach (ILayer layer in element.Layers)
                     {

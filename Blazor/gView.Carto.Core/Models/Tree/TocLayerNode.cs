@@ -7,7 +7,7 @@ namespace gView.Carto.Core.Models.Tree;
 
 public class TocLayerNode : TocTreeNode
 {
-    public TocLayerNode(ITOCElement tocElement) : base(tocElement)
+    public TocLayerNode(ITocElement tocElement) : base(tocElement)
     {
         this.Icon = "basic:checkbox-checked";
 

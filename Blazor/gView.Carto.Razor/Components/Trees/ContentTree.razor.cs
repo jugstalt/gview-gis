@@ -49,10 +49,10 @@ namespace gView.Carto.Razor.Components.Trees
                 {
                     TocTreeNode? childTreeNode = tocElement.ElementType switch
                     {
-                        TOCElementType.OpenedGroup => new TocParentNode(tocElement),
-                        TOCElementType.ClosedGroup => new TocParentNode(tocElement),
-                        TOCElementType.Layer => new TocLayerNode(tocElement),
-                        TOCElementType.Legend => new TocLegendNode(tocElement),
+                        TocElementType.OpenedGroup => new TocParentNode(tocElement),
+                        TocElementType.ClosedGroup => new TocParentNode(tocElement),
+                        TocElementType.Layer => new TocLayerNode(tocElement),
+                        TocElementType.Legend => new TocLegendNode(tocElement),
                         _ => null,
                     };
 
