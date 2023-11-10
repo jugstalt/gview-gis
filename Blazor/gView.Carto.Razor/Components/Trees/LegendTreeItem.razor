@@ -1,0 +1,49 @@
+@using gView.Framework.Carto.UI
+@using gView.Framework.Symbology
+
+@if (_legendItems != null)
+{
+    <table style="margin-left: 34px">
+        @foreach(var item in _legendItems)
+        {
+            <tr>
+                <td>
+                    <img src="data:image/png;base64, @(Convert.ToBase64String(RenderSymbol(item)))" />
+                </td>
+                <td>@item.LegendLabel</td>
+            </tr>
+        }
+    </table>
+}
+
+@code {
+    [Parameter] public ITOCElement? ParentElement { get; set; }
+
+    private IEnumerable<ISymbol>? _legendItems;
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+
+        _legendItems = ParentElement?.GetLegendItems();
+    }
+
+    private byte[] RenderSymbol(ISymbol symbol)
+    {
+        var imageBytes = Array.Empty<byte>();
+
+        using (var bitmap = GraphicsEngine.Current.Engine.CreateBitmap(30, 20, GraphicsEngine.PixelFormat.Rgba32))
+        using (var canvas = bitmap.CreateCanvas())
+        using (var memStream = new MemoryStream())
+        {
+            bitmap.MakeTransparent();
+            new SymbolPreview(null).Draw(canvas, new GraphicsEngine.CanvasRectangle(0, 0, 30, 20), symbol, false);
+            bitmap.Save(memStream, GraphicsEngine.ImageFormat.Png);
+
+            imageBytes = memStream.ToArray();
+
+        }
+
+        return imageBytes;
+    }
+}

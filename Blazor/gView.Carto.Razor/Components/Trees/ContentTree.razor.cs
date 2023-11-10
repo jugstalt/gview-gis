@@ -1,6 +1,7 @@
 ﻿using gView.Carto.Core.Abstractions;
 using gView.Carto.Core.Models.Tree;
 using gView.Carto.Core.Services.Abstraction;
+using gView.Framework.Carto;
 using gView.Framework.UI;
 
 namespace gView.Carto.Razor.Components.Trees
@@ -8,25 +9,43 @@ namespace gView.Carto.Razor.Components.Trees
     public partial class ContentTree
     {
         private ICartoApplicationScopeService? _cartoScope;
-        private void SetAppScope(ICartoApplicationScopeService cartoApplicationScopeService)
+
+        private Task SetAppScope(ICartoApplicationScopeService cartoApplicationScopeService)
         {
             _cartoScope = cartoApplicationScopeService;
 
-            _cartoScope.EventBus.OnCartoDocumentLoadedAsync += OnCartoDocumentLoadedAsync;
+            InitEvents();
+
+            return Rebuild();
         }
 
         private Task OnCartoDocumentLoadedAsync(ICartoDocument arg)
         {
-            if(_cartoScope == null)
+            return Rebuild();
+        }
+
+        private async Task Rebuild()
+        {
+            if (_cartoScope == null)
             {
-                return Task.CompletedTask;
+                return;
             }
+
+            TreeNodes.Clear();
 
             var map = _cartoScope.Document?.Map;
 
-            if (map?.TOC.Elements != null)
+            Rebuild(map, null);
+
+            fullReloadKey = Guid.NewGuid();
+            await _cartoScope.EventBus.FireRefreshContentTreeAsync();
+        }
+
+        private void Rebuild(IMap? map, TocTreeNode? parentTreeNode)
+        {
+            if (map?.TOC?.Elements != null)
             {
-                foreach (var tocElement in map.TOC.Elements)
+                foreach (var tocElement in map.TOC.Elements.Where(e => e.ParentGroup == parentTreeNode?.TocElement))
                 {
                     TocTreeNode? childTreeNode = tocElement.ElementType switch
                     {
@@ -39,25 +58,52 @@ namespace gView.Carto.Razor.Components.Trees
 
                     if (childTreeNode != null)
                     {
-                        TreeNodes.Add(childTreeNode);
-                        if (tocElement.ParentGroup == null)
+                        if (parentTreeNode == null)
                         {
-                            this.Children.Add(childTreeNode);
+                            TreeNodes.Add(childTreeNode);
                         }
                         else
                         {
-                            var parentTocTreeNode = TreeNodes.FirstOrDefault(t => t.TocElement == tocElement.ParentGroup);
-                            if (parentTocTreeNode != null)
-                            {
-                                parentTocTreeNode.Children = parentTocTreeNode.Children ?? new HashSet<TocTreeNode>();
-                                parentTocTreeNode.Children.Add(childTreeNode);
-                            }
+                            parentTreeNode.Children = parentTreeNode.Children ?? new HashSet<TocTreeNode>();
+                            parentTreeNode.Children.Add(childTreeNode);
                         }
+                    }
+
+                    if (childTreeNode is TocParentNode)
+                    {
+                        Rebuild(map, childTreeNode);
                     }
                 }
             }
+        }
 
-            return _cartoScope.EventBus.FireRefreshContentTreeAsync();
+        private Task RefreshContentTree()
+            => this.InvokeAsync(() =>
+            {
+                StateHasChanged();
+            });
+
+        private void InitEvents()
+        {
+            EventBus.OnCartoDocumentLoadedAsync += OnCartoDocumentLoadedAsync;
+            EventBus.OnRefreshContentTreeAsync += RefreshContentTree;
+        }
+
+        private void RelaseEvents()
+        {
+            EventBus.OnRefreshContentTreeAsync -= RefreshContentTree;
+            EventBus.OnCartoDocumentLoadedAsync += OnCartoDocumentLoadedAsync;
+        }
+
+        public void Dispose()
+        {
+
+            RelaseEvents();
+
+            foreach (var treeNode in TreeNodes)
+            {
+                treeNode?.Dispose();
+            }
         }
     }
 }

@@ -212,6 +212,11 @@
     }
 }
 
+.grouplayer-text {
+    /*font-weight: bold;*/
+    font-style: italic;
+    color: #008aee;
+}
 
 /* Icons */
 .sketchpen-icon-basic-bg-light-24 {
@@ -235,3 +240,4 @@
 .mud-table-cell {
     white-space: nowrap;
 }
+

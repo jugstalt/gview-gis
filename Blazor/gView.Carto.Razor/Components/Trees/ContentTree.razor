@@ -1,7 +1,7 @@
 @inherits BaseHandler
 @implements IDisposable
 
-@inject IconService Icons
+@inject IconService IconService
 @inject ICartoApplicationService CartoApplication
 @inject IApplicationScope AppScope
 @inject PluginManagerService PluginManager
@@ -10,35 +10,78 @@
 <MudTreeView  Items="TreeNodes"
               ExpandOnClick="true" 
               MultiSelection="true"
-              Hover="true" Dense="true">
+              Hover="true" Dense="true" @key="@fullReloadKey">
     <ItemTemplate>
-        <div style="white-space:nowrap; overflow-x:hidden;"
-             class="treenode">
-            <MudTreeViewItem Value="@context"
+        @if(context is TocLayerNode)
+        {
+            @if(context.TocElement.HasLegendItems())
+            {
+                <div style="white-space:nowrap; overflow-x:hidden;"
+                     class="treenode">
+                    <MudTreeViewItem Value="@context"
+                                     Items="@context.Children"
+                                     CanExpand="@context.HasChildren"
+                                     Expanded="@context.IsExpanded"
+                                     Selected="@context.IsSelected"
+                                     ExpandedIcon="@Icons.Material.Rounded.ArrowRight"
+                                     ExpandedChanged="@((expanded) => OnNodeExpandedChanged(context, expanded))"
+                                     Text="@context.Text"
+                                     @onclick="@(() => OnNodeClickAsync(context))">
+                        @if (context.TocElement.HasLegendItems())
+                        {
+                            <div style="white-space:nowrap; overflow-x:hidden;">
+                                <LegendTreeItem ParentElement="((TocLayerNode)context).TocElement" />
+                            </div>
+                        }
+                    </MudTreeViewItem>
+                </div>
+            } 
+            else
+            {
+                <div style="white-space:nowrap; overflow-x:hidden;"
+                     class="treenode">
+                    <MudTreeViewItem Value="@context"
+                                     Items="@context.Children"
+                                     CanExpand="false"
+                                     Selected="@context.IsSelected"
+                                     Text="@context.Text"
+                                     @onclick="@(() => OnNodeClickAsync(context))">
+                    </MudTreeViewItem>
+                </div>
+            }
+        } 
+        else 
+        {
+            <div style="white-space:nowrap; overflow-x:hidden;"
+                 class="treenode">
+                <MudTreeViewItem Value="@context"
                              
-                              Items="@context.Children"
-                              CanExpand="@context.HasChildren"
-                              Expanded="@context.IsExpanded"
-                              ExpandedChanged="@((expanded) => OnNodeExpandedChanged(context, expanded))"
-                              Text="@context.Text" 
-                              @onclick="@(() => OnNodeClickAsync(context))">      
-            </MudTreeViewItem>
-        </div>
+                                  Items="@context.Children"
+                                  CanExpand="@context.HasChildren"
+                                  Expanded="@context.IsExpanded"
+                                  Selected="@context.IsSelected"
+                                  ExpandedChanged="@((expanded) => OnNodeExpandedChanged(context, expanded))"
+                                  Text="@context.Text"
+                                  TextClass="grouplayer-text"
+                                  @onclick="@(() => OnNodeClickAsync(context))">      
+                </MudTreeViewItem>
+            </div>
+        }
     </ItemTemplate>
 </MudTreeView>
 
 @code {
     private HashSet<TocTreeNode> TreeNodes { get; set; } = new HashSet<TocTreeNode>();
 
+    // force a full reload after rebuild
+    // otherwise some items (legends) will be cached!
+    private object fullReloadKey = Guid.NewGuid();
+
     async protected override Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
 
-        var tocMapNode = new TocMapNode((ICartoApplicationScopeService)AppScope);
-        TreeNodes.Add(tocMapNode);
-        await tocMapNode.Rebuild();
-
-        EventBus.OnRefreshContentTreeAsync += RefreshContentTree;
+        await SetAppScope((ICartoApplicationScopeService)AppScope);        
     }
 
     private Task OnNodeExpandedChanged(TocTreeNode node, bool expanded) => base.HandleAsync(async () =>
@@ -49,22 +92,5 @@
     private Task OnNodeClickAsync(TocTreeNode node) => base.HandleAsync(async () =>
     {
         await EventBus.FireSelectedTocTreeNodeChanged(node);
-    });
-
-    private Task RefreshContentTree()
-        => this.InvokeAsync(() =>
-        {
-            StateHasChanged();
-        });
-   
-
-    public void Dispose()
-    {
-        EventBus.OnRefreshContentTreeAsync -= RefreshContentTree;
-
-        foreach(var treeNode in TreeNodes)
-        {
-            treeNode?.Dispose();
-        }
-    }
+    });    
 }

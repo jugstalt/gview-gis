@@ -10,6 +10,9 @@ abstract public class TreeItem<T> : IDisposable
     public string Icon { get; set; } = string.Empty;
     virtual public bool IsExpanded { get; set; }
     public bool HasChildren { get; set; }
+    
+    virtual public bool IsSelected { get; set; }
+    
     public HashSet<T>? Children { get; set; }
 
     public object? RefObject { get; set; }
