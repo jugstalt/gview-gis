@@ -8,6 +8,7 @@
         GeographicDatumSelectorDialog,
         ConnectionString,
         ExecuteCommand,
-        PropertyGridDialog
+        PropertyGridDialog,
+        WarningsDialog
     }
 }

@@ -205,7 +205,7 @@ namespace gView.Desktop.Wpf.Carto
             if (this.Map != null)
             {
                 TOC objInst = new TOC(this.Map);
-                objInst.Modifier = TOCModifier.Private;
+                objInst.Modifier = TocModifier.Private;
                 _toc = (TOC)stream.Load("ITOC", null, objInst);
                 if (_toc == null)
                 {

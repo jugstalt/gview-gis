@@ -771,10 +771,10 @@ namespace gView.Framework.Carto
 
             if (layer.GroupLayer != null)
             {
-                TOCElement parent = _toc.GetTOCElement(layer.GroupLayer) as TOCElement;
+                TocElement parent = _toc.GetTOCElement(layer.GroupLayer) as TocElement;
                 if (parent != null)
                 {
-                    TOCElement tocElement = _toc.GetTOCElement(layer) as TOCElement;
+                    TocElement tocElement = _toc.GetTOCElement(layer) as TocElement;
                     if (tocElement != null)
                     {
                         tocElement.ParentGroup = parent;

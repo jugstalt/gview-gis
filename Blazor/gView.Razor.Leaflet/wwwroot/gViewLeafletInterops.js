@@ -249,6 +249,13 @@ window.gViewLeafletInterops = {
             gViewLeaflet.maps[mapId] = null;
         }
     },
+    refresh: function (mapId) {
+        const map = gViewLeaflet.maps[mapId];
+        if (map) {
+            console.log('refresh map');
+            map.invalidateSize();
+        }
+    },
     updateImageLayer: function (mapId, layerId, url, southWest, northEast) {
         let layer = gViewLeaflet.layers[mapId].find(l => l.id === layerId);
         if (layer !== undefined) {

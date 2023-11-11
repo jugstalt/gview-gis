@@ -4,7 +4,6 @@ using gView.Framework.Data;
 using gView.Framework.Geometry;
 using gView.Framework.system;
 using gView.GraphicsEngine.Abstraction;
-using Microsoft.SqlServer.Management.SqlParser.SqlCodeDom;
 using System;
 using System.IO;
 using System.Threading.Tasks;
@@ -18,10 +17,12 @@ public class MapRenderService : IDisposable
     private MapRenderInstance2? _renderer;
     private ICancelTracker? _cancelTracker;
 
+    private readonly string _scopeId;
     private readonly GeoTransformerService _geoTransformer;
 
     public MapRenderService(GeoTransformerService geoTransformer)
     {
+        _scopeId = Guid.NewGuid().ToString();
         _geoTransformer = geoTransformer;
     }
 
@@ -36,7 +37,16 @@ public class MapRenderService : IDisposable
 
     #endregion
 
-    public void InitMap(ISpatialReference mapSRef)
+    public Map CreateMap(ISpatialReference mapSRef)
+    {
+        var map = new Map();
+        map.Display.SpatialReference = mapSRef;
+        map.MakeTransparent = true;
+
+        return map;
+    }
+
+    public void InitMap(Map map)
     {
         ReleaseCurrentMapRendererInstance();
 
@@ -56,15 +66,13 @@ public class MapRenderService : IDisposable
             _map.DoRefreshMapView -= MakeMapViewRefresh;
         }
 
-        _map = new Map();
-        _map.Display.SpatialReference = mapSRef;
-        _map.MakeTransparent = true;
+        _map = map;
 
         #region Recover current extend and size
 
         if (bounds != null && iWidth.HasValue && iHeight.HasValue && sRef != null)
         {
-            bounds = _geoTransformer.Transform(bounds, sRef, mapSRef).Envelope;
+            bounds = _geoTransformer.Transform(bounds, sRef, _map.SpatialReference).Envelope;
             _map.Envelope = bounds;
             _map.iWidth = iWidth.Value;
             _map.iHeight = iHeight.Value;
@@ -89,7 +97,7 @@ public class MapRenderService : IDisposable
 
     public IEnvelope Bounds => _map?.Envelope ?? Envelope.Null();
     public int ImageWidth => _map?.iWidth ?? 0;
-    public int ImageHeight=> _map?.iHeight ?? 0;
+    public int ImageHeight => _map?.iHeight ?? 0;
     public bool BoundsIntialized() => _map != null &&
         _map?.Envelope != null &&
         !Envelope.IsNull(_map?.Envelope) &&
@@ -101,7 +109,7 @@ public class MapRenderService : IDisposable
 
     #endregion
 
-    public bool AddWebFeatureClass(IWebFeatureClass webFeatureClass,IWebServiceClass webServiceClass)
+    public bool AddWebFeatureClass(IWebFeatureClass webFeatureClass, IWebServiceClass webServiceClass)
     {
         MapRendererNotIntializedException.ThrowIfNull(_map);
         _map.AddLayer(LayerFactory.Create(webServiceClass));
@@ -159,6 +167,26 @@ public class MapRenderService : IDisposable
     public void CancelRender()
     {
         _cancelTracker?.Cancel();
+    }
+
+    public async Task Rerender(int delay = 0)
+    {
+        if (delay <= 0)
+        {
+            CancelRender();
+            BeginRender();
+        }
+
+        using (var mutex = await FuzzyMutexAsync.LockAsync(_scopeId))
+        {
+            if (mutex.WasBlocked == false)
+            {
+                await Task.Delay(delay);
+
+                CancelRender();
+                BeginRender();
+            }
+        }
     }
 
     #region Helper

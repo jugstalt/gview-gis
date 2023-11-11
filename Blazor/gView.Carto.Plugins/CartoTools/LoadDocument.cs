@@ -6,6 +6,7 @@ using gView.Framework.Blazor;
 using gView.Framework.Blazor.Services.Abstraction;
 using gView.Framework.Carto;
 using gView.Framework.Carto.Abstraction;
+using gView.Framework.Carto.UI;
 using gView.Framework.IO;
 using gView.Framework.system;
 
@@ -63,6 +64,21 @@ public class LoadDocument : ICartoTool
 
             await stream.LoadAsync("MapDocument", cartoDocument);
 
+            if (cartoDocument.Map?.ErrorMessages?.Any() == true)
+            {
+                if(await scopeService.ShowKnownDialog(
+                                    KnownDialogs.WarningsDialog,
+                                    model: new WarningsDialogModel() 
+                                    { 
+                                        Warnings = cartoDocument.Map.ErrorMessages 
+                                    })
+                    is null)
+                {
+                    return false;
+                }
+            }
+
+            //((TOC)cartoDocument.Map.TOC).Modifier = TocModifier.Private;
             scopeService.Document = cartoDocument;
         }
 

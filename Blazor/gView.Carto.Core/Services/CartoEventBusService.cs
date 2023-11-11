@@ -22,4 +22,8 @@ public class CartoEventBusService
     public event Func<Task>? OnRefreshContentTreeAsync;
     public Task FireRefreshContentTreeAsync()
         => OnRefreshContentTreeAsync?.FireAsync() ?? Task.CompletedTask;
+
+    public event Func<int, Task>? OnRefreshMapAsync;
+    public Task FireRefreshMapAsync(int delay = 0)
+        => OnRefreshMapAsync?.FireAsync(delay) ?? Task.CompletedTask;
 }

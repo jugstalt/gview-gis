@@ -8,8 +8,8 @@
 @inject CartoEventBusService EventBus
 
 <MudTreeView  Items="TreeNodes"
-              ExpandOnClick="true" 
-              MultiSelection="true"
+              ExpandOnDoubleClick="true" 
+              MultiSelection="false" 
               Hover="true" Dense="true" @key="@fullReloadKey">
     <ItemTemplate>
         @if(context is TocLayerNode)
@@ -25,8 +25,10 @@
                                      Selected="@context.IsSelected"
                                      ExpandedIcon="@Icons.Material.Rounded.ArrowRight"
                                      ExpandedChanged="@((expanded) => OnNodeExpandedChanged(context, expanded))"
+                                     SelectedChanged="((selected) => OnNodeSelectedAsync(context, selected))"
                                      Text="@context.Text"
-                                     @onclick="@(() => OnNodeClickAsync(context))">
+                                     Icon="@CheckboxIcon(context)"
+                                     @onclick="@((e) => OnNodeClickAsync(context, e))">
                         @if (context.TocElement.HasLegendItems())
                         {
                             <div style="white-space:nowrap; overflow-x:hidden;">
@@ -44,8 +46,10 @@
                                      Items="@context.Children"
                                      CanExpand="false"
                                      Selected="@context.IsSelected"
+                                     SelectedChanged="((selected) => OnNodeSelectedAsync(context, selected))"
                                      Text="@context.Text"
-                                     @onclick="@(() => OnNodeClickAsync(context))">
+                                     Icon="@CheckboxIcon(context)"
+                                     @onclick="@((e) => OnNodeClickAsync(context,e))">
                     </MudTreeViewItem>
                 </div>
             }
@@ -55,15 +59,16 @@
             <div style="white-space:nowrap; overflow-x:hidden;"
                  class="treenode">
                 <MudTreeViewItem Value="@context"
-                             
-                                  Items="@context.Children"
-                                  CanExpand="@context.HasChildren"
-                                  Expanded="@context.IsExpanded"
-                                  Selected="@context.IsSelected"
-                                  ExpandedChanged="@((expanded) => OnNodeExpandedChanged(context, expanded))"
-                                  Text="@context.Text"
-                                  TextClass="grouplayer-text"
-                                  @onclick="@(() => OnNodeClickAsync(context))">      
+                                 Items="@context.Children"
+                                 CanExpand="@context.HasChildren"
+                                 Expanded="@context.IsExpanded"
+                                 Selected="@context.IsSelected"
+                                 ExpandedChanged="@((expanded) => OnNodeExpandedChanged(context, expanded))"
+                                 SelectedChanged="((selected) => OnNodeSelectedAsync(context, selected))"
+                                 Text="@context.Text"
+                                 Icon="@CheckboxIcon(context)"
+                                 TextClass="grouplayer-text"
+                                 @onclick="@((e) => OnNodeClickAsync(context,e))">
                 </MudTreeViewItem>
             </div>
         }
@@ -84,13 +89,60 @@
         await SetAppScope((ICartoApplicationScopeService)AppScope);        
     }
 
-    private Task OnNodeExpandedChanged(TocTreeNode node, bool expanded) => base.HandleAsync(async () =>
+    private Task OnNodeExpandedChanged(TocTreeNode node, bool expanded) => base.HandleAsync(() =>
     {
         node.IsExpanded = expanded;
+
+        return Task.CompletedTask;
     });
 
-    private Task OnNodeClickAsync(TocTreeNode node) => base.HandleAsync(async () =>
+    private Task OnNodeSelectedAsync(TocTreeNode node, bool selected) => base.HandleAsync(async () =>
     {
-        await EventBus.FireSelectedTocTreeNodeChanged(node);
-    });    
+        node.IsSelected = selected;
+
+        await EventBus.FireRefreshMapAsync(500);
+    });
+
+    private string CheckboxIcon(TocTreeNode node)
+    {
+        return node.IsSelected 
+        ? IconService.FromString("basic:checkbox-checked")
+        : IconService.FromString("basic:checkbox-unchecked");
+    }
+
+    private void OnIconClicked(TocTreeNode node)
+    {
+        node.IsSelected = !node.IsSelected;
+    }
+
+    private Task OnNodeClickAsync(TocTreeNode node, MouseEventArgs e) => base.HandleAsync(async () =>
+    {
+        var level = GetLevel(node);
+        int clientX = level * 20 + 48; // empirical
+
+        if (e.ClientX > clientX && e.ClientX < clientX + 20)
+        {
+            OnIconClicked(node);
+        }
+        else
+        {
+            await EventBus.FireSelectedTocTreeNodeChanged(node);
+        }
+    });
+
+    #region Helper
+
+    private int GetLevel(TocTreeNode? node, int level = 0)
+    {
+        if(node?.TocElement.ParentGroup==null)
+        {
+            return level;
+        }
+
+        var parent = TreeNodes.FirstOrDefault(n => n.TocElement == node.TocElement.ParentGroup);
+
+        return GetLevel(parent, level + 1);
+    }
+
+    #endregion
 }
