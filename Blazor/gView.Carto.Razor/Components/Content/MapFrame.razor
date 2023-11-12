@@ -25,6 +25,8 @@
 
         EventBus.OnCartoDocumentLoadedAsync += OnCartoDocumentLoadedAsync;
         EventBus.OnRefreshMapAsync += OnRefreshMapAsync;
+        EventBus.OnMapSettingsChangedAsync += OnMapSettingsChanged;
+        EventBus.OnMapZoomToAsync += OnMapZoomToAsync;
         MapRenderer.OnRefreshMapImage += OnRefreshMapImage;
 
         await OnCartoDocumentLoadedAsync(((ICartoApplicationScopeService)AppScope).Document);
@@ -47,14 +49,30 @@
             {
                 var boundsWgs84 = GeoTransformer.ToWGS84(new Envelope(mapBounds), map.SpatialReference).Envelope;
 
-                MapControl.FitBounds(new LatLng(boundsWgs84.LowerLeft.Y, boundsWgs84.LowerLeft.X),
-                                     new LatLng(boundsWgs84.UpperRight.Y, boundsWgs84.UpperRight.X));
+                await MapControl.FitBounds(new LatLng(boundsWgs84.LowerLeft.Y, boundsWgs84.LowerLeft.X),
+                                           new LatLng(boundsWgs84.UpperRight.Y, boundsWgs84.UpperRight.X));
             }
         }
     });
 
     private Task OnRefreshMapAsync(int delay) => HandleAsync(() =>
         MapRenderer.Rerender(delay));
+
+    private Task OnMapSettingsChanged() => HandleAsync(() =>
+        MapRenderer.Rerender(300));
+
+
+    private Task OnMapZoomToAsync(IEnvelope zoomTo) => HandleAsync(async () =>
+    {
+        if(MapControl is not null) 
+        {
+            var zoomToWgs84 = GeoTransformer.ToWGS84(zoomTo, _mapSRef).Envelope;
+
+            await MapControl.FitBounds(
+                new LatLng(zoomToWgs84.LowerLeft.Y, zoomToWgs84.LowerLeft.X),
+                new LatLng(zoomToWgs84.UpperRight.Y, zoomToWgs84.UpperRight.X));
+        }
+    });
 
     async private Task OnRefreshMapImage(byte[]? data)
     {
@@ -133,8 +151,8 @@
             Opacity = 0.2
         });
 
-        MapControl.FitBounds(new LatLng(-80,-180),
-                             new LatLng( 80, 180));
+        await MapControl.FitBounds(new LatLng(-80,-180),
+                                   new LatLng( 80, 180));
 
         // IEnvelope? dataEnvelope = null;
         // ISpatialReference? dataSRef = null;
@@ -199,6 +217,8 @@
     {
         EventBus.OnCartoDocumentLoadedAsync -= OnCartoDocumentLoadedAsync;
         EventBus.OnRefreshMapAsync -= OnRefreshMapAsync;
+        EventBus.OnMapSettingsChangedAsync -= OnMapSettingsChanged;
+        EventBus.OnMapZoomToAsync -= OnMapZoomToAsync;
         MapRenderer.OnRefreshMapImage -= OnRefreshMapImage;
 
         await DestroyMapControl();

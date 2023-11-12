@@ -24,6 +24,11 @@ namespace gView.Carto.Razor.Components.Trees
             return Rebuild();
         }
 
+        private Task OnMapSettingsChangedAsync()
+        {
+            return Rebuild();
+        }
+
         private async Task Rebuild()
         {
             if (_cartoScope == null)
@@ -86,13 +91,16 @@ namespace gView.Carto.Razor.Components.Trees
         private void InitEvents()
         {
             EventBus.OnCartoDocumentLoadedAsync += OnCartoDocumentLoadedAsync;
+            EventBus.OnMapSettingsChangedAsync += OnMapSettingsChangedAsync;
             EventBus.OnRefreshContentTreeAsync += RefreshContentTree;
         }
 
         private void RelaseEvents()
         {
             EventBus.OnRefreshContentTreeAsync -= RefreshContentTree;
-            EventBus.OnCartoDocumentLoadedAsync += OnCartoDocumentLoadedAsync;
+            EventBus.OnMapSettingsChangedAsync -= OnMapSettingsChangedAsync;
+            EventBus.OnCartoDocumentLoadedAsync -= OnCartoDocumentLoadedAsync;
+
         }
 
         public void Dispose()

@@ -199,8 +199,8 @@
                 }
             }
 
-            MapControl.FitBounds(new LatLng(lMapBounds.LowerLeft.Y, lMapBounds.LowerLeft.X),
-                             new LatLng(lMapBounds.UpperRight.Y, lMapBounds.UpperRight.X));
+            await MapControl.FitBounds(new LatLng(lMapBounds.LowerLeft.Y, lMapBounds.LowerLeft.X),
+                                       new LatLng(lMapBounds.UpperRight.Y, lMapBounds.UpperRight.X));
         }
     });
 

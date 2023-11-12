@@ -5,7 +5,9 @@ using gView.Framework.Blazor;
 using gView.Framework.Blazor.Services.Abstraction;
 using gView.Framework.Carto;
 using gView.Framework.Carto.Abstraction;
+using gView.Framework.Data;
 using gView.Framework.system;
+using System.ComponentModel;
 
 namespace gView.Carto.Plugins.CartoTools;
 
@@ -44,6 +46,29 @@ internal class AddData : ICartoInitialTool
                                                            },
                                                            Mode = ExploerDialogMode.Open
                                                        });
+
+        if(model == null)
+        {
+            return false;
+        }
+
+        var map = scopeService.Document.Map;
+        bool firstLayer = map.MapElements!.Any() != true;
+        var layersResult = await model.GetLayers(scopeService.GeoTransformer, map.Display.SpatialReference);
+        
+        foreach(var layer in layersResult.layers.OrderLayersByType())
+        {
+            scopeService.Document.Map.AddLayer(layer);
+        }
+
+        if (layersResult.layersExtent is not null)
+        {
+            if (firstLayer || layersResult.layersExtent.Intersects(map.Display.Envelope) == false)
+            {
+                await scopeService.EventBus.FireMapZoomToAsync(layersResult.layersExtent);
+            }
+        }
+        await scopeService.EventBus.FireMapSettingsChangedAsync();
 
         return true;
     }

@@ -77,14 +77,14 @@ public class LMap
         await _leafletJs.RemoveLayer(Id, layer.Id);
     }
 
-    public void FitBounds(LatLng southWest, LatLng northEast, Point2d? padding = null, float? maxZoom = null)
+    async public Task FitBounds(LatLng southWest, LatLng northEast, Point2d? padding = null, float? maxZoom = null)
     {
-        _leafletJs.FitBounds(Id, southWest, northEast, padding, maxZoom);
+        await _leafletJs.FitBounds(Id, southWest, northEast, padding, maxZoom);
     }
 
-    public void PanTo(LatLng latLng, bool animate = false, float duration = 0.25f, float easeLinearity = 0.25f, bool noMoveStart = false)
+    async public Task PanTo(LatLng latLng, bool animate = false, float duration = 0.25f, float easeLinearity = 0.25f, bool noMoveStart = false)
     {
-        _leafletJs.PanTo(Id, latLng, animate, duration, easeLinearity, noMoveStart);
+        await _leafletJs.PanTo(Id, latLng, animate, duration, easeLinearity, noMoveStart);
     }
 
     public async Task<LatLng> GetCenter() => await _leafletJs.GetCenter(Id);

@@ -1,4 +1,5 @@
 ﻿using gView.Blazor.Core.Exceptions;
+using gView.Blazor.Core.Services;
 using gView.Blazor.Core.Services.Abstraction;
 using gView.Carto.Core;
 using gView.Carto.Core.Abstractions;
@@ -13,6 +14,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Options;
 using Microsoft.JSInterop;
 using MudBlazor;
+using OSGeo_v3.OGR;
 
 namespace gView.Carto.Plugins.Services;
 public class CartoApplicationScopeService : ApplictionBusyHandler, IApplicationScope, ICartoApplicationScopeService
@@ -23,6 +25,8 @@ public class CartoApplicationScopeService : ApplictionBusyHandler, IApplicationS
     private readonly IJSRuntime _jsRuntime;
     private readonly ISnackbar _snackbar;
     private readonly CartoApplicationScopeServiceOptions _options;
+    private readonly GeoTransformerService _geoTransformer;
+
     private ICartoDocument _cartoDocument;
 
     public CartoApplicationScopeService(IDialogService dialogService,
@@ -30,6 +34,7 @@ public class CartoApplicationScopeService : ApplictionBusyHandler, IApplicationS
                                         CartoEventBusService eventBus,
                                         IJSRuntime jsRuntime,
                                         ISnackbar snackbar,
+                                        GeoTransformerService geoTransformer,
                                         IOptions<CartoApplicationScopeServiceOptions> options)
     {
         _dialogService = dialogService;
@@ -37,6 +42,7 @@ public class CartoApplicationScopeService : ApplictionBusyHandler, IApplicationS
         _eventBus = eventBus;
         _jsRuntime = jsRuntime;
         _snackbar = snackbar;
+        _geoTransformer = geoTransformer;
         _options = options.Value;
 
         _cartoDocument = this.Document = new CartoDocument();
@@ -63,6 +69,8 @@ public class CartoApplicationScopeService : ApplictionBusyHandler, IApplicationS
     public Task SetSelectedTocTreeNode(TocTreeNode? selectedTocTreeNode)
         => _eventBus.FireSelectedTocTreeNodeChangedAsync(this.SelectedTocTreeNode = selectedTocTreeNode);
 
+
+    public GeoTransformerService GeoTransformer => _geoTransformer; 
 
     #region IDisposable
 
