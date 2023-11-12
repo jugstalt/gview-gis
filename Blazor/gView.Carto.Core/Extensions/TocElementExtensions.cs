@@ -1,10 +1,12 @@
 ﻿using gView.Framework.Data;
 using gView.Framework.Symbology;
 using gView.Framework.UI;
+using System.Collections.Generic;
+using System.Linq;
 
-namespace gView.Carto.Razor.Extensions;
+namespace gView.Carto.Core.Extensions;
 
-static internal class TocElementExtensions
+static public class TocElementExtensions
 {
     static public bool HasLegendItems(this ITocElement tocElement)
         => tocElement?.Layers?.Any(l =>

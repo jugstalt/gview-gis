@@ -1,7 +1,6 @@
-﻿using gView.Framework.Data;
+﻿using gView.Carto.Core.Extensions;
 using gView.Framework.UI;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace gView.Carto.Core.Models.Tree;
 
@@ -9,16 +8,14 @@ public class TocLayerNode : TocTreeNode
 {
     public TocLayerNode(ITocElement tocElement) : base(tocElement)
     {
-        this.Icon = "basic:checkbox-checked";
-
-        if(tocElement.Layers?.Any(l=> l is IFeatureLayer) == true)
+        if (tocElement.HasLegendItems())
         {
-            //this.Children = new HashSet<TocTreeNode>();
-            //this.Children.Add(new TocLegendNode(tocElement));
+            this.Children = new HashSet<TocTreeNode>();
+            this.Children.Add(new TocLegendNode(tocElement));
         }
     }
 
-    public override bool IsSelected
+    public override bool IsChecked
     {
         get
         {

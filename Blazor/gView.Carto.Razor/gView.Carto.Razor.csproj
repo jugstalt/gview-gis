@@ -33,4 +33,8 @@
     <ProjectReference Include="..\gView.Razor\gView.Razor.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Extensions\" />
+  </ItemGroup>
+
 </Project>

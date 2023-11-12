@@ -7,7 +7,6 @@ public class TocParentNode : TocTreeNode
 {
     public TocParentNode(ITocElement tocElement) : base(tocElement)
     {
-        this.Icon = "basic:checkbox-unchecked";
     }
 
     public override bool IsExpanded
@@ -24,7 +23,7 @@ public class TocParentNode : TocTreeNode
         }
     }
 
-    public override bool IsSelected
+    public override bool IsChecked
     {
         get
         {

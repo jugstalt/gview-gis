@@ -8,4 +8,6 @@ public class TocLegendNode : TocTreeNode
     {
         this.Text = "Legende";
     }
+
+    public override bool IsChecked { get; set; }
 }
