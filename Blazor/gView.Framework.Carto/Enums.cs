@@ -11,5 +11,8 @@ public enum ToolType
 
 public enum CartoToolTarget
 {
+    File,
+    Map,
+    SelectedTocItem,
     General
 }

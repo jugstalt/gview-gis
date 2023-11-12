@@ -2,6 +2,7 @@
 using gView.Blazor.Core.Services.Abstraction;
 using gView.Carto.Core;
 using gView.Carto.Core.Abstractions;
+using gView.Carto.Core.Models.Tree;
 using gView.Carto.Core.Services;
 using gView.Carto.Core.Services.Abstraction;
 using gView.Framework.Blazor;
@@ -56,6 +57,11 @@ public class CartoApplicationScopeService : ApplictionBusyHandler, IApplicationS
             _eventBus.FireCartoDocumentLoadedAsync(value);
         }
     }
+
+    public TocTreeNode? SelectedTocTreeNode { get; private set; }
+
+    public Task SetSelectedTocTreeNode(TocTreeNode? selectedTocTreeNode)
+        => _eventBus.FireSelectedTocTreeNodeChangedAsync(this.SelectedTocTreeNode = selectedTocTreeNode);
 
 
     #region IDisposable
@@ -175,7 +181,7 @@ public class CartoApplicationScopeService : ApplictionBusyHandler, IApplicationS
     #region Busy Context
 
     override protected Task HandleBusyStatusChanged(bool isBussy, string message)
-        => _eventBus.FireBusyStatusChanged(isBussy, message);
+        => _eventBus.FireBusyStatusChangedAsync(isBussy, message);
 
     override async protected ValueTask SetBusyCursor()
     {

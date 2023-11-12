@@ -21,9 +21,9 @@ public class SaveDocumentAs : ICartoTool
 
     public string Icon => "basic:disks-white";
 
-    public CartoToolTarget Target => CartoToolTarget.General;
+    public CartoToolTarget Target => CartoToolTarget.File;
 
-    public int SortOrder => 3;
+    public int SortOrder => 4;
 
     public void Dispose()
     {

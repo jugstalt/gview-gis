@@ -18,7 +18,7 @@ public class NewDocument : ICartoInitialTool
 
     public string Icon => "basic:bulb-shining";
 
-    public CartoToolTarget Target => CartoToolTarget.General;
+    public CartoToolTarget Target => CartoToolTarget.Map;
 
     public int SortOrder => 0;
 

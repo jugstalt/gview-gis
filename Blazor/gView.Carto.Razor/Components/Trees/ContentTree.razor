@@ -20,11 +20,13 @@
     MultiSelection="false" 
     Hover="true" Dense="true" @key="@fullReloadKey">
         <ItemTemplate>
+            <div style="white-space:nowrap; overflow-x:hidden;"
+                 class="treenode">
             @if (context is TocLayerNode)
             {
-                <div style="white-space:nowrap; overflow-x:hidden;"
-                class="treenode">
-                    <MudTreeViewItem Value="@context"
+                
+                <MudTreeViewItem Value="@context"
+                    Class="@(context.IsSelected ? "toctreenode-selected" :"")"
                     Items="@context.Children"
                     CanExpand="@context.HasChildren"
                     Expanded="@context.IsExpanded"
@@ -38,26 +40,21 @@
                             <MudText>@context.Text</MudText>
                         </Content>
                     </MudTreeViewItem>
-                </div>
             }
             else if (context is TocLegendNode)
             {
-                <div style="white-space:nowrap; overflow-x:hidden;"
-                class="treenode">
-                    <MudTreeViewItem Value="@context">
-                        <Content>
-                            <div style="white-space:nowrap; overflow-x:hidden;">
-                                <LegendTreeItem ParentElement="context.TocElement" />
-                            </div>
-                        </Content>
-                    </MudTreeViewItem>
-                </div>
+                <MudTreeViewItem Value="@context">
+                    <Content>
+                        <div style="white-space:nowrap; overflow-x:hidden;">
+                            <LegendTreeItem ParentElement="context.TocElement" />
+                        </div>
+                    </Content>
+                </MudTreeViewItem>
             }
             else
             {
-                <div style="white-space:nowrap; overflow-x:hidden;"
-                class="treenode">
-                    <MudTreeViewItem Value="@context"
+                <MudTreeViewItem Value="@context"
+                    Class="@(context.IsSelected ? "toctreenode-selected" :"")"
                     Items="@context.Children"
                     CanExpand="true"
                     Expanded="@context.IsExpanded"
@@ -71,18 +68,18 @@
                             <MudText Class="grouplayer-text">@context.Text</MudText>
                         </Content>
                     </MudTreeViewItem>
-                </div>
             }
+            </div>
         </ItemTemplate>
     </MudTreeView>
-} 
-else if(_cartoTools != null)
+}
+else if(_cartoInitialTools != null)
 {
     <div style="padding:10px">
         <MudText>
-            This is an empty map now. To start use on of the this tools:
+            This is an empty map now. To start use one of the this tools:
         </MudText>
-        @foreach(var cartoTool in _cartoTools)
+        @foreach(var cartoTool in _cartoInitialTools)
         {
             <div class="carto-initial-tool"
                  alt="@cartoTool.ToolTip"
@@ -94,9 +91,12 @@ else if(_cartoTools != null)
     </div>
     
 }
+
 @code {
     private HashSet<TocTreeNode> _treeNodes = new HashSet<TocTreeNode>();
-    private ICartoTool[]? _cartoTools;
+    private ICartoTool[]? _cartoInitialTools;
+
+    private ICartoApplicationScopeService? _cartoAppService;
 
     // force a full reload after rebuild
     // otherwise some items (legends) will be cached!
@@ -106,12 +106,13 @@ else if(_cartoTools != null)
     {
         await base.OnInitializedAsync();
 
-        _cartoTools = PluginManager.GetPlugins<ICartoTool>(gView.Framework.system.Plugins.Type.ICartoTool)
+        _cartoInitialTools = PluginManager.GetPlugins<ICartoTool>(gView.Framework.system.Plugins.Type.ICartoTool)
             .Where(t => t is ICartoInitialTool)
             .OrderBy(t => t.SortOrder)
             .ToArray();
 
-        await SetAppScope((ICartoApplicationScopeService)AppScope);
+        _cartoAppService = (ICartoApplicationScopeService)AppScope;
+        await SetAppScope(_cartoAppService);
     });
 
     private void OnNodeExpandedChanged(TocTreeNode node, bool expanded) => base.Handle(() =>
@@ -128,6 +129,37 @@ else if(_cartoTools != null)
 
     private Task OnNodeClickAsync(TocTreeNode node, MouseEventArgs e) => base.HandleAsync(async () =>
     {
-        await EventBus.FireSelectedTocTreeNodeChanged(node); 
+        var isSelected = node.IsSelected;
+
+        foreach (var node in _treeNodes)
+        {
+            node.IsSelected = false;
+            UnselectChildNodes(node);
+        }
+
+        node.IsSelected = !isSelected;
+
+        if(_cartoAppService!=null)
+        {
+            await _cartoAppService.SetSelectedTocTreeNode(node.IsSelected ? node : null);
+        }
     });
+
+    #region Helper
+
+    private void UnselectChildNodes(TocTreeNode tocTreeNode)
+    {
+        if(tocTreeNode.Children == null)
+        {
+            return;
+        }
+
+        foreach(var child in tocTreeNode.Children)
+        {
+            UnselectChildNodes(child);
+            child.IsSelected = false;
+        }
+    }
+
+    #endregion
 }

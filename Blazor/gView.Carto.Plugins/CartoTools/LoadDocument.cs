@@ -22,9 +22,9 @@ public class LoadDocument : ICartoInitialTool
 
     public string Icon => "basic:folder-white";
 
-    public CartoToolTarget Target => CartoToolTarget.General;
+    public CartoToolTarget Target => CartoToolTarget.File;
 
-    public int SortOrder => 1;
+    public int SortOrder => 2;
 
     public void Dispose()
     {

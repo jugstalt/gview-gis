@@ -20,9 +20,9 @@ internal class AddData : ICartoInitialTool
 
     public string Icon => "basic:database-plus";
 
-    public CartoToolTarget Target => CartoToolTarget.General;
+    public CartoToolTarget Target => CartoToolTarget.Map;
 
-    public int SortOrder => 0;
+    public int SortOrder => 1;
 
     public void Dispose()
     {
