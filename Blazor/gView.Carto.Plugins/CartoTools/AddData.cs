@@ -10,7 +10,7 @@ using gView.Framework.system;
 namespace gView.Carto.Plugins.CartoTools;
 
 [RegisterPlugIn("7C9CA04B-7DFC-4028-8CEF-25D2A02272ED")]
-internal class AddData : ICartoTool
+internal class AddData : ICartoInitialTool
 {
     public string Name => "Add Data";
 

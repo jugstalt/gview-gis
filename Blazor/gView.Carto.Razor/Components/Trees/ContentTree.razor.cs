@@ -31,7 +31,7 @@ namespace gView.Carto.Razor.Components.Trees
                 return;
             }
 
-            TreeNodes.Clear();
+            _treeNodes.Clear();
 
             var map = _cartoScope.Document?.Map;
 
@@ -60,7 +60,7 @@ namespace gView.Carto.Razor.Components.Trees
                     {
                         if (parentTreeNode == null)
                         {
-                            TreeNodes.Add(childTreeNode);
+                            _treeNodes.Add(childTreeNode);
                         }
                         else
                         {
@@ -100,7 +100,7 @@ namespace gView.Carto.Razor.Components.Trees
 
             RelaseEvents();
 
-            foreach (var treeNode in TreeNodes)
+            foreach (var treeNode in _treeNodes)
             {
                 treeNode?.Dispose();
             }

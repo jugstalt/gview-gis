@@ -8,7 +8,7 @@ using gView.Framework.system;
 namespace gView.Carto.Plugins.CartoTools;
 
 [RegisterPlugIn("D6A44B2E-1883-4D69-984B-2468E98216CD")]
-public class NewDocument : ICartoTool
+public class NewDocument : ICartoInitialTool
 {
     public string Name => "New Map";
 

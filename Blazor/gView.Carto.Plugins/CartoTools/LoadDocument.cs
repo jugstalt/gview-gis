@@ -6,14 +6,13 @@ using gView.Framework.Blazor;
 using gView.Framework.Blazor.Services.Abstraction;
 using gView.Framework.Carto;
 using gView.Framework.Carto.Abstraction;
-using gView.Framework.Carto.UI;
 using gView.Framework.IO;
 using gView.Framework.system;
 
 namespace gView.Carto.Plugins.CartoTools;
 
 [RegisterPlugIn("891D1698-1D8C-4785-9197-D8EFD8492C23")]
-public class LoadDocument : ICartoTool
+public class LoadDocument : ICartoInitialTool
 {
     public string Name => "Open Map";
 
@@ -29,7 +28,7 @@ public class LoadDocument : ICartoTool
 
     public void Dispose()
     {
-        
+
     }
 
     public bool IsEnabled(IApplicationScope scope)
@@ -52,7 +51,7 @@ public class LoadDocument : ICartoTool
                                                        });
 
         string? mxlFilePath = model?.Result.ExplorerObjects.FirstOrDefault()?.FullName;
-        if(!String.IsNullOrEmpty(mxlFilePath))
+        if (!String.IsNullOrEmpty(mxlFilePath))
         {
             XmlStream stream = new XmlStream("");
             stream.ReadStream(mxlFilePath);
@@ -66,11 +65,11 @@ public class LoadDocument : ICartoTool
 
             if (cartoDocument.Map?.ErrorMessages?.Any() == true)
             {
-                if(await scopeService.ShowKnownDialog(
+                if (await scopeService.ShowKnownDialog(
                                     KnownDialogs.WarningsDialog,
-                                    model: new WarningsDialogModel() 
-                                    { 
-                                        Warnings = cartoDocument.Map.ErrorMessages 
+                                    model: new WarningsDialogModel()
+                                    {
+                                        Warnings = cartoDocument.Map.ErrorMessages
                                     })
                     is null)
                 {

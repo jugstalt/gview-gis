@@ -98,6 +98,22 @@
         overflow: auto;
     }
 
+    .carto-main .toc .carto-initial-tool {
+        border:1px solid #eee;
+        border-radius:5px;
+        padding:5px;
+        cursor:pointer;
+        margin:16px 0px;
+    }
+
+        .carto-main .toc .carto-initial-tool .icon {
+            display:inline-block;
+            vertical-align:bottom;
+        }
+        .carto-main .toc .carto-initial-tool .title {
+            display: inline-block;
+        }
+
     .carto-main .toc-content-splitter {
         position: absolute;
         left: 325px;

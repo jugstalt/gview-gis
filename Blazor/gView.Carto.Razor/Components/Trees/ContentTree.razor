@@ -7,70 +7,96 @@
 @inject PluginManagerService PluginManager
 @inject CartoEventBusService EventBus
 
-<MudTreeView  Items="TreeNodes"
-              ExpandOnDoubleClick="true" 
-              MultiSelection="false" 
-              Hover="true" Dense="true" @key="@fullReloadKey">
-    <ItemTemplate>
-        @if(context is TocLayerNode)
-        {
-            <div style="white-space:nowrap; overflow-x:hidden;"
-                     class="treenode">
-                <MudTreeViewItem Value="@context"
-                                 Items="@context.Children"
-                                 CanExpand="@context.HasChildren"
-                                 Expanded="@context.IsExpanded"
-                                 ExpandedChanged="@((expanded) => OnNodeExpandedChanged(context, expanded))"
-                                 @onclick="@((e) => OnNodeClickAsync(context,e))">
-                       <Content>
+<div style="padding:2px 10px">
+    <MudText Typo="Typo.h6">
+        @(((ICartoApplicationScopeService)AppScope).Document?.Map?.Name)
+    </MudText>
+</div>
+
+@if (_treeNodes.Any())
+{
+    <MudTreeView  Items="_treeNodes"
+    ExpandOnDoubleClick="true" 
+    MultiSelection="false" 
+    Hover="true" Dense="true" @key="@fullReloadKey">
+        <ItemTemplate>
+            @if (context is TocLayerNode)
+            {
+                <div style="white-space:nowrap; overflow-x:hidden;"
+                class="treenode">
+                    <MudTreeViewItem Value="@context"
+                    Items="@context.Children"
+                    CanExpand="@context.HasChildren"
+                    Expanded="@context.IsExpanded"
+                    ExpandedChanged="@((expanded) => OnNodeExpandedChanged(context, expanded))"
+                    @onclick="@((e) => OnNodeClickAsync(context,e))">
+                        <Content>
                             <MudTreeViewItemToggleButton @bind-Expanded="@context.IsExpanded" Visible="@context.HasChildren" ExpandedIcon="@Icons.Material.Rounded.ArrowRight" />
                             <MudCheckBox T="bool" 
-                                         Checked="@context.IsChecked"
-                                         CheckedChanged="@((e) => OnCheckboxClickedAsync(context,e))" />
+                            Checked="@context.IsChecked"
+                            CheckedChanged="@((e) => OnCheckboxClickedAsync(context,e))" />
                             <MudText>@context.Text</MudText>
-                       </Content>
-                </MudTreeViewItem>
-            </div>
-            
-        }
-        else if(context is TocLegendNode)
-        {
-            <div style="white-space:nowrap; overflow-x:hidden;"
-                 class="treenode">
-            <MudTreeViewItem Value="@context">
-                <Content>
-                    <div style="white-space:nowrap; overflow-x:hidden;">
-                        <LegendTreeItem ParentElement="context.TocElement" />
-                    </div>
-                </Content>
-            </MudTreeViewItem>
-            </div>
-        }
-        else 
-        {
-            <div style="white-space:nowrap; overflow-x:hidden;"
-                 class="treenode">
-                <MudTreeViewItem Value="@context"
-                                 Items="@context.Children"
-                                 CanExpand="true"
-                                 Expanded="@context.IsExpanded"
-                                 ExpandedChanged="@((expanded) => OnNodeExpandedChanged(context, expanded))"
-                                 @onclick="@((e) => OnNodeClickAsync(context,e))">
+                        </Content>
+                    </MudTreeViewItem>
+                </div>
+            }
+            else if (context is TocLegendNode)
+            {
+                <div style="white-space:nowrap; overflow-x:hidden;"
+                class="treenode">
+                    <MudTreeViewItem Value="@context">
+                        <Content>
+                            <div style="white-space:nowrap; overflow-x:hidden;">
+                                <LegendTreeItem ParentElement="context.TocElement" />
+                            </div>
+                        </Content>
+                    </MudTreeViewItem>
+                </div>
+            }
+            else
+            {
+                <div style="white-space:nowrap; overflow-x:hidden;"
+                class="treenode">
+                    <MudTreeViewItem Value="@context"
+                    Items="@context.Children"
+                    CanExpand="true"
+                    Expanded="@context.IsExpanded"
+                    ExpandedChanged="@((expanded) => OnNodeExpandedChanged(context, expanded))"
+                    @onclick="@((e) => OnNodeClickAsync(context,e))">
                         <Content>
                             <MudTreeViewItemToggleButton @bind-Expanded="@context.IsExpanded" Visible="true" />
                             <MudCheckBox T="bool"
-                                         Checked="@context.IsChecked"
-                                         CheckedChanged="@((e) => OnCheckboxClickedAsync(context,e ))" />
+                            Checked="@context.IsChecked"
+                            CheckedChanged="@((e) => OnCheckboxClickedAsync(context,e ))" />
                             <MudText Class="grouplayer-text">@context.Text</MudText>
                         </Content>
-                </MudTreeViewItem>
+                    </MudTreeViewItem>
+                </div>
+            }
+        </ItemTemplate>
+    </MudTreeView>
+} 
+else if(_cartoTools != null)
+{
+    <div style="padding:10px">
+        <MudText>
+            This is an empty map now. To start use on of the this tools:
+        </MudText>
+        @foreach(var cartoTool in _cartoTools)
+        {
+            <div class="carto-initial-tool"
+                 alt="@cartoTool.ToolTip"
+                 @onclick="async () => await cartoTool.OnEvent(AppScope)">
+                <div class="@(IconService.FromString(cartoTool.Icon)) icon"></div>
+                <div class="title">@cartoTool.Name</div>
             </div>
         }
-    </ItemTemplate>
-</MudTreeView>
-
+    </div>
+    
+}
 @code {
-    private HashSet<TocTreeNode> TreeNodes { get; set; } = new HashSet<TocTreeNode>();
+    private HashSet<TocTreeNode> _treeNodes = new HashSet<TocTreeNode>();
+    private ICartoTool[]? _cartoTools;
 
     // force a full reload after rebuild
     // otherwise some items (legends) will be cached!
@@ -79,6 +105,11 @@
     protected override Task OnInitializedAsync() => base.HandleAsync(async () =>
     {
         await base.OnInitializedAsync();
+
+        _cartoTools = PluginManager.GetPlugins<ICartoTool>(gView.Framework.system.Plugins.Type.ICartoTool)
+            .Where(t => t is ICartoInitialTool)
+            .OrderBy(t => t.SortOrder)
+            .ToArray();
 
         await SetAppScope((ICartoApplicationScopeService)AppScope);
     });
