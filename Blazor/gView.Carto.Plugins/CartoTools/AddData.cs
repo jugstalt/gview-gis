@@ -56,7 +56,7 @@ internal class AddData : ICartoInitialTool
         bool firstLayer = map.MapElements!.Any() != true;
         var layersResult = await model.GetLayers(scopeService.GeoTransformer, map.Display.SpatialReference);
         
-        foreach(var layer in layersResult.layers.OrderLayersByType())
+        foreach(var layer in layersResult.layers.OrderLayersByGeometryType())
         {
             scopeService.Document.Map.AddLayer(layer);
         }
