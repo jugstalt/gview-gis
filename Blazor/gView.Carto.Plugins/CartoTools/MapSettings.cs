@@ -1,12 +1,8 @@
-﻿using gView.Framework.Blazor.Services.Abstraction;
+﻿using gView.Carto.Plugins.Extensions;
+using gView.Framework.Blazor.Services.Abstraction;
 using gView.Framework.Carto;
 using gView.Framework.Carto.Abstraction;
 using gView.Framework.system;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace gView.Carto.Plugins.CartoTools;
 
@@ -27,13 +23,24 @@ internal class MapSettings : ICartoTool
 
     public void Dispose()
     {
-        
+
     }
 
     public bool IsEnabled(IApplicationScope scope) => true;
 
-    public Task<bool> OnEvent(IApplicationScope scope)
+    async public Task<bool> OnEvent(IApplicationScope scope)
     {
-        return Task.FromResult(false);
+        var scopeService = scope.ToCartoScopeService();
+
+        var model = await scopeService.ShowModalDialog(typeof(gView.Carto.Razor.Components.Dialogs.MapSettingsDialog),
+                                                    "Map Properties",
+                                                    new Razor.Components.Dialogs.Models.MapSettingsModel());
+
+        if (model != null)
+        {
+
+        }
+
+        return true;
     }
 }
