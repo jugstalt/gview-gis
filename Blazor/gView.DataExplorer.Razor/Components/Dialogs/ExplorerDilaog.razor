@@ -127,19 +127,19 @@
             <MudButton Variant="Variant.Filled"
                        Disabled="!placeToSave"
                        Color="Color.Primary"
-                       OnClick="Submit">Create</MudButton>
+                       OnClick="Apply">@(_isSubmitting ? "Creating..." : "Create")</MudButton>
         } 
         else 
         {
             <MudButton Variant="Variant.Filled"
                         Disabled="Model.Result.ExplorerObjects.Count == 0"
                         Color="Color.Primary"
-                        OnClick="Submit">Open</MudButton>
+                        OnClick="Apply">@(_isSubmitting ? "Loading..." : "Open")</MudButton>
         }
     </DialogButtons>
 </ModalDialogFormBase>
 
- @code {
+@code {
     private List<IExplorerObject> rootExplorerObjects = new();
     private List<IExplorerObject> currentListExplorerObjects = new();
     private Dictionary<IExplorerObject, int> levels = new();
@@ -147,6 +147,7 @@
     private ExplorerDialogFilter? selectedFilter;
 
     private bool placeToSave = false;
+    private bool _isSubmitting = false;
 
     protected override Task OnInitializedAsync()
         => HandleAsync(async () =>
@@ -248,5 +249,18 @@
     {
         selectedFilter = filter;
         Model.Result.ExplorerObjects.Clear();
+    }
+
+    private Task Apply()
+    {
+        if (_isSubmitting) 
+        {
+            return Task.CompletedTask;
+        }
+
+        _isSubmitting = true;
+        StateHasChanged();
+
+        return base.Submit();
     }
 }
