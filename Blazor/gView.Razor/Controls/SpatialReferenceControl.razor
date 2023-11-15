@@ -12,11 +12,14 @@
                     <MudText Typo="Typo.caption">@String.Join(" ", SpatialReference.Parameters)</MudText>
                 }
             </GvCardContent>
-            <GvCardActions>
-                <MudButton Variant="Variant.Text" 
+            @if (!ReadOnly)
+            {
+                <GvCardActions>
+                    <MudButton Variant="Variant.Text" 
                             Color="Color.Primary"
                             OnClick="SelectProjection">Select</MudButton>
-            </GvCardActions>
+                </GvCardActions>
+            }
         </GvCard>
     </GvGridItem>
     @if (SpatialReference != null)
@@ -32,7 +35,7 @@
                     }
                 </GvCardContent>
 
-                @if (!EpsgOnly)
+                @if (!EpsgOnly && !ReadOnly)
                 {
                     <GvCardActions>
                         <MudButton Variant="Variant.Text"
@@ -49,6 +52,7 @@
     [Parameter] public ISpatialReference? SpatialReference{ get; set; }
     [Parameter] public EventCallback<ISpatialReference> SRefChanged { get; set; }
     [Parameter] public bool EpsgOnly { get; set; } = false;
+    [Parameter] public bool ReadOnly { get; set; } = false;
 
     private Task SelectProjection()
         => HandleAsync(async () =>

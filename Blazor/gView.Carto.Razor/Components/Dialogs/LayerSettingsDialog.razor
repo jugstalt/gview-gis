@@ -1,7 +1,7 @@
 @inherits ModalDialogFormBase<LayerSettingsModel>
 @inject IconService IconService
 
-@if (Model.Map != null)
+@if (Model.Map is not null && Model.Layer is not null)
 {
     <ModalDialogFormBase T="LayerSettingsModel"
                          OnDialogClose="base.OnDialogClose"
@@ -18,8 +18,29 @@
                                      Value="Page.General" Text="Map / Display" />
                         <MudListItem Icon="@IconService.FromString("basic:copyright")" Style="white-space:nowrap"
                                      Value="Page.Description" Text="Description & (c)" />
-                        <MudListItem Icon="@IconService.FromString("basic:cloud-connect")" Style="white-space:nowrap"
-                                     Value="Page.MapService" Text="Map Service" />
+
+                        @if(Model.Layer.ImplementsSpatialReference())
+                        {
+                            <MudListItem Icon="@IconService.FromString("basic:globe")" Style="white-space:nowrap"
+                                         Value="Page.SpatialReference" Text="Spatial Reference" />
+                        }
+                        @if(Model.Layer is IGroupLayer) {
+                            <MudListItem Icon="@IconService.FromString("basic:cloud-connect")" Style="white-space:nowrap"
+                                         Value="Page.MapServiceBehavoir" Text="Map Service Behavoir" />
+                        }
+
+                        @if (Model.Layer.DatasetID >= 0)
+                        {
+                            <MudListItem Icon="@IconService.FromString("basic:database")" Style="white-space:nowrap"
+                                         Value="Page.Source" Text="Source" />
+                        }
+
+                        @if (Model.Layer is IFeatureLayerComposition)
+                        {
+                            <MudListItem Icon="@IconService.FromString("webgis:layer-middle")" Style="white-space:nowrap"
+                                         Value="Page.CompositionMode" Text="Composition Mode" />
+                        }
+
                     </MudList>
                 </MudDrawer>
             </MudDrawerContainer>
@@ -27,15 +48,34 @@
             <MudContainer Style="padding-left:50px;padding-right:10px">
                 @if (Page.General.Equals(_currentTab))
                 {
-                    <LayerGeneralSettings Layer="Model.Layer" />
+                    <LayerGeneralSettingsControl Layer="Model.Layer" />
                 }
                 else if (Page.Description.Equals(_currentTab))
                 {
-
+                    <LayerDescriptionControl Map="Model.Map" Layer="Model.Layer" />
                 }
-                else if (Page.MapService.Equals(_currentTab))
+                else if (Page.MapServiceBehavoir.Equals(_currentTab))
                 {
-
+                    <GroupLayerMapServerBehavoirControl Layer="Model.Layer as IGroupLayer" />
+                }
+                else if(Page.Source.Equals(_currentTab))
+                {
+                    <LayerSourceControl Map="Model.Map" Layer="Model.Layer" />
+                }
+                else if(Page.CompositionMode.Equals(_currentTab))
+                {
+                    <LayerCompositionModeControl Layer="Model.Layer as IFeatureLayerComposition" />
+                }
+                else if(Page.SpatialReference.Equals(_currentTab))
+                {
+                    if(_sRef is not null)
+                    {
+                        <SpatialReferenceControl SpatialReference="_sRef" ReadOnly="true"/>
+                    } 
+                    else
+                    {
+                        @GvUtilities.InfoText("Spatial Reference System is not defined in this layer!");    
+                    }
                 }
             </MudContainer>
         </DialogBody>
@@ -58,10 +98,22 @@
     {
         General,
         Description,
-        MapService
+        SpatialReference,
+        MapServiceBehavoir,
+        Source,
+        CompositionMode
     }
     private bool _drawerIsOpen = false;
     private object _currentTab = Page.General;
+
+    private ISpatialReference? _sRef;
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+
+        _sRef = Model.Layer?.GetSpatialReference();
+    }
 
     protected Task Apply()
     {

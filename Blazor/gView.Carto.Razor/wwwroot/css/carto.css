@@ -104,7 +104,7 @@
         .carto-main .toc .grouplayer-text {
             /*font-weight: bold;*/
             font-style: italic;
-            color: #008aee;
+            color: var(--mud-palette-primary);
         }
 
         .carto-main .toc .toctreenode-selected > .mud-treeview-item-content,
@@ -114,7 +114,8 @@
         }
 
         .carto-main .toc .carto-initial-tool {
-            border: 1px solid #888;
+            border: 1px solid var(--mud-palette-lines-default);
+            background-color: var(--mud-palette-primary-hover);
             border-radius: 5px;
             padding: 5px;
             cursor: pointer;
@@ -265,4 +266,24 @@
 .mud-table-cell {
     white-space: nowrap;
 }
+
+/* Checkbox in toc */
+.mud-input-control.mud-input-control-boolean-input {
+    position: relative;
+    left: -5px;
+}
+
+/* Cards */
+
+.mud-card-header {
+    padding: 4px 16px;
+    border-bottom: 1px solid var(--mud-palette-lines-default);
+    background-color: var(--mud-palette-primary-hover);
+}
+
+.mud-card-content {
+    padding: 0px 16px;
+}
+
+
 

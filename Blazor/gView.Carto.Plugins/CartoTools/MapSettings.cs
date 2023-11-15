@@ -44,7 +44,7 @@ internal class MapSettings : ICartoTool
         clone.Display.ImageHeight = original.Display.ImageHeight;
 
         var model = await scopeService.ShowModalDialog(typeof(gView.Carto.Razor.Components.Dialogs.MapSettingsDialog),
-                                                    "Map Properties",
+                                                    "Map Settings",
                                                     new Razor.Components.Dialogs.Models.MapSettingsModel()
                                                     {
                                                         Map = clone

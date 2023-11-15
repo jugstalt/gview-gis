@@ -2,7 +2,7 @@
     public static RenderFragment AppName()
         =>@<MudText Typo="Typo.h1">gView</MudText>;
 
-    public static RenderFragment EnumToOptions<TEnum>() 
+    public static RenderFragment EnumToSelectItems<TEnum>() 
         where TEnum : struct, Enum
         => builder =>
         {
@@ -21,8 +21,19 @@
             }
         };
 
+
+    public static RenderFragment InfoTextHeader(string text)
+       =>@<MudText Typo="Typo.h6"
+                   Color="Color.Primary"
+                   Style="margin-bottom:8px">@text</MudText>;
+
     public static RenderFragment InfoText(string text)
         =>@<MudText Typo="Typo.body2" 
                     Color="Color.Primary"
                     Style="margin-bottom:8px">@text</MudText>;
+
+    public static RenderFragment InfoTextStringBold(string text)
+        =>@<MudText Typo="Typo.body2"
+                    Color="Color.Primary"
+                    Style="margin-bottom:8px;font-weight:bold">@text</MudText>;
 }

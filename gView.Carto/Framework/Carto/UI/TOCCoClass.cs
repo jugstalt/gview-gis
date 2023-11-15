@@ -552,7 +552,7 @@ namespace gView.Framework.Carto.UI
             return null;
         }
 
-        public ITocElement GetTOCElementByLayerId(int layerId)
+        public ITocElement GetTocElementByLayerId(int layerId)
         {
             foreach (ITocElement tocElement in _elements)
             {

@@ -6,7 +6,7 @@
 @inherits ModalDialogFormBase<MapSettingsModel>
 @inject IconService IconService
 
-@if(Model.Map!=null) {
+@if(Model.Map is not null) {
 <ModalDialogFormBase T="MapSettingsModel"
                      OnDialogClose="base.OnDialogClose"
                      Model="base.Model">
@@ -51,14 +51,14 @@
 
                         <MudSelect Label="Map Units" T="GeoUnits"
                                    @bind-Value="Model.Map.Display.MapUnits">
-                            @(GvUtilities.EnumToOptions<GeoUnits>())
+                            @(GvUtilities.EnumToSelectItems<GeoUnits>())
                         </MudSelect>
                         <MudSelect Label="Display Units" T="GeoUnits"
                                    @bind-Value="Model.Map.Display.DisplayUnits">
-                            @(GvUtilities.EnumToOptions<GeoUnits>())
+                            @(GvUtilities.EnumToSelectItems<GeoUnits>())
                         </MudSelect>
 
-                        <MudColorPicker Label="Grid" 
+                        <MudColorPicker Label="Background Color" 
                                         ColorPickerView="ColorPickerView.Grid" 
                                         @bind-Value="_backgroundColor" />
                     </GvCardContent>
@@ -76,64 +76,83 @@
             }
             else if (Page.SpatialReference.Equals(_currentTab))
             {
-                @GvUtilities.InfoText("The Spatial Reference System of this map")
-                <SpatialReferenceControl SpatialReference="Model.Map.SpatialReference" 
-                                         SRefChanged="(sRef) => Model.Map.SpatialReference = sRef"/>
+                <GvCard Title="Map Spatial Reference System">
+                    <GvCardContent>
+                            @GvUtilities.InfoText("The Spatial Reference System of this map")
+                            <SpatialReferenceControl SpatialReference="Model.Map.SpatialReference"
+                                                     SRefChanged="(sRef) => Model.Map.SpatialReference = sRef" />
+                    </GvCardContent>
+                </GvCard>
+                
             }
             else if(Page.DefaultLayerSpatialReference.Equals(_currentTab))
             {
-                @GvUtilities.InfoText("This Spatial Reference System is applied for all spatial data in the map, that do not have any spatial reference.")
-                <SpatialReferenceControl SpatialReference="Model.Map.LayerDefaultSpatialReference" 
-                                         SRefChanged="(sRef) => Model.Map.LayerDefaultSpatialReference = sRef"/>
+                <GvCard Title="Default Layer Spatial Reference System">
+                    <GvCardContent>
+                            @GvUtilities.InfoText("This Spatial Reference System is applied for all spatial data in the map, that do not have any spatial reference.")
+                            <SpatialReferenceControl SpatialReference="Model.Map.LayerDefaultSpatialReference"
+                                                     SRefChanged="(sRef) => Model.Map.LayerDefaultSpatialReference = sRef" />
+                    </GvCardContent>
+                </GvCard>
             }
             else if(Page.Description.Equals(_currentTab))
             {
-                <MudTextField Label="Title" T="string" @bind-Value="Model.Map.Title" />
-                <MudTextField Label="Decription" T="string" Lines="5" @ref="description"
-                              Text="@Model.Map.GetLayerDescription(Map.MapDescriptionId)"
-                              OnBlur="()=>Model.Map.SetLayerDescription(Map.MapDescriptionId, description!.Value)" />
-                <MudTextField Label="Copyright" T="string" Lines="5"  @ref="copyright"
-                              Text="@Model.Map.GetLayerCopyrightText(Map.MapCopyrightTextId)"
-                              OnBlur="()=>Model.Map.SetLayerCopyrightText(Map.MapCopyrightTextId, copyright!.Value)" />
+                <GvCard Title="Description & Copyright">
+                    <GvCardContent>
+                            <MudTextField Label="Title" T="string" @bind-Value="Model.Map.Title" />
+                            <MudTextField Label="Decription" T="string" Lines="5" @ref="description"
+                                          Text="@Model.Map.GetLayerDescription(Map.MapDescriptionId)"
+                                          OnBlur="()=>Model.Map.SetLayerDescription(Map.MapDescriptionId, description!.Value)" />
+                            <MudTextField Label="Copyright" T="string" Lines="5" @ref="copyright"
+                                          Text="@Model.Map.GetLayerCopyrightText(Map.MapCopyrightTextId)"
+                                          OnBlur="()=>Model.Map.SetLayerCopyrightText(Map.MapCopyrightTextId, copyright!.Value)" />
+                    </GvCardContent>
+                </GvCard>
+                
             }
             else if(Page.Resources.Equals(_currentTab))
             {
-                @GvUtilities.InfoText("Resources are binary data added to to the map. This can e.g uses image-symbols for layer renderers. The resources are stored inside the map-document. Do not add large files, to avoid large map-documents!")
+                <GvCard Title="Map (Biniary) Resources">
+                    <GvCardContent>
+                            @GvUtilities.InfoText("Resources are binary data added to to the map. This can e.g uses image-symbols for layer renderers. The resources are stored inside the map-document. Do not add large files, to avoid large map-documents!")
 
-                <MudFileUpload T="IReadOnlyList<IBrowserFile>" FilesChanged="UploadMapResourceFiles">
-                    <ButtonTemplate>
-                        <MudButton HtmlTag="label"
-                                   Variant="Variant.Filled"
-                                   Color="Color.Primary"
-                                   StartIcon="@Icons.Material.Filled.CloudUpload"
-                                   for="@context">
-                              Upload Resource
-                        </MudButton>
-                    </ButtonTemplate>
-                </MudFileUpload>
+                            <MudFileUpload T="IReadOnlyList<IBrowserFile>" FilesChanged="UploadMapResourceFiles">
+                                <ButtonTemplate>
+                                    <MudButton HtmlTag="label"
+                                               Variant="Variant.Filled"
+                                               Color="Color.Primary"
+                                               StartIcon="@Icons.Material.Filled.CloudUpload"
+                                               for="@context">
+                                        Upload Resource
+                                    </MudButton>
+                                </ButtonTemplate>
+                            </MudFileUpload>
 
-                @if(Model.Map.ResourceContainer.HasResources) 
-                {
-                    <table style="width:100%">
-                        <tr>
-                            <th>Name</th>
-                            <th>Size</th>
-                            <th></th>
-                        </tr>
-                   
-                        @foreach(var resourceName in Model.Map.ResourceContainer.Names)
-                        {
-                            <tr>
-                                <td>@resourceName</td>
-                                <td>@((int)((Model.Map.ResourceContainer[resourceName]?.Length ?? 0) / 1024)) KB</td>
-                                <td>
-                                    <MudButton Color="Color.Secondary"
-                                               OnClick="() => RemoveMapResource(resourceName)"  >Remove</MudButton>
-                                </td>
-                            </tr>
-                        } 
-                    </table>
-                }
+                            @if (Model.Map.ResourceContainer.HasResources)
+                            {
+                                <table style="width:100%">
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Size</th>
+                                        <th></th>
+                                    </tr>
+
+                                    @foreach (var resourceName in Model.Map.ResourceContainer.Names)
+                                    {
+                                        <tr>
+                                            <td>@resourceName</td>
+                                            <td>@((int)((Model.Map.ResourceContainer[resourceName]?.Length ?? 0) / 1024)) KB</td>
+                                            <td>
+                                                <MudButton Color="Color.Secondary"
+                                                           OnClick="() => RemoveMapResource(resourceName)">Remove</MudButton>
+                                            </td>
+                                        </tr>
+                                    }
+                                </table>
+                            }
+                    </GvCardContent>
+                </GvCard>
+                
             }
             else if(Page.MapService.Equals(_currentTab))
             {

@@ -251,3 +251,15 @@
 .mud-table-cell {
     white-space: nowrap;
 }
+
+/* Cards */
+
+.mud-card-header {
+    padding: 4px 16px;
+    border-bottom: 1px solid var(--mud-palette-lines-default);
+    background-color: var(--mud-palette-primary-hover);
+}
+
+.mud-card-content {
+    padding: 0px 16px;
+}

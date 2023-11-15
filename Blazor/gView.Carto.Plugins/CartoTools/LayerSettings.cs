@@ -2,13 +2,7 @@
 using gView.Framework.Blazor.Services.Abstraction;
 using gView.Framework.Carto;
 using gView.Framework.Carto.Abstraction;
-using gView.Framework.OGC.WFS.Version_1_1_0;
 using gView.Framework.system;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace gView.Carto.Plugins.CartoTools
 {
@@ -29,26 +23,22 @@ namespace gView.Carto.Plugins.CartoTools
 
         public void Dispose()
         {
-            
+
         }
 
         public bool IsEnabled(IApplicationScope scope)
-            =>  scope.ToCartoScopeService().SelectedTocTreeNode != null;
-        
+            => scope.ToCartoScopeService().SelectedTocTreeNode != null;
+
         async public Task<bool> OnEvent(IApplicationScope scope)
         {
             var scopeService = scope.ToCartoScopeService();
-            var original = scopeService.Document.Map as Map;
-            var clone = original?.Clone() as Map;
+            var originalMap = scopeService.Document.Map as Map;
+            var clonedMap = originalMap?.Clone() as Map;
 
-            if (original is null || clone is null)
+            if (originalMap is null || clonedMap is null)
             {
                 return false;
             }
-
-            clone.ZoomTo(original.Display.Envelope);
-            clone.Display.ImageWidth = original.Display.ImageWidth;
-            clone.Display.ImageHeight = original.Display.ImageHeight;
 
             var layer = scopeService.SelectedTocTreeNode?.TocElement?.Layers?.FirstOrDefault();
             if (layer is null)  // todo: clone layer?
@@ -56,11 +46,13 @@ namespace gView.Carto.Plugins.CartoTools
                 return false;
             }
 
+            var tocElement = originalMap.TOC.GetTocElementByLayerId(layer.ID);
+
             var model = await scopeService.ShowModalDialog(typeof(gView.Carto.Razor.Components.Dialogs.LayerSettingsDialog),
-                                                                "Map Properties",
+                                                                $"Layer: {tocElement?.Name}",
                                                                 new Razor.Components.Dialogs.Models.LayerSettingsModel()
                                                                 {
-                                                                    Map = clone,
+                                                                    Map = clonedMap,
                                                                     Layer = layer
                                                                 });
 
@@ -68,6 +60,13 @@ namespace gView.Carto.Plugins.CartoTools
             {
                 return false;
             }
+
+            #region Description
+
+            originalMap.SetLayerDescription(layer.ID, clonedMap.GetLayerDescription(layer.ID));
+            originalMap.SetLayerCopyrightText(layer.ID, clonedMap.GetLayerCopyrightText(layer.ID));
+
+            #endregion
 
             return true;
         }
