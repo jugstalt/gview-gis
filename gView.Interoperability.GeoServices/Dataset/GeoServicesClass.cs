@@ -83,7 +83,7 @@ namespace gView.Interoperability.GeoServices.Dataset
             {
                 jsonExportMap.BBoxSRef = sRef.Name.ToLower().Replace("epsg:", "");
             }
-            jsonExportMap.Size = $"{display.iWidth},{display.iHeight}";
+            jsonExportMap.Size = $"{display.ImageWidth},{display.ImageHeight}";
 
             var layerIds = this.Themes
                 .Where(l => l.Visible && (l.Class is IWebFeatureClass || l.Class is IWebRasterClass))

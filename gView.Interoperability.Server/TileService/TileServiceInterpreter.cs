@@ -319,10 +319,10 @@ namespace gView.Interoperability.Server.TileService
             ISpatialReference sRef = SpatialReference.FromID("epsg:" + epsg);
 
             serviceMap.Display.SpatialReference = sRef;
-            serviceMap.Display.dpi = metadata.Dpi;
+            serviceMap.Display.Dpi = metadata.Dpi;
 
-            serviceMap.Display.iWidth = metadata.TileWidth;
-            serviceMap.Display.iHeight = metadata.TileHeight;
+            serviceMap.Display.ImageWidth = metadata.TileWidth;
+            serviceMap.Display.ImageHeight = metadata.TileHeight;
 
             double res = (double)scale / (metadata.Dpi / 0.0254);
             if (serviceMap.Display.MapUnits != GeoUnits.Meters)
@@ -446,7 +446,7 @@ namespace gView.Interoperability.Server.TileService
             ISpatialReference sRef = SpatialReference.FromID("epsg:" + epsg);
 
             serviceMap.Display.SpatialReference = sRef;
-            serviceMap.Display.dpi = metadata.Dpi;
+            serviceMap.Display.Dpi = metadata.Dpi;
 
             double res = (double)scale / (metadata.Dpi / 0.0254);
             if (serviceMap.Display.MapUnits != GeoUnits.Meters)
@@ -464,8 +464,8 @@ namespace gView.Interoperability.Server.TileService
 
             int tileMatrixWidth = 8, tileMatrixHeight = 8;
 
-            serviceMap.Display.iWidth = metadata.TileWidth * tileMatrixWidth;
-            serviceMap.Display.iHeight = metadata.TileHeight * tileMatrixHeight;
+            serviceMap.Display.ImageWidth = metadata.TileWidth * tileMatrixWidth;
+            serviceMap.Display.ImageHeight = metadata.TileHeight * tileMatrixHeight;
 
             for (int r = 0; r < 128; r += 8)
             {

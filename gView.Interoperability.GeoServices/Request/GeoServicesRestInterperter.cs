@@ -142,12 +142,12 @@ namespace gView.Interoperability.GeoServices.Request
 
                     #region Display
 
-                    serviceMap.Display.dpi = _exportMap.Dpi;
+                    serviceMap.Display.Dpi = _exportMap.Dpi;
                     //serviceMap.ScaleSymbolFactor = (float)_exportMap.Dpi / 96f;
 
                     var size = _exportMap.Size.ToSize();
-                    serviceMap.Display.iWidth = size[0];
-                    serviceMap.Display.iHeight = size[1];
+                    serviceMap.Display.ImageWidth = size[0];
+                    serviceMap.Display.ImageHeight = size[1];
 
                     if (_exportMap.Rotation != 0.0)
                     {
@@ -225,10 +225,10 @@ namespace gView.Interoperability.GeoServices.Request
                             context.ServiceRequest.Response = new JsonExportResponse()
                             {
                                 Href = $"{context.ServiceRequest.OutputUrl}/{fileName}",
-                                Width = serviceMap.Display.iWidth,
-                                Height = serviceMap.Display.iHeight,
+                                Width = serviceMap.Display.ImageWidth,
+                                Height = serviceMap.Display.ImageHeight,
                                 ContentType = $"image/{iFormat.ToString().ToLower()}",
-                                Scale = serviceMap.Display.mapScale,
+                                Scale = serviceMap.Display.MapScale,
                                 Extent = new JsonExtent()
                                 {
                                     Xmin = serviceMap.Display.Envelope.minx,
@@ -907,9 +907,9 @@ namespace gView.Interoperability.GeoServices.Request
                     #region Initialize Display
 
                     serviceMap.Display.SpatialReference = sRef;
-                    serviceMap.Display.iWidth = (int)imageDisplay[0];
-                    serviceMap.Display.iHeight = (int)imageDisplay[1];
-                    serviceMap.Display.dpi = imageDisplay[2];
+                    serviceMap.Display.ImageWidth = (int)imageDisplay[0];
+                    serviceMap.Display.ImageHeight = (int)imageDisplay[1];
+                    serviceMap.Display.Dpi = imageDisplay[2];
 
                     serviceMap.Display.Limit = mapExtent;
                     serviceMap.Display.ZoomTo(mapExtent);
@@ -918,7 +918,7 @@ namespace gView.Interoperability.GeoServices.Request
 
                     if (geometry is IPoint && mapExtent.Width > 0 && mapExtent.Height > 0)
                     {
-                        double tol = identify.PixelTolerance * serviceMap.Display.mapScale / (96 / 0.0254);  // [m]
+                        double tol = identify.PixelTolerance * serviceMap.Display.MapScale / (96 / 0.0254);  // [m]
                         if (sRef != null &&
                             sRef.SpatialParameters.IsGeographic)
                         {

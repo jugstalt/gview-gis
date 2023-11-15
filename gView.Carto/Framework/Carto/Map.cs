@@ -66,7 +66,7 @@ namespace gView.Framework.Carto
             _toc = new TOC(this);
             _selectionEnv = new SelectionEnvironment();
 
-            this.refScale = 500;
+            this.ReferenceScale = 500;
         }
 
         public Map(Map original, bool writeNamespace)
@@ -76,7 +76,8 @@ namespace gView.Framework.Carto
             this.Display.MapUnits = original.Display.MapUnits;
             this.Display.DisplayUnits = original.Display.DisplayUnits;
             this.Display.DisplayTransformation.DisplayRotation = original.Display.DisplayTransformation.DisplayRotation;
-            this.refScale = original.Display.refScale;
+            this.Display.BackgroundColor = original.Display.BackgroundColor;
+            this.ReferenceScale = original.Display.ReferenceScale;
             this.Display.SpatialReference = original.Display.SpatialReference != null ? original.SpatialReference.Clone() as ISpatialReference : null;
             this.LayerDefaultSpatialReference = original.LayerDefaultSpatialReference != null ? original.LayerDefaultSpatialReference.Clone() as ISpatialReference : null;
 
@@ -85,8 +86,11 @@ namespace gView.Framework.Carto
             _datasets = ListOperations<IDataset>.Clone(original._datasets);
             _layers = new List<ILayer>();
 
+            this.Title = original.Title;
             this._layerDescriptions = original._layerDescriptions;
             this._layerCopyrightTexts = original._layerCopyrightTexts;
+
+            this.SetResourceContainer(original.ResourceContainer);
 
             //if (modifyLayerTitles)
             {
@@ -1531,8 +1535,8 @@ namespace gView.Framework.Carto
 
             stream.Save("refScale", m_refScale);
 
-            stream.Save("iwidth", iWidth);
-            stream.Save("iheight", iHeight);
+            stream.Save("iwidth", ImageWidth);
+            stream.Save("iheight", ImageHeight);
 
             stream.Save("background", _backgroundColor.ToArgb());
 
@@ -1870,7 +1874,7 @@ namespace gView.Framework.Carto
                 using (var textBrush = GraphicsEngine.Current.Engine.CreateSolidBrush(GraphicsEngine.ArgbColor.Red))
                 {
                     var sizeF = this.Display.Canvas.MeasureText(sb.ToString().ToString(), font);
-                    int mx = this.Display.iWidth / 2 - (int)sizeF.Width / 2, my = this.Display.iHeight / 2 - (int)sizeF.Height / 2;
+                    int mx = this.Display.ImageWidth / 2 - (int)sizeF.Width / 2, my = this.Display.ImageHeight / 2 - (int)sizeF.Height / 2;
                     this.Display.Canvas.FillRectangle(backgroundBrush, new GraphicsEngine.CanvasRectangle(mx - 30, my - 30, (int)sizeF.Width + 60, (int)sizeF.Height + 60));
                     this.Display.Canvas.DrawRectangle(borderPen, new GraphicsEngine.CanvasRectangle(mx - 30, my - 30, (int)sizeF.Width + 60, (int)sizeF.Height + 60));
                     this.Display.Canvas.DrawText(sb.ToString(), font, textBrush, new GraphicsEngine.CanvasPoint(mx, my));

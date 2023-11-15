@@ -606,9 +606,9 @@ namespace gView.Interoperability.OGC
                         _parameters.BBOX = new Envelope(ll, ur);
                     }
 
-                    map.Display.dpi = _parameters.dpi;
-                    map.Display.iWidth = _parameters.Width;
-                    map.Display.iHeight = _parameters.Height;
+                    map.Display.Dpi = _parameters.dpi;
+                    map.Display.ImageWidth = _parameters.Width;
+                    map.Display.ImageHeight = _parameters.Height;
                     map.Display.Limit = _parameters.BBOX;
                     map.Display.ZoomTo(_parameters.BBOX);
 
@@ -775,8 +775,8 @@ namespace gView.Interoperability.OGC
                 }
 
                 map.Display.SpatialReference = sRef;
-                map.Display.iWidth = parameters.Width;
-                map.Display.iHeight = parameters.Height;
+                map.Display.ImageWidth = parameters.Width;
+                map.Display.ImageHeight = parameters.Height;
                 map.Display.Limit = parameters.BBOX;
                 map.Display.ZoomTo(parameters.BBOX);
 
@@ -784,7 +784,7 @@ namespace gView.Interoperability.OGC
                 double y = featureInfoPoint.Y;
                 map.Display.Image2World(ref x, ref y);
 
-                double tol = 5.0 * map.Display.mapScale / (96 / 0.0254);  // [m]
+                double tol = 5.0 * map.Display.MapScale / (96 / 0.0254);  // [m]
                 if (sRef != null &&
                     sRef.SpatialParameters.IsGeographic)
                 {

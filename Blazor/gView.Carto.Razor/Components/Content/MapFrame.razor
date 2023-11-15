@@ -17,7 +17,7 @@
     private LMap? MapControl { get; set; }
     private ImageLayer? ImageLayer = null;
 
-    private ISpatialReference _mapSRef = new SpatialReference("epsg:3857");
+    private ISpatialReference _mapControlSRef = new SpatialReference("epsg:3857");
 
     protected override Task OnInitializedAsync() => HandleAsync(async () =>
     {
@@ -39,15 +39,15 @@
         if (document.Map is Map map)
         {
             // project map sref to current leaflet map transformation
-            var mapBounds = GeoTransformer.Transform(map.Envelope, map.SpatialReference, _mapSRef).Envelope;
-            map.SpatialReference = _mapSRef;
-            map.Envelope = mapBounds;
+            var mapBounds = GeoTransformer.Transform(map.Envelope, map.SpatialReference, _mapControlSRef).Envelope;
+            //map.SpatialReference = _mapSRef;
+            //map.Envelope = mapBounds;
 
-            MapRenderer.InitMap(map);
+            MapRenderer.InitMap(map, _mapControlSRef);
 
             if (reused && MapControl is not null)
             {
-                var boundsWgs84 = GeoTransformer.ToWGS84(new Envelope(mapBounds), map.SpatialReference).Envelope;
+                var boundsWgs84 = GeoTransformer.ToWGS84(new Envelope(mapBounds), _mapControlSRef).Envelope;
 
                 await MapControl.FitBounds(new LatLng(boundsWgs84.LowerLeft.Y, boundsWgs84.LowerLeft.X),
                                            new LatLng(boundsWgs84.UpperRight.Y, boundsWgs84.UpperRight.X));
@@ -66,7 +66,7 @@
     {
         if(MapControl is not null) 
         {
-            var zoomToWgs84 = GeoTransformer.ToWGS84(zoomTo, _mapSRef).Envelope;
+            var zoomToWgs84 = GeoTransformer.ToWGS84(zoomTo, _mapControlSRef).Envelope;
 
             await MapControl.FitBounds(
                 new LatLng(zoomToWgs84.LowerLeft.Y, zoomToWgs84.LowerLeft.X),
@@ -112,7 +112,7 @@
 
                 await OnRefreshMapImage(null);
 
-                var mapBounds = GeoTransformer.FromWGS84(new Envelope(bounds.SouthWest.Lng, bounds.SouthWest.Lat, bounds.NorthEast.Lng, bounds.NorthEast.Lat), _mapSRef).Envelope;
+                var mapBounds = GeoTransformer.FromWGS84(new Envelope(bounds.SouthWest.Lng, bounds.SouthWest.Lat, bounds.NorthEast.Lng, bounds.NorthEast.Lat), _mapControlSRef).Envelope;
                 MapRenderer.SetBoundsAndSize(mapBounds, size.Width, size.Height);
                 MapRenderer.BeginRender();
             }

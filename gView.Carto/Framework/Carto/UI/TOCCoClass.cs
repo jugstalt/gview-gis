@@ -161,12 +161,12 @@ namespace gView.Framework.Carto.UI
 
                     if (_map != null && _map.Display != null)
                     {
-                        if (layer.MinimumScale > 1 && layer.MinimumScale > _map.Display.mapScale)
+                        if (layer.MinimumScale > 1 && layer.MinimumScale > _map.Display.MapScale)
                         {
                             continue;
                         }
 
-                        if (layer.MaximumScale > 1 && layer.MaximumScale < _map.Display.mapScale)
+                        if (layer.MaximumScale > 1 && layer.MaximumScale < _map.Display.MapScale)
                         {
                             continue;
                         }

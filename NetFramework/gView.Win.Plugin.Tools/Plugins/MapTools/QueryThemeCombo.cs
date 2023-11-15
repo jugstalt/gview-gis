@@ -303,8 +303,8 @@ namespace gView.Plugins.MapTools
 
                         ILayer layer = element as ILayer;
                         if ((layer.Visible == false) ||
-                            (layer.MinimumScale > 1 && layer.MinimumScale > map.Display.mapScale) ||
-                            (layer.MaximumScale > 1 && layer.MaximumScale < map.Display.mapScale))
+                            (layer.MinimumScale > 1 && layer.MinimumScale > map.Display.MapScale) ||
+                            (layer.MaximumScale > 1 && layer.MaximumScale < map.Display.MapScale))
                         {
                             remove.Add(element);
                         }

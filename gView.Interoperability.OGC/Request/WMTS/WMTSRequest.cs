@@ -311,10 +311,10 @@ namespace gView.Interoperability.OGC.Request.WMTS
                     ISpatialReference sRef = SpatialReference.FromID("epsg:" + epsg);
 
                     map.Display.SpatialReference = sRef;
-                    map.Display.dpi = metadata.Dpi;
+                    map.Display.Dpi = metadata.Dpi;
 
-                    map.Display.iWidth = metadata.TileWidth;
-                    map.Display.iHeight = metadata.TileHeight;
+                    map.Display.ImageWidth = metadata.TileWidth;
+                    map.Display.ImageHeight = metadata.TileHeight;
 
                     double res = scale / (metadata.Dpi / 0.0254);
                     if (map.Display.MapUnits != GeoUnits.Meters)

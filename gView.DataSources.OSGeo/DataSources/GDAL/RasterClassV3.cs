@@ -287,7 +287,7 @@ namespace gView.DataSources.GDAL
                 var p2 = new gView.Framework.Geometry.Point(vecs[1].x, vecs[1].y);
                 var p3 = new gView.Framework.Geometry.Point(vecs[2].x, vecs[2].y);
 
-                double pix = display.mapScale / (display.dpi / 0.0254);  // [m]
+                double pix = display.MapScale / (display.Dpi / 0.0254);  // [m]
                 double c1 = Math.Sqrt(_tfw.dx_X * _tfw.dx_X + _tfw.dx_Y * _tfw.dx_Y);
                 double c2 = Math.Sqrt(_tfw.dy_Y * _tfw.dy_Y + _tfw.dy_X * _tfw.dy_X);
                 double mag = Math.Min(c1, c2) / pix;

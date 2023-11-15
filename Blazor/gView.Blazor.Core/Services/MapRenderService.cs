@@ -17,6 +17,9 @@ public class MapRenderService : IDisposable
     private MapRenderInstance2? _renderer;
     private ICancelTracker? _cancelTracker;
 
+    private ISpatialReference? _mapControlSRef;
+    private IEnvelope? _mapControlBounds;
+
     private readonly string _scopeId;
     private readonly GeoTransformerService _geoTransformer;
 
@@ -46,15 +49,17 @@ public class MapRenderService : IDisposable
         return map;
     }
 
-    public void InitMap(Map map)
+    public void InitMap(Map map, ISpatialReference? mapControlSRef = null)
     {
         ReleaseCurrentMapRendererInstance();
+
+        _mapControlSRef = mapControlSRef ?? map.SpatialReference;
 
         #region Remember current extent and size
 
         var bounds = _map?.Envelope;
-        var iWidth = _map?.iWidth;
-        var iHeight = _map?.iHeight;
+        var iWidth = _map?.ImageWidth;
+        var iHeight = _map?.ImageHeight;
         var sRef = _map?.SpatialReference;
 
         #endregion
@@ -74,8 +79,8 @@ public class MapRenderService : IDisposable
         {
             bounds = _geoTransformer.Transform(bounds, sRef, _map.SpatialReference).Envelope;
             _map.Envelope = bounds;
-            _map.iWidth = iWidth.Value;
-            _map.iHeight = iHeight.Value;
+            _map.ImageWidth = iWidth.Value;
+            _map.ImageHeight = iHeight.Value;
         }
 
         #endregion
@@ -88,16 +93,22 @@ public class MapRenderService : IDisposable
     {
         MapRendererNotIntializedException.ThrowIfNull(_map);
 
-        _map.Display.iWidth = imageWidth;
-        _map.Display.iHeight = imageHeight;
-        _map.Display.ZoomTo(bounds);
+        _map.Display.ImageWidth = imageWidth;
+        _map.Display.ImageHeight = imageHeight;
+
+        _mapControlBounds = bounds;
+
+        if (_mapControlSRef != null && _map.SpatialReference != null)
+        {
+            _map.Display.ZoomTo(_geoTransformer.Transform(bounds, _mapControlSRef, _map.SpatialReference).Envelope);
+        }
     }
 
     #region Properties
 
     public IEnvelope Bounds => _map?.Envelope ?? Envelope.Null();
-    public int ImageWidth => _map?.iWidth ?? 0;
-    public int ImageHeight => _map?.iHeight ?? 0;
+    public int ImageWidth => _map?.ImageWidth ?? 0;
+    public int ImageHeight => _map?.ImageHeight ?? 0;
     public bool BoundsIntialized() => _map != null &&
         _map?.Envelope != null &&
         !Envelope.IsNull(_map?.Envelope) &&
@@ -156,10 +167,14 @@ public class MapRenderService : IDisposable
     public void BeginRender()
     {
         MapRendererNotIntializedException.ThrowIfNull(_map);
+        MapRendererNotIntializedException.ThrowIfNull(_mapControlSRef);
+        MapRendererNotIntializedException.ThrowIfNull(_mapControlBounds);
 
         Task.Run(async () =>
         {
             var mapRenderInstance = await CreateMapRendererInstance();
+            mapRenderInstance.SpatialReference = _mapControlSRef;
+            mapRenderInstance.Display.ZoomTo(_mapControlBounds);
             await mapRenderInstance.RefreshMap(DrawPhase.All, _cancelTracker = new CancelTracker());
         });
     }

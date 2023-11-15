@@ -1,3 +1,4 @@
+@using Microsoft.AspNetCore.Components.Routing
 @inherits BaseHandler
 @implements IDisposable
 
@@ -12,25 +13,6 @@
         @(((ICartoApplicationScopeService)AppScope).Document?.Map?.Name)
     </MudText>
 </div>
-
-
-        <MudPaper Height="200px" Style="overflow:hidden; position:relative;">
-            <MudDrawerContainer Class="mud-height-full">
-                <MudDrawer Variant="@DrawerVariant.Mini"
-                           Color="Color.Primary"
-                           Elevation="1"
-                           Open="true"
-                           OpenMiniOnHover="true"
-                           Fixed="false">
-                    <MudNavMenu>
-                        <MudNavLink Icon="@Icons.Material.Filled.Store">Store</MudNavLink>
-                        <MudNavLink Icon="@Icons.Material.Filled.LibraryBooks">Library</MudNavLink>
-                        <MudNavLink Icon="@Icons.Material.Filled.Group">Community</MudNavLink>
-                    </MudNavMenu>
-                </MudDrawer>
-            </MudDrawerContainer>
-        </MudPaper>
-
 
 @if (_treeNodes.Any())
 {
@@ -95,9 +77,8 @@
 else if(_cartoInitialTools != null)
 {
     <div style="padding:10px">
-        <MudText>
-            This is an empty map now. To start use one of the this tools:
-        </MudText>
+        @GvUtilities.InfoText("This is an empty map now. To start use one of the this tools:")
+            
         @foreach(var cartoTool in _cartoInitialTools)
         {
             <div class="carto-initial-tool"

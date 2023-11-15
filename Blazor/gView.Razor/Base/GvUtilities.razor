@@ -1,0 +1,28 @@
+@code {
+    public static RenderFragment AppName()
+        =>@<MudText Typo="Typo.h1">gView</MudText>;
+
+    public static RenderFragment EnumToOptions<TEnum>() 
+        where TEnum : struct, Enum
+        => builder =>
+        {
+            var values = Enum.GetValues(typeof(TEnum));
+            int seq = 0;
+
+            foreach (var value in values)
+            {
+                builder.OpenComponent<MudSelectItem<TEnum>>(seq++);
+                builder.AddAttribute(seq++, "Value", value);
+                builder.AddAttribute(seq++, "ChildContent", new RenderFragment((innerBuilder) =>
+                {
+                    innerBuilder.AddContent(seq++, value.ToString());
+                }));
+                builder.CloseComponent();
+            }
+        };
+
+    public static RenderFragment InfoText(string text)
+        =>@<MudText Typo="Typo.body2" 
+                    Color="Color.Primary"
+                    Style="margin-bottom:8px">@text</MudText>;
+}

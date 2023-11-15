@@ -31,14 +31,61 @@ internal class MapSettings : ICartoTool
     async public Task<bool> OnEvent(IApplicationScope scope)
     {
         var scopeService = scope.ToCartoScopeService();
+        var original = scopeService.Document.Map as Map;
+        var clone = original?.Clone() as Map;
+
+        if (original is null || clone is null)
+        {
+            return false;
+        }
+
+        clone.ZoomTo(original.Display.Envelope);
+        clone.Display.ImageWidth = original.Display.ImageWidth;
+        clone.Display.ImageHeight = original.Display.ImageHeight;
 
         var model = await scopeService.ShowModalDialog(typeof(gView.Carto.Razor.Components.Dialogs.MapSettingsDialog),
                                                     "Map Properties",
-                                                    new Razor.Components.Dialogs.Models.MapSettingsModel());
+                                                    new Razor.Components.Dialogs.Models.MapSettingsModel()
+                                                    {
+                                                        Map = clone
+                                                    });
 
-        if (model != null)
+        if (model?.Map != null)
         {
+            #region General
 
+            original.Name = clone.Name;
+
+            original.ReferenceScale = clone.ReferenceScale;
+            original.Display.MapUnits = clone.Display.MapUnits;
+            original.Display.DisplayUnits = clone.Display.DisplayUnits;
+            original.Display.BackgroundColor = clone.Display.BackgroundColor;
+
+            #endregion
+
+            #region Spatial Reference
+
+            original.SpatialReference = clone.SpatialReference;
+            original.LayerDefaultSpatialReference = clone.LayerDefaultSpatialReference;
+
+            #endregion
+
+            #region Description
+
+            original.Title = clone.Title;
+            original.SetLayerDescription(Map.MapDescriptionId, clone.GetLayerDescription(Map.MapDescriptionId));
+            original.SetLayerCopyrightText(Map.MapCopyrightTextId, clone.GetLayerCopyrightText(Map.MapCopyrightTextId));
+
+            #endregion
+
+            #region Resources
+
+            // clone and original shares resource container
+            // changes are live (no cancel!)
+
+            #endregion
+
+            await scopeService.EventBus.FireRefreshMapAsync();
         }
 
         return true;

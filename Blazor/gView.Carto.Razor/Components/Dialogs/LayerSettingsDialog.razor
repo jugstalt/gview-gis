@@ -1,0 +1,70 @@
+@inherits ModalDialogFormBase<LayerSettingsModel>
+@inject IconService IconService
+
+@if (Model.Map != null)
+{
+    <ModalDialogFormBase T="LayerSettingsModel"
+                         OnDialogClose="base.OnDialogClose"
+                         Model="base.Model">
+        <DialogBody>
+            <MudDrawerContainer Class="mud-height-full">
+                <MudDrawer Variant="@DrawerVariant.Mini" Anchor="Anchor.Left"
+                           Elevation="1"
+                           @bind-Open="@_drawerIsOpen"
+                           OpenMiniOnHover="true"
+                           Fixed="false">
+                    <MudList Clickable="true" @bind-SelectedValue="@_currentTab">
+                        <MudListItem Icon="@IconService.FromString("basic:settings")" Style="white-space:nowrap"
+                                     Value="Page.General" Text="Map / Display" />
+                        <MudListItem Icon="@IconService.FromString("basic:copyright")" Style="white-space:nowrap"
+                                     Value="Page.Description" Text="Description & (c)" />
+                        <MudListItem Icon="@IconService.FromString("basic:cloud-connect")" Style="white-space:nowrap"
+                                     Value="Page.MapService" Text="Map Service" />
+                    </MudList>
+                </MudDrawer>
+            </MudDrawerContainer>
+
+            <MudContainer Style="padding-left:50px;padding-right:10px">
+                @if (Page.General.Equals(_currentTab))
+                {
+                    <LayerGeneralSettings Layer="Model.Layer" />
+                }
+                else if (Page.Description.Equals(_currentTab))
+                {
+
+                }
+                else if (Page.MapService.Equals(_currentTab))
+                {
+
+                }
+            </MudContainer>
+        </DialogBody>
+
+        <DialogButtons>
+            <MudButton Variant="Variant.Filled"
+                       Color="Color.Default"
+                       OnClick="()=>base.Close()">Cancel</MudButton>
+            <MudButton Variant="Variant.Filled"
+                       Color="Color.Primary"
+                       OnClick="Apply">Apply</MudButton>
+        </DialogButtons>
+
+    </ModalDialogFormBase>
+}
+
+@code
+{
+    private enum Page
+    {
+        General,
+        Description,
+        MapService
+    }
+    private bool _drawerIsOpen = false;
+    private object _currentTab = Page.General;
+
+    protected Task Apply()
+    {
+        return base.Submit();
+    }
+}

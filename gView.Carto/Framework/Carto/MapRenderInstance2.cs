@@ -40,7 +40,7 @@ namespace gView.Framework.Carto
             //serviceMap._ceckLayerVisibilityBeforeDrawing = true;
             mapRenderInstance._mapUnits = original.MapUnits;
             mapRenderInstance._displayUnits = original.DisplayUnits;
-            mapRenderInstance.refScale = original.refScale;
+            mapRenderInstance.ReferenceScale = original.ReferenceScale;
 
             mapRenderInstance.SpatialReference = original.Display.SpatialReference;
             mapRenderInstance.LayerDefaultSpatialReference = original.LayerDefaultSpatialReference != null ? original.LayerDefaultSpatialReference.Clone() as ISpatialReference : null;
@@ -56,10 +56,10 @@ namespace gView.Framework.Carto
 
             mapRenderInstance.SetResourceContainer(original.ResourceContainer);
 
-            mapRenderInstance.Display.iWidth = original.Display.iWidth;
-            mapRenderInstance.Display.iHeight = original.Display.iHeight;
+            mapRenderInstance.Display.ImageWidth = original.Display.ImageWidth;
+            mapRenderInstance.Display.ImageHeight = original.Display.ImageHeight;
             mapRenderInstance.Display.ZoomTo(original.Envelope);
-            mapRenderInstance.Display.dpi = original.Display.dpi;
+            mapRenderInstance.Display.Dpi = original.Display.Dpi;
             mapRenderInstance.Display.TransparentColor = original.Display.TransparentColor;
 
             mapRenderInstance.DrawingLayer += (string layerName) =>
@@ -128,7 +128,7 @@ namespace gView.Framework.Carto
                         DisposeStreams();
                     }
 
-                    if (_bitmap != null && (_bitmap.Width != iWidth || _bitmap.Height != iHeight))
+                    if (_bitmap != null && (_bitmap.Width != ImageWidth || _bitmap.Height != ImageHeight))
                     {
 
                         if (!DisposeImage())
@@ -139,7 +139,7 @@ namespace gView.Framework.Carto
 
                     if (_bitmap == null)
                     {
-                        _bitmap = GraphicsEngine.Current.Engine.CreateBitmap(iWidth, iHeight, GraphicsEngine.PixelFormat.Rgba32);
+                        _bitmap = GraphicsEngine.Current.Engine.CreateBitmap(ImageWidth, ImageHeight, GraphicsEngine.PixelFormat.Rgba32);
                         _bitmap.MakeTransparent();
                     }
 
@@ -397,8 +397,8 @@ namespace gView.Framework.Carto
                         }
                         if (_drawScaleBar)
                         {
-                            m_imageMerger.mapScale = this.mapScale;
-                            m_imageMerger.dpi = this.dpi;
+                            m_imageMerger.mapScale = this.MapScale;
+                            m_imageMerger.dpi = this.Dpi;
                         }
                         if (m_imageMerger.Count > 0)
                         {
@@ -618,7 +618,7 @@ namespace gView.Framework.Carto
 
             try
             {
-                using (var bm = GraphicsEngine.Current.Engine.CreateBitmap(Display.iWidth, Display.iHeight, GraphicsEngine.PixelFormat.Rgba32))
+                using (var bm = GraphicsEngine.Current.Engine.CreateBitmap(Display.ImageWidth, Display.ImageHeight, GraphicsEngine.PixelFormat.Rgba32))
                 using (_canvas = bm.CreateCanvas())
                 {
                     DrawStream(_canvas, _msGeometry);

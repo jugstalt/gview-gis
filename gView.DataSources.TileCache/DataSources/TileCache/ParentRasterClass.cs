@@ -117,7 +117,7 @@ namespace gView.DataSources.TileCache
             double dpi = 96.0;  // gView Default... //25.4D / 0.28D;   // wmts 0.28mm -> 1 Pixel in WebMercator;
 
             // !!!! Only correct, if diplay unit is meter !!!! 
-            double displayResolution = display.mapScale / (display.dpi / 0.0254);
+            double displayResolution = display.MapScale / (display.Dpi / 0.0254);
 
             Grid grid = new Grid(
                 _dataset.OriginPoint == null ? new Point(_dataset.Extent.minx, _dataset.Extent.maxy) : new Point(_dataset.OriginPoint),

@@ -838,7 +838,7 @@ namespace gView.Plugins.Editor
                 IFeatureClass fc = _module.SelectedEditLayer.FeatureLayer.FeatureClass;
 
                 double tolerance = 5.0;
-                double tol = tolerance * _doc.FocusMap.Display.mapScale / (96 / 0.0254);  // [m]
+                double tol = tolerance * _doc.FocusMap.Display.MapScale / (96 / 0.0254);  // [m]
                 if (_doc.FocusMap.Display.SpatialReference != null &&
                      _doc.FocusMap.Display.SpatialReference.SpatialParameters.IsGeographic)
                 {

@@ -1,0 +1,34 @@
+@if (Layer != null)
+{
+    <GvCard Title="Feature Rendering">
+        <GvCardContent>
+            
+        </GvCardContent>
+    </GvCard>
+
+    <GvCard Title="Labelling">
+        <GvCardContent>
+
+        </GvCardContent>
+    </GvCard>
+
+    <GvCard Title="Zoom To Features">
+        <GvCardContent>
+
+        </GvCardContent>
+    </GvCard>
+
+    @if (Layer.Class is IFeatureClass fClass)
+    {
+        <GvCard Title="Feature Layer">
+            <GvCardContent>
+
+            </GvCardContent>
+        </GvCard>
+    }
+}
+
+@code {
+    [Parameter] 
+    public ILayer? Layer { get; set; }
+}

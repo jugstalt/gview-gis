@@ -91,7 +91,7 @@ namespace gView.Plugins.DbTools.Migrate
 
             Map migMap = new Map();
             migMap.Name = txtMap.Text;
-            migMap.Display.refScale = _map.Display.refScale;
+            migMap.Display.ReferenceScale = _map.Display.ReferenceScale;
             migMap.Display.MapUnits = _map.Display.MapUnits;
             migMap.Display.DisplayUnits = _map.Display.DisplayUnits;
             migMap.Display.SpatialReference = _map.Display.SpatialReference;

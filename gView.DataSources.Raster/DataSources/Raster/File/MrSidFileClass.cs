@@ -303,7 +303,7 @@ namespace gView.DataSources.Raster.File
                 var p2 = new gView.Framework.Geometry.Point(vecs[1].x, vecs[1].y);
                 var p3 = new gView.Framework.Geometry.Point(vecs[2].x, vecs[2].y);
 
-                double pix = display.mapScale / (display.dpi / 0.0254);  // [m]
+                double pix = display.MapScale / (display.Dpi / 0.0254);  // [m]
                 double c1 = Math.Sqrt(_geoCoord.xRes * _geoCoord.xRes + _geoCoord.xRot * _geoCoord.xRot);
                 double c2 = Math.Sqrt(_geoCoord.yRes * _geoCoord.yRes + _geoCoord.yRot * _geoCoord.yRot);
                 mag = Math.Round((Math.Min(c1, c2) / pix), 8);
