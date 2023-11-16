@@ -25,7 +25,7 @@ namespace gView.Framework.Carto.LayerRenderers
             if (rLayer != null)
             {
                 _interpolMethod = rLayer.InterpolationMethod;
-                _transparency = rLayer.Transparency;
+                _transparency = rLayer.Opacity;
                 _transColor = rLayer.TransparentColor;
                 _filter = rLayer.FilterImplementation;
             }

@@ -293,7 +293,7 @@ namespace gView.Framework.Carto
             if (rootLayer != null)
             {
                 _interpolMethod = rootLayer.InterpolationMethod;
-                _transparency = rootLayer.Transparency;
+                _transparency = rootLayer.Opacity;
             }
         }
 

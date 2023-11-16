@@ -1472,7 +1472,7 @@ namespace gView.Framework.UI.Dialogs
                         cmbInterpolationMode.SelectedItem = mode;
                     }
                 }
-                tbTransparency.Value = (int)Math.Max(Math.Min((int)(((IRasterLayer)_layer).Transparency * 100f), 100), 0);
+                tbTransparency.Value = (int)Math.Max(Math.Min((int)(((IRasterLayer)_layer).Opacity * 100f), 100), 0);
                 lblTransPercent.Text = tbTransparency.Value.ToString() + "%";
 
                 btnTranscolor.BackColor = ((IRasterLayer)_layer).TransparentColor.ToGdiColor();
@@ -1963,7 +1963,7 @@ namespace gView.Framework.UI.Dialogs
             {
                 ((IRasterLayer)_layer).FilterImplementation = (GraphicsEngine.Filters.FilterImplementations)cmbFilter.SelectedItem;
                 ((IRasterLayer)_layer).InterpolationMethod = (InterpolationMethod)cmbInterpolationMode.SelectedItem;
-                ((IRasterLayer)_layer).Transparency = ((float)tbTransparency.Value) / 100f;
+                ((IRasterLayer)_layer).Opacity = ((float)tbTransparency.Value) / 100f;
                 ((IRasterLayer)_layer).TransparentColor = btnTranscolor.BackColor.ToArgbColor();
             }
             if (_layer.Class is IGridClass)

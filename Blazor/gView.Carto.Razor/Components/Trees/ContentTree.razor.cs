@@ -1,4 +1,5 @@
-﻿using gView.Carto.Core.Abstractions;
+﻿using gView.Blazor.Core.Extensions;
+using gView.Carto.Core.Abstractions;
 using gView.Carto.Core.Models.Tree;
 using gView.Carto.Core.Services.Abstraction;
 using gView.Framework.Carto;
@@ -52,6 +53,15 @@ namespace gView.Carto.Razor.Components.Trees
             {
                 foreach (var tocElement in map.TOC.Elements.Where(e => e.ParentGroup == parentTreeNode?.TocElement))
                 {
+                    var locked = 
+                        tocElement.LayerLocked
+                        || tocElement.Layers?.All(l => l.IsLocked()) == true;
+
+                    if (locked)
+                    {
+                        continue;
+                    }
+
                     TocTreeNode? childTreeNode = tocElement.ElementType switch
                     {
                         TocElementType.OpenedGroup => new TocParentNode(tocElement),

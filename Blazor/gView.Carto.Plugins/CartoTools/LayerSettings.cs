@@ -68,6 +68,8 @@ namespace gView.Carto.Plugins.CartoTools
 
             #endregion
 
+            await scopeService.EventBus.FireMapSettingsChangedAsync();
+
             return true;
         }
     }

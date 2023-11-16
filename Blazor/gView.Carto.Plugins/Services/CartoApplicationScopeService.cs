@@ -131,9 +131,17 @@ public class CartoApplicationScopeService : ApplictionBusyHandler, IApplicationS
         {
             DisableBackdropClick = true,
             CloseButton = modalDialogOptions?.ShowCloseButton ?? true,
-            MaxWidth = MaxWidth.ExtraExtraLarge,
+            MaxWidth = modalDialogOptions?.Width switch
+            {
+                ModalDialogWidth.ExtraExtraLarge => MaxWidth.ExtraExtraLarge,
+                ModalDialogWidth.Large => MaxWidth.Large,
+                ModalDialogWidth.Medium => MaxWidth.Medium,
+                ModalDialogWidth.Small => MaxWidth.Small,
+                ModalDialogWidth.ExtraSmall => MaxWidth.ExtraSmall,
+                _ => MaxWidth.ExtraLarge
+            },
             CloseOnEscapeKey = modalDialogOptions?.CloseOnEscapeKey ?? false,
-            //FullWidth = true
+            FullWidth = modalDialogOptions?.FullWidth ?? false,
         };
 
         dialog = await _dialogService.ShowAsync(razorComponent, title, dialogParameters, dialogOptions);

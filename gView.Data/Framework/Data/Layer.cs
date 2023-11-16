@@ -1462,7 +1462,7 @@ namespace gView.Framework.Data
                 IRasterLayer layer = (IRasterLayer)element;
 
                 _interpolMethod = layer.InterpolationMethod;
-                _transparency = layer.Transparency;
+                _transparency = layer.Opacity;
                 _transColor = layer.TransparentColor;
                 FilterImplementation = layer.FilterImplementation;
             }
@@ -1481,7 +1481,7 @@ namespace gView.Framework.Data
             }
         }
 
-        public float Transparency
+        public float Opacity
         {
             get
             {
@@ -1584,7 +1584,7 @@ namespace gView.Framework.Data
                 IRasterLayer layer = (IRasterLayer)element;
 
                 _interpolMethod = layer.InterpolationMethod;
-                _transparency = layer.Transparency;
+                _transparency = layer.Opacity;
                 _transColor = layer.TransparentColor;
             }
         }
@@ -1603,7 +1603,7 @@ namespace gView.Framework.Data
             }
         }
 
-        public float Transparency
+        public float Opacity
         {
             get
             {

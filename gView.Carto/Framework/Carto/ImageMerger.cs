@@ -153,7 +153,7 @@ namespace gView.Framework.Carto
         {
             foreach (var georefBitmap in _picList)
             {
-                georefBitmap.Dispose();
+                georefBitmap?.Dispose();
             }
 
             _picList.Clear();

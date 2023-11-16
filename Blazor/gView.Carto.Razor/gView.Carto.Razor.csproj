@@ -7,6 +7,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Include="Components\Controls\Classes\WmsClassSettingsControl.razor" />
+    <None Include="Components\Controls\Tables\QueryBuilderControl.razor" />
     <None Include="Components\Dialogs\NewMapDialog.razor" />
   </ItemGroup>
 
@@ -22,6 +24,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\gView.Cmd.Core\gView.Cmd.Core.csproj" />
+    <ProjectReference Include="..\..\gView.Interoperability.OGC\gView.Interoperability.OGC.csproj" />
     <ProjectReference Include="..\..\gView.System\gView.System.csproj" />
     <ProjectReference Include="..\gView.Blazor.Core\gView.Blazor.Core.csproj" />
     <ProjectReference Include="..\gView.Blazor.Models\gView.Blazor.Models.csproj" />

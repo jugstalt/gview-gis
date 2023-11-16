@@ -14,20 +14,25 @@
         <MudDrawerContainer Class="mud-height-full">
             <MudDrawer Variant="@DrawerVariant.Mini" Anchor="Anchor.Left"
                        Elevation="1" 
-                       @bind-Open="@_drawerIsOpen" 
+                       @bind-Open="@_drawerIsOpen"  
                        OpenMiniOnHover="true" 
                        Fixed="false">
-                <MudList Clickable="true" @bind-SelectedValue="@_currentTab" >
+                    <MudList Clickable="true" @bind-SelectedValue="@_currentTab">
                     <MudListItem Icon="@IconService.FromString("basic:settings")" Style="white-space:nowrap"
-                                 Value="Page.General" Text="Map / Display"/>
+                                 Value="Page.General" Text="Map / Display" 
+                                 OnClick="() => _drawerIsOpen = false" />
                     <MudListItem Icon="@IconService.FromString("basic:globe-table")" Style="white-space:nowrap"
-                                 Value="Page.SpatialReference" Text="Spatial Reference" />
+                                 Value="Page.SpatialReference" Text="Spatial Reference" 
+                                 OnClick="() => _drawerIsOpen = false" />
                     <MudListItem Icon="@IconService.FromString("basic:globe")" Style="white-space:nowrap"
-                                 Value="Page.DefaultLayerSpatialReference" Text="Default Layer SRef" />
+                                 Value="Page.DefaultLayerSpatialReference" Text="Default Layer SRef" 
+                                 OnClick="() => _drawerIsOpen = false" />
                     <MudListItem Icon="@IconService.FromString("basic:copyright")" Style="white-space:nowrap"
-                                 Value="Page.Description" Text="Description & (c)" />
+                                 Value="Page.Description" Text="Description & (c)" 
+                                 OnClick="() => _drawerIsOpen = false" />
                     <MudListItem Icon="@IconService.FromString("basic:package")" Style="white-space:nowrap"
-                                 Value="Page.Resources" Text="Resources" />
+                                 Value="Page.Resources" Text="Resources" 
+                                 OnClick="() => _drawerIsOpen = false" />
                     @*<MudListItem Icon="@IconService.FromString("basic:cloud-connect")" Style="white-space:nowrap"
                     Value="Page.MapService" Text="Map Service" />*@
                 </MudList>
@@ -58,9 +63,9 @@
                             @(GvUtilities.EnumToSelectItems<GeoUnits>())
                         </MudSelect>
 
-                        <MudColorPicker Label="Background Color" 
-                                        ColorPickerView="ColorPickerView.Grid" 
-                                        @bind-Value="_backgroundColor" />
+                        <MudInputLabel>Background Color</MudInputLabel>
+                        <ColorSelectorButton ArgbColor="Model.Map.BackgroundColor"
+                                             ArgbColorChanged="(color) => Model.Map.BackgroundColor = color" />
                     </GvCardContent>
                     
                 </GvCard>
@@ -187,33 +192,17 @@
     private object _currentTab = Page.General;
 
     private MudTextField<string>? description, copyright;
-    private MudColor _backgroundColor = new MudColor("#ff0");
 
     protected override void OnInitialized()
     {
         base.OnInitialized();
-
-        if (Model.Map != null)
-        {
-            _backgroundColor = new MudColor(
-                Model.Map.Display.BackgroundColor.R,
-                Model.Map.Display.BackgroundColor.G,
-                Model.Map.Display.BackgroundColor.B,
-                Model.Map.Display.BackgroundColor.A
-            );
-        }
     }
 
     protected Task Apply()
     {
         if(Model.Map != null)
         {
-            Model.Map.Display.BackgroundColor = GraphicsEngine.ArgbColor.FromArgb(
-                _backgroundColor.A,
-                _backgroundColor.R,
-                _backgroundColor.G,
-                _backgroundColor.B
-            );
+            // nothing to do here...
         }
 
         return base.Submit();

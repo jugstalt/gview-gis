@@ -97,7 +97,8 @@ public class WmsServiceExplorerObject : ExplorerObjectCls<WmsExplorerObject, WMS
         if (_class == null)
         {
             WMSDataset dataset = await WMSDataset.Create(_connectionString, _name);
-            //dataset.Open(); // kein open, weil sonst ein GET_SERVICE_INFO durchgeführt wird...
+            await dataset.Open(); // kein open, weil sonst ein GET_SERVICE_INFO durchgeführt wird...
+            
             switch (ConfigTextStream.ExtractValue(_connectionString, "service").ToUpper())
             {
                 case "WMS":

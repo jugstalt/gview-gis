@@ -144,7 +144,7 @@ namespace gView.DataSources.TileCache
             }
         }
 
-        public float Transparency
+        public float Opacity
         {
             get
             {

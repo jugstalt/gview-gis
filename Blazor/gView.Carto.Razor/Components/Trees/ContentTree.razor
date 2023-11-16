@@ -34,10 +34,13 @@
                     ExpandedChanged="@((expanded) => OnNodeExpandedChanged(context, expanded))"
                     @onclick="@((e) => OnNodeClickAsync(context,e))">
                         <Content>
-                            <MudTreeViewItemToggleButton @bind-Expanded="@context.IsExpanded" Visible="@context.HasChildren" ExpandedIcon="@Icons.Material.Rounded.ArrowRight" />
+                            <MudTreeViewItemToggleButton @bind-Expanded="@context.IsExpanded" 
+                                                         Visible="@context.HasChildren" 
+                                                         ExpandedIcon="@Icons.Material.Rounded.ArrowRight" />
                             <MudCheckBox T="bool" 
-                            Checked="@context.IsChecked"
-                            CheckedChanged="@((e) => OnCheckboxClickedAsync(context,e))" />
+                                         Checked="@context.IsChecked"
+                                         Color="Color.Surface"
+                                         CheckedChanged="@((e) => OnCheckboxClickedAsync(context,e))" />
                             <MudText>@context.Text</MudText>
                         </Content>
                     </MudTreeViewItem>
@@ -62,10 +65,13 @@
                     ExpandedChanged="@((expanded) => OnNodeExpandedChanged(context, expanded))"
                     @onclick="@((e) => OnNodeClickAsync(context,e))">
                         <Content>
-                            <MudTreeViewItemToggleButton @bind-Expanded="@context.IsExpanded" Visible="true" />
+                            <MudTreeViewItemToggleButton @bind-Expanded="@context.IsExpanded" 
+                                                         Visible="true" 
+                                                         ExpandedIconColor="Color.Primary" />
                             <MudCheckBox T="bool"
-                            Checked="@context.IsChecked"
-                            CheckedChanged="@((e) => OnCheckboxClickedAsync(context,e ))" />
+                                         Checked="@context.IsChecked"
+                                         Color="Color.Primary"
+                                         CheckedChanged="@((e) => OnCheckboxClickedAsync(context,e ))" />
                             <MudText Class="grouplayer-text">@context.Text</MudText>
                         </Content>
                     </MudTreeViewItem>

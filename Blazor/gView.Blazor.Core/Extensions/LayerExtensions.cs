@@ -17,9 +17,33 @@ static public class LayerExtensions
     static public bool ImplementsSpatialReference(this ILayer layer)
         => layer switch
         {
+            IWebServiceTheme => false,
             IFeatureLayer => true,
             IRasterLayer => true,
             IWebServiceLayer => true,
+            _ => false
+        };
+
+    static public bool IsGroupLayer(this ILayer layer) => layer is IGroupLayer;
+
+    static public bool HasDataSource(this ILayer layer) => layer.DatasetID >= 0;
+
+    static public bool ImplementsLayerComposition(this ILayer layer)
+        => layer is IFeatureLayerComposition 
+           && !(layer is IWebServiceTheme);
+
+    static public bool ImplementsLayerDefinitionFilter(this ILayer layer)
+       => layer is IFeatureLayerComposition
+           && !(layer is IWebServiceTheme);
+
+    static public bool IsRasterLayer(this ILayer layer) => layer is IRasterLayer;
+
+    static public bool IsWebServiceLayer(this ILayer layer) => layer is IWebServiceLayer;
+
+    static public bool IsLocked(this ILayer layer)
+        => layer switch
+        {
+            IWebServiceTheme theme => theme.Locked,
             _ => false
         };
 }
