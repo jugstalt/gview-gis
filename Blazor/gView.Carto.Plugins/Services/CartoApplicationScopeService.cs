@@ -14,7 +14,6 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Options;
 using Microsoft.JSInterop;
 using MudBlazor;
-using OSGeo_v3.OGR;
 
 namespace gView.Carto.Plugins.Services;
 public class CartoApplicationScopeService : ApplictionBusyHandler, IApplicationScope, ICartoApplicationScopeService
@@ -70,7 +69,7 @@ public class CartoApplicationScopeService : ApplictionBusyHandler, IApplicationS
         => _eventBus.FireSelectedTocTreeNodeChangedAsync(this.SelectedTocTreeNode = selectedTocTreeNode);
 
 
-    public GeoTransformerService GeoTransformer => _geoTransformer; 
+    public GeoTransformerService GeoTransformer => _geoTransformer;
 
     #region IDisposable
 

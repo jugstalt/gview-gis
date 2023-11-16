@@ -6,7 +6,11 @@
                       OnDialogClose="base.OnDialogClose"
                       Model="base.Model">
     <DialogBody>
-        @if (selectedRoot != null)
+        @if(_isSubmitting)
+        {
+            <div>Submitting...</div>
+        }
+        else if (selectedRoot != null)
         {
             currentListExplorerObjects.Clear();
             currentListExplorerObjects.AddRange(selectedRoot is IExplorerParentObject ?
@@ -147,11 +151,14 @@
     private ExplorerDialogFilter? selectedFilter;
 
     private bool placeToSave = false;
-    private bool _isSubmitting = false;
+    private bool _isSubmitting = true;
 
     protected override Task OnInitializedAsync()
         => HandleAsync(async () =>
         {
+            //await Task.Delay(2000);
+            _isSubmitting = false;
+
             #region Initialize Select
 
             selectedRoot = ExplorerApplication.RootExplorerObject;
@@ -251,16 +258,21 @@
         Model.Result.ExplorerObjects.Clear();
     }
 
-    private Task Apply()
+    async private Task Apply()
     {
         if (_isSubmitting) 
         {
-            return Task.CompletedTask;
+            return;
         }
 
         _isSubmitting = true;
-        StateHasChanged();
 
-        return base.Submit();
+        // await InvokeAsync(() =>
+        // {
+        //     StateHasChanged();
+        //     base.Submit();
+        // });
+
+        await base.Submit();
     }
 }

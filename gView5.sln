@@ -261,6 +261,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Carto.Core", "Blazor\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Framework.Carto", "Blazor\gView.Framework.Carto\gView.Framework.Carto.csproj", "{40B83634-ED94-4513-B8A0-D82CB8E8C84A}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gView.Carto.Web", "Blazor\gView.Carto.Web\gView.Carto.Web.csproj", "{5690D23F-4B77-4BBF-89E2-9A0594CAB3CB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -1229,6 +1231,14 @@ Global
 		{40B83634-ED94-4513-B8A0-D82CB8E8C84A}.Release|Any CPU.Build.0 = Release|Any CPU
 		{40B83634-ED94-4513-B8A0-D82CB8E8C84A}.Release|x64.ActiveCfg = Release|Any CPU
 		{40B83634-ED94-4513-B8A0-D82CB8E8C84A}.Release|x64.Build.0 = Release|Any CPU
+		{5690D23F-4B77-4BBF-89E2-9A0594CAB3CB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5690D23F-4B77-4BBF-89E2-9A0594CAB3CB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5690D23F-4B77-4BBF-89E2-9A0594CAB3CB}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{5690D23F-4B77-4BBF-89E2-9A0594CAB3CB}.Debug|x64.Build.0 = Debug|Any CPU
+		{5690D23F-4B77-4BBF-89E2-9A0594CAB3CB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5690D23F-4B77-4BBF-89E2-9A0594CAB3CB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5690D23F-4B77-4BBF-89E2-9A0594CAB3CB}.Release|x64.ActiveCfg = Release|Any CPU
+		{5690D23F-4B77-4BBF-89E2-9A0594CAB3CB}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -1362,6 +1372,7 @@ Global
 		{BBA74397-70BC-4C92-8771-509A9225AF01} = {75D9853B-5A03-4E2C-9B36-509B68E2ADEA}
 		{31979DF2-8250-4115-89F5-DF995BF71611} = {75D9853B-5A03-4E2C-9B36-509B68E2ADEA}
 		{40B83634-ED94-4513-B8A0-D82CB8E8C84A} = {75D9853B-5A03-4E2C-9B36-509B68E2ADEA}
+		{5690D23F-4B77-4BBF-89E2-9A0594CAB3CB} = {75D9853B-5A03-4E2C-9B36-509B68E2ADEA}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {11C25FC0-EB32-4DE1-9CBB-CF2D68D1AA9B}
