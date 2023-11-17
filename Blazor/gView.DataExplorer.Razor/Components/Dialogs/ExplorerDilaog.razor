@@ -267,11 +267,7 @@
 
         _isSubmitting = true;
 
-        // await InvokeAsync(() =>
-        // {
-        //     StateHasChanged();
-        //     base.Submit();
-        // });
+        await ForceRenderComponent();
 
         await base.Submit();
     }

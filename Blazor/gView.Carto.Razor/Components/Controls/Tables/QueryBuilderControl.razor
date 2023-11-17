@@ -42,7 +42,7 @@
                 </GvGridItem>
 
                 <GvGridItem>
-                    @GvUtilities.InfoText($"{(_fieldValuesLoading ? "Loading..." : "Values:")} {_fieldValues.Count}")
+                    @GvUtilities.InfoText($"{_currentField?.name} {(_fieldValuesLoading ? "Loading..." : "Values:")} {_fieldValues.Count}")
                     @if (@* _fieldValuesLoading == false &&  *@ _fieldValues.Count > 0)
                     {
                         <MudPaper Outlined="true" Style="height:300px;overflow-y:auto">
@@ -119,11 +119,14 @@
         _fieldValuesLoading = true;
         _hasMore = false;
 
-        try {
+        try 
+        {
             if (!append)
             {
                 _fieldValues.Clear();
             }
+
+            await ForceRenderComponent();
 
             if (TableClass is null || _currentField is null)
             {
@@ -165,7 +168,7 @@
 
                     if (count % 100 == 0)
                     {
-                        StateHasChanged();
+                        await ForceRenderComponent();
                     }
                 }
             }

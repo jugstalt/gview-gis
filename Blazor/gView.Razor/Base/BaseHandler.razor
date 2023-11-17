@@ -44,7 +44,7 @@
             // {
             //     // do nothing
             // });
-            
+
             return default(T);
         }
     }
@@ -67,5 +67,11 @@
         await DialogService.ShowMessageBox(
                 "Error",
                 ex.Message);
+    }
+
+    async protected Task ForceRenderComponent()
+    {
+        await Task.Delay(1);
+        StateHasChanged();
     }
 }
