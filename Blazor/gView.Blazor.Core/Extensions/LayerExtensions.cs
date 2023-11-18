@@ -28,6 +28,9 @@ static public class LayerExtensions
 
     static public bool HasDataSource(this ILayer layer) => layer.DatasetID >= 0;
 
+    static public bool CanFeatureRender(this ILayer layer) => layer is IFeatureLayer;
+    static public bool CanLabelRenderer(this ILayer layer) => layer is IFeatureLayer;
+
     static public bool ImplementsLayerComposition(this ILayer layer)
         => layer is IFeatureLayerComposition 
            && !(layer is IWebServiceTheme);

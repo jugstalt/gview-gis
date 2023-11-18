@@ -1,0 +1,168 @@
+@using gView.Framework.Symbology
+@inherits ModalDialogFormBase<SymbolComposerModel>
+
+<ModalDialogFormBase T="SymbolComposerModel"
+                     OnDialogClose="base.OnDialogClose"
+                     Model="base.Model">
+    <DialogBody>
+        
+        <GvCard Title="Gallery">
+            <GvCardContent>
+                <SymbolGalleryControl SymbolProtoType="Model.Symbol"
+                                      OnSymbolSelected="GallerySymbolSelected"/>
+            </GvCardContent>
+        </GvCard>
+
+        <GvGrid ColumnCount="3">
+            <GvGridItem>
+                <GvCard Title="Stack">
+                    <GvCardContent>
+                        @if (_symbolStack is not null)
+                        {
+                            <MudDropContainer T="ISymbolCollectionItem"
+                                              Items="_symbolStack.Symbols"
+                                              ItemDropped="ReorderStackItems"
+                                              ItemsSelector="@((item,zone) => true)">
+                                <ChildContent>
+                                    <MudDropZone T="ISymbolCollectionItem"
+                                                 AllowReorder="true">
+                                        @GvUtilities.InfoText("Drag to reorder...")
+                                    </MudDropZone>
+                                </ChildContent>
+                                <ItemRenderer>
+                                    <MudCheckBox T="bool" Style="display:inline-block" Dense="true"
+                                                 Checked="@context.Visible"
+                                                 CheckedChanged="(visible) => { context.Visible = visible; DrawPreviewImage(); }" />
+                                     <div style="display:inline-block;width:150px;height:35px;background-image:url('@context.Symbol.ToBase64ImageSource(150,35)')">
+
+                                     </div>
+                                    <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                                   Size="MudBlazor.Size.Small"
+                                                   Style="display:inline-block; vertical-align: super"
+                                                   OnClick="() => RemoveStackItem(context)"
+                                                   aria-label="delete" />
+                                </ItemRenderer>
+                            </MudDropContainer>
+                        }
+                    </GvCardContent>
+                </GvCard>
+
+                <GvCard Title="Preview">
+                    <GvCardContent>
+                        <div class="carto-symbol-composer-preview"
+                             style="background-image:url('@_previewImageBase64')">
+                        </div>
+                    </GvCardContent>
+                </GvCard>
+            </GvGridItem>
+
+            <GvGridItem Span="2">
+                <GvCard Title="Type/Properties">
+                    <GvCardContent>
+                        @if(_selectedSymbol != null)
+                        {
+                            <PropertyGridControl Instance="_selectedSymbol" />
+                        }
+                    </GvCardContent>
+                </GvCard>
+            </GvGridItem>
+        </GvGrid>
+
+    </DialogBody>
+</ModalDialogFormBase>
+
+@code {
+    private string _previewImageBase64 = "";
+    private SymbolCollection? _symbolStack;
+    private ISymbol? _selectedSymbol = null;
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+
+        CreateSymbolStack(Model.Symbol);
+    }
+
+    private void CreateSymbolStack(ISymbol? symbol)
+    {
+        if (_symbolStack == null)
+        {
+            _symbolStack = new SymbolCollection();
+        }
+
+        if (symbol is SymbolCollection symbolCollection && symbolCollection.Symbols?.Count > 0)
+        {
+            foreach (var symbolItem in symbolCollection.Symbols)
+            {
+                _symbolStack.AddSymbol(symbolItem.Symbol, symbolItem.Visible);
+            }
+        }
+        else if(symbol is not null)
+        {
+            _symbolStack.AddSymbol(symbol);
+        }
+
+        _selectedSymbol = _symbolStack.Symbols.FirstOrDefault()?.Symbol;
+
+        DrawPreviewImage();
+    }
+
+    private void ReorderStackItems(MudItemDropInfo<ISymbolCollectionItem> dropInfo)
+    {
+        var item = dropInfo.Item;
+        if(item is null || _symbolStack is null)
+        {
+            return;
+        }
+
+        var newStack = new SymbolCollection();
+        int index = 0;
+        bool added = false;
+        foreach (var symbolItem in _symbolStack.Symbols)
+        {
+            if (index == dropInfo.IndexInZone)
+            {
+                newStack.AddSymbol(item.Symbol, item.Visible);
+                added = true;
+            }
+
+            if(symbolItem != item)
+            {
+                newStack.AddSymbol(symbolItem.Symbol, symbolItem.Visible);
+                index++;
+            } 
+        }
+        if(!added)
+        {
+            newStack.AddSymbol(item.Symbol, item.Visible);
+        }
+
+        _symbolStack = newStack;
+
+        DrawPreviewImage();
+    }
+
+    private void RemoveStackItem(ISymbolCollectionItem item)
+    {
+        if (_symbolStack is not null)
+        {
+            _symbolStack.RemoveSymbol(item.Symbol);
+
+
+            if (_selectedSymbol == item.Symbol)
+            {
+                _selectedSymbol = _symbolStack.Symbols.FirstOrDefault()?.Symbol;
+            }
+        }
+
+        DrawPreviewImage();
+    }
+
+    private void GallerySymbolSelected(ISymbol symbol) => Handle(() 
+       => CreateSymbolStack(symbol));
+
+    private void DrawPreviewImage()
+    {
+        _previewImageBase64 = _symbolStack?.ToBase64ImageSource(210, 120) ?? string.Empty;
+    }
+}

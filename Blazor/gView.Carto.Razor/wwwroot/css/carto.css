@@ -221,6 +221,33 @@
     background-image: url(../../../sketchpen/webgis/content/img/sketchpen/bg-dark/24/1/sprite.png) !important;
 }
 
+.carto-symbol-composer-button {
+    cursor: pointer;
+    width: 150px;
+    height: 50px;
+    border: 1px solid #616161;
+    border-radius: 6px;
+    margin: 5px 0px;
+}
+
+.carto-symbol-composer-preview {
+    width: 220px;
+    height: 130px;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+.carto-symbol-gallery-tile {
+    cursor:pointer;
+    display: inline-block;
+    width: 150px;
+    height: 140px;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+    .carto-symbol-gallery-tile:hover {
+        background-color: var(--mud-palette-primary-hover);
+    }
 
 @media (-webkit-min-device-pixel-ratio: 1.5), (min-resolution: 144dpi) {
 

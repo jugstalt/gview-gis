@@ -5,6 +5,7 @@
 {
     <ModalDialogFormBase T="LayerSettingsModel"
                          OnDialogClose="base.OnDialogClose"
+                         ContentStyle="DialogContentStyle.Wide"
                          Model="base.Model">
         <DialogBody>
             <MudDrawerContainer Class="mud-height-full">
@@ -17,9 +18,28 @@
                         <MudListItem Icon="@IconService.FromString("basic:settings")" Style="white-space:nowrap"
                                      Value="Page.General" Text="Map / Display"
                                      OnClick="() => _drawerIsOpen = false" />
-                        <MudListItem Icon="@IconService.FromString("basic:copyright")" Style="white-space:nowrap"
-                                     Value="Page.Description" Text="Description & (c)"
-                                     OnClick="() => _drawerIsOpen = false" />
+
+
+                        @if(Model.Layer.CanFeatureRender())
+                        {
+                            <MudListItem Icon="@IconService.FromString("webgis:polygon-highlighted")" Style="white-space:nowrap"
+                                         Value="Page.FeatureRenderer" Text="Feature Renderer"
+                                         OnClick="() => _drawerIsOpen = false" />
+
+
+                            <MudListItem Icon="@IconService.FromString("webgis:polygon-selected")" Style="white-space:nowrap"
+                                         Value="Page.FeatureSelectionRenderer" Text="Feature Selection"
+                                         OnClick="() => _drawerIsOpen = false" />
+                        }
+
+                        @if (Model.Layer.CanLabelRenderer())
+                        {
+                            <MudListItem Icon="@IconService.FromString("basic:text")" Style="white-space:nowrap"
+                                         Value="Page.LabelRenderer" Text="Label Rendrerer"
+                                         OnClick="() => _drawerIsOpen = false" />
+                        }
+
+                        
 
                         @if(Model.Layer.ImplementsSpatialReference())
                         {
@@ -38,13 +58,6 @@
                         @if(Model.Layer.IsGroupLayer()) {
                             <MudListItem Icon="@IconService.FromString("basic:cloud-connect")" Style="white-space:nowrap"
                                          Value="Page.MapServiceBehavoir" Text="Map Service Behavoir"
-                                         OnClick="() => _drawerIsOpen = false" />
-                        }
-
-                        @if (Model.Layer.HasDataSource())
-                        {
-                            <MudListItem Icon="@IconService.FromString("basic:database")" Style="white-space:nowrap"
-                                         Value="Page.Source" Text="Source"
                                          OnClick="() => _drawerIsOpen = false" />
                         }
 
@@ -76,6 +89,17 @@
                                          OnClick="() => _drawerIsOpen = false" />
                         }
 
+                        @if (Model.Layer.HasDataSource())
+                        {
+                            <MudListItem Icon="@IconService.FromString("basic:database")" Style="white-space:nowrap"
+                                         Value="Page.Source" Text="Source"
+                                         OnClick="() => _drawerIsOpen = false" />
+                        }
+
+                        <MudListItem Icon="@IconService.FromString("basic:copyright")" Style="white-space:nowrap"
+                                     Value="Page.Description" Text="Description & (c)"
+                                     OnClick="() => _drawerIsOpen = false" />
+
                     </MudList>
                 </MudDrawer>
             </MudDrawerContainer>
@@ -84,6 +108,10 @@
                 @if (Page.General.Equals(_currentTab))
                 {
                     <LayerGeneralSettingsControl Layer="Model.Layer" />
+                }
+                else if (Page.FeatureRenderer.Equals(_currentTab))
+                {
+                    <FeatureLayerRendererSettingsControl Map="Model.Map" Layer="Model.Layer as IFeatureLayer" />
                 }
                 else if (Page.Description.Equals(_currentTab))
                 {
@@ -148,6 +176,9 @@
     private enum Page
     {
         General,
+        FeatureRenderer,
+        FeatureSelectionRenderer,
+        LabelRenderer,
         Description,
         SpatialReference,
         Filter,

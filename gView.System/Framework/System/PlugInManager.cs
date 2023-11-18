@@ -551,7 +551,8 @@ namespace gView.Framework.system
             IFeatureLayerJoin,
             IFeatureDatabase,
             ICartoRibbonTab,
-            IExplorerRibbonTab
+            IExplorerRibbonTab,
+            IPerpertyPageDefinition
         };
 
         //public static string TypeName(Plugins.Type type) 

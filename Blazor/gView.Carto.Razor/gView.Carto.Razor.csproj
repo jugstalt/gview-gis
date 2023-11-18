@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <None Include="Components\Controls\Classes\WmsClassSettingsControl.razor" />
+    <None Include="Components\Controls\Renderers\SimpleFeatureRendererPropertyPage.razor" />
     <None Include="Components\Controls\Tables\QueryBuilderControl.razor" />
     <None Include="Components\Dialogs\NewMapDialog.razor" />
   </ItemGroup>
@@ -34,10 +35,6 @@
     <ProjectReference Include="..\gView.Framework.Carto\gView.Framework.Carto.csproj" />
     <ProjectReference Include="..\gView.Razor.Leaflet\gView.Razor.Leaflet.csproj" />
     <ProjectReference Include="..\gView.Razor\gView.Razor.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Extensions\" />
   </ItemGroup>
 
 </Project>

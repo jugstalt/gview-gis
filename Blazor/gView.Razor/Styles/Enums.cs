@@ -4,6 +4,7 @@
     {
         Normal,
         Narrow,
+        Wide,
         Full
     }
 }

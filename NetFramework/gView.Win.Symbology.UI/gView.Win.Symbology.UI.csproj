@@ -200,6 +200,9 @@
     <EmbeddedResource Include="Framework\Symbology\UI\Controls\FormColorTransparency.resx">
       <DependentUpon>FormColorTransparency.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Framework\Symbology\UI\Controls\FormSymbol.de-DE.resx">
+      <DependentUpon>FormSymbol.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Framework\Symbology\UI\Controls\FormSymbol.de.resx">
       <DependentUpon>FormSymbol.cs</DependentUpon>
     </EmbeddedResource>

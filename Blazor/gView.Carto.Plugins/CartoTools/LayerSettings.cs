@@ -1,4 +1,5 @@
 ﻿using gView.Carto.Plugins.Extensions;
+using gView.Framework.Blazor.Models;
 using gView.Framework.Blazor.Services.Abstraction;
 using gView.Framework.Carto;
 using gView.Framework.Carto.Abstraction;
@@ -54,6 +55,11 @@ namespace gView.Carto.Plugins.CartoTools
                                                                 {
                                                                     Map = clonedMap,
                                                                     Layer = layer
+                                                                },
+                                                                new ModalDialogOptions()
+                                                                {
+                                                                    Width = ModalDialogWidth.ExtraExtraLarge,
+                                                                    FullWidth = false
                                                                 });
 
             if (model is null)
