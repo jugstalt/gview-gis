@@ -15,10 +15,14 @@ public class PluginManagerService
     }
 
     public IEnumerable<T> GetPlugins<T>(Plugins.Type pluginType)
-    {
-        return _plugInManager
+        => _plugInManager
             .GetPlugins(pluginType)
             .Select(t => _plugInManager.CreateInstance<T>(t))
             .ToArray();
-    }
+    
+
+    public IEnumerable<System.Type> GetPluginTypes(Plugins.Type pluginType)
+        => _plugInManager
+            .GetPlugins(pluginType)
+            .ToArray();
 }
