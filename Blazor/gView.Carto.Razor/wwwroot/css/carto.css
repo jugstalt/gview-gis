@@ -249,6 +249,14 @@
         background-color: var(--mud-palette-primary-hover);
     }
 
+.carto-symbol-composer-stack-item {
+
+}
+
+    .carto-symbol-composer-stack-item.selected {
+        background-color: var(--mud-palette-primary);
+    }
+
 @media (-webkit-min-device-pixel-ratio: 1.5), (min-resolution: 144dpi) {
 
     .carto-main.dark .sketchpen-icon-basic-bg-light-24 {
@@ -270,6 +278,7 @@
         background-image: url("../../../sketchpen/webgis/content/img/sketchpen/bg-dark/24/2/sprite.png") !important;
     }
 }
+
 
 /* Icons */
 .sketchpen-icon-basic-bg-light-24 {

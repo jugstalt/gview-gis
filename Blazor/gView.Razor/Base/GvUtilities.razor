@@ -1,3 +1,4 @@
+@using System.Reflection
 @code {
     public static RenderFragment AppName()
         =>@<MudText Typo="Typo.h1">gView</MudText>;
@@ -20,6 +21,20 @@
                 builder.CloseComponent();
             }
         };
+
+    public static RenderFragment EnumTypeToSelectItems(Type enumType)
+    {
+        if (!enumType.IsEnum)
+        {
+            throw new ArgumentException("Type is not an enum:", nameof(enumType));
+        }
+
+        MethodInfo genericMethod = typeof(GvUtilities).GetMethod(nameof(EnumToSelectItems), BindingFlags.Static | BindingFlags.Public)!;
+        MethodInfo genericMethodInstance = genericMethod.MakeGenericMethod(enumType);
+
+        return (RenderFragment)genericMethodInstance.Invoke(null, null)!;
+    }
+
 
     public static RenderFragment StringsToSelectItems(IEnumerable<string> values)
         => builder =>

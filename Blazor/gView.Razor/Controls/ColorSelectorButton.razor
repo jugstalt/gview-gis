@@ -6,7 +6,7 @@
 
 @if(_color is not null)
 {
-    <MudButton Style="@($"background-color:{_color.ToString(MudColorOutputFormats.Hex)};color:{TextColor.ToString(MudColorOutputFormats.Hex)}")"
+    <MudButton Style="@($"background-color:{_color.ToString(MudColorOutputFormats.Hex)};color:{TextColor.ToString(MudColorOutputFormats.Hex)};width:200px")"
                OnClick="OpenColorPicker">
             @_color.ToString(MudColorOutputFormats.HexA)
     </MudButton>

@@ -6,68 +6,93 @@
                      Model="base.Model">
     <DialogBody>
         
-        <GvCard Title="Gallery">
-            <GvCardContent>
+        <MudExpansionPanels>
+            <MudExpansionPanel Text="Gallery">            
                 <SymbolGalleryControl SymbolProtoType="Model.Symbol"
                                       OnSymbolSelected="GallerySymbolSelected"/>
-            </GvCardContent>
-        </GvCard>
+            </MudExpansionPanel>
+        
+            <MudExpansionPanel Text="Symbol" Style="padding:6px" @bind-IsExpanded="_symbol_isExpanded">
+                <GvGrid ColumnCount="3">
+                    <GvGridItem>
+                        <GvCard Title="Stack">
+                            <GvCardContentNoPadding>
+                                @if (_symbolStack is not null)
+                                {
+                                    <MudDropContainer T="ISymbolCollectionItem"
+                                                      Items="_symbolStack.Symbols"
+                                                      ItemDropped="ReorderStackItems"
+                                                      ItemsSelector="@((item,zone) => true)">
+                                        <ChildContent>
+                                            <MudDropZone T="ISymbolCollectionItem"
+                                                         AllowReorder="true">
+                                                @GvUtilities.InfoText("Drag to reorder...")
+                                            </MudDropZone>
+                                        </ChildContent>
+                                        <ItemRenderer>
+                                            <div style="padding:0px 4px"
+                                                 class="@(_selectedSymbol == context.Symbol ? "selected " : "")carto-symbol-composer-stack-item"
+                                                 @onclick="() => { _selectedSymbol = context.Symbol; }">
+                                                <MudCheckBox T="bool" Style="display:inline-block" Dense="true"
+                                                             Checked="@context.Visible"
+                                                             CheckedChanged="(visible) => { context.Visible = visible; DrawPreviewImage(); }" />
+                                                 <div style="display:inline-block;width:150px;height:35px;background-image:url('@context.Symbol.ToBase64ImageSource(150,35)')">
 
-        <GvGrid ColumnCount="3">
-            <GvGridItem>
-                <GvCard Title="Stack">
-                    <GvCardContent>
-                        @if (_symbolStack is not null)
-                        {
-                            <MudDropContainer T="ISymbolCollectionItem"
-                                              Items="_symbolStack.Symbols"
-                                              ItemDropped="ReorderStackItems"
-                                              ItemsSelector="@((item,zone) => true)">
-                                <ChildContent>
-                                    <MudDropZone T="ISymbolCollectionItem"
-                                                 AllowReorder="true">
-                                        @GvUtilities.InfoText("Drag to reorder...")
-                                    </MudDropZone>
-                                </ChildContent>
-                                <ItemRenderer>
-                                    <MudCheckBox T="bool" Style="display:inline-block" Dense="true"
-                                                 Checked="@context.Visible"
-                                                 CheckedChanged="(visible) => { context.Visible = visible; DrawPreviewImage(); }" />
-                                     <div style="display:inline-block;width:150px;height:35px;background-image:url('@context.Symbol.ToBase64ImageSource(150,35)')">
+                                                 </div>
+                                                <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                                               Size="MudBlazor.Size.Small"
+                                                               Style="display:inline-block; vertical-align: super"
+                                                               OnClick="() => RemoveStackItem(context)"
+                                                                   aria-label="delete" />
+                                            </div>
+                                        </ItemRenderer>
+                                    </MudDropContainer>
+                                }
+                            </GvCardContentNoPadding>
+                        </GvCard>
 
-                                     </div>
-                                    <MudIconButton Icon="@Icons.Material.Filled.Delete"
-                                                   Size="MudBlazor.Size.Small"
-                                                   Style="display:inline-block; vertical-align: super"
-                                                   OnClick="() => RemoveStackItem(context)"
-                                                   aria-label="delete" />
-                                </ItemRenderer>
-                            </MudDropContainer>
-                        }
-                    </GvCardContent>
-                </GvCard>
+                        <GvCard Title="Preview">
+                            <GvCardContentNoPadding>
+                                @if (_selectedSymbol is ISymbolTransformation symTrans)
+                                {
+                                    <MudPaper Elevation="5">
+                                        <MudToolBar>
+                                            <MudIconButton Size="MudBlazor.Size.Small" Icon="@Icons.Material.Outlined.ArrowBack" 
+                                                           OnClick="() => { symTrans.HorizontalOffset -= 1f; DrawPreviewImage(); }"/>
+                                            <MudIconButton Size="MudBlazor.Size.Small" Icon="@Icons.Material.Outlined.ArrowUpward"
+                                                           OnClick="() => { symTrans.VerticalOffset -= 1f; DrawPreviewImage(); }" />
+                                            <MudIconButton Size="MudBlazor.Size.Small" Icon="@Icons.Material.Outlined.ArrowDownward"
+                                                           OnClick="() => { symTrans.VerticalOffset += 1f; DrawPreviewImage(); }" />
+                                            <MudIconButton Size="MudBlazor.Size.Small" Icon="@Icons.Material.Outlined.ArrowForward"
+                                                           OnClick="() => { symTrans.HorizontalOffset += 1f; DrawPreviewImage(); }" />
+                                            <MudIconButton Size="MudBlazor.Size.Small" Icon="@Icons.Material.Outlined.RotateLeft"
+                                                           OnClick="() => { symTrans.Angle -= 5f; DrawPreviewImage(); }" />
+                                            <MudIconButton Size="MudBlazor.Size.Small" Icon="@Icons.Material.Outlined.RotateRight"
+                                                           OnClick="() => { symTrans.Angle += 5f; DrawPreviewImage(); }" />
+                                        </MudToolBar>
+                                    </MudPaper>
+                                }
+                                <div class="carto-symbol-composer-preview"
+                                     style="background-image:url('@_previewImageBase64')">
+                                </div>
+                            </GvCardContentNoPadding>
+                        </GvCard>
+                    </GvGridItem>
 
-                <GvCard Title="Preview">
-                    <GvCardContent>
-                        <div class="carto-symbol-composer-preview"
-                             style="background-image:url('@_previewImageBase64')">
-                        </div>
-                    </GvCardContent>
-                </GvCard>
-            </GvGridItem>
-
-            <GvGridItem Span="2">
-                <GvCard Title="Type/Properties">
-                    <GvCardContent>
-                        @if(_selectedSymbol != null)
-                        {
-                            <PropertyGridControl Instance="_selectedSymbol" />
-                        }
-                    </GvCardContent>
-                </GvCard>
-            </GvGridItem>
-        </GvGrid>
-
+                    <GvGridItem Span="2">
+                        <GvCard Title="Type/Properties">
+                            <GvCardContentNoPadding>
+                                @if(_selectedSymbol is not null)
+                                {
+                                    <PropertyGridControl Instance="_selectedSymbol"
+                                                         OnPropertyChanged="() => DrawPreviewImage()" />
+                                }
+                            </GvCardContentNoPadding>
+                        </GvCard>
+                    </GvGridItem>
+                </GvGrid>
+            </MudExpansionPanel>
+        </MudExpansionPanels>
     </DialogBody>
 </ModalDialogFormBase>
 
@@ -75,6 +100,8 @@
     private string _previewImageBase64 = "";
     private SymbolCollection? _symbolStack;
     private ISymbol? _selectedSymbol = null;
+
+    private bool _symbol_isExpanded = true;
 
     protected override void OnInitialized()
     {
@@ -158,8 +185,12 @@
         DrawPreviewImage();
     }
 
-    private void GallerySymbolSelected(ISymbol symbol) => Handle(() 
-       => CreateSymbolStack(symbol));
+    private void GallerySymbolSelected(ISymbol symbol) => Handle(() =>
+    { 
+        _symbol_isExpanded = true;
+
+        CreateSymbolStack(symbol);
+    });
 
     private void DrawPreviewImage()
     {

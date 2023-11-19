@@ -4,7 +4,7 @@
 
 @if(SymbolProtoType is not null)
 {
-    <div style="max-height:200px;overflow:auto">
+    <div style="max-height:600px;overflow:auto">
         @foreach(var symbol in SymbolProtoType switch
                 {
                     IPointSymbol => SymbolGallery[typeof(IPointSymbol)].ToArray(),

@@ -82,3 +82,12 @@
             font-size: 10px;
             height: 155px;
         }
+
+.gview-property-grid {
+    width:100%;
+}
+
+    .gview-property-grid .mud-input-control,
+    .gview-property-grid .mud-input {
+        margin-top: 0px !important;
+    }

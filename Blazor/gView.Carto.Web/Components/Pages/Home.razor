@@ -1,8 +1,7 @@
 ﻿@page "/"
-@rendermode InteractiveServer
-@attribute [StreamRendering(true)]
+@* @rendermode InteractiveServer *@
 
-<MudDialogProvider />
-<MudSnackbarProvider />
+<MudDialogProvider @rendermode="InteractiveServer" />
+@* <MudSnackbarProvider @rendermode="InteractiveServer" /> *@
 
 <CartoMainPage />
