@@ -179,6 +179,21 @@ namespace gView.Server.Services.Security
 
                 #endregion
 
+                #region From Url (/geoservices(THE_TOKEN)/....
+
+                int tokenPos1 = request.Path.ToString().IndexOf("/geoservices(", StringComparison.OrdinalIgnoreCase);
+                int tokenPos2 = tokenPos1 >= 0
+                    ? request.Path.ToString().IndexOf(")/", tokenPos1)
+                    : -1;
+
+                if (tokenPos1 >= 0 && tokenPos2 > tokenPos1)
+                {
+                    tokenPos1 += "/geoservices(".Length;
+                    var urlToken = request.Path.ToString().Substring(tokenPos1, tokenPos2 - tokenPos1);
+                }
+
+                #endregion
+
                 #region From Cookie
 
                 string cookie = request.Cookies[Globals.AuthCookieName];
@@ -229,8 +244,6 @@ namespace gView.Server.Services.Security
         {
             return LoginAuthToken(request);
         }
-
-
 
         #endregion
 

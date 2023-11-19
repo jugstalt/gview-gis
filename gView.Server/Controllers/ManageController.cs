@@ -5,7 +5,7 @@ using gView.Interoperability.ArcXML.Dataset;
 using gView.MapServer;
 using gView.Server.AppCode;
 using gView.Server.AppCode.Extensions;
-using gView.Server.Models;
+using gView.Server.Models.Manage;
 using gView.Server.Services.Logging;
 using gView.Server.Services.MapServer;
 using gView.Server.Services.Security;
@@ -623,6 +623,11 @@ namespace gView.Server.Controllers
 
                 return Json(new { success = true });
             });
+        }
+
+        public IActionResult CreateUrlToken(CreateUrlTokenModel model)
+        {
+            return null;
         }
 
         [HttpPost]

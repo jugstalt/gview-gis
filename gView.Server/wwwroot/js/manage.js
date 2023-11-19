@@ -757,7 +757,7 @@ window.gview.manage = (function() {
     //
     // Page Security
     //
-    var appendFormInput = function($form, name, type, label) {
+    var appendFormInput = function($form, name, type, label, readonly) {
         var $formInput = $('<div>')
             .addClass('form-input')
             .appendTo($form);
@@ -766,9 +766,14 @@ window.gview.manage = (function() {
             .html(label || name)
             .appendTo($formInput);
         $('<br/>').appendTo($formInput);
-        $("<input name='" + name + "' type='" + (type || 'text') + "' autocomplete='off' />")
+
+        var $input = $("<input name='" + name + "' type='" + (type || 'text') + "' autocomplete='off' />")
             .addClass('form-value')
             .appendTo($formInput);
+
+        if (readonly === true) {
+            $input.attr('readonly', 'readonly');
+        }
     };
     var appendFormHidden = function($form, name, val) {
         $("<input type='hidden' name='" + name + "' />")
@@ -783,21 +788,36 @@ window.gview.manage = (function() {
         var $form = $('<div>')
             .addClass('form')
             .appendTo($page);
-        if (user === '') {
+        if (user === '') {  // Client
             appendFormInput($form, 'NewUsername', 'text', 'New client');
             appendFormInput($form, 'NewPassword', 'password', 'New secret');
 
             $('<button>Create</button>')
                 .appendTo($form)
-                .click(function() {
+                .click(function () {
                     postForm($form, {
                         url: '/manage/createtokenuser',
-                        success: function() {
+                        success: function () {
                             pageSecurity();
                         }
                     });
                 });
-        } else {
+        }
+        else if (user === '~') {  // (Url) Token
+            appendFormInput($form, 'NewTokenName', 'text', 'New Token Name');
+
+            $('<button>Create</button>')
+                .appendTo($form)
+                .click(function () {
+                    postForm($form, {
+                        url: '/manage/createurltoken',
+                        success: function () {
+                            pageSecurity();
+                        }
+                    });
+                });
+        }
+        else {
             appendFormHidden($form, 'Username', user);
             appendFormInput($form, 'NewPassword', 'password', 'New secret');
 
@@ -826,7 +846,7 @@ window.gview.manage = (function() {
                     .addClass('users')
                     .appendTo($body);
 
-                $('<li>New...</li>')
+                $('<li>New Client...</li>')
                     .addClass('user new selected')
                     .appendTo($users)
                     .click(function() {
@@ -836,6 +856,17 @@ window.gview.manage = (function() {
                             .removeClass('selected');
                         $(this).addClass('selected');
                         pageUser('');
+                    });
+                $('<li>New (Url) Token</li>')
+                    .addClass('user new')
+                    .appendTo($users)
+                    .click(function () {
+                        $(this)
+                            .parent()
+                            .children('.user')
+                            .removeClass('selected');
+                        $(this).addClass('selected');
+                        pageUser('~');
                     });
 
                 $.each(result.users, function(i, user) {

@@ -156,7 +156,8 @@ namespace gView.Server.AppCode
 
         #endregion
 
-        async virtual protected Task<IActionResult> SecureMethodHandler(Func<Identity, Task<IActionResult>> func, Func<Exception, IActionResult> onException = null)
+        async virtual protected Task<IActionResult> SecureMethodHandler(Func<Identity, Task<IActionResult>> func, 
+                                                                        Func<Exception, IActionResult> onException = null)
         {
             if (_mapServerService.Options.IsValid == false)
             {

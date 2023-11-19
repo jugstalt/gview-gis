@@ -203,7 +203,10 @@ namespace gView.Server
                     defaults: new { controller = "Output", Action = "Index" }
                 );
 
-                // geoservices Server
+                #region GeoServices (MapServer)
+
+                #region Export Map
+
                 routes.MapRoute(
                     name: "geoservices_rest_exportmap",
                     template: "geoservices/rest/services/{folder}/{id}/mapserver/export",
@@ -216,6 +219,21 @@ namespace gView.Server
                 );
 
                 routes.MapRoute(
+                    name: "geoservices_rest_exportmap_token",
+                    template: "geoservices({urltoken})/rest/services/{folder}/{id}/mapserver/export",
+                    defaults: new { controller = "GeoServicesRest", Action = "ExportMap" }
+                );
+                routes.MapRoute(
+                    name: "geoservices_rest_exportmap2_token",
+                    template: "geoservices({urltoken})/rest/services/{id}/mapserver/export",
+                    defaults: new { controller = "GeoServicesRest", Action = "ExportMap" }
+                );
+
+                #endregion
+
+                #region Query
+
+                routes.MapRoute(
                     name: "geoservices_rest_query",
                     template: "geoservices/rest/services/{folder}/{id}/mapserver/{layerId}/query",
                     defaults: new { controller = "GeoServicesRest", Action = "Query" }
@@ -225,6 +243,22 @@ namespace gView.Server
                     template: "geoservices/rest/services/{id}/mapserver/{layerId}/query",
                     defaults: new { controller = "GeoServicesRest", Action = "Query" }
                 );
+
+                routes.MapRoute(
+                    name: "geoservices_rest_query_token",
+                    template: "geoservices({urltoken})/rest/services/{folder}/{id}/mapserver/{layerId}/query",
+                    defaults: new { controller = "GeoServicesRest", Action = "Query" }
+                );
+                routes.MapRoute(
+                    name: "geoservices_rest_query2_token",
+                    template: "geoservices({urltoken})/rest/services/{id}/mapserver/{layerId}/query",
+                    defaults: new { controller = "GeoServicesRest", Action = "Query" }
+                );
+
+                #endregion
+
+                #region Identify
+
                 routes.MapRoute(
                    name: "geoservices_rest_identify",
                    template: "geoservices/rest/services/{folder}/{id}/mapserver/identify",
@@ -235,6 +269,22 @@ namespace gView.Server
                    template: "geoservices/rest/services/{id}/mapserver/identify",
                    defaults: new { controller = "GeoServicesRest", Action = "Identify" }
                 );
+
+                routes.MapRoute(
+                   name: "geoservices_rest_identify_token",
+                   template: "geoservices({urltoken})/rest/services/{folder}/{id}/mapserver/identify",
+                   defaults: new { controller = "GeoServicesRest", Action = "Identify" }
+                );
+                routes.MapRoute(
+                   name: "geoservices_rest_identify2_token",
+                   template: "geoservices({urltoken})/rest/services/{id}/mapserver/identify",
+                   defaults: new { controller = "GeoServicesRest", Action = "Identify" }
+                );
+
+                #endregion
+
+                #region ServiceLayers
+
                 routes.MapRoute(
                     name: "geoservices_rest_servicelayers",
                     template: "geoservices/rest/services/{folder}/{id}/mapserver/layers",
@@ -245,6 +295,22 @@ namespace gView.Server
                     template: "geoservices/rest/services/{id}/mapserver/layers",
                     defaults: new { controller = "GeoServicesRest", Action = "ServiceLayers" }
                 );
+
+                routes.MapRoute(
+                    name: "geoservices_rest_servicelayers_token",
+                    template: "geoservices({urltoken})/rest/services/{folder}/{id}/mapserver/layers",
+                    defaults: new { controller = "GeoServicesRest", Action = "ServiceLayers" }
+                );
+                routes.MapRoute(
+                    name: "geoservices_rest_servicelayers2_token",
+                    template: "geoservices({urltoken})/rest/services/{id}/mapserver/layers",
+                    defaults: new { controller = "GeoServicesRest", Action = "ServiceLayers" }
+                );
+
+
+                #endregion
+
+                #region Legend
 
                 routes.MapRoute(
                     name: "geoservices_rest_servicelegend",
@@ -258,6 +324,47 @@ namespace gView.Server
                 );
 
                 routes.MapRoute(
+                    name: "geoservices_rest_servicelegend_token",
+                    template: "geoservices({urltoken})/rest/services/{folder}/{id}/mapserver/legend",
+                    defaults: new { controller = "GeoServicesRest", Action = "Legend" }
+                );
+                routes.MapRoute(
+                    name: "geoservices_rest_servicelegend2_token",
+                    template: "geoservices({urltoken})/rest/services/{id}/mapserver/legend",
+                    defaults: new { controller = "GeoServicesRest", Action = "Legend" }
+                );
+
+                #endregion
+
+                #region WmsServer 
+
+                routes.MapRoute(
+                    name: "geoservices_rest_service_wms",
+                    template: "geoservices/rest/services/{folder}/{id}/mapserver/wmsserver",
+                    defaults: new { controller = "GeoServicesRest", Action = "WmsServer" }
+                );
+                routes.MapRoute(
+                    name: "geoservices_rest_service2_wms",
+                    template: "geoservices/rest/services/{id}/mapserver/wmsserver",
+                    defaults: new { controller = "GeoServicesRest", Action = "WmsServer" }
+                );
+
+                routes.MapRoute(
+                    name: "geoservices_rest_service_wms_token",
+                    template: "geoservices({urltoken})/rest/services/{folder}/{id}/mapserver/wmsserver",
+                    defaults: new { controller = "GeoServicesRest", Action = "WmsServer" }
+                );
+                routes.MapRoute(
+                    name: "geoservices_rest_service2_wms_token",
+                    template: "geoservices({urltoken})/rest/services/{id}/mapserver/wmsserver",
+                    defaults: new { controller = "GeoServicesRest", Action = "WmsServer" }
+                );
+
+                #endregion
+
+                #region ServiceLayer
+
+                routes.MapRoute(
                    name: "geoservices_rest_servicelayer",
                    template: "geoservices/rest/services/{folder}/{id}/mapserver/{layerId}",
                    defaults: new { controller = "GeoServicesRest", Action = "ServiceLayer" }
@@ -269,6 +376,21 @@ namespace gView.Server
                 );
 
                 routes.MapRoute(
+                   name: "geoservices_rest_servicelayer_token",
+                   template: "geoservices({urltoken})/rest/services/{folder}/{id}/mapserver/{layerId}",
+                   defaults: new { controller = "GeoServicesRest", Action = "ServiceLayer" }
+                );
+                routes.MapRoute(
+                   name: "geoservices_rest_servicelayer2_token",
+                   template: "geoservices({urltoken})/rest/services/{id}/mapserver/{layerId}",
+                   defaults: new { controller = "GeoServicesRest", Action = "ServiceLayer" }
+                );
+
+                #endregion
+
+                #region Service
+
+                routes.MapRoute(
                     name: "geoservices_rest_service",
                     template: "geoservices/rest/services/{folder}/{id}/mapserver",
                     defaults: new { controller = "GeoServicesRest", Action = "Service" }
@@ -278,17 +400,61 @@ namespace gView.Server
                     template: "geoservices/rest/services/{id}/mapserver",
                     defaults: new { controller = "GeoServicesRest", Action = "Service" }
                 );
+
+                routes.MapRoute(
+                    name: "geoservices_rest_service_token",
+                    template: "geoservices({urltoken})/rest/services/{folder}/{id}/mapserver",
+                    defaults: new { controller = "GeoServicesRest", Action = "Service" }
+                );
+                routes.MapRoute(
+                    name: "geoservices_rest_service2_token",
+                    template: "geoservices({urltoken})/rest/services/{id}/mapserver",
+                    defaults: new { controller = "GeoServicesRest", Action = "Service" }
+                );
+
+                #endregion
+
+                #endregion
+
+                #region GeoServices (Folder/Services)
+
+                #region Folder
+
                 routes.MapRoute(
                     name: "geoservices_rest_folder",
                     template: "geoservices/rest/services/{id}",
                     defaults: new { controller = "GeoServicesRest", Action = "Folder" }
                 );
+
+                routes.MapRoute(
+                    name: "geoservices_rest_folder_token",
+                    template: "geoservices({urltoken})/rest/services/{id}",
+                    defaults: new { controller = "GeoServicesRest", Action = "Folder" }
+                );
+
+                #endregion
+
+                #region Services
+
                 routes.MapRoute(
                     name: "geoservices_rest_services",
                     template: "geoservices/rest/services",
                     defaults: new { controller = "GeoServicesRest", Action = "Services" }
                 );
 
+                routes.MapRoute(
+                    name: "geoservices_rest_services_token",
+                    template: "geoservices({urltoken})/rest/services",
+                    defaults: new { controller = "GeoServicesRest", Action = "Services" }
+                );
+
+                #endregion
+
+                #endregion
+
+                #region GeoServices (FeatureServer)
+
+                #region FeatureServerQuery
 
                 routes.MapRoute(
                     name: "geoservices_rest_featureserver_query",
@@ -300,6 +466,22 @@ namespace gView.Server
                     template: "geoservices/rest/services/{id}/featureserver/{layerId}/query",
                     defaults: new { controller = "GeoServicesRest", Action = "FeatureServerQuery" }
                 );
+
+                routes.MapRoute(
+                    name: "geoservices_rest_featureserver_query_token",
+                    template: "geoservices({urltoken})/rest/services/{folder}/{id}/featureserver/{layerId}/query",
+                    defaults: new { controller = "GeoServicesRest", Action = "FeatureServerQuery" }
+                );
+                routes.MapRoute(
+                    name: "geoservices_rest_featureserver_query2_token",
+                    template: "geoservices({urltoken})/rest/services/{id}/featureserver/{layerId}/query",
+                    defaults: new { controller = "GeoServicesRest", Action = "FeatureServerQuery" }
+                );
+
+                #endregion
+
+                #region FeatureServerAddFeatures
+
                 routes.MapRoute(
                     name: "geoservices_rest_featureserver_addfeatures",
                     template: "geoservices/rest/services/{folder}/{id}/featureserver/{layerId}/addfeatures",
@@ -310,6 +492,22 @@ namespace gView.Server
                     template: "geoservices/rest/services/{id}/featureserver/{layerId}/addfeatures",
                     defaults: new { controller = "GeoServicesRest", Action = "FeatureServerAddFeatures" }
                 );
+
+                routes.MapRoute(
+                    name: "geoservices_rest_featureserver_addfeatures_token",
+                    template: "geoservices({urltoken})/rest/services/{folder}/{id}/featureserver/{layerId}/addfeatures",
+                    defaults: new { controller = "GeoServicesRest", Action = "FeatureServerAddFeatures" }
+                );
+                routes.MapRoute(
+                    name: "geoservices_rest_featureserver_addfeatures2_token",
+                    template: "geoservices({urltoken})/rest/services/{id}/featureserver/{layerId}/addfeatures",
+                    defaults: new { controller = "GeoServicesRest", Action = "FeatureServerAddFeatures" }
+                );
+
+                #endregion
+
+                #region FeatureServerUpdateFeatures
+
                 routes.MapRoute(
                     name: "geoservices_rest_featureserver_updatefeatures",
                     template: "geoservices/rest/services/{folder}/{id}/featureserver/{layerId}/updatefeatures",
@@ -320,6 +518,22 @@ namespace gView.Server
                     template: "geoservices/rest/services/{id}/featureserver/{layerId}/updatefeatures",
                     defaults: new { controller = "GeoServicesRest", Action = "FeatureServerUpdateFeatures" }
                 );
+
+                routes.MapRoute(
+                    name: "geoservices_rest_featureserver_updatefeatures_token",
+                    template: "geoservices({urltoken})/rest/services/{folder}/{id}/featureserver/{layerId}/updatefeatures",
+                    defaults: new { controller = "GeoServicesRest", Action = "FeatureServerUpdateFeatures" }
+                );
+                routes.MapRoute(
+                    name: "geoservices_rest_featureserver_updatefeatures2_token",
+                    template: "geoservices({urltoken})/rest/services/{id}/featureserver/{layerId}/updatefeatures",
+                    defaults: new { controller = "GeoServicesRest", Action = "FeatureServerUpdateFeatures" }
+                );
+
+                #endregion
+
+                #region FeatureServerDeleteFeatures
+
                 routes.MapRoute(
                     name: "geoservices_rest_featureserver_deletefeatures",
                     template: "geoservices/rest/services/{folder}/{id}/featureserver/{layerId}/deletefeatures",
@@ -330,6 +544,22 @@ namespace gView.Server
                     template: "geoservices/rest/services/{id}/featureserver/{layerId}/deletefeatures",
                     defaults: new { controller = "GeoServicesRest", Action = "FeatureServerDeleteFeatures" }
                 );
+
+                routes.MapRoute(
+                    name: "geoservices_rest_featureserver_deletefeatures_token",
+                    template: "geoservices({urltoken})/rest/services/{folder}/{id}/featureserver/{layerId}/deletefeatures",
+                    defaults: new { controller = "GeoServicesRest", Action = "FeatureServerDeleteFeatures" }
+                );
+                routes.MapRoute(
+                    name: "geoservices_rest_featureserver_deletefeatures2_token",
+                    template: "geoservices({urltoken})/rest/services/{id}/featureserver/{layerId}/deletefeatures",
+                    defaults: new { controller = "GeoServicesRest", Action = "FeatureServerDeleteFeatures" }
+                );
+
+                #endregion
+
+                #region FeatureServerLayer
+
                 routes.MapRoute(
                   name: "geoservices_rest_featureserverlayer",
                   template: "geoservices/rest/services/{folder}/{id}/featureserver/{layerId}",
@@ -340,6 +570,22 @@ namespace gView.Server
                   template: "geoservices/rest/services/{id}/featureserver/{layerId}",
                   defaults: new { controller = "GeoServicesRest", Action = "FeatureServerLayer" }
                 );
+
+                routes.MapRoute(
+                  name: "geoservices_rest_featureserverlayer_token",
+                  template: "geoservices({urltoken})/rest/services/{folder}/{id}/featureserver/{layerId}",
+                  defaults: new { controller = "GeoServicesRest", Action = "FeatureServerLayer" }
+                );
+                routes.MapRoute(
+                  name: "geoservices_rest_featureserverlayer2_token",
+                  template: "geoservices({urltoken})/rest/services/{id}/featureserver/{layerId}",
+                  defaults: new { controller = "GeoServicesRest", Action = "FeatureServerLayer" }
+                );
+
+                #endregion
+
+                #region FeatureServerService
+
                 routes.MapRoute(
                    name: "geoservices_rest_featureserver",
                    template: "geoservices/rest/services/{folder}/{id}/featureserver",
@@ -352,16 +598,55 @@ namespace gView.Server
                 );
 
                 routes.MapRoute(
-                 name: "geoservices_restgeneratetoken",
-                 template: "geoservices/tokens/generateToken",
-                 defaults: new { controller = "GeoServicesRest", Action = "GenerateToken" }
-               );
+                   name: "geoservices_rest_featureserver_token",
+                   template: "geoservices({urltoken})/rest/services/{folder}/{id}/featureserver",
+                   defaults: new { controller = "GeoServicesRest", Action = "FeatureServerService" }
+                );
+                routes.MapRoute(
+                    name: "geoservices_rest_featureserver2_token",
+                    template: "geoservices({urltoken})/rest/services/{id}/featureserver",
+                    defaults: new { controller = "GeoServicesRest", Action = "FeatureServerService" }
+                );
+
+                #endregion
+
+                #endregion
+
+                #region GeoServices (GenerateToken/Info)
+
+                #region GenerateToken
 
                 routes.MapRoute(
-                 name: "geoservices_rest_info",
-                 template: "geoservices/rest/info",
-                 defaults: new { controller = "GeoServicesRest", Action = "RestInfo" }
-               );
+                   name: "geoservices_restgeneratetoken",
+                   template: "geoservices/tokens/generateToken",
+                   defaults: new { controller = "GeoServicesRest", Action = "GenerateToken" }
+                );
+
+                routes.MapRoute(
+                   name: "geoservices_restgeneratetoken_token",
+                   template: "geoservices({urltoken})/tokens/generateToken",
+                   defaults: new { controller = "GeoServicesRest", Action = "GenerateToken" }
+                );
+
+                #endregion
+
+                #region RestInfo
+
+                routes.MapRoute(
+                  name: "geoservices_rest_info",
+                  template: "geoservices/rest/info",
+                  defaults: new { controller = "GeoServicesRest", Action = "RestInfo" }
+                );
+
+                routes.MapRoute(
+                  name: "geoservices_rest_info_token",
+                  template: "geoservices({urltoken})/rest/info",
+                  defaults: new { controller = "GeoServicesRest", Action = "RestInfo" }
+                );
+
+                #endregion
+
+                #endregion
 
                 // Ogc
                 routes.MapRoute(

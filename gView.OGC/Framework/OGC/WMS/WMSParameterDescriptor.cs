@@ -131,37 +131,40 @@ namespace gView.Framework.OGC.WMS
             {
                 WriteError("mandatory REQUEST parameter is missing");
             }
-            if (request["REQUEST"].ToUpper().IndexOf("MAP") != -1)
-            {
-                this.Request = WMSRequestType.GetMap;
-            }
-            else if (request["REQUEST"].ToUpper().IndexOf("CAPABILITIES") != -1)
-            {
-                this.Request = WMSRequestType.GetCapabilities;
-            }
-            else if (request["REQUEST"].ToUpper().IndexOf("FEATUREINFO") != -1)
-            {
-                this.Request = WMSRequestType.GetFeatureInfo;
-            }
-            else if (request["REQUEST"].ToUpper().IndexOf("GETLEGENDGRAPHIC") != -1)
-            {
-                this.Request = WMSRequestType.GetLegendGraphic;
-            }
-            else if (request["REQUEST"].ToUpper().IndexOf("DESCRIPETILES") != -1)
-            {
-                this.Request = WMSRequestType.DescriptTiles;
-            }
-            else if (request["REQUEST"].ToUpper().IndexOf("GETTILE") != -1)
-            {
-                this.Request = WMSRequestType.GetTile;
-            }
-            else if (request["REQUEST"].ToUpper().IndexOf("GENERATETILES") != -1)
-            {
-                this.Request = WMSRequestType.GenerateTiles;
-            }
             else
             {
-                WriteError("REQUEST parameter is either missing, erroneous, or not supported. Supported values are: 'GetMap', 'map', 'GetCapabilities','capabilities'");
+                if (request["REQUEST"].ToUpper().IndexOf("MAP") != -1)
+                {
+                    this.Request = WMSRequestType.GetMap;
+                }
+                else if (request["REQUEST"].ToUpper().IndexOf("CAPABILITIES") != -1)
+                {
+                    this.Request = WMSRequestType.GetCapabilities;
+                }
+                else if (request["REQUEST"].ToUpper().IndexOf("FEATUREINFO") != -1)
+                {
+                    this.Request = WMSRequestType.GetFeatureInfo;
+                }
+                else if (request["REQUEST"].ToUpper().IndexOf("GETLEGENDGRAPHIC") != -1)
+                {
+                    this.Request = WMSRequestType.GetLegendGraphic;
+                }
+                else if (request["REQUEST"].ToUpper().IndexOf("DESCRIPETILES") != -1)
+                {
+                    this.Request = WMSRequestType.DescriptTiles;
+                }
+                else if (request["REQUEST"].ToUpper().IndexOf("GETTILE") != -1)
+                {
+                    this.Request = WMSRequestType.GetTile;
+                }
+                else if (request["REQUEST"].ToUpper().IndexOf("GENERATETILES") != -1)
+                {
+                    this.Request = WMSRequestType.GenerateTiles;
+                }
+                else
+                {
+                    WriteError("REQUEST parameter is either missing, erroneous, or not supported. Supported values are: 'GetMap', 'map', 'GetCapabilities','capabilities'");
+                }
             }
 
             if (request["VERSION"] == null && request["WMTVER"] == null)
