@@ -12,6 +12,7 @@ using gView.GraphicsEngine;
 using gView.GraphicsEngine.Abstraction;
 using gView.Interoperability.OGC.SLD;
 using gView.MapServer;
+using gView.Web.Framework.Web.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -132,15 +133,13 @@ namespace gView.Interoperability.OGC
         {
             get
             {
-                return new InterpreterCapabilities(new InterpreterCapabilities.Capability[]{
-                    new InterpreterCapabilities.LinkCapability("GetCapabilities","{server}/ogc/{folder@service}?VERSION=1.1.1&SERVICE=WMS&REQUEST=GetCapabilities","1.1.1"),
-                    //new InterpreterCapabilities.SimpleCapability("GetMap","{server}/{service}/ogc/{service}?VERSION=1.1.1&SERVICE=WMS&REQUEST=GetMap&...","1.1.1"),
-                    //new InterpreterCapabilities.SimpleCapability("GetFeatureInfo","{server}/ogc/{service}?VERSION=1.1.1&SERVICE=WMS&REQUEST=GetFeatureInfo&...","1.1.1"),
-                    new InterpreterCapabilities.LinkCapability("GetCapabilities","{server}/ogc/{folder@service}?VERSION=1.3.0&SERVICE=WMS&REQUEST=GetCapabilities","1.3.0"),
-                    //new InterpreterCapabilities.SimpleCapability("GetMap","{server}/ogc/{service}?VERSION=1.3.0&SERVICE=WMS&REQUEST=GetMap&...","1.3.0"),
-                    //new InterpreterCapabilities.SimpleCapability("GetFeatureInfo","{server}/ogc/{service}?VERSION=1.3.0&SERVICE=WMS&REQUEST=GetFeatureInfo&...","1.3.0")
-                }
-                );
+                return new InterpreterCapabilities(new InterpreterCapabilities.Capability[]
+                {
+                    new InterpreterCapabilities.LinkCapability("Recommended: GetCapabilities (GeoServices - with Token)","{server}/geoservices/rest/services/{folder/service}/MapServer/WmsServer?VERSION=1.1.1&SERVICE=WMS&REQUEST=GetCapabilities","1.1.1"),
+                    new InterpreterCapabilities.LinkCapability("Recommended: GetCapabilities (GeoServices - with Token)","{server}/geoservices/rest/services/{folder/service}/MapServer/WmsServer?VERSION=1.3.0&SERVICE=WMS&REQUEST=GetCapabilities","1.3.0"),
+                    new InterpreterCapabilities.LinkCapability("GetCapabilities (with Basic Auth)","{server}/ogc/{folder@service}?VERSION=1.1.1&SERVICE=WMS&REQUEST=GetCapabilities","1.1.1"),
+                    new InterpreterCapabilities.LinkCapability("GetCapabilities (with Basic Auth)","{server}/ogc/{folder@service}?VERSION=1.3.0&SERVICE=WMS&REQUEST=GetCapabilities","1.3.0")
+                });
             }
         }
 
@@ -192,8 +191,7 @@ namespace gView.Interoperability.OGC
                     NumberFormatInfo nfi = new NumberFormatInfo();
                     nfi.NumberDecimalSeparator = ".";
 
-                    string sOnlineResource = OnlineResource + "?SERVICE=WMS&";
-                    sOnlineResource = sOnlineResource.Replace("??", "?");
+                    string sOnlineResource = $"{OnlineResource.AddParameterToUrl("SERVICE", "WMS")}&";
 
                     if (parameters.Version == "1.1.1")
                     {

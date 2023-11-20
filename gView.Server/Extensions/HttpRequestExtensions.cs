@@ -20,4 +20,20 @@ internal static class HttpRequestExtensions
 
         return String.Empty;
     }
+
+    static public string GetGeoServicesUrlToken(this HttpRequest httpRequest)
+    {
+        int tokenPos1 = httpRequest.Path.ToString().IndexOf("/geoservices(", StringComparison.OrdinalIgnoreCase);
+        int tokenPos2 = tokenPos1 >= 0
+            ? httpRequest.Path.ToString().IndexOf(")/", tokenPos1)
+            : -1;
+
+        if (tokenPos1 >= 0 && tokenPos2 > tokenPos1)
+        {
+            tokenPos1 += "/geoservices(".Length;
+            return httpRequest.Path.ToString().Substring(tokenPos1, tokenPos2 - tokenPos1);
+        }
+
+        return string.Empty;
+    }
 }

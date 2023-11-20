@@ -230,7 +230,7 @@ table.service-capabilities {
 
     table.service-capabilities td,
     table.service-capabilities th {
-        width: 100%;
+        /*width: 100%;*/
         border-bottom: 1px solid #ddd;
         /*border-right: 1px solid #ddd;*/
         padding:4px;
@@ -500,14 +500,15 @@ input[type="file"] {
         color:#0094ff;
         text-align:left;
     }
-    .gview5-manage-body .form .form-input input,
-    .modal-dialog .form-input input {
-        min-width:250px;
-        margin:5px 0px;
-        border:1px solid #0094ff;
-        border-radius:5px;
-        padding:10px 5px 5px 5px;
-    }
+.gview5-manage-body .form .form-input input,
+.modal-dialog .form-input input {
+    min-width: 650px;
+    max-width: 100%;
+    margin: 5px 0px;
+    border: 1px solid #0094ff;
+    border-radius: 5px;
+    padding: 10px 5px 5px 5px;
+}
 
     .modal-dialog .form-input input {
         width: 100%;

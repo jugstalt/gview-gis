@@ -2,6 +2,8 @@
 
 window.gview.manage = (function() {
     var rootUrl = '/';
+    const UrlTokenPrefix = 'token-';
+    const UrlTokenSplitter = '~';
 
     var setRootUrl = function(url) {
         rootUrl = url;
@@ -501,7 +503,12 @@ window.gview.manage = (function() {
                             .click(function(e) {
                                 e.stopPropagation();
 
-                                var renderSecurityTableRow = function($row, allTypes, rule) {
+                                var renderSecurityTableRow = function ($row, allTypes, rule) {
+
+                                    var username = rule.username.indexOf(UrlTokenPrefix) === 0
+                                        ? rule.username.split(UrlTokenSplitter)[0]
+                                        : rule.username;
+
                                     $('<td>✖</td>')
                                         .addClass('remove')
                                         .appendTo($row)
@@ -512,8 +519,8 @@ window.gview.manage = (function() {
                                         });
                                     $('<td>')
                                         .addClass('username')
-                                        .attr('data-username', rule.username)
-                                        .html(rule.username)
+                                        .attr('data-username', username)
+                                        .html(username)
                                         .appendTo($row);
 
                                     var allInterpreters = false;
@@ -599,9 +606,13 @@ window.gview.manage = (function() {
                                             result.anonymousUsername +
                                             '</option>'
                                     ).appendTo($selectUser);
-                                    $.each(result.allUsers, function(i, user) {
-                                        $("<option value='" + user + "'>")
-                                            .html(user)
+                                    $.each(result.allUsers, function (i, user) {
+                                        var username = user.indexOf(UrlTokenPrefix) === 0
+                                            ? user.split(UrlTokenSplitter)[0]
+                                            : user;
+
+                                        $("<option value='" + username + "'>")
+                                            .html(username)
                                             .appendTo($selectUser);
                                     });
                                     $selectUser.click(function() {
@@ -757,7 +768,7 @@ window.gview.manage = (function() {
     //
     // Page Security
     //
-    var appendFormInput = function($form, name, type, label, readonly) {
+    var appendFormInput = function($form, name, type, label, readonly, val) {
         var $formInput = $('<div>')
             .addClass('form-input')
             .appendTo($form);
@@ -774,6 +785,9 @@ window.gview.manage = (function() {
         if (readonly === true) {
             $input.attr('readonly', 'readonly');
         }
+        if (val) {
+            $input.val(val);
+        }
     };
     var appendFormHidden = function($form, name, val) {
         $("<input type='hidden' name='" + name + "' />")
@@ -788,7 +802,7 @@ window.gview.manage = (function() {
         var $form = $('<div>')
             .addClass('form')
             .appendTo($page);
-        if (user === '') {  // Client
+        if (user === '') {  // new Client
             appendFormInput($form, 'NewUsername', 'text', 'New client');
             appendFormInput($form, 'NewPassword', 'password', 'New secret');
 
@@ -803,21 +817,24 @@ window.gview.manage = (function() {
                     });
                 });
         }
-        else if (user === '~') {  // (Url) Token
+        else if (user === '~') {  // new (Url) Token
             appendFormInput($form, 'NewTokenName', 'text', 'New Token Name');
 
             $('<button>Create</button>')
                 .appendTo($form)
                 .click(function () {
                     postForm($form, {
-                        url: '/manage/createurltoken',
+                        url: '/manage/createnewurltoken',
                         success: function () {
                             pageSecurity();
                         }
                     });
                 });
         }
-        else {
+        else if (user.indexOf(UrlTokenPrefix) === 0) {  // edit token
+            appendFormInput($form, 'Token', 'text', 'Token', true, user);
+        }
+        else {  // edit client
             appendFormHidden($form, 'Username', user);
             appendFormInput($form, 'NewPassword', 'password', 'New secret');
 
@@ -873,7 +890,9 @@ window.gview.manage = (function() {
                     $('<li>')
                         .addClass('user')
                         .attr('data-user', user)
-                        .html(user)
+                        .html(user.indexOf(UrlTokenPrefix) === 0
+                            ? user.split(UrlTokenSplitter)[0]
+                            : user)
                         .appendTo($users)
                         .click(function() {
                             $(this)

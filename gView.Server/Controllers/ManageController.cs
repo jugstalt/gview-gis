@@ -1,5 +1,6 @@
 ﻿using gView.Core.Framework.Exceptions;
 using gView.Framework.IO;
+using gView.Framework.Security;
 using gView.Framework.system;
 using gView.Interoperability.ArcXML.Dataset;
 using gView.MapServer;
@@ -10,6 +11,8 @@ using gView.Server.Services.Logging;
 using gView.Server.Services.MapServer;
 using gView.Server.Services.Security;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -625,10 +628,22 @@ namespace gView.Server.Controllers
             });
         }
 
-        public IActionResult CreateUrlToken(CreateUrlTokenModel model)
+        public IActionResult CreateNewUrlToken(CreateUrlTokenModel model) => SecureApiCall(() =>
         {
-            return null;
-        }
+            model.NewTokenName = model.NewTokenName?.Trim().ToLower() ?? String.Empty;
+
+            if (String.IsNullOrWhiteSpace(model.NewTokenName))
+            {
+                throw new MapServerException("token is empty");
+            }
+
+            string tokenName = $"{Globals.UrlTokenNamePrefix}{model.NewTokenName}";
+            string token = $"{tokenName}~{SecureCrypto.GenerateToken(64)}";
+
+            _loginManager.CreateTokenLogin(tokenName, token);
+
+            return Json(new { success = true });
+        });
 
         [HttpPost]
         public IActionResult ChangeTokenUserPassword(ChangeTokenUserPasswordModel model)

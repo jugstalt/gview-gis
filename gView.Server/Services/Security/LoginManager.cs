@@ -1,4 +1,5 @@
 ﻿using gView.Core.Framework.Exceptions;
+using gView.Framework.Geometry;
 using gView.Framework.Security;
 using gView.Security.Framework;
 using gView.Server.AppCode;
@@ -97,7 +98,13 @@ namespace gView.Server.Services.Security
             var di = new DirectoryInfo(_mapServerService.Options.LoginManagerRootPath + "/token");
             if (di.Exists)
             {
-                return di.GetFiles("*.lgn").Select(f => f.Name.Substring(0, f.Name.Length - f.Extension.Length));
+                return di.GetFiles("*.lgn")
+                         .Select(f => {
+                             var username = f.Name.Substring(0, f.Name.Length - f.Extension.Length);
+                             return username.UserNameIsUrlToken()
+                                        ? File.ReadAllText(f.FullName)
+                                        : username;
+                             });
             }
 
             return new string[0];
@@ -181,15 +188,13 @@ namespace gView.Server.Services.Security
 
                 #region From Url (/geoservices(THE_TOKEN)/....
 
-                int tokenPos1 = request.Path.ToString().IndexOf("/geoservices(", StringComparison.OrdinalIgnoreCase);
-                int tokenPos2 = tokenPos1 >= 0
-                    ? request.Path.ToString().IndexOf(")/", tokenPos1)
-                    : -1;
-
-                if (tokenPos1 >= 0 && tokenPos2 > tokenPos1)
+                var urlToken = request.GetGeoServicesUrlToken();
+                if(!String.IsNullOrEmpty(urlToken))
                 {
-                    tokenPos1 += "/geoservices(".Length;
-                    var urlToken = request.Path.ToString().Substring(tokenPos1, tokenPos2 - tokenPos1);
+                    var urlTokenName = urlToken.NameOfUrlToken();
+                    var path = _mapServerService.Options.LoginManagerRootPath + "/token";
+
+                    return authToken = CreateAuthToken(path, urlTokenName, urlToken, AuthToken.AuthTypes.Tokenuser);
                 }
 
                 #endregion
@@ -254,9 +259,19 @@ namespace gView.Server.Services.Security
             var fi = new FileInfo(path + "/" + username + ".lgn");
             if (fi.Exists)
             {
-                if (SecureCrypto.VerifyPassword(password, File.ReadAllText(fi.FullName), username))
+                if (username.UserNameIsUrlToken())
                 {
-                    return new AuthToken(username, authType, new DateTimeOffset(DateTime.UtcNow.Ticks, new TimeSpan(0, 30, 0)));
+                    if(password == File.ReadAllText(fi.FullName))
+                    {
+                        return new AuthToken(username, authType, new DateTimeOffset(DateTime.UtcNow.Ticks, new TimeSpan(0, 30, 0)));
+                    }
+                }
+                else
+                {
+                    if (SecureCrypto.VerifyPassword(password, File.ReadAllText(fi.FullName), username))
+                    {
+                        return new AuthToken(username, authType, new DateTimeOffset(DateTime.UtcNow.Ticks, new TimeSpan(0, 30, 0)));
+                    }
                 }
             }
 
@@ -281,7 +296,9 @@ namespace gView.Server.Services.Security
             username.ValidateUsername();
             password.ValidatePassword();
 
-            var hashedPassword = SecureCrypto.Hash64(password, username);
+            var hashedPassword = username.UserNameIsUrlToken() 
+                ? password
+                : SecureCrypto.Hash64(password, username);
 
             File.WriteAllText(path + "/" + username + ".lgn", hashedPassword);
         }

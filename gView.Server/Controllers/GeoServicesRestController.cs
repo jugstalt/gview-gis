@@ -508,7 +508,7 @@ namespace gView.Server.Controllers
 
                 ServiceRequest serviceRequest = new ServiceRequest(id, folder, requestString)
                 {
-                    OnlineResource = _mapServerService.Options.OnlineResource.AppendWmsServerPath(id, folder),
+                    OnlineResource = _mapServerService.Options.OnlineResource.AppendWmsServerPath(this.Request, id, folder),
                     OutputUrl = _mapServerService.Options.OutputUrl,
                     Identity = identity
                 };

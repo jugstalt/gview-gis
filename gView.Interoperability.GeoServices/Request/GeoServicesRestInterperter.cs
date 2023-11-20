@@ -46,9 +46,10 @@ namespace gView.Interoperability.GeoServices.Request
         public int Priority => 100;
 
         public InterpreterCapabilities Capabilities =>
-            new InterpreterCapabilities(new InterpreterCapabilities.Capability[]{
-                    new InterpreterCapabilities.SimpleCapability("Catalog (REST)",InterpreterCapabilities.Method.Post,"{server}/geoservices/rest/services/{folder}","1.0"),
-                    new InterpreterCapabilities.SimpleCapability("Service (REST)",InterpreterCapabilities.Method.Post,"{server}/geoservices/rest/services/{folder/service}/MapServer","1.0")
+            new InterpreterCapabilities(new InterpreterCapabilities.Capability[]
+            {
+                new InterpreterCapabilities.SimpleCapability("Catalog (REST)",InterpreterCapabilities.Method.Post,"{server}/geoservices/rest/services/{folder}","1.0"),
+                new InterpreterCapabilities.SimpleCapability("Service (REST)",InterpreterCapabilities.Method.Post,"{server}/geoservices/rest/services/{folder/service}/MapServer","1.0")
             });
 
         public void OnCreate(IMapServer mapServer)
