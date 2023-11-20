@@ -12,12 +12,14 @@ using gView.GraphicsEngine;
 using gView.GraphicsEngine.Abstraction;
 using gView.Interoperability.OGC.SLD;
 using gView.MapServer;
+using gView.OGC.Framework.OGC.Exceptions;
 using gView.Web.Framework.Web.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Net.Mime;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
@@ -66,41 +68,50 @@ namespace gView.Interoperability.OGC
                 return;
             }
 
-            WMSParameterDescriptor parameters = ParseParameters(context);
-            //ServiceRequestContext context = new ServiceRequestContext(_mapServer, this, request);
-            switch (parameters.Request)
+            try
             {
-                case WMSRequestType.GetCapabilities:
-                    var getCapabilitiesResponse = await WMS_GetCapabilities(context.ServiceRequest.OnlineResource, context.ServiceRequest.Service, parameters, context);
-                    context.ServiceRequest.Response = getCapabilitiesResponse.body;
-                    context.ServiceRequest.ResponseContentType = getCapabilitiesResponse.contentType;
-                    break;
-                case WMSRequestType.GetMap:
-                    var getMapResponse = await WMS_GetMap(context.ServiceRequest.Service, parameters, context);
-                    context.ServiceRequest.Response = getMapResponse.body;
-                    context.ServiceRequest.ResponseContentType = getMapResponse.contentType;
-                    break;
-                case WMSRequestType.GetFeatureInfo:
-                    var featureInfoResponse = await WMS_FeatureInfo(context.ServiceRequest.Service, parameters, context);
-                    context.ServiceRequest.Response = featureInfoResponse.body;
-                    context.ServiceRequest.ResponseContentType = featureInfoResponse.contentType;
-                    break;
-                case WMSRequestType.GetLegendGraphic:
-                    var getLegendResponse = await WMS_GetLegendGraphic(context.ServiceRequest.Service, parameters, context);
-                    context.ServiceRequest.Response = getLegendResponse.body;
-                    context.ServiceRequest.ResponseContentType = getLegendResponse.contentType;
-                    break;
+                WMSParameterDescriptor parameters = ParseParameters(context);
 
-                    //case WMSRequestType.DescriptTiles:
-                    //    context.ServiceRequest.Response = await WMSC_DescriptTiles(context.ServiceRequest.Service, parameters, context);
-                    //    context.ServiceRequest.ResponseContentType = "text/xml";
-                    //    break;
-                    //case WMSRequestType.GetTile:
-                    //    context.ServiceRequest.Response = await WMSC_GetTile(context.ServiceRequest.Service, parameters, context);
-                    //    break;
-                    //case WMSRequestType.GenerateTiles:
-                    //    context.ServiceRequest.Response = await WMS_GenerateTiles(context.ServiceRequest.Service, parameters, context);
-                    //    break;
+                //ServiceRequestContext context = new ServiceRequestContext(_mapServer, this, request);
+                switch (parameters.Request)
+                {
+                    case WMSRequestType.GetCapabilities:
+                        var getCapabilitiesResponse = await WMS_GetCapabilities(context.ServiceRequest.OnlineResource, context.ServiceRequest.Service, parameters, context);
+                        context.ServiceRequest.Response = getCapabilitiesResponse.body;
+                        context.ServiceRequest.ResponseContentType = getCapabilitiesResponse.contentType;
+                        break;
+                    case WMSRequestType.GetMap:
+                        var getMapResponse = await WMS_GetMap(context.ServiceRequest.Service, parameters, context);
+                        context.ServiceRequest.Response = getMapResponse.body;
+                        context.ServiceRequest.ResponseContentType = getMapResponse.contentType;
+                        break;
+                    case WMSRequestType.GetFeatureInfo:
+                        var featureInfoResponse = await WMS_FeatureInfo(context.ServiceRequest.Service, parameters, context);
+                        context.ServiceRequest.Response = featureInfoResponse.body;
+                        context.ServiceRequest.ResponseContentType = featureInfoResponse.contentType;
+                        break;
+                    case WMSRequestType.GetLegendGraphic:
+                        var getLegendResponse = await WMS_GetLegendGraphic(context.ServiceRequest.Service, parameters, context);
+                        context.ServiceRequest.Response = getLegendResponse.body;
+                        context.ServiceRequest.ResponseContentType = getLegendResponse.contentType;
+                        break;
+
+                        //case WMSRequestType.DescriptTiles:
+                        //    context.ServiceRequest.Response = await WMSC_DescriptTiles(context.ServiceRequest.Service, parameters, context);
+                        //    context.ServiceRequest.ResponseContentType = "text/xml";
+                        //    break;
+                        //case WMSRequestType.GetTile:
+                        //    context.ServiceRequest.Response = await WMSC_GetTile(context.ServiceRequest.Service, parameters, context);
+                        //    break;
+                        //case WMSRequestType.GenerateTiles:
+                        //    context.ServiceRequest.Response = await WMS_GenerateTiles(context.ServiceRequest.Service, parameters, context);
+                        //    break;
+                }
+            }
+            catch (ParseParametersException ppe)
+            {
+                context.ServiceRequest.Response = ppe.MessageData;
+                context.ServiceRequest.ResponseContentType = ppe.ContentType;
             }
         }
 
@@ -108,18 +119,22 @@ namespace gView.Interoperability.OGC
         {
             var accessTypes = AccessTypes.None;
 
-            WMSParameterDescriptor parameters = ParseParameters(context);
-
-            switch (parameters.Request)
+            try
             {
-                case WMSRequestType.GetMap:
-                case WMSRequestType.GetTile:
-                    accessTypes |= AccessTypes.Map;
-                    break;
-                case WMSRequestType.GetFeatureInfo:
-                    accessTypes |= AccessTypes.Query;
-                    break;
+                WMSParameterDescriptor parameters = ParseParameters(context);
+
+                switch (parameters.Request)
+                {
+                    case WMSRequestType.GetMap:
+                    case WMSRequestType.GetTile:
+                        accessTypes |= AccessTypes.Map;
+                        break;
+                    case WMSRequestType.GetFeatureInfo:
+                        accessTypes |= AccessTypes.Query;
+                        break;
+                }
             }
+            catch (ParseParametersException) { }
 
             return accessTypes;
         }
@@ -148,10 +163,8 @@ namespace gView.Interoperability.OGC
             var queryString = Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(context?.ServiceRequest?.Request);
 
             WMSParameterDescriptor parameters = new WMSParameterDescriptor();
-            if (!parameters.ParseParameters(queryString/*context?.ServiceRequest?.Request?.Split('&')*/))
-            {
-                throw new Exception("Invalid WMS Parameters");
-            }
+
+            parameters.ParseParameters(queryString);
 
             return parameters;
         }
@@ -639,7 +652,7 @@ namespace gView.Interoperability.OGC
                                 {
                                     var sourceRect = new GraphicsEngine.CanvasRectangleF((float)minx, (float)maxy, (float)Math.Abs(maxx - minx), (float)Math.Abs(miny - maxy));
                                     canvas.DrawBitmap(map.MapImage,
-                                        new GraphicsEngine.CanvasRectangleF(0f, 0f, (float)bitmap.Width, (float)bitmap.Height),
+                                        new GraphicsEngine.CanvasRectangleF(0f, 0f, bitmap.Width, bitmap.Height),
                                         sourceRect);
                                 }
 
