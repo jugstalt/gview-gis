@@ -1,11 +1,11 @@
 ﻿using gView.Core.Framework.Exceptions;
-using gView.Framework.Geometry;
 using gView.Framework.Security;
 using gView.Security.Framework;
 using gView.Server.AppCode;
 using gView.Server.Extensions;
 using gView.Server.Services.MapServer;
 using Microsoft.AspNetCore.Http;
+using MongoDB.Bson;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -67,29 +67,44 @@ namespace gView.Server.Services.Security
                 throw new MapServerException("User '" + username + "' already exists");
             }
 
-            var di = new DirectoryInfo(_mapServerService.Options.LoginManagerRootPath + "/token");
-            var fi = new FileInfo(di.FullName + "/" + username + ".lgn");
+            var fi = new FileInfo(Path.Combine(_mapServerService.Options.LoginManagerRootPath, "token", $"{username}.lgn"));
+            
             if (fi.Exists)
             {
-                throw new MapServerException("User '" + username + "' already exists");
+                throw new MapServerException($"User '{username}' already exists");
             }
 
-            CreateLogin(di.FullName, username, password);
+            CreateLogin(fi.Directory.FullName, username, password);
         }
 
         public void ChangeTokenUserPassword(string username, string newPassword)
         {
             newPassword.ValidatePassword();
 
-            var di = new DirectoryInfo(_mapServerService.Options.LoginManagerRootPath + "/token");
-            var fi = new FileInfo(di.FullName + "/" + username + ".lgn");
+            var fi = new FileInfo(Path.Combine(_mapServerService.Options.LoginManagerRootPath, "token", $"{username}.lgn"));
+            
             if (!fi.Exists)
             {
-                throw new MapServerException("User '" + username + "' do not exists");
+                throw new MapServerException($"User '{username}' does not exists");
             }
 
-            var hashedPassword = SecureCrypto.Hash64(newPassword, username);
+            var hashedPassword = username.UserNameIsUrlToken()
+                ? newPassword  // do not hash tokens
+                : SecureCrypto.Hash64(newPassword, username);
+
             File.WriteAllText(fi.FullName, hashedPassword);
+        }
+
+        public void DeleteTokenLogin(string username)
+        {
+            var fi = new FileInfo(Path.Combine(_mapServerService.Options.LoginManagerRootPath, "token", $"{username}.lgn"));
+            
+            if (!fi.Exists)
+            {
+                throw new MapServerException($"User '{username}' does not exists");
+            }
+
+            fi.Delete();
         }
 
         public IEnumerable<string> GetTokenUsernames()
@@ -170,15 +185,8 @@ namespace gView.Server.Services.Security
             {
                 #region From Token
 
-                string token = request.Query["token"];
-                if (String.IsNullOrWhiteSpace(token) && request.HasFormContentType)
-                {
-                    try
-                    {
-                        token = request.Form["token"];
-                    }
-                    catch { }
-                }
+                string token = request.GetGeoservicesToken();
+
                 if (!String.IsNullOrEmpty(token))
                 {
                     return authToken = _encryptionCertService.FromToken(token);
@@ -210,10 +218,7 @@ namespace gView.Server.Services.Security
                     }
                     catch (System.Security.Cryptography.CryptographicException)
                     {
-                        return authToken = new AuthToken()
-                        {
-                            Username = String.Empty
-                        };
+                        return authToken = AuthToken.Anonymous;
                     }
                 }
 
@@ -231,10 +236,7 @@ namespace gView.Server.Services.Security
 
                 #endregion
 
-                return authToken = new AuthToken()
-                {
-                    Username = String.Empty
-                };
+                return authToken = AuthToken.Anonymous;
             }
             finally
             {
@@ -256,21 +258,24 @@ namespace gView.Server.Services.Security
 
         private AuthToken CreateAuthToken(string path, string username, string password, AuthToken.AuthTypes authType, int expireMiniutes = 30)
         {
-            var fi = new FileInfo(path + "/" + username + ".lgn");
+            var fi = new FileInfo(Path.Combine(path, $"{username}.lgn"));
+
             if (fi.Exists)
             {
+                expireMiniutes = expireMiniutes <= 0 ? 30 : expireMiniutes;
+
                 if (username.UserNameIsUrlToken())
                 {
                     if(password == File.ReadAllText(fi.FullName))
                     {
-                        return new AuthToken(username, authType, new DateTimeOffset(DateTime.UtcNow.Ticks, new TimeSpan(0, 30, 0)));
+                        return new AuthToken(username, authType, new TimeSpan(0, expireMiniutes, 0));
                     }
                 }
                 else
                 {
                     if (SecureCrypto.VerifyPassword(password, File.ReadAllText(fi.FullName), username))
                     {
-                        return new AuthToken(username, authType, new DateTimeOffset(DateTime.UtcNow.Ticks, new TimeSpan(0, 30, 0)));
+                        return new AuthToken(username, authType, new TimeSpan(0, expireMiniutes, 0));
                     }
                 }
             }
@@ -282,10 +287,13 @@ namespace gView.Server.Services.Security
 
         private AuthToken CreateAuthTokenWithoutPasswordCheck(string path, string username, AuthToken.AuthTypes authType, int expireMiniutes = 30)
         {
-            var fi = new FileInfo(path + "/" + username + ".lgn");
+            var fi = new FileInfo(Path.Combine(path, $"{username}.lgn"));
+
             if (fi.Exists)
             {
-                return new AuthToken(username, authType, new DateTimeOffset(DateTime.UtcNow.Ticks, new TimeSpan(0, 30, 0)));
+                expireMiniutes = expireMiniutes <= 0 ? 30 : expireMiniutes;
+
+                return new AuthToken(username, authType, new TimeSpan(0, expireMiniutes, 0));
             }
 
             return null;
@@ -300,7 +308,7 @@ namespace gView.Server.Services.Security
                 ? password
                 : SecureCrypto.Hash64(password, username);
 
-            File.WriteAllText(path + "/" + username + ".lgn", hashedPassword);
+            File.WriteAllText(Path.Combine(path, $"{username}.lgn"), hashedPassword);
         }
 
         #endregion

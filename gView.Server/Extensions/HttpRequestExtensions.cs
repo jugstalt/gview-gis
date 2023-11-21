@@ -21,6 +21,21 @@ internal static class HttpRequestExtensions
         return String.Empty;
     }
 
+    static public string GetGeoservicesToken(this HttpRequest httpRequest)
+    {
+        string token = httpRequest.Query["token"];
+        if (String.IsNullOrWhiteSpace(token) && httpRequest.HasFormContentType)
+        {
+            try
+            {
+                token = httpRequest.Form["token"];
+            }
+            catch { }
+        }
+
+        return token;
+    }
+
     static public string GetGeoServicesUrlToken(this HttpRequest httpRequest)
     {
         int tokenPos1 = httpRequest.Path.ToString().IndexOf("/geoservices(", StringComparison.OrdinalIgnoreCase);

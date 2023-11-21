@@ -55,54 +55,6 @@ namespace gView.Server.AppCode
             this.Response.Cookies.Delete(Globals.AuthCookieName);
         }
 
-        public AuthToken LoginAuthToken(HttpRequest request)
-        {
-            AuthToken authToken = null;
-
-            try
-            {
-                #region From Token
-
-                string token = request.Query["token"];
-                if (String.IsNullOrWhiteSpace(token) && request.HasFormContentType)
-                {
-                    try
-                    {
-                        token = request.Form["token"];
-                    }
-                    catch { }
-                }
-                if (!String.IsNullOrEmpty(token))
-                {
-                    return authToken = _encryptionCertificate.FromToken(token);
-                }
-
-                #endregion
-
-                #region From Cookie
-
-                string cookie = request.Cookies[Globals.AuthCookieName];
-                if (!String.IsNullOrWhiteSpace(cookie))
-                {
-                    return authToken = _encryptionCertificate.FromToken(cookie);
-                }
-
-                #endregion
-
-                return authToken = new AuthToken()
-                {
-                    Username = String.Empty
-                };
-            }
-            finally
-            {
-                if (authToken == null || authToken.IsExpired)
-                {
-                    throw new InvalidTokenException();
-                }
-            }
-        }
-
         #endregion
 
         #region ETAG

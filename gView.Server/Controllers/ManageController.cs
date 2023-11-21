@@ -2,22 +2,20 @@
 using gView.Framework.IO;
 using gView.Framework.Security;
 using gView.Framework.system;
-using gView.Interoperability.ArcXML.Dataset;
 using gView.MapServer;
+using gView.Security.Framework;
 using gView.Server.AppCode;
 using gView.Server.AppCode.Extensions;
+using gView.Server.Extensions;
 using gView.Server.Models.Manage;
 using gView.Server.Services.Logging;
 using gView.Server.Services.MapServer;
 using gView.Server.Services.Security;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
-using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Runtime.Intrinsics.X86;
 using System.Threading.Tasks;
 using YamlDotNet.Core;
 using YamlDotNet.Serialization;
@@ -411,9 +409,9 @@ namespace gView.Server.Controllers
         [HttpPost]
         public Task<IActionResult> ServiceMetadata(string service, Dictionary<string, string> metadata) => SecureApiCall(async () =>
         {
-            if(metadata == null && metadata.Keys.Count == 0)
+            if (metadata == null && metadata.Keys.Count == 0)
             {
-                return Json(new { success = false});
+                return Json(new { success = false });
             }
 
             var pluginManager = new PlugInManager();
@@ -430,7 +428,7 @@ namespace gView.Server.Controllers
                 var metadataProvider = (map.MetadataProvider(PlugInManager.PluginIDFromType(metadataProviderType))
                     ?? Activator.CreateInstance(metadataProviderType)) as IMetadataProvider;
 
-                if (metadataProvider is IPropertyModel && 
+                if (metadataProvider is IPropertyModel &&
                     metadata.ContainsKey(metadataProvider.Name) &&
                     await metadataProvider.ApplyTo(map) == true)
                 {
@@ -438,7 +436,7 @@ namespace gView.Server.Controllers
                     {
                         var propertyObject = deserializer.Deserialize(metadata[metadataProvider.Name],
                                                                       ((IPropertyModel)metadataProvider).PropertyModelType);
-                   
+
                         ((IPropertyModel)metadataProvider).SetPropertyModel(propertyObject);
                         metadataProviders.Add(metadataProvider);
 
@@ -601,6 +599,8 @@ namespace gView.Server.Controllers
 
         #region Security
 
+        #region TokenUsers (=Clients)
+
         public IActionResult TokenUsers()
         {
             return SecureApiCall(() =>
@@ -610,7 +610,7 @@ namespace gView.Server.Controllers
         }
 
         [HttpPost]
-        public IActionResult CreateTokenUser(CreateTokenUserModel model)
+        public IActionResult TokenUserCreate(CreateTokenUserModel model)
         {
             return SecureApiCall(() =>
             {
@@ -622,31 +622,19 @@ namespace gView.Server.Controllers
                     throw new MapServerException("Username is empty");
                 }
 
+                if(model.NewUsername.StartsWith(Globals.UrlTokenNamePrefix))
+                {
+                    throw new MapServerException($"{Globals.UrlTokenNamePrefix} is not allowed as prefix for a username");
+                }
+
                 _loginManager.CreateTokenLogin(model.NewUsername.ToLower(), model.NewPassword);
 
                 return Json(new { success = true });
             });
         }
 
-        public IActionResult CreateNewUrlToken(CreateUrlTokenModel model) => SecureApiCall(() =>
-        {
-            model.NewTokenName = model.NewTokenName?.Trim().ToLower() ?? String.Empty;
-
-            if (String.IsNullOrWhiteSpace(model.NewTokenName))
-            {
-                throw new MapServerException("token is empty");
-            }
-
-            string tokenName = $"{Globals.UrlTokenNamePrefix}{model.NewTokenName}";
-            string token = $"{tokenName}~{SecureCrypto.GenerateToken(64)}";
-
-            _loginManager.CreateTokenLogin(tokenName, token);
-
-            return Json(new { success = true });
-        });
-
         [HttpPost]
-        public IActionResult ChangeTokenUserPassword(ChangeTokenUserPasswordModel model)
+        public IActionResult TokenUserChangePassword(ChangeTokenUserPasswordModel model)
         {
             return SecureApiCall(() =>
             {
@@ -658,6 +646,75 @@ namespace gView.Server.Controllers
                 return Json(new { success = true });
             });
         }
+
+        [HttpPost]
+        public IActionResult TokenUserDelete(DeleteTokenUserModel model)
+        {
+            return SecureApiCall(() =>
+            {
+                model.Username = model.Username?.Trim() ?? String.Empty;
+
+                _loginManager.DeleteTokenLogin(model.Username);
+
+                return Json(new { success = true });
+            });
+        }
+
+        #endregion
+
+        #region Url Tokens
+
+        public IActionResult UrlTokenCreate(CreateUrlTokenModel model) => SecureApiCall(() =>
+        {
+            return SecureApiCall(() =>
+            {
+                model.NewTokenName = model.NewTokenName?.Trim().ToLower() ?? String.Empty;
+
+                if (String.IsNullOrWhiteSpace(model.NewTokenName))
+                {
+                    throw new MapServerException("token is empty");
+                }
+
+                model.NewTokenName.ValidateRawUrlTokenName();
+
+                string tokenName = $"{Globals.UrlTokenNamePrefix}{model.NewTokenName}";
+                string token = $"{tokenName}~{SecureCrypto.GenerateToken(64)}";
+
+                _loginManager.CreateTokenLogin(tokenName, token);
+
+                return Json(new { success = true });
+            });
+        });
+
+        [HttpPost]
+        public IActionResult UrlTokenRecycle(UrlTokenModel model)
+        {
+            return SecureApiCall(() =>
+            {
+                string tokenName = model.UrlToken.NameOfUrlToken();
+
+                string token = $"{tokenName}~{SecureCrypto.GenerateToken(64)}";
+
+                _loginManager.ChangeTokenUserPassword(tokenName, token);
+
+                return Json(new { success = true });
+            });
+        }
+
+        [HttpPost]
+        public IActionResult UrlTokenDelete(UrlTokenModel model)
+        {
+            return SecureApiCall(() =>
+            {
+                string tokenName = model.UrlToken.NameOfUrlToken();
+
+                _loginManager.DeleteTokenLogin(tokenName);
+
+                return Json(new { success = true });
+            });
+        }
+
+        #endregion
 
         #endregion
 

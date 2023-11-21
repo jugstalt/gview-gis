@@ -343,7 +343,7 @@ window.gview.manage = (function() {
                             success: function(result) {
                                 console.log(result);
                                 createServiceListItem(
-                                    $('.gview5-manage-body').find('.services'),
+                                    $('.gview-manage-body').find('.services'),
                                     result.service
                                 );
                             }
@@ -466,7 +466,7 @@ window.gview.manage = (function() {
     };
 
     var pageServices = function() {
-        var $body = $('.gview5-manage-body')
+        var $body = $('.gview-manage-body')
             .empty()
             .addClass('loading');
 
@@ -475,9 +475,14 @@ window.gview.manage = (function() {
             success: function(result) {
                 $body.removeClass('loading');
 
+                var $container = $("<div>")
+                    .addClass('container')
+                    .css('max-height','unset')
+                    .appendTo($body)
+
                 var $folders = $('<ul>')
                     .addClass('folders')
-                    .appendTo($body);
+                    .appendTo($container);
                 $('<li>')
                     .addClass('folder selected')
                     .html('(root)')
@@ -739,7 +744,7 @@ window.gview.manage = (function() {
 
                 var $services = $('<ul>')
                     .addClass('services')
-                    .appendTo($body);
+                    .appendTo($container);
                 folderServices('');
                 //$.each(result.services, function (i, service) {
                 //    createServiceListItem($services, service);
@@ -810,29 +815,12 @@ window.gview.manage = (function() {
                 .appendTo($form)
                 .click(function () {
                     postForm($form, {
-                        url: '/manage/createtokenuser',
+                        url: '/manage/tokenusercreate',
                         success: function () {
                             pageSecurity();
                         }
                     });
                 });
-        }
-        else if (user === '~') {  // new (Url) Token
-            appendFormInput($form, 'NewTokenName', 'text', 'New Token Name');
-
-            $('<button>Create</button>')
-                .appendTo($form)
-                .click(function () {
-                    postForm($form, {
-                        url: '/manage/createnewurltoken',
-                        success: function () {
-                            pageSecurity();
-                        }
-                    });
-                });
-        }
-        else if (user.indexOf(UrlTokenPrefix) === 0) {  // edit token
-            appendFormInput($form, 'Token', 'text', 'Token', true, user);
         }
         else {  // edit client
             appendFormHidden($form, 'Username', user);
@@ -842,26 +830,96 @@ window.gview.manage = (function() {
                 .appendTo($form)
                 .click(function() {
                     postForm($form, {
-                        url: '/manage/changetokenuserpassword',
+                        url: '/manage/tokenuserchangepassword',
                         success: function() {
                             pageSecurity();
                         }
                     });
                 });
+
+            $('<button>Delete</button>')
+                .css('background', 'red')
+                .appendTo($form)
+                .click(function () {
+                    if (confirm('Are you sure? Delete Client?')) {
+                        postForm($form, {
+                            url: '/manage/tokenuserdelete',
+                            success: function () {
+                                pageSecurity();
+                            }
+                        });
+                    }
+                });
         }
     };
 
-    var pageSecurity = function() {
-        var $body = $('.gview5-manage-body')
+    var pageUrlToken = function (urlToken) {
+        var $page = $('.urltoken-properties').empty();
+
+        var $form = $('<div>')
+            .addClass('form')
+            .appendTo($page);
+        if (urlToken === '') {  // new (Url) Token
+            appendFormInput($form, 'NewTokenName', 'text', 'New Token Name');
+
+            $('<button>Create</button>')
+                .appendTo($form)
+                .click(function () {
+                    postForm($form, {
+                        url: '/manage/urltokencreate',
+                        success: function () {
+                            pageSecurity();
+                        }
+                    });
+                });
+        }
+        else  {  // edit token
+            appendFormInput($form, 'UrlToken', 'text', 'Token', true, urlToken);
+
+            $('<button>Recycle</button>')
+                .appendTo($form)
+                .click(function () {
+                    if (confirm('Are you sure? Recycle Token?')) {
+                        postForm($form, {
+                            url: '/manage/urltokenrecycle',
+                            success: function () {
+                                pageSecurity('.urltoken.' + urlToken.split(UrlTokenSplitter)[0]);
+                            }
+                        });
+                    }
+                });
+
+            $('<button>Delete</button>')
+                .css('background','red')
+                .appendTo($form)
+                .click(function () {
+                    if (confirm('Are you sure? Delete Token?')) {
+                        postForm($form, {
+                            url: '/manage/urltokendelete',
+                            success: function () {
+                                pageSecurity();
+                            }
+                        });
+                    }
+                });
+        }
+    };
+
+    var pageSecurity = function(triggerClick) {
+        var $body = $('.gview-manage-body')
             .empty()
             .addClass('loading');
 
         get({
             url: '/manage/tokenusers',
-            success: function(result) {
+            success: function (result) {
+                var $usersContainer = $("<div>")
+                    .addClass('container')
+                    .appendTo($body);
+
                 var $users = $('<ul>')
                     .addClass('users')
-                    .appendTo($body);
+                    .appendTo($usersContainer);
 
                 $('<li>New Client...</li>')
                     .addClass('user new selected')
@@ -874,25 +932,15 @@ window.gview.manage = (function() {
                         $(this).addClass('selected');
                         pageUser('');
                     });
-                $('<li>New (Url) Token</li>')
-                    .addClass('user new')
-                    .appendTo($users)
-                    .click(function () {
-                        $(this)
-                            .parent()
-                            .children('.user')
-                            .removeClass('selected');
-                        $(this).addClass('selected');
-                        pageUser('~');
-                    });
+               
+                $.each(result.users, function (i, user) {
+                    if (user.indexOf(UrlTokenPrefix) === 0)
+                        return;
 
-                $.each(result.users, function(i, user) {
                     $('<li>')
                         .addClass('user')
                         .attr('data-user', user)
-                        .html(user.indexOf(UrlTokenPrefix) === 0
-                            ? user.split(UrlTokenSplitter)[0]
-                            : user)
+                        .html(user)
                         .appendTo($users)
                         .click(function() {
                             $(this)
@@ -906,9 +954,53 @@ window.gview.manage = (function() {
 
                 $('<div>')
                     .addClass('user-properties')
+                    .appendTo($usersContainer);
+
+                // experimental
+                var $urlTokensContainer = $("<div>")
+                    .addClass('container')
                     .appendTo($body);
 
-                $users.children('.user.new').trigger('click');
+                var $urlTokens = $('<ul>')
+                    .addClass('urltokens')
+                    .appendTo($urlTokensContainer);
+                $('<li>New (Url) Token</li>')
+                    .addClass('urltoken new')
+                    .appendTo($urlTokens)
+                    .click(function () {
+                        $(this)
+                            .parent()
+                            .children('.urltoken')
+                            .removeClass('selected');
+                        $(this).addClass('selected');
+                        pageUrlToken('');
+                    });
+
+                $.each(result.users, function (i, urlToken) {
+                    if (urlToken.indexOf(UrlTokenPrefix) !== 0)
+                        return;
+
+                    $('<li>')
+                        .addClass('urltoken '+urlToken.split(UrlTokenSplitter)[0])
+                        .attr('data-user', urlToken)
+                        .html(urlToken.split(UrlTokenSplitter)[0])
+                        .appendTo($urlTokens)
+                        .click(function () {
+                            $(this)
+                                .parent()
+                                .children('.user')
+                                .removeClass('selected');
+                            $(this).addClass('selected');
+                            pageUrlToken($(this).attr('data-user'));
+                        });
+                });
+
+                $('<div>')
+                    .addClass('urltoken-properties')
+                    .appendTo($urlTokensContainer);
+
+                console.log('triggerCLick', triggerClick);
+                $body.find(triggerClick || '.user.new').trigger('click');
             }
         });
     };
