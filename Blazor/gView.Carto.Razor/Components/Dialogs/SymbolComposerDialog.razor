@@ -138,6 +138,15 @@
             </MudExpansionPanel>
         </MudExpansionPanels>
     </DialogBody>
+
+    <DialogButtons>
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Default"
+                   OnClick="()=>base.Close()">Cancel</MudButton>
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   OnClick="Apply">Apply</MudButton>
+    </DialogButtons>
 </ModalDialogFormBase>
 
 @code {
@@ -160,6 +169,20 @@
         _creatableSymbolTypes = PluginManager.GetPluginTypes(Plugins.Type.ISymbol)
                                              .Where(t => Model.Symbol.HasSameSymbolBaseType(t))
                                              .ToArray();
+    }
+
+    private Task Apply()
+    {
+        if(_symbolStack?.Symbols?.Count > 1)
+        {
+            Model.Symbol = _symbolStack;
+        }
+        else if(_symbolStack?.Symbols?.Count == 1)
+        {
+            Model.Symbol = _symbolStack.Symbols.First().Symbol;
+        }
+
+        return base.Submit();
     }
 
     #region Symbol Stack
