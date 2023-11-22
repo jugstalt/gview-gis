@@ -96,7 +96,7 @@ ul {
 .html-body a {
     color: #fff;
     text-decoration: none;
-    background-color: #337ab7;
+    background-color: #5c6874;
     padding: 1px 10px;
     border-radius: 15px;
     margin: 0px 4px 4px 0px;
@@ -130,13 +130,13 @@ ul {
 /****** Home *********/
 
 .gview-header-brand {
-    background-image: url('../images/logos/gview5_48x48.png');
-    background-repeat:no-repeat;
-    background-position:center left;
-    background-size:26px;
-    display:inline-block;
-    padding-left:30px;
-    margin-left:-8px;
+    background-image: url('../images/logos/gis_logo_no_shadow.png');
+    background-repeat: no-repeat;
+    background-position: center left;
+    background-size: 21px;
+    display: inline-block;
+    padding-left: 30px;
+    margin-left: -8px;
 }
 
 .gview-header-brand:hover {
@@ -158,12 +158,16 @@ ul {
 .main-logo {
     display: block;
     text-align: center;
-    height: 173px;
-    margin: 10px;
-    background-image: url('../images/logos/gview5_100x100.png');
-    background-position: center 20px;
+    max-width: 602px;
+    height: 602px;
+    background-image: url(../images/banner0.jpg);
+    background-size: contain;
     background-repeat: no-repeat;
     position: relative;
+    margin: 20px auto;
+    border-radius: 20px;
+    margin-top: 19px;
+    box-shadow: 4px 4px 9px rgba(0, 0, 0, .4) !important;
 }
     .main-logo .text {
         position: absolute;
@@ -171,7 +175,7 @@ ul {
         left: 0px;
         right: 0px;
         height: 40px;
-        color: #337ab7;
+        color: #5c6874;
         font-size: 28px;
         white-space:nowrap;
     }
@@ -186,10 +190,11 @@ ul {
         height: 100px;
         display: inline-block;
         position: relative;
-        background-color: #337ab7;
+        background-color: #5c6874;
         background-position: center 20px;
         background-repeat: no-repeat;
         margin: 10px;
+        border-radius: 6px;
         box-shadow: 4px 4px 9px rgba(0, 0, 0, .4) !important;
     }
 
@@ -237,7 +242,7 @@ table.service-capabilities {
     }
 
     table.service-capabilities tr.interpreter {
-        background-color: #337ab7;
+        background-color: #5c6874;
         color: #fff;
     }
     table.service-capabilities tr.interpreter td.interpreter-name {
@@ -454,7 +459,7 @@ input[type="file"] {
             .gview-manage-body .folders .folder.selected,
             .gview-manage-body .users .user.selected,
             .gview-manage-body .urltokens .urltoken.selected {
-                background: #337ab7;
+                background: #5c6874;
                 color: white;
             }
             .gview-manage-body .folders .folder:hover,
@@ -550,9 +555,9 @@ input[type="file"] {
 }
 
 .gview-manage-body button {
-    background: #337ab7;
+    background: #5c6874;
     color: #fff;
-    border: 1px solid #337ab7;
+    border: 1px solid #5c6874;
     border-radius: 19px;
     padding: 8px 20px;
 }
