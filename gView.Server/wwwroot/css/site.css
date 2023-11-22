@@ -3,6 +3,8 @@ for details on configuring this project to bundle and minify static web assets. 
 body {
     padding-top: 50px;
     padding-bottom: 20px;
+    background-color:#333;
+    color:#ccc;
 }
 
 /* Wrapping element */
@@ -36,6 +38,11 @@ body {
     }
 }
 
+a {
+    color: #72b5ef;
+    text-decoration: none;
+}
+
 ul {
     list-style: none;
 }
@@ -46,10 +53,10 @@ ul {
 
 .code-block {
     padding: 8px;
-    background-color: #ddd;
+    background-color: #222;
     border: solid 1px #ccc;
-    border-radius: 4px;
-    overflow:auto;
+    border-radius: 6px;
+    overflow: auto;
 }
 
 .yaml-code {
@@ -74,8 +81,12 @@ ul {
     display:block;
 }
 
-.html-body form  {
-    background-color:#eee;
+.html-body form {
+    background-color: #555;
+    margin: 10px auto;
+    border-radius: 8px;
+    padding: 12px;
+    color: #ddd;
 }
 
 .html-body form table {
@@ -89,9 +100,24 @@ ul {
     .html-body form table td.input {
         width: 100%;
     }
-    .html-body form table td.input * {
-        min-width:100%;
-    }
+        .html-body form table td.input * {
+            min-width: 100%;
+            padding: 4px 10px;
+            background: #222;
+            border: 1px solid #333;
+            border-radius: 6px;
+        }
+
+        .html-body form table td button {
+            padding: 4px 10px;
+            background: #5c6874;
+            border-radius: 6px;
+            border:none;
+            color:#eee;
+        }
+            .html-body form table td button:hover {
+                background: #888;
+            }
 
 .html-body a {
     color: #fff;
@@ -106,7 +132,7 @@ ul {
 
 /***** Header *******/
 .webportal-layout-header.navbar {
-    background-color:#fefefe;
+    background-color:#222;
 }
 /***** Footer *******/
 .webportal-layout-footer .version {
@@ -139,9 +165,9 @@ ul {
     margin-left: -8px;
 }
 
-.gview-header-brand:hover {
+/*.gview-header-brand:hover {
     color: #0094ff;
-}
+}*/
 
 .navbar-inverse .navbar-nav > li > a {
     color:rgba(0, 0, 0, .4);
@@ -236,7 +262,7 @@ table.service-capabilities {
     table.service-capabilities td,
     table.service-capabilities th {
         /*width: 100%;*/
-        border-bottom: 1px solid #ddd;
+        border-bottom: 1px solid #555;
         /*border-right: 1px solid #ddd;*/
         padding:4px;
     }
@@ -253,7 +279,7 @@ table.service-capabilities {
         cursor: pointer;
     }
         table.service-capabilities tr.interpreter-capabilities:hover {
-            background-color: #eee;
+            background-color: #222;
         }
 
 ul.browseservices{
@@ -269,7 +295,7 @@ ul.browseservices{
         background-repeat:no-repeat;
     }
         ul.browseservices li:hover {
-            background-color:#eee;
+            background-color:#222;
         }
 
         ul.browseservices li.back {
@@ -330,6 +356,7 @@ ul.browseservices{
     border-radius: 8px;
     border: 1px solid #ccc;
     background: #f8f8f8;
+    color:#333;
 }
 
     form .gview5-form-header {
@@ -389,6 +416,7 @@ input[type="file"] {
     border-radius: 8px;
     border: 1px solid #ccc;
     background: #f8f8f8;
+    color: #333;
 }
 
     .gview5-login-panel .title * {
@@ -414,13 +442,14 @@ input[type="file"] {
     top: 52px;
     right:0px;
     bottom:0px;
-    overflow:auto;*/
-    background-color: white;
+    overflow:auto;
+    background-color: white;*/
 }
 
     .gview-manage-body .container {
         position: relative;
         background: #f8f8f8;
+        color:#333;
         box-shadow: 4px 4px 9px rgba(0, 0, 0, .4) !important;
         border: 1px solid #ccc;
         border-radius: 8px;
