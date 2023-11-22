@@ -1,11 +1,11 @@
 ﻿if (!window.gview) window.gview = {};
 
 window.gview.manage = (function() {
-    var rootUrl = '/';
+    let rootUrl = '/';
     const UrlTokenPrefix = 'token-';
     const UrlTokenSplitter = '~';
 
-    var setRootUrl = function(url) {
+    let setRootUrl = function(url) {
         rootUrl = url;
     };
 
@@ -13,7 +13,7 @@ window.gview.manage = (function() {
     //  Get/Post
     //
 
-    var get = function(options) {
+    let get = function(options) {
         $.ajax({
             url: rootUrl + options.url,
             type: options.type || 'get',
@@ -32,8 +32,8 @@ window.gview.manage = (function() {
         });
     };
 
-    var postForm = function($form, options) {
-        var data = {};
+    let postForm = function($form, options) {
+        let data = {};
 
         if ($form.find('.form-value').length === 0) {
             data['_emtpyform'] = true; // One properterty needed!!!!
@@ -49,7 +49,7 @@ window.gview.manage = (function() {
         options.type = 'post';
         options.data = data;
 
-        var onSuccess = options.success;
+        let onSuccess = options.success;
         options.success = function(result) {
             $form.find('.form-error').remove();
 
@@ -69,8 +69,8 @@ window.gview.manage = (function() {
     // UI Elements
     //
 
-    var modalDialog = function (options) {
-        var $blocker = $('<div>')
+    let modalDialog = function (options) {
+        let $blocker = $('<div>')
             .addClass('gview5-modal-blocker')
             .appendTo($('body'))
             .click(function (e) {
@@ -79,7 +79,7 @@ window.gview.manage = (function() {
                 //    .trigger('click');
             });
 
-        var $modal = $('<div>')
+        let $modal = $('<div>')
             .addClass('modal-dialog')
             .appendTo($blocker)
             .click(function(e) {
@@ -91,10 +91,10 @@ window.gview.manage = (function() {
                 .addClass('modal-title')
                 .appendTo($modal);
         }
-        var $body = $('<div>')
+        let $body = $('<div>')
             .addClass('modal-body')
             .appendTo($modal);
-        var $footer = $('<div>')
+        let $footer = $('<div>')
             .addClass('modal-footer')
             .appendTo($modal);
 
@@ -115,9 +115,9 @@ window.gview.manage = (function() {
                 .click(function(e) {
                     e.stopPropagation();
 
-                    var autoClose = options.autoClose === false ? false : true;
+                    let autoClose = options.autoClose === false ? false : true;
                     if (options.onOk) {
-                        var ret = options.onOk($body);
+                        let ret = options.onOk($body);
                         autoClose = autoClose || ret;
                     }
                     if (autoClose === true) {
@@ -134,9 +134,9 @@ window.gview.manage = (function() {
     //
     // Page Services
     //
-    var createServiceListItem = function($services, service) {
+    let createServiceListItem = function($services, service) {
         //console.log(service);
-        var $service = $services.children(
+        let $service = $services.children(
             ".service[data-service='" +
                 (service.folder ? service.folder + '/' : '') +
                 service.name +
@@ -154,7 +154,7 @@ window.gview.manage = (function() {
             .empty();
         if (service.hasErrors) $service.addClass('has-errors');
 
-        var $toolbar = $('<div>')
+        let $toolbar = $('<div>')
             .addClass('toolbar')
             .appendTo($service);
 
@@ -162,13 +162,13 @@ window.gview.manage = (function() {
             .addClass('icon clickable log')
             .appendTo($toolbar)
             .click(function() {
-                var serviceName = $(this)
+                let serviceName = $(this)
                     .closest('.service')
                     .attr('data-service');
 
-                var renderErrorLogs = function($target, result) {
+                let renderErrorLogs = function($target, result) {
                     $target.empty();
-                    var $ul = $('<ul>').appendTo($target);
+                    let $ul = $('<ul>').appendTo($target);
                     $.each(result.errors, function(i, e) {
                         $('<li>')
                             .appendTo($ul)
@@ -209,11 +209,11 @@ window.gview.manage = (function() {
             .addClass('icon clickable security' + (service.hasSecurity === true ? '1' : '0'))
             .appendTo($toolbar)
             .click(function() {
-                var serviceName = $(this)
+                let serviceName = $(this)
                     .closest('.service')
                     .attr('data-service');
 
-                var renderSecurityTableRow = function($row, allTypes, rule) {
+                let renderSecurityTableRow = function($row, allTypes, rule) {
                     $('<td>✖</td>')
                         .addClass('remove')
                         .appendTo($row)
@@ -228,13 +228,13 @@ window.gview.manage = (function() {
                         .html(rule.username)
                         .appendTo($row);
 
-                    var allInterpreters = false;
+                    let allInterpreters = false;
                     $.each(allTypes, function(i, type) {
                         $cell = $('<td>')
                             .addClass('rule')
                             .appendTo($row);
-                        var hasRule = $.inArray(type.toLowerCase(), rule.servicetypes) >= 0;
-                        var $chkbox = $(
+                        let hasRule = $.inArray(type.toLowerCase(), rule.servicetypes) >= 0;
+                        let $chkbox = $(
                             "<input type='checkbox' name='" + rule.username + '~' + type + "' />"
                         )
                             .addClass('form-value')
@@ -245,7 +245,7 @@ window.gview.manage = (function() {
                             if (type === '_all') {
                                 allInterpreters = hasRule;
                                 $chkbox.click(function() {
-                                    var val = $(this).prop('checked');
+                                    let val = $(this).prop('checked');
                                     $(this)
                                         .closest('tr')
                                         .find('input.interpreter')
@@ -259,19 +259,19 @@ window.gview.manage = (function() {
                         }
                     });
                 };
-                var renderSecurityTable = function($target, result) {
+                let renderSecurityTable = function($target, result) {
                     $target.empty();
 
-                    var $tab = $('<table>').appendTo($target);
-                    var $row = $('<tr>').appendTo($tab);
+                    let $tab = $('<table>').appendTo($target);
+                    let $row = $('<tr>').appendTo($tab);
 
-                    var $cell = $('<th>').appendTo($row); // remove (X)
+                    let $cell = $('<th>').appendTo($row); // remove (X)
                     $('<th>')
                         .html('User')
                         .appendTo($row);
 
                     $.each(result.allTypes, function(i, type) {
-                        var title = toUIString(type);
+                        let title = toUIString(type);
                         if (title.indexOf('_') === 0) title = '#' + title.substr(1).toUpperCase();
                         $('<th>')
                             .addClass('rule')
@@ -288,7 +288,7 @@ window.gview.manage = (function() {
                     $('<td>').appendTo($row); // remove (X)
                     $cell = $('<td>').appendTo($row);
 
-                    var $selectUser = $('<select>').appendTo($cell);
+                    let $selectUser = $('<select>').appendTo($cell);
                     $("<option value=''></options>").appendTo($selectUser);
                     $(
                         "<option value='" +
@@ -312,7 +312,7 @@ window.gview.manage = (function() {
                         ) {
                             $row = $('<tr>').insertBefore($(this).closest('tr'));
 
-                            var servicetypes = [];
+                            let servicetypes = [];
                             $.each(result.allTypes, function(i, t) {
                                 if (t.indexOf('_') !== 0 || t === '_all')
                                     servicetypes.push(t.toLowerCase());
@@ -386,7 +386,7 @@ window.gview.manage = (function() {
                                 let $select = $("<select>")
                                     .css({ width: '100%', height: 25 })
                                     .appendTo($body);
-                                for (var id in result) {
+                                for (let id in result) {
                                     $("<option>")
                                         .attr('value', id)
                                         .text(id)
@@ -453,8 +453,8 @@ window.gview.manage = (function() {
         return $service;
     };
 
-    var folderServices = function(folder) {
-        var $services = $('.services').empty();
+    let folderServices = function(folder) {
+        let $services = $('.services').empty();
         get({
             url: '/manage/services?folder=' + folder,
             success: function(result) {
@@ -465,8 +465,8 @@ window.gview.manage = (function() {
         });
     };
 
-    var pageServices = function() {
-        var $body = $('.gview-manage-body')
+    let pageServices = function() {
+        let $body = $('.gview-manage-body')
             .empty()
             .addClass('loading');
 
@@ -475,12 +475,12 @@ window.gview.manage = (function() {
             success: function(result) {
                 $body.removeClass('loading');
 
-                var $container = $("<div>")
+                let $container = $("<div>")
                     .addClass('container')
                     .css('max-height','unset')
                     .appendTo($body)
 
-                var $folders = $('<ul>')
+                let $folders = $('<ul>')
                     .addClass('folders')
                     .appendTo($container);
                 $('<li>')
@@ -490,13 +490,13 @@ window.gview.manage = (function() {
                     .appendTo($folders);
                 $.each(result.folders, function(i, folder) {
                     if (folder) {
-                        var $folder = $('<li>')
+                        let $folder = $('<li>')
                             .addClass('folder')
                             .html(folder.name)
                             .attr('data-folder', folder.name)
                             .appendTo($folders);
 
-                        var $toolbar = $('<div>')
+                        let $toolbar = $('<div>')
                             .addClass('toolbar')
                             .appendTo($folder);
                         $('<div>')
@@ -508,9 +508,9 @@ window.gview.manage = (function() {
                             .click(function(e) {
                                 e.stopPropagation();
 
-                                var renderSecurityTableRow = function ($row, allTypes, rule) {
+                                let renderSecurityTableRow = function ($row, allTypes, rule) {
 
-                                    var username = rule.username.indexOf(UrlTokenPrefix) === 0
+                                    let username = rule.username.indexOf(UrlTokenPrefix) === 0
                                         ? rule.username.split(UrlTokenSplitter)[0]
                                         : rule.username;
 
@@ -528,14 +528,14 @@ window.gview.manage = (function() {
                                         .html(username)
                                         .appendTo($row);
 
-                                    var allInterpreters = false;
+                                    let allInterpreters = false;
                                     $.each(allTypes, function(i, type) {
                                         $cell = $('<td>')
                                             .addClass('rule')
                                             .appendTo($row);
-                                        var hasRule =
+                                        let hasRule =
                                             $.inArray(type.toLowerCase(), rule.servicetypes) >= 0;
-                                        var $chkbox = $(
+                                        let $chkbox = $(
                                             "<input type='checkbox' name='" +
                                                 rule.username +
                                                 '~' +
@@ -550,7 +550,7 @@ window.gview.manage = (function() {
                                             if (type === '_all') {
                                                 allInterpreters = hasRule;
                                                 $chkbox.click(function() {
-                                                    var val = $(this).prop('checked');
+                                                    let val = $(this).prop('checked');
                                                     $(this)
                                                         .closest('tr')
                                                         .find('input.interpreter')
@@ -568,23 +568,23 @@ window.gview.manage = (function() {
                                     });
                                 };
 
-                                var renderSecurityTable = function(
+                                let renderSecurityTable = function(
                                     $target,
                                     result,
                                     advancedSettings
                                 ) {
                                     $target.empty();
 
-                                    var $tab = $('<table>').appendTo($target);
-                                    var $row = $('<tr>').appendTo($tab);
+                                    let $tab = $('<table>').appendTo($target);
+                                    let $row = $('<tr>').appendTo($tab);
 
-                                    var $cell = $('<th>').appendTo($row); // remove (X)
+                                    let $cell = $('<th>').appendTo($row); // remove (X)
                                     $('<th>')
                                         .html('User')
                                         .appendTo($row);
 
                                     $.each(result.allTypes, function(i, type) {
-                                        var title = toUIString(type);
+                                        let title = toUIString(type);
                                         if (title.indexOf('_') === 0)
                                             title = '#' + title.substr(1).toUpperCase();
                                         $('<th>')
@@ -602,7 +602,7 @@ window.gview.manage = (function() {
                                     $('<td>').appendTo($row); // remove (X)
                                     $cell = $('<td>').appendTo($row);
 
-                                    var $selectUser = $('<select>').appendTo($cell);
+                                    let $selectUser = $('<select>').appendTo($cell);
                                     $("<option value=''></options>").appendTo($selectUser);
                                     $(
                                         "<option value='" +
@@ -612,7 +612,7 @@ window.gview.manage = (function() {
                                             '</option>'
                                     ).appendTo($selectUser);
                                     $.each(result.allUsers, function (i, user) {
-                                        var username = user.indexOf(UrlTokenPrefix) === 0
+                                        let username = user.indexOf(UrlTokenPrefix) === 0
                                             ? user.split(UrlTokenSplitter)[0]
                                             : user;
 
@@ -631,7 +631,7 @@ window.gview.manage = (function() {
                                         ) {
                                             $row = $('<tr>').insertBefore($(this).closest('tr'));
 
-                                            var servicetypes = [];
+                                            let servicetypes = [];
                                             $.each(result.allTypes, function(i, t) {
                                                 if (t.indexOf('_') !== 0 || t === '_all')
                                                     servicetypes.push(t.toLowerCase());
@@ -645,12 +645,12 @@ window.gview.manage = (function() {
                                     });
 
                                     if (advancedSettings) {
-                                        var $settingsDiv = $('<div>')
+                                        let $settingsDiv = $('<div>')
                                             .addClass('section')
                                             .appendTo($target);
                                         $('<h4>Folder Settings</h4>').appendTo($settingsDiv);
 
-                                        var $formInput = $('<div>')
+                                        let $formInput = $('<div>')
                                             .addClass('form-input')
                                             .appendTo($settingsDiv);
 
@@ -695,12 +695,12 @@ window.gview.manage = (function() {
                                             url: '/manage/foldersecurity?folder=' + folder.name,
                                             success: function(result) {
                                                 if (result && result.success && result.folder) {
-                                                    var $folder = $(
+                                                    let $folder = $(
                                                         ".folders .folder[data-folder='" +
                                                             result.folder.name +
                                                             "']"
                                                     );
-                                                    var cls =
+                                                    let cls =
                                                         'security' +
                                                         (result.folder.hasSecurity === true
                                                             ? '1'
@@ -742,7 +742,7 @@ window.gview.manage = (function() {
                     );
                 });
 
-                var $services = $('<ul>')
+                let $services = $('<ul>')
                     .addClass('services')
                     .appendTo($container);
                 folderServices('');
@@ -753,7 +753,7 @@ window.gview.manage = (function() {
         });
     };
 
-    var setServiceStatus = function (sender, $service, status) {
+    let setServiceStatus = function (sender, $service, status) {
         $(sender).addClass('loading');
 
         get({
@@ -773,8 +773,8 @@ window.gview.manage = (function() {
     //
     // Page Security
     //
-    var appendFormInput = function($form, name, type, label, readonly, val) {
-        var $formInput = $('<div>')
+    let appendFormInput = function($form, name, type, label, readonly, val) {
+        let $formInput = $('<div>')
             .addClass('form-input')
             .appendTo($form);
         $('<div>')
@@ -783,7 +783,7 @@ window.gview.manage = (function() {
             .appendTo($formInput);
         $('<br/>').appendTo($formInput);
 
-        var $input = $("<input name='" + name + "' type='" + (type || 'text') + "' autocomplete='off' />")
+        let $input = $("<input name='" + name + "' type='" + (type || 'text') + "' autocomplete='off' />")
             .addClass('form-value')
             .appendTo($formInput);
 
@@ -794,17 +794,17 @@ window.gview.manage = (function() {
             $input.val(val);
         }
     };
-    var appendFormHidden = function($form, name, val) {
+    let appendFormHidden = function($form, name, val) {
         $("<input type='hidden' name='" + name + "' />")
             .val(val)
             .addClass('form-value')
             .appendTo($form);
     };
 
-    var pageUser = function(user) {
-        var $page = $('.user-properties').empty();
+    let pageUser = function(user) {
+        let $page = $('.user-properties').empty();
 
-        var $form = $('<div>')
+        let $form = $('<div>')
             .addClass('form')
             .appendTo($page);
         if (user === '') {  // new Client
@@ -853,10 +853,10 @@ window.gview.manage = (function() {
         }
     };
 
-    var pageUrlToken = function (urlToken) {
-        var $page = $('.urltoken-properties').empty();
+    let pageUrlToken = function (urlToken) {
+        let $page = $('.urltoken-properties').empty();
 
-        var $form = $('<div>')
+        let $form = $('<div>')
             .addClass('form')
             .appendTo($page);
         if (urlToken === '') {  // new (Url) Token
@@ -905,19 +905,26 @@ window.gview.manage = (function() {
         }
     };
 
-    var pageSecurity = function(triggerClick) {
-        var $body = $('.gview-manage-body')
+    let pageSecurity = function(triggerClick) {
+        let $body = $('.gview-manage-body')
             .empty()
             .addClass('loading');
 
         get({
             url: '/manage/tokenusers',
             success: function (result) {
-                var $usersContainer = $("<div>")
+                let $usersContainer = $("<div>")
                     .addClass('container')
                     .appendTo($body);
 
-                var $users = $('<ul>')
+
+                let clientLoginUrl = rootUrl + '/geoservices/tokens/generatetoken';
+                $("<div>")
+                    .addClass('info')
+                    .html("Clients can login to get access to GeoServices services. A client can login (programatically) here <a href='" + clientLoginUrl + "' target='_blank'>" + clientLoginUrl + "</a> with clientId and secret to receive an access token.")
+                    .appendTo($usersContainer)
+
+                let $users = $('<ul>')
                     .addClass('users')
                     .appendTo($usersContainer);
 
@@ -957,11 +964,21 @@ window.gview.manage = (function() {
                     .appendTo($usersContainer);
 
                 // experimental
-                var $urlTokensContainer = $("<div>")
+                let $urlTokensContainer = $("<div>")
                     .addClass('container')
                     .appendTo($body);
 
-                var $urlTokens = $('<ul>')
+                $("<div>")
+                    .addClass('info')
+                    .html("Url Tokens are experimental! This functionality may no longer be offered in the future!")
+                    .appendTo($urlTokensContainer);
+
+                $("<div>")
+                    .addClass('info')
+                    .html("Url Tokens are static tokens and must be send in every url request to a secured GeoServices service: " + rootUrl + "/geoservices(token-xxx~...)/rest/services/... There is no clientId necessary. Anyone who owns the token can use the corresponding service.")
+                    .appendTo($urlTokensContainer);
+
+                let $urlTokens = $('<ul>')
                     .addClass('urltokens')
                     .appendTo($urlTokensContainer);
                 $('<li>New (Url) Token</li>')
@@ -1005,7 +1022,7 @@ window.gview.manage = (function() {
         });
     };
 
-    var toUIString = function (type) {
+    let toUIString = function (type) {
         if (type) {
             switch (type.toLowerCase()) {
                 case 'map':

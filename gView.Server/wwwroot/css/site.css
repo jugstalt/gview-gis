@@ -426,6 +426,13 @@ input[type="file"] {
         margin-bottom: 16px;
     }
 
+        .gview-manage-body .container .info {
+            background: #ffc;
+            padding: 8px;
+            border-radius: 8px;
+            margin: 0px 0px 8px 0px;
+        }
+
     .gview-manage-body .folders,
     .gview-manage-body .users,
     .gview-manage-body .urltokens {
