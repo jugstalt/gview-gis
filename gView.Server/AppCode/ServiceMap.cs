@@ -10,7 +10,9 @@ using gView.Framework.UI;
 using gView.GraphicsEngine;
 using gView.GraphicsEngine.Abstraction;
 using gView.MapServer;
+using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -23,13 +25,18 @@ namespace gView.Server.AppCode
         private IMapServer _mapServer = null;
         private IServiceRequestInterpreter _interpreter = null;
         private ServiceRequest _request = null;
+        private IServiceRequestContext _requestContext = null;
         private IEnumerable<IMapApplicationModule> _modules = null;
-
+        
         //private bool _ceckLayerVisibilityBeforeDrawing;
 
         private ServiceMap() { }
 
-        async static public Task<ServiceMap> CreateAsync(Map original, IMapServer mapServer, IEnumerable<IMapApplicationModule> modules)
+        async static public Task<ServiceMap> CreateAsync(
+            Map original, 
+            IMapServer mapServer,
+            IEnumerable<IMapApplicationModule> modules,
+            IServiceRequestContext requestContext)
         {
             var serviceMap = new ServiceMap();
 
@@ -60,6 +67,8 @@ namespace gView.Server.AppCode
 
             serviceMap._layerDescriptions = original.LayerDescriptions;
             serviceMap._layerCopyrightTexts = original.LayerCopyrightTexts;
+
+            serviceMap._requestContext = requestContext;
 
             serviceMap.SetResourceContainer(original.ResourceContainer);
 
@@ -254,7 +263,7 @@ namespace gView.Server.AppCode
                             modLayers.Add(theme);
                         }
                     }
-                    BeforeRenderLayers(this, modLayers);
+                    BeforeRenderLayers(this, _requestContext, modLayers);
                 }
             }
             #endregion
@@ -329,7 +338,7 @@ namespace gView.Server.AppCode
                         tocElement.AddLayer(newLayer);
                     }
                 }
-                BeforeRenderLayers(this, modLayers);
+                BeforeRenderLayers(this, _requestContext, modLayers);
                 layers = modLayers;
             }
 
@@ -430,7 +439,7 @@ namespace gView.Server.AppCode
                                     modLayers.Add(theme);
                                 }
                             }
-                            BeforeRenderLayers(this, modLayers);
+                            BeforeRenderLayers(this, _requestContext, modLayers);
 
                             foreach (ILayer additionalLayer in MapServerHelper.FindAdditionalWebServiceLayers(wsLayer.WebServiceClass, modLayers))
                             {
@@ -531,7 +540,7 @@ namespace gView.Server.AppCode
 
                             modLayers.Add(LayerFactory.Create(layer.Class, layer));
                         }
-                        BeforeRenderLayers(this, modLayers);
+                        BeforeRenderLayers(this, _requestContext, modLayers);
                         layers = modLayers;
                     }
                     //layers = ModifyLayerList(layers);
@@ -836,6 +845,31 @@ namespace gView.Server.AppCode
         {
             return Task.FromResult(this.MetadataProvider(metadataProviderId));
         }
+
+        #region Context Metadata
+
+        private ConcurrentDictionary<string, object> _metadata;
+        public void SetContextMetadata<T>(string key, T value)
+        {
+            if (_metadata == null)
+            {
+                _metadata = new ConcurrentDictionary<string, object>();
+            }
+
+            _metadata[key] = value;
+        }
+
+        public T GetContextMetadata<T>(string key, T defaultValue = default)
+        {
+            if (_metadata?.TryGetValue(key, out var value) == true)
+            {
+                return (T)value;
+            }
+
+            return defaultValue;
+        }
+
+        #endregion
 
         #endregion
 

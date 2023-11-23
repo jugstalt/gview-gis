@@ -98,7 +98,11 @@ namespace gView.Server.Controllers
                     throw new Exception("Password is required...");
                 }
 
-                var authToken = _loginManager.GetManagerAuthToken(model.Username.Trim(), model.Password.Trim(), createIfFirst: true);
+                var authToken = _loginManager.GetManagerAuthToken(
+                    model.Username.Trim(),
+                    model.Password.Trim(),
+                    exipreMinutes: 60 * 24,
+                    createIfFirst: true);
 
                 if (authToken == null)
                 {
@@ -760,15 +764,21 @@ namespace gView.Server.Controllers
             }
             catch (NotAuthorizedException)
             {
-                return Json(new { success = false, error = "not authorized" });
+                base.RemoveAuthCookie();
+                return Json(new { success = false, code = 401, error = "not authorized" });
+            }
+            catch (InvalidTokenException)
+            {
+                base.RemoveAuthCookie();
+                return Json(new { success = false, code = 498, error = "Session expired" });
             }
             catch (MapServerException mse)
             {
-                return Json(new { success = false, error = mse.Message });
+                return Json(new { success = false, code = 500, error = mse.Message });
             }
             catch (Exception/* ex*/)
             {
-                return Json(new { success = false, error = $"unknown error" });
+                return Json(new { success = false, code = 500, error = $"unknown error" });
             }
         }
 

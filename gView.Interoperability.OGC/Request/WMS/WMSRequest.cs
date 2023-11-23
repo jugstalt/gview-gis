@@ -10,6 +10,7 @@ using gView.Framework.OGC.WMS;
 using gView.Framework.system;
 using gView.GraphicsEngine;
 using gView.GraphicsEngine.Abstraction;
+using gView.Interoperability.OGC.Request.Extensions;
 using gView.Interoperability.OGC.SLD;
 using gView.MapServer;
 using gView.OGC.Framework.OGC.Exceptions;
@@ -33,6 +34,9 @@ namespace gView.Interoperability.OGC
     [gView.Framework.system.RegisterPlugIn("C4892F49-446C-4e22-BCC7-76F033F1F03B")]
     public class WMSRequest : IServiceRequestInterpreter
     {
+        public const string LayerNameFormatMetadataKey = "LayerNameFormat";
+        public const string LayerNameFormatDefault = "c{0}";
+
         private static IFormatProvider _nhi = System.Globalization.CultureInfo.InvariantCulture.NumberFormat;
 
         private IMapServer _mapServer = null;
@@ -171,7 +175,11 @@ namespace gView.Interoperability.OGC
 
         #endregion
 
-        async private Task<(string body, string contentType)> WMS_GetCapabilities(string OnlineResource, string service, WMSParameterDescriptor parameters, IServiceRequestContext context)
+        async private Task<(string body, string contentType)> WMS_GetCapabilities(
+            string OnlineResource, 
+            string service, 
+            WMSParameterDescriptor parameters, 
+            IServiceRequestContext context)
         {
             try
             {
@@ -334,7 +342,7 @@ namespace gView.Interoperability.OGC
                             }
 
                             Framework.OGC.WMS.Version_1_1_1.Layer fType = new Framework.OGC.WMS.Version_1_1_1.Layer();
-                            fType.Name = "c" + layers.ID;
+                            fType.Name = context.ToLayerName(layers.ID);
                             fType.Title = layers.Title;
                             IClass c = layers.FirstClass;
                             fType.queryable = c is IFeatureClass ? Framework.OGC.WMS.Version_1_1_1.LayerQueryable.Item1 : Framework.OGC.WMS.Version_1_1_1.LayerQueryable.Item0;
@@ -508,7 +516,7 @@ namespace gView.Interoperability.OGC
                             }
 
                             Framework.OGC.WMS.Version_1_3_0.Layer fType = new Framework.OGC.WMS.Version_1_3_0.Layer();
-                            fType.Name = "c" + layers.ID;
+                            fType.Name = context.ToLayerName(layers.ID);
                             fType.Title = layers.Title;
                             IClass c = layers.FirstClass;
                             fType.queryable = (c is IFeatureClass ? 1 : 0);
@@ -679,7 +687,9 @@ namespace gView.Interoperability.OGC
                 }
             }
 
-            void map_BeforeRenderLayers(IServiceMap sender, List<ILayer> layers)
+            void map_BeforeRenderLayers(IServiceMap sender, 
+                                        IServiceRequestContext context,
+                                        List<ILayer> layers)
             {
                 // if layers=MapName => Top Layer in Capabilites => all Layers visible (or default?)
                 var mapLayerVisible = _parameters.Layers.Length == 1 && _parameters.Layers[0] == sender.Name;
@@ -696,14 +706,16 @@ namespace gView.Interoperability.OGC
                         layer.Visible = false;
                     }
 
-                    foreach (string id in _parameters.Layers)
+                    foreach (string layerName in _parameters.Layers)
                     {
-                        if (id == String.Empty || id[0] != 'c')
+                        if (layerName == String.Empty)
                         {
                             continue;
                         }
 
-                        foreach (ILayer layer in MapServerHelper.FindMapLayers(sender, _useTOC, id.Substring(1, id.Length - 1), layers))
+                        string layerId = context.ToLayerId(layerName);
+
+                        foreach (ILayer layer in MapServerHelper.FindMapLayers(sender, _useTOC, layerId, layers))
                         {
                             layer.Visible = true;
                         }
@@ -727,14 +739,16 @@ namespace gView.Interoperability.OGC
                                 continue;
                             }
 
-                            string id = nameNode.InnerText;
-                            if (id == String.Empty || id[0] != 'c')
+                            string layerName = nameNode.InnerText;
+                            if (layerName == String.Empty)
                             {
                                 continue;
                             }
 
+                            string layerId = context.ToLayerId(layerName);
+
                             SLDRenderer renderer = new SLDRenderer(namedLayer.OuterXml);
-                            foreach (ILayer layer in MapServerHelper.FindMapLayers(sender, _useTOC, id.Substring(1, id.Length - 1), layers))
+                            foreach (ILayer layer in MapServerHelper.FindMapLayers(sender, _useTOC, layerId, layers))
                             {
                                 if (layer is IFeatureLayer)
                                 {
@@ -809,14 +823,16 @@ namespace gView.Interoperability.OGC
 
                 // Get Layers
                 List<ILayer> queryLayers = new List<ILayer>();
-                foreach (string l in parameters.QueryLayers)
+                foreach (string layerName in parameters.QueryLayers)
                 {
-                    if (l == String.Empty || l[0] != 'c')
+                    if (layerName == String.Empty)
                     {
                         continue;
                     }
 
-                    MapServerHelper.Layers layers = MapServerHelper.FindMapLayers(map, _useTOC, l.Substring(1, l.Length - 1));
+                    string layerId = context.ToLayerId(layerName);
+
+                    MapServerHelper.Layers layers = MapServerHelper.FindMapLayers(map, _useTOC, layerId);
                     if (layers == null)
                     {
                         continue;
@@ -842,7 +858,7 @@ namespace gView.Interoperability.OGC
                             IFeature feature = null;
                             while ((feature = await cursor.NextFeature()) != null)
                             {
-                                features.Add(new FeatureType("c" + layer.SID, ((IFeatureLayer)layer).FeatureClass, feature));
+                                features.Add(new FeatureType(context.ToLayerName(layer.SID), ((IFeatureLayer)layer).FeatureClass, feature));
                             }
                         }
                     }
@@ -872,13 +888,13 @@ namespace gView.Interoperability.OGC
                 int imageWidth, imageHeight;
                 using (var dummy = Current.Engine.CreateBitmap(1, 1))
                 {
-                    var size = await DrawLegend(serviceMap, parameters, dummy);
+                    var size = await DrawLegend(serviceMap, context, parameters, dummy);
                     imageWidth = size.Width;
                     imageHeight = size.Height;
                 }
                 using (var legendBitmap = Current.Engine.CreateBitmap(imageWidth, imageHeight))
                 {
-                    await DrawLegend(serviceMap, parameters, legendBitmap);
+                    await DrawLegend(serviceMap, context, parameters, legendBitmap);
 
                     MemoryStream ms = new MemoryStream();
                     legendBitmap.Save(ms, parameters.GetImageFormat());
@@ -887,7 +903,11 @@ namespace gView.Interoperability.OGC
             }
         }
 
-        async private Task<CanvasSize> DrawLegend(IServiceMap serviceMap, WMSParameterDescriptor parameters, IBitmap bitmap)
+        async private Task<CanvasSize> DrawLegend(
+            IServiceMap serviceMap, 
+            IServiceRequestContext context,
+            WMSParameterDescriptor parameters,
+            IBitmap bitmap)
         {
             if (serviceMap?.TOC == null)
             {
@@ -902,6 +922,8 @@ namespace gView.Interoperability.OGC
             bool defaultLayerVisibility = parameters.Layer == serviceMap.Name;
             var layerIds = parameters.Layer.Split(',');
 
+            var drawTextFormat = Current.Engine.CreateDrawTextFormat();
+
             using (var canvas = bitmap.CreateCanvas())
             using (var fontBold = Current.Engine.CreateFont("Arial", 9, FontStyle.Bold))
             using (var fontRegular = Current.Engine.CreateFont("Arial", 8, FontStyle.Regular))
@@ -912,7 +934,7 @@ namespace gView.Interoperability.OGC
 
                 foreach (var element in serviceMap.MapElements)
                 {
-                    if (!defaultLayerVisibility && !layerIds.Contains("c" + element.ID))
+                    if (!defaultLayerVisibility && !layerIds.Contains(context.ToLayerName(element.ID.ToString())))
                     {
                         continue;
                     }
@@ -960,7 +982,9 @@ namespace gView.Interoperability.OGC
                                 if (bitmap.Width > 1)
                                 {
                                     canvas.DrawBitmap(tocLegendItem.Image, new CanvasPointF(padding, offsetY));
-                                    canvas.DrawText(tocElement.Name, fontBold, blackBrush, new CanvasPointF(padding * 2f + tocLegendItem.Image.Width, offsetY + 3f));
+                                    canvas.DrawText(tocElement.Name, fontBold, blackBrush, 
+                                        new CanvasPointF(padding * 2f + tocLegendItem.Image.Width, offsetY + 3f),
+                                        drawTextFormat);
                                 }
 
                                 var labelSize = canvas.MeasureText(tocElement.Name, fontBold);
@@ -973,7 +997,9 @@ namespace gView.Interoperability.OGC
                             {
                                 if (bitmap.Width > 1)
                                 {
-                                    canvas.DrawText(tocElement.Name, fontBold, blackBrush, new CanvasPointF(padding, offsetY));
+                                    canvas.DrawText(tocElement.Name, fontBold, blackBrush, 
+                                        new CanvasPointF(padding, offsetY - 5f),
+                                        drawTextFormat);
                                 }
                                 var titleSize = canvas.MeasureText(tocElement.Name, fontBold);
                                 width = Math.Max(width, padding * 2f + titleSize.Width);
@@ -993,13 +1019,15 @@ namespace gView.Interoperability.OGC
                                         canvas.DrawBitmap(tocLegendItem.Image, new CanvasPointF(padding, offsetY));
                                         if (!String.IsNullOrWhiteSpace(tocLegendItem.Label))
                                         {
-                                            canvas.DrawText(tocLegendItem.Label, fontRegular, blackBrush, new CanvasPointF(padding * 2f + tocLegendItem.Image.Width, offsetY + 3f));
+                                            canvas.DrawText(tocLegendItem.Label, fontRegular, blackBrush,
+                                                new CanvasPointF(padding * 2f + tocLegendItem.Image.Width, offsetY + 3f),
+                                                drawTextFormat);
                                         }
                                     }
 
                                     var labelSize = String.IsNullOrEmpty(tocLegendItem.Label) ? new CanvasSizeF(0f, 0f) : canvas.MeasureText(tocLegendItem.Label, fontRegular);
                                     width = Math.Max(width, padding * 2f + tocLegendItem.Image.Width + labelSize.Width + padding);
-                                    height = Math.Max(height, Math.Max(tocLegendItem.Image.Height, labelSize.Height) + padding);
+                                    height = Math.Max(height, Math.Max(offsetY + tocLegendItem.Image.Height, labelSize.Height) + padding);
 
                                     offsetY += Math.Max(tocLegendItem.Image.Height, labelSize.Height) + lineSpan;
                                 }

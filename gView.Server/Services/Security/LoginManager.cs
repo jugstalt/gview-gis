@@ -107,7 +107,7 @@ namespace gView.Server.Services.Security
             fi.Delete();
         }
 
-        public IEnumerable<string> GetTokenUsernames()
+        public IEnumerable<string> GetTokenUsernames(bool fullUrlToken = true)
         {
 
             var di = new DirectoryInfo(_mapServerService.Options.LoginManagerRootPath + "/token");
@@ -116,7 +116,7 @@ namespace gView.Server.Services.Security
                 return di.GetFiles("*.lgn")
                          .Select(f => {
                              var username = f.Name.Substring(0, f.Name.Length - f.Extension.Length);
-                             return username.UserNameIsUrlToken()
+                             return fullUrlToken && username.UserNameIsUrlToken()
                                         ? File.ReadAllText(f.FullName)
                                         : username;
                              });
@@ -144,7 +144,7 @@ namespace gView.Server.Services.Security
             List<string> names = new List<string>();
 
             names.AddRange(GetMangeUserNames());
-            names.AddRange(GetTokenUsernames());
+            names.AddRange(GetTokenUsernames(false));
 
             return names;
         }

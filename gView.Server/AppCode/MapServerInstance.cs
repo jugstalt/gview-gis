@@ -304,7 +304,7 @@ public class MapServerInstance : IMapServer
             {
                 modules = ((IMapDocumentModules)_mapServiceDeploymentMananger.MapDocument).GetMapModules(map);
             }
-            return await ServiceMap.CreateAsync(map, this, modules);
+            return await ServiceMap.CreateAsync(map, this, modules, context);
         }
 
         if (name.Contains(",") /* && _serverLicType == ServerLicType.gdi*/)
@@ -414,7 +414,7 @@ public class MapServerInstance : IMapServer
                     _mapServiceMananger.MapServices.Add(new MapService(_mapServiceMananger, name, String.Empty, MapServiceType.GDI));
                 }
 
-                return await ServiceMap.CreateAsync(newMap, this, null);
+                return await ServiceMap.CreateAsync(newMap, this, null, context);
             }
         }
 

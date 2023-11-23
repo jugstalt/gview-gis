@@ -1,9 +1,9 @@
 ﻿if (!window.gview) window.gview = {};
 
-window.gview.server = (function() {
+window.gview.server = (function () {
     var rootUrl = '/';
 
-    var setRootUrl = function(url) {
+    var setRootUrl = function (url) {
         rootUrl = url;
         if (rootUrl[rootUrl.length - 1] !== '/') {
             rootUrl += '/';
@@ -14,7 +14,7 @@ window.gview.server = (function() {
     //  Get/Post
     //
 
-    var get = function(options) {
+    var get = function (options) {
         $.ajax({
             url:
                 options.url.indexOf(rootUrl) === 0
@@ -24,25 +24,54 @@ window.gview.server = (function() {
             data: options.data || null,
             success:
                 options.success ||
-                function(result) {
+                function (result) {
                     gview.server.alert(result);
                 },
             error:
                 options.error ||
-                function(jqXHR, textStatus, errorThrown) {
+                function (jqXHR, textStatus, errorThrown) {
                     $('.loading').removeClass('loading');
                     gview.server.alert('Error: ' + errorThrown + '(' + textStatus + ')');
                 }
         });
     };
 
-    var alert = function(msg) {
+    var alert = function (msg) {
         bootbox.alert(msg);
     };
+
+    var toggleDarkMode = function () {
+        let $body = $('body');
+
+        if ($body.hasClass('light')) {
+            $body.removeClass('light');
+            setStorageValue('colormode', 'dark');
+        } else {
+            $body.addClass('light');
+            setStorageValue('colormode', 'light');
+        }
+    };
+
+    var getStorageValue = function(name) {
+        if (typeof localStorage !== 'undefined') {
+            return localStorage.getItem(name);
+        }
+    };
+
+    var setStorageValue = function(name, value) {
+        if (typeof localStorage !== 'undefined') {
+            localStorage.setItem(name, value);
+        }
+    }
+
+    $(function () {
+        $('body').addClass(getStorageValue('colormode'));
+    });
 
     return {
         get: get,
         alert: alert,
-        setRootUrl: setRootUrl
+        setRootUrl: setRootUrl,
+        toggleDarkMode: toggleDarkMode
     };
 })();

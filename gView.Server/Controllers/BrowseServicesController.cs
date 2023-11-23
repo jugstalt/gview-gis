@@ -39,7 +39,8 @@ namespace gView.Server.Controllers
             _loginManagerService = loginManagerService;
         }
 
-        async public Task<IActionResult> Index(string folder, string serviceName = "", string errorMessage = "")
+        async public Task<IActionResult> Index(string folder, string serviceName = "", string errorMessage = "", 
+                                               bool openPublish = false, bool openCreate = false)
         {
             folder = folder ?? String.Empty;
 
@@ -97,6 +98,9 @@ namespace gView.Server.Controllers
                         services.Add(s);
                     }
                 }
+
+                ViewData["open-publish"] = openPublish;
+                ViewData["open-create"] = openCreate;
 
                 var model = new BrowseServicesIndexModel()
                 {
@@ -335,7 +339,16 @@ namespace gView.Server.Controllers
             {
                 onException = (e) =>
                 {
-                    throw e;
+                    if (e is InvalidTokenException)
+                    {
+                        base.RemoveAuthCookie();
+                    }
+                    else
+                    {
+                        throw e;
+                    }
+
+                    return RedirectToAction("Index", "Home");
                 };
             }
 

@@ -277,7 +277,10 @@ namespace gView.Interoperability.GeoServices.Request
             }
         }
 
-        private void ServiceMap_BeforeRenderLayers(Framework.Carto.IServiceMap sender, List<Framework.Data.ILayer> layers)
+        private void ServiceMap_BeforeRenderLayers(
+            Framework.Carto.IServiceMap sender, 
+            IServiceRequestContext context,
+            List<Framework.Data.ILayer> layers)
         {
             var mapLayersString = _exportMap?.Layers.Trim();
 

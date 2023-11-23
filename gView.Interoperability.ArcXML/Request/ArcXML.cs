@@ -402,7 +402,7 @@ namespace gView.Interoperability.ArcXML
             return "";
         }
 
-        async void map_BeforeRenderLayers(IServiceMap sender, List<ILayer> layers)
+        async void map_BeforeRenderLayers(IServiceMap sender, IServiceRequestContext context, List<ILayer> layers)
         {
             if (layers == null)
             {

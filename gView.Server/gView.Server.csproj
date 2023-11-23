@@ -127,6 +127,12 @@
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>tor_sdep.Designer.cs</LastGenOutput>
     </None>
+    <None Update="_lics\credits.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="_lics\license.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>

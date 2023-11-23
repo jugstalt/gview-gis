@@ -1,6 +1,7 @@
 using gView.Framework.Data;
 using gView.Framework.Geometry;
 using gView.Framework.system;
+using gView.MapServer;
 using System.Collections.Generic;
 
 namespace gView.Framework.Carto
@@ -27,7 +28,9 @@ namespace gView.Framework.Carto
     */
 
     //public delegate bool LayerIsVisibleHook(string layername,bool defaultValue);
-    public delegate void BeforeRenderLayersEvent(IServiceMap sender, List<ILayer> layers);
+    public delegate void BeforeRenderLayersEvent(IServiceMap sender, 
+                                                 IServiceRequestContext context,
+                                                 List<ILayer> layers);
 
     public delegate void MapScaleChangedEvent(IDisplay sender);
     public delegate void RenderOverlayImageEvent(GraphicsEngine.Abstraction.IBitmap bitmap, bool clearOld);

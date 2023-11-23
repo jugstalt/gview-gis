@@ -47,14 +47,34 @@ ul {
     list-style: none;
 }
 
+select {
+    background:#222;
+}
+
+button {
+    background-color: #222;
+    color: #ccc;
+    border: 1px solid #555;
+}
+
+.label {
+    color: #ccc;
+}
+
+.form-control {
+    background: #222;
+    color: #ccc;
+    border: 1px solid #555;
+}
+
 .html-body {
     padding:3px;
 }
 
 .code-block {
-    padding: 8px;
+    padding: 15px 30px;
     background-color: #222;
-    border: solid 1px #ccc;
+    border: solid 1px #555;
     border-radius: 6px;
     overflow: auto;
 }
@@ -85,7 +105,7 @@ ul {
     background-color: #555;
     margin: 10px auto;
     border-radius: 8px;
-    padding: 12px;
+    padding: 15px 30px;
     color: #ddd;
 }
 
@@ -120,7 +140,7 @@ ul {
             }
 
 .html-body a {
-    color: #fff;
+    color: #fff !important;
     text-decoration: none;
     background-color: #5c6874;
     padding: 1px 10px;
@@ -351,12 +371,12 @@ ul.browseservices{
 }
 
 .gview5-form-upload {
-    padding: 15px;
+    padding: 15px 30px;
     box-shadow: 4px 4px 9px rgba(0, 0, 0, .4) !important;
     border-radius: 8px;
-    border: 1px solid #ccc;
-    background: #f8f8f8;
-    color:#333;
+    border: 1px solid #555;
+    background: #222;
+    color: #ccc;
 }
 
     form .gview5-form-header {
@@ -389,6 +409,7 @@ input[type="file"] {
 
 .custom-file-upload {
     border: 1px solid #ccc;
+    border-radius: 4px;
     display: inline-block;
     padding: 6px 12px 6px 36px;
     cursor: pointer;
@@ -402,7 +423,7 @@ input[type="file"] {
     outline: none;
 }
 
-.gview5-login-panel {
+.gview-login-panel {
     position: absolute;
     left: 50%;
     top: 50%;
@@ -411,24 +432,24 @@ input[type="file"] {
     width: 400px;
     max-width: 100%;
     background-color: white;
-    padding: 15px;
+    padding: 15px 30px;
     box-shadow: 4px 4px 9px rgba(0, 0, 0, .4) !important;
     border-radius: 8px;
-    border: 1px solid #ccc;
-    background: #f8f8f8;
-    color: #333;
+    border: 1px solid #555;
+    background: #222;
+    color: #ccc;
 }
 
-    .gview5-login-panel .title * {
+    .gview-login-panel .title * {
         display: inline-block;
         margin: 0px;
     }
 
-    .gview5-login-panel .title img {
+    .gview-login-panel .title img {
         margin-right: 5px;
     }
 
-    .gview5-login-panel .error-message {
+    .gview-login-panel .error-message {
         padding: 10px;
         background: #ffaaaa;
         border: 1px solid #ff0000;
@@ -448,12 +469,12 @@ input[type="file"] {
 
     .gview-manage-body .container {
         position: relative;
-        background: #f8f8f8;
-        color:#333;
+        background: #222;
+        color: #ccc;
         box-shadow: 4px 4px 9px rgba(0, 0, 0, .4) !important;
-        border: 1px solid #ccc;
+        border: 1px solid #555;
         border-radius: 8px;
-        padding: 10px;
+        padding: 10px 30px;
         width: 100%;
         max-height: 400px;
         overflow: auto;
@@ -461,10 +482,10 @@ input[type="file"] {
     }
 
         .gview-manage-body .container .info {
-            background: #ffc;
+            background: #770;
             padding: 8px;
             border-radius: 8px;
-            margin: 0px 0px 8px 0px;
+            margin: 15px 0px 15px 0px;
         }
 
     .gview-manage-body .folders,
@@ -480,7 +501,7 @@ input[type="file"] {
         .gview-manage-body .users .user,
         .gview-manage-body .urltokens .urltoken {
             padding: 8px;
-            border-bottom: 1px solid #ddd;
+            border-bottom: 1px solid #555;
             cursor: pointer;
             height: 43px;
             position: relative;
@@ -494,8 +515,12 @@ input[type="file"] {
             .gview-manage-body .folders .folder:hover,
             .gview-manage-body .users .user:hover,
             .gview-manage-body .urltokens .urltoken:hover {
-                background: #eee;
+                background: #333;
             }
+
+    .gview-manage-body .folder.add {
+        color: #337ab7;
+    }
 
     .gview-manage-body .services {
         list-style: none;
@@ -508,14 +533,14 @@ input[type="file"] {
     }
         .gview-manage-body .services .service {
             padding: 8px;
-            border: 1px solid #ddd;
+            border: 1px solid #555;
             cursor: pointer;
             margin: 0px 3px 3px 3px;
             border-radius: 4px;
         }
 
             .gview-manage-body .services .service:hover {
-                background: #eee;
+                background: #333;
             }
 
             .gview-manage-body .services .service.stopped {
@@ -523,10 +548,10 @@ input[type="file"] {
                 opacity: .25;
             }
             .gview-manage-body .services .service.running {
-                background-color: #ccffcc;
+                background-color: #070;
             }
             .gview-manage-body .services .service.has-errors {
-                background-color: #ffcccc;
+                background-color: #700;
             }
             .gview-manage-body .services .service.stopped.has-errors {
                 /*background-color: #ffeecc;*/
@@ -558,7 +583,7 @@ input[type="file"] {
         position:relative;
         top:14px;
         left:5px;
-        background:#fff;
+        background:#222;
         color:#0094ff;
         text-align:left;
     }
@@ -567,6 +592,7 @@ input[type="file"] {
     max-width: 650px;
     width: 100%;
     margin: 5px 0px;
+    background: #222;
     border: 1px solid #0094ff;
     border-radius: 5px;
     padding: 10px 5px 5px 5px;
@@ -578,7 +604,7 @@ input[type="file"] {
 
 .modal-dialog .section {
     margin-top: 10px;
-    background: #0094ff47;
+    background: #222;
     padding: 10px;
     border-radius: 5px;
 }
@@ -607,7 +633,7 @@ input[type="file"] {
         left: 20%;
         right: 20%;
         bottom: 20%;
-        background: #fff;
+        background: #333;
         box-shadow: 4px 4px 9px rgba(0, 0, 0, .4) !important;
         margin:0px;
         width:auto;
@@ -646,9 +672,6 @@ input[type="file"] {
             min-width:100px;
             border-radius:5px;
             min-height:28px;
-            background-color:#fff;
-            color:#808080;
-            border:1px solid #808080;
             margin-left:5px;
         }
             .gview5-modal-blocker .modal-dialog .modal-footer button:hover {
@@ -667,7 +690,7 @@ input[type="file"] {
         background-color: white;
     }
 
-    .gview5-login-panel {
+    .gview-login-panel {
         left: 0px;
         right: 0px;
         top: 0px;
@@ -699,15 +722,17 @@ input[type="file"] {
 
 .gview-manage-body .service .toolbar {
     float: right;
-    background-color: #fff;
+    background-color: #555;
     height: 40px;
+    border-radius:4px;
 }
 .gview-manage-body .folder .toolbar {
     position:absolute;
     right:1px;
     top:1px;
-    background-color:#fff;
+    background-color:#555;
     height:40px;
+    border-radius:4px;
 }
 
 .gview-manage-body .service .toolbar .icon,
@@ -718,7 +743,7 @@ input[type="file"] {
     background-repeat:no-repeat;
     background-position:center;
     margin:2px;
-    border:1px solid #efefef;
+    border:1px solid #555;
 }
 
 
@@ -735,6 +760,13 @@ input[type="file"] {
 .icon.settings {
     background-image: url('../images/icons/settings-b-26.png');
 }
+    .icon.settings.gray {
+        background-image: url('../images/icons/settings-g-26.png');
+    }
+.icon.publish {
+    background-image: url('../images/icons/publish-b-26.png');
+}
+
     .icon.settings.gray {
         background-image: url('../images/icons/settings-g-26.png');
     }
@@ -799,18 +831,18 @@ input[type="file"] {
 
     .service-security table {
         width: 100%;
-        border-left:1px solid #ddd;
-        border-top:1px solid #ddd;
+        border-left:1px solid #555;
+        border-top:1px solid #555;
     }
 
     .service-security table tr {
         height:30px;
-        border-bottom:1px solid #ddd;
+        border-bottom:1px solid #555;
     }
 
         .service-security table th,
         .service-security table td {
-            border-right:1px solid #ddd;
+            border-right:1px solid #555;
             padding:5px;
         }
 
@@ -824,3 +856,198 @@ input[type="file"] {
                 color:red;
                 cursor:pointer;
             }
+
+
+.navbar-header {
+    float: left !important;
+}
+.gview-colormode-button {
+    width: 48px;
+    height: 48px;
+    color: #ccc;
+    background: #333;
+    cursor: pointer;
+    float: right;
+    border-radius: 50%;
+    padding: 6px 12px;
+    font-size: 26px;
+    font-weight: bold;
+    margin: 4px;
+}
+
+.page-about {
+    background-image: url(../images/banner0.jpg);
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: right;
+}
+pre.gview-license {
+    max-height: 400px;
+    max-width: 600px;
+    overflow:auto;
+    border:2px solid #ccc;
+    background:#222;
+    color:#ccc;
+}
+
+/* light mode */
+body.light {
+    background-color: #fff;
+    color: #333;
+}
+
+body.light .code-block {
+    padding: 15px 30px;
+    background-color: #e0e0e0;
+    border: solid 1px #ccc;
+}
+
+body.light .html-body form {
+    background-color: #e0e0e0;
+    color: #222;
+}
+
+    body.light .html-body form table td.input * {
+        background: #fff;
+        border: 1px solid #ccc;
+
+    }
+
+    body.light .webportal-layout-header.navbar {
+        background-color: #efefef;
+    }
+
+    body.light ul.browseservices li:hover {
+        background-color: #eee;
+    }
+
+    body.light a {
+        color: #337ab7;
+        text-decoration: none;
+    }
+
+    body.light .gview5-form-upload {
+        border: 1px solid #ccc;
+        background: #f8f8f8;
+        color: #333;
+    }
+
+    body.light .gview-manage-body .container {
+       
+        background: #f8f8f8;
+        color: #333;
+        border: 1px solid #ccc;
+    }
+
+    body.light .gview-manage-body .folders .folder, 
+    body.light .gview-manage-body .users .user,
+    body.light .gview-manage-body .urltokens .urltoken {
+        border-bottom: 1px solid #ddd;
+    }
+
+        body.light .gview-manage-body .folders .folder:hover,
+        body.light .gview-manage-body .users .user:hover,
+        body.light .gview-manage-body .urltokens .urltoken:hover {
+            background: #eee;
+        }
+
+    body.light .gview-manage-body .services .service {
+        border: 1px solid #ddd;
+    }
+
+        body.light .gview-manage-body .services .service:hover {
+            background: #eee;
+        }
+
+        body.light .gview-manage-body .services .service.running {
+            background-color: #ccffcc;
+        }
+
+        body.light .gview-manage-body .services .service.has-errors {
+            background-color: #ffcccc;
+        }
+
+        body.light .gview-manage-body .services .service.stopped.has-errors {
+            /*background-color: #ffeecc;*/
+        }
+
+    body.light .gview-manage-body .folder .toolbar {
+        background-color: #fff;
+    }
+
+    body.light .gview-manage-body .service .toolbar {
+        background-color: #fff;
+    }
+
+        body.light .gview-manage-body .service .toolbar .icon,
+        body.light .gview-manage-body .folder .toolbar .icon {
+            border: 1px solid #efefef;
+        }
+
+    body.light body.light .gview-manage-body .service .toolbar {
+        background-color: #fff;
+    }
+
+    body.light .gview-manage-body .form .form-input .label, 
+    body.light .modal-dialog .form-input .label {
+        background: #fff;
+        color: #0094ff;
+    }
+
+    body.light .gview-manage-body .form .form-input input, 
+    body.light .modal-dialog .form-input input {
+        background: #fff;
+        border: 1px solid #0094ff;
+    }
+
+    body.light .gview-manage-body .container .info {
+        background: #ffc;
+    }
+
+    body.light .gview5-modal-blocker .modal-dialog {
+        background: #fff;
+    }
+
+    body.light .modal-dialog .section {
+        background: #0094ff47;
+    }
+
+    body.light .service-security table {
+        border-left: 1px solid #ddd;
+        border-top: 1px solid #ddd;
+    }
+
+        body.light .service-security table tr {
+            border-bottom: 1px solid #ddd;
+        }
+
+        body.light .service-security table th,
+        body.light .service-security table td {
+            border-right: 1px solid #ddd;
+        }
+
+        body.light select {
+            background:#fff;
+        }
+
+    body.light button {
+        background-color: #fff;
+        color: #808080;
+        border: 1px solid #808080;
+    }
+
+    body.light .form-control {
+        background: #fff;
+        color: #333;
+        border: 1px solid #ccc;
+    }
+
+    body.light .gview-login-panel {
+        border: 1px solid #ccc;
+        background: #fff;
+        color: #333;
+    }
+
+    body.light .label{
+        color:#333;
+    }

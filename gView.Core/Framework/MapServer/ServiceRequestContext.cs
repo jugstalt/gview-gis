@@ -11,9 +11,9 @@ namespace gView.MapServer
 {
     public class ServiceRequestContext : IServiceRequestContext
     {
-        private IMapServer _mapServer = null;
-        private IServiceRequestInterpreter _interpreter = null;
-        private ServiceRequest _request = null;
+        private readonly IMapServer _mapServer = null;
+        private readonly IServiceRequestInterpreter _interpreter = null;
+        private readonly ServiceRequest _request = null;
 
         private ServiceRequestContext(IMapServer mapServer, IServiceRequestInterpreter interpreter, ServiceRequest request)
         {
@@ -79,6 +79,31 @@ namespace gView.MapServer
         {
             return await _mapServer?.GetMetadtaProviderAsync(this, metadataProviderId);
         }
+
+        #region Context Metadata
+
+        private ConcurrentDictionary<string, object> _metadata;
+        public void SetContextMetadata<T>(string key, T value)
+        {
+            if (_metadata == null)
+            {
+                _metadata = new ConcurrentDictionary<string, object>();
+            }
+
+            _metadata[key] = value; 
+        }
+
+        public T GetContextMetadata<T>(string key, T defaultValue = default)
+        {
+            if(_metadata?.TryGetValue(key, out var value) == true)
+            {
+                return (T)value;
+            }
+
+            return defaultValue;
+        }
+
+        #endregion
 
         #endregion
     }

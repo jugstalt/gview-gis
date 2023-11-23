@@ -43,7 +43,7 @@
                         <h4>Publish Service</h4>
                     </div>
 
-                    <div class="gview5-form-upload-body gview5-form-body hidden" >
+                    <div class="gview5-form-upload-body gview5-form-body @(Convert.ToBoolean(ViewData["open-publish"]) ? "" : "hidden")" >
                         <div class="attribute">
                             <div>
                                 <div class="label">Service Name</div>
@@ -72,7 +72,7 @@
                         <h4>Create Folder</h4>
                     </div>
 
-                    <div class="gview5-form-newfolder-body gview5-form-body hidden">
+                    <div class="gview5-form-newfolder-body gview5-form-body @(Convert.ToBoolean(ViewData["open-create"]) ? "" : "hidden")">
                         <div class="attribute">
                             <div>
                                 <div class="label">Folder Name</div>

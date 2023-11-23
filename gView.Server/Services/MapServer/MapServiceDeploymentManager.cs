@@ -438,7 +438,7 @@ namespace gView.Server.Services.MapServer
                     modules = ((IMapDocumentModules)MapDocument).GetMapModules(map);
                 }
 
-                IServiceMap sMap = await ServiceMap.CreateAsync(map, _mapServerService.Instance, modules);
+                IServiceMap sMap = await ServiceMap.CreateAsync(map, _mapServerService.Instance, modules, null);
                 XmlStream xmlStream;
                 // 1. Bestehende Metadaten auf sds anwenden
                 if (fi.Exists)

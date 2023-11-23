@@ -19,10 +19,20 @@ window.gview.manage = (function() {
             type: options.type || 'get',
             data: options.data || null,
             success:
-                options.success ||
-                function(result) {
-                    alert(result);
-                },
+                function (result) {
+                    if (result.success === false) {
+                        alert(result.error + "(" + result.code + ")" || "unknown error");
+                        if (result.code > 400 && result.code < 500) {
+                            location.reload(); // should redirect to login page
+                        }
+                    }
+                    else {
+                        options.success(result) ||
+                            function (result) {
+                                alert(result);
+                            }
+                    }
+                }                    ,
             error:
                 options.error ||
                 function(jqXHR, textStatus, errorThrown) {
@@ -488,7 +498,8 @@ window.gview.manage = (function() {
                     .html('(root)')
                     .attr('data-folder', '')
                     .appendTo($folders);
-                $.each(result.folders, function(i, folder) {
+
+                $.each(result.folders, function (i, folder) {
                     if (folder) {
                         let $folder = $('<li>')
                             .addClass('folder')
@@ -499,6 +510,7 @@ window.gview.manage = (function() {
                         let $toolbar = $('<div>')
                             .addClass('toolbar')
                             .appendTo($folder);
+
                         $('<div>')
                             .addClass(
                                 'icon clickable security' +
@@ -728,8 +740,18 @@ window.gview.manage = (function() {
                                     }
                                 });
                             });
+                        $('<div>')
+                            .addClass('icon clickable publish')
+                            .appendTo($toolbar)
+                            .click(function (e) {
+                                e.stopPropagation();
+
+                                console.log(rootUrl + '/BrowseServices?folder=' + folder);
+                                document.location = rootUrl + '/BrowseServices?openpublish=true&folder=' + folder.name;
+                            })
                     }
                 });
+
                 $folders.children('.folder').click(function() {
                     $(this)
                         .parent()
@@ -749,6 +771,16 @@ window.gview.manage = (function() {
                 //$.each(result.services, function (i, service) {
                 //    createServiceListItem($services, service);
                 //});
+
+                $('<li>')
+                    .addClass('folder add')
+                    .html('Add Folder...')
+                    .appendTo($folders)
+                    .click(function (e) {
+                        e.stopPropagation();
+
+                        document.location = rootUrl + '/BrowseServices?opencreate=true'
+                    });
             }
         });
     };

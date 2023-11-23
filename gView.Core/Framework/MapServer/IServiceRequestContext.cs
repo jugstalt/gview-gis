@@ -2,7 +2,6 @@
 using gView.Framework.IO;
 using gView.Framework.system;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -14,6 +13,9 @@ namespace gView.MapServer
         IServiceRequestInterpreter ServiceRequestInterpreter { get; }
         ServiceRequest ServiceRequest { get; }
         IDictionary<string, double> Metrics { get; }
+
+        void SetContextMetadata<T>(string key, T value);
+        T GetContextMetadata<T>(string key, T defaultValue = default);   
 
         Task<IServiceMap> CreateServiceMapInstance();
 

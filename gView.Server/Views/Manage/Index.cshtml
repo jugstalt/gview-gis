@@ -25,7 +25,7 @@
     </nav>*@
 
 <h1>Manage</h1>
-<table>
+<table style="font-size:1.5em">
     <tr>
         <td>
             <a href="" onclick="window.gview.manage.pageServices(); return false;">Services</a>
@@ -46,10 +46,10 @@
 @section Scripts {
 
     <environment include="Development">
-        <script src="~/js/manage.js"></script>
+        <script src="~/js/manage.js?@(@gView.Framework.system.SystemInfo.Version.ToString())"></script>
     </environment>
     <environment exclude="Development">
-        <script src="~/js/manage.js"></script>
+        <script src="~/js/manage.js?@(@gView.Framework.system.SystemInfo.Version.ToString())"></script>
     </environment>
 
     <script type="text/javascript">

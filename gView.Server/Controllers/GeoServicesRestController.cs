@@ -523,6 +523,8 @@ namespace gView.Server.Controllers
                        serviceRequest);
 
 
+                context.SetContextMetadata(WMSRequest.LayerNameFormatMetadataKey, "{0}");
+
                 await _mapServerService.TaskQueue.AwaitRequest(interpreter.Request, context);
 
                 #endregion
