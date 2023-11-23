@@ -44,6 +44,11 @@ namespace gView.Framework.Symbology
             _font = font;
         }
 
+        public override string ToString()
+        {
+            return this.Name;
+        }
+
         [Browsable(true)]
         [UseColorPicker()]
         public ArgbColor Color

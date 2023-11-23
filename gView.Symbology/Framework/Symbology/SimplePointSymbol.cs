@@ -36,6 +36,11 @@ namespace gView.Framework.Symbology
             _pen = Current.Engine.CreatePen(penColor, penWidth);
         }
 
+        public override string ToString()
+        {
+            return this.Name;
+        }
+
         [Browsable(true)]
         public float Size
         {

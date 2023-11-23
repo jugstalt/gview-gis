@@ -158,6 +158,11 @@ namespace gView.Framework.Symbology
             }
         }
 
+        public override string ToString()
+        {
+            return this.Name;
+        }
+
         #region ISymbol Member
 
         public void Release()
@@ -178,7 +183,7 @@ namespace gView.Framework.Symbology
         {
             get
             {
-                return "SymbolCollection";
+                return "Symbol Collection";
             }
         }
 

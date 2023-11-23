@@ -3,6 +3,7 @@
 @using gView.GraphicsEngine
 
 @inherits BaseHandler
+@inject IEnumerable<IPropertyGridEditor> Editors;
 @inject IApplicationScope AppScope
 
 <MudExpansionPanels MultiExpansion="false">
@@ -96,7 +97,14 @@
                             else if(propertyInfo.PropertyType == typeof(bool))
                             {
                                 <MudCheckBox T="bool" Checked="(bool)properties[propertyInfo]!"
-                                             CheckedChanged="(check) => PropertyChanged(category, propertyInfo, check)" />
+                                CheckedChanged="(check) => PropertyChanged(category, propertyInfo, check)" />
+                            }
+                            else if (Editors.FirstEditorOrNull(propertyInfo.PropertyType) is IPropertyGridEditor editor)
+                            {
+                                <MudButton Variant="Variant.Filled"
+                                           OnClick="() => ShowEditor(editor, propertyInfo)" >
+                                    Edit: @properties[propertyInfo]?.ToString()
+                                </MudButton>
                             }
                             else 
                             {
@@ -154,6 +162,18 @@
         }
 
         #endregion
+    });
+
+    private Task ShowEditor(IPropertyGridEditor editor, PropertyInfo propertyInfo) => HandleAsync(async () =>
+    {
+        var newValue = await editor.EditAsync(AppScope, propertyInfo.GetValue(Instance));
+
+        if (newValue != null)
+        {
+            propertyInfo.SetValue(Instance, newValue);
+
+            await OnPropertyChanged.InvokeAsync(propertyInfo);
+        }
     });
 
     private Task PropertyChanged(string category, PropertyInfo propertyInfo, object? val) => HandleAsync(() =>

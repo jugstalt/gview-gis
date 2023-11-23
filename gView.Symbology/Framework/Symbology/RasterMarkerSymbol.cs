@@ -47,6 +47,11 @@ namespace gView.Framework.Symbology
             set { _sizeY = value; }
         }
 
+        public override string ToString()
+        {
+            return this.Name;
+        }
+
         #region IPropertyPage Member
 
         public object PropertyPageObject()

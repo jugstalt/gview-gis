@@ -36,6 +36,11 @@ namespace gView.Framework.Symbology
             this.Release();
         }
 
+        public override string ToString()
+        {
+            return this.Name;
+        }
+
         [Browsable(true)]
         [Category("Fill Symbol")]
         [ReadOnly(true)]

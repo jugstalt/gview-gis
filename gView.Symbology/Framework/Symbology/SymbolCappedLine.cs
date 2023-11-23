@@ -19,6 +19,11 @@ namespace gView.Framework.Symbology
             this.RotateStartSymbol = this.RotateEndSymbol = true;
         }
 
+        public override string ToString()
+        {
+            return this.Name;
+        }
+
         #region Properties
 
         [Browsable(true)]

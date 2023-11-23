@@ -27,6 +27,11 @@ namespace gView.Framework.Symbology
             _outlinebrush = Current.Engine.CreateSolidBrush(outlinecolor);
         }
 
+        public override string ToString()
+        {
+            return this.Name;
+        }
+
         [Browsable(true)]
         [UseColorPicker()]
         public ArgbColor ColorOutline

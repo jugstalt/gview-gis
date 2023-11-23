@@ -43,6 +43,11 @@ namespace gView.Framework.Symbology
             this.ShowInTOC = false;
         }
 
+        public override string ToString()
+        {
+            return this.Name;
+        }
+
         [Browsable(true)]
         public IFont Font
         {

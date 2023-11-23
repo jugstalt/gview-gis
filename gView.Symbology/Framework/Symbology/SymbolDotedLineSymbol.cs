@@ -67,6 +67,11 @@ namespace gView.Framework.Symbology
         [Category("Point Symbol")]
         public bool UseSymbolRotation { get; set; }
 
+        public override string ToString()
+        {
+            return this.Name;
+        }
+
         #region ILineSymbol
 
         [Browsable(false)]

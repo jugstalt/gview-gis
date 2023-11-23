@@ -1,8 +1,10 @@
 ﻿using gView.Carto.Core.Extensions.DependencyInjection;
 using gView.Carto.Core.Services;
 using gView.Carto.Core.Services.Abstraction;
+using gView.Carto.Plugins.PropertyGridEditors;
 using gView.Carto.Plugins.Services;
 using gView.Framework.Blazor.Services.Abstraction;
+using gView.Razor.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace gView.Carto.Plugins.Extensions.DependencyInjection;
@@ -16,6 +18,7 @@ static public class ServicesExtensions
                                                                         Action<CartoApplicationScopeServiceOptions> configureOptions)
     {
         return services
+            .AddTransient<IPropertyGridEditor, SymbolPropertyEditor>()
             .Configure(configureOptions)
             .AddEventBus()
             .AddScoped<IApplicationScope, CartoApplicationScopeService>();
