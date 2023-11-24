@@ -591,7 +591,7 @@ namespace gView.Server.AppCode
                                 RenderFeatureLayer rlt = new RenderFeatureLayer(this, datasetCachingContext, fLayer, cancelTracker, new FeatureCounter());
                                 if (fLayer.LabelRenderer != null && fLayer.LabelRenderer.RenderMode == LabelRenderMode.RenderWithFeature)
                                 {
-                                    rlt.UseLabelRenderer = true;
+                                    rlt.UseLabelRenderer = fLayer.LabelInScale(this); //true;
                                 }
                                 else
                                 {
