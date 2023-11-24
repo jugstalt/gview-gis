@@ -7,7 +7,7 @@
 //     der Code erneut generiert wird.
 // </auto-generated>
 //------------------------------------------------------------------------------
-
+#pragma warning disable
 // 
 // Dieser Quellcode wurde automatisch generiert von xsd, Version=4.0.30319.1.
 // 

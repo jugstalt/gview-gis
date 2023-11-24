@@ -652,7 +652,7 @@ namespace gView.Cmd.Fdb.Lib.Data
 
                             if (edge.Weights != null && edge.Weights.ContainsKey(weight.Guid))
                             {
-                                NetworkObjectSerializer.WriteWeight(bw, weight, (double)edge.Weights[weight.Guid]);
+                                NetworkObjectSerializer.WriteWeight(bw, weight, (double)edge.Weights[weight.Guid]!);
                             }
                             else
                             {

@@ -11,7 +11,7 @@ internal class RemoveIfNotExists
 {
     private ICancelTracker _cancelTracker;
     public delegate void ReportActionEvent(RemoveIfNotExists sender, string action);
-    public event ReportActionEvent? ReportAction;
+    //public event ReportActionEvent? ReportAction;
 
     public RemoveIfNotExists(ICancelTracker? cancelTracker)
     {

@@ -50,7 +50,7 @@ namespace gView.Framework.Carto.Rendering
 
         public ISymbol CreateStandardSymbol(GeometryType type)
         {
-            return RendererFunctions.CreateStandardSymbol(type);
+            return RendererFunctions.CreateStandardSymbol(type, lineWidth: 3);
         }
 
         public ISymbol CreateStandardSelectionSymbol(GeometryType type)

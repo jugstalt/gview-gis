@@ -11,8 +11,11 @@ namespace gView.Framework.Security
             Certificate = cert;
 
             // Generate some Password for eg Token Encryption now to improve performace
-            var hash = new SHA1Managed().ComputeHash(cert.GetPublicKey());
+            var hash = /*new SHA1Managed() */SHA1.Create().ComputeHash(cert.GetPublicKey());
             hash = cert.GetRSAPrivateKey().SignHash(hash, HashAlgorithmName.SHA1, RSASignaturePadding.Pkcs1);
+
+            //var hash = SHA256.Create().ComputeHash(cert.GetPublicKey());
+            //hash = cert.GetRSAPrivateKey().SignHash(hash, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
 
             var password = new byte[128];
             var salt = new byte[8];

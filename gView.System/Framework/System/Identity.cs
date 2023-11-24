@@ -108,12 +108,14 @@ namespace gView.Framework.system
                 return String.Empty;
             }
 
-            MD5CryptoServiceProvider md5 = new MD5CryptoServiceProvider();
-            byte[] byteValue = UTF8Encoding.UTF8.GetBytes(password);
-            byte[] byteHash = md5.ComputeHash(byteValue);
-            md5.Clear();
+            using (var md5 = MD5.Create())
+            {
+                byte[] byteValue = UTF8Encoding.UTF8.GetBytes(password);
+                byte[] byteHash = md5.ComputeHash(byteValue);
+                md5.Clear();
 
-            return Convert.ToBase64String(byteHash);
+                return Convert.ToBase64String(byteHash);
+            }
         }
         #endregion
     }

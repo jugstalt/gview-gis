@@ -152,24 +152,6 @@ namespace gView.Server.Connector
 
         public string LastErrorMessage { get; set; }
 
-
-        #region PasswordHash
-        private string HashPassword(string password)
-        {
-            if (String.IsNullOrEmpty(password))
-            {
-                return String.Empty;
-            }
-
-            MD5CryptoServiceProvider md5 = new MD5CryptoServiceProvider();
-            byte[] byteValue = UTF8Encoding.UTF8.GetBytes(password);
-            byte[] byteHash = md5.ComputeHash(byteValue);
-            md5.Clear();
-
-            return Convert.ToBase64String(byteHash);
-        }
-        #endregion
-
         public class MapService
         {
             public enum MapServiceType { MXL = 0, SVC = 1, GDI = 2 }

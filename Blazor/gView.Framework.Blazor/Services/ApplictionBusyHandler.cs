@@ -34,7 +34,7 @@ public abstract class ApplictionBusyHandler : IApplicationBusyHandling
         {
             --_runningBusyTasks;
 
-            _tasks.TryRemove(busyTask.Id, out string _);
+            _tasks.TryRemove(busyTask.Id, out string? _);
 
             if (_runningBusyTasks == 0)
             {

@@ -53,7 +53,7 @@ namespace gView.Framework.Geometry
     {
         private IntPtr _fromID = IntPtr.Zero, _toID = IntPtr.Zero;
         //private int _preToID = -1, _preFromID = -1;
-        private IntPtr _fromStr = (IntPtr)0, _toStr = (IntPtr)0;
+        //private IntPtr _fromStr = (IntPtr)0, _toStr = (IntPtr)0;
         static private object LockThis1 = new object();
 
         private ISpatialReference _fromSRef = null, _toSRef = null;

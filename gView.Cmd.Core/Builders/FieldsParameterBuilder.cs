@@ -45,7 +45,7 @@ public class FieldsParameterBuilder : ICommandPararmeterBuilder
         string fieldJsonString = parameters.GetRequiredValue<string>("fields".PrependPrefix(_parameterPrefix));
         var fieldModels = JsonConvert.DeserializeObject<IEnumerable<FieldModel>>(fieldJsonString);
 
-        if(typeof(T).IsAssignableFrom(typeof(IFieldCollection)))
+        if(fieldModels is not null && typeof(T).IsAssignableFrom(typeof(IFieldCollection)))
         {
             var fields = new FieldCollection(
                 fieldModels.Select(m => new Field(m.Name)

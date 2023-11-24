@@ -229,7 +229,7 @@ namespace gView.Cmd.TileCache.Lib.Tools
                     {
                         if (_threads[i] == null || !_threads[i].IsAlive)
                         {
-                            _threads[i] = new Thread(new ParameterizedThreadStart(this.Run));
+                            _threads[i] = new Thread(new ParameterizedThreadStart(this.Run!));
                             return _threads[i];
                         }
                     }

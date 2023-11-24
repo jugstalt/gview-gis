@@ -50,13 +50,15 @@ namespace gView.Framework.Security
         {
             const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._";
             var token = new char[length];
-            var random = new RNGCryptoServiceProvider();
 
-            for (int i = 0; i < token.Length; i++)
+            using (var random = RandomNumberGenerator.Create())
             {
-                byte[] randomByte = new byte[1];
-                random.GetBytes(randomByte);
-                token[i] = chars[randomByte[0] % chars.Length];
+                for (int i = 0; i < token.Length; i++)
+                {
+                    byte[] randomByte = new byte[1];
+                    random.GetBytes(randomByte);
+                    token[i] = chars[randomByte[0] % chars.Length];
+                }
             }
 
             return new String(token);
@@ -88,7 +90,7 @@ namespace gView.Framework.Security
 
             using (MemoryStream ms = new MemoryStream())
             {
-                using (RijndaelManaged AES = new RijndaelManaged())
+                using (var AES = Aes.Create())
                 {
                     AES.KeySize = keySize;
                     AES.BlockSize = 128;
@@ -120,7 +122,7 @@ namespace gView.Framework.Security
 
             using (MemoryStream ms = new MemoryStream())
             {
-                using (RijndaelManaged AES = new RijndaelManaged())
+                using (var AES = Aes.Create())
                 {
                     AES.KeySize = keySize;
                     AES.BlockSize = 128;
@@ -156,8 +158,11 @@ namespace gView.Framework.Security
         static private byte[] GetRandomBytes()
         {
             byte[] ba = new byte[_saltSize];
-            RNGCryptoServiceProvider.Create().GetBytes(ba);
-            return ba;
+            using (var numGenerator = RandomNumberGenerator.Create())
+            {
+                numGenerator.GetBytes(ba);
+                return ba;
+            }
         }
 
         static private byte[] GetBytes(byte[] initialBytes, int size)
@@ -177,7 +182,8 @@ namespace gView.Framework.Security
             Buffer.BlockCopy(hash, 0, ret, 0, Math.Min(hash.Length, ret.Length));
 
             byte[] saltBytes = salt ?? new byte[] { 167, 123, 23, 12, 64, 198, 177, 114 };
-            var key = new Rfc2898DeriveBytes(hash, g1 ?? _g1, 10); // 10 is enough for this...
+            var key = new Rfc2898DeriveBytes(hash, g1 ?? _g1, 10, 
+                hashAlgorithm: HashAlgorithmName.SHA256); // 10 is enough for this...
             ret = key.GetBytes(size);
 
             return ret;

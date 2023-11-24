@@ -40,7 +40,7 @@ static public class DictionaryExtensions
         }
         else if (typeof(T).IsEnum)
         {
-            return (T)Enum.Parse(typeof(T), parameters[key].ToString());
+            return (T)Enum.Parse(typeof(T), parameters[key].ToString()!);
         }
 
         return (T)Convert.ChangeType(parameters[key], typeof(T));
@@ -134,7 +134,7 @@ static public class DictionaryExtensions
 
                     var val = parameterDescription.ParameterType switch
                     {
-                        Type t when t == typeof(Guid) => new Guid(parameters[parameterDescription.Name].ToString()),
+                        Type t when t == typeof(Guid) => new Guid(parameters[parameterDescription.Name].ToString()!),
                         _ => Convert.ChangeType(parameters[parameterDescription.Name], parameterDescription.ParameterType)
                     };
                 }
