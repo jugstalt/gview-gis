@@ -49,9 +49,9 @@ namespace gView.DataSources.Fdb
                 }
 
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                throw ex;
+                throw;
             }
 
             return true;

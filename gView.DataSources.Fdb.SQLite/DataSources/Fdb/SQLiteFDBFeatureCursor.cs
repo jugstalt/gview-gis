@@ -303,10 +303,10 @@ namespace gView.DataSources.Fdb.SQLite
                     return feature;
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 Dispose();
-                throw (ex);
+                throw;
                 //return null;
             }
         }

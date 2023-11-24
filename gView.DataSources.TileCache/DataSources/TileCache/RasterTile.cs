@@ -447,10 +447,10 @@ namespace gView.DataSources.TileCache
 
                             return new RasterPaintContext(bitmap);
                         }
-                        catch (Exception ex)
+                        catch (Exception)
                         {
                             bitmap?.Dispose();
-                            throw ex;
+                            throw;
                         }
                     }
                 }

@@ -17,8 +17,8 @@ namespace gView.Cmd.RasterDataset.Util
 {
     class Program
     {
-        enum jobs { add, truncate, removeUnexisting, unknown };
-        static jobs job = jobs.unknown;
+        enum Jobs { add, truncate, removeUnexisting, unknown };
+        static Jobs job = Jobs.unknown;
         static string connectinString = String.Empty;
         static string dbType = "sql", provider = "none";
         static string fileName = String.Empty, rootPath = String.Empty, Filters = String.Empty;
@@ -35,29 +35,29 @@ namespace gView.Cmd.RasterDataset.Util
                 switch (args[i])
                 {
                     case "-add":
-                        if (job != jobs.unknown)
+                        if (job != Jobs.unknown)
                         {
                             Console.WriteLine("Can't do more than one job. Run programm twice...");
                             return 1;
                         }
-                        job = jobs.add;
+                        job = Jobs.add;
                         break;
                     case "-clean":
-                        if (job != jobs.unknown)
+                        if (job != Jobs.unknown)
                         {
                             Console.WriteLine("Can't do more than one job. Run programm twice...");
                             return 1;
                         }
-                        job = jobs.removeUnexisting;
+                        job = Jobs.removeUnexisting;
                         break;
                     case "-truncate":
-                        if (job != jobs.unknown)
+                        if (job != Jobs.unknown)
                         {
                             Usage();
                             Console.WriteLine("Can't do more than one job. Run programm twice...");
                             return 1;
                         }
-                        job = jobs.truncate;
+                        job = Jobs.truncate;
                         break;
                     case "-s":
                         connectinString = args[++i];
@@ -105,10 +105,10 @@ namespace gView.Cmd.RasterDataset.Util
             }
             switch (job)
             {
-                case jobs.removeUnexisting:
-                case jobs.truncate:
+                case Jobs.removeUnexisting:
+                case Jobs.truncate:
                     break;
-                case jobs.add:
+                case Jobs.add:
                     if (fileName == String.Empty &&
                         (rootPath == String.Empty || Filters == String.Empty))
                     {
@@ -117,7 +117,7 @@ namespace gView.Cmd.RasterDataset.Util
                         return 1;
                     }
                     break;
-                case jobs.unknown:
+                case Jobs.unknown:
                     Usage();
                     Console.WriteLine("No job defined...");
                     return 1;
@@ -244,14 +244,14 @@ namespace gView.Cmd.RasterDataset.Util
 
             switch (job)
             {
-                case jobs.truncate:
+                case Jobs.truncate:
                     await Truncate(ds, dsname + "_IMAGE_POLYGONS");
                     break;
-                case jobs.removeUnexisting:
+                case Jobs.removeUnexisting:
                     await RemoveUnexisting(ds);
                     await CalculateExtent(ds);
                     break;
-                case jobs.add:
+                case Jobs.add:
                     if (fileName != String.Empty)
                     {
                         if (!await ImportFiles(ds, fileName.Split(';'), providers))

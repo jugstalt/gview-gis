@@ -741,12 +741,12 @@ namespace gView.Framework.OGC.DB
 
                                 if (fields.Length != 0)
                                 {
-                                    fields.Append(",");
+                                    fields.Append(',');
                                 }
 
                                 if (parameters.Length != 0)
                                 {
-                                    parameters.Append(",");
+                                    parameters.Append(',');
                                 }
 
                                 object val = fv.Value;
@@ -779,10 +779,10 @@ namespace gView.Framework.OGC.DB
                         {
                             transaction.Commit();
                         }
-                        catch (Exception ex)
+                        catch (Exception)
                         {
                             transaction.Rollback();
-                            throw ex;
+                            throw;
                         }
                     }
                 }
@@ -909,7 +909,7 @@ namespace gView.Framework.OGC.DB
 
                                 if (fields.Length != 0)
                                 {
-                                    fields.Append(",");
+                                    fields.Append(',');
                                 }
 
                                 object val = fv.Value;
@@ -929,10 +929,10 @@ namespace gView.Framework.OGC.DB
                         {
                             transaction.Commit();
                         }
-                        catch (Exception ex)
+                        catch (Exception)
                         {
                             transaction.Rollback();
-                            throw ex;
+                            throw;
                         }
                     }
                 }
@@ -1275,7 +1275,7 @@ namespace gView.Framework.OGC.DB
                 {
                     if (fieldNames.Length > 0)
                     {
-                        fieldNames.Append(",");
+                        fieldNames.Append(',');
                     }
 
                     if (fieldName == "\"" + fc.ShapeFieldName + "\"")
@@ -1350,7 +1350,7 @@ namespace gView.Framework.OGC.DB
 
         virtual public IEnumerable<string> SupportedSubFieldFunctions()
         {
-            return new string[0];
+            return Array.Empty<string>();
         }
 
         #endregion

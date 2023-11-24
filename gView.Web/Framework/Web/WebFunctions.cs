@@ -51,7 +51,7 @@ namespace gView.Framework.Web
                         return Current.Engine.CreateBitmap(fi.FullName);
                     }
                 }
-                catch (Exception ex) { LastErrorMessage = ex.Message; throw ex; }
+                catch (Exception ex) { LastErrorMessage = ex.Message; throw; }
             }
             if (output.Attributes["url"] != null)
             {
@@ -75,7 +75,7 @@ namespace gView.Framework.Web
                         return Current.Engine.CreateBitmap(fi.FullName);
                     }
                 }
-                catch (Exception ex) { LastErrorMessage = ex.Message; throw ex; }
+                catch (Exception ex) { LastErrorMessage = ex.Message; throw; }
             }
             if (output.Attributes["url"] != null)
             {
@@ -115,8 +115,7 @@ namespace gView.Framework.Web
             catch (Exception ex)
             {
                 LastErrorMessage = ex.Message;
-                throw ex;
-                //return null;
+                throw;
             }
         }
 
@@ -179,7 +178,7 @@ namespace gView.Framework.Web
             catch (Exception ex)
             {
                 LastErrorMessage = ex.Message;
-                throw ex;
+                throw;
                 //return null;
             }
         }
@@ -396,7 +395,7 @@ namespace gView.Framework.Web
             catch (Exception ex)
             {
                 LastErrorMessage = ex.Message;
-                throw ex;
+                throw;
                 //return null;
             }
         }
@@ -468,7 +467,7 @@ namespace gView.Framework.Web
             catch (Exception ex)
             {
                 LastErrorMessage = ex.Message;
-                throw ex;
+                throw;
                 //return null;
             }
         }
@@ -557,12 +556,12 @@ namespace gView.Framework.Web
                     httpResponse = (HttpWebResponse)httpRequest.GetResponse();
                     break;
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                     trys++;
                     if (trys > 5)
                     {
-                        throw (ex);
+                        throw;
                     }
                 }
             }
@@ -657,12 +656,12 @@ namespace gView.Framework.Web
                     httpResponse = (HttpWebResponse)await httpRequest.GetResponseAsync();
                     break;
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                     trys++;
                     if (trys > 5)
                     {
-                        throw (ex);
+                        throw;
                     }
                 }
             }

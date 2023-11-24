@@ -45,7 +45,7 @@ internal class Copy : IExplorerTool
         {
             scopeService.SetClipboardItem(new ClipboardItem(typeof(IFeatureClass))
             {
-                Elements = featureClasses
+                Elements = featureClasses.Where(f => f != null)!
             });
 
             scopeService.AddToSnackbar("Featureclass(es) in Clipbard. Navigate to Featuredataset and click Paste-Button to copy...");

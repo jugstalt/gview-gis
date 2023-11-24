@@ -11,7 +11,6 @@ using gView.Framework.DataExplorer.Abstraction;
 using gView.Framework.DataExplorer.Events;
 using gView.Framework.Geometry;
 using gView.Framework.system;
-using Microsoft.Azure.Documents.SystemFunctions;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;

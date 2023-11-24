@@ -64,10 +64,10 @@ namespace gView.DataSources.Fdb.MSSql
 
                 await cursor.ExecuteReaderAsync();
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 cursor.Dispose();
-                throw (ex);
+                throw;
             }
 
             return cursor;
@@ -314,11 +314,10 @@ namespace gView.DataSources.Fdb.MSSql
                     return feature;
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 Dispose();
-                throw (ex);
-                //return null;
+                throw;
             }
         }
 

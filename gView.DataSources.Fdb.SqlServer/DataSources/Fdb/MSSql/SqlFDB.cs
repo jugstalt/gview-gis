@@ -2057,7 +2057,7 @@ namespace gView.DataSources.Fdb.MSSql
                             }
                             else
                             {
-                                throw ex;
+                                throw;
                             }
                         }
                     }
@@ -2129,7 +2129,7 @@ namespace gView.DataSources.Fdb.MSSql
                             }
                             else
                             {
-                                throw ex;
+                                throw;
                             }
                         }
                     }
@@ -2234,7 +2234,7 @@ namespace gView.DataSources.Fdb.MSSql
                             }
                             else
                             {
-                                throw ex;
+                                throw;
                             }
                         }
                     }
@@ -2275,7 +2275,7 @@ namespace gView.DataSources.Fdb.MSSql
                         }
                         else
                         {
-                            throw ex;
+                            throw;
                         }
                     }
 
@@ -2312,7 +2312,7 @@ namespace gView.DataSources.Fdb.MSSql
                             }
                             else
                             {
-                                throw ex;
+                                throw;
                             }
                         }
                     }
@@ -2380,7 +2380,7 @@ namespace gView.DataSources.Fdb.MSSql
                             }
                             else
                             {
-                                throw ex;
+                                throw;
                             }
                         }
                     }

@@ -50,7 +50,7 @@ namespace gView.Interoperability.GeoServices.Dataset
                                 tokenServiceUrl = "https:" + tokenServiceUrl.Substring(5);
                                 continue;
                             }
-                            throw we;
+                            throw;
                         }
                     }
                     if (tokenResponse.Contains("\"error\":"))

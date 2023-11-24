@@ -52,21 +52,14 @@ class ToolObject : ExplorerObjectCls<IExplorerObject, IExplorerToolCommand>,
 
     #region ISerializableExplorerObject Member
 
-    async public Task<IExplorerObject?> CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache? cache)
+    public Task<IExplorerObject?> CreateInstanceByFullName(string FullName, ISerializableExplorerObjectCache? cache)
     {
         if (cache != null && cache.Contains(FullName))
         {
-            return cache[FullName];
+            return Task.FromResult<IExplorerObject?>(cache[FullName]);
         }
 
-        try
-        {
-            return null;
-        }
-        catch
-        {
-            return null;
-        }
+        return Task.FromResult<IExplorerObject?>(null);
     }
 
     #endregion

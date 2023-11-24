@@ -171,10 +171,10 @@ namespace gView.DataSources.EventTable
                     return feature;
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 Dispose();
-                throw (ex);
+                throw;
             }
         }
 

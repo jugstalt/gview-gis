@@ -29,7 +29,7 @@
 @code{
     private HashSet<ExplorerTreeNode> TreeNodes { get; set; } = new HashSet<ExplorerTreeNode>();
 
-    protected override Task OnInitializedAsync() => HandleAsync(async () =>
+    protected override Task OnInitializedAsync() => HandleAsync(() =>
     {
         // initialize tree
         TreeNodes.Add(/*_selected = */new ExplorerTreeNode(ExplorerApplication.RootExplorerObject));
@@ -38,6 +38,8 @@
 
         //EventBus.OnSetCurrentExplorerObjectAsync += HandleSetCurrentExplorerObjectAsync;
         //EventBus.OnRefreshContentAsync += OnRefreshContentAsync;
+
+        return Task.CompletedTask;
     });
 
     private Task OnNodeExpandedChanged(ExplorerTreeNode node, bool expanded) => base.HandleAsync(async () =>
@@ -68,7 +70,7 @@
         }
     });
 
-    private Task<bool> RefreshCurrentNodeAsync() => base.HandleFuncAsync(async () =>
+    private Task<bool> RefreshCurrentNodeAsync() => base.HandleFuncAsync(() =>
     {
         /*if (_selected != null && await _selected.ExObject.SecureRefresh() == true)
         {
@@ -78,7 +80,7 @@
             return true;
         }*/
 
-        return false;
+        return Task.FromResult(false);
     });
 
     public Task<HashSet<ExplorerTreeNode>?> LoadServerData(ExplorerTreeNode parentNode) => base.HandleFuncAsync(async () =>

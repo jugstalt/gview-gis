@@ -150,30 +150,6 @@ namespace gView.Framework.system
             }
         }
 
-
-        static private float _primaryScreenDPI = -1;
-        static public float PrimaryScreenDPI(bool forceRefresh = false)
-        {
-            if (_primaryScreenDPI != -1 && forceRefresh == false)
-            {
-                return _primaryScreenDPI;
-            }
-
-            try
-            {
-                using (global::System.Drawing.Graphics gr = global::System.Drawing.Graphics.FromHwndInternal(IntPtr.Zero))
-                {
-                    _primaryScreenDPI = gr.DpiX;
-                }
-            }
-            catch
-            {
-                _primaryScreenDPI = 96f;
-            }
-
-            return _primaryScreenDPI;
-        }
-
         static private float _sytemFontScaleFactor = 1f;
         static public float SystemFontsScaleFactor
         {
@@ -188,11 +164,6 @@ namespace gView.Framework.system
         }
 
         static public bool UseDiagnostic { get; set; } = false;
-    }
-
-    public interface IProperties
-    {
-        object SelectedObject { get; }
     }
 
     public class Cloner

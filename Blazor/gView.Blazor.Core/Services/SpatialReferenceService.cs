@@ -26,7 +26,7 @@ public class SpatialReferenceService
 
         foreach (DataRow row in dataTable.Rows)
         {
-            result.Add(row[0].ToString(), row[1].ToString());
+            result.Add(row[0]?.ToString() ?? "", row[1]?.ToString() ?? "");
         }
 
         return Task.FromResult<IDictionary<string, string>>(result);

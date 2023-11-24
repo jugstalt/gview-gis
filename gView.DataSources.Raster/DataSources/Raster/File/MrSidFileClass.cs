@@ -124,9 +124,9 @@ namespace gView.DataSources.Raster.File
                     reader = IntPtr.Zero;
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                throw ex;
+                throw;
             }
         }
 
@@ -366,7 +366,7 @@ namespace gView.DataSources.Raster.File
                 }
                 else
                 {
-                    throw ex;
+                    throw;
                 }
 
                 return null;

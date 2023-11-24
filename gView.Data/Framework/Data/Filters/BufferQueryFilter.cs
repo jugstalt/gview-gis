@@ -153,9 +153,9 @@ namespace gView.Framework.Data.Filters
 
                 return spatialFilter;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                throw ex;
+                throw;
             }
         }
     }

@@ -60,7 +60,7 @@ public class CreateNetworkClassCommand : ICommand
                 throw new Exception("Dataset is not a valid gView Feature Database");
             }
 
-            int datasetId = await fdb.DatasetID(dataset.DatasetName);
+            int datasetId = await fdb.DatasetID(dataset!.DatasetName);
 
             #endregion
 

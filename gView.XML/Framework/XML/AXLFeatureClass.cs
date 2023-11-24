@@ -1017,13 +1017,14 @@ namespace gView.Framework.XML
 
                 return true;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 _fc = null;
                 _filter = null;
                 _features = null;
                 _doc = null;
-                throw (ex);
+
+                throw;
             }
         }
 

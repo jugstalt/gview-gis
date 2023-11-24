@@ -431,7 +431,7 @@ namespace gView.DataSources.GDAL
 
                 return new RasterPaintContext2(bitmap);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 if (bitmap != null && bitmapData != null)
                 {
@@ -441,7 +441,7 @@ namespace gView.DataSources.GDAL
                     bitmap = null;
                 }
 
-                throw ex;
+                throw;
             }
             finally
             {
@@ -494,7 +494,7 @@ namespace gView.DataSources.GDAL
 
                 return new RasterPaintContext2(bitmap);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 if (bitmap != null && bitmapData != null)
                 {
@@ -504,7 +504,7 @@ namespace gView.DataSources.GDAL
                     bitmap = null;
                 }
 
-                throw ex;
+                throw;
             }
             finally
             {
@@ -612,9 +612,9 @@ namespace gView.DataSources.GDAL
 
                     return new RasterPaintContext2(contextBitmap);
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
-                    throw ex;
+                    throw;
                 }
                 finally
                 {
@@ -738,9 +738,9 @@ namespace gView.DataSources.GDAL
 
                     return new RasterPaintContext2(contextBitmap);
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
-                    throw ex;
+                    throw;
                 }
                 finally
                 {

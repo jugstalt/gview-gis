@@ -28,7 +28,7 @@ static public class DictionaryExtensions
 
         if (typeof(T) == typeof(Guid))
         {
-            return (T)(object)new Guid(parameters[key].ToString());
+            return (T)(object)new Guid(parameters[key].ToString()!);
         }
         else if (typeof(T) == typeof(float))
         {

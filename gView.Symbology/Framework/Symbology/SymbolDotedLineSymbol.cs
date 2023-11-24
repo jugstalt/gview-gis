@@ -260,9 +260,9 @@ namespace gView.Framework.Symbology
                     }
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                throw ex;
+                throw;
             }
         }
 

@@ -1,6 +1,7 @@
 using gView.Framework.system;
 using NpgsqlTypes;
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Text;
 using System.Xml;
@@ -562,7 +563,7 @@ namespace gView.Framework.Geometry
         }
 
         #region Static Members
-        public static bool IsNull(IEnvelope envelope)
+        public static bool IsNull([NotNullWhen(false)] IEnvelope envelope)
         {
             if (envelope == null)
             {

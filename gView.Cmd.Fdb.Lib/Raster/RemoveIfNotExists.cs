@@ -3,9 +3,6 @@ using gView.DataSources.Fdb.MSAccess;
 using gView.Framework.Data;
 using gView.Framework.FDB;
 using gView.Framework.system;
-using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace gView.Cmd.Fdb.Lib.Raster;

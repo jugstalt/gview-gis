@@ -57,8 +57,8 @@ public class MapServerClient
             var services = root.Descendants("SERVICE")
                                .Select(x => new ServiceModel
                                {
-                                   Name = (string)x.Attribute("name"),
-                                   Type = (string)x.Attribute("type")
+                                   Name = (string?)x.Attribute("name") ?? "",
+                                   Type = (string?)x.Attribute("type") ?? ""
                                })
                                .ToList();
 

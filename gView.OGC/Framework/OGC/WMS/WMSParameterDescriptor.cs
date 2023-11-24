@@ -69,8 +69,8 @@ namespace gView.Framework.OGC.WMS
         private WMSInfoFormat meInfoFormat = WMSInfoFormat.html;
         private string meInfoFormatXsl = String.Empty;
         private IEnvelope moBox = null;
-        private string[] msLayers = new string[0];
-        private string[] msQueryLayers = new string[0];
+        private string[] msLayers = Array.Empty<string>();
+        private string[] msQueryLayers = Array.Empty<string>();
         private string msVersion = "1.1.1";
         private bool mbTransparent = false;
         private Color moBgColor = Color.White;
@@ -977,7 +977,7 @@ namespace gView.Framework.OGC.WMS
                     {
                         if (p2.Length > 0)
                         {
-                            p2.Append("=");
+                            p2.Append('=');
                         }
 
                         p2.Append(p[i]);

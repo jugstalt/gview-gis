@@ -317,7 +317,7 @@ namespace gView.Interoperability.GeoServices.Dataset
                         {
                             throw new TokenRequiredException();
                         }
-                        throw ex;
+                        throw;
                     }
 
                     if (result.Contains("\"error\":"))
