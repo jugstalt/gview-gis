@@ -1914,17 +1914,29 @@ namespace gView.Server.Controllers
                     }
                     catch (TokenRequiredException tre)
                     {
-                        return Result(new JsonError()
+                        var error = new JsonError()
                         {
                             Error = new JsonError.ErrorDef() { Code = 499, Message = tre.Message }
-                        });
+                        };
+
+                        return ResultFormat()?.ToLower() switch
+                        {
+                            "image" => Json(error),  // image request must return token errors as json explicit! otherwise (if HTML response) clients do not refresh or get tokens 
+                            _ => Result(error)
+                        };
                     }
                     catch (InvalidTokenException ite)
                     {
-                        return Result(new JsonError()
+                        var error = new JsonError()
                         {
                             Error = new JsonError.ErrorDef() { Code = 498, Message = ite.Message }
-                        });
+                        };
+
+                        return ResultFormat()?.ToLower() switch
+                        {
+                            "image" => Json(error),  // image request must return token errors as json explicit!
+                            _ => Result(error)
+                        };
                     }
                     catch (MapServerException mse)
                     {
