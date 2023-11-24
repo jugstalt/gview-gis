@@ -8,11 +8,12 @@ using gView.Framework.IO;
 using gView.Framework.system;
 using Microsoft.Azure.Documents;
 using Microsoft.Azure.Documents.Client;
-using System;
 using System.Collections.Generic;
 using System.Dynamic;
 using System.Linq;
 using System.Threading.Tasks;
+using System;
+using Index = Microsoft.Azure.Documents.Index;
 
 namespace gView.DataSources.CosmoDb
 {
@@ -241,7 +242,7 @@ namespace gView.DataSources.CosmoDb
 
         public string LastErrorMessage { get; set; }
 
-        public Exception LastException { get; private set; }
+        public System.Exception LastException { get; private set; }
 
         public int SuggestedInsertFeatureCountPerTransaction => throw new NotImplementedException();
 

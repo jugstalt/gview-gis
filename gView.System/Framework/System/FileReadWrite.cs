@@ -177,8 +177,7 @@ namespace gView.Framework.system
 
 
             Rijndael alg = Rijndael.Create();
-
-
+            //Aes alg = Aes.Create();
 
             alg.Key = pdb.GetBytes(32);
 
