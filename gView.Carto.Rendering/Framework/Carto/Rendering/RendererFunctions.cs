@@ -8,14 +8,13 @@ namespace gView.Framework.Carto.Rendering
     public class RendererFunctions
     {
         static internal Random r = new Random(DateTime.Now.Millisecond);
-        static internal ArgbColor RandomColor
-        {
-            get
-            {
-                return ArgbColor.FromArgb(r.Next(255), r.Next(255), r.Next(255));
-            }
-        }
-        static public ISymbol CreateStandardSymbol(GeometryType type)
+        static internal ArgbColor RandomColor(int alpah = 255)
+            => ArgbColor.FromArgb(alpah, r.Next(255), r.Next(255), r.Next(255));
+
+        static public ISymbol CreateStandardSymbol(GeometryType type,
+                                                   int fillAlpha = 150,
+                                                   float lineWidth = 1,
+                                                   int pointSize = 5)
         {
             ISymbol symbol = null;
             switch (type)
@@ -23,22 +22,23 @@ namespace gView.Framework.Carto.Rendering
                 case GeometryType.Envelope:
                 case GeometryType.Polygon:
                     symbol = new SimpleFillSymbol();
-                    ((SimpleFillSymbol)symbol).Color = RandomColor;
-                    ((SimpleFillSymbol)symbol).SmoothingMode = SymbolSmoothing.AntiAlias;
+                    var fillColor = RandomColor(fillAlpha);
                     ((SimpleFillSymbol)symbol).OutlineSymbol = new SimpleLineSymbol();
-                    ((SimpleLineSymbol)((SimpleFillSymbol)symbol).OutlineSymbol).Color = RandomColor;
-                    ((SimpleLineSymbol)((SimpleFillSymbol)symbol).OutlineSymbol).Smoothingmode = SymbolSmoothing.AntiAlias;
+                    ((SimpleFillSymbol)symbol).Color = fillColor;
+                    ((SimpleLineSymbol)((SimpleFillSymbol)symbol).OutlineSymbol).Color = ArgbColor.FromArgb(255, fillColor);
+                    ((SimpleLineSymbol)((SimpleFillSymbol)symbol).OutlineSymbol).Width = lineWidth;
                     break;
                 case GeometryType.Polyline:
                     symbol = new SimpleLineSymbol();
-                    ((SimpleLineSymbol)symbol).Color = RandomColor;
-                    ((SimpleLineSymbol)symbol).Smoothingmode = SymbolSmoothing.AntiAlias;
+                    ((SimpleLineSymbol)symbol).Color = RandomColor();
+                    ((SimpleLineSymbol)symbol).Width = lineWidth;
                     break;
                 case GeometryType.Multipoint:
                 case GeometryType.Point:
                     symbol = new SimplePointSymbol();
-                    ((SimplePointSymbol)symbol).Color = RandomColor;
-                    ((SimplePointSymbol)symbol).Smoothingmode = SymbolSmoothing.AntiAlias;
+                    ((SimplePointSymbol)symbol).Color = RandomColor();
+                    ((SimplePointSymbol)symbol).Size = pointSize;
+                    ((SimplePointSymbol)symbol).SymbolWidth = lineWidth;
                     break;
             }
             return symbol;

@@ -1907,10 +1907,16 @@ namespace gView.Server.Controllers
                     }
                     catch (NotAuthorizedException nae)
                     {
-                        return Result(new JsonError()
+                        var error = new JsonError()
                         {
                             Error = new JsonError.ErrorDef() { Code = 403, Message = nae.Message }
-                        });
+                        };
+
+                        return ResultFormat()?.ToLower() switch
+                        {
+                            "image" => Json(error),  // image request must return token errors as json explicit!
+                            _ => Result(error)
+                        };
                     }
                     catch (TokenRequiredException tre)
                     {

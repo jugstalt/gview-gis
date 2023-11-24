@@ -283,7 +283,7 @@ namespace gView.Framework.Carto
                                     RenderFeatureLayer rlt = new RenderFeatureLayer(this, datasetCachingContext, fLayer, cancelTracker, fCounter);
                                     if (fLayer.LabelRenderer != null && fLayer.LabelRenderer.RenderMode == LabelRenderMode.RenderWithFeature)
                                     {
-                                        rlt.UseLabelRenderer = true;
+                                        rlt.UseLabelRenderer = fLayer.LabelInScale(this);
                                     }
                                     else
                                     {
