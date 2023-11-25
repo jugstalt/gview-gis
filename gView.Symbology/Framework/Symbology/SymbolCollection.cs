@@ -495,9 +495,14 @@ namespace gView.Framework.Symbology
         [Browsable(false)]
         public SymbolSmoothing SymbolSmothingMode
         {
+            get => _symbols?.Any(s => s.Symbol is Symbol && ((Symbol)s.Symbol).Smoothingmode == SymbolSmoothing.None) == true
+                       ? SymbolSmoothing.None
+                       : SymbolSmoothing.AntiAlias;
+                
+            
             set
             {
-                if (_symbols != null)
+                if (_symbols is not null)
                 {
                     foreach (SymbolCollectionItem item in _symbols)
                     {

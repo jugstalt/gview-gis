@@ -1,15 +1,12 @@
 ﻿using gView.Framework.Carto;
 using gView.Framework.Geometry;
 using gView.Framework.IO;
-using gView.Framework.Symbology.UI;
 using gView.Framework.system;
-using gView.Framework.UI;
 using gView.GraphicsEngine.Abstraction;
 using gView.Symbology.Framework.Symbology.Extensions;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Reflection;
 
 namespace gView.Framework.Symbology
 {
@@ -20,7 +17,7 @@ namespace gView.Framework.Symbology
     }
 
     [gView.Framework.system.RegisterPlugIn("C13DF1F1-FB0A-4C47-AF73-05A184880612")]
-    public class SymbolDotedLineSymbol : Symbol, ILineSymbol, IPropertyPage, IPersistable
+    public class SymbolDotedLineSymbol : Symbol, ILineSymbol, IPersistable
     {
         [Browsable(true)]
         [DisplayName("Symbol")]
@@ -321,13 +318,13 @@ namespace gView.Framework.Symbology
             cloneSym.DrawEndPoint = this.DrawEndPoint;
             cloneSym.DrawStepPoints = this.DrawStepPoints;
             cloneSym.StepWidthUnit = this.StepWidthUnit;
-            cloneSym.SymbolMaxDistance = (int)((float)this.SymbolMaxDistance * fac);
+            cloneSym.SymbolMaxDistance = (int)(SymbolMaxDistance * fac);
 
             switch (cloneSym.StepWidthUnit)
             {
                 case StepWidthUnit.Pixel:
-                    cloneSym.StepWidth = (int)((float)this.StepWidth * fac);
-                    cloneSym.StepStartPos = (int)((float)this.StepStartPos * fac);
+                    cloneSym.StepWidth = (int)(StepWidth * fac);
+                    cloneSym.StepStartPos = (int)(StepStartPos * fac);
                     break;
                 default:
                     cloneSym.StepWidth = this.StepWidth;
@@ -342,29 +339,6 @@ namespace gView.Framework.Symbology
 
         #endregion
 
-        #region IPropertyPage Member
-
-        public object PropertyPageObject()
-        {
-            return null;
-        }
-
-        public object PropertyPage(object initObject)
-        {
-            string appPath = System.IO.Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
-            Assembly uiAssembly = Assembly.LoadFrom(appPath + @"/gView.Win.Symbology.UI.dll");
-
-            IPropertyPanel p = uiAssembly.CreateInstance("gView.Framework.Symbology.UI.PropertyForm_SymbolDotedLineSymbol") as IPropertyPanel;
-            if (p != null)
-            {
-                return p.PropertyPanel(this);
-            }
-
-            return null;
-        }
-
-        #endregion
-
         #region IPersistable
 
         public new void Load(IPersistStream stream)
@@ -373,14 +347,14 @@ namespace gView.Framework.Symbology
 
             this.PointSymbol = (ISymbol)stream.Load("pointsymbol");
             this.LineSymbol = (ISymbol)stream.Load("linesymbol");
-                
+
             this.DrawStartPoint = (bool)stream.Load("drawstartpoint", true);
             this.DrawEndPoint = (bool)stream.Load("drawendpoint", true);
             this.DrawStepPoints = (bool)stream.Load("drawsteppoints", true);
-            this.StepWidth = (int)stream.Load("stepwidth", (int)20);
+            this.StepWidth = (int)stream.Load("stepwidth", 20);
             this.StepWidthUnit = (StepWidthUnit)(int)stream.Load("stepwidthunit", (int)StepWidthUnit.Pixel);
-            this.StepStartPos = (int)stream.Load("stepstartpos", (int)0);
-            this.SymbolMaxDistance = (int)stream.Load("symbolmaxdistance", (int)0);
+            this.StepStartPos = (int)stream.Load("stepstartpos", 0);
+            this.SymbolMaxDistance = (int)stream.Load("symbolmaxdistance", 0);
 
             this.UseSymbolRotation = (bool)stream.Load("usesymbolrotation", true);
         }

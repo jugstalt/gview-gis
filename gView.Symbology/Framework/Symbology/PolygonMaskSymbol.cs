@@ -1,7 +1,6 @@
 ﻿using gView.Framework.Carto;
 using gView.Framework.Geometry;
 using gView.Framework.IO;
-using gView.Framework.Symbology.UI;
 using gView.Framework.system;
 using gView.Framework.UI;
 using gView.GraphicsEngine;
@@ -12,7 +11,7 @@ using System.Reflection;
 namespace gView.Framework.Symbology
 {
     [gView.Framework.system.RegisterPlugIn("48177A8B-1B3F-480a-87DF-9F7E1DE57D7B")]
-    public sealed class PolygonMaskSymbol : LegendItem, IFillSymbol, IPropertyPage
+    public sealed class PolygonMaskSymbol : LegendItem, IFillSymbol
     {
         private IBrush _brush;
         private ArgbColor _color;
@@ -128,29 +127,6 @@ namespace gView.Framework.Symbology
         public string Name
         {
             get { return "Polygon Mask"; }
-        }
-
-        #endregion
-
-        #region IPropertyPage Member
-
-        public object PropertyPageObject()
-        {
-            return null;
-        }
-
-        public object PropertyPage(object initObject)
-        {
-            string appPath = System.IO.Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
-            Assembly uiAssembly = Assembly.LoadFrom(appPath + @"/gView.Win.Symbology.UI.dll");
-
-            IPropertyPanel p = uiAssembly.CreateInstance("gView.Framework.Symbology.UI.PropertyForm_SimpleFillSymbol") as IPropertyPanel;
-            if (p != null)
-            {
-                return p.PropertyPanel(this);
-            }
-
-            return null;
         }
 
         #endregion

@@ -1,23 +1,27 @@
 ﻿using gView.Framework.Carto;
 using gView.Framework.Geometry;
 using gView.Framework.IO;
-using gView.Framework.Symbology.UI;
+using gView.Framework.Reflection;
 using gView.Framework.system;
-using gView.Framework.UI;
 using gView.GraphicsEngine;
 using gView.GraphicsEngine.Abstraction;
+using gView.Symbology.Framework.Symbology.UI.Rules;
 using System.ComponentModel;
-using System.Reflection;
 
 namespace gView.Framework.Symbology
 {
     [gView.Framework.system.RegisterPlugIn("E37D7D86-DF11-410f-ADD1-EA89C1E89605")]
-    public sealed class HatchSymbol : LegendItem, IFillSymbol, IPersistable, IPropertyPage, IBrushColor, IPenColor, IPenWidth, IPenDashStyle
+    public sealed class HatchSymbol : LegendItemWidthWhithOutlineSymbol,
+                                      IFillSymbol,
+                                      IPersistable,
+                                      IBrushColor,
+                                      IPenColor,
+                                      IPenWidth,
+                                      IPenDashStyle
     {
         private IBrushCollection _brush;
         private ArgbColor _forecolor;
         private ArgbColor _backcolor;
-        private ISymbol _outlineSymbol = null;
         private HatchStyle _hatchStyle;
 
         public HatchSymbol()
@@ -112,53 +116,6 @@ namespace gView.Framework.Symbology
             }
         }
 
-        [Browsable(true)]
-        [DisplayName("Symbol")]
-        [Category("Outline Symbol")]
-        [UseLineSymbolPicker()]
-        public ISymbol OutlineSymbol
-        {
-            get
-            {
-                return _outlineSymbol;
-            }
-            set
-            {
-                _outlineSymbol = value;
-            }
-        }
-
-
-        [Browsable(true)]
-        [DisplayName("Color")]
-        [Category("Outline Symbol")]
-        [UseColorPicker()]
-        public ArgbColor OutlineColor
-        {
-            get { return PenColor; }
-            set { PenColor = value; }
-        }
-
-        [Browsable(true)]
-        [DisplayName("DashStyle")]
-        [Category("Outline Symbol")]
-        [UseDashStylePicker()]
-        public LineDashStyle OutlineDashStyle
-        {
-            get { return PenDashStyle; }
-            set { PenDashStyle = value; }
-        }
-
-        [Browsable(true)]
-        [Category("Outline Symbol")]
-        [DisplayName("Width")]
-        [UseWidthPicker()]
-        public float OutlineWidth
-        {
-            get { return PenWidth; }
-            set { PenWidth = value; }
-        }
-
         #region IFillSymbol Member
 
         public void FillPath(IDisplay display, IGraphicsPath path)
@@ -167,13 +124,13 @@ namespace gView.Framework.Symbology
             {
                 display.Canvas.FillPath(_brush, path);
             }
-            //if(_outlineSymbol!=null) 
+            //if(OutlineSymbol!=null) 
             //{
-            //    if(_outlineSymbol is ILineSymbol)
-            //        ((ILineSymbol)_outlineSymbol).DrawPath(display,path);
-            //    else if(_outlineSymbol is SymbolCollection) 
+            //    if(OutlineSymbol is ILineSymbol)
+            //        ((ILineSymbol)OutlineSymbol).DrawPath(display,path);
+            //    else if(OutlineSymbol is SymbolCollection) 
             //    {
-            //        foreach(SymbolCollectionItem item in ((SymbolCollection)_outlineSymbol).Symbols) 
+            //        foreach(SymbolCollectionItem item in ((SymbolCollection)OutlineSymbol).Symbols) 
             //        {
             //            if(!item.Visible) continue;
             //            if(item.Symbol is ILineSymbol) 
@@ -198,7 +155,7 @@ namespace gView.Framework.Symbology
             {
                 this.FillPath(display, gp);
 
-                SimpleFillSymbol.DrawOutlineSymbol(display, _outlineSymbol, geometry, gp);
+                SimpleFillSymbol.DrawOutlineSymbol(display, OutlineSymbol, geometry, gp);
                 gp.Dispose(); gp = null;
             }
         }
@@ -210,9 +167,9 @@ namespace gView.Framework.Symbology
                 _brush.Dispose();
                 _brush = null;
             }
-            if (_outlineSymbol != null)
+            if (OutlineSymbol != null)
             {
-                _outlineSymbol.Release();
+                OutlineSymbol.Release();
             }
         }
 
@@ -246,7 +203,7 @@ namespace gView.Framework.Symbology
             this.ForeColor = ArgbColor.FromArgb((int)stream.Load("forecolor", ArgbColor.Red.ToArgb()));
             this.BackColor = ArgbColor.FromArgb((int)stream.Load("backcolor", ArgbColor.Transparent.ToArgb()));
             this.HatchStyle = (HatchStyle)stream.Load("hatchstyle", HatchStyle.Horizontal);
-            _outlineSymbol = (ISymbol)stream.Load("outlinesymbol");
+            OutlineSymbol = (ISymbol)stream.Load("outlinesymbol");
         }
 
         new public void Save(IPersistStream stream)
@@ -256,35 +213,11 @@ namespace gView.Framework.Symbology
             stream.Save("forecolor", _forecolor.ToArgb());
             stream.Save("backcolor", _backcolor.ToArgb());
             stream.Save("hatchstyle", (int)_hatchStyle);
-            if (_outlineSymbol != null)
+            if (OutlineSymbol != null)
             {
-                stream.Save("outlinesymbol", _outlineSymbol);
+                stream.Save("outlinesymbol", OutlineSymbol);
             }
         }
-
-        #endregion
-
-        #region IPropertyPage Member
-
-        public object PropertyPageObject()
-        {
-            return null;
-        }
-
-        public object PropertyPage(object initObject)
-        {
-            string appPath = System.IO.Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
-            Assembly uiAssembly = Assembly.LoadFrom(appPath + @"/gView.Win.Symbology.UI.dll");
-
-            IPropertyPanel p = uiAssembly.CreateInstance("gView.Framework.Symbology.UI.PropertyForm_SimpleFillSymbol") as IPropertyPanel;
-            if (p != null)
-            {
-                return p.PropertyPanel(this);
-            }
-
-            return null;
-        }
-
 
         #endregion
 
@@ -307,9 +240,9 @@ namespace gView.Framework.Symbology
             fac *= options.DpiFactor;
 
             HatchSymbol hSym = new HatchSymbol(_forecolor, _backcolor, _hatchStyle);
-            if (_outlineSymbol != null)
+            if (OutlineSymbol != null)
             {
-                hSym._outlineSymbol = (ISymbol)_outlineSymbol.Clone(options);
+                hSym.OutlineSymbol = (ISymbol)OutlineSymbol.Clone(options);
             }
 
             hSym.LegendLabel = _legendLabel;
@@ -342,17 +275,17 @@ namespace gView.Framework.Symbology
         {
             get
             {
-                if (_outlineSymbol is IPenColor)
+                if (OutlineSymbol is IPenColor)
                 {
-                    return ((IPenColor)_outlineSymbol).PenColor;
+                    return ((IPenColor)OutlineSymbol).PenColor;
                 }
                 return ArgbColor.Transparent;
             }
             set
             {
-                if (_outlineSymbol is IPenColor)
+                if (OutlineSymbol is IPenColor)
                 {
-                    ((IPenColor)_outlineSymbol).PenColor = value;
+                    ((IPenColor)OutlineSymbol).PenColor = value;
                 }
             }
         }
@@ -366,17 +299,17 @@ namespace gView.Framework.Symbology
         {
             get
             {
-                if (_outlineSymbol is IPenWidth)
+                if (OutlineSymbol is IPenWidth)
                 {
-                    return ((IPenWidth)_outlineSymbol).PenWidth;
+                    return ((IPenWidth)OutlineSymbol).PenWidth;
                 }
                 return 0;
             }
             set
             {
-                if (_outlineSymbol is IPenWidth)
+                if (OutlineSymbol is IPenWidth)
                 {
-                    ((IPenWidth)_outlineSymbol).PenWidth = value;
+                    ((IPenWidth)OutlineSymbol).PenWidth = value;
                 }
             }
         }
@@ -386,17 +319,17 @@ namespace gView.Framework.Symbology
         {
             get
             {
-                if (_outlineSymbol is IPenWidth)
+                if (OutlineSymbol is IPenWidth)
                 {
-                    return ((IPenWidth)_outlineSymbol).PenWidthUnit;
+                    return ((IPenWidth)OutlineSymbol).PenWidthUnit;
                 }
                 return DrawingUnit.Pixel;
             }
             set
             {
-                if (_outlineSymbol is IPenWidth)
+                if (OutlineSymbol is IPenWidth)
                 {
-                    ((IPenWidth)_outlineSymbol).PenWidthUnit = value;
+                    ((IPenWidth)OutlineSymbol).PenWidthUnit = value;
                 }
             }
         }
@@ -408,17 +341,17 @@ namespace gView.Framework.Symbology
         {
             get
             {
-                if (_outlineSymbol is IPenWidth)
+                if (OutlineSymbol is IPenWidth)
                 {
-                    return ((IPenWidth)_outlineSymbol).MaxPenWidth;
+                    return ((IPenWidth)OutlineSymbol).MaxPenWidth;
                 }
                 return 0;
             }
             set
             {
-                if (_outlineSymbol is IPenWidth)
+                if (OutlineSymbol is IPenWidth)
                 {
-                    ((IPenWidth)_outlineSymbol).MaxPenWidth = value;
+                    ((IPenWidth)OutlineSymbol).MaxPenWidth = value;
                 }
             }
         }
@@ -430,17 +363,17 @@ namespace gView.Framework.Symbology
         {
             get
             {
-                if (_outlineSymbol is IPenWidth)
+                if (OutlineSymbol is IPenWidth)
                 {
-                    return ((IPenWidth)_outlineSymbol).MinPenWidth;
+                    return ((IPenWidth)OutlineSymbol).MinPenWidth;
                 }
                 return 0;
             }
             set
             {
-                if (_outlineSymbol is IPenWidth)
+                if (OutlineSymbol is IPenWidth)
                 {
-                    ((IPenWidth)_outlineSymbol).MinPenWidth = value;
+                    ((IPenWidth)OutlineSymbol).MinPenWidth = value;
                 }
             }
         }
@@ -454,17 +387,17 @@ namespace gView.Framework.Symbology
         {
             get
             {
-                if (_outlineSymbol is IPenDashStyle)
+                if (OutlineSymbol is IPenDashStyle)
                 {
-                    return ((IPenDashStyle)_outlineSymbol).PenDashStyle;
+                    return ((IPenDashStyle)OutlineSymbol).PenDashStyle;
                 }
                 return LineDashStyle.Solid;
             }
             set
             {
-                if (_outlineSymbol is IPenDashStyle)
+                if (OutlineSymbol is IPenDashStyle)
                 {
-                    ((IPenDashStyle)_outlineSymbol).PenDashStyle = value;
+                    ((IPenDashStyle)OutlineSymbol).PenDashStyle = value;
                 }
             }
         }
@@ -478,16 +411,16 @@ namespace gView.Framework.Symbology
         {
             set
             {
-                if (_outlineSymbol != null)
+                if (OutlineSymbol != null)
                 {
-                    _outlineSymbol.SymbolSmothingMode = value;
+                    OutlineSymbol.SymbolSmothingMode = value;
                 }
             }
         }
 
         public bool RequireClone()
         {
-            return _outlineSymbol != null && _outlineSymbol.RequireClone();
+            return OutlineSymbol != null && OutlineSymbol.RequireClone();
         }
 
         #endregion

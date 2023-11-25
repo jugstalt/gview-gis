@@ -1,7 +1,6 @@
 ﻿using gView.Framework.Carto;
 using gView.Framework.Geometry;
 using gView.Framework.IO;
-using gView.Framework.Symbology.UI;
 using gView.Framework.system;
 using gView.Framework.UI;
 using gView.GraphicsEngine;
@@ -19,7 +18,7 @@ using System.Xml;
 namespace gView.Framework.Symbology
 {
     [gView.Framework.system.RegisterPlugIn("A5DA4D8D-879F-41a5-9795-F22BE5B85877")]
-    public class SimpleTextSymbol : Symbol, ITextSymbol, IPropertyPage, IFontColor, IFontSymbol
+    public class SimpleTextSymbol : Symbol, ITextSymbol, IFontColor, IFontSymbol
     {
         protected string _text;
         protected IFont _font;
@@ -956,29 +955,6 @@ namespace gView.Framework.Symbology
             tSym.SecondaryTextSymbolAlignments = this.SecondaryTextSymbolAlignments;
 
             return tSym;
-        }
-
-        #endregion
-
-        #region IPropertyPage Members
-
-        public object PropertyPage(object initObject)
-        {
-            string appPath = System.IO.Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
-            Assembly uiAssembly = Assembly.LoadFrom(appPath + @"/gView.Win.Symbology.UI.dll");
-
-            IPropertyPanel p = uiAssembly.CreateInstance("gView.Framework.Symbology.UI.PropertyForm_SimpleTextSymbol") as IPropertyPanel;
-            if (p != null)
-            {
-                return p.PropertyPanel(this);
-            }
-
-            return null;
-        }
-
-        public object PropertyPageObject()
-        {
-            return null;
         }
 
         #endregion

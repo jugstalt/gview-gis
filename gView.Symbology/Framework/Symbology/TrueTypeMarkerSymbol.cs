@@ -1,9 +1,7 @@
 ﻿using gView.Framework.Carto;
 using gView.Framework.Geometry;
 using gView.Framework.IO;
-using gView.Framework.Symbology.UI;
 using gView.Framework.system;
-using gView.Framework.UI;
 using gView.GraphicsEngine;
 using gView.GraphicsEngine.Abstraction;
 using gView.Symbology.Framework.Symbology.IO;
@@ -11,7 +9,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using System.Reflection;
 using System.Text;
 using System.Xml;
 
@@ -19,7 +16,6 @@ namespace gView.Framework.Symbology
 {
     [gView.Framework.system.RegisterPlugIn("71E22086-D511-4a41-AAE1-BBC78572F277")]
     public sealed class TrueTypeMarkerSymbol : LegendItem,
-                                               IPropertyPage,
                                                IPointSymbol,
                                                ISymbolRotation,
                                                IFontColor,
@@ -340,29 +336,6 @@ namespace gView.Framework.Symbology
                     stream.Save($"{key}.y", _engineOffset[key].VerticalOffset);
                 }
             }
-        }
-
-        #endregion
-
-        #region IPropertyPage Member
-
-        public object PropertyPageObject()
-        {
-            return null;
-        }
-
-        public object PropertyPage(object initObject)
-        {
-            string appPath = System.IO.Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
-            Assembly uiAssembly = Assembly.LoadFrom(appPath + @"/gView.Win.Symbology.UI.dll");
-
-            IPropertyPanel p = uiAssembly.CreateInstance("gView.Framework.Symbology.UI.PropertyForm_SimplePointSymbol") as IPropertyPanel;
-            if (p != null)
-            {
-                return p.PropertyPanel(this);
-            }
-
-            return null;
         }
 
         #endregion

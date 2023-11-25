@@ -34,7 +34,7 @@
                                                         <MudMenu Icon="@Icons.Material.Filled.ArrowDropDown" Style="align-self: auto;">
                                                             @foreach (var symbolType in _creatableSymbolTypes)
                                                             {
-                                                                <MudMenuItem OnClick="() => CreateNewStackSymbol(symbolType)">@symbolType.Name</MudMenuItem>
+                                                                <MudMenuItem OnClick="() => CreateNewStackSymbol(symbolType)">@symbolType.Name.SplitCamelCase()</MudMenuItem>
                                                             }
                                                         </MudMenu>
                                                     </MudButtonGroup>
@@ -124,7 +124,7 @@
                     </GvGridItem>
 
                     <GvGridItem Span="2">
-                        <GvCard Title="@($"Properties: {_selectedSymbol?.GetType().Name}")">
+                        <GvCard Title="@($"Properties: {_selectedSymbol?.Name}")">
                             <GvCardContentNoPadding>
                                 @if(_selectedSymbol is not null)
                                 {

@@ -1,7 +1,6 @@
 ﻿using gView.Framework.Carto;
 using gView.Framework.Geometry;
 using gView.Framework.IO;
-using gView.Framework.Symbology.UI;
 using gView.Framework.system;
 using gView.Framework.UI;
 using gView.GraphicsEngine;
@@ -13,7 +12,7 @@ using System.Reflection;
 namespace gView.Framework.Symbology
 {
     [gView.Framework.system.RegisterPlugIn("F73F40DD-BA55-40b1-B372-99F08B66D2D4")]
-    public sealed class SimplePointSymbol : Symbol, IPointSymbol, IPropertyPage, ISymbolRotation, IBrushColor, IPenColor, IPenWidth, ISymbolSize, ISymbolWidth
+    public sealed class SimplePointSymbol : Symbol, IPointSymbol, ISymbolRotation, IBrushColor, IPenColor, IPenWidth, ISymbolSize, ISymbolWidth
     {
         public enum MarkerType { Circle = 0, Triangle = 1, Square = 2, Cross = 3, Star = 4 }
 
@@ -359,34 +358,11 @@ namespace gView.Framework.Symbology
             stream.Save("outlinecolor", OutlineColor.ToArgb());
             stream.Save("marker", (int)_type);
 
-            stream.Save("maxpenwidth", (float)this.MaxPenWidth);
-            stream.Save("minpenwidth", (float)this.MinPenWidth);
+            stream.Save("maxpenwidth", MaxPenWidth);
+            stream.Save("minpenwidth", MinPenWidth);
 
             stream.Save("maxsymbolsize", this.MaxSymbolSize);
             stream.Save("minsymbolsize", this.MinSymbolSize);
-        }
-
-        #endregion
-
-        #region IPropertyPage Member
-
-        public object PropertyPageObject()
-        {
-            return null;
-        }
-
-        public object PropertyPage(object initObject)
-        {
-            string appPath = System.IO.Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
-            Assembly uiAssembly = Assembly.LoadFrom(appPath + @"/gView.Win.Symbology.UI.dll");
-
-            IPropertyPanel p = uiAssembly.CreateInstance("gView.Framework.Symbology.UI.PropertyForm_SimplePointSymbol") as IPropertyPanel;
-            if (p != null)
-            {
-                return p.PropertyPanel(this);
-            }
-
-            return null;
         }
 
         #endregion

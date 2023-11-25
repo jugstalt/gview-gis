@@ -1,7 +1,6 @@
 ﻿using gView.Framework.Carto;
 using gView.Framework.Geometry;
 using gView.Framework.IO;
-using gView.Framework.Symbology.UI;
 using gView.Framework.system;
 using gView.Framework.UI;
 using gView.GraphicsEngine;
@@ -15,7 +14,7 @@ using System.Reflection;
 namespace gView.Framework.Symbology
 {
     [gView.Framework.system.RegisterPlugIn("230881F2-F9E4-4593-BD25-5B614B9CB503")]
-    public sealed class RasterMarkerSymbol : LegendItem, IPropertyPage, IPointSymbol, ISymbolRotation
+    public sealed class RasterMarkerSymbol : LegendItem, IPointSymbol, ISymbolRotation
     {
         private float _xOffset = 0, _yOffset = 0, _angle = 0, _rotation = 0, _hOffset = 0, _vOffset = 0;
         private float _sizeX = 10f, _sizeY = 10f;
@@ -51,29 +50,6 @@ namespace gView.Framework.Symbology
         {
             return this.Name;
         }
-
-        #region IPropertyPage Member
-
-        public object PropertyPageObject()
-        {
-            return null;
-        }
-
-        public object PropertyPage(object initObject)
-        {
-            string appPath = System.IO.Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
-            Assembly uiAssembly = Assembly.LoadFrom(appPath + @"/gView.Win.Symbology.UI.dll");
-
-            IPropertyPanel p = uiAssembly.CreateInstance("gView.Framework.Symbology.UI.PropertyForm_SimplePointSymbol") as IPropertyPanel;
-            if (p != null)
-            {
-                return p.PropertyPanel(this);
-            }
-
-            return null;
-        }
-
-        #endregion IPropertyPage Member
 
         #region IPointSymbol Member
 

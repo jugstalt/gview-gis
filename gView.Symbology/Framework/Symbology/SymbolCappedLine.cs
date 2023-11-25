@@ -1,18 +1,15 @@
 ﻿using gView.Framework.Carto;
 using gView.Framework.Geometry;
 using gView.Framework.IO;
-using gView.Framework.Symbology.UI;
 using gView.Framework.system;
-using gView.Framework.UI;
 using gView.GraphicsEngine.Abstraction;
 using System;
 using System.ComponentModel;
-using System.Reflection;
 
 namespace gView.Framework.Symbology
 {
     [gView.Framework.system.RegisterPlugIn("16519A8B-2945-4F74-A38D-98D8E41BF3EA")]
-    public class SymbolCappedLineSymbol : Symbol, ILineSymbol, IPropertyPage, IPersistable
+    public class SymbolCappedLineSymbol : Symbol, ILineSymbol, IPersistable
     {
         public SymbolCappedLineSymbol()
         {
@@ -259,29 +256,6 @@ namespace gView.Framework.Symbology
 
             stream.Save("rotatestartsymbol", this.RotateStartSymbol);
             stream.Save("rotateendsymbol", this.RotateEndSymbol);
-        }
-
-        #endregion
-
-        #region IPropertyPage
-
-        public object PropertyPageObject()
-        {
-            return null;
-        }
-
-        public object PropertyPage(object initObject)
-        {
-            string appPath = System.IO.Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
-            Assembly uiAssembly = Assembly.LoadFrom(appPath + @"/gView.Win.Symbology.UI.dll");
-
-            IPropertyPanel p = uiAssembly.CreateInstance("gView.Framework.Symbology.UI.PropertyForm_SymbolCappedLineSymbol") as IPropertyPanel;
-            if (p != null)
-            {
-                return p.PropertyPanel(this);
-            }
-
-            return null;
         }
 
         #endregion

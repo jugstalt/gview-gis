@@ -1,7 +1,6 @@
 ﻿using gView.Framework.Carto;
 using gView.Framework.Geometry;
 using gView.Framework.IO;
-using gView.Framework.Symbology.UI;
 using gView.Framework.system;
 using gView.Framework.UI;
 using gView.GraphicsEngine;
@@ -12,7 +11,7 @@ using System.Reflection;
 namespace gView.Framework.Symbology
 {
     [gView.Framework.system.RegisterPlugIn("91CC3F6F-0EC5-42b7-AA34-9C89803118E7")]
-    public sealed class SimpleLineSymbol : Symbol, ILineSymbol, IPropertyPage, IPenColor, IPenWidth, IPenDashStyle
+    public sealed class SimpleLineSymbol : Symbol, ILineSymbol, IPenColor, IPenWidth, IPenDashStyle
     {
         private IPen _pen;
         private ArgbColor _color;
@@ -216,29 +215,6 @@ namespace gView.Framework.Symbology
 
         #endregion
 
-        #region IPropertyPage Member
-
-        public object PropertyPageObject()
-        {
-            return null;
-        }
-
-        public object PropertyPage(object initObject)
-        {
-            string appPath = System.IO.Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
-            Assembly uiAssembly = Assembly.LoadFrom(appPath + @"/gView.Win.Symbology.UI.dll");
-
-            IPropertyPanel p = uiAssembly.CreateInstance("gView.Framework.Symbology.UI.PropertyForm_SimpleLineSymbol") as IPropertyPanel;
-            if (p != null)
-            {
-                return p.PropertyPanel(this);
-            }
-
-            return null;
-        }
-
-        #endregion
-
         #region IPersistable Member
 
         [Browsable(false)]
@@ -282,8 +258,8 @@ namespace gView.Framework.Symbology
             stream.Save("linescap", (int)this.LineStartCap);
             stream.Save("lineecap", (int)this.LineEndCap);
 
-            stream.Save("maxwidth", (float)this.MaxPenWidth);
-            stream.Save("minwidth", (float)this.MinPenWidth);
+            stream.Save("maxwidth", MaxPenWidth);
+            stream.Save("minwidth", MinPenWidth);
             stream.Save("widthunit", (int)this.PenWidthUnit);
         }
 

@@ -1,22 +1,25 @@
 ﻿using gView.Framework.Carto;
 using gView.Framework.Geometry;
 using gView.Framework.IO;
-using gView.Framework.Symbology.UI;
+using gView.Framework.Reflection;
 using gView.Framework.system;
-using gView.Framework.UI;
 using gView.GraphicsEngine;
 using gView.GraphicsEngine.Abstraction;
+using gView.Symbology.Framework.Symbology.UI.Rules;
 using System.ComponentModel;
-using System.Reflection;
 
 namespace gView.Framework.Symbology
 {
     [gView.Framework.system.RegisterPlugIn("1496A1A8-8087-4eba-86A0-23FB91197B22")]
-    public sealed class SimpleFillSymbol : LegendItem, IFillSymbol, IPropertyPage, IPenColor, IBrushColor, IPenWidth, IPenDashStyle
+    public sealed class SimpleFillSymbol : LegendItemWidthWhithOutlineSymbol, 
+                                           IFillSymbol, 
+                                           IPenColor, 
+                                           IBrushColor, 
+                                           IPenWidth, 
+                                           IPenDashStyle
     {
         private IBrush _brush;
         private ArgbColor _color;
-        private ISymbol _outlineSymbol = null;
 
         public SimpleFillSymbol()
         {
@@ -42,7 +45,6 @@ namespace gView.Framework.Symbology
 
         [Browsable(true)]
         [Category("Fill Symbol")]
-        [UseColorPicker()]
         public ArgbColor Color
         {
             get
@@ -56,85 +58,13 @@ namespace gView.Framework.Symbology
             }
         }
 
-        [Browsable(true)]
-        [DisplayName("Symbol")]
-        [Category("Outline Symbol")]
-        [UseLineSymbolPicker()]
-        public ISymbol OutlineSymbol
-        {
-            get
-            {
-                return _outlineSymbol;
-            }
-            set
-            {
-                _outlineSymbol = value;
-            }
-        }
-
-        [Browsable(true)]
-        [DisplayName("Smoothingmode")]
-        [Category("Outline Symbol")]
-        public SymbolSmoothing SmoothingMode
-        {
-            get
-            {
-                if (_outlineSymbol is Symbol)
-                {
-                    return ((Symbol)_outlineSymbol).Smoothingmode;
-                }
-
-                return SymbolSmoothing.None;
-            }
-            set
-            {
-                if (_outlineSymbol is Symbol)
-                {
-                    ((Symbol)_outlineSymbol).Smoothingmode = value;
-                }
-            }
-        }
-
-        [Browsable(true)]
-        [DisplayName("Color")]
-        [Category("Outline Symbol")]
-        //[Editor(typeof(gView.Framework.UI.ColorTypeEditor), typeof(System.Drawing.Design.UITypeEditor))]
-        [UseColorPicker()]
-        public ArgbColor OutlineColor
-        {
-            get { return PenColor; }
-            set { PenColor = value; }
-        }
-
-        [Browsable(true)]
-        [DisplayName("DashStyle")]
-        [Category("Outline Symbol")]
-        //[Editor(typeof(gView.Framework.UI.DashStyleTypeEditor), typeof(System.Drawing.Design.UITypeEditor))]
-        [UseDashStylePicker()]
-        public LineDashStyle OutlineDashStyle
-        {
-            get { return PenDashStyle; }
-            set { PenDashStyle = value; }
-        }
-
-        [Browsable(true)]
-        [Category("Outline Symbol")]
-        [DisplayName("Width")]
-        //[Editor(typeof(gView.Framework.UI.PenWidthTypeEditor), typeof(System.Drawing.Design.UITypeEditor))]
-        [UseWidthPicker()]
-        public float OutlineWidth
-        {
-            get { return PenWidth; }
-            set { PenWidth = value; }
-        }
-
         public bool SupportsGeometryType(GeometryType geomType) => geomType == GeometryType.Polygon;
 
         #region IFillSymbol Member
 
         public void FillPath(IDisplay display, IGraphicsPath path)
         {
-            if (_outlineSymbol == null || this.OutlineColor.IsTransparent)
+            if (OutlineSymbol == null || this.OutlineColor.IsTransparent)
             {
                 display.Canvas.SmoothingMode = (SmoothingMode)this.SmoothingMode;
             }
@@ -146,15 +76,15 @@ namespace gView.Framework.Symbology
 
             display.Canvas.SmoothingMode = GraphicsEngine.SmoothingMode.None;
 
-            //if (_outlineSymbol != null)
+            //if (OutlineSymbol != null)
             //{
-            //    if (_outlineSymbol is ILineSymbol)
+            //    if (OutlineSymbol is ILineSymbol)
             //    {
-            //        ((ILineSymbol)_outlineSymbol).DrawPath(display, path);
+            //        ((ILineSymbol)OutlineSymbol).DrawPath(display, path);
             //    }
-            //    else if (_outlineSymbol is SymbolCollection)
+            //    else if (OutlineSymbol is SymbolCollection)
             //    {
-            //        foreach (SymbolCollectionItem item in ((SymbolCollection)_outlineSymbol).Symbols)
+            //        foreach (SymbolCollectionItem item in ((SymbolCollection)OutlineSymbol).Symbols)
             //        {
             //            if (!item.Visible) continue;
             //            if (item.Symbol is ILineSymbol)
@@ -179,7 +109,7 @@ namespace gView.Framework.Symbology
 
                 if (!this.OutlineColor.IsTransparent)
                 {
-                    SimpleFillSymbol.DrawOutlineSymbol(display, _outlineSymbol, geometry, gp);
+                    SimpleFillSymbol.DrawOutlineSymbol(display, OutlineSymbol, geometry, gp);
                 }
 
                 gp.Dispose(); gp = null;
@@ -193,9 +123,9 @@ namespace gView.Framework.Symbology
                 _brush.Dispose();
                 _brush = null;
             }
-            if (_outlineSymbol != null)
+            if (OutlineSymbol != null)
             {
-                _outlineSymbol.Release();
+                OutlineSymbol.Release();
             }
         }
 
@@ -211,29 +141,6 @@ namespace gView.Framework.Symbology
 
         #endregion
 
-        #region IPropertyPage Member
-
-        public object PropertyPageObject()
-        {
-            return null;
-        }
-
-        public object PropertyPage(object initObject)
-        {
-            string appPath = System.IO.Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
-            Assembly uiAssembly = Assembly.LoadFrom(appPath + @"/gView.Win.Symbology.UI.dll");
-
-            IPropertyPanel p = uiAssembly.CreateInstance("gView.Framework.Symbology.UI.PropertyForm_SimpleFillSymbol") as IPropertyPanel;
-            if (p != null)
-            {
-                return p.PropertyPanel(this);
-            }
-
-            return null;
-        }
-
-        #endregion
-
         #region IPersistable Member
 
         new public void Load(IPersistStream stream)
@@ -241,7 +148,7 @@ namespace gView.Framework.Symbology
             base.Load(stream);
 
             this.Color = ArgbColor.FromArgb((int)stream.Load("color", ArgbColor.Red.ToArgb()));
-            _outlineSymbol = (ISymbol)stream.Load("outlinesymbol");
+            OutlineSymbol = (ISymbol)stream.Load("outlinesymbol");
         }
 
         new public void Save(IPersistStream stream)
@@ -249,9 +156,9 @@ namespace gView.Framework.Symbology
             base.Save(stream);
 
             stream.Save("color", this.Color.ToArgb());
-            if (_outlineSymbol != null)
+            if (OutlineSymbol != null)
             {
-                stream.Save("outlinesymbol", _outlineSymbol);
+                stream.Save("outlinesymbol", OutlineSymbol);
             }
         }
 
@@ -268,9 +175,9 @@ namespace gView.Framework.Symbology
             }
 
             SimpleFillSymbol fSym = new SimpleFillSymbol(_brush.Color);
-            if (_outlineSymbol != null)
+            if (OutlineSymbol != null)
             {
-                fSym._outlineSymbol = (ISymbol)_outlineSymbol.Clone(options);
+                fSym.OutlineSymbol = (ISymbol)OutlineSymbol.Clone(options);
             }
 
             fSym.LegendLabel = _legendLabel;
@@ -287,17 +194,17 @@ namespace gView.Framework.Symbology
         {
             get
             {
-                if (_outlineSymbol is IPenColor)
+                if (OutlineSymbol is IPenColor)
                 {
-                    return ((IPenColor)_outlineSymbol).PenColor;
+                    return ((IPenColor)OutlineSymbol).PenColor;
                 }
                 return ArgbColor.Transparent;
             }
             set
             {
-                if (_outlineSymbol is IPenColor)
+                if (OutlineSymbol is IPenColor)
                 {
-                    ((IPenColor)_outlineSymbol).PenColor = value;
+                    ((IPenColor)OutlineSymbol).PenColor = value;
                 }
             }
         }
@@ -328,17 +235,17 @@ namespace gView.Framework.Symbology
         {
             get
             {
-                if (_outlineSymbol is IPenWidth)
+                if (OutlineSymbol is IPenWidth)
                 {
-                    return ((IPenWidth)_outlineSymbol).PenWidth;
+                    return ((IPenWidth)OutlineSymbol).PenWidth;
                 }
                 return 0;
             }
             set
             {
-                if (_outlineSymbol is IPenWidth)
+                if (OutlineSymbol is IPenWidth)
                 {
-                    ((IPenWidth)_outlineSymbol).PenWidth = value;
+                    ((IPenWidth)OutlineSymbol).PenWidth = value;
                 }
             }
         }
@@ -348,17 +255,17 @@ namespace gView.Framework.Symbology
         {
             get
             {
-                if (_outlineSymbol is IPenWidth)
+                if (OutlineSymbol is IPenWidth)
                 {
-                    return ((IPenWidth)_outlineSymbol).PenWidthUnit;
+                    return ((IPenWidth)OutlineSymbol).PenWidthUnit;
                 }
                 return DrawingUnit.Pixel;
             }
             set
             {
-                if (_outlineSymbol is IPenWidth)
+                if (OutlineSymbol is IPenWidth)
                 {
-                    ((IPenWidth)_outlineSymbol).PenWidthUnit = value;
+                    ((IPenWidth)OutlineSymbol).PenWidthUnit = value;
                 }
             }
         }
@@ -370,18 +277,18 @@ namespace gView.Framework.Symbology
         {
             get
             {
-                if (_outlineSymbol is IPenWidth)
+                if (OutlineSymbol is IPenWidth)
                 {
-                    return ((IPenWidth)_outlineSymbol).MaxPenWidth;
+                    return ((IPenWidth)OutlineSymbol).MaxPenWidth;
                 }
 
                 return 0f;
             }
             set
             {
-                if (_outlineSymbol is IPenWidth)
+                if (OutlineSymbol is IPenWidth)
                 {
-                    ((IPenWidth)_outlineSymbol).MaxPenWidth = value;
+                    ((IPenWidth)OutlineSymbol).MaxPenWidth = value;
                 }
             }
         }
@@ -393,18 +300,18 @@ namespace gView.Framework.Symbology
         {
             get
             {
-                if (_outlineSymbol is IPenWidth)
+                if (OutlineSymbol is IPenWidth)
                 {
-                    return ((IPenWidth)_outlineSymbol).MinPenWidth;
+                    return ((IPenWidth)OutlineSymbol).MinPenWidth;
                 }
 
                 return 0f;
             }
             set
             {
-                if (_outlineSymbol is IPenWidth)
+                if (OutlineSymbol is IPenWidth)
                 {
-                    ((IPenWidth)_outlineSymbol).MinPenWidth = value;
+                    ((IPenWidth)OutlineSymbol).MinPenWidth = value;
                 }
             }
         }
@@ -418,17 +325,17 @@ namespace gView.Framework.Symbology
         {
             get
             {
-                if (_outlineSymbol is IPenDashStyle)
+                if (OutlineSymbol is IPenDashStyle)
                 {
-                    return ((IPenDashStyle)_outlineSymbol).PenDashStyle;
+                    return ((IPenDashStyle)OutlineSymbol).PenDashStyle;
                 }
                 return LineDashStyle.Solid;
             }
             set
             {
-                if (_outlineSymbol is IPenDashStyle)
+                if (OutlineSymbol is IPenDashStyle)
                 {
-                    ((IPenDashStyle)_outlineSymbol).PenDashStyle = value;
+                    ((IPenDashStyle)OutlineSymbol).PenDashStyle = value;
                 }
             }
         }
@@ -503,16 +410,16 @@ namespace gView.Framework.Symbology
         {
             set
             {
-                if (_outlineSymbol != null)
+                if (OutlineSymbol != null)
                 {
-                    _outlineSymbol.SymbolSmothingMode = value;
+                    OutlineSymbol.SymbolSmothingMode = value;
                 }
             }
         }
 
         public bool RequireClone()
         {
-            return _outlineSymbol != null && _outlineSymbol.RequireClone();
+            return OutlineSymbol != null && OutlineSymbol.RequireClone();
         }
 
         #endregion
