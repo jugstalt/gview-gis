@@ -2,12 +2,14 @@ using gView.Framework.Data;
 using gView.Framework.Geometry;
 using gView.Framework.system;
 using gView.Framework.Web;
+using gView.GraphicsEngine;
 using gView.GraphicsEngine.Abstraction;
 using gView.Interoperability.GeoServices.Rest.Json.Request;
 using gView.Interoperability.GeoServices.Rest.Json.Response;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -17,7 +19,7 @@ using System.Xml;
 
 namespace gView.Interoperability.GeoServices.Dataset
 {
-    public class GeoServicesClass : IWebServiceClass
+    public class GeoServicesClass : IWebServiceClass, IDisposable
     {
         internal event EventHandler ModifyResponseOuput = null;
 
@@ -115,11 +117,12 @@ namespace gView.Interoperability.GeoServices.Dataset
             bool hasImage = false;
             if (!String.IsNullOrWhiteSpace(response.Href))
             {
-                var bm = WebFunctions.DownloadImage(response.Href);
-                if (bm != null)
+                var imageData = await _dataset._http.GetDataAsync(response.Href);
+
+                if (imageData != null)
                 {
                     hasImage = true;
-                    _image = new GeorefBitmap(bm);
+                    _image = new GeorefBitmap(Current.Engine.CreateBitmap(new MemoryStream(imageData)));
                     if (response.Extent != null)
                     {
                         _image.Envelope = new Envelope(response.Extent.Xmin, response.Extent.Ymin, response.Extent.Xmax, response.Extent.Ymax);
@@ -293,6 +296,15 @@ namespace gView.Interoperability.GeoServices.Dataset
             }
 
             return sb.ToString();
+        }
+
+        public void Dispose()
+        {
+            if (_image is not null)
+            {
+                _image.Dispose();
+                _image = null;
+            }
         }
 
         #endregion Helper

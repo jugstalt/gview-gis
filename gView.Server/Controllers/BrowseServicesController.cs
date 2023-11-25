@@ -220,7 +220,7 @@ namespace gView.Server.Controllers
                                 Encoding.UTF8,
                                 Encoding.Unicode,
                                 Encoding.UTF32,
-                                Encoding.UTF7,
+                                //Encoding.UTF7,
                                 Encoding.Default
                             })
                     {

@@ -2,11 +2,12 @@ using gView.Framework.Data;
 using gView.Framework.Data.Metadata;
 using gView.Framework.Geometry;
 using gView.Framework.IO;
+using gView.Framework.Web.Abstraction;
+using gView.Framework.Web.Services;
 using gView.Framework.XML;
 using gView.MapServer;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Threading.Tasks;
 using System.Xml;
 
@@ -15,6 +16,8 @@ namespace gView.Interoperability.ArcXML.Dataset
     [gView.Framework.system.RegisterPlugIn("3B26682C-BF6E-4fe8-BE80-762260ABA581")]
     public class ArcIMSDataset : DatasetMetadata, IFeatureDataset, IRequestDependentDataset
     {
+        internal readonly IHttpService _http;
+
         internal string _connection = "";
         internal string _name = "";
         internal List<IWebServiceTheme> _themes = new List<IWebServiceTheme>();
@@ -22,13 +25,16 @@ namespace gView.Interoperability.ArcXML.Dataset
         private IEnvelope _envelope;
         private string _errMsg = "";
         internal ArcXMLProperties _properties = new ArcXMLProperties();
-        //internal dotNETConnector _connector = null;
         private DatasetState _state = DatasetState.unknown;
         private ISpatialReference _sRef = null;
 
-        public ArcIMSDataset() { }
+        public ArcIMSDataset() 
+        {
+            _http = HttpService.CreateInstance();
+        }
 
         public ArcIMSDataset(string connection, string name)
+            : this()
         {
             _connection = connection;
             _name = name;
@@ -261,11 +267,12 @@ namespace gView.Interoperability.ArcXML.Dataset
                         bool.TryParse(layerNode.Attributes["visible"].Value, out visible);
                     }
 
-                    XmlNode tocNode = layerNode.SelectSingleNode("TOC");
-                    if (tocNode != null)
-                    {
-                        ReadTocNode(tocNode);
-                    }
+                    //XmlNode tocNode = layerNode.SelectSingleNode("TOC");
+                    //if (tocNode != null)
+                    //{
+                    //    ReadTocNode(tocNode);
+                    //}
+
                     IClass themeClass = null;
                     IWebServiceTheme theme;
                     if (layerNode.Attributes["type"] != null && layerNode.Attributes["type"].Value == "featureclass")
@@ -373,23 +380,25 @@ namespace gView.Interoperability.ArcXML.Dataset
         #endregion
 
         #region Helper
-        private void ReadTocNode(XmlNode tocNode)
-        {
-            foreach (XmlNode tocclass in tocNode.SelectNodes("TOCGROUP/TOCCLASS"))
-            {
-                try
-                {
-                    MemoryStream ms = new MemoryStream();
-                    byte[] imgBytes = Convert.FromBase64String(tocclass.InnerText);
-                    ms.Write(imgBytes, 0, imgBytes.Length);
-                    ms.Position = 0;
 
-                    System.Drawing.Image image = System.Drawing.Image.FromStream(ms);
-                    image.Dispose();
-                }
-                catch { }
-            }
-        }
+        //private void ReadTocNode(XmlNode tocNode)
+        //{
+        //    foreach (XmlNode tocclass in tocNode.SelectNodes("TOCGROUP/TOCCLASS"))
+        //    {
+        //        try
+        //        {
+        //            MemoryStream ms = new MemoryStream();
+        //            byte[] imgBytes = Convert.FromBase64String(tocclass.InnerText);
+        //            ms.Write(imgBytes, 0, imgBytes.Length);
+        //            ms.Position = 0;
+
+        //            System.Drawing.Image image = System.Drawing.Image.FromStream(ms);
+        //            image.Dispose();
+        //        }
+        //        catch { }
+        //    }
+        //}
+
         #endregion
     }
 }

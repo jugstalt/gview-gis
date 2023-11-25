@@ -583,7 +583,7 @@ namespace gView.Framework.OGC.DB
 
         #region IFeatureUpdater Member
 
-        Encoding _encoder = new UTF7Encoding();
+        //Encoding _encoder = new UTF7Encoding();
         virtual public Task<bool> Insert(IFeatureClass fClass, IFeature feature)
         {
             List<IFeature> features = new List<IFeature>();

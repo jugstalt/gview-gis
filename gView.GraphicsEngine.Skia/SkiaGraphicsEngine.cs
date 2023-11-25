@@ -1,7 +1,10 @@
 ﻿using gView.GraphicsEngine.Abstraction;
 using gView.GraphicsEngine.Threading;
+using SkiaSharp;
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace gView.GraphicsEngine.Skia
 {
@@ -61,6 +64,47 @@ namespace gView.GraphicsEngine.Skia
         public IFont CreateFont(string fontFamily, float size, FontStyle fontStyle = FontStyle.Regular, GraphicsUnit grUnit = GraphicsUnit.Point)
         {
             return new SkiaFont(fontFamily, size, fontStyle, grUnit);
+        }
+
+        private static string[] _installedFontNames = null;
+        public IEnumerable<string> GetInstalledFontNames()
+        {
+            if (_installedFontNames is null)
+            {
+                using (var fontManager = SKFontManager.Default)
+                {
+                    _installedFontNames = fontManager.FontFamilies?.ToArray() ?? [];
+                }
+            }
+
+            return _installedFontNames;
+        }
+
+        private static readonly string[] CommonFonts = new string[]
+        {
+            "Times New Roman", "Verdana", "Tahoma", "Arial", "Helvetica",
+            "Georgia", "Trebuchet MS", "Lucida Sans","Courier New"
+        };
+        private static string _defaultFontName = null;
+        public string GetDefaultFontName()
+        {
+            if (_defaultFontName is null)
+            {
+                var availableFonts = GetInstalledFontNames();
+
+                foreach (var font in CommonFonts)
+                {
+                    if (availableFonts.Any(f => f.Equals(font, StringComparison.OrdinalIgnoreCase)))
+                    {
+                        return _defaultFontName = font;
+                    }
+                }
+
+                // Fallback
+                return _defaultFontName = "Sans-serif";
+            }
+
+            return _defaultFontName;
         }
 
         public IGraphicsPath CreateGraphicsPath()

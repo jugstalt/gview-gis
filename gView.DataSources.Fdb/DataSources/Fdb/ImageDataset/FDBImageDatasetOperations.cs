@@ -5,6 +5,7 @@ using gView.Framework.Data.Filters;
 using gView.Framework.Db;
 using gView.Framework.FDB;
 using gView.Framework.system;
+using gView.GraphicsEngine;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -419,23 +420,13 @@ namespace gView.DataSources.Fdb.ImageDataset
                 ReportProgress(this, 1);
             }
 
-            System.Drawing.Imaging.ImageFormat format = System.Drawing.Imaging.ImageFormat.Jpeg;
-            switch (fi.Extension.ToLower())
-            {
-                case ".png":
-                    format = System.Drawing.Imaging.ImageFormat.Png;
-                    break;
-                case ".tif":
-                case ".tiff":
-                    format = System.Drawing.Imaging.ImageFormat.Tiff;
-                    break;
-            }
-
             #region RasterFileDataset bestimmen
+
             List<IRasterFileDataset> rFileDatasets = new List<IRasterFileDataset>();
             IRasterFileDataset rFileDataset = null;
             IRasterLayer rasterLayer = null;
             PlugInManager compMan = new PlugInManager();
+
             foreach (var dsType in compMan.GetPlugins(Plugins.Type.IDataset))
             {
                 IRasterFileDataset rds = compMan.CreateInstance<IDataset>(dsType) as IRasterFileDataset;
@@ -495,6 +486,7 @@ namespace gView.DataSources.Fdb.ImageDataset
                 Console.WriteLine(_errMsg = fi.FullName + " is not a valid Raster Layer...");
                 return false;
             }
+
             #endregion
 
             FileInfo fiWorld = null;

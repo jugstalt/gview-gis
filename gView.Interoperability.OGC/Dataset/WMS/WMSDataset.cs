@@ -3,6 +3,8 @@ using gView.Framework.Data.Metadata;
 using gView.Framework.Geometry;
 using gView.Framework.IO;
 using gView.Framework.Web;
+using gView.Framework.Web.Abstraction;
+using gView.Framework.Web.Services;
 using gView.Interoperability.OGC.Dataset.WFS;
 using System;
 using System.Collections.Generic;
@@ -15,6 +17,8 @@ namespace gView.Interoperability.OGC.Dataset.WMS
     [gView.Framework.system.RegisterPlugIn("538F0731-31FE-493a-B063-10A2D37D6E6D")]
     public class WMSDataset : DatasetMetadata, IFeatureDataset, IRequestDependentDataset
     {
+        internal readonly IHttpService _http;
+
         internal string _connection = "", _connectionString;
         private IEnvelope _envelope = null;
         private string _errMsg = "";
@@ -25,7 +29,10 @@ namespace gView.Interoperability.OGC.Dataset.WMS
         private SERVICE_TYPE _type = SERVICE_TYPE.WMS;
         private DatasetState _state = DatasetState.unknown;
 
-        public WMSDataset() { }
+        public WMSDataset() 
+        {
+            _http = HttpService.CreateInstance();
+        }
 
         async static public Task<WMSDataset> Create(string connectionString, string name)
         {

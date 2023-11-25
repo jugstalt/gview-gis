@@ -4,8 +4,10 @@
         <GvCardContent>
             <GvGrid ColumnCount="6">
                 <GvGridItem Span="5">
-                    <MudTextField Label="New Scale" @ref="_addScaleInput"
-                                  Format="N6" T="double" Immediate="true"
+                    <MudTextField Label="New Scale" 
+                                  @bind-Value="_newScale"
+                                  Format="N6" T="double" 
+                                  Immediate="true"
                                   InputType="InputType.Number" Step="0.1"
                                   Variant="Variant.Text"></MudTextField>
                 </GvGridItem>
@@ -35,14 +37,15 @@
 
 @code{
     [Parameter] public TileScalesModel? Model { get; set; }
-    private MudTextField<double>? _addScaleInput;
+
+    private double _newScale;
 
     private void AddScale()
     {
-        if (_addScaleInput != null && Model != null && !Model.Scales.Contains(_addScaleInput.Value))
+        if (_newScale > 0 && Model != null && !Model.Scales.Contains(_newScale))
         {
-            Model.Scales.Add(_addScaleInput.Value);
-            _addScaleInput.Value = 0D;
+            Model.Scales.Add(_newScale);
+            _newScale = 0D;
         }
     }
 

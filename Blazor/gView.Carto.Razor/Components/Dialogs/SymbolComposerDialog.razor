@@ -27,19 +27,19 @@
                                         <ChildContent>
                                             <MudDropZone T="ISymbolCollectionItem"
                                                          AllowReorder="true">
-                                                <MudSelect T="System.Type" @ref="_createNewStackItemSelect"
-                                                          Value="null"
-                                                          Label="Select to add new item"
-                                                           ValueChanged="(val) => CreateNewStackSymbol(val)">
-                                                   <MudSelectItem T="System.Type" Value="null">---</MudSelectItem>
-                                                   @if(_creatableSymbolTypes is not null) 
-                                                   { 
-                                                        @foreach(var symbolType in _creatableSymbolTypes)
-                                                        {
-                                                            <MudSelectItem Value="symbolType">@symbolType.Name</MudSelectItem>
-                                                        }
-                                                   }
-                                                </MudSelect>
+                                                @if (_creatableSymbolTypes is not null)
+                                                {
+                                                    <MudButtonGroup Color="Color.Primary" Variant="Variant.Outlined">
+                                                        <MudButton>Add</MudButton>
+                                                        <MudMenu Icon="@Icons.Material.Filled.ArrowDropDown" Style="align-self: auto;">
+                                                            @foreach (var symbolType in _creatableSymbolTypes)
+                                                            {
+                                                                <MudMenuItem OnClick="() => CreateNewStackSymbol(symbolType)">@symbolType.Name</MudMenuItem>
+                                                            }
+                                                        </MudMenu>
+                                                    </MudButtonGroup>
+                                                }
+
                                             </MudDropZone>
                                         </ChildContent>
                                         <ItemRenderer>
@@ -155,7 +155,6 @@
     private ISymbol? _selectedSymbol = null;
 
     private Type[]? _creatableSymbolTypes = null;
-    private MudSelect<Type>? _createNewStackItemSelect = null;
 
     private bool _symbol_isExpanded = true;
     private bool _symbolTransformation_input = false;
@@ -254,7 +253,6 @@
             _symbolStack?.AddSymbol(newSymbol);
 
             _selectedSymbol = _selectedSymbol ?? newSymbol;
-            _createNewStackItemSelect!.Value = null!;
 
             DrawPreviewImage();
         }

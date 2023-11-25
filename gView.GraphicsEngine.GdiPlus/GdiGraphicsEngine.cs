@@ -1,7 +1,9 @@
 ﻿using gView.GraphicsEngine.Abstraction;
 using gView.GraphicsEngine.Threading;
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace gView.GraphicsEngine.GdiPlus
 {
@@ -53,6 +55,28 @@ namespace gView.GraphicsEngine.GdiPlus
         public IFont CreateFont(string fontFamily, float size, FontStyle fontStyle = FontStyle.Regular, GraphicsUnit grUnit = GraphicsUnit.Point)
         {
             return new GdiFont(fontFamily, size, fontStyle);
+        }
+
+        private static string[] _installedFontNames = null;
+        public IEnumerable<string> GetInstalledFontNames()
+        {
+            if(_installedFontNames is null)
+            {
+                _installedFontNames = System.Drawing.FontFamily.Families.Select(f => f.Name).ToArray();
+            }
+
+            return _installedFontNames ?? [];
+        }
+
+        private static string _defaultFontName = null;
+        public string GetDefaultFontName()
+        {
+            if (String.IsNullOrEmpty(_defaultFontName))
+            {
+                _defaultFontName = System.Drawing.FontFamily.GenericSansSerif.Name;
+            }
+
+            return _defaultFontName;
         }
 
         public IGraphicsPath CreateGraphicsPath()

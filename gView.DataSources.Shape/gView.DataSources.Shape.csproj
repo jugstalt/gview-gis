@@ -20,4 +20,7 @@
     <ProjectReference Include="..\gView.System\gView.System.csproj" />
   </ItemGroup>
 
+	<PropertyGroup>
+		<NoWarn>$(NoWarn);SYSLIB0001</NoWarn>
+	</PropertyGroup>	
 </Project>

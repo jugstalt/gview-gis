@@ -20,7 +20,7 @@ namespace gView.Interoperability.GeoServices.Dataset
     [gView.Framework.system.RegisterPlugIn("C4D644FE-8125-4214-99E1-0F0BC5884EDB")]
     public class GeoServicesDataset : DatasetMetadata, IFeatureDataset, IRequestDependentDataset
     {
-        private readonly IHttpService _http;
+        internal readonly IHttpService _http;
 
         internal string _connection = "";
         internal string _name = "";

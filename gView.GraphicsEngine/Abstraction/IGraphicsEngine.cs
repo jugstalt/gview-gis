@@ -1,5 +1,7 @@
 ﻿using gView.GraphicsEngine.Threading;
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 
 namespace gView.GraphicsEngine.Abstraction
@@ -20,6 +22,8 @@ namespace gView.GraphicsEngine.Abstraction
         IBrushCollection CreateHatchBrush(HatchStyle hatchStyle, ArgbColor foreColor, ArgbColor backColor);
 
         IFont CreateFont(string fontFamily, float size, FontStyle fontStyle = FontStyle.Regular, GraphicsUnit grUnit = GraphicsUnit.Point);
+        IEnumerable<string> GetInstalledFontNames();
+        string GetDefaultFontName();
 
         IDrawTextFormat CreateDrawTextFormat();
 

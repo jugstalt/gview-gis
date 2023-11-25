@@ -1,5 +1,6 @@
 using gView.Framework.IO;
 using gView.Framework.system;
+using gView.Framework.Web.Abstraction;
 using gView.GraphicsEngine;
 using gView.GraphicsEngine.Abstraction;
 using Newtonsoft.Json;
@@ -39,7 +40,7 @@ namespace gView.Framework.Web
             return proxy;
         }
 
-        public static IBitmap DownloadImage(XmlNode output)
+        async public static Task<IBitmap> DownloadImage(IHttpService http, XmlNode output)
         {
             if (output.Attributes["file"] != null)
             {
@@ -55,439 +56,22 @@ namespace gView.Framework.Web
             }
             if (output.Attributes["url"] != null)
             {
-                return DownloadImage(
+                var webCredentials = WebCredentials.FromXmlNode(output);
+                var imageData = await http.GetDataAsync(
                     output.Attributes["url"].Value,
-                    ProxySettings.Proxy(output.Attributes["url"].Value),
-                    WebCredentials.FromXmlNode(output.SelectSingleNode("credentials")));
+                    webCredentials != null
+                        ? new Models.RequestAuthorization() { Username = webCredentials.UserName, Password = webCredentials.Password }
+                        : null);
+
+                if (imageData != null)
+                {
+                    using (var ms = new MemoryStream(imageData))
+                    {
+                        return Current.Engine.CreateBitmap(ms);
+                    }
+                }
             }
             return null;
-        }
-
-        public static IBitmap DownloadImage(XmlNode output, IWebProxy proxy)
-        {
-            if (output.Attributes["file"] != null)
-            {
-                try
-                {
-                    FileInfo fi = new FileInfo(output.Attributes["file"].Value);
-                    if (fi.Exists)
-                    {
-                        return Current.Engine.CreateBitmap(fi.FullName);
-                    }
-                }
-                catch (Exception ex) { LastErrorMessage = ex.Message; throw; }
-            }
-            if (output.Attributes["url"] != null)
-            {
-                return DownloadImage(
-                    output.Attributes["url"].Value,
-                    proxy,
-                    WebCredentials.FromXmlNode(output.SelectSingleNode("credentials")));
-            }
-            return null;
-        }
-        public static IBitmap DownloadImage(string imageUrl)
-        {
-            return DownloadImage(imageUrl, ProxySettings.Proxy(imageUrl));
-        }
-        public static IBitmap DownloadImage(string imageUrl, string usr, string pwd)
-        {
-            return DownloadImage(imageUrl, ProxySettings.Proxy(imageUrl), null, usr, pwd);
-        }
-        public static IBitmap DownloadImage(string imageUrl, IWebProxy proxy)
-        {
-            return DownloadImage(imageUrl, proxy, null);
-        }
-        public static IBitmap DownloadImage(string imageUrl, IWebProxy proxy, ICredentials credentials)
-        {
-            return DownloadImage(imageUrl, proxy, credentials, String.Empty, String.Empty);
-        }
-        public static IBitmap DownloadImage(string imageUrl, IWebProxy proxy, ICredentials credentials, string usr, string pwd)
-        {
-            try
-            {
-                using (MemoryStream memStream = DownloadStream(imageUrl, proxy, credentials, usr, pwd))
-                {
-                    return Current.Engine.CreateBitmap(memStream);
-                }
-
-            }
-            catch (Exception ex)
-            {
-                LastErrorMessage = ex.Message;
-                throw;
-            }
-        }
-
-        public static MemoryStream DownloadStream(string url)
-        {
-            return DownloadStream(url, ProxySettings.Proxy(url));
-        }
-        public static MemoryStream DownloadStream(string url, string usr, string pwd)
-        {
-            return DownloadStream(url, ProxySettings.Proxy(url), null, usr, pwd);
-        }
-        public static MemoryStream DownloadStream(string url, IWebProxy proxy)
-        {
-            return DownloadStream(url, proxy, null);
-        }
-        public static MemoryStream DownloadStream(string url, IWebProxy proxy, ICredentials credentials)
-        {
-            return DownloadStream(url, proxy, credentials, String.Empty, String.Empty);
-        }
-        public static MemoryStream DownloadStream(string url, IWebProxy proxy, ICredentials credentials, string usr, string pwd)
-        {
-            try
-            {
-                HttpWebRequest wReq = (HttpWebRequest)HttpWebRequest.Create(url);
-                wReq.Credentials = credentials;
-
-                if (proxy != null)
-                {
-                    wReq.Proxy = proxy;
-                }
-
-                AppendAuthentification(wReq, usr, pwd);
-
-                //wReq.UserAgent = "Mozilla/5.0 (Windows NT 6.1; rv:15.0) Gecko/20100101 Firefox/15.0.1";
-                wReq.UserAgent = ".NET Framework";
-
-                HttpWebResponse wresp = (HttpWebResponse)wReq.GetResponse();
-
-                int Bytes2Read = 3500000;
-                Byte[] b = new Byte[Bytes2Read];
-
-                DateTime t1 = DateTime.Now;
-                Stream stream = wresp.GetResponseStream();
-
-                MemoryStream memStream = new MemoryStream();
-
-                while (Bytes2Read > 0)
-                {
-                    int len = stream.Read(b, 0, Bytes2Read);
-                    if (len == 0)
-                    {
-                        break;
-                    }
-
-                    memStream.Write(b, 0, len);
-                }
-                memStream.Position = 0;
-                return memStream;
-            }
-            catch (Exception ex)
-            {
-                LastErrorMessage = ex.Message;
-                throw;
-                //return null;
-            }
-        }
-
-        public static string DownloadXml(string url)
-        {
-            return DownloadXml(url, String.Empty, String.Empty);
-        }
-        public static string DownloadXml(string url, string usr, string pwd)
-        {
-            return DownloadXml(url, ProxySettings.Proxy(url), usr, pwd);
-        }
-        public static string DownloadXml(string url, IWebProxy proxy)
-        {
-            return DownloadXml(url, proxy, String.Empty, String.Empty);
-        }
-        public static string DownloadXml(string url, IWebProxy proxy, string usr, string pwd)
-        {
-            try
-            {
-                HttpWebRequest wReq = (HttpWebRequest)HttpWebRequest.Create(url);
-
-                if (proxy != null)
-                {
-                    wReq.Proxy = proxy;
-                }
-
-                AppendAuthentification(wReq, usr, pwd);
-
-                HttpWebResponse wresp = (HttpWebResponse)wReq.GetResponse();
-
-                int Bytes2Read = 3500000;
-                Byte[] b = new Byte[Bytes2Read];
-
-                DateTime t1 = DateTime.Now;
-                Stream stream = wresp.GetResponseStream();
-
-                MemoryStream memStream = new MemoryStream();
-
-                while (Bytes2Read > 0)
-                {
-                    int len = stream.Read(b, 0, Bytes2Read);
-                    if (len == 0)
-                    {
-                        break;
-                    }
-
-                    memStream.Write(b, 0, len);
-                }
-                memStream.Position = 0;
-                string ret = Encoding.Default.GetString(memStream.GetBuffer()).Trim(' ', '\0'); ;
-                memStream.Close();
-                memStream.Dispose();
-
-                return ret.Trim();
-            }
-            catch (Exception ex)
-            {
-                LastErrorMessage = ex.Message;
-                return "<Exception>" + ex.Message + "</Exception>";
-            }
-        }
-        public static IBitmap DownloadImage(string imageUrl, byte[] postBytes)
-        {
-            return DownloadImage(imageUrl, postBytes, null);
-        }
-        public static IBitmap DownloadImage(string imageUrl, byte[] postBytes, IWebProxy proxy)
-        {
-            try
-            {
-                HttpWebRequest wReq = (HttpWebRequest)HttpWebRequest.Create(imageUrl);
-                wReq.Method = "POST";
-
-                if (proxy != null)
-                {
-                    wReq.Proxy = proxy;
-                }
-
-                if (postBytes != null)
-                {
-                    wReq.ContentLength = postBytes.Length;
-
-                    try
-                    {
-                        Stream postStream = wReq.GetRequestStream();
-                        postStream.Write(postBytes, 0, postBytes.Length);
-                        postStream.Flush();
-                        postStream.Close();
-                    }
-                    catch (Exception e)
-                    {
-                        //log("ERROR@Connector.Sendrequest_ServletExec:\n"+e.Message,"");
-                        LastErrorMessage = e.Message;
-                        return null;
-                    }
-                }
-
-                HttpWebResponse wresp = (HttpWebResponse)wReq.GetResponse();
-
-                int Bytes2Read = 3500000;
-                Byte[] b = new Byte[Bytes2Read];
-
-                DateTime t1 = DateTime.Now;
-                Stream stream = wresp.GetResponseStream();
-
-                using (MemoryStream memStream = new MemoryStream())
-                {
-
-                    while (Bytes2Read > 0)
-                    {
-                        int len = stream.Read(b, 0, Bytes2Read);
-                        if (len == 0)
-                        {
-                            break;
-                        }
-
-                        memStream.Write(b, 0, len);
-                    }
-                    memStream.Position = 0;
-                    return Current.Engine.CreateBitmap(memStream);
-                }
-            }
-            catch (Exception ex)
-            {
-                LastErrorMessage = ex.Message;
-                return null;
-            }
-        }
-
-        public static byte[] DownloadRaw(string url)
-        {
-            return DownloadRaw(url, null, null, null, String.Empty, String.Empty);
-        }
-        public static byte[] DownloadRaw(string url, string usr, string pwd)
-        {
-            return DownloadRaw(url, null, null, null, usr, pwd);
-        }
-        public static byte[] DownloadRaw(string url, byte[] postBytes, string usr, string pwd)
-        {
-            return DownloadRaw(url, postBytes, null, null, usr, pwd);
-        }
-        public static byte[] DownloadRaw(string url, IWebProxy proxy)
-        {
-            return DownloadRaw(url, null, proxy, null, String.Empty, String.Empty);
-        }
-        public static byte[] DownloadRaw(string url, IWebProxy proxy, ICredentials credentials)
-        {
-            return DownloadRaw(url, null, proxy, credentials, String.Empty, String.Empty);
-        }
-        public static byte[] DownloadRaw(string url, byte[] postBytes, IWebProxy proxy, ICredentials credentials, string usr, string pwd)
-        {
-            try
-            {
-                HttpWebRequest wReq = (HttpWebRequest)HttpWebRequest.Create(url);
-                wReq.Credentials = credentials;
-
-                if (proxy != null)
-                {
-                    wReq.Proxy = proxy;
-                }
-
-                AppendAuthentification(wReq, usr, pwd);
-
-                if (postBytes != null)
-                {
-                    wReq.Method = "POST";
-                    wReq.ContentLength = postBytes.Length;
-
-                    try
-                    {
-                        Stream postStream = wReq.GetRequestStream();
-                        postStream.Write(postBytes, 0, postBytes.Length);
-                        postStream.Flush();
-                        postStream.Close();
-                    }
-                    catch (Exception e)
-                    {
-                        //log("ERROR@Connector.Sendrequest_ServletExec:\n"+e.Message,"");
-                        LastErrorMessage = e.Message;
-                        return null;
-                    }
-                }
-                else
-                {
-                    wReq.ContentLength = 0;
-                }
-
-                HttpWebResponse wresp = (HttpWebResponse)wReq.GetResponse();
-
-                int Bytes2Read = 3500000;
-                Byte[] b = new Byte[Bytes2Read];
-
-                DateTime t1 = DateTime.Now;
-                Stream stream = wresp.GetResponseStream();
-
-                MemoryStream memStream = new MemoryStream();
-
-                while (Bytes2Read > 0)
-                {
-                    int len = stream.Read(b, 0, Bytes2Read);
-                    if (len == 0)
-                    {
-                        break;
-                    }
-
-                    memStream.Write(b, 0, len);
-                }
-                memStream.Position = 0;
-                byte[] bytes = new byte[memStream.Length];
-                memStream.Read(bytes, 0, (int)memStream.Length);
-
-                return bytes;
-            }
-            catch (Exception ex)
-            {
-                LastErrorMessage = ex.Message;
-                throw;
-                //return null;
-            }
-        }
-
-        async public static Task<byte[]> DownloadRawAsync(string url, byte[] postBytes, IWebProxy proxy, ICredentials credentials, string usr, string pwd)
-        {
-            try
-            {
-                HttpWebRequest wReq = (HttpWebRequest)HttpWebRequest.Create(url);
-                wReq.Credentials = credentials;
-
-                if (proxy != null)
-                {
-                    wReq.Proxy = proxy;
-                }
-
-                AppendAuthentification(wReq, usr, pwd);
-
-                if (postBytes != null)
-                {
-                    wReq.Method = "POST";
-                    wReq.ContentLength = postBytes.Length;
-
-                    try
-                    {
-                        Stream postStream = wReq.GetRequestStream();
-                        postStream.Write(postBytes, 0, postBytes.Length);
-                        postStream.Flush();
-                        postStream.Close();
-                    }
-                    catch (Exception e)
-                    {
-                        //log("ERROR@Connector.Sendrequest_ServletExec:\n"+e.Message,"");
-                        LastErrorMessage = e.Message;
-                        return null;
-                    }
-                }
-                else
-                {
-                    wReq.ContentLength = 0;
-                }
-
-                HttpWebResponse wresp = (HttpWebResponse)await wReq.GetResponseAsync();
-
-                int Bytes2Read = 3500000;
-                Byte[] b = new Byte[Bytes2Read];
-
-                DateTime t1 = DateTime.Now;
-                Stream stream = wresp.GetResponseStream();
-
-                MemoryStream memStream = new MemoryStream();
-
-                while (Bytes2Read > 0)
-                {
-                    int len = stream.Read(b, 0, Bytes2Read);
-                    if (len == 0)
-                    {
-                        break;
-                    }
-
-                    memStream.Write(b, 0, len);
-                }
-                memStream.Position = 0;
-                byte[] bytes = new byte[memStream.Length];
-                memStream.Read(bytes, 0, (int)memStream.Length);
-
-                return bytes;
-            }
-            catch (Exception ex)
-            {
-                LastErrorMessage = ex.Message;
-                throw;
-                //return null;
-            }
-        }
-
-        async public static Task<T> DownloadObjectAsync<T>(string url)
-        {
-            return await DownloadObjectAsync<T>(url, null, null, null, String.Empty, String.Empty);
-        }
-
-        async public static Task<T> DownloadObjectAsync<T>(string url, byte[] postBytes, IWebProxy proxy, ICredentials credentials, string user, string pwd)
-        {
-            var bytes = await DownloadRawAsync(url, postBytes, proxy, credentials, user, pwd);
-            if (bytes == null || bytes.Length == 0)
-            {
-                return default(T);
-            }
-
-            var json = System.Text.Encoding.UTF8.GetString(bytes);
-
-            return JsonConvert.DeserializeObject<T>(json);
         }
 
         public static string HttpSendRequest(string url)
@@ -600,154 +184,6 @@ namespace gView.Framework.Web
                 return s;
             }
              * */
-        }
-
-        async public static Task<string> HttpSendRequestAsync(string url, string methode, byte[] postBytes, string user, string password, Encoding encoding, int timeout = 0)
-        {
-            HttpWebResponse httpResponse;
-            int trys = 0;
-            while (true)
-            {
-                HttpWebRequest httpRequest = (HttpWebRequest)WebRequest.Create(url);
-
-                if (!user.Equals(String.Empty) || !password.Equals(string.Empty))
-                {
-                    string auth = "Basic " + Convert.ToBase64String(Encoding.ASCII.GetBytes(user + ":" + password));
-                    httpRequest.Headers.Add("Authorization", auth);
-                }
-
-                //HttpWReq.Timeout = timeout;
-                httpRequest.Method = methode;
-
-                if (timeout > 0)
-                {
-                    httpRequest.Timeout = timeout;
-                }
-
-                //ProxySettings settings = new ProxySettings();
-                //HttpWReq.Proxy = settings.Proxy(url);
-                httpRequest.Proxy = ProxySettings.Proxy(url);
-
-                if (postBytes != null)
-                {
-                    httpRequest.ContentLength = postBytes.Length;
-
-                    try
-                    {
-                        Stream stream = httpRequest.GetRequestStream();
-                        stream.Write(postBytes, 0, postBytes.Length);
-                        stream.Flush();
-                        stream.Close();
-                    }
-                    catch (Exception e)
-                    {
-                        //log("ERROR@Connector.Sendrequest_ServletExec:\n"+e.Message,"");
-                        LastErrorMessage = e.Message;
-                        return null;
-                    }
-                }
-                else
-                {
-                    httpRequest.ContentLength = 0;
-                }
-
-                try
-                {
-                    httpResponse = (HttpWebResponse)await httpRequest.GetResponseAsync();
-                    break;
-                }
-                catch (Exception)
-                {
-                    trys++;
-                    if (trys > 5)
-                    {
-                        throw;
-                    }
-                }
-            }
-
-            using (Stream stream = httpResponse.GetResponseStream())
-            {
-                int Bytes2Read = 3500000;
-                Byte[] b = new Byte[Bytes2Read];
-
-                MemoryStream memStream = new MemoryStream();
-                while (Bytes2Read > 0)
-                {
-                    int len = stream.Read(b, 0, Bytes2Read);
-                    if (len == 0)
-                    {
-                        break;
-                    }
-
-                    memStream.Write(b, 0, len);
-                }
-
-                memStream.Position = 0;
-                string s = encoding.GetString(memStream.GetBuffer()).Trim(' ', '\0');
-                memStream.Close();
-                memStream.Dispose();
-
-                return s;
-            }
-        }
-
-
-        public static string AppendParametersToUrl(string url, string parameters)
-        {
-            string c = "?";
-            if (url.EndsWith("?") || url.EndsWith("&"))
-            {
-                c = "";
-            }
-            else if (url.Contains("?"))
-            {
-                c = "&";
-            }
-
-            return url + c + parameters;
-        }
-
-        public static string RemoveDOCTYPE(string xml)
-        {
-            int pos = xml.IndexOf("<!DOCTYPE");
-            if (pos != -1)
-            {
-                int o = 1, i;
-                for (i = pos + 1; i < xml.Length; i++)
-                {
-                    if (xml[i] == '<')
-                    {
-                        o++;
-                    }
-                    else if (xml[i] == '>')
-                    {
-                        o--;
-                        if (o == 0)
-                        {
-                            break;
-                        }
-                    }
-                }
-
-                string s1 = xml.Substring(0, pos - 1);
-                string s2 = xml.Substring(i + 1, xml.Length - i - 1);
-
-                return s1 + s2;
-            }
-
-            return xml;
-        }
-
-        private static void AppendAuthentification(HttpWebRequest req, string usr, string pwd)
-        {
-            if (String.IsNullOrEmpty(usr.Trim()))
-            {
-                return;
-            }
-
-            string auth = "Basic " + Convert.ToBase64String(Encoding.ASCII.GetBytes(usr + ":" + pwd));
-            req.Headers.Add("Authorization", auth);
         }
     }
 
@@ -1008,28 +444,20 @@ namespace gView.Framework.Web
         }
     }
 
-    public class WebCredentials
+    internal class WebCredentials
     {
-        static public ICredentials FromXmlNode(XmlNode node)
+        public string Domain { get; set; }
+        public string Password { get; set; }
+        public string UserName { get; set; }
+
+        static public WebCredentials FromXmlNode(XmlNode node)
         {
             if (node == null)
             {
                 return null;
             }
 
-            if (node.Attributes["default"] != null &&
-                node.Attributes["default"].Value.ToLower() == "true")
-            {
-                return CredentialCache.DefaultCredentials;
-            }
-
-            if (node.Attributes["default"] != null &&
-                node.Attributes["default"].Value.ToLower() == "net")
-            {
-                return CredentialCache.DefaultNetworkCredentials;
-            }
-
-            NetworkCredential credential = new NetworkCredential();
+            var credential = new WebCredentials();
             if (node.Attributes["user"] != null)
             {
                 credential.UserName = node.Attributes["user"].Value;

@@ -1,24 +1,25 @@
 ﻿using gView.DataExplorer.Plugins.ExplorerObjects.Base;
+using gView.DataExplorer.Plugins.ExplorerObjects.Extensions;
 using gView.Framework.DataExplorer.Abstraction;
 using gView.Framework.IO;
-using gView.Framework.Web;
+using gView.Framework.system;
+using gView.Framework.Web.Services;
 using gView.Interoperability.GeoServices.Dataset;
 using gView.Interoperability.GeoServices.Rest.Json;
 using System;
 using System.Linq;
+using gView.Framework.Web.Extensions;
 using System.Threading.Tasks;
-using gView.Framework.system;
-using gView.DataExplorer.Plugins.ExplorerObjects.Extensions;
 
 namespace gView.DataExplorer.Plugins.ExplorerObjects.Web.GeoServices;
 
-public class GeoServicesFolderExplorerObject : ExplorerParentObject<GeoServicesConnectionExplorerObject>, 
+public class GeoServicesFolderExplorerObject : ExplorerParentObject<GeoServicesConnectionExplorerObject>,
                                                IExplorerSimpleObject
 {
     private string _name = "", _connectionString = "";
 
     internal GeoServicesFolderExplorerObject(GeoServicesConnectionExplorerObject parent, string name, string connectionString)
-        : base(parent,  1)
+        : base(parent, 1)
     {
         _name = name;
         _connectionString = connectionString;
@@ -46,7 +47,7 @@ public class GeoServicesFolderExplorerObject : ExplorerParentObject<GeoServicesC
                 url = url.UrlAppendParameters($"token={token}");
             }
 
-            var jsonServices = await WebFunctions.DownloadObjectAsync<JsonServices>(url);
+            var jsonServices = await HttpService.CreateInstance().GetAsync<JsonServices>(url);
 
             if (jsonServices != null)
             {
@@ -88,7 +89,7 @@ public class GeoServicesFolderExplorerObject : ExplorerParentObject<GeoServicesC
 
     #region IExplorerObject Member
 
-    public string Name => _name; 
+    public string Name => _name;
 
     public string FullName
     {

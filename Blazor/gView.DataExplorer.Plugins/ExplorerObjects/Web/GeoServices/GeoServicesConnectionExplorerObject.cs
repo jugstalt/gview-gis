@@ -1,22 +1,23 @@
 ﻿using gView.DataExplorer.Plugins.ExplorerObjects.Base;
+using gView.DataExplorer.Plugins.ExplorerObjects.Web.GeoServices.ContextTools;
 using gView.Framework.DataExplorer.Abstraction;
 using gView.Framework.DataExplorer.Events;
 using gView.Framework.IO;
-using gView.Framework.Web;
+using gView.Framework.system;
+using gView.Framework.Web.Services;
 using gView.Interoperability.GeoServices.Dataset;
 using gView.Interoperability.GeoServices.Rest.Json;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using gView.Framework.system;
-using System.Collections.Generic;
-using gView.DataExplorer.Plugins.ExplorerObjects.Web.GeoServices.ContextTools;
+using gView.Framework.Web.Extensions;
 
 namespace gView.DataExplorer.Plugins.ExplorerObjects.Web.GeoServices;
 
-public class GeoServicesConnectionExplorerObject : ExplorerParentObject<IExplorerObject>, 
-                                                   IExplorerSimpleObject, 
-                                                   IExplorerObjectDeletable, 
+public class GeoServicesConnectionExplorerObject : ExplorerParentObject<IExplorerObject>,
+                                                   IExplorerSimpleObject,
+                                                   IExplorerObjectDeletable,
                                                    IExplorerObjectRenamable,
                                                    IExplorerObjectContextTools
 {
@@ -51,7 +52,7 @@ public class GeoServicesConnectionExplorerObject : ExplorerParentObject<IExplore
 
     #region IExplorerObject Member
 
-    public string Name=>_name;
+    public string Name => _name;
 
 
     public string FullName => @$"WebServices\gView.GeoServices\{_name}";
@@ -90,7 +91,7 @@ public class GeoServicesConnectionExplorerObject : ExplorerParentObject<IExplore
                 url = url.UrlAppendParameters($"token={token}");
             }
 
-            var jsonServices = await WebFunctions.DownloadObjectAsync<JsonServices>(url);
+            var jsonServices = await HttpService.CreateInstance().GetAsync<JsonServices>(url);
 
             if (jsonServices != null)
             {
@@ -184,7 +185,7 @@ public class GeoServicesConnectionExplorerObject : ExplorerParentObject<IExplore
     public Task<bool> RenameExplorerObject(string newName)
     {
         ConfigConnections configConnections = new ConfigConnections("geoservices_connection", "546B0513-D71D-4490-9E27-94CD5D72C64A");
-        bool result=configConnections.Rename(this.Name, newName);
+        bool result = configConnections.Rename(this.Name, newName);
 
         if (result == true)
         {

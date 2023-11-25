@@ -251,7 +251,7 @@ namespace gView.Interoperability.ArcXML.Dataset
 #if(DEBUG)
                     gView.Framework.system.Logger.LogDebug("Start ArcXML DownloadImage");
 #endif
-                    bitmap = WebFunctions.DownloadImage(outputNode/*_dataset._connector.Proxy*/);
+                    bitmap = await WebFunctions.DownloadImage(_dataset._http, outputNode/*_dataset._connector.Proxy*/);
 #if(DEBUG)
                     gView.Framework.system.Logger.LogDebug("ArcXML DownloadImage Finished");
 #endif
@@ -444,7 +444,7 @@ namespace gView.Interoperability.ArcXML.Dataset
                     _legend.Dispose();
                 }
 
-                _legend = WebFunctions.DownloadImage(output);
+                _legend = await WebFunctions.DownloadImage(_dataset._http, output);
                 return true;
             }
             catch (Exception ex)

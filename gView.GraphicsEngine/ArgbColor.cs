@@ -68,6 +68,37 @@ namespace gView.GraphicsEngine
                                       (byte)(argb));
         }
 
+        public static ArgbColor FromHexString(string hex)
+        {
+            if (hex.StartsWith("#"))
+            {
+                hex = hex.Substring(1);
+            }
+
+            if (hex.Length == 3)
+            {
+                hex = $"{hex[0]}{hex[0]}{hex[1]}{hex[1]}{hex[2]}{hex[2]}";
+            }
+            else if (hex.Length == 4)
+            {
+                hex = $"{hex[0]}{hex[0]}{hex[1]}{hex[1]}{hex[2]}{hex[2]}{hex[3]}{hex[3]}";
+            }
+
+            byte a = 255, r, g, b;
+
+            if (hex.Length == 8)
+            {
+                a = Convert.ToByte(hex.Substring(0, 2), 16);
+                hex = hex.Substring(2);
+            }
+
+            r = Convert.ToByte(hex.Substring(0, 2), 16);
+            g = Convert.ToByte(hex.Substring(2, 2), 16);
+            b = Convert.ToByte(hex.Substring(4, 2), 16);
+
+            return new ArgbColor { A = a, R = r, G = g, B = b };
+        }
+
         public override bool Equals(object obj)
         {
             if (obj is ArgbColor)

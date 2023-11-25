@@ -2136,10 +2136,10 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
 
                     await cursor.ExecuteReaderAsync();
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                     cursor.Dispose();
-                    throw (ex);
+                    throw;
                 }
 
                 return cursor;
@@ -2384,10 +2384,10 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
                         return feature;
                     }
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                     Dispose();
-                    throw (ex);
+                    throw;
                     //return null;
                 }
             }

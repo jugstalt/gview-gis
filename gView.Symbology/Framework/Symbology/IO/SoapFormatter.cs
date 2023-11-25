@@ -1,5 +1,6 @@
 ﻿using gView.Framework.IO;
 using gView.Framework.system;
+using gView.GraphicsEngine;
 using System;
 using System.IO;
 using System.Linq;
@@ -82,14 +83,16 @@ namespace gView.Symbology.Framework.Symbology.IO
                     grUnit = (GraphicsEngine.GraphicsUnit)Enum.Parse(typeof(GraphicsEngine.GraphicsUnit), unitNode.InnerText);
                 }
 
-                var fontFamily = System.Drawing.FontFamily.Families.Where(f => f.Name == name).FirstOrDefault();
-                if (fontFamily == null)
+                var fontFamilyName = Current.Engine.GetInstalledFontNames()
+                                            .Where(n =>n.Equals(name, StringComparison.OrdinalIgnoreCase))
+                                            .FirstOrDefault();
+                if (String.IsNullOrEmpty(fontFamilyName))
                 {
-                    fontFamily = System.Drawing.FontFamily.GenericSansSerif;
+                    fontFamilyName = Current.Engine.GetDefaultFontName();
 
                     if (errorReport != null)
                     {
-                        var message = $"Font '{name}' not installed on target system. '{fontFamily.Name}' will be used instead.";
+                        var message = $"Font '{name}' not installed on target system. '{fontFamilyName}' will be used instead.";
                         if (writeError == true)
                         {
                             errorReport.AddError(message, source);
@@ -101,7 +104,7 @@ namespace gView.Symbology.Framework.Symbology.IO
                     }
                 }
 
-                var font = GraphicsEngine.Current.Engine.CreateFont(fontFamily.Name, size, fontStyle, grUnit);
+                var font = Current.Engine.CreateFont(fontFamilyName, size, fontStyle, grUnit);
                 return font;
             }
 

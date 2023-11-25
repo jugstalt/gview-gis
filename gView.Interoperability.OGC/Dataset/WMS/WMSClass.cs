@@ -2,7 +2,7 @@ using gView.Framework.Data;
 using gView.Framework.Geometry;
 using gView.Framework.IO;
 using gView.Framework.system;
-using gView.Framework.Web;
+using gView.GraphicsEngine;
 using gView.GraphicsEngine.Abstraction;
 using gView.Interoperability.OGC.Dataset.WFS;
 using gView.Interoperability.OGC.SLD;
@@ -16,7 +16,7 @@ using System.Xml;
 
 namespace gView.Interoperability.OGC.Dataset.WMS
 {
-    public class WMSClass : IWebServiceClass
+    public class WMSClass : IWebServiceClass, IDisposable
     {
         private static IFormatProvider _nhi = System.Globalization.CultureInfo.InvariantCulture.NumberFormat;
         private static object lockThis = new object();
@@ -566,9 +566,14 @@ namespace gView.Interoperability.OGC.Dataset.WMS
                 string url = WMSDataset.Append2Url(_getMap.Get_OnlineResource, request.ToString());
                 try
                 {
-                    bitmap = WebFunctions.DownloadImage(url,
-                        ConfigTextStream.ExtractValue(_dataset._connectionString, "usr"),
-                        ConfigTextStream.ExtractValue(_dataset._connectionString, "pwd"));
+                    var imageData = await _dataset._http.GetDataAsync(url,
+                        new Framework.Web.Models.RequestAuthorization()
+                        {
+                            Username = ConfigTextStream.ExtractValue(_dataset._connectionString, "usr"),
+                            Password = ConfigTextStream.ExtractValue(_dataset._connectionString, "pwd")
+                        });
+
+                    bitmap = Current.Engine.CreateBitmap(new MemoryStream(imageData));
                 }
                 catch (Exception ex)
                 {
@@ -1099,6 +1104,15 @@ namespace gView.Interoperability.OGC.Dataset.WMS
                 msg.ToString() +
                 ex.Source + "\n" +
                 ex.StackTrace + "\n");
+        }
+
+        public void Dispose()
+        {
+            if (_image != null)
+            {
+                _image.Dispose();
+                _image = null;
+            }
         }
 
         /*

@@ -1,15 +1,16 @@
 using gView.Framework.Geometry;
 using gView.Framework.system;
 using gView.Framework.Web;
+using gView.Framework.Web.Services;
+using gView.GraphicsEngine;
+using gView.GraphicsEngine.Abstraction;
 using gView.OGC.Framework.OGC.Exceptions;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Text;
-using Color = System.Drawing.Color;
 
 namespace gView.Framework.OGC.WMS
 {
@@ -73,7 +74,7 @@ namespace gView.Framework.OGC.WMS
         private string[] msQueryLayers = Array.Empty<string>();
         private string msVersion = "1.1.1";
         private bool mbTransparent = false;
-        private Color moBgColor = Color.White;
+        private ArgbColor moBgColor = ArgbColor.White;
         private string sldString = String.Empty;
 
         private string msLayer = String.Empty, msStyle = String.Empty;
@@ -423,7 +424,7 @@ namespace gView.Framework.OGC.WMS
                     }
                     if (request["BGCOLOR"] != null)
                     {
-                        this.BgColor = ColorTranslator.FromHtml(request["BGCOLOR"]);
+                        this.BgColor = ArgbColor.FromHexString(request["BGCOLOR"]);
                     }
                     if (request["STYLES"] != null)
                     {
@@ -444,7 +445,9 @@ namespace gView.Framework.OGC.WMS
                     {
                         if (request["SLD"] != null)
                         {
-                            sldString = WebFunctions.DownloadXml(request["SLD"]);
+                            var awaiter = HttpService.CreateInstance().GetStringAsync(request["SLD"]).GetAwaiter();
+                            sldString = awaiter.GetResult();
+
                             if (sldString == null)
                             {
                                 sldString = String.Empty;
@@ -615,54 +618,55 @@ namespace gView.Framework.OGC.WMS
                 return (Encoding.UTF8.GetBytes(sMsg),
                     this.Version == "1.1.1" ? "application/vnd.ogc.se_xml" : "text/xml");
             }
-            else if (this.Exceptions == WMSExceptionType.se_in_image)
+            else /*if (this.Exceptions == WMSExceptionType.se_in_image)*/
             {
-                using (Bitmap bitmap = new Bitmap(this.Width, this.Height, PixelFormat.Format32bppArgb))
-                using (Graphics gr = Graphics.FromImage(bitmap))
+                using (var bm = Current.Engine.CreateBitmap(this.Width, this.Height, GraphicsEngine.PixelFormat.Rgba32))
+                using (var canvas = bm.CreateCanvas())
+                using (var font = Current.Engine.CreateFont(Current.Engine.GetDefaultFontName(), 12f))
+                using (var brush = Current.Engine.CreateSolidBrush(ArgbColor.Black))
                 {
                     if (!this.Transparent)
                     {
-                        gr.Clear(this.BgColor);
+                        canvas.Clear(this.BgColor);
                     }
                     else
                     {
-                        bitmap.MakeTransparent(this.BgColor);
-                        gr.Clear(this.BgColor);
+                        bm.MakeTransparent(this.BgColor);
                     }
-                    Font f = new Font("Tahoma", 12, FontStyle.Regular);
-                    SizeF sz = gr.MeasureString(msg, f);
-                    RectangleF rect = new RectangleF(5f, 5f, sz.Width, sz.Height);
-                    gr.DrawString(msg, f, new SolidBrush(Color.Black), rect);
-                    gr.Save();
 
-                    MemoryStream memoryStream = new MemoryStream();
-                    bitmap.Save(memoryStream, SystemDrawingGetImageFormat());
+                    var sz = canvas.MeasureText(msg, font);
+                    var rect = new RectangleF(5f, 5f, sz.Width, sz.Height);
 
-                    return (memoryStream.ToArray(), this.MimeType);
+                    canvas.DrawText(msg, font, brush,
+                        new CanvasRectangleF(5f, 5f, sz.Width, sz.Height));
+
+                    var ms = new MemoryStream();
+                    bm.Save(ms, SystemDrawingGetImageFormat());
+
+                    return (ms.ToArray(), this.MimeType);
                 }
             }
-            else
-            {
-                using (Bitmap bitmap = new Bitmap(this.Width, this.Height, PixelFormat.Format32bppArgb))
-                using (Graphics gr = Graphics.FromImage(bitmap))
-                {
-                    if (!this.Transparent)
-                    {
-                        gr.Clear(this.BgColor);
-                    }
-                    else
-                    {
-                        bitmap.MakeTransparent(this.BgColor);
-                        gr.Clear(this.BgColor);
-                    }
-                    gr.Save();
+            //else
+            //{
+            //    // Empty Image??
+            //    using (var bm = Current.Engine.CreateBitmap(this.Width, this.Height, GraphicsEngine.PixelFormat.Rgba32))
+            //    using (var canvas = bm.CreateCanvas())
+            //    {
+            //        if (!this.Transparent)
+            //        {
+            //            canvas.Clear(this.BgColor);
+            //        }
+            //        else
+            //        {
+            //            bm.MakeTransparent(this.BgColor);
+            //        }
 
-                    MemoryStream memoryStream = new MemoryStream();
-                    bitmap.Save(memoryStream, SystemDrawingGetImageFormat());
+            //        var ms = new MemoryStream();
+            //        bm.Save(ms, SystemDrawingGetImageFormat());
 
-                    return (memoryStream.ToArray(), this.MimeType);
-                }
-            }
+            //        return (ms.ToArray(), this.MimeType);
+            //    }
+            //}
 
         }
 
@@ -684,58 +688,6 @@ namespace gView.Framework.OGC.WMS
         #endregion
 
         #region Helper
-        private Bitmap CreateTransparentGif(Bitmap gif, ColorPalette cp)
-        {
-            //please note: the following code has been adopted from the following page:
-            //GDI+ FAQ, http://www.bobpowell.net/giftransparency.htm
-            //Creates a new GIF image with a modified colour palette
-            if (cp != null)
-            {
-                //Create a new 8 bit per pixel image
-                Bitmap bm = new Bitmap(gif.Width, gif.Height, PixelFormat.Format8bppIndexed);
-                //get it's palette
-                ColorPalette ncp = bm.Palette;
-                //copy all the entries from the old palette removing any transparency
-                int n = 0;
-                foreach (Color c in cp.Entries)
-                {
-                    ncp.Entries[n++] = Color.FromArgb(255, c);
-                }
-                //Set the second entry as transparent color
-                ncp.Entries[ncp.Entries.Length - 1] = Color.FromArgb(0, ncp.Entries[ncp.Entries.Length - 1]);
-
-                //re-insert the palette
-                bm.Palette = ncp;
-                //now to copy the actual bitmap data
-                //lock the source and destination bits
-                BitmapData src = ((Bitmap)gif).LockBits(new Rectangle(0, 0, gif.Width, gif.Height), ImageLockMode.ReadOnly, gif.PixelFormat);
-                BitmapData dst = bm.LockBits(new Rectangle(0, 0, bm.Width, bm.Height), ImageLockMode.WriteOnly, bm.PixelFormat);
-
-                //uses pointers so we need unsafe code.
-                //the project is also compiled with /unsafe
-                unsafe
-                {
-                    //steps through each pixel
-                    for (int y = 0; y < gif.Height; y++)
-                    {
-                        for (int x = 0; x < gif.Width; x++)
-                        {
-                            //transferring the bytes
-                            ((byte*)dst.Scan0.ToPointer())[(dst.Stride * y) + x] = ((byte*)src.Scan0.ToPointer())[(src.Stride * y) + x];
-                        }
-                    }
-                }
-
-                //all done, unlock the bitmaps
-                ((Bitmap)gif).UnlockBits(src);
-                bm.UnlockBits(dst);
-                return bm;
-            }
-            else
-            {
-                return null;
-            }
-        }
 
         public GraphicsEngine.ImageFormat GetImageFormat()
         {
@@ -753,19 +705,18 @@ namespace gView.Framework.OGC.WMS
             }
         }
 
-        public System.Drawing.Imaging.ImageFormat SystemDrawingGetImageFormat()
+        public GraphicsEngine.ImageFormat SystemDrawingGetImageFormat()
         {
             switch (this.Format)
             {
                 case WMSImageFormat.gif:
-                    return System.Drawing.Imaging.ImageFormat.Gif;
+                    return GraphicsEngine.ImageFormat.Gif;
                 case WMSImageFormat.bmp:
-                    return System.Drawing.Imaging.ImageFormat.Bmp;
+                    return GraphicsEngine.ImageFormat.Bmp;
                 case WMSImageFormat.jpeg:
-                    return System.Drawing.Imaging.ImageFormat.Jpeg;
-                case WMSImageFormat.png:
-                    return System.Drawing.Imaging.ImageFormat.Png;
-                default: return System.Drawing.Imaging.ImageFormat.Png;
+                    return GraphicsEngine.ImageFormat.Jpeg;
+                default: 
+                    return GraphicsEngine.ImageFormat.Png;
             }
         }
 
@@ -895,7 +846,7 @@ namespace gView.Framework.OGC.WMS
             set { msQueryLayers = value; }
         }
 
-        public Color BgColor
+        public ArgbColor BgColor
         {
             get { return moBgColor; }
             set { moBgColor = value; }

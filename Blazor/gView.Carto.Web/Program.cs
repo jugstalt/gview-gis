@@ -56,8 +56,13 @@ app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 
 gView.GraphicsEngine.Current.UseSecureDisposingOnUserInteractiveUIs = true;
-gView.GraphicsEngine.Current.Engine = new gView.GraphicsEngine.Skia.SkiaGraphicsEngine(96.0f);
+
+// Gdi+
+//gView.GraphicsEngine.Current.Engine = new gView.GraphicsEngine.GdiPlus.GdiGraphicsEngine(96.0f);
 //gView.GraphicsEngine.Current.Encoder = new gView.GraphicsEngine.GdiPlus.GdiBitmapEncoding();
+
+// Skia
+gView.GraphicsEngine.Current.Engine = new gView.GraphicsEngine.Skia.SkiaGraphicsEngine(96.0f);
 gView.GraphicsEngine.Current.Encoder = new gView.GraphicsEngine.Skia.SkiaBitmapEncoding();
 
 app.Run();
