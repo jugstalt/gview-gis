@@ -68,23 +68,29 @@ namespace gView.Framework.Symbology
         public string Name => "Symbol Capped Line";
 
         [Browsable(false)]
-        public SymbolSmoothing SymbolSmothingMode
+        public SymbolSmoothing SymbolSmoothingMode
         {
+            get => LineSymbol?.SymbolSmoothingMode == SymbolSmoothing.AntiAlias &&
+                   StartCapPointSymbol?.SymbolSmoothingMode == SymbolSmoothing.AntiAlias && 
+                   EndCapPointSymbol?.SymbolSmoothingMode == SymbolSmoothing.AntiAlias
+                    ? SymbolSmoothing.AntiAlias
+                    : SymbolSmoothing.None;
+
             set
             {
                 if (this.LineSymbol != null)
                 {
-                    this.LineSymbol.SymbolSmothingMode = value;
+                    this.LineSymbol.SymbolSmoothingMode = value;
                 }
 
                 if (this.StartCapPointSymbol != null)
                 {
-                    this.StartCapPointSymbol.SymbolSmothingMode = value;
+                    this.StartCapPointSymbol.SymbolSmoothingMode = value;
                 }
 
                 if (this.EndCapPointSymbol != null)
                 {
-                    this.EndCapPointSymbol.SymbolSmothingMode = value;
+                    this.EndCapPointSymbol.SymbolSmoothingMode = value;
                 }
             }
         }

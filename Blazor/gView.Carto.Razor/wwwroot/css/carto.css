@@ -54,6 +54,7 @@
             border: 1px solid #ccc;
             border-radius: 8px;
             box-sizing: border-box;
+            background: var(--mud-palette-primary-hover);
         }
 
             .carto-main .toolbar .carto-tool-box .carto-tool-sub-box > .title {

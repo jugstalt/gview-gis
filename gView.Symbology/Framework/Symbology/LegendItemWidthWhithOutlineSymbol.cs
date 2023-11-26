@@ -24,7 +24,7 @@ namespace gView.Framework.Symbology
             get => OutlineSymbol switch
             {
                 Symbol symbol => symbol.Smoothingmode,
-                SymbolCollection symbolCollection => symbolCollection.SymbolSmothingMode,
+                SymbolCollection symbolCollection => symbolCollection.SymbolSmoothingMode,
                 _ => SymbolSmoothing.None,
             };
 
@@ -36,7 +36,7 @@ namespace gView.Framework.Symbology
                 }
                 else if (OutlineSymbol is SymbolCollection)
                 {
-                    ((SymbolCollection)OutlineSymbol).SymbolSmothingMode = value;
+                    ((SymbolCollection)OutlineSymbol).SymbolSmoothingMode = value;
                 }
             }
         }

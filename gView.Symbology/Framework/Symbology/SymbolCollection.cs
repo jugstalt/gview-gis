@@ -493,9 +493,9 @@ namespace gView.Framework.Symbology
         #region ISymbol Member
 
         [Browsable(false)]
-        public SymbolSmoothing SymbolSmothingMode
+        public SymbolSmoothing SymbolSmoothingMode
         {
-            get => _symbols?.Any(s => s.Symbol is Symbol && ((Symbol)s.Symbol).Smoothingmode == SymbolSmoothing.None) == true
+            get => _symbols?.Any(s => s?.Symbol?.SymbolSmoothingMode == SymbolSmoothing.None) == true
                        ? SymbolSmoothing.None
                        : SymbolSmoothing.AntiAlias;
                 
@@ -508,7 +508,7 @@ namespace gView.Framework.Symbology
                     {
                         if (item.Symbol != null)
                         {
-                            item.Symbol.SymbolSmothingMode = value;
+                            item.Symbol.SymbolSmoothingMode = value;
                         }
                     }
                 }

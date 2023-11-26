@@ -85,7 +85,7 @@
 
         if (newSymbol is not null)
         {
-            _undoSymbol = Symbol;
+            _undoSymbol = Symbol?.Clone() as ISymbol;
             Symbol = newSymbol;
 
             SetQuickSymbolProperties();
@@ -113,7 +113,7 @@
 
             if (newSymbol != Symbol)
             {
-                _undoSymbol = Symbol;
+                _undoSymbol = Symbol?.Clone() as ISymbol;
                 Symbol = newSymbol;
 
                 SetQuickSymbolProperties();

@@ -11,7 +11,7 @@ namespace gView.Framework.Symbology
 
         string Name { get; }
 
-        SymbolSmoothing SymbolSmothingMode { set; }
+        SymbolSmoothing SymbolSmoothingMode { get; set; }
 
         bool SupportsGeometryType(GeometryType type);
 

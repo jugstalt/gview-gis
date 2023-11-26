@@ -1,6 +1,8 @@
 ﻿using gView.Framework.Carto;
 using gView.Framework.Geometry;
 using gView.Framework.IO;
+using gView.Framework.Symbology.UI.Abstractions;
+using gView.Framework.Symbology.UI;
 using gView.Framework.system;
 using gView.GraphicsEngine;
 using gView.GraphicsEngine.Abstraction;
@@ -9,7 +11,12 @@ using System.ComponentModel;
 namespace gView.Framework.Symbology
 {
     [gView.Framework.system.RegisterPlugIn("91CC3F6F-0EC5-42b7-AA34-9C89803118E7")]
-    public sealed class SimpleLineSymbol : Symbol, ILineSymbol, IPenColor, IPenWidth, IPenDashStyle
+    public sealed class SimpleLineSymbol : Symbol, 
+                        ILineSymbol, 
+                        IPenColor, 
+                        IPenWidth, 
+                        IPenDashStyle,
+                        IQuickSymolPropertyProvider
     {
         private IPen _pen;
         private ArgbColor _color;
@@ -405,14 +412,24 @@ namespace gView.Framework.Symbology
         #region ISymbol Member
 
         [Browsable(false)]
-        public SymbolSmoothing SymbolSmothingMode
+        public SymbolSmoothing SymbolSmoothingMode
         {
+            get => this.Smoothingmode;
             set { this.Smoothingmode = value; }
         }
 
         public bool RequireClone()
         {
             return _widthUnit != DrawingUnit.Pixel;
+        }
+
+        #endregion
+
+        #region IQuickSymolPropertyProvider
+
+        public IQuickSymbolProperties? GetQuickSymbolProperties()
+        {
+            return new QuickLineSymbolProperties(this);
         }
 
         #endregion

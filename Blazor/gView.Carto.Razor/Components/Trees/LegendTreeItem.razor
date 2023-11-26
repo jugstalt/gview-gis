@@ -4,15 +4,16 @@
 
 @inject CartoEventBusService EventBus
 
+@implements IDisposable
 @inherits BaseHandler
 
 @if (_legendItems is not null)
 {
-    <table style="margin-left: @(_quickEditSymbol == null ? "34px" : "0px");width:100%">
+    <table style="margin-left: @(_inlineEditorSymbol == null ? "34px" : "0px");width:100%">
         @foreach(var item in _legendItems)
         {
             <tr> 
-                @if (_quickEditSymbol is not null && _quickEditSymbol == item)
+                @if (_inlineEditorSymbol is not null && _inlineEditorSymbol == item)
                 {
                     <td colspan="2">
                         <MudPaper Elevation="5" style="padding:5px">
@@ -33,11 +34,11 @@
                 else 
                 {
                     <td>
-                        <img src="@item.ToBase64ImageSource()" 
-                             @ondblclick="() => _quickEditSymbol = item"/>
+                        <img src="@item.ToBase64ImageSource()"
+                             @ondblclick="() => ShowInlineEditor(item)" />
                     </td>
                     <td style="width:100%">
-                        <span @ondblclick="() => _quickEditSymbol = item">
+                        <span @ondblclick="() => ShowInlineEditor(item)">
                             @item.LegendLabel
                         </span>
                     </td>
@@ -51,29 +52,47 @@
     [Parameter] public ITocElement? ParentElement { get; set; }
 
     private IEnumerable<ISymbol>? _legendItems;
-    private ISymbol? _quickEditSymbol = null;
+    private ISymbol? _inlineEditorSymbol = null;
 
     protected override void OnInitialized()
     {
         base.OnInitialized();
 
         _legendItems = ParentElement?.GetLegendItems();
+
+        EventBus.OnCloseTocInlineEditorsAsync += OnCloseTocInlineEditors;
     }
+
+    private Task OnCloseTocInlineEditors() => HandleAsync(() =>
+    {
+        _inlineEditorSymbol = null;
+
+        return InvokeAsync(() => StateHasChanged());
+    });
+
+    private Task ShowInlineEditor(ISymbol item) => HandleAsync(async () =>
+    {
+        await EventBus.FireCloseTocInlineEditorsAsync();
+        _inlineEditorSymbol = item;
+    });
 
     private void OnSymbolChanged(ISymbol symbol, ISymbol newSymbol) => Handle(() =>
     {
         if (ParentElement?.SetLegendItemSymbol(symbol, newSymbol) == true)
         {
             _legendItems = ParentElement?.GetLegendItems();  // recollect items
-            _quickEditSymbol = newSymbol;
+            _inlineEditorSymbol = newSymbol;
         }
     });
 
     private Task SymbolEditDone() => HandleAsync(() =>
     {
-        _quickEditSymbol = null;
+        _inlineEditorSymbol = null;
         return EventBus.FireRefreshMapAsync();
     });
 
-
+    public void Dispose()
+    {
+        EventBus.OnCloseTocInlineEditorsAsync -= OnCloseTocInlineEditors;
+    }
 }

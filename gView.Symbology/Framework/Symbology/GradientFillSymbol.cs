@@ -338,13 +338,16 @@ namespace gView.Framework.Symbology
         #region ISymbol Member
 
         [Browsable(false)]
-        public SymbolSmoothing SymbolSmothingMode
+        public SymbolSmoothing SymbolSmoothingMode
         {
+            get => OutlineSymbol != null
+               ? OutlineSymbol.SymbolSmoothingMode
+               : SymbolSmoothing.None;
             set
             {
                 if (OutlineSymbol != null)
                 {
-                    OutlineSymbol.SymbolSmothingMode = value;
+                    OutlineSymbol.SymbolSmoothingMode = value;
                 }
             }
         }

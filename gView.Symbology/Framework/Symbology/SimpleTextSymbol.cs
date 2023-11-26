@@ -993,8 +993,9 @@ namespace gView.Framework.Symbology
         #region ISymbol Member
 
         [Browsable(false)]
-        virtual public SymbolSmoothing SymbolSmothingMode
+        virtual public SymbolSmoothing SymbolSmoothingMode
         {
+            get => this.Smoothingmode;
             set { this.Smoothingmode = value; }
         }
 

@@ -166,8 +166,13 @@ namespace gView.Framework.Symbology
         #region ISymbol Member
 
         [Browsable(false)]
-        override public SymbolSmoothing SymbolSmothingMode
+        override public SymbolSmoothing SymbolSmoothingMode
         {
+            get => this.Smoothingmode == SymbolSmoothing.AntiAlias &&
+                   _outlineSmothingMode == SymbolSmoothing.AntiAlias 
+                ? SymbolSmoothing.AntiAlias
+                : this.Smoothingmode;
+
             set
             {
                 this.Smoothingmode = _outlineSmothingMode = value;

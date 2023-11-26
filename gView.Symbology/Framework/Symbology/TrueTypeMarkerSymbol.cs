@@ -501,8 +501,9 @@ namespace gView.Framework.Symbology
         #region ISymbol Member
 
         [Browsable(false)]
-        public SymbolSmoothing SymbolSmothingMode
+        public SymbolSmoothing SymbolSmoothingMode
         {
+            get => SymbolSmoothing.None;
             set { }
         }
 

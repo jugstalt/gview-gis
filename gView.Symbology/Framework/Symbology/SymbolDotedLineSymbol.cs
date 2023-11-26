@@ -75,18 +75,23 @@ namespace gView.Framework.Symbology
         public string Name => "Symbol Doted Line";
 
         [Browsable(false)]
-        public SymbolSmoothing SymbolSmothingMode
+        public SymbolSmoothing SymbolSmoothingMode
         {
+            get => LineSymbol?.SymbolSmoothingMode == SymbolSmoothing.AntiAlias &&
+                   PointSymbol?.SymbolSmoothingMode == SymbolSmoothing.AntiAlias
+                    ? SymbolSmoothing.AntiAlias
+                    : SymbolSmoothing.None;
+            
             set
             {
                 if (this.LineSymbol != null)
                 {
-                    this.LineSymbol.SymbolSmothingMode = value;
+                    this.LineSymbol.SymbolSmoothingMode = value;
                 }
 
                 if (this.PointSymbol != null)
                 {
-                    this.PointSymbol.SymbolSmothingMode = value;
+                    this.PointSymbol.SymbolSmoothingMode = value;
                 }
             }
         }

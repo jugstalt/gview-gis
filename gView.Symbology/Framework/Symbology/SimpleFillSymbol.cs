@@ -81,25 +81,6 @@ namespace gView.Framework.Symbology
             }
 
             display.Canvas.SmoothingMode = GraphicsEngine.SmoothingMode.None;
-
-            //if (OutlineSymbol != null)
-            //{
-            //    if (OutlineSymbol is ILineSymbol)
-            //    {
-            //        ((ILineSymbol)OutlineSymbol).DrawPath(display, path);
-            //    }
-            //    else if (OutlineSymbol is SymbolCollection)
-            //    {
-            //        foreach (SymbolCollectionItem item in ((SymbolCollection)OutlineSymbol).Symbols)
-            //        {
-            //            if (!item.Visible) continue;
-            //            if (item.Symbol is ILineSymbol)
-            //            {
-            //                ((ILineSymbol)item.Symbol).DrawPath(display, path);
-            //            }
-            //        }
-            //    }
-            //}
         }
 
         #endregion
@@ -412,13 +393,16 @@ namespace gView.Framework.Symbology
         #region ISymbol Member
 
         [Browsable(false)]
-        public SymbolSmoothing SymbolSmothingMode
+        public SymbolSmoothing SymbolSmoothingMode
         {
+            get => OutlineSymbol != null 
+                ? OutlineSymbol.SymbolSmoothingMode 
+                : SymbolSmoothing.None;
             set
             {
                 if (OutlineSymbol != null)
                 {
-                    OutlineSymbol.SymbolSmothingMode = value;
+                    OutlineSymbol.SymbolSmoothingMode = value;
                 }
             }
         }

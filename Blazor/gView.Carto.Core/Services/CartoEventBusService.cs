@@ -16,6 +16,10 @@ public class CartoEventBusService
     public Task FireSelectedTocTreeNodeChangedAsync(TocTreeNode? selectedTocTreeNode)
         => OnSelectedTocTreeNodeChangedAsync?.FireAsync(selectedTocTreeNode) ?? Task.CompletedTask;
 
+    public event Func<Task>? OnCloseTocInlineEditorsAsync;
+    public Task FireCloseTocInlineEditorsAsync()
+        => OnCloseTocInlineEditorsAsync?.FireAsync() ?? Task.CompletedTask;
+
     public event Func<ICartoDocument, Task>? OnCartoDocumentLoadedAsync;
     public Task FireCartoDocumentLoadedAsync(ICartoDocument cartoDocument)
         => OnCartoDocumentLoadedAsync?.FireAsync(cartoDocument) ?? Task.CompletedTask;

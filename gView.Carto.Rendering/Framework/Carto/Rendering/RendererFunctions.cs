@@ -41,9 +41,14 @@ namespace gView.Framework.Carto.Rendering
                     ((SimplePointSymbol)symbol).SymbolWidth = lineWidth;
                     break;
             }
+
+            if(symbol is not null)
+            {
+                symbol.SymbolSmoothingMode = SymbolSmoothing.AntiAlias;
+            }
+
             return symbol;
         }
-
         static public ISymbol CreateStandardSelectionSymbol(GeometryType type)
         {
             ISymbol symbol = null;
@@ -105,7 +110,5 @@ namespace gView.Framework.Carto.Rendering
             }
             return symbol;
         }
-
-
     }
 }

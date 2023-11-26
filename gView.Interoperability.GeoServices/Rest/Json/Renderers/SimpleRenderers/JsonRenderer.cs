@@ -262,7 +262,7 @@ namespace gView.Interoperability.GeoServices.Rest.Json.Renderers.SimpleRenderers
                 {
                     symbol.OutlineColor = sms.Outline.Color.ToColor();
                     symbol.OutlineWidth = sms.Outline.Width;
-                    symbol.SymbolSmothingMode = Framework.Symbology.SymbolSmoothing.AntiAlias;
+                    symbol.SymbolSmoothingMode = Framework.Symbology.SymbolSmoothing.AntiAlias;
                 }
 
                 return symbol;
@@ -276,7 +276,7 @@ namespace gView.Interoperability.GeoServices.Rest.Json.Renderers.SimpleRenderers
                 symbol.Color = sls.Color.ToColor();
                 symbol.DashStyle = sls.Style.ToDashStyle();
                 symbol.Width = sls.Width;
-                symbol.SymbolSmothingMode = Framework.Symbology.SymbolSmoothing.AntiAlias;
+                symbol.SymbolSmoothingMode = Framework.Symbology.SymbolSmoothing.AntiAlias;
                 symbol.LineEndCap = symbol.LineStartCap = LineCap.Round;
 
                 return symbol;
@@ -295,7 +295,7 @@ namespace gView.Interoperability.GeoServices.Rest.Json.Renderers.SimpleRenderers
                         Color = sfs.Outline.Color.ToColor(),
                         Width = sfs.Outline.Width,
                         DashStyle = sfs.Outline.Style.ToDashStyle(),
-                        SymbolSmothingMode = Framework.Symbology.SymbolSmoothing.AntiAlias,
+                        SymbolSmoothingMode = Framework.Symbology.SymbolSmoothing.AntiAlias,
                         LineStartCap = LineCap.Round,
                         LineEndCap = LineCap.Round
                     };
@@ -358,7 +358,7 @@ namespace gView.Interoperability.GeoServices.Rest.Json.Renderers.SimpleRenderers
                             symbol.TextSymbolAlignment = Framework.Symbology.TextSymbolAlignment.Center;
                             break;
                     }
-                    symbol.SymbolSmothingMode = Framework.Symbology.SymbolSmoothing.AntiAlias;
+                    symbol.SymbolSmoothingMode = Framework.Symbology.SymbolSmoothing.AntiAlias;
 
                     var fontStyle = FontStyle.Regular;
                     if (ts.Font.Weight == "bold" || ts.Font.Weight == "bolder")

@@ -2,17 +2,22 @@
 using gView.Framework.Geometry;
 using gView.Framework.IO;
 using gView.Framework.system;
-using gView.Framework.UI;
 using gView.GraphicsEngine;
 using gView.GraphicsEngine.Abstraction;
 using System;
 using System.ComponentModel;
-using System.Reflection;
 
 namespace gView.Framework.Symbology
 {
     [gView.Framework.system.RegisterPlugIn("F73F40DD-BA55-40b1-B372-99F08B66D2D4")]
-    public sealed class SimplePointSymbol : Symbol, IPointSymbol, ISymbolRotation, IBrushColor, IPenColor, IPenWidth, ISymbolSize, ISymbolWidth
+    public sealed class SimplePointSymbol : Symbol,
+                                            IPointSymbol,
+                                            ISymbolRotation,
+                                            IBrushColor,
+                                            IPenColor,
+                                            IPenWidth,
+                                            ISymbolSize,
+                                            ISymbolWidth
     {
         public enum MarkerType { Circle = 0, Triangle = 1, Square = 2, Cross = 3, Star = 4 }
 
@@ -569,8 +574,9 @@ namespace gView.Framework.Symbology
         #region ISymbol Member
 
         [Browsable(false)]
-        public SymbolSmoothing SymbolSmothingMode
+        public SymbolSmoothing SymbolSmoothingMode
         {
+            get => this.Smoothingmode;
             set { this.Smoothingmode = value; }
         }
 
