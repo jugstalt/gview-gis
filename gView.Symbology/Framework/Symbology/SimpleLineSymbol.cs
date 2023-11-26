@@ -2,11 +2,9 @@
 using gView.Framework.Geometry;
 using gView.Framework.IO;
 using gView.Framework.system;
-using gView.Framework.UI;
 using gView.GraphicsEngine;
 using gView.GraphicsEngine.Abstraction;
 using System.ComponentModel;
-using System.Reflection;
 
 namespace gView.Framework.Symbology
 {

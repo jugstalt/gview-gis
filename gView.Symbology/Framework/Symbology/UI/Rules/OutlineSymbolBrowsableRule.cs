@@ -6,7 +6,7 @@ using gView.GraphicsEngine;
 using System;
 using System.Reflection;
 
-namespace gView.Symbology.Framework.Symbology.UI.Rules
+namespace gView.Framework.Symbology.UI.Rules
 {
     internal class OutlineSymbolBrowsableRule : IBrowsableRule
     {
@@ -14,9 +14,7 @@ namespace gView.Symbology.Framework.Symbology.UI.Rules
         {
             ISymbol? outlineSymbol = instance switch
             {
-                SimpleFillSymbol fillSymbol => fillSymbol.OutlineSymbol,
-                HatchSymbol hatchSymbol => hatchSymbol.OutlineSymbol,
-                GradientFillSymbol gradientSymbol => gradientSymbol.OutlineSymbol,
+                IOutlineSymbol polygonSymbol => polygonSymbol.OutlineSymbol,
                 _ => null
             };
 

@@ -1,5 +1,4 @@
 @using gView.Framework.Carto.Rendering
-@using gView.Framework.Symbology
 
 @inject IApplicationScope AppScope
 
@@ -7,16 +6,17 @@
 {
     <GvCard Title="Symbology">
         <GvCardContent>
-            <img @onclick = "SelectSymbol"
+            @* <img @onclick = "SelectSymbol"
                  class = "carto-symbol-composer-button"
-                 src = "@_renderer.Symbol.ToBase64ImageSource(150, 50)" />
+                 src = "@_renderer.Symbol.ToBase64ImageSource(150, 50)" /> *@
+            <QuickSymbolPropertiesControl Symbol="_renderer.Symbol"
+                                          SymbolChanged="OnSymbolChanged"/>
         </GvCardContent>
     </GvCard>
 
     @if (_renderer.Symbol is ISymbolCollection)
     {
-        <GvCard Title
-        ="Cartography">
+        <GvCard Title="Cartography">
             <GvCardContent>
             <MudSelect T="SimpleRenderer.CartographicMethod" 
                        Label="Ordering"
@@ -61,11 +61,11 @@
         }
     }
 
-    async private Task SelectSymbol()
+    private void OnSymbolChanged(ISymbol symbol)
     {
         if(_renderer is not null)
         {
-            _renderer.Symbol = await _renderer.Symbol.Compose(AppScope);
+            _renderer.Symbol = symbol;
         }
     }
 }

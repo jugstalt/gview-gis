@@ -1,24 +1,27 @@
-﻿using gView.Framework.Carto;
+﻿#nullable enable
+
+using gView.Framework.Carto;
 using gView.Framework.Geometry;
 using gView.Framework.IO;
-using gView.Framework.Reflection;
+using gView.Framework.Symbology.UI;
+using gView.Framework.Symbology.UI.Abstractions;
 using gView.Framework.system;
 using gView.GraphicsEngine;
 using gView.GraphicsEngine.Abstraction;
-using gView.Symbology.Framework.Symbology.UI.Rules;
 using System.ComponentModel;
 
 namespace gView.Framework.Symbology
 {
     [gView.Framework.system.RegisterPlugIn("1496A1A8-8087-4eba-86A0-23FB91197B22")]
-    public sealed class SimpleFillSymbol : LegendItemWidthWhithOutlineSymbol, 
-                                           IFillSymbol, 
-                                           IPenColor, 
-                                           IBrushColor, 
-                                           IPenWidth, 
-                                           IPenDashStyle
+    public sealed class SimpleFillSymbol : LegendItemWidthWhithOutlineSymbol,
+                                           IFillSymbol,
+                                           IPenColor,
+                                           IBrushColor,
+                                           IPenWidth,
+                                           IPenDashStyle,
+                                           IQuickSymolPropertyProvider
     {
-        private IBrush _brush;
+        private IBrush? _brush;
         private ArgbColor _color;
 
         public SimpleFillSymbol()
@@ -53,7 +56,10 @@ namespace gView.Framework.Symbology
             }
             set
             {
-                _brush.Color = value;
+                if (_brush != null)
+                {
+                    _brush.Color = value;
+                }
                 _color = value;
             }
         }
@@ -174,7 +180,7 @@ namespace gView.Framework.Symbology
                 return Clone();
             }
 
-            SimpleFillSymbol fSym = new SimpleFillSymbol(_brush.Color);
+            SimpleFillSymbol fSym = new SimpleFillSymbol(_brush?.Color ?? ArgbColor.Transparent);
             if (OutlineSymbol != null)
             {
                 fSym.OutlineSymbol = (ISymbol)OutlineSymbol.Clone(options);
@@ -420,6 +426,27 @@ namespace gView.Framework.Symbology
         public bool RequireClone()
         {
             return OutlineSymbol != null && OutlineSymbol.RequireClone();
+        }
+
+        #endregion
+
+        #region IQuickSymolPropertyProvider
+
+        public IQuickSymbolProperties? GetQuickSymbolProperties()
+        {
+            var provideQuickProperties = this switch
+            {
+                { OutlineSymbol: null } => true,
+                { Color.IsTransparent: true } => true,
+                IOutlineSymbol oSymbol when oSymbol is ISymbolCollection => false,
+                IPenColor pColor when pColor.PenColor.EqualBase(this.FillColor) => true,
+                _ => false
+            };
+
+            return provideQuickProperties
+                ? new QuickPolygonSymbolProperties(this)
+                : null;
+
         }
 
         #endregion

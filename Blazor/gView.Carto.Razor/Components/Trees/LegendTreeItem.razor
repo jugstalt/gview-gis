@@ -1,16 +1,47 @@
 @using gView.Framework.Carto.UI
+@using gView.Framework.IO
 @using gView.Framework.Symbology
+
+@inject CartoEventBusService EventBus
+
+@inherits BaseHandler
 
 @if (_legendItems is not null)
 {
-    <table style="margin-left: 34px">
+    <table style="margin-left: @(_quickEditSymbol == null ? "34px" : "0px");width:100%">
         @foreach(var item in _legendItems)
         {
-            <tr>
-                <td>
-                    <img src="@item.ToBase64ImageSource()" />
-                </td>
-                <td>@item.LegendLabel</td>
+            <tr> 
+                @if (_quickEditSymbol is not null && _quickEditSymbol == item)
+                {
+                    <td colspan="2">
+                        <MudPaper Elevation="5" style="padding:5px">
+                            <MudTextField T="string"
+                                          @bind-Value="item.LegendLabel"
+                                          Label="Label" />
+
+                            <QuickSymbolPropertiesControl Symbol="item" 
+                                                          Dense="true"
+                                                          SymbolChanged="(newSymbol) => OnSymbolChanged(item, newSymbol)"/>
+
+                            <MudButton Variant="Variant.Filled"
+                                       Color="Color.Primary"
+                                       OnClick="SymbolEditDone">Done</MudButton>
+                            </MudPaper>
+                    </td>
+                } 
+                else 
+                {
+                    <td>
+                        <img src="@item.ToBase64ImageSource()" 
+                             @ondblclick="() => _quickEditSymbol = item"/>
+                    </td>
+                    <td style="width:100%">
+                        <span @ondblclick="() => _quickEditSymbol = item">
+                            @item.LegendLabel
+                        </span>
+                    </td>
+                }
             </tr>
         }
     </table>
@@ -20,6 +51,7 @@
     [Parameter] public ITocElement? ParentElement { get; set; }
 
     private IEnumerable<ISymbol>? _legendItems;
+    private ISymbol? _quickEditSymbol = null;
 
     protected override void OnInitialized()
     {
@@ -27,4 +59,21 @@
 
         _legendItems = ParentElement?.GetLegendItems();
     }
+
+    private void OnSymbolChanged(ISymbol symbol, ISymbol newSymbol) => Handle(() =>
+    {
+        if (ParentElement?.SetLegendItemSymbol(symbol, newSymbol) == true)
+        {
+            _legendItems = ParentElement?.GetLegendItems();  // recollect items
+            _quickEditSymbol = newSymbol;
+        }
+    });
+
+    private Task SymbolEditDone() => HandleAsync(() =>
+    {
+        _quickEditSymbol = null;
+        return EventBus.FireRefreshMapAsync();
+    });
+
+
 }

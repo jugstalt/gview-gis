@@ -1,12 +1,12 @@
 ﻿using gView.Framework.Reflection;
+using gView.Framework.Symbology.UI.Rules;
 using gView.GraphicsEngine;
-using gView.Symbology.Framework.Symbology.UI.Rules;
 using System.ComponentModel;
 
 namespace gView.Framework.Symbology
 {
     public class LegendItemWidthWhithOutlineSymbol
-        : LegendItem
+        : LegendItem, IOutlineSymbol
     {
         [Browsable(true)]
         [DisplayName("Symbol")]
@@ -52,9 +52,9 @@ namespace gView.Framework.Symbology
                 IPenColor penColor => penColor.PenColor,
                 _ => ArgbColor.Transparent
             };
-            set 
+            set
             {
-                if(this is IPenColor penColor) penColor.PenColor = value;
+                if (this is IPenColor penColor) penColor.PenColor = value;
             }
         }
 
@@ -71,7 +71,7 @@ namespace gView.Framework.Symbology
             };
             set
             {
-                if (this is IPenDashStyle penDashStyle) 
+                if (this is IPenDashStyle penDashStyle)
                     penDashStyle.PenDashStyle = value;
             }
         }

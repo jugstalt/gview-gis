@@ -1,15 +1,13 @@
 ﻿using gView.Framework.Carto;
 using gView.Framework.Geometry;
 using gView.Framework.IO;
+using gView.Framework.Symbology.Extensions;
 using gView.Framework.system;
-using gView.Framework.UI;
 using gView.GraphicsEngine;
 using gView.GraphicsEngine.Abstraction;
-using gView.Symbology.Framework.Symbology.Extensions;
 using System;
 using System.ComponentModel;
 using System.IO;
-using System.Reflection;
 
 namespace gView.Framework.Symbology
 {

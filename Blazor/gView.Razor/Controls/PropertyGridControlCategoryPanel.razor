@@ -1,0 +1,209 @@
+@using System.Reflection
+@using System.ComponentModel
+@using gView.GraphicsEngine
+
+@inherits BaseHandler
+@inject IEnumerable<IPropertyGridEditor> Editors;
+@inject IApplicationScope AppScope
+
+@if(Properties is not null)
+{
+    <table class="gview-property-grid">
+        @foreach (var propertyInfo in Properties.Keys)
+        {
+            #region Property Attributes and Rules
+
+            var browsableAttribute = propertyInfo.GetCustomAttribute<BrowsableAttribute>();
+            if (browsableAttribute?.Browsable == false)
+            {
+                continue;
+            }
+            var displayNameAttribute = propertyInfo.GetCustomAttribute<DisplayNameAttribute>();
+            var propertyName = String.IsNullOrEmpty(displayNameAttribute?.DisplayName)
+                                    ? propertyInfo.Name
+                                    : displayNameAttribute.DisplayName;
+
+            var propDesc =
+                propertyInfo.GetCustomAttribute<PropertyDescriptionAttribute>()
+                ?? new PropertyDescriptionAttribute();
+
+            if (propDesc.BrowsableRule != null)
+            {
+                var rule = Activator.CreateInstance(propDesc.BrowsableRule) as IBrowsableRule;
+                if (rule?.BrowsableFor(propertyInfo, Instance) == false)
+                {
+                    continue;
+                }
+            }
+
+            #endregion
+
+            <tr>
+                <td style="padding-right:8px;white-space:nowrap">
+                    <MudText Typo="Typo.body1">@propertyName</MudText>
+                </td>
+                <td style="width:100%">
+                    @if (Properties[propertyInfo] is not null)
+                    {
+                        @if (propertyInfo.CanWrite == false)
+                        {
+                            <MudTextField T="string" ReadOnly=true
+                                          Value="Properties[propertyInfo]?.ToString()"
+                                          ValueChanged="(val) => PropertyChanged(propertyInfo, val)">
+
+                            </MudTextField>
+                        }
+                        else if (propertyInfo.PropertyType == typeof(short))
+                        {
+                            <MudTextField T="short" Variant="Variant.Text"
+                                          Value="(short)(Properties[propertyInfo] ?? 0)"
+                                          ValueChanged="(val) => PropertyChanged(propertyInfo, val)"
+                                          Immediate="false"
+                                          InputType="InputType.Number" Step="0.1">
+                            </MudTextField>
+                        }
+                        else if (propertyInfo.PropertyType == typeof(int))
+                        {
+                            <MudTextField T="int" Variant="Variant.Text"
+                                          Value="(int)(Properties[propertyInfo] ?? 0)"
+                                          ValueChanged="(val) => PropertyChanged(propertyInfo, val)"
+                                          Immediate="false"
+                                          InputType="InputType.Number" Step="1">
+                            </MudTextField>
+                        }
+                        else if (propertyInfo.PropertyType == typeof(long))
+                        {
+                            <MudTextField T="long" Variant="Variant.Text"
+                                          Value="(long)(Properties[propertyInfo] ?? 0)"
+                                          ValueChanged="(val) => PropertyChanged(propertyInfo, val)"
+                                          Immediate="false"
+                                          InputType="InputType.Number" Step="1">
+                            </MudTextField>
+                        }
+                        else if (propertyInfo.PropertyType == typeof(float))
+                        {
+                            if(propDesc.Range is (float min, float max, float step, string format) range) 
+                            {
+                                <MudSlider T="float"
+                                           Min="range.min" Max="range.max"
+                                           Step="step"
+                                           Value="(float)(Properties[propertyInfo] ?? 0f)"
+                                           ValueChanged="(val) => PropertyChanged(propertyInfo, val)">
+                                    @String.Format(format, (float?)(Properties[propertyInfo] ?? 0f))
+                                </MudSlider>
+                            }
+                            else
+                            {
+                                <MudTextField T="float" Variant="Variant.Text"
+                                              Value="(float)(Properties[propertyInfo] ?? 0f)"
+                                              ValueChanged="(val) => PropertyChanged(propertyInfo, val)"
+                                              Format="#.00" Culture="@_en" Immediate="false"
+                                              InputType="InputType.Number" Step="1">
+                                </MudTextField>
+                            }
+                        }
+                        else if (propertyInfo.PropertyType == typeof(double))
+                        {
+                            <MudTextField T="double" Variant="Variant.Text"
+                                          Value="(double)(Properties[propertyInfo] ?? 0D)"
+                                          ValueChanged="(val) => PropertyChanged(propertyInfo, val)"
+                                          Format="#.00000" Culture="@_en" Immediate="false"
+                                          InputType="InputType.Number" Step="0.1">
+                            </MudTextField>
+                        }
+                        else if (propertyInfo.PropertyType == typeof(ArgbColor))
+                        {
+                            <ColorSelectorButton ArgbColor="(ArgbColor)Properties[propertyInfo]!"
+                                                 ArgbColorChanged="(col) => PropertyChanged(propertyInfo, col)" />
+                        }
+                        else if (propertyInfo.PropertyType.IsEnum)
+                        {
+                            <MudSelect T="object" Value="Properties[propertyInfo]!"
+                                       SelectedValuesChanged="(val) => PropertyChanged(propertyInfo, val)">
+                                @foreach (var enumValue in Enum.GetValues(propertyInfo.PropertyType))
+                                {
+                                    <MudSelectItem Value="enumValue">@enumValue.ToString()?.SplitCamelCase()</MudSelectItem>
+                                }
+                            </MudSelect>
+                        }
+                        else if (propertyInfo.PropertyType == typeof(bool))
+                        {
+                            <MudCheckBox T="bool" Checked="(bool)Properties[propertyInfo]!"
+                                         CheckedChanged="(check) => PropertyChanged(propertyInfo, check)" />
+                        }
+                        else if (Editors.FirstEditorOrNull(propertyInfo.PropertyType) is IPropertyGridEditor editor)
+                        {
+                            <MudButton Variant="Variant.Filled"
+                                       Color="Color.Primary"
+                                       OnClick="() => ShowEditor(editor, propertyInfo)">
+                                Edit: @Properties[propertyInfo]?.ToString()?.SplitCamelCase(14)
+                            </MudButton>
+                        }
+                        else
+                        {
+                            <MudTextField T="string" Variant="Variant.Text"
+                                          Value="Properties[propertyInfo]?.ToString()"
+                                          ValueChanged="(val) => PropertyChanged(propertyInfo, val)">
+
+                            </MudTextField>
+                        }
+
+                        if (propDesc.AllowNull == true)
+                        {
+                            <MudChip Icon="@Icons.Material.Filled.Dangerous"
+                                     IconColor="Color.Error"
+                                     Style="float:right"
+                                     OnClick="() => PropertyChanged(propertyInfo, null)">No @propertyName</MudChip>
+                        }
+                    }
+                    else if (propDesc.DefaultInitializaionType is not null)
+                    {
+                        <MudButton Variant="Variant.Filled"
+                                   OnClick="() => PropertyChanged(propertyInfo, Activator.CreateInstance(propDesc.DefaultInitializaionType))">
+                            @($"No {propertyName}: Create {propDesc.DefaultInitializaionType.Name.SplitCamelCase()}".TruncateWithEllipsis(38))
+                        </MudButton>
+                    }
+                </td>
+            </tr>
+        }
+    </table>
+}
+
+@code  {
+    [Parameter] public object Instance { get; set; } = new object();
+    [Parameter] public EventCallback<PropertyInfo> OnPropertyChanged { get; set; }
+    [Parameter] public Dictionary<PropertyInfo, object?>? Properties { get; set; }
+
+    private System.Globalization.CultureInfo _en = System.Globalization.CultureInfo.GetCultureInfo("en-US");
+
+    private Task ShowEditor(IPropertyGridEditor editor, PropertyInfo propertyInfo) => HandleAsync(async () =>
+    {
+        var newValue = await editor.EditAsync(AppScope, propertyInfo.GetValue(Instance));
+
+        if (newValue != null)
+        {
+            propertyInfo.SetValue(Instance, newValue);
+
+            await OnPropertyChanged.InvokeAsync(propertyInfo);
+        }
+    });
+
+    private Task PropertyChanged(PropertyInfo propertyInfo, object? val) => HandleAsync(() =>
+    {
+        if (Properties?.ContainsKey(propertyInfo) == true)
+        {
+            if (val is HashSet<object> hashSet)  // Select for enum sends hashSet !?
+            {
+                val = hashSet.FirstOrDefault();
+            }
+
+            Properties[propertyInfo] = val;
+
+            propertyInfo.SetValue(Instance, val);
+
+            return OnPropertyChanged.InvokeAsync(propertyInfo);
+        }
+
+        return Task.CompletedTask;
+    });
+}

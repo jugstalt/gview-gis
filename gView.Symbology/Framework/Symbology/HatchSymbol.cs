@@ -1,11 +1,13 @@
-﻿using gView.Framework.Carto;
+﻿#nullable enable
+
+using gView.Framework.Carto;
 using gView.Framework.Geometry;
 using gView.Framework.IO;
-using gView.Framework.Reflection;
+using gView.Framework.Symbology.UI.Abstractions;
+using gView.Framework.Symbology.UI;
 using gView.Framework.system;
 using gView.GraphicsEngine;
 using gView.GraphicsEngine.Abstraction;
-using gView.Symbology.Framework.Symbology.UI.Rules;
 using System.ComponentModel;
 
 namespace gView.Framework.Symbology
@@ -17,9 +19,10 @@ namespace gView.Framework.Symbology
                                       IBrushColor,
                                       IPenColor,
                                       IPenWidth,
-                                      IPenDashStyle
+                                      IPenDashStyle,
+                                      IQuickSymolPropertyProvider
     {
-        private IBrushCollection _brush;
+        private IBrushCollection? _brush;
         private ArgbColor _forecolor;
         private ArgbColor _backcolor;
         private HatchStyle _hatchStyle;
@@ -192,7 +195,7 @@ namespace gView.Framework.Symbology
         {
             get
             {
-                return null;
+                return null!;
             }
         }
 
@@ -232,12 +235,12 @@ namespace gView.Framework.Symbology
             }
 
             float fac = 1;
-            if (options.ApplyRefScale)
+            if (options?.ApplyRefScale == true)
             {
                 fac = (float)(display.ReferenceScale / display.MapScale);
                 fac = options.RefScaleFactor(fac);
             }
-            fac *= options.DpiFactor;
+            fac *= options?.DpiFactor ?? 1;
 
             HatchSymbol hSym = new HatchSymbol(_forecolor, _backcolor, _hatchStyle);
             if (OutlineSymbol != null)
@@ -421,6 +424,25 @@ namespace gView.Framework.Symbology
         public bool RequireClone()
         {
             return OutlineSymbol != null && OutlineSymbol.RequireClone();
+        }
+
+        #endregion
+
+        #region IQuickSymolPropertyProvider
+
+        public IQuickSymbolProperties? GetQuickSymbolProperties()
+        {
+            var provideQuickProperties = this switch
+            {
+                { OutlineSymbol: null } => true,
+                IOutlineSymbol oSymbol when oSymbol is ISymbolCollection => false,
+                IPenColor pColor when pColor.PenColor.EqualBase(this.FillColor) => true,
+                _ => false
+            };
+
+            return provideQuickProperties
+                ? new QuickPolygonSymbolProperties(this)
+                : null;
         }
 
         #endregion

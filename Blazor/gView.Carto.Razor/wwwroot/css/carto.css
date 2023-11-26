@@ -4,7 +4,7 @@
     top: 0px;
     right: 0px;
     bottom: 0px;
-    background: #0094ff;
+    background: #e0e0e0;
     user-select: none;
 }
 
@@ -14,7 +14,7 @@
         top: 0px;
         right: 0px;
         height: 100px;
-        background: #ccc;
+        background: #f0f0f0;
     }
 
         .carto-main .toolbar .carto-tool-box {
@@ -51,7 +51,7 @@
             display: inline-block;
             height: 94px;
             vertical-align: top;
-            border: 1px solid #555;
+            border: 1px solid #ccc;
             border-radius: 8px;
             box-sizing: border-box;
         }
@@ -193,6 +193,9 @@
 }
 
 /**** Darkmode ****/
+.carto-main.dark {
+    background: #0094ff;
+}
 .carto-main.dark .content {
     background: #333;
 }
@@ -203,6 +206,10 @@
 
 .carto-main.dark .toolbar {
     background: #333;
+}
+
+.carto-main.dark .toolbar .carto-tool-box .carto-tool-sub-box {
+    border: 1px solid #555;
 }
 
 .carto-main.dark .context-selected {

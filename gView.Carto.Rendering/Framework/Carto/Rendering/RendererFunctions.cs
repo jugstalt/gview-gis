@@ -105,5 +105,7 @@ namespace gView.Framework.Carto.Rendering
             }
             return symbol;
         }
+
+
     }
 }

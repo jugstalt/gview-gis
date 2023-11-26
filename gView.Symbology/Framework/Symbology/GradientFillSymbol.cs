@@ -1,22 +1,18 @@
 ﻿using gView.Framework.Carto;
 using gView.Framework.Geometry;
 using gView.Framework.IO;
-using gView.Framework.Reflection;
 using gView.Framework.system;
-using gView.Framework.UI;
 using gView.GraphicsEngine;
 using gView.GraphicsEngine.Abstraction;
-using gView.Symbology.Framework.Symbology.UI.Rules;
 using System.ComponentModel;
-using System.Reflection;
 
 namespace gView.Framework.Symbology
 {
     [RegisterPlugInAttribute("E043E059-47E9-42A0-ACF0-FB1012DC8AA2")]
-    public sealed class GradientFillSymbol : LegendItemWidthWhithOutlineSymbol, 
-                                             IFillSymbol, 
-                                             IPenColor, 
-                                             IPenDashStyle, 
+    public sealed class GradientFillSymbol : LegendItemWidthWhithOutlineSymbol,
+                                             IFillSymbol,
+                                             IPenColor,
+                                             IPenDashStyle,
                                              IPenWidth
     {
         public enum GradientRectType { Feature = 0, Display = 1 }

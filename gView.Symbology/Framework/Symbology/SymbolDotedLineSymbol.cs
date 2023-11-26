@@ -1,9 +1,9 @@
 ﻿using gView.Framework.Carto;
 using gView.Framework.Geometry;
 using gView.Framework.IO;
+using gView.Framework.Symbology.Extensions;
 using gView.Framework.system;
 using gView.GraphicsEngine.Abstraction;
-using gView.Symbology.Framework.Symbology.Extensions;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;

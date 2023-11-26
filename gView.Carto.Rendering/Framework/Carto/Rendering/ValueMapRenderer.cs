@@ -122,7 +122,7 @@ namespace gView.Framework.Carto.Rendering
                 ISymbol symbol;
                 if (value == null)
                 {
-                    symbol = RendererFunctions.CreateStandardSymbol(_geometryType, 150, 3, 7);
+                    symbol = RendererFunctions.CreateStandardSymbol(_geometryType, 76, 3, 7);
                 }
                 else
                 {

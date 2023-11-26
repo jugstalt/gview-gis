@@ -1,8 +1,8 @@
 using gView.Framework.Data;
 using gView.Framework.Symbology;
+using gView.Framework.Symbology.Extensions;
 using gView.Framework.system;
 using gView.Framework.UI;
-using gView.Symbology.Framework.Symbology.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -56,12 +56,12 @@ namespace gView.Framework.Carto.UI
                     return null;
                 }
 
-                ITocElement element = (ITocElement)_elements[_pos];
+                ITocElement element = _elements[_pos];
                 if (element.ElementType == TocElementType.ClosedGroup)
                 {
                     for (int i = _pos + 1; i < _elements.Count; i++)
                     {
-                        ITocElement elemParent = ((ITocElement)_elements[i]).ParentGroup;
+                        ITocElement elemParent = _elements[i].ParentGroup;
                         ITocElement parent = element.ParentGroup;
                         while (true)
                         {
@@ -205,7 +205,7 @@ namespace gView.Framework.Carto.UI
                 int width = 0, height = 0;
                 foreach (var bm in bitmaps)
                 {
-                    width = (int)Math.Max(width, bm.Width);
+                    width = Math.Max(width, bm.Width);
                     height += bm.Height;
                 }
 
@@ -1145,7 +1145,7 @@ namespace gView.Framework.Carto.UI
             _elements.Clear();
 
             TocElement element = null;
-            while ((element = (TocElement)await stream.LoadAsync("ITOCElement", new TocElement(this))) != null)
+            while ((element = await stream.LoadAsync("ITOCElement", new TocElement(this))) != null)
             {
                 _elements.Add(element);
             }
@@ -1258,7 +1258,7 @@ namespace gView.Framework.Carto.UI
             _toc = parentTOC;
             if (layer is ILayer)
             {
-                _visible = ((ILayer)layer).Visible;
+                _visible = layer.Visible;
             }
         }
         public TocElement(ILayer layer, string name, ITocElement parent, TOC parentTOC, TocElementType type)
@@ -1607,7 +1607,7 @@ namespace gView.Framework.Carto.UI
             {
                 PersistLayer pElement = null;
 
-                pElement = (PersistLayer)await stream.LoadAsync("DatasetElement", new PersistLayer(_toc._map));
+                pElement = await stream.LoadAsync("DatasetElement", new PersistLayer(_toc._map));
 
                 if (pElement != null && pElement.DatasetElement != null)
                 {
@@ -1651,7 +1651,7 @@ namespace gView.Framework.Carto.UI
             {
                 PersistLayer pElement = null;
 
-                while ((pElement = (PersistLayer)await stream.LoadAsync("DatasetElement", new PersistLayer(_toc._map))) != null)
+                while ((pElement = await stream.LoadAsync("DatasetElement", new PersistLayer(_toc._map))) != null)
                 {
                     _layers.Add(pElement.DatasetElement);  // DatasetElement kann auch null sein, wenn (vorübergehend) nicht mehr im Dataset...
                     if (_parent != null && _parent.Layers.Count == 1 && _parent.Layers[0] is GroupLayer)

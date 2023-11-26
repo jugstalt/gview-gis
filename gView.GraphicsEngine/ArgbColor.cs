@@ -109,6 +109,9 @@ namespace gView.GraphicsEngine
             return false;
         }
 
+        public bool EqualBase(ArgbColor col)
+            => this.R == col.R && this.G == col.G && this.B == col.B;
+
         public override int GetHashCode()
         {
             return base.GetHashCode();

@@ -1,6 +1,6 @@
 ﻿using gView.Framework.Carto;
 
-namespace gView.Symbology.Framework.Symbology.Extensions
+namespace gView.Framework.Symbology.Extensions
 {
     static public class DisplayExtensions
     {

@@ -2,7 +2,6 @@
 using gView.Framework.Geometry;
 using gView.Framework.IO;
 using gView.Framework.system;
-using gView.Framework.UI;
 using gView.GraphicsEngine;
 using gView.GraphicsEngine.Abstraction;
 using gView.GraphicsEngine.Extensions;
@@ -11,7 +10,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using System.Reflection;
 using System.Text;
 using System.Xml;
 

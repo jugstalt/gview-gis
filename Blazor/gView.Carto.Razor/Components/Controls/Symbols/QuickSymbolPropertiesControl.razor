@@ -1,0 +1,124 @@
+@using gView.Framework.Carto.Rendering
+@using gView.Framework.Symbology.Extensions
+@inherits BaseHandler
+@inject IApplicationScope AppScope
+
+@if (Symbol is not null)
+{
+    <GvGrid ColumnCount="@(_quickSymbolProperties is not null && Dense == false ? 3 : 1)">
+        <GvGridItem>
+
+            @if(Dense == false)
+            {
+                <img class="carto-symbol-composer-button" style="margin:5px"
+                     @onclick="OpenSymbolComposer"
+                     src="@Symbol.ToBase64ImageSource(150, 50)" />
+            }
+            <MudToolBar Dense="false" Style="padding:0px">
+                @if(Dense == true)
+                {
+                    <img class="carto-symbol-composer-button" style="margin:5px"
+                         @onclick="OpenSymbolComposer"
+                         src="@Symbol.ToBase64ImageSource(120, 40)" />
+                }
+                <MudIconButton Size="MudBlazor.Size.Medium" 
+                               Icon="@Icons.Material.Outlined.Refresh"
+                               Title="Create new random symbol"
+                               OnClick="RefreshWithRandomSymbol" />
+                <MudIconButton Size="MudBlazor.Size.Medium" 
+                               Disabled="_undoSymbol is null"
+                               Icon="@Icons.Material.Outlined.Undo"
+                               Title="Undo"
+                               OnClick="UndoSymbol" />
+                <MudIconButton Size="MudBlazor.Size.Medium" 
+                               Color="Color.Primary"
+                               Icon="@Icons.Material.Outlined.Settings"
+                               Title="Symbol Composer..."
+                               OnClick="OpenSymbolComposer"></MudIconButton>
+            </MudToolBar>
+        </GvGridItem>
+        @if (_quickSymbolProperties is not null)
+        {
+            <GvGridItem Span="Dense ? 1 : 2">
+                @if (Dense == false)
+                {
+                    <MudText Typo="Typo.h6">Quick Settings</MudText>
+                }
+                <PropertyGridControl Instance="_quickSymbolProperties"
+                                     OnPropertyChanged="(propertyInfo) => PropertyChanged(propertyInfo)" />
+        </GvGridItem>
+        }
+    </GvGrid>
+}
+@code {
+    [Parameter] public ISymbol? Symbol { get; set; }
+    [Parameter] public EventCallback<ISymbol> SymbolChanged { get; set; }
+    [Parameter] public bool Dense { get; set; } 
+
+    private IQuickSymbolProperties? _quickSymbolProperties { get; set; }
+    private ISymbol? _undoSymbol = null;
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+
+        SetQuickSymbolProperties();
+    }
+
+    private void SetQuickSymbolProperties() => Handle(() => 
+    {
+        _quickSymbolProperties = Symbol switch
+        {
+            IQuickSymolPropertyProvider provider => provider.GetQuickSymbolProperties(),
+            _ => null
+        };
+    });
+
+    private Task PropertyChanged(PropertyInfo propertyInfo)
+    {
+        return Task.CompletedTask;
+    }
+
+    private Task RefreshWithRandomSymbol() => HandleAsync(async () =>
+    {
+        var newSymbol = RendererFunctions.CreateStandardSymbol(Symbol.ToGeometryType(), 76, 3, 7);
+
+        if (newSymbol is not null)
+        {
+            _undoSymbol = Symbol;
+            Symbol = newSymbol;
+
+            SetQuickSymbolProperties();
+            await SymbolChanged.InvokeAsync(Symbol);
+        }
+    });
+
+    private Task UndoSymbol() => HandleAsync(async () =>
+    {
+        if(_undoSymbol is not null)
+        {
+            Symbol = _undoSymbol;
+            _undoSymbol = null;
+
+            SetQuickSymbolProperties();
+            await SymbolChanged.InvokeAsync(Symbol);
+        }
+    });
+
+    private Task OpenSymbolComposer() => HandleAsync(async () =>
+    {
+        if (Symbol is not null)
+        {
+            var newSymbol = await Symbol.Compose(AppScope);
+
+            if (newSymbol != Symbol)
+            {
+                _undoSymbol = Symbol;
+                Symbol = newSymbol;
+
+                SetQuickSymbolProperties();
+                await SymbolChanged.InvokeAsync(Symbol);
+            }
+        }
+    });
+}

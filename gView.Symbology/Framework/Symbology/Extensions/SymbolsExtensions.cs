@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace gView.Symbology.Framework.Symbology.Extensions
+namespace gView.Framework.Symbology.Extensions
 {
     static class SymbolsExtensions
     {
