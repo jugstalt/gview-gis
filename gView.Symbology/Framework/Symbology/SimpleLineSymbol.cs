@@ -1,4 +1,6 @@
-﻿using gView.Framework.Carto;
+﻿#nullable enable
+
+using gView.Framework.Carto;
 using gView.Framework.Geometry;
 using gView.Framework.IO;
 using gView.Framework.Symbology.UI.Abstractions;
@@ -18,7 +20,7 @@ namespace gView.Framework.Symbology
                         IPenDashStyle,
                         IQuickSymolPropertyProvider
     {
-        private IPen _pen;
+        private IPen? _pen;
         private ArgbColor _color;
 
         public SimpleLineSymbol()
@@ -51,11 +53,14 @@ namespace gView.Framework.Symbology
         {
             get
             {
-                return _pen.DashStyle;
+                return _pen?.DashStyle ?? LineDashStyle.Solid;
             }
             set
             {
-                _pen.DashStyle = value;
+                if (_pen is not null)
+                {
+                    _pen.DashStyle = value;
+                }
             }
         }
 
@@ -63,11 +68,14 @@ namespace gView.Framework.Symbology
         {
             get
             {
-                return _pen.StartCap;
+                return _pen?.StartCap ?? LineCap.Round;
             }
             set
             {
-                _pen.StartCap = value;
+                if (_pen is not null)
+                {
+                    _pen.StartCap = value;
+                }
             }
         }
 
@@ -75,11 +83,14 @@ namespace gView.Framework.Symbology
         {
             get
             {
-                return _pen.EndCap;
+                return _pen?.EndCap ?? LineCap.Round;
             }
             set
             {
-                _pen.EndCap = value;
+                if (_pen is not null)
+                {
+                    _pen.EndCap = value;
+                }
             }
         }
 
@@ -89,7 +100,7 @@ namespace gView.Framework.Symbology
         {
             get
             {
-                return _pen.Width;
+                return _pen?.Width ?? 1f;
             }
             set
             {
@@ -113,7 +124,10 @@ namespace gView.Framework.Symbology
             }
             set
             {
-                _pen.Color = value;
+                if (_pen is not null)
+                {
+                    _pen.Color = value;
+                }
                 _color = value;
             }
         }
@@ -222,14 +236,14 @@ namespace gView.Framework.Symbology
 
         #region IPersistable Member
 
-        [Browsable(false)]
-        public string PersistID
-        {
-            get
-            {
-                return null;
-            }
-        }
+        //[Browsable(false)]
+        //public string PersistID
+        //{
+        //    get
+        //    {
+        //        return null;
+        //    }
+        //}
 
         new public void Load(IPersistStream stream)
         {
@@ -286,7 +300,7 @@ namespace gView.Framework.Symbology
             {
                 fac = ReferenceScaleHelper.CalcPixelUnitFactor(options);
             }
-            else if (_widthUnit != DrawingUnit.Pixel && _pen.Width > 0)
+            else if (_widthUnit != DrawingUnit.Pixel && _pen?.Width > 0)
             {
                 float pix = (float)(display.MapScale / (display.Dpi / 0.0254));
                 if (pix == 0f)
@@ -299,7 +313,7 @@ namespace gView.Framework.Symbology
                 }
             }
 
-            SimpleLineSymbol clone = new SimpleLineSymbol(_color, ReferenceScaleHelper.PenWidth(_pen.Width * fac, this, display));
+            SimpleLineSymbol clone = new SimpleLineSymbol(_color, ReferenceScaleHelper.PenWidth((_pen?.Width ?? 1f) * fac, this, display));
             clone.DashStyle = this.DashStyle;
             clone.LineStartCap = this.LineStartCap;
             clone.LineEndCap = this.LineEndCap;

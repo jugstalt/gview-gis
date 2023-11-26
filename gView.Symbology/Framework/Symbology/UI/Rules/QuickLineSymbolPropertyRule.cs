@@ -1,4 +1,6 @@
-﻿using gView.Framework.Reflection;
+﻿#nullable enable
+
+using gView.Framework.Reflection;
 using System.Reflection;
 
 namespace gView.Framework.Symbology.UI.Rules;

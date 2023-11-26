@@ -337,50 +337,6 @@ namespace gView.Framework.Symbology
             }
         }
 
-        [Browsable(true)]
-        [Category("Reference Scaling")]
-        [UseWidthPicker()]
-        public float MaxPenWidth
-        {
-            get
-            {
-                if (OutlineSymbol is IPenWidth)
-                {
-                    return ((IPenWidth)OutlineSymbol).MaxPenWidth;
-                }
-                return 0;
-            }
-            set
-            {
-                if (OutlineSymbol is IPenWidth)
-                {
-                    ((IPenWidth)OutlineSymbol).MaxPenWidth = value;
-                }
-            }
-        }
-
-        [Browsable(true)]
-        [Category("Reference Scaling")]
-        [UseWidthPicker()]
-        public float MinPenWidth
-        {
-            get
-            {
-                if (OutlineSymbol is IPenWidth)
-                {
-                    return ((IPenWidth)OutlineSymbol).MinPenWidth;
-                }
-                return 0;
-            }
-            set
-            {
-                if (OutlineSymbol is IPenWidth)
-                {
-                    ((IPenWidth)OutlineSymbol).MinPenWidth = value;
-                }
-            }
-        }
-
         #endregion
 
         #region IPenDashStyle Member
