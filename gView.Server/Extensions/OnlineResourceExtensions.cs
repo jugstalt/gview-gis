@@ -24,7 +24,7 @@ static public class OnlineResourceExtensions
         } 
         else
         {
-            sb.Append("/geoservices/rest/services/");
+            sb.Append("/geoservices/rest/services");
         }
         
         if (!string.IsNullOrEmpty(folder))
