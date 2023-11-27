@@ -1,4 +1,6 @@
-﻿using gView.Framework.Db;
+﻿using gView.Framework.Core.Geometry;
+using gView.Framework.Core.IO;
+using gView.Framework.Db;
 using gView.Framework.Geometry;
 using gView.Framework.IO;
 using System;

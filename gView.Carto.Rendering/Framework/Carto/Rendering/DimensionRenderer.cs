@@ -1,10 +1,15 @@
 using gView.Framework.Carto.Rendering.UI;
-using gView.Framework.Data;
-using gView.Framework.Data.Filters;
+using gView.Framework.Core.Carto;
+using gView.Framework.Core.Data;
+using gView.Framework.Core.Data.Filters;
+using gView.Framework.Core.Geometry;
+using gView.Framework.Core.IO;
+using gView.Framework.Core.Symbology;
+using gView.Framework.Core.system;
+using gView.Framework.Core.UI;
 using gView.Framework.Geometry;
 using gView.Framework.Symbology;
 using gView.Framework.system;
-using gView.Framework.UI;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
@@ -99,7 +104,7 @@ namespace gView.Framework.Carto.Rendering
 
         #region IFeatureRenderer Member
 
-        public void Draw(IDisplay disp, gView.Framework.Data.IFeature feature)
+        public void Draw(IDisplay disp, IFeature feature)
         {
             if (disp == null || disp.MapScale < 1.0 ||
                 feature == null || !(feature.Shape is IPolyline))
@@ -235,14 +240,14 @@ namespace gView.Framework.Carto.Rendering
 
         }
 
-        public bool CanRender(gView.Framework.Data.IFeatureLayer layer, IMap map)
+        public bool CanRender(IFeatureLayer layer, IMap map)
         {
             return layer != null &&
                 layer.FeatureClass != null &&
                 layer.LayerGeometryType == GeometryType.Polyline;
         }
 
-        public bool HasEffect(gView.Framework.Data.IFeatureLayer layer, IMap map)
+        public bool HasEffect(IFeatureLayer layer, IMap map)
         {
             return layer != null &&
                 layer.FeatureClass != null &&
@@ -281,7 +286,7 @@ namespace gView.Framework.Carto.Rendering
 
         #region IPersistable Member
 
-        public void Load(gView.Framework.IO.IPersistStream stream)
+        public void Load(IPersistStream stream)
         {
             this.Release();
 
@@ -291,7 +296,7 @@ namespace gView.Framework.Carto.Rendering
             _format = (string)stream.Load("format", String.Empty);
         }
 
-        public void Save(gView.Framework.IO.IPersistStream stream)
+        public void Save(IPersistStream stream)
         {
             stream.Save("textSymbol", _textSymbol);
             stream.Save("lineSymbol", _lineSymbol);

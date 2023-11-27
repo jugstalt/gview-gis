@@ -1,14 +1,15 @@
-﻿using gView.Framework.Carto;
+﻿using gView.Framework.Core.Carto;
+using gView.Framework.Core.Data;
+using gView.Framework.Core.IO;
+using gView.Framework.Core.system;
 using gView.Framework.Editor.Core;
-using gView.Framework.IO;
-using gView.Framework.system;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace gView.Plugins.Modules
 {
-    [gView.Framework.system.RegisterPlugIn("45713F48-0D81-4a54-A422-D0E6F397BC95", PluginUsage.Server)]
+    [RegisterPlugIn("45713F48-0D81-4a54-A422-D0E6F397BC95", PluginUsage.Server)]
     public class EditorModule : IMapApplicationModule, IPersistable
     {
         private List<EditLayer> _editLayers = new List<EditLayer>();
@@ -138,7 +139,7 @@ namespace gView.Plugins.Modules
             public string ClassName { get; private set; }
             public EditStatements Statements { get; private set; }
 
-            public Framework.Data.IFeatureLayer FeatureLayer { get { return null; } }
+            public IFeatureLayer FeatureLayer { get { return null; } }
 
             #region IPersistable
 

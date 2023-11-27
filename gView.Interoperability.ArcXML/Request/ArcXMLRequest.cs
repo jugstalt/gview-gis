@@ -1,15 +1,20 @@
 using gView.Framework.Carto;
+using gView.Framework.Core.Carto;
+using gView.Framework.Core.Data;
+using gView.Framework.Core.Data.Cursors;
+using gView.Framework.Core.Data.Filters;
+using gView.Framework.Core.Geometry;
+using gView.Framework.Core.MapServer;
+using gView.Framework.Core.Network;
+using gView.Framework.Core.system;
 using gView.Framework.Data;
-using gView.Framework.Data.Cursors;
 using gView.Framework.Data.Filters;
 using gView.Framework.Geometry;
-using gView.Framework.Network;
 using gView.Framework.Network.Algorthm;
 using gView.Framework.system;
 using gView.Framework.XML;
 using gView.GraphicsEngine;
 using gView.Interoperability.ArcXML.Dataset;
-using gView.MapServer;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -19,7 +24,7 @@ using System.Xml;
 
 namespace gView.Interoperability.ArcXML
 {
-    [gView.Framework.system.RegisterPlugIn("BB294D9C-A184-4129-9555-398AA70284BC")]
+    [RegisterPlugIn("BB294D9C-A184-4129-9555-398AA70284BC")]
     public class ArcXMLRequest : IServiceRequestInterpreter
     {
         private static IFormatProvider _nhi = System.Globalization.CultureInfo.InvariantCulture.NumberFormat;
@@ -1597,7 +1602,7 @@ namespace gView.Interoperability.ArcXML
     }
 
     /*
-    [gView.Framework.system.RegisterPlugIn("DC58F436-9E1E-444b-8E09-EA2D1E0F5C30")]
+    [RegisterPlugIn("DC58F436-9E1E-444b-8E09-EA2D1E0F5C30")]
     public class ArcXMLRequest2 : ArcXMLRequest
     {
         public ArcXMLRequest2()

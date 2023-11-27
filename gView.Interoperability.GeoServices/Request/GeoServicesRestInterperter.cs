@@ -1,16 +1,21 @@
-﻿using gView.Core.Framework.Exceptions;
-using gView.Framework.Carto;
+﻿using gView.Framework.Core.Carto;
+using gView.Framework.Core.Data;
+using gView.Framework.Core.Data.Cursors;
+using gView.Framework.Core.Data.Filters;
+using gView.Framework.Core.Exceptions;
+using gView.Framework.Core.FDB;
+using gView.Framework.Core.Geometry;
+using gView.Framework.Core.MapServer;
+using gView.Framework.Core.system;
+using gView.Framework.Core.UI;
 using gView.Framework.Data;
-using gView.Framework.Data.Cursors;
 using gView.Framework.Data.Filters;
 using gView.Framework.Editor.Core;
-using gView.Framework.FDB;
 using gView.Framework.Geometry;
 using gView.Framework.IO;
 using gView.Framework.OGC.GeoJson;
 using gView.Framework.system;
 using gView.Framework.system.Diagnostics;
-using gView.Framework.UI;
 using gView.Interoperability.GeoServices.Exceptions;
 using gView.Interoperability.GeoServices.Extensions;
 using gView.Interoperability.GeoServices.Request.Extensions;
@@ -20,7 +25,6 @@ using gView.Interoperability.GeoServices.Rest.Json.FeatureServer;
 using gView.Interoperability.GeoServices.Rest.Json.Renderers.SimpleRenderers;
 using gView.Interoperability.GeoServices.Rest.Json.Request;
 using gView.Interoperability.GeoServices.Rest.Json.Response;
-using gView.MapServer;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -31,7 +35,7 @@ using System.Threading.Tasks;
 
 namespace gView.Interoperability.GeoServices.Request
 {
-    [gView.Framework.system.RegisterPlugIn("6702B376-8848-435B-8611-6516A9726D3F")]
+    [RegisterPlugIn("6702B376-8848-435B-8611-6516A9726D3F")]
     public class GeoServicesRestInterperter : IServiceRequestInterpreter
     {
         private IMapServer _mapServer;
@@ -217,7 +221,7 @@ namespace gView.Interoperability.GeoServices.Request
                         {
                             string serviceMapName = serviceMap.Name.Replace("/", "_").Replace(",", "_");
                             string fileName =
-                               $"{serviceMapName}_{System.Guid.NewGuid().ToString("N")}.{iFormat.ToString().ToLower()}";
+                               $"{serviceMapName}_{System.Guid.NewGuid():N}.{iFormat.ToString().ToLower()}";
 
                             string path = ($"{_mapServer.OutputPath}/{fileName}").ToPlatformPath();
                             await serviceMap.SaveImage(path, iFormat);
@@ -278,9 +282,9 @@ namespace gView.Interoperability.GeoServices.Request
         }
 
         private void ServiceMap_BeforeRenderLayers(
-            Framework.Carto.IServiceMap sender, 
+            IServiceMap sender,
             IServiceRequestContext context,
-            List<Framework.Data.ILayer> layers)
+            List<ILayer> layers)
         {
             var mapLayersString = _exportMap?.Layers.Trim();
 
@@ -758,7 +762,7 @@ namespace gView.Interoperability.GeoServices.Request
                                                             {
                                                                 Name = tableField.name,
                                                                 Alias = tableField.aliasname,
-                                                                Length = tableField.size > 0 ? (int?)tableField.size : null,
+                                                                Length = tableField.size > 0 ? tableField.size : null,
                                                                 Type = JsonField.ToType(tableField.type).ToString()
                                                             });
                                                         }
@@ -774,7 +778,7 @@ namespace gView.Interoperability.GeoServices.Request
                                     }
                                 }
 
-                                if(cursor is IDiagnostics)
+                                if (cursor is IDiagnostics)
                                 {
                                     idleMilliseconds = ((IDiagnostics)cursor).DiagnosticParameters?.IdleMilliseconds ?? 0D;
                                 }

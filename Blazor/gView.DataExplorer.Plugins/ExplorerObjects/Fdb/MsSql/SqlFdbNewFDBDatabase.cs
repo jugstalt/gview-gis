@@ -1,23 +1,20 @@
 ﻿using gView.DataExplorer.Plugins.ExplorerObjects.Base;
 using gView.DataExplorer.Plugins.ExplorerObjects.Fdb.MsSql.Extensions;
-using gView.DataExplorer.Plugins.ExplorerObjects.Fdb.PostgreSql;
 using gView.DataExplorer.Plugins.Extensions;
 using gView.DataExplorer.Razor.Components.Dialogs.Models;
 using gView.DataSources.Fdb.MSSql;
 using gView.Framework.Blazor.Services.Abstraction;
+using gView.Framework.Core.system;
 using gView.Framework.DataExplorer.Abstraction;
-using gView.Framework.Db;
 using gView.Framework.IO;
-using gView.Framework.OGC.KML;
 using gView.Framework.system;
 using System.Threading.Tasks;
-using System.Xml.Linq;
 
 namespace gView.DataExplorer.Plugins.ExplorerObjects.Fdb.MsSql;
 
 [RegisterPlugIn("320E7A05-ACC5-4229-A989-2BF6D7CC62BF")]
-public class SqlFdbNewFDBDatabase : ExplorerObjectCls<SqlFdbExplorerGroupObject>, 
-                                    IExplorerObject, 
+public class SqlFdbNewFDBDatabase : ExplorerObjectCls<SqlFdbExplorerGroupObject>,
+                                    IExplorerObject,
                                     IExplorerObjectCreatable
 {
     public SqlFdbNewFDBDatabase()
@@ -36,7 +33,7 @@ public class SqlFdbNewFDBDatabase : ExplorerObjectCls<SqlFdbExplorerGroupObject>
 
     public string FullName => "";
 
-    public string Type=> "SQL Server Feature database"; 
+    public string Type => "SQL Server Feature database";
 
     public string Icon => "basic:screw-wrench-double";
 
@@ -46,7 +43,7 @@ public class SqlFdbNewFDBDatabase : ExplorerObjectCls<SqlFdbExplorerGroupObject>
     }
 
     public Task<object?> GetInstanceAsync() => Task.FromResult<object?>(null);
-    
+
 
     #endregion
 
@@ -75,7 +72,7 @@ public class SqlFdbNewFDBDatabase : ExplorerObjectCls<SqlFdbExplorerGroupObject>
             if (model.CreateRepositoryOnly == false)
             {
                 connectionString = ConfigTextStream.RemoveValue(connectionString, "database");
-            } 
+            }
             else
             {
                 parameters.SetUserData("CreateDatabase", false);
@@ -84,7 +81,7 @@ public class SqlFdbNewFDBDatabase : ExplorerObjectCls<SqlFdbExplorerGroupObject>
             SqlFDB fdb = new SqlFDB();
 
             await fdb.Open(connectionString);
-            if(!fdb.Create(databaseName, parameters))
+            if (!fdb.Create(databaseName, parameters))
             {
                 throw new System.Exception(fdb.LastErrorMessage);
             }

@@ -3,6 +3,7 @@ using gView.DataExplorer.Plugins.Extensions;
 using gView.DataExplorer.Razor.Components.Dialogs.Models;
 using gView.DataExplorer.Razor.Components.Dialogs.Models.Extensions;
 using gView.Framework.Blazor.Services.Abstraction;
+using gView.Framework.Core.system;
 using gView.Framework.DataExplorer.Abstraction;
 using gView.Framework.DataExplorer.Events;
 using gView.Framework.IO;
@@ -12,10 +13,10 @@ using System.Threading.Tasks;
 
 namespace gView.DataExplorer.Plugins.ExplorerObjects.Web.Wms;
 
-[gView.Framework.system.RegisterPlugIn("4C8FC31A-D988-4D6A-94C5-849237FB8E70")]
-public class WmsNewConnectionExplorerObject : ExplorerObjectCls<WmsExplorerObject>, 
-                                              IExplorerSimpleObject, 
-                                              IExplorerObjectDoubleClick, 
+[RegisterPlugIn("4C8FC31A-D988-4D6A-94C5-849237FB8E70")]
+public class WmsNewConnectionExplorerObject : ExplorerObjectCls<WmsExplorerObject>,
+                                              IExplorerSimpleObject,
+                                              IExplorerObjectDoubleClick,
                                               IExplorerObjectCreatable
 {
     public WmsNewConnectionExplorerObject()

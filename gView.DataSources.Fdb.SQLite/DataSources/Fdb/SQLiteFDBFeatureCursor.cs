@@ -1,8 +1,9 @@
-﻿using gView.Framework.Data;
-using gView.Framework.Data.Cursors;
-using gView.Framework.Data.Filters;
+﻿using gView.Framework.Core.Data;
+using gView.Framework.Core.Data.Cursors;
+using gView.Framework.Core.Data.Filters;
+using gView.Framework.Core.Geometry;
+using gView.Framework.Data;
 using gView.Framework.Db.Extensions;
-using gView.Framework.Geometry;
 using System;
 using System.Collections.Generic;
 using System.Data;

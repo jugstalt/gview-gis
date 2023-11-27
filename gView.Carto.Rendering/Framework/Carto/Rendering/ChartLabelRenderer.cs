@@ -1,10 +1,15 @@
 ﻿using gView.Framework.Carto.Rendering.UI;
-using gView.Framework.Data;
-using gView.Framework.Data.Filters;
+using gView.Framework.Core.Carto;
+using gView.Framework.Core.Data;
+using gView.Framework.Core.Data.Filters;
+using gView.Framework.Core.Geometry;
+using gView.Framework.Core.IO;
+using gView.Framework.Core.Symbology;
+using gView.Framework.Core.system;
+using gView.Framework.Core.UI;
 using gView.Framework.Geometry;
 using gView.Framework.Symbology;
 using gView.Framework.system;
-using gView.Framework.UI;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,7 +17,7 @@ using System.Reflection;
 
 namespace gView.Framework.Carto.Rendering
 {
-    [gView.Framework.system.RegisterPlugIn("0be572ae-bb58-4148-a428-084bad28ffab")]
+    [RegisterPlugIn("0be572ae-bb58-4148-a428-084bad28ffab")]
     public class ChartLabelRenderer : Cloner, ILabelRenderer, IPriority, IPropertyPage, ILegendGroup
     {
         public enum chartType { Pie = 0, Bars = 1, Stack = 2 }
@@ -619,9 +624,9 @@ namespace gView.Framework.Carto.Rendering
 
         #region IRenderer Member
 
-        public List<Symbology.ISymbol> Symbols
+        public List<ISymbol> Symbols
         {
-            get { return new List<Symbology.ISymbol>(); }
+            get { return new List<ISymbol>(); }
         }
 
         public bool Combine(IRenderer renderer)
@@ -633,7 +638,7 @@ namespace gView.Framework.Carto.Rendering
 
         #region IPersistable Member
 
-        public void Load(IO.IPersistStream stream)
+        public void Load(IPersistStream stream)
         {
             _type = (chartType)stream.Load("Type", (int)chartType.Pie);
             _sizeType = (sizeType)stream.Load("SizeType", (int)sizeType.ConstantSize);
@@ -649,7 +654,7 @@ namespace gView.Framework.Carto.Rendering
             _outlineSymbol = stream.Load("Outline", null) as ILineSymbol;
         }
 
-        public void Save(IO.IPersistStream stream)
+        public void Save(IPersistStream stream)
         {
             stream.Save("Type", (int)_type);
             stream.Save("SizeType", (int)_sizeType);

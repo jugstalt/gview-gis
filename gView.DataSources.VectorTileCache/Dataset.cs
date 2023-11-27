@@ -1,8 +1,12 @@
 ﻿using gView.Data.Framework.Data;
 using gView.Data.Framework.Data.Abstraction;
+using gView.Framework.Core.Data;
+using gView.Framework.Core.FDB;
+using gView.Framework.Core.Geometry;
+using gView.Framework.Core.IO;
+using gView.Framework.Core.system;
 using gView.Framework.Data;
 using gView.Framework.Data.Metadata;
-using gView.Framework.FDB;
 using gView.Framework.Geometry;
 using gView.Framework.IO;
 using Newtonsoft.Json;
@@ -14,7 +18,7 @@ using System.Threading.Tasks;
 
 namespace gView.DataSources.VectorTileCache
 {
-    [gView.Framework.system.RegisterPlugIn("1B8F1096-8D3F-4D2B-9222-15F26BBEC550")]
+    [RegisterPlugIn("1B8F1096-8D3F-4D2B-9222-15F26BBEC550")]
     public class Dataset : DatasetMetadata, IDataset, IFeatureCacheDataset, IFeatureDataset
     {
         private string _connectionString;

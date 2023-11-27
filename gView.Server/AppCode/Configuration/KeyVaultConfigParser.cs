@@ -1,4 +1,4 @@
-﻿using gView.Core.Framework.system;
+﻿using gView.Framework.Core.system;
 using System.Text.RegularExpressions;
 
 namespace gView.Server.AppCode.Configuration

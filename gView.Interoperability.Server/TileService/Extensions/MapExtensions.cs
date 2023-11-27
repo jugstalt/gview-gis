@@ -1,4 +1,4 @@
-﻿using gView.Framework.Carto;
+﻿using gView.Framework.Core.Carto;
 using System.Threading.Tasks;
 
 namespace gView.Interoperability.Server.TileService.Extensions

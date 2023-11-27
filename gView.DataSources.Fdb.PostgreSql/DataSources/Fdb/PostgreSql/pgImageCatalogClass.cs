@@ -1,8 +1,14 @@
-﻿using gView.Framework.Data;
+﻿using gView.Framework.Core.Carto;
+using gView.Framework.Core.Data;
+using gView.Framework.Core.Data.Cursors;
+using gView.Framework.Core.Data.Filters;
+using gView.Framework.Core.Geometry;
+using gView.Framework.Core.IO;
+using gView.Framework.Core.system;
+using gView.Framework.Data;
 using gView.Framework.Data.Cursors;
 using gView.Framework.Data.Filters;
 using gView.Framework.Geometry;
-using gView.Framework.IO;
 using gView.Framework.system;
 using gView.GraphicsEngine;
 using System;
@@ -141,7 +147,7 @@ namespace gView.DataSources.Fdb.PostgreSql
 
         #region IRasterClass Members
 
-        public gView.Framework.Geometry.IPolygon Polygon
+        public IPolygon Polygon
         {
             get
             {
@@ -149,7 +155,7 @@ namespace gView.DataSources.Fdb.PostgreSql
             }
         }
 
-        public Task<IRasterPaintContext> BeginPaint(gView.Framework.Carto.IDisplay display, ICancelTracker cancelTracker)
+        public Task<IRasterPaintContext> BeginPaint(IDisplay display, ICancelTracker cancelTracker)
         {
             return Task.FromResult<IRasterPaintContext>(new RasterPaintContext(null));
         }
@@ -189,7 +195,7 @@ namespace gView.DataSources.Fdb.PostgreSql
             get { return 0.0; }
         }
 
-        public gView.Framework.Geometry.ISpatialReference SpatialReference
+        public ISpatialReference SpatialReference
         {
             get
             {
@@ -221,7 +227,7 @@ namespace gView.DataSources.Fdb.PostgreSql
             }
         }
 
-        async public Task<IRasterLayerCursor> ChildLayers(gView.Framework.Carto.IDisplay display, string filterClause)
+        async public Task<IRasterLayerCursor> ChildLayers(IDisplay display, string filterClause)
         {
             if (_fc == null || display == null || _fdb == null)
             {
@@ -514,7 +520,7 @@ namespace gView.DataSources.Fdb.PostgreSql
 
         public IPointIdentifyContext CreatePointIdentifyContext() => new DummyPointIdentifyContext();
 
-        async public Task<ICursor> PointQuery(gView.Framework.Carto.IDisplay display, IPoint point, ISpatialReference sRef, IUserData userdata, IPointIdentifyContext context)
+        async public Task<ICursor> PointQuery(IDisplay display, IPoint point, ISpatialReference sRef, IUserData userdata, IPointIdentifyContext context)
         {
             PointCollection pColl = new PointCollection();
             pColl.AddPoint(point);
@@ -526,7 +532,7 @@ namespace gView.DataSources.Fdb.PostgreSql
 
         #region IMulitPointIdentify Member
 
-        async public Task<ICursor> MultiPointQuery(gView.Framework.Carto.IDisplay dispaly, IPointCollection points, ISpatialReference sRef, IUserData userdata)
+        async public Task<ICursor> MultiPointQuery(IDisplay dispaly, IPointCollection points, ISpatialReference sRef, IUserData userdata)
         {
             IMultiPoint mPoint = new MultiPoint(points);
             List<IRasterLayer> layers = await QueryChildLayers(mPoint, String.Empty);
@@ -583,7 +589,7 @@ namespace gView.DataSources.Fdb.PostgreSql
 
         #region IMultiGridIdentify
 
-        async public Task<float[]> MultiGridQuery(gView.Framework.Carto.IDisplay display, IPoint[] Points, double dx, double dy, ISpatialReference sRef, IUserData userdata)
+        async public Task<float[]> MultiGridQuery(IDisplay display, IPoint[] Points, double dx, double dy, ISpatialReference sRef, IUserData userdata)
         {
             if (Points == null || Points.Length != 3)
             {
@@ -969,7 +975,7 @@ namespace gView.DataSources.Fdb.PostgreSql
             get { return _polygon; }
         }
 
-        async public Task<IRasterPaintContext> BeginPaint(gView.Framework.Carto.IDisplay display, ICancelTracker cancelTracker)
+        async public Task<IRasterPaintContext> BeginPaint(IDisplay display, ICancelTracker cancelTracker)
         {
             if (_fdb == null)
             {

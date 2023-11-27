@@ -3,7 +3,7 @@ using gView.Carto.Plugins.Extensions;
 using gView.Framework.Blazor.Services.Abstraction;
 using gView.Framework.Carto;
 using gView.Framework.Carto.Abstraction;
-using gView.Framework.system;
+using gView.Framework.Core.system;
 
 namespace gView.Carto.Plugins.CartoTools;
 
@@ -24,7 +24,7 @@ public class NewDocument : ICartoInitialTool
 
     public void Dispose()
     {
-        
+
     }
 
     public bool IsEnabled(IApplicationScope scope)

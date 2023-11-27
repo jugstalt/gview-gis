@@ -2,6 +2,7 @@
 using gView.DataExplorer.Plugins.Extensions;
 using gView.DataExplorer.Razor.Components.Dialogs.Models;
 using gView.Framework.Blazor.Services.Abstraction;
+using gView.Framework.Core.system;
 using gView.Framework.DataExplorer;
 using gView.Framework.DataExplorer.Abstraction;
 using gView.Framework.IO;
@@ -10,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace gView.DataExplorer.Plugins.ExplorerTools;
 
-[gView.Framework.system.RegisterPlugIn("7cbbed5e-c071-46de-b30a-9c6140dafd75")]
+[RegisterPlugIn("7cbbed5e-c071-46de-b30a-9c6140dafd75")]
 internal class AddNetworkDirectory : IExplorerTool
 {
     #region IExplorerTool

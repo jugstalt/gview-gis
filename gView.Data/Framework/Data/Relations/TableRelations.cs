@@ -1,5 +1,6 @@
-﻿using gView.Framework.IO;
-using gView.Framework.UI;
+﻿using gView.Framework.Core.Data;
+using gView.Framework.Core.IO;
+using gView.Framework.Core.UI;
 using System.Collections.Generic;
 
 namespace gView.Framework.Data.Relations

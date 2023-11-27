@@ -1,13 +1,13 @@
-﻿using gView.Framework.Data;
-using gView.Framework.FDB;
-using gView.Framework.IO;
+﻿using gView.Framework.Core.Data;
+using gView.Framework.Core.FDB;
+using gView.Framework.Core.IO;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace gView.Carto.Framework.Carto
 {
-    //[gView.Framework.system.RegisterPlugIn("B9D72B66-B716-4375-A01D-9386AC6235B8")]
+    //[RegisterPlugIn("B9D72B66-B716-4375-A01D-9386AC6235B8")]
     public class UnknownDataset : IDataset
     {
         public Task<IDatasetElement> Element(string title)

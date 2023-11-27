@@ -1,6 +1,8 @@
-﻿using gView.Framework.Network.Algorthm;
+﻿using gView.Framework.Core.Network;
+using gView.Framework.Core.system;
+using gView.Framework.Core.UI;
+using gView.Framework.Network.Algorthm;
 using gView.Framework.system;
-using gView.Framework.UI;
 using System.Threading.Tasks;
 
 namespace gView.Framework.Network.Tracers

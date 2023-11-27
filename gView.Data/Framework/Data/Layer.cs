@@ -1,10 +1,14 @@
-using gView.Framework.Carto;
-using gView.Framework.Data.Cursors;
+using gView.Framework.Core.Carto;
+using gView.Framework.Core.Data;
+using gView.Framework.Core.Data.Cursors;
+using gView.Framework.Core.Data.Filters;
+using gView.Framework.Core.Geometry;
+using gView.Framework.Core.IO;
+using gView.Framework.Core.Symbology;
+using gView.Framework.Core.system;
 using gView.Framework.Data.Filters;
 using gView.Framework.Data.Metadata;
 using gView.Framework.Geometry;
-using gView.Framework.IO;
-using gView.Framework.Symbology;
 using gView.Framework.system;
 using gView.Framework.system.Diagnostics;
 using gView.GraphicsEngine.Filters;
@@ -451,7 +455,7 @@ namespace gView.Framework.Data
 
         public List<ILayer> ChildLayer
         {
-            get { return gView.Framework.system.ListOperations<ILayer>.Clone(_childLayers); }
+            get { return ListOperations<ILayer>.Clone(_childLayers); }
         }
 
         public MapServerGrouplayerStyle MapServerStyle { get; set; }
@@ -2022,7 +2026,7 @@ namespace gView.Framework.Data
             set { _shapeFieldName = value; }
         }
 
-        public gView.Framework.Geometry.IEnvelope Envelope
+        public IEnvelope Envelope
         {
             get
             {
@@ -2119,13 +2123,13 @@ namespace gView.Framework.Data
             set { _hasM = value; }
         }
 
-        public gView.Framework.Geometry.GeometryType GeometryType
+        public GeometryType GeometryType
         {
             get { return _geomType; }
             set { _geomType = value; }
         }
 
-        public gView.Framework.Geometry.ISpatialReference SpatialReference
+        public ISpatialReference SpatialReference
         {
             get
             {
@@ -2137,7 +2141,7 @@ namespace gView.Framework.Data
             }
         }
 
-        public gView.Framework.Data.GeometryFieldType GeometryFieldType
+        public GeometryFieldType GeometryFieldType
         {
             get
             {

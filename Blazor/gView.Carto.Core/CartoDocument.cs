@@ -1,9 +1,10 @@
 ﻿using gView.Carto.Core.Abstractions;
 using gView.Framework.Carto;
-using gView.Framework.Data;
-using gView.Framework.IO;
 using System.Threading.Tasks;
 using gView.Framework.Data.Relations;
+using gView.Framework.Core.Data;
+using gView.Framework.Core.Carto;
+using gView.Framework.Core.IO;
 
 namespace gView.Carto.Core;
 

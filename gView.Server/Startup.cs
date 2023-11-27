@@ -1,4 +1,5 @@
-﻿using gView.Server.AppCode;
+﻿using gView.Framework.Core.system;
+using gView.Server.AppCode;
 using gView.Server.AppCode.Configuration;
 using gView.Server.Extensions;
 using gView.Server.Extensions.DependencyInjection;
@@ -25,7 +26,7 @@ namespace gView.Server
 
             Framework.system.SystemInfo.RegisterGdal1_10_PluginEnvironment();
             Framework.system.SystemVariables.UseDiagnostic = 
-            Framework.system.ContextVariables.UseMetrics =    
+            ContextVariables.UseMetrics =    
                 "true".Equals(Configuration["diagnostics"], StringComparison.OrdinalIgnoreCase);
 
             #region Graphics Engine

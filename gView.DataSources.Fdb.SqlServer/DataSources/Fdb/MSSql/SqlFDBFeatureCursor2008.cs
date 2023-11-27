@@ -1,7 +1,8 @@
-﻿using gView.Framework.Data;
-using gView.Framework.Data.Cursors;
-using gView.Framework.Data.Filters;
-using gView.Framework.Geometry;
+﻿using gView.Framework.Core.Data;
+using gView.Framework.Core.Data.Cursors;
+using gView.Framework.Core.Data.Filters;
+using gView.Framework.Core.Geometry;
+using gView.Framework.Data;
 using System;
 using System.Data;
 using System.Data.SqlClient;

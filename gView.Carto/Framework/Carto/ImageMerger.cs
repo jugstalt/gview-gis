@@ -1,5 +1,7 @@
 using gView.Framework.Carto.Graphics;
-using gView.Framework.Data;
+using gView.Framework.Core.Carto;
+using gView.Framework.Core.Data;
+using gView.Framework.Core.Geometry;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -234,10 +236,10 @@ namespace gView.Framework.Carto
                             if (geoBmp.Envelope != null)
                             {
                                 double x0, y0, x1, y1, x2, y2;
-                                gView.Framework.Geometry.IGeometry geom = gView.Framework.Geometry.GeometricTransformerFactory.Transform2D(geoBmp.Envelope, geoBmp.SpatialReference, display.SpatialReference);
-                                if (geom is gView.Framework.Geometry.IPolygon)
+                                IGeometry geom = gView.Framework.Geometry.GeometricTransformerFactory.Transform2D(geoBmp.Envelope, geoBmp.SpatialReference, display.SpatialReference);
+                                if (geom is IPolygon)
                                 {
-                                    gView.Framework.Geometry.IRing ring = ((gView.Framework.Geometry.IPolygon)geom)[0];
+                                    IRing ring = ((IPolygon)geom)[0];
 
                                     x0 = ring[1].X; y0 = ring[1].Y;
                                     x1 = ring[2].X; y1 = ring[2].Y;
@@ -386,7 +388,7 @@ namespace gView.Framework.Carto
                             {
                                 double xx = x, yy = y;
                                 destDisplay.Image2World(ref xx, ref yy);
-                                gView.Framework.Geometry.IPoint point = (gView.Framework.Geometry.IPoint)transformer.InvTransform2D(new gView.Framework.Geometry.Point(xx, yy));
+                                IPoint point = (IPoint)transformer.InvTransform2D(new gView.Framework.Geometry.Point(xx, yy));
                                 xx = point.X; yy = point.Y;
                                 sourceDisplay.World2Image(ref xx, ref yy);
 

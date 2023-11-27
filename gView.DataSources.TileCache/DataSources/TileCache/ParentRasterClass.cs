@@ -1,4 +1,8 @@
-﻿using gView.Framework.Data;
+﻿using gView.Framework.Core.Carto;
+using gView.Framework.Core.Data;
+using gView.Framework.Core.Geometry;
+using gView.Framework.Core.system;
+using gView.Framework.Data;
 using gView.Framework.Geometry;
 using gView.Framework.Geometry.Tiling;
 using gView.GraphicsEngine.Abstraction;
@@ -19,7 +23,7 @@ namespace gView.DataSources.TileCache
 
         #region IRasterClass Member
 
-        public Framework.Geometry.IPolygon Polygon
+        public IPolygon Polygon
         {
             get
             {
@@ -66,7 +70,7 @@ namespace gView.DataSources.TileCache
             get { return 0D; }
         }
 
-        public Framework.Geometry.ISpatialReference SpatialReference
+        public ISpatialReference SpatialReference
         {
             get
             {
@@ -78,7 +82,7 @@ namespace gView.DataSources.TileCache
             }
         }
 
-        public Task<IRasterPaintContext> BeginPaint(Framework.Carto.IDisplay display, Framework.system.ICancelTracker cancelTracker)
+        public Task<IRasterPaintContext> BeginPaint(IDisplay display, ICancelTracker cancelTracker)
         {
             return Task.FromResult<IRasterPaintContext>(new RasterPaintContext(null));
         }
@@ -107,7 +111,7 @@ namespace gView.DataSources.TileCache
 
         #region IParentRasterLayer Member
 
-        public Task<IRasterLayerCursor> ChildLayers(gView.Framework.Carto.IDisplay display, string filterClause)
+        public Task<IRasterLayerCursor> ChildLayers(IDisplay display, string filterClause)
         {
             if (_dataset == null || _dataset.Extent == null || _dataset.Scales == null)
             {

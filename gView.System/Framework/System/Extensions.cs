@@ -1,7 +1,7 @@
-﻿using gView.Framework.Carto;
-using gView.Framework.Data;
-using gView.Framework.IO;
-using gView.Framework.UI;
+﻿using gView.Framework.Core.Carto;
+using gView.Framework.Core.Data;
+using gView.Framework.Core.IO;
+using gView.Framework.Core.UI;
 using System;
 using System.Collections.Generic;
 using System.Linq;

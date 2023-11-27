@@ -1,7 +1,10 @@
+using gView.Framework.Core.Data;
+using gView.Framework.Core.FDB;
+using gView.Framework.Core.Geometry;
+using gView.Framework.Core.IO;
+using gView.Framework.Core.system;
 using gView.Framework.Data;
 using gView.Framework.Data.Metadata;
-using gView.Framework.Geometry;
-using gView.Framework.IO;
 using gView.Framework.OGC.GML;
 using gView.Framework.system;
 using System;
@@ -12,7 +15,7 @@ using System.Xml;
 
 namespace gView.Interoperability.OGC.Dataset.GML
 {
-    [gView.Framework.system.RegisterPlugIn("DBABE7F1-FE46-4731-AB2B-8A324C60554E")]
+    [RegisterPlugIn("DBABE7F1-FE46-4731-AB2B-8A324C60554E")]
     public class Dataset : DatasetMetadata, IFeatureDataset
     {
         private string _connectionString;
@@ -273,7 +276,7 @@ namespace gView.Interoperability.OGC.Dataset.GML
             get { return ""; }
         }
 
-        public gView.Framework.FDB.IDatabase Database
+        public IDatabase Database
         {
             get { return _database; }
         }

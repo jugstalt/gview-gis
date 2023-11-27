@@ -6,11 +6,11 @@ using gView.DataExplorer.Plugins.Extensions;
 using gView.DataSources.Fdb;
 using gView.DataSources.Fdb.PostgreSql;
 using gView.Framework.Blazor.Services.Abstraction;
-using gView.Framework.Data;
+using gView.Framework.Core.Data;
+using gView.Framework.Core.Geometry;
+using gView.Framework.Core.system;
 using gView.Framework.DataExplorer.Abstraction;
 using gView.Framework.DataExplorer.Events;
-using gView.Framework.Geometry;
-using gView.Framework.system;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -682,7 +682,7 @@ public class PostgreSqlFeatureClassExplorerObject : ExplorerObjectCls<PostgreSql
 //    #endregion
 //}
 
-////[gView.Framework.system.RegisterPlugIn("9B5B718C-2ECA-47ee-851F-9D33E3D82C55")]
+////[RegisterPlugIn("9B5B718C-2ECA-47ee-851F-9D33E3D82C55")]
 //public class SqlFDBTileGridClassExplorerObject : ExplorerObjectCls, IExplorerSimpleObject, IExplorerObjectCreatable
 //{
 //    public SqlFDBTileGridClassExplorerObject() : base(null, null, 1) { }

@@ -3,7 +3,7 @@ using gView.Cmd.Core.Extensions;
 using gView.DataSources.Fdb.MSSql;
 using gView.DataSources.Fdb.PostgreSql;
 using gView.DataSources.Fdb.SQLite;
-using gView.Framework.Data;
+using gView.Framework.Core.Data;
 using gView.Framework.system;
 using System;
 using System.Collections.Generic;

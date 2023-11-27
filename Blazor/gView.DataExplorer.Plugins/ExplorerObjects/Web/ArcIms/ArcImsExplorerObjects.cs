@@ -1,5 +1,6 @@
 ﻿using gView.DataExplorer.Plugins.ExplorerObjects.Base;
 using gView.DataExplorer.Plugins.ExplorerObjects.WebServices;
+using gView.Framework.Core.system;
 using gView.Framework.DataExplorer.Abstraction;
 using gView.Framework.IO;
 using System.Collections.Generic;
@@ -7,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace gView.DataExplorer.Plugins.ExplorerObjects.Web.ArcIms;
 
-[gView.Framework.system.RegisterPlugIn("FEEFD2E9-D0DD-4850-BCD6-86D88B543DB3")]
+[RegisterPlugIn("FEEFD2E9-D0DD-4850-BCD6-86D88B543DB3")]
 public class ArcImsExplorerObjects :
                     ExplorerParentObject,
                     IWebServicesExplorerGroupObject

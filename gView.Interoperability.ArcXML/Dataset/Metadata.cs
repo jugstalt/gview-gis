@@ -1,9 +1,10 @@
-using gView.Framework.Carto;
-using gView.Framework.Data;
-using gView.Framework.IO;
+using gView.Framework.Core.Carto;
+using gView.Framework.Core.Data;
+using gView.Framework.Core.IO;
+using gView.Framework.Core.MapServer;
+using gView.Framework.Core.system;
+using gView.Framework.Core.UI;
 using gView.Framework.system;
-using gView.Framework.UI;
-using gView.MapServer;
 using System;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -11,7 +12,7 @@ using System.Xml;
 
 namespace gView.Interoperability.ArcXML.Dataset
 {
-    [gView.Framework.system.RegisterPlugIn("704FCEAF-7BD8-4e50-81AB-8F5581584F9A")]
+    [RegisterPlugIn("704FCEAF-7BD8-4e50-81AB-8F5581584F9A")]
     public class Metadata : IMetadataProvider, IPropertyPage
     {
         public enum credentialMethod { none = 0, def = 1, net = 2, custom = 3 }

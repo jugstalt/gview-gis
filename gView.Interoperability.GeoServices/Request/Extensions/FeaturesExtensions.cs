@@ -1,5 +1,6 @@
-﻿using gView.Framework.Carto;
-using gView.Framework.Data;
+﻿using gView.Framework.Core.Carto;
+using gView.Framework.Core.Data;
+using gView.Framework.Core.Geometry;
 using gView.Framework.Geometry;
 using gView.Framework.OGC.WMS.Version_1_1_1;
 using System.Collections.Generic;

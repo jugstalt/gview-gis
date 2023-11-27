@@ -4,7 +4,7 @@
 
 //namespace gView.Framework.Carto.Rendering
 //{
-//    //[gView.Framework.system.RegisterPlugIn("2C8BF397-D96B-47B6-803F-1190E1808A51")]
+//    //[RegisterPlugIn("2C8BF397-D96B-47B6-803F-1190E1808A51")]
 //    public class FilterDependentLabelRenderer
 //    {
 //        private RendererList _renderers;

@@ -1,5 +1,8 @@
-﻿using gView.Framework.system;
-using gView.Framework.UI;
+﻿using gView.Framework.Core.Data;
+using gView.Framework.Core.IO;
+using gView.Framework.Core.system;
+using gView.Framework.Core.UI;
+using gView.Framework.system;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -44,7 +47,7 @@ namespace gView.Framework.Data.Fields.FieldDomains
 
         #region IPersistable Member
 
-        public void Load(gView.Framework.IO.IPersistStream stream)
+        public void Load(IPersistStream stream)
         {
             _values.Clear();
             object o;
@@ -54,7 +57,7 @@ namespace gView.Framework.Data.Fields.FieldDomains
             }
         }
 
-        public void Save(gView.Framework.IO.IPersistStream stream)
+        public void Save(IPersistStream stream)
         {
             foreach (object o in _values)
             {

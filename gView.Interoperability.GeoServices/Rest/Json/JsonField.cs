@@ -1,4 +1,4 @@
-﻿using gView.Framework.Data;
+﻿using gView.Framework.Core.Data;
 using Newtonsoft.Json;
 using System;
 

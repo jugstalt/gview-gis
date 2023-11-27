@@ -1,7 +1,7 @@
 ﻿using gView.Blazor.Models.Dialogs;
+using gView.Framework.Core.FDB;
+using gView.Framework.Core.Geometry;
 using gView.Framework.Data;
-using gView.Framework.FDB;
-using gView.Framework.Geometry;
 using gView.Framework.system;
 
 namespace gView.DataExplorer.Razor.Components.Dialogs.Models;

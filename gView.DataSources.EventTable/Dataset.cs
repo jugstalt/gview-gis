@@ -1,7 +1,11 @@
-﻿using gView.Framework.Data;
+﻿using gView.Framework.Core.Data;
+using gView.Framework.Core.FDB;
+using gView.Framework.Core.Geometry;
+using gView.Framework.Core.IO;
+using gView.Framework.Core.system;
+using gView.Framework.Core.UI;
+using gView.Framework.Data;
 using gView.Framework.Data.Metadata;
-using gView.Framework.Geometry;
-using gView.Framework.IO;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
@@ -9,8 +13,8 @@ using System.Threading.Tasks;
 
 namespace gView.DataSources.EventTable
 {
-    [gView.Framework.system.RegisterPlugIn("8EF4C53A-EE74-4c4a-B733-95D7CD23BE11")]
-    public class Dataset : DatasetMetadata, IFeatureDataset, gView.Framework.UI.IConnectionStringDialog
+    [RegisterPlugIn("8EF4C53A-EE74-4c4a-B733-95D7CD23BE11")]
+    public class Dataset : DatasetMetadata, IFeatureDataset, IConnectionStringDialog
     {
         private EventTableConnection _etcon = null;
         private DatasetState _state = DatasetState.unknown;
@@ -149,7 +153,7 @@ namespace gView.DataSources.EventTable
             get { return String.Empty; }
         }
 
-        public gView.Framework.FDB.IDatabase Database
+        public IDatabase Database
         {
             get { return null; }
         }
@@ -204,7 +208,7 @@ namespace gView.DataSources.EventTable
             string appPath = System.IO.Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
             Assembly uiAssembly = Assembly.LoadFrom(appPath + @"/gView.DataSources.EventTable.UI.dll");
 
-            gView.Framework.UI.IConnectionStringDialog p = uiAssembly.CreateInstance("gView.Datasources.EventTable.UI.FormEventTableConnection") as gView.Framework.UI.IConnectionStringDialog;
+            IConnectionStringDialog p = uiAssembly.CreateInstance("gView.Datasources.EventTable.UI.FormEventTableConnection") as IConnectionStringDialog;
             if (p != null)
             {
                 return p.ShowConnectionStringDialog(initConnectionString);

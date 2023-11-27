@@ -1,6 +1,6 @@
 namespace gView.Interoperability.OGC.Dataset.WMS
 {
-    //[gView.Framework.system.RegisterPlugIn("386D6A7E-FA7E-4b99-A5F7-DFAB16E4516D")]
+    //[RegisterPlugIn("386D6A7E-FA7E-4b99-A5F7-DFAB16E4516D")]
     //class ServiceDataset : IServiceableDataset
     //{
     //    WMSDataset _dataset = null;

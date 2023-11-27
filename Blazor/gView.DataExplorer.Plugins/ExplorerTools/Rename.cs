@@ -1,6 +1,7 @@
 ﻿using gView.DataExplorer.Plugins.Extensions;
 using gView.DataExplorer.Razor.Components.Dialogs.Models;
 using gView.Framework.Blazor.Services.Abstraction;
+using gView.Framework.Core.system;
 using gView.Framework.DataExplorer;
 using gView.Framework.DataExplorer.Abstraction;
 using System.Linq;
@@ -8,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace gView.DataExplorer.Plugins.ExplorerTools;
 
-[gView.Framework.system.RegisterPlugIn("91F17A8E-D859-4840-A287-7FDE14152CB1")]
+[RegisterPlugIn("91F17A8E-D859-4840-A287-7FDE14152CB1")]
 public class Rename : IExplorerTool
 {
     #region IExplorerTool

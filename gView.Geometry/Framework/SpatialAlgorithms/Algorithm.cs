@@ -1,9 +1,12 @@
-using gView.Framework.Data;
-using gView.Framework.Data.Filters;
+using gView.Framework.Core.Carto;
+using gView.Framework.Core.Data;
+using gView.Framework.Core.Data.Filters;
+using gView.Framework.Core.Geometry;
+using gView.Framework.Core.system;
+using gView.Framework.Core.UI;
 using gView.Framework.Geometry;
 using gView.Framework.LinAlg;
 using gView.Framework.SpatialAlgorithms.Clipper;
-using gView.Framework.system;
 using gView.Geometry.Framework.Topology;
 using System;
 using System.Collections.Generic;
@@ -2053,7 +2056,7 @@ namespace gView.Framework.SpatialAlgorithms
             return pColl;
         }
 
-        private class SmartPolygonLabelPoint : Point, gView.Framework.Carto.ISmartLabelPoint
+        private class SmartPolygonLabelPoint : Point, ISmartLabelPoint
         {
             private IPolygon _polygon;
             private IRing _ring;
@@ -2069,7 +2072,7 @@ namespace gView.Framework.SpatialAlgorithms
 
             #region ISmartLabelPoint Member
 
-            public IMultiPoint AlernativeLabelPoints(gView.Framework.Carto.IDisplay display)
+            public IMultiPoint AlernativeLabelPoints(IDisplay display)
             {
                 MultiPoint pColl = new MultiPoint();
 
@@ -2106,7 +2109,7 @@ namespace gView.Framework.SpatialAlgorithms
             return polygons.Merge();
         }
 
-        public static IPolygon FastMergePolygon(List<IPolygon> polygons, ICancelTracker cancelTracker, gView.Framework.UI.ProgressReporterEvent reporter)
+        public static IPolygon FastMergePolygon(List<IPolygon> polygons, ICancelTracker cancelTracker, ProgressReporterEvent reporter)
         {
             if (polygons == null || polygons.Count == 0)
             {
@@ -2120,7 +2123,7 @@ namespace gView.Framework.SpatialAlgorithms
 
             int count = polygons.Count;
             List<IPolygon> merged = new List<IPolygon>();
-            gView.Framework.UI.ProgressReport report = new gView.Framework.UI.ProgressReport();
+            ProgressReport report = new ProgressReport();
             report.featureMax = polygons.Count;
             report.Message = "Merge Polygons";
 

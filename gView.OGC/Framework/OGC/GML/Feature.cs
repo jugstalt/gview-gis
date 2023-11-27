@@ -1,10 +1,10 @@
-using gView.Framework.Data;
-using gView.Framework.Data.Cursors;
-using gView.Framework.Geometry;
 using System.Text;
 using System.Threading.Tasks;
-using gView.Framework.Extensions;
 using gView.Framework.OGC.Extensions;
+using gView.Framework.Core.Data;
+using gView.Framework.Core.Geometry;
+using gView.Framework.Core.Extensions;
+using gView.Framework.Core.Data.Cursors;
 
 namespace gView.Framework.OGC.GML
 {

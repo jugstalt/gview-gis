@@ -1,3 +1,4 @@
+using gView.Framework.Core.Geometry;
 using gView.Framework.system;
 using NpgsqlTypes;
 using System;
@@ -346,7 +347,7 @@ namespace gView.Framework.Geometry
         /// <summary>
         /// The type of the geometry (Envelope)
         /// </summary>
-        public gView.Framework.Geometry.GeometryType GeometryType
+        public GeometryType GeometryType
         {
             get
             {
@@ -357,7 +358,7 @@ namespace gView.Framework.Geometry
         /// <summary>
         /// Creates a copy of this geometry's envelope and returns it.
         /// </summary>
-        IEnvelope gView.Framework.Geometry.IGeometry.Envelope
+        IEnvelope IGeometry.Envelope
         {
             get
             {

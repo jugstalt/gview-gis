@@ -1,4 +1,5 @@
-﻿using gView.Framework.system;
+﻿using gView.Framework.Core.Data;
+using gView.Framework.Core.system;
 using System;
 using System.Collections.Generic;
 

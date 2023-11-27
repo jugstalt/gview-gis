@@ -4,9 +4,12 @@ using gView.Cmd.Core.Extensions;
 using gView.Cmd.Fdb.Lib.Data;
 using gView.Cmd.Fdb.Lib.Model;
 using gView.DataSources.Fdb.MSAccess;
-using gView.Framework.Data;
+using gView.Framework.Core.Data;
+using gView.Framework.Core.Geometry;
+using gView.Framework.Core.Network;
+using gView.Framework.Core.system;
+using gView.Framework.Core.UI;
 using gView.Framework.IO;
-using gView.Framework.Network;
 using gView.Framework.system;
 using System;
 using System.Collections.Generic;
@@ -77,7 +80,7 @@ public class CreateNetworkClassCommand : ICommand
                 foreach (var edge in commandModel.Edges)
                 {
                     var edgeFc = (await dataset!.Element(edge.Name))?.Class as IFeatureClass;
-                    if (edgeFc == null || edgeFc.GeometryType != Framework.Geometry.GeometryType.Polyline)
+                    if (edgeFc == null || edgeFc.GeometryType != GeometryType.Polyline)
                     {
                         throw new Exception($"{edge.Name} is not a valid Edge Featureclass");
                     }
@@ -96,7 +99,7 @@ public class CreateNetworkClassCommand : ICommand
                 foreach (var node in commandModel.Nodes)
                 {
                     var nodeFc = (await dataset!.Element(node.Name))?.Class as IFeatureClass;
-                    if (nodeFc == null || nodeFc.GeometryType != Framework.Geometry.GeometryType.Point)
+                    if (nodeFc == null || nodeFc.GeometryType != GeometryType.Point)
                     {
                         throw new Exception($"{node.Name} is not a valid Node Featureclass");
                     }
@@ -145,7 +148,7 @@ public class CreateNetworkClassCommand : ICommand
             {
                 string lastMessage = "";
                 int lastPercentage = -1;
-                creator.ReportProgress += (Framework.UI.ProgressReport progressEventReport) =>
+                creator.ReportProgress += (ProgressReport progressEventReport) =>
                 {
                     if (cancelTracker?.Continue == false)
                     {

@@ -1,12 +1,13 @@
 ﻿using gView.DataExplorer.Plugins.Extensions;
 using gView.Framework.Blazor.Services.Abstraction;
+using gView.Framework.Core.system;
 using gView.Framework.DataExplorer;
 using gView.Framework.DataExplorer.Abstraction;
 using System.Threading.Tasks;
 
 namespace gView.DataExplorer.Plugins.ExplorerTools;
 
-[gView.Framework.system.RegisterPlugIn("54597B19-B37A-4fa2-BA45-8B4137F2910E")]
+[RegisterPlugIn("54597B19-B37A-4fa2-BA45-8B4137F2910E")]
 public class Refresh : IExplorerTool
 {
     #region IExplorerTool

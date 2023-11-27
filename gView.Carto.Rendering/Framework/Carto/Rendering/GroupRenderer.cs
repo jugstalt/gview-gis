@@ -1,10 +1,12 @@
 using gView.Framework.Carto.Rendering.UI;
-using gView.Framework.Data;
-using gView.Framework.Data.Filters;
-using gView.Framework.IO;
-using gView.Framework.Symbology;
+using gView.Framework.Core.Carto;
+using gView.Framework.Core.Data;
+using gView.Framework.Core.Data.Filters;
+using gView.Framework.Core.IO;
+using gView.Framework.Core.Symbology;
+using gView.Framework.Core.system;
+using gView.Framework.Core.UI;
 using gView.Framework.system;
-using gView.Framework.UI;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,7 +14,7 @@ using System.Reflection;
 
 namespace gView.Framework.Carto.Rendering
 {
-    [gView.Framework.system.RegisterPlugIn("2F814C8E-A8B7-442a-BB8B-410F2022F89A")]
+    [RegisterPlugIn("2F814C8E-A8B7-442a-BB8B-410F2022F89A")]
     public class FeatureGroupRenderer : Cloner, IGroupRenderer, IFeatureRenderer, IPropertyPage, ILegendGroup, ISimplify
     {
         private RendererGroup _renderers;
@@ -32,7 +34,7 @@ namespace gView.Framework.Carto.Rendering
 
         #region IFeatureRenderer Member
 
-        public void Draw(IDisplay disp, gView.Framework.Data.IFeature feature)
+        public void Draw(IDisplay disp, IFeature feature)
         {
             foreach (IFeatureRenderer renderer in _renderers)
             {
@@ -71,7 +73,7 @@ namespace gView.Framework.Carto.Rendering
             }
         }
 
-        public bool CanRender(gView.Framework.Data.IFeatureLayer layer, IMap map)
+        public bool CanRender(IFeatureLayer layer, IMap map)
         {
             return true;
         }

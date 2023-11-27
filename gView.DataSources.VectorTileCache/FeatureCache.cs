@@ -1,6 +1,7 @@
 ﻿using GeoJSON.Net.Feature;
 using gView.Data.Framework.Data.Abstraction;
-using gView.Framework.Carto;
+using gView.Framework.Core.Carto;
+using gView.Framework.Core.Geometry;
 using gView.Framework.Geometry;
 using Mapbox.Vector.Tile;
 using Newtonsoft.Json;

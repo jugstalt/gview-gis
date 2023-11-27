@@ -2,11 +2,12 @@
 using gView.DataExplorer.Plugins.ExplorerObjects.Base;
 using gView.DataExplorer.Plugins.ExplorerObjects.Extensions;
 using gView.DataSources.PostGIS;
-using gView.Framework.Data;
+using gView.Framework.Core.Data;
+using gView.Framework.Core.FDB;
+using gView.Framework.Core.Geometry;
+using gView.Framework.Core.system;
 using gView.Framework.DataExplorer.Abstraction;
 using gView.Framework.DataExplorer.Events;
-using gView.Framework.FDB;
-using gView.Framework.Geometry;
 using gView.Framework.system;
 using System.Threading.Tasks;
 

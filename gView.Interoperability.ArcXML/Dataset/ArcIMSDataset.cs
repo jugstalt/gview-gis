@@ -1,3 +1,9 @@
+using gView.Framework.Core.Data;
+using gView.Framework.Core.FDB;
+using gView.Framework.Core.Geometry;
+using gView.Framework.Core.IO;
+using gView.Framework.Core.MapServer;
+using gView.Framework.Core.system;
 using gView.Framework.Data;
 using gView.Framework.Data.Metadata;
 using gView.Framework.Geometry;
@@ -5,7 +11,6 @@ using gView.Framework.IO;
 using gView.Framework.Web.Abstraction;
 using gView.Framework.Web.Services;
 using gView.Framework.XML;
-using gView.MapServer;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -13,7 +18,7 @@ using System.Xml;
 
 namespace gView.Interoperability.ArcXML.Dataset
 {
-    [gView.Framework.system.RegisterPlugIn("3B26682C-BF6E-4fe8-BE80-762260ABA581")]
+    [RegisterPlugIn("3B26682C-BF6E-4fe8-BE80-762260ABA581")]
     public class ArcIMSDataset : DatasetMetadata, IFeatureDataset, IRequestDependentDataset
     {
         internal readonly IHttpService _http;
@@ -162,7 +167,7 @@ namespace gView.Interoperability.ArcXML.Dataset
             get { return ""; }
         }
 
-        public gView.Framework.FDB.IDatabase Database
+        public IDatabase Database
         {
             get { return null; }
         }

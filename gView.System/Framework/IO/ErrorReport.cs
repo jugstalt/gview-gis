@@ -1,5 +1,6 @@
 ﻿using System.Collections.Concurrent;
 using System.Collections.Generic;
+using gView.Framework.Core.IO;
 
 namespace gView.Framework.IO
 {

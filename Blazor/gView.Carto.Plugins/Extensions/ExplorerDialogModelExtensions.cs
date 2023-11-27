@@ -1,8 +1,8 @@
 ﻿using gView.Blazor.Core.Extensions;
 using gView.Blazor.Core.Services;
 using gView.DataExplorer.Razor.Components.Dialogs.Models;
-using gView.Framework.Data;
-using gView.Framework.Geometry;
+using gView.Framework.Core.Data;
+using gView.Framework.Core.Geometry;
 
 namespace gView.Carto.Plugins.Extensions;
 

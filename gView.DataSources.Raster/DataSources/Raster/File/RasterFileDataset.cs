@@ -1,4 +1,9 @@
-﻿using gView.Framework.Data;
+﻿using gView.Framework.Core.Data;
+using gView.Framework.Core.FDB;
+using gView.Framework.Core.Geometry;
+using gView.Framework.Core.IO;
+using gView.Framework.Core.system;
+using gView.Framework.Data;
 using gView.Framework.Data.Metadata;
 using gView.Framework.Geometry;
 using gView.Framework.system;
@@ -9,7 +14,7 @@ using System.Threading.Tasks;
 
 namespace gView.DataSources.Raster.File
 {
-    [gView.Framework.system.RegisterPlugIn("D4812641-3F53-48eb-A66C-FC0203980C79")]
+    [RegisterPlugIn("D4812641-3F53-48eb-A66C-FC0203980C79")]
     public class RasterFileDataset : DatasetMetadata, IRasterFileDataset
     {
         private List<IDatasetElement> _layers = new List<IDatasetElement>();
@@ -82,7 +87,7 @@ namespace gView.DataSources.Raster.File
             }
         }
 
-        public gView.Framework.Data.IDatasetEnum DatasetEnum
+        public IDatasetEnum DatasetEnum
         {
             get { return null; }
         }
@@ -90,7 +95,7 @@ namespace gView.DataSources.Raster.File
         public Task<List<IDatasetElement>> Elements()
         {
             List<IDatasetElement> ret = new List<IDatasetElement>();
-            foreach (gView.Framework.Data.IRasterLayer layer in _layers)
+            foreach (IRasterLayer layer in _layers)
             {
                 ret.Add(layer);
             }
@@ -108,7 +113,7 @@ namespace gView.DataSources.Raster.File
             get { return ""; }
         }
 
-        public gView.Framework.FDB.IDatabase Database
+        public IDatabase Database
         {
             get { return null; }
         }
@@ -234,7 +239,7 @@ namespace gView.DataSources.Raster.File
         {
             Envelope env = null;
 
-            foreach (gView.Framework.Data.IRasterLayer layer in _layers)
+            foreach (IRasterLayer layer in _layers)
             {
                 if (layer.RasterClass == null || layer.RasterClass.Polygon == null)
                 {
@@ -271,7 +276,7 @@ namespace gView.DataSources.Raster.File
             get { return ""; }
         }
 
-        public Task<bool> LoadAsync(gView.Framework.IO.IPersistStream stream)
+        public Task<bool> LoadAsync(IPersistStream stream)
         {
             _directory = (string)stream.Load("Directory");
             if (_directory == null)
@@ -282,7 +287,7 @@ namespace gView.DataSources.Raster.File
             return Task.FromResult(true);
         }
 
-        public void Save(gView.Framework.IO.IPersistStream stream)
+        public void Save(IPersistStream stream)
         {
             stream.Save("Directory", _directory);
         }

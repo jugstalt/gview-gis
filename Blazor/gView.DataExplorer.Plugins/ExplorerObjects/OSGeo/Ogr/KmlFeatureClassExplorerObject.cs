@@ -1,7 +1,7 @@
 ﻿using gView.DataExplorer.Plugins.ExplorerObjects.Base;
-using gView.Framework.Data;
+using gView.Framework.Core.Data;
+using gView.Framework.Core.Geometry;
 using gView.Framework.DataExplorer.Abstraction;
-using gView.Framework.Geometry;
 using System.Threading.Tasks;
 
 namespace gView.DataExplorer.Plugins.ExplorerObjects.OSGeo.Ogr;

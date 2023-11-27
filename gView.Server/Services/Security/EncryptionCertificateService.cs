@@ -1,4 +1,4 @@
-﻿using gView.Core.Framework.Exceptions;
+﻿using gView.Framework.Core.Exceptions;
 using gView.Framework.Security;
 using gView.Server.Services.MapServer;
 using System;

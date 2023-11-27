@@ -1,8 +1,12 @@
-﻿using gView.Framework.Data;
-using gView.Framework.Data.Cursors;
+﻿using gView.Framework.Core.Carto;
+using gView.Framework.Core.Data;
+using gView.Framework.Core.Data.Cursors;
+using gView.Framework.Core.Data.Filters;
+using gView.Framework.Core.Geometry;
+using gView.Framework.Core.Symbology;
+using gView.Framework.Core.system;
+using gView.Framework.Data;
 using gView.Framework.Data.Filters;
-using gView.Framework.Geometry;
-using gView.Framework.Symbology;
 using gView.Framework.system;
 using gView.Framework.system.Diagnostics;
 using gView.GraphicsEngine.Extensions;

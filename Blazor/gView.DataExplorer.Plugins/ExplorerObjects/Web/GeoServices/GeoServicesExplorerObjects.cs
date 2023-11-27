@@ -1,5 +1,6 @@
 ﻿using gView.DataExplorer.Plugins.ExplorerObjects.Base;
 using gView.DataExplorer.Plugins.ExplorerObjects.WebServices;
+using gView.Framework.Core.system;
 using gView.Framework.DataExplorer.Abstraction;
 using gView.Framework.IO;
 using System.Collections.Generic;
@@ -7,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace gView.DataExplorer.Plugins.ExplorerObjects.Web.GeoServices;
 
-[gView.Framework.system.RegisterPlugIn("517DEC80-F6A5-44BC-95EF-9A56543C373B")]
+[RegisterPlugIn("517DEC80-F6A5-44BC-95EF-9A56543C373B")]
 public class GeoServicesExplorerObjects : ExplorerParentObject,
                                           IWebServicesExplorerGroupObject
 {

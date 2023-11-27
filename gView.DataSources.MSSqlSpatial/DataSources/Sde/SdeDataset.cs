@@ -1,9 +1,12 @@
 ﻿using gView.DataSources.MSSqlSpatial.DataSources.Sde.Extensions;
 using gView.DataSources.MSSqlSpatial.DataSources.Sde.Repo;
+using gView.Framework.Core.Data;
+using gView.Framework.Core.Data.Filters;
+using gView.Framework.Core.Geometry;
+using gView.Framework.Core.Geometry.Extensions;
+using gView.Framework.Core.system;
 using gView.Framework.Data;
 using gView.Framework.Data.Filters;
-using gView.Framework.Geometry;
-using gView.Framework.Geometry.Extensions;
 using gView.Framework.OGC;
 using gView.Framework.OGC.DB;
 using gView.Framework.SpatialAlgorithms;
@@ -16,7 +19,7 @@ using System.Threading.Tasks;
 
 namespace gView.DataSources.MSSqlSpatial.DataSources.Sde
 {
-    [gView.Framework.system.RegisterPlugIn("F7394B37-1397-4914-B1D0-5A03B11D2949")]
+    [RegisterPlugIn("F7394B37-1397-4914-B1D0-5A03B11D2949")]
     public class SdeDataset : gView.Framework.OGC.DB.OgcSpatialDataset
     {
         protected DbProviderFactory _factory = null;

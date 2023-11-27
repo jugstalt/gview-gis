@@ -1,5 +1,5 @@
 ﻿using gView.Framework.Carto;
-using gView.Framework.Data;
+using gView.Framework.Core.Data;
 using System.Linq;
 
 namespace gView.MxUtil.Lib

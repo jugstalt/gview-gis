@@ -1,7 +1,9 @@
 using gView.Framework.Carto.UI;
-using gView.Framework.Data;
+using gView.Framework.Core.Carto;
+using gView.Framework.Core.Data;
+using gView.Framework.Core.Geometry;
+using gView.Framework.Core.system;
 using gView.Framework.Geometry;
-using gView.Framework.system;
 using System;
 using System.Threading.Tasks;
 

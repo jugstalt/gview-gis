@@ -1,13 +1,16 @@
-using gView.Framework.Carto;
+using gView.Framework.Core.Carto;
+using gView.Framework.Core.Data;
+using gView.Framework.Core.Data.Cursors;
+using gView.Framework.Core.Data.Filters;
+using gView.Framework.Core.Geometry;
+using gView.Framework.Core.MapServer;
+using gView.Framework.Core.system;
 using gView.Framework.Data;
-using gView.Framework.Data.Cursors;
-using gView.Framework.Data.Filters;
 using gView.Framework.Geometry;
 using gView.Framework.OGC.GML;
 using gView.Framework.OGC.WFS;
 using gView.Framework.system;
 using gView.Interoperability.OGC.Dataset.GML;
-using gView.MapServer;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -19,7 +22,7 @@ using System.Xml.Serialization;
 
 namespace gView.Interoperability.OGC
 {
-    [gView.Framework.system.RegisterPlugIn("391FA941-3E31-456e-8A3A-703E07962BA6")]
+    [RegisterPlugIn("391FA941-3E31-456e-8A3A-703E07962BA6")]
     public class WFSRequest : IServiceRequestInterpreter
     {
         private IMapServer _mapServer = null;

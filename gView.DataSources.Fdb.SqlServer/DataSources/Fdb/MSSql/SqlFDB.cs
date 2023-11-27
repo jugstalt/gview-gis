@@ -1,12 +1,16 @@
+using gView.Framework.Core.Data;
+using gView.Framework.Core.Data.Cursors;
+using gView.Framework.Core.Data.Filters;
+using gView.Framework.Core.FDB;
+using gView.Framework.Core.Geometry;
+using gView.Framework.Core.system;
+using gView.Framework.Core.UI;
 using gView.Framework.Data;
-using gView.Framework.Data.Cursors;
 using gView.Framework.Data.Filters;
 using gView.Framework.Db;
-using gView.Framework.FDB;
 using gView.Framework.Geometry;
 using gView.Framework.Offline;
 using gView.Framework.system;
-using gView.Framework.UI;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -22,7 +26,7 @@ namespace gView.DataSources.Fdb.MSSql
     /// <summary>
     /// Zusammenfassung für Class1.
     /// </summary>
-    [RegisterPlugInAttribute("e6efb823-82ff-4682-8654-ffb099db7050")]
+    [RegisterPlugIn("e6efb823-82ff-4682-8654-ffb099db7050")]
     public class SqlFDB : gView.DataSources.Fdb.MSAccess.AccessFDB
     {
         //public delegate void ProgressEvent(object progressEventReport);

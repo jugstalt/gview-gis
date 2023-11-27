@@ -91,12 +91,12 @@
         Model.SpatialIndex = binaryTreeDef;
     }
 
-    private void CheckAutoField(Framework.FDB.IAutoField autoField, bool isChecked)
+    private void CheckAutoField(IAutoField autoField, bool isChecked)
     {
         Model.AutoFields[autoField] = isChecked;
     }
 
-    private void SetAutoFieldName(Framework.FDB.IAutoField autoField, string name)
+    private void SetAutoFieldName(IAutoField autoField, string name)
     {
         if(autoField is Field)
         {

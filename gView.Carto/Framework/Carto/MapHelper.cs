@@ -1,4 +1,7 @@
-﻿using gView.Framework.Data;
+﻿using gView.Framework.Core.Carto;
+using gView.Framework.Core.Data;
+using gView.Framework.Core.Data.Filters;
+using gView.Framework.Core.Geometry;
 using gView.Framework.Data.Filters;
 using gView.Framework.Geometry;
 using System;

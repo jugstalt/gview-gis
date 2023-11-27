@@ -17,7 +17,7 @@
   <ItemGroup>
     <ProjectReference Include="..\gView.Carto.Rendering\gView.Carto.Rendering.csproj" />
     <ProjectReference Include="..\gView.Carto\gView.Carto.csproj" />
-    <ProjectReference Include="..\gView.Core\gView.Core.csproj" />
+    <ProjectReference Include="..\gView.Framework.Core\gView.Framework.Core.csproj" />
     <ProjectReference Include="..\gView.Data.Fields\gView.Data.Fields.csproj" />
     <ProjectReference Include="..\gView.Data.Joins\gView.Data.Joins.csproj" />
     <ProjectReference Include="..\gView.DataSources.EventTable\gView.DataSources.EventTable.csproj" />
@@ -53,7 +53,7 @@
     <ProjectReference Include="..\gView.Plugins.Modules\gView.Plugins.Modules.csproj" />
     <ProjectReference Include="..\gView.Security\gView.Security.csproj" />
     <ProjectReference Include="..\gView.Server.Connector\gView.Server.Connector.csproj" />
-    <ProjectReference Include="..\gView.Symbology\gView.Symbology.csproj" />
+    <ProjectReference Include="..\gView.Framework.Symbology\gView.Framework.Symbology.csproj" />
     <ProjectReference Include="..\gView.System\gView.System.csproj" />
     <ProjectReference Include="..\gView.Web\gView.Web.csproj" />
   </ItemGroup>

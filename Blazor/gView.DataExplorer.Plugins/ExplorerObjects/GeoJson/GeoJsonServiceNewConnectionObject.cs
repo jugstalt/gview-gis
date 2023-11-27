@@ -3,6 +3,7 @@ using gView.DataExplorer.Plugins.Extensions;
 using gView.DataExplorer.Razor.Components.Dialogs.Models;
 using gView.DataExplorer.Razor.Components.Dialogs.Models.Extensions;
 using gView.Framework.Blazor.Services.Abstraction;
+using gView.Framework.Core.system;
 using gView.Framework.DataExplorer.Abstraction;
 using gView.Framework.DataExplorer.Events;
 using gView.Framework.IO;
@@ -11,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace gView.DataExplorer.Plugins.ExplorerObjects.GeoJson
 {
-    [gView.Framework.system.RegisterPlugIn("DAF698C1-54F2-4199-A145-A7A911B882DF")]
+    [RegisterPlugIn("DAF698C1-54F2-4199-A145-A7A911B882DF")]
     public class GeoJsonServiceNewConnectionObject : ExplorerObjectCls<GeoJsonServiceGroupObject>,
                                                      IExplorerSimpleObject,
                                                      IExplorerObjectDoubleClick,
@@ -36,11 +37,11 @@ namespace gView.DataExplorer.Plugins.ExplorerObjects.GeoJson
 
         #region IExplorerObject Members
 
-        public string Name=> "New Connection...";
+        public string Name => "New Connection...";
 
         public string FullName => "";
 
-        public string Type=> "New GeoJson Service Connection"; 
+        public string Type => "New GeoJson Service Connection";
 
         public void Dispose()
         {

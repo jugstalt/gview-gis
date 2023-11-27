@@ -1,4 +1,6 @@
-﻿using gView.Framework.system;
+﻿using gView.Framework.Core.Geometry;
+using gView.Framework.Core.Symbology;
+using gView.Framework.Core.system;
 using System;
 using System.Collections.Generic;
 
@@ -7,7 +9,7 @@ namespace gView.Framework.Geometry
     public class DisplayPath : IDisplayPath
     {
         private float _chainage = 0.0f;
-        private Symbology.IAnnotationPolygonCollision _apc = null;
+        private IAnnotationPolygonCollision _apc = null;
         private List<GraphicsEngine.CanvasPointF> _points = new List<GraphicsEngine.CanvasPointF>();
 
         private Geometry.Point GetBezierPoint(double t, Geometry.Point p0, Geometry.Point p1, Geometry.Point p2, Geometry.Point p3)
@@ -59,7 +61,7 @@ namespace gView.Framework.Geometry
             }
         }
 
-        public Symbology.IAnnotationPolygonCollision AnnotationPolygonCollision
+        public IAnnotationPolygonCollision AnnotationPolygonCollision
         {
             get
             {

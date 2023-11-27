@@ -1,7 +1,11 @@
-using gView.Core.Framework.Exceptions;
-using gView.Framework.Carto;
+using gView.Framework.Core.Carto;
+using gView.Framework.Core.Data;
+using gView.Framework.Core.Data.Cursors;
+using gView.Framework.Core.Exceptions;
+using gView.Framework.Core.Geometry;
+using gView.Framework.Core.MapServer;
+using gView.Framework.Core.system;
 using gView.Framework.Data;
-using gView.Framework.Data.Cursors;
 using gView.Framework.Data.Filters;
 using gView.Framework.Geometry;
 using gView.Framework.OGC.GeoJson;
@@ -12,7 +16,6 @@ using gView.GraphicsEngine;
 using gView.GraphicsEngine.Abstraction;
 using gView.Interoperability.OGC.Request.Extensions;
 using gView.Interoperability.OGC.SLD;
-using gView.MapServer;
 using gView.OGC.Framework.OGC.Exceptions;
 using gView.Web.Framework.Web.Extensions;
 using System;
@@ -20,7 +23,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Net.Mime;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
@@ -31,7 +33,7 @@ using System.Xml.Xsl;
 
 namespace gView.Interoperability.OGC
 {
-    [gView.Framework.system.RegisterPlugIn("C4892F49-446C-4e22-BCC7-76F033F1F03B")]
+    [RegisterPlugIn("C4892F49-446C-4e22-BCC7-76F033F1F03B")]
     public class WMSRequest : IServiceRequestInterpreter
     {
         public const string LayerNameFormatMetadataKey = "LayerNameFormat";
@@ -176,9 +178,9 @@ namespace gView.Interoperability.OGC
         #endregion
 
         async private Task<(string body, string contentType)> WMS_GetCapabilities(
-            string OnlineResource, 
-            string service, 
-            WMSParameterDescriptor parameters, 
+            string OnlineResource,
+            string service,
+            WMSParameterDescriptor parameters,
             IServiceRequestContext context)
         {
             try
@@ -687,7 +689,7 @@ namespace gView.Interoperability.OGC
                 }
             }
 
-            void map_BeforeRenderLayers(IServiceMap sender, 
+            void map_BeforeRenderLayers(IServiceMap sender,
                                         IServiceRequestContext context,
                                         List<ILayer> layers)
             {
@@ -904,7 +906,7 @@ namespace gView.Interoperability.OGC
         }
 
         async private Task<CanvasSize> DrawLegend(
-            IServiceMap serviceMap, 
+            IServiceMap serviceMap,
             IServiceRequestContext context,
             WMSParameterDescriptor parameters,
             IBitmap bitmap)
@@ -982,7 +984,7 @@ namespace gView.Interoperability.OGC
                                 if (bitmap.Width > 1)
                                 {
                                     canvas.DrawBitmap(tocLegendItem.Image, new CanvasPointF(padding, offsetY));
-                                    canvas.DrawText(tocElement.Name, fontBold, blackBrush, 
+                                    canvas.DrawText(tocElement.Name, fontBold, blackBrush,
                                         new CanvasPointF(padding * 2f + tocLegendItem.Image.Width, offsetY + 3f),
                                         drawTextFormat);
                                 }
@@ -997,7 +999,7 @@ namespace gView.Interoperability.OGC
                             {
                                 if (bitmap.Width > 1)
                                 {
-                                    canvas.DrawText(tocElement.Name, fontBold, blackBrush, 
+                                    canvas.DrawText(tocElement.Name, fontBold, blackBrush,
                                         new CanvasPointF(padding, offsetY - 5f),
                                         drawTextFormat);
                                 }

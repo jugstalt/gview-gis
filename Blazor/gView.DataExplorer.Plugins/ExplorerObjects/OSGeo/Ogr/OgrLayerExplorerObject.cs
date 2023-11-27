@@ -1,15 +1,15 @@
 ﻿using gView.DataExplorer.Plugins.ExplorerObjects.Base;
-using gView.Framework.Data;
+using gView.Framework.Core.Data;
+using gView.Framework.Core.Geometry;
+using gView.Framework.Core.system;
 using gView.Framework.DataExplorer.Abstraction;
-using gView.Framework.Geometry;
-using gView.Framework.system;
 using System.Threading.Tasks;
 
 namespace gView.DataExplorer.Plugins.ExplorerObjects.OSGeo.Ogr;
 
 [RegisterPlugIn("137ab461-6e7b-4c43-8be2-515c9ca475d2")]
-public class OgrLayerExplorerObject : ExplorerObjectCls<OgrDatasetExplorerObject, IFeatureClass>, 
-                                      IExplorerSimpleObject, 
+public class OgrLayerExplorerObject : ExplorerObjectCls<OgrDatasetExplorerObject, IFeatureClass>,
+                                      IExplorerSimpleObject,
                                       ISerializableExplorerObject
 {
     private string _fcname = "", _type = "", _icon = "";
@@ -70,7 +70,7 @@ public class OgrLayerExplorerObject : ExplorerObjectCls<OgrDatasetExplorerObject
             _fc = null;
         }
     }
-    
+
     public Task<object?> GetInstanceAsync() => Task.FromResult<object?>(_fc);
 
     #endregion

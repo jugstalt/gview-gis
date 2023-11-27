@@ -5,7 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\gView.Core\gView.Core.csproj" />
+    <ProjectReference Include="..\gView.Framework.Core\gView.Framework.Core.csproj" />
     <ProjectReference Include="..\gView.DataSources.Fdb\gView.DataSources.Fdb.csproj" />
     <ProjectReference Include="..\gView.DataSources.Raster\gView.DataSources.Raster.csproj" />
     <ProjectReference Include="..\gView.Data\gView.Data.csproj" />

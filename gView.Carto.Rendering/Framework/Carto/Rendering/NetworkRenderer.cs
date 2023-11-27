@@ -1,12 +1,14 @@
 ﻿using gView.Framework.Carto.Rendering.UI;
-using gView.Framework.Data;
-using gView.Framework.Data.Filters;
-using gView.Framework.Geometry;
-using gView.Framework.IO;
-using gView.Framework.Network;
-using gView.Framework.Symbology;
+using gView.Framework.Core.Carto;
+using gView.Framework.Core.Data;
+using gView.Framework.Core.Data.Filters;
+using gView.Framework.Core.Geometry;
+using gView.Framework.Core.IO;
+using gView.Framework.Core.Network;
+using gView.Framework.Core.Symbology;
+using gView.Framework.Core.system;
+using gView.Framework.Core.UI;
 using gView.Framework.system;
-using gView.Framework.UI;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,7 +16,7 @@ using System.Reflection;
 
 namespace gView.Framework.Carto.Rendering
 {
-    [gView.Framework.system.RegisterPlugIn("9E51A28A-5735-4b84-9DC1-D6EB77D9FD26")]
+    [RegisterPlugIn("9E51A28A-5735-4b84-9DC1-D6EB77D9FD26")]
     public class NetworkRenderer : Cloner, IFeatureRenderer, IPropertyPage, ILegendGroup
     {
         private RendererGroup _renderers;
@@ -94,7 +96,7 @@ namespace gView.Framework.Carto.Rendering
 
         #region IFeatureRenderer Member
 
-        public void Draw(IDisplay disp, gView.Framework.Data.IFeature feature)
+        public void Draw(IDisplay disp, IFeature feature)
         {
             if (feature != null)
             {
@@ -161,7 +163,7 @@ namespace gView.Framework.Carto.Rendering
             }
         }
 
-        public bool CanRender(gView.Framework.Data.IFeatureLayer layer, IMap map)
+        public bool CanRender(IFeatureLayer layer, IMap map)
         {
             if (layer != null &&
                 layer.FeatureClass is INetworkFeatureClass)
@@ -172,7 +174,7 @@ namespace gView.Framework.Carto.Rendering
             return false;
         }
 
-        public bool HasEffect(gView.Framework.Data.IFeatureLayer layer, IMap map)
+        public bool HasEffect(IFeatureLayer layer, IMap map)
         {
             if (_renderers == null)
             {

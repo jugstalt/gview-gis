@@ -1,3 +1,6 @@
+using gView.Framework.Core.Carto;
+using gView.Framework.Core.Data;
+using gView.Framework.Core.Geometry;
 using gView.Framework.Data;
 using gView.Framework.Geometry;
 using gView.Framework.system;
@@ -41,7 +44,7 @@ namespace gView.Interoperability.GeoServices.Dataset
 
         public event AfterMapRequestEventHandler AfterMapRequest = null;
 
-        async public Task<bool> MapRequest(gView.Framework.Carto.IDisplay display)
+        async public Task<bool> MapRequest(IDisplay display)
         {
             if (_dataset == null)
             {
@@ -144,7 +147,7 @@ namespace gView.Interoperability.GeoServices.Dataset
             return true;
         }
 
-        public Task<bool> LegendRequest(gView.Framework.Carto.IDisplay display)
+        public Task<bool> LegendRequest(IDisplay display)
         {
             return Task.FromResult(true);
         }

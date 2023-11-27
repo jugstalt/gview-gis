@@ -1,7 +1,12 @@
-using gView.Framework.Carto;
+using gView.Framework.Core.Carto;
+using gView.Framework.Core.Data;
+using gView.Framework.Core.FDB;
+using gView.Framework.Core.Geometry;
+using gView.Framework.Core.IO;
+using gView.Framework.Core.system;
+using gView.Framework.Core.UI;
 using gView.Framework.Data;
 using gView.Framework.Data.Metadata;
-using gView.Framework.FDB;
 using gView.Framework.Geometry;
 using gView.Framework.IO;
 using System.Collections.Generic;
@@ -13,8 +18,8 @@ namespace gView.DataSources.Fdb.MSSql
     /// <summary>
     /// Zusammenfassung für SqlFDBDataset.
     /// </summary>
-    [gView.Framework.system.RegisterPlugIn("3B870AB5-8BE0-4a00-911D-ECC6C83DD6B4")]
-    public class SqlFDBDataset : DatasetMetadata, IFeatureDataset2, IRasterDataset, IFDBDataset, gView.Framework.UI.IConnectionStringDialog
+    [RegisterPlugIn("3B870AB5-8BE0-4a00-911D-ECC6C83DD6B4")]
+    public class SqlFDBDataset : DatasetMetadata, IFeatureDataset2, IRasterDataset, IFDBDataset, IConnectionStringDialog
     {
         internal int _dsID = -1;
         private List<IDatasetElement> _layers;
@@ -510,7 +515,7 @@ namespace gView.DataSources.Fdb.MSSql
             string appPath = System.IO.Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
             Assembly uiAssembly = Assembly.LoadFrom(appPath + @"/gView.DataSources.Fdb.UI.dll");
 
-            gView.Framework.UI.IConnectionStringDialog p = uiAssembly.CreateInstance("gView.DataSources.Fdb.UI.MSSql.SqlFdbConnectionStringDialog") as gView.Framework.UI.IConnectionStringDialog;
+            IConnectionStringDialog p = uiAssembly.CreateInstance("gView.DataSources.Fdb.UI.MSSql.SqlFdbConnectionStringDialog") as IConnectionStringDialog;
             if (p != null)
             {
                 return p.ShowConnectionStringDialog(initConnectionString);

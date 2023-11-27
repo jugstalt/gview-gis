@@ -1,5 +1,7 @@
-using gView.Framework.Carto;
 using gView.Framework.Carto.Rendering;
+using gView.Framework.Core.Carto;
+using gView.Framework.Core.Data;
+using gView.Framework.Core.Symbology;
 using gView.Framework.Data;
 using gView.Framework.Symbology;
 using gView.GraphicsEngine;

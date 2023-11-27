@@ -1,4 +1,5 @@
-﻿using gView.Framework.SpatialAlgorithms;
+﻿using gView.Framework.Core.Geometry;
+using gView.Framework.SpatialAlgorithms;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -172,7 +173,7 @@ namespace gView.Framework.Geometry
         /// <summary>
         /// The type of the geometry (Polyline)
         /// </summary>
-        public gView.Framework.Geometry.GeometryType GeometryType
+        public GeometryType GeometryType
         {
             get
             {

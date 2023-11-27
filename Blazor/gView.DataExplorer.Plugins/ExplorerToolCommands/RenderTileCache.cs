@@ -4,10 +4,9 @@ using gView.DataExplorer.Plugins.Extensions;
 using gView.DataExplorer.Razor.Components.Dialogs.Models;
 using gView.Framework.Blazor;
 using gView.Framework.Blazor.Services.Abstraction;
+using gView.Framework.Core.system;
 using gView.Framework.DataExplorer.Abstraction;
-using gView.Razor.Base;
 using gView.Server.Clients;
-using MudBlazor;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,7 +14,7 @@ using System.Threading.Tasks;
 
 namespace gView.DataExplorer.Plugins.ExplorerToolCommands;
 
-[gView.Framework.system.RegisterPlugIn("900D0FF7-8CE2-4E87-968C-C4534F285416")]
+[RegisterPlugIn("900D0FF7-8CE2-4E87-968C-C4534F285416")]
 internal class RenderTileCache : IExplorerToolCommand
 {
     public string Name => "TileCache.Render";
@@ -48,7 +47,7 @@ internal class RenderTileCache : IExplorerToolCommand
         var metadata = await new MapServerClient(serviceModel.Server)
                                 .GetTileServiceMetadata(serviceModel.Service);
 
-        if(metadata == null || metadata.Use == false)
+        if (metadata == null || metadata.Use == false)
         {
             throw new Exception("Service does not support tiles (WMTS)");
         }
@@ -81,12 +80,12 @@ internal class RenderTileCache : IExplorerToolCommand
                 { "threads", model.ThreadCount }
             };
 
-        if(model.Scales!=null && model.Scales.Count > 0)
+        if (model.Scales != null && model.Scales.Count > 0)
         {
             parameters.Add("scales", String.Join(",", model.Scales.Select(s => s.ToString(System.Globalization.NumberFormatInfo.InvariantInfo))));
         }
 
-        if(model.Compact)
+        if (model.Compact)
         {
             parameters.Add("compact", true);
         }

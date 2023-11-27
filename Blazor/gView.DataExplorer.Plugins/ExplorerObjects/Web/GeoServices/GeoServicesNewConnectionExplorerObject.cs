@@ -3,6 +3,7 @@ using gView.DataExplorer.Plugins.Extensions;
 using gView.DataExplorer.Razor.Components.Dialogs.Models;
 using gView.DataExplorer.Razor.Components.Dialogs.Models.Extensions;
 using gView.Framework.Blazor.Services.Abstraction;
+using gView.Framework.Core.system;
 using gView.Framework.DataExplorer.Abstraction;
 using gView.Framework.DataExplorer.Events;
 using gView.Framework.IO;
@@ -11,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace gView.DataExplorer.Plugins.ExplorerObjects.Web.GeoServices;
 
-[gView.Framework.system.RegisterPlugIn("573EA02F-778C-4F9A-9DA6-DF9DBE3978D6")]
+[RegisterPlugIn("573EA02F-778C-4F9A-9DA6-DF9DBE3978D6")]
 public class GeoServicesNewConnectionExplorerObject : ExplorerObjectCls<IExplorerObject>,
                                                       IExplorerSimpleObject,
                                                       IExplorerObjectDoubleClick,
@@ -29,7 +30,7 @@ public class GeoServicesNewConnectionExplorerObject : ExplorerObjectCls<IExplore
 
     #region IExplorerObject Member
 
-    public string Name => "New GeoServices Connection..."; 
+    public string Name => "New GeoServices Connection...";
 
     public string FullName => "";
 

@@ -1,7 +1,8 @@
 ﻿using gView.DataExplorer.Plugins.ExplorerObjects.Base;
 using gView.DataExplorer.Plugins.ExplorerObjects.Tiles.Vector.ContextTools;
 using gView.DataSources.VectorTileCache;
-using gView.Framework.Data;
+using gView.Framework.Core.Data;
+using gView.Framework.Core.system;
 using gView.Framework.DataExplorer.Abstraction;
 using gView.Framework.DataExplorer.Events;
 using gView.Framework.IO;
@@ -11,10 +12,10 @@ using System.Threading.Tasks;
 
 namespace gView.DataExplorer.Plugins.ExplorerObjects.Tiles.Vector
 {
-    [gView.Framework.system.RegisterPlugIn("9F64AC86-4FE0-4E34-85C5-23BFF2DB42D2")]
-    public class VectorTileCacheDatasetExplorerObject : ExplorerParentObject<VectorTileCacheGroupExplorerObject, Dataset>, 
-                                                        IExplorerSimpleObject, 
-                                                        IExplorerObjectDeletable, 
+    [RegisterPlugIn("9F64AC86-4FE0-4E34-85C5-23BFF2DB42D2")]
+    public class VectorTileCacheDatasetExplorerObject : ExplorerParentObject<VectorTileCacheGroupExplorerObject, Dataset>,
+                                                        IExplorerSimpleObject,
+                                                        IExplorerObjectDeletable,
                                                         IExplorerObjectRenamable,
                                                         ISerializableExplorerObject,
                                                         IExplorerObjectContextTools
@@ -56,9 +57,9 @@ namespace gView.DataExplorer.Plugins.ExplorerObjects.Tiles.Vector
 
         public string Name => _name;
 
-        public string FullName=>@$"Tiles\TileCache\{_name}";
+        public string FullName => @$"Tiles\TileCache\{_name}";
 
-        public string Type=> "Vector Tile Cache Dataset";
+        public string Type => "Vector Tile Cache Dataset";
 
         public string Icon => "webgis:tiles";
 

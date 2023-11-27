@@ -1,7 +1,7 @@
 ﻿using gView.DataExplorer.Plugins.ExplorerObjects.Base;
 using gView.DataExplorer.Plugins.ExplorerObjects.GeoJson.ContextTools;
 using gView.DataSources.GeoJson;
-using gView.Framework.Data;
+using gView.Framework.Core.Data;
 using gView.Framework.DataExplorer.Abstraction;
 using gView.Framework.DataExplorer.Events;
 using gView.Framework.IO;

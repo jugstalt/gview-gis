@@ -1,4 +1,10 @@
-using gView.Core.Framework.Exceptions;
+using gView.Framework.Core.Data;
+using gView.Framework.Core.Exceptions;
+using gView.Framework.Core.FDB;
+using gView.Framework.Core.Geometry;
+using gView.Framework.Core.IO;
+using gView.Framework.Core.MapServer;
+using gView.Framework.Core.system;
 using gView.Framework.Data;
 using gView.Framework.Data.Metadata;
 using gView.Framework.Geometry;
@@ -7,7 +13,6 @@ using gView.Framework.system;
 using gView.Framework.Web.Abstraction;
 using gView.Framework.Web.Services;
 using gView.Interoperability.GeoServices.Rest.Json;
-using gView.MapServer;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -17,7 +22,7 @@ using System.Threading.Tasks;
 
 namespace gView.Interoperability.GeoServices.Dataset
 {
-    [gView.Framework.system.RegisterPlugIn("C4D644FE-8125-4214-99E1-0F0BC5884EDB")]
+    [RegisterPlugIn("C4D644FE-8125-4214-99E1-0F0BC5884EDB")]
     public class GeoServicesDataset : DatasetMetadata, IFeatureDataset, IRequestDependentDataset
     {
         internal readonly IHttpService _http;
@@ -161,7 +166,7 @@ namespace gView.Interoperability.GeoServices.Dataset
             get { return ""; }
         }
 
-        public gView.Framework.FDB.IDatabase Database
+        public IDatabase Database
         {
             get { return null; }
         }

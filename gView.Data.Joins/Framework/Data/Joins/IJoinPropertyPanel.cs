@@ -1,4 +1,5 @@
-﻿using gView.Framework.UI;
+﻿using gView.Framework.Core.Data;
+using gView.Framework.Core.UI;
 
 namespace gView.Framework.Data.Joins
 {

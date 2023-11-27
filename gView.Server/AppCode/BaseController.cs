@@ -1,5 +1,4 @@
-﻿using gView.Core.Framework.Exceptions;
-using gView.Framework.system;
+﻿using gView.Framework.system;
 using gView.Server.Extensions;
 using gView.Server.Services.MapServer;
 using gView.Server.Services.Security;
@@ -108,7 +107,7 @@ namespace gView.Server.AppCode
 
         #endregion
 
-        async virtual protected Task<IActionResult> SecureMethodHandler(Func<Identity, Task<IActionResult>> func, 
+        async virtual protected Task<IActionResult> SecureMethodHandler(Func<Identity, Task<IActionResult>> func,
                                                                         Func<Exception, IActionResult> onException = null)
         {
             if (_mapServerService.Options.IsValid == false)

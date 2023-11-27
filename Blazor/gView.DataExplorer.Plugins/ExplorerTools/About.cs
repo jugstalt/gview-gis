@@ -1,15 +1,15 @@
 ﻿using gView.DataExplorer.Plugins.Extensions;
 using gView.Framework.Blazor.Services.Abstraction;
+using gView.Framework.Core.system;
 using gView.Framework.DataExplorer;
 using gView.Framework.DataExplorer.Abstraction;
 using gView.Framework.system;
 using gView.Razor.Dialogs.Models;
-using System;
 using System.Threading.Tasks;
 
 namespace gView.DataExplorer.Plugins.ExplorerTools;
 
-[gView.Framework.system.RegisterPlugIn("1DB93AF4-F1E0-4CD7-A934-0E8BE3C35D98")]
+[RegisterPlugIn("1DB93AF4-F1E0-4CD7-A934-0E8BE3C35D98")]
 public class About : IExplorerTool
 {
     #region IExplorerTool
@@ -51,7 +51,7 @@ public class About : IExplorerTool
 
     public void Dispose()
     {
-        
+
     }
 
     #endregion

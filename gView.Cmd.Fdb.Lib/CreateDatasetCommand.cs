@@ -6,10 +6,11 @@ using gView.DataSources.Fdb.MSAccess;
 using gView.DataSources.Fdb.MSSql;
 using gView.DataSources.Fdb.PostgreSql;
 using gView.DataSources.Fdb.SQLite;
+using gView.Framework.Core.Data;
+using gView.Framework.Core.Geometry;
+using gView.Framework.Core.system;
 using gView.Framework.Data;
-using gView.Framework.FDB;
 using gView.Framework.Geometry;
-using gView.Framework.system;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -133,7 +134,7 @@ public class CreateDatasetCommand : ICommand
                 #endregion
 
                 if (await fdb.CreateImageDataset(
-                    parameters.GetRequiredValue<string>("ds_name"), 
+                    parameters.GetRequiredValue<string>("ds_name"),
                     spatialReference, spatialIndexDef, string.Empty, autoFields) < 0)
                 {
                     throw new Exception($"Unable to create dataset: {fdb.LastErrorMessage}");
@@ -145,7 +146,7 @@ public class CreateDatasetCommand : ICommand
             }
 
             return true;
-        } 
+        }
         catch (Exception ex)
         {
             logger?.LogLine($"ERROR: {ex.Message}");

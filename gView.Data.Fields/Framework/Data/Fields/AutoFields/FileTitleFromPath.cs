@@ -1,11 +1,13 @@
-﻿using gView.Framework.Data;
-using gView.Framework.FDB;
+﻿using gView.Framework.Core.Data;
+using gView.Framework.Core.FDB;
+using gView.Framework.Core.system;
+using gView.Framework.Data;
 using System.IO;
 using System.Threading.Tasks;
 
 namespace gView.Data.Fields.Framework.Data.Fields.AutoFields
 {
-    [gView.Framework.system.RegisterPlugIn("683204A1-E77B-4CF9-A68D-831CADDFF1AB")]
+    [RegisterPlugIn("683204A1-E77B-4CF9-A68D-831CADDFF1AB")]
     class FileTitleFromPath : Field, IAutoField
     {
         public FileTitleFromPath()

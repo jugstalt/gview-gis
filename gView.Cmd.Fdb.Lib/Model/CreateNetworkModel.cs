@@ -1,6 +1,6 @@
-﻿using gView.Framework.Data;
-using gView.Framework.IO;
-using gView.Framework.Network;
+﻿using gView.Framework.Core.IO;
+using gView.Framework.Core.Network;
+using gView.Framework.Data;
 using gView.Framework.Network.Algorthm;
 using System;
 using System.Collections.Generic;

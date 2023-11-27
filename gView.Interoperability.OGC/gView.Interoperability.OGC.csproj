@@ -7,12 +7,12 @@
   <ItemGroup>
     <ProjectReference Include="..\gView.Carto.Rendering\gView.Carto.Rendering.csproj" />
     <ProjectReference Include="..\gView.Carto\gView.Carto.csproj" />
-    <ProjectReference Include="..\gView.Core\gView.Core.csproj" />
+    <ProjectReference Include="..\gView.Framework.Core\gView.Framework.Core.csproj" />
     <ProjectReference Include="..\gView.Data\gView.Data.csproj" />
     <ProjectReference Include="..\gView.Geometry\gView.Geometry.csproj" />
     <ProjectReference Include="..\gView.Metadata\gView.Metadata.csproj" />
     <ProjectReference Include="..\gView.OGC\gView.OGC.csproj" />
-    <ProjectReference Include="..\gView.Symbology\gView.Symbology.csproj" />
+    <ProjectReference Include="..\gView.Framework.Symbology\gView.Framework.Symbology.csproj" />
     <ProjectReference Include="..\gView.System\gView.System.csproj" />
     <ProjectReference Include="..\gView.Web\gView.Web.csproj" />
     <ProjectReference Include="..\gView.XML2\gView.XML2.csproj" />

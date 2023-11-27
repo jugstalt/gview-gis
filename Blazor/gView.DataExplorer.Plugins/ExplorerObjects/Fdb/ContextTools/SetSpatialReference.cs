@@ -2,10 +2,9 @@
 using gView.DataExplorer.Plugins.Extensions;
 using gView.DataSources.Fdb.MSAccess;
 using gView.Framework.Blazor.Services.Abstraction;
-using gView.Framework.Data;
+using gView.Framework.Core.Data;
+using gView.Framework.Core.Geometry;
 using gView.Framework.DataExplorer.Abstraction;
-using gView.Framework.FDB;
-using gView.Framework.Geometry;
 using gView.Razor.Base;
 using System.Threading.Tasks;
 
@@ -30,7 +29,7 @@ internal class SetSpatialReference : IExplorerObjectContextTool
         }
 
         var _fdb = dataset.Database as AccessFDB;
-        if(_fdb == null)
+        if (_fdb == null)
         {
             throw new GeneralException("Database is not a gView FeatureDatabase");
         }
@@ -38,12 +37,12 @@ internal class SetSpatialReference : IExplorerObjectContextTool
         var model = await scope.ToExplorerScopeService().ShowKnownDialog(
             Framework.Blazor.KnownDialogs.SpatialReferenceDialog,
             model: new BaseDialogModel<ISpatialReference>()
-                           {
-                               Value = await dataset.GetSpatialReference()
-                           }
+            {
+                Value = await dataset.GetSpatialReference()
+            }
             );
 
-        if(model?.Value != null)
+        if (model?.Value != null)
         {
             int id = await _fdb.CreateSpatialReference(model.Value);
             if (id == -1)

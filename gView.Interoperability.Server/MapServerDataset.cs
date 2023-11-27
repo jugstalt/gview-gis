@@ -1,3 +1,8 @@
+using gView.Framework.Core.Data;
+using gView.Framework.Core.FDB;
+using gView.Framework.Core.Geometry;
+using gView.Framework.Core.IO;
+using gView.Framework.Core.system;
 using gView.Framework.Data;
 using gView.Framework.Data.Metadata;
 using gView.Framework.Geometry;
@@ -12,7 +17,7 @@ using System.Xml;
 
 namespace gView.Interoperability.Server
 {
-    [gView.Framework.system.RegisterPlugIn("654AF5E2-6159-4342-ABA8-0332CD71D990")]
+    [RegisterPlugIn("654AF5E2-6159-4342-ABA8-0332CD71D990")]
     public class MapServerDataset : DatasetMetadata, IFeatureDataset, IPersistable
     {
         internal readonly IHttpService _http;
@@ -346,7 +351,7 @@ namespace gView.Interoperability.Server
             get { return ""; }
         }
 
-        public gView.Framework.FDB.IDatabase Database
+        public IDatabase Database
         {
             get { return null; }
         }

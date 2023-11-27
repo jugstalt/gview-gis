@@ -1,10 +1,12 @@
 using gView.Framework.Carto.Rendering.UI;
-using gView.Framework.Data;
-using gView.Framework.Data.Filters;
-using gView.Framework.IO;
-using gView.Framework.Symbology;
+using gView.Framework.Core.Carto;
+using gView.Framework.Core.Data;
+using gView.Framework.Core.Data.Filters;
+using gView.Framework.Core.IO;
+using gView.Framework.Core.Symbology;
+using gView.Framework.Core.system;
+using gView.Framework.Core.UI;
 using gView.Framework.system;
-using gView.Framework.UI;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,7 +14,7 @@ using System.Reflection;
 
 namespace gView.Framework.Carto.Rendering
 {
-    [gView.Framework.system.RegisterPlugIn("CD41C987-9415-4c7c-AF5F-6385622AB768")]
+    [RegisterPlugIn("CD41C987-9415-4c7c-AF5F-6385622AB768")]
     public class ScaleDependentRenderer : IGroupRenderer, IFeatureRenderer, IPropertyPage, ILegendGroup, ISimplify
     {
         private RendererList _renderers;
@@ -33,7 +35,7 @@ namespace gView.Framework.Carto.Rendering
         #endregion
 
         #region IFeatureRenderer Member
-        public void Draw(IDisplay disp, gView.Framework.Data.IFeature feature)
+        public void Draw(IDisplay disp, IFeature feature)
         {
             foreach (IFeatureRenderer renderer in _renderers)
             {
@@ -353,7 +355,7 @@ namespace gView.Framework.Carto.Rendering
 
             #region IFeatureRenderer Member
 
-            public void Draw(IDisplay disp, gView.Framework.Data.IFeature feature)
+            public void Draw(IDisplay disp, IFeature feature)
             {
                 if (_renderer == null)
                 {
@@ -393,7 +395,7 @@ namespace gView.Framework.Carto.Rendering
                 _renderer.PrepareQueryFilter(layer, filter);
             }
 
-            public bool CanRender(gView.Framework.Data.IFeatureLayer layer, IMap map)
+            public bool CanRender(IFeatureLayer layer, IMap map)
             {
                 if (_renderer == null)
                 {
@@ -403,7 +405,7 @@ namespace gView.Framework.Carto.Rendering
                 return _renderer.CanRender(layer, map);
             }
 
-            public bool HasEffect(gView.Framework.Data.IFeatureLayer layer, IMap map)
+            public bool HasEffect(IFeatureLayer layer, IMap map)
             {
                 if (_renderer == null || map == null || map.Display == null)
                 {
@@ -492,14 +494,14 @@ namespace gView.Framework.Carto.Rendering
 
             #region IPersistable Member
 
-            public void Load(gView.Framework.IO.IPersistStream stream)
+            public void Load(IPersistStream stream)
             {
                 ScaleRendererPersist persist = new ScaleRendererPersist(this);
 
                 persist.Load(stream);
             }
 
-            public void Save(gView.Framework.IO.IPersistStream stream)
+            public void Save(IPersistStream stream)
             {
                 ScaleRendererPersist persist = new ScaleRendererPersist(this);
 

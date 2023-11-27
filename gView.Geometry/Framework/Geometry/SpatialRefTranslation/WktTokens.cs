@@ -1,4 +1,5 @@
 using System;
+using gView.Framework.Core.Geometry;
 
 namespace gView.Framework.Geometry.SpatialRefTranslation
 {

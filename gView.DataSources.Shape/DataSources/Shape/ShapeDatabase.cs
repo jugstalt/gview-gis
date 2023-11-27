@@ -1,8 +1,10 @@
+using gView.Framework.Core.Data;
+using gView.Framework.Core.Data.Cursors;
+using gView.Framework.Core.Data.Filters;
+using gView.Framework.Core.FDB;
+using gView.Framework.Core.Geometry;
+using gView.Framework.Core.system;
 using gView.Framework.Data;
-using gView.Framework.Data.Cursors;
-using gView.Framework.Data.Filters;
-using gView.Framework.FDB;
-using gView.Framework.Geometry;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -10,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace gView.DataSources.Shape
 {
-    [gView.Framework.system.RegisterPlugIn("BC0F0E24-075D-437c-ACBF-48BA74906009")]
+    [RegisterPlugIn("BC0F0E24-075D-437c-ACBF-48BA74906009")]
     public class ShapeDatabase : IFileFeatureDatabase
     {
         private string _errMsg = "";

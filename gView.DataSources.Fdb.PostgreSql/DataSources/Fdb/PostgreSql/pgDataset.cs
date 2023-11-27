@@ -1,6 +1,11 @@
-﻿using gView.Framework.Data;
+﻿using gView.Framework.Core.Data;
+using gView.Framework.Core.FDB;
+using gView.Framework.Core.Geometry;
+using gView.Framework.Core.IO;
+using gView.Framework.Core.system;
+using gView.Framework.Core.UI;
+using gView.Framework.Data;
 using gView.Framework.Data.Metadata;
-using gView.Framework.FDB;
 using gView.Framework.Geometry;
 using gView.Framework.IO;
 using System;
@@ -9,8 +14,8 @@ using System.Threading.Tasks;
 
 namespace gView.DataSources.Fdb.PostgreSql
 {
-    [gView.Framework.system.RegisterPlugIn("33254063-133D-4b17-AAE2-46AF7A7DA733")]
-    public class pgDataset : DatasetMetadata, IFeatureDataset2, IRasterDataset, IFDBDataset, gView.Framework.UI.IConnectionStringDialog
+    [RegisterPlugIn("33254063-133D-4b17-AAE2-46AF7A7DA733")]
+    public class pgDataset : DatasetMetadata, IFeatureDataset2, IRasterDataset, IFDBDataset, IConnectionStringDialog
     {
         internal int _dsID = -1;
         private List<IDatasetElement> _layers;

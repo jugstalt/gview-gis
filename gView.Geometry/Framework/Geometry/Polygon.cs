@@ -1,4 +1,5 @@
-﻿using gView.Framework.SpatialAlgorithms;
+﻿using gView.Framework.Core.Geometry;
+using gView.Framework.SpatialAlgorithms;
 using gView.Framework.SpatialAlgorithms.Clipper;
 using System;
 using System.Collections;
@@ -282,7 +283,7 @@ namespace gView.Framework.Geometry
         /// <summary>
         /// The type of the geometry (Polygon).
         /// </summary>
-        public gView.Framework.Geometry.GeometryType GeometryType
+        public GeometryType GeometryType
         {
             get
             {

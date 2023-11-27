@@ -1,10 +1,15 @@
 using gView.Framework.Carto.Rendering.UI;
-using gView.Framework.Data;
-using gView.Framework.Data.Filters;
+using gView.Framework.Core.Carto;
+using gView.Framework.Core.Data;
+using gView.Framework.Core.Data.Filters;
+using gView.Framework.Core.Geometry;
+using gView.Framework.Core.IO;
+using gView.Framework.Core.Symbology;
+using gView.Framework.Core.system;
+using gView.Framework.Core.UI;
 using gView.Framework.Geometry;
 using gView.Framework.Symbology;
 using gView.Framework.system;
-using gView.Framework.UI;
 using gView.GraphicsEngine.Abstraction;
 using System;
 using System.Collections.Generic;
@@ -12,7 +17,7 @@ using System.Reflection;
 
 namespace gView.Framework.Carto.Rendering
 {
-    [gView.Framework.system.RegisterPlugIn("92650F7D-CEC9-4418-9EA0-A8B09436AA7A")]
+    [RegisterPlugIn("92650F7D-CEC9-4418-9EA0-A8B09436AA7A")]
     public class SimpleLabelRenderer : Cloner, ILabelRenderer, ILegendGroup, IPropertyPage, IPriority
     {
         public enum howManyLabels { one_per_name = 0, one_per_feature = 1, one_per_part = 2 }
@@ -687,7 +692,7 @@ namespace gView.Framework.Carto.Rendering
 
         #region IPersistable Members
 
-        public void Load(gView.Framework.IO.IPersistStream stream)
+        public void Load(IPersistStream stream)
         {
             _fieldname = (string)stream.Load("Fieldname");
             _sizeField = (string)stream.Load("Sizefield");
@@ -704,7 +709,7 @@ namespace gView.Framework.Carto.Rendering
             _symbolRotation = (SymbolRotation)stream.Load("SymbolRotation", _symbolRotation, _symbolRotation);
         }
 
-        public void Save(gView.Framework.IO.IPersistStream stream)
+        public void Save(IPersistStream stream)
         {
             stream.Save("Fieldname", _fieldname);
             stream.Save("Sizefield", _sizeField);

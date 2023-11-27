@@ -1,17 +1,17 @@
 ﻿using gView.DataExplorer.Plugins.Extensions;
 using gView.DataExplorer.Razor.Components.Dialogs.Models;
 using gView.Framework.Blazor.Services.Abstraction;
-using gView.Framework.Data;
+using gView.Framework.Core.Data;
+using gView.Framework.Core.system;
 using gView.Framework.DataExplorer;
 using gView.Framework.DataExplorer.Abstraction;
-using gView.Framework.system;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 
 namespace gView.DataExplorer.Plugins.ExplorerTools;
 
-[gView.Framework.system.RegisterPlugIn("6B0B060E-45BC-4686-BEDE-23E61C849814")]
+[RegisterPlugIn("6B0B060E-45BC-4686-BEDE-23E61C849814")]
 internal class ObjectInfo : IExplorerTool
 {
     #region IExplorerTool

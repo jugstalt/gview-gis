@@ -1,7 +1,8 @@
 ﻿using gView.DataExplorer.Plugins.ExplorerObjects.Base;
 using gView.DataExplorer.Plugins.ExplorerObjects.EventTable.ContextTools;
 using gView.DataSources.EventTable;
-using gView.Framework.Data;
+using gView.Framework.Core.Data;
+using gView.Framework.Core.system;
 using gView.Framework.DataExplorer.Abstraction;
 using gView.Framework.DataExplorer.Events;
 using gView.Framework.IO;
@@ -11,10 +12,10 @@ using System.Threading.Tasks;
 
 namespace gView.DataExplorer.Plugins.ExplorerObjects.EventTable;
 
-[gView.Framework.system.RegisterPlugIn("B498C801-D7F2-4e1d-AA09-7A3599549DD8")]
-public class EventTableObject : ExplorerObjectCls<IExplorerObject, IFeatureClass>, 
-                                IExplorerSimpleObject, 
-                                IExplorerObjectDeletable, 
+[RegisterPlugIn("B498C801-D7F2-4e1d-AA09-7A3599549DD8")]
+public class EventTableObject : ExplorerObjectCls<IExplorerObject, IFeatureClass>,
+                                IExplorerSimpleObject,
+                                IExplorerObjectDeletable,
                                 IExplorerObjectRenamable,
                                 IExplorerObjectContextTools
 {
@@ -75,7 +76,7 @@ public class EventTableObject : ExplorerObjectCls<IExplorerObject, IFeatureClass
         }
     }
 
-    public string Type=>"Database Event Table";
+    public string Type => "Database Event Table";
 
     public string Icon => "basic:table";
 
@@ -93,15 +94,15 @@ public class EventTableObject : ExplorerObjectCls<IExplorerObject, IFeatureClass
                 Dataset ds = new Dataset();
 
                 await ds.SetConnectionString(_etconn.ToXmlString());
-                if(!await ds.Open())
+                if (!await ds.Open())
                 {
                     throw new Exception($"Can't open dataset: {ds.LastErrorMessage}");
                 }
                 _fc = (await ds.Elements())[0].Class as IFeatureClass;
-                
+
                 return _fc;
             }
-            catch(Exception)  
+            catch (Exception)
             {
                 _fc = null;
 

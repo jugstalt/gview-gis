@@ -1,8 +1,12 @@
+using gView.Framework.Core.Data;
+using gView.Framework.Core.Data.Filters;
+using gView.Framework.Core.FDB;
+using gView.Framework.Core.Geometry;
+using gView.Framework.Core.Geometry.Extensions;
+using gView.Framework.Core.system;
 using gView.Framework.Data;
 using gView.Framework.Data.Filters;
-using gView.Framework.FDB;
 using gView.Framework.Geometry;
-using gView.Framework.Geometry.Extensions;
 using gView.Framework.OGC;
 using gView.Framework.OGC.DB;
 using gView.Framework.SpatialAlgorithms;
@@ -17,7 +21,7 @@ using System.Threading.Tasks;
 
 namespace gView.DataSources.MSSqlSpatial
 {
-    [gView.Framework.system.RegisterPlugIn("69A965B6-E7F6-4C67-A8F4-57AEDF9541C3")]
+    [RegisterPlugIn("69A965B6-E7F6-4C67-A8F4-57AEDF9541C3")]
     [UseDatasetNameCase(DatasetNameCase.fieldNamesUpper)]
     [ImportFeatureClassNameWithSchema]
     public class GeometryDataset : gView.Framework.OGC.DB.OgcSpatialDataset, IFeatureImportEvents

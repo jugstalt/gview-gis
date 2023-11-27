@@ -1,21 +1,21 @@
 ﻿using gView.Blazor.Core.Exceptions;
 using gView.DataExplorer.Plugins.ExplorerObjects.Base;
 using gView.DataExplorer.Plugins.ExplorerObjects.Extensions;
-using gView.Framework.Data;
+using gView.Framework.Core.Data;
+using gView.Framework.Core.FDB;
+using gView.Framework.Core.Geometry;
+using gView.Framework.Core.system;
 using gView.Framework.DataExplorer.Abstraction;
 using gView.Framework.DataExplorer.Events;
-using gView.Framework.FDB;
-using gView.Framework.Geometry;
-using gView.Framework.system;
 using System.Threading.Tasks;
 
 namespace gView.DataExplorer.Plugins.ExplorerObjects.MsSqlSpatial.Geometry;
 
 [RegisterPlugIn("BAC5EF61-8E60-48D5-9744-4260BDCDBD56")]
-public class MsSqlSpatialFeatureClassExplorerObject : 
-                ExplorerObjectCls<MsSqlSpatialExplorerObject, IFeatureClass>, 
-                IExplorerSimpleObject, 
-                ISerializableExplorerObject, 
+public class MsSqlSpatialFeatureClassExplorerObject :
+                ExplorerObjectCls<MsSqlSpatialExplorerObject, IFeatureClass>,
+                IExplorerSimpleObject,
+                ISerializableExplorerObject,
                 IExplorerObjectDeletable
 {
     private string _icon = "";
@@ -62,7 +62,7 @@ public class MsSqlSpatialFeatureClassExplorerObject :
 
     #region IExplorerObject Members
 
-    public string Name=>_fcname; 
+    public string Name => _fcname;
 
     public string FullName
     {
@@ -76,7 +76,7 @@ public class MsSqlSpatialFeatureClassExplorerObject :
             return base.Parent.FullName + @"\" + this.Name;
         }
     }
-    public string Type=> _type;
+    public string Type => _type;
 
     public string Icon => _icon;
 
@@ -88,7 +88,7 @@ public class MsSqlSpatialFeatureClassExplorerObject :
         }
     }
     public Task<object?> GetInstanceAsync() => Task.FromResult<object?>(_fc);
-    
+
 
     #endregion
 

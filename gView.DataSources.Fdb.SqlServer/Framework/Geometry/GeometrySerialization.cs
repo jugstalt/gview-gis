@@ -1,5 +1,6 @@
 using System.Data.SqlTypes;
 using System.IO;
+using gView.Framework.Core.Geometry;
 
 namespace gView.Framework.Geometry
 {

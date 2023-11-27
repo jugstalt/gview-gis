@@ -1,4 +1,6 @@
-﻿namespace gView.Framework.Data.Filters
+﻿using gView.Framework.Core.Data.Filters;
+
+namespace gView.Framework.Data.Filters
 {
     public class DistinctFilter : QueryFilter, IDistinctFilter
     {

@@ -1,10 +1,12 @@
-using gView.Framework.FDB;
-using gView.Framework.Geometry;
+using gView.Framework.Core.Data;
+using gView.Framework.Core.FDB;
+using gView.Framework.Core.Geometry;
+using gView.Framework.Core.system;
 using System.Threading.Tasks;
 
 namespace gView.Framework.Data.Fields.AutoFields
 {
-    [gView.Framework.system.RegisterPlugIn("2CE75DD8-7E11-4047-B3CE-D7BA6EEB5C65")]
+    [RegisterPlugIn("2CE75DD8-7E11-4047-B3CE-D7BA6EEB5C65")]
     class ShapeLength : Field, IAutoField
     {
         public ShapeLength()

@@ -3,7 +3,8 @@ using gView.DataExplorer.Plugins.Extensions;
 using gView.DataExplorer.Razor.Components.Dialogs.Models;
 using gView.Framework.Blazor;
 using gView.Framework.Blazor.Services.Abstraction;
-using gView.Framework.Data;
+using gView.Framework.Core.Data;
+using gView.Framework.Core.system;
 using gView.Framework.DataExplorer;
 using gView.Framework.DataExplorer.Abstraction;
 using gView.Framework.system;
@@ -13,7 +14,7 @@ using System.Threading.Tasks;
 
 namespace gView.DataExplorer.Plugins.ExplorerTools;
 
-[gView.Framework.system.RegisterPlugIn("2C22F66F-BE67-420A-9B99-92B98260FA76")]
+[RegisterPlugIn("2C22F66F-BE67-420A-9B99-92B98260FA76")]
 internal class Paste : IExplorerTool
 {
     public string Name => "Paste";

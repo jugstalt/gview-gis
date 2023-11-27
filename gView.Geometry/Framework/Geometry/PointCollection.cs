@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using gView.Framework.Core.Geometry;
 
 namespace gView.Framework.Geometry
 {

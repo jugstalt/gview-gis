@@ -1,10 +1,11 @@
-﻿using gView.Blazor.Models.Table;
-using gView.Framework.Data;
+﻿using gView.Blazor.Models.Extensions;
+using gView.Blazor.Models.Table;
+using gView.Framework.Core.Data;
+using gView.Framework.Core.system;
 using gView.Framework.DataExplorer.Abstraction;
 using gView.Framework.system;
 using System;
 using System.Threading.Tasks;
-using gView.Blazor.Models.Extensions;
 
 namespace gView.DataExplorer.Plugins.ExplorerTabPages;
 

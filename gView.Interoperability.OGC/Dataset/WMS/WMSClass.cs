@@ -1,3 +1,8 @@
+using gView.Framework.Core.Carto;
+using gView.Framework.Core.Data;
+using gView.Framework.Core.Geometry;
+using gView.Framework.Core.MapServer;
+using gView.Framework.Core.system;
 using gView.Framework.Data;
 using gView.Framework.Geometry;
 using gView.Framework.IO;
@@ -6,7 +11,6 @@ using gView.GraphicsEngine;
 using gView.GraphicsEngine.Abstraction;
 using gView.Interoperability.OGC.Dataset.WFS;
 using gView.Interoperability.OGC.SLD;
-using gView.MapServer;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -377,7 +381,7 @@ namespace gView.Interoperability.OGC.Dataset.WMS
 
         public event AfterMapRequestEventHandler AfterMapRequest = null;
 
-        async public Task<bool> MapRequest(gView.Framework.Carto.IDisplay display)
+        async public Task<bool> MapRequest(IDisplay display)
         {
             if (_srs == null)
             {
@@ -598,7 +602,7 @@ namespace gView.Interoperability.OGC.Dataset.WMS
             return _image != null;
         }
 
-        public Task<bool> LegendRequest(gView.Framework.Carto.IDisplay display)
+        public Task<bool> LegendRequest(IDisplay display)
         {
             return Task.FromResult(false);
         }
@@ -613,7 +617,7 @@ namespace gView.Interoperability.OGC.Dataset.WMS
             get { return _legend; }
         }
 
-        public gView.Framework.Geometry.IEnvelope Envelope
+        public IEnvelope Envelope
         {
             get
             {
@@ -633,7 +637,7 @@ namespace gView.Interoperability.OGC.Dataset.WMS
             }
         }
 
-        public gView.Framework.Geometry.ISpatialReference SpatialReference
+        public ISpatialReference SpatialReference
         {
             get
             {

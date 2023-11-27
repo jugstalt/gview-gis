@@ -1,5 +1,10 @@
-﻿using gView.Core.Framework.Exceptions;
-using gView.Framework.Carto;
+﻿using gView.Framework.Carto;
+using gView.Framework.Core.Carto;
+using gView.Framework.Core.Data;
+using gView.Framework.Core.Exceptions;
+using gView.Framework.Core.Geometry;
+using gView.Framework.Core.MapServer;
+using gView.Framework.Core.system;
 using gView.Framework.Data;
 using gView.Framework.system;
 using gView.Interoperability.GeoServices.Request;
@@ -10,7 +15,6 @@ using gView.Interoperability.GeoServices.Rest.Json.Renderers.SimpleRenderers;
 using gView.Interoperability.GeoServices.Rest.Json.Request;
 using gView.Interoperability.GeoServices.Rest.Reflection;
 using gView.Interoperability.OGC;
-using gView.MapServer;
 using gView.Server.AppCode;
 using gView.Server.AppCode.Extensions;
 using gView.Server.Extensions;
@@ -154,7 +158,7 @@ namespace gView.Server.Controllers
                         throw new MapServerException($"unable to create map: {id}. Check log file for details");
                     }
 
-                    gView.Framework.Geometry.IEnvelope fullExtent = map.FullExtent();
+                    IEnvelope fullExtent = map.FullExtent();
                     var spatialReference = map.Display.SpatialReference;
                     int epsgCode = spatialReference != null ? spatialReference.EpsgCode : 0;
 
@@ -611,9 +615,9 @@ namespace gView.Server.Controllers
 
                         var geometryType = e.Class is IFeatureClass ?
                             ((IFeatureClass)e.Class).GeometryType :
-                            Framework.Geometry.GeometryType.Unknown;
+                            GeometryType.Unknown;
 
-                        if (geometryType == Framework.Geometry.GeometryType.Unknown && e is IFeatureLayer)   // if layer is SQL Spatial with undefined geometrytype...
+                        if (geometryType == GeometryType.Unknown && e is IFeatureLayer)   // if layer is SQL Spatial with undefined geometrytype...
                         {
                             geometryType = ((IFeatureLayer)e).LayerGeometryType;                             // take the settings from layer-properties
                         }
@@ -1160,9 +1164,9 @@ namespace gView.Server.Controllers
 
                 var geometryType = datasetElement.Class is IFeatureClass ?
                     ((IFeatureClass)datasetElement.Class).GeometryType :
-                    Framework.Geometry.GeometryType.Unknown;
+                    GeometryType.Unknown;
 
-                if (geometryType == Framework.Geometry.GeometryType.Unknown && datasetElement is IFeatureLayer)   // if layer is SQL Spatial with undefined geometrytype...
+                if (geometryType == GeometryType.Unknown && datasetElement is IFeatureLayer)   // if layer is SQL Spatial with undefined geometrytype...
                 {
                     geometryType = ((IFeatureLayer)datasetElement).LayerGeometryType;                             // take the settings from layer-properties
                 }

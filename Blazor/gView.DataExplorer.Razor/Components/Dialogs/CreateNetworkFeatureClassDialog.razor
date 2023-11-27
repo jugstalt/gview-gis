@@ -1,6 +1,5 @@
-@using gView.Framework.Network.Algorthm;
-@using gView.Framework.Network;
-@using gView.Razor.Dialogs.Models;
+@using gView.Framework.Network.Algorthm
+
 @inherits ModalDialogFormBase<CreateNetworkFeatureClassModel>
 @inject IApplicationScope AppScope
 
@@ -113,10 +112,10 @@
                                             @bind-Value="node.Fieldname">
                                     @foreach(var field in node.FeatureClass.Fields.ToEnumerable())
                                     {
-                                        @if(field.type == Framework.Data.FieldType.integer ||
-                                            field.type == Framework.Data.FieldType.smallinteger ||
-                                            field.type == Framework.Data.FieldType.biginteger ||
-                                            field.type == Framework.Data.FieldType.boolean) 
+                                        @if(field.type == Framework.Core.Data.FieldType.integer ||
+                                            field.type == Framework.Core.Data.FieldType.smallinteger ||
+                                            field.type == Framework.Core.Data.FieldType.biginteger ||
+                                            field.type == Framework.Core.Data.FieldType.boolean) 
                                         {
                                             <MudSelectItem Value="field.name">
                                                 @field.name
@@ -126,10 +125,10 @@
                                 </MudSelect>
                             </td>
                             <td>
-                                <MudSelect T="gView.Framework.Network.NetworkNodeType" 
+                                <MudSelect T="NetworkNodeType" 
                                             Label=""
                                             @bind-Value="node.NodeType">
-                                    @foreach (gView.Framework.Network.NetworkNodeType type in Enum.GetValues(typeof(gView.Framework.Network.NetworkNodeType)))
+                                    @foreach (NetworkNodeType type in Enum.GetValues(typeof(NetworkNodeType)))
                                     {
                                         <MudSelectItem Value="type">
                                             @type.ToString()
@@ -199,10 +198,10 @@
                                                 </MudSelectItem>
                                                 @foreach (var field in fc.Fields.ToEnumerable())
                                                 {
-                                                    @if (field.type == Framework.Data.FieldType.integer ||
-                                                         field.type == Framework.Data.FieldType.smallinteger ||
-                                                         field.type == Framework.Data.FieldType.biginteger ||
-                                                         field.type == Framework.Data.FieldType.boolean)
+                                                    @if (field.type == Framework.Core.Data.FieldType.integer ||
+                                                         field.type == Framework.Core.Data.FieldType.smallinteger ||
+                                                         field.type == Framework.Core.Data.FieldType.biginteger ||
+                                                         field.type == Framework.Core.Data.FieldType.boolean)
                                                     {
                                                         <MudSelectItem Value="field.name">
                                                             @field.name

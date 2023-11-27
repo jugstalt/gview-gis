@@ -1,6 +1,6 @@
 ﻿using gView.DataSources.VectorTileCache.Extensions;
-using gView.Framework.Data;
-using gView.Framework.Data.Filters;
+using gView.Framework.Core.Data;
+using gView.Framework.Core.Data.Filters;
 using System.Linq;
 using System.Threading.Tasks;
 

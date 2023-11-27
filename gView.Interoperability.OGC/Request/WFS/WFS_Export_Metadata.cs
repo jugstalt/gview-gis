@@ -1,14 +1,16 @@
-﻿using gView.Framework.Carto;
+﻿using gView.Framework.Core.Carto;
+using gView.Framework.Core.IO;
+using gView.Framework.Core.system;
+using gView.Framework.Core.UI;
 using gView.Framework.IO;
 using gView.Framework.system;
-using gView.Framework.UI;
 using System;
 using System.Reflection;
 using System.Threading.Tasks;
 
 namespace gView.Interoperability.OGC
 {
-    [gView.Framework.system.RegisterPlugIn("A2342AC5-9FD6-47a4-A25A-F684C375C895")]
+    [RegisterPlugIn("A2342AC5-9FD6-47a4-A25A-F684C375C895")]
     public class WFS_Export_Metadata : IMetadataProvider, IPropertyPage, IEpsgMetadata, IPropertyModel
     {
         private Metadata _metadata = null;

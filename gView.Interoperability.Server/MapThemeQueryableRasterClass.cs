@@ -1,7 +1,8 @@
-﻿using gView.Framework.Data;
+﻿using gView.Framework.Core.Data;
+using gView.Framework.Core.MapServer;
+using gView.Framework.Core.system;
 using gView.Framework.IO;
 using gView.Framework.system;
-using gView.MapServer;
 using gView.Server.Connector;
 using System;
 using System.Threading.Tasks;

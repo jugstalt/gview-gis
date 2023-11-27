@@ -1,5 +1,6 @@
-﻿using gView.Framework.system;
-using gView.Framework.UI;
+﻿using gView.Framework.Core.Network;
+using gView.Framework.Core.system;
+using gView.Framework.Core.UI;
 using System.Collections.Generic;
 
 namespace gView.Framework.Network.Algorthm

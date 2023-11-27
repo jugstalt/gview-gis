@@ -1,8 +1,10 @@
+using gView.Framework.Core.Data;
+using gView.Framework.Core.FDB;
+using gView.Framework.Core.Geometry;
+using gView.Framework.Core.IO;
+using gView.Framework.Core.system;
 using gView.Framework.Data;
 using gView.Framework.Data.Metadata;
-using gView.Framework.Geometry;
-using gView.Framework.IO;
-using gView.Framework.system;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -10,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace gView.DataSources.GDAL
 {
-    [gView.Framework.system.RegisterPlugIn("43DFABF1-3D19-438c-84DA-F8BA0B266592")]
+    [RegisterPlugIn("43DFABF1-3D19-438c-84DA-F8BA0B266592")]
     public class Dataset : DatasetMetadata, IRasterFileDataset, IPlugInDependencies
     {
         private string _connectionString = "";
@@ -257,7 +259,7 @@ namespace gView.DataSources.GDAL
             get { throw new Exception("The method or operation is not implemented."); }
         }
 
-        public gView.Framework.FDB.IDatabase Database
+        public IDatabase Database
         {
             get { return null; }
         }

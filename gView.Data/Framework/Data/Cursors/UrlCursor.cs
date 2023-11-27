@@ -1,4 +1,6 @@
-﻿namespace gView.Framework.Data.Cursors
+﻿using gView.Framework.Core.Data.Cursors;
+
+namespace gView.Framework.Data.Cursors
 {
     public class UrlCursor : IUrlCursor
     {

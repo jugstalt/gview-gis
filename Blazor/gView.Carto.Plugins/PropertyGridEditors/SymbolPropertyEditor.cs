@@ -1,7 +1,7 @@
 ﻿using gView.Carto.Plugins.Extensions;
 using gView.Carto.Razor.Components.Dialogs.Models;
 using gView.Framework.Blazor.Services.Abstraction;
-using gView.Framework.Symbology;
+using gView.Framework.Core.Symbology;
 using gView.Razor.Abstractions;
 
 namespace gView.Carto.Plugins.PropertyGridEditors

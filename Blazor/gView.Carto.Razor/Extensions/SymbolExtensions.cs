@@ -1,6 +1,6 @@
 ﻿using gView.Carto.Razor.Components.Dialogs.Models;
 using gView.Framework.Blazor.Services.Abstraction;
-using gView.Framework.Symbology;
+using gView.Framework.Core.Symbology;
 
 namespace gView.Carto.Razor.Extensions;
 

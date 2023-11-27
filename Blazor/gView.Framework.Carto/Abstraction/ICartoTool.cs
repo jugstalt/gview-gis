@@ -1,5 +1,5 @@
 ﻿using gView.Framework.Blazor.Services.Abstraction;
-using gView.Framework.UI;
+using gView.Framework.Core.UI;
 using System;
 using System.Collections.Generic;
 using System.Text;

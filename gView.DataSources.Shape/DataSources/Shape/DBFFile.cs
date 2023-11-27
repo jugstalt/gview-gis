@@ -1,3 +1,4 @@
+using gView.Framework.Core.Data;
 using gView.Framework.Data;
 using System;
 using System.Collections.Generic;
@@ -165,47 +166,47 @@ namespace gView.DataSources.Shape
             char fieldType = 'C';
             switch (field.type)
             {
-                case gView.Framework.Data.FieldType.biginteger:
+                case Framework.Core.Data.FieldType.biginteger:
                     fieldLength = 18;
                     fieldType = 'N';
                     break;
-                case gView.Framework.Data.FieldType.boolean:
+                case Framework.Core.Data.FieldType.boolean:
                     fieldLength = 1;
                     fieldType = 'L';
                     break;
-                case gView.Framework.Data.FieldType.character:
+                case Framework.Core.Data.FieldType.character:
                     fieldLength = 1;
                     fieldType = 'C';
                     break;
-                case gView.Framework.Data.FieldType.Date:
+                case Framework.Core.Data.FieldType.Date:
                     fieldLength = 8;
                     fieldType = 'D';
                     break;
-                case gView.Framework.Data.FieldType.Double:
+                case Framework.Core.Data.FieldType.Double:
                     fieldLength = 31;
                     decimalCount = 31;
                     fieldType = 'F';
                     break;
-                case gView.Framework.Data.FieldType.Float:
+                case Framework.Core.Data.FieldType.Float:
                     fieldLength = 11;
                     fieldType = 'F';
                     break;
-                case gView.Framework.Data.FieldType.ID:
+                case Framework.Core.Data.FieldType.ID:
                     fieldLength = 9;
                     fieldType = 'N';
                     break;
-                case gView.Framework.Data.FieldType.integer:
+                case Framework.Core.Data.FieldType.integer:
                     fieldLength = 9;
                     fieldType = 'N';
                     break;
-                case gView.Framework.Data.FieldType.Shape:
+                case Framework.Core.Data.FieldType.Shape:
                     return false;
 
-                case gView.Framework.Data.FieldType.smallinteger:
+                case Framework.Core.Data.FieldType.smallinteger:
                     fieldLength = 6;
                     fieldType = 'N';
                     break;
-                case gView.Framework.Data.FieldType.String:
+                case Framework.Core.Data.FieldType.String:
                     fieldLength = (byte)(field.size > 255 ? 255 : field.size);
                     fieldType = 'C';
                     break;
@@ -516,38 +517,38 @@ namespace gView.DataSources.Shape
         {
             switch (fd.FieldType)
             {
-                case 'C': return gView.Framework.Data.FieldType.String;
+                case 'C': return Framework.Core.Data.FieldType.String;
                 case 'F':
                 case 'N':
                     if (fd.DecimalCount == 0)
                     {
                         if (fd.FieldLength <= 6)
                         {
-                            return gView.Framework.Data.FieldType.smallinteger;
+                            return Framework.Core.Data.FieldType.smallinteger;
                         }
 
                         if (fd.FieldLength <= 9)
                         {
-                            return gView.Framework.Data.FieldType.integer;
+                            return Framework.Core.Data.FieldType.integer;
                         }
 
-                        return gView.Framework.Data.FieldType.biginteger;
+                        return Framework.Core.Data.FieldType.biginteger;
                     }
                     else  // if( fd.DecimalCount==9 && fd.FieldLength==31 ) 
                     {
                         if (fd.DecimalCount <= 9)
                         {
-                            return gView.Framework.Data.FieldType.Float;
+                            return Framework.Core.Data.FieldType.Float;
                         }
 
-                        return gView.Framework.Data.FieldType.Double;
+                        return Framework.Core.Data.FieldType.Double;
                     }
-                case 'L': return gView.Framework.Data.FieldType.boolean;
-                case 'D': return gView.Framework.Data.FieldType.Date;
-                case 'I': return gView.Framework.Data.FieldType.integer;
-                case 'O': return gView.Framework.Data.FieldType.Double;
-                case '+': return gView.Framework.Data.FieldType.integer; // Autoincrement
-                default: return gView.Framework.Data.FieldType.String;
+                case 'L': return Framework.Core.Data.FieldType.boolean;
+                case 'D': return Framework.Core.Data.FieldType.Date;
+                case 'I': return Framework.Core.Data.FieldType.integer;
+                case 'O': return Framework.Core.Data.FieldType.Double;
+                case '+': return Framework.Core.Data.FieldType.integer; // Autoincrement
+                default: return Framework.Core.Data.FieldType.String;
             }
         }
 
@@ -942,7 +943,7 @@ namespace gView.DataSources.Shape
                 // ID
                 Field field = new Field();
                 field.name = _idField;
-                field.type = gView.Framework.Data.FieldType.ID;
+                field.type = Framework.Core.Data.FieldType.ID;
                 fields.Add(field);
 
                 foreach (FieldDescriptor fd in _fields)

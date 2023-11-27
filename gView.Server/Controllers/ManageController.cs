@@ -1,8 +1,10 @@
-﻿using gView.Core.Framework.Exceptions;
+﻿using gView.Framework.Core.Exceptions;
+using gView.Framework.Core.IO;
+using gView.Framework.Core.MapServer;
+using gView.Framework.Core.system;
 using gView.Framework.IO;
 using gView.Framework.Security;
 using gView.Framework.system;
-using gView.MapServer;
 using gView.Security.Framework;
 using gView.Server.AppCode;
 using gView.Server.AppCode.Extensions;
@@ -240,7 +242,7 @@ namespace gView.Server.Controllers
         {
             return SecureApiCall(() =>
             {
-                var errorsResult = _logger.ErrorLogs(service, Framework.system.loggingMethod.error, long.Parse(last));
+                var errorsResult = _logger.ErrorLogs(service, loggingMethod.error, long.Parse(last));
 
                 return Json(new
                 {

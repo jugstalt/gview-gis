@@ -1,6 +1,11 @@
+using gView.Framework.Core.Data;
+using gView.Framework.Core.FDB;
+using gView.Framework.Core.Geometry;
+using gView.Framework.Core.IO;
+using gView.Framework.Core.MapServer;
+using gView.Framework.Core.system;
 using gView.Framework.Data;
 using gView.Framework.Data.Metadata;
-using gView.Framework.Geometry;
 using gView.Framework.IO;
 using gView.Framework.Web;
 using gView.Framework.Web.Abstraction;
@@ -14,7 +19,7 @@ namespace gView.Interoperability.OGC.Dataset.WMS
 {
     public enum SERVICE_TYPE { WMS = 0, WFS = 1, WMS_WFS = 2 };
 
-    [gView.Framework.system.RegisterPlugIn("538F0731-31FE-493a-B063-10A2D37D6E6D")]
+    [RegisterPlugIn("538F0731-31FE-493a-B063-10A2D37D6E6D")]
     public class WMSDataset : DatasetMetadata, IFeatureDataset, IRequestDependentDataset
     {
         internal readonly IHttpService _http;
@@ -189,7 +194,7 @@ namespace gView.Interoperability.OGC.Dataset.WMS
             get { return ""; }
         }
 
-        public gView.Framework.FDB.IDatabase Database
+        public IDatabase Database
         {
             get { return null; }
         }
@@ -224,7 +229,7 @@ namespace gView.Interoperability.OGC.Dataset.WMS
 
         #region IRequestDependentDataset Member
 
-        async public Task<bool> Open(gView.MapServer.IServiceRequestContext context)
+        async public Task<bool> Open(IServiceRequestContext context)
         {
             string url = String.Empty;
             try

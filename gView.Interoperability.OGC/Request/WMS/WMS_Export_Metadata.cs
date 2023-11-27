@@ -1,14 +1,16 @@
-﻿using gView.Framework.Carto;
+﻿using gView.Framework.Core.Carto;
+using gView.Framework.Core.IO;
+using gView.Framework.Core.system;
+using gView.Framework.Core.UI;
 using gView.Framework.IO;
 using gView.Framework.system;
-using gView.Framework.UI;
 using System;
 using System.Reflection;
 using System.Threading.Tasks;
 
 namespace gView.Interoperability.OGC
 {
-    [gView.Framework.system.RegisterPlugIn("0F6317BC-38FD-41d3-8E1A-82AB1873C526")]
+    [RegisterPlugIn("0F6317BC-38FD-41d3-8E1A-82AB1873C526")]
     public class WMS_Export_Metadata : IMetadataProvider, IPropertyPage, IEpsgMetadata, IPropertyModel
     {
         private IMap _map = null;

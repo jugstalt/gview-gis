@@ -3,6 +3,7 @@ using gView.DataExplorer.Plugins.Extensions;
 using gView.DataExplorer.Razor.Components.Dialogs.Models;
 using gView.DataSources.EventTable;
 using gView.Framework.Blazor.Services.Abstraction;
+using gView.Framework.Core.system;
 using gView.Framework.DataExplorer.Abstraction;
 using gView.Framework.DataExplorer.Events;
 using gView.Framework.IO;
@@ -10,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace gView.DataExplorer.Plugins.ExplorerObjects.EventTable;
 
-[gView.Framework.system.RegisterPlugIn("F45B7E98-B20A-47bf-A45D-E78D52F36314")]
+[RegisterPlugIn("F45B7E98-B20A-47bf-A45D-E78D52F36314")]
 public class EventTableNewConnectionObject : 
                 ExplorerObjectCls<IExplorerObject>, 
                 IExplorerSimpleObject, 

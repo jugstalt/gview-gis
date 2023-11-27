@@ -1,15 +1,11 @@
 ﻿using gView.DataExplorer.Plugins.ExplorerObjects.Base;
 using gView.DataExplorer.Plugins.ExplorerObjects.Databases;
+using gView.Framework.Core.system;
 using gView.Framework.DataExplorer.Abstraction;
 using gView.Framework.Db;
 using gView.Framework.IO;
-using gView.Framework.system;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using System.Web;
 
 namespace gView.DataExplorer.Plugins.ExplorerObjects.Fdb.PostgreSql;
 
@@ -27,13 +23,13 @@ public class PostgreSqlExplorerGroupObject : ExplorerParentObject,
 
     #region IExplorerObject Members
 
-    public string Name=> "gView Feature Database Connections (Postgres)"; 
+    public string Name => "gView Feature Database Connections (Postgres)";
 
-    public string FullName=> @"Databases\PostgreFDBConnections";
+    public string FullName => @"Databases\PostgreFDBConnections";
 
-    public string Type=> "PostgreFDB Connections"; 
+    public string Type => "PostgreFDB Connections";
 
-    public Task<object?> GetInstanceAsync()=>Task.FromResult<object?>(null);
+    public Task<object?> GetInstanceAsync() => Task.FromResult<object?>(null);
 
     #endregion
 
@@ -429,7 +425,7 @@ public class PostgreSqlExplorerGroupObject : ExplorerParentObject,
 //    #endregion
 //}
 
-////[gView.Framework.system.RegisterPlugIn("9B5B718C-2ECA-47ee-851F-9D33E3D82C55")]
+////[RegisterPlugIn("9B5B718C-2ECA-47ee-851F-9D33E3D82C55")]
 //public class SqlFDBTileGridClassExplorerObject : ExplorerObjectCls, IExplorerSimpleObject, IExplorerObjectCreatable
 //{
 //    public SqlFDBTileGridClassExplorerObject() : base(null, null, 1) { }

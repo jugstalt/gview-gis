@@ -1,4 +1,5 @@
-﻿using gView.Framework.Geometry;
+﻿using gView.Framework.Core.Geometry;
+using gView.Framework.Geometry;
 
 namespace gView.DataSources.MongoDb
 {

@@ -1,6 +1,8 @@
-﻿using gView.Framework.Network.Algorthm;
+﻿using gView.Framework.Core.Network;
+using gView.Framework.Core.system;
+using gView.Framework.Core.UI;
+using gView.Framework.Network.Algorthm;
 using gView.Framework.system;
-using gView.Framework.UI;
 using System.Threading.Tasks;
 
 namespace gView.Framework.Network.Tracers
@@ -26,7 +28,7 @@ namespace gView.Framework.Network.Tracers
                    input.Collect(NetworkTracerInputType.SinkNode).Count == 1;
         }
 
-        async public Task<NetworkTracerOutputCollection> Trace(INetworkFeatureClass network, NetworkTracerInputCollection input, gView.Framework.system.ICancelTracker cancelTraker)
+        async public Task<NetworkTracerOutputCollection> Trace(INetworkFeatureClass network, NetworkTracerInputCollection input, ICancelTracker cancelTraker)
         {
             if (network == null || !CanTrace(input))
             {

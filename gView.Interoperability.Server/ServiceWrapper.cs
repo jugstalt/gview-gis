@@ -1,6 +1,6 @@
-using gView.Framework.Carto;
-using gView.Framework.IO;
-using gView.Framework.UI;
+using gView.Framework.Core.Carto;
+using gView.Framework.Core.IO;
+using gView.Framework.Core.UI;
 using System.Threading.Tasks;
 
 namespace gView.Interoperability.Server

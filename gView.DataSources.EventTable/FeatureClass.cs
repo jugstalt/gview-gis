@@ -1,5 +1,8 @@
-﻿using gView.Framework.Data;
-using gView.Framework.Data.Cursors;
+﻿using gView.Framework.Core.Data;
+using gView.Framework.Core.Data.Cursors;
+using gView.Framework.Core.Data.Filters;
+using gView.Framework.Core.Geometry;
+using gView.Framework.Data;
 using gView.Framework.Data.Filters;
 using gView.Framework.Db;
 using gView.Framework.Geometry;
@@ -73,7 +76,7 @@ namespace gView.DataSources.EventTable
             get { return "#SHAPE#"; }
         }
 
-        public gView.Framework.Geometry.IEnvelope Envelope
+        public IEnvelope Envelope
         {
             get { return _env; }
         }
@@ -202,7 +205,7 @@ namespace gView.DataSources.EventTable
             get { return false; }
         }
 
-        public gView.Framework.Geometry.ISpatialReference SpatialReference
+        public ISpatialReference SpatialReference
         {
             get
             {
@@ -222,7 +225,7 @@ namespace gView.DataSources.EventTable
             }
         }
 
-        public gView.Framework.Geometry.GeometryType GeometryType
+        public GeometryType GeometryType
         {
             get { return GeometryType.Point; }
         }

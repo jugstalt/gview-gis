@@ -5,7 +5,7 @@ VisualStudioVersion = 17.1.32328.378
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.System", "gView.System\gView.System.csproj", "{E50D8014-0FB8-4B67-8291-0ABEE04A1403}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Core", "gView.Core\gView.Core.csproj", "{5A66D185-6E2C-4DA4-97D7-00616A182BD8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Core", "gView.Framework.Core\gView.Framework.Core.csproj", "{5A66D185-6E2C-4DA4-97D7-00616A182BD8}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Db", "gView.Db\gView.Db.csproj", "{FB98412B-8DEF-4B02-B903-2979A433E75E}"
 EndProject
@@ -21,7 +21,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Carto", "gView.Carto\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Carto.Rendering", "gView.Carto.Rendering\gView.Carto.Rendering.csproj", "{961D9A60-014E-4139-907F-0112F5DFAC4D}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Symbology", "gView.Symbology\gView.Symbology.csproj", "{C37D6D4B-5670-49B9-8592-48E9DCC0AA3C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Symbology", "gView.Framework.Symbology\gView.Framework.Symbology.csproj", "{C37D6D4B-5670-49B9-8592-48E9DCC0AA3C}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Network", "gView.Network\gView.Network.csproj", "{F47EA9DF-E750-4AFE-BDFF-8644403E17BB}"
 EndProject

@@ -1,9 +1,10 @@
 ﻿using gView.Blazor.Models.Dialogs;
 using gView.Cmd.Fdb.Lib.Model;
 using gView.Framework.Blazor.Services.Abstraction;
-using gView.Framework.Data;
+using gView.Framework.Core.Data;
+using gView.Framework.Core.Geometry;
+using gView.Framework.Core.Network;
 using gView.Framework.IO;
-using gView.Framework.Network;
 using gView.Framework.system;
 using System.Text;
 
@@ -106,7 +107,7 @@ public class CreateNetworkFeatureClassModel : IDialogResultItem
                     warnings.AppendLine($"Edge Featureclass {edge.Name} not found in dataset");
                     continue;
                 }
-                if (fc.GeometryType != Framework.Geometry.GeometryType.Polyline)
+                if (fc.GeometryType != GeometryType.Polyline)
                 {
                     warnings.AppendLine($"Edge Featureclass {edge.Name} has the wrong geometry type {fc.GeometryType}.");
                     continue;
@@ -131,7 +132,7 @@ public class CreateNetworkFeatureClassModel : IDialogResultItem
                     warnings.AppendLine($"Node Featureclass {node.Name} not found in dataset");
                     continue;
                 }
-                if (fc.GeometryType != Framework.Geometry.GeometryType.Polyline)
+                if (fc.GeometryType != GeometryType.Polyline)
                 {
                     warnings.AppendLine($"Node Featureclass {node.Name} has the wrong geometry type {fc.GeometryType}.");
                     continue;

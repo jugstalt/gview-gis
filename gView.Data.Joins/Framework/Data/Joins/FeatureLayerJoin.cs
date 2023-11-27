@@ -1,8 +1,12 @@
-﻿using gView.Framework.Carto;
-using gView.Framework.Data.Cursors;
+﻿using gView.Framework.Core.Carto;
+using gView.Framework.Core.Data;
+using gView.Framework.Core.Data.Cursors;
+using gView.Framework.Core.Data.Filters;
+using gView.Framework.Core.IO;
+using gView.Framework.Core.system;
+using gView.Framework.Core.UI;
 using gView.Framework.Data.Filters;
 using gView.Framework.system;
-using gView.Framework.UI;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
@@ -11,7 +15,7 @@ using System.Threading.Tasks;
 
 namespace gView.Framework.Data.Joins
 {
-    [RegisterPlugInAttribute("b480ce21-7e05-4153-89ee-331ebc4b3167")]
+    [RegisterPlugIn("b480ce21-7e05-4153-89ee-331ebc4b3167")]
     public class FeatureLayerJoin : IFeatureLayerJoin, IPropertyPage
     {
         private IMap _map;
@@ -177,7 +181,7 @@ namespace gView.Framework.Data.Joins
             set;
         }
 
-        public void OnCreate(Carto.IMap map)
+        public void OnCreate(IMap map)
         {
             _map = map;
 
@@ -194,7 +198,7 @@ namespace gView.Framework.Data.Joins
 
         #region IPersistable Member
 
-        public void Load(IO.IPersistStream stream)
+        public void Load(IPersistStream stream)
         {
             this.JoinName = (string)stream.Load("joinname", "Join");
             this.Field = (string)stream.Load("field", String.Empty);
@@ -204,7 +208,7 @@ namespace gView.Framework.Data.Joins
             this.JoinField = (string)stream.Load("joinfield", String.Empty);
         }
 
-        public void Save(IO.IPersistStream stream)
+        public void Save(IPersistStream stream)
         {
             stream.Save("joinname", this.JoinName);
             stream.Save("field", this.Field);

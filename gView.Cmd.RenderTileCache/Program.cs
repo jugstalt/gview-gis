@@ -9,6 +9,7 @@ using gView.Cmd.TileCache.Lib.Extensions;
 using gView.Cmd.TileCache.Lib.Tools;
 using gView.Cmd.Core;
 using System.Threading.Tasks;
+using gView.Framework.Core.Geometry;
 
 namespace gView.Cmd.RenderTileCache
 {

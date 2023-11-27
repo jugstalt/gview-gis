@@ -1,16 +1,16 @@
 ﻿using gView.DataExplorer.Plugins.Extensions;
 using gView.Framework.Blazor.Models;
 using gView.Framework.Blazor.Services.Abstraction;
-using gView.Framework.Data;
+using gView.Framework.Core.Data;
+using gView.Framework.Core.system;
 using gView.Framework.DataExplorer;
 using gView.Framework.DataExplorer.Abstraction;
-using Microsoft.SqlServer.Management.SqlParser.SqlCodeDom;
 using System.Linq;
 using System.Threading.Tasks;
 
 namespace gView.DataExplorer.Plugins.ExplorerTools;
 
-[gView.Framework.system.RegisterPlugIn("A0204C3B-74A0-4339-A99B-A39C0749E2AC")]
+[RegisterPlugIn("A0204C3B-74A0-4339-A99B-A39C0749E2AC")]
 internal class Copy : IExplorerTool
 {
     public string Name => "Copy";

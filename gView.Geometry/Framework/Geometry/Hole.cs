@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using gView.Framework.Core.Geometry;
 
 namespace gView.Framework.Geometry
 {

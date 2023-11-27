@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using gView.Framework.Core.Data;
 
 namespace gView.Framework.Data
 {

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using gView.Framework.Core.Geometry;
 
 namespace gView.Framework.Geometry
 {
@@ -165,7 +166,7 @@ namespace gView.Framework.Geometry
         /// <summary>
         /// The type of the geometry (Point)
         /// </summary>
-        public gView.Framework.Geometry.GeometryType GeometryType
+        public GeometryType GeometryType
         {
             get
             {

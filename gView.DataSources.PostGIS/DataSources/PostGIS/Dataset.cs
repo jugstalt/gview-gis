@@ -1,6 +1,7 @@
-using gView.Framework.Data;
+using gView.Framework.Core.Data;
+using gView.Framework.Core.Geometry;
+using gView.Framework.Core.system;
 using gView.Framework.Db;
-using gView.Framework.Geometry;
 using gView.Framework.OGC.DB;
 using gView.Framework.OGC.KML;
 using gView.Framework.system;

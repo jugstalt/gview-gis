@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using gView.Framework.Core.Geometry;
 
 namespace gView.Framework.Geometry.Tiling
 {

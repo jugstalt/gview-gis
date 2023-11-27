@@ -1,4 +1,4 @@
-﻿using gView.Core.Framework.system;
+﻿using gView.Framework.Core.system;
 using Microsoft.Azure.KeyVault;
 using System.Threading.Tasks;
 

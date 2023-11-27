@@ -1,6 +1,7 @@
 ﻿using gView.DataExplorer.Plugins.Extensions;
 using gView.DataExplorer.Razor.Components.Dialogs.Models;
 using gView.Framework.Blazor.Services.Abstraction;
+using gView.Framework.Core.system;
 using gView.Framework.DataExplorer;
 using gView.Framework.DataExplorer.Abstraction;
 using gView.Framework.DataExplorer.Events;
@@ -10,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace gView.DataExplorer.Plugins.ExplorerTools
 {
-    [gView.Framework.system.RegisterPlugIn("4F54D455-1C22-469e-9DBB-78DBBEF6078D")]
+    [RegisterPlugIn("4F54D455-1C22-469e-9DBB-78DBBEF6078D")]
     public class Delete : IExplorerTool
     {
         public string Name => "Delete";

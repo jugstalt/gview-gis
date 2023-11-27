@@ -1,5 +1,6 @@
-﻿using gView.Framework.Carto;
-using gView.Framework.IO;
+﻿using gView.Framework.Core.Carto;
+using gView.Framework.Core.Data;
+using gView.Framework.Core.IO;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 

@@ -1,7 +1,10 @@
-using gView.Framework.Data;
+using gView.Framework.Core.Data;
+using gView.Framework.Core.Data.Filters;
+using gView.Framework.Core.Geometry;
+using gView.Framework.Core.IO;
+using gView.Framework.Core.system;
 using gView.Framework.Data.Filters;
 using gView.Framework.Geometry;
-using gView.Framework.IO;
 using gView.Framework.OGC.GML;
 using gView.Framework.system;
 using System;
@@ -13,7 +16,7 @@ using System.Xml;
 
 namespace gView.Framework.OGC.WFS
 {
-    [gView.Framework.system.RegisterPlugIn("DBD759E3-4776-43c0-A31A-0481C5480A67")]
+    [RegisterPlugIn("DBD759E3-4776-43c0-A31A-0481C5480A67")]
     public class Filter : IPersistable
     {
         private static IFormatProvider _nhi = System.Globalization.CultureInfo.InvariantCulture.NumberFormat;

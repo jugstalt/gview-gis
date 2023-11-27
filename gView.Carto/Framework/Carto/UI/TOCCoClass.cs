@@ -1,8 +1,11 @@
+using gView.Framework.Core.Carto;
+using gView.Framework.Core.Data;
+using gView.Framework.Core.IO;
+using gView.Framework.Core.Symbology;
+using gView.Framework.Core.system;
+using gView.Framework.Core.UI;
 using gView.Framework.Data;
-using gView.Framework.Symbology;
 using gView.Framework.Symbology.Extensions;
-using gView.Framework.system;
-using gView.Framework.UI;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -47,7 +50,7 @@ namespace gView.Framework.Carto.UI
             _pos = 0;
         }
 
-        public gView.Framework.UI.ITocElement NextVisibleElement
+        public ITocElement NextVisibleElement
         {
             get
             {
@@ -1140,7 +1143,7 @@ namespace gView.Framework.Carto.UI
 
         #region IPersistable Member
 
-        async public Task<bool> LoadAsync(gView.Framework.IO.IPersistStream stream)
+        async public Task<bool> LoadAsync(IPersistStream stream)
         {
             _elements.Clear();
 
@@ -1155,7 +1158,7 @@ namespace gView.Framework.Carto.UI
             return true;
         }
 
-        public void Save(gView.Framework.IO.IPersistStream stream)
+        public void Save(IPersistStream stream)
         {
             foreach (TocElement element in _elements)
             {
@@ -1234,7 +1237,7 @@ namespace gView.Framework.Carto.UI
         #endregion
     }
 
-    internal class TocElement : gView.Framework.UI.ITocElement
+    internal class TocElement : ITocElement
     {
         private string _name;
         private TocElementType _type;
@@ -1356,7 +1359,7 @@ namespace gView.Framework.Carto.UI
             }
         }
 
-        public gView.Framework.UI.TocElementType ElementType
+        public TocElementType ElementType
         {
             get
             {
@@ -1570,7 +1573,7 @@ namespace gView.Framework.Carto.UI
 
         #region IPersistable Member
 
-        async public Task<bool> LoadAsync(gView.Framework.IO.IPersistStream stream)
+        async public Task<bool> LoadAsync(IPersistStream stream)
         {
             _name = (string)stream.Load("Name");
             _type = (TocElementType)stream.Load("Type");
@@ -1664,7 +1667,7 @@ namespace gView.Framework.Carto.UI
             return true;
         }
 
-        public void Save(gView.Framework.IO.IPersistStream stream)
+        public void Save(IPersistStream stream)
         {
             stream.Save("Name", (_type == TocElementType.OpenedGroup || _type == TocElementType.ClosedGroup) ? RecursiveName(this) : _name);
             stream.Save("Type", (int)_type);
@@ -1689,7 +1692,7 @@ namespace gView.Framework.Carto.UI
         #endregion
     }
 
-    internal class PersistLayer : gView.Framework.IO.IPersistableLoadAsync
+    internal class PersistLayer : IPersistableLoadAsync
     {
         private IMap _map = null;
         private IDatasetElement _element = new NullLayer();
@@ -1710,7 +1713,7 @@ namespace gView.Framework.Carto.UI
 
         #region IPersistable Member
 
-        async public Task<bool> LoadAsync(gView.Framework.IO.IPersistStream stream)
+        async public Task<bool> LoadAsync(IPersistStream stream)
         {
             if (_map == null)
             {
@@ -1807,7 +1810,7 @@ namespace gView.Framework.Carto.UI
             return true;
         }
 
-        public void Save(gView.Framework.IO.IPersistStream stream)
+        public void Save(IPersistStream stream)
         {
             if (_element == null || _map == null)
             {

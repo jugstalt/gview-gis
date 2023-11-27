@@ -1,4 +1,4 @@
-﻿using gView.MapServer;
+﻿using gView.Framework.Core.MapServer;
 using System;
 using System.Collections.Generic;
 using System.Text;

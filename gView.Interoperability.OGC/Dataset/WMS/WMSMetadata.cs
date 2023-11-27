@@ -1,17 +1,18 @@
-using gView.Framework.Carto;
-using gView.Framework.Data;
-using gView.Framework.Geometry;
+using gView.Framework.Core.Carto;
+using gView.Framework.Core.Data;
+using gView.Framework.Core.Geometry;
+using gView.Framework.Core.IO;
+using gView.Framework.Core.MapServer;
+using gView.Framework.Core.system;
+using gView.Framework.Core.UI;
 using gView.Framework.IO;
-using gView.Framework.system;
-using gView.Framework.UI;
-using gView.MapServer;
 using System;
 using System.Reflection;
 using System.Threading.Tasks;
 
 namespace gView.Interoperability.OGC.Dataset.WMS
 {
-    [gView.Framework.system.RegisterPlugIn("C2FF55BA-61AF-42aa-9216-E68CDAE8F0DE")]
+    [RegisterPlugIn("C2FF55BA-61AF-42aa-9216-E68CDAE8F0DE")]
     public class WMSImportMetadata : IMetadataProvider, IPropertyPage
     {
         #region Declarations

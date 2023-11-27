@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using gView.Framework.Core.Geometry;
 
 namespace gView.Framework.Geometry
 {
@@ -25,7 +26,7 @@ namespace gView.Framework.Geometry
         /// <summary>
         /// The type of the geometry (Multipoint)
         /// </summary>
-        public gView.Framework.Geometry.GeometryType GeometryType
+        public GeometryType GeometryType
         {
             get
             {

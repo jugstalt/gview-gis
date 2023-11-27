@@ -1,15 +1,19 @@
 
+using gView.Framework.Core.Data;
+using gView.Framework.Core.Data.Cursors;
+using gView.Framework.Core.Data.Filters;
+using gView.Framework.Core.FDB;
+using gView.Framework.Core.Geometry;
+using gView.Framework.Core.Network;
+using gView.Framework.Core.system;
+using gView.Framework.Core.UI;
 using gView.Framework.Data;
-using gView.Framework.Data.Cursors;
 using gView.Framework.Data.Filters;
 using gView.Framework.Db;
 using gView.Framework.Editor.Core;
-using gView.Framework.FDB;
 using gView.Framework.Geometry;
-using gView.Framework.Network;
 using gView.Framework.Offline;
 using gView.Framework.system;
-using gView.Framework.UI;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -24,7 +28,7 @@ namespace gView.DataSources.Fdb.MSAccess
     /// <summary>
     /// Zusammenfassung für AccessFDB.
     /// </summary>
-    public abstract class AccessFDB : gView.Framework.FDB.IFeatureDatabase3, gView.Framework.FDB.IImageDB, gView.Framework.FDB.IFeatureUpdater, gView.Framework.FDB.IAltertable, gView.Framework.Offline.IFeatureDatabaseReplication, IEditableDatabase, IImplementsBinarayTreeDef, IAlterDatabase, IDatabaseNames, IDisposable, IFDBDatabase
+    public abstract class AccessFDB : IFeatureDatabase3, IImageDB, IFeatureUpdater, IAltertable, gView.Framework.Offline.IFeatureDatabaseReplication, IEditableDatabase, IImplementsBinarayTreeDef, IAlterDatabase, IDatabaseNames, IDisposable, IFDBDatabase
     {
         protected IFormatProvider _nhi = System.Globalization.CultureInfo.InvariantCulture.NumberFormat;
 
@@ -4541,7 +4545,7 @@ namespace gView.DataSources.Fdb.MSAccess
         public ICommonDbConnection DbConnection { get { return _conn; } }
     }
 
-    internal class SpatialTreeInfo : gView.Framework.FDB.ISpatialTreeInfo
+    internal class SpatialTreeInfo : ISpatialTreeInfo
     {
         private string _si_type = "";
         private IEnvelope _si_bounds = null;

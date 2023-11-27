@@ -1,11 +1,14 @@
+using gView.Framework.Core.Carto;
+using gView.Framework.Core.Data;
+using gView.Framework.Core.Geometry;
+using gView.Framework.Core.MapServer;
+using gView.Framework.Core.system;
 using gView.Framework.Data;
 using gView.Framework.Geometry;
 using gView.Framework.IO;
-using gView.Framework.system;
 using gView.Framework.Web;
 using gView.Framework.XML;
 using gView.GraphicsEngine.Abstraction;
-using gView.MapServer;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -37,7 +40,7 @@ namespace gView.Interoperability.ArcXML.Dataset
 
         public event AfterMapRequestEventHandler AfterMapRequest = null;
 
-        async public Task<bool> MapRequest(gView.Framework.Carto.IDisplay display)
+        async public Task<bool> MapRequest(IDisplay display)
         {
             if (_dataset == null)
             {
@@ -296,7 +299,7 @@ namespace gView.Interoperability.ArcXML.Dataset
             }
         }
 
-        async public Task<bool> LegendRequest(gView.Framework.Carto.IDisplay display)
+        async public Task<bool> LegendRequest(IDisplay display)
         {
             if (_dataset == null)
             {

@@ -1,6 +1,7 @@
 ﻿using gView.DataExplorer.Plugins.ExplorerObjects.Base;
 using gView.DataExplorer.Plugins.ExplorerObjects.VectorData;
 using gView.DataSources.EventTable;
+using gView.Framework.Core.system;
 using gView.Framework.DataExplorer.Abstraction;
 using gView.Framework.IO;
 using System.Collections.Generic;
@@ -8,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace gView.DataExplorer.Plugins.ExplorerObjects.EventTable;
 
-[gView.Framework.system.RegisterPlugIn("653DA8F8-D321-4701-861F-23317E9FEC4D")]
+[RegisterPlugIn("653DA8F8-D321-4701-861F-23317E9FEC4D")]
 public class EventTableGroupObject : 
         ExplorerParentObject, 
         IVectorDataExplorerGroupObject

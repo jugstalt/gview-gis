@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 using System.Text;
+using gView.Framework.Core.Geometry;
 
 namespace gView.Framework.Geometry
 {
@@ -49,7 +50,7 @@ namespace gView.Framework.Geometry
         public static extern void pj_set_searchpath(int count, IntPtr path);
     }
 
-    public sealed class GeometricTransformerProj4Nativ : gView.Framework.Geometry.IGeometricTransformer, IDisposable
+    public sealed class GeometricTransformerProj4Nativ : IGeometricTransformer, IDisposable
     {
         private IntPtr _fromID = IntPtr.Zero, _toID = IntPtr.Zero;
         //private int _preToID = -1, _preFromID = -1;

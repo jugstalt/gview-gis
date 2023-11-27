@@ -1,3 +1,5 @@
+using gView.Framework.Core.system;
+
 namespace gView.Framework.system
 {
     /// <summary>

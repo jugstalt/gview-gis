@@ -1,15 +1,16 @@
 using gView.DataExplorer.Plugins.ExplorerObjects.Base;
 using gView.DataSources.Shape;
-using gView.Framework.Data;
+using gView.Framework.Core.Data;
+using gView.Framework.Core.Geometry;
+using gView.Framework.Core.system;
 using gView.Framework.DataExplorer.Abstraction;
 using gView.Framework.DataExplorer.Events;
-using gView.Framework.Geometry;
 using System.IO;
 using System.Threading.Tasks;
 
 namespace gView.DataExplorer.Plugins.ExplorerObjects.ShapeFiles
 {
-    [gView.Framework.system.RegisterPlugIn("665E0CD5-B3DF-436c-91B4-D4C0B3ECA5B9")]
+    [RegisterPlugIn("665E0CD5-B3DF-436c-91B4-D4C0B3ECA5B9")]
     public class ShapeFileExplorerObject : ExplorerObjectCls<IExplorerObject, IFeatureClass>, 
                                            IExplorerFileObject, 
                                            ISerializableExplorerObject, 

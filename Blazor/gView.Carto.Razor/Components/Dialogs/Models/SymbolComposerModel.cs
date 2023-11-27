@@ -1,5 +1,5 @@
 ﻿using gView.Blazor.Models.Dialogs;
-using gView.Framework.Symbology;
+using gView.Framework.Core.Symbology;
 
 namespace gView.Carto.Razor.Components.Dialogs.Models;
 

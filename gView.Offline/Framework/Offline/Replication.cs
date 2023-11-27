@@ -1,8 +1,11 @@
+using gView.Framework.Core.Data;
+using gView.Framework.Core.Data.Cursors;
+using gView.Framework.Core.Data.Filters;
+using gView.Framework.Core.FDB;
+using gView.Framework.Core.Geometry;
+using gView.Framework.Core.system;
 using gView.Framework.Data;
-using gView.Framework.Data.Cursors;
 using gView.Framework.Data.Filters;
-using gView.Framework.FDB;
-using gView.Framework.Geometry;
 using gView.Framework.system;
 using System;
 using System.Collections.Generic;
@@ -3672,7 +3675,7 @@ SELECT " + c.parentFc_id + @"," + c.parentDb.DbColName("OBJECT_GUID") + ",0," + 
                 get { return _fc.ShapeFieldName; }
             }
 
-            public gView.Framework.Geometry.IEnvelope Envelope
+            public IEnvelope Envelope
             {
                 get { return _fc.Envelope; }
             }
@@ -3749,12 +3752,12 @@ SELECT " + c.parentFc_id + @"," + c.parentDb.DbColName("OBJECT_GUID") + ",0," + 
                 get { return _fc.HasM; }
             }
 
-            public gView.Framework.Geometry.ISpatialReference SpatialReference
+            public ISpatialReference SpatialReference
             {
                 get { return _fc?.SpatialReference; }
             }
 
-            public gView.Framework.Geometry.GeometryType GeometryType
+            public GeometryType GeometryType
             {
                 get { return _fc.GeometryType; }
             }

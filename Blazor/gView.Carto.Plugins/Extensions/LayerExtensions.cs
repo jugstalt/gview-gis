@@ -1,5 +1,5 @@
-﻿using gView.Framework.Data;
-using gView.Framework.Geometry;
+﻿using gView.Framework.Core.Data;
+using gView.Framework.Core.Geometry;
 using MongoDB.Bson.Serialization.Conventions;
 
 namespace gView.Carto.Plugins.Extensions;

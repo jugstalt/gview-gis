@@ -2,7 +2,6 @@
 using gView.DataExplorer.Plugins.ExplorerObjects.Base;
 using gView.DataExplorer.Plugins.ExplorerObjects.Base.ContextTools;
 using gView.DataSources.PostGIS;
-using gView.Framework.Data;
 using gView.Framework.DataExplorer.Abstraction;
 using gView.Framework.DataExplorer.Events;
 using gView.Framework.Db;
@@ -11,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using gView.Framework.system;
+using gView.Framework.Core.Data;
 
 namespace gView.DataExplorer.Plugins.ExplorerObjects.PostGIS;
 

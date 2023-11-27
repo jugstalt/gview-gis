@@ -1,5 +1,6 @@
 using System;
 using System.Threading;
+using gView.Framework.Core.Data;
 
 namespace gView.Framework.system
 {
@@ -54,7 +55,7 @@ namespace gView.Framework.system
             }
         }
 
-        public T AllocConnection(gView.Framework.Data.IDataset dataset)
+        public T AllocConnection(IDataset dataset)
         {
             lock (_lockThis)
             {
@@ -109,7 +110,7 @@ namespace gView.Framework.system
         }
 
         protected abstract void CloseConnection(T connection);
-        protected abstract T OpenConnection(gView.Framework.Data.IDataset dataset);
+        protected abstract T OpenConnection(IDataset dataset);
     }
 
     public class DatabaseConnection

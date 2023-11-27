@@ -1,6 +1,6 @@
-﻿using gView.Framework.Data;
-using gView.Framework.Symbology;
-using gView.Framework.UI;
+﻿using gView.Framework.Core.Data;
+using gView.Framework.Core.Symbology;
+using gView.Framework.Core.UI;
 using System.Collections.Generic;
 using System.Linq;
 using static gView.Framework.Network.Algorthm.RoadBook;

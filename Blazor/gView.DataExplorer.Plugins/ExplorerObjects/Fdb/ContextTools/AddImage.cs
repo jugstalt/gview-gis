@@ -10,7 +10,7 @@ using gView.DataSources.GDAL;
 using gView.DataSources.Raster.File;
 using gView.Framework.Blazor;
 using gView.Framework.Blazor.Services.Abstraction;
-using gView.Framework.Data;
+using gView.Framework.Core.Data;
 using gView.Framework.DataExplorer.Abstraction;
 using System.Collections.Generic;
 using System.Linq;

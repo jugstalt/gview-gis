@@ -3,9 +3,9 @@ using gView.DataExplorer.Razor.Components.Dialogs.Filters;
 using gView.DataExplorer.Razor.Components.Dialogs.Models;
 using gView.DataSources.Fdb.MSAccess;
 using gView.Framework.Blazor.Services.Abstraction;
-using gView.Framework.Data;
+using gView.Framework.Core.Data;
+using gView.Framework.Core.system;
 using gView.Framework.DataExplorer.Abstraction;
-using gView.Framework.system;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -53,7 +53,7 @@ public class SqLiteFdbLinkedFeatureclassExplorerObject : IExplorerSimpleObject,
                 Mode = ExploerDialogMode.Open
             });
 
-        if (model?.Result?.ExplorerObjects != null )
+        if (model?.Result?.ExplorerObjects != null)
         {
             //IExplorerObject? ret = null;
 

@@ -1,16 +1,17 @@
 ﻿using gView.Blazor.Core.Exceptions;
 using gView.DataExplorer.Plugins.ExplorerObjects.Base;
 using gView.DataExplorer.Plugins.ExplorerObjects.Extensions;
-using gView.Framework.Data;
+using gView.Framework.Core.Data;
+using gView.Framework.Core.FDB;
+using gView.Framework.Core.Geometry;
+using gView.Framework.Core.system;
 using gView.Framework.DataExplorer.Abstraction;
 using gView.Framework.DataExplorer.Events;
-using gView.Framework.FDB;
-using gView.Framework.Geometry;
 using System.Threading.Tasks;
 
 namespace gView.DataExplorer.Plugins.ExplorerObjects.MsSqlSpatial.Sde;
 
-[gView.Framework.system.RegisterPlugIn("D159CD92-7872-48F0-81BF-938543C5C2C1")]
+[RegisterPlugIn("D159CD92-7872-48F0-81BF-938543C5C2C1")]
 public class MsSqlSpatialSdeFeatureClassExplorerObject : 
                 ExplorerObjectCls<MsSqlSpatialSdeExplorerObject, IFeatureClass>, 
                 IExplorerSimpleObject, 

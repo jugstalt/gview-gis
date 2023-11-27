@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using gView.Framework.Core.Data;
+using gView.Framework.Core.Data.Cursors;
 
 namespace gView.Framework.Data.Cursors
 {

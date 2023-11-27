@@ -1,5 +1,5 @@
-﻿using gView.Framework.Data;
-using gView.Framework.Geometry;
+﻿using gView.Framework.Core.Geometry;
+using gView.Framework.Data;
 using System.Collections;
 using System.Collections.Generic;
 

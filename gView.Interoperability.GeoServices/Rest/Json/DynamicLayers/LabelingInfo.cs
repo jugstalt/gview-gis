@@ -1,5 +1,6 @@
-﻿using gView.Framework.Carto;
-using gView.Framework.Geometry;
+﻿using gView.Framework.Core.Carto;
+using gView.Framework.Core.Geometry;
+using gView.Framework.Core.Symbology;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
@@ -55,7 +56,7 @@ namespace gView.Interoperability.GeoServices.Rest.Json.DynamicLayers
                 labelRenderer.UseExpression = true;
                 labelRenderer.LabelExpression = LabelExpression;
             }
-            labelRenderer.TextSymbol = Renderers.SimpleRenderers.JsonRenderer.FromSymbolJObject(Symbol as JObject) as Framework.Symbology.ITextSymbol;
+            labelRenderer.TextSymbol = Renderers.SimpleRenderers.JsonRenderer.FromSymbolJObject(Symbol as JObject) as ITextSymbol;
 
             return labelRenderer;
         }

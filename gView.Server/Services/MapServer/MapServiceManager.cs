@@ -1,6 +1,6 @@
-﻿using gView.Framework.IO;
+﻿using gView.Framework.Core.MapServer;
+using gView.Framework.IO;
 using gView.Framework.system;
-using gView.MapServer;
 using gView.Server.AppCode;
 using gView.Server.Services.Logging;
 using Microsoft.Extensions.Logging;

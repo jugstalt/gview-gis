@@ -12,7 +12,7 @@
 
 //namespace gView.Interoperability.Server.TileService
 //{
-//    [gView.Framework.system.RegisterPlugIn("B6748883-23D6-4363-BA51-2B98C1291E0C")]
+//    [RegisterPlugIn("B6748883-23D6-4363-BA51-2B98C1291E0C")]
 //    class ServiceRequestInterpreter : IServiceRequestInterpreter
 //    {
 //        private static IFormatProvider _nhi = System.Globalization.CultureInfo.InvariantCulture.NumberFormat;

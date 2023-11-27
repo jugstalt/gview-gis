@@ -1,4 +1,4 @@
-﻿using gView.Core.Framework.Exceptions;
+﻿using gView.Framework.Core.Exceptions;
 using System.Text.RegularExpressions;
 
 namespace gView.Security.Framework

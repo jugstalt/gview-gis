@@ -1,13 +1,13 @@
-using gView.Framework.IO;
-using gView.Framework.system;
-using gView.Framework.UI;
+using gView.Framework.Core.IO;
+using gView.Framework.Core.system;
+using gView.Framework.Core.UI;
 using System;
 using System.Reflection;
 using System.Threading.Tasks;
 
 namespace gView.Framework.Metadata
 {
-    [gView.Framework.system.RegisterPlugIn("32C9CDB8-5A2D-4fc1-87AD-2AE960D1E31A")]
+    [RegisterPlugIn("32C9CDB8-5A2D-4fc1-87AD-2AE960D1E31A")]
     public class GeneralMetadata : IMetadataProvider, IPropertyPage, IPropertyModel
     {
         private PropertyModel _properties;

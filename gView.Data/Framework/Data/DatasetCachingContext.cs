@@ -1,6 +1,6 @@
 ﻿using gView.Data.Framework.Data.Abstraction;
-using gView.Framework.Carto;
-using gView.Framework.Data;
+using gView.Framework.Core.Carto;
+using gView.Framework.Core.Data;
 using System;
 using System.Collections.Concurrent;
 using System.Linq;

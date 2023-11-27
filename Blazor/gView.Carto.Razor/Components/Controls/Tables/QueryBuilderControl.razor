@@ -1,5 +1,6 @@
-@using gView.Framework.Data.Cursors
+@using gView.Framework.Core.Data.Cursors
 @using gView.Framework.Data.Filters
+
 @inherits BaseHandler
 
 @if(TableClass is not null)
@@ -13,7 +14,7 @@
                         <MudList Clickable="true">
                             @foreach (var field in TableClass.Fields.ToEnumerable())
                             {
-                                if(field.type == gView.Framework.Data.FieldType.Shape)
+                                if(field.type == gView.Framework.Core.Data.FieldType.Shape)
                                 {
                                     continue;
                                 }
@@ -175,11 +176,11 @@
 
             _fieldTemplate = _currentField.type switch
             {
-                gView.Framework.Data.FieldType.Date => "'{0}'",
-                gView.Framework.Data.FieldType.character => "'{0}'",
-                gView.Framework.Data.FieldType.guid => "'{0}'",
-                gView.Framework.Data.FieldType.NString => "'{0}'",
-                gView.Framework.Data.FieldType.String => "'{0}'",
+                gView.Framework.Core.Data.FieldType.Date => "'{0}'",
+                gView.Framework.Core.Data.FieldType.character => "'{0}'",
+                gView.Framework.Core.Data.FieldType.guid => "'{0}'",
+                gView.Framework.Core.Data.FieldType.NString => "'{0}'",
+                gView.Framework.Core.Data.FieldType.String => "'{0}'",
                 _ => "{0}"
             };
 

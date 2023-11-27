@@ -1,10 +1,13 @@
+using gView.Framework.Core.Data;
+using gView.Framework.Core.IO;
+using gView.Framework.Core.system;
+using gView.Framework.Core.UI;
 using gView.Framework.system;
-using gView.Framework.UI;
 using System.Reflection;
 
 namespace gView.Framework.Data.Fields.FieldDomains
 {
-    [gView.Framework.system.RegisterPlugIn("D2AA566F-362E-4ccc-93E8-4B37FF371104")]
+    [RegisterPlugIn("D2AA566F-362E-4ccc-93E8-4B37FF371104")]
     public class RangeDomain : Cloner, IRangeFieldDomain, IPropertyPage
     {
         double _minValue = (double)int.MinValue, _maxValue = (double)int.MaxValue;
@@ -36,13 +39,13 @@ namespace gView.Framework.Data.Fields.FieldDomains
 
         #region IPersistable Member
 
-        public void Load(gView.Framework.IO.IPersistStream stream)
+        public void Load(IPersistStream stream)
         {
             _minValue = (double)stream.Load("minValue", double.MinValue);
             _maxValue = (double)stream.Load("maxValue", double.MaxValue);
         }
 
-        public void Save(gView.Framework.IO.IPersistStream stream)
+        public void Save(IPersistStream stream)
         {
             stream.Save("minValue", _minValue);
             stream.Save("maxValue", _maxValue);

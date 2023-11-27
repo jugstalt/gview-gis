@@ -1,4 +1,6 @@
 ﻿using gView.DataSources.Fdb.MSAccess;
+using gView.Framework.Core.Data;
+using gView.Framework.Core.system;
 using gView.Framework.Data;
 using gView.Framework.system;
 using Microsoft.SqlServer.Management.SqlParser.SqlCodeDom;

@@ -1,12 +1,14 @@
-﻿using gView.Framework.Data.Metadata;
+﻿using gView.Framework.Core.Carto;
+using gView.Framework.Core.Geometry;
+using gView.Framework.Core.Symbology;
+using gView.Framework.Data.Metadata;
 using gView.Framework.Geometry;
-using gView.Framework.Symbology;
 using gView.Framework.system;
 using System;
 
 namespace gView.Framework.Carto
 {
-    public class Display : MapMetadata, gView.Framework.Carto.IDisplay
+    public class Display : MapMetadata, IDisplay
     {
         public event MapScaleChangedEvent MapScaleChanged;
         public event RenderOverlayImageEvent RenderOverlayImage;

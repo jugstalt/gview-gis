@@ -1,15 +1,18 @@
+using gView.Framework.Core.Data;
+using gView.Framework.Core.FDB;
+using gView.Framework.Core.Geometry;
+using gView.Framework.Core.IO;
+using gView.Framework.Core.system;
 using gView.Framework.Data;
 using gView.Framework.Data.Metadata;
 using gView.Framework.Geometry;
-using gView.Framework.IO;
-using gView.Framework.system;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace gView.DataSources.OGR
 {
-    [gView.Framework.system.RegisterPlugIn("7a972c29-4955-4899-b142-98f6e05bb063")]
+    [RegisterPlugIn("7a972c29-4955-4899-b142-98f6e05bb063")]
     public class Dataset : DatasetMetadata, IFeatureDataset, IDisposable, IDataset2, IPlugInDependencies
     {
         private string _connectionString, _lastErrMsg = "";
@@ -198,7 +201,7 @@ namespace gView.DataSources.OGR
             get { return String.Empty; }
         }
 
-        public gView.Framework.FDB.IDatabase Database
+        public IDatabase Database
         {
             get
             {

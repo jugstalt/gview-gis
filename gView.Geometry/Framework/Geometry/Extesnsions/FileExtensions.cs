@@ -1,4 +1,4 @@
-﻿using gView.Framework.Geometry;
+﻿using gView.Framework.Core.Geometry;
 using System.IO;
 
 namespace gView.Geometry.Framework.Geometry.Extesnsions

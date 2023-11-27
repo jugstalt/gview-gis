@@ -1,9 +1,14 @@
+using gView.Framework.Core.Carto;
+using gView.Framework.Core.Data;
+using gView.Framework.Core.FDB;
+using gView.Framework.Core.Geometry;
+using gView.Framework.Core.IO;
+using gView.Framework.Core.system;
+using gView.Framework.Core.UI;
 using gView.Framework.Data;
 using gView.Framework.Data.Metadata;
 using gView.Framework.Geometry;
-using gView.Framework.IO;
 using gView.Framework.system;
-using gView.Framework.UI;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -52,7 +57,7 @@ namespace gView.DataSources.Shape
     /// </summary>
     [UseDatasetNameCase(DatasetNameCase.fieldNamesUpper)]
     [MaximumFieldnameLength(10)]
-    [gView.Framework.system.RegisterPlugIn("80F48262-D412-41fb-BF43-2D611A2ABF42")]
+    [RegisterPlugIn("80F48262-D412-41fb-BF43-2D611A2ABF42")]
     public class ShapeDataset : DatasetMetadata, IFeatureDataset
     {
         private string _connectionString = "", _errMsg = "";
@@ -88,7 +93,7 @@ namespace gView.DataSources.Shape
 
         #region IFeatureDataset Member
 
-        public bool renderImage(gView.Framework.Carto.IDisplay display)
+        public bool renderImage(IDisplay display)
         {
             return false;
         }
@@ -115,7 +120,7 @@ namespace gView.DataSources.Shape
             return Task.FromResult<IEnvelope>(new Envelope(_minX, _minY, _maxX, _maxY));
         }
 
-        public bool renderLayer(gView.Framework.Carto.IDisplay display, ILayer layer)
+        public bool renderLayer(IDisplay display, ILayer layer)
         {
             return false;
         }
@@ -289,7 +294,7 @@ namespace gView.DataSources.Shape
             }
         }
 
-        public gView.Framework.FDB.IDatabase Database
+        public IDatabase Database
         {
             get
             {
@@ -353,7 +358,7 @@ namespace gView.DataSources.Shape
                     }
                 }
 
-                gView.Framework.FDB.IIndexTree iTree = null;
+                IIndexTree iTree = null;
                 if (shpFile.IDX_Exists)
                 {
                     iTree = new IDXIndexTree(shpFile.IDX_Filename);

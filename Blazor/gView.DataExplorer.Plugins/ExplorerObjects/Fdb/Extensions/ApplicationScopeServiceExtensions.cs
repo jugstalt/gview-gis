@@ -12,7 +12,7 @@ using gView.DataSources.Fdb.MSSql;
 using gView.DataSources.Fdb.PostgreSql;
 using gView.DataSources.Fdb.SQLite;
 using gView.Framework.Blazor;
-using gView.Framework.Data;
+using gView.Framework.Core.Data;
 using gView.Framework.DataExplorer.Abstraction;
 using gView.Framework.IO;
 using gView.Framework.system;

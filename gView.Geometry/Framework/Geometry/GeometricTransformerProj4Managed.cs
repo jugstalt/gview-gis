@@ -1,11 +1,12 @@
-﻿using Proj4Net.Core;
+﻿using gView.Framework.Core.Geometry;
+using Proj4Net.Core;
 using System;
 using System.Linq;
 using System.Text;
 
 namespace gView.Framework.Geometry
 {
-    public sealed class GeometricTransformerProj4Managed : gView.Framework.Geometry.IGeometricTransformer, IDisposable
+    public sealed class GeometricTransformerProj4Managed : IGeometricTransformer, IDisposable
     {
         private CoordinateReferenceSystem _fromSrs = null, _toSrs = null;
         private bool _toProjective = true, _fromProjective = true;

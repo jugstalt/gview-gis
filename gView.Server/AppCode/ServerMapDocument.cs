@@ -1,9 +1,11 @@
-﻿using gView.Framework.Carto;
-using gView.Framework.Data;
+﻿using gView.Framework.Core.Carto;
+using gView.Framework.Core.Data;
+using gView.Framework.Core.IO;
+using gView.Framework.Core.system;
+using gView.Framework.Core.UI;
 using gView.Framework.Data.Relations;
 using gView.Framework.IO;
 using gView.Framework.system;
-using gView.Framework.UI;
 using gView.Server.Services.MapServer;
 using System;
 using System.Collections.Concurrent;
@@ -113,7 +115,7 @@ namespace gView.Server.AppCode
             }
         }
 
-        public IMap this[gView.Framework.Data.IDatasetElement layer]
+        public IMap this[IDatasetElement layer]
         {
             get
             {

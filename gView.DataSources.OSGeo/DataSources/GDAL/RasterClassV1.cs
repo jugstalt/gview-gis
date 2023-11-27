@@ -1,7 +1,10 @@
-using gView.Framework.Data;
-using gView.Framework.Data.Cursors;
+using gView.Framework.Core.Carto;
+using gView.Framework.Core.Data;
+using gView.Framework.Core.Data.Cursors;
+using gView.Framework.Core.Geometry;
+using gView.Framework.Core.IO;
+using gView.Framework.Core.system;
 using gView.Framework.Geometry;
-using gView.Framework.IO;
 using gView.Framework.LinAlg;
 using gView.Framework.system;
 using gView.Geometry.Framework.Geometry.Extesnsions;
@@ -199,7 +202,7 @@ namespace gView.DataSources.GDAL
 
         #region IRasterClass Member
 
-        public gView.Framework.Geometry.IPolygon Polygon
+        public IPolygon Polygon
         {
             get { return _polygon; }
         }
@@ -211,7 +214,7 @@ namespace gView.DataSources.GDAL
         public double dy1 { get { return _tfw.dy_X; } }
         public double dy2 { get { return _tfw.dy_Y; } }
 
-        public gView.Framework.Geometry.ISpatialReference SpatialReference
+        public ISpatialReference SpatialReference
         {
             get
             {
@@ -223,7 +226,7 @@ namespace gView.DataSources.GDAL
             }
         }
 
-        public Task<IRasterPaintContext> BeginPaint(gView.Framework.Carto.IDisplay display, ICancelTracker cancelTracker)
+        public Task<IRasterPaintContext> BeginPaint(IDisplay display, ICancelTracker cancelTracker)
         {
             try
             {
@@ -798,7 +801,7 @@ namespace gView.DataSources.GDAL
 
         public IPointIdentifyContext CreatePointIdentifyContext() => new DummyPointIdentifyContext();
 
-        public Task<ICursor> PointQuery(gView.Framework.Carto.IDisplay display, IPoint point, ISpatialReference sRef, IUserData userdata, IPointIdentifyContext context)
+        public Task<ICursor> PointQuery(IDisplay display, IPoint point, ISpatialReference sRef, IUserData userdata, IPointIdentifyContext context)
         {
             TFWFile tfw = this.WorldFile as TFWFile;
             if (tfw == null)
@@ -855,7 +858,7 @@ namespace gView.DataSources.GDAL
             }
         }
 
-        public float GridQuery(gView.Framework.Carto.IDisplay display, IPoint point, ISpatialReference sRef)
+        public float GridQuery(IDisplay display, IPoint point, ISpatialReference sRef)
         {
             float floatNodata = (float)_nodata;
 

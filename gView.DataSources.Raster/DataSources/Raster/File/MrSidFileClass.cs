@@ -1,9 +1,11 @@
-﻿using gView.Framework.Carto;
+﻿using gView.Framework.Core.Carto;
+using gView.Framework.Core.Data;
+using gView.Framework.Core.Geometry;
+using gView.Framework.Core.MapServer;
+using gView.Framework.Core.system;
 using gView.Framework.Data;
 using gView.Framework.Geometry;
-using gView.Framework.system;
 using gView.Geometry.Framework.Geometry.Extesnsions;
-using gView.MapServer;
 using System;
 using System.IO;
 using System.Threading.Tasks;
@@ -228,7 +230,7 @@ namespace gView.DataSources.Raster.File
             }
         }
 
-        async public Task<IRasterPaintContext> BeginPaint(gView.Framework.Carto.IDisplay display, ICancelTracker cancelTracker)
+        async public Task<IRasterPaintContext> BeginPaint(IDisplay display, ICancelTracker cancelTracker)
         {
             IntPtr bufferData = IntPtr.Zero;
             GraphicsEngine.BitmapPixelData bitmapData = null;

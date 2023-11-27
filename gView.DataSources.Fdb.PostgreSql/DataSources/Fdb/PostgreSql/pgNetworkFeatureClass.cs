@@ -1,9 +1,13 @@
-﻿using gView.Framework.Data;
+﻿using gView.Framework.Core.Data;
+using gView.Framework.Core.Data.Cursors;
+using gView.Framework.Core.Data.Filters;
+using gView.Framework.Core.FDB;
+using gView.Framework.Core.Geometry;
+using gView.Framework.Core.Network;
+using gView.Framework.Data;
 using gView.Framework.Data.Cursors;
 using gView.Framework.Data.Filters;
-using gView.Framework.FDB;
 using gView.Framework.Geometry;
-using gView.Framework.Network;
 using gView.Framework.Network.Algorthm;
 using gView.Framework.Network.Build;
 using System;
@@ -131,7 +135,7 @@ namespace gView.DataSources.Fdb.PostgreSql
             get { return String.Empty; }
         }
 
-        public gView.Framework.Geometry.IEnvelope Envelope
+        public IEnvelope Envelope
         {
             get
             {

@@ -1,4 +1,5 @@
-﻿using gView.Framework.Geometry;
+﻿using gView.Framework.Core.Geometry;
+using gView.Framework.Geometry;
 using System.Collections.Generic;
 
 namespace gView.Framework.SpatialAlgorithms.Clipper

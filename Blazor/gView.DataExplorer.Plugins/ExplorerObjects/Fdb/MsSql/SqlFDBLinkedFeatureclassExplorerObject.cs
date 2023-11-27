@@ -3,9 +3,9 @@ using gView.DataExplorer.Razor.Components.Dialogs.Filters;
 using gView.DataExplorer.Razor.Components.Dialogs.Models;
 using gView.DataSources.Fdb.MSAccess;
 using gView.Framework.Blazor.Services.Abstraction;
-using gView.Framework.Data;
+using gView.Framework.Core.Data;
+using gView.Framework.Core.system;
 using gView.Framework.DataExplorer.Abstraction;
-using gView.Framework.system;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -224,7 +224,7 @@ namespace gView.DataExplorer.Plugins.ExplorerObjects.Fdb.MsSql;
 //}
 
 [RegisterPlugIn("19AF8E6C-8324-4290-AF7C-5B19E31A952E")]
-public class SqlFDBLinkedFeatureclassExplorerObject : IExplorerSimpleObject, 
+public class SqlFDBLinkedFeatureclassExplorerObject : IExplorerSimpleObject,
                                                       IExplorerObjectCreatable
 {
     #region IExplorerObjectCreatable Member

@@ -1,13 +1,15 @@
 ﻿using gView.DataExplorer.Plugins.ExplorerObjects.Base;
+using gView.Framework.Core.Data;
+using gView.Framework.Core.system;
 using gView.Framework.Data;
 using gView.Framework.DataExplorer.Abstraction;
 using System.Threading.Tasks;
 
 namespace gView.DataExplorer.Plugins.ExplorerObjects.Tiles.Vector
 {
-    [gView.Framework.system.RegisterPlugIn("23781302-2B04-4ECF-82A8-246A0C0DCA42")]
-    public class VectorTileCacheLayerExplorerObject : ExplorerObjectCls<VectorTileCacheDatasetExplorerObject, FeatureClass>, 
-                                                      IExplorerSimpleObject, 
+    [RegisterPlugIn("23781302-2B04-4ECF-82A8-246A0C0DCA42")]
+    public class VectorTileCacheLayerExplorerObject : ExplorerObjectCls<VectorTileCacheDatasetExplorerObject, FeatureClass>,
+                                                      IExplorerSimpleObject,
                                                       ISerializableExplorerObject
     {
         private string _fcname = "";
@@ -33,7 +35,7 @@ namespace gView.DataExplorer.Plugins.ExplorerObjects.Tiles.Vector
 
         #region IExplorerObject Members
 
-        public string Name=> _fcname;
+        public string Name => _fcname;
 
         public string FullName => $@"{Parent.FullName}\{_fcname}";
         public string Type => "Vector Tile Cache Layer";
@@ -48,7 +50,7 @@ namespace gView.DataExplorer.Plugins.ExplorerObjects.Tiles.Vector
             }
         }
         public Task<object?> GetInstanceAsync() => Task.FromResult<object?>(_fc);
-        
+
         #endregion
 
         #region ISerializableExplorerObject Member

@@ -1,7 +1,8 @@
+using gView.Framework.Core.Data;
+using gView.Framework.Core.Data.Cursors;
+using gView.Framework.Core.Data.Filters;
+using gView.Framework.Core.Geometry;
 using gView.Framework.Data;
-using gView.Framework.Data.Cursors;
-using gView.Framework.Data.Filters;
-using gView.Framework.Geometry;
 using System.Threading.Tasks;
 using System.Xml;
 
@@ -42,7 +43,7 @@ namespace gView.Interoperability.OGC.Dataset.GML
             set { _shapeField = value; }
         }
 
-        public gView.Framework.Geometry.IEnvelope Envelope
+        public IEnvelope Envelope
         {
             get;
             private set;
@@ -142,13 +143,13 @@ namespace gView.Interoperability.OGC.Dataset.GML
             get { return false; }
         }
 
-        public gView.Framework.Geometry.ISpatialReference SpatialReference
+        public ISpatialReference SpatialReference
         {
             get;
             set;
         }
 
-        public gView.Framework.Geometry.GeometryType GeometryType
+        public GeometryType GeometryType
         {
             get { return _geomType; }
             set { _geomType = value; }

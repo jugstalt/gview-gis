@@ -2,8 +2,8 @@
 using gView.Carto.Core.Abstractions;
 using gView.Carto.Core.Models.Tree;
 using gView.Carto.Core.Services.Abstraction;
-using gView.Framework.Carto;
-using gView.Framework.UI;
+using gView.Framework.Core.Carto;
+using gView.Framework.Core.UI;
 
 namespace gView.Carto.Razor.Components.Trees
 {

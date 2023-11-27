@@ -12,6 +12,7 @@
 @using gView.Carto.Core.Services
 @using gView.Carto.Core.Models.Tree;
 @using gView.Carto.Core.Extensions;
+@using gView.Carto.Core.Abstractions;
 @using gView.DataExplorer.Razor.Components.Dialogs
 @using gView.DataExplorer.Razor.Components.Dialogs.Models
 @using gView.DataExplorer.Razor.Components.Dialogs.Filters
@@ -22,7 +23,13 @@
 @using gView.Blazor.Core.Services
 @using gView.Blazor.Core.Exceptions
 @using gView.Blazor.Core.Extensions
+@using gView.Framework.Core.Geometry
+@using gView.Framework.Core.Data
+@using gView.Framework.Core.Carto
+@using gView.Framework.Core.IO
+@using gView.Framework.Core.Symbology
 @using gView.Framework.Carto
+@using gView.Framework.Carto.Rendering
 @using gView.Framework.Carto.Abstraction
 @using gView.Framework.DataExplorer
 @using gView.Framework.DataExplorer.Abstraction
@@ -36,7 +43,7 @@
 @using gView.Blazor.Models.Dialogs;
 @using gView.Blazor.Models.Extensions;
 @using gView.DataExplorer.Core.Models.Tree
-@using gView.Framework.UI
+@using gView.Framework.Core.UI
 @using gView.Razor.Base
 @using gView.Razor.Styles
 @using gView.Razor.Layout

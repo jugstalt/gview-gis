@@ -1,4 +1,4 @@
-using gView.Framework.IO;
+using gView.Framework.Core.IO;
 using gView.Framework.system;
 using System;
 using System.Collections.Concurrent;

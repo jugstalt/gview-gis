@@ -1,6 +1,9 @@
 ﻿using gView.DataSources.Fdb.Sqlite;
+using gView.Framework.Core.Data;
+using gView.Framework.Core.Data.Cursors;
+using gView.Framework.Core.Data.Filters;
+using gView.Framework.Core.Geometry;
 using gView.Framework.Data;
-using gView.Framework.Data.Cursors;
 using gView.Framework.Data.Filters;
 using gView.Framework.Geometry;
 using gView.Framework.Offline;
@@ -2196,7 +2199,7 @@ namespace gView.DataSources.Fdb.SQLite
                 }
             }
 
-            async public Task<bool> Select(IQueryFilter filter, gView.Framework.Data.CombinationMethod methode)
+            async public Task<bool> Select(IQueryFilter filter, CombinationMethod methode)
             {
                 if (!(this.Class is ITableClass))
                 {
@@ -2211,7 +2214,7 @@ namespace gView.DataSources.Fdb.SQLite
                 return true;
             }
 
-            public event gView.Framework.Data.FeatureSelectionChangedEvent FeatureSelectionChanged;
+            public event FeatureSelectionChangedEvent FeatureSelectionChanged;
             public event BeforeClearSelectionEvent BeforeClearSelection;
 
             public void ClearSelection()

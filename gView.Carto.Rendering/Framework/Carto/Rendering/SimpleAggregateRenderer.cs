@@ -1,18 +1,21 @@
 ﻿using gView.Framework.Carto.Rendering.UI;
-using gView.Framework.Data;
-using gView.Framework.Data.Filters;
+using gView.Framework.Core.Carto;
+using gView.Framework.Core.Data;
+using gView.Framework.Core.Data.Filters;
+using gView.Framework.Core.Geometry;
+using gView.Framework.Core.IO;
+using gView.Framework.Core.Symbology;
+using gView.Framework.Core.system;
+using gView.Framework.Core.UI;
 using gView.Framework.Geometry;
-using gView.Framework.IO;
-using gView.Framework.Symbology;
 using gView.Framework.system;
-using gView.Framework.UI;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
 
 namespace gView.Framework.Carto.Rendering
 {
-    [gView.Framework.system.RegisterPlugIn("7B82A53D-63DA-43CA-BE94-23B4B1F1D9DA")]
+    [RegisterPlugIn("7B82A53D-63DA-43CA-BE94-23B4B1F1D9DA")]
     public class SimpleAggregateRenderer : Cloner, IFeatureRenderer2, IPropertyPage, ILegendGroup, ISymbolCreator
     {
         private ISymbol _symbol;

@@ -1,7 +1,10 @@
-using gView.Framework.Data;
+using gView.Framework.Core.Carto;
+using gView.Framework.Core.Data;
+using gView.Framework.Core.Data.Cursors;
+using gView.Framework.Core.Geometry;
+using gView.Framework.Core.system;
 using gView.Framework.Data.Cursors;
 using gView.Framework.Geometry;
-using gView.Framework.system;
 using gView.Framework.Web;
 using System;
 using System.Collections.Generic;
@@ -88,7 +91,7 @@ namespace gView.Interoperability.OGC.Dataset.WMS
         #region IPointIdentify Member
 
         public IPointIdentifyContext CreatePointIdentifyContext() => new DummyPointIdentifyContext();
-        public Task<ICursor> PointQuery(gView.Framework.Carto.IDisplay display, gView.Framework.Geometry.IPoint point, ISpatialReference sRef, IUserData userdata, IPointIdentifyContext context)
+        public Task<ICursor> PointQuery(IDisplay display, IPoint point, ISpatialReference sRef, IUserData userdata, IPointIdentifyContext context)
         {
             if (display == null || point == null)
             {

@@ -1,12 +1,13 @@
 ﻿using gView.DataExplorer.Plugins.ExplorerObjects.Base;
-using gView.Framework.Data;
+using gView.Framework.Core.Data;
+using gView.Framework.Core.Geometry;
+using gView.Framework.Core.system;
 using gView.Framework.DataExplorer.Abstraction;
-using gView.Framework.Geometry;
 using System.Threading.Tasks;
 
 namespace gView.DataExplorer.Plugins.ExplorerObjects.GeoJson
 {
-    [gView.Framework.system.RegisterPlugIn("368020E0-216E-46B8-8DAD-BAAC38D75B92")]
+    [RegisterPlugIn("368020E0-216E-46B8-8DAD-BAAC38D75B92")]
     public class GeoJsonServiceFeatureClassExplorerObject : ExplorerObjectCls<GeoJsonServiceExplorerObject, IFeatureClass>,
                                                             IExplorerSimpleObject,
                                                             ISerializableExplorerObject
@@ -63,7 +64,7 @@ namespace gView.DataExplorer.Plugins.ExplorerObjects.GeoJson
 
         #region IExplorerObject Members
 
-        public string Name=> _fcname;
+        public string Name => _fcname;
 
         public string FullName
         {
@@ -79,7 +80,7 @@ namespace gView.DataExplorer.Plugins.ExplorerObjects.GeoJson
         }
         public string Type => _type;
 
-        public string Icon=> _icon;
+        public string Icon => _icon;
 
         public void Dispose()
         {

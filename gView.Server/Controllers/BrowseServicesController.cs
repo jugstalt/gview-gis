@@ -1,6 +1,7 @@
-﻿using gView.Core.Framework.Exceptions;
+﻿using gView.Framework.Core.Exceptions;
+using gView.Framework.Core.MapServer;
+using gView.Framework.Core.system;
 using gView.Framework.system;
-using gView.MapServer;
 using gView.Server.AppCode;
 using gView.Server.AppCode.Extensions;
 using gView.Server.Models;
@@ -39,7 +40,7 @@ namespace gView.Server.Controllers
             _loginManagerService = loginManagerService;
         }
 
-        async public Task<IActionResult> Index(string folder, string serviceName = "", string errorMessage = "", 
+        async public Task<IActionResult> Index(string folder, string serviceName = "", string errorMessage = "",
                                                bool openPublish = false, bool openCreate = false)
         {
             folder = folder ?? String.Empty;

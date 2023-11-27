@@ -1,11 +1,10 @@
-﻿using gView.Core.Framework.Exceptions;
+﻿using gView.Framework.Core.Exceptions;
 using gView.Framework.Security;
 using gView.Security.Framework;
 using gView.Server.AppCode;
 using gView.Server.Extensions;
 using gView.Server.Services.MapServer;
 using Microsoft.AspNetCore.Http;
-using MongoDB.Bson;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -68,7 +67,7 @@ namespace gView.Server.Services.Security
             }
 
             var fi = new FileInfo(Path.Combine(_mapServerService.Options.LoginManagerRootPath, "token", $"{username}.lgn"));
-            
+
             if (fi.Exists)
             {
                 throw new MapServerException($"User '{username}' already exists");
@@ -82,7 +81,7 @@ namespace gView.Server.Services.Security
             newPassword.ValidatePassword();
 
             var fi = new FileInfo(Path.Combine(_mapServerService.Options.LoginManagerRootPath, "token", $"{username}.lgn"));
-            
+
             if (!fi.Exists)
             {
                 throw new MapServerException($"User '{username}' does not exists");
@@ -98,7 +97,7 @@ namespace gView.Server.Services.Security
         public void DeleteTokenLogin(string username)
         {
             var fi = new FileInfo(Path.Combine(_mapServerService.Options.LoginManagerRootPath, "token", $"{username}.lgn"));
-            
+
             if (!fi.Exists)
             {
                 throw new MapServerException($"User '{username}' does not exists");
@@ -114,12 +113,13 @@ namespace gView.Server.Services.Security
             if (di.Exists)
             {
                 return di.GetFiles("*.lgn")
-                         .Select(f => {
+                         .Select(f =>
+                         {
                              var username = f.Name.Substring(0, f.Name.Length - f.Extension.Length);
                              return fullUrlToken && username.UserNameIsUrlToken()
                                         ? File.ReadAllText(f.FullName)
                                         : username;
-                             });
+                         });
             }
 
             return new string[0];
@@ -197,7 +197,7 @@ namespace gView.Server.Services.Security
                 #region From Url (/geoservices(THE_TOKEN)/....
 
                 var urlToken = request.GetGeoServicesUrlToken();
-                if(!String.IsNullOrEmpty(urlToken))
+                if (!String.IsNullOrEmpty(urlToken))
                 {
                     var urlTokenName = urlToken.NameOfUrlToken();
                     var path = _mapServerService.Options.LoginManagerRootPath + "/token";
@@ -266,7 +266,7 @@ namespace gView.Server.Services.Security
 
                 if (username.UserNameIsUrlToken())
                 {
-                    if(password == File.ReadAllText(fi.FullName))
+                    if (password == File.ReadAllText(fi.FullName))
                     {
                         return new AuthToken(username, authType, new TimeSpan(0, expireMiniutes, 0));
                     }
@@ -304,7 +304,7 @@ namespace gView.Server.Services.Security
             username.ValidateUsername();
             password.ValidatePassword();
 
-            var hashedPassword = username.UserNameIsUrlToken() 
+            var hashedPassword = username.UserNameIsUrlToken()
                 ? password
                 : SecureCrypto.Hash64(password, username);
 

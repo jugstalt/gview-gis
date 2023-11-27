@@ -1,5 +1,5 @@
-﻿using gView.Framework.system;
-using gView.MapServer;
+﻿using gView.Framework.Core.MapServer;
+using gView.Framework.Core.system;
 using gView.Server.Services.MapServer;
 using System;
 using System.Collections.Generic;

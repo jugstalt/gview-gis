@@ -1,4 +1,4 @@
-﻿using gView.Framework.Data;
+﻿using gView.Framework.Core.Data;
 
 namespace gView.DataExplorer.Plugins.ExplorerObjects.Fdb.MsSql;
 

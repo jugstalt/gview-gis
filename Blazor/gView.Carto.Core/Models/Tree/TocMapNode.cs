@@ -1,10 +1,4 @@
-﻿using gView.Carto.Core.Services.Abstraction;
-using gView.Framework.UI;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
-namespace gView.Carto.Core.Models.Tree;
+﻿namespace gView.Carto.Core.Models.Tree;
 
 //public class TocMapNode : TocTreeNode
 //{

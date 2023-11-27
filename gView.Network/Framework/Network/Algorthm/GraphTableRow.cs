@@ -1,4 +1,6 @@
-﻿using gView.Framework.system;
+﻿using gView.Framework.Core.IO;
+using gView.Framework.Core.Network;
+using gView.Framework.Core.system;
 using System;
 using System.Data;
 
@@ -164,7 +166,7 @@ namespace gView.Framework.Network.Algorthm
 
         #region IPersistable Member
 
-        public void Load(gView.Framework.IO.IPersistStream stream)
+        public void Load(IPersistStream stream)
         {
             _name = (string)stream.Load("name", String.Empty);
             _guid = new Guid((string)stream.Load("guid", new Guid()));
@@ -177,7 +179,7 @@ namespace gView.Framework.Network.Algorthm
             }
         }
 
-        public void Save(gView.Framework.IO.IPersistStream stream)
+        public void Save(IPersistStream stream)
         {
             stream.Save("name", _name);
             stream.Save("guid", _guid.ToString());
@@ -236,14 +238,14 @@ namespace gView.Framework.Network.Algorthm
 
         #region IPersistable Member
 
-        public void Load(gView.Framework.IO.IPersistStream stream)
+        public void Load(IPersistStream stream)
         {
             _fcId = (int)stream.Load("fcid", -1);
             _fieldName = (string)stream.Load("fieldname", String.Empty);
             _calc = stream.Load("calc", null) as ISimpleNumberCalculation;
         }
 
-        public void Save(gView.Framework.IO.IPersistStream stream)
+        public void Save(IPersistStream stream)
         {
             stream.Save("fcid", _fcId);
             stream.Save("fieldname", _fieldName);

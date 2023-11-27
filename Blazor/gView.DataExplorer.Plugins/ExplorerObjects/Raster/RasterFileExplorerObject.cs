@@ -1,13 +1,14 @@
 ﻿using gView.DataExplorer.Plugins.ExplorerObjects.Base;
 using gView.DataSources.Raster.File;
-using gView.Framework.Data;
+using gView.Framework.Core.Data;
+using gView.Framework.Core.system;
 using gView.Framework.DataExplorer.Abstraction;
 using System.IO;
 using System.Threading.Tasks;
 
 namespace gView.DataExplorer.Plugins.ExplorerObjects.Raster;
 
-[gView.Framework.system.RegisterPlugIn("6F0051F0-F3C7-4eee-BE4B-45340F684FAA")]
+[RegisterPlugIn("6F0051F0-F3C7-4eee-BE4B-45340F684FAA")]
 public class RasterFileExplorerObject :
                     ExplorerObjectCls<IExplorerObject, IRasterClass>,
                     IExplorerFileObject

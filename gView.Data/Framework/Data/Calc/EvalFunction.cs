@@ -1,4 +1,6 @@
-﻿using gView.Framework.system;
+﻿using gView.Framework.Core.IO;
+using gView.Framework.Core.system;
+using gView.Framework.system;
 using System;
 using System.Data;
 
@@ -46,12 +48,12 @@ namespace gView.Framework.Data.Calc
 
         #region IPersistable Member
 
-        public void Load(gView.Framework.IO.IPersistStream stream)
+        public void Load(IPersistStream stream)
         {
             _function = (string)stream.Load("func", "x");
         }
 
-        public void Save(gView.Framework.IO.IPersistStream stream)
+        public void Save(IPersistStream stream)
         {
             stream.Save("func", _function);
         }

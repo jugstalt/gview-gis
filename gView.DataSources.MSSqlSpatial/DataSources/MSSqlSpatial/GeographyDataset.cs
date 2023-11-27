@@ -1,20 +1,22 @@
-﻿using gView.Framework.Data;
+﻿using gView.Framework.Core.Data;
+using gView.Framework.Core.Data.Filters;
+using gView.Framework.Core.Geometry;
+using gView.Framework.Core.Geometry.Extensions;
+using gView.Framework.Core.system;
+using gView.Framework.Data;
 using gView.Framework.Data.Filters;
 using gView.Framework.Geometry;
-using gView.Framework.Geometry.Extensions;
 using gView.Framework.OGC.DB;
 using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
-using System.Data.SqlClient;
-using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace gView.DataSources.MSSqlSpatial
 {
-    [gView.Framework.system.RegisterPlugIn("6EB3070C-377A-4B1B-8479-A0ADA92D8D69")]
+    [RegisterPlugIn("6EB3070C-377A-4B1B-8479-A0ADA92D8D69")]
     [ImportFeatureClassNameWithSchema]
     public class GeographyDataset : GeometryDataset
     {
@@ -40,7 +42,7 @@ namespace gView.DataSources.MSSqlSpatial
                 case FieldType.Shape:
                     return "[GEOGRAPHY]";
                 case FieldType.ID:
-                    return $"[int] IDENTITY(1,1) NOT NULL CONSTRAINT KEY_{System.Guid.NewGuid().ToString("N")}_{field.name} PRIMARY KEY CLUSTERED";
+                    return $"[int] IDENTITY(1,1) NOT NULL CONSTRAINT KEY_{System.Guid.NewGuid():N}_{field.name} PRIMARY KEY CLUSTERED";
                 case FieldType.smallinteger:
                     return "[int] NULL";
                 case FieldType.integer:
@@ -69,8 +71,8 @@ namespace gView.DataSources.MSSqlSpatial
             return $"[{colName}]";
         }
 
-        protected override object ShapeParameterValue(OgcSpatialFeatureclass fClass, 
-                                                      IGeometry shape, 
+        protected override object ShapeParameterValue(OgcSpatialFeatureclass fClass,
+                                                      IGeometry shape,
                                                       int srid,
                                                       StringBuilder sqlStatementHeader,
                                                       out bool AsSqlParameter)
@@ -319,7 +321,7 @@ namespace gView.DataSources.MSSqlSpatial
                     foreach (DataRow row in tables.Rows)
                     {
                         var fcShema = row["dbSchema"].ToString();
-                        var fcName = String.IsNullOrEmpty(fcShema) ? row["tabName"].ToString() : $"{fcShema}.{row["tabName"].ToString()}";
+                        var fcName = String.IsNullOrEmpty(fcShema) ? row["tabName"].ToString() : $"{fcShema}.{row["tabName"]}";
 
                         IFeatureClass fc = await Featureclass.Create(this,
                             fcName,
@@ -330,7 +332,7 @@ namespace gView.DataSources.MSSqlSpatial
                     foreach (DataRow row in views.Rows)
                     {
                         var fcShema = row["dbSchema"].ToString();
-                        var fcName = String.IsNullOrEmpty(fcShema) ? row["tabName"].ToString() : $"{fcShema}.{row["tabName"].ToString()}";
+                        var fcName = String.IsNullOrEmpty(fcShema) ? row["tabName"].ToString() : $"{fcShema}.{row["tabName"]}";
 
                         IFeatureClass fc = await Featureclass.Create(this,
                             fcName,
@@ -385,7 +387,7 @@ namespace gView.DataSources.MSSqlSpatial
                     {
                         return new DatasetElement(await Featureclass.Create(this,
                             fcName,
-                            await IDFieldName( title),
+                            await IDFieldName(title),
                             row["colName"].ToString(), false));
                     }
                 }

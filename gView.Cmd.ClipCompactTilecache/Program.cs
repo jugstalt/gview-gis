@@ -1,5 +1,6 @@
 ﻿using gView.Data.Framework.Data.TileCache;
-using gView.Framework.Data;
+using gView.Framework.Core.Data;
+using gView.Framework.Core.Geometry;
 using gView.Framework.Geometry;
 using gView.Framework.SpatialAlgorithms;
 using gView.Framework.system;

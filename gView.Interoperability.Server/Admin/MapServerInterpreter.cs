@@ -6,7 +6,7 @@
 
 //namespace gView.Interoperability.Server.Admin
 //{
-//    [gView.Framework.system.RegisterPlugIn("FDDF09E4-DE73-41af-B09C-DCB7CC94B29D")]
+//    [RegisterPlugIn("FDDF09E4-DE73-41af-B09C-DCB7CC94B29D")]
 //    class MapServerInterpreter : IServiceRequestInterpreter
 //    {
 //        private IMapServer _mapServer = null;

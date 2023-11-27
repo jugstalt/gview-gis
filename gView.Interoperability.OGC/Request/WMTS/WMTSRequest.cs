@@ -1,4 +1,8 @@
 ﻿using gView.Framework.Carto;
+using gView.Framework.Core.Carto;
+using gView.Framework.Core.Geometry;
+using gView.Framework.Core.MapServer;
+using gView.Framework.Core.system;
 using gView.Framework.Geometry;
 using gView.Framework.Geometry.Tiling;
 using gView.Framework.IO;
@@ -6,7 +10,6 @@ using gView.Framework.Metadata;
 using gView.Framework.system;
 using gView.GraphicsEngine;
 using gView.GraphicsEngine.Filters;
-using gView.MapServer;
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
@@ -16,7 +19,7 @@ using System.Threading.Tasks;
 
 namespace gView.Interoperability.OGC.Request.WMTS
 {
-    [gView.Framework.system.RegisterPlugIn("A16422D6-F9EB-46C7-9517-2C50713A1910")]
+    [RegisterPlugIn("A16422D6-F9EB-46C7-9517-2C50713A1910")]
     public class WMTSRequest : IServiceRequestInterpreter
     {
         private static IFormatProvider _nhi = System.Globalization.CultureInfo.InvariantCulture.NumberFormat;
@@ -773,7 +776,7 @@ namespace gView.Interoperability.OGC.Request.WMTS
             return !Directory.EnumerateFileSystemEntries(path).Any();
         }
 
-        private string PointToString(gView.Framework.Geometry.IPoint p, ISpatialReference sRef)
+        private string PointToString(IPoint p, ISpatialReference sRef)
         {
             if (sRef != null &&
                 (sRef.Gml3AxisX == AxisDirection.North || sRef.Gml3AxisX == AxisDirection.South) &&

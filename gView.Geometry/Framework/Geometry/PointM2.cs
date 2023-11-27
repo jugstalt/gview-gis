@@ -1,4 +1,6 @@
-﻿namespace gView.Framework.Geometry
+﻿using gView.Framework.Core.Geometry;
+
+namespace gView.Framework.Geometry
 {
     public class PointM2 : PointM
     {

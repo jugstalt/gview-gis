@@ -1,4 +1,4 @@
-﻿using gView.Framework.Data;
+﻿using gView.Framework.Core.Data;
 using System;
 
 namespace gView.DataSources.MSSqlSpatial.DataSources.Sde.Repo
@@ -44,44 +44,44 @@ namespace gView.DataSources.MSSqlSpatial.DataSources.Sde.Repo
 
             if (((SdeFieldFlags)sdeColumn.Flags).HasFlag(SdeFieldFlags.IsId))
             {
-                return Framework.Data.FieldType.ID;
+                return Framework.Core.Data.FieldType.ID;
             }
 
             switch (sdeColumn.SdeType)
             {
                 case SE_SMALLINT_TYPE:
-                    return Framework.Data.FieldType.smallinteger;
+                    return Framework.Core.Data.FieldType.smallinteger;
                 case SE_FLOAT_TYPE:
-                    return Framework.Data.FieldType.Float;
+                    return Framework.Core.Data.FieldType.Float;
                 case SE_DOUBLE_TYPE:
-                    return Framework.Data.FieldType.Double;
+                    return Framework.Core.Data.FieldType.Double;
                 case SE_STRING_TYPE:
-                    return Framework.Data.FieldType.String;
+                    return Framework.Core.Data.FieldType.String;
                 case SE_BLOB_TYPE:
-                    return Framework.Data.FieldType.binary;
+                    return Framework.Core.Data.FieldType.binary;
                 case SE_DATE_TYPE:
-                    return Framework.Data.FieldType.Date;
+                    return Framework.Core.Data.FieldType.Date;
                 case SE_SHAPE_TYPE:
-                    return Framework.Data.FieldType.Shape;
+                    return Framework.Core.Data.FieldType.Shape;
                 case SE_RASTER_TYPE:
-                    return Framework.Data.FieldType.binary;
+                    return Framework.Core.Data.FieldType.binary;
                 case SE_XML_TYPE:
-                    return Framework.Data.FieldType.String;
+                    return Framework.Core.Data.FieldType.String;
                 case SE_INT64_TYPE:
-                    return Framework.Data.FieldType.biginteger;
+                    return Framework.Core.Data.FieldType.biginteger;
                 case SE_UUID_TYPE:
-                    return Framework.Data.FieldType.guid;
+                    return Framework.Core.Data.FieldType.guid;
                 case SE_CLOB_TYPE:
-                    return Framework.Data.FieldType.binary;
+                    return Framework.Core.Data.FieldType.binary;
                 case SE_NSTRING_TYPE:
-                    return Framework.Data.FieldType.NString;
+                    return Framework.Core.Data.FieldType.NString;
                 case SE_NCLOB_TYPE:
-                    return Framework.Data.FieldType.binary;
+                    return Framework.Core.Data.FieldType.binary;
                 case SE_INTEGER_TYPE:
-                    return Framework.Data.FieldType.integer;
+                    return Framework.Core.Data.FieldType.integer;
             }
 
-            return Framework.Data.FieldType.unknown;
+            return Framework.Core.Data.FieldType.unknown;
         }
     }
 }

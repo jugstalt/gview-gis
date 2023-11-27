@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Reflection;
 using System.Xml;
+using gView.Framework.Core.IO;
 
 namespace gView.Framework.IO
 {

@@ -1,15 +1,15 @@
 ﻿using gView.Blazor.Models.Content;
 using gView.Blazor.Models.Extensions;
 using gView.Blazor.Models.Table;
+using gView.Framework.Core.system;
 using gView.Framework.DataExplorer.Abstraction;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
 namespace gView.DataExplorer.Plugins.ExplorerTabPages;
 
-[gView.Framework.system.RegisterPlugIn("47328671-87F7-4cf7-B59D-2BC111A29BA3")]
+[RegisterPlugIn("47328671-87F7-4cf7-B59D-2BC111A29BA3")]
 public class ContentTabPage : IExplorerTabPage
 {
     private IExplorerObject? _exObject;

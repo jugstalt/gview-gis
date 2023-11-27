@@ -1,4 +1,5 @@
-﻿using gView.Framework.Data;
+﻿using gView.Framework.Core.Data;
+using gView.Framework.Core.Network;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 

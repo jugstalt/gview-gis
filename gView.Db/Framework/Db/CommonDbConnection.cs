@@ -1,5 +1,6 @@
 using gView.Db.Framework.Extensions;
-using gView.Framework.Data.Filters;
+using gView.Framework.Core.Data;
+using gView.Framework.Core.Data.Filters;
 using Oracle.ManagedDataAccess.Client;
 using System;
 using System.Collections.Generic;
@@ -1449,7 +1450,7 @@ namespace gView.Framework.Db
             return tableNames.ToArray();
         }
 
-        public (string top, string limit) LimitResults(IQueryFilter filter, Data.IFeatureClass fc)
+        public (string top, string limit) LimitResults(IQueryFilter filter, IFeatureClass fc)
         {
             string top = String.Empty, limit = String.Empty;
             switch (dbType)

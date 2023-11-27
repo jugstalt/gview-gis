@@ -1,4 +1,4 @@
-﻿using gView.Framework.UI;
+﻿using gView.Framework.Core.UI;
 using System;
 using System.Threading.Tasks;
 

@@ -3,6 +3,7 @@ using gView.DataExplorer.Plugins.Extensions;
 using gView.DataExplorer.Razor.Components.Dialogs.Models;
 using gView.DataExplorer.Razor.Components.Dialogs.Models.Extensions;
 using gView.Framework.Blazor.Services.Abstraction;
+using gView.Framework.Core.system;
 using gView.Framework.DataExplorer.Abstraction;
 using gView.Framework.DataExplorer.Events;
 using gView.Framework.IO;
@@ -10,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace gView.DataExplorer.Plugins.ExplorerObjects.Tiles.Vector
 {
-    [gView.Framework.system.RegisterPlugIn("4C43C243-43D7-4B57-AD52-504659561C6E")]
+    [RegisterPlugIn("4C43C243-43D7-4B57-AD52-504659561C6E")]
     public class VectorTileCacheNewConnectionObject : ExplorerObjectCls<VectorTileCacheGroupExplorerObject>,
                                                       IExplorerSimpleObject,
                                                       IExplorerObjectDoubleClick,

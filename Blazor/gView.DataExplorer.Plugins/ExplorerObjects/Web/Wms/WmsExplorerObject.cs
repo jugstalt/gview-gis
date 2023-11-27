@@ -1,5 +1,6 @@
 ﻿using gView.DataExplorer.Plugins.ExplorerObjects.Base;
 using gView.DataExplorer.Plugins.ExplorerObjects.WebServices;
+using gView.Framework.Core.system;
 using gView.Framework.DataExplorer.Abstraction;
 using gView.Framework.IO;
 using System.Collections.Generic;
@@ -7,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace gView.DataExplorer.Plugins.ExplorerObjects.Web.Wms;
 
-[gView.Framework.system.RegisterPlugIn("41C75FD2-9AD0-4457-8248-E55EDA0C114E")]
+[RegisterPlugIn("41C75FD2-9AD0-4457-8248-E55EDA0C114E")]
 public class WmsExplorerObject : ExplorerParentObject,
                                  IWebServicesExplorerGroupObject
 {

@@ -1,5 +1,6 @@
-﻿using gView.Framework.Geometry.SpatialRefTranslation;
-using gView.Framework.IO;
+﻿using gView.Framework.Core.Geometry;
+using gView.Framework.Core.IO;
+using gView.Framework.Geometry.SpatialRefTranslation;
 using gView.Framework.Proj;
 using System;
 

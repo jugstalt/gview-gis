@@ -5,8 +5,8 @@ using gView.Framework.Blazor;
 using gView.Framework.Blazor.Services.Abstraction;
 using gView.Framework.Carto;
 using gView.Framework.Carto.Abstraction;
+using gView.Framework.Core.system;
 using gView.Framework.IO;
-using gView.Framework.system;
 
 namespace gView.Carto.Plugins.CartoTools;
 
@@ -49,9 +49,9 @@ public class SaveDocumentAs : ICartoTool
                                                            Mode = ExploerDialogMode.Save
                                                        });
 
-        
-        if (model?.Result.ExplorerObjects != null 
-            && model.Result.ExplorerObjects.Count == 1 
+
+        if (model?.Result.ExplorerObjects != null
+            && model.Result.ExplorerObjects.Count == 1
             && !String.IsNullOrWhiteSpace(model.Result.Name))
         {
             string fileTitle = model.Result.Name.Trim();

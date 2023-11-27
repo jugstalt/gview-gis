@@ -1,5 +1,5 @@
-using gView.Framework.Data;
-using gView.Framework.Geometry;
+using gView.Framework.Core.Data;
+using gView.Framework.Core.Geometry;
 using System;
 
 namespace gView.Framework.Editor.Core

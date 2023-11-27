@@ -1,13 +1,16 @@
 using gView.Db.Framework.Db;
+using gView.Framework.Core.Data;
+using gView.Framework.Core.Data.Cursors;
+using gView.Framework.Core.Data.Filters;
+using gView.Framework.Core.Extensions;
+using gView.Framework.Core.FDB;
+using gView.Framework.Core.Geometry;
+using gView.Framework.Core.IO;
 using gView.Framework.Data;
-using gView.Framework.Data.Cursors;
 using gView.Framework.Data.Filters;
 using gView.Framework.Data.Metadata;
 using gView.Framework.Editor.Core;
-using gView.Framework.Extensions;
-using gView.Framework.FDB;
 using gView.Framework.Geometry;
-using gView.Framework.IO;
 using gView.Framework.system;
 using System;
 using System.Collections.Generic;
@@ -225,7 +228,7 @@ namespace gView.Framework.OGC.DB
             get { return ""; }
         }
 
-        public gView.Framework.FDB.IDatabase Database
+        public IDatabase Database
         {
             get { return this; }
         }

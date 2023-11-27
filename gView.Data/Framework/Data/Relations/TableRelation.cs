@@ -1,7 +1,10 @@
-﻿using gView.Framework.Carto;
-using gView.Framework.Data.Cursors;
+﻿using gView.Framework.Core.Carto;
+using gView.Framework.Core.Data;
+using gView.Framework.Core.Data.Cursors;
+using gView.Framework.Core.Data.Filters;
+using gView.Framework.Core.IO;
+using gView.Framework.Core.UI;
 using gView.Framework.Data.Filters;
-using gView.Framework.UI;
 using System.Threading.Tasks;
 
 namespace gView.Framework.Data.Relations
@@ -108,7 +111,7 @@ namespace gView.Framework.Data.Relations
 
         #region IPersistable Member
 
-        public void Load(IO.IPersistStream stream)
+        public void Load(IPersistStream stream)
         {
             this.RelationName = (string)stream.Load("RelationName");
 
@@ -121,7 +124,7 @@ namespace gView.Framework.Data.Relations
             this.LogicalOperator = (string)stream.Load("LogicalOperator", "=");
         }
 
-        public void Save(IO.IPersistStream stream)
+        public void Save(IPersistStream stream)
         {
             stream.Save("RelationName", this.RelationName);
 

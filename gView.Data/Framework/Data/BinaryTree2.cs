@@ -1,5 +1,7 @@
+using gView.Framework.Core.Data;
+using gView.Framework.Core.Geometry;
+using gView.Framework.Core.system;
 using gView.Framework.Geometry;
-using gView.Framework.system;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -466,7 +468,7 @@ namespace gView.Framework.Data
             IEnvelope bound1 = this[c1];
             IEnvelope bound2 = this[c2];
 
-            foreach (FeatureEnvelope env in gView.Framework.system.ListOperations<FeatureEnvelope>.Clone(list))
+            foreach (FeatureEnvelope env in ListOperations<FeatureEnvelope>.Clone(list))
             {
                 if (bound1 != null && bound1.Contains(env.Envelope))
                 {

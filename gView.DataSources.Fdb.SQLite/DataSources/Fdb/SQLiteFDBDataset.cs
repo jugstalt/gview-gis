@@ -1,6 +1,10 @@
-﻿using gView.Framework.Data;
+﻿using gView.Framework.Core.Data;
+using gView.Framework.Core.FDB;
+using gView.Framework.Core.Geometry;
+using gView.Framework.Core.IO;
+using gView.Framework.Core.system;
+using gView.Framework.Data;
 using gView.Framework.Data.Metadata;
-using gView.Framework.FDB;
 using gView.Framework.Geometry;
 using gView.Framework.IO;
 using System;
@@ -9,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace gView.DataSources.Fdb.SQLite
 {
-    [gView.Framework.system.RegisterPlugIn("36DEB6AC-EA0C-4B37-91F1-B2E397351555")]
+    [RegisterPlugIn("36DEB6AC-EA0C-4B37-91F1-B2E397351555")]
     public class SQLiteFDBDataset : DatasetMetadata, IFeatureDataset2, IRasterDataset, IFDBDataset
     {
         internal int _dsID = -1;

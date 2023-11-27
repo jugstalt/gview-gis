@@ -1,11 +1,14 @@
 using gView.Framework.Carto.Rendering.UI;
-using gView.Framework.Data;
-using gView.Framework.Data.Filters;
-using gView.Framework.Geometry;
-using gView.Framework.IO;
+using gView.Framework.Core.Carto;
+using gView.Framework.Core.Data;
+using gView.Framework.Core.Data.Filters;
+using gView.Framework.Core.Geometry;
+using gView.Framework.Core.IO;
+using gView.Framework.Core.Symbology;
+using gView.Framework.Core.system;
+using gView.Framework.Core.UI;
 using gView.Framework.Symbology;
 using gView.Framework.system;
-using gView.Framework.UI;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -15,7 +18,7 @@ namespace gView.Framework.Carto.Rendering
 {
     public enum LegendGroupCartographicMethod { Simple = 0, LegendOrdering = 1, LegendAndSymbolOrdering = 2 }
 
-    [gView.Framework.system.RegisterPlugIn("C7A92674-0120-4f3d-BC03-F1210136B5C6")]
+    [RegisterPlugIn("C7A92674-0120-4f3d-BC03-F1210136B5C6")]
     public class ValueMapRenderer : Cloner, IFeatureRenderer, IPropertyPage, ILegendGroup
     {
         private string _valueField = String.Empty;

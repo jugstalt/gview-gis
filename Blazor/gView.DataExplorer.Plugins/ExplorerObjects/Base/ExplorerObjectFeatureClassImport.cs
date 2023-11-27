@@ -1,10 +1,11 @@
 ﻿using gView.DataExplorer.Core.Services;
 using gView.DataSources.Fdb.MSAccess;
-using gView.Framework.Data;
+using gView.Framework.Core.Data;
+using gView.Framework.Core.FDB;
+using gView.Framework.Core.system;
+using gView.Framework.Core.UI;
 using gView.Framework.DataExplorer.Abstraction;
-using gView.Framework.FDB;
 using gView.Framework.system;
-using gView.Framework.UI;
 using System;
 using System.Threading.Tasks;
 

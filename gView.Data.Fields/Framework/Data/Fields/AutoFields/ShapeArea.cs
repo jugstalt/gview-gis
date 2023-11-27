@@ -1,10 +1,13 @@
-using gView.Framework.FDB;
+using gView.Framework.Core.Data;
+using gView.Framework.Core.FDB;
+using gView.Framework.Core.Geometry;
+using gView.Framework.Core.system;
 using gView.Framework.Geometry;
 using System.Threading.Tasks;
 
 namespace gView.Framework.Data.Fields.AutoFields
 {
-    [gView.Framework.system.RegisterPlugIn("2923B158-F8FB-45f5-B82B-2376612ABD50")]
+    [RegisterPlugIn("2923B158-F8FB-45f5-B82B-2376612ABD50")]
     class ShapeArea : Field, IAutoField
     {
         public ShapeArea()

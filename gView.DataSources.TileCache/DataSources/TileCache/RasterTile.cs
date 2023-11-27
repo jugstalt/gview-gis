@@ -1,9 +1,11 @@
-﻿using gView.Framework.Carto;
+﻿using gView.Framework.Core.Carto;
+using gView.Framework.Core.Data;
+using gView.Framework.Core.Geometry;
+using gView.Framework.Core.IO;
+using gView.Framework.Core.system;
 using gView.Framework.Data;
 using gView.Framework.Geometry;
 using gView.Framework.Geometry.Tiling;
-using gView.Framework.IO;
-using gView.Framework.system;
 using gView.GraphicsEngine;
 using System;
 using System.Collections.Generic;
@@ -52,7 +54,7 @@ namespace gView.DataSources.TileCache
 
         #region IRasterClass Member
 
-        public Framework.Geometry.IPolygon Polygon
+        public IPolygon Polygon
         {
             get { return _poly; }
         }
@@ -87,7 +89,7 @@ namespace gView.DataSources.TileCache
             get { return _dy2; }
         }
 
-        public Framework.Geometry.ISpatialReference SpatialReference
+        public ISpatialReference SpatialReference
         {
             get
             {
@@ -344,7 +346,7 @@ namespace gView.DataSources.TileCache
 
         #region IMetadata Member
 
-        public void ReadMetadata(Framework.IO.IPersistStream stream)
+        public void ReadMetadata(IPersistStream stream)
         {
             throw new NotImplementedException();
         }
@@ -353,7 +355,7 @@ namespace gView.DataSources.TileCache
 
         public Task WriteMetadata(IPersistStream stream) => Task.CompletedTask;
 
-        public Framework.IO.IMetadataProvider MetadataProvider(Guid guid)
+        public IMetadataProvider MetadataProvider(Guid guid)
         {
             return null;
         }

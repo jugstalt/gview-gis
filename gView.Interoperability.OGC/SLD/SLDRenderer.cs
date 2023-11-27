@@ -1,13 +1,14 @@
-using gView.Framework.Carto;
 using gView.Framework.Carto.Rendering;
-using gView.Framework.Data;
-using gView.Framework.Data.Filters;
-using gView.Framework.Geometry;
-using gView.Framework.IO;
-using gView.Framework.Symbology;
+using gView.Framework.Core.Carto;
+using gView.Framework.Core.Data;
+using gView.Framework.Core.Data.Filters;
+using gView.Framework.Core.Geometry;
+using gView.Framework.Core.IO;
+using gView.Framework.Core.Symbology;
+using gView.Framework.Core.system;
+using gView.Framework.Core.UI;
+using gView.Framework.Core.Xml;
 using gView.Framework.system;
-using gView.Framework.UI;
-using gView.Framework.Xml;
 using gView.Framework.XML;
 using System;
 using System.Collections.Generic;
@@ -20,7 +21,7 @@ using System.Xml;
 
 namespace gView.Interoperability.OGC.SLD
 {
-    [gView.Framework.system.RegisterPlugIn("60A6D860-F90F-454a-B1F3-EA26E945CD78")]
+    [RegisterPlugIn("60A6D860-F90F-454a-B1F3-EA26E945CD78")]
     public class SLDRenderer : Cloner, IFeatureRenderer, IPropertyPage, ILegendGroup, IToArcXml
     {
         private bool _useRefScale = true;
@@ -164,7 +165,7 @@ namespace gView.Interoperability.OGC.SLD
 
         #region IFeatureRenderer Member
 
-        public void Draw(IDisplay disp, gView.Framework.Data.IFeature feature)
+        public void Draw(IDisplay disp, IFeature feature)
         {
             bool rendered = false;
             foreach (Rule rule in _rules)
@@ -232,7 +233,7 @@ namespace gView.Interoperability.OGC.SLD
             }
         }
 
-        public bool CanRender(gView.Framework.Data.IFeatureLayer layer, IMap map)
+        public bool CanRender(IFeatureLayer layer, IMap map)
         {
             //if (layer != null &&
             //    (layer.Class is WMSThemeClass ||
@@ -246,7 +247,7 @@ namespace gView.Interoperability.OGC.SLD
             return true;
         }
 
-        public bool HasEffect(gView.Framework.Data.IFeatureLayer layer, IMap map)
+        public bool HasEffect(IFeatureLayer layer, IMap map)
         {
             return true;
         }
@@ -283,7 +284,7 @@ namespace gView.Interoperability.OGC.SLD
 
         #region IPersistable Member
 
-        public void Load(gView.Framework.IO.IPersistStream stream)
+        public void Load(IPersistStream stream)
         {
             _useRefScale = (bool)stream.Load("UseRefScale", true);
 
@@ -295,7 +296,7 @@ namespace gView.Interoperability.OGC.SLD
             }
         }
 
-        public void Save(gView.Framework.IO.IPersistStream stream)
+        public void Save(IPersistStream stream)
         {
             stream.Save("UseRefScale", _useRefScale);
 

@@ -1,10 +1,11 @@
-﻿using gView.Framework.Data;
-using gView.Framework.Geometry;
-using gView.Framework.Network;
+﻿using gView.Framework.Core.Data;
+using gView.Framework.Core.Geometry;
+using gView.Framework.Core.Network;
+using gView.Framework.Core.system;
+using gView.Framework.Core.UI;
 using gView.Framework.Network.Algorthm;
 using gView.Framework.Network.Tracers;
 using gView.Framework.system;
-using gView.Framework.UI;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -33,7 +34,7 @@ namespace gView.Network.Framework.Network.Tracers
                    input.Collect(NetworkTracerInputType.SoruceEdge).Count == 1;
         }
 
-        async public Task<NetworkTracerOutputCollection> Trace(INetworkFeatureClass network, NetworkTracerInputCollection input, gView.Framework.system.ICancelTracker cancelTraker)
+        async public Task<NetworkTracerOutputCollection> Trace(INetworkFeatureClass network, NetworkTracerInputCollection input, ICancelTracker cancelTraker)
         {
             if (network == null || !CanTrace(input))
             {

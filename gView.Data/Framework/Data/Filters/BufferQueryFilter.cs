@@ -1,6 +1,9 @@
-﻿using gView.Framework.Data.Cursors;
-using gView.Framework.FDB;
-using gView.Framework.Geometry;
+﻿using gView.Framework.Core.Carto;
+using gView.Framework.Core.Data;
+using gView.Framework.Core.Data.Cursors;
+using gView.Framework.Core.Data.Filters;
+using gView.Framework.Core.FDB;
+using gView.Framework.Core.Geometry;
 using System;
 using System.Threading.Tasks;
 
@@ -11,7 +14,7 @@ namespace gView.Framework.Data.Filters
         private IQueryFilter _rootFilter = null;
         private IFeatureClass _rootFC = null;
         private double _bufferDistance = 0.0;
-        private gView.Framework.Carto.GeoUnits _units = gView.Framework.Carto.GeoUnits.Meters;
+        private GeoUnits _units = GeoUnits.Meters;
 
         public BufferQueryFilter() { }
         public BufferQueryFilter(IQueryFilter proto)
@@ -51,7 +54,7 @@ namespace gView.Framework.Data.Filters
             set { _bufferDistance = value; }
         }
 
-        public gView.Framework.Carto.GeoUnits BufferUnits
+        public GeoUnits BufferUnits
         {
             get { return _units; }
             set { _units = value; }

@@ -4,20 +4,17 @@ using gView.DataExplorer.Plugins.Extensions;
 using gView.DataExplorer.Razor.Components.Dialogs.Models;
 using gView.Framework.Blazor;
 using gView.Framework.Blazor.Services.Abstraction;
+using gView.Framework.Core.system;
 using gView.Framework.DataExplorer.Abstraction;
 using gView.Framework.DataExplorer.Events;
-using gView.Framework.Db;
-using gView.Framework.IO;
-using gView.Framework.system;
-using System;
 using System.Threading.Tasks;
 
 namespace gView.DataExplorer.Plugins.ExplorerObjects.Fdb.MsSql;
 
 [RegisterPlugIn("8368C71F-51CE-42E8-B167-BE9AE414C1C8")]
 public class SqlFdbNewConnectionObject : ExplorerObjectCls<SqlFdbExplorerGroupObject>,
-                                         IExplorerSimpleObject, 
-                                         IExplorerObjectDoubleClick, 
+                                         IExplorerSimpleObject,
+                                         IExplorerObjectDoubleClick,
                                          IExplorerObjectCreatable
 {
     public SqlFdbNewConnectionObject()
@@ -33,7 +30,7 @@ public class SqlFdbNewConnectionObject : ExplorerObjectCls<SqlFdbExplorerGroupOb
 
     #region IExplorerObject Members
 
-    public string Name=> "New Connection...";
+    public string Name => "New Connection...";
 
     public string FullName => "";
 

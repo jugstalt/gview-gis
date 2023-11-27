@@ -1,4 +1,4 @@
-﻿using gView.Framework.Data.Cursors;
+﻿using gView.Framework.Core.Data.Cursors;
 
 namespace gView.Framework.Data
 {

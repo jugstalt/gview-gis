@@ -1,9 +1,11 @@
 using gView.Data.Framework.Data.Extensions;
+using gView.Framework.Core.Data;
+using gView.Framework.Core.Data.Cursors;
+using gView.Framework.Core.Data.Filters;
+using gView.Framework.Core.Geometry;
+using gView.Framework.Core.system;
 using gView.Framework.Data;
-using gView.Framework.Data.Cursors;
 using gView.Framework.Data.Filters;
-using gView.Framework.Geometry;
-using gView.Framework.system;
 using System;
 using System.Data;
 using System.Data.Common;
@@ -287,7 +289,7 @@ namespace gView.Framework.OGC.DB
             get { return _shapefield; }
         }
 
-        public gView.Framework.Geometry.IEnvelope Envelope
+        public IEnvelope Envelope
         {
             get
             {
@@ -463,13 +465,13 @@ namespace gView.Framework.OGC.DB
             get { return false; }
         }
 
-        virtual public gView.Framework.Geometry.ISpatialReference SpatialReference
+        virtual public ISpatialReference SpatialReference
         {
             get { return _sRef; }
             set { _sRef = value; }
         }
 
-        public gView.Framework.Geometry.GeometryType GeometryType
+        public GeometryType GeometryType
         {
             get { return _geomType; }
         }

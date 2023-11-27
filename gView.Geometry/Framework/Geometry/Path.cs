@@ -1,5 +1,6 @@
-﻿using gView.Framework.SpatialAlgorithms;
-using gView.Framework.system;
+﻿using gView.Framework.Core.Geometry;
+using gView.Framework.Core.system;
+using gView.Framework.SpatialAlgorithms;
 using System;
 using System.Collections.Generic;
 

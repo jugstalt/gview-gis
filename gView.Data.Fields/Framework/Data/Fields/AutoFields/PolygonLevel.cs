@@ -1,13 +1,15 @@
-using gView.Framework.Data.Cursors;
+using gView.Framework.Core.Data;
+using gView.Framework.Core.Data.Cursors;
+using gView.Framework.Core.FDB;
+using gView.Framework.Core.system;
 using gView.Framework.Data.Filters;
-using gView.Framework.FDB;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace gView.Framework.Data.Fields.AutoFields
 {
-    [gView.Framework.system.RegisterPlugIn("D2DB93C7-5614-47ef-B8F7-ABDA2C6151A7")]
+    [RegisterPlugIn("D2DB93C7-5614-47ef-B8F7-ABDA2C6151A7")]
     class PolygonLevel : Field, IAutoField
     {
         public PolygonLevel()

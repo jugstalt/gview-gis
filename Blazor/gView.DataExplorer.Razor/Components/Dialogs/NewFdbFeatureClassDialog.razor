@@ -54,11 +54,11 @@
                                             <MudTextField Value="fieldName" Label="" ReadOnly="true" />
                                        </td>
                                        <td>
-                                            <MudSelect Label="" T="gView.Framework.Data.FieldType"
+                                            <MudSelect Label="" T="Framework.Core.Data.FieldType"
                                                         Value="Model.Fields[fieldName].type"
                                                         ValueChanged="(type)=>SetFieldType(fieldName, type)"
                                                         Variant="Variant.Text">
-                                                @foreach (var fieldType in Enum.GetValues<gView.Framework.Data.FieldType>())
+                                                @foreach (var fieldType in Enum.GetValues<Framework.Core.Data.FieldType>())
                                                 {
                                                     <MudSelectItem Value="fieldType">@fieldType.ToString()</MudSelectItem>
                                                 }
@@ -69,8 +69,8 @@
                                                           ValueChanged="(alias) => SetFieldAlias(fieldName, alias)" />
                                        </td>
                                        <td>
-                                           @if(Model.Fields[fieldName].type == Framework.Data.FieldType.String ||
-                                               Model.Fields[fieldName].type == Framework.Data.FieldType.NString) {
+                                           @if(Model.Fields[fieldName].type == Framework.Core.Data.FieldType.String ||
+                                               Model.Fields[fieldName].type == Framework.Core.Data.FieldType.NString) {
                                                     <MudNumericField Value="Model.Fields[fieldName].size" Label="" T="int"
                                                                        ValueChanged="(size) => SetFieldSize(fieldName, size)" />
                                                }
@@ -91,7 +91,7 @@
                                         <MudSelect Label=""
                                                    @bind-Value="newFieldType"
                                                    Variant="Variant.Text">
-                                            @foreach (var fieldType in Enum.GetValues<gView.Framework.Data.FieldType>())
+                                            @foreach (var fieldType in Enum.GetValues<Framework.Core.Data.FieldType>())
                                             {
                                                 <MudSelectItem Value="fieldType">@fieldType.ToString()</MudSelectItem>
                                             }
@@ -121,7 +121,7 @@
 
 @code {
     private string newFieldName { get; set; } = string.Empty;
-    private gView.Framework.Data.FieldType newFieldType = Framework.Data.FieldType.String;
+    private Framework.Core.Data.FieldType newFieldType = Framework.Core.Data.FieldType.String;
     private string lastErrorMessage = string.Empty;
 
     private void TryAddField()
@@ -154,7 +154,7 @@
         }
     }
 
-    private void SetFieldType(string fieldName, gView.Framework.Data.FieldType fieldType)
+    private void SetFieldType(string fieldName, Framework.Core.Data.FieldType fieldType)
     {
         if (Model.Fields.ContainsKey(fieldName))
         {

@@ -1,11 +1,13 @@
 using gView.Framework.Carto.Rendering.UI;
-using gView.Framework.Data;
-using gView.Framework.Data.Filters;
-using gView.Framework.Geometry;
-using gView.Framework.IO;
-using gView.Framework.Symbology;
+using gView.Framework.Core.Carto;
+using gView.Framework.Core.Data;
+using gView.Framework.Core.Data.Filters;
+using gView.Framework.Core.Geometry;
+using gView.Framework.Core.IO;
+using gView.Framework.Core.Symbology;
+using gView.Framework.Core.system;
+using gView.Framework.Core.UI;
 using gView.Framework.system;
-using gView.Framework.UI;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,7 +15,7 @@ using System.Reflection;
 
 namespace gView.Framework.Carto.Rendering
 {
-    [gView.Framework.system.RegisterPlugIn("48EDC5DB-18B6-44cc-8646-461B388F2D94")]
+    [RegisterPlugIn("48EDC5DB-18B6-44cc-8646-461B388F2D94")]
     public class UniversalGeometryRenderer : Cloner, IFeatureRenderer, IDisposable, IPropertyPage, ILegendGroup
     {
         private bool _useRefScale = true;
@@ -85,7 +87,7 @@ namespace gView.Framework.Carto.Rendering
 
         #region IFeatureRenderer Member
 
-        public void Draw(IDisplay disp, gView.Framework.Data.IFeature feature)
+        public void Draw(IDisplay disp, IFeature feature)
         {
             if (feature == null)
             {
@@ -106,7 +108,7 @@ namespace gView.Framework.Carto.Rendering
 
         }
 
-        public bool CanRender(gView.Framework.Data.IFeatureLayer layer, IMap map)
+        public bool CanRender(IFeatureLayer layer, IMap map)
         {
             if (layer != null &&
                 layer.FeatureClass != null &&
@@ -160,13 +162,13 @@ namespace gView.Framework.Carto.Rendering
 
         #region IPersistable Member
 
-        public void Load(gView.Framework.IO.IPersistStream stream)
+        public void Load(IPersistStream stream)
         {
             _symbol = (UniversalGeometrySymbol)stream.Load("Symbol", new UniversalGeometrySymbol(UniversalGeometrySymbol.SymbolType.normal), new UniversalGeometrySymbol(UniversalGeometrySymbol.SymbolType.normal));
             _symbolRotation = (SymbolRotation)stream.Load("SymbolRotation", _symbolRotation, _symbolRotation);
         }
 
-        public void Save(gView.Framework.IO.IPersistStream stream)
+        public void Save(IPersistStream stream)
         {
             stream.Save("Symbol", _symbol);
             if (_symbolRotation.RotationFieldName != "")

@@ -1,6 +1,6 @@
 ﻿using gView.Blazor.Models.Dialogs;
+using gView.Framework.Core.Geometry;
 using gView.Framework.Db;
-using gView.Framework.Geometry;
 
 namespace gView.DataExplorer.Razor.Components.Dialogs.Models;
 public class EventTableConnectionModel : IDialogResultItem

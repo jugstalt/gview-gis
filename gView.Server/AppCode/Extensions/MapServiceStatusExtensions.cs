@@ -1,4 +1,4 @@
-﻿using gView.MapServer;
+﻿using gView.Framework.Core.MapServer;
 
 namespace gView.Server.AppCode.Extensions
 {

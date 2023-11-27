@@ -1,4 +1,5 @@
-﻿using gView.Framework.Data.Filters;
+﻿using gView.Framework.Core.Data.Filters;
+using gView.Framework.Core.Geometry;
 using gView.Framework.Geometry;
 using System;
 using System.Text;

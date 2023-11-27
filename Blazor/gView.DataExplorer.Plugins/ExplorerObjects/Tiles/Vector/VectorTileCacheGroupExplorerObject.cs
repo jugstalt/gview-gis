@@ -1,4 +1,5 @@
 ﻿using gView.DataExplorer.Plugins.ExplorerObjects.Base;
+using gView.Framework.Core.system;
 using gView.Framework.DataExplorer.Abstraction;
 using gView.Framework.IO;
 using System.Collections.Generic;
@@ -6,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace gView.DataExplorer.Plugins.ExplorerObjects.Tiles.Vector
 {
-    [gView.Framework.system.RegisterPlugIn("AD895DDE-6951-4B9B-87B5-298767AF06D2")]
+    [RegisterPlugIn("AD895DDE-6951-4B9B-87B5-298767AF06D2")]
     public class VectorTileCacheGroupExplorerObject : ExplorerParentObject,
                                                       ITilesExplorerGroupObject
     {

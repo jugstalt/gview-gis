@@ -2,9 +2,9 @@
 using gView.DataExplorer.Plugins.ExplorerObjects.Fdb.PostgreSql.Extensions;
 using gView.DataExplorer.Plugins.Extensions;
 using gView.DataExplorer.Razor.Components.Dialogs.Models;
-using gView.DataSources.Fdb.MSSql;
 using gView.DataSources.Fdb.PostgreSql;
 using gView.Framework.Blazor.Services.Abstraction;
+using gView.Framework.Core.system;
 using gView.Framework.DataExplorer.Abstraction;
 using gView.Framework.IO;
 using gView.Framework.system;
@@ -13,8 +13,8 @@ using System.Threading.Tasks;
 namespace gView.DataExplorer.Plugins.ExplorerObjects.Fdb.PostgreSql;
 
 [RegisterPlugIn("F95513B4-572E-40fc-9BD9-F6ABD4BB1D66")]
-public class PostgreSqlNewFdbDatabase : ExplorerObjectCls<PostgreSqlExplorerGroupObject>, 
-                              IExplorerObject, 
+public class PostgreSqlNewFdbDatabase : ExplorerObjectCls<PostgreSqlExplorerGroupObject>,
+                              IExplorerObject,
                               IExplorerObjectCreatable
 {
     public PostgreSqlNewFdbDatabase() : base() { }
@@ -25,7 +25,7 @@ public class PostgreSqlNewFdbDatabase : ExplorerObjectCls<PostgreSqlExplorerGrou
 
     public string FullName => "";
 
-    public string Type=>"Postgre Feature database";
+    public string Type => "Postgre Feature database";
 
     public string Icon => "basic:screw-wrench-double";
 
@@ -34,7 +34,7 @@ public class PostgreSqlNewFdbDatabase : ExplorerObjectCls<PostgreSqlExplorerGrou
 
     }
 
-    public Task<object?> GetInstanceAsync()=> Task.FromResult<object?>(null);
+    public Task<object?> GetInstanceAsync() => Task.FromResult<object?>(null);
 
     #endregion
 
@@ -433,7 +433,7 @@ public class PostgreSqlNewFdbDatabase : ExplorerObjectCls<PostgreSqlExplorerGrou
 //    #endregion
 //}
 
-////[gView.Framework.system.RegisterPlugIn("9B5B718C-2ECA-47ee-851F-9D33E3D82C55")]
+////[RegisterPlugIn("9B5B718C-2ECA-47ee-851F-9D33E3D82C55")]
 //public class SqlFDBTileGridClassExplorerObject : ExplorerObjectCls, IExplorerSimpleObject, IExplorerObjectCreatable
 //{
 //    public SqlFDBTileGridClassExplorerObject() : base(null, null, 1) { }

@@ -1,8 +1,12 @@
+using gView.Framework.Core.Carto;
+using gView.Framework.Core.Data;
+using gView.Framework.Core.Data.Cursors;
+using gView.Framework.Core.Data.Filters;
+using gView.Framework.Core.Geometry;
+using gView.Framework.Core.system;
 using gView.Framework.Data;
-using gView.Framework.Data.Cursors;
 using gView.Framework.Data.Filters;
 using gView.Framework.Geometry;
-using gView.Framework.system;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -1171,7 +1175,7 @@ namespace gView.Framework.XML
 
         public IPointIdentifyContext CreatePointIdentifyContext() => new DummyPointIdentifyContext();
 
-        async public Task<ICursor> PointQuery(gView.Framework.Carto.IDisplay display, IPoint point, ISpatialReference sRef, IUserData userdata, IPointIdentifyContext context)
+        async public Task<ICursor> PointQuery(IDisplay display, IPoint point, ISpatialReference sRef, IUserData userdata, IPointIdentifyContext context)
         {
             if (point == null)
             {
@@ -1260,7 +1264,7 @@ namespace gView.Framework.XML
 
         public event BeforePointIdentifyEventHandler BeforePointIdentify = null;
 
-        public void FireBeforePointIdentify(gView.Framework.Carto.IDisplay display, ref IPoint point, ref ISpatialReference sRef, IUserData userdata)
+        public void FireBeforePointIdentify(IDisplay display, ref IPoint point, ref ISpatialReference sRef, IUserData userdata)
         {
             if (BeforePointIdentify != null)
             {

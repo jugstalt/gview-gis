@@ -1,5 +1,5 @@
-﻿using gView.Framework.Carto;
-using gView.Framework.Geometry;
+﻿using gView.Framework.Core.Carto;
+using gView.Framework.Core.Geometry;
 
 namespace gView.Interoperability.GeoServices.Extensions
 {

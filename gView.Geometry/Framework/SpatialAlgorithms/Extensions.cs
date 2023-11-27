@@ -1,4 +1,4 @@
-﻿using gView.Framework.Geometry;
+﻿using gView.Framework.Core.Geometry;
 
 namespace gView.Framework.SpatialAlgorithms
 {

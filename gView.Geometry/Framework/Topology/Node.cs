@@ -1,4 +1,4 @@
-using gView.Framework.Geometry;
+using gView.Framework.Core.Geometry;
 using System.Collections.Generic;
 
 namespace gView.Framework.Topology

@@ -1,5 +1,9 @@
 ﻿using gView.Data.Framework.Data.TileCache;
 using gView.Framework.Carto;
+using gView.Framework.Core.Carto;
+using gView.Framework.Core.Geometry;
+using gView.Framework.Core.MapServer;
+using gView.Framework.Core.system;
 using gView.Framework.Geometry;
 using gView.Framework.Geometry.Tiling;
 using gView.Framework.IO;
@@ -8,7 +12,6 @@ using gView.Framework.system;
 using gView.GraphicsEngine;
 using gView.GraphicsEngine.Abstraction;
 using gView.Interoperability.Server.TileService.Extensions;
-using gView.MapServer;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -19,7 +22,7 @@ using System.Threading.Tasks;
 
 namespace gView.Interoperability.Server.TileService
 {
-    [gView.Framework.system.RegisterPlugIn("ED770739-12FA-40d7-8EF9-38FE9299564A")]
+    [RegisterPlugIn("ED770739-12FA-40d7-8EF9-38FE9299564A")]
     public class TileServiceInterpreter : IServiceRequestInterpreter
     {
         private static IFormatProvider _nhi = System.Globalization.CultureInfo.InvariantCulture.NumberFormat;

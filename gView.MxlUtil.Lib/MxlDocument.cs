@@ -1,9 +1,11 @@
 ﻿using gView.Framework.Carto;
-using gView.Framework.Data;
+using gView.Framework.Core.Carto;
+using gView.Framework.Core.Data;
+using gView.Framework.Core.IO;
+using gView.Framework.Core.UI;
 using gView.Framework.Data.Relations;
 using gView.Framework.IO;
 using gView.Framework.system;
-using gView.Framework.UI;
 using gView.GraphicsEngine;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -95,7 +97,7 @@ namespace gView.MxUtil.Lib
 
             if (map.Display != null)
             {
-                map.Display.MapScaleChanged += new gView.Framework.Carto.MapScaleChangedEvent(Display_MapScaleChanged);
+                map.Display.MapScaleChanged += new MapScaleChangedEvent(Display_MapScaleChanged);
             }
 
             if (MapAdded != null)

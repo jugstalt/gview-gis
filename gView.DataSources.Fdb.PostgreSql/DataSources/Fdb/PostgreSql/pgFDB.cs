@@ -1,9 +1,13 @@
-﻿using gView.Framework.Data;
-using gView.Framework.Data.Cursors;
+﻿using gView.Framework.Core.Data;
+using gView.Framework.Core.Data.Cursors;
+using gView.Framework.Core.Data.Filters;
+using gView.Framework.Core.FDB;
+using gView.Framework.Core.Geometry;
+using gView.Framework.Core.system;
+using gView.Framework.Data;
 using gView.Framework.Data.Filters;
 using gView.Framework.Db;
 using gView.Framework.Db.Extensions;
-using gView.Framework.FDB;
 using gView.Framework.Geometry;
 using gView.Framework.Offline;
 using gView.Framework.system;
@@ -18,7 +22,7 @@ using System.Threading.Tasks;
 
 namespace gView.DataSources.Fdb.PostgreSql
 {
-    [RegisterPlugInAttribute("a408f01d-7237-4e33-81ba-ac9d29dfc433")]
+    [RegisterPlugIn("a408f01d-7237-4e33-81ba-ac9d29dfc433")]
     public class pgFDB : gView.DataSources.Fdb.MSAccess.AccessFDB
     {
         internal static DbProviderFactory _dbProviderFactory = DataProvider.PostgresProvider;
@@ -2042,7 +2046,7 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
                 }
             }
 
-            async public Task<bool> Select(IQueryFilter filter, gView.Framework.Data.CombinationMethod methode)
+            async public Task<bool> Select(IQueryFilter filter, CombinationMethod methode)
             {
                 if (!(this.Class is ITableClass))
                 {
@@ -2057,7 +2061,7 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
                 return true;
             }
 
-            public event gView.Framework.Data.FeatureSelectionChangedEvent FeatureSelectionChanged;
+            public event FeatureSelectionChangedEvent FeatureSelectionChanged;
             public event BeforeClearSelectionEvent BeforeClearSelection;
 
             public void ClearSelection()

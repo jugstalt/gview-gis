@@ -1,12 +1,15 @@
-using gView.Framework.Carto;
+using gView.Framework.Core.Carto;
+using gView.Framework.Core.Data;
+using gView.Framework.Core.Data.Cursors;
+using gView.Framework.Core.Data.Filters;
+using gView.Framework.Core.FDB;
+using gView.Framework.Core.Geometry;
+using gView.Framework.Core.IO;
+using gView.Framework.Core.system;
 using gView.Framework.Data;
-using gView.Framework.Data.Cursors;
-using gView.Framework.Data.Filters;
 using gView.Framework.Data.Metadata;
-using gView.Framework.FDB;
 using gView.Framework.Geometry;
 using gView.Framework.IO;
-using gView.Framework.system;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -16,7 +19,7 @@ namespace gView.DataSources.Fdb.MSAccess
     /// <summary>
     /// Zusammenfassung für AccessFDBDataset.
     /// </summary>
-    //[gView.Framework.system.RegisterPlugIn("6F540340-74C9-4b1a-BD4D-B1C5FE946CA1")]
+    //[RegisterPlugIn("6F540340-74C9-4b1a-BD4D-B1C5FE946CA1")]
     public class AccessFDBDataset : DatasetMetadata, IFeatureDataset2, IRasterDataset, IFDBDataset
     {
         internal int _dsID = -1;
@@ -743,7 +746,7 @@ namespace gView.DataSources.Fdb.MSAccess
 
         #endregion
 
-        public void SetSpatialTreeInfo(gView.Framework.FDB.ISpatialTreeInfo info)
+        public void SetSpatialTreeInfo(ISpatialTreeInfo info)
         {
             if (info == null)
             {
@@ -839,7 +842,7 @@ namespace gView.DataSources.Fdb.MSAccess
             }
         }
 
-        public gView.Framework.Data.GeometryFieldType GeometryFieldType
+        public GeometryFieldType GeometryFieldType
         {
             get
             {

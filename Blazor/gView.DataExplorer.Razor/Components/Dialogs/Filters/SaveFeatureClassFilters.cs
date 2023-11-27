@@ -1,6 +1,6 @@
-﻿using gView.Framework.Data;
+﻿using gView.Framework.Core.Data;
+using gView.Framework.Core.FDB;
 using gView.Framework.DataExplorer.Abstraction;
-using gView.Framework.FDB;
 using gView.Framework.system;
 
 namespace gView.DataExplorer.Razor.Components.Dialogs.Filters;

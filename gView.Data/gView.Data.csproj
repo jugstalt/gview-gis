@@ -9,7 +9,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\gView.Core\gView.Core.csproj" />
+    <ProjectReference Include="..\gView.Framework.Core\gView.Framework.Core.csproj" />
     <ProjectReference Include="..\gView.Db\gView.Db.csproj" />
     <ProjectReference Include="..\gView.Geometry\gView.Geometry.csproj" />
     <ProjectReference Include="..\gView.Math\gView.Math.csproj" />

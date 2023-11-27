@@ -1,6 +1,7 @@
-﻿using gView.Core.Framework.Exceptions;
+﻿using gView.Framework.Core.Exceptions;
+using gView.Framework.Core.MapServer;
+using gView.Framework.Core.system;
 using gView.Framework.system;
-using gView.MapServer;
 using gView.Server.AppCode.Extensions;
 using gView.Server.Services.MapServer;
 using Newtonsoft.Json;

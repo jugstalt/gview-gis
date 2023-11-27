@@ -1,9 +1,13 @@
 ﻿using gView.Data.Framework.Data;
 using gView.Data.Framework.Data.Abstraction;
 using gView.Framework.Carto.LayerRenderers;
+using gView.Framework.Core.Carto;
+using gView.Framework.Core.Data;
+using gView.Framework.Core.Geometry;
+using gView.Framework.Core.Symbology;
+using gView.Framework.Core.system;
 using gView.Framework.Data;
 using gView.Framework.Geometry;
-using gView.Framework.Symbology;
 using gView.Framework.system;
 using System;
 using System.Collections.Generic;

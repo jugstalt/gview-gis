@@ -1,10 +1,13 @@
-using gView.Framework.Carto;
 using gView.Framework.Carto.Rendering;
-using gView.Framework.Data;
+using gView.Framework.Core.Carto;
+using gView.Framework.Core.Data;
+using gView.Framework.Core.Data.Filters;
+using gView.Framework.Core.Geometry;
+using gView.Framework.Core.Symbology;
+using gView.Framework.Core.Xml;
 using gView.Framework.Data.Filters;
 using gView.Framework.Geometry;
 using gView.Framework.Symbology;
-using gView.Framework.Xml;
 using gView.GraphicsEngine;
 using System;
 using System.Globalization;

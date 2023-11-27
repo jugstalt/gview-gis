@@ -1,5 +1,8 @@
-﻿using gView.Framework.Geometry;
-using gView.Framework.system;
+﻿using gView.Framework.Core.Data;
+using gView.Framework.Core.Data.Filters;
+using gView.Framework.Core.Geometry;
+using gView.Framework.Core.system;
+using gView.Framework.Geometry;
 
 namespace gView.Framework.Data.Filters
 {

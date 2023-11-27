@@ -1,12 +1,12 @@
-using gView.Framework.IO;
-using gView.Framework.system;
+using gView.Framework.Core.IO;
+using gView.Framework.Core.system;
 using System;
 using System.Collections.Generic;
 using System.Text;
 
 namespace gView.Framework.Metadata
 {
-    [gView.Framework.system.RegisterPlugIn("5CF9FD50-16B2-4650-A3E3-229E60848CA6")]
+    [RegisterPlugIn("5CF9FD50-16B2-4650-A3E3-229E60848CA6")]
     public class PersistableDictionary : IPersistableDictionary
     {
         private Dictionary<string, object> _dictionary = new Dictionary<string, object>();
@@ -101,7 +101,7 @@ namespace gView.Framework.Metadata
         #endregion
     }
 
-    [gView.Framework.system.RegisterPlugIn("24373762-127A-4125-B87F-AC0D091D947E")]
+    [RegisterPlugIn("24373762-127A-4125-B87F-AC0D091D947E")]
     public class PersistableMetadata : IPlugInParameter, IPersistable
     {
         IMetadata _metadata = null;

@@ -1,5 +1,6 @@
 ﻿using gView.Blazor.Models.Content;
-using gView.Framework.Data;
+using gView.Framework.Core.Data;
+using gView.Framework.Core.system;
 using gView.Framework.DataExplorer.Abstraction;
 using gView.Framework.system;
 using System;
@@ -51,7 +52,7 @@ public class MapTabPage : IExplorerTabPage
             return Task.FromResult(false);
         }
 
-        if(TypeHelper.Match(exObject.ObjectType, typeof(IWebFeatureClass)))
+        if (TypeHelper.Match(exObject.ObjectType, typeof(IWebFeatureClass)))
         {
             return Task.FromResult(false);
         }

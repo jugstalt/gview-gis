@@ -1,11 +1,13 @@
 using gView.Framework.Carto.Rendering.UI;
-using gView.Framework.Data;
-using gView.Framework.Data.Filters;
-using gView.Framework.Geometry;
-using gView.Framework.IO;
-using gView.Framework.Symbology;
+using gView.Framework.Core.Carto;
+using gView.Framework.Core.Data;
+using gView.Framework.Core.Data.Filters;
+using gView.Framework.Core.Geometry;
+using gView.Framework.Core.IO;
+using gView.Framework.Core.Symbology;
+using gView.Framework.Core.system;
+using gView.Framework.Core.UI;
 using gView.Framework.system;
-using gView.Framework.UI;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,7 +15,7 @@ using System.Reflection;
 
 namespace gView.Framework.Carto.Rendering
 {
-    [gView.Framework.system.RegisterPlugIn("9D278A19-9547-4BC5-824E-E4F45EA1BB7A")]
+    [RegisterPlugIn("9D278A19-9547-4BC5-824E-E4F45EA1BB7A")]
     public class QuantityRenderer : Cloner, IFeatureRenderer, IPropertyPage, ILegendGroup
     {
         private string _valueField = String.Empty;
@@ -127,7 +129,7 @@ namespace gView.Framework.Carto.Rendering
 
         #region IFeatureRenderer Member
 
-        public void Draw(IDisplay disp, gView.Framework.Data.IFeature feature)
+        public void Draw(IDisplay disp, IFeature feature)
         {
             ISymbol symbol = null;
             object od = feature[_valueField];
@@ -213,7 +215,7 @@ namespace gView.Framework.Carto.Rendering
             }
         }
 
-        public bool CanRender(gView.Framework.Data.IFeatureLayer layer, IMap map)
+        public bool CanRender(IFeatureLayer layer, IMap map)
         {
             if (layer == null)
             {
@@ -237,7 +239,7 @@ if (layer.FeatureClass.GeometryType == geometryType.Unknown ||
             return true;
         }
 
-        public bool HasEffect(gView.Framework.Data.IFeatureLayer layer, IMap map)
+        public bool HasEffect(IFeatureLayer layer, IMap map)
         {
             return true;
         }
@@ -278,7 +280,7 @@ if (layer.FeatureClass.GeometryType == geometryType.Unknown ||
 
         #region IPersistable Member
 
-        public void Load(gView.Framework.IO.IPersistStream stream)
+        public void Load(IPersistStream stream)
         {
             this.Release();
 
@@ -292,7 +294,7 @@ if (layer.FeatureClass.GeometryType == geometryType.Unknown ||
             }
         }
 
-        public void Save(gView.Framework.IO.IPersistStream stream)
+        public void Save(IPersistStream stream)
         {
             stream.Save("field", _valueField);
             stream.Save("default", _defaultSymbol);

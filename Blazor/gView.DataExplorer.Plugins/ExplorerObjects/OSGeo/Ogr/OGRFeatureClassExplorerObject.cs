@@ -1,9 +1,9 @@
 ﻿using gView.Blazor.Core.Exceptions;
 using gView.DataExplorer.Plugins.ExplorerObjects.Base;
 using gView.DataSources.OGR;
-using gView.Framework.Data;
+using gView.Framework.Core.Data;
+using gView.Framework.Core.Geometry;
 using gView.Framework.DataExplorer.Abstraction;
-using gView.Framework.Geometry;
 using System;
 using System.IO;
 using System.Threading.Tasks;

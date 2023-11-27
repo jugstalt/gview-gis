@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Text;
+using gView.Framework.Core.Data.Filters;
 
 namespace gView.Framework.Data.Filters
 {

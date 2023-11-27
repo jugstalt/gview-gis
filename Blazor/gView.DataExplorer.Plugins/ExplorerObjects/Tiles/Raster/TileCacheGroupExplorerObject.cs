@@ -1,13 +1,12 @@
 ﻿using gView.DataExplorer.Plugins.ExplorerObjects.Base;
 using gView.Framework.DataExplorer.Abstraction;
 using gView.Framework.IO;
-using gView.Framework.system;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace gView.DataExplorer.Plugins.ExplorerObjects.Tiles.Raster;
 
-[RegisterPlugIn("0d217509-0df9-4b8d-bd3b-b7390de5abde")]
+[Framework.Core.system.RegisterPlugIn("0d217509-0df9-4b8d-bd3b-b7390de5abde")]
 public class TileCacheGroupExplorerObject : ExplorerParentObject,
                                             ITilesExplorerGroupObject
 {

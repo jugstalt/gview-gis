@@ -4,11 +4,9 @@ using gView.DataExplorer.Plugins.Extensions;
 using gView.DataExplorer.Razor.Components.Dialogs.Models;
 using gView.Framework.Blazor;
 using gView.Framework.Blazor.Services.Abstraction;
+using gView.Framework.Core.system;
 using gView.Framework.DataExplorer.Abstraction;
 using gView.Framework.DataExplorer.Events;
-using gView.Framework.Db;
-using gView.Framework.IO;
-using gView.Framework.system;
 using System.Threading.Tasks;
 
 namespace gView.DataExplorer.Plugins.ExplorerObjects.Fdb.PostgreSql;
@@ -424,7 +422,7 @@ public class PostgreSqlNewConnectionObject : ExplorerObjectCls<PostgreSqlExplore
 //    #endregion
 //}
 
-////[gView.Framework.system.RegisterPlugIn("9B5B718C-2ECA-47ee-851F-9D33E3D82C55")]
+////[RegisterPlugIn("9B5B718C-2ECA-47ee-851F-9D33E3D82C55")]
 //public class SqlFDBTileGridClassExplorerObject : ExplorerObjectCls, IExplorerSimpleObject, IExplorerObjectCreatable
 //{
 //    public SqlFDBTileGridClassExplorerObject() : base(null, null, 1) { }

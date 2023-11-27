@@ -1,4 +1,6 @@
-﻿using gView.Framework.Geometry;
+﻿using gView.Framework.Core.Carto;
+using gView.Framework.Core.Geometry;
+using gView.Framework.Geometry;
 using System;
 
 namespace gView.Framework.Carto

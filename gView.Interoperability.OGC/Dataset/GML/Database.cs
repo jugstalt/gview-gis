@@ -1,8 +1,10 @@
+using gView.Framework.Core.Data;
+using gView.Framework.Core.Data.Cursors;
+using gView.Framework.Core.Data.Filters;
+using gView.Framework.Core.FDB;
+using gView.Framework.Core.Geometry;
+using gView.Framework.Core.system;
 using gView.Framework.Data;
-using gView.Framework.Data.Cursors;
-using gView.Framework.Data.Filters;
-using gView.Framework.FDB;
-using gView.Framework.Geometry;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -10,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace gView.Interoperability.OGC.Dataset.GML
 {
-    [gView.Framework.system.RegisterPlugIn("93474BC6-9E24-45ff-B21D-1D8CF0E9D30A")]
+    [RegisterPlugIn("93474BC6-9E24-45ff-B21D-1D8CF0E9D30A")]
     public class Database : IFileFeatureDatabase
     {
         private string _errMsg = String.Empty, _name = String.Empty;
@@ -93,12 +95,12 @@ namespace gView.Interoperability.OGC.Dataset.GML
 
         #region IFeatureDatabase Member
 
-        public Task<int> CreateDataset(string name, gView.Framework.Geometry.ISpatialReference sRef)
+        public Task<int> CreateDataset(string name, ISpatialReference sRef)
         {
             return Task.FromResult<int>(Create(name) ? 0 : -1);
         }
 
-        async public Task<int> CreateFeatureClass(string dsname, string fcname, gView.Framework.Geometry.IGeometryDef geomDef, IFieldCollection fields)
+        async public Task<int> CreateFeatureClass(string dsname, string fcname, IGeometryDef geomDef, IFieldCollection fields)
         {
             if (geomDef == null || fields == null)
             {
@@ -212,7 +214,7 @@ namespace gView.Interoperability.OGC.Dataset.GML
         #region IFeatureUpdater Member
         private Dictionary<string, GMLFile> _gmlFiles = new Dictionary<string, GMLFile>();
 
-        public Task<bool> Insert(gView.Framework.Data.IFeatureClass fClass, gView.Framework.Data.IFeature feature)
+        public Task<bool> Insert(IFeatureClass fClass, IFeature feature)
         {
             if (fClass == null || feature == null)
             {
@@ -223,7 +225,7 @@ namespace gView.Interoperability.OGC.Dataset.GML
             return Insert(fClass, features);
         }
 
-        async public Task<bool> Insert(gView.Framework.Data.IFeatureClass fClass, List<gView.Framework.Data.IFeature> features)
+        async public Task<bool> Insert(IFeatureClass fClass, List<IFeature> features)
         {
             if (fClass == null || !(fClass.Dataset is Dataset) || features == null)
             {
@@ -268,22 +270,22 @@ namespace gView.Interoperability.OGC.Dataset.GML
             return true;
         }
 
-        public Task<bool> Update(gView.Framework.Data.IFeatureClass fClass, gView.Framework.Data.IFeature feature)
+        public Task<bool> Update(IFeatureClass fClass, IFeature feature)
         {
             throw new Exception("The method or operation is not implemented.");
         }
 
-        public Task<bool> Update(gView.Framework.Data.IFeatureClass fClass, List<gView.Framework.Data.IFeature> features)
+        public Task<bool> Update(IFeatureClass fClass, List<IFeature> features)
         {
             throw new Exception("The method or operation is not implemented.");
         }
 
-        public Task<bool> Delete(gView.Framework.Data.IFeatureClass fClass, int oid)
+        public Task<bool> Delete(IFeatureClass fClass, int oid)
         {
             throw new Exception("The method or operation is not implemented.");
         }
 
-        public Task<bool> Delete(gView.Framework.Data.IFeatureClass fClass, string where)
+        public Task<bool> Delete(IFeatureClass fClass, string where)
         {
             throw new Exception("The method or operation is not implemented.");
         }

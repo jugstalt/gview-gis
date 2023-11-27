@@ -1,5 +1,6 @@
-﻿using gView.Framework.Carto;
-using gView.Framework.Carto.Rendering;
+﻿using gView.Framework.Carto.Rendering;
+using gView.Framework.Core.Carto;
+using gView.Framework.Core.Symbology;
 using gView.GraphicsEngine;
 using gView.Interoperability.GeoServices.Rest.Json.Renderers.OtherRenderers;
 using Newtonsoft.Json;
@@ -139,7 +140,7 @@ namespace gView.Interoperability.GeoServices.Rest.Json.Renderers.SimpleRenderers
             return null;
         }
 
-        static public object FromSymbol(Framework.Symbology.ISymbol symbol)
+        static public object FromSymbol(ISymbol symbol)
         {
             try
             {
@@ -237,7 +238,7 @@ namespace gView.Interoperability.GeoServices.Rest.Json.Renderers.SimpleRenderers
             return null;
         }
 
-        static public Framework.Symbology.ISymbol FromSymbolJObject(JObject jObject)
+        static public ISymbol FromSymbolJObject(JObject jObject)
         {
             if (jObject == null)
             {
@@ -262,7 +263,7 @@ namespace gView.Interoperability.GeoServices.Rest.Json.Renderers.SimpleRenderers
                 {
                     symbol.OutlineColor = sms.Outline.Color.ToColor();
                     symbol.OutlineWidth = sms.Outline.Width;
-                    symbol.SymbolSmoothingMode = Framework.Symbology.SymbolSmoothing.AntiAlias;
+                    symbol.SymbolSmoothingMode = SymbolSmoothing.AntiAlias;
                 }
 
                 return symbol;
@@ -276,7 +277,7 @@ namespace gView.Interoperability.GeoServices.Rest.Json.Renderers.SimpleRenderers
                 symbol.Color = sls.Color.ToColor();
                 symbol.DashStyle = sls.Style.ToDashStyle();
                 symbol.Width = sls.Width;
-                symbol.SymbolSmoothingMode = Framework.Symbology.SymbolSmoothing.AntiAlias;
+                symbol.SymbolSmoothingMode = SymbolSmoothing.AntiAlias;
                 symbol.LineEndCap = symbol.LineStartCap = LineCap.Round;
 
                 return symbol;
@@ -295,7 +296,7 @@ namespace gView.Interoperability.GeoServices.Rest.Json.Renderers.SimpleRenderers
                         Color = sfs.Outline.Color.ToColor(),
                         Width = sfs.Outline.Width,
                         DashStyle = sfs.Outline.Style.ToDashStyle(),
-                        SymbolSmoothingMode = Framework.Symbology.SymbolSmoothing.AntiAlias,
+                        SymbolSmoothingMode = SymbolSmoothing.AntiAlias,
                         LineStartCap = LineCap.Round,
                         LineEndCap = LineCap.Round
                     };
@@ -328,37 +329,37 @@ namespace gView.Interoperability.GeoServices.Rest.Json.Renderers.SimpleRenderers
                     switch (ts.VerticalAlignment + " " + ts.HorizontalAlignment)
                     {
                         case "top left":
-                            symbol.TextSymbolAlignment = Framework.Symbology.TextSymbolAlignment.leftAlignOver;
+                            symbol.TextSymbolAlignment = TextSymbolAlignment.leftAlignOver;
                             break;
                         case "middle left":
-                            symbol.TextSymbolAlignment = Framework.Symbology.TextSymbolAlignment.leftAlignCenter;
+                            symbol.TextSymbolAlignment = TextSymbolAlignment.leftAlignCenter;
                             break;
                         case "bottom left":
-                            symbol.TextSymbolAlignment = Framework.Symbology.TextSymbolAlignment.leftAlignUnder;
+                            symbol.TextSymbolAlignment = TextSymbolAlignment.leftAlignUnder;
                             break;
                         case "top center":
-                            symbol.TextSymbolAlignment = Framework.Symbology.TextSymbolAlignment.Over;
+                            symbol.TextSymbolAlignment = TextSymbolAlignment.Over;
                             break;
                         case "middle center":
-                            symbol.TextSymbolAlignment = Framework.Symbology.TextSymbolAlignment.Center;
+                            symbol.TextSymbolAlignment = TextSymbolAlignment.Center;
                             break;
                         case "bottom center":
-                            symbol.TextSymbolAlignment = Framework.Symbology.TextSymbolAlignment.Under;
+                            symbol.TextSymbolAlignment = TextSymbolAlignment.Under;
                             break;
                         case "top right":
-                            symbol.TextSymbolAlignment = Framework.Symbology.TextSymbolAlignment.rightAlignOver;
+                            symbol.TextSymbolAlignment = TextSymbolAlignment.rightAlignOver;
                             break;
                         case "middle right":
-                            symbol.TextSymbolAlignment = Framework.Symbology.TextSymbolAlignment.rightAlignCenter;
+                            symbol.TextSymbolAlignment = TextSymbolAlignment.rightAlignCenter;
                             break;
                         case "bottom right":
-                            symbol.TextSymbolAlignment = Framework.Symbology.TextSymbolAlignment.rightAlignUnder;
+                            symbol.TextSymbolAlignment = TextSymbolAlignment.rightAlignUnder;
                             break;
                         default:
-                            symbol.TextSymbolAlignment = Framework.Symbology.TextSymbolAlignment.Center;
+                            symbol.TextSymbolAlignment = TextSymbolAlignment.Center;
                             break;
                     }
-                    symbol.SymbolSmoothingMode = Framework.Symbology.SymbolSmoothing.AntiAlias;
+                    symbol.SymbolSmoothingMode = SymbolSmoothing.AntiAlias;
 
                     var fontStyle = FontStyle.Regular;
                     if (ts.Font.Weight == "bold" || ts.Font.Weight == "bolder")

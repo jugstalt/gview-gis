@@ -1,12 +1,13 @@
-using gView.Framework.Data;
-using gView.Framework.UI;
+using gView.Framework.Core.Data;
+using gView.Framework.Core.IO;
+using gView.Framework.Core.UI;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
 
 namespace gView.Interoperability.Server
 {
-    //[gView.Framework.system.RegisterPlugIn("FD3FC1C5-1E10-41e3-8955-3441402950CC")]
+    //[RegisterPlugIn("FD3FC1C5-1E10-41e3-8955-3441402950CC")]
     class ServicableDataset : IServiceableDataset
     {
         MapServerDataset _dataset = null;
@@ -58,7 +59,7 @@ namespace gView.Interoperability.Server
 
         #region IPersistable Member
 
-        public void Load(gView.Framework.IO.IPersistStream stream)
+        public void Load(IPersistStream stream)
         {
             _dataset = null;
             string connectionString = (string)stream.Load("ConnectionString", String.Empty);
@@ -70,7 +71,7 @@ namespace gView.Interoperability.Server
             }
         }
 
-        public void Save(gView.Framework.IO.IPersistStream stream)
+        public void Save(IPersistStream stream)
         {
             if (_dataset == null)
             {

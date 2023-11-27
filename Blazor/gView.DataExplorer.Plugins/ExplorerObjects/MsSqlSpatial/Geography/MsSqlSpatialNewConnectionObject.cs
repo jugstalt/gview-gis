@@ -3,22 +3,21 @@ using gView.DataExplorer.Plugins.Extensions;
 using gView.DataExplorer.Razor.Components.Dialogs.Models;
 using gView.Framework.Blazor;
 using gView.Framework.Blazor.Services.Abstraction;
+using gView.Framework.Core.system;
 using gView.Framework.DataExplorer.Abstraction;
 using gView.Framework.DataExplorer.Events;
 using gView.Framework.Db;
 using gView.Framework.IO;
-using gView.Framework.system;
 using System;
-using System.Drawing.Printing;
 using System.Threading.Tasks;
 
 namespace gView.DataExplorer.Plugins.ExplorerObjects.MsSqlSpatial.Geography;
 
 [RegisterPlugIn("2D95BCBD-B257-4162-8EB3-F5FED50A1F7A")]
-public class MsSqlSpatialNewConnectionObject : 
-                    ExplorerObjectCls<IExplorerObject>, 
-                    IExplorerSimpleObject, 
-                    IExplorerObjectDoubleClick, 
+public class MsSqlSpatialNewConnectionObject :
+                    ExplorerObjectCls<IExplorerObject>,
+                    IExplorerSimpleObject,
+                    IExplorerObjectDoubleClick,
                     IExplorerObjectCreatable
 {
     public MsSqlSpatialNewConnectionObject()

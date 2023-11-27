@@ -1,6 +1,9 @@
+using gView.Framework.Core.Data;
+using gView.Framework.Core.IO;
+using gView.Framework.Core.system;
+using gView.Framework.Core.UI;
 using gView.Framework.Db;
 using gView.Framework.system;
-using gView.Framework.UI;
 using System;
 using System.Data;
 using System.Reflection;
@@ -83,13 +86,13 @@ namespace gView.Framework.Data.Fields.FieldDomains
 
         #region IPersistable Member
 
-        public void Load(gView.Framework.IO.IPersistStream stream)
+        public void Load(IPersistStream stream)
         {
             this.DbConnectionString = (gView.Framework.Db.DbConnectionString)stream.Load("DbConnectionString", null, new DbConnectionString());
             this.SqlStatement = (string)stream.Load("SqlStatement", String.Empty);
         }
 
-        public void Save(gView.Framework.IO.IPersistStream stream)
+        public void Save(IPersistStream stream)
         {
             if (_dbConnString != null)
             {

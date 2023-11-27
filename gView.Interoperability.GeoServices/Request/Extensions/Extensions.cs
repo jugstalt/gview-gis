@@ -1,4 +1,5 @@
-﻿using gView.Framework.Geometry;
+﻿using gView.Framework.Core.Geometry;
+using gView.Framework.Geometry;
 using gView.Framework.system;
 using gView.Interoperability.GeoServices.Rest.Json.Features.Geometry;
 using gView.Interoperability.GeoServices.Rest.Json.FeatureServer;

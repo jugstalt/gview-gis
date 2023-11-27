@@ -1,4 +1,5 @@
-﻿using gView.Framework.IO;
+﻿using gView.Framework.Core.Geometry;
+using gView.Framework.Core.IO;
 using System;
 using System.ComponentModel;
 
@@ -112,7 +113,7 @@ namespace gView.Framework.Geometry
         }
         #region ISpatialReference Member
 
-        public gView.Framework.Geometry.IGeodeticDatum Datum
+        public IGeodeticDatum Datum
         {
             get
             {

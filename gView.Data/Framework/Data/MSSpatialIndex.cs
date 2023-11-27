@@ -1,4 +1,6 @@
-using gView.Framework.FDB;
+using gView.Framework.Core.Data;
+using gView.Framework.Core.FDB;
+using gView.Framework.Core.Geometry;
 using gView.Framework.Geometry;
 using System;
 using System.Text;

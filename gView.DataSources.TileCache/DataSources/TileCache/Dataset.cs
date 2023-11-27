@@ -1,4 +1,9 @@
-﻿using gView.Framework.Data;
+﻿using gView.Framework.Core.Data;
+using gView.Framework.Core.FDB;
+using gView.Framework.Core.Geometry;
+using gView.Framework.Core.IO;
+using gView.Framework.Core.system;
+using gView.Framework.Data;
 using gView.Framework.Data.Metadata;
 using gView.Framework.Geometry;
 using gView.Framework.Geometry.Tiling;
@@ -12,7 +17,7 @@ using System.Threading.Tasks;
 
 namespace gView.DataSources.TileCache
 {
-    [gView.Framework.system.RegisterPlugIn("fce6b9a8-c0b1-4600-bdd5-3eb10fe6b29d")]
+    [RegisterPlugIn("fce6b9a8-c0b1-4600-bdd5-3eb10fe6b29d")]
     public class Dataset : DatasetMetadata, IDataset, IDataCopyright
     {
         private string _dsName = String.Empty;
@@ -168,7 +173,7 @@ namespace gView.DataSources.TileCache
             get { return String.Empty; }
         }
 
-        public Framework.FDB.IDatabase Database
+        public IDatabase Database
         {
             get { return null; }
         }

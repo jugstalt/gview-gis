@@ -1,3 +1,4 @@
+using gView.Framework.Core.Data;
 using gView.Framework.Data;
 
 namespace gView.Framework.Carto
