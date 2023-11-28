@@ -9,6 +9,7 @@ using gView.Framework.Data;
 using gView.Framework.Data.Cursors;
 using gView.Framework.Data.Filters;
 using gView.Framework.Geometry;
+using gView.Framework.Geometry.GeoProcessing;
 using gView.Framework.system;
 using gView.GraphicsEngine;
 using System;
@@ -559,7 +560,7 @@ namespace gView.DataSources.Fdb.MSSql
                             continue;
                         }
 
-                        if (gView.Framework.SpatialAlgorithms.Algorithm.Jordan(
+                        if (Algorithm.Jordan(
                             ((IRasterClass)layer.Class).Polygon,
                             point.X, point.Y))
                         {
@@ -636,7 +637,7 @@ namespace gView.DataSources.Fdb.MSSql
                                 continue;
                             }
 
-                            if (gView.Framework.SpatialAlgorithms.Algorithm.Jordan(((IRasterClass)layer.Class).Polygon, p.X, p.Y))
+                            if (Algorithm.Jordan(((IRasterClass)layer.Class).Polygon, p.X, p.Y))
                             {
                                 ((IGridIdentify)layer.Class).InitGridQuery();
                                 float val = ((IGridIdentify)layer.Class).GridQuery(display, p, sRef);
@@ -919,7 +920,7 @@ namespace gView.DataSources.Fdb.MSSql
                             polygon.Deserialize(r, new GeometryDef(GeometryType.Polygon, null, true));
                             r.Close();
 
-                            if (gView.Framework.SpatialAlgorithms.Algorithm.IntersectBox(polygon, _dispEnvelope))
+                            if (Algorithm.IntersectBox(polygon, _dispEnvelope))
                             {
                                 SqlFDBImageDatasetImageClass rClass = new SqlFDBImageDatasetImageClass(_layer._fdb, _layer._dsname, (int)row["ID"], polygon);
                                 rLayer = new RasterLayer(rClass);

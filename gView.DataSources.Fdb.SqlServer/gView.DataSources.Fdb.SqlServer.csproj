@@ -8,13 +8,13 @@
     <ProjectReference Include="..\gView.Framework.Core\gView.Framework.Core.csproj" />
     <ProjectReference Include="..\gView.DataSources.Fdb\gView.DataSources.Fdb.csproj" />
     <ProjectReference Include="..\gView.DataSources.Raster\gView.DataSources.Raster.csproj" />
-    <ProjectReference Include="..\gView.Data\gView.Data.csproj" />
+    <ProjectReference Include="..\gView.Framework.Data\gView.Framework.Data.csproj" />
     <ProjectReference Include="..\gView.Db\gView.Db.csproj" />
     <ProjectReference Include="..\gView.Editor.Core\gView.Editor.Core.csproj" />
-    <ProjectReference Include="..\gView.Geometry\gView.Geometry.csproj" />
-    <ProjectReference Include="..\gView.Network\gView.Network.csproj" />
-    <ProjectReference Include="..\gView.Offline\gView.Offline.csproj" />
-    <ProjectReference Include="..\gView.OGC\gView.OGC.csproj" />
+    <ProjectReference Include="..\gView.Framework.Geometry\gView.Framework.Geometry.csproj" />
+    <ProjectReference Include="..\gView.Framework.Network\gView.Framework.Network.csproj" />
+    <ProjectReference Include="..\gView.Framework.Offline\gView.Framework.Offline.csproj" />
+    <ProjectReference Include="..\gView.Framework.OGC\gView.Framework.OGC.csproj" />
     <ProjectReference Include="..\gView.System\gView.System.csproj" />
   </ItemGroup>
 

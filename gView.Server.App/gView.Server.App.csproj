@@ -6,8 +6,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\gView.Carto\gView.Carto.csproj" />
-    <ProjectReference Include="..\gView.Data\gView.Data.csproj" />
-    <ProjectReference Include="..\gView.Security\gView.Security.csproj" />
+    <ProjectReference Include="..\gView.Framework.Data\gView.Framework.Data.csproj" />
+    <ProjectReference Include="..\gView.Framework.Security\gView.Framework.Security.csproj" />
     <ProjectReference Include="..\gView.System\gView.System.csproj" />
     <ProjectReference Include="..\NetFramework\gView.Win.Core.UI\gView.Win.Core.UI.csproj" />
   </ItemGroup>

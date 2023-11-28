@@ -1,13 +1,14 @@
-﻿using gView.Data.Framework.Data;
-using gView.Data.Framework.Data.Abstraction;
-using gView.Framework.Carto.LayerRenderers;
+﻿using gView.Framework.Carto.LayerRenderers;
 using gView.Framework.Core.Carto;
 using gView.Framework.Core.Data;
 using gView.Framework.Core.Geometry;
 using gView.Framework.Core.Symbology;
 using gView.Framework.Core.system;
 using gView.Framework.Data;
+using gView.Framework.Data.Abstraction;
+using gView.Framework.Data.Extensions;
 using gView.Framework.Geometry;
+using gView.Framework.Geometry.GeoProcessing;
 using gView.Framework.system;
 using System;
 using System.Collections.Generic;
@@ -321,7 +322,7 @@ namespace gView.Framework.Carto
                                     dispEnvelope = ((IGeometry)Display.GeometricTransformer.InvTransform2D(dispEnvelope)).Envelope;
                                 }
 
-                                if (gView.Framework.SpatialAlgorithms.Algorithm.IntersectBox(rLayer.RasterClass.Polygon, dispEnvelope))
+                                if (Algorithm.IntersectBox(rLayer.RasterClass.Polygon, dispEnvelope))
                                 {
                                     if (rLayer.Class is IParentRasterLayer)
                                     {
@@ -480,7 +481,7 @@ namespace gView.Framework.Carto
                                         ((IFeatureSelection)theme).SelectionSet.Count > 0)
                                     {
                                         SetGeotransformer(theme, geoTransformer);
-                                        await RenderSelection(theme as IFeatureLayer, cancelTracker);
+                                        await RenderSelection(theme, cancelTracker);
                                     }
                                 }
                             }

@@ -7,9 +7,9 @@ using gView.Framework.Core.Geometry.Extensions;
 using gView.Framework.Core.system;
 using gView.Framework.Data;
 using gView.Framework.Data.Filters;
-using gView.Framework.OGC;
+using gView.Framework.Geometry.GeoProcessing;
 using gView.Framework.OGC.DB;
-using gView.Framework.SpatialAlgorithms;
+using gView.Framework.OGC.WKT;
 using System;
 using System.Collections.Generic;
 using System.Data.Common;
@@ -98,7 +98,7 @@ namespace gView.DataSources.MSSqlSpatial.DataSources.Sde
                 case FieldType.Shape:
                     return "[GEOMETRY]";
                 case FieldType.ID:
-                    return $"[int] IDENTITY(1,1) NOT NULL CONSTRAINT KEY_{System.Guid.NewGuid().ToString("N")}_{field.name} PRIMARY KEY CLUSTERED";
+                    return $"[int] IDENTITY(1,1) NOT NULL CONSTRAINT KEY_{System.Guid.NewGuid():N}_{field.name} PRIMARY KEY CLUSTERED";
                 case FieldType.smallinteger:
                     return "[int] NULL";
                 case FieldType.integer:
@@ -143,7 +143,7 @@ namespace gView.DataSources.MSSqlSpatial.DataSources.Sde
 
             AsSqlParameter = false;
 
-            var wkt = gView.Framework.OGC.WKT.ToWKT(shape);
+            var wkt = WKT.ToWKT(shape);
 
             sqlStatementHeader.Append("DECLARE @");
             sqlStatementHeader.Append(fClass.ShapeFieldName);
@@ -289,7 +289,7 @@ namespace gView.DataSources.MSSqlSpatial.DataSources.Sde
             if (filter.Limit > 0)
             {
                 if (RepoProvider.PreferTopThanOffset() ||
-                    (String.IsNullOrEmpty(fc.IDFieldName) && 
+                    (String.IsNullOrEmpty(fc.IDFieldName) &&
                      orderBy.Length == 0 && !(filter is DistinctFilter)))
                 {
                     top.Append($"top({filter.Limit}) ");

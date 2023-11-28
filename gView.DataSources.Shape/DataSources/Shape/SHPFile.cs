@@ -2,6 +2,7 @@ using gView.Framework.Core.Data;
 using gView.Framework.Core.Geometry;
 using gView.Framework.Data;
 using gView.Framework.Geometry;
+using gView.Framework.Geometry.GeoProcessing;
 using System;
 using System.IO;
 
@@ -977,7 +978,7 @@ namespace gView.DataSources.Shape
 
                         if (_header.ShapeType == ShapeType.PolyLineM || _header.ShapeType == ShapeType.PolyLineZ)
                         {
-                            IPointCollection pColl = gView.Framework.SpatialAlgorithms.Algorithm.GeometryPoints(pline, false);
+                            IPointCollection pColl = Algorithm.GeometryPoints(pline, false);
                             if (_header.ShapeType == ShapeType.PolyLineZ)
                             {
                                 WritePointsZRange(bw_shp, pColl);
@@ -1012,7 +1013,7 @@ namespace gView.DataSources.Shape
 
                         if (_header.ShapeType == ShapeType.PolygonM || _header.ShapeType == ShapeType.PolygonZ)
                         {
-                            IPointCollection pColl = gView.Framework.SpatialAlgorithms.Algorithm.GeometryPoints(poly, false);
+                            IPointCollection pColl = Algorithm.GeometryPoints(poly, false);
                             if (_header.ShapeType == ShapeType.PolygonZ)
                             {
                                 WritePointsZRange(bw_shp, pColl);

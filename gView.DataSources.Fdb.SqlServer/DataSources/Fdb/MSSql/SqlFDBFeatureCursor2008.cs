@@ -3,6 +3,7 @@ using gView.Framework.Core.Data.Cursors;
 using gView.Framework.Core.Data.Filters;
 using gView.Framework.Core.Geometry;
 using gView.Framework.Data;
+using gView.Framework.OGC.WKT;
 using System;
 using System.Data;
 using System.Data.SqlClient;
@@ -57,7 +58,7 @@ namespace gView.DataSources.Fdb.MSSql
                         where.Append("geography::STGeomFromText('");
                     }
 
-                    where.Append(gView.Framework.OGC.WKT.ToWKT(sFilter.Geometry));
+                    where.Append(WKT.ToWKT(sFilter.Geometry));
                     where.Append("',");
                     if (geometryType == GeometryFieldType.MsGeometry)
                     {
@@ -82,7 +83,7 @@ namespace gView.DataSources.Fdb.MSSql
                         where.Append("geography::STGeomFromText('");
                     }
 
-                    where.Append(gView.Framework.OGC.WKT.ToWKT(sFilter.Geometry));
+                    where.Append(WKT.ToWKT(sFilter.Geometry));
                     where.Append("',");
                     if (geometryType == GeometryFieldType.MsGeometry)
                     {

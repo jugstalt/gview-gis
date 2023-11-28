@@ -4,6 +4,7 @@ using gView.Framework.Core.IO;
 using gView.Framework.Core.Symbology;
 using gView.Framework.Core.system;
 using gView.Framework.Geometry;
+using gView.Framework.Geometry.GeoProcessing;
 using gView.Framework.Symbology.Extensions;
 using gView.GraphicsEngine.Abstraction;
 using System;
@@ -116,7 +117,7 @@ namespace gView.Framework.Symbology
                     new Envelope(display.Envelope);
 
                 //dispEnvelope.Raise(75);
-                geometry = SpatialAlgorithms.Clip.PerformClip(dispEnvelope, geometry);
+                geometry = Clip.PerformClip(dispEnvelope, geometry);
                 if (geometry == null)
                 {
                     return;
@@ -182,7 +183,7 @@ namespace gView.Framework.Symbology
                             if (this.DrawStepPoints && stepWidthValue >= 1 && step > double.Epsilon)
                             {
                                 pointCollection = length > step ?
-                                    SpatialAlgorithms.Algorithm.PathPoints(path,
+                                    Algorithm.PathPoints(path,
                                                                            fromStat: start > 0.0 ? start : step,
                                                                            toStat: length,
                                                                            step: step,

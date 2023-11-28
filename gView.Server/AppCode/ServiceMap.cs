@@ -1,6 +1,4 @@
-﻿using gView.Data.Framework.Data;
-using gView.Data.Framework.Data.Abstraction;
-using gView.Framework.Carto;
+﻿using gView.Framework.Carto;
 using gView.Framework.Carto.LayerRenderers;
 using gView.Framework.Core.Carto;
 using gView.Framework.Core.Data;
@@ -10,12 +8,14 @@ using gView.Framework.Core.MapServer;
 using gView.Framework.Core.system;
 using gView.Framework.Core.UI;
 using gView.Framework.Data;
+using gView.Framework.Data.Abstraction;
+using gView.Framework.Data.Extensions;
 using gView.Framework.Geometry;
+using gView.Framework.Geometry.GeoProcessing;
 using gView.Framework.IO;
 using gView.Framework.system;
 using gView.GraphicsEngine;
 using gView.GraphicsEngine.Abstraction;
-using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -32,13 +32,13 @@ namespace gView.Server.AppCode
         private ServiceRequest _request = null;
         private IServiceRequestContext _requestContext = null;
         private IEnumerable<IMapApplicationModule> _modules = null;
-        
+
         //private bool _ceckLayerVisibilityBeforeDrawing;
 
         private ServiceMap() { }
 
         async static public Task<ServiceMap> CreateAsync(
-            Map original, 
+            Map original,
             IMapServer mapServer,
             IEnumerable<IMapApplicationModule> modules,
             IServiceRequestContext requestContext)
@@ -636,7 +636,7 @@ namespace gView.Server.AppCode
                                 dispEnvelope = ((IGeometry)Display.GeometricTransformer.InvTransform2D(dispEnvelope)).Envelope;
                             }
 
-                            if (gView.Framework.SpatialAlgorithms.Algorithm.IntersectBox(rLayer.RasterClass.Polygon, dispEnvelope))
+                            if (Algorithm.IntersectBox(rLayer.RasterClass.Polygon, dispEnvelope))
                             {
                                 if (rLayer.Class is IParentRasterLayer)
                                 {

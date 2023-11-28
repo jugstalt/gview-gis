@@ -8,7 +8,7 @@
   <ItemGroup>
     <ProjectReference Include="..\gView.Carto\gView.Carto.csproj" />
     <ProjectReference Include="..\gView.Cmd.Core\gView.Cmd.Core.csproj" />
-    <ProjectReference Include="..\gView.Metadata\gView.Metadata.csproj" />
+    <ProjectReference Include="..\gView.Framework.Metadata\gView.Framework.Metadata.csproj" />
     <ProjectReference Include="..\gView.Server.Clients\gView.Server.Clients.csproj" />
     <ProjectReference Include="..\gView.Server.Connector\gView.Server.Connector.csproj" />
   </ItemGroup>

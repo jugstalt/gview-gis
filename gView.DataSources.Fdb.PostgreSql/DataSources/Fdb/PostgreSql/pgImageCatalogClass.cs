@@ -9,6 +9,7 @@ using gView.Framework.Data;
 using gView.Framework.Data.Cursors;
 using gView.Framework.Data.Filters;
 using gView.Framework.Geometry;
+using gView.Framework.Geometry.GeoProcessing;
 using gView.Framework.system;
 using gView.GraphicsEngine;
 using System;
@@ -558,7 +559,7 @@ namespace gView.DataSources.Fdb.PostgreSql
                             continue;
                         }
 
-                        if (gView.Framework.SpatialAlgorithms.Algorithm.Jordan(
+                        if (Algorithm.Jordan(
                             ((IRasterClass)layer.Class).Polygon,
                             point.X, point.Y))
                         {
@@ -635,7 +636,7 @@ namespace gView.DataSources.Fdb.PostgreSql
                                 continue;
                             }
 
-                            if (gView.Framework.SpatialAlgorithms.Algorithm.Jordan(((IRasterClass)layer.Class).Polygon, p.X, p.Y))
+                            if (Algorithm.Jordan(((IRasterClass)layer.Class).Polygon, p.X, p.Y))
                             {
                                 ((IGridIdentify)layer.Class).InitGridQuery();
                                 float val = ((IGridIdentify)layer.Class).GridQuery(display, p, sRef);

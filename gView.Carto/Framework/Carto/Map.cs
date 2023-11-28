@@ -7,6 +7,7 @@ using gView.Framework.Core.IO;
 using gView.Framework.Core.system;
 using gView.Framework.Core.UI;
 using gView.Framework.Data;
+using gView.Framework.Data.Extensions;
 using gView.Framework.Geometry;
 using gView.Framework.IO;
 using gView.Framework.system;

@@ -8,6 +8,7 @@ using gView.Framework.Data;
 using gView.Framework.Data.Cursors;
 using gView.Framework.Data.Filters;
 using gView.Framework.Geometry;
+using gView.Framework.Geometry.GeoProcessing;
 using gView.Framework.Network.Algorthm;
 using gView.Framework.Network.Build;
 using System;
@@ -860,7 +861,7 @@ namespace gView.DataSources.Fdb.PostgreSql
                     int fcid = (int)feature["NETWORK#FCID"];
 
                     double dist, stat;
-                    IPoint spoint = gView.Framework.SpatialAlgorithms.Algorithm.Point2PolylineDistance((IPolyline)feature.Shape, point, out dist, out stat);
+                    IPoint spoint = Algorithm.Point2PolylineDistance((IPolyline)feature.Shape, point, out dist, out stat);
                     if (spoint == null)
                     {
                         continue;

@@ -2,7 +2,7 @@
 using gView.Framework.Core.Geometry;
 using gView.Framework.Data;
 using gView.Framework.Geometry;
-using gView.OGC.Framework.OGC.DB;
+using gView.Framework.OGC.DB;
 using System;
 using System.Collections;
 using System.Collections.Generic;

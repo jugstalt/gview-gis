@@ -4,6 +4,7 @@ using gView.Framework.Core.IO;
 using gView.Framework.Core.Symbology;
 using gView.Framework.Core.system;
 using gView.Framework.Geometry;
+using gView.Framework.Geometry.GeoProcessing;
 using gView.GraphicsEngine;
 using gView.GraphicsEngine.Abstraction;
 using System.ComponentModel;
@@ -77,7 +78,7 @@ namespace gView.Framework.Symbology
                 for (int i = 0; i < ((IPolygon)geometry).RingCount; i++)
                 {
                     var ring = ((IPolygon)geometry)[i];
-                    if (SpatialAlgorithms.Algorithm.Intersects(display.Envelope, new Polygon(ring)))
+                    if (Algorithm.Intersects(display.Envelope, new Polygon(ring)))
                     {
                         p.AddRing(ring);
                     }
@@ -93,7 +94,7 @@ namespace gView.Framework.Symbology
                         for (int i = 0; i < poly.RingCount; i++)
                         {
                             var ring = poly[i];
-                            if (SpatialAlgorithms.Algorithm.Intersects(display.Envelope, new Polygon(ring)))
+                            if (Algorithm.Intersects(display.Envelope, new Polygon(ring)))
                             {
                                 p.AddRing(ring);
                             }

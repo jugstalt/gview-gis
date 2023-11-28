@@ -1,6 +1,6 @@
 ﻿using gView.Framework.Core.Exceptions;
 using gView.Framework.Security;
-using gView.Security.Framework;
+using gView.Framework.Security.Extensions;
 using gView.Server.AppCode;
 using gView.Server.Extensions;
 using gView.Server.Services.MapServer;

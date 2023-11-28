@@ -8,6 +8,7 @@ using gView.Framework.Core.Symbology;
 using gView.Framework.Core.system;
 using gView.Framework.Core.UI;
 using gView.Framework.Geometry;
+using gView.Framework.Geometry.GeoProcessing;
 using gView.Framework.Symbology;
 using gView.Framework.system;
 using System;
@@ -228,7 +229,7 @@ namespace gView.Framework.Carto.Rendering
             else if (feature.Shape is IPolyline)
             {
                 IEnvelope dispEnv = _clipEnvelope;
-                IPolyline pLine = (IPolyline)gView.Framework.SpatialAlgorithms.Clip.PerformClip(dispEnv, feature.Shape);
+                IPolyline pLine = (IPolyline)Clip.PerformClip(dispEnv, feature.Shape);
 
                 if (pLine == null)
                 {
@@ -291,7 +292,7 @@ namespace gView.Framework.Carto.Rendering
                 return false;
             }
 
-            IMultiPoint pColl = gView.Framework.SpatialAlgorithms.Algorithm.PolygonLabelPoints(polygon);
+            IMultiPoint pColl = Algorithm.PolygonLabelPoints(polygon);
             return LabelPointCollection(disp, polygon, pColl, values, valSum, valMin, valMax);
         }
 

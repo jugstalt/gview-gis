@@ -9,6 +9,7 @@ using gView.Framework.Core.MapServer;
 using gView.Framework.Core.system;
 using gView.Framework.Core.UI;
 using gView.Framework.Data;
+using gView.Framework.Data.Extensions;
 using gView.Framework.Data.Filters;
 using gView.Framework.Editor.Core;
 using gView.Framework.Geometry;

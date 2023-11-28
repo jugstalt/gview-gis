@@ -1,5 +1,6 @@
 ﻿using gView.Framework.Core.Geometry;
 using gView.Framework.Geometry;
+using gView.Framework.Geometry.GeoProcessing;
 using MongoDB.Driver.GeoJsonObjectModel;
 using System;
 using System.Collections.Generic;
@@ -296,7 +297,7 @@ namespace gView.DataSources.MongoDb
                     res = res.ToDegrees();
                 }
 
-                var generalizedGeometry = gView.Framework.SpatialAlgorithms.Algorithm.Generalize(geometry, res * 2, true);
+                var generalizedGeometry = Algorithm.Generalize(geometry, res * 2, true);
 
                 if (generalizedGeometry == null)
                 {

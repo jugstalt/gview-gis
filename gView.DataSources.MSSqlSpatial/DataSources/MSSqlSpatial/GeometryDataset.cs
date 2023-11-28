@@ -7,9 +7,8 @@ using gView.Framework.Core.system;
 using gView.Framework.Data;
 using gView.Framework.Data.Filters;
 using gView.Framework.Geometry;
-using gView.Framework.OGC;
 using gView.Framework.OGC.DB;
-using gView.Framework.SpatialAlgorithms;
+using gView.Framework.OGC.WKT;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -87,7 +86,7 @@ namespace gView.DataSources.MSSqlSpatial
                 case FieldType.Shape:
                     return "[GEOMETRY]";
                 case FieldType.ID:
-                    return $"[int] IDENTITY(1,1) NOT NULL CONSTRAINT KEY_{System.Guid.NewGuid().ToString("N")}_{field.name} PRIMARY KEY CLUSTERED";
+                    return $"[int] IDENTITY(1,1) NOT NULL CONSTRAINT KEY_{System.Guid.NewGuid():N}_{field.name} PRIMARY KEY CLUSTERED";
                 case FieldType.smallinteger:
                     return "[int] NULL";
                 case FieldType.integer:
@@ -122,7 +121,7 @@ namespace gView.DataSources.MSSqlSpatial
         }
 
         protected override object ShapeParameterValue(OgcSpatialFeatureclass fClass,
-                                                      IGeometry shape, 
+                                                      IGeometry shape,
                                                       int srid,
                                                       StringBuilder sqlStatementHeader,
                                                       out bool AsSqlParameter)
@@ -137,7 +136,7 @@ namespace gView.DataSources.MSSqlSpatial
 
             AsSqlParameter = false;
 
-            var wkt = gView.Framework.OGC.WKT.ToWKT(shape);
+            var wkt = WKT.ToWKT(shape);
 
             sqlStatementHeader.Append("DECLARE @");
             sqlStatementHeader.Append(fClass.ShapeFieldName);
@@ -461,7 +460,7 @@ namespace gView.DataSources.MSSqlSpatial
                         try
                         {
                             var fcShema = row["dbSchema"].ToString();
-                            var fcName = String.IsNullOrEmpty(fcShema) ? row["tabName"].ToString() : $"{fcShema}.{row["tabName"].ToString()}";
+                            var fcName = String.IsNullOrEmpty(fcShema) ? row["tabName"].ToString() : $"{fcShema}.{row["tabName"]}";
 
                             tasks.Add(Featureclass.Create(this,
                                 fcName,
@@ -475,7 +474,7 @@ namespace gView.DataSources.MSSqlSpatial
                         try
                         {
                             var fcShema = row["dbSchema"].ToString();
-                            var fcName = String.IsNullOrEmpty(fcShema) ? row["tabName"].ToString() : $"{fcShema}.{row["tabName"].ToString()}";
+                            var fcName = String.IsNullOrEmpty(fcShema) ? row["tabName"].ToString() : $"{fcShema}.{row["tabName"]}";
 
                             tasks.Add(Featureclass.Create(this,
                                 fcName,
@@ -525,7 +524,7 @@ namespace gView.DataSources.MSSqlSpatial
 
                     adapter.SelectCommand.CommandText = @"select SCHEMA_NAME(t.schema_id) as dbSchema, t.name as tabName, c.name as colName, types.name from sys.views t join sys.columns c on (t.object_id = c.object_id) join sys.types types on (c.user_type_id = types.user_type_id) where types.name = 'geometry'";
                     adapter.Fill(views);
-                   
+
                     dbConnection.Close();
                 }
 

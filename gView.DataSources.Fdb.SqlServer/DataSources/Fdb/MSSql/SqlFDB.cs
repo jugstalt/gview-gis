@@ -10,6 +10,7 @@ using gView.Framework.Data.Filters;
 using gView.Framework.Db;
 using gView.Framework.Geometry;
 using gView.Framework.Offline;
+using gView.Framework.OGC.WKT;
 using gView.Framework.system;
 using System;
 using System.Collections.Generic;
@@ -1429,22 +1430,22 @@ namespace gView.DataSources.Fdb.MSSql
                                 {
                                     if (fClass.GeometryType == GeometryType.Polygon)
                                     {
-                                        wkt = "geometry::STGeomFromText('" + gView.Framework.OGC.WKT.ToWKT(shape) + "',0).MakeValid()";
+                                        wkt = "geometry::STGeomFromText('" + WKT.ToWKT(shape) + "',0).MakeValid()";
                                     }
                                     else
                                     {
-                                        wkt = "geometry::STGeomFromText('" + gView.Framework.OGC.WKT.ToWKT(shape) + "',0)";
+                                        wkt = "geometry::STGeomFromText('" + WKT.ToWKT(shape) + "',0)";
                                     }
                                 }
                                 else
                                 {
                                     if (fClass.GeometryType == GeometryType.Polygon)
                                     {
-                                        wkt = "geography::STGeomFromText('" + GeographyMakeValid(connection, transaction, gView.Framework.OGC.WKT.ToWKT(shape)) + "',4326)";
+                                        wkt = "geography::STGeomFromText('" + GeographyMakeValid(connection, transaction, WKT.ToWKT(shape)) + "',4326)";
                                     }
                                     else
                                     {
-                                        wkt = "geography::STGeomFromText('" + gView.Framework.OGC.WKT.ToWKT(shape) + "',4326)";
+                                        wkt = "geography::STGeomFromText('" + WKT.ToWKT(shape) + "',4326)";
                                     }
                                 }
                                 //SqlParameter parameter = new SqlParameter("@FDB_SHAPE", wkt);
@@ -1697,22 +1698,22 @@ namespace gView.DataSources.Fdb.MSSql
                                 {
                                     if (fClass.GeometryType == GeometryType.Polygon)
                                     {
-                                        wkt = "geometry::STGeomFromText('" + gView.Framework.OGC.WKT.ToWKT(feature.Shape) + "',0).MakeValid()";
+                                        wkt = "geometry::STGeomFromText('" + WKT.ToWKT(feature.Shape) + "',0).MakeValid()";
                                     }
                                     else
                                     {
-                                        wkt = "geometry::STGeomFromText('" + gView.Framework.OGC.WKT.ToWKT(feature.Shape) + "',0)";
+                                        wkt = "geometry::STGeomFromText('" + WKT.ToWKT(feature.Shape) + "',0)";
                                     }
                                 }
                                 else
                                 {
                                     if (fClass.GeometryType == GeometryType.Polygon)
                                     {
-                                        wkt = "geography::STGeomFromText('" + GeographyMakeValid(connection, transaction, gView.Framework.OGC.WKT.ToWKT(feature.Shape)) + "',4326)";
+                                        wkt = "geography::STGeomFromText('" + GeographyMakeValid(connection, transaction, WKT.ToWKT(feature.Shape)) + "',4326)";
                                     }
                                     else
                                     {
-                                        wkt = "geography::STGeomFromText('" + gView.Framework.OGC.WKT.ToWKT(feature.Shape) + "',4326)";
+                                        wkt = "geography::STGeomFromText('" + WKT.ToWKT(feature.Shape) + "',4326)";
                                     }
                                 }
                                 //SqlParameter parameter = new SqlParameter("@FDB_SHAPE", wkt);

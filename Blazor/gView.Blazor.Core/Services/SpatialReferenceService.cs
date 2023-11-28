@@ -1,8 +1,6 @@
 ﻿using gView.Framework.Geometry;
-using gView.Framework.Proj;
-using System.Collections;
+using gView.Framework.Geometry.Proj;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using System.Data;
 using System.Threading.Tasks;
 
@@ -32,7 +30,7 @@ public class SpatialReferenceService
         return Task.FromResult<IDictionary<string, string>>(result);
     }
 
-    public Task<IDictionary<string,string>> GetDatums()
+    public Task<IDictionary<string, string>> GetDatums()
     {
         var result = new Dictionary<string, string>();
         var dataTable = _datumsDb.GetDatumTable();

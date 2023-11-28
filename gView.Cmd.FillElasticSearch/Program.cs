@@ -3,7 +3,7 @@ using gView.Framework.Core.Data.Cursors;
 using gView.Framework.Core.Geometry;
 using gView.Framework.Data.Filters;
 using gView.Framework.Geometry;
-using gView.Framework.SpatialAlgorithms;
+using gView.Framework.Geometry.GeoProcessing;
 using gView.Framework.system;
 using Newtonsoft.Json;
 using System;

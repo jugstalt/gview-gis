@@ -24,7 +24,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\gView.Cmd.Core\gView.Cmd.Core.csproj" />
     <ProjectReference Include="..\..\gView.Cmd.Fdb.Lib\gView.Cmd.Fdb.Lib.csproj" />
-    <ProjectReference Include="..\..\gView.Data.Fields\gView.Data.Fields.csproj" />
+    <ProjectReference Include="..\..\gView.Framework.Data.Fields\gView.Framework.Data.Fields.csproj" />
     <ProjectReference Include="..\..\gView.DataSources.OSGeo\gView.DataSources.OSGeo.csproj" />
     <ProjectReference Include="..\..\gView.DataSources.TileCache\gView.DataSources.TileCache.csproj" />
     <ProjectReference Include="..\..\gView.Server.Clients\gView.Server.Clients.csproj" />

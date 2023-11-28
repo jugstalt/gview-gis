@@ -5,8 +5,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\gView.Data\gView.Data.csproj" />
-    <ProjectReference Include="..\gView.OGC\gView.OGC.csproj" />
+    <ProjectReference Include="..\gView.Framework.Data\gView.Framework.Data.csproj" />
+    <ProjectReference Include="..\gView.Framework.OGC\gView.Framework.OGC.csproj" />
   </ItemGroup>
 
 </Project>

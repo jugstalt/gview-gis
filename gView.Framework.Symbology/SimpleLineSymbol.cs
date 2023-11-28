@@ -6,6 +6,7 @@ using gView.Framework.Core.IO;
 using gView.Framework.Core.Symbology;
 using gView.Framework.Core.system;
 using gView.Framework.Geometry;
+using gView.Framework.Geometry.GeoProcessing;
 using gView.Framework.Symbology.UI;
 using gView.Framework.Symbology.UI.Abstractions;
 using gView.GraphicsEngine;
@@ -166,7 +167,7 @@ namespace gView.Framework.Symbology
                     new Envelope(display.Envelope);
 
                 //dispEnvelope.Raise(75);
-                geometry = gView.Framework.SpatialAlgorithms.Clip.PerformClip(dispEnvelope, geometry);
+                geometry = Clip.PerformClip(dispEnvelope, geometry);
                 if (geometry == null)
                 {
                     return;

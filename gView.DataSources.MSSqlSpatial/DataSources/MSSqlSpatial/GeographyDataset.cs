@@ -7,6 +7,7 @@ using gView.Framework.Data;
 using gView.Framework.Data.Filters;
 using gView.Framework.Geometry;
 using gView.Framework.OGC.DB;
+using gView.Framework.OGC.WKT;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -87,7 +88,7 @@ namespace gView.DataSources.MSSqlSpatial
 
             AsSqlParameter = false;
 
-            var wkt = gView.Framework.OGC.WKT.ToWKT(shape);
+            var wkt = WKT.ToWKT(shape);
 
             sqlStatementHeader.Append("DECLARE @");
             sqlStatementHeader.Append(fClass.ShapeFieldName);

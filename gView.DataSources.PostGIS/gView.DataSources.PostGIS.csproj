@@ -6,10 +6,10 @@
 
   <ItemGroup>
     <ProjectReference Include="..\gView.Framework.Core\gView.Framework.Core.csproj" />
-    <ProjectReference Include="..\gView.Data\gView.Data.csproj" />
+    <ProjectReference Include="..\gView.Framework.Data\gView.Framework.Data.csproj" />
     <ProjectReference Include="..\gView.Db\gView.Db.csproj" />
     <ProjectReference Include="..\gView.Editor.Core\gView.Editor.Core.csproj" />
-    <ProjectReference Include="..\gView.OGC\gView.OGC.csproj" />
+    <ProjectReference Include="..\gView.Framework.OGC\gView.Framework.OGC.csproj" />
   </ItemGroup>
 
   <ItemGroup>

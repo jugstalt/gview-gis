@@ -8,6 +8,7 @@ using gView.Framework.Core.Symbology;
 using gView.Framework.Core.system;
 using gView.Framework.Core.UI;
 using gView.Framework.Geometry;
+using gView.Framework.Geometry.GeoProcessing;
 using gView.Framework.Symbology;
 using gView.Framework.system;
 using gView.GraphicsEngine.Abstraction;
@@ -330,7 +331,7 @@ namespace gView.Framework.Carto.Rendering
                 //    object e = disp.GeometricTransformer.InvTransform2D(disp.Envelope);
                 //    if (e is IGeometry) dispEnv = ((IGeometry)e).Envelope;
                 //}
-                IPolyline pLine = (IPolyline)gView.Framework.SpatialAlgorithms.Clip.PerformClip(dispEnv, feature.Shape);
+                IPolyline pLine = (IPolyline)Clip.PerformClip(dispEnv, feature.Shape);
 
                 if (pLine == null)
                 {
@@ -633,7 +634,7 @@ namespace gView.Framework.Carto.Rendering
 
             if (polygon.TotalPointCount < MaxPolygonTotalPointCount)
             {
-                IMultiPoint pColl = gView.Framework.SpatialAlgorithms.Algorithm.PolygonLabelPoints(polygon);
+                IMultiPoint pColl = Algorithm.PolygonLabelPoints(polygon);
                 return LabelPointCollection(disp, polygon, pColl);
             }
             else
