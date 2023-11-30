@@ -3,121 +3,121 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.1.32328.378
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.System", "gView.System\gView.System.csproj", "{E50D8014-0FB8-4B67-8291-0ABEE04A1403}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Framework", "src\gView.Framework\gView.Framework.csproj", "{E50D8014-0FB8-4B67-8291-0ABEE04A1403}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Framework.Core", "gView.Framework.Core\gView.Framework.Core.csproj", "{5A66D185-6E2C-4DA4-97D7-00616A182BD8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Framework.Core", "src\gView.Framework.Core\gView.Framework.Core.csproj", "{5A66D185-6E2C-4DA4-97D7-00616A182BD8}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Db", "gView.Db\gView.Db.csproj", "{FB98412B-8DEF-4B02-B903-2979A433E75E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Framework.Db", "src\gView.Framework.Db\gView.Framework.Db.csproj", "{FB98412B-8DEF-4B02-B903-2979A433E75E}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Math", "gView.Framework.Calc\gView.Framework.Calc.csproj", "{DEB9738E-EC3B-4E04-9301-617CB56641AC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Framework.Calc", "src\gView.Framework.Calc\gView.Framework.Calc.csproj", "{DEB9738E-EC3B-4E04-9301-617CB56641AC}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Framework.Geometry", "gView.Framework.Geometry\gView.Framework.Geometry.csproj", "{82012E45-2EFC-498E-9BB1-F3DEBA4B87C5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Framework.Geometry", "src\gView.Framework.Geometry\gView.Framework.Geometry.csproj", "{82012E45-2EFC-498E-9BB1-F3DEBA4B87C5}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Framework.Data", "gView.Framework.Data\gView.Framework.Data.csproj", "{9B556868-8431-4D6C-B002-3FEF15DF0498}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Framework.Data", "src\gView.Framework.Data\gView.Framework.Data.csproj", "{9B556868-8431-4D6C-B002-3FEF15DF0498}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Framework.Data.Fields", "gView.Framework.Data.Fields\gView.Framework.Data.Fields.csproj", "{F47E7FFF-3582-4BB4-84DB-B197A5DA921F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Framework.Data.Fields", "src\gView.Framework.Data.Fields\gView.Framework.Data.Fields.csproj", "{F47E7FFF-3582-4BB4-84DB-B197A5DA921F}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Carto", "gView.Carto\gView.Carto.csproj", "{517F72FA-AA41-4E70-8469-E7BECCA58AD6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Framework.Cartography", "src\gView.Framework.Cartography\gView.Framework.Cartography.csproj", "{517F72FA-AA41-4E70-8469-E7BECCA58AD6}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Carto.Rendering", "gView.Carto.Rendering\gView.Carto.Rendering.csproj", "{961D9A60-014E-4139-907F-0112F5DFAC4D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Framework.Cartography.Rendering", "src\gView.Framework.Cartography.Rendering\gView.Framework.Cartography.Rendering.csproj", "{961D9A60-014E-4139-907F-0112F5DFAC4D}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Framework.Symbology", "gView.Framework.Symbology\gView.Framework.Symbology.csproj", "{C37D6D4B-5670-49B9-8592-48E9DCC0AA3C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Framework.Symbology", "src\gView.Framework.Symbology\gView.Framework.Symbology.csproj", "{C37D6D4B-5670-49B9-8592-48E9DCC0AA3C}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Network", "gView.Framework.Network\gView.Framework.Network.csproj", "{F47EA9DF-E750-4AFE-BDFF-8644403E17BB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Framework.Network", "src\gView.Framework.Network\gView.Framework.Network.csproj", "{F47EA9DF-E750-4AFE-BDFF-8644403E17BB}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Framework.Data.Joins", "gView.Framework.Data.Joins\gView.Framework.Data.Joins.csproj", "{1730A1E1-3991-46D0-A52A-1A86B6CCB8F0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Framework.Data.Joins", "src\gView.Framework.Data.Joins\gView.Framework.Data.Joins.csproj", "{1730A1E1-3991-46D0-A52A-1A86B6CCB8F0}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Editor.Core", "gView.Editor.Core\gView.Editor.Core.csproj", "{8C804D9D-7CB0-4F53-88B2-F265060CE702}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Editor.Core", "src\gView.Editor.Core\gView.Editor.Core.csproj", "{8C804D9D-7CB0-4F53-88B2-F265060CE702}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.OGC", "gView.Framework.OGC\gView.Framework.OGC.csproj", "{248D2C9B-793A-4EB0-A2DA-7A881A1357BD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Framework.OGC", "src\gView.Framework.OGC\gView.Framework.OGC.csproj", "{248D2C9B-793A-4EB0-A2DA-7A881A1357BD}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Web", "gView.Web\gView.Web.csproj", "{B0F8BFA1-0034-4797-AE21-CD4CBD489E4C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Framework.Web", "src\gView.Framework.Web\gView.Framework.Web.csproj", "{B0F8BFA1-0034-4797-AE21-CD4CBD489E4C}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.DataSources.PostGIS", "gView.DataSources.PostGIS\gView.DataSources.PostGIS.csproj", "{794758C5-26A1-4141-B2A5-FCA016AADB8B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.DataSources.PostGIS", "src\gView.DataSources.PostGIS\gView.DataSources.PostGIS.csproj", "{794758C5-26A1-4141-B2A5-FCA016AADB8B}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.DataSources.MSSqlSpatial", "gView.DataSources.MSSqlSpatial\gView.DataSources.MSSqlSpatial.csproj", "{5326D7F9-707E-45E2-92D2-5CB92D0FF897}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.DataSources.MSSqlSpatial", "src\gView.DataSources.MSSqlSpatial\gView.DataSources.MSSqlSpatial.csproj", "{5326D7F9-707E-45E2-92D2-5CB92D0FF897}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Offline", "gView.Framework.Offline\gView.Framework.Offline.csproj", "{7EAF9C21-4C1D-4996-B111-7C503217B8F5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Framework.Offline", "src\gView.Framework.Offline\gView.Framework.Offline.csproj", "{7EAF9C21-4C1D-4996-B111-7C503217B8F5}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.DataSources.Fdb", "gView.DataSources.Fdb\gView.DataSources.Fdb.csproj", "{595657D6-C9DC-4A48-A5D0-3CBC4A90ADA1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.DataSources.Fdb", "src\gView.DataSources.Fdb\gView.DataSources.Fdb.csproj", "{595657D6-C9DC-4A48-A5D0-3CBC4A90ADA1}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.DataSources.Raster", "gView.DataSources.Raster\gView.DataSources.Raster.csproj", "{180B4390-78E4-47CD-BA97-30F5EF31AF07}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.DataSources.Raster", "src\gView.DataSources.Raster\gView.DataSources.Raster.csproj", "{180B4390-78E4-47CD-BA97-30F5EF31AF07}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.XML", "gView.Framework.XML\gView.Framework.XML.csproj", "{CDF0E058-D35B-4EFE-9BBD-E1E355A4BD6B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Framework.XML", "src\gView.Framework.XML\gView.Framework.XML.csproj", "{CDF0E058-D35B-4EFE-9BBD-E1E355A4BD6B}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.XML2", "gView.Framework.AXL\gView.Framework.AXL.csproj", "{4C56BB1B-9C29-49E0-959A-C34F1E71C96D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Framework.AXL", "src\gView.Framework.AXL\gView.Framework.AXL.csproj", "{4C56BB1B-9C29-49E0-959A-C34F1E71C96D}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Interoperability.ArcXML", "gView.Interoperability.ArcXML\gView.Interoperability.ArcXML.csproj", "{5E48A0A0-CF45-458D-AD3C-4FC235AD203F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Interoperability.ArcXML", "src\gView.Interoperability.ArcXML\gView.Interoperability.ArcXML.csproj", "{5E48A0A0-CF45-458D-AD3C-4FC235AD203F}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Interoperability.OGC", "gView.Interoperability.OGC\gView.Interoperability.OGC.csproj", "{FAFEF445-A01C-4770-B993-4E9CA33D95E3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Interoperability.OGC", "src\gView.Interoperability.OGC\gView.Interoperability.OGC.csproj", "{FAFEF445-A01C-4770-B993-4E9CA33D95E3}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Metadata", "gView.Framework.Metadata\gView.Framework.Metadata.csproj", "{42696D09-69C7-4E21-8351-DC53698D24E8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Framework.Metadata", "src\gView.Framework.Metadata\gView.Framework.Metadata.csproj", "{42696D09-69C7-4E21-8351-DC53698D24E8}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Server", "gView.Server\gView.Server.csproj", "{C5E46A29-ECBA-4F6B-A14C-5DE553CE77BE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Server", "src\gView.Server\gView.Server.csproj", "{C5E46A29-ECBA-4F6B-A14C-5DE553CE77BE}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.DataSources.Shape", "gView.DataSources.Shape\gView.DataSources.Shape.csproj", "{ED4B335F-4967-4245-BCEA-45CE48B4648B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.DataSources.Shape", "src\gView.DataSources.Shape\gView.DataSources.Shape.csproj", "{ED4B335F-4967-4245-BCEA-45CE48B4648B}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.DataSources.Fdb.SQLite", "gView.DataSources.Fdb.SQLite\gView.DataSources.Fdb.SQLite.csproj", "{F11B1BE8-7D8A-4B23-AF7B-DB27A0BC9086}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.DataSources.Fdb.SQLite", "src\gView.DataSources.Fdb.SQLite\gView.DataSources.Fdb.SQLite.csproj", "{F11B1BE8-7D8A-4B23-AF7B-DB27A0BC9086}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.DataSources.Fdb.SqlServer", "gView.DataSources.Fdb.SqlServer\gView.DataSources.Fdb.SqlServer.csproj", "{D890DD88-58CD-4DC1-8664-38F273D74692}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.DataSources.Fdb.SqlServer", "src\gView.DataSources.Fdb.SqlServer\gView.DataSources.Fdb.SqlServer.csproj", "{D890DD88-58CD-4DC1-8664-38F273D74692}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.DataSources.Fdb.PostgreSql", "gView.DataSources.Fdb.PostgreSql\gView.DataSources.Fdb.PostgreSql.csproj", "{01AD9E16-2249-4A46-9173-2EC727A6026E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.DataSources.Fdb.PostgreSql", "src\gView.DataSources.Fdb.PostgreSql\gView.DataSources.Fdb.PostgreSql.csproj", "{01AD9E16-2249-4A46-9173-2EC727A6026E}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.DataSources.OSGeo", "gView.DataSources.OSGeo\gView.DataSources.OSGeo.csproj", "{78971780-E6B2-423B-B61D-7CAEFBB25282}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.DataSources.OSGeo", "src\gView.DataSources.OSGeo\gView.DataSources.OSGeo.csproj", "{78971780-E6B2-423B-B61D-7CAEFBB25282}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Plugins.Modules", "gView.Plugins.Modules\gView.Plugins.Modules.csproj", "{04E002F8-468C-45E8-997B-332E5048BA31}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Plugins.Modules", "src\gView.Plugins.Modules\gView.Plugins.Modules.csproj", "{04E002F8-468C-45E8-997B-332E5048BA31}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Interoperability.GeoServices", "gView.Interoperability.GeoServices\gView.Interoperability.GeoServices.csproj", "{7B010002-084B-4D1D-9B06-4EC70EC93CA2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Interoperability.GeoServices", "src\gView.Interoperability.GeoServices\gView.Interoperability.GeoServices.csproj", "{7B010002-084B-4D1D-9B06-4EC70EC93CA2}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Security", "gView.Framework.Security\gView.Framework.Security.csproj", "{F90E3A4D-8A73-4899-9F49-A756F58828F7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Framework.Security", "src\gView.Framework.Security\gView.Framework.Security.csproj", "{F90E3A4D-8A73-4899-9F49-A756F58828F7}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.DataSources.EventTable", "gView.DataSources.EventTable\gView.DataSources.EventTable.csproj", "{77AFD455-9FD0-4087-8163-44BA03886670}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.DataSources.EventTable", "src\gView.DataSources.EventTable\gView.DataSources.EventTable.csproj", "{77AFD455-9FD0-4087-8163-44BA03886670}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.DataSources.MongoDb", "gView.DataSources.MongoDb\gView.DataSources.MongoDb.csproj", "{FAEABC8E-55FD-4D3E-9759-83D0FB94C9FB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.DataSources.MongoDb", "src\gView.DataSources.MongoDb\gView.DataSources.MongoDb.csproj", "{FAEABC8E-55FD-4D3E-9759-83D0FB94C9FB}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Interoperability.Server", "gView.Interoperability.Server\gView.Interoperability.Server.csproj", "{E740AE66-7162-4355-87B1-CB706774931A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Interoperability.Server", "src\gView.Interoperability.Server\gView.Interoperability.Server.csproj", "{E740AE66-7162-4355-87B1-CB706774931A}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Server.Connector", "gView.Server.Connector\gView.Server.Connector.csproj", "{2678B2D7-4EEB-4945-8F77-6D0ADD3A8B48}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Server.Connector", "src\gView.Server.Connector\gView.Server.Connector.csproj", "{2678B2D7-4EEB-4945-8F77-6D0ADD3A8B48}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Cmd.RasterDataset.Util", "gView.Cmd.RasterDataset.Util\gView.Cmd.RasterDataset.Util.csproj", "{34A98FF2-8496-4270-BB94-0E6CA6459ACF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Cmd.RasterDataset.Util", "src\gView.Cmd.RasterDataset.Util\gView.Cmd.RasterDataset.Util.csproj", "{34A98FF2-8496-4270-BB94-0E6CA6459ACF}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Cmd.CompactTileBundle", "gView.Cmd.CompactTileBundle\gView.Cmd.CompactTileBundle.csproj", "{44127EB3-6E77-4A29-B21F-EE087CC946C3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Cmd.CompactTileBundle", "src\gView.Cmd.CompactTileBundle\gView.Cmd.CompactTileBundle.csproj", "{44127EB3-6E77-4A29-B21F-EE087CC946C3}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Cmd.ClipCompactTilecache", "gView.Cmd.ClipCompactTilecache\gView.Cmd.ClipCompactTilecache.csproj", "{97D0200C-87E0-4720-AA90-1C65C32D36A7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Cmd.ClipCompactTilecache", "src\gView.Cmd.ClipCompactTilecache\gView.Cmd.ClipCompactTilecache.csproj", "{97D0200C-87E0-4720-AA90-1C65C32D36A7}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Cmd.FillElasticSearch", "gView.Cmd.FillElasticSearch\gView.Cmd.FillElasticSearch.csproj", "{150FF859-A3D0-4643-87B9-E1C8FA0AF0CA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Cmd.FillElasticSearch", "src\gView.Cmd.FillElasticSearch\gView.Cmd.FillElasticSearch.csproj", "{150FF859-A3D0-4643-87B9-E1C8FA0AF0CA}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Cmd.CopyFeatureclass", "gView.Cmd.CopyFeatureclass\gView.Cmd.CopyFeatureclass.csproj", "{9DB41767-A9D9-477B-A86E-4B0FBE0EFC60}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Cmd.CopyFeatureclass", "src\gView.Cmd.CopyFeatureclass\gView.Cmd.CopyFeatureclass.csproj", "{9DB41767-A9D9-477B-A86E-4B0FBE0EFC60}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.DataSources.TileCache", "gView.DataSources.TileCache\gView.DataSources.TileCache.csproj", "{B31AB72E-72F6-489E-B707-9D481DEA3338}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.DataSources.TileCache", "src\gView.DataSources.TileCache\gView.DataSources.TileCache.csproj", "{B31AB72E-72F6-489E-B707-9D481DEA3338}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.DataSources.VectorTileCache", "gView.DataSources.VectorTileCache\gView.DataSources.VectorTileCache.csproj", "{46CCAD05-281C-437F-A0A3-89D0B9B6662E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.DataSources.VectorTileCache", "src\gView.DataSources.VectorTileCache\gView.DataSources.VectorTileCache.csproj", "{46CCAD05-281C-437F-A0A3-89D0B9B6662E}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.DataSources.GeoJson", "gView.DataSources.GeoJson\gView.DataSources.GeoJson.csproj", "{E56C9CC9-720D-453F-9760-A56D83A48D10}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.DataSources.GeoJson", "src\gView.DataSources.GeoJson\gView.DataSources.GeoJson.csproj", "{E56C9CC9-720D-453F-9760-A56D83A48D10}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Logging", "gView.Framework.Logging\gView.Framework.Logging.csproj", "{7FC15EB9-D6EA-4C37-91B7-73C70C001EE3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Framework.Logging", "src\gView.Framework.Logging\gView.Framework.Logging.csproj", "{7FC15EB9-D6EA-4C37-91B7-73C70C001EE3}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Azure", "gView.Azure\gView.Azure.csproj", "{5C229CB1-4ED9-4771-B4D9-DAF3C1C7D15E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Azure", "src\gView.Azure\gView.Azure.csproj", "{5C229CB1-4ED9-4771-B4D9-DAF3C1C7D15E}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Cmd.FillLuceneServer", "gView.Cmd.FillLuceneServer\gView.Cmd.FillLuceneServer.csproj", "{11421C27-F65E-4826-B0ED-84C4536A69BF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Cmd.FillLuceneServer", "src\gView.Cmd.FillLuceneServer\gView.Cmd.FillLuceneServer.csproj", "{11421C27-F65E-4826-B0ED-84C4536A69BF}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Cmd.RenderTileCache", "gView.Cmd.RenderTileCache\gView.Cmd.RenderTileCache.csproj", "{A0A9A5A5-AAA6-46AA-821E-57F65E851814}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Cmd.RenderTileCache", "src\gView.Cmd.RenderTileCache\gView.Cmd.RenderTileCache.csproj", "{A0A9A5A5-AAA6-46AA-821E-57F65E851814}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.GraphicsEngine", "gView.GraphicsEngine\gView.GraphicsEngine.csproj", "{ED711BDA-7FD3-42AE-A6A0-DDF07C20014D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.GraphicsEngine", "src\gView.GraphicsEngine\gView.GraphicsEngine.csproj", "{ED711BDA-7FD3-42AE-A6A0-DDF07C20014D}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.GraphicsEngine.GdiPlus", "gView.GraphicsEngine.GdiPlus\gView.GraphicsEngine.GdiPlus.csproj", "{27A01872-3E18-4C14-A267-F4093F7317B0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.GraphicsEngine.GdiPlus", "src\gView.GraphicsEngine.GdiPlus\gView.GraphicsEngine.GdiPlus.csproj", "{27A01872-3E18-4C14-A267-F4093F7317B0}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.GraphicsEngine.Skia", "gView.GraphicsEngine.Skia\gView.GraphicsEngine.Skia.csproj", "{00332360-3466-4C26-8604-C43DB166DD2B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.GraphicsEngine.Skia", "src\gView.GraphicsEngine.Skia\gView.GraphicsEngine.Skia.csproj", "{00332360-3466-4C26-8604-C43DB166DD2B}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Cmd.MxlUtil", "gView.Cmd.MxlUtil\gView.Cmd.MxlUtil.csproj", "{2C999E65-0443-40B5-AC06-0099453C7382}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Cmd.MxlUtil", "src\gView.Cmd.MxlUtil\gView.Cmd.MxlUtil.csproj", "{2C999E65-0443-40B5-AC06-0099453C7382}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.MxlUtil.Lib", "gView.MxlUtil.Lib\gView.MxlUtil.Lib.csproj", "{96DC810B-40E9-4519-988C-9B0A584DAB8C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.MxlUtil.Lib", "src\gView.MxlUtil.Lib\gView.MxlUtil.Lib.csproj", "{96DC810B-40E9-4519-988C-9B0A584DAB8C}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Server.Models", "gView.Server.Models\gView.Server.Models.csproj", "{72A5E829-24DD-4BCB-B559-AF7D7BFB13A6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Server.Models", "src\gView.Server.Models\gView.Server.Models.csproj", "{72A5E829-24DD-4BCB-B559-AF7D7BFB13A6}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.GraphicsEngine.Gdal", "gView.GraphicsEngine.Gdal\gView.GraphicsEngine.Gdal.csproj", "{E467A033-F1CA-4733-9BC1-7ED02F0EFD38}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.GraphicsEngine.Gdal", "src\gView.GraphicsEngine.Gdal\gView.GraphicsEngine.Gdal.csproj", "{E467A033-F1CA-4733-9BC1-7ED02F0EFD38}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.GraphicsEngine.Default", "gView.GraphicsEngine.Default\gView.GraphicsEngine.Default.csproj", "{81CB417D-E498-4EE1-BF8B-AED0DD3E3F46}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.GraphicsEngine.Default", "src\gView.GraphicsEngine.Default\gView.GraphicsEngine.Default.csproj", "{81CB417D-E498-4EE1-BF8B-AED0DD3E3F46}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{F92CCD65-1D06-475F-8FFB-3F912C7BBE7E}"
 EndProject
@@ -133,47 +133,51 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "interoperability", "interop
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "blazor", "blazor", "{75D9853B-5A03-4E2C-9B36-509B68E2ADEA}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.DataExplorer.Razor", "Blazor\gView.DataExplorer.Razor\gView.DataExplorer.Razor.csproj", "{167FFE44-3ACA-4564-93AF-3A0FA3198804}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.DataExplorer.Razor", "src\Blazor\gView.DataExplorer.Razor\gView.DataExplorer.Razor.csproj", "{167FFE44-3ACA-4564-93AF-3A0FA3198804}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.DataExplorer.Core", "Blazor\gView.DataExplorer.Core\gView.DataExplorer.Core.csproj", "{202E4A76-9D7C-4B45-B8DB-3726CF01E5B3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.DataExplorer.Core", "src\Blazor\gView.DataExplorer.Core\gView.DataExplorer.Core.csproj", "{202E4A76-9D7C-4B45-B8DB-3726CF01E5B3}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Blazor.Models", "Blazor\gView.Blazor.Models\gView.Blazor.Models.csproj", "{DA8200F1-4CA9-4210-B790-AC19903D8402}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Blazor.Models", "src\Blazor\gView.Blazor.Models\gView.Blazor.Models.csproj", "{DA8200F1-4CA9-4210-B790-AC19903D8402}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Blazor.Core", "Blazor\gView.Blazor.Core\gView.Blazor.Core.csproj", "{02517C6B-098C-42DF-9D6F-9E89669FA82B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Blazor.Core", "src\Blazor\gView.Blazor.Core\gView.Blazor.Core.csproj", "{02517C6B-098C-42DF-9D6F-9E89669FA82B}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.DataExplorer.Plugins", "Blazor\gView.DataExplorer.Plugins\gView.DataExplorer.Plugins.csproj", "{ED07E1D1-2714-496D-AD43-D1D0B533B01E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.DataExplorer.Plugins", "src\Blazor\gView.DataExplorer.Plugins\gView.DataExplorer.Plugins.csproj", "{ED07E1D1-2714-496D-AD43-D1D0B533B01E}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Framework.DataExplorer", "Blazor\gView.Framework.DataExplorer\gView.Framework.DataExplorer.csproj", "{C7DEF84A-E2D6-410C-8718-C06DA9E3E192}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Framework.DataExplorer", "src\Blazor\gView.Framework.DataExplorer\gView.Framework.DataExplorer.csproj", "{C7DEF84A-E2D6-410C-8718-C06DA9E3E192}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.DataExplorer.Server", "Blazor\gView.DataExplorer.Server\gView.DataExplorer.Server.csproj", "{79A38BC5-0E85-4A36-918A-905B2A588065}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.DataExplorer.Server", "src\Blazor\gView.DataExplorer.Server\gView.DataExplorer.Server.csproj", "{79A38BC5-0E85-4A36-918A-905B2A588065}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Razor", "Blazor\gView.Razor\gView.Razor.csproj", "{B72D6366-422E-4B0D-8091-7D44C207E298}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Razor", "src\Blazor\gView.Razor\gView.Razor.csproj", "{B72D6366-422E-4B0D-8091-7D44C207E298}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Framework.Blazor", "Blazor\gView.Framework.Blazor\gView.Framework.Blazor.csproj", "{CEE100F9-D37B-4E43-B2F7-C43C137A6D4F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Framework.Blazor", "src\Blazor\gView.Framework.Blazor\gView.Framework.Blazor.csproj", "{CEE100F9-D37B-4E43-B2F7-C43C137A6D4F}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Razor.Leaflet", "Blazor\gView.Razor.Leaflet\gView.Razor.Leaflet.csproj", "{49925BCE-F067-42D4-B2FF-AC4720D39376}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Razor.Leaflet", "src\Blazor\gView.Razor.Leaflet\gView.Razor.Leaflet.csproj", "{49925BCE-F067-42D4-B2FF-AC4720D39376}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Cmd.Core", "gView.Cmd.Core\gView.Cmd.Core.csproj", "{9B7E4D69-2A7A-4B13-BAA8-07DD6811A0BB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Cmd.Core", "src\gView.Cmd.Core\gView.Cmd.Core.csproj", "{9B7E4D69-2A7A-4B13-BAA8-07DD6811A0BB}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.CopyFeatureclass.Lib", "gView.CopyFeatureclass.Lib\gView.CopyFeatureclass.Lib.csproj", "{0B60ACF3-E8D4-4EBE-9B4C-375876BE362E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.CopyFeatureclass.Lib", "src\gView.CopyFeatureclass.Lib\gView.CopyFeatureclass.Lib.csproj", "{0B60ACF3-E8D4-4EBE-9B4C-375876BE362E}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Cmd.Fdb.Lib", "gView.Cmd.Fdb.Lib\gView.Cmd.Fdb.Lib.csproj", "{998E5F11-C807-49ED-8406-E36169634574}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Cmd.Fdb.Lib", "src\gView.Cmd.Fdb.Lib\gView.Cmd.Fdb.Lib.csproj", "{998E5F11-C807-49ED-8406-E36169634574}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Cmd.TileCache.Lib", "gView.Cmd.TileCache.Lib\gView.Cmd.TileCache.Lib.csproj", "{4A9A13C2-2B54-4DF4-A325-2B520EEB4175}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Cmd.TileCache.Lib", "src\gView.Cmd.TileCache.Lib\gView.Cmd.TileCache.Lib.csproj", "{4A9A13C2-2B54-4DF4-A325-2B520EEB4175}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Server.Clients", "gView.Server.Clients\gView.Server.Clients.csproj", "{DC3CEE39-3096-4F7A-8885-A8C97D130567}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Server.Clients", "src\gView.Server.Clients\gView.Server.Clients.csproj", "{DC3CEE39-3096-4F7A-8885-A8C97D130567}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Carto.Razor", "Blazor\gView.Carto.Razor\gView.Carto.Razor.csproj", "{DB6AB418-AEB5-47A7-9CB5-87E3F2E6D4B5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Carto.Razor", "src\Blazor\gView.Carto.Razor\gView.Carto.Razor.csproj", "{DB6AB418-AEB5-47A7-9CB5-87E3F2E6D4B5}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Carto.Plugins", "Blazor\gView.Carto.Plugins\gView.Carto.Plugins.csproj", "{BBA74397-70BC-4C92-8771-509A9225AF01}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Carto.Plugins", "src\Blazor\gView.Carto.Plugins\gView.Carto.Plugins.csproj", "{BBA74397-70BC-4C92-8771-509A9225AF01}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Carto.Core", "Blazor\gView.Carto.Core\gView.Carto.Core.csproj", "{31979DF2-8250-4115-89F5-DF995BF71611}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Carto.Core", "src\Blazor\gView.Carto.Core\gView.Carto.Core.csproj", "{31979DF2-8250-4115-89F5-DF995BF71611}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Framework.Carto", "Blazor\gView.Framework.Carto\gView.Framework.Carto.csproj", "{40B83634-ED94-4513-B8A0-D82CB8E8C84A}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Carto.Web", "Blazor\gView.Carto.Web\gView.Carto.Web.csproj", "{5690D23F-4B77-4BBF-89E2-9A0594CAB3CB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Carto.Web", "src\Blazor\gView.Carto.Web\gView.Carto.Web.csproj", "{5690D23F-4B77-4BBF-89E2-9A0594CAB3CB}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "graphics-engines", "graphics-engines", "{C69C2196-AF44-4FD1-B02D-E028764D3BB5}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Framework.Carto", "src\Blazor\gView.Framework.Carto\gView.Framework.Carto.csproj", "{6D4C6CA4-0493-4952-A6F2-CF3A593DF77F}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Framework.IO", "src\gView.Framework.IO\gView.Framework.IO.csproj", "{DB2A613F-257E-466A-B033-69D4ED2C4D8D}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "shared", "shared", "{0ADA1A24-AC4C-4471-939B-609A83271367}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -791,14 +795,6 @@ Global
 		{31979DF2-8250-4115-89F5-DF995BF71611}.Release|Any CPU.Build.0 = Release|Any CPU
 		{31979DF2-8250-4115-89F5-DF995BF71611}.Release|x64.ActiveCfg = Release|Any CPU
 		{31979DF2-8250-4115-89F5-DF995BF71611}.Release|x64.Build.0 = Release|Any CPU
-		{40B83634-ED94-4513-B8A0-D82CB8E8C84A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{40B83634-ED94-4513-B8A0-D82CB8E8C84A}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{40B83634-ED94-4513-B8A0-D82CB8E8C84A}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{40B83634-ED94-4513-B8A0-D82CB8E8C84A}.Debug|x64.Build.0 = Debug|Any CPU
-		{40B83634-ED94-4513-B8A0-D82CB8E8C84A}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{40B83634-ED94-4513-B8A0-D82CB8E8C84A}.Release|Any CPU.Build.0 = Release|Any CPU
-		{40B83634-ED94-4513-B8A0-D82CB8E8C84A}.Release|x64.ActiveCfg = Release|Any CPU
-		{40B83634-ED94-4513-B8A0-D82CB8E8C84A}.Release|x64.Build.0 = Release|Any CPU
 		{5690D23F-4B77-4BBF-89E2-9A0594CAB3CB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{5690D23F-4B77-4BBF-89E2-9A0594CAB3CB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5690D23F-4B77-4BBF-89E2-9A0594CAB3CB}.Debug|x64.ActiveCfg = Debug|Any CPU
@@ -807,6 +803,22 @@ Global
 		{5690D23F-4B77-4BBF-89E2-9A0594CAB3CB}.Release|Any CPU.Build.0 = Release|Any CPU
 		{5690D23F-4B77-4BBF-89E2-9A0594CAB3CB}.Release|x64.ActiveCfg = Release|Any CPU
 		{5690D23F-4B77-4BBF-89E2-9A0594CAB3CB}.Release|x64.Build.0 = Release|Any CPU
+		{6D4C6CA4-0493-4952-A6F2-CF3A593DF77F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6D4C6CA4-0493-4952-A6F2-CF3A593DF77F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6D4C6CA4-0493-4952-A6F2-CF3A593DF77F}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{6D4C6CA4-0493-4952-A6F2-CF3A593DF77F}.Debug|x64.Build.0 = Debug|Any CPU
+		{6D4C6CA4-0493-4952-A6F2-CF3A593DF77F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6D4C6CA4-0493-4952-A6F2-CF3A593DF77F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6D4C6CA4-0493-4952-A6F2-CF3A593DF77F}.Release|x64.ActiveCfg = Release|Any CPU
+		{6D4C6CA4-0493-4952-A6F2-CF3A593DF77F}.Release|x64.Build.0 = Release|Any CPU
+		{DB2A613F-257E-466A-B033-69D4ED2C4D8D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DB2A613F-257E-466A-B033-69D4ED2C4D8D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DB2A613F-257E-466A-B033-69D4ED2C4D8D}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{DB2A613F-257E-466A-B033-69D4ED2C4D8D}.Debug|x64.Build.0 = Debug|Any CPU
+		{DB2A613F-257E-466A-B033-69D4ED2C4D8D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DB2A613F-257E-466A-B033-69D4ED2C4D8D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DB2A613F-257E-466A-B033-69D4ED2C4D8D}.Release|x64.ActiveCfg = Release|Any CPU
+		{DB2A613F-257E-466A-B033-69D4ED2C4D8D}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -824,7 +836,7 @@ Global
 		{C37D6D4B-5670-49B9-8592-48E9DCC0AA3C} = {DE176D4E-059E-4483-9C23-16055A573204}
 		{F47EA9DF-E750-4AFE-BDFF-8644403E17BB} = {DE176D4E-059E-4483-9C23-16055A573204}
 		{1730A1E1-3991-46D0-A52A-1A86B6CCB8F0} = {DE176D4E-059E-4483-9C23-16055A573204}
-		{8C804D9D-7CB0-4F53-88B2-F265060CE702} = {DE176D4E-059E-4483-9C23-16055A573204}
+		{8C804D9D-7CB0-4F53-88B2-F265060CE702} = {0ADA1A24-AC4C-4471-939B-609A83271367}
 		{248D2C9B-793A-4EB0-A2DA-7A881A1357BD} = {DE176D4E-059E-4483-9C23-16055A573204}
 		{B0F8BFA1-0034-4797-AE21-CD4CBD489E4C} = {DE176D4E-059E-4483-9C23-16055A573204}
 		{794758C5-26A1-4141-B2A5-FCA016AADB8B} = {84A4527B-D47D-4E2A-80F0-31C6569B1ED2}
@@ -843,13 +855,13 @@ Global
 		{D890DD88-58CD-4DC1-8664-38F273D74692} = {84A4527B-D47D-4E2A-80F0-31C6569B1ED2}
 		{01AD9E16-2249-4A46-9173-2EC727A6026E} = {84A4527B-D47D-4E2A-80F0-31C6569B1ED2}
 		{78971780-E6B2-423B-B61D-7CAEFBB25282} = {84A4527B-D47D-4E2A-80F0-31C6569B1ED2}
-		{04E002F8-468C-45E8-997B-332E5048BA31} = {DE176D4E-059E-4483-9C23-16055A573204}
+		{04E002F8-468C-45E8-997B-332E5048BA31} = {0ADA1A24-AC4C-4471-939B-609A83271367}
 		{7B010002-084B-4D1D-9B06-4EC70EC93CA2} = {B3257507-BB58-4FAC-AA9A-1165F105606D}
 		{F90E3A4D-8A73-4899-9F49-A756F58828F7} = {DE176D4E-059E-4483-9C23-16055A573204}
 		{77AFD455-9FD0-4087-8163-44BA03886670} = {84A4527B-D47D-4E2A-80F0-31C6569B1ED2}
 		{FAEABC8E-55FD-4D3E-9759-83D0FB94C9FB} = {84A4527B-D47D-4E2A-80F0-31C6569B1ED2}
 		{E740AE66-7162-4355-87B1-CB706774931A} = {B3257507-BB58-4FAC-AA9A-1165F105606D}
-		{2678B2D7-4EEB-4945-8F77-6D0ADD3A8B48} = {DE176D4E-059E-4483-9C23-16055A573204}
+		{2678B2D7-4EEB-4945-8F77-6D0ADD3A8B48} = {0ADA1A24-AC4C-4471-939B-609A83271367}
 		{34A98FF2-8496-4270-BB94-0E6CA6459ACF} = {E3346CF3-359E-4F92-BD8F-1E946130BC6A}
 		{44127EB3-6E77-4A29-B21F-EE087CC946C3} = {E3346CF3-359E-4F92-BD8F-1E946130BC6A}
 		{97D0200C-87E0-4720-AA90-1C65C32D36A7} = {E3346CF3-359E-4F92-BD8F-1E946130BC6A}
@@ -859,7 +871,7 @@ Global
 		{46CCAD05-281C-437F-A0A3-89D0B9B6662E} = {84A4527B-D47D-4E2A-80F0-31C6569B1ED2}
 		{E56C9CC9-720D-453F-9760-A56D83A48D10} = {84A4527B-D47D-4E2A-80F0-31C6569B1ED2}
 		{7FC15EB9-D6EA-4C37-91B7-73C70C001EE3} = {DE176D4E-059E-4483-9C23-16055A573204}
-		{5C229CB1-4ED9-4771-B4D9-DAF3C1C7D15E} = {DE176D4E-059E-4483-9C23-16055A573204}
+		{5C229CB1-4ED9-4771-B4D9-DAF3C1C7D15E} = {0ADA1A24-AC4C-4471-939B-609A83271367}
 		{11421C27-F65E-4826-B0ED-84C4536A69BF} = {E3346CF3-359E-4F92-BD8F-1E946130BC6A}
 		{A0A9A5A5-AAA6-46AA-821E-57F65E851814} = {E3346CF3-359E-4F92-BD8F-1E946130BC6A}
 		{ED711BDA-7FD3-42AE-A6A0-DDF07C20014D} = {C69C2196-AF44-4FD1-B02D-E028764D3BB5}
@@ -873,8 +885,8 @@ Global
 		{35DB9D54-1E51-457C-AE43-CFE1189552CB} = {F92CCD65-1D06-475F-8FFB-3F912C7BBE7E}
 		{E3346CF3-359E-4F92-BD8F-1E946130BC6A} = {F92CCD65-1D06-475F-8FFB-3F912C7BBE7E}
 		{DE176D4E-059E-4483-9C23-16055A573204} = {F92CCD65-1D06-475F-8FFB-3F912C7BBE7E}
-		{84A4527B-D47D-4E2A-80F0-31C6569B1ED2} = {DE176D4E-059E-4483-9C23-16055A573204}
-		{B3257507-BB58-4FAC-AA9A-1165F105606D} = {DE176D4E-059E-4483-9C23-16055A573204}
+		{84A4527B-D47D-4E2A-80F0-31C6569B1ED2} = {F92CCD65-1D06-475F-8FFB-3F912C7BBE7E}
+		{B3257507-BB58-4FAC-AA9A-1165F105606D} = {F92CCD65-1D06-475F-8FFB-3F912C7BBE7E}
 		{75D9853B-5A03-4E2C-9B36-509B68E2ADEA} = {F92CCD65-1D06-475F-8FFB-3F912C7BBE7E}
 		{167FFE44-3ACA-4564-93AF-3A0FA3198804} = {75D9853B-5A03-4E2C-9B36-509B68E2ADEA}
 		{202E4A76-9D7C-4B45-B8DB-3726CF01E5B3} = {75D9853B-5A03-4E2C-9B36-509B68E2ADEA}
@@ -894,9 +906,11 @@ Global
 		{DB6AB418-AEB5-47A7-9CB5-87E3F2E6D4B5} = {75D9853B-5A03-4E2C-9B36-509B68E2ADEA}
 		{BBA74397-70BC-4C92-8771-509A9225AF01} = {75D9853B-5A03-4E2C-9B36-509B68E2ADEA}
 		{31979DF2-8250-4115-89F5-DF995BF71611} = {75D9853B-5A03-4E2C-9B36-509B68E2ADEA}
-		{40B83634-ED94-4513-B8A0-D82CB8E8C84A} = {75D9853B-5A03-4E2C-9B36-509B68E2ADEA}
 		{5690D23F-4B77-4BBF-89E2-9A0594CAB3CB} = {75D9853B-5A03-4E2C-9B36-509B68E2ADEA}
-		{C69C2196-AF44-4FD1-B02D-E028764D3BB5} = {DE176D4E-059E-4483-9C23-16055A573204}
+		{C69C2196-AF44-4FD1-B02D-E028764D3BB5} = {F92CCD65-1D06-475F-8FFB-3F912C7BBE7E}
+		{6D4C6CA4-0493-4952-A6F2-CF3A593DF77F} = {75D9853B-5A03-4E2C-9B36-509B68E2ADEA}
+		{DB2A613F-257E-466A-B033-69D4ED2C4D8D} = {DE176D4E-059E-4483-9C23-16055A573204}
+		{0ADA1A24-AC4C-4471-939B-609A83271367} = {F92CCD65-1D06-475F-8FFB-3F912C7BBE7E}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {11C25FC0-EB32-4DE1-9CBB-CF2D68D1AA9B}
