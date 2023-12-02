@@ -1,4 +1,4 @@
-﻿using gView.Framework.Core.Reflection;
+﻿using gView.Carto.Plugins.PropertyGridEditors.Models;
 using gView.GraphicsEngine;
 using gView.GraphicsEngine.Abstraction;
 using gView.Razor.Abstractions;
@@ -10,7 +10,7 @@ internal class FontPropertyEditor : IPropertyGridInlineEditor
 {
     public FontPropertyEditor()
     {
-        this.Name = "";
+        this.Name = new FontName();
     }
 
     [Browsable(false)]
@@ -22,7 +22,7 @@ internal class FontPropertyEditor : IPropertyGridInlineEditor
 
         if (font is not null)
         {
-            this.Name = font.Name;
+            this.Name = new FontName() { Value = font.Name };
             this.Size = font.Size;
             this.Style = font.Style;
         }
@@ -30,17 +30,17 @@ internal class FontPropertyEditor : IPropertyGridInlineEditor
 
     public object? GetInstance()
     {
-        if (String.IsNullOrEmpty(this.Name))
+        if (String.IsNullOrEmpty(this.Name.Value))
         {
             return null;
         }
 
-        return Current.Engine.CreateFont(Name, this.Size, this.Style);
+        return Current.Engine.CreateFont(Name.Value, this.Size, this.Style);
     }
 
     [Browsable(true)]
-    [PropertyDescription(SelectOptionsPropertyName = nameof(FontNames))]
-    public string Name
+    //[PropertyDescription(SelectOptionsPropertyName = nameof(FontNames))]
+    public FontName Name
     {
         get; set;
     }

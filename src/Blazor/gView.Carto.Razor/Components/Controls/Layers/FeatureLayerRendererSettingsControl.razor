@@ -13,9 +13,10 @@
                             {
                                 <MudListItem Style="white-space:nowrap;overflow:hiddden" 
                                              Dense="true"
-                                             OnClick="() => SelectRenderer(featureRenderer)">
-                                    @featureRenderer.Name
-                                </MudListItem>
+                                                    Class="@(featureRenderer.GetType() == _selectedRendererType ? "gview-selected-item" : "")"
+                                                    OnClick="() => SelectRenderer(featureRenderer)">
+                                            @featureRenderer.Name
+                                       </MudListItem>
                             }
                         </MudList>
                     </GvCardContent>
@@ -46,11 +47,11 @@
     [Parameter] public IFeatureLayer? Layer { get; set; }
 
     private IFeatureRenderer[]? _featureRenderers;
-    private IPerpertyPageDefinition[]? _propertyPageDefs;
+    private IPropertyPageDefinition[]? _propertyPageDefs;
     private string[]? _categories;
 
     private Type? _selectedRendererType;
-    private IPerpertyPageDefinition? _currentPropertyPage;
+    private IPropertyPageDefinition? _currentPropertyPage;
     private RenderFragment? _propertyPageRenderFragment;
 
     protected override void OnParametersSet()
@@ -70,7 +71,7 @@
                                            .Distinct()
                                            .ToArray();
 
-            _propertyPageDefs = PluginManager.GetPlugins<IPerpertyPageDefinition>(gView.Framework.Common.Plugins.Type.IPerpertyPageDefinition)
+            _propertyPageDefs = PluginManager.GetPlugins<IPropertyPageDefinition>(gView.Framework.Common.Plugins.Type.IPropertyPageDefinition)
                                              .Where(p => p.InterfaceType == typeof(IFeatureRenderer))
                                              .ToArray();
 

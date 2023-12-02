@@ -6,19 +6,29 @@
                      OnDialogClose="base.OnDialogClose"
                      Model="base.Model">
     <DialogBody>
-        @if(_chars is not null)
+
+        @if (Model?.Charakter != null)
         {
-            @foreach(byte key in _chars.Keys)
+            <MudTextField T="byte" Variant="Variant.Text"
+                          Label="Char"
+                          @bind-Value="Model.Charakter.Value"
+                          InputType="InputType.Number" Step="1">
+            </MudTextField>
+
+            @if (_chars is not null)
             {
-                <div style="width:30px;height:50px;display:inline-block;cursor:pointer;padding:5px;margin:0px 2px 2px 0px;border:1px solid #555"
-                     @onclick="() => SelectChar(key)" >
-                    <img src="@_chars[key]" />
-                </div>
+                @foreach (byte key in _chars.Keys)
+                {
+                    <div class="@(Model.Charakter.Value == key ? "gview-selected-item" : "")"
+                         style="width:30px;height:50px;display:inline-block;cursor:pointer;padding:5px;margin:0px 2px 2px 0px;border:1px solid #555"
+                         @onclick="() => SelectChar(key)" >
+                        <img src="@_chars[key]" />
+                    </div>
+                }
+
             }
         }
     </DialogBody>
-    <DialogButtons>
-    </DialogButtons>
 </ModalDialogFormBase>
 
 @code {

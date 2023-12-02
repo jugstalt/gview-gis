@@ -6,9 +6,6 @@
 {
     <GvCard Title="Symbology">
         <GvCardContent>
-            @* <img @onclick = "SelectSymbol"
-                 class = "carto-symbol-composer-button"
-                 src = "@_renderer.Symbol.ToBase64ImageSource(150, 50)" /> *@
             <QuickSymbolPropertiesControl Symbol="_renderer.Symbol"
                                           SymbolChanged="OnSymbolChanged"/>
         </GvCardContent>

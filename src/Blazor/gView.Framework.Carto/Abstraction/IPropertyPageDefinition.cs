@@ -2,7 +2,7 @@
 
 namespace gView.Framework.Carto.Abstraction;
 
-public interface IPerpertyPageDefinition
+public interface IPropertyPageDefinition
 {
     Type InterfaceType { get; }
     Type InstanceType { get; }

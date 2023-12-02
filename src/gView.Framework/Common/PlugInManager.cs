@@ -553,7 +553,7 @@ namespace gView.Framework.Common
             IFeatureDatabase,
             ICartoRibbonTab,
             IExplorerRibbonTab,
-            IPerpertyPageDefinition
+            IPropertyPageDefinition
         };
 
         //public static string TypeName(Plugins.Type type) 

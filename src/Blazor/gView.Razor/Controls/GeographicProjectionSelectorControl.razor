@@ -65,45 +65,42 @@
     [Parameter] public ISpatialReference? SpatialReference{ get; set; }
     [Parameter] public EventCallback<ISpatialReference> SpatialReferenceChanged { get; set; }
 
-    protected override Task OnInitializedAsync()
-       => HandleAsync(async () =>
-       {
-           items = (await GetProjections()).ToList();
-           filteredItems = items.ToArray();
-       });
+    protected override Task OnInitializedAsync() => HandleAsync(async () =>
+    {
+        items = (await GetProjections()).ToList();
+        filteredItems = items.ToArray();
+    });
 
     async private Task<IEnumerable<KeyValuePair<string, string>>> GetProjections()
     {
         return await SRefService.GetProjections();
     }
 
-    private void FilterTable(ChangeEventArgs e)
-        => Handle(() =>
-            {
-                if (items != null)
-                {
-                    string? searchTerm = e.Value?.ToString();
-
-                    if (String.IsNullOrEmpty(searchTerm))
-                    {
-                        filteredItems = items.ToArray();
-                    }
-                    else
-                    {
-                        filteredItems = items
-                            .Where(item => item.Key.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
-                                   item.Value.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)).ToArray();
-                    }
-
-                    StateHasChanged();
-                }
-            });
-
-
-    private Task OnSelect(KeyValuePair<string, string> item)
-        => HandleAsync(async () =>
+    private void FilterTable(ChangeEventArgs e)  => Handle(() =>
+    {
+        if (items != null)
         {
-            SpatialReference = await SRefService.GetSpatialReference(item.Key);
-            await SpatialReferenceChanged.InvokeAsync();
-        });
+            string? searchTerm = e.Value?.ToString();
+
+            if (String.IsNullOrEmpty(searchTerm))
+            {
+                filteredItems = items.ToArray();
+            }
+            else
+            {
+                filteredItems = items
+                    .Where(item => item.Key.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
+                            item.Value.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)).ToArray();
+            }
+
+            StateHasChanged();
+        }
+    });
+
+
+    private Task OnSelect(KeyValuePair<string, string> item) => HandleAsync(async () =>
+    {
+        SpatialReference = await SRefService.GetSpatialReference(item.Key);
+        await SpatialReferenceChanged.InvokeAsync();
+    });
 }

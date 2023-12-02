@@ -1,0 +1,43 @@
+@using gView.Framework.Cartography.Rendering
+
+@inject IApplicationScope AppScope
+
+@if (_renderer != null)
+{
+    <GvCard Title="Symbology">
+        <GvCardContent>
+            <QuickSymbolPropertiesControl Symbol="_renderer.Symbol"
+                                          SymbolChanged="OnSymbolChanged" />
+        </GvCardContent>
+    </GvCard>
+}
+
+@code {
+    [Parameter] public object? Instance { get; set; }
+
+    private IFeatureLayer? _layer;
+    private SimpleAggregateRenderer? _renderer;
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+
+        if (Instance is IFeatureLayer fLayer)
+        {
+            _layer = fLayer;
+            _renderer = fLayer.FeatureRenderer as SimpleAggregateRenderer;
+        }
+        else
+        {
+            _renderer = Instance as SimpleAggregateRenderer;
+        }
+    }
+
+    private void OnSymbolChanged(ISymbol symbol)
+    {
+        if (_renderer is not null)
+        {
+            _renderer.Symbol = symbol;
+        }
+    }
+}

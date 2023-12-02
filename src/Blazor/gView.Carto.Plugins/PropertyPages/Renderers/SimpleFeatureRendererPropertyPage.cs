@@ -6,7 +6,7 @@ using gView.Framework.Core.system;
 namespace gView.Carto.Plugins.PropertyPages.Renderers;
 
 [RegisterPlugIn("CFB9B4B6-E7A7-44F6-AF57-C0F4ADED93D1")]
-internal class SimpleFeatureRendererPropertyPage : IPerpertyPageDefinition
+internal class SimpleFeatureRendererPropertyPage : IPropertyPageDefinition
 {
     public Type InterfaceType => typeof(IFeatureRenderer);
 
