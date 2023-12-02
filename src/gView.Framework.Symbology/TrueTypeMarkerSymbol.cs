@@ -13,6 +13,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Xml;
+using gView.Framework.Symbology.Models;
 
 namespace gView.Framework.Symbology
 {
@@ -48,7 +49,6 @@ namespace gView.Framework.Symbology
         }
 
         [Browsable(true)]
-        [UseColorPicker()]
         public ArgbColor Color
         {
             get
@@ -77,10 +77,10 @@ namespace gView.Framework.Symbology
 
         [Browsable(true)]
         [UseCharacterPicker()]
-        public byte Charakter
+        public Charakter Charakter
         {
-            get { return (byte)_char; }
-            set { _char = (char)value; }
+            get { return new Charakter() { Value = (byte)_char }; }
+            set { _char = (char)value.Value; }
         }
 
         #region IPointSymbol Member

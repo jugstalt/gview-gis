@@ -1,6 +1,7 @@
 ﻿#nullable enable
 
 using System;
+using System.Collections.Generic;
 
 namespace gView.Framework.Core.Reflection;
 
@@ -14,6 +15,8 @@ public class PropertyDescriptionAttribute : Attribute
     public float MaxValue { get; set; } = 0f;
     public float RangeStep { get; set; } = 0f;
     public string LabelFormat { get; set; } = "";
+
+    public string SelectOptionsPropertyName { get; set; } = "";
 
     public (float min, float max, float step, string format)? Range =>
         MinValue < MaxValue

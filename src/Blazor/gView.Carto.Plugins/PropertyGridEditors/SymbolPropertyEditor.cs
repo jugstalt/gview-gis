@@ -3,32 +3,34 @@ using gView.Carto.Razor.Components.Dialogs.Models;
 using gView.Framework.Blazor.Services.Abstraction;
 using gView.Framework.Core.Symbology;
 using gView.Razor.Abstractions;
+using System.Reflection;
 
-namespace gView.Carto.Plugins.PropertyGridEditors
+namespace gView.Carto.Plugins.PropertyGridEditors;
+
+internal class SymbolPropertyEditor : IPropertyGridEditAsync
 {
-    internal class SymbolPropertyEditor : IPropertyGridEditor
+    public Type PropertyType => typeof(ISymbol);
+
+    async public Task<object?> EditAsync(IApplicationScope scope,
+                                         object instance,
+                                         PropertyInfo propertyInfo)
     {
-        public Type PropertyType => typeof(ISymbol);
+        var scopeService = scope.ToCartoScopeService();
 
-        async public Task<object?> EditAsync(IApplicationScope scope, object? propertyValue)
+        var symbol = propertyInfo.GetValue(instance) as ISymbol;
+        if (symbol == null)
         {
-            var scopeService = scope.ToCartoScopeService();
-
-            var symbol = propertyValue as ISymbol;
-            if (symbol == null)
-            {
-                return null;
-            }
-
-            var model = await scopeService.ShowModalDialog(
-                typeof(gView.Carto.Razor.Components.Dialogs.SymbolComposerDialog),
-                $"Edit: {symbol.Name}",
-                new SymbolComposerModel()
-                {
-                    Symbol = symbol
-                });
-
-            return model?.Symbol;
+            return null;
         }
+
+        var model = await scopeService.ShowModalDialog(
+            typeof(gView.Carto.Razor.Components.Dialogs.SymbolComposerDialog),
+            $"Edit: {symbol.Name}",
+            new SymbolComposerModel()
+            {
+                Symbol = symbol
+            });
+
+        return model?.Symbol;
     }
 }

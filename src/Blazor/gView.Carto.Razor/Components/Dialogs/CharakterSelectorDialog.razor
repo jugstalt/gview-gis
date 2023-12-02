@@ -1,0 +1,66 @@
+@using gView.GraphicsEngine
+@inherits ModalDialogFormBase<CharakterSelectorModel>
+
+
+<ModalDialogFormBase T="CharakterSelectorModel"
+                     OnDialogClose="base.OnDialogClose"
+                     Model="base.Model">
+    <DialogBody>
+        @if(_chars is not null)
+        {
+            @foreach(byte key in _chars.Keys)
+            {
+                <div style="width:30px;height:50px;display:inline-block;cursor:pointer;padding:5px;margin:0px 2px 2px 0px;border:1px solid #555"
+                     @onclick="() => SelectChar(key)" >
+                    <img src="@_chars[key]" />
+                </div>
+            }
+        }
+    </DialogBody>
+    <DialogButtons>
+    </DialogButtons>
+</ModalDialogFormBase>
+
+@code {
+    private Dictionary<byte, string>? _chars = null;
+
+    protected override Task OnInitializedAsync() => HandleAsync(async () =>
+    {
+        await base.OnInitializedAsync();
+
+        if (string.IsNullOrEmpty(Model.FontName))
+        {
+            return;
+        }
+
+        _chars = new Dictionary<byte, string>();
+        var symbol = new TrueTypeMarkerSymbol();
+
+        using(var font = Current.Engine.CreateFont(Model.FontName, 20))
+        {
+            symbol.Font = font;
+            for (byte i = 0; i < 255; i++)
+            {
+                symbol.Charakter = new Framework.Symbology.Models.Charakter()
+                {
+                    Value = i
+                };      
+
+                _chars.Add(i, symbol.ToBase64ImageSource(20, 40));
+            }
+        }
+
+        symbol.Font = null;
+        symbol.Release();
+    });
+
+    private Task SelectChar(byte charakter)
+    {
+        if (Model?.Charakter is not null)
+        {
+            Model.Charakter.Value = charakter;
+        }
+
+        return base.Submit();
+    }
+}

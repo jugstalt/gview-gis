@@ -1875,7 +1875,7 @@ namespace gView.Framework.AXL
             {
                 try
                 {
-                    symbol.Charakter = (byte)Convert.ToInt16(axl.Attributes["character"].Value);
+                    symbol.Charakter = new Symbology.Models.Charakter() { Value = (byte)Convert.ToInt16(axl.Attributes["character"].Value) };
                 }
                 catch { }
             }

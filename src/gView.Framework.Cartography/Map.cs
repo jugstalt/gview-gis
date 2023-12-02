@@ -43,8 +43,8 @@ namespace gView.Framework.Cartography
         public event UserIntefaceEvent OnUserInterface;
 
         public ImageMerger2 m_imageMerger;
-        public TOC _toc;
-        private TOC _dataViewTOC;
+        public Toc _toc;
+        private Toc _dataViewTOC;
 
         private SelectionEnvironment _selectionEnv;
         //protected MapDB.mapDB m_mapDB=null;
@@ -70,7 +70,7 @@ namespace gView.Framework.Cartography
 
             m_activeLayerNames = new ArrayList();
             m_name = "Map1";
-            _toc = new TOC(this);
+            _toc = new Toc(this);
             _selectionEnv = new SelectionEnvironment();
 
             ReferenceScale = 500;
@@ -88,7 +88,7 @@ namespace gView.Framework.Cartography
             Display.SpatialReference = original.Display.SpatialReference != null ? original.SpatialReference.Clone() as ISpatialReference : null;
             LayerDefaultSpatialReference = original.LayerDefaultSpatialReference != null ? original.LayerDefaultSpatialReference.Clone() as ISpatialReference : null;
 
-            _toc = new TOC(this); //original.TOC.Clone() as TOC;
+            _toc = new Toc(this); //original.TOC.Clone() as TOC;
 
             _datasets = ListOperations<IDataset>.Clone(original._datasets);
             _layers = new List<ILayer>();
@@ -1451,7 +1451,7 @@ namespace gView.Framework.Cartography
             }
 
             stream.Load("IClasses", null, new PersistableClasses(_layers));
-            _toc = (TOC)await stream.LoadAsync<IToc>("ITOC", new TOC(this));
+            _toc = (Toc)await stream.LoadAsync<IToc>("ITOC", new Toc(this));
 
             stream.Load("IGraphicsContainer", null, GraphicsContainer);
 
@@ -1753,7 +1753,7 @@ namespace gView.Framework.Cartography
 
         #endregion
 
-        public TOC DataViewTOC
+        public Toc DataViewTOC
         {
             set
             {

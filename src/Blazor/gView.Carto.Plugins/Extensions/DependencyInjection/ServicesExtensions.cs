@@ -19,6 +19,8 @@ static public class ServicesExtensions
     {
         return services
             .AddTransient<IPropertyGridEditor, SymbolPropertyEditor>()
+            .AddTransient<IPropertyGridEditor, FontPropertyEditor>()
+            .AddTransient<IPropertyGridEditor, CharakterSelectorEditor>()
             .Configure(configureOptions)
             .AddEventBus()
             .AddScoped<IApplicationScope, CartoApplicationScopeService>();

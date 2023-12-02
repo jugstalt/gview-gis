@@ -1,6 +1,7 @@
 ﻿using gView.Framework.Core.Carto;
 using gView.Framework.Core.Geometry;
 using gView.Framework.Core.IO;
+using gView.Framework.Core.Reflection;
 using gView.Framework.Core.Symbology;
 using gView.Framework.Core.system;
 using gView.GraphicsEngine.Abstraction;
@@ -27,7 +28,8 @@ namespace gView.Framework.Symbology
         [Browsable(true)]
         [DisplayName("Start Cap Symbol")]
         [Category("Cap Symbols")]
-        [UsePointSymbolPicker()]
+        [PropertyDescription(AllowNull = true,
+                             DefaultInitializaionType = typeof(SimplePointSymbol))]
         public ISymbol StartCapPointSymbol
         {
             get; set;
@@ -36,7 +38,8 @@ namespace gView.Framework.Symbology
         [Browsable(true)]
         [DisplayName("End Cap Symbol")]
         [Category("Cap Symbols")]
-        [UsePointSymbolPicker()]
+        [PropertyDescription(AllowNull = true,
+                             DefaultInitializaionType = typeof(SimplePointSymbol))]
         public ISymbol EndCapPointSymbol
         {
             get; set;
@@ -55,7 +58,8 @@ namespace gView.Framework.Symbology
         [Browsable(true)]
         [DisplayName("Symbol")]
         [Category("Line Symbol")]
-        [UseLineSymbolPicker()]
+        [PropertyDescription(AllowNull = true,
+                             DefaultInitializaionType = typeof(SimpleLineSymbol))]
         public ISymbol LineSymbol
         {
             get; set;

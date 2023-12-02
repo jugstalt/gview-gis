@@ -21,7 +21,7 @@ namespace gView.Framework.Cartography
             m_imageMerger = new ImageMerger2();
 
             m_name = original.Name;
-            _toc = (TOC)original.TOC;
+            _toc = (Toc)original.TOC;
 
             Limit = original.Limit;
 
