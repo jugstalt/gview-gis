@@ -12,11 +12,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 
 namespace gView.Framework.Cartography.Rendering
 {
     [RegisterPlugIn("48EDC5DB-18B6-44cc-8646-461B388F2D94")]
-    public class UniversalGeometryRenderer : Cloner, IFeatureRenderer, IDisposable, IPropertyPage, ILegendGroup
+    public class UniversalGeometryRenderer : Cloner, IFeatureRenderer, IDisposable, IDefault, ILegendGroup
     {
         private bool _useRefScale = true;
         UniversalGeometrySymbol _symbol;
@@ -210,35 +211,13 @@ namespace gView.Framework.Cartography.Rendering
 
         #endregion
 
-        #region IPropertyPage Member
+        #region ICreateDefault Member
 
-        public object PropertyPage(object initObject)
+        public ValueTask DefaultIfEmpty(object initObject)
         {
-            if (initObject is IFeatureLayer)
-            {
-                if (((IFeatureLayer)initObject).FeatureClass == null
-                    && !(initObject is IWebServiceTheme))
-                {
-                    return null;
-                }
-
-                string appPath = System.IO.Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
-                Assembly uiAssembly = Assembly.LoadFrom(appPath + @"/gView.Win.Carto.Rendering.UI.dll");
-
-                IPropertyPanel p = uiAssembly.CreateInstance("gView.Framework.Carto.Rendering.UI.PropertyForm_UniversalGeometryRenderer") as IPropertyPanel;
-                if (p != null)
-                {
-                    return p.PropertyPanel(this, (IFeatureLayer)initObject);
-                }
-            }
-
-            return null;
+            return ValueTask.CompletedTask;
         }
 
-        public object PropertyPageObject()
-        {
-            return this;
-        }
 
         #endregion
 

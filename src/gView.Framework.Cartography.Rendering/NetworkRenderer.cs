@@ -13,11 +13,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 
 namespace gView.Framework.Cartography.Rendering
 {
     [RegisterPlugIn("9E51A28A-5735-4b84-9DC1-D6EB77D9FD26")]
-    public class NetworkRenderer : Cloner, IFeatureRenderer, IPropertyPage, ILegendGroup
+    public class NetworkRenderer : Cloner, IFeatureRenderer, IDefault, ILegendGroup
     {
         private RendererGroup _renderers;
         private bool _useRefScale = true;
@@ -292,33 +293,11 @@ namespace gView.Framework.Cartography.Rendering
 
         #endregion
 
-        #region IPropertyPage Member
+        #region ICreateDefault Member
 
-        public object PropertyPageObject()
+        public ValueTask DefaultIfEmpty(object initObject)
         {
-            return this;
-        }
-
-        public object PropertyPage(object initObject)
-        {
-            if (initObject is IFeatureLayer)
-            {
-                if (((IFeatureLayer)initObject).FeatureClass == null)
-                {
-                    return null;
-                }
-
-                string appPath = System.IO.Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
-                Assembly uiAssembly = Assembly.LoadFrom(appPath + @"/gView.Win.Carto.Rendering.UI.dll");
-
-                IPropertyPanel p = uiAssembly.CreateInstance("gView.Framework.Carto.Rendering.UI.NetworkRendererControl") as IPropertyPanel;
-                if (p != null)
-                {
-                    return p.PropertyPanel(this, (IFeatureLayer)initObject);
-                }
-            }
-
-            return null;
+            return ValueTask.CompletedTask;
         }
 
         #endregion

@@ -1,4 +1,4 @@
-using gView.Framework.Cartography.Rendering.UI;
+using gView.Framework.Common;
 using gView.Framework.Core.Carto;
 using gView.Framework.Core.Data;
 using gView.Framework.Core.Data.Filters;
@@ -9,22 +9,21 @@ using gView.Framework.Core.system;
 using gView.Framework.Core.UI;
 using gView.Framework.Geometry;
 using gView.Framework.Symbology;
-using gView.Framework.Common;
 using System;
 using System.Collections.Generic;
-using System.Reflection;
+using System.Threading.Tasks;
 
 namespace gView.Framework.Cartography.Rendering
 {
     [RegisterPlugIn("C1880775-C5B7-40DD-80B3-6B54A1F41655")]
-    public class DimensionRenderer : Cloner, IFeatureRenderer, IPropertyPage, ILegendGroup
+    public class DimensionRenderer : Cloner, IFeatureRenderer, IDefault, ILegendGroup
     {
-        public enum lineCapType { Arrow = 0, ArrowLine = 1, Line = 2, Circle = 3 }
+        public enum DimensionLineCapType { Arrow = 0, ArrowLine = 1, Line = 2, Circle = 3 }
 
         private ITextSymbol _textSymbol = null;
         private ILineSymbol _lineSymbol = null;
         private bool _useRefScale = true;
-        private lineCapType _capType = lineCapType.ArrowLine;
+        private DimensionLineCapType _capType = DimensionLineCapType.ArrowLine;
         private string _format = "0.00";
 
         public DimensionRenderer()
@@ -90,7 +89,7 @@ namespace gView.Framework.Cartography.Rendering
             }
         }
 
-        public lineCapType LineCapType
+        public DimensionLineCapType LineCapType
         {
             get { return _capType; }
             set { _capType = value; }
@@ -155,8 +154,8 @@ namespace gView.Framework.Cartography.Rendering
                     }
 
                     #region LineCapStyle
-                    if (_capType == lineCapType.Arrow ||
-                        _capType == lineCapType.ArrowLine)
+                    if (_capType == DimensionLineCapType.Arrow ||
+                        _capType == DimensionLineCapType.ArrowLine)
                     {
                         #region Arrow
                         disp.Draw(_lineSymbol, Arrow(path[0], l, al1));
@@ -164,9 +163,9 @@ namespace gView.Framework.Cartography.Rendering
                         #endregion
                     }
 
-                    if (_capType == lineCapType.ArrowLine ||
-                        _capType == lineCapType.Circle ||
-                        _capType == lineCapType.Line)
+                    if (_capType == DimensionLineCapType.ArrowLine ||
+                        _capType == DimensionLineCapType.Circle ||
+                        _capType == DimensionLineCapType.Line)
                     {
                         #region CapLine
                         if (p == 1 || p != fPath.PointCount - 1)
@@ -185,7 +184,7 @@ namespace gView.Framework.Cartography.Rendering
                         #endregion
                     }
 
-                    if (_capType == lineCapType.Line)
+                    if (_capType == DimensionLineCapType.Line)
                     {
                         #region Line
                         if (p == 1 || p != fPath.PointCount - 1)
@@ -204,7 +203,7 @@ namespace gView.Framework.Cartography.Rendering
                         #endregion
                     }
 
-                    if (_capType == lineCapType.Circle)
+                    if (_capType == DimensionLineCapType.Circle)
                     {
                         #region Circle
                         if (p == fPath.PointCount - 1)
@@ -292,7 +291,7 @@ namespace gView.Framework.Cartography.Rendering
 
             _textSymbol = stream.Load("textSymbol", null) as ITextSymbol;
             _lineSymbol = stream.Load("lineSymbol", null) as ILineSymbol;
-            _capType = (lineCapType)stream.Load("capType", lineCapType.ArrowLine);
+            _capType = (DimensionLineCapType)stream.Load("capType", DimensionLineCapType.ArrowLine);
             _format = (string)stream.Load("format", string.Empty);
         }
 
@@ -332,33 +331,11 @@ namespace gView.Framework.Cartography.Rendering
 
         #endregion
 
-        #region IPropertyPage Member
+        #region ICreateDefault Member
 
-        public object PropertyPageObject()
+        public ValueTask DefaultIfEmpty(object initObject)
         {
-            return this;
-        }
-
-        public object PropertyPage(object initObject)
-        {
-            if (initObject is IFeatureLayer)
-            {
-                if (((IFeatureLayer)initObject).FeatureClass == null)
-                {
-                    return null;
-                }
-
-                string appPath = System.IO.Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
-                Assembly uiAssembly = Assembly.LoadFrom(appPath + @"/gView.Win.Carto.Rendering.UI.dll");
-
-                IPropertyPanel p = uiAssembly.CreateInstance("gView.Framework.Carto.Rendering.UI.PropertyForm_DimensionRenderer") as IPropertyPanel;
-                if (p != null)
-                {
-                    return p.PropertyPanel(this, (IFeatureLayer)initObject);
-                }
-            }
-
-            return null;
+            return ValueTask.CompletedTask;
         }
 
         #endregion

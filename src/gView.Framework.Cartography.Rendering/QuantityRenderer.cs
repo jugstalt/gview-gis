@@ -12,11 +12,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 
 namespace gView.Framework.Cartography.Rendering
 {
     [RegisterPlugIn("9D278A19-9547-4BC5-824E-E4F45EA1BB7A")]
-    public class QuantityRenderer : Cloner, IFeatureRenderer, IPropertyPage, ILegendGroup
+    public class QuantityRenderer : Cloner, IFeatureRenderer, IDefault, ILegendGroup
     {
         private string _valueField = string.Empty;
         private ISymbol _defaultSymbol = null;
@@ -369,40 +370,21 @@ if (layer.FeatureClass.GeometryType == geometryType.Unknown ||
 
         #endregion
 
-        #region IPropertyPage Member
+        #region ICreateDefault Member
 
-        public object PropertyPage(object initObject)
+        public ValueTask DefaultIfEmpty(object initObject)
         {
-            if (initObject is IFeatureLayer)
+            if (initObject is IFeatureLayer fLayer)
             {
-                IFeatureLayer layer = (IFeatureLayer)initObject;
-                if (layer.FeatureClass == null)
+                if (_defaultSymbol == null && fLayer.FeatureClass is not null)
                 {
-                    return null;
-                }
-
-                if (_defaultSymbol == null)
-                {
-                    _defaultSymbol = RendererFunctions.CreateStandardSymbol(layer.LayerGeometryType/*layer.FeatureClass.GeometryType*/);
-                }
-
-                string appPath = System.IO.Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
-                Assembly uiAssembly = Assembly.LoadFrom(appPath + @"/gView.Win.Carto.Rendering.UI.dll");
-
-                IPropertyPanel p = uiAssembly.CreateInstance("gView.Framework.Carto.Rendering.UI.PropertyPage_QuantityRenderer") as IPropertyPanel;
-                if (p != null)
-                {
-                    return p.PropertyPanel(this, (IFeatureLayer)initObject);
+                    _defaultSymbol = RendererFunctions.CreateStandardSymbol(fLayer.LayerGeometryType);
                 }
             }
 
-            return null;
+            return ValueTask.CompletedTask;
         }
 
-        public object PropertyPageObject()
-        {
-            return null;
-        }
 
         #endregion
 

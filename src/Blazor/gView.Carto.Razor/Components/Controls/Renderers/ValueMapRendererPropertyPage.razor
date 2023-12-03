@@ -1,0 +1,246 @@
+@using gView.Carto.Razor.Components.Controls.Renderers.Models
+@using gView.Framework.Core.Data.Cursors
+@using gView.Framework.Data.Filters
+
+@inherits BaseHandler
+
+@if(_renderer is not null && _layer?.FeatureClass is not null)
+{
+    <GvGrid ColumnCount="2">
+        <GvGridItem>
+            <MudSelect T="string" Label="Value Field"
+                       @bind-Value="_renderer.ValueField">
+                @GvUtilities.StringsToSelectItems(_layer.FeatureClass
+                                                        .Fields?
+                                                        .ToEnumerable()
+                                                        .Select(f=>f.name) ?? [])
+            </MudSelect>
+        </GvGridItem>
+        <GvGridItem>
+
+        </GvGridItem>
+    </GvGrid>
+    <GvGrid ColumnCount="4">
+        <GvGridItem>
+            <MudButton Color="Color.Primary"
+                       Variant="Variant.Filled"
+                       OnClick="OnAddAllItems" >Add All Values</MudButton>
+        </GvGridItem>
+        <GvGridItem>
+            <MudButton Color="Color.Primary"
+                       Variant="Variant.Filled"
+                       OnClick="() => _addValueItem = new()"  >Add Value</MudButton>
+        </GvGridItem>
+        <GvGridItem>
+            <MudButton Color="Color.Primary"
+                       Variant="Variant.Filled"
+                       OnClick="OnAddAllOtherValuesItem">Add "All other"</MudButton>
+        </GvGridItem>
+        <GvGridItem>
+            <MudButton Color="Color.Secondary"
+                       Variant="Variant.Filled"
+                       OnClick="OnRemoveAllItems">Remove all</MudButton>
+        </GvGridItem>
+    </GvGrid>
+
+    @if (_addValueItem is not null)
+    {
+        <GvCard Title="Add Value Item">
+            <GvCardContent>
+                <GvGrid ColumnCount="2">
+                    <GvGridItem>
+                        <MudTextField Label="Value"
+                                      @bind-Value="_addValueItem.Key"></MudTextField>
+                    </GvGridItem>
+                    <GvGridItem>
+                        <MudTextField Label="Label Text"
+                                      @bind-Value="_addValueItem.LabelText"></MudTextField>
+                    </GvGridItem>
+                </GvGrid>
+            </GvCardContent>
+            <GvCardActions>
+                <MudButton Variant="Variant.Filled"
+                           OnClick="() => _addValueItem = null" >Cancel</MudButton>
+                <MudButton Variant="Variant.Filled"
+                           Color="Color.Primary"
+                           OnClick="OnAddValueItem">Add</MudButton>
+            </GvCardActions>
+        </GvCard>
+    }
+    else
+    {
+        <GvCard Title="@($"Symbols: {_renderer.LegendItemCount}")">
+            <GvCardContentNoPadding>
+                <div style="height:400px;overflow-y:auto;white-space:nowrap">
+                    <KeySymbolListControl KeySymbols="_keySymbols"
+                                          KeySymbolChanged="OnKeySymbolChanged" />
+                </div>
+            </GvCardContentNoPadding>
+        </GvCard>
+    }
+}
+
+@code {
+    [Parameter] public object? Instance { get; set; }
+
+    private IFeatureLayer? _layer;
+    private ValueMapRenderer? _renderer;
+
+    private List<KeySymbol> _keySymbols = new();
+    private ValueItemModel? _addValueItem = null;
+
+    protected override Task OnParametersSetAsync() => HandleAsync(async () =>
+    {
+        await base.OnParametersSetAsync();
+
+        if (Instance is IFeatureLayer fLayer)
+        {
+            _layer = fLayer;
+            _renderer = fLayer.FeatureRenderer as ValueMapRenderer;
+
+            if (_renderer is not null)
+            {
+                _renderer.GeometryType = _layer.LayerGeometryType;
+            }
+        }
+        else
+        {
+            _renderer = Instance as ValueMapRenderer;
+        }
+
+        await RefreshKeySymbolList();
+    });
+
+    private Task RefreshKeySymbolList() => HandleAsync(async () =>
+    {
+        if (_renderer is not null)
+        {
+            _keySymbols.Clear();
+
+            await ForceRenderComponent();
+
+            int index = 0;
+            foreach (string key in _renderer.Keys)
+            {
+                var symbol = _renderer.LegendItem(index) as ISymbol;
+
+                if (symbol is not null)
+                {
+                    _keySymbols.Add(new KeySymbol(key, symbol));
+                }
+                index++;
+            }
+        }
+
+        StateHasChanged();
+    });
+
+    private void OnKeySymbolChanged(KeySymbol keySymbol) => Handle(() =>
+    {
+        {
+            if (_renderer is not null)
+            {
+                var legendItem = _keySymbols.FirstOrDefault(k => k.Key == keySymbol.Key)?.Symbol as ILegendItem;
+
+                if (legendItem is not null)
+                {
+                    _renderer.SetSymbol(legendItem, keySymbol.Symbol);
+
+                    RefreshKeySymbolList();
+                }
+            }
+        }
+    });
+
+    #region Button Events
+
+    private Task OnAddAllItems() => HandleAsync(async () =>
+    {
+        if (_renderer is null 
+            || _layer?.FeatureClass is null)
+        {
+            return;
+        }
+
+        await OnRemoveAllItems();
+        await this.ForceRenderComponent();
+
+        DistinctFilter filter = new DistinctFilter(_renderer.ValueField);
+        filter.OrderBy = _renderer.ValueField;
+
+        using (IFeatureCursor cursor = (IFeatureCursor)await _layer.FeatureClass.Search(filter))
+        {
+            int counter = 0;
+            IFeature feature;
+            while ((feature = await cursor.NextFeature()) is not null)
+            {
+                string key = ((FieldValue)feature.Fields[0]!)?.Value?.ToString();
+
+                if (_renderer[key] == null)
+                {
+                    _renderer[key] = null;  // neues Symbol erzeugen...
+                }
+
+                if(++counter % 100 == 0)
+                {
+                    await ForceRenderComponent();
+                }
+            }
+        }
+
+        await RefreshKeySymbolList();
+    });
+
+    private Task OnRemoveAllItems() => HandleAsync(async () =>
+    {
+        if (_renderer is null)
+        {
+            return;
+        }
+        foreach (string key in _renderer.Keys)
+        {
+            _renderer.RemoveSymbol(key);
+        }
+
+        await RefreshKeySymbolList();
+    });
+
+    private Task OnAddAllOtherValuesItem() => HandleAsync(async () =>
+    {
+        if (_renderer is null)
+        {
+            return;
+        }
+
+        if (_renderer[ValueMapRenderer.AllOtherValuesKey] is null)
+        {
+            var symbol = RendererFunctions.CreateStandardSymbol(_renderer.GeometryType);
+            if (symbol is ILegendItem legendItem)
+            {
+                legendItem.LegendLabel = ValueMapRenderer.AllOtherValuesLabel;
+            }
+
+            _renderer[ValueMapRenderer.AllOtherValuesKey] = symbol;
+
+            await RefreshKeySymbolList();
+        }
+    });
+
+    private Task OnAddValueItem() => HandleAsync(async () =>
+    {
+        if(_renderer is not null 
+            && _layer is not null
+            && _addValueItem is not null)
+        {
+            if(_renderer[_addValueItem.Key] is null)
+            {
+                _renderer[_addValueItem.Key] = RendererFunctions.CreateStandardSymbol(_layer.LayerGeometryType);
+            }
+
+            await RefreshKeySymbolList();
+        }
+        _addValueItem = null;
+    });
+
+    #endregion
+}

@@ -14,11 +14,12 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace gView.Framework.Cartography.Rendering
 {
     [RegisterPlugIn("73117665-EFA6-4B49-BBFD-0C956876E3FB")]
-    public class ManyValueMapRenderer : Cloner, IFeatureRenderer, IPropertyPage, ILegendGroup
+    public class ManyValueMapRenderer : Cloner, IFeatureRenderer, IDefault, ILegendGroup
     {
         private string _valueField1 = string.Empty, _valueField2 = string.Empty, _valueField3 = string.Empty;
         private Dictionary<string, ISymbol> _symbolTable = new Dictionary<string, ISymbol>();
@@ -621,39 +622,19 @@ if (layer.FeatureClass.GeometryType == geometryType.Unknown ||
 
         #endregion
 
-        #region IPropertyPage Member
+        #region ICreateDefault Member
 
-        public object PropertyPageObject()
+        public ValueTask DefaultIfEmpty(object initObject)
         {
-            return null;
-        }
-
-        public object PropertyPage(object initObject)
-        {
-            if (initObject is IFeatureLayer)
+            if (initObject is IFeatureLayer fLayer)
             {
-                IFeatureLayer layer = (IFeatureLayer)initObject;
-                if (layer.FeatureClass == null)
+                if (_symbolTable.Count == 0 && fLayer.FeatureClass is not null)
                 {
-                    return null;
-                }
-
-                if (_symbolTable.Count == 0)
-                {
-                    this[null] = RendererFunctions.CreateStandardSymbol(layer.LayerGeometryType/*layer.FeatureClass.GeometryType*/);
-                }
-
-                string appPath = System.IO.Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
-                Assembly uiAssembly = Assembly.LoadFrom(appPath + @"/gView.Win.Carto.Rendering.UI.dll");
-
-                IPropertyPanel p = uiAssembly.CreateInstance("gView.Framework.Carto.Rendering.UI.PropertyPage_ManyValueMapRenderer") as IPropertyPanel;
-                if (p != null)
-                {
-                    return p.PropertyPanel(this, (IFeatureLayer)initObject);
+                    this[null] = RendererFunctions.CreateStandardSymbol(fLayer.LayerGeometryType);
                 }
             }
 
-            return null;
+            return ValueTask.CompletedTask;
         }
 
         #endregion

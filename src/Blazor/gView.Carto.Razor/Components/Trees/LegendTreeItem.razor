@@ -8,7 +8,15 @@
 @if (_legendItems is not null)
 {
     <table style="margin-left: @(_inlineEditorSymbol == null ? "34px" : "0px");width:100%">
-        @foreach(var item in _legendItems)
+        @if(_legendItems.Count() > ShowMaxItems)
+        {
+            <tr>
+                <td colspan="2">
+                    <MudText Typo="Typo.body2">@($"{ShowMaxItems}/{_legendItems.Count()} items...")</MudText>
+                </td>
+            </tr>
+        }
+        @foreach(var item in _legendItems.Take(ShowMaxItems))
         {
             <tr> 
                 @if (_inlineEditorSymbol is not null && _inlineEditorSymbol == item)
@@ -48,6 +56,8 @@
 
 @code {
     [Parameter] public ITocElement? ParentElement { get; set; }
+
+    private const int ShowMaxItems = 1000;
 
     private IEnumerable<ISymbol>? _legendItems;
     private ISymbol? _inlineEditorSymbol = null;

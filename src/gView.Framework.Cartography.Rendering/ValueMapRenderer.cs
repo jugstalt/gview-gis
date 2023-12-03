@@ -1,4 +1,4 @@
-using gView.Framework.Cartography.Rendering.UI;
+using gView.Framework.Common;
 using gView.Framework.Core.Carto;
 using gView.Framework.Core.Data;
 using gView.Framework.Core.Data.Filters;
@@ -8,22 +8,24 @@ using gView.Framework.Core.Symbology;
 using gView.Framework.Core.system;
 using gView.Framework.Core.UI;
 using gView.Framework.Symbology;
-using gView.Framework.Common;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Reflection;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace gView.Framework.Cartography.Rendering
 {
     public enum LegendGroupCartographicMethod { Simple = 0, LegendOrdering = 1, LegendAndSymbolOrdering = 2 }
 
     [RegisterPlugIn("C7A92674-0120-4f3d-BC03-F1210136B5C6")]
-    public class ValueMapRenderer : Cloner, IFeatureRenderer, IPropertyPage, ILegendGroup
+    public class ValueMapRenderer : Cloner, IFeatureRenderer, IDefault, ILegendGroup
     {
+        public const string AllOtherValuesKey = "__gview_all_other_values__";
+        public const string AllOtherValuesLabel = "All other values";
+
         private string _valueField = string.Empty;
         private Dictionary<string, ISymbol> _symbolTable = new Dictionary<string, ISymbol>();
-        //private ISymbol _defaultSymbol = null;
         private GeometryType _geometryType = GeometryType.Unknown;
         private SymbolRotation _symbolRotation;
         private bool _useRefscale = true;
@@ -143,7 +145,7 @@ namespace gView.Framework.Cartography.Rendering
                 }
                 else
                 {
-                    _symbolTable[key].Release();
+                    _symbolTable[key]?.Release();
                     _symbolTable[key] = symbol;
                 }
                 if (symbol is ILegendItem)
@@ -157,11 +159,11 @@ namespace gView.Framework.Cartography.Rendering
             }
         }
 
-        public ICollection Keys
+        public IEnumerable<string> Keys
         {
             get
             {
-                return _symbolTable.Keys;
+                return _symbolTable.Keys.ToArray();
             }
         }
 
@@ -611,39 +613,24 @@ if (layer.FeatureClass.GeometryType == geometryType.Unknown ||
 
         #endregion
 
-        #region IPropertyPage Member
+        #region ICreateDefault Member
 
-        public object PropertyPageObject()
+        public ValueTask DefaultIfEmpty(object initObject)
         {
-            return null;
-        }
-
-        public object PropertyPage(object initObject)
-        {
-            if (initObject is IFeatureLayer)
+            if (initObject is IFeatureLayer fLayer)
             {
-                IFeatureLayer layer = (IFeatureLayer)initObject;
-                if (layer.FeatureClass == null)
+                if (_symbolTable.Count == 0 && fLayer.FeatureClass is not null)
                 {
-                    return null;
+                    this[null] = RendererFunctions.CreateStandardSymbol(fLayer.LayerGeometryType);
                 }
 
-                if (_symbolTable.Count == 0)
+                if(_geometryType == GeometryType.Unknown)
                 {
-                    this[null] = RendererFunctions.CreateStandardSymbol(layer.LayerGeometryType/*layer.FeatureClass.GeometryType*/);
-                }
-
-                string appPath = System.IO.Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
-                Assembly uiAssembly = Assembly.LoadFrom(appPath + @"/gView.Win.Carto.Rendering.UI.dll");
-
-                IPropertyPanel p = uiAssembly.CreateInstance("gView.Framework.Carto.Rendering.UI.PropertyPage_ValueMapRenderer") as IPropertyPanel;
-                if (p != null)
-                {
-                    return p.PropertyPanel(this, (IFeatureLayer)initObject);
+                    _geometryType = fLayer.LayerGeometryType;
                 }
             }
 
-            return null;
+            return ValueTask.CompletedTask;
         }
 
         #endregion
@@ -652,7 +639,7 @@ if (layer.FeatureClass.GeometryType == geometryType.Unknown ||
 
         public int LegendItemCount
         {
-            get { return 1 + _symbolTable.Count; }
+            get { return /*1 + */_symbolTable.Count; }
         }
 
         public ILegendItem LegendItem(int index)
@@ -712,6 +699,7 @@ if (layer.FeatureClass.GeometryType == geometryType.Unknown ||
                 }
             }
         }
+
         #endregion
 
         #region IClone2

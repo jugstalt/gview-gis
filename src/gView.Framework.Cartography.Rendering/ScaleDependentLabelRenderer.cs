@@ -11,11 +11,12 @@ using gView.Framework.Common;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Threading.Tasks;
 
 namespace gView.Framework.Cartography.Rendering
 {
     [RegisterPlugIn("4221EF57-E89E-4035-84EB-D3FA163FDE0C")]
-    public class ScaleDependentLabelRenderer : ILabelRenderer, ILabelGroupRenderer, ILegendGroup, IPropertyPage
+    public class ScaleDependentLabelRenderer : ILabelRenderer, ILabelGroupRenderer, ILegendGroup, IDefault
     {
         private RendererList _renderers;
 
@@ -161,36 +162,11 @@ namespace gView.Framework.Cartography.Rendering
 
         #endregion
 
-        #region IPropertyPage Member
+        #region ICreateDefault Member
 
-        public object PropertyPage(object initObject)
+        public ValueTask DefaultIfEmpty(object initObject)
         {
-            if (!(initObject is IFeatureLayer))
-            {
-                return null;
-            }
-
-            try
-            {
-                string appPath = System.IO.Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
-                Assembly uiAssembly = Assembly.LoadFrom(appPath + @"/gView.Win.Carto.Rendering.UI.dll");
-
-                IPropertyPanel2 p = uiAssembly.CreateInstance("gView.Framework.Carto.Rendering.UI.PropertyForm_LabelGroupRenderer") as IPropertyPanel2;
-                if (p != null)
-                {
-                    return p.PropertyPanel(this, (IFeatureLayer)initObject);
-                }
-            }
-            catch (Exception /*ex*/)
-            {
-
-            }
-            return null;
-        }
-
-        public object PropertyPageObject()
-        {
-            return this;
+            return ValueTask.CompletedTask;
         }
 
         #endregion

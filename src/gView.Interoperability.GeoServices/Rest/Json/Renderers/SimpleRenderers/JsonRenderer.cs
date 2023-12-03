@@ -82,9 +82,9 @@ namespace gView.Interoperability.GeoServices.Rest.Json.Renderers.SimpleRenderers
 
                 if (valueMapRenderer.Keys != null)
                 {
-                    var keys = new string[valueMapRenderer.Keys.Count];
-                    valueMapRenderer.Keys.CopyTo(keys, 0);
+                    var keys = valueMapRenderer.Keys;
                     var index = 0;
+
                     return new JsonRenderer()
                     {
                         Type = "uniqueValue",

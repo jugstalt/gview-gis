@@ -12,11 +12,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 
 namespace gView.Framework.Cartography.Rendering
 {
     [RegisterPlugIn("CD41C987-9415-4c7c-AF5F-6385622AB768")]
-    public class ScaleDependentRenderer : IGroupRenderer, IFeatureRenderer, IPropertyPage, ILegendGroup, ISimplify
+    public class ScaleDependentRenderer : IGroupRenderer, IFeatureRenderer, IDefault, ILegendGroup, ISimplify
     {
         private RendererList _renderers;
         private bool _useRefScale = true;
@@ -170,31 +171,11 @@ namespace gView.Framework.Cartography.Rendering
 
         #endregion
 
-        #region IPropertyPage Member
+        #region ICreateDefault Member
 
-        public object PropertyPage(object initObject)
+        public ValueTask DefaultIfEmpty(object initObject)
         {
-            if (!(initObject is IFeatureLayer))
-            {
-                return null;
-            }
-
-            try
-            {
-                string appPath = System.IO.Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
-                Assembly uiAssembly = Assembly.LoadFrom(appPath + @"/gView.Win.Carto.Rendering.UI.dll");
-
-                IPropertyPanel p = uiAssembly.CreateInstance("gView.Framework.Carto.Rendering.UI.PropertyForm_FeatureGroupRenderer") as IPropertyPanel;
-                if (p != null)
-                {
-                    return p.PropertyPanel(this, (IFeatureLayer)initObject);
-                }
-            }
-            catch (Exception /*ex*/)
-            {
-
-            }
-            return null;
+            return ValueTask.CompletedTask;
         }
 
         public object PropertyPageObject()

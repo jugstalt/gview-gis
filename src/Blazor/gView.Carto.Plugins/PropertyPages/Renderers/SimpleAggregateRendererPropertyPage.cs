@@ -12,5 +12,5 @@ internal class SimpleAggregateRendererPropertyPage : IPropertyPageDefinition
 
     public Type InstanceType => typeof(SimpleAggregateRenderer);
 
-    public Type PropertyPageType => typeof(gView.Carto.Razor.Components.Controls.Renderers.SimpleAggregateRendererPropertyPage);
+    public Type PropertyPageType => typeof(Razor.Components.Controls.Renderers.SimpleAggregateRendererPropertyPage);
 }

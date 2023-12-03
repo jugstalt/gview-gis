@@ -15,11 +15,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 
 namespace gView.Framework.Cartography.Rendering
 {
     [RegisterPlugIn("0be572ae-bb58-4148-a428-084bad28ffab")]
-    public class ChartLabelRenderer : Cloner, ILabelRenderer, IPriority, IPropertyPage, ILegendGroup
+    public class ChartLabelRenderer : Cloner, ILabelRenderer, IPriority, IDefault, ILegendGroup
     {
         public enum chartType { Pie = 0, Bars = 1, Stack = 2 }
         public enum sizeType { ConstantSize = 0, ValueOfEquatesToSize = 1 }
@@ -752,34 +753,11 @@ namespace gView.Framework.Cartography.Rendering
 
         #endregion
 
-        #region IPropertyPage Members
+        #region ICreateDefault Members
 
-        public object PropertyPage(object initObject)
+        public ValueTask DefaultIfEmpty(object initObject)
         {
-            if (initObject is IFeatureLayer)
-            {
-                IFeatureLayer layer = (IFeatureLayer)initObject;
-                if (layer.FeatureClass == null)
-                {
-                    return null;
-                }
-
-                string appPath = System.IO.Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
-                Assembly uiAssembly = Assembly.LoadFrom(appPath + @"/gView.Win.Carto.Rendering.UI.dll");
-
-                IPropertyPanel2 p = uiAssembly.CreateInstance("gView.Framework.Carto.Rendering.UI.PropertyForm_ChartLabelRenderer") as IPropertyPanel2;
-                if (p != null)
-                {
-                    return p.PropertyPanel(this, (IFeatureLayer)initObject);
-                }
-            }
-
-            return null;
-        }
-
-        public object PropertyPageObject()
-        {
-            return null;
+            return ValueTask.CompletedTask;
         }
 
         #endregion

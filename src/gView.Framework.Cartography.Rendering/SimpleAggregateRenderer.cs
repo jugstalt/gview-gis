@@ -12,11 +12,12 @@ using gView.Framework.Common;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Threading.Tasks;
 
 namespace gView.Framework.Cartography.Rendering
 {
     [RegisterPlugIn("7B82A53D-63DA-43CA-BE94-23B4B1F1D9DA")]
-    public class SimpleAggregateRenderer : Cloner, IFeatureRenderer2, IPropertyPage, ILegendGroup, ISymbolCreator
+    public class SimpleAggregateRenderer : Cloner, IFeatureRenderer2, IDefault, ILegendGroup, ISymbolCreator
     {
         private ISymbol _symbol;
         private bool _useRefScale = true;
@@ -197,37 +198,19 @@ namespace gView.Framework.Cartography.Rendering
 
         #endregion
 
-        #region IPropertyPage Member
+        #region ICreateDefault Member
 
-        public object PropertyPageObject()
+        public ValueTask DefaultIfEmpty(object initObject)
         {
-            return this;
-        }
-
-        public object PropertyPage(object initObject)
-        {
-            if (initObject is IFeatureLayer)
+            if (initObject is IFeatureLayer fLayer)
             {
-                if (((IFeatureLayer)initObject).FeatureClass == null)
+                if (_symbol is null && fLayer.FeatureClass is not null)
                 {
-                    return null;
-                }
-
-                if (_symbol == null)
-                {
-                    _symbol = RendererFunctions.CreateStandardSymbol(((IFeatureLayer)initObject).LayerGeometryType/*((IFeatureLayer)initObject).FeatureClass.GeometryType*/);
-                }
-                string appPath = System.IO.Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
-                Assembly uiAssembly = Assembly.LoadFrom(appPath + @"/gView.Win.Carto.Rendering.UI.dll");
-
-                IPropertyPanel p = uiAssembly.CreateInstance("gView.Framework.Carto.Rendering.UI.PropertyForm_SimpleRenderer") as IPropertyPanel;
-                if (p != null)
-                {
-                    return p.PropertyPanel(this, (IFeatureLayer)initObject);
+                    _symbol = RendererFunctions.CreateStandardSymbol(fLayer.LayerGeometryType);
                 }
             }
 
-            return null;
+            return ValueTask.CompletedTask;
         }
 
         #endregion

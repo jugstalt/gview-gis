@@ -1,0 +1,100 @@
+@using gView.Carto.Razor.Components.Controls.Renderers.Models
+
+@inherits BaseHandler
+
+@if (_keySymbolsCopy is not null)
+{
+    @if (!String.IsNullOrEmpty(_composeSymbolKey))
+    {
+        var composeSymbol = KeySymbols.First(k => k.Key == _composeSymbolKey).Symbol;
+        <GvGridItem Span="8">
+            <GvCard Title="@_composeSymbolKey">
+                <GvCardContent>
+                    <QuickSymbolPropertiesControl Symbol="composeSymbol"
+                                                  SymbolChanged="(symbol) => OnSymbolChanged(_composeSymbolKey, symbol)" />
+                    <MudButton Color="Color.Primary"
+                               Variant="Variant.Filled"
+                               OnClick="() => _composeSymbolKey = string.Empty">Done</MudButton>
+                </GvCardContent>
+            </GvCard>
+
+        </GvGridItem>
+    }
+    else if(_keySymbolsCopy.Count > 0)
+    {
+        <MudDropContainer T="KeySymbol"
+                          Items="_keySymbolsCopy"
+                          ItemDropped="ReorderSymbols"
+                          ItemsSelector="@((item,zone) => true)">
+            <ChildContent>
+                <MudDropZone T="KeySymbol"
+                             AllowReorder="@(String.IsNullOrEmpty(_composeSymbolKey))">
+                </MudDropZone>
+            </ChildContent>
+            <ItemRenderer>
+                <GvGrid ColumnCount="8">
+                    <GvGridItem Span="1">
+                        <div style="display:inline-block;width:30px;height:30px;cursor:pointer;background-image:url('@context.Symbol.ToBase64ImageSource(30,30)')"
+                             @ondblclick="() => ComposeSymbol(context.Key)">
+                        </div>
+                    </GvGridItem>
+                    <GvGridItem Span="2">
+                        <div style="overflow:hidden">
+                            @context.Key
+                        </div>
+                    </GvGridItem>
+                    <GvGridItem Span="5">
+                        @if (_editLabelKey == context.Key)
+                        {
+                            <MudTextField T="string"
+                                          Label="Legend Text"
+                                          @bind-Value="@context.LegendLabel">
+                            </MudTextField>
+                        }
+                        else
+                        {
+                            <div @ondblclick="() => _editLabelKey = context.Key">
+                                @context.LegendLabel
+                            </div>
+                        }
+                    </GvGridItem>
+                </GvGrid>
+            </ItemRenderer>
+        </MudDropContainer>
+    }
+}
+
+@code {
+    [Parameter] public List<KeySymbol>? KeySymbols { get; set; }
+    [Parameter] public EventCallback<KeySymbol> KeySymbolChanged { get; set; }
+
+    private List<KeySymbol>? _keySymbolsCopy;
+    private string _composeSymbolKey = "";
+    private string _editLabelKey = "";
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+
+        _keySymbolsCopy = new List<KeySymbol>(KeySymbols?.Take(1000) ?? []);
+        _composeSymbolKey = "";
+        _editLabelKey = "";
+
+        StateHasChanged();
+    }
+
+    private void ComposeSymbol(string key)
+    {
+        _composeSymbolKey = key;
+
+        StateHasChanged();
+    }
+
+    private Task OnSymbolChanged(string key, ISymbol symbol) => HandleAsync(() =>
+        KeySymbolChanged.InvokeAsync(new KeySymbol(key, symbol)));
+
+
+    private void ReorderSymbols(MudItemDropInfo<KeySymbol> dropInfo)
+    {
+    }
+}

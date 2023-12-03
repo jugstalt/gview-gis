@@ -43,28 +43,30 @@ else
 
         propertiesDict.Clear();
 
-        //var propertyInfos = Instance.GetType().GetProperties(System.Reflection.BindingFlags.Public);
-        var propertyInfos = Instance.GetType().GetProperties();
-
-
-        foreach (var propertyInfo in propertyInfos)
+        if (Instance is not null)
         {
-            var browsableAttribute = propertyInfo.GetCustomAttribute<BrowsableAttribute>();
-            if (browsableAttribute?.Browsable == false)
+            //var propertyInfos = Instance.GetType().GetProperties(System.Reflection.BindingFlags.Public);
+            var propertyInfos = Instance.GetType().GetProperties();
+
+            foreach (var propertyInfo in propertyInfos)
             {
-                continue;
+                var browsableAttribute = propertyInfo.GetCustomAttribute<BrowsableAttribute>();
+                if (browsableAttribute?.Browsable == false)
+                {
+                    continue;
+                }
+
+                var categoryAttribute = propertyInfo.GetCustomAttribute<System.ComponentModel.CategoryAttribute>();
+                string category = String.IsNullOrEmpty(categoryAttribute?.Category) ?
+                             GeneralCategory : categoryAttribute.Category;
+
+                if (!propertiesDict.ContainsKey(category))
+                {
+                    propertiesDict.Add(category, new());
+                }
+
+                propertiesDict[category].Add(propertyInfo, propertyInfo.GetValue(Instance));
             }
-
-            var categoryAttribute = propertyInfo.GetCustomAttribute<System.ComponentModel.CategoryAttribute>();
-            string category = String.IsNullOrEmpty(categoryAttribute?.Category) ?
-                         GeneralCategory : categoryAttribute.Category;
-
-            if (!propertiesDict.ContainsKey(category))
-            {
-                propertiesDict.Add(category, new());
-            }
-
-            propertiesDict[category].Add(propertyInfo, propertyInfo.GetValue(Instance));
         }
 
         #endregion

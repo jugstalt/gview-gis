@@ -15,11 +15,12 @@ using gView.GraphicsEngine.Abstraction;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Threading.Tasks;
 
 namespace gView.Framework.Cartography.Rendering
 {
     [RegisterPlugIn("92650F7D-CEC9-4418-9EA0-A8B09436AA7A")]
-    public class SimpleLabelRenderer : Cloner, ILabelRenderer, ILegendGroup, IPropertyPage, IPriority
+    public class SimpleLabelRenderer : Cloner, ILabelRenderer, ILegendGroup, IDefault, IPriority
     {
         public enum howManyLabels { one_per_name = 0, one_per_feature = 1, one_per_part = 2 }
         public enum labelPriority { always = 0, high = 1, normal = 2, low = 3 }
@@ -765,35 +766,13 @@ namespace gView.Framework.Cartography.Rendering
 
         #endregion
 
-        #region IPropertyPage Members
+        #region ICreateDefault Members
 
-        public object PropertyPage(object initObject)
+        public ValueTask DefaultIfEmpty(object initObject)
         {
-            if (initObject is IFeatureLayer)
-            {
-                IFeatureLayer layer = (IFeatureLayer)initObject;
-                if (layer.FeatureClass == null)
-                {
-                    return null;
-                }
-
-                string appPath = System.IO.Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
-                Assembly uiAssembly = Assembly.LoadFrom(appPath + @"/gView.Win.Carto.Rendering.UI.dll");
-
-                IPropertyPanel2 p = uiAssembly.CreateInstance("gView.Framework.Carto.Rendering.UI.PropertyForm_SimpleLabelRenderer") as IPropertyPanel2;
-                if (p != null)
-                {
-                    return p.PropertyPanel(this, (IFeatureLayer)initObject);
-                }
-            }
-
-            return null;
+            return ValueTask.CompletedTask;
         }
 
-        public object PropertyPageObject()
-        {
-            return null;
-        }
 
         #endregion
 
