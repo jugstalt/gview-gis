@@ -6,80 +6,75 @@
 
 @if(_renderer is not null && _layer?.FeatureClass is not null)
 {
-    <GvGrid ColumnCount="2">
-        <GvGridItem>
-            <MudSelect T="string" Label="Value Field"
-                       Value="_renderer.ValueField"
-                       ValueChanged="(val) => OnValueFieldChanged(val)" >
-                @GvUtilities.StringsToSelectItems(_layer.FeatureClass
-                                                        .Fields?
-                                                        .ToEnumerable()
-                                                        .Select(f=>f.name) ?? [])
-            </MudSelect>
-        </GvGridItem>
-        <GvGridItem>
+    <KeySymbolListControl KeySymbols="_dictKeySymbols.ContainsKey(_renderer.ValueField) ? _dictKeySymbols[_renderer.ValueField] : []">
+        <ListItemTools>
+            <GvGrid ColumnCount="2">
+                <GvGridItem>
+                    <MudSelect T="string" Label="Value Field"
+                               Value="_renderer.ValueField"
+                               ValueChanged="(val) => OnValueFieldChanged(val)" >
+                        @GvUtilities.StringsToSelectItems(_layer.FeatureClass
+                                                                .Fields?
+                                                                .ToEnumerable()
+                                                                .Select(f=>f.name) ?? [])
+                    </MudSelect>
+                </GvGridItem>
+                <GvGridItem>
 
-        </GvGridItem>
-    </GvGrid>
-    <GvGrid ColumnCount="4">
-        <GvGridItem>
-            <MudButton Color="Color.Primary"
-                       Variant="Variant.Filled"
-                       OnClick="OnAddAllItems" >Add All Values</MudButton>
-        </GvGridItem>
-        <GvGridItem>
-            <MudButton Color="Color.Primary"
-                       Variant="Variant.Filled"
-                       OnClick="() => _addValueItem = new()"  >Add Value</MudButton>
-        </GvGridItem>
-        <GvGridItem>
-            <MudButton Color="Color.Primary"
-                       Variant="Variant.Filled"
-                       OnClick="OnAddAllOtherValuesItem">Add "All other"</MudButton>
-        </GvGridItem>
-        <GvGridItem>
-            <MudButton Color="Color.Secondary"
-                       Variant="Variant.Filled"
-                       OnClick="OnRemoveAllItems">Remove all</MudButton>
-        </GvGridItem>
-    </GvGrid>
+                </GvGridItem>
+            </GvGrid>
+            <GvGrid ColumnCount="4">
+                <GvGridItem>
+                    <MudButton Color="Color.Primary"
+                               Variant="Variant.Filled"
+                               OnClick="OnAddAllItems" >Add All Values</MudButton>
+                </GvGridItem>
+                <GvGridItem>
+                    <MudButton Color="Color.Primary"
+                               Variant="Variant.Filled"
+                               OnClick="() => _addValueItem = new()"  >Add Value</MudButton>
+                </GvGridItem>
+                <GvGridItem>
+                    <MudButton Color="Color.Primary"
+                               Variant="Variant.Filled"
+                               OnClick="OnAddAllOtherValuesItem">Add "All other"</MudButton>
+                </GvGridItem>
+                <GvGridItem>
+                    <MudButton Color="Color.Secondary"
+                               Variant="Variant.Filled"
+                               OnClick="OnRemoveAllItems">Remove all</MudButton>
+                </GvGridItem>
+            </GvGrid>
+            <MudText Typo="Typo.h6">
+                @($"{(_dictKeySymbols.ContainsKey(_renderer.ValueField) ? _dictKeySymbols[_renderer.ValueField].Count : 0)} items")
+            </MudText>
 
-    @if (_addValueItem is not null)
-    {
-        <GvCard Title="Add Value Item">
-            <GvCardContent>
-                <GvGrid ColumnCount="2">
-                    <GvGridItem>
-                        <MudTextField Label="Value"
-                                      @bind-Value="_addValueItem.Key"></MudTextField>
-                    </GvGridItem>
-                    <GvGridItem>
-                        <MudTextField Label="Label Text"
-                                      @bind-Value="_addValueItem.LabelText"></MudTextField>
-                    </GvGridItem>
-                </GvGrid>
-            </GvCardContent>
-            <GvCardActions>
-                <MudButton Variant="Variant.Filled"
-                           OnClick="() => _addValueItem = null" >Cancel</MudButton>
-                <MudButton Variant="Variant.Filled"
-                           Color="Color.Primary"
-                           OnClick="OnAddValueItem">Add</MudButton>
-            </GvCardActions>
-        </GvCard>
-    }
-    else
-    {
-        <GvCard Title="@($"Symbols: {(_dictKeySymbols.ContainsKey(_renderer.ValueField) ? _dictKeySymbols[_renderer.ValueField].Count : 0)}")">
-            <GvCardContentNoPadding>
-                <div style="height:400px;overflow-y:auto;white-space:nowrap">
-                    <KeySymbolListControl KeySymbols="_dictKeySymbols.ContainsKey(_renderer.ValueField) ? _dictKeySymbols[_renderer.ValueField] : []"
-                                          KeySymbolChanged="OnKeySymbolChanged" />
-                       
-                </div>
-            </GvCardContentNoPadding>
-        </GvCard>
-    }
+            @if (_addValueItem is not null)
+            {
+                <GvCard Title="Add Value Item">
+                    <GvCardContent>
+                        <GvGrid ColumnCount="2">
+                            <GvGridItem>
+                                <MudTextField Label="Value"
+                                              @bind-Value="_addValueItem.Key"></MudTextField>
+                            </GvGridItem>
+                            <GvGridItem>
+                                <MudTextField Label="Label Text"
+                                              @bind-Value="_addValueItem.LabelText"></MudTextField>
+                            </GvGridItem>
+                        </GvGrid>
+                    </GvCardContent>
+                    <GvCardActions>
+                        <MudButton Variant="Variant.Filled"
+                                   OnClick="() => _addValueItem = null" >Cancel</MudButton>
+                        <MudButton Variant="Variant.Filled"
+                                   Color="Color.Primary"
+                                   OnClick="OnAddValueItem">Add</MudButton>
+                    </GvCardActions>
+                </GvCard>
+            }
+        </ListItemTools>
+    </KeySymbolListControl>
 }
 
 @code {
@@ -90,14 +85,6 @@
 
     private Dictionary<string, List<KeySymbol>> _dictKeySymbols = new();
     private ValueItemModel? _addValueItem = null;
-
-    private HashSet<string> _list = new();
-    async private Task Add()
-    {
-        _list.Add(Guid.NewGuid().ToString());
-
-        await InvokeAsync(StateHasChanged);
-    }
 
     protected override Task OnParametersSetAsync() => HandleAsync(async () =>
     {
@@ -135,20 +122,20 @@
             }
         }
 
-        await RefreshKeySymbolList();
+        ExtendKeySymbolList();
     });
 
-    private async Task OnValueFieldChanged(string field)
+    private void OnValueFieldChanged(string field)
     {
         if (_renderer is not null)
         {
             _renderer.ValueField = field;
 
-            await RefreshKeySymbolList();
+            ExtendKeySymbolList();
         }
     }
 
-    private Task RefreshKeySymbolList() => HandleAsync(async () =>
+    private void ExtendKeySymbolList() => Handle(async () =>
     {
         if (_renderer is not null)
         {
@@ -156,31 +143,27 @@
             {
                 _dictKeySymbols[_renderer.ValueField] = [];
             }
-
-            await ForceRenderComponent();
-        }
-
-        StateHasChanged();
-    });
-
-    private void OnKeySymbolChanged(KeySymbol keySymbol) => Handle(() =>
-    {
-        {
-            if (_renderer is not null && _dictKeySymbols.ContainsKey(_renderer.ValueField))
-            {
-                var legendItem = _dictKeySymbols[_renderer.ValueField]
-                                        .FirstOrDefault(k => k.Key == keySymbol.Key)?
-                                        .Symbol as ILegendItem;
-
-                if (legendItem is not null)
-                {
-                    _renderer.SetSymbol(legendItem, keySymbol.Symbol);
-
-                    RefreshKeySymbolList();
-                }
-            }
         }
     });
+
+    // private void OnKeySymbolChanged(KeySymbol keySymbol) => Handle(() =>
+    // {
+    //     {
+    //         if (_renderer is not null && _dictKeySymbols.ContainsKey(_renderer.ValueField))
+    //         {
+    //             var legendItem = _dictKeySymbols[_renderer.ValueField]
+    //                                     .FirstOrDefault(k => k.Key == keySymbol.Key)?
+    //                                     .Symbol as ILegendItem;
+
+    //             if (legendItem is not null)
+    //             {
+    //                 _renderer.SetSymbol(legendItem, keySymbol.Symbol);
+
+    //                 RefreshKeySymbolList();
+    //             }
+    //         }
+    //     }
+    // });
 
     #region Button Events
 
@@ -192,7 +175,8 @@
             return;
         }
 
-        await OnRemoveAllItems();
+        OnRemoveAllItems();
+
         await this.ForceRenderComponent();
 
         DistinctFilter filter = new DistinctFilter(_renderer.ValueField);
@@ -206,8 +190,19 @@
             {
                 string key = ((FieldValue)feature.Fields[0]!)?.Value?.ToString();
 
+                var symbol = RendererFunctions.CreateStandardSymbol(_layer.LayerGeometryType);
+
+                if(symbol is null)
+                {
+                    continue;
+                }
+                if(symbol is ILegendItem legendItem)
+                {
+                    legendItem.LegendLabel = key;
+                }
+
                 _dictKeySymbols[_renderer.ValueField].Add(
-                    new KeySymbol(key!, RendererFunctions.CreateStandardSymbol(_layer.LayerGeometryType)));
+                    new KeySymbol(key!, symbol));
 
                 if(++counter % 100 == 0)
                 {
@@ -215,11 +210,9 @@
                 }
             }
         }
-
-        await RefreshKeySymbolList();
     });
 
-    private Task OnRemoveAllItems() => HandleAsync(async () =>
+    private void OnRemoveAllItems() => Handle(() =>
     {
         if (_renderer is null)
         {
@@ -231,10 +224,10 @@
             _dictKeySymbols.Remove(_renderer.ValueField);
         }
 
-        await RefreshKeySymbolList();
+        ExtendKeySymbolList();
     });
 
-    private Task OnAddAllOtherValuesItem() => HandleAsync(async () =>
+    private void OnAddAllOtherValuesItem() => Handle(() =>
     {
         if (_renderer is null)
         {
@@ -251,23 +244,38 @@
             }
 
             _dictKeySymbols[_renderer.ValueField].Add(new KeySymbol(ValueMapRenderer.AllOtherValuesKey, symbol));
-
-            await RefreshKeySymbolList();
         }
     });
 
-    private Task OnAddValueItem() => HandleAsync(async () =>
+    private void OnAddValueItem() => Handle(() =>
     {
         if(_renderer is not null 
             && _layer is not null
             && _addValueItem is not null)
         {
-            if(_renderer[_addValueItem.Key] is null)
+            ExtendKeySymbolList();
+
+            _addValueItem.Key = _addValueItem.Key.Trim();
+
+            if(_dictKeySymbols[_renderer.ValueField].Any(k=>k.Key == _addValueItem.Key))
             {
-                _renderer[_addValueItem.Key] = RendererFunctions.CreateStandardSymbol(_layer.LayerGeometryType);
+                throw new Exception($"Item {_addValueItem.Key} already exists");
             }
 
-            await RefreshKeySymbolList();
+            var symbol = RendererFunctions.CreateStandardSymbol(_layer.LayerGeometryType);
+            if(symbol is null)
+            {
+                throw new Exception($"Can't create a symbol for {_layer.LayerGeometryType} geometry");
+            }
+
+            if(symbol is ILegendItem legendItem)
+            {
+                legendItem.LegendLabel = _addValueItem.LabelText;    
+            }
+
+            _dictKeySymbols[_renderer.ValueField].Add(
+                new KeySymbol(_addValueItem.Key, symbol));
+
         }
         _addValueItem = null;
     });

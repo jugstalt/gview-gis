@@ -11,7 +11,7 @@ public class KeySymbol
     }
 
     public string Key { get; }
-    public ISymbol Symbol { get; }
+    public ISymbol Symbol { get; set; }
 
     public string LegendLabel
     {
