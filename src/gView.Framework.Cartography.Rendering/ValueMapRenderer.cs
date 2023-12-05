@@ -1,4 +1,5 @@
 using gView.Framework.Common;
+using gView.Framework.Common.Collection;
 using gView.Framework.Core.Carto;
 using gView.Framework.Core.Data;
 using gView.Framework.Core.Data.Filters;
@@ -11,7 +12,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Collections.sp
 
 namespace gView.Framework.Cartography.Rendering;
 
@@ -24,7 +24,7 @@ public class ValueMapRenderer : Cloner, IFeatureRenderer, IDefault, ILegendGroup
     public const string AllOtherValuesLabel = "All other values";
 
     private string _valueField = string.Empty;
-    private Dictionary<string, ISymbol> _symbolTable = new Dictionary<string, ISymbol>();
+    private OrderedKeyValuePairs<string, ISymbol> _symbolTable = new OrderedKeyValuePairs<string, ISymbol>();
     private GeometryType _geometryType = GeometryType.Unknown;
     private SymbolRotation _symbolRotation;
     private bool _useRefscale = true;
@@ -49,11 +49,6 @@ public class ValueMapRenderer : Cloner, IFeatureRenderer, IDefault, ILegendGroup
             symbol.Release();
         }
         _symbolTable.Clear();
-        //if (_defaultSymbol != null)
-        //{
-        //    _defaultSymbol.Release();
-        //    _defaultSymbol = null;
-        //}
     }
 
     public string ValueField
@@ -65,15 +60,6 @@ public class ValueMapRenderer : Cloner, IFeatureRenderer, IDefault, ILegendGroup
             {
                 return;
             }
-
-            /*
-            foreach(string key in _symbolTable.Keys) 
-            {
-                ISymbol sym=(ISymbol)_symbolTable[key];
-                sym.Release();
-            }
-            _symbolTable.Clear();
-            */
             _valueField = value;
         }
     }
@@ -202,33 +188,6 @@ public class ValueMapRenderer : Cloner, IFeatureRenderer, IDefault, ILegendGroup
         set { _cartoMethod = value; }
     }
 
-    public void ReorderLegendItems(string[] keys)
-    {
-        if (keys == null)
-        {
-            return;
-        }
-
-        Dictionary<string, ISymbol> orderedSymbolTable = new Dictionary<string, ISymbol>();
-        foreach (string key in keys)
-        {
-            if (_symbolTable.ContainsKey(key))
-            {
-                orderedSymbolTable.Add(key, _symbolTable[key]);
-            }
-        }
-
-        foreach (string key in _symbolTable.Keys)
-        {
-            if (!orderedSymbolTable.ContainsKey(key))
-            {
-                orderedSymbolTable.Add(key, _symbolTable[key]);
-            }
-        }
-
-        _symbolTable = orderedSymbolTable;
-    }
-
     #region IFeatureRenderer Member
 
     public bool CanRender(IFeatureLayer layer, IMap map)
@@ -242,10 +201,7 @@ public class ValueMapRenderer : Cloner, IFeatureRenderer, IDefault, ILegendGroup
         {
             return false;
         }
-        /*
-if (layer.FeatureClass.GeometryType == geometryType.Unknown ||
-layer.FeatureClass.GeometryType == geometryType.Network) return false;
-* */
+        
         if (layer.LayerGeometryType == GeometryType.Unknown ||
             layer.LayerGeometryType == GeometryType.Network)
         {
@@ -300,50 +256,17 @@ layer.FeatureClass.GeometryType == geometryType.Network) return false;
         }
     }
 
-    /*
-		public void Draw(IDisplay disp, IFeatureCursor fCursor, gView.Framework.Carto.Rendering.DrawPhase drawPhase, ICancelTracker cancelTracker)
-		{
-			IFeature feature;
-			
-			try 
-			{
-				ISymbol _symbol=null;
-				string key="";
-				while((feature=fCursor.NextFeature)!=null) 
-				{
-					string k=((FieldValue)feature.Fields[0]).Value.ToString();
-					if(k!=key) 
-					{
-						key=k;
-						_symbol=(ISymbol)_symbolTable[key];
-					}
-			
-					if(cancelTracker!=null) 
-						if(!cancelTracker.Continue) 
-							return;
-
-					disp.Draw((_symbol==null) ? _defaultSymbol : _symbol,feature.Shape);
-
-                if (_labelRenderer != null) _labelRenderer.Draw(disp, feature, drawPhase, cancelTracker);
-				}
-			} 
-			catch(Exception ex)
-			{
-				string msg=ex.Message;
-			}
-		}
-     * */
     public void Draw(IDisplay disp, IFeature feature)
     {
-        object o = feature[_valueField];
-        string k = o != null ? o.ToString() : null; //feature[_valueField].ToString(); //((FieldValue)feature.Fields[0]).Value.ToString();
+        object value = feature[_valueField];
+        string key = value != null ? value.ToString() : null; //feature[_valueField].ToString(); //((FieldValue)feature.Fields[0]).Value.ToString();
 
         if (_cartoMethod == LegendGroupCartographicMethod.Simple)
         {
             ISymbol _symbol = null;
-            if (k != null && _symbolTable.ContainsKey(k))
+            if (key != null && _symbolTable.ContainsKey(key))
             {
-                _symbol = _symbolTable[k];
+                _symbol = _symbolTable[key];
             }
 
             _symbol = _symbol == null ? this[null] : _symbol;
@@ -374,25 +297,25 @@ layer.FeatureClass.GeometryType == geometryType.Network) return false;
                 _features = new Dictionary<string, List<IFeature>>();
             }
 
-            if (k == null || k != null && !_symbolTable.ContainsKey(k))
+            if (key == null || key != null && !_symbolTable.ContainsKey(key))
             {
-                k = "__gview_all_other_values__";
+                key = AllOtherValuesKey;
             }
 
-            if (!_symbolTable.ContainsKey(k))
+            if (!_symbolTable.ContainsKey(key))
             {
                 return;
             }
 
             List<IFeature> fList = null;
-            if (_features.ContainsKey(k))
+            if (_features.ContainsKey(key))
             {
-                fList = _features[k];
+                fList = _features[key];
             }
             else
             {
                 fList = new List<IFeature>();
-                _features.Add(k, fList);
+                _features.Add(key, fList);
             }
 
             fList.Add(feature);
@@ -644,20 +567,7 @@ layer.FeatureClass.GeometryType == geometryType.Network) return false;
     }
 
     public ILegendItem LegendItem(int index)
-    {
-        if (index < 0)
-        {
-            return null;
-        }
-        //if (index == 0) return (ILegendItem)_defaultSymbol;
-        if (index <= _symbolTable.Count)
-        {
-            var legendItem = _symbolTable.Values.ToArray()[index] as ILegendItem;
-
-            return legendItem;
-        }
-        return null;
-    }
+        => _symbolTable.ValueAtOrDefault(index);
 
     public void SetSymbol(ILegendItem item, ISymbol symbol)
     {
@@ -666,30 +576,22 @@ layer.FeatureClass.GeometryType == geometryType.Network) return false;
             return;
         }
 
-        //if (item == _defaultSymbol)
-        //{
-        //    _defaultSymbol.Release();
-        //    _defaultSymbol = symbol;
-        //}
-        //else
+        foreach (string key in _symbolTable.Keys)
         {
-            foreach (string key in _symbolTable.Keys)
+            if (!(_symbolTable[key] is ILegendItem))
             {
-                if (!(_symbolTable[key] is ILegendItem))
+                continue;
+            }
+
+            if (_symbolTable[key] == item)
+            {
+                if (symbol is ILegendItem)
                 {
-                    continue;
+                    symbol.LegendLabel = item.LegendLabel;
                 }
 
-                if (_symbolTable[key] == item)
-                {
-                    if (symbol is ILegendItem)
-                    {
-                        symbol.LegendLabel = item.LegendLabel;
-                    }
-
-                    _symbolTable[key] = symbol;
-                    return;
-                }
+                _symbolTable[key] = symbol;
+                return;
             }
         }
     }
@@ -697,12 +599,13 @@ layer.FeatureClass.GeometryType == geometryType.Network) return false;
     #endregion
 
     #region IClone2
+
     public object Clone(CloneOptions options)
     {
         ValueMapRenderer renderer = new ValueMapRenderer();
+
         renderer._valueField = _valueField;
-        //if (_defaultSymbol != null)
-        //    renderer._defaultSymbol = (ISymbol)_defaultSymbol.Clone(_useRefscale ? display : null);
+        
         foreach (string key in _symbolTable.Keys)
         {
             ISymbol symbol = _symbolTable[key];
@@ -716,6 +619,7 @@ layer.FeatureClass.GeometryType == geometryType.Network) return false;
         renderer._geometryType = _geometryType;
         renderer._symbolRotation = (SymbolRotation)_symbolRotation.Clone();
         renderer._cartoMethod = _cartoMethod;
+
         return renderer;
     }
     public void Release()
@@ -789,7 +693,7 @@ internal class ValueMapRendererSymbol : IPersistable
     public void Load(IPersistStream stream)
     {
         _key = (string)stream.Load("key");
-        if (_key == "__gview_all_other_values__")
+        if (_key == ValueMapRenderer.AllOtherValuesKey)
         {
             _key = null;
         }
@@ -801,7 +705,7 @@ internal class ValueMapRendererSymbol : IPersistable
     {
         if (_key == null)
         {
-            stream.Save("key", "__gview_all_other_values__");
+            stream.Save("key", ValueMapRenderer.AllOtherValuesKey);
         }
         else
         {

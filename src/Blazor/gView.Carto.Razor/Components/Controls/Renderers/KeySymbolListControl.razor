@@ -6,8 +6,8 @@
 {
     <MudDropContainer T="KeySymbol"
                       Items="KeySymbols.Take(1000)"
-                        ItemDropped="ReorderSymbols"
-                        ItemsSelector="@((item,zone) => true)">
+                      ItemDropped="ReorderSymbols"
+                      ItemsSelector="@((item,zone) => true)">
         <ChildContent>
             
             @if (!String.IsNullOrEmpty(_composeSymbolKey))
@@ -74,7 +74,7 @@
 @code {
     [Parameter] public RenderFragment? ListItemTools { get; set; }
     [Parameter] public List<KeySymbol>? KeySymbols { get; set; }
-    [Parameter] public EventCallback OnKeySymbolsChanged { get; set; }
+    [Parameter] public EventCallback<List<KeySymbol>> OnKeySymbolsChanged { get; set; }
 
     private string _composeSymbolKey = "";
     private string _editLabelKey = "";
@@ -112,7 +112,7 @@
 
                 keySymbol.Symbol = newSymbol;
 
-                await OnKeySymbolsChanged.InvokeAsync();
+                await OnKeySymbolsChanged.InvokeAsync(KeySymbols);
             }
         }
     });
@@ -133,6 +133,24 @@
                 : dropInfo.IndexInZone,
             dropInfo.Item);
 
-        await OnKeySymbolsChanged.InvokeAsync();
+        await OnKeySymbolsChanged.InvokeAsync(KeySymbols);
+
+
+        // ToDo: Quirks...
+        // vielleicht muss man besser eine komplett neue Liste anlegen, 
+        // nach dem Sortieren... also oben schon
+        // die müsste man dann gleich an KeySymbolsChanged übergeben
+        // ...
+        var keySymbols = KeySymbols;
+        KeySymbols = new();
+
+        await ForceRenderComponent();
+
+        foreach(var item in keySymbols)
+        {
+            KeySymbols.Add(item);
+        }
+
+        StateHasChanged();
     }
 }
