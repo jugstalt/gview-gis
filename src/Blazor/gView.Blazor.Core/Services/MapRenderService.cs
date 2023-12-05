@@ -11,6 +11,7 @@ using gView.GraphicsEngine.Abstraction;
 using System;
 using System.IO;
 using System.Threading.Tasks;
+using gView.Framework.Common.Extensions;
 
 namespace gView.Blazor.Core.Services;
 

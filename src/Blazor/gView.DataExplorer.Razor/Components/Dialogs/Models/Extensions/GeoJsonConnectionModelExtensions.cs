@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using gView.Framework.IO;
-using gView.Framework.Common;
+using gView.Framework.Common.Extensions;
 
 namespace gView.DataExplorer.Razor.Components.Dialogs.Models.Extensions;
 static public class GeoJsonConnectionModelExtensions

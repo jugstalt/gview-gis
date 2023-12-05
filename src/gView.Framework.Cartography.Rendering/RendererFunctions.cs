@@ -13,7 +13,7 @@ namespace gView.Framework.Cartography.Rendering
             => ArgbColor.FromArgb(alpah, r.Next(255), r.Next(255), r.Next(255));
 
         static public ISymbol CreateStandardSymbol(GeometryType type,
-                                                   int fillAlpha = 150,
+                                                   int fillAlpha = 85,
                                                    float lineWidth = 1,
                                                    int pointSize = 5)
         {

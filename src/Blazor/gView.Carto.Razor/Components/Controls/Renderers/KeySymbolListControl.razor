@@ -74,7 +74,7 @@
 @code {
     [Parameter] public RenderFragment? ListItemTools { get; set; }
     [Parameter] public List<KeySymbol>? KeySymbols { get; set; }
-    [Parameter] public EventCallback<KeySymbol> KeySymbolChanged { get; set; }
+    [Parameter] public EventCallback OnKeySymbolsChanged { get; set; }
 
     private string _composeSymbolKey = "";
     private string _editLabelKey = "";
@@ -96,7 +96,7 @@
         StateHasChanged();
     }
 
-    private void OnSymbolChanged(string key, ISymbol newSymbol) => Handle(() =>
+    private Task OnSymbolChanged(string key, ISymbol newSymbol) => HandleAsync(async () =>
     {
         if (KeySymbols is not null)
         {
@@ -111,12 +111,28 @@
                 }
 
                 keySymbol.Symbol = newSymbol;
+
+                await OnKeySymbolsChanged.InvokeAsync();
             }
         }
     });
 
-
-    private void ReorderSymbols(MudItemDropInfo<KeySymbol> dropInfo)
+    async Task ReorderSymbols(MudItemDropInfo<KeySymbol> dropInfo)
     {
+        if(KeySymbols is null || dropInfo.Item is null)
+        {
+            return;
+        }
+
+        var currentIndex = KeySymbols.IndexOf(dropInfo.Item);
+
+        KeySymbols.Remove(dropInfo.Item);
+        KeySymbols.Insert(
+            currentIndex < dropInfo.IndexInZone
+                ? dropInfo.IndexInZone
+                : dropInfo.IndexInZone,
+            dropInfo.Item);
+
+        await OnKeySymbolsChanged.InvokeAsync();
     }
 }

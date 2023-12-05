@@ -9,7 +9,6 @@ using gView.Framework.Data;
 using gView.Framework.Data.Metadata;
 using gView.Framework.Geometry;
 using gView.Framework.IO;
-using gView.Framework.Common;
 using gView.Framework.Web.Abstraction;
 using gView.Framework.Web.Services;
 using gView.Interoperability.GeoServices.Rest.Json;
@@ -19,6 +18,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
+using gView.Framework.Common.Extensions;
 
 namespace gView.Interoperability.GeoServices.Dataset
 {

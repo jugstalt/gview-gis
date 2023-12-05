@@ -9,9 +9,9 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
 
-namespace gView.Framework.Common
+namespace gView.Framework.Common.Extensions
 {
-    static public class Extensions
+    static public class GeneralExtensions
     {
         //static public T NonblockingResult<T>(this Task task)
         //{

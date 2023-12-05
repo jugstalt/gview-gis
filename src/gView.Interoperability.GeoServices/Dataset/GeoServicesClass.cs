@@ -19,6 +19,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Web;
 using System.Xml;
+using gView.Framework.Common.Extensions;
 
 namespace gView.Interoperability.GeoServices.Dataset
 {

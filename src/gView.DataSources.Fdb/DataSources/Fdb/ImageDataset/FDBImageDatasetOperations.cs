@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.IO;
 using System.Threading.Tasks;
+using gView.Framework.Common.Extensions;
 
 namespace gView.DataSources.Fdb.ImageDataset
 {

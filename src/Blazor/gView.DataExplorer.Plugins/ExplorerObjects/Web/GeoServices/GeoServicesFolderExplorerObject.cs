@@ -9,7 +9,7 @@ using System;
 using System.Linq;
 using gView.Framework.Web.Extensions;
 using System.Threading.Tasks;
-using gView.Framework.Common;
+using gView.Framework.Common.Extensions;
 
 namespace gView.DataExplorer.Plugins.ExplorerObjects.Web.GeoServices;
 

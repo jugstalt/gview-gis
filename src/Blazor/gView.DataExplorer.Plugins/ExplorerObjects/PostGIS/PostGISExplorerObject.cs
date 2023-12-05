@@ -10,7 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using gView.Framework.Core.Data;
-using gView.Framework.Common;
+using gView.Framework.Common.Extensions;
 
 namespace gView.DataExplorer.Plugins.ExplorerObjects.PostGIS;
 

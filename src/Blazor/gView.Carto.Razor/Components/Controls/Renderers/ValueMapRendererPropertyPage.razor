@@ -6,7 +6,9 @@
 
 @if(_renderer is not null && _layer?.FeatureClass is not null)
 {
-    <KeySymbolListControl KeySymbols="_dictKeySymbols.ContainsKey(_renderer.ValueField) ? _dictKeySymbols[_renderer.ValueField] : []">
+    <KeySymbolListControl 
+            KeySymbols="_dictKeySymbols.GetValueOrDefault(_renderer.ValueField, [])"
+            OnKeySymbolsChanged="ApplyChanges">
         <ListItemTools>
             <GvGrid ColumnCount="2">
                 <GvGridItem>
@@ -46,7 +48,7 @@
                 </GvGridItem>
             </GvGrid>
             <MudText Typo="Typo.h6">
-                @($"{(_dictKeySymbols.ContainsKey(_renderer.ValueField) ? _dictKeySymbols[_renderer.ValueField].Count : 0)} items")
+                @($"{_dictKeySymbols.IfKeyExists(_renderer.ValueField, (l) => l.Count)} items")
             </MudText>
 
             @if (_addValueItem is not null)
@@ -107,7 +109,8 @@
 
         if(_renderer is not null)
         {
-            _dictKeySymbols[_renderer.ValueField] = [];
+            var keySymbols = CurrentKeySymbolsList();
+            keySymbols.Clear();
 
             int index = 0;
             foreach (string key in _renderer.Keys)
@@ -116,14 +119,26 @@
 
                 if (symbol is not null)
                 {
-                    _dictKeySymbols[_renderer.ValueField].Add(new KeySymbol(key, symbol));
+                    keySymbols.Add(new KeySymbol(key, symbol));
                 }
                 index++;
             }
         }
-
-        ExtendKeySymbolList();
     });
+
+    private void ApplyChanges()
+    {
+        if(_renderer is null)
+        {
+            return;
+        }
+
+        _renderer.Keys.ToList()
+                      .ForEach(key => _renderer.RemoveSymbol(key));
+
+        var keySymbols = CurrentKeySymbolsList();
+        keySymbols.ForEach((keySybol) => _renderer[keySybol.Key] = keySybol.Symbol.Clone() as ISymbol);
+    }
 
     private void OnValueFieldChanged(string field)
     {
@@ -131,20 +146,9 @@
         {
             _renderer.ValueField = field;
 
-            ExtendKeySymbolList();
+            CurrentKeySymbolsList();
         }
     }
-
-    private void ExtendKeySymbolList() => Handle(async () =>
-    {
-        if (_renderer is not null)
-        {
-            if (!_dictKeySymbols.ContainsKey(_renderer.ValueField))
-            {
-                _dictKeySymbols[_renderer.ValueField] = [];
-            }
-        }
-    });
 
     // private void OnKeySymbolChanged(KeySymbol keySymbol) => Handle(() =>
     // {
@@ -176,6 +180,7 @@
         }
 
         OnRemoveAllItems();
+        var keySymbols = CurrentKeySymbolsList();
 
         await this.ForceRenderComponent();
 
@@ -201,8 +206,7 @@
                     legendItem.LegendLabel = key;
                 }
 
-                _dictKeySymbols[_renderer.ValueField].Add(
-                    new KeySymbol(key!, symbol));
+                keySymbols.Add(new KeySymbol(key!, symbol));
 
                 if(++counter % 100 == 0)
                 {
@@ -210,6 +214,8 @@
                 }
             }
         }
+
+        ApplyChanges();
     });
 
     private void OnRemoveAllItems() => Handle(() =>
@@ -219,12 +225,14 @@
             return;
         }
 
-        if (_dictKeySymbols.ContainsKey(_renderer.ValueField))
-        {
-            _dictKeySymbols.Remove(_renderer.ValueField);
-        }
+        _dictKeySymbols.RemoveIfExists(_renderer.ValueField, (keySymbols) =>
+            keySymbols?.ForEach((keySymbol) 
+                => keySymbol.Symbol?.Release())
+        );
 
-        ExtendKeySymbolList();
+        CurrentKeySymbolsList();
+
+        ApplyChanges();
     });
 
     private void OnAddAllOtherValuesItem() => Handle(() =>
@@ -234,8 +242,9 @@
             return;
         }
 
-        if (_dictKeySymbols.ContainsKey(_renderer.ValueField) &&
-            _dictKeySymbols[_renderer.ValueField].Any(k => k.Key == ValueMapRenderer.AllOtherValuesKey) == false)
+        var keySymbols = CurrentKeySymbolsList();
+
+        if (keySymbols.Any(k => k.Key == ValueMapRenderer.AllOtherValuesKey) == false)
         {
             var symbol = RendererFunctions.CreateStandardSymbol(_renderer.GeometryType);
             if (symbol is ILegendItem legendItem)
@@ -243,7 +252,9 @@
                 legendItem.LegendLabel = ValueMapRenderer.AllOtherValuesLabel;
             }
 
-            _dictKeySymbols[_renderer.ValueField].Add(new KeySymbol(ValueMapRenderer.AllOtherValuesKey, symbol));
+            keySymbols.Add(new KeySymbol(ValueMapRenderer.AllOtherValuesKey, symbol));
+
+            ApplyChanges();
         }
     });
 
@@ -253,11 +264,11 @@
             && _layer is not null
             && _addValueItem is not null)
         {
-            ExtendKeySymbolList();
+            var keySymbols = CurrentKeySymbolsList();
 
             _addValueItem.Key = _addValueItem.Key.Trim();
 
-            if(_dictKeySymbols[_renderer.ValueField].Any(k=>k.Key == _addValueItem.Key))
+            if (keySymbols.Any(k => k.Key == _addValueItem.Key))
             {
                 throw new Exception($"Item {_addValueItem.Key} already exists");
             }
@@ -273,12 +284,31 @@
                 legendItem.LegendLabel = _addValueItem.LabelText;    
             }
 
-            _dictKeySymbols[_renderer.ValueField].Add(
-                new KeySymbol(_addValueItem.Key, symbol));
+            keySymbols.Add(new KeySymbol(_addValueItem.Key, symbol));
 
+            ApplyChanges();
         }
         _addValueItem = null;
     });
+
+    #endregion
+
+    #region Helper
+
+    private List<KeySymbol> CurrentKeySymbolsList()
+    {
+        if (_renderer is not null)
+        {
+            if (!_dictKeySymbols.ContainsKey(_renderer.ValueField))
+            {
+                _dictKeySymbols[_renderer.ValueField] = [];
+            }
+
+            return _dictKeySymbols[_renderer.ValueField];
+        }
+
+        return [];
+    }
 
     #endregion
 }

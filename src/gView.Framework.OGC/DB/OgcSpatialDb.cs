@@ -11,7 +11,6 @@ using gView.Framework.Data.Metadata;
 using gView.Framework.Db;
 using gView.Framework.Editor.Core;
 using gView.Framework.Geometry;
-using gView.Framework.Common;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -19,6 +18,7 @@ using System.Data.Common;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using gView.Framework.Common.Extensions;
 
 namespace gView.Framework.OGC.DB
 {

@@ -21,6 +21,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using gView.Framework.Common.Extensions;
 
 namespace gView.DataExplorer.Plugins.ExplorerObjects.Fdb.Extensions;
 static internal class ApplicationScopeServiceExtensions

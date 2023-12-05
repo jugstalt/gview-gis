@@ -17,6 +17,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using gView.Framework.Common.Extensions;
 
 namespace gView.Server.Controllers
 {

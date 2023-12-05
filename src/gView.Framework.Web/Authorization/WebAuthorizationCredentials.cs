@@ -1,4 +1,4 @@
-﻿using gView.Framework.Common;
+﻿using gView.Framework.Common.Extensions;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Concurrent;
