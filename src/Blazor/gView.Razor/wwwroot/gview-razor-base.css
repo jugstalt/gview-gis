@@ -91,3 +91,12 @@
     .gview-property-grid .mud-input {
         margin-top: 0px !important;
     }
+
+.gview-inline-input {
+    width: 100%;
+    color: currentColor;
+    border: none;
+    border-bottom: 1px solid currentColor;
+    outline: none;
+    background:none;
+}

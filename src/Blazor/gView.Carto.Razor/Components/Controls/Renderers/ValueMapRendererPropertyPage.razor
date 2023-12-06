@@ -3,12 +3,13 @@
 @using gView.Framework.Data.Filters
 
 @inherits BaseHandler
+@implements IDisposable
 
 @if(_renderer is not null && _layer?.FeatureClass is not null)
 {
     <KeySymbolListControl 
             KeySymbols="_dictKeySymbols.GetValueOrDefault(_renderer.ValueField, [])"
-            OnKeySymbolsChanged="ApplyChanges">
+            OnKeySymbolsChanged="SymbolsListChanged">
         <ListItemTools>
             <GvGrid ColumnCount="2">
                 <GvGridItem>
@@ -100,6 +101,10 @@
             if (_renderer is not null)
             {
                 _renderer.GeometryType = _layer.LayerGeometryType;
+                if(String.IsNullOrEmpty(_renderer.ValueField))
+                {
+                    _renderer.ValueField = _layer.FeatureClass?.IDFieldName ?? "";
+                }
             }
         }
         else
@@ -140,6 +145,17 @@
         keySymbols.ForEach((keySybol) => _renderer[keySybol.Key] = keySybol.Symbol.Clone() as ISymbol);
     }
 
+    private void SymbolsListChanged(List<KeySymbol> keySymbols)
+    {
+        if(_renderer is null)
+        {
+            return;
+        }
+
+        _dictKeySymbols[_renderer.ValueField] = keySymbols;
+        ApplyChanges();
+    }
+
     private void OnValueFieldChanged(string field)
     {
         if (_renderer is not null)
@@ -150,31 +166,11 @@
         }
     }
 
-    // private void OnKeySymbolChanged(KeySymbol keySymbol) => Handle(() =>
-    // {
-    //     {
-    //         if (_renderer is not null && _dictKeySymbols.ContainsKey(_renderer.ValueField))
-    //         {
-    //             var legendItem = _dictKeySymbols[_renderer.ValueField]
-    //                                     .FirstOrDefault(k => k.Key == keySymbol.Key)?
-    //                                     .Symbol as ILegendItem;
-
-    //             if (legendItem is not null)
-    //             {
-    //                 _renderer.SetSymbol(legendItem, keySymbol.Symbol);
-
-    //                 RefreshKeySymbolList();
-    //             }
-    //         }
-    //     }
-    // });
-
     #region Button Events
 
     private Task OnAddAllItems() => HandleAsync(async () =>
     {
-        if (_renderer is null 
-            || _layer?.FeatureClass is null)
+        if (_renderer is null || _layer?.FeatureClass is null)
         {
             return;
         }
@@ -193,7 +189,7 @@
             IFeature feature;
             while ((feature = await cursor.NextFeature()) is not null)
             {
-                string key = ((FieldValue)feature.Fields[0]!)?.Value?.ToString();
+                var key = feature.Fields[0].Value?.ToString() ?? "";
 
                 var symbol = RendererFunctions.CreateStandardSymbol(_layer.LayerGeometryType);
 
@@ -206,7 +202,7 @@
                     legendItem.LegendLabel = key;
                 }
 
-                keySymbols.Add(new KeySymbol(key!, symbol));
+                keySymbols.Add(new KeySymbol(key, symbol));
 
                 if(++counter % 100 == 0)
                 {
@@ -244,18 +240,16 @@
 
         var keySymbols = CurrentKeySymbolsList();
 
-        if (keySymbols.Any(k => k.Key == ValueMapRenderer.AllOtherValuesKey) == false)
-        {
-            var symbol = RendererFunctions.CreateStandardSymbol(_renderer.GeometryType);
-            if (symbol is ILegendItem legendItem)
-            {
-                legendItem.LegendLabel = ValueMapRenderer.AllOtherValuesLabel;
-            }
+        keySymbols.Any(k => k.Key == ValueMapRenderer.AllOtherValuesKey)
+                  .ThrowIfTrue(() => "All other values item is already added");
 
-            keySymbols.Add(new KeySymbol(ValueMapRenderer.AllOtherValuesKey, symbol));
+        var symbol = RendererFunctions.CreateStandardSymbol(_renderer.GeometryType)
+                                  .AddLegendLabel(ValueMapRenderer.AllOtherValuesLabel);
 
-            ApplyChanges();
-        }
+        keySymbols.Add(new KeySymbol(ValueMapRenderer.AllOtherValuesKey, symbol));
+
+        ApplyChanges();
+
     });
 
     private void OnAddValueItem() => Handle(() =>
@@ -268,21 +262,13 @@
 
             _addValueItem.Key = _addValueItem.Key.Trim();
 
-            if (keySymbols.Any(k => k.Key == _addValueItem.Key))
-            {
-                throw new Exception($"Item {_addValueItem.Key} already exists");
-            }
+            keySymbols.Any(k => k.Key == _addValueItem.Key)
+                      .ThrowIfTrue(() => $"Item {_addValueItem.Key} already exists");
 
-            var symbol = RendererFunctions.CreateStandardSymbol(_layer.LayerGeometryType);
-            if(symbol is null)
-            {
-                throw new Exception($"Can't create a symbol for {_layer.LayerGeometryType} geometry");
-            }
-
-            if(symbol is ILegendItem legendItem)
-            {
-                legendItem.LegendLabel = _addValueItem.LabelText;    
-            }
+            var symbol = RendererFunctions
+                            .CreateStandardSymbol(_layer.LayerGeometryType)
+                            .ThrowIfNull(() => $"Can't create a symbol for {_layer.LayerGeometryType} geometry")
+                            .AddLegendLabel(_addValueItem.LabelText);
 
             keySymbols.Add(new KeySymbol(_addValueItem.Key, symbol));
 
@@ -308,6 +294,18 @@
         }
 
         return [];
+    }
+
+    #endregion
+
+    #region IDisposable
+
+    public void Dispose()
+    {
+        _dictKeySymbols.ForEach((key, keySymbols) =>
+            keySymbols.ForEach((keySymbol) => keySymbol.Symbol?.Release())
+        );
+        _dictKeySymbols.Clear();
     }
 
     #endregion

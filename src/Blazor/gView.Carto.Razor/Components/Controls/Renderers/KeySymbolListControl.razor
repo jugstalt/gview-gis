@@ -6,7 +6,7 @@
 {
     <MudDropContainer T="KeySymbol"
                       Items="KeySymbols.Take(1000)"
-                      ItemDropped="ReorderSymbols"
+                      ItemDropped="ReorderItems"
                       ItemsSelector="@((item,zone) => true)">
         <ChildContent>
             
@@ -40,23 +40,30 @@
             }
         </ChildContent>
         <ItemRenderer>
-            <GvGrid ColumnCount="8">
+            <GvGrid ColumnCount="12">
+                <GvGridItem Span="1">
+                    <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                   OnClick="() => DeleteItem(context)"
+                                   Size="MudBlazor.Size.Small"
+                                   Color="Color.Secondary"
+                                   aria-label="delete"></MudIconButton>
+                </GvGridItem>
                 <GvGridItem Span="1">
                     <div style="display:inline-block;width:30px;height:30px;cursor:pointer;background-image:url('@context.Symbol.ToBase64ImageSource(30,30)')"
                          @onclick="() => ComposeSymbol(context.Key)">
                     </div>
                 </GvGridItem>
-                <GvGridItem Span="2">
+                <GvGridItem Span="4">
                     <div style="overflow:hidden">
                         @context.Key
                     </div>
                 </GvGridItem>
-                <GvGridItem Span="5">
+                <GvGridItem Span="6">
                     @if (_editLabelKey == context.Key)
                     {
-                        <MudTextField T="string"
-                                      @bind-Value="@context.LegendLabel">
-                        </MudTextField>
+                        <InlineInput @bind-Value="@context.LegendLabel"
+                                     OnEnter="() => _editLabelKey = String.Empty"
+                                     OnBlur="() => _editLabelKey = String.Empty"/>
                     }
                     else
                     {
@@ -78,16 +85,6 @@
 
     private string _composeSymbolKey = "";
     private string _editLabelKey = "";
-
-    protected override void OnParametersSet()
-    {
-        base.OnParametersSet();
-
-        _composeSymbolKey = "";
-        _editLabelKey = "";
-
-        StateHasChanged();
-    }
 
     private void ComposeSymbol(string key)
     {
@@ -117,39 +114,50 @@
         }
     });
 
-    async Task ReorderSymbols(MudItemDropInfo<KeySymbol> dropInfo)
+    private Task DeleteItem(KeySymbol keySymbol) => HandleAsync(() =>
+    {
+        KeySymbols?.Remove(keySymbol);
+
+        return OnKeySymbolsChanged.InvokeAsync(KeySymbols);
+    });
+
+    async Task ReorderItems(MudItemDropInfo<KeySymbol> dropInfo)
     {
         if(KeySymbols is null || dropInfo.Item is null)
         {
             return;
         }
 
-        var currentIndex = KeySymbols.IndexOf(dropInfo.Item);
-
-        KeySymbols.Remove(dropInfo.Item);
-        KeySymbols.Insert(
-            currentIndex < dropInfo.IndexInZone
-                ? dropInfo.IndexInZone
-                : dropInfo.IndexInZone,
-            dropInfo.Item);
-
-        await OnKeySymbolsChanged.InvokeAsync(KeySymbols);
-
-
-        // ToDo: Quirks...
-        // vielleicht muss man besser eine komplett neue Liste anlegen, 
-        // nach dem Sortieren... also oben schon
-        // die müsste man dann gleich an KeySymbolsChanged übergeben
-        // ...
+        //
+        // Completely rebuild a new list
+        // with new instances of items (.Copy())
+        // otherwise the list will not refreshed correctly
+        // in the dropzone
+        //
         var keySymbols = KeySymbols;
         KeySymbols = new();
 
-        await ForceRenderComponent();
-
+        bool added = false;
         foreach(var item in keySymbols)
         {
-            KeySymbols.Add(item);
+            if(KeySymbols.Count == dropInfo.IndexInZone)
+            {
+                KeySymbols.Add(dropInfo.Item.Copy());
+                added = true;
+            }
+            if(item == dropInfo.Item)
+            {
+                continue;
+            }
+
+            KeySymbols.Add(item.Copy());
         }
+        if(!added)
+        {
+            KeySymbols.Add(dropInfo.Item.Copy());
+        }
+
+        await OnKeySymbolsChanged.InvokeAsync(KeySymbols);
 
         StateHasChanged();
     }

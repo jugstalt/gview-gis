@@ -1,0 +1,52 @@
+<input class="gview-inline-input"
+       @bind-value="Value"
+       @oninput="HandleInputChange"
+       @onblur="HandleBlur"
+       @onkeypress="HandleKeyPress" />
+
+@code {
+    private string _value = "";
+
+    [Parameter]
+    public string? Value
+    {
+        get => _value;
+        set
+        {
+            if (_value == value) 
+            {
+                return; 
+            }
+
+            _value = value;
+
+            ValueChanged.InvokeAsync(value);
+        }
+    }
+
+    [Parameter] public EventCallback<string> ValueChanged { get; set; }
+    [Parameter] public EventCallback<string> OnEnter { get; set; }
+    [Parameter] public EventCallback<string> OnBlur { get; set; }
+
+    private void HandleInputChange(ChangeEventArgs e)
+    {
+        Value = e.Value?.ToString() ?? "";
+    }
+
+    private Task HandleBlur(FocusEventArgs e)
+    {
+        return OnEnter.InvokeAsync(Value);
+    }
+
+    private Task HandleKeyPress(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            return OnEnter.InvokeAsync(Value);
+        }
+
+        return Task.CompletedTask;
+    }
+}
+
+

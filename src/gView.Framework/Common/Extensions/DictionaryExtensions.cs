@@ -11,7 +11,7 @@ static public class DictionaryExtensions
         TKey key,
         Func<TValue, TResult> action,
         TResult? defaultResult = default)
-        => dict.ContainsKey(key) ? action(dict[key]) : defaultResult;
+        => dict?.ContainsKey(key) == true ? action(dict[key]) : defaultResult;
 
     static public void RemoveIfExists<TKey, TValue>(
         this IDictionary<TKey, TValue> dict,
@@ -23,7 +23,22 @@ static public class DictionaryExtensions
         {
             dict.Remove(key, out TValue? value);
 
-            removeItem?.Invoke(value);  
+            removeItem?.Invoke(value);
+        }
+    }
+
+    static public void ForEach<TKey, TValue>(
+        this IDictionary<TKey, TValue> dict,
+        Action<TKey, TValue> action)
+    {
+        if (dict is null)
+        {
+            return;
+        }
+
+        foreach (var key in dict.Keys)
+        {
+            action(key, dict[key]);
         }
     }
 }

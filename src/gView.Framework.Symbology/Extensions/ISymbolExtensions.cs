@@ -1,5 +1,6 @@
 ﻿using gView.Framework.Core.Geometry;
 using gView.Framework.Core.Symbology;
+using System.Reflection.Emit;
 
 namespace gView.Framework.Symbology.Extensions;
 
@@ -14,4 +15,14 @@ public static class ISymbolExtensions
             ITextSymbol => GeometryType.Point,
             _ => GeometryType.Unknown
         };
+
+    public static ISymbol AddLegendLabel(this ISymbol symbol, string legendLabel)
+    {
+        if(symbol is ILegendItem legendItem)
+        {
+            symbol.LegendLabel = legendLabel;
+        }
+
+        return symbol;
+    }
 }
