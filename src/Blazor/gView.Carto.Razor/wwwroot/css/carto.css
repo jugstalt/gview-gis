@@ -276,27 +276,40 @@
 }
 
     .gview-ui-image.img-legend-roads {
-        width: 100%;
+        width: 160px;
         height: 50px;
         background-image: url(../img/legend_roads.png);
     }
 
     .gview-ui-image.img-carto-simple {
-        width: 100%;
+        width: 160px;
         height: 50px;
         background-image: url(../img/carto_feature_order.png);
     }
 
     .gview-ui-image.img-carto-legendordering {
-        width: 100%;
+        width: 160px;
         height: 50px;
         background-image: url(../img/carto_legend_ordering.png);
     }
 
     .gview-ui-image.img-carto-legendandsymbolordering {
-        width: 100%;
+        width: 160px;
         height: 50px;
         background-image: url(../img/carto_symbol_ordering.png);
+    }
+
+    .gview-ui-image.img-rotation-geographic {
+        width: 150px;
+        height: 130px;
+        background-size: contain;
+        background-image: url(../img/rotation_geographic.png);
+    }
+    .gview-ui-image.img-rotation-arithmetic {
+        width: 150px;
+        height: 130px;
+        background-size: contain;
+        background-image: url(../img/rotation_arithmetic.png);
     }
 
 @media (-webkit-min-device-pixel-ratio: 1.5), (min-resolution: 144dpi) {

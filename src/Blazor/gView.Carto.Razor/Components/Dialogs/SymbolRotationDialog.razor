@@ -1,0 +1,52 @@
+@inherits ModalDialogFormBase<SymbolRotationModel>
+
+<ModalDialogFormBase T="SymbolRotationModel"
+                     OnDialogClose="base.OnDialogClose"
+                     Model="base.Model">
+    <FormContent>
+        @if(Model.TableClass is not null)
+        {
+            var fieldNames = Model.TableClass.Fields.ToEnumerable()
+                            .Where(f => f.type switch
+                            {
+                                Framework.Core.Data.FieldType.Float => true,
+                                Framework.Core.Data.FieldType.Double => true,
+                                Framework.Core.Data.FieldType.smallinteger => true,
+                                Framework.Core.Data.FieldType.integer => true,
+                                Framework.Core.Data.FieldType.biginteger => true,
+                                _ => false
+                            })
+                            .Select(f => f.name);
+
+            <MudSelect T="string"
+                       @bind-Value="Model.RotationFieldName"
+                       Label="Field">
+                @GvUtilities.StringsToSelectItems(fieldNames, appendEmpty: true)
+            </MudSelect>
+        }
+
+        <MudRadioGroup @bind-SelectedOption="Model.RotationType">
+            <GvGrid ColumnCount="2">
+
+                @foreach (var roationType in Enum.GetValues<RotationType>())
+                {
+                    <GvGridItem>
+                        <MudRadio Option="roationType" Placement="Placement.Bottom">
+                            <div class="gview-ui-image img-rotation-@roationType.ToString().ToLower()"></div>
+                            <div>
+                                @roationType.ToString().SplitCamelCase()
+                            </div>
+                        </MudRadio>
+                    </GvGridItem>
+                }
+
+            </GvGrid>
+
+            <MudSelect T="RotationUnit"
+                       @bind-Value="Model.RotationUnit"
+                       Label="Unit">
+                @(GvUtilities.EnumToSelectItems<RotationUnit>())
+            </MudSelect>
+        </MudRadioGroup>
+    </FormContent>
+</ModalDialogFormBase>

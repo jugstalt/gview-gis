@@ -980,7 +980,7 @@ namespace gView.Framework.AXL
             sb.Append(" anglefield=\"" + rotation.RotationFieldName + "\"");
             switch (rotation.RotationType)
             {
-                case RotationType.aritmetic:
+                case RotationType.arithmetic:
                     sb.Append(" rotatemethod=\"arithmetic\"");
                     break;
                 case RotationType.geographic:
@@ -1023,7 +1023,7 @@ namespace gView.Framework.AXL
                 switch (axl.Attributes["rotatemethod"].Value.ToLower())
                 {
                     case "arithmetic":
-                        rotation.RotationType = RotationType.aritmetic;
+                        rotation.RotationType = RotationType.arithmetic;
                         break;
                     case "geographic":
                         rotation.RotationType = RotationType.geographic;

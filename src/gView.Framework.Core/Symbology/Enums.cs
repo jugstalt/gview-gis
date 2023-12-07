@@ -8,7 +8,7 @@
 
     public enum TextSymbolAlignment { rightAlignOver, Over, leftAlignOver, rightAlignCenter, Center, leftAlignCenter, rightAlignUnder, Under, leftAlignUnder }
 
-    public enum RotationType { geographic, aritmetic }
+    public enum RotationType { geographic, arithmetic }
     public enum RotationUnit { rad, deg, gon }
 
     // Never Change values!!

@@ -297,7 +297,32 @@
 
     private Task SetRotation() => HandleAsync(async () =>
     {
+        if (_renderer is null)
+        {
+            return;
+        }
 
+        var model = await AppScope.ShowModalDialog
+            (typeof(SymbolRotationDialog),
+            "Symbol Rotation",
+            new SymbolRotationModel()
+            {
+                TableClass = _layer?.FeatureClass,
+                RotationType = _renderer.SymbolRotation.RotationType,
+                RotationUnit = _renderer.SymbolRotation.RotationUnit,
+                RotationFieldName = _renderer.SymbolRotation.RotationFieldName
+            },
+            new ModalDialogOptions()
+            {
+                Width = ModalDialogWidth.ExtraSmall
+            });
+
+        if (model is not null)
+        {
+            _renderer.SymbolRotation.RotationType = model.RotationType;
+            _renderer.SymbolRotation.RotationUnit = model.RotationUnit;
+            _renderer.SymbolRotation.RotationFieldName = model.RotationFieldName;
+        }
     });
 
     private Task SetCartographicsMethod() => HandleAsync(async () =>
@@ -313,6 +338,10 @@
             new LegendGroupCartographicMethodModel()
             {
                 CartographicMethod = _renderer.CartoMethod
+            },
+            new ModalDialogOptions()
+            {
+                Width = ModalDialogWidth.ExtraSmall    
             });
 
         if(model is not null)
