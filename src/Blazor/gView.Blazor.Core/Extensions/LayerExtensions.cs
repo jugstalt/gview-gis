@@ -49,4 +49,8 @@ static public class LayerExtensions
             IWebServiceTheme theme => theme.Locked,
             _ => false
         };
+
+    static public bool CanRotateSymbols(this IFeatureLayer fLayer)
+        => fLayer.LayerGeometryType == GeometryType.Point
+           || fLayer.LayerGeometryType == GeometryType.Multipoint;
 }

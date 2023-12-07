@@ -1,0 +1,37 @@
+@inherits ModalDialogFormBase<LegendGroupCartographicMethodModel>
+
+<ModalDialogFormBase T="LegendGroupCartographicMethodModel"
+                     OnDialogClose="base.OnDialogClose"
+                     Model="base.Model">
+    <FormContent>
+        <GvCard Title="Method">
+            <GvCardContent>
+                <MudSelect T="LegendGroupCartographicMethod"
+                           Label="Cartographic Method"
+                           @bind-Value="Model.CartographicMethod">
+                    @(GvUtilities.EnumToSelectItems<LegendGroupCartographicMethod>())
+                </MudSelect>
+            </GvCardContent>
+        </GvCard>
+
+        
+
+        <GvCard Title="Example">
+            <GvCardContent>
+                <div style="padding:10px">
+                    <GvGrid ColumnCount="12">
+                        <GvGridItem Span="5">
+                            <div class="gview-ui-image img-legend-roads"></div>
+                        </GvGridItem>
+                        <GvGridItem Span="2">
+                            <span>@("=>")</span>
+                        </GvGridItem>
+                        <GvGridItem Span="5">
+                            <div class="gview-ui-image img-carto-@Model.CartographicMethod.ToString().ToLower()"></div>
+                        </GvGridItem>
+                    </GvGrid>
+                </div>
+            </GvCardContent>
+        </GvCard>
+    </FormContent>
+</ModalDialogFormBase>

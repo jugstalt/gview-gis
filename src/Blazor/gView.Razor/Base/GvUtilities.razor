@@ -36,10 +36,24 @@
     }
 
 
-    public static RenderFragment StringsToSelectItems(IEnumerable<string> values)
+    public static RenderFragment StringsToSelectItems(
+        IEnumerable<string> values,
+        bool appendEmpty = false,
+        string emptyLabel = "")
         => builder =>
         {
             int seq = 0;
+
+            if(appendEmpty)
+            {
+                builder.OpenComponent<MudSelectItem<string>>(seq++);
+                builder.AddAttribute(seq++, "Value", "");
+                builder.AddAttribute(seq++, "ChildContent", new RenderFragment((innerBuilder) =>
+                {
+                    innerBuilder.AddContent(seq++, emptyLabel);
+                }));
+                builder.CloseComponent();
+            }
 
             foreach (var value in values)
             {

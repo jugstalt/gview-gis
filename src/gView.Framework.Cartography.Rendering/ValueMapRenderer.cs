@@ -24,7 +24,7 @@ public class ValueMapRenderer : Cloner, IFeatureRenderer, IDefault, ILegendGroup
     public const string AllOtherValuesLabel = "All other values";
 
     private string _valueField = string.Empty;
-    private OrderedKeyValuePairs<string, ISymbol> _symbolTable = new OrderedKeyValuePairs<string, ISymbol>();
+    private OrderedKeyValuePairs<string, ISymbol> _symbolTable = new();
     private GeometryType _geometryType = GeometryType.Unknown;
     private SymbolRotation _symbolRotation;
     private bool _useRefscale = true;
@@ -146,13 +146,7 @@ public class ValueMapRenderer : Cloner, IFeatureRenderer, IDefault, ILegendGroup
         }
     }
 
-    public IEnumerable<string> Keys
-    {
-        get
-        {
-            return _symbolTable.Keys.ToArray();
-        }
-    }
+    public IEnumerable<string> Keys => _symbolTable.Keys.ToArray();
 
     public void RemoveSymbol(string key)
     {

@@ -1,3 +1,4 @@
+@using System.Text
 @using gView.Carto.Razor.Components.Controls.Renderers.Models
 @using gView.Framework.Core.Data.Cursors
 @using gView.Framework.Data.Filters
@@ -5,23 +6,44 @@
 @inherits BaseHandler
 @implements IDisposable
 
-@inject IApplicationScope AppScope
-
 @if(_renderer is not null && _layer?.FeatureClass is not null)
 {
-    <KeySymbolListControl KeySymbols="@(CurrentKeySymbolsList() ?? [])"
-                          OnKeySymbolsChanged="SymbolsListChanged">
+    <KeySymbolListControl 
+            KeySymbols="@(CurrentKeySymbolsList() ?? [])"
+            OnKeySymbolsChanged="SymbolsListChanged">
         <ListItemTools>
             <GvGrid ColumnCount="2">
                 <GvGridItem>
-                    <MudSelect T="string" Label="Value Field"
-                               Value="_renderer.ValueField"
-                               ValueChanged="(val) => OnValueFieldChanged(val)" >
+                    <MudSelect T="string" Label="Value Field 1"
+                               Value="_renderer.ValueField1"
+                               ValueChanged="(val) => OnValueFieldChanged(0, val)" >
                         @GvUtilities.StringsToSelectItems(_layer.FeatureClass
                                                                 .Fields?
                                                                 .ToEnumerable()
-                                                                .Select(f=>f.name) ?? [])
+                                                                .Select(f => f.name) ?? [])
                     </MudSelect>
+                    @if(!String.IsNullOrEmpty(_renderer.ValueField1))
+                    {
+                        <MudSelect T="string" Label="Value Field 2"
+                                   Value="_renderer.ValueField2"
+                                   ValueChanged="(val) => OnValueFieldChanged(1, val)">
+                            @GvUtilities.StringsToSelectItems(_layer.FeatureClass
+                                     .Fields?
+                                     .ToEnumerable()
+                                     .Select(f => f.name) ?? [], true)
+                        </MudSelect>
+                    }
+                    @if(!String.IsNullOrEmpty(_renderer.ValueField2))
+                    {
+                        <MudSelect T="string" Label="Value Field 3"
+                                   Value="_renderer.ValueField3"
+                                   ValueChanged="(val) => OnValueFieldChanged(2, val)">
+                            @GvUtilities.StringsToSelectItems(_layer.FeatureClass
+                                     .Fields?
+                                     .ToEnumerable()
+                                     .Select(f => f.name) ?? [], true)
+                        </MudSelect>
+                    }
                 </GvGridItem>
                 <GvGridItem>
 
@@ -50,7 +72,7 @@
                 </GvGridItem>
             </GvGrid>
             <MudText Typo="Typo.h6">
-                @($"{_dictKeySymbols.IfKeyExists(_renderer.ValueField, (l) => l.Count)} items")
+                @($"{_dictKeySymbols.IfKeyExists(_renderer.ValueField1, (l) => l.Count)} items")
             </MudText>
 
             @if (_addValueItem is not null)
@@ -59,8 +81,18 @@
                     <GvCardContent>
                         <GvGrid ColumnCount="2">
                             <GvGridItem>
-                                <MudTextField Label="@_renderer.ValueField"
-                                              @bind-Value="_addValueItem.Key"></MudTextField>
+                                <MudTextField Label="@_renderer.ValueField1"
+                                              @bind-Value="_addValueItem.Key1"></MudTextField>
+                                @if(!String.IsNullOrEmpty(_renderer.ValueField2))
+                                {
+                                    <MudTextField Label="@_renderer.ValueField2"
+                                                  @bind-Value="_addValueItem.Key2"></MudTextField>
+                                }
+                                @if (!String.IsNullOrEmpty(_renderer.ValueField3))
+                                {
+                                    <MudTextField Label="@_renderer.ValueField3"
+                                                  @bind-Value="_addValueItem.Key3"></MudTextField>
+                                }
                             </GvGridItem>
                             <GvGridItem>
                                 <MudTextField Label="Label Text"
@@ -79,33 +111,16 @@
             }
         </ListItemTools>
     </KeySymbolListControl>
-    <GvGrid ColumnCount="2">
-        <GvGridItem>
-            <MudButton OnClick="SetRotation"
-                       Variant="Variant.Filled"
-                       Color="Color.Primary"
-                       Disabled="@(!_layer.CanRotateSymbols())"  >
-                Rotation
-            </MudButton>
-        </GvGridItem>
-        <GvGridItem>
-            <MudButton OnClick="SetCartographicsMethod"
-                       Variant="Variant.Filled"
-                       Color="Color.Primary">
-                Cartography
-            </MudButton>
-        </GvGridItem>
-    </GvGrid>
 }
 
 @code {
     [Parameter] public object? Instance { get; set; }
 
     private IFeatureLayer? _layer;
-    private ValueMapRenderer? _renderer;
+    private ManyValueMapRenderer? _renderer;
 
     private Dictionary<string, List<KeySymbol>> _dictKeySymbols = new();
-    private ValueItemModel? _addValueItem = null;
+    private ManyValueItemModel? _addValueItem = null;
 
     protected override Task OnParametersSetAsync() => HandleAsync(async () =>
     {
@@ -114,20 +129,20 @@
         if (Instance is IFeatureLayer fLayer)
         {
             _layer = fLayer;
-            _renderer = fLayer.FeatureRenderer as ValueMapRenderer;
+            _renderer = fLayer.FeatureRenderer as ManyValueMapRenderer;
 
             if (_renderer is not null)
             {
                 _renderer.GeometryType = _layer.LayerGeometryType;
-                if(String.IsNullOrEmpty(_renderer.ValueField))
+                if(String.IsNullOrEmpty(_renderer.ValueField1))
                 {
-                    _renderer.ValueField = _layer.FeatureClass?.IDFieldName ?? "";
+                    _renderer.ValueField1 = _layer.FeatureClass?.IDFieldName ?? "";
                 }
             }
         }
         else
         {
-            _renderer = Instance as ValueMapRenderer;
+            _renderer = Instance as ManyValueMapRenderer;
         }
 
         if(_renderer is not null)
@@ -170,15 +185,27 @@
             return;
         }
 
-        _dictKeySymbols[_renderer.ValueField] = keySymbols;
+        _dictKeySymbols[_renderer.ValueField1] = keySymbols;
         ApplyChanges();
     }
 
-    private void OnValueFieldChanged(string field)
+    private void OnValueFieldChanged(int index, string field)
     {
         if (_renderer is not null)
         {
-            _renderer.ValueField = field;
+            switch(index)
+            {
+                case 0:
+                    _renderer.ValueField1 = field;
+                    break;
+                case 1:
+                    _renderer.ValueField2 = field;
+                    break;
+                case 2:
+                    _renderer.ValueField3 = field;
+                    break;
+
+            }
 
             CurrentKeySymbolsList();
         }
@@ -198,35 +225,54 @@
 
         await this.ForceRenderComponent();
 
-        DistinctFilter filter = new DistinctFilter(_renderer.ValueField);
-        filter.OrderBy = _renderer.ValueField;
+        QueryFilter filter = new QueryFilter();
+        if (!String.IsNullOrEmpty(_renderer.ValueField1))
+        {
+            filter.AddField(_renderer.ValueField1);
+        }
+
+        if (!String.IsNullOrEmpty(_renderer.ValueField2))
+        {
+            filter.AddField(_renderer.ValueField2);
+        }
+
+        if (!String.IsNullOrEmpty(_renderer.ValueField3))
+        {
+            filter.AddField(_renderer.ValueField3);
+        }
+        filter.OrderBy = _renderer.ValueField1;
+
+        List<string> keys = new List<string>();
 
         using (IFeatureCursor cursor = (IFeatureCursor)await _layer.FeatureClass.Search(filter))
         {
-            int counter = 0;
             IFeature feature;
-            while ((feature = await cursor.NextFeature()) is not null)
+
+            while ((feature = await cursor.NextFeature()) != null)
             {
-                var key = feature.Fields[0].Value?.ToString() ?? "";
-
-                var symbol = RendererFunctions.CreateStandardSymbol(_layer.LayerGeometryType);
-
-                if(symbol is null)
+                string key = _renderer.GetKey(feature);
+                if (keys.Contains(key))
                 {
                     continue;
                 }
-                if(symbol is ILegendItem legendItem)
-                {
-                    legendItem.LegendLabel = key;
-                }
 
-                keySymbols.Add(new KeySymbol(key, symbol));
-
-                if(++counter % 100 == 0)
-                {
-                    await ForceRenderComponent();
-                }
+                keys.Add(key);
             }
+        }
+        keys.Sort();
+
+        foreach(var key in keys)
+        {
+            var symbol = RendererFunctions.CreateStandardSymbol(_layer.LayerGeometryType);
+
+            if (symbol is null)
+            {
+                continue;
+            }
+
+            symbol.AddLegendLabel(key.Replace("|", ", "));
+
+            keySymbols.Add(new KeySymbol(key, symbol));
         }
 
         ApplyChanges();
@@ -239,7 +285,7 @@
             return;
         }
 
-        _dictKeySymbols.RemoveIfExists(_renderer.ValueField, (keySymbols) =>
+        _dictKeySymbols.RemoveIfExists(_renderer.ValueField1, (keySymbols) =>
             keySymbols?.ForEach((keySymbol) 
                 => keySymbol.Symbol?.Release())
         );
@@ -278,47 +324,36 @@
         {
             var keySymbols = CurrentKeySymbolsList();
 
-            _addValueItem.Key = _addValueItem.Key.Trim();
+            _addValueItem.Key1 = _addValueItem.Key1?.Trim() ?? "";
+            _addValueItem.Key2 = _addValueItem.Key2?.Trim() ?? "";
+            _addValueItem.Key3 = _addValueItem.Key3?.Trim() ?? "";
 
-            keySymbols.Any(k => k.Key == _addValueItem.Key)
-                      .ThrowIfTrue(() => $"Item {_addValueItem.Key} already exists");
+            Feature feature = new Feature();
+            feature.Fields.Add(new FieldValue(_renderer.ValueField1, _addValueItem.Key1));
+            if(!String.IsNullOrEmpty(_renderer.ValueField2))
+            {
+                feature.Fields.Add(new FieldValue(_renderer.ValueField2, _addValueItem.Key2));
+            }
+            if (!String.IsNullOrEmpty(_renderer.ValueField3))
+            {
+                feature.Fields.Add(new FieldValue(_renderer.ValueField3, _addValueItem.Key3));
+            }
+
+            string key = _renderer.GetKey(feature);
+
+            keySymbols.Any(k => k.Key == key)
+                      .ThrowIfTrue(() => $"Item {key} already exists");
 
             var symbol = RendererFunctions
                             .CreateStandardSymbol(_layer.LayerGeometryType)
                             .ThrowIfNull(() => $"Can't create a symbol for {_layer.LayerGeometryType} geometry")
-                            .AddLegendLabel(_addValueItem.LabelText);
+                            .AddLegendLabel(_addValueItem.LabelText.Replace("|", ", "));
 
-            keySymbols.Add(new KeySymbol(_addValueItem.Key, symbol));
+            keySymbols.Add(new KeySymbol(key, symbol));
 
             ApplyChanges();
         }
         _addValueItem = null;
-    });
-
-    private Task SetRotation() => HandleAsync(async () =>
-    {
-
-    });
-
-    private Task SetCartographicsMethod() => HandleAsync(async () =>
-    {
-        if (_renderer is null)
-        {
-            return;
-        }
-
-        var model = await AppScope.ShowModalDialog
-            (typeof(LegendGroupCartographicMethodDialog),
-            "Cartographic Method",
-            new LegendGroupCartographicMethodModel()
-            {
-                CartographicMethod = _renderer.CartoMethod
-            });
-
-        if(model is not null)
-        {
-            _renderer.CartoMethod = model.CartographicMethod;
-        }
     });
 
     #endregion
@@ -329,12 +364,26 @@
     {
         if (_renderer is not null)
         {
-            if (!_dictKeySymbols.ContainsKey(_renderer.ValueField))
+            var keyBuilder = new StringBuilder();
+
+            keyBuilder.Append(_renderer.ValueField1);
+            if(!String.IsNullOrEmpty(_renderer.ValueField2))
             {
-                _dictKeySymbols[_renderer.ValueField] = [];
+                keyBuilder.Append($"|{_renderer.ValueField2}");
+            }
+            if (!String.IsNullOrEmpty(_renderer.ValueField3))
+            {
+                keyBuilder.Append($"|{_renderer.ValueField3}");
             }
 
-            return _dictKeySymbols[_renderer.ValueField];
+            string key = keyBuilder.ToString();
+
+            if (!_dictKeySymbols.ContainsKey(key))
+            {
+                _dictKeySymbols[key] = [];
+            }
+
+            return _dictKeySymbols[key];
         }
 
         return [];

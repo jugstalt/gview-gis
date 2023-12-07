@@ -269,6 +269,36 @@
         background-color: var(--mud-palette-primary);
     }
 
+/*** UI Image Resources ***/
+.gview-ui-image {
+    background-repeat:no-repeat;
+    background-position:center;
+}
+
+    .gview-ui-image.img-legend-roads {
+        width: 100%;
+        height: 50px;
+        background-image: url(../img/legend_roads.png);
+    }
+
+    .gview-ui-image.img-carto-simple {
+        width: 100%;
+        height: 50px;
+        background-image: url(../img/carto_feature_order.png);
+    }
+
+    .gview-ui-image.img-carto-legendordering {
+        width: 100%;
+        height: 50px;
+        background-image: url(../img/carto_legend_ordering.png);
+    }
+
+    .gview-ui-image.img-carto-legendandsymbolordering {
+        width: 100%;
+        height: 50px;
+        background-image: url(../img/carto_symbol_ordering.png);
+    }
+
 @media (-webkit-min-device-pixel-ratio: 1.5), (min-resolution: 144dpi) {
 
     .carto-main.dark .sketchpen-icon-basic-bg-light-24 {
@@ -332,6 +362,7 @@
 .mud-card-content {
     padding: 0px 16px;
 }
+
 
 
 

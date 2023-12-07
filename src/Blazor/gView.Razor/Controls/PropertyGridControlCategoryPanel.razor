@@ -275,10 +275,22 @@
         {
             if (val is HashSet<object> hashSet)  // Select for enum sends hashSet !?
             {
-                val = 0;
-                foreach(var enumVal in hashSet)
+                if (propertyInfo.PropertyType.IsFlagsEnum())
                 {
-                    val = (int)val + (int)enumVal;
+                    val = 0;
+                    foreach (var enumVal in hashSet)
+                    {
+                        val = (int)val + (int)enumVal;
+                    }
+                }
+                else if(hashSet.Count == 1)
+                {
+                    val = hashSet.First();
+                }
+                else
+                {
+                    return Task.CompletedTask;
+                    //throw new Exception("Can't process HashSet for this property!");
                 }
             }
 
