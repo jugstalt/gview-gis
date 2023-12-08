@@ -6,7 +6,7 @@
 
 @if (Symbol is not null)
 {
-    <GvGrid ColumnCount="@(_quickSymbolProperties is not null && Dense == false ? 3 : 1)">
+    <GvGrid ColumnCount="@(ShowPropertyGrid && _quickSymbolProperties is not null && Dense == false ? 3 : 1)">
         <GvGridItem>
 
             @if(Dense == false)
@@ -38,7 +38,7 @@
                                OnClick="OpenSymbolComposer"></MudIconButton>
             </MudToolBar>
         </GvGridItem>
-        @if (_quickSymbolProperties is not null)
+        @if (ShowPropertyGrid && _quickSymbolProperties is not null)
         {
             <GvGridItem Span="Dense ? 1 : 2">
                 @if (Dense == false)
@@ -54,7 +54,8 @@
 @code {
     [Parameter] public ISymbol? Symbol { get; set; }
     [Parameter] public EventCallback<ISymbol> SymbolChanged { get; set; }
-    [Parameter] public bool Dense { get; set; } 
+    [Parameter] public bool Dense { get; set; }
+    [Parameter] public bool ShowPropertyGrid { get; set; } = true;
 
     private IQuickSymbolProperties? _quickSymbolProperties { get; set; }
     private ISymbol? _undoSymbol = null;
