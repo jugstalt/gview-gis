@@ -1282,12 +1282,12 @@ namespace gView.Framework.Data
                 stream.Save("applyLRefScale", _applyLabelRefScale);
             }
 
-            if (this.MaxRefScaleFactor > 0D)
+            if (this.MaxRefScaleFactor > 0f)
             {
                 stream.Save("maxRefScaleFactor", this.MaxRefScaleFactor);
             }
 
-            if (this.MaxLabelRefScaleFactor > 0D)
+            if (this.MaxLabelRefScaleFactor > 0f)
             {
                 stream.Save("maxLabelRefScaleFactor", this.MaxLabelRefScaleFactor);
             }

@@ -2,11 +2,13 @@
 {
     <GvCard Title="Feature Rendering">
         <GvCardContent>
-            <MudSelect T="bool" @bind-Value="RenderAtAllScales">
+            <MudSelect T="bool" @bind-Value="_renderAtAllScales">
                 <MudSelectItem Value="true">Render layer at all scales</MudSelectItem>
                 <MudSelectItem Value="false">Render layer between scales</MudSelectItem>
             </MudSelect>
-            @if(RenderAtAllScales == false) {
+            
+            @if(_renderAtAllScales == false) 
+            {
                 Layer.MinimumScale = Math.Abs(Layer.MinimumScale);
                 Layer.MaximumScale = Math.Abs(Layer.MaximumScale);
 
@@ -16,9 +18,32 @@
                                  @bind-Value="Layer.MinimumScale"/>
                 @GvUtilities.InfoText("<=0 means: ignore this scale level")
             } 
-            else {
+            else 
+            {
                 Layer.MinimumScale = -Math.Abs(Layer.MinimumScale);
                 Layer.MaximumScale = -Math.Abs(Layer.MaximumScale);
+            }
+
+            @if (Layer is IFeatureLayer fLayer) 
+            {
+                <MudSelect T="RefScaleBehavoir"
+                           Value="_renderRefScaleBehavoir"
+                           ValueChanged="RenderRefScaleBehavoirChanged"
+                           Label="Reference Scale Behavoir">
+                    <MudSelectItem Value="RefScaleBehavoir.IgnoreRefScale">Do not apply reference scale</MudSelectItem>
+                    <MudSelectItem Value="RefScaleBehavoir.ApplyRefScale">Apply reference scale</MudSelectItem>
+                    <MudSelectItem Value="RefScaleBehavoir.ApplyRefScaleWithMaxUpscale">Apply reference scale (max scale up)</MudSelectItem>
+                </MudSelect>
+                @if (_renderRefScaleBehavoir == RefScaleBehavoir.ApplyRefScaleWithMaxUpscale)
+                {
+                    fLayer.MaxRefScaleFactor = Math.Max(1f, fLayer.MaxRefScaleFactor);
+
+                    <MudSlider T="float" Min="1f" Max="5f" Step="0.1f"
+                               @bind-Value="fLayer.MaxRefScaleFactor"
+                               Color="Color.Info">
+                               @($"{Math.Round((fLayer.MaxRefScaleFactor - 1f) * 100f)}% / {Math.Round(fLayer.MaxRefScaleFactor, 1)}x")
+                    </MudSlider>
+                }
             }
         </GvCardContent>
     </GvCard>
@@ -26,11 +51,12 @@
     @if((Layer is IFeatureLayer fLayer && fLayer.LabelRenderer is not null) || Layer is IGroupLayer) {
         <GvCard Title="Labelling">
             <GvCardContent>
-                <MudSelect T="bool" @bind-Value="LabelAtAllScales">
+                <MudSelect T="bool" @bind-Value="_labelAtAllScales">
                     <MudSelectItem Value="true">Label layer at all scales</MudSelectItem>
                     <MudSelectItem Value="false">Label layer between scales</MudSelectItem>
                 </MudSelect>
-                @if(LabelAtAllScales == false) {
+                
+                @if(_labelAtAllScales == false) {
                     Layer.MinimumLabelScale = Math.Abs(Layer.MinimumLabelScale);
                     Layer.MaximumLabelScale = Math.Abs(Layer.MaximumLabelScale);
 
@@ -43,6 +69,28 @@
                 else {
                     Layer.MinimumLabelScale = -Math.Abs(Layer.MinimumLabelScale);
                     Layer.MaximumLabelScale = -Math.Abs(Layer.MaximumLabelScale);
+                }
+
+                @if (Layer is IFeatureLayer fLayer)
+                {
+                    <MudSelect T="RefScaleBehavoir"
+                               Value="_labelRefScaleBehavoir"
+                               ValueChanged="LabelRefScaleBehavoirChanged"
+                               Label="Reference Scale Behavoir">
+                        <MudSelectItem Value="RefScaleBehavoir.IgnoreRefScale">Do not apply reference scale</MudSelectItem>
+                        <MudSelectItem Value="RefScaleBehavoir.ApplyRefScale">Apply reference scale</MudSelectItem>
+                        <MudSelectItem Value="RefScaleBehavoir.ApplyRefScaleWithMaxUpscale">Apply reference scale (max scale up)</MudSelectItem>
+                    </MudSelect>
+                    @if (_labelRefScaleBehavoir == RefScaleBehavoir.ApplyRefScaleWithMaxUpscale)
+                    {
+                        fLayer.MaxLabelRefScaleFactor = Math.Max(1f, fLayer.MaxLabelRefScaleFactor);
+
+                        <MudSlider T="float" Min="1f" Max="5f" Step="0.1f"
+                                   @bind-Value="fLayer.MaxLabelRefScaleFactor"
+                                   Color="Color.Info">
+                            @($"{Math.Round((fLayer.MaxLabelRefScaleFactor - 1f) * 100f)}% / {Math.Round(fLayer.MaxLabelRefScaleFactor, 1)}x")
+                        </MudSlider>
+                    }
                 }
             </GvCardContent>
         </GvCard>
@@ -68,17 +116,95 @@
     [Parameter] 
     public ILayer? Layer { get; set; }
 
-    private bool RenderAtAllScales { get; set; }
-    private bool LabelAtAllScales { get; set; }
+    private bool _renderAtAllScales;
+    private bool _labelAtAllScales;
+
+    private enum RefScaleBehavoir
+    {
+        IgnoreRefScale = -1,
+        ApplyRefScale = 0,
+        ApplyRefScaleWithMaxUpscale = 1
+    }
+
+    private RefScaleBehavoir _renderRefScaleBehavoir;
+    private RefScaleBehavoir _labelRefScaleBehavoir;
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+    }
 
     protected override void OnParametersSet()
     {
         base.OnParametersSet();
 
-        if (Layer != null)
+        if (Layer is not null)
         {
-            RenderAtAllScales = Layer.MinimumScale <= 0 && Layer.MaximumScale <= 0;
-            LabelAtAllScales = Layer.MinimumLabelScale <= 0 && Layer.MaximumLabelScale <= 0;
+            _renderAtAllScales = Layer.MinimumScale <= 0 && Layer.MaximumScale <= 0;
+            _labelAtAllScales = Layer.MinimumLabelScale <= 0 && Layer.MaximumLabelScale <= 0;
+        }
+
+        if(Layer is IFeatureLayer fLayer)
+        {
+            _renderRefScaleBehavoir = fLayer switch
+            {
+                { ApplyRefScale: false } => RefScaleBehavoir.IgnoreRefScale,
+                { MaxRefScaleFactor: >= 1f} => RefScaleBehavoir.ApplyRefScaleWithMaxUpscale,
+                { ApplyRefScale: true } => RefScaleBehavoir.ApplyRefScale
+            };
+
+            _labelRefScaleBehavoir = fLayer switch
+            {
+                { ApplyLabelRefScale: false } => RefScaleBehavoir.IgnoreRefScale,
+                { MaxLabelRefScaleFactor: >= 1f } => RefScaleBehavoir.ApplyRefScaleWithMaxUpscale,
+                { ApplyLabelRefScale: true } => RefScaleBehavoir.ApplyRefScale
+            };
+        }
+    }
+
+    private void RenderRefScaleBehavoirChanged(RefScaleBehavoir refScaleBehavoir)
+    {
+        if(Layer is IFeatureLayer fLayer)
+        {
+            _renderRefScaleBehavoir = refScaleBehavoir;
+
+            switch(refScaleBehavoir)
+            {
+                case RefScaleBehavoir.IgnoreRefScale:
+                    fLayer.ApplyRefScale = false;
+                    fLayer.MaxRefScaleFactor = 0f;
+                    break;
+                case RefScaleBehavoir.ApplyRefScale:
+                    fLayer.ApplyRefScale = true;
+                    fLayer.MaxRefScaleFactor = 0f;
+                    break;
+                case RefScaleBehavoir.ApplyRefScaleWithMaxUpscale:
+                    fLayer.ApplyRefScale = true;
+                    break;
+            }
+        }
+    }
+
+    private void LabelRefScaleBehavoirChanged(RefScaleBehavoir refScaleBehavoir)
+    {
+        if (Layer is IFeatureLayer fLayer)
+        {
+            _labelRefScaleBehavoir = refScaleBehavoir;
+
+            switch (refScaleBehavoir)
+            {
+                case RefScaleBehavoir.IgnoreRefScale:
+                    fLayer.ApplyLabelRefScale = false;
+                    fLayer.MaxLabelRefScaleFactor = 0f;
+                    break;
+                case RefScaleBehavoir.ApplyRefScale:
+                    fLayer.ApplyLabelRefScale = true;
+                    fLayer.MaxLabelRefScaleFactor = 0f;
+                    break;
+                case RefScaleBehavoir.ApplyRefScaleWithMaxUpscale:
+                    fLayer.ApplyLabelRefScale = true;
+                    break;
+            }
         }
     }
 }

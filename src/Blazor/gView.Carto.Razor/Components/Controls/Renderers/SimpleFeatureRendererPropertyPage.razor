@@ -1,3 +1,7 @@
+@inherits BaseHandler
+
+@inject IApplicationScope AppScope
+
 @if (_renderer is not null)
 {
     <GvCard Title="Symbology">
@@ -22,13 +26,12 @@
 
     <GvCard Title="Advanced">
         <GvCardContent>
-            @if(_layer?.FeatureClass is not null 
-                &&
-                    (_layer.FeatureClass.GeometryType == GeometryType.Point
-                  || _layer.FeatureClass.GeometryType == GeometryType.Multipoint))
-            {
-                <MudButton>Rotation</MudButton>
-            }
+            <MudButton OnClick="SetRotation"
+                       Variant="Variant.Filled"
+                       Color="Color.Primary"
+                       Disabled="@(!_layer.CanRotateSymbols())">
+                Rotation
+            </MudButton>
         </GvCardContent>
     </GvCard>
 }
@@ -61,4 +64,8 @@
             _renderer.Symbol = symbol;
         }
     }
+
+    private Task SetRotation() => HandleAsync(() =>
+        _renderer?.SymbolRotation.EditProperties(AppScope, _layer?.FeatureClass)
+        ?? Task.CompletedTask);
 }

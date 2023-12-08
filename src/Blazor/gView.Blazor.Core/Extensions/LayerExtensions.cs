@@ -50,7 +50,10 @@ static public class LayerExtensions
             _ => false
         };
 
-    static public bool CanRotateSymbols(this IFeatureLayer fLayer)
-        => fLayer.LayerGeometryType == GeometryType.Point
-           || fLayer.LayerGeometryType == GeometryType.Multipoint;
+    static public bool CanRotateSymbols(this IFeatureLayer? fLayer)
+        => fLayer is not null &&
+            (
+                fLayer.LayerGeometryType == GeometryType.Point
+                || fLayer.LayerGeometryType == GeometryType.Multipoint
+            );
 }

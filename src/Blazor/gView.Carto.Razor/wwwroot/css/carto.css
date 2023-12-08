@@ -312,6 +312,20 @@
         background-image: url(../img/rotation_arithmetic.png);
     }
 
+    .gview-ui-image.img-compostion-over {
+        width: 250px;
+        height: 230px;
+        background-size: contain;
+        background-image: url(../img/composition_over.png);
+    }
+
+    .gview-ui-image.img-compostion-copy {
+        width: 250px;
+        height: 230px;
+        background-size: contain;
+        background-image: url(../img/composition_copy.png);
+    }
+
 @media (-webkit-min-device-pixel-ratio: 1.5), (min-resolution: 144dpi) {
 
     .carto-main.dark .sketchpen-icon-basic-bg-light-24 {

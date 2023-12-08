@@ -18,35 +18,49 @@
                             })
                             .Select(f => f.name);
 
-            <MudSelect T="string"
-                       @bind-Value="Model.RotationFieldName"
-                       Label="Field">
-                @GvUtilities.StringsToSelectItems(fieldNames, appendEmpty: true)
-            </MudSelect>
+            <GvCard Title="Rotation Attribite">
+                <GvCardContent>
+                    <MudSelect T="string"
+                               @bind-Value="Model.RotationFieldName"
+                               Label="Field Name">
+                        @GvUtilities.StringsToSelectItems(fieldNames, appendEmpty: true)
+                    </MudSelect>
+                </GvCardContent>
+            </GvCard>    
+            
         }
 
-        <MudRadioGroup @bind-SelectedOption="Model.RotationType">
-            <GvGrid ColumnCount="2">
+        <GvCard Title="Direction Of Rotation">
+            <GvCardContent>
+                <MudRadioGroup @bind-SelectedOption="Model.RotationType">
+                    <GvGrid ColumnCount="2">
 
-                @foreach (var roationType in Enum.GetValues<RotationType>())
-                {
-                    <GvGridItem>
-                        <MudRadio Option="roationType" Placement="Placement.Bottom">
-                            <div class="gview-ui-image img-rotation-@roationType.ToString().ToLower()"></div>
-                            <div>
-                                @roationType.ToString().SplitCamelCase()
-                            </div>
-                        </MudRadio>
-                    </GvGridItem>
-                }
+                        @foreach (var roationType in Enum.GetValues<RotationType>())
+                        {
+                            <GvGridItem>
+                                <MudRadio Option="roationType" Placement="Placement.Bottom">
+                                    <div class="gview-ui-image img-rotation-@roationType.ToString().ToLower()"></div>
+                                    <div>
+                                        @roationType.ToString().SplitCamelCase()
+                                    </div>
+                                </MudRadio>
+                            </GvGridItem>
+                        }
 
-            </GvGrid>
+                        </GvGrid>
+                </MudRadioGroup>
+           </GvCardContent>
+        </GvCard>
 
-            <MudSelect T="RotationUnit"
-                       @bind-Value="Model.RotationUnit"
-                       Label="Unit">
-                @(GvUtilities.EnumToSelectItems<RotationUnit>())
-            </MudSelect>
-        </MudRadioGroup>
+        <GvCard Title="Angle Unit">
+            <GvCardContent>
+                <MudSelect T="RotationUnit"
+                           @bind-Value="Model.RotationUnit"
+                           Label="Unit">
+                    @(GvUtilities.EnumToSelectItems<RotationUnit>())
+                </MudSelect>
+            </GvCardContent>
+        </GvCard>
+        
     </FormContent>
 </ModalDialogFormBase>

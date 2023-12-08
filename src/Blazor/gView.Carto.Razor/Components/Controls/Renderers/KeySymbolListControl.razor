@@ -1,36 +1,37 @@
 @using gView.Carto.Razor.Components.Controls.Renderers.Models
 
 @inherits BaseHandler
+@typeparam TKey
 
 @if (KeySymbols is not null)
 {
-    <MudDropContainer T="KeySymbol"
+    <MudDropContainer T="KeySymbol<TKey>"
                       Items="KeySymbols.Take(1000)"
                       ItemDropped="ReorderItems"
                       ItemsSelector="@((item,zone) => true)">
         <ChildContent>
             
-            @if (!String.IsNullOrEmpty(_composeSymbolKey))
+            @if (_composeSymbolKey != null)
             {
-                var composeSymbol = KeySymbols.First(k => k.Key == _composeSymbolKey).Symbol;
+                var composeSymbol = KeySymbols.First(k => k.Key?.Equals(_composeSymbolKey) == true).Symbol;
+                
                 <GvGridItem Span="8">
-                    <GvCard Title="@_composeSymbolKey">
+                    <GvCard Title="@_composeSymbolKey.ToString()">
                         <GvCardContent>
                             <QuickSymbolPropertiesControl Symbol="composeSymbol"
                                                           SymbolChanged="(symbol) => OnSymbolChanged(_composeSymbolKey, symbol)" />
                             <MudButton Color="Color.Primary"
                                         Variant="Variant.Filled"
-                                        OnClick="() => _composeSymbolKey = string.Empty">Done</MudButton>
+                                        OnClick="() => _composeSymbolKey = default">Done</MudButton>
                         </GvCardContent>
                     </GvCard>
-
                 </GvGridItem>
             }
             else
             {
                 <div style="height:63vh;overflow-y:auto;white-space:nowrap">
-                    <MudDropZone T="KeySymbol"
-                                    AllowReorder="@(String.IsNullOrEmpty(_composeSymbolKey))">
+                    <MudDropZone T="KeySymbol<TKey>"
+                                 AllowReorder="true">
                         @if (ListItemTools is not null)
                         {
                             @ListItemTools
@@ -59,11 +60,11 @@
                     </div>
                 </GvGridItem>
                 <GvGridItem Span="6">
-                    @if (_editLabelKey == context.Key)
+                    @if (_editLabelKey != null)
                     {
                         <InlineInput @bind-Value="@context.LegendLabel"
-                                     OnEnter="() => _editLabelKey = String.Empty"
-                                     OnBlur="() => _editLabelKey = String.Empty"/>
+                                     OnEnter="() => _editLabelKey = default"
+                                     OnBlur="() => _editLabelKey = default"/>
                     }
                     else
                     {
@@ -80,29 +81,29 @@
 
 @code {
     [Parameter] public RenderFragment? ListItemTools { get; set; }
-    [Parameter] public List<KeySymbol>? KeySymbols { get; set; }
-    [Parameter] public EventCallback<List<KeySymbol>> OnKeySymbolsChanged { get; set; }
+    [Parameter] public List<KeySymbol<TKey>>? KeySymbols { get; set; }
+    [Parameter] public EventCallback<List<KeySymbol<TKey>>> OnKeySymbolsChanged { get; set; }
 
-    private string _composeSymbolKey = "";
-    private string _editLabelKey = "";
+    private TKey? _composeSymbolKey = default;
+    private TKey? _editLabelKey = default;
 
     protected override Task OnParametersSetAsync()
     {
         return base.OnParametersSetAsync();
     }
 
-    private void ComposeSymbol(string key)
+    private void ComposeSymbol(TKey key)
     {
         _composeSymbolKey = key;
 
         StateHasChanged();
     }
 
-    private Task OnSymbolChanged(string key, ISymbol newSymbol) => HandleAsync(async () =>
+    private Task OnSymbolChanged(TKey key, ISymbol newSymbol) => HandleAsync(async () =>
     {
         if (KeySymbols is not null)
         {
-            var keySymbol = KeySymbols?.FirstOrDefault(k => k.Key == key);
+            var keySymbol = KeySymbols?.FirstOrDefault(k => k.Key?.Equals(key) == true);
 
             if(keySymbol is not null)
             {
@@ -119,14 +120,14 @@
         }
     });
 
-    private Task DeleteItem(KeySymbol keySymbol) => HandleAsync(() =>
+    private Task DeleteItem(KeySymbol<TKey> keySymbol) => HandleAsync(() =>
     {
         KeySymbols?.Remove(keySymbol);
 
         return OnKeySymbolsChanged.InvokeAsync(KeySymbols);
     });
 
-    async Task ReorderItems(MudItemDropInfo<KeySymbol> dropInfo)
+    async Task ReorderItems(MudItemDropInfo<KeySymbol<TKey>> dropInfo)
     {
         if(KeySymbols is null || dropInfo.Item is null)
         {

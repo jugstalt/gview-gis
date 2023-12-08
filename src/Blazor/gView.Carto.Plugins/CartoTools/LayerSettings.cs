@@ -79,8 +79,10 @@ namespace gView.Carto.Plugins.CartoTools
 
             #region Description
 
-            scopeService!.SelectedTocTreeNode!.TocElement.RemoveLayer(originalLayer);
-            scopeService.SelectedTocTreeNode.TocElement.AddLayer(clonedLayer);
+            //scopeService!.SelectedTocTreeNode!.TocElement.RemoveLayer(originalLayer);
+            //scopeService.SelectedTocTreeNode.TocElement.AddLayer(clonedLayer);
+
+            originalMap.ReplaceLayer(originalLayer, clonedLayer);
 
             originalMap.SetLayerDescription(originalLayer.ID, clonedMap.GetLayerDescription(originalLayer.ID));
             originalMap.SetLayerCopyrightText(originalLayer.ID, clonedMap.GetLayerCopyrightText(originalLayer.ID));

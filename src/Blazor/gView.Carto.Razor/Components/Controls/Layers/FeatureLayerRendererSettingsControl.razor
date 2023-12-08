@@ -5,28 +5,36 @@
 {
     <GvGrid ColumnCount="3">
         <GvGridItem>
-            @foreach(var category in _categories)
+            <MudCheckBox T="bool"
+                         Checked="@(Layer?.FeatureRenderer is not null)"
+                         CheckedChanged="(chk) => RenderFeaturesChecked(chk)"
+                         Label="Render features for this layer" />
+            @if(Layer?.FeatureRenderer is not null) 
             {
-                <GvCard Title="@category">
-                    <GvCardContent>
-                        <MudList Dense="true" Clickable="true">
-                            @foreach(var featureRenderer in _featureRenderers.Where(r=>category == r.Category))
-                            {
-                                <MudListItem Style="white-space:nowrap;overflow:hiddden" 
-                                             Dense="true"
-                                                    Class="@(featureRenderer.GetType() == _selectedRendererType ? "gview-selected-item" : "")"
-                                                    OnClick="() => SelectRenderer(featureRenderer)">
-                                            @featureRenderer.Name
-                                       </MudListItem>
-                            }
-                        </MudList>
-                    </GvCardContent>
-                </GvCard>
+                @foreach(var category in _categories)
+                {
+                    <GvCard Title="@category">
+                        <GvCardContentNoPadding>
+                            <MudList Dense="true" Clickable="true" 
+                                     Style="padding:0px">
+                                @foreach(var featureRenderer in _featureRenderers.Where(r=>category == r.Category))
+                                {
+                                    <MudListItem Style="white-space:nowrap;overflow:hidden" 
+                                                 Dense="true"
+                                                        Class="@(featureRenderer.GetType() == _selectedRendererType ? "gview-selected-item" : "")"
+                                                        OnClick="() => SelectRenderer(featureRenderer)">
+                                                @featureRenderer.Name
+                                           </MudListItem>
+                                }
+                            </MudList>
+                        </GvCardContentNoPadding>
+                    </GvCard>
+                }
             }
         </GvGridItem>
 
         <GvGridItem Span="2">
-            @if(_selectedRendererType is not null)
+            @if(Layer?.FeatureRenderer is not null &&  _selectedRendererType is not null)
             {
                 var renderer = _featureRenderers.First(r => _selectedRendererType.Equals(r.GetType()));
 
@@ -93,11 +101,11 @@
         }
     });
 
-    private void SelectRenderer(IFeatureRenderer? featureRenderer)
+    private void SelectRenderer(IFeatureRenderer? featureRenderer) => Handle(() =>
     {
         _selectedRendererType = featureRenderer?.GetType();
 
-        if(Layer is not null)
+        if (Layer is not null)
         {
             Layer.FeatureRenderer = featureRenderer;
 
@@ -111,10 +119,33 @@
                     builder.AddAttribute(++sequence, "Instance", Layer);
                     builder.CloseComponent();
                 });
-            } else
+            }
+            else
             {
                 _propertyPageRenderFragment = null;
             }
         }
-    }
+    });
+
+    private void RenderFeaturesChecked(bool renderer) => Handle(() =>
+    {
+        if (Layer is null)
+        {
+            return;
+        }
+
+        if (renderer == false)
+        {
+            Layer.FeatureRenderer = null;
+        }
+        else
+        {
+            Layer.FeatureRenderer =
+                _featureRenderers?.FirstOrDefault(r => r.GetType() == _selectedRendererType)
+                ?? _featureRenderers?.FirstOrDefault(r => r is SimpleRenderer)
+                ?? _featureRenderers?.FirstOrDefault();
+
+            SelectRenderer(Layer.FeatureRenderer);
+        }
+    });
 }

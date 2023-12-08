@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Security.Policy;
 
 namespace gView.Framework.Cartography
 {
@@ -803,6 +804,40 @@ namespace gView.Framework.Cartography
             if (LayerAdded != null)
             {
                 LayerAdded(this, layer);
+            }
+        }
+
+        public void ReplaceLayer(ILayer oldLayer, ILayer newLayer)
+        {
+            if(oldLayer.ID != newLayer.ID)
+            {
+                throw new Exception("Can't replace layers with differnt Ids");
+            }
+
+            if(oldLayer.DatasetID != newLayer.DatasetID)
+            {
+                throw new Exception("Can't replace layer with differnt Dataset-Ids.");
+            }
+
+            int index = _layers.IndexOf(oldLayer);
+            if (index < 0)
+            {
+                throw new Exception("Layer is not part of map");
+            }
+            _layers.Remove(oldLayer);
+            _layers.Insert(index, newLayer);
+
+            if (_toc is not null)
+            {
+                ITocElement tocElement = _toc.GetTocElementByLayerId(oldLayer.ID);
+                if (tocElement is not null)
+                {
+                    //var tocIndex = tocElement.Layers.IndexOf(oldLayer);
+                    //tocElement.Layers.Remove(oldLayer);
+                    //tocElement.Layers.Insert(Math.Max(0, tocIndex), newLayer);
+                    tocElement.RemoveLayer(oldLayer);
+                    tocElement.AddLayer(newLayer);  
+                }
             }
         }
 

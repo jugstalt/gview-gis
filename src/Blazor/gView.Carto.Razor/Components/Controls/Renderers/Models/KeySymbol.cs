@@ -2,15 +2,15 @@
 
 namespace gView.Carto.Razor.Components.Controls.Renderers.Models;
 
-public class KeySymbol
+public class KeySymbol<TKey>
 {
-    public KeySymbol(string key, ISymbol symbol)
+    public KeySymbol(TKey key, ISymbol symbol)
     {
         Key = key;
         Symbol = symbol;
     }
 
-    public string Key { get; }
+    public TKey Key { get; }
     public ISymbol Symbol { get; set; }
 
     public string LegendLabel
@@ -30,5 +30,6 @@ public class KeySymbol
         }
     }
 
-    public KeySymbol Copy() => new KeySymbol(Key, Symbol);
+    public KeySymbol<TKey> Copy()
+        => new KeySymbol<TKey>(Key, Symbol);
 }
