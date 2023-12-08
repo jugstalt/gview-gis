@@ -14,6 +14,8 @@ using System.Linq;
 using System.Text;
 using System.Xml;
 using gView.Framework.Symbology.Models;
+using gView.Framework.Symbology.UI.Abstractions;
+using gView.Framework.Symbology.UI;
 
 namespace gView.Framework.Symbology
 {
@@ -24,7 +26,8 @@ namespace gView.Framework.Symbology
                                                IFontColor,
                                                ISymbolPositioningUI,
                                                ISymbolSize,
-                                               ISymbolCurrentGraphicsEngineDependent
+                                               ISymbolCurrentGraphicsEngineDependent,
+                                               IQuickSymolPropertyProvider
     {
         private float _xOffset = 0, _yOffset = 0, _angle = 0, _rotation = 0, _hOffset = 0, _vOffset = 0;
         private IBrush _brush;
@@ -585,6 +588,22 @@ namespace gView.Framework.Symbology
             }
             public float HorizontalOffset { get; set; }
             public float VerticalOffset { get; set; }
+        }
+
+        #endregion
+
+        #region IQuickSymolPropertyProvider
+
+        public IQuickSymbolProperties? GetQuickSymbolProperties()
+        {
+            var provideQuickProperties = this switch  // are any tests nessassary
+            {
+                _ => true
+            };
+
+            return provideQuickProperties
+                ? new QuickPointSymbolProperties(this)
+                : null;
         }
 
         #endregion

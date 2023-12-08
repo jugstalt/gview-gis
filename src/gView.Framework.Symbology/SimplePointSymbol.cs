@@ -3,6 +3,8 @@ using gView.Framework.Core.Geometry;
 using gView.Framework.Core.IO;
 using gView.Framework.Core.Symbology;
 using gView.Framework.Core.system;
+using gView.Framework.Symbology.UI;
+using gView.Framework.Symbology.UI.Abstractions;
 using gView.GraphicsEngine;
 using gView.GraphicsEngine.Abstraction;
 using System;
@@ -18,7 +20,8 @@ namespace gView.Framework.Symbology
                                             IPenColor,
                                             IPenWidth,
                                             ISymbolSize,
-                                            ISymbolWidth
+                                            ISymbolWidth,
+                                            IQuickSymolPropertyProvider
     {
         public enum MarkerType { Circle = 0, Triangle = 1, Square = 2, Cross = 3, Star = 4 }
 
@@ -584,6 +587,22 @@ namespace gView.Framework.Symbology
         public bool RequireClone()
         {
             return false;
+        }
+
+        #endregion
+
+        #region IQuickSymolPropertyProvider
+
+        public IQuickSymbolProperties? GetQuickSymbolProperties()
+        {
+            var provideQuickProperties = this switch  // are any tests nessassary
+            {
+                _ => true
+            };
+
+            return provideQuickProperties
+                ? new QuickPointSymbolProperties(this)
+                : null;
         }
 
         #endregion
