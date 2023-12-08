@@ -6,6 +6,7 @@ using gView.Framework.UI.Controls;
 using gView.Win.Carto.Rendering.UI.Framework.Carto.Rendering.Extensions;
 using System;
 using System.Drawing;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace gView.Framework.Carto.Rendering.UI
@@ -72,11 +73,11 @@ namespace gView.Framework.Carto.Rendering.UI
             object minObj = FunctionFilter.QueryScalar(
                 _fc,
                 new FunctionFilter("MIN", _renderer.ValueField, "fieldMin"),
-                "fieldMin");
+                "fieldMin").Result;
             object maxObj = FunctionFilter.QueryScalar(
                 _fc,
                 new FunctionFilter("MAX", _renderer.ValueField, "fieldMax"),
-                "fieldMax");
+                "fieldMax").Result;
 
             if (minObj != null)
             {
