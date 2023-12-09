@@ -2,6 +2,6 @@
 {
     public interface IGroupRenderer
     {
-        IRendererGroup Renderers { get; }
+        IRendererGroup RendererItems { get; }
     }
 }

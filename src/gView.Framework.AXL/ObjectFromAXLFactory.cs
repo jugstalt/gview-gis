@@ -349,7 +349,7 @@ namespace gView.Framework.AXL
                     IFeatureRenderer r = ObjectFromAXLFactory.SimpleRenderer(child);
                     if (r != null)
                     {
-                        renderer.Renderers.Add(r);
+                        renderer.RendererItems.Add(renderer.RendererItems.Create(r));
                     }
                 }
                 else if (child.Name == "VALUEMAPRENDERER")
@@ -357,7 +357,7 @@ namespace gView.Framework.AXL
                     IFeatureRenderer r = ObjectFromAXLFactory.ValueMapRenderer(child);
                     if (r != null)
                     {
-                        renderer.Renderers.Add(r);
+                        renderer.RendererItems.Add(renderer.RendererItems.Create(r));
                     }
                 }
                 else if (child.Name == "GROUPRENDERER")
@@ -365,7 +365,7 @@ namespace gView.Framework.AXL
                     IFeatureRenderer r = ObjectFromAXLFactory.GroupRenderer(child);
                     if (r != null)
                     {
-                        renderer.Renderers.Add(r);
+                        renderer.RendererItems.Add(renderer.RendererItems.Create(r));
                     }
                 }
                 else if (child.Name == "SCALEDEPENDENTRENDERER")
@@ -373,14 +373,14 @@ namespace gView.Framework.AXL
                     IFeatureRenderer r = ObjectFromAXLFactory.ScaleDependentRenderer(child);
                     if (r != null)
                     {
-                        renderer.Renderers.Add(r);
+                        renderer.RendererItems.Add(renderer.RendererItems.Create(r));
                     }
                 }
             }
 
-            if (renderer.Renderers.Count == 1)
+            if (renderer.RendererItems.Count == 1)
             {
-                return renderer.Renderers[0];
+                return renderer.RendererItems[0].Renderer as IFeatureRenderer;
             }
 
             return renderer;
@@ -403,23 +403,23 @@ namespace gView.Framework.AXL
 
                 if (rendererObj is IGroupRenderer)
                 {
-                    foreach (IFeatureRenderer childRenderer in ((IGroupRenderer)rendererObj).Renderers)
+                    foreach (IFeatureRenderer childRenderer in ((IGroupRenderer)rendererObj).RendererItems)
                     {
-                        renderer.Renderers.Add(childRenderer);
+                        renderer.RendererItems.Add(renderer.RendererItems.Create(childRenderer));
                     }
                 }
                 else if (rendererObj is IFeatureRenderer)
                 {
-                    renderer.Renderers.Add((IFeatureRenderer)rendererObj);
+                    renderer.RendererItems.Add(renderer.RendererItems.Create((IFeatureRenderer)rendererObj));
                 }
 
-                foreach (IScaledependent sdRenderer in renderer.Renderers)
+                foreach (IScaledependent sdRenderer in renderer.RendererItems)
                 {
                     sdRenderer.MinimumScale = minScale;
                     sdRenderer.MaximumScale = maxScale;
                 }
 
-                return renderer.Renderers.Count > 0 ? renderer : null;
+                return renderer.RendererItems.Count > 0 ? renderer : null;
             }
             catch
             {
@@ -488,7 +488,7 @@ namespace gView.Framework.AXL
             {
                 StringBuilder sb = new StringBuilder();
                 sb.Append("<GROUPRENDERER>");
-                foreach (IFeatureRenderer renderer in ((FeatureGroupRenderer)gViewObject).Renderers)
+                foreach (IFeatureRenderer renderer in ((FeatureGroupRenderer)gViewObject).RendererItems)
                 {
                     sb.Append(ConvertToAXL(renderer));
                 }

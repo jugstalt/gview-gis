@@ -38,4 +38,8 @@
     <ProjectReference Include="..\gView.Razor\gView.Razor.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Components\Controls\Renderers\Abstraction\" />
+  </ItemGroup>
+
 </Project>

@@ -5,11 +5,9 @@ using gView.Framework.Core.system;
 
 namespace gView.Framework.Core.Carto
 {
-    public interface ILabelRenderer : IRenderer, IPersistable, IClone, IClone2
+    public interface ILabelRenderer : IRenderer, IPersistable
     {
         void PrepareQueryFilter(IDisplay display, IFeatureLayer layer, IQueryFilter filter);
-        bool CanRender(IFeatureLayer layer, IMap map);
-        string Name { get; }
 
         LabelRenderMode RenderMode { get; }
         int RenderPriority { get; }

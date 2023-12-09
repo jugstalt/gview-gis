@@ -17,7 +17,11 @@ using System.Threading.Tasks;
 namespace gView.Framework.Cartography.Rendering
 {
     [RegisterPlugIn("CD41C987-9415-4c7c-AF5F-6385622AB768")]
-    public class ScaleDependentRenderer : IGroupRenderer, IFeatureRenderer, IDefault, ILegendGroup, ISimplify
+    public class ScaleDependentRenderer : 
+        IGroupRenderer,
+        IFeatureRenderer,
+        IDefault, 
+        ILegendGroup
     {
         private RendererList _renderers;
         private bool _useRefScale = true;
@@ -29,7 +33,7 @@ namespace gView.Framework.Cartography.Rendering
 
         #region IGroupRenderer Member
 
-        public IRendererGroup Renderers
+        public IRendererGroup RendererItems
         {
             get { return _renderers; }
         }
@@ -136,7 +140,10 @@ namespace gView.Framework.Cartography.Rendering
 
         public bool RequireClone()
         {
-            return _renderers?.Where(r => r != null && r.RequireClone()).FirstOrDefault() != null;
+            return _renderers?.Any(
+                r => r != null 
+                    && r is IFeatureRenderer featureRenderer
+                    && featureRenderer.RequireClone()) == true;
         }
 
         #endregion
@@ -197,7 +204,7 @@ namespace gView.Framework.Cartography.Rendering
                     continue;
                 }
 
-                scaledependentRenderer._renderers.Add(renderer.Clone(options) as IFeatureRenderer);
+                scaledependentRenderer._renderers.Add(renderer.Clone(options) as ScaleRenderer);
             }
 
             scaledependentRenderer.UseReferenceScale = _useRefScale;
@@ -289,9 +296,9 @@ namespace gView.Framework.Cartography.Rendering
             ScaleDependentRenderer scaleDependentRenderer = new ScaleDependentRenderer();
 
             scaleDependentRenderer._useRefScale = _useRefScale;
-            foreach (IFeatureRenderer renderer in Renderers)
+            foreach (IFeatureRenderer renderer in RendererItems)
             {
-                scaleDependentRenderer.Renderers.Add(renderer.Clone() as IFeatureRenderer);
+                scaleDependentRenderer.RendererItems.Add(renderer.Clone() as ScaleRenderer);
             }
 
             return scaleDependentRenderer;
@@ -299,7 +306,12 @@ namespace gView.Framework.Cartography.Rendering
 
         #endregion
 
-        private class ScaleRenderer : IFeatureRenderer, IScaledependent, IPropertyPage, ILegendGroup, ISimplify
+        private class ScaleRenderer : IFeatureRenderer, 
+                                      IScaledependent, 
+                                      IPropertyPage, 
+                                      ILegendGroup, 
+                                      ISimplify,
+                                      IRendererGroupItem
         {
             private IFeatureRenderer _renderer = null;
             private double _minScale = 0, _maxScale = 0;
@@ -315,10 +327,10 @@ namespace gView.Framework.Cartography.Rendering
                 _maxScale = maxScale;
             }
 
-            internal IFeatureRenderer Renderer
+            public IRenderer Renderer
             {
                 get { return _renderer; }
-                set { _renderer = value; }
+                set { _renderer = value as IFeatureRenderer; }
             }
 
             #region IScaledependent
@@ -688,24 +700,29 @@ namespace gView.Framework.Cartography.Rendering
             #endregion
         }
 
-        private class RendererList : List<IFeatureRenderer>, IRendererGroup
+        private class RendererList : List<IRendererGroupItem>, IRendererGroup
         {
-            public new void Add(IFeatureRenderer renderer)
+            public new void Add(IRendererGroupItem item)
             {
-                if (renderer == null)
+                if (item == null)
                 {
                     return;
                 }
 
-                if (renderer is ScaleRenderer)
+                if (item is ScaleRenderer scaleRenderer)
                 {
-                    base.Add(renderer);
+                    base.Add(scaleRenderer);
                 }
-                else
+                else if(item.Renderer is IFeatureRenderer featureRenderer)
                 {
-                    base.Add(new ScaleRenderer(renderer));
+                    base.Add(new ScaleRenderer(featureRenderer));
                 }
             }
+
+            public IRendererGroupItem Create(IRenderer renderer)
+            => renderer is IFeatureRenderer featureRenderer
+                ? new ScaleRenderer(featureRenderer)
+                : throw new ArgumentException("Renderer is not a feature renderer");
         }
 
         #region IRenderer Member
@@ -744,99 +761,24 @@ namespace gView.Framework.Cartography.Rendering
             {
                 ScaleDependentRenderer cand = (ScaleDependentRenderer)renderer;
 
-                foreach (ScaleRenderer sRenderer in Renderers)
+                foreach (ScaleRenderer sRenderer in RendererItems)
                 {
-                    for (int i = 0; i < cand.Renderers.Count; i++)
+                    for (int i = 0; i < cand.RendererItems.Count; i++)
                     {
-                        if (sRenderer.Combine(cand.Renderers[i]))
+                        if (sRenderer.Combine(cand.RendererItems[i].Renderer))
                         {
-                            cand.Renderers.RemoveAt(i);
+                            cand.RendererItems.RemoveAt(i);
                             i--;
                         }
                     }
                 }
 
-                return cand.Renderers.Count == 0;
+                return cand.RendererItems.Count == 0;
             }
 
             return false;
         }
-        #endregion
-
-        #region ISimplify Member
-
-        public void Simplify()
-        {
-            if (_renderers == null)
-            {
-                return;
-            }
-
-            foreach (IFeatureRenderer renderer in _renderers)
-            {
-                if (renderer is ISimplify)
-                {
-                    ((ISimplify)renderer).Simplify();
-                }
-            }
-
-            #region SimpleRenderer zusammenfassen
-            bool allSimpleRenderers = true;
-            foreach (IRenderer renderer in _renderers)
-            {
-                if (!(renderer is ScaleRenderer) && ((ScaleRenderer)renderer).Renderer is SimpleRenderer)
-                {
-                    allSimpleRenderers = false;
-                    break;
-                }
-            }
-
-            if (allSimpleRenderers && _renderers.Count > 1)
-            {
-                ScaleRenderer renderer = (ScaleRenderer)_renderers[0];
-                if (_renderers.Count > 1)
-                {
-                    ISymbolCollection symCol = PlugInManager.Create(new Guid("062AD1EA-A93C-4c3c-8690-830E65DC6D91")) as ISymbolCollection;
-                    foreach (IRenderer sRenderer in _renderers)
-                    {
-                        if (((SimpleRenderer)((ScaleRenderer)sRenderer).Renderer).Symbol != null)
-                        {
-                            symCol.AddSymbol(((SimpleRenderer)((ScaleRenderer)sRenderer).Renderer).Symbol);
-                        }
-                    }
-                    ((SimpleRenderer)renderer.Renderer).Symbol = (ISymbol)symCol;
-                    _renderers.Clear();
-                    _renderers.Add(renderer);
-                }
-            }
-            #endregion
-
-            ShrinkScaleRenderes();
-        }
 
         #endregion
-
-        public void ShrinkScaleRenderes()
-        {
-            if (_renderers == null)
-            {
-                return;
-            }
-
-            for (int i = 0; i < _renderers.Count; i++)
-            {
-                ScaleRenderer sRenderer = _renderers[i] as ScaleRenderer;
-                for (int j = i + 1; j < _renderers.Count; j++)
-                {
-                    ScaleRenderer sRenderCand = _renderers[j] as ScaleRenderer;
-
-                    if (sRenderer.Combine(sRenderCand))
-                    {
-                        _renderers.RemoveAt(j);
-                        j--;
-                    }
-                }
-            }
-        }
     }
 }

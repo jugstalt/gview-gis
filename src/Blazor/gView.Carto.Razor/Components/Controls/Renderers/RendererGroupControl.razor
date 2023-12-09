@@ -1,0 +1,196 @@
+@using gView.Framework.Cartography.Rendering.Abstractions
+@inject PluginManagerService PluginManager
+@inject ICartoDocumentService CartoDocument
+
+@inherits BaseHandler
+@typeparam TItem where TItem : IRendererGroupItem
+@typeparam TRenderer where TRenderer : IRenderer
+
+@if(_editRenderer is not null)
+{
+    <GvCard Title="@_editRenderer.Name">
+        <GvCardContent>
+            @if (_propertyPageRenderFragment is not null)
+            {
+                @(_propertyPageRenderFragment)
+            }
+        </GvCardContent>
+        <GvCardActions>
+            <MudButton Color="Color.Primary"
+                       Variant="Variant.Filled"
+                       OnClick="() => _editRenderer = default(TRenderer)">Done</MudButton>
+        </GvCardActions>
+    </GvCard>
+}
+else if(_editItem is not null)
+{
+    <GvCard Title="@_editItem.ToString()">
+        <GvCardContent>
+            <PropertyGridControl Instance="_editItem"
+                                 OnPropertyChanged="(p) => {}"/>
+        </GvCardContent>
+        <GvCardActions>
+            <MudButton Color="Color.Primary"
+                       Variant="Variant.Filled"
+                       OnClick="() => _editItem = default(TItem)">Done</MudButton>
+        </GvCardActions>
+    </GvCard>
+}
+else
+{
+    <MudDropContainer T="TItem"
+                      Items="RendererItems"
+                      ItemDropped="ReorderRendererItems"
+                      ItemsSelector="@((item,zone) => true)">
+        <ChildContent>
+            <div style="height:63vh;overflow-y:auto;overflow-x:hidden;white-space:nowrap">
+                <MudDropZone T="TItem"
+                             AllowReorder="true">
+                    @if (_availableRenderers is not null)
+                    {
+                        <MudPaper Elevation="25">
+                            <MudButtonGroup Color="Color.Primary" Variant="Variant.Outlined">
+                                <MudButton>Add</MudButton>
+                                <MudMenu Icon="@Icons.Material.Filled.ArrowDropDown" Style="align-self: auto;">
+                                    @foreach (var renderer in _availableRenderers)
+                                    {
+                                        <MudMenuItem OnClick="() => AddRendererItem(renderer)">@renderer.Name.SplitCamelCase()</MudMenuItem>
+                                    }
+                                </MudMenu>
+                            </MudButtonGroup>
+                        </MudPaper>
+                    }
+                </MudDropZone>
+            </div>
+        </ChildContent>
+        <ItemRenderer>
+            <GvGrid ColumnCount="12">
+                <GvGridItem Span="1">
+                    <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                   OnClick="() => EditRenderer(context)"
+                                   Size="MudBlazor.Size.Small"
+                                   Color="Color.Primary"
+                                   aria-label="edit"></MudIconButton>
+                </GvGridItem>
+                <GvGridItem Span="1">
+                    <MudIconButton Icon="@Icons.Material.Filled.Settings"
+                                   OnClick="() => EditRendererItem(context)"
+                                   Size="MudBlazor.Size.Small"
+                                   Color="Color.Primary"
+                                   aria-label="settings"></MudIconButton>
+                </GvGridItem>
+                <GvGridItem Span="1">
+                    <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                    OnClick="() => DeleteRendererItem(context)"
+                                    Size="MudBlazor.Size.Small"
+                                    Color="Color.Secondary"
+                                    aria-label="delete"></MudIconButton>
+                </GvGridItem>
+                <GvGridItem Span="9">
+                    @(context.ToString())
+                </GvGridItem>
+            </GvGrid>
+        </ItemRenderer>
+    </MudDropContainer>
+}
+@code {
+    [Parameter] public List<TItem> RendererItems { get; set; } = [];
+    [Parameter] public IFeatureLayer? Layer { get; set; }
+
+    private TRenderer[]? _availableRenderers;
+    private IPropertyPageDefinition[]? _propertyPageDefs;
+    private RenderFragment? _propertyPageRenderFragment;
+
+    private TRenderer? _editRenderer = default(TRenderer);
+    private TItem? _editItem = default(TItem);
+
+    async protected override Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+
+        if (Layer is not null)
+        {
+            var map = CartoDocument.Document.Map;
+
+            var pluginType = typeof(TRenderer) switch
+            {
+                Type t when t == typeof(IFeatureRenderer) => gView.Framework.Common.Plugins.Type.IFeatureRenderer,
+                Type t when t == typeof(ILabelRenderer) => gView.Framework.Common.Plugins.Type.ILabelRenderer,
+                _ => throw new ArgumentException($"Component can't be used with type {typeof(TRenderer).Name}")
+            };
+
+            _availableRenderers = PluginManager.GetPlugins<TRenderer>(pluginType)
+                                             .Where(r => r.CanRender(Layer, map))
+                                             .ToArray();
+
+            _propertyPageDefs = PluginManager.GetPlugins<IPropertyPageDefinition>(gView.Framework.Common.Plugins.Type.IPropertyPageDefinition)
+                                             .Where(p => p.InterfaceType == typeof(TRenderer))
+                                             .ToArray();
+        }
+    }
+
+    private void AddRendererItem(TRenderer renderer)
+    {
+        var rendererItem = Activator.CreateInstance<TItem>();
+        rendererItem.Renderer = (TRenderer)renderer.Clone();
+
+        if(rendererItem.Renderer is not null) 
+        {
+            if(rendererItem.Renderer is IDefault defaultRenderer)
+            {
+                defaultRenderer.DefaultIfEmpty(Layer);
+            }
+
+            RendererItems.Add(rendererItem);
+
+            StateHasChanged();
+        }
+    }
+
+    private void EditRenderer(TItem rendererItem)
+    {
+        _editRenderer = (TRenderer?)rendererItem.Renderer;
+        _propertyPageRenderFragment = null;
+
+        if (Layer is not null)
+        {
+            var layerClone = (Layer as gView.Framework.Data.Layer)?.PersistedClone();
+            var propertyPage = _propertyPageDefs?.FirstOrDefault(p => p.InstanceType == _editRenderer?.GetType());
+            if (layerClone is IFeatureLayer fLayer &&  propertyPage is not null)
+            {
+                if (_editRenderer is IFeatureRenderer fRenderer)
+                {
+                    fLayer.FeatureRenderer = fRenderer;
+                }
+                else if(_editRenderer is ILabelRenderer lRenderer)
+                {
+                    fLayer.LabelRenderer = lRenderer;
+                }
+                layerClone.Class = Layer.Class;
+
+                _propertyPageRenderFragment = new RenderFragment(builder =>
+                {
+                    var sequence = 0;
+                    builder.OpenComponent(sequence, propertyPage.PropertyPageType);
+                    builder.AddAttribute(++sequence, "Instance", layerClone);
+                    builder.CloseComponent();
+                });
+            }
+        }
+    }
+
+    private void EditRendererItem(TItem rendererItem)
+    {
+        _editItem = rendererItem;
+    }
+
+    private void DeleteRendererItem(TItem rendererItem)
+    {
+        RendererItems.Remove(rendererItem);
+    }
+
+    async private Task ReorderRendererItems(MudItemDropInfo<TItem> dropInfo)
+    {
+    
+    }
+}

@@ -8,7 +8,7 @@ namespace gView.Framework.Core.Carto
     /// <summary>
     /// Porvide access to members and properties that control the functionality of renderers.
     /// </summary>
-    public interface IFeatureRenderer : IRenderer, IPersistable, IClone, IClone2
+    public interface IFeatureRenderer : IRenderer, IPersistable
     {
         /// <summary>
         /// Draws features from the specified Featurecursor on the given display.
@@ -33,22 +33,11 @@ namespace gView.Framework.Core.Carto
         /// <param name="layer"></param>
         /// <param name="filter">The filter for querying the features</param>
         void PrepareQueryFilter(IFeatureLayer layer, IQueryFilter filter);
-        /// <summary>
-        /// Indicates if the specified feature class can be rendered on the given display. 
-        /// </summary>
-        /// <param name="layer"></param>
-        /// <param name="map"></param>
-        /// <returns></returns>
-        bool CanRender(IFeatureLayer layer, IMap map);
 
         bool HasEffect(IFeatureLayer layer, IMap map);
 
         bool UseReferenceScale { get; set; }
 
-        /// <summary>
-        /// The name of the renderer.
-        /// </summary>
-        string Name { get; }
         /// <summary>
         /// The category for the renderer.
         /// </summary>

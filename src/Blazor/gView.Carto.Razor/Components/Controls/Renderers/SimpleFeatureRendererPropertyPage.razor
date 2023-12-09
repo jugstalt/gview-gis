@@ -26,12 +26,14 @@
 
     <GvCard Title="Advanced">
         <GvCardContent>
-            <MudButton OnClick="SetRotation"
-                       Variant="Variant.Filled"
-                       Color="Color.Primary"
-                       Disabled="@(!_layer.CanRotateSymbols())">
-                Rotation
-            </MudButton>
+            <MudPaper Elevation="24">
+                    <MudButtonGroup Color="Color.Primary" Variant="Variant.Filled">
+                    <MudButton OnClick="SetRotation"
+                               Disabled="@(!_layer.CanRotateSymbols())">
+                        Rotation
+                    </MudButton>
+            </MudButtonGroup>
+            </MudPaper>
         </GvCardContent>
     </GvCard>
 }

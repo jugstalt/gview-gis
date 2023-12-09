@@ -1,0 +1,47 @@
+@inherits BaseHandler
+
+@if (_layer is not null)
+{
+    <RendererGroupControl TItem="ScaleDependentRendererGroupItem"
+                          TRenderer="IFeatureRenderer"
+                          Layer="_layer" />
+}
+
+@code {
+    [Parameter] public object? Instance { get; set; }
+
+    private IFeatureLayer? _layer;
+    private ScaleDependentRenderer? _renderer;
+    private List<ScaleDependentRendererGroupItem> _rendererItems = [];
+
+    protected override Task OnParametersSetAsync() => HandleAsync(async () =>
+    {
+        await base.OnParametersSetAsync();
+
+        if (Instance is IFeatureLayer fLayer)
+        {
+            _layer = fLayer;
+            _renderer = fLayer.FeatureRenderer as ScaleDependentRenderer;
+        }
+        else
+        {
+            _renderer = Instance as ScaleDependentRenderer;
+        }
+
+        if(_renderer?.RendererItems is not null)
+        {
+            foreach(var rendererItem in _renderer.RendererItems)
+            {
+                if(rendererItem?.Renderer is null)
+                {
+                    continue;
+                }
+
+                var item = new ScaleDependentRendererGroupItem()
+                {
+                    Renderer = rendererItem.Renderer;
+                }
+            }
+        }
+    });
+}

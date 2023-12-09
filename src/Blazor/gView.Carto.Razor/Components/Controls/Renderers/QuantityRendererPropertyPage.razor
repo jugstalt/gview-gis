@@ -39,28 +39,22 @@
 
                     </GvGridItem>
                 </GvGrid>
-                <GvGrid ColumnCount="3">
-                    <GvGridItem>
-                        <MudButton Color="Color.Primary"
-                                   Variant="Variant.Filled"
-                                   OnClick="OnSnowWizard">Wizard</MudButton>
-                    </GvGridItem>
-                    <GvGridItem>
-                        <MudButton Color="Color.Primary"
-                                   Variant="Variant.Filled"
-                                   OnClick="() => _addQuantityItem = new()">Add Value</MudButton>
-                    </GvGridItem>
-                    @* <GvGridItem>
-                        <MudButton Color="Color.Primary"
-                                   Variant="Variant.Filled"
-                                   OnClick="OnAddAllOtherValuesItem">Add "All other"</MudButton>
-                    </GvGridItem> *@
-                    <GvGridItem>
-                        <MudButton Color="Color.Secondary"
-                                   Variant="Variant.Filled"
-                                   OnClick="OnRemoveAllItems">Remove all</MudButton>
-                    </GvGridItem>
-                </GvGrid>
+                <MudPaper Elevation="24">
+                    <MudButtonGroup Color="Color.Primary" Variant="Variant.Filled">
+                        <MudButton OnClick="OnSnowWizard">Wizard</MudButton>
+                        <MudButton OnClick="() => _addQuantityItem = new()">Add Value</MudButton>
+                        @* 
+                            <MudButton Color="Color.Primary"
+                            Variant="Variant.Filled"
+                            OnClick="OnAddAllOtherValuesItem">Add "All other"</MudButton>
+                            *@
+                               
+                    </MudButtonGroup>
+                    
+                    <MudButton Color="Color.Secondary"
+                                Variant="Variant.Filled"
+                                OnClick="OnRemoveAllItems">Remove all</MudButton>
+                </MudPaper>
                 <MudText Typo="Typo.h6">
                     @($"{_dictKeySymbols.IfKeyExists(_renderer.ValueField, (l) => l.Count)} items")
                 </MudText>
@@ -144,27 +138,24 @@
         </ListItemTools>
     </KeySymbolListControl>
 
-    <GvGrid ColumnCount="2">
-        <GvGridItem>
+    <MudPaper Elevation="24">
+        <MudButtonGroup Color="Color.Primary" Variant="Variant.Filled">
             <MudButton OnClick="SetRotation"
-                       Variant="Variant.Filled"
-                       Color="Color.Primary"
                        Disabled="@(!_layer.CanRotateSymbols())">
                 Rotation
             </MudButton>
-        </GvGridItem>
-        <GvGridItem>
+
             @* <MudButton OnClick="SetCartographicsMethod"
                        Variant="Variant.Filled"
                        Color="Color.Primary">
                 Cartography
             </MudButton> *@
-        </GvGridItem>
-    </GvGrid>
+        </MudButtonGroup>
+    </MudPaper>
 }
 
 @code {
-        [Parameter] public object? Instance { get; set; }
+    [Parameter] public object? Instance { get; set; }
 
     private IFeatureLayer? _layer;
     private QuantityRenderer? _renderer;

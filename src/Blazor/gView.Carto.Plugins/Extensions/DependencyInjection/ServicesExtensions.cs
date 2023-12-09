@@ -22,6 +22,7 @@ static public class ServicesExtensions
             .AddTransient<IPropertyGridEditor, FontPropertyEditor>()
             .AddTransient<IPropertyGridEditor, CharakterSelectorEditor>()
             .AddTransient<IPropertyGridEditor, FontNameSelectorEditor>()
+            .AddTransient<ICartoDocumentService, CartoDocumentService>()
             .Configure(configureOptions)
             .AddEventBus()
             .AddScoped<IApplicationScope, CartoApplicationScopeService>();
