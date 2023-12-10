@@ -61,12 +61,12 @@ internal class QuantityWizardModel
         {
             object minObj = await FunctionFilter.QueryScalar(
                     featureClass,
-                    new FunctionFilter("MIN", renderer.ValueField, "fieldMin"),
-                    "fieldMin");
+                    new FunctionFilter("MIN", renderer.ValueField, "field_min"),
+                    "field_min");
             object maxObj = await FunctionFilter.QueryScalar(
                 featureClass,
-                new FunctionFilter("MAX", renderer.ValueField, "fieldMax"),
-                "fieldMax");
+                new FunctionFilter("MAX", renderer.ValueField, "field_max"),
+                "field_max");
 
             if (minObj != null)
             {

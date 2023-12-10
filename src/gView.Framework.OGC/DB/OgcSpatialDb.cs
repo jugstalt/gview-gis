@@ -1206,7 +1206,8 @@ namespace gView.Framework.OGC.DB
                 filter.AddField(fc.IDFieldName);
                 filter.AddField(fc.ShapeFieldName);
             }
-            else if (!(filter is DistinctFilter))
+            else if (!(filter is DistinctFilter) &&
+                     !(filter is FunctionFilter))
             {
                 filter.AddField(fc.IDFieldName);
             }
@@ -1268,14 +1269,15 @@ namespace gView.Framework.OGC.DB
 
             StringBuilder fieldNames = new StringBuilder();
 
-            if (filter is DistinctFilter)
+            if (filter is DistinctFilter ||
+                filter is FunctionFilter)
             {
                 fieldNames.Append(filter.SubFieldsAndAlias);
             }
             else
             {
                 foreach (string fieldName in filter.SubFields.Split(' '))
-                {
+                { 
                     if (fieldNames.Length > 0)
                     {
                         fieldNames.Append(',');
