@@ -27,7 +27,7 @@ namespace gView.Framework.Cartography.Rendering
 
         private chartType _type = chartType.Pie;
         private sizeType _sizeType = sizeType.ConstantSize;
-        private SimpleLabelRenderer.labelPriority _labelPriority = SimpleLabelRenderer.labelPriority.normal;
+        private SimpleLabelRenderer.RenderLabelPriority _labelPriority = SimpleLabelRenderer.RenderLabelPriority.Normal;
         private Dictionary<string, ISymbol> _symbolTable = new Dictionary<string, ISymbol>();
         private ILineSymbol _outlineSymbol = null;
         private double _size = 50D, _valueEquatesToSize = 100D;
@@ -109,7 +109,7 @@ namespace gView.Framework.Cartography.Rendering
             set { _sizeType = value; }
         }
 
-        public SimpleLabelRenderer.labelPriority LabelPriority
+        public SimpleLabelRenderer.RenderLabelPriority LabelPriority
         {
             get
             {
@@ -173,7 +173,7 @@ namespace gView.Framework.Cartography.Rendering
 
         public LabelRenderMode RenderMode
         {
-            get { return _labelPriority == SimpleLabelRenderer.labelPriority.always ? LabelRenderMode.RenderWithFeature : LabelRenderMode.UseRenderPriority; }
+            get { return _labelPriority == SimpleLabelRenderer.RenderLabelPriority.Always ? LabelRenderMode.RenderWithFeature : LabelRenderMode.UseRenderPriority; }
         }
 
         public int RenderPriority
@@ -222,7 +222,7 @@ namespace gView.Framework.Cartography.Rendering
                 point = (IPoint)feature.Shape;
                 if (disp.LabelEngine.TryAppend(disp,
                     ChartAnnotationPolygon(disp, point, values, valSum, valMin, valMax),
-                    feature.Shape, _labelPriority != SimpleLabelRenderer.labelPriority.always) == LabelAppendResult.Succeeded)
+                    feature.Shape, _labelPriority != SimpleLabelRenderer.RenderLabelPriority.Always) == LabelAppendResult.Succeeded)
                 {
                     DrawChart(disp, point, values, valSum, valMin, valMax);
                 }
@@ -252,7 +252,7 @@ namespace gView.Framework.Cartography.Rendering
                             point = new Point((p1.X + p2.X) * 0.5, (p1.Y + p2.Y) * 0.5);
                             if (disp.LabelEngine.TryAppend(disp,
                                 ChartAnnotationPolygon(disp, point, values, valSum, valMin, valMax),
-                                pLine, _labelPriority != SimpleLabelRenderer.labelPriority.always) == LabelAppendResult.Succeeded)
+                                pLine, _labelPriority != SimpleLabelRenderer.RenderLabelPriority.Always) == LabelAppendResult.Succeeded)
                             {
                                 DrawChart(disp, point, values, valSum, valMin, valMax);
                                 return;
@@ -308,7 +308,7 @@ namespace gView.Framework.Cartography.Rendering
             {
                 if (disp.LabelEngine.TryAppend(disp,
                     ChartAnnotationPolygon(disp, pColl[i], values, valSum, valMin, valMax),
-                    pColl[i], _labelPriority != SimpleLabelRenderer.labelPriority.always) == LabelAppendResult.Succeeded)
+                    pColl[i], _labelPriority != SimpleLabelRenderer.RenderLabelPriority.Always) == LabelAppendResult.Succeeded)
                 {
                     DrawChart(disp, pColl[i], values, valSum, valMin, valMax);
                     return true;
@@ -644,7 +644,7 @@ namespace gView.Framework.Cartography.Rendering
         {
             _type = (chartType)stream.Load("Type", (int)chartType.Pie);
             _sizeType = (sizeType)stream.Load("SizeType", (int)sizeType.ConstantSize);
-            _labelPriority = (SimpleLabelRenderer.labelPriority)stream.Load("labelPriority", (int)SimpleLabelRenderer.labelPriority.normal);
+            _labelPriority = (SimpleLabelRenderer.RenderLabelPriority)stream.Load("labelPriority", (int)SimpleLabelRenderer.RenderLabelPriority.Normal);
             _size = (double)stream.Load("Size", 50D);
             _valueEquatesToSize = (double)stream.Load("ValueEquatesToSize", 100D);
 
@@ -738,13 +738,13 @@ namespace gView.Framework.Cartography.Rendering
             {
                 switch (_labelPriority)
                 {
-                    case SimpleLabelRenderer.labelPriority.always:
+                    case SimpleLabelRenderer.RenderLabelPriority.Always:
                         return 0;
-                    case SimpleLabelRenderer.labelPriority.high:
+                    case SimpleLabelRenderer.RenderLabelPriority.High:
                         return 100;
-                    case SimpleLabelRenderer.labelPriority.normal:
+                    case SimpleLabelRenderer.RenderLabelPriority.Normal:
                         return 0;
-                    case SimpleLabelRenderer.labelPriority.low:
+                    case SimpleLabelRenderer.RenderLabelPriority.Low:
                         return -100;
                 }
                 return 0;

@@ -111,6 +111,10 @@
                 {
                     <FeatureLayerRendererSettingsControl Map="Model.Map" Layer="Model.Layer as IFeatureLayer" />
                 }
+                else if(Page.LabelRenderer.Equals(_currentTab))
+                {
+                    <FeatureLayerLabelRendererSettingsControl Map="Model.Map" Layer="Model.Layer as IFeatureLayer" />
+                }
                 else if (Page.Description.Equals(_currentTab))
                 {
                     <LayerDescriptionControl Map="Model.Map" Layer="Model.Layer" />

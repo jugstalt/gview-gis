@@ -16,7 +16,9 @@
                 builder.AddAttribute(seq++, "Value", value);
                 builder.AddAttribute(seq++, "ChildContent", new RenderFragment((innerBuilder) =>
                 {
-                    innerBuilder.AddContent(seq++, value.ToString()?.SplitCamelCase());
+                    string description = ((Enum)value).GetDescription();
+
+                    innerBuilder.AddContent(seq++, description?.SplitCamelCase());
                 }));
                 builder.CloseComponent();
             }

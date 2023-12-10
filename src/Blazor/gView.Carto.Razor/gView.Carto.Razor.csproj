@@ -7,6 +7,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Components\Controls\Renderers\Abstraction\**" />
+    <Content Remove="Components\Controls\Renderers\Abstraction\**" />
+    <EmbeddedResource Remove="Components\Controls\Renderers\Abstraction\**" />
+    <None Remove="Components\Controls\Renderers\Abstraction\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Include="Components\Controls\Classes\WmsClassSettingsControl.razor" />
     <None Include="Components\Controls\Renderers\SimpleFeatureRendererPropertyPage.razor" />
     <None Include="Components\Controls\Tables\QueryBuilderControl.razor" />
@@ -36,10 +43,6 @@
     <ProjectReference Include="..\gView.Framework.Carto\gView.Framework.Carto.csproj" />
     <ProjectReference Include="..\gView.Razor.Leaflet\gView.Razor.Leaflet.csproj" />
     <ProjectReference Include="..\gView.Razor\gView.Razor.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Components\Controls\Renderers\Abstraction\" />
   </ItemGroup>
 
 </Project>

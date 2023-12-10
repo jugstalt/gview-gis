@@ -71,7 +71,11 @@ else
                                 <MudMenu Icon="@Icons.Material.Filled.ArrowDropDown" Style="align-self: auto;">
                                     @foreach (var renderer in _availableRenderers)
                                     {
-                                        <MudMenuItem OnClick="() => AddRendererItem(renderer)">@renderer.Name.SplitCamelCase()</MudMenuItem>
+                                        <MudMenuItem OnClick="() => AddRendererItem(renderer)">
+                                            @(renderer is IFeatureRenderer fRenderer 
+                                                ? $"{fRenderer.Category}: {fRenderer.Name.SplitCamelCase()}" 
+                                                : renderer.Name.SplitCamelCase())
+                                        </MudMenuItem>
                                     }
                                 </MudMenu>
                             </MudButtonGroup>
@@ -149,6 +153,7 @@ else
 
             _availableRenderers = PluginManager.GetPlugins<TRenderer>(pluginType)
                                              .Where(r => r.CanRender(Layer, map))
+                                             .OrderBy(r => r is IFeatureRenderer fRenderer ? fRenderer.Category : r.Name)
                                              .ToArray();
 
             _propertyPageDefs = PluginManager.GetPlugins<IPropertyPageDefinition>(gView.Framework.Common.Plugins.Type.IPropertyPageDefinition)

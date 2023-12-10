@@ -21,11 +21,15 @@ namespace gView.Framework.Symbology
             : base()
         {
             _outlinebrush = Current.Engine.CreateSolidBrush(ArgbColor.Yellow);
+
+            this.SymbolSmoothingMode = SymbolSmoothing.AntiAlias;
         }
         protected GlowingTextSymbol(IFont font, ArgbColor color, ArgbColor outlinecolor)
             : base(font, color)
         {
             _outlinebrush = Current.Engine.CreateSolidBrush(outlinecolor);
+
+            this.SymbolSmoothingMode = SymbolSmoothing.AntiAlias;
         }
 
         public override string ToString()

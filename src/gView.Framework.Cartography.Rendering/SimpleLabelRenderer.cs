@@ -1,20 +1,19 @@
-using gView.Framework.Cartography.Rendering.UI;
+using gView.Framework.Common;
 using gView.Framework.Core.Carto;
+using gView.Framework.Core.Common;
 using gView.Framework.Core.Data;
 using gView.Framework.Core.Data.Filters;
 using gView.Framework.Core.Geometry;
 using gView.Framework.Core.IO;
 using gView.Framework.Core.Symbology;
-using gView.Framework.Core.Common;
 using gView.Framework.Core.UI;
 using gView.Framework.Geometry;
 using gView.Framework.Geometry.GeoProcessing;
 using gView.Framework.Symbology;
-using gView.Framework.Common;
 using gView.GraphicsEngine.Abstraction;
 using System;
 using System.Collections.Generic;
-using System.Reflection;
+using System.ComponentModel;
 using System.Threading.Tasks;
 
 namespace gView.Framework.Cartography.Rendering
@@ -22,17 +21,43 @@ namespace gView.Framework.Cartography.Rendering
     [RegisterPlugIn("92650F7D-CEC9-4418-9EA0-A8B09436AA7A")]
     public class SimpleLabelRenderer : Cloner, ILabelRenderer, ILegendGroup, IDefault, IPriority
     {
-        public enum howManyLabels { one_per_name = 0, one_per_feature = 1, one_per_part = 2 }
-        public enum labelPriority { always = 0, high = 1, normal = 2, low = 3 }
-        public enum CartographicLineLabeling { Parallel = 0, CurvedText = 1, Horizontal = 2, Perpendicular = 3 }
-        public enum CartographicPolygonLabelling { Horizontal = 0, Parallel = 1 }
+        public enum RenderHowManyLabels 
+        {
+            OnPerName = 0,
+            OnPerFeature = 1,
+            OnPerPart = 2 
+        }
+        public enum RenderLabelPriority 
+        {
+            [Description("Always (no overlay check)")]
+            Always = 0,
+            [Description("High (overlay check)")]
+            High = 1,
+            [Description("Normal (overlay check)")]
+            Normal = 2,
+            [Description("Low (overlay check)")]
+            Low = 3 
+        
+        }
+        public enum CartographicLineLabeling 
+        { 
+            Parallel = 0, 
+            CurvedText = 1, 
+            Horizontal = 2, 
+            Perpendicular = 3 
+        }
+        public enum CartographicPolygonLabelling 
+        { 
+            Horizontal = 0, 
+            Parallel = 1 
+        }
 
         private string _fieldname, _sizeField, _fontField, _expression;
-        private bool _useExpression = false;
+        private bool _useExpression = false; 
         private ITextSymbol _symbol;
 
-        private howManyLabels _howManyLabels = howManyLabels.one_per_feature;
-        private labelPriority _labelPriority = labelPriority.normal;
+        private RenderHowManyLabels _howManyLabels = RenderHowManyLabels.OnPerFeature;
+        private RenderLabelPriority _labelPriority = RenderLabelPriority.Normal;
         private List<string> _labelStrings = new List<string>();
         private SymbolRotation _symbolRotation;
         private CartographicLineLabeling _lineLabelling = CartographicLineLabeling.Parallel;
@@ -82,7 +107,7 @@ namespace gView.Framework.Cartography.Rendering
             set { _useExpression = value; }
         }
 
-        public howManyLabels HowManyLabels
+        public RenderHowManyLabels HowManyLabels
         {
             get
             {
@@ -94,7 +119,7 @@ namespace gView.Framework.Cartography.Rendering
             }
         }
 
-        public labelPriority LabelPriority
+        public RenderLabelPriority LabelPriority
         {
             get
             {
@@ -226,7 +251,7 @@ namespace gView.Framework.Cartography.Rendering
         {
             get
             {
-                return _labelPriority == labelPriority.always ? LabelRenderMode.RenderWithFeature : LabelRenderMode.UseRenderPriority;
+                return _labelPriority == RenderLabelPriority.Always ? LabelRenderMode.RenderWithFeature : LabelRenderMode.UseRenderPriority;
             }
         }
 
@@ -279,7 +304,7 @@ namespace gView.Framework.Cartography.Rendering
                 return;
             }
 
-            if (_howManyLabels == howManyLabels.one_per_name)
+            if (_howManyLabels == RenderHowManyLabels.OnPerName)
             {
                 if (_labelStrings.Contains(_symbol.Text.Trim()))
                 {
@@ -289,9 +314,9 @@ namespace gView.Framework.Cartography.Rendering
 
             if (feature.Shape is IPoint)
             {
-                if (disp.LabelEngine.TryAppend(disp, _symbol, feature.Shape, _labelPriority != labelPriority.always) == LabelAppendResult.Succeeded)
+                if (disp.LabelEngine.TryAppend(disp, _symbol, feature.Shape, _labelPriority != RenderLabelPriority.Always) == LabelAppendResult.Succeeded)
                 {
-                    if (_howManyLabels == howManyLabels.one_per_name)
+                    if (_howManyLabels == RenderHowManyLabels.OnPerName)
                     {
                         _labelStrings.Add(_symbol.Text.Trim());
                     }
@@ -307,14 +332,14 @@ namespace gView.Framework.Cartography.Rendering
                         continue;
                     }
 
-                    if (disp.LabelEngine.TryAppend(disp, _symbol, multiPoint[i], _labelPriority != labelPriority.always) == LabelAppendResult.Succeeded)
+                    if (disp.LabelEngine.TryAppend(disp, _symbol, multiPoint[i], _labelPriority != RenderLabelPriority.Always) == LabelAppendResult.Succeeded)
                     {
-                        if (_howManyLabels == howManyLabels.one_per_name)
+                        if (_howManyLabels == RenderHowManyLabels.OnPerName)
                         {
                             _labelStrings.Add(_symbol.Text.Trim());
                         }
 
-                        if (_howManyLabels == howManyLabels.one_per_part)
+                        if (_howManyLabels == RenderHowManyLabels.OnPerPart)
                         {
                             break;
                         }
@@ -383,15 +408,15 @@ namespace gView.Framework.Cartography.Rendering
                         bool found = false;
                         while (!found)
                         {
-                            if (disp.LabelEngine.TryAppend(disp, _symbol, displayPath, _labelPriority != labelPriority.always) == LabelAppendResult.Succeeded)
+                            if (disp.LabelEngine.TryAppend(disp, _symbol, displayPath, _labelPriority != RenderLabelPriority.Always) == LabelAppendResult.Succeeded)
                             {
                                 found = true;
-                                if (_howManyLabels == howManyLabels.one_per_name)
+                                if (_howManyLabels == RenderHowManyLabels.OnPerName)
                                 {
                                     _labelStrings.Add(_symbol.Text.Trim());
                                 }
 
-                                if (_howManyLabels != howManyLabels.one_per_part)
+                                if (_howManyLabels != RenderHowManyLabels.OnPerPart)
                                 {
                                     break;
                                 }
@@ -485,9 +510,9 @@ namespace gView.Framework.Cartography.Rendering
 
                             _symbol.Angle = (float)angle;
                         }
-                        if (disp.LabelEngine.TryAppend(disp, _symbol, p, _labelPriority != labelPriority.always) == LabelAppendResult.Succeeded)
+                        if (disp.LabelEngine.TryAppend(disp, _symbol, p, _labelPriority != RenderLabelPriority.Always) == LabelAppendResult.Succeeded)
                         {
-                            if (_howManyLabels == howManyLabels.one_per_name)
+                            if (_howManyLabels == RenderHowManyLabels.OnPerName)
                             {
                                 _labelStrings.Add(_symbol.Text.Trim());
                             }
@@ -560,9 +585,9 @@ namespace gView.Framework.Cartography.Rendering
                         pLine[0].AddPoint(point1);
                         pLine[0].AddPoint(point2);
 
-                        if (disp.LabelEngine.TryAppend(disp, _symbol, pLine, _labelPriority != labelPriority.always) == LabelAppendResult.Succeeded)
+                        if (disp.LabelEngine.TryAppend(disp, _symbol, pLine, _labelPriority != RenderLabelPriority.Always) == LabelAppendResult.Succeeded)
                         {
-                            if (_howManyLabels == howManyLabels.one_per_name)
+                            if (_howManyLabels == RenderHowManyLabels.OnPerName)
                             {
                                 _labelStrings.Add(_symbol.Text.Trim());
                             }
@@ -653,13 +678,13 @@ namespace gView.Framework.Cartography.Rendering
 
             switch (_howManyLabels)
             {
-                case howManyLabels.one_per_feature:
-                case howManyLabels.one_per_name:
+                case RenderHowManyLabels.OnPerFeature:
+                case RenderHowManyLabels.OnPerName:
                     for (int i = 0; i < pColl.PointCount; i++)
                     {
-                        if (disp.LabelEngine.TryAppend(disp, _symbol, pColl[i], _labelPriority != labelPriority.always) == LabelAppendResult.Succeeded)
+                        if (disp.LabelEngine.TryAppend(disp, _symbol, pColl[i], _labelPriority != RenderLabelPriority.Always) == LabelAppendResult.Succeeded)
                         {
-                            if (_howManyLabels == howManyLabels.one_per_name)
+                            if (_howManyLabels == RenderHowManyLabels.OnPerName)
                             {
                                 _labelStrings.Add(_symbol.Text.Trim());
                             }
@@ -676,10 +701,10 @@ namespace gView.Framework.Cartography.Rendering
                         }
                     }
                     break;
-                case howManyLabels.one_per_part:
-                    if (disp.LabelEngine.TryAppend(disp, _symbol, pColl, _labelPriority != labelPriority.always) == LabelAppendResult.Succeeded)
+                case RenderHowManyLabels.OnPerPart:
+                    if (disp.LabelEngine.TryAppend(disp, _symbol, pColl, _labelPriority != RenderLabelPriority.Always) == LabelAppendResult.Succeeded)
                     {
-                        if (_howManyLabels == howManyLabels.one_per_name)
+                        if (_howManyLabels == RenderHowManyLabels.OnPerName)
                         {
                             _labelStrings.Add(_symbol.Text.Trim());
                         }
@@ -704,8 +729,8 @@ namespace gView.Framework.Cartography.Rendering
 
             _symbol = (ITextSymbol)stream.Load("Symbol");
 
-            _howManyLabels = (howManyLabels)stream.Load("howManyLabels", (int)howManyLabels.one_per_feature);
-            _labelPriority = (labelPriority)stream.Load("labelPriority", (int)labelPriority.normal);
+            _howManyLabels = (RenderHowManyLabels)stream.Load("howManyLabels", (int)RenderHowManyLabels.OnPerFeature);
+            _labelPriority = (RenderLabelPriority)stream.Load("labelPriority", (int)RenderLabelPriority.Normal);
             _lineLabelling = (CartographicLineLabeling)stream.Load("lineLabelling", (int)CartographicLineLabeling.Parallel);
 
             _symbolRotation = (SymbolRotation)stream.Load("SymbolRotation", _symbolRotation, _symbolRotation);
@@ -811,13 +836,13 @@ namespace gView.Framework.Cartography.Rendering
             {
                 switch (_labelPriority)
                 {
-                    case labelPriority.always:
+                    case RenderLabelPriority.Always:
                         return 0;
-                    case labelPriority.high:
+                    case RenderLabelPriority.High:
                         return 100;
-                    case labelPriority.normal:
+                    case RenderLabelPriority.Normal:
                         return 0;
-                    case labelPriority.low:
+                    case RenderLabelPriority.Low:
                         return -100;
                 }
                 return 0;

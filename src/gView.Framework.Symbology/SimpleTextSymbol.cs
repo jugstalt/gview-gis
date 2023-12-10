@@ -33,6 +33,7 @@ namespace gView.Framework.Symbology
             _font = Current.Engine.CreateFont("Arial", 10);
             _brush = Current.Engine.CreateSolidBrush(ArgbColor.Black);
 
+            this.SymbolSmoothingMode = SymbolSmoothing.AntiAlias;
             this.ShowInTOC = false;
         }
 
@@ -41,6 +42,7 @@ namespace gView.Framework.Symbology
             _font = font;
             _brush = Current.Engine.CreateSolidBrush(color);
 
+            this.SymbolSmoothingMode = SymbolSmoothing.AntiAlias;
             this.ShowInTOC = false;
         }
 

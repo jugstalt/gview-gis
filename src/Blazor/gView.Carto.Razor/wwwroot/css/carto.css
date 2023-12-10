@@ -263,6 +263,7 @@
 
 .gview-selected-item {
     background-color: var(--mud-palette-primary) !important;
+    color: var(--mud-palette-primary-text) !important;
 }
 
     .carto-symbol-composer-stack-item.selected {

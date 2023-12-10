@@ -1,4 +1,5 @@
 ﻿using gView.Framework.Cartography.UI;
+using gView.Framework.Core.Carto;
 using gView.Framework.Core.Symbology;
 using gView.GraphicsEngine;
 using System;

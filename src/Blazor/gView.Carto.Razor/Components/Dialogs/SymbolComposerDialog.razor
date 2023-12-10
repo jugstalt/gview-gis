@@ -165,7 +165,7 @@
         CreateSymbolStack(Model.Symbol);
 
         _creatableSymbolTypes = PluginManager.GetPluginTypes(Plugins.Type.ISymbol)
-                                             .Where(t => Model.Symbol.HasSameSymbolBaseType(t))
+                                             .Where(t => Model.Symbol.HasSameSymbolBaseType(t) && !(t.IsAssignableTo(typeof(ISymbolCollection))))
                                              .ToArray();
     }
 

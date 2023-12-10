@@ -282,13 +282,13 @@ namespace gView.Framework.AXL
                 switch (axl.Attributes["howmanylabels"].Value.ToLower())
                 {
                     case "one_label_per_name":
-                        renderer.HowManyLabels = Cartography.Rendering.SimpleLabelRenderer.howManyLabels.one_per_name;
+                        renderer.HowManyLabels = Cartography.Rendering.SimpleLabelRenderer.RenderHowManyLabels.OnPerName;
                         break;
                     case "one_label_per_shape":
-                        renderer.HowManyLabels = Cartography.Rendering.SimpleLabelRenderer.howManyLabels.one_per_feature;
+                        renderer.HowManyLabels = Cartography.Rendering.SimpleLabelRenderer.RenderHowManyLabels.OnPerFeature;
                         break;
                     case "one_label_per_part":
-                        renderer.HowManyLabels = Cartography.Rendering.SimpleLabelRenderer.howManyLabels.one_per_part;
+                        renderer.HowManyLabels = Cartography.Rendering.SimpleLabelRenderer.RenderHowManyLabels.OnPerPart;
                         break;
                 }
             }
@@ -297,16 +297,16 @@ namespace gView.Framework.AXL
                 switch (axl.Attributes["labelweight"].Value.ToLower())
                 {
                     case "no_weight":
-                        renderer.LabelPriority = Cartography.Rendering.SimpleLabelRenderer.labelPriority.low;
+                        renderer.LabelPriority = Cartography.Rendering.SimpleLabelRenderer.RenderLabelPriority.Low;
                         break;
                     case "med_weight":
-                        renderer.LabelPriority = Cartography.Rendering.SimpleLabelRenderer.labelPriority.normal;
+                        renderer.LabelPriority = Cartography.Rendering.SimpleLabelRenderer.RenderLabelPriority.Normal;
                         break;
                     case "high_weight":
-                        renderer.LabelPriority = Cartography.Rendering.SimpleLabelRenderer.labelPriority.high;
+                        renderer.LabelPriority = Cartography.Rendering.SimpleLabelRenderer.RenderLabelPriority.High;
                         break;
                     case "always":
-                        renderer.LabelPriority = Cartography.Rendering.SimpleLabelRenderer.labelPriority.always;
+                        renderer.LabelPriority = Cartography.Rendering.SimpleLabelRenderer.RenderLabelPriority.Always;
                         break;
                 }
             }
@@ -538,28 +538,28 @@ namespace gView.Framework.AXL
                 sb.Append(" field=\"" + renderer.FieldName + "\"");
                 switch (renderer.HowManyLabels)
                 {
-                    case Cartography.Rendering.SimpleLabelRenderer.howManyLabels.one_per_name:
+                    case Cartography.Rendering.SimpleLabelRenderer.RenderHowManyLabels.OnPerName:
                         sb.Append(@" howmanylabels=""one_label_per_name""");
                         break;
-                    case Cartography.Rendering.SimpleLabelRenderer.howManyLabels.one_per_feature:
+                    case Cartography.Rendering.SimpleLabelRenderer.RenderHowManyLabels.OnPerFeature:
                         sb.Append(@" howmanylabels=""one_label_per_shape""");
                         break;
-                    case Cartography.Rendering.SimpleLabelRenderer.howManyLabels.one_per_part:
+                    case Cartography.Rendering.SimpleLabelRenderer.RenderHowManyLabels.OnPerPart:
                         sb.Append(@" howmanylabels=""one_label_per_part""");
                         break;
                 }
                 switch (renderer.LabelPriority)
                 {
-                    case Cartography.Rendering.SimpleLabelRenderer.labelPriority.low:
+                    case Cartography.Rendering.SimpleLabelRenderer.RenderLabelPriority.Low:
                         sb.Append(@" labelweight =""no_weight""");
                         break;
-                    case Cartography.Rendering.SimpleLabelRenderer.labelPriority.normal:
+                    case Cartography.Rendering.SimpleLabelRenderer.RenderLabelPriority.Normal:
                         sb.Append(@" labelweight =""med_weight""");
                         break;
-                    case Cartography.Rendering.SimpleLabelRenderer.labelPriority.high:
+                    case Cartography.Rendering.SimpleLabelRenderer.RenderLabelPriority.High:
                         sb.Append(@" labelweight =""high_weight""");
                         break;
-                    case Cartography.Rendering.SimpleLabelRenderer.labelPriority.always:
+                    case Cartography.Rendering.SimpleLabelRenderer.RenderLabelPriority.Always:
                         sb.Append(@" labelweight =""always""");
                         break;
                 }
