@@ -3,7 +3,6 @@ using gView.Framework.Core.Symbology;
 using gView.Framework.Core.UI;
 using System.Collections.Generic;
 using System.Linq;
-using static gView.Framework.Network.Algorthm.RoadBook;
 
 namespace gView.Carto.Core.Extensions;
 
@@ -26,21 +25,21 @@ static public class TocElementExtensions
             }
         }
 
-        return items;
+        return items.Where(item => item is not null).ToArray();
     }
 
     static public bool SetLegendItemSymbol(this ITocElement tocElement, ISymbol symbol, ISymbol newSymbol)
     {
         if (tocElement?.Layers is not null)
         {
-            foreach (var legendGroup in tocElement.Layers.Where(l => l is IFeatureLayer fLayer && fLayer.FeatureRenderer is ILegendGroup)  
-                                                         .Select(l=> ((IFeatureLayer)l).FeatureRenderer as ILegendGroup))
+            foreach (var legendGroup in tocElement.Layers.Where(l => l is IFeatureLayer fLayer && fLayer.FeatureRenderer is ILegendGroup)
+                                                         .Select(l => ((IFeatureLayer)l).FeatureRenderer as ILegendGroup))
             {
-                if(legendGroup == null)
+                if (legendGroup == null)
                 {
                     continue;
                 }
-                for(int i=0;i<legendGroup.LegendItemCount;i++)
+                for (int i = 0; i < legendGroup.LegendItemCount; i++)
                 {
                     var legendItem = legendGroup.LegendItem(i);
                     if (legendItem == symbol)

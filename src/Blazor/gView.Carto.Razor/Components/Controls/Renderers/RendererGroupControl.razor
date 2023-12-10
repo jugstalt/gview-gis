@@ -1,14 +1,16 @@
+@using System.ComponentModel
 @using gView.Framework.Cartography.Rendering.Abstractions
+
 @inject PluginManagerService PluginManager
 @inject ICartoDocumentService CartoDocument
 
 @inherits BaseHandler
-@typeparam TItem where TItem : IRendererGroupItem
+@typeparam TItem where TItem : IRendererGroupItem, ICopy
 @typeparam TRenderer where TRenderer : IRenderer
 
-@if(_editRenderer is not null)
+@if(_editRendererItem is not null)
 {
-    <GvCard Title="@_editRenderer.Name">
+    <GvCard Title="@_editRendererItem.Renderer?.Name">
         <GvCardContent>
             @if (_propertyPageRenderFragment is not null)
             {
@@ -18,7 +20,7 @@
         <GvCardActions>
             <MudButton Color="Color.Primary"
                        Variant="Variant.Filled"
-                       OnClick="() => _editRenderer = default(TRenderer)">Done</MudButton>
+                       OnClick="EditRendererCommit">Done</MudButton>
         </GvCardActions>
     </GvCard>
 }
@@ -32,7 +34,22 @@ else if(_editItem is not null)
         <GvCardActions>
             <MudButton Color="Color.Primary"
                        Variant="Variant.Filled"
-                       OnClick="() => _editItem = default(TItem)">Done</MudButton>
+                       OnClick="EditRendererItemCommit">Done</MudButton>
+        </GvCardActions>
+    </GvCard>
+}
+else if(_deleteItem is not null)
+{
+    <GvCard Title="@_deleteItem.ToString()">
+        <GvCardContent>
+            <MudText Typo="Typo.body1">Delete this item?</MudText>
+        </GvCardContent>
+        <GvCardActions>
+            <MudButton Variant="Variant.Filled"
+                       OnClick="() => _deleteItem = default(TItem)">Cancel</MudButton>
+            <MudButton Color="Color.Secondary"
+                       Variant="Variant.Filled"
+                       OnClick="DeleteRendererItemCommmit">Yes, Delete</MudButton>
         </GvCardActions>
     </GvCard>
 }
@@ -72,13 +89,16 @@ else
                                    Color="Color.Primary"
                                    aria-label="edit"></MudIconButton>
                 </GvGridItem>
-                <GvGridItem Span="1">
-                    <MudIconButton Icon="@Icons.Material.Filled.Settings"
+                @if (_hasItemProperties)
+                {
+                    <GvGridItem Span="1">
+                        <MudIconButton Icon="@Icons.Material.Filled.Settings"
                                    OnClick="() => EditRendererItem(context)"
                                    Size="MudBlazor.Size.Small"
                                    Color="Color.Primary"
                                    aria-label="settings"></MudIconButton>
-                </GvGridItem>
+                    </GvGridItem>
+                }
                 <GvGridItem Span="1">
                     <MudIconButton Icon="@Icons.Material.Filled.Delete"
                                     OnClick="() => DeleteRendererItem(context)"
@@ -86,23 +106,31 @@ else
                                     Color="Color.Secondary"
                                     aria-label="delete"></MudIconButton>
                 </GvGridItem>
-                <GvGridItem Span="9">
+                <GvGridItem Span="(_hasItemProperties ? 9 : 10)">
                     @(context.ToString())
                 </GvGridItem>
             </GvGrid>
         </ItemRenderer>
     </MudDropContainer>
 }
+
 @code {
     [Parameter] public List<TItem> RendererItems { get; set; } = [];
     [Parameter] public IFeatureLayer? Layer { get; set; }
+    [Parameter] public EventCallback<TRenderer> OnAddNewRendererItem { get; set; }
+    [Parameter] public EventCallback<TItem> OnRendererChanged{ get; set; }
+    [Parameter] public EventCallback<TItem> OnRendererItemChanged{ get; set; }
+    [Parameter] public EventCallback<List<TItem>> OnRendererItemsChanged { get; set; }
 
     private TRenderer[]? _availableRenderers;
     private IPropertyPageDefinition[]? _propertyPageDefs;
     private RenderFragment? _propertyPageRenderFragment;
 
-    private TRenderer? _editRenderer = default(TRenderer);
+    private bool _hasItemProperties;
+
+    private TItem? _editRendererItem = default(TItem);
     private TItem? _editItem = default(TItem);
+    private TItem? _deleteItem = default(TItem);
 
     async protected override Task OnParametersSetAsync()
     {
@@ -126,43 +154,46 @@ else
             _propertyPageDefs = PluginManager.GetPlugins<IPropertyPageDefinition>(gView.Framework.Common.Plugins.Type.IPropertyPageDefinition)
                                              .Where(p => p.InterfaceType == typeof(TRenderer))
                                              .ToArray();
+
+            _hasItemProperties = typeof(TItem)
+                .GetProperties()
+                .Any(p => p.GetCustomAttribute<BrowsableAttribute>()?.Browsable == true);
         }
     }
 
-    private void AddRendererItem(TRenderer renderer)
+    private Task AddRendererItem(TRenderer renderer) => HandleAsync(async () =>
     {
-        var rendererItem = Activator.CreateInstance<TItem>();
-        rendererItem.Renderer = (TRenderer)renderer.Clone();
+        var newRenderer = (TRenderer?)renderer.Clone();
 
-        if(rendererItem.Renderer is not null) 
+        if (newRenderer is not null)
         {
-            if(rendererItem.Renderer is IDefault defaultRenderer)
+            if (newRenderer is IDefault defaultRenderer)
             {
-                defaultRenderer.DefaultIfEmpty(Layer);
+                await defaultRenderer.DefaultIfEmpty(Layer);
             }
 
-            RendererItems.Add(rendererItem);
+            await OnAddNewRendererItem.InvokeAsync(newRenderer);
 
             StateHasChanged();
         }
-    }
+    });
 
-    private void EditRenderer(TItem rendererItem)
+    private void EditRenderer(TItem rendererItem) => Handle(() =>
     {
-        _editRenderer = (TRenderer?)rendererItem.Renderer;
+        _editRendererItem = rendererItem;
         _propertyPageRenderFragment = null;
 
         if (Layer is not null)
         {
             var layerClone = (Layer as gView.Framework.Data.Layer)?.PersistedClone();
-            var propertyPage = _propertyPageDefs?.FirstOrDefault(p => p.InstanceType == _editRenderer?.GetType());
-            if (layerClone is IFeatureLayer fLayer &&  propertyPage is not null)
+            var propertyPage = _propertyPageDefs?.FirstOrDefault(p => p.InstanceType == _editRendererItem?.Renderer?.GetType());
+            if (layerClone is IFeatureLayer fLayer && propertyPage is not null)
             {
-                if (_editRenderer is IFeatureRenderer fRenderer)
+                if (_editRendererItem.Renderer is IFeatureRenderer fRenderer)
                 {
                     fLayer.FeatureRenderer = fRenderer;
                 }
-                else if(_editRenderer is ILabelRenderer lRenderer)
+                else if (_editRendererItem.Renderer is ILabelRenderer lRenderer)
                 {
                     fLayer.LabelRenderer = lRenderer;
                 }
@@ -177,20 +208,82 @@ else
                 });
             }
         }
-    }
+    });
+
+    private Task EditRendererCommit() => HandleAsync(async () =>
+    {
+        await OnRendererChanged.InvokeAsync(_editRendererItem);
+
+        _editRendererItem = default(TItem);
+    });
 
     private void EditRendererItem(TItem rendererItem)
     {
         _editItem = rendererItem;
     }
 
+    private Task EditRendererItemCommit() => HandleAsync(async () =>
+    {
+        await OnRendererItemChanged.InvokeAsync(_editItem);
+        _editItem = default(TItem);
+    });
+
     private void DeleteRendererItem(TItem rendererItem)
     {
-        RendererItems.Remove(rendererItem);
+        _deleteItem = rendererItem;
     }
 
-    async private Task ReorderRendererItems(MudItemDropInfo<TItem> dropInfo)
+    private Task DeleteRendererItemCommmit() => HandleAsync(() =>
     {
-    
-    }
+        if (_deleteItem is not null)
+        {
+            RendererItems.Remove(_deleteItem);
+            _deleteItem = default(TItem);
+
+            return OnRendererItemsChanged.InvokeAsync(RendererItems);
+        }
+
+        return Task.CompletedTask;
+    });
+
+    private Task ReorderRendererItems(MudItemDropInfo<TItem> dropInfo) => HandleAsync(async () =>
+    {
+        if (dropInfo.Item is null)
+        {
+            return;
+        }
+
+        //
+        // Completely rebuild a new list
+        // with new instances of items (.Copy())
+        // otherwise the list will not refreshed correctly
+        // in the dropzone
+        //
+        var rendererItems = RendererItems;
+        RendererItems = new();
+
+        bool added = false;
+        foreach (var item in rendererItems)
+        {
+            if (RendererItems.Count == dropInfo.IndexInZone)
+            {
+                RendererItems.Add((TItem)dropInfo.Item.Copy());
+                added = true;
+            }
+            if (item.Equals(dropInfo.Item))
+            {
+                continue;
+            }
+
+            RendererItems.Add((TItem)item.Copy());
+        }
+        if (!added)
+        {
+            RendererItems.Add((TItem)dropInfo.Item.Copy());
+        }
+
+        await OnRendererItemsChanged.InvokeAsync(RendererItems);
+
+        StateHasChanged();
+    });
 }

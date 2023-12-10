@@ -1,6 +1,6 @@
 ﻿using gView.DataExplorer.Plugins.Extensions;
 using gView.Framework.Blazor.Services.Abstraction;
-using gView.Framework.Core.system;
+using gView.Framework.Core.Common;
 using gView.Framework.DataExplorer;
 using gView.Framework.DataExplorer.Abstraction;
 using System.Threading.Tasks;

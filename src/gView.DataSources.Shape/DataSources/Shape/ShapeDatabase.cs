@@ -3,7 +3,7 @@ using gView.Framework.Core.Data.Cursors;
 using gView.Framework.Core.Data.Filters;
 using gView.Framework.Core.FDB;
 using gView.Framework.Core.Geometry;
-using gView.Framework.Core.system;
+using gView.Framework.Core.Common;
 using gView.Framework.Data;
 using System;
 using System.Collections.Generic;

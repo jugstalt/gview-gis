@@ -1,7 +1,7 @@
 ﻿using gView.Framework.Carto.Abstraction;
 using gView.Framework.Cartography.Rendering;
 using gView.Framework.Core.Carto;
-using gView.Framework.Core.system;
+using gView.Framework.Core.Common;
 
 namespace gView.Carto.Plugins.PropertyPages.Renderers;
 

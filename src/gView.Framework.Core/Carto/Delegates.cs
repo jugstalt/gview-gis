@@ -1,7 +1,7 @@
 using gView.Framework.Core.Data;
 using gView.Framework.Core.Geometry;
 using gView.Framework.Core.MapServer;
-using gView.Framework.Core.system;
+using gView.Framework.Core.Common;
 using System.Collections.Generic;
 
 namespace gView.Framework.Core.Carto

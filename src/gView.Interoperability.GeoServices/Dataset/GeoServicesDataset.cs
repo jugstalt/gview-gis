@@ -4,7 +4,7 @@ using gView.Framework.Core.FDB;
 using gView.Framework.Core.Geometry;
 using gView.Framework.Core.IO;
 using gView.Framework.Core.MapServer;
-using gView.Framework.Core.system;
+using gView.Framework.Core.Common;
 using gView.Framework.Data;
 using gView.Framework.Data.Metadata;
 using gView.Framework.Geometry;

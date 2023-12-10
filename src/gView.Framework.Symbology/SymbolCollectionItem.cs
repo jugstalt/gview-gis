@@ -1,6 +1,6 @@
 ﻿using gView.Framework.Core.IO;
 using gView.Framework.Core.Symbology;
-using gView.Framework.Core.system;
+using gView.Framework.Core.Common;
 
 namespace gView.Framework.Symbology
 {

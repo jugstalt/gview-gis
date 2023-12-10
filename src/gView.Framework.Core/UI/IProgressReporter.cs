@@ -1,4 +1,4 @@
-﻿using gView.Framework.Core.system;
+﻿using gView.Framework.Core.Common;
 
 namespace gView.Framework.Core.UI
 {

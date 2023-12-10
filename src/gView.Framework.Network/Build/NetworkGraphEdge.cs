@@ -1,4 +1,4 @@
-﻿using gView.Framework.Core.system;
+﻿using gView.Framework.Core.Common;
 using System.Collections.Generic;
 
 namespace gView.Framework.Network.Build

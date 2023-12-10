@@ -6,7 +6,7 @@ using gView.Framework.Core.Geometry;
 using gView.Framework.Core.IO;
 using gView.Framework.Core.Network;
 using gView.Framework.Core.Symbology;
-using gView.Framework.Core.system;
+using gView.Framework.Core.Common;
 using gView.Framework.Core.UI;
 using gView.Framework.Common;
 using System;

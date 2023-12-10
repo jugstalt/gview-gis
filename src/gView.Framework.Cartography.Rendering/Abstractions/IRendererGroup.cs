@@ -5,12 +5,14 @@ namespace gView.Framework.Cartography.Rendering.Abstractions
 {
     public interface IRendererGroup : IEnumerable<IRendererGroupItem>
     {
-        void Add(IRendererGroupItem renderer);
-        int IndexOf(IRendererGroupItem renderer);
-        bool Remove(IRendererGroupItem renderer);
+        void Add(IRendererGroupItem rendererItem);
+        int IndexOf(IRendererGroupItem rendererItem);
+        bool Remove(IRendererGroupItem rendererItem);
         void RemoveAt(int index);
-        void Insert(int index, IRendererGroupItem renderer);
+        void Insert(int index, IRendererGroupItem rendererItem);
         int Count { get; }
+
+        void Clear();
 
         IRendererGroupItem Create(IRenderer renderer);
 

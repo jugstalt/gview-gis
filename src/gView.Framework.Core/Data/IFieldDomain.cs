@@ -3,7 +3,7 @@
     //public enum getFeatureQueryType { Geometry, Attributes, All }
 
     //public enum FieldDomainType { Range, Values, Lookup }
-    public interface IFieldDomain : IO.IPersistable, system.IClone
+    public interface IFieldDomain : IO.IPersistable, Common.IClone
     {
         string Name { get; }
     }

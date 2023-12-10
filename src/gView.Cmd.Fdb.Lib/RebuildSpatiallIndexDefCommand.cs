@@ -6,7 +6,7 @@ using gView.Cmd.Fdb.Lib.SpatialIndex;
 using gView.DataSources.Fdb.MSAccess;
 using gView.Framework.Core.Data;
 using gView.Framework.Core.Geometry;
-using gView.Framework.Core.system;
+using gView.Framework.Core.Common;
 using gView.Framework.Data;
 using System;
 using System.Collections.Generic;

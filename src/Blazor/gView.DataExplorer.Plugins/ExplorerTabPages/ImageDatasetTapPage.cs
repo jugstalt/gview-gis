@@ -5,7 +5,7 @@ using gView.DataSources.Fdb.PostgreSql;
 using gView.DataSources.Fdb.SQLite;
 using gView.Framework.Core.Data;
 using gView.Framework.Core.Data.Cursors;
-using gView.Framework.Core.system;
+using gView.Framework.Core.Common;
 using gView.Framework.Data.Filters;
 using gView.Framework.DataExplorer.Abstraction;
 using gView.Framework.Common;

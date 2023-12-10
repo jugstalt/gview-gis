@@ -1,5 +1,5 @@
 ﻿using gView.Framework.Core.Exceptions;
-using gView.Framework.Core.system;
+using gView.Framework.Core.Common;
 using gView.Framework.Common;
 using gView.Server.Services.MapServer;
 using System;

@@ -4,7 +4,7 @@ using gView.DataExplorer.Plugins.Extensions;
 using gView.DataExplorer.Razor.Components.Dialogs.Models;
 using gView.Framework.Blazor;
 using gView.Framework.Blazor.Services.Abstraction;
-using gView.Framework.Core.system;
+using gView.Framework.Core.Common;
 using gView.Framework.DataExplorer.Abstraction;
 using gView.Server.Clients;
 using System;

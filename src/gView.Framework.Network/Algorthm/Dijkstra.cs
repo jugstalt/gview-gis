@@ -1,5 +1,5 @@
 ﻿using gView.Framework.Core.Network;
-using gView.Framework.Core.system;
+using gView.Framework.Core.Common;
 using gView.Framework.Core.UI;
 using System.Collections.Generic;
 

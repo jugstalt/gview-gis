@@ -5,7 +5,7 @@ using gView.Framework.Core.Data.Filters;
 using gView.Framework.Core.FDB;
 using gView.Framework.Core.Geometry;
 using gView.Framework.Core.Network;
-using gView.Framework.Core.system;
+using gView.Framework.Core.Common;
 using gView.Framework.Core.UI;
 using gView.Framework.Data;
 using gView.Framework.Data.Filters;

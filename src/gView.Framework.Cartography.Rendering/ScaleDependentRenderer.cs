@@ -5,7 +5,7 @@ using gView.Framework.Core.Data;
 using gView.Framework.Core.Data.Filters;
 using gView.Framework.Core.IO;
 using gView.Framework.Core.Symbology;
-using gView.Framework.Core.system;
+using gView.Framework.Core.Common;
 using gView.Framework.Core.UI;
 using gView.Framework.Common;
 using System;
@@ -717,6 +717,16 @@ namespace gView.Framework.Cartography.Rendering
                 {
                     base.Add(new ScaleRenderer(featureRenderer));
                 }
+            }
+
+            public new void Clear()
+            {
+                foreach(var item in this)
+                {
+                    item.Renderer?.Release();
+                }
+
+                base.Clear();
             }
 
             public IRendererGroupItem Create(IRenderer renderer)

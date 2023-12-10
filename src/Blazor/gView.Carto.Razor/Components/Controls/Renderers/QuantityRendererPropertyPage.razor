@@ -11,7 +11,9 @@
 {
     <KeySymbolListControl TKey="RangeClass"
                           KeySymbols="@(CurrentKeySymbolsList() ?? [])"
-                          OnKeySymbolsChanged="SymbolsListChanged">
+                          AllowReorder="false"
+                          OnKeySymbolsChanged="SymbolsListChanged"
+                          OnKeySymbolChanged="SymbolChanged">
         <ListItemTools>
             @if(_addQuantityItem is null && _wizardModel is null) 
             {
@@ -237,6 +239,16 @@
         }
 
         _dictKeySymbols[_renderer.ValueField] = keySymbols;
+        ApplyChanges();
+    }
+
+    private void SymbolChanged(KeySymbol<RangeClass> keySymbol)
+    {
+        if (_renderer is null)
+        {
+            return;
+        }
+
         ApplyChanges();
     }
 

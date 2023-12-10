@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Text;
-using gView.Framework.Core.system;
+using gView.Framework.Core.Common;
 
 namespace gView.Framework.Common
 {

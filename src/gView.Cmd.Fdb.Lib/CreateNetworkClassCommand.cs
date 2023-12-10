@@ -7,7 +7,7 @@ using gView.DataSources.Fdb.MSAccess;
 using gView.Framework.Core.Data;
 using gView.Framework.Core.Geometry;
 using gView.Framework.Core.Network;
-using gView.Framework.Core.system;
+using gView.Framework.Core.Common;
 using gView.Framework.Core.UI;
 using gView.Framework.IO;
 using gView.Framework.Common;

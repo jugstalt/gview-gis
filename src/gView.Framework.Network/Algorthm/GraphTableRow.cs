@@ -1,6 +1,6 @@
 ﻿using gView.Framework.Core.IO;
 using gView.Framework.Core.Network;
-using gView.Framework.Core.system;
+using gView.Framework.Core.Common;
 using System;
 using System.Data;
 

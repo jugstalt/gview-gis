@@ -1,7 +1,7 @@
 ﻿using gView.Framework.Core.Carto;
 using gView.Framework.Core.Exceptions;
 using gView.Framework.Core.IO;
-using gView.Framework.Core.system;
+using gView.Framework.Core.Common;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;

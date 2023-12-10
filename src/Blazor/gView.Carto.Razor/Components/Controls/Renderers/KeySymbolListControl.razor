@@ -31,7 +31,7 @@
             {
                 <div style="height:63vh;overflow-y:auto;overflow-x:hidden;white-space:nowrap">
                     <MudDropZone T="KeySymbol<TKey>"
-                                 AllowReorder="true">
+                                 AllowReorder="AllowReorder">
                         @if (ListItemTools is not null)
                         {
                             @ListItemTools
@@ -60,11 +60,11 @@
                     </div>
                 </GvGridItem>
                 <GvGridItem Span="6">
-                    @if (_editLabelKey != null)
+                    @if (_editLabelKey is not null && _editLabelKey.Equals(context.Key))
                     {
                         <InlineInput @bind-Value="@context.LegendLabel"
-                                     OnEnter="() => _editLabelKey = default"
-                                     OnBlur="() => _editLabelKey = default"/>
+                                     OnEnter="OnLegendItemChanged"
+                                     OnBlur="OnLegendItemChanged " />
                     }
                     else
                     {
@@ -76,12 +76,13 @@
             </GvGrid>
         </ItemRenderer>
     </MudDropContainer>
-    
 }
 
 @code {
     [Parameter] public RenderFragment? ListItemTools { get; set; }
+    [Parameter] public bool AllowReorder { get; set; } = true;
     [Parameter] public List<KeySymbol<TKey>>? KeySymbols { get; set; }
+    [Parameter] public EventCallback<KeySymbol<TKey>> OnKeySymbolChanged { get; set; }
     [Parameter] public EventCallback<List<KeySymbol<TKey>>> OnKeySymbolsChanged { get; set; }
 
     private TKey? _composeSymbolKey = default;
@@ -120,6 +121,19 @@
         }
     });
 
+    private Task OnLegendItemChanged() => HandleAsync(() =>
+    {
+        if (_editLabelKey is not null && KeySymbols is not null)
+        {
+            var keySymbol = KeySymbols?.FirstOrDefault(k => k.Key?.Equals(_editLabelKey) == true);
+            _editLabelKey = default(TKey);
+            
+            return OnKeySymbolChanged.InvokeAsync(keySymbol);
+        }
+       
+        return Task.CompletedTask;
+    });
+
     private Task DeleteItem(KeySymbol<TKey> keySymbol) => HandleAsync(() =>
     {
         KeySymbols?.Remove(keySymbol);
@@ -129,7 +143,7 @@
 
     async Task ReorderItems(MudItemDropInfo<KeySymbol<TKey>> dropInfo)
     {
-        if(KeySymbols is null || dropInfo.Item is null)
+        if(AllowReorder == false || KeySymbols is null || dropInfo.Item is null)
         {
             return;
         }

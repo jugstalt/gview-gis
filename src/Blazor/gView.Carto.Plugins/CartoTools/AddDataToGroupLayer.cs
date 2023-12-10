@@ -7,7 +7,7 @@ using gView.Framework.Blazor.Services.Abstraction;
 using gView.Framework.Carto;
 using gView.Framework.Carto.Abstraction;
 using gView.Framework.Core.Data;
-using gView.Framework.Core.system;
+using gView.Framework.Core.Common;
 using gView.Framework.Data;
 using gView.Framework.Common;
 

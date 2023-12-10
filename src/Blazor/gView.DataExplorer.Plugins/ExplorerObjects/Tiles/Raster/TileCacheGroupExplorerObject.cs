@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace gView.DataExplorer.Plugins.ExplorerObjects.Tiles.Raster;
 
-[Framework.Core.system.RegisterPlugIn("0d217509-0df9-4b8d-bd3b-b7390de5abde")]
+[Framework.Core.Common.RegisterPlugIn("0d217509-0df9-4b8d-bd3b-b7390de5abde")]
 public class TileCacheGroupExplorerObject : ExplorerParentObject,
                                             ITilesExplorerGroupObject
 {

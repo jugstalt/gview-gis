@@ -1,7 +1,7 @@
 ﻿using gView.Blazor.Models.Extensions;
 using gView.Blazor.Models.Table;
 using gView.Framework.Core.Data;
-using gView.Framework.Core.system;
+using gView.Framework.Core.Common;
 using gView.Framework.DataExplorer.Abstraction;
 using gView.Framework.Common;
 using System;

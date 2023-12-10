@@ -3,7 +3,7 @@ using gView.Framework.Core.Carto;
 using gView.Framework.Core.Data;
 using gView.Framework.Core.Geometry;
 using gView.Framework.Core.MapServer;
-using gView.Framework.Core.system;
+using gView.Framework.Core.Common;
 using gView.Framework.Data;
 using gView.Framework.Geometry;
 using gView.Framework.IO;

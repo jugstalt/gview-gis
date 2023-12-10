@@ -12,7 +12,8 @@
 {
     <KeySymbolListControl TKey="string"
                           KeySymbols="@(CurrentKeySymbolsList() ?? [])"
-                          OnKeySymbolsChanged="SymbolsListChanged">
+                          OnKeySymbolsChanged="SymbolsListChanged"
+                          OnKeySymbolChanged="SymbolChanged">
         <ListItemTools>
             <GvGrid ColumnCount="2">
                 <GvGridItem>
@@ -190,7 +191,17 @@
             return;
         }
 
-        _dictKeySymbols[_renderer.ValueField1] = keySymbols;
+        _dictKeySymbols[CurrentKey()] = keySymbols;
+        ApplyChanges();
+    }
+
+    private void SymbolChanged(KeySymbol<string> keySymbol)
+    {
+        if (_renderer is null)
+        {
+            return;
+        }
+
         ApplyChanges();
     }
 
