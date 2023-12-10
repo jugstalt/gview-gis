@@ -1,22 +1,24 @@
 using gView.Framework.Cartography.Rendering.Abstractions;
-using gView.Framework.Cartography.Rendering.UI;
+using gView.Framework.Common;
 using gView.Framework.Core.Carto;
+using gView.Framework.Core.Common;
 using gView.Framework.Core.Data;
 using gView.Framework.Core.Data.Filters;
 using gView.Framework.Core.IO;
 using gView.Framework.Core.Symbology;
-using gView.Framework.Core.Common;
 using gView.Framework.Core.UI;
-using gView.Framework.Common;
 using System;
 using System.Collections.Generic;
-using System.Reflection;
 using System.Threading.Tasks;
 
 namespace gView.Framework.Cartography.Rendering
 {
     [RegisterPlugIn("4221EF57-E89E-4035-84EB-D3FA163FDE0C")]
-    public class ScaleDependentLabelRenderer : ILabelRenderer, ILabelGroupRenderer, ILegendGroup, IDefault
+    public class ScaleDependentLabelRenderer :
+        ILabelRenderer,
+        IGroupRenderer,
+        ILegendGroup,
+        IDefault
     {
         private RendererList _renderers;
 
@@ -27,7 +29,7 @@ namespace gView.Framework.Cartography.Rendering
 
         #region IGroupRenderer Member
 
-        public ILabelRendererGroup Renderers
+        public IRendererGroup RendererItems
         {
             get { return _renderers; }
         }
@@ -118,9 +120,9 @@ namespace gView.Framework.Cartography.Rendering
         {
             ScaleDependentLabelRenderer scaleDependentRenderer = new ScaleDependentLabelRenderer();
 
-            foreach (ILabelRenderer renderer in Renderers)
+            foreach (ILabelRenderer renderer in RendererItems)
             {
-                scaleDependentRenderer.Renderers.Add(renderer.Clone() as ILabelRenderer);
+                scaleDependentRenderer.RendererItems.Add(renderer.Clone() as ScaleRenderer);
             }
 
             return scaleDependentRenderer;
@@ -140,7 +142,7 @@ namespace gView.Framework.Cartography.Rendering
                     continue;
                 }
 
-                scaledependentRenderer._renderers.Add(renderer.Clone(options) as ILabelRenderer);
+                scaledependentRenderer._renderers.Add(renderer.Clone(options) as ScaleRenderer);
             }
 
             return scaledependentRenderer;
@@ -233,24 +235,39 @@ namespace gView.Framework.Cartography.Rendering
 
         #endregion
 
-        private class RendererList : List<ILabelRenderer>, ILabelRendererGroup
+        private class RendererList : List<IRendererGroupItem>, IRendererGroup
         {
-            public new void Add(ILabelRenderer renderer)
+            public new void Add(IRendererGroupItem item)
             {
-                if (renderer == null)
+                if (item == null)
                 {
                     return;
                 }
 
-                if (renderer is ScaleRenderer)
+                if (item is ScaleRenderer)
                 {
-                    base.Add(renderer);
+                    base.Add(item);
                 }
-                else
+                else if (item.Renderer is ILabelRenderer labelRenderer)
                 {
-                    base.Add(new ScaleRenderer(renderer));
+                    base.Add(new ScaleRenderer(labelRenderer));
                 }
             }
+
+            public new void Clear()
+            {
+                foreach (var item in this)
+                {
+                    item.Renderer?.Release();
+                }
+
+                base.Clear();
+            }
+
+            public IRendererGroupItem Create(IRenderer renderer)
+            => renderer is ILabelRenderer labelRenderer
+                ? new ScaleRenderer(labelRenderer)
+                : throw new ArgumentException("Renderer is not a label renderer");
         }
 
         private class ScaleRendererPersist : IPersistable
@@ -297,7 +314,11 @@ namespace gView.Framework.Cartography.Rendering
             #endregion
         }
 
-        private class ScaleRenderer : ILabelRenderer, ILegendGroup, IScaledependent, IPropertyPage
+        private class ScaleRenderer :
+            ILabelRenderer,
+            ILegendGroup,
+            IScaledependent,
+            IRendererGroupItem
         {
             private ILabelRenderer _renderer = null;
             private double _minScale = 0, _maxScale = 0;
@@ -313,10 +334,20 @@ namespace gView.Framework.Cartography.Rendering
                 _maxScale = maxScale;
             }
 
-            internal ILabelRenderer Renderer
+            public IRenderer Renderer
             {
                 get { return _renderer; }
-                set { _renderer = value; }
+                set
+                {
+                    if (value is ILabelRenderer labelRenderer)
+                    {
+                        _renderer = labelRenderer;
+                    }
+                    else
+                    {
+                        throw new ArgumentException("Renderer is not a label renderer");
+                    }
+                }
             }
 
             #region IScaledependent

@@ -308,7 +308,6 @@ namespace gView.Framework.Cartography.Rendering
 
         private class ScaleRenderer : IFeatureRenderer, 
                                       IScaledependent, 
-                                      IPropertyPage, 
                                       ILegendGroup, 
                                       ISimplify,
                                       IRendererGroupItem
@@ -330,7 +329,17 @@ namespace gView.Framework.Cartography.Rendering
             public IRenderer Renderer
             {
                 get { return _renderer; }
-                set { _renderer = value as IFeatureRenderer; }
+                set 
+                {
+                    if (value is IFeatureRenderer featureRenderer)
+                    {
+                        _renderer = featureRenderer;
+                    }
+                    else
+                    {
+                        throw new ArgumentException("Renderer is not a feature renderer");
+                    }
+                }
             }
 
             #region IScaledependent
@@ -532,30 +541,6 @@ namespace gView.Framework.Cartography.Rendering
                 {
                     _renderer.Release();
                 }
-            }
-
-            #endregion
-
-            #region IPropertyPage Member
-
-            public object PropertyPage(object initObject)
-            {
-                if (_renderer is IPropertyPage)
-                {
-                    return ((IPropertyPage)_renderer).PropertyPage(initObject);
-                }
-
-                return null;
-            }
-
-            public object PropertyPageObject()
-            {
-                if (_renderer is IPropertyPage)
-                {
-                    return ((IPropertyPage)_renderer).PropertyPageObject();
-                }
-
-                return null;
             }
 
             #endregion

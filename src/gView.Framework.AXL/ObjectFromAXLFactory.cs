@@ -444,10 +444,11 @@ namespace gView.Framework.AXL
                         continue;
                     }
 
-                    renderer.Renderers.Add(labelRenderer);
+                    renderer.RendererItems.Add(
+                        renderer.RendererItems.Create(labelRenderer));
                 }
 
-                foreach (IScaledependent sdRenderer in renderer.Renderers)
+                foreach (IScaledependent sdRenderer in renderer.RendererItems)
                 {
                     sdRenderer.MinimumScale = minScale;
                     sdRenderer.MaximumScale = maxScale;
