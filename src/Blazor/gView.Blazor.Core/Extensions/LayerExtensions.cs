@@ -56,4 +56,11 @@ static public class LayerExtensions
                 fLayer.LayerGeometryType == GeometryType.Point
                 || fLayer.LayerGeometryType == GeometryType.Multipoint
             );
+
+    static public bool CanApplySecondaryLabelAlignment(this IFeatureLayer fLayer)
+        => fLayer is not null &&
+            (
+                fLayer.LayerGeometryType == GeometryType.Point
+                || fLayer.LayerGeometryType == GeometryType.Multipoint
+            );
 }

@@ -85,27 +85,30 @@
                                 <MudRadio Size="MudBlazor.Size.Small" 
                                           Option="TextSymbolAlignment.leftAlignOver" />
                             </td>
-                            <td>
-                                <MudButton Variant="Variant.Filled"
-                                           OnClick="() => AppendSecondaryAlignment(TextSymbolAlignment.rightAlignOver)"
-                                           Color="SecondaryButtonColor(TextSymbolAlignment.rightAlignOver)">
-                                    @SecondaryAlignIndexText(TextSymbolAlignment.rightAlignOver)
-                                </MudButton>
-                            </td>
-                            <td>
-                                <MudButton Variant="Variant.Filled"
-                                           OnClick="() => AppendSecondaryAlignment(TextSymbolAlignment.Over)"
-                                           Color="SecondaryButtonColor(TextSymbolAlignment.Over)">
-                                    @SecondaryAlignIndexText(TextSymbolAlignment.Over)
-                                </MudButton>
-                            </td>
-                            <td>
-                                <MudButton Variant="Variant.Filled"
-                                           OnClick="() => AppendSecondaryAlignment(TextSymbolAlignment.leftAlignOver)"
-                                           Color="SecondaryButtonColor(TextSymbolAlignment.leftAlignOver)">
-                                    @SecondaryAlignIndexText(TextSymbolAlignment.leftAlignOver)
-                                </MudButton>
-                            </td>
+                            @if(_layer.CanApplySecondaryLabelAlignment()) 
+                            {
+                                <td>
+                                    <MudButton Variant="Variant.Filled"
+                                               OnClick="() => AppendSecondaryAlignment(TextSymbolAlignment.rightAlignOver)"
+                                               Color="SecondaryButtonColor(TextSymbolAlignment.rightAlignOver)">
+                                        @SecondaryAlignIndexText(TextSymbolAlignment.rightAlignOver)
+                                    </MudButton>
+                                </td>
+                                <td>
+                                    <MudButton Variant="Variant.Filled"
+                                               OnClick="() => AppendSecondaryAlignment(TextSymbolAlignment.Over)"
+                                               Color="SecondaryButtonColor(TextSymbolAlignment.Over)">
+                                        @SecondaryAlignIndexText(TextSymbolAlignment.Over)
+                                    </MudButton>
+                                </td>
+                                <td>
+                                    <MudButton Variant="Variant.Filled"
+                                               OnClick="() => AppendSecondaryAlignment(TextSymbolAlignment.leftAlignOver)"
+                                               Color="SecondaryButtonColor(TextSymbolAlignment.leftAlignOver)">
+                                        @SecondaryAlignIndexText(TextSymbolAlignment.leftAlignOver)
+                                    </MudButton>
+                                </td>
+                            }
                         </tr>
                         <tr>
                             <td>
@@ -120,27 +123,30 @@
                                 <MudRadio Size="MudBlazor.Size.Small" 
                                           Option="TextSymbolAlignment.leftAlignCenter" />
                             </td>
-                            <td>
-                                <MudButton Variant="Variant.Filled"
-                                           OnClick="() => AppendSecondaryAlignment(TextSymbolAlignment.rightAlignCenter)"
-                                           Color="SecondaryButtonColor(TextSymbolAlignment.rightAlignCenter)">
-                                    @SecondaryAlignIndexText(TextSymbolAlignment.rightAlignCenter)
-                                </MudButton>
-                            </td>
-                            <td>
-                                <MudButton Variant="Variant.Filled"
-                                           OnClick="() => AppendSecondaryAlignment(TextSymbolAlignment.Center)"
-                                           Color="SecondaryButtonColor(TextSymbolAlignment.Center)">
-                                    @SecondaryAlignIndexText(TextSymbolAlignment.Center)
-                                </MudButton>
-                            </td>
-                            <td>
-                                <MudButton Variant="Variant.Filled"
-                                           OnClick="() => AppendSecondaryAlignment(TextSymbolAlignment.leftAlignCenter)"
-                                           Color="SecondaryButtonColor(TextSymbolAlignment.leftAlignCenter)">
-                                    @SecondaryAlignIndexText(TextSymbolAlignment.leftAlignCenter)
-                                </MudButton>
-                            </td>
+                            @if (_layer.CanApplySecondaryLabelAlignment())
+                            {
+                                <td>
+                                    <MudButton Variant="Variant.Filled"
+                                               OnClick="() => AppendSecondaryAlignment(TextSymbolAlignment.rightAlignCenter)"
+                                               Color="SecondaryButtonColor(TextSymbolAlignment.rightAlignCenter)">
+                                        @SecondaryAlignIndexText(TextSymbolAlignment.rightAlignCenter)
+                                    </MudButton>
+                                </td>
+                                <td>
+                                    <MudButton Variant="Variant.Filled"
+                                               OnClick="() => AppendSecondaryAlignment(TextSymbolAlignment.Center)"
+                                               Color="SecondaryButtonColor(TextSymbolAlignment.Center)">
+                                        @SecondaryAlignIndexText(TextSymbolAlignment.Center)
+                                    </MudButton>
+                                </td>
+                                <td>
+                                    <MudButton Variant="Variant.Filled"
+                                               OnClick="() => AppendSecondaryAlignment(TextSymbolAlignment.leftAlignCenter)"
+                                               Color="SecondaryButtonColor(TextSymbolAlignment.leftAlignCenter)">
+                                        @SecondaryAlignIndexText(TextSymbolAlignment.leftAlignCenter)
+                                    </MudButton>
+                                </td>
+                            }
                         </tr>
                         <tr>
                             <td>
@@ -155,28 +161,42 @@
                                 <MudRadio Size="MudBlazor.Size.Small" 
                                           Option="TextSymbolAlignment.leftAlignUnder" />
                             </td>
-                            <td>
-                                <MudButton Variant="Variant.Filled"
-                                           OnClick="() => AppendSecondaryAlignment(TextSymbolAlignment.rightAlignUnder)"
-                                           Color="SecondaryButtonColor(TextSymbolAlignment.rightAlignUnder)">
-                                    @SecondaryAlignIndexText(TextSymbolAlignment.rightAlignUnder)
-                                </MudButton>
-                            </td>
-                            <td>
-                                <MudButton Variant="Variant.Filled"
-                                           OnClick="() => AppendSecondaryAlignment(TextSymbolAlignment.Under)"
-                                           Color="SecondaryButtonColor(TextSymbolAlignment.Under)">
-                                    @SecondaryAlignIndexText(TextSymbolAlignment.Under)
-                                </MudButton>
-                            </td>
-                            <td>
-                                <MudButton Variant="Variant.Filled"
-                                           OnClick="() => AppendSecondaryAlignment(TextSymbolAlignment.leftAlignUnder)"
-                                           Color="SecondaryButtonColor(TextSymbolAlignment.leftAlignUnder)">
-                                    @SecondaryAlignIndexText(TextSymbolAlignment.leftAlignUnder)
-                                </MudButton>
-                            </td>
+                            @if(_layer.CanApplySecondaryLabelAlignment()) 
+                            {
+                                <td>
+                                    <MudButton Variant="Variant.Filled"
+                                               OnClick="() => AppendSecondaryAlignment(TextSymbolAlignment.rightAlignUnder)"
+                                               Color="SecondaryButtonColor(TextSymbolAlignment.rightAlignUnder)">
+                                        @SecondaryAlignIndexText(TextSymbolAlignment.rightAlignUnder)
+                                    </MudButton>
+                                </td>
+                                <td>
+                                    <MudButton Variant="Variant.Filled"
+                                               OnClick="() => AppendSecondaryAlignment(TextSymbolAlignment.Under)"
+                                               Color="SecondaryButtonColor(TextSymbolAlignment.Under)">
+                                        @SecondaryAlignIndexText(TextSymbolAlignment.Under)
+                                    </MudButton>
+                                </td>
+                                <td>
+                                    <MudButton Variant="Variant.Filled"
+                                               OnClick="() => AppendSecondaryAlignment(TextSymbolAlignment.leftAlignUnder)"
+                                               Color="SecondaryButtonColor(TextSymbolAlignment.leftAlignUnder)">
+                                        @SecondaryAlignIndexText(TextSymbolAlignment.leftAlignUnder)
+                                    </MudButton>
+                                </td>
+                            }
                         </tr>
+                        @if (_layer.CanApplySecondaryLabelAlignment())
+                        {
+                            <tr>
+                                <td colspan="3"></td>
+                                <td colspan="3">
+                                    <MudButton Variant="Variant.Filled"
+                                               OnClick="ResetSecondaryAlignment">Reset</MudButton>
+                                </td>
+                            </tr>
+                            
+                        }
                     </table>
                 </MudRadioGroup>
             </GvCardContent>
@@ -202,6 +222,14 @@
         else
         {
             _renderer = Instance as SimpleLabelRenderer;
+        }
+
+        if(_renderer?.TextSymbol is not null)
+        {
+            if(_renderer.TextSymbol.SecondaryTextSymbolAlignments.IsNullOrEmpty())
+            {
+                ResetSecondaryAlignment();
+            }
         }
     }
 
@@ -255,10 +283,26 @@
         }
 
         var secondaryAlignments = new List<TextSymbolAlignment>(_renderer.TextSymbol.SecondaryTextSymbolAlignments ?? []); 
-        if(/* alignment != _renderer.TextSymbol.TextSymbolAlignment &&  */!secondaryAlignments.Contains(alignment))
+
+        if(secondaryAlignments.Contains(alignment))
+        {
+            secondaryAlignments.Remove(alignment);
+        } 
+        else
         {
             secondaryAlignments.Add(alignment);
-            _renderer.TextSymbol.SecondaryTextSymbolAlignments = secondaryAlignments.ToArray();
+        }
+
+        _renderer.TextSymbol.SecondaryTextSymbolAlignments = secondaryAlignments.ToArray();
+    }
+
+    private void ResetSecondaryAlignment()
+    {
+        if(_renderer?.TextSymbol is not null
+           && _layer?.CanApplySecondaryLabelAlignment() == true) 
+        {
+            _renderer.TextSymbol.SecondaryTextSymbolAlignments
+                = [_renderer.TextSymbol.TextSymbolAlignment];
         }
     }
 
@@ -270,11 +314,6 @@
         {
             return "0";
         }
-
-        // if(_renderer.TextSymbol.TextSymbolAlignment == alignment)
-        // {
-        //     return "1";
-        // }
 
         if(_renderer.TextSymbol.SecondaryTextSymbolAlignments == null ||
            _renderer.TextSymbol.SecondaryTextSymbolAlignments.Contains(alignment) == false)
