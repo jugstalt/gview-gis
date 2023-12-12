@@ -327,6 +327,31 @@
         background-image: url(../img/composition_copy.png);
     }
 
+    .gview-ui-image.img-line-labeling-parallel {
+        width: 220px;
+        height: 96px;
+        background-size: contain;
+        background-image: url(../img/label_parallel.png);
+    }
+    .gview-ui-image.img-line-labeling-curvedtext {
+        width: 220px;
+        height: 96px;
+        background-size: contain;
+        background-image: url(../img/label_curvedtext.png);
+    }
+    .gview-ui-image.img-line-labeling-horizontal {
+        width: 220px;
+        height: 96px;
+        background-size: contain;
+        background-image: url(../img/label_horizontal.png);
+    }
+    .gview-ui-image.img-line-labeling-perpendicular {
+        width: 220px;
+        height: 96px;
+        background-size: contain;
+        background-image: url(../img/label_perpenticlar.png);
+    }
+
 @media (-webkit-min-device-pixel-ratio: 1.5), (min-resolution: 144dpi) {
 
     .carto-main.dark .sketchpen-icon-basic-bg-light-24 {

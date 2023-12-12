@@ -1,4 +1,6 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System;
+using System.Linq;
+using System.Runtime.CompilerServices;
 
 namespace gView.GraphicsEngine.Skia.Extensions
 {
@@ -20,5 +22,22 @@ namespace gView.GraphicsEngine.Skia.Extensions
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public string[] GetLines(this string txt) => txt.Split('\n');
+
+        //[MethodImpl(MethodImplOptions.AggressiveInlining)]
+        //static public int LinesCount(this string txt) => txt.Count((c) => c == '\n') + 1;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public int LinesCount(this ReadOnlySpan<char> txt)
+        {
+            int count = 0;
+            for (int i = 0, to = txt.Length; i < to; i++)
+            {
+                if (txt[i] == '\n')
+                {
+                    count++;
+                }
+            }
+            return count + 1;
+        }
     }
 }

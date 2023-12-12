@@ -8,20 +8,34 @@
         <GvCardContent>
             <GvGrid ColumnCount="2">
                 <GvGridItem>
-                    <MudSelect T="string" Label="Value Field"
-                               Value="_renderer.FieldName"
-                               ValueChanged="(val) => OnFieldNameChanged(val)">
-                        @GvUtilities.StringsToSelectItems(_layer.FeatureClass
-                                 .Fields?
-                                 .ToEnumerable()
-                                 .Select(f => f.name) ?? [])
+                    <MudSelect T="bool" Label="Label Type"
+                                @bind-Value="_renderer.UseExpression">
+                        <MudSelectItem Value="false">Field</MudSelectItem>
+                        <MudSelectItem Value="true">Expression</MudSelectItem>
                     </MudSelect>
                 </GvGridItem>
                 <GvGridItem>
-                    <MudButton Variant="Variant.Filled"
-                               Color="Color.Primary">
-                               Expression
-                    </MudButton>
+                    @if(_renderer.UseExpression)
+                    {
+                        <div style="padding:8px">
+                        <MudButton Variant="Variant.Filled"
+                                Color="Color.Primary"
+                                OnClick="EditExpression">
+                               Edit Expression
+                        </MudButton>
+                        </div>
+                    } 
+                    else
+                    {
+                        <MudSelect T="string" Label="Value Field"
+                               Value="_renderer.FieldName"
+                               ValueChanged="(val) => OnFieldNameChanged(val)">
+                             @GvUtilities.StringsToSelectItems(_layer.FeatureClass
+                                 .Fields?
+                                 .ToEnumerable()
+                                 .Select(f => f.name) ?? [])
+                        </MudSelect>
+                    }
                 </GvGridItem>
             </GvGrid>
         </GvCardContent>
@@ -52,13 +66,23 @@
         <GvCardContent>
             <GvGrid ColumnCount="2">
                 <GvGridItem>
-                    <div style="width:250px;height:200px;">
+                    <div style="width:250px;height:200px;" @onclick="OnEditSymbol">
                         <img src="@(_renderer.ToBase64ImageSource(250, 200))" />
                     </div>
                 </GvGridItem>
                 <GvGridItem>
-                    <MudButton>Rotation</MudButton>
-                    <MudButton OnClick="OnEditSymbol">Symbol</MudButton>
+                    <MudButton Color="Color.Primary" 
+                                Variant="Variant.Outlined"
+                               OnClick="SetRotation">Rotation</MudButton>
+                    <MudButton Color="Color.Primary"
+                                Variant="Variant.Outlined"
+                                OnClick="OnEditSymbol">Symbol</MudButton>
+                    @if(_layer.HasLineGeometry())
+                    {
+                        <MudButton Color="Color.Primary"
+                                   Variant="Variant.Outlined"
+                                   OnClick="SetCartographicsCartoLineLabelingMethod">Text Orientation</MudButton>
+                    }
                 </GvGridItem>
             </GvGrid>
         </GvCardContent>
@@ -305,6 +329,58 @@
                 = [_renderer.TextSymbol.TextSymbolAlignment];
         }
     }
+
+    private Task SetRotation() => HandleAsync(() =>
+        _renderer?.SymbolRotation.EditProperties(AppScope, _layer?.FeatureClass)
+        ?? Task.CompletedTask);
+
+
+    private Task SetCartographicsCartoLineLabelingMethod() => HandleAsync(async () =>
+    {
+        if (_renderer is null)
+        {
+            return;
+        }
+
+        var model = await AppScope.ShowModalDialog
+            (typeof(LineLabelingCartographicMethodDialog),
+            "Cartographic Method",
+            new LineLabelingCartographicMethodModel()
+            {
+                CartographicLineLabeling = _renderer.CartoLineLabelling
+            },
+            new ModalDialogOptions()
+            {
+                Width = ModalDialogWidth.ExtraSmall
+            });
+
+        if (model is not null)
+        {
+            _renderer.CartoLineLabelling = model.CartographicLineLabeling;
+        }
+    });
+
+    private Task EditExpression() => HandleAsync(async () =>
+    {
+        if (_renderer is null)
+        {
+            return;
+        }
+
+        var model = await AppScope.ShowModalDialog
+            (typeof(LabelExpressionDialog),
+            "Cartographic Method",
+            new LabelExpressionModel()
+            {
+                TableClass = _layer?.FeatureClass,
+                Expression = _renderer.LabelExpression
+            });
+
+        if (model is not null)
+        {
+            _renderer.LabelExpression = model.Expression;
+        }
+    });
 
     #region Helper
 

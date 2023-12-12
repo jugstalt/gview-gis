@@ -1,0 +1,27 @@
+@inherits ModalDialogFormBase<LineLabelingCartographicMethodModel>
+
+<ModalDialogFormBase T="LineLabelingCartographicMethodModel"
+                     OnDialogClose="base.OnDialogClose"
+                     Model="base.Model">
+    <FormContent>
+        <MudRadioGroup @bind-SelectedOption="Model.CartographicLineLabeling">
+            <GvGrid>
+
+                @foreach (var method in Enum.GetValues<SimpleLabelRenderer.CartographicLineLabeling>())
+                {
+                    <GvGridItem>
+                        <MudRadio Option="method">
+                            <div>
+                                @method.ToString().SplitCamelCase()
+                            </div>
+
+                            <div class="gview-ui-image img-line-labeling-@method.ToString().ToLower()"></div>
+
+                        </MudRadio>
+                    </GvGridItem>
+                }
+
+            </GvGrid>
+        </MudRadioGroup>
+    </FormContent>
+</ModalDialogFormBase>

@@ -4,6 +4,7 @@ using SkiaSharp;
 using System;
 using System.Runtime.CompilerServices;
 using gView.GraphicsEngine.Extensions;
+using System.Linq;
 
 namespace gView.GraphicsEngine.Skia
 {
@@ -368,10 +369,10 @@ namespace gView.GraphicsEngine.Skia
                     switch (format.LineAlignment)
                     {
                         case StringAlignment.Far:
-                            point.Y += far;
+                            point.Y += far + ((text.AsSpan().LinesCount() - 1) * (skPaint.FontMetrics.Ascent));
                             break;
                         case StringAlignment.Center:
-                            point.Y += (far + near) * .5f;
+                            point.Y += (far + near) * .5f + ((text.AsSpan().LinesCount() - 1)) * (skPaint.FontMetrics.Ascent) * .5f;
                             //point.Y = this.MeasureText(text, font).Height;
                             break;
                         case StringAlignment.Near:

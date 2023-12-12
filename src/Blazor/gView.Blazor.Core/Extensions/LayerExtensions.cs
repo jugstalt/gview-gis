@@ -50,6 +50,11 @@ static public class LayerExtensions
             _ => false
         };
 
+    static public bool HasLineGeometry(this IFeatureLayer? fLayer)
+        => fLayer is not null &&
+            (
+                fLayer.LayerGeometryType == GeometryType.Polyline
+            );
     static public bool CanRotateSymbols(this IFeatureLayer? fLayer)
         => fLayer is not null &&
             (
