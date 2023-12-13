@@ -236,16 +236,18 @@ namespace gView.Interoperability.OGC.SLD
 
         public bool CanRender(IFeatureLayer layer, IMap map)
         {
-            //if (layer != null &&
-            //    (layer.Class is WMSThemeClass ||
-            //    layer.Class is WFSFeatureClass)) return true;
-            if (layer == null && layer.FeatureClass == null &&
-                layer.FeatureClass.GeometryType == GeometryType.Network)
-            {
-                return false;
-            }
+            ////if (layer != null &&
+            ////    (layer.Class is WMSThemeClass ||
+            ////    layer.Class is WFSFeatureClass)) return true;
+            //if (layer == null && layer.FeatureClass == null &&
+            //    layer.FeatureClass.GeometryType == GeometryType.Network)
+            //{
+            //    return false;
+            //}
 
-            return true;
+            //return true;
+
+            return false;
         }
 
         public bool HasEffect(IFeatureLayer layer, IMap map)
