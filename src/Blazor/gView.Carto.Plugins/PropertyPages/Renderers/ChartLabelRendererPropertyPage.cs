@@ -14,4 +14,3 @@ internal class ChartLabelRendererPropertyPage : IPropertyPageDefinition
 
     public Type PropertyPageType => typeof(gView.Carto.Razor.Components.Controls.Renderers.ChartLabelRendererPropertyPage);
 }
-

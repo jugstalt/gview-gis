@@ -1,0 +1,116 @@
+@using gView.Framework.Cartography.Rendering.Abstractions
+@inherits BaseHandler
+
+@if (_layer is not null)
+{
+    <RendererGroupControl TItem="ScaleDependentRendererGroupItem"
+                          TRenderer="ILabelRenderer"
+                          Layer="_layer"
+                          RendererItems="_rendererItems"
+                          OnAddNewRendererItem="AddNewRendererItem"
+                          OnRendererChanged="OnRendererItemChanged"
+                          OnRendererItemChanged="OnRendererItemChanged"
+                          OnRendererItemsChanged="OnRendererItemsChanged" >
+
+    </RendererGroupControl>
+}
+
+@code {
+    [Parameter] public object? Instance { get; set; }
+
+    private IFeatureLayer? _layer;
+    private ScaleDependentLabelRenderer? _renderer;
+    private List<ScaleDependentRendererGroupItem> _rendererItems = [];
+
+    protected override Task OnParametersSetAsync() => HandleAsync(async () =>
+    {
+        await base.OnParametersSetAsync();
+
+        if (Instance is IFeatureLayer fLayer)
+        {
+            _layer = fLayer;
+            _renderer = fLayer.LabelRenderer as ScaleDependentLabelRenderer;
+        }
+        else
+        {
+            _renderer = Instance as ScaleDependentLabelRenderer;
+        }
+
+        if(_renderer?.RendererItems is not null)
+        {
+            _rendererItems.Clear();
+
+            foreach(var rendererItem in _renderer.RendererItems)
+            {
+                if(rendererItem?.Renderer is null)
+                {
+                    continue;
+                }
+
+                var item = new ScaleDependentRendererGroupItem()
+                {
+                    Renderer = (IRenderer?)rendererItem.Renderer?.Clone()
+                };
+
+                if(rendererItem is IScaledependent scaledependent)
+                {
+                    item.MinimumScale = (int)scaledependent.MinimumScale;
+                    item.MaximumScale = (int)scaledependent.MaximumScale;
+                }
+
+                _rendererItems.Add(item);
+            }
+        }
+    });
+
+    private void Apply()
+    {
+        if (_renderer is null)
+        {
+            return;
+        }
+
+        _renderer.RendererItems.Clear(); // ToDo: Release, Dispose? in them RendererItem Class?
+
+        foreach(var rendererItem in _rendererItems)
+        {
+            var item = _renderer.RendererItems.Create(rendererItem.Renderer?.Clone() as IRenderer);
+            if(item is null)
+            {
+                continue;
+            }
+
+            if(item is IScaledependent scaledependent)
+            {
+                scaledependent.MinimumScale = rendererItem.MinimumScale;
+                scaledependent.MaximumScale = rendererItem.MaximumScale;
+            }
+
+            _renderer.RendererItems.Add(item);
+        }
+    }
+
+    private void OnRendererItemChanged(ScaleDependentRendererGroupItem rendererItem)
+    {
+        Apply();
+    }
+
+    private void OnRendererItemsChanged(List<ScaleDependentRendererGroupItem> rendererItems)
+    {
+        _rendererItems = rendererItems;
+
+        Apply();
+    }
+
+    private void AddNewRendererItem(ILabelRenderer labelRenderer)
+    {
+        var item = new ScaleDependentRendererGroupItem()
+        {
+            Renderer = labelRenderer
+        };
+
+        _rendererItems.Add(item);
+
+        Apply();
+    }
+}
