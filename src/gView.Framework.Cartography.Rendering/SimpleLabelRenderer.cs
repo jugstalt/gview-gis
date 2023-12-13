@@ -605,7 +605,7 @@ namespace gView.Framework.Cartography.Rendering
 
         #endregion
 
-        private const int MaxPolygonTotalPointCount = 10000;  // Labelling is too expensive for complex polygons
+        internal const int MaxPolygonTotalPointCount = 10000;  // Labelling is too expensive for complex polygons
         private bool LabelPolygon(IDisplay disp, IPolygon polygon)
         {
             //var center = new MultiPoint();

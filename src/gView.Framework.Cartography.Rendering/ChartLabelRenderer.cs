@@ -16,19 +16,20 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using gView.Framework.Common.Collection;
 
 namespace gView.Framework.Cartography.Rendering
 {
     [RegisterPlugIn("0be572ae-bb58-4148-a428-084bad28ffab")]
     public class ChartLabelRenderer : Cloner, ILabelRenderer, IPriority, IDefault, ILegendGroup
     {
-        public enum chartType { Pie = 0, Bars = 1, Stack = 2 }
-        public enum sizeType { ConstantSize = 0, ValueOfEquatesToSize = 1 }
+        public enum RenderChartType { Pie = 0, Bars = 1, Stack = 2 }
+        public enum RenderSizeType { ConstantSize = 0, ValueOfEquatesToSize = 1 }
 
-        private chartType _type = chartType.Pie;
-        private sizeType _sizeType = sizeType.ConstantSize;
+        private RenderChartType _type = RenderChartType.Pie;
+        private RenderSizeType _sizeType = RenderSizeType.ConstantSize;
         private SimpleLabelRenderer.RenderLabelPriority _labelPriority = SimpleLabelRenderer.RenderLabelPriority.Normal;
-        private Dictionary<string, ISymbol> _symbolTable = new Dictionary<string, ISymbol>();
+        private OrderedKeyValuePairs<string, ISymbol> _symbolTable = new();
         private ILineSymbol _outlineSymbol = null;
         private double _size = 50D, _valueEquatesToSize = 100D;
         private IEnvelope _clipEnvelope = null;
@@ -45,6 +46,7 @@ namespace gView.Framework.Cartography.Rendering
             {
                 if (_symbolTable.ContainsKey(fieldName))
                 {
+                    _symbolTable[fieldName]?.Release();
                     _symbolTable.Remove(fieldName);
                 }
             }
@@ -60,6 +62,16 @@ namespace gView.Framework.Cartography.Rendering
                     _symbolTable[fieldName] = symbol;
                 }
             }
+        }
+
+        public void RemoveAllSymbols()
+        {
+            foreach(var symbol in _symbolTable.Values.ToArray()) 
+            { 
+                symbol?.Release(); 
+            }
+
+            _symbolTable.Clear(); 
         }
 
         public ISymbol GetSymbol(string fieldName)
@@ -97,13 +109,13 @@ namespace gView.Framework.Cartography.Rendering
             set { _valueEquatesToSize = Math.Abs(value); }
         }
 
-        public chartType ChartType
+        public RenderChartType ChartType
         {
             get { return _type; }
             set { _type = value; }
         }
 
-        public sizeType SizeType
+        public RenderSizeType SizeType
         {
             get { return _sizeType; }
             set { _sizeType = value; }
@@ -142,6 +154,14 @@ namespace gView.Framework.Cartography.Rendering
                 filter.AddField(fieldName);
             }
             _clipEnvelope = new Envelope(display.DisplayTransformation.TransformedBounds(display));
+            if (display.GeometricTransformer != null)
+            {
+                object e = display.GeometricTransformer.InvTransform2D(display.Envelope);
+                if (e is IGeometry)
+                {
+                    _clipEnvelope = ((IGeometry)e).Envelope;
+                }
+            }
         }
 
         public bool CanRender(IFeatureLayer layer, IMap map)
@@ -163,7 +183,7 @@ namespace gView.Framework.Cartography.Rendering
                     count++;
                 }
             }
-            return count > 1;
+            return count > 0;
         }
 
         public string Name
@@ -184,12 +204,12 @@ namespace gView.Framework.Cartography.Rendering
         public void Draw(IDisplay disp, IFeature feature)
         {
             #region Check Values
-            if (_symbolTable.Keys.Count == 0)
+            if (_symbolTable.Count == 0)
             {
                 return;
             }
 
-            double[] values = new double[_symbolTable.Keys.Count];
+            double[] values = new double[_symbolTable.Count];
             double valSum = 0.0, valMax = double.MinValue, valMin = double.MaxValue;
             #region Get Values
             int i = 0;
@@ -275,17 +295,41 @@ namespace gView.Framework.Cartography.Rendering
 
             if (polygon is ITopologicalOperation)
             {
+                try
+                {
+                    double tolerance = 1.0 * disp.MapScale / disp.Dpm;  // 1 Pixel
 
-                IGeometry g;
-                ((ITopologicalOperation)polygon).Clip(env, out g);
-                if (g == null)
+                    // Wichtig bei Flächen mit sehr vielen Vertices... Bundesländer, Länder Thema kann sonst beim Clippen abstürzen
+                    //if (polygon.TotalPointCount > MaxPolygonTotalPointCount)
+                    //{
+                    //polygon = SpatialAlgorithms.Algorithm.SnapOutsidePointsToEnvelope(polygon, env);
+                    //polygon = (IPolygon)SpatialAlgorithms.Algorithm.Generalize(polygon, tolerance);
+                    //}
+                    // For testing polygons with many vertices an clipping
+                    // polygon = (IPolygon)SpatialAlgorithms.Algorithm.InterpolatePoints(polygon, 2, true);
+
+                    IGeometry g;
+                    if (polygon.TotalPointCount > SimpleLabelRenderer.MaxPolygonTotalPointCount)
+                    {
+                        g = polygon;
+                    }
+                    else
+                    {
+                        ((ITopologicalOperation)polygon).Clip(env, out g);
+                    }
+                    if (g == null)
+                    {
+                        return false;
+                    }
+
+                    if (g is IPolygon)
+                    {
+                        polygon = (IPolygon)g;
+                    }
+                }
+                catch (Exception)
                 {
                     return false;
-                }
-
-                if (g is IPolygon)
-                {
-                    polygon = (IPolygon)g;
                 }
             }
             if (polygon == null)
@@ -329,7 +373,7 @@ namespace gView.Framework.Cartography.Rendering
         {
             IEnvelope chartEnvelope = null;
 
-            if (_type == chartType.Pie)
+            if (_type == RenderChartType.Pie)
             {
                 #region Measure Pie
 
@@ -341,7 +385,7 @@ namespace gView.Framework.Cartography.Rendering
                 double r = disp.MapScale / disp.Dpm * _size / 2D;
                 switch (_sizeType)
                 {
-                    case sizeType.ValueOfEquatesToSize:
+                    case RenderSizeType.ValueOfEquatesToSize:
                         double a = r * r * Math.PI * valSum / _valueEquatesToSize;
                         r = Math.Sqrt(a / Math.PI);
                         break;
@@ -351,7 +395,7 @@ namespace gView.Framework.Cartography.Rendering
 
                 #endregion
             }
-            else if (_type == chartType.Bars)
+            else if (_type == RenderChartType.Bars)
             {
                 #region Draw Bars
 
@@ -361,7 +405,7 @@ namespace gView.Framework.Cartography.Rendering
 
                 switch (_sizeType)
                 {
-                    case sizeType.ConstantSize:
+                    case RenderSizeType.ConstantSize:
                         if (valSum == 0.0)
                         {
                             return null;
@@ -371,16 +415,16 @@ namespace gView.Framework.Cartography.Rendering
                         break;
                 }
 
-                double left = -(_symbolTable.Keys.Count * width / 2.0) - (_symbolTable.Keys.Count - 1) * (disp.MapScale / disp.Dpm) / 2.0;
+                double left = -(_symbolTable.Count * width / 2.0) - (_symbolTable.Count - 1) * (disp.MapScale / disp.Dpm) / 2.0;
 
                 chartEnvelope = new Envelope(point.X + left,
                     point.Y,
-                    point.X + left + (width + disp.MapScale / disp.Dpm) * _symbolTable.Keys.Count,
+                    point.X + left + (width + disp.MapScale / disp.Dpm) * _symbolTable.Count,
                     point.Y + height * (valMax / heightVal));
 
                 #endregion
             }
-            else if (_type == chartType.Stack)
+            else if (_type == RenderChartType.Stack)
             {
                 #region Draw Stack
 
@@ -392,7 +436,7 @@ namespace gView.Framework.Cartography.Rendering
 
                 switch (_sizeType)
                 {
-                    case sizeType.ConstantSize:
+                    case RenderSizeType.ConstantSize:
                         if (valSum == 0.0)
                         {
                             return null;
@@ -413,6 +457,15 @@ namespace gView.Framework.Cartography.Rendering
 
             if (chartEnvelope != null)
             {
+                if (disp.GeometricTransformer != null)
+                {
+                    object e = disp.GeometricTransformer.Transform2D(chartEnvelope);
+                    if (e is IGeometry)
+                    {
+                        chartEnvelope = ((IGeometry)e).Envelope;
+                    }
+                }
+
                 double x1 = chartEnvelope.minx, y1 = chartEnvelope.maxy,
                        x2 = chartEnvelope.maxx, y2 = chartEnvelope.miny;
                 disp.World2Image(ref x1, ref y1);
@@ -438,13 +491,22 @@ namespace gView.Framework.Cartography.Rendering
             {
                 ((Display)disp).Canvas = disp.LabelEngine.LabelCanvas;
 
-                if (_symbolTable.Keys.Count == 0)
+                if (_symbolTable.Count == 0)
                 {
                     return;
                 }
 
+                if(disp.GeometricTransformer != null)
+                {
+                    point = disp.GeometricTransformer.Transform2D(point) as IPoint;
+                    if(point is null)
+                    {
+                        return;
+                    }
+                }
+
                 int i = 0;
-                if (_type == chartType.Pie)
+                if (_type == RenderChartType.Pie)
                 {
                     #region Draw Pie
 
@@ -456,7 +518,7 @@ namespace gView.Framework.Cartography.Rendering
                     double r = disp.MapScale / disp.Dpm * _size / 2D;
                     switch (_sizeType)
                     {
-                        case sizeType.ValueOfEquatesToSize:
+                        case RenderSizeType.ValueOfEquatesToSize:
                             double a = r * r * Math.PI * valSum / _valueEquatesToSize;
                             r = Math.Sqrt(a / Math.PI);
                             break;
@@ -500,7 +562,7 @@ namespace gView.Framework.Cartography.Rendering
 
                     #endregion
                 }
-                else if (_type == chartType.Bars)
+                else if (_type == RenderChartType.Bars)
                 {
                     #region Draw Bars
 
@@ -510,7 +572,7 @@ namespace gView.Framework.Cartography.Rendering
 
                     switch (_sizeType)
                     {
-                        case sizeType.ConstantSize:
+                        case RenderSizeType.ConstantSize:
                             if (valSum == 0.0)
                             {
                                 return;
@@ -521,7 +583,7 @@ namespace gView.Framework.Cartography.Rendering
                     }
 
                     i = 0;
-                    double left = -(_symbolTable.Keys.Count * width / 2.0) - (_symbolTable.Keys.Count - 1) * (disp.MapScale / disp.Dpm) / 2.0;
+                    double left = -(_symbolTable.Count * width / 2.0) - (_symbolTable.Count - 1) * (disp.MapScale / disp.Dpm) / 2.0;
                     foreach (string fieldname in _symbolTable.Keys)
                     {
                         ISymbol symbol = _symbolTable[fieldname];
@@ -552,7 +614,7 @@ namespace gView.Framework.Cartography.Rendering
 
                     #endregion
                 }
-                else if (_type == chartType.Stack)
+                else if (_type == RenderChartType.Stack)
                 {
                     #region Draw Stack
                     double height = disp.MapScale / disp.Dpm * _size;
@@ -563,7 +625,7 @@ namespace gView.Framework.Cartography.Rendering
 
                     switch (_sizeType)
                     {
-                        case sizeType.ConstantSize:
+                        case RenderSizeType.ConstantSize:
                             if (valSum == 0.0)
                             {
                                 return;
@@ -599,7 +661,7 @@ namespace gView.Framework.Cartography.Rendering
                             {
                                 outerPath.AddPoint(new Point(point.X + left, point.Y + bottom));
                             }
-                            if (i == _symbolTable.Keys.Count)
+                            if (i == _symbolTable.Count)
                             {
                                 outerPath.AddPoint(new Point(point.X + left, point.Y + bottom + h));
                                 outerPath.AddPoint(new Point(point.X + left + width, point.Y + bottom + h));
@@ -642,8 +704,8 @@ namespace gView.Framework.Cartography.Rendering
 
         public void Load(IPersistStream stream)
         {
-            _type = (chartType)stream.Load("Type", (int)chartType.Pie);
-            _sizeType = (sizeType)stream.Load("SizeType", (int)sizeType.ConstantSize);
+            _type = (RenderChartType)stream.Load("Type", (int)RenderChartType.Pie);
+            _sizeType = (RenderSizeType)stream.Load("SizeType", (int)RenderSizeType.ConstantSize);
             _labelPriority = (SimpleLabelRenderer.RenderLabelPriority)stream.Load("labelPriority", (int)SimpleLabelRenderer.RenderLabelPriority.Normal);
             _size = (double)stream.Load("Size", 50D);
             _valueEquatesToSize = (double)stream.Load("ValueEquatesToSize", 100D);
@@ -681,6 +743,15 @@ namespace gView.Framework.Cartography.Rendering
 
         public object Clone(CloneOptions options)
         {
+            if(options is not null)
+            {
+                options = new CloneOptions(options.Display,
+                    options.ApplyRefScale,
+                    options.MaxLabelRefScaleFactor,  // use maxLabelRefscaleFactor also for symbols
+                    options.MaxLabelRefScaleFactor); // otherwise they will use the FeatureRefscalefactor
+                                                     // wich is wrong here
+            }
+
             ChartLabelRenderer clone = new ChartLabelRenderer();
 
             foreach (string key in _symbolTable.Keys)
@@ -697,19 +768,23 @@ namespace gView.Framework.Cartography.Rendering
             clone._type = _type;
             clone._outlineSymbol = _outlineSymbol != null ? (ILineSymbol)_outlineSymbol.Clone(options) : null;
 
-            double fac = 1.0;
-
+            float fac = 1f;
             var display = options?.Display;
 
-            if (display != null && display.ReferenceScale > 1)
+            if (options.ApplyRefScale)
             {
-                fac = display.ReferenceScale / Math.Max(display.MapScale, 1D);
+                fac = ReferenceScaleHelper.RefscaleFactor(
+                    (float)(display.ReferenceScale / display.MapScale),
+                    (float)Size,
+                    0f,
+                    0f);
+                fac = options.LabelRefScaleFactor(fac);
             }
 
             clone._size = Math.Max(_size * fac, 1D);
             clone._valueEquatesToSize = _valueEquatesToSize;
             clone._sizeType = _sizeType;
-            clone._clipEnvelope = new Envelope(_clipEnvelope);
+            clone._clipEnvelope = _clipEnvelope != null ? new Envelope(_clipEnvelope) : null;
             return clone;
         }
 

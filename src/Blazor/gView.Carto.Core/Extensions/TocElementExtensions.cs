@@ -19,6 +19,19 @@ static public class TocElementExtensions
 
         if (tocElement?.Layers is not null)
         {
+            foreach (IFeatureLayer featureLayer in tocElement.Layers.Where(l => l is IFeatureLayer fLayer && fLayer.LabelRenderer is ILegendGroup))
+            {
+                var legendGroup = (ILegendGroup)featureLayer.LabelRenderer;
+                for(int i=0;i<legendGroup.LegendItemCount;i++)
+                {
+                    var symbol = legendGroup.LegendItem(i) as ISymbol;
+                    if(symbol is not null && symbol is not ITextSymbol)
+                    {
+                        items.Add(symbol);
+                    }
+                }
+            }
+
             foreach (IFeatureLayer featureLayer in tocElement.Layers.Where(l => l is IFeatureLayer fLayer && fLayer.FeatureRenderer?.Symbols != null))
             {
                 items.AddRange(featureLayer.FeatureRenderer.Symbols);
@@ -32,23 +45,42 @@ static public class TocElementExtensions
     {
         if (tocElement?.Layers is not null)
         {
+            foreach (var legendGroup in tocElement.Layers.Where(l => l is IFeatureLayer fLayer && fLayer.LabelRenderer is ILegendGroup)
+                                                         .Select(l => ((IFeatureLayer)l).LabelRenderer as ILegendGroup))
+            {
+                if(SetLegendItemSymbol(legendGroup, symbol, newSymbol))
+                {
+                    return true;
+                }
+            }
+
             foreach (var legendGroup in tocElement.Layers.Where(l => l is IFeatureLayer fLayer && fLayer.FeatureRenderer is ILegendGroup)
                                                          .Select(l => ((IFeatureLayer)l).FeatureRenderer as ILegendGroup))
             {
-                if (legendGroup == null)
+                if(SetLegendItemSymbol(legendGroup, symbol, newSymbol))
                 {
-                    continue;
+                    return true;
                 }
-                for (int i = 0; i < legendGroup.LegendItemCount; i++)
-                {
-                    var legendItem = legendGroup.LegendItem(i);
-                    if (legendItem == symbol)
-                    {
-                        legendGroup.SetSymbol(legendItem, newSymbol);
+            }
+        }
 
-                        return true;
-                    }
-                }
+        return false;
+    }
+
+    static private bool SetLegendItemSymbol(this ILegendGroup? legendGroup, ISymbol symbol, ISymbol newSymbol)
+    {
+        if (legendGroup == null)
+        {
+            return false;
+        }
+        for (int i = 0; i < legendGroup.LegendItemCount; i++)
+        {
+            var legendItem = legendGroup.LegendItem(i);
+            if (legendItem == symbol)
+            {
+                legendGroup.SetSymbol(legendItem, newSymbol);
+
+                return true;
             }
         }
 

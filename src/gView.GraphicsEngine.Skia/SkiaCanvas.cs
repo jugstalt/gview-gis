@@ -369,10 +369,24 @@ namespace gView.GraphicsEngine.Skia
                     switch (format.LineAlignment)
                     {
                         case StringAlignment.Far:
-                            point.Y += far + ((text.AsSpan().LinesCount() - 1) * (skPaint.FontMetrics.Ascent));
+                            point.Y += far;
+
+                            var span = text.AsSpan();
+                            if(span.IsMultiline())
+                            {
+                                point.Y += (span.LinesCount() - 1) * (skPaint.FontMetrics.Ascent);
+                            }
+                            
                             break;
                         case StringAlignment.Center:
-                            point.Y += (far + near) * .5f + ((text.AsSpan().LinesCount() - 1)) * (skPaint.FontMetrics.Ascent) * .5f;
+                            point.Y += (far + near) * .5f;
+
+                            var span2 = text.AsSpan();
+                            if (span2.IsMultiline())
+                            {
+                                point.Y += (span2.LinesCount() - 1) * (skPaint.FontMetrics.Ascent) * .5f;
+                            }
+                            
                             //point.Y = this.MeasureText(text, font).Height;
                             break;
                         case StringAlignment.Near:

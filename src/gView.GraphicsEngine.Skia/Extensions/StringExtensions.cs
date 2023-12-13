@@ -27,6 +27,20 @@ namespace gView.GraphicsEngine.Skia.Extensions
         //static public int LinesCount(this string txt) => txt.Count((c) => c == '\n') + 1;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public bool IsMultiline(this ReadOnlySpan<char> txt)
+        {
+            for (int i = 0, to = txt.Length; i < to; i++)
+            {
+                if (txt[i] == '\n')
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public int LinesCount(this ReadOnlySpan<char> txt)
         {
             int count = 0;

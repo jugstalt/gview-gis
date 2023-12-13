@@ -24,10 +24,13 @@ namespace gView.Framework.Cartography.Rendering
                 case GeometryType.Polygon:
                     symbol = new SimpleFillSymbol();
                     var fillColor = RandomColor(fillAlpha);
-                    ((SimpleFillSymbol)symbol).OutlineSymbol = new SimpleLineSymbol();
                     ((SimpleFillSymbol)symbol).Color = fillColor;
-                    ((SimpleLineSymbol)((SimpleFillSymbol)symbol).OutlineSymbol).Color = ArgbColor.FromArgb(255, fillColor);
-                    ((SimpleLineSymbol)((SimpleFillSymbol)symbol).OutlineSymbol).Width = lineWidth;
+                    if (lineWidth >= 0)
+                    {
+                        ((SimpleFillSymbol)symbol).OutlineSymbol = new SimpleLineSymbol();
+                        ((SimpleLineSymbol)((SimpleFillSymbol)symbol).OutlineSymbol).Color = ArgbColor.FromArgb(255, fillColor);
+                        ((SimpleLineSymbol)((SimpleFillSymbol)symbol).OutlineSymbol).Width = lineWidth;
+                    }
                     break;
                 case GeometryType.Polyline:
                     symbol = new SimpleLineSymbol();

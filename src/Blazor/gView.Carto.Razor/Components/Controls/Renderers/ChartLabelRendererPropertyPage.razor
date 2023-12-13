@@ -1,0 +1,326 @@
+@using gView.Framework.Data.Filters
+
+@inherits BaseHandler
+@inject IApplicationScope AppScope
+
+@if (_renderer is not null && _layer is not null)
+{
+    <GvCard Title="Behavoir">
+        <GvCardContent>
+            <GvGrid ColumnCount="2">
+                <GvGridItem>
+                    <MudSelect T="ChartLabelRenderer.RenderChartType"
+                               @bind-Value="_renderer.ChartType"
+                               Label="Type">
+                        @(GvUtilities.EnumToSelectItems<ChartLabelRenderer.RenderChartType>())
+                    </MudSelect>
+                </GvGridItem>
+                <GvGridItem>
+                    <MudSelect T="SimpleLabelRenderer.RenderLabelPriority"
+                               @bind-Value="_renderer.LabelPriority"
+                               Label="Priority">
+                        @(GvUtilities.EnumToSelectItems<SimpleLabelRenderer.RenderLabelPriority>())
+                    </MudSelect>
+                </GvGridItem>
+                
+            </GvGrid>
+        </GvCardContent>
+    </GvCard>
+
+    @if (_dropItems is not null)
+    {
+        <MudDropContainer T="DropItem"
+                          Items="_dropItems"
+                          ItemDropped="DropField"
+                          ItemsSelector="@((item,zone) => item.Zone == zone)">
+            <ChildContent>
+                <GvCard Title="Chart Data">
+                    <GvCardContent>
+                        <GvGrid ColumnCount="3">
+                            <GvGridItem>
+                                <MudPaper Elevation="25">
+                                    <div style="height:200px;overflow-y:auto;overflow-x:hidden;white-space:nowrap">
+                                        <MudDropZone T="DropItem" Identifier="@ClassFieldNamesContainer"
+                                                     AllowReorder="false"
+                                                     CanDrop="@((item) => true)">
+                                            <MudText Typo="Typo.h6" Class="mb-4">Fields</MudText>
+                                        </MudDropZone>
+                                    </div>
+                                </MudPaper>
+                            </GvGridItem>
+                            <GvGridItem Span="2">
+                                <MudPaper Elevation="25">
+                                    <div style="height:200px;overflow-y:auto;overflow-x:hidden;white-space:nowrap">
+                                        <MudDropZone T="DropItem" Identifier="@RendererFieldNamesContainer"
+                                                     AllowReorder="true" CanDrop="@((item) => true)">
+                                            <MudText Typo="Typo.h6" Class="mb-4">Chart Fields</MudText>
+                                        </MudDropZone>
+                                    </div>
+                                </MudPaper>
+                            </GvGridItem>
+                        </GvGrid>
+                    </GvCardContent>
+                </GvCard>
+               
+            </ChildContent>
+            <ItemRenderer>
+                <table style="width:100%">
+                    <tr>
+                        @if(context.Zone == RendererFieldNamesContainer) 
+                        {
+                            <td @ondblclick="() => ComposeSymbol(context)"
+                                style="cursor:pointer" >
+                                <img src="@context.Symbol.ToBase64ImageSource(30,20)" />
+                            </td>
+                            <td style="overflow:hidden">
+                                <div style="width:100px">@context.Name</div>
+                            </td>
+                            @if (_editLabelItem == context)
+                            {
+                                <td style="width:100%;padding:4px;">
+                                    <InlineInput @bind-Value="context.Label"
+                                                 OnBlur="ItemLabelEdited"
+                                                 OnEnter="ItemLabelEdited"/>
+                                </td>
+                            } 
+                            else
+                            {
+                                <td @ondblclick="() => _editLabelItem = context" 
+                                    style="width:100%;cursor:pointer;padding:4px;border-left:1px solid #eee">
+                                    @context.Label
+                                </td>
+                            }
+                        } 
+                        else
+                        {
+                            <td style="padding:4px;">
+                                <div>@context.Name</div>
+                            </td>
+                        }  
+                    </tr>
+                </table>
+            </ItemRenderer>
+        </MudDropContainer>
+    }
+
+    <GvCard Title="Size">
+        <GvCardContent>
+            <GvGrid ColumnCount="2">
+                <GvGridItem>
+                    <MudRadioGroup @bind-SelectedOption="_renderer.SizeType" >
+                        <MudRadio Option="ChartLabelRenderer.RenderSizeType.ConstantSize">
+                            Constant Size
+                        </MudRadio>
+                        <MudRadio Option="ChartLabelRenderer.RenderSizeType.ValueOfEquatesToSize">
+                            Value of equates to size
+                            <MudFab Color="Color.Primary"
+                                    Size="MudBlazor.Size.Small"
+                                    OnClick="CalcMaxSumValue"
+                                    StartIcon="@Icons.Material.Filled.Calculate" />
+                        </MudRadio>
+                    </MudRadioGroup>
+                </GvGridItem>
+                <GvGridItem>
+                    @if(_renderer.SizeType == ChartLabelRenderer.RenderSizeType.ValueOfEquatesToSize) {
+                        <MudNumericField @bind-Value="_renderer.ValueEquatesToSize"
+                                         Label="Value (Sum) yields..." />
+                    }
+                    <MudNumericField @bind-Value="_renderer.Size"
+                                     Label="Size [px]" />
+                </GvGridItem>
+            </GvGrid>
+            
+            
+        </GvCardContent>
+    </GvCard>
+}
+
+@code {
+    [Parameter] public object? Instance { get; set; }
+
+    private const string RendererFieldNamesContainer = "RendererFieldNames";
+    private const string ClassFieldNamesContainer = "ClassFieldNames";
+
+    private IFeatureLayer? _layer;
+    private ChartLabelRenderer? _renderer;
+
+    private DropItem[]? _dropItems;
+    private DropItem? _editLabelItem;
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+
+        if (Instance is IFeatureLayer fLayer)
+        {
+            _layer = fLayer;
+            _renderer = fLayer.LabelRenderer as ChartLabelRenderer;
+        }
+        else
+        {
+            _renderer = Instance as ChartLabelRenderer;
+        }
+
+        if(_renderer is not null && _layer?.FeatureClass.Fields is not null)
+        {
+            _dropItems = _layer.FeatureClass.Fields
+                .ToEnumerable()
+                .Where(field => field.type == Framework.Core.Data.FieldType.biginteger ||
+                    field.type == Framework.Core.Data.FieldType.Double ||
+                    field.type == Framework.Core.Data.FieldType.Float ||
+                    field.type == Framework.Core.Data.FieldType.integer ||
+                    field.type == Framework.Core.Data.FieldType.smallinteger)
+                .Select(field => new DropItem()
+                { 
+                    Name = field.name,
+                    Symbol = _renderer.FieldNames?.Contains(field.name) == true
+                        ? _renderer.GetSymbol(field.name)
+                        : null,
+                    Zone = _renderer.FieldNames?.Contains(field.name) == true
+                        ? RendererFieldNamesContainer
+                        : ClassFieldNamesContainer
+                })
+                .ToArray();
+        }
+    }
+
+    private void Apply() => Handle(() =>
+    {
+        if(_renderer is null)
+        {
+            return;
+        }
+
+        _renderer.RemoveAllSymbols();
+
+        if(_dropItems is null)
+        {
+            return;
+        }
+
+        foreach(var dropItem in _dropItems.Where(i => i.Zone == RendererFieldNamesContainer))
+        {
+            if(dropItem.Symbol is null)
+            {
+                var symbol = RendererFunctions.CreateStandardSymbol(GeometryType.Polygon, fillAlpha: 125, lineWidth: -1);
+                if(symbol is ILegendItem legendItem)
+                {
+                    legendItem.LegendLabel = dropItem.Label = dropItem.Name;
+                }
+
+                dropItem.Symbol = symbol;
+            }
+
+            _renderer.SetSymbol(dropItem.Name, (ISymbol?)dropItem.Symbol?.Clone());
+        }
+
+        StateHasChanged();
+    });
+
+    private Task ComposeSymbol(DropItem dropItem) => HandleAsync(async () =>
+    {
+        if (dropItem.Symbol is not null)
+        {
+            var newSymbol = await dropItem.Symbol.Compose(AppScope);
+
+            if (newSymbol is not null)
+            {
+                dropItem.Symbol = newSymbol;
+
+                Apply();
+            }
+        }
+    });
+
+    private void ItemLabelEdited()
+    {
+        _editLabelItem = null;
+
+        Apply();
+    }
+
+    async Task DropField(MudItemDropInfo<DropItem> dropItem)
+    {
+        if(_dropItems is null)
+        {
+            return;
+        }
+
+        dropItem.Item!.Zone = dropItem.DropzoneIdentifier;
+        bool addToRenderer = dropItem.DropzoneIdentifier == RendererFieldNamesContainer,
+             addedToNewList = false;
+
+        List<DropItem> newItems = new();
+        foreach(var item in _dropItems.Where(i=>i.Zone == RendererFieldNamesContainer))
+        {
+            if(addToRenderer && newItems.Count == dropItem.IndexInZone)
+            {
+                newItems.Add(dropItem.Item);
+                addedToNewList = true;
+            } 
+            if(item != dropItem.Item)
+            {
+                newItems.Add(item);
+            }
+        }
+        if(addToRenderer && !addedToNewList)
+        {
+            newItems.Add(dropItem.Item);
+        }
+
+        newItems.AddRange(_dropItems.Where(i => i.Zone == ClassFieldNamesContainer));
+        _dropItems = newItems.ToArray();
+
+        Apply();
+    }
+
+    private Task CalcMaxSumValue() => HandleAsync(async () =>
+    {
+        if(_renderer?.FieldNames is null || _layer?.FeatureClass is null)
+        {
+            return;
+        }
+
+        double sum = 0D;
+        foreach (string fieldName in _renderer.FieldNames)
+        {
+            if (_layer.FeatureClass.FindField(fieldName) == null)
+            {
+                continue;
+            }
+
+            object minObj = await FunctionFilter.QueryScalar(
+                _layer.FeatureClass,
+                 new FunctionFilter("MIN", fieldName, "field_min"),
+                "field_min");
+
+            object maxObj = await FunctionFilter.QueryScalar(
+                _layer.FeatureClass,
+                new FunctionFilter("MAX", fieldName, "field_max"),
+                "field_max");
+
+            double max;
+            if (minObj != null && maxObj != null)
+            {
+                max = Math.Max(Math.Abs(Convert.ToDouble(minObj)), Math.Abs(Convert.ToDouble(maxObj)));
+                sum += max;
+            }
+        }
+        if(sum > 0)
+        {
+            _renderer.ValueEquatesToSize = sum;
+        }
+    });
+
+    #region Classes
+
+    public class DropItem
+    {
+        public string Name { get; init; } = "";
+        public ISymbol? Symbol { get; set; }
+        public string Label { get; set; } = "";
+        public string Zone { get; set; } = "";
+    }
+
+    #endregion
+ }

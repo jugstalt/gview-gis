@@ -4,7 +4,7 @@ using gView.Framework.Core.Common;
 
 namespace gView.Framework.Symbology
 {
-    static class ReferenceScaleHelper
+    public static class ReferenceScaleHelper
     {
         static public float PenWidth(float penWidth, IPenWidth symbol, IDisplay display)
         {
