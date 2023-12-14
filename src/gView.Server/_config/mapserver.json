@@ -42,5 +42,12 @@
 
   "globals": {
     "CustomCursorTimeoutSeconds": -1
-  }
+  },
+
+  "path-aliases_": [
+    {
+      "path": "\\\\gis3.esn.at\\e$",
+      "alias": "E:"
+    }
+  ]
 }

@@ -11,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
+using gView.Framework.IO;
 
 namespace gView.DataSources.Raster.File
 {
@@ -165,7 +166,8 @@ namespace gView.DataSources.Raster.File
         {
             try
             {
-                FileInfo fi = new FileInfo(filename);
+                FileInfo fi = FileInfoFactory.Create(filename);
+
                 if (_directory == "")
                 {
                     _directory = fi.Directory.FullName;

@@ -15,6 +15,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json;
 using System;
+using gView.Framework.IO;
 
 namespace gView.Server
 {
@@ -64,6 +65,22 @@ namespace gView.Server
             if (Configuration["globals:CustomCursorTimeoutSeconds"] != null)
             {
                 Framework.Db.Globals.CustomCursorTimeoutSeconds = int.Parse(Configuration["globals:CustomCursorTimeoutSeconds"]);
+            }
+
+            #endregion
+
+            #region Path Aliases
+
+            var pathAliases = Configuration.GetSection("path-aliases");
+            if (pathAliases is not null)
+            {
+                foreach (var pathAlias in pathAliases.GetChildren())
+                {
+                    if (!String.IsNullOrEmpty(pathAlias["path"]))
+                    {
+                        FileInfoFactory.AddAlias(pathAlias["path"], pathAlias["alias"]);
+                    }
+                }
             }
 
             #endregion

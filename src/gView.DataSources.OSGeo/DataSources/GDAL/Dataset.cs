@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
+using gView.Framework.IO;
 
 namespace gView.DataSources.GDAL
 {
@@ -35,7 +36,8 @@ namespace gView.DataSources.GDAL
         {
             try
             {
-                FileInfo fi = new FileInfo(filename);
+                FileInfo fi = FileInfoFactory.Create(filename);
+
                 if (_directory == "")
                 {
                     _directory = fi.Directory.FullName;
