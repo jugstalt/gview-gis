@@ -1,0 +1,68 @@
+@inherits BaseHandler
+@inject IApplicationScope AppScope
+
+@if(_renderer is not null)
+{
+    <MudCheckBox T="bool"
+                 @bind-Checked="_renderer.UsePointSymbol">
+
+        <MudPaper Elevation="25" Style="pading:10px;margin:2px">
+            <MudText Typo="Typo.h6">Point Symbol</MudText>
+            <QuickSymbolPropertiesControl Symbol="_renderer[GeometryType.Point]"
+                                          SymbolChanged="(sym) => _renderer[GeometryType.Point] = sym"
+                                          Dense="true"
+                                          ShowPropertyGrid="false" />
+            <MudButton OnClick="SetRotation">
+                Rotation
+            </MudButton>
+        </MudPaper>
+    </MudCheckBox>
+
+    <MudCheckBox T="bool"
+                 @bind-Checked="_renderer.UseLineSymbol">
+        <MudPaper Elevation="25" Style="pading:10px;margin:2px">
+            <MudText Typo="Typo.h6">Line Symbol</MudText>
+            <QuickSymbolPropertiesControl Symbol="_renderer[GeometryType.Polyline]"
+                                          SymbolChanged="(sym) => _renderer[GeometryType.Polyline] = sym"
+                                          Dense="true"
+                                          ShowPropertyGrid="false" />
+        </MudPaper>
+    </MudCheckBox>
+
+    <MudCheckBox T="bool"
+                 @bind-Checked="_renderer.UsePolygonSymbol">
+        <MudPaper Elevation="25" Style="pading:10px;margin:2px">
+            <MudText Typo="Typo.h6">Polygon Symbol</MudText>
+            <QuickSymbolPropertiesControl Symbol="_renderer[GeometryType.Polygon]"
+                                          SymbolChanged="(sym) => _renderer[GeometryType.Polygon] = sym"
+                                          Dense="true"
+                                          ShowPropertyGrid="false" />
+        </MudPaper>
+    </MudCheckBox>
+}
+
+@code {
+    [Parameter] public object? Instance { get; set; }
+
+    private IFeatureLayer? _layer;
+    private UniversalGeometryRenderer? _renderer;
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+
+        if (Instance is IFeatureLayer fLayer)
+        {
+            _layer = fLayer;
+            _renderer = fLayer.FeatureRenderer as UniversalGeometryRenderer;
+        }
+        else
+        {
+            _renderer = Instance as UniversalGeometryRenderer;
+        }
+    }
+
+    private Task SetRotation() => HandleAsync(() =>
+        _renderer?.SymbolRotation.EditProperties(AppScope, _layer?.FeatureClass)
+        ?? Task.CompletedTask);
+}

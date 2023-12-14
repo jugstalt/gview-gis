@@ -39,7 +39,7 @@
                         <GvGrid ColumnCount="3">
                             <GvGridItem>
                                 <MudPaper Elevation="25">
-                                    <div style="height:200px;overflow-y:auto;overflow-x:hidden;white-space:nowrap">
+                                    <div style="height:260px;overflow-y:auto;overflow-x:hidden;white-space:nowrap">
                                         <MudDropZone T="DropItem" Identifier="@ClassFieldNamesContainer"
                                                      AllowReorder="false"
                                                      CanDrop="@((item) => true)">
@@ -56,6 +56,13 @@
                                             <MudText Typo="Typo.h6" Class="mb-4">Chart Fields</MudText>
                                         </MudDropZone>
                                     </div>
+                                    <MudText Typo="Typo.h6">Outline Symbol</MudText>
+                                    <QuickSymbolPropertiesControl Symbol="_renderer.OutlineSymbol"
+                                                                  SymbolChanged="(sym) => SetOutlineSymbol(sym)"
+                                                                  SymbolDefaultGeometry="GeometryType.Polyline"
+                                                                  AllowDeleteSymbol="true"
+                                                                  Dense="true"
+                                                                  ShowPropertyGrid="false" />
                                 </MudPaper>
                             </GvGridItem>
                         </GvGrid>
@@ -239,11 +246,11 @@
         Apply();
     }
 
-    async Task DropField(MudItemDropInfo<DropItem> dropItem)
+    Task DropField(MudItemDropInfo<DropItem> dropItem)
     {
         if(_dropItems is null)
         {
-            return;
+            return Task.CompletedTask;
         }
 
         dropItem.Item!.Zone = dropItem.DropzoneIdentifier;
@@ -272,6 +279,8 @@
         _dropItems = newItems.ToArray();
 
         Apply();
+
+        return Task.CompletedTask;
     }
 
     private Task CalcMaxSumValue() => HandleAsync(async () =>
@@ -310,6 +319,21 @@
         {
             _renderer.ValueEquatesToSize = sum;
         }
+    });
+
+    private void SetOutlineSymbol(ISymbol? outlineSymbol) => Handle(() =>
+    {
+        if(_renderer is null)
+        {
+            return;
+        }
+
+        _renderer.OutlineSymbol = outlineSymbol switch
+        {
+            null => null,
+            ILineSymbol lineSymbol => lineSymbol,
+            _ => throw new ArgumentException("Only simple line symboligies are allowed (no collections)")
+        };
     });
 
     #region Classes
