@@ -562,7 +562,9 @@ namespace gView.Framework.Cartography
             }
             finally
             {
-                AppendRequestExceptionsToImage();
+                 AppendRequestExceptionsToImage();
+
+                DoRefreshMapView();
 
                 if (_canvas != null)
                 {

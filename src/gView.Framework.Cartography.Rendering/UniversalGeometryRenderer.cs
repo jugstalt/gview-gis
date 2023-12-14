@@ -13,6 +13,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using gView.Framework.Symbology;
+using System.Linq.Expressions;
+using gView.Framework.Cartography.UI;
 
 namespace gView.Framework.Cartography.Rendering
 {
@@ -454,22 +457,22 @@ namespace gView.Framework.Cartography.Rendering
                 return;
             }
 
-            if (geometry is IPoint)
+            if (_usePointSymbol && geometry is IPoint)
             {
                 display.Draw(_pointSymbol, geometry);
             }
-            else if (geometry is IPointCollection)
+            else if (_usePointSymbol && geometry is IPointCollection)
             {
                 for (int i = 0; i < ((IPointCollection)geometry).PointCount; i++)
                 {
                     Draw(((IPointCollection)geometry)[i], display);
                 }
             }
-            else if (geometry is IPolyline)
+            else if (_useLineSymbol && geometry is IPolyline)
             {
                 display.Draw(_lineSymbol, geometry);
             }
-            else if (geometry is IPolygon)
+            else if (_usePolygonSymbol && geometry is IPolygon)
             {
                 display.Draw(_polygonSymbol, geometry);
             }
@@ -513,6 +516,11 @@ namespace gView.Framework.Cartography.Rendering
         public object Clone(CloneOptions options)
         {
             UniversalGeometrySymbol symbol = new UniversalGeometrySymbol();
+
+            symbol._usePointSymbol = _usePointSymbol;
+            symbol._useLineSymbol = _useLineSymbol;
+            symbol._usePolygonSymbol = _usePolygonSymbol;
+
             symbol._pointSymbol = (ISymbol)_pointSymbol.Clone(options);
             symbol._lineSymbol = (ISymbol)_lineSymbol.Clone(options);
             symbol._polygonSymbol = (ISymbol)_polygonSymbol.Clone(options);

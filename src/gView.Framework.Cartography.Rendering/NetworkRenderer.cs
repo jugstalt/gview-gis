@@ -288,7 +288,15 @@ namespace gView.Framework.Cartography.Rendering
 
         public void Release()
         {
-            throw new NotImplementedException();
+            if(_renderers is not null)
+            {
+                foreach(var renderer in _renderers)
+                {
+                    renderer?.Release();
+                }
+            }
+
+            _renderers = null;
         }
 
         #endregion
