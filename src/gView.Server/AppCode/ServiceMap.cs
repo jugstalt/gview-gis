@@ -276,14 +276,7 @@ namespace gView.Server.AppCode
             List<ILayer> layers = new List<ILayer>();
             if (this.TOC != null)
             {
-                if (this.GetType().Equals(typeof(ServiceMap)))
-                {
-                    layers = ListOperations<ILayer>.Swap(this.TOC.Layers);
-                }
-                else
-                {
-                    layers = ListOperations<ILayer>.Swap(this.TOC.VisibleLayers);
-                }
+                layers = ListOperations<ILayer>.Swap(this.TOC.Layers);
             }
             else
             {
