@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 
 namespace gView.Framework.Core.Reflection;
 
@@ -17,6 +18,8 @@ public class PropertyDescriptionAttribute : Attribute
     public string LabelFormat { get; set; } = "";
 
     public string SelectOptionsPropertyName { get; set; } = "";
+
+    public Type? EditorPropertyType { get; set; } = null;
 
     public (float min, float max, float step, string format)? Range =>
         MinValue < MaxValue

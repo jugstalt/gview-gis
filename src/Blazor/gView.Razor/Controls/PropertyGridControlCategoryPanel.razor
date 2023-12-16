@@ -55,7 +55,8 @@
                         </MudButton>
                     </td>
                 }
-                else if (Editors.FirstEditorOrNull(propertyInfo.PropertyType) is IPropertyGridEditAsync editor)
+                else if ((Editors.FirstEditorOrNull(propertyInfo.PropertyType) 
+                         ?? Editors.FirstEditorOrNull(propDesc?.EditorPropertyType)) is IPropertyGridEditAsync editor)
                 {
                     <td colspan="2">
                         <MudText Typo="Typo.body1">@propertyName</MudText>
@@ -65,7 +66,7 @@
                             Edit: @Properties[propertyInfo]?.ToString()?.SplitCamelCase(24)
                         </MudButton>
 
-                        @if (propDesc.AllowNull == true)
+                        @if (propDesc?.AllowNull == true)
                         {
                             <MudChip Icon="@Icons.Material.Filled.Dangerous"
                                      IconColor="Color.Error"
@@ -139,7 +140,7 @@
                             }
                             else if (propertyInfo.PropertyType == typeof(float))
                             {
-                                if(propDesc.Range is (float min, float max, float step, string format) range) 
+                                if(propDesc?.Range is (float min, float max, float step, string format) range) 
                                 {
                                     <MudSlider T="float"
                                                Min="range.min" Max="range.max"
@@ -171,7 +172,7 @@
                             else if (propertyInfo.PropertyType == typeof(ArgbColor))
                             {
                                 <ColorSelectorButton ArgbColor="(ArgbColor)Properties[propertyInfo]!"
-                                                     ArgbColorChanged="(col) => PropertyChanged(propertyInfo, col)" />
+                                ArgbColorChanged="(col) => PropertyChanged(propertyInfo, col)" />
                             }
                             else if (propertyInfo.PropertyType.IsEnum)
                             {
@@ -192,7 +193,7 @@
                                 <MudCheckBox T="bool" Checked="(bool)Properties[propertyInfo]!"
                                              CheckedChanged="(check) => PropertyChanged(propertyInfo, check)" />
                             }
-                            else if(!String.IsNullOrEmpty(propDesc.SelectOptionsPropertyName))
+                            else if(!String.IsNullOrEmpty(propDesc?.SelectOptionsPropertyName))
                             {
                                 var optionsProperty = Instance.GetType().GetProperty(propDesc.SelectOptionsPropertyName);
                                 var options = optionsProperty?.GetValue(Instance) as IEnumerable<string>;
@@ -215,7 +216,7 @@
                                 </MudTextField>
                             }
 
-                            if (propDesc.AllowNull == true)
+                            if (propDesc?.AllowNull == true)
                             {
                                 <MudChip Icon="@Icons.Material.Filled.Dangerous"
                                          IconColor="Color.Error"

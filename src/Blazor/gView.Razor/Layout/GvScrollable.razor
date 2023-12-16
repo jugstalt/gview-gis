@@ -1,0 +1,11 @@
+<div style="max-height:@(MaxHeight)vh;overflow:auto">
+    @if (ChildContent is not null)
+    {
+        @ChildContent
+    }
+</div>
+
+@code {
+    [Parameter] public float MaxHeight { get; set; } = 73f;
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+}

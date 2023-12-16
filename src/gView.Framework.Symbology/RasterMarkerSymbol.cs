@@ -9,6 +9,9 @@ using gView.GraphicsEngine.Abstraction;
 using System;
 using System.ComponentModel;
 using System.IO;
+using gView.Framework.IO;
+using gView.Framework.Core.Reflection;
+using System.Diagnostics;
 
 namespace gView.Framework.Symbology
 {
@@ -20,7 +23,8 @@ namespace gView.Framework.Symbology
         private string _filename = String.Empty;
         private IBitmap _image = null;
 
-        [UseFilePicker()]
+        [Browsable(true)]
+        [PropertyDescription(EditorPropertyType = typeof(FileInfo))]
         public string Filename
         {
             get

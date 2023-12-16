@@ -2,6 +2,7 @@
 @using gView.Framework.Core.Symbology
 
 @inherits BaseHandler
+@inject ICartoDocumentService CartoDocument
 
 @if(SymbolProtoType is not null)
 {
@@ -17,7 +18,7 @@
         {
             <div @onclick="()=>SymbolSelected(symbol)"
                  class="carto-symbol-gallery-tile"
-                 style="background-image:url('@symbol.ToBase64ImageSource(140, 130)')">
+                 style="background-image:url('@symbol.ToBase64ImageSource(CartoDocument.CurrentMap, 140, 130)')">
                 
             </div>
         }

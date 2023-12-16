@@ -1,6 +1,7 @@
 @inherits BaseHandler
 
 @inject IApplicationScope AppScope
+@inject ICartoDocumentService CartoDocument
 
 @if(_renderer is not null && _layer is not null)
 {
@@ -67,7 +68,7 @@
             <GvGrid ColumnCount="2">
                 <GvGridItem>
                     <div style="width:250px;height:200px;" @onclick="OnEditSymbol">
-                        <img src="@(_renderer.ToBase64ImageSource(250, 200))" />
+                        <img src="@(_renderer.ToBase64ImageSource(CartoDocument.CurrentMap, 250, 200))" />
                     </div>
                 </GvGridItem>
                 <GvGridItem>

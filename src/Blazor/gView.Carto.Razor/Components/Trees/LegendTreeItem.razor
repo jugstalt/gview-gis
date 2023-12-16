@@ -1,6 +1,7 @@
 @using gView.Framework.Core.UI
 
 @inject CartoEventBusService EventBus
+@inject ICartoDocumentService CartoDocument
 
 @implements IDisposable
 @inherits BaseHandler
@@ -40,7 +41,7 @@
                 else 
                 {
                     <td>
-                        <img src="@item.ToBase64ImageSource()"
+                        <img src="@item.ToBase64ImageSource(CartoDocument.CurrentMap)"
                              @ondblclick="() => ShowInlineEditor(item)" />
                     </td>
                     <td style="width:100%">

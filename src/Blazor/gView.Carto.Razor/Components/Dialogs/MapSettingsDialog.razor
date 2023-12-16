@@ -116,6 +116,7 @@
             {
                 <GvCard Title="Map (Biniary) Resources">
                     <GvCardContent>
+                        <GvScrollable>
                             @GvUtilities.InfoText("Resources are binary data added to to the map. This can e.g uses image-symbols for layer renderers. The resources are stored inside the map-document. Do not add large files, to avoid large map-documents!")
 
                             <MudFileUpload T="IReadOnlyList<IBrowserFile>" FilesChanged="UploadMapResourceFiles">
@@ -152,6 +153,7 @@
                                     }
                                 </table>
                             }
+                        </GvScrollable>
                     </GvCardContent>
                 </GvCard>
                 

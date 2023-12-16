@@ -1,17 +1,16 @@
 using gView.Framework.Cartography.LayerRenderers;
 using gView.Framework.Cartography.UI;
+using gView.Framework.Common;
 using gView.Framework.Core.Carto;
+using gView.Framework.Core.Common;
 using gView.Framework.Core.Data;
 using gView.Framework.Core.Geometry;
 using gView.Framework.Core.IO;
-using gView.Framework.Core.Common;
 using gView.Framework.Core.UI;
 using gView.Framework.Data;
 using gView.Framework.Data.Extensions;
 using gView.Framework.Geometry;
 using gView.Framework.IO;
-using gView.Framework.Common;
-using gView.Framework.Common;
 using System;
 using System.Collections;
 using System.Collections.Concurrent;
@@ -19,7 +18,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.Security.Policy;
 
 namespace gView.Framework.Cartography
 {
@@ -809,12 +807,12 @@ namespace gView.Framework.Cartography
 
         public void ReplaceLayer(ILayer oldLayer, ILayer newLayer)
         {
-            if(oldLayer.ID != newLayer.ID)
+            if (oldLayer.ID != newLayer.ID)
             {
                 throw new Exception("Can't replace layers with differnt Ids");
             }
 
-            if(oldLayer.DatasetID != newLayer.DatasetID)
+            if (oldLayer.DatasetID != newLayer.DatasetID)
             {
                 throw new Exception("Can't replace layer with differnt Dataset-Ids.");
             }
@@ -836,7 +834,7 @@ namespace gView.Framework.Cartography
                     //tocElement.Layers.Remove(oldLayer);
                     //tocElement.Layers.Insert(Math.Max(0, tocIndex), newLayer);
                     tocElement.RemoveLayer(oldLayer);
-                    tocElement.AddLayer(newLayer);  
+                    tocElement.AddLayer(newLayer);
                 }
             }
         }

@@ -2,6 +2,7 @@
 
 @inherits BaseHandler
 @inject IApplicationScope AppScope
+@inject ICartoDocumentService CartoDocument
 
 @if (_renderer is not null && _layer is not null)
 {
@@ -77,7 +78,7 @@
                         {
                             <td @ondblclick="() => ComposeSymbol(context)"
                                 style="cursor:pointer" >
-                                <img src="@context.Symbol.ToBase64ImageSource(30,20)" />
+                                <img src="@context.Symbol.ToBase64ImageSource(CartoDocument.CurrentMap, 30,20)" />
                             </td>
                             <td style="overflow:hidden">
                                 <div style="width:100px">@context.Name</div>

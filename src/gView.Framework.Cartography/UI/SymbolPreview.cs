@@ -1,28 +1,27 @@
-using gView.Framework.Cartography;
+#nullable enable
+
+using gView.Framework.Common;
 using gView.Framework.Core.Carto;
+using gView.Framework.Core.Common;
 using gView.Framework.Core.Geometry;
 using gView.Framework.Core.Symbology;
-using gView.Framework.Core.Common;
 using gView.Framework.Geometry;
-using gView.Framework.Common;
 using System;
 
 namespace gView.Framework.Cartography.UI
 {
     public class SymbolPreview
     {
-        public static IMap CurrentMap = null;
+        private readonly IMap? _map;
 
-        private readonly IMap _map;
-
-        public SymbolPreview(IMap map)
+        public SymbolPreview(IMap? map)
         {
-            _map = map ?? CurrentMap;
+            _map = map;
         }
 
-        private static IGeometry GeometryFromSymbol(ISymbol symbol, IEnvelope env)
+        private static IGeometry? GeometryFromSymbol(ISymbol symbol, IEnvelope env)
         {
-            IGeometry geometry = null;
+            IGeometry? geometry = null;
 
             if (symbol is ISymbolCollection)
             {
@@ -84,7 +83,7 @@ namespace gView.Framework.Cartography.UI
             display.ImageHeight = (int)env.maxy;
             display.ZoomTo(env.minx, env.miny, env.maxx, env.maxy);
 
-            IGeometry geometry = GeometryFromSymbol(symbol, new Envelope(rectangle.Left,
+            IGeometry? geometry = GeometryFromSymbol(symbol, new Envelope(rectangle.Left,
                                                                          rectangle.Height + rectangle.Top,
                                                                          rectangle.Width + rectangle.Left,
                                                                          rectangle.Top));
@@ -108,8 +107,8 @@ namespace gView.Framework.Cartography.UI
                 }
             }
 
-            ISymbol sym = symbol.Clone(new CloneOptions(display, false)) as ISymbol;
-            if (sym != null)
+            ISymbol? sym = symbol.Clone(new CloneOptions(display, false)) as ISymbol;
+            if (sym is not null)
             {
                 if (sym is ITextSymbol)
                 {

@@ -1,5 +1,6 @@
 @using gView.Carto.Razor.Components.Controls.Renderers.Models
 
+@inject ICartoDocumentService CartoDocument
 @inherits BaseHandler
 @typeparam TKey
 
@@ -50,7 +51,7 @@
                                    aria-label="delete"></MudIconButton>
                 </GvGridItem>
                 <GvGridItem Span="1">
-                    <div style="display:inline-block;width:30px;height:30px;cursor:pointer;background-image:url('@context.Symbol.ToBase64ImageSource(30,30)')"
+                    <div style="display:inline-block;width:30px;height:30px;cursor:pointer;background-image:url('@context.Symbol.ToBase64ImageSource(CartoDocument.CurrentMap, 30,30)')"
                          @onclick="() => ComposeSymbol(context.Key)">
                     </div>
                 </GvGridItem>

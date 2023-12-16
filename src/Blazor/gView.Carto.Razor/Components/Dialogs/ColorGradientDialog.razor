@@ -1,0 +1,55 @@
+@inherits ModalDialogFormBase<ColorGradientModel>
+@inject ICartoDocumentService CartoDocument
+
+<ModalDialogFormBase T="ColorGradientModel"
+                     OnDialogClose="base.OnDialogClose"
+                     Model="base.Model">
+    <DialogBody>
+
+        @if (Model?.ColorGradient is not null)
+        {
+            <GvGrid ColumnCount="2">
+                <GvGridItem>
+                    <MudText Typo="Typo.h6">Color 1</MudText>
+                    <ColorSelectorButton ArgbColor="Model.ColorGradient.Color1"
+                                         ArgbColorChanged="(col) => Model.ColorGradient.Color1 = col" />
+                </GvGridItem>
+                <GvGridItem>
+                    <MudText Typo="Typo.h6">Color 1</MudText>
+                    <ColorSelectorButton ArgbColor="Model.ColorGradient.Color2"
+                                         ArgbColorChanged="(col) => Model.ColorGradient.Color2 = col" />
+                </GvGridItem>
+                <GvGridItem>
+                    <MudNumericField @bind-Value="Model.ColorGradient.Angle"
+                                     Min="0" Max="360" Step="5"
+                                     Label="Angle" />
+                </GvGridItem>
+                <GvGridItem>
+                    @if (_symol is not null)
+                    {
+                        <MudText Typo="Typo.h6">Preview</MudText>
+                        <img src="@_symol.ToBase64ImageSource(CartoDocument.CurrentMap, 256,256)" />
+                    }
+                </GvGridItem>
+            </GvGrid>
+        }
+    </DialogBody>
+</ModalDialogFormBase>
+
+@code {
+    private GradientFillSymbol? _symol;
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+
+        if(Model.ColorGradient is not null)
+        {
+            _symol = new GradientFillSymbol()
+            {
+                ColorGradient = Model.ColorGradient,
+                GradientRectangle = GradientFillSymbol.GradientRectType.Feature,
+            };
+        }
+    }
+}

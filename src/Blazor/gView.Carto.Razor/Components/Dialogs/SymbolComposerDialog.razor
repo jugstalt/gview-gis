@@ -1,5 +1,6 @@
 @inherits ModalDialogFormBase<SymbolComposerModel>
 @inject PluginManagerService PluginManager
+@inject ICartoDocumentService CartoDocument
 
 <ModalDialogFormBase T="SymbolComposerModel"
                      OnDialogClose="base.OnDialogClose"
@@ -48,7 +49,7 @@
                                                 <MudCheckBox T="bool" Style="display:inline-block" Dense="true"
                                                              Checked="@context.Visible"
                                                              CheckedChanged="(visible) => { context.Visible = visible; DrawPreviewImage(); }" />
-                                                 <div style="display:inline-block;width:150px;height:35px;background-image:url('@context.Symbol.ToBase64ImageSource(150,35)')">
+                                                 <div style="display:inline-block;width:150px;height:35px;background-image:url('@context.Symbol.ToBase64ImageSource(CartoDocument.CurrentMap, 150,35)')">
 
                                                  </div>
                                                 <MudIconButton Icon="@Icons.Material.Filled.Delete"
@@ -284,6 +285,6 @@
 
     private void DrawPreviewImage()
     {
-        _previewImageBase64 = _symbolStack?.ToBase64ImageSource(210, 120, addCrossHair: true) ?? string.Empty;
+        _previewImageBase64 = _symbolStack?.ToBase64ImageSource(CartoDocument.CurrentMap, 210, 120, addCrossHair: true) ?? string.Empty;
     }
 }

@@ -9,7 +9,11 @@ namespace gView.Blazor.Core.Extensions;
 
 static public class SymbolExtensions
 {
-    static public byte[] ToBytes(this ISymbol? symbol, int width = 30, int height = 20, bool addCrossHair = false)
+    static public byte[] ToBytes(this ISymbol? symbol,
+        IMap currentMap,
+        int width = 30,
+        int height = 20,
+        bool addCrossHair = false)
     {
         var imageBytes = Array.Empty<byte>();
 
@@ -34,7 +38,7 @@ static public class SymbolExtensions
                     }
                 }
 
-                new SymbolPreview(null).Draw(canvas, rect, symbol, false);
+                new SymbolPreview(currentMap).Draw(canvas, rect, symbol, false);
 
                 bitmap.Save(memStream, ImageFormat.Png);
                 imageBytes = memStream.ToArray();
@@ -45,6 +49,6 @@ static public class SymbolExtensions
         return imageBytes;
     }
 
-    static public string ToBase64ImageSource(this ISymbol? symbol, int width = 30, int height = 20, bool addCrossHair = false)
-        => $"data:image/png;base64, {Convert.ToBase64String(symbol.ToBytes(width, height, addCrossHair))}";
+    static public string ToBase64ImageSource(this ISymbol? symbol, IMap currentMap, int width = 30, int height = 20, bool addCrossHair = false)
+        => $"data:image/png;base64, {Convert.ToBase64String(symbol.ToBytes(currentMap, width, height, addCrossHair))}";
 }

@@ -1,16 +1,15 @@
 ﻿using gView.Framework.Cartography.LayerRenderers;
+using gView.Framework.Common;
 using gView.Framework.Core.Carto;
+using gView.Framework.Core.Common;
 using gView.Framework.Core.Data;
 using gView.Framework.Core.Geometry;
 using gView.Framework.Core.Symbology;
-using gView.Framework.Core.Common;
 using gView.Framework.Data;
 using gView.Framework.Data.Abstraction;
 using gView.Framework.Data.Extensions;
 using gView.Framework.Geometry;
 using gView.Framework.Geometry.GeoProcessing;
-using gView.Framework.Common;
-using gView.Framework.Common;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -562,7 +561,7 @@ namespace gView.Framework.Cartography
             }
             finally
             {
-                 AppendRequestExceptionsToImage();
+                AppendRequestExceptionsToImage();
 
                 DoRefreshMapView();
 

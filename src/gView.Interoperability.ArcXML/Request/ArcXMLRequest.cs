@@ -1,20 +1,19 @@
 using gView.Framework.AXL;
 using gView.Framework.Cartography;
+using gView.Framework.Common;
 using gView.Framework.Core.Carto;
+using gView.Framework.Core.Common;
 using gView.Framework.Core.Data;
 using gView.Framework.Core.Data.Cursors;
 using gView.Framework.Core.Data.Filters;
 using gView.Framework.Core.Geometry;
 using gView.Framework.Core.MapServer;
 using gView.Framework.Core.Network;
-using gView.Framework.Core.Common;
 using gView.Framework.Data;
 using gView.Framework.Data.Extensions;
 using gView.Framework.Data.Filters;
 using gView.Framework.Geometry;
 using gView.Framework.Network.Algorthm;
-using gView.Framework.Common;
-using gView.Framework.Common;
 using gView.Framework.XML;
 using gView.GraphicsEngine;
 using gView.Interoperability.ArcXML.Dataset;
@@ -1457,7 +1456,7 @@ namespace gView.Interoperability.ArcXML
             {
                 if (element.Class is IClass)
                 {
-                    classes.Add(element.Class as IClass);
+                    classes.Add(element.Class);
                 }
             }
             return classes;

@@ -3,6 +3,7 @@
 
 @inherits BaseHandler
 @inject IApplicationScope AppScope
+@inject ICartoDocumentService CartoDocument
 
 @if (Symbol is not null)
 {
@@ -13,14 +14,14 @@
             {
                 <img class="carto-symbol-composer-button" style="margin:5px"
                      @onclick="OpenSymbolComposer"
-                     src="@Symbol.ToBase64ImageSource(150, 50)" />
+                     src="@Symbol.ToBase64ImageSource(CartoDocument.CurrentMap, 150, 50)" />
             }
             <MudToolBar Dense="Dense" Style="padding:0px">
                 @if(Dense == true)
                 {
                     <img class="carto-symbol-composer-button" style="margin:5px"
                          @onclick="OpenSymbolComposer"
-                         src="@Symbol.ToBase64ImageSource(120, 40)" />
+                         src="@Symbol.ToBase64ImageSource(CartoDocument.CurrentMap, 120, 40)" />
                 }
                 <MudIconButton Size="MudBlazor.Size.Medium" 
                                Icon="@Icons.Material.Outlined.Refresh"

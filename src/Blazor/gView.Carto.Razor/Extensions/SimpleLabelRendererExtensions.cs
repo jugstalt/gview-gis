@@ -1,5 +1,8 @@
-﻿using gView.Framework.Cartography.Rendering;
+﻿using gView.Framework.Blazor.Services.Abstraction;
+using gView.Framework.Cartography.Rendering;
 using gView.Framework.Cartography.UI;
+using gView.Framework.Core.Carto;
+using gView.Framework.Core.Common;
 using gView.Framework.Core.Symbology;
 using gView.GraphicsEngine;
 
@@ -9,6 +12,7 @@ static public class SimpleLabelRendererExtensions
 {
     static public byte[] ToBytes(
         this SimpleLabelRenderer renderer,
+        IMap currentMap,
         int width = 100,
         int height = 100,
         bool addCrossHair = true)
@@ -17,7 +21,6 @@ static public class SimpleLabelRendererExtensions
 
         if (renderer.TextSymbol is ISymbol)
         {
-
             using (var bitmap = Current.Engine.CreateBitmap(width, height, PixelFormat.Rgba32))
             using (var canvas = bitmap.CreateCanvas())
             using (var memStream = new MemoryStream())
@@ -41,7 +44,7 @@ static public class SimpleLabelRendererExtensions
 
                 renderer.TextSymbol.Text = "Label";
 
-                new SymbolPreview(null).Draw(canvas, rect, renderer.TextSymbol, false);
+                new SymbolPreview(currentMap).Draw(canvas, rect, renderer.TextSymbol, false);
 
                 bitmap.Save(memStream, ImageFormat.Png);
                 imageBytes = memStream.ToArray();
@@ -53,8 +56,9 @@ static public class SimpleLabelRendererExtensions
 
     static public string ToBase64ImageSource(
         this SimpleLabelRenderer renderer,
+        IMap currentMap,
         int width = 100,
         int height = 100,
         bool addCrossHair = true)
-        => $"data:image/png;base64, {Convert.ToBase64String(renderer.ToBytes(width, height, addCrossHair))}";
+        => $"data:image/png;base64, {Convert.ToBase64String(renderer.ToBytes(currentMap, width, height, addCrossHair))}";
 }

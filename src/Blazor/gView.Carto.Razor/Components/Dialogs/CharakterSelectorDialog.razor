@@ -1,6 +1,7 @@
 @using gView.GraphicsEngine
 @inherits ModalDialogFormBase<CharakterSelectorModel>
 
+@inject ICartoDocumentService CartoDocument
 
 <ModalDialogFormBase T="CharakterSelectorModel"
                      OnDialogClose="base.OnDialogClose"
@@ -56,7 +57,7 @@
                     Value = i
                 };      
 
-                _chars.Add(i, symbol.ToBase64ImageSource(20, 40));
+                _chars.Add(i, symbol.ToBase64ImageSource(CartoDocument.CurrentMap, 20, 40));
             }
         }
 

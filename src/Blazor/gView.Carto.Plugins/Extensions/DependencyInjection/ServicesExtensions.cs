@@ -22,6 +22,8 @@ static public class ServicesExtensions
             .AddTransient<IPropertyGridEditor, FontPropertyEditor>()
             .AddTransient<IPropertyGridEditor, CharakterSelectorEditor>()
             .AddTransient<IPropertyGridEditor, FontNameSelectorEditor>()
+            .AddTransient<IPropertyGridEditor, ColorGradientPropertyEditor>()
+            .AddTransient<IPropertyGridEditor, ResourcesPickerPropertyEditor>()
             .AddTransient<ICartoDocumentService, CartoDocumentService>()
             .Configure(configureOptions)
             .AddEventBus()

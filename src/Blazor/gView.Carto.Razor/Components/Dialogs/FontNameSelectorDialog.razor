@@ -1,5 +1,6 @@
 @using gView.GraphicsEngine
 @inherits ModalDialogFormBase<FontNameSelectorModel>
+@inject ICartoDocumentService CartoDocument
 
 <ModalDialogFormBase T="FontNameSelectorModel"
                      OnDialogClose="base.OnDialogClose"
@@ -91,7 +92,7 @@
                             Value = (byte)c
                         };
 
-                    _chars.Add((byte)c, symbol.ToBase64ImageSource(40, 80));
+                    _chars.Add((byte)c, symbol.ToBase64ImageSource(CartoDocument.CurrentMap, 40, 80));
                 }
             }
 
