@@ -4,8 +4,8 @@ using gView.DataExplorer.Core.Services;
 using gView.Framework.Blazor;
 using gView.Framework.Blazor.Models;
 using gView.Framework.Blazor.Services;
-using gView.Framework.Blazor.Services.Abstraction;
 using gView.Framework.DataExplorer.Abstraction;
+using gView.Framework.DataExplorer.Services.Abstraction;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Options;
 using Microsoft.JSInterop;
@@ -18,7 +18,7 @@ using System.Threading.Tasks;
 
 namespace gView.DataExplorer.Plugins.Services;
 
-public class ExplorerApplicationScopeService : ApplictionBusyHandler, IApplicationScope
+public class ExplorerApplicationScopeService : ApplictionBusyHandler, IExplorerApplicationScopeService
 {
     private readonly IDialogService _dialogService;
     private readonly IEnumerable<IKnownDialogService> _knownDialogs;

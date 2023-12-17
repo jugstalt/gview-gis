@@ -20,7 +20,7 @@ public class TableItem : ContentItem
     public RowItem AddRow()
     {
         var row = new RowItem();
-        ((List<RowItem>)_rows).Add(row);
+        _rows.Add(row);
 
         return row;
     }

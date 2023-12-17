@@ -12,6 +12,7 @@ using gView.Framework.Blazor;
 using gView.Framework.Blazor.Services.Abstraction;
 using gView.Framework.Core.Data;
 using gView.Framework.DataExplorer.Abstraction;
+using gView.Framework.DataExplorer.Services.Abstraction;
 using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.Linq;
@@ -25,17 +26,16 @@ internal class AddImages : IExplorerObjectContextTool
 
     public string Icon => "basic:folder-white";
 
-    public bool IsEnabled(IApplicationScope scope, IExplorerObject exObject)
+    public bool IsEnabled(IExplorerApplicationScopeService scope, IExplorerObject exObject)
     {
         return true;
     }
 
-    async public Task<bool> OnEvent(IApplicationScope scope, IExplorerObject exObject)
+    async public Task<bool> OnEvent(IExplorerApplicationScopeService scope, IExplorerObject exObject)
     {
-        var scopeService = scope.ToExplorerScopeService();
         var instance = await exObject.GetInstanceAsync() as IRasterCatalogClass;
 
-        var model = await scopeService.ShowModalDialog(typeof(gView.DataExplorer.Razor.Components.Dialogs.ImageDatasetImportFolder),
+        var model = await scope.ShowModalDialog(typeof(gView.DataExplorer.Razor.Components.Dialogs.ImageDatasetImportFolder),
                                                        "Import Folder",
                                                         new ImageDatasetImportFolderModel());
 
@@ -80,7 +80,7 @@ internal class AddImages : IExplorerObjectContextTool
                         })));
             }
 
-            await scopeService.ShowKnownDialog(
+            await scope.ShowKnownDialog(
                     KnownDialogs.ExecuteCommand,
                     $"Add File",
                     new ExecuteCommandModel()

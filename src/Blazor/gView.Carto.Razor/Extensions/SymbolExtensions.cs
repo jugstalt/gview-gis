@@ -6,9 +6,9 @@ namespace gView.Carto.Razor.Extensions;
 
 public static class SymbolExtensions
 {
-    async public static Task<ISymbol> Compose(this ISymbol symbol, IApplicationScope scope)
+    async public static Task<ISymbol> Compose(this ISymbol symbol, IApplicationScopeFactory scopeFactory)
     {
-        var model = await scope.ShowModalDialog(
+        var model = await scopeFactory.ShowModalDialog(
             typeof(gView.Carto.Razor.Components.Dialogs.SymbolComposerDialog),
             "Symbol Composer",
             new SymbolComposerModel()

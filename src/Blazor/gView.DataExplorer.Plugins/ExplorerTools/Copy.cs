@@ -7,6 +7,7 @@ using gView.Framework.DataExplorer;
 using gView.Framework.DataExplorer.Abstraction;
 using System.Linq;
 using System.Threading.Tasks;
+using gView.Framework.DataExplorer.Services.Abstraction;
 
 namespace gView.DataExplorer.Plugins.ExplorerTools;
 
@@ -21,20 +22,16 @@ internal class Copy : IExplorerTool
 
     public ExplorerToolTarget Target => ExplorerToolTarget.SelectedContextExplorerObjects;
 
-    public bool IsEnabled(IApplicationScope scope)
+    public bool IsEnabled(IExplorerApplicationScopeService scope)
     {
-        var scopeService = scope.ToExplorerScopeService();
-
-        return scopeService.ContextExplorerObjects?
+        return scope.ContextExplorerObjects?
             .Where(e => e.ObjectType != null && e.ObjectType.IsAssignableTo(typeof(IFeatureClass)))
             .Count() > 0;
     }
 
-    public Task<bool> OnEvent(IApplicationScope scope)
+    public Task<bool> OnEvent(IExplorerApplicationScopeService scope)
     {
-        var scopeService = scope.ToExplorerScopeService();
-
-        var featureClasses = scopeService.ContextExplorerObjects?
+        var featureClasses = scope.ContextExplorerObjects?
             .Where(e => e.ObjectType != null && (e.ObjectType is IFeatureClass || e.ObjectType.IsAssignableTo(typeof(IFeatureClass))))
             .Select(async e => await e.GetInstanceAsync())
             .Select(e => e.Result as IFeatureClass)
@@ -43,12 +40,12 @@ internal class Copy : IExplorerTool
 
         if (featureClasses != null && featureClasses.Any())
         {
-            scopeService.SetClipboardItem(new ClipboardItem(typeof(IFeatureClass))
+            scope.SetClipboardItem(new ClipboardItem(typeof(IFeatureClass))
             {
                 Elements = featureClasses.Where(f => f != null)!
             });
 
-            scopeService.AddToSnackbar("Featureclass(es) in Clipbard. Navigate to Featuredataset and click Paste-Button to copy...");
+            scope.AddToSnackbar("Featureclass(es) in Clipbard. Navigate to Featuredataset and click Paste-Button to copy...");
 
             return Task.FromResult(true);
         }

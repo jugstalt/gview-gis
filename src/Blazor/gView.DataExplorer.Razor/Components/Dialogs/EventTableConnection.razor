@@ -1,7 +1,7 @@
 @using gView.Framework.Db
 
 @inherits ModalDialogFormBase<EventTableConnectionModel>
-@inject IApplicationScope AppScope
+@inject IApplicationScopeFactory AppScopeFactory
 
 <ModalDialogFormBase T="EventTableConnectionModel"
                           OnDialogClose="base.OnDialogClose"
@@ -127,7 +127,7 @@
 
     private Task SelectConnectionString() => HandleAsync(async () =>
     {
-        var DbConnectionModel = await AppScope.ShowKnownDialog(Framework.Blazor.KnownDialogs.ConnectionString,
+        var DbConnectionModel = await AppScopeFactory.ShowKnownDialog(Framework.Blazor.KnownDialogs.ConnectionString,
                                                                model: new ConnectionStringModel(Model.ConnectionString.Clone()));
 
         if (DbConnectionModel != null)
@@ -178,7 +178,7 @@
 
     private Task SelectSpatialReference() => HandleAsync(async () =>
     {
-        var sRrefModel = await AppScope.ShowKnownDialog(Framework.Blazor.KnownDialogs.SpatialReferenceDialog,
+        var sRrefModel = await AppScopeFactory.ShowKnownDialog(Framework.Blazor.KnownDialogs.SpatialReferenceDialog,
                                                         model: new BaseDialogModel<ISpatialReference>()
                                                             {
                                                                 Value = Model.SpatialReference

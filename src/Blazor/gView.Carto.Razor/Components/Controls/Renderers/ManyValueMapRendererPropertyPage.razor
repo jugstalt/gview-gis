@@ -6,7 +6,7 @@
 @inherits BaseHandler
 @implements IDisposable
 
-@inject IApplicationScope AppScope
+@inject IApplicationScopeFactory AppScopeFactory
 
 @if(_renderer is not null && _layer?.FeatureClass is not null)
 {
@@ -373,7 +373,7 @@
     });
 
     private Task SetRotation() => HandleAsync(() =>
-        _renderer?.SymbolRotation.EditProperties(AppScope, _layer?.FeatureClass)
+        _renderer?.SymbolRotation.EditProperties(AppScopeFactory, _layer?.FeatureClass)
         ?? Task.CompletedTask);
 
     private Task SetCartographicsMethod() => HandleAsync(async () =>
@@ -383,7 +383,7 @@
             return;
         }
 
-        var model = await AppScope.ShowModalDialog
+        var model = await AppScopeFactory.ShowModalDialog
             (typeof(LegendGroupCartographicMethodDialog),
             "Cartographic Method",
             new LegendGroupCartographicMethodModel()

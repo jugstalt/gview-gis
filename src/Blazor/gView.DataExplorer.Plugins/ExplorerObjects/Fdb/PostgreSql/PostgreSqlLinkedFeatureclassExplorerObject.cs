@@ -10,6 +10,7 @@ using gView.Framework.Common;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using gView.Framework.DataExplorer.Services.Abstraction;
 
 namespace gView.DataExplorer.Plugins.ExplorerObjects.Fdb.PostgreSql;
 
@@ -235,7 +236,7 @@ public class PostgreSqlLinkedFeatureclassExplorerObject : IExplorerSimpleObject,
         return parentExObject is PostgreSqlDatasetExplorerObject;
     }
 
-    async public Task<IExplorerObject?> CreateExplorerObjectAsync(IApplicationScope scope, IExplorerObject parentExObject)
+    async public Task<IExplorerObject?> CreateExplorerObjectAsync(IExplorerApplicationScopeService scope, IExplorerObject parentExObject)
     {
         PostgreSqlDatasetExplorerObject parent = (PostgreSqlDatasetExplorerObject)parentExObject;
 
@@ -251,7 +252,7 @@ public class PostgreSqlLinkedFeatureclassExplorerObject : IExplorerSimpleObject,
             return null;
         }
 
-        var model = await scope.ToExplorerScopeService().ShowKnownDialog(
+        var model = await scope.ShowKnownDialog(
            Framework.Blazor.KnownDialogs.ExplorerDialog,
            model: new ExplorerDialogModel()
            {
@@ -272,7 +273,7 @@ public class PostgreSqlLinkedFeatureclassExplorerObject : IExplorerSimpleObject,
                 }
             }
 
-            await scope.ToExplorerScopeService().ForceContentRefresh();
+            await scope.ForceContentRefresh();
         }
 
         return null;

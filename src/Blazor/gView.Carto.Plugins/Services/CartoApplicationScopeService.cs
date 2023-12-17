@@ -9,14 +9,13 @@ using gView.Carto.Core.Services.Abstraction;
 using gView.Framework.Blazor;
 using gView.Framework.Blazor.Models;
 using gView.Framework.Blazor.Services;
-using gView.Framework.Blazor.Services.Abstraction;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Options;
 using Microsoft.JSInterop;
 using MudBlazor;
 
 namespace gView.Carto.Plugins.Services;
-public class CartoApplicationScopeService : ApplictionBusyHandler, IApplicationScope, ICartoApplicationScopeService
+public class CartoApplicationScopeService : ApplictionBusyHandler, ICartoApplicationScopeService
 {
     private readonly IDialogService _dialogService;
     private readonly IEnumerable<IKnownDialogService> _knownDialogs;
@@ -81,31 +80,6 @@ public class CartoApplicationScopeService : ApplictionBusyHandler, IApplicationS
     #endregion
 
     #region IApplicationScope
-
-    public IEnumerable<T> GetClipboardElements<T>()
-    {
-        throw new NotImplementedException();
-    }
-
-    public Type? GetClipboardItemType()
-    {
-        throw new NotImplementedException();
-    }
-
-    public string GetToolConfigFilename(params string[] paths)
-    {
-        throw new NotImplementedException();
-    }
-
-    public IEnumerable<string> GetToolConfigFiles(params string[] paths)
-    {
-        throw new NotImplementedException();
-    }
-
-    public void SetClipboardItem(ClipboardItem item)
-    {
-        throw new NotImplementedException();
-    }
 
     async public Task<T?> ShowModalDialog<T>(Type razorComponent,
                                              string title,

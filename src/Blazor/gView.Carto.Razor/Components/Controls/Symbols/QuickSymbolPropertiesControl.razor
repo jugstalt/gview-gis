@@ -2,7 +2,7 @@
 @using gView.Framework.Symbology.Extensions
 
 @inherits BaseHandler
-@inject IApplicationScope AppScope
+@inject IApplicationScopeFactory AppScopeFactory
 @inject ICartoDocumentService CartoDocument
 
 @if (Symbol is not null)
@@ -145,7 +145,7 @@ else if(SymbolDefaultGeometry != GeometryType.Unknown)
     {
         if (Symbol is not null)
         {
-            var newSymbol = await Symbol.Compose(AppScope);
+            var newSymbol = await Symbol.Compose(AppScopeFactory);
 
             if (newSymbol != Symbol)
             {

@@ -22,12 +22,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using gView.Framework.Common.Extensions;
+using gView.Framework.DataExplorer.Services.Abstraction;
 
 namespace gView.DataExplorer.Plugins.ExplorerObjects.Fdb.Extensions;
 static internal class ApplicationScopeServiceExtensions
 {
     
-    async static public Task<IDataset?> CreateDataset(this ExplorerApplicationScopeService scopeService, IExplorerObject parentExObject)
+    async static public Task<IDataset?> CreateDataset(this IExplorerApplicationScopeService scopeService, IExplorerObject parentExObject)
     {
         var model = await scopeService
                                .ShowModalDialog(typeof(gView.DataExplorer.Razor.Components.Dialogs.NewFdbDataset),
@@ -113,7 +114,7 @@ static internal class ApplicationScopeServiceExtensions
         return null;
     }
 
-    async static public Task<IDatasetElement?> CreateCeatureClass(this ExplorerApplicationScopeService scopeService, IExplorerObject parentExObject)
+    async static public Task<IDatasetElement?> CreateCeatureClass(this IExplorerApplicationScopeService scopeService, IExplorerObject parentExObject)
     {
         var model = await scopeService
                                .ShowModalDialog(typeof(gView.DataExplorer.Razor.Components.Dialogs.NewFdbFeatureClassDialog),
@@ -179,7 +180,7 @@ static internal class ApplicationScopeServiceExtensions
         return createElement;
     }
 
-    async static public Task<bool> CreateNetworkClass(this ExplorerApplicationScopeService scopeService, IExplorerObject parentExObject)
+    async static public Task<bool> CreateNetworkClass(this IExplorerApplicationScopeService scopeService, IExplorerObject parentExObject)
     {
         var dataset = (await parentExObject.GetInstanceAsync()) as IFeatureDataset;
         if (dataset == null)

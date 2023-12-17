@@ -13,6 +13,7 @@ using gView.Razor.Base;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using gView.Framework.DataExplorer.Services.Abstraction;
 
 namespace gView.DataExplorer.Plugins.ExplorerObjects.Fdb.ContextTools;
 internal class SpatialIndexDefinition : IExplorerObjectContextTool
@@ -21,14 +22,13 @@ internal class SpatialIndexDefinition : IExplorerObjectContextTool
 
     public string Icon => "basic:warning_yellow";
 
-    public bool IsEnabled(IApplicationScope scope, IExplorerObject exObject)
+    public bool IsEnabled(IExplorerApplicationScopeService scope, IExplorerObject exObject)
     {
         return true;
     }
 
-    async public Task<bool> OnEvent(IApplicationScope scope, IExplorerObject exObject)
+    async public Task<bool> OnEvent(IExplorerApplicationScopeService scope, IExplorerObject exObject)
     {
-        var scopeService = scope.ToExplorerScopeService();
         var featureClass = await exObject.GetInstanceAsync() as IFeatureClass;
         var fdb = featureClass?.Dataset?.Database as AccessFDB;
 
@@ -39,7 +39,7 @@ internal class SpatialIndexDefinition : IExplorerObjectContextTool
 
         var binarayTreeDef = await fdb.BinaryTreeDef(featureClass.Name);
 
-        var model = await scopeService.ShowModalDialog(typeof(gView.DataExplorer.Razor.Components.Dialogs.SpatialIndexDefDialog),
+        var model = await scope.ShowModalDialog(typeof(gView.DataExplorer.Razor.Components.Dialogs.SpatialIndexDefDialog),
                                            "Spatial Index Definition",
                                            new BaseDialogModel<BinaryTreeDef>() { Value = binarayTreeDef });
 
@@ -68,7 +68,7 @@ internal class SpatialIndexDefinition : IExplorerObjectContextTool
                 { "max_levels", model.Value.MaxLevel }
             };
 
-        await scopeService.ShowKnownDialog(
+        await scope.ShowKnownDialog(
                     KnownDialogs.ExecuteCommand,
                     $"Rebuild spatial index",
                     new ExecuteCommandModel()

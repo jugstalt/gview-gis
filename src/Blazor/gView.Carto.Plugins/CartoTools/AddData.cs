@@ -1,4 +1,5 @@
-﻿using gView.Carto.Plugins.Extensions;
+﻿using gView.Carto.Core.Services.Abstraction;
+using gView.Carto.Plugins.Extensions;
 using gView.DataExplorer.Razor.Components.Dialogs.Filters;
 using gView.DataExplorer.Razor.Components.Dialogs.Models;
 using gView.Framework.Blazor;
@@ -6,9 +7,6 @@ using gView.Framework.Blazor.Services.Abstraction;
 using gView.Framework.Carto;
 using gView.Framework.Carto.Abstraction;
 using gView.Framework.Core.Common;
-using gView.Framework.Data;
-using gView.Framework.Common;
-using System.ComponentModel;
 
 namespace gView.Carto.Plugins.CartoTools;
 
@@ -32,13 +30,11 @@ internal class AddData : ICartoInitialTool
 
     }
 
-    public bool IsEnabled(IApplicationScope scope) => true;
+    public bool IsEnabled(ICartoApplicationScopeService scope) => true;
 
-    async public Task<bool> OnEvent(IApplicationScope scope)
+    async public Task<bool> OnEvent(ICartoApplicationScopeService scope)
     {
-        var scopeService = scope.ToCartoScopeService();
-
-        var model = await scopeService.ShowKnownDialog(KnownDialogs.ExplorerDialog,
+        var model = await scope.ShowKnownDialog(KnownDialogs.ExplorerDialog,
                                                        title: "Add Data",
                                                        model: new ExplorerDialogModel()
                                                        {
@@ -48,28 +44,28 @@ internal class AddData : ICartoInitialTool
                                                            Mode = ExploerDialogMode.Open
                                                        });
 
-        if(model == null)
+        if (model == null)
         {
             return false;
         }
 
-        var map = scopeService.Document.Map;
+        var map = scope.Document.Map;
         bool firstLayer = map.MapElements!.Any() != true;
-        var layersResult = await model.GetLayers(scopeService.GeoTransformer, map.Display.SpatialReference);
-        
-        foreach(var layer in layersResult.layers.OrderLayersByGeometryType())
+        var layersResult = await model.GetLayers(scope.GeoTransformer, map.Display.SpatialReference);
+
+        foreach (var layer in layersResult.layers.OrderLayersByGeometryType())
         {
-            scopeService.Document.Map.AddLayer(layer);
+            scope.Document.Map.AddLayer(layer);
         }
 
         if (layersResult.layersExtent is not null)
         {
             if (firstLayer || layersResult.layersExtent.Intersects(map.Display.Envelope) == false)
             {
-                await scopeService.EventBus.FireMapZoomToAsync(layersResult.layersExtent);
+                await scope.EventBus.FireMapZoomToAsync(layersResult.layersExtent);
             }
         }
-        await scopeService.EventBus.FireMapSettingsChangedAsync();
+        await scope.EventBus.FireMapSettingsChangedAsync();
 
         return true;
     }

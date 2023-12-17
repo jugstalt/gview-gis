@@ -4,7 +4,7 @@
 @inject LeafletService Leaflet
 @inject MapRenderService MapRenderer
 @inject GeoTransformerService GeoTransformer
-@inject IApplicationScope AppScope
+@inject ICartoApplicationScopeService AppScope
 @inject CartoEventBusService EventBus
 
 @if (MapControl != null)
@@ -29,7 +29,7 @@
         EventBus.OnMapZoomToAsync += OnMapZoomToAsync;
         MapRenderer.OnRefreshMapImage += OnRefreshMapImage;
 
-        await OnCartoDocumentLoadedAsync(((ICartoApplicationScopeService)AppScope).Document);
+        await OnCartoDocumentLoadedAsync(AppScope.Document);
     });
 
     protected override Task OnAfterRenderAsync(bool firstRender) => HandleAsync(async () =>

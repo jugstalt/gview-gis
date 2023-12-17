@@ -5,6 +5,7 @@ using gView.Framework.Core.Common;
 using gView.Framework.DataExplorer;
 using gView.Framework.DataExplorer.Abstraction;
 using gView.Framework.DataExplorer.Events;
+using gView.Framework.DataExplorer.Services.Abstraction;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -22,31 +23,27 @@ namespace gView.DataExplorer.Plugins.ExplorerTools
 
         public ExplorerToolTarget Target => ExplorerToolTarget.SelectedContextExplorerObjects;
 
-        public bool IsEnabled(IApplicationScope scope)
+        public bool IsEnabled(IExplorerApplicationScopeService scope)
         {
-            var scopeService = scope.ToExplorerScopeService();
-
-            return scopeService.ContextExplorerObjects?
+            return scope.ContextExplorerObjects?
                 .Where(e => e is IExplorerObjectDeletable)
                 .Count() > 0;
         }
 
-        async public Task<bool> OnEvent(IApplicationScope scope)
+        async public Task<bool> OnEvent(IExplorerApplicationScopeService scope)
         {
-            var scopeService = scope.ToExplorerScopeService();
-
-            if (scopeService.ContextExplorerObjects != null && scopeService.ContextExplorerObjects.Any())
+            if (scope.ContextExplorerObjects != null && scope.ContextExplorerObjects.Any())
             {
                 var model = new DeleteObjectsModel()
                 {
                     ExplorerObjects = new List<SelectItemModel<IExplorerObject>>(
-                        scopeService.ContextExplorerObjects
+                        scope.ContextExplorerObjects
                             .Where(e => e is IExplorerObjectDeletable)
                             .Select(e => new SelectItemModel<IExplorerObject>(e)))
                 };
 
 
-                model = await scopeService.ShowModalDialog(
+                model = await scope.ShowModalDialog(
                     typeof(Razor.Components.Dialogs.DeleteObjectsDialog),
                     this.Name,
                     model);
@@ -60,7 +57,7 @@ namespace gView.DataExplorer.Plugins.ExplorerTools
                     }
                 }
 
-                await scopeService.ForceContentRefresh();
+                await scope.ForceContentRefresh();
             }
 
             return true;

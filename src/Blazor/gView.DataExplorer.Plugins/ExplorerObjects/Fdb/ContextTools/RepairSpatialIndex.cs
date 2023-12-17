@@ -10,6 +10,7 @@ using gView.Framework.DataExplorer.Abstraction;
 using gView.Framework.Common;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using gView.Framework.DataExplorer.Services.Abstraction;
 
 namespace gView.DataExplorer.Plugins.ExplorerObjects.Fdb.ContextTools;
 
@@ -19,14 +20,13 @@ internal class RepairSpatialIndex : IExplorerObjectContextTool
 
     public string Icon => "basic:warning_yellow";
 
-    public bool IsEnabled(IApplicationScope scope, IExplorerObject exObject)
+    public bool IsEnabled(IExplorerApplicationScopeService scope, IExplorerObject exObject)
     {
         return true;
     }
 
-    async public Task<bool> OnEvent(IApplicationScope scope, IExplorerObject exObject)
+    async public Task<bool> OnEvent(IExplorerApplicationScopeService scope, IExplorerObject exObject)
     {
-        var scopeService = scope.ToExplorerScopeService();
         var instance = await exObject.GetInstanceAsync();
 
         List<CommandItem> commandItems = new();
@@ -79,7 +79,7 @@ internal class RepairSpatialIndex : IExplorerObjectContextTool
 
         if (commandItems.Count > 0)
         {
-            await scopeService.ShowKnownDialog(
+            await scope.ShowKnownDialog(
                         KnownDialogs.ExecuteCommand,
                         $"Repaier spatial indices",
                         new ExecuteCommandModel() { CommandItems = commandItems });

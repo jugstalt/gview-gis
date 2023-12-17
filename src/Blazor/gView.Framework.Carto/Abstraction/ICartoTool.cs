@@ -1,4 +1,5 @@
-﻿using gView.Framework.Blazor.Services.Abstraction;
+﻿using gView.Carto.Core.Services.Abstraction;
+using gView.Framework.Blazor.Services.Abstraction;
 using gView.Framework.Core.UI;
 using System;
 using System.Collections.Generic;
@@ -11,7 +12,7 @@ public interface ICartoTool : IOrder, IDisposable
 {
     string Name { get; }
 
-    bool IsEnabled(IApplicationScope scope);
+    bool IsEnabled(ICartoApplicationScopeService scope);
 
     string ToolTip { get; }
 
@@ -21,5 +22,5 @@ public interface ICartoTool : IOrder, IDisposable
 
     CartoToolTarget Target { get; }
 
-    Task<bool> OnEvent(IApplicationScope scope);
+    Task<bool> OnEvent(ICartoApplicationScopeService scope);
 }

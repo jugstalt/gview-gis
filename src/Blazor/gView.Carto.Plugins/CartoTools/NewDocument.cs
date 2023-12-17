@@ -1,5 +1,7 @@
 ﻿using gView.Carto.Core;
+using gView.Carto.Core.Services.Abstraction;
 using gView.Carto.Plugins.Extensions;
+using gView.Carto.Plugins.Services;
 using gView.Framework.Blazor.Services.Abstraction;
 using gView.Framework.Carto;
 using gView.Framework.Carto.Abstraction;
@@ -27,22 +29,20 @@ public class NewDocument : ICartoInitialTool
 
     }
 
-    public bool IsEnabled(IApplicationScope scope)
+    public bool IsEnabled(ICartoApplicationScopeService scope)
     {
         return true;
     }
 
-    async public Task<bool> OnEvent(IApplicationScope scope)
+    async public Task<bool> OnEvent(ICartoApplicationScopeService scope)
     {
-        var scopeService = scope.ToCartoScopeService();
-
-        var model = await scopeService.ShowModalDialog(typeof(gView.Carto.Razor.Components.Dialogs.NewMapDialog),
+        var model = await scope.ShowModalDialog(typeof(gView.Carto.Razor.Components.Dialogs.NewMapDialog),
                                                     "Create New Map",
                                                     new Razor.Components.Dialogs.Models.NewMapModel());
 
         if (model != null)
         {
-            scope.ToCartoScopeService().Document = new CartoDocument(model.Name.Trim());
+            ((CartoApplicationScopeService)scope).Document = new CartoDocument(model.Name.Trim());
         }
 
         return true;

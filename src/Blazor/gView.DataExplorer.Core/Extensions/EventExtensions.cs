@@ -1,9 +1,5 @@
-﻿using gView.Framework.DataExplorer.Abstraction;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace gView.DataExplorer.Core.Extensions;
@@ -26,7 +22,7 @@ internal static class EventExtensions
     {
         if (eventFunction != null)
         {
-            foreach(var handler in eventFunction.GetInvocationList()
+            foreach (var handler in eventFunction.GetInvocationList()
                                                 .OfType<Func<T, Task>>())
             {
                 await handler.Invoke(eventArg);

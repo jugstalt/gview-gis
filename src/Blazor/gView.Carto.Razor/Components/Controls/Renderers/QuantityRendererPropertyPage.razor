@@ -5,7 +5,7 @@
 @inherits BaseHandler
 @implements IDisposable
 
-@inject IApplicationScope AppScope
+@inject IApplicationScopeFactory AppScopeFactory
 
 @if (_renderer is not null && _layer?.FeatureClass is not null)
 {
@@ -342,7 +342,7 @@
     {
         if (_wizardModel is not null && _wizardModel[sym] is not null)
         {
-            var newSymbol = await _wizardModel[sym]!.Compose(AppScope);
+            var newSymbol = await _wizardModel[sym]!.Compose(AppScopeFactory);
 
             if (newSymbol != _wizardModel[sym])
             {
@@ -412,7 +412,7 @@
     });
 
     private Task SetRotation() => HandleAsync(() =>
-        _renderer?.SymbolRotation.EditProperties(AppScope, _layer?.FeatureClass)
+        _renderer?.SymbolRotation.EditProperties(AppScopeFactory, _layer?.FeatureClass)
         ?? Task.CompletedTask);
 
     // private Task SetCartographicsMethod() => HandleAsync(async () =>

@@ -9,6 +9,7 @@ using gView.Framework.DataExplorer.Abstraction;
 using gView.Framework.IO;
 using gView.Framework.Common;
 using System.Threading.Tasks;
+using gView.Framework.DataExplorer.Services.Abstraction;
 
 namespace gView.DataExplorer.Plugins.ExplorerObjects.Fdb.MsSql;
 
@@ -54,11 +55,9 @@ public class SqlFdbNewFDBDatabase : ExplorerObjectCls<SqlFdbExplorerGroupObject>
         return (parentExObject is SqlFdbExplorerGroupObject);
     }
 
-    async public Task<IExplorerObject?> CreateExplorerObjectAsync(IApplicationScope appScope, IExplorerObject parentExObject)
+    async public Task<IExplorerObject?> CreateExplorerObjectAsync(IExplorerApplicationScopeService appScope, IExplorerObject parentExObject)
     {
-        var scopeService = appScope.ToExplorerScopeService();
-
-        var model = await scopeService.ShowModalDialog(typeof(gView.DataExplorer.Razor.Components.Dialogs.CreateFdbDialog),
+        var model = await appScope.ShowModalDialog(typeof(gView.DataExplorer.Razor.Components.Dialogs.CreateFdbDialog),
                                                        "Create FDB",
                                                        new CreateFdbModel("mssql", false));
 

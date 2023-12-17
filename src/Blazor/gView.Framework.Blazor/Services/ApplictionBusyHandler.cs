@@ -3,7 +3,6 @@ using gView.Framework.Common;
 using System;
 using System.Collections.Concurrent;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace gView.Framework.Blazor.Services;
@@ -18,7 +17,7 @@ public abstract class ApplictionBusyHandler : IApplicationBusyHandling
         {
             _runningBusyTasks++;
 
-            var id=Guid.NewGuid();
+            var id = Guid.NewGuid();
             _tasks.TryAdd(id, task);
 
             await HandleBusyStatusChanged(true, ComposeMessage());
@@ -48,7 +47,7 @@ public abstract class ApplictionBusyHandler : IApplicationBusyHandling
     private string ComposeMessage()
         => String.Join(", ", _tasks.Keys.ToArray()
                                         .Select(k => _tasks[k]));
-                 
+
     #region Abstract Members
 
     abstract protected Task HandleBusyStatusChanged(bool isBussy, string message);

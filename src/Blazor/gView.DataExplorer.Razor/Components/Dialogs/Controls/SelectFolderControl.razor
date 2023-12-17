@@ -1,4 +1,4 @@
-@inject IApplicationScope AppScope
+@inject IApplicationScopeFactory AppScopeFactory
 
 <GvGrid ColumnCount="6">
     <GvGridItem Span="5">
@@ -20,7 +20,7 @@
 
     async private Task SelectFolder()
     {
-        var model = await AppScope.ShowKnownDialog(Framework.Blazor.KnownDialogs.ExplorerDialog,
+        var model = await AppScopeFactory.ShowKnownDialog(Framework.Blazor.KnownDialogs.ExplorerDialog,
                                                         model: new ExplorerDialogModel()
                                                         {
                                                                 Filters = new List<ExplorerDialogFilter> {

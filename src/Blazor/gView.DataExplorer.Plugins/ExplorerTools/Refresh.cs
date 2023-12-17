@@ -3,6 +3,7 @@ using gView.Framework.Blazor.Services.Abstraction;
 using gView.Framework.Core.Common;
 using gView.Framework.DataExplorer;
 using gView.Framework.DataExplorer.Abstraction;
+using gView.Framework.DataExplorer.Services.Abstraction;
 using System.Threading.Tasks;
 
 namespace gView.DataExplorer.Plugins.ExplorerTools;
@@ -14,7 +15,7 @@ public class Refresh : IExplorerTool
 
     public string Name => "Refresh";
 
-    public bool IsEnabled(IApplicationScope scope) => true;
+    public bool IsEnabled(IExplorerApplicationScopeService scope) => true;
 
     public string ToolTip => "";
 
@@ -22,11 +23,9 @@ public class Refresh : IExplorerTool
 
     public ExplorerToolTarget Target => ExplorerToolTarget.General;
 
-    async public Task<bool> OnEvent(IApplicationScope scope)
+    async public Task<bool> OnEvent(IExplorerApplicationScopeService scope)
     {
-        var scopeService = scope.ToExplorerScopeService();
-
-        await scopeService.ForceContentRefresh();
+        await scope.ForceContentRefresh();
 
         return true;
     }

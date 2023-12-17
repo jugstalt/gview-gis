@@ -4,7 +4,7 @@
 
 @inherits BaseHandler
 @inject IEnumerable<IPropertyGridEditor> Editors;
-@inject IApplicationScope AppScope
+@inject IApplicationScopeFactory AppScopeFactory
 
 @if(Properties is not null)
 {
@@ -241,7 +241,7 @@
 
     private Task ShowEditor(IPropertyGridEditAsync editor, PropertyInfo propertyInfo) => HandleAsync(async () =>
     {
-        var newValue = await editor.EditAsync(AppScope, Instance, propertyInfo);
+        var newValue = await editor.EditAsync(AppScopeFactory, Instance, propertyInfo);
 
         if (newValue != null)
         {

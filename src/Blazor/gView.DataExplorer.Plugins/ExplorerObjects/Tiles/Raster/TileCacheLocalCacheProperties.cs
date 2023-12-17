@@ -7,6 +7,7 @@ using gView.Framework.DataExplorer.Abstraction;
 using gView.Framework.DataExplorer.Events;
 using gView.Framework.Common;
 using System.Threading.Tasks;
+using gView.Framework.DataExplorer.Services.Abstraction;
 
 namespace gView.DataExplorer.Plugins.ExplorerObjects.Tiles.Raster;
 
@@ -46,9 +47,9 @@ public class TileCacheLocalCacheProperties : ExplorerObjectCls<TileCacheGroupExp
 
     #region IExplorerObjectDoubleClick Members
 
-    async public Task ExplorerObjectDoubleClick(IApplicationScope appScope, ExplorerObjectEventArgs e)
+    async public Task ExplorerObjectDoubleClick(IExplorerApplicationScopeService appScope, ExplorerObjectEventArgs e)
     {
-        var model = await appScope.ToExplorerScopeService().ShowModalDialog(typeof(gView.DataExplorer.Razor.Components.Dialogs.RasterTileCacheLocalPropertiesDialog),
+        var model = await appScope.ShowModalDialog(typeof(gView.DataExplorer.Razor.Components.Dialogs.RasterTileCacheLocalPropertiesDialog),
                                                                     "Import from Template",
                                                                     new RasterTileCacheLocalPropertiesModel()
                                                                     {
@@ -87,7 +88,7 @@ public class TileCacheLocalCacheProperties : ExplorerObjectCls<TileCacheGroupExp
         return (parentExObject is TileCacheGroupExplorerObject);
     }
 
-    async public Task<IExplorerObject?> CreateExplorerObjectAsync(IApplicationScope appScope, IExplorerObject parentExObject)
+    async public Task<IExplorerObject?> CreateExplorerObjectAsync(IExplorerApplicationScopeService appScope, IExplorerObject parentExObject)
     {
         await ExplorerObjectDoubleClick(appScope, new ExplorerObjectEventArgs());
         return null;

@@ -7,6 +7,7 @@ using gView.Framework.Blazor.Services.Abstraction;
 using gView.Framework.Core.Common;
 using gView.Framework.DataExplorer.Abstraction;
 using gView.Framework.DataExplorer.Events;
+using gView.Framework.DataExplorer.Services.Abstraction;
 using System.Threading.Tasks;
 
 namespace gView.DataExplorer.Plugins.ExplorerObjects.Fdb.MsSql;
@@ -47,9 +48,9 @@ public class SqlFdbNewConnectionObject : ExplorerObjectCls<SqlFdbExplorerGroupOb
 
     #region IExplorerObjectDoubleClick Members
 
-    async public Task ExplorerObjectDoubleClick(IApplicationScope appScope, ExplorerObjectEventArgs e)
+    async public Task ExplorerObjectDoubleClick(IExplorerApplicationScopeService appScope, ExplorerObjectEventArgs e)
     {
-        var model = await appScope.ToExplorerScopeService().ShowKnownDialog(KnownDialogs.ConnectionString,
+        var model = await appScope.ShowKnownDialog(KnownDialogs.ConnectionString,
                                                                     model: new ConnectionStringModel("mssql", false));
 
         if (model != null)
@@ -81,7 +82,7 @@ public class SqlFdbNewConnectionObject : ExplorerObjectCls<SqlFdbExplorerGroupOb
         return (parentExObject is SqlFdbExplorerGroupObject);
     }
 
-    async public Task<IExplorerObject?> CreateExplorerObjectAsync(IApplicationScope appScope, IExplorerObject parentExObject)
+    async public Task<IExplorerObject?> CreateExplorerObjectAsync(IExplorerApplicationScopeService appScope, IExplorerObject parentExObject)
     {
         ExplorerObjectEventArgs e = new ExplorerObjectEventArgs();
         await ExplorerObjectDoubleClick(appScope, e);

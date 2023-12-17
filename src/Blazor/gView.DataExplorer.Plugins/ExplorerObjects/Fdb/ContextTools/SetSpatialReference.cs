@@ -5,6 +5,7 @@ using gView.Framework.Blazor.Services.Abstraction;
 using gView.Framework.Core.Data;
 using gView.Framework.Core.Geometry;
 using gView.Framework.DataExplorer.Abstraction;
+using gView.Framework.DataExplorer.Services.Abstraction;
 using gView.Razor.Base;
 using System.Threading.Tasks;
 
@@ -15,12 +16,12 @@ internal class SetSpatialReference : IExplorerObjectContextTool
     public string Name => "Spatial Reference";
     public string Icon => "basic:globe";
 
-    public bool IsEnabled(IApplicationScope scope, IExplorerObject exObject)
+    public bool IsEnabled(IExplorerApplicationScopeService scope, IExplorerObject exObject)
     {
         return true;
     }
 
-    async public Task<bool> OnEvent(IApplicationScope scope, IExplorerObject exObject)
+    async public Task<bool> OnEvent(IExplorerApplicationScopeService scope, IExplorerObject exObject)
     {
         var dataset = await exObject.GetInstanceAsync() as IFeatureDataset;
         if (dataset == null)
@@ -34,7 +35,7 @@ internal class SetSpatialReference : IExplorerObjectContextTool
             throw new GeneralException("Database is not a gView FeatureDatabase");
         }
 
-        var model = await scope.ToExplorerScopeService().ShowKnownDialog(
+        var model = await scope.ShowKnownDialog(
             Framework.Blazor.KnownDialogs.SpatialReferenceDialog,
             model: new BaseDialogModel<ISpatialReference>()
             {

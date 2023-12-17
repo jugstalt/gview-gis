@@ -6,6 +6,8 @@ using gView.Framework.DataExplorer.Abstraction;
 using gView.Framework.Common;
 using gView.Razor.Dialogs.Models;
 using System.Threading.Tasks;
+using gView.DataExplorer.Core.Services.Abstraction;
+using gView.Framework.DataExplorer.Services.Abstraction;
 
 namespace gView.DataExplorer.Plugins.ExplorerTools;
 
@@ -22,13 +24,11 @@ public class About : IExplorerTool
 
     public ExplorerToolTarget Target => ExplorerToolTarget.General;
 
-    public bool IsEnabled(IApplicationScope scope) => true;
+    public bool IsEnabled(IExplorerApplicationScopeService scope) => true;
 
-    async public Task<bool> OnEvent(IApplicationScope scope)
+    async public Task<bool> OnEvent(IExplorerApplicationScopeService scope)
     {
-        var scopeService = scope.ToExplorerScopeService();
-
-        await scopeService.ShowModalDialog(typeof(gView.Razor.Dialogs.AboutDialog),
+        await scope.ShowModalDialog(typeof(gView.Razor.Dialogs.AboutDialog),
                                      "About",
                                      new AboutDialogModel()
                                      {

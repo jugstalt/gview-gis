@@ -1,4 +1,5 @@
-﻿using gView.Carto.Plugins.Extensions;
+﻿using gView.Carto.Core.Services.Abstraction;
+using gView.Carto.Plugins.Extensions;
 using gView.Carto.Plugins.PropertyGridEditors.Models;
 using gView.Carto.Razor.Components.Dialogs.Models;
 using gView.Framework.Blazor.Services.Abstraction;
@@ -11,17 +12,17 @@ internal class FontNameSelectorEditor : IPropertyGridEditAsync
 {
     public Type PropertyType => typeof(FontName);
 
-    async public Task<object?> EditAsync(IApplicationScope scope, object instance, PropertyInfo propertyInfo)
+    async public Task<object?> EditAsync(IApplicationScopeFactory scope, 
+                                         object instance, 
+                                         PropertyInfo propertyInfo)
     {
-        var scopeService = scope.ToCartoScopeService();
-
         var fontName = propertyInfo.GetValue(instance) as FontName;
         if (fontName == null)
         {
             return null;
         }
 
-        var model = await scopeService.ShowModalDialog(
+        var model = await scope.ShowModalDialog(
             typeof(gView.Carto.Razor.Components.Dialogs.FontNameSelectorDialog),
             "Select Font",
             new FontNameSelectorModel()

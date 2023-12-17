@@ -4,6 +4,7 @@ using gView.DataExplorer.Core.Services.Abstraction;
 using gView.DataExplorer.Plugins.Services;
 using gView.DataExplorer.Plugins.Services.Dialogs;
 using gView.Framework.Blazor.Services.Abstraction;
+using gView.Framework.DataExplorer.Services.Abstraction;
 using gView.Razor.Services;
 using Microsoft.Extensions.DependencyInjection;
 using System;
@@ -23,7 +24,7 @@ static public class ServicesExtensions
         return services
             .Configure(configureOptions)
             .AddEventBus()
-            .AddScoped<IApplicationScope, ExplorerApplicationScopeService>();
+            .AddScoped<IExplorerApplicationScopeService, ExplorerApplicationScopeService>();
     }
 
     static public IServiceCollection AddKnownExplorerDialogsServices(this IServiceCollection services)

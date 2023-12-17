@@ -15,6 +15,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using gView.Framework.DataExplorer.Services.Abstraction;
 
 namespace gView.DataExplorer.Plugins.ExplorerObjects.Tiles.Raster;
 
@@ -60,9 +61,9 @@ public class TileCacheFromTemplate : ExplorerObjectCls<TileCacheGroupExplorerObj
         return (parentExObject is TileCacheGroupExplorerObject);
     }
 
-    async public Task<IExplorerObject?> CreateExplorerObjectAsync(IApplicationScope appScope, IExplorerObject parentExObject)
+    async public Task<IExplorerObject?> CreateExplorerObjectAsync(IExplorerApplicationScopeService appScope, IExplorerObject parentExObject)
     {
-        var model = await appScope.ToExplorerScopeService().ShowModalDialog(typeof(gView.DataExplorer.Razor.Components.Dialogs.RasterTileCacheImportFromTemplateDialog),
+        var model = await appScope.ShowModalDialog(typeof(gView.DataExplorer.Razor.Components.Dialogs.RasterTileCacheImportFromTemplateDialog),
                                                                     "Import from Template",
                                                                     new RasterTileCacheImportFromTemplateModel()
                                                                     {

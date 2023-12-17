@@ -8,6 +8,7 @@ using gView.Framework.DataExplorer.Abstraction;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using gView.Framework.DataExplorer.Services.Abstraction;
 
 namespace gView.DataExplorer.Plugins.ExplorerTools;
 
@@ -24,12 +25,10 @@ internal class ObjectInfo : IExplorerTool
 
     public ExplorerToolTarget Target => ExplorerToolTarget.SelectedContextExplorerObjects;
 
-    public bool IsEnabled(IApplicationScope scope)
+    public bool IsEnabled(IExplorerApplicationScopeService scope)
     {
-        var scopeService = scope.ToExplorerScopeService();
-
-        if (scopeService.ContextExplorerObjects != null &&
-            scopeService.ContextExplorerObjects.Count() == 1)
+        if (scope.ContextExplorerObjects != null &&
+            scope.ContextExplorerObjects.Count() == 1)
         {
             return true;
             //var pluginAttribute = scopeService.ContextExplorerObjects.First()
@@ -42,14 +41,12 @@ internal class ObjectInfo : IExplorerTool
         return false;
     }
 
-    async public Task<bool> OnEvent(IApplicationScope scope)
+    async public Task<bool> OnEvent(IExplorerApplicationScopeService scope)
     {
-        var scopeService = scope.ToExplorerScopeService();
-
-        if (scopeService.ContextExplorerObjects is not null &&
-            scopeService.ContextExplorerObjects.Count() == 1)
+        if (scope.ContextExplorerObjects is not null &&
+            scope.ContextExplorerObjects.Count() == 1)
         {
-            var exObject = scopeService.ContextExplorerObjects.First();
+            var exObject = scope.ContextExplorerObjects.First();
             var instance = await exObject.GetInstanceAsync();
 
             var pluginAttribute = instance?.GetType()
@@ -73,7 +70,7 @@ internal class ObjectInfo : IExplorerTool
                 model.Properties.Add("ConnectionString", ((IDataset)instance).ConnectionString);
             }
 
-            await scopeService.ShowModalDialog(
+            await scope.ShowModalDialog(
                 typeof(Razor.Components.Dialogs.ObjectInfoDialog),
                 this.Name,
                 model);

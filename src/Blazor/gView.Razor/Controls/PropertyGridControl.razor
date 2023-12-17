@@ -4,7 +4,6 @@
 
 @inherits BaseHandler
 @inject IEnumerable<IPropertyGridEditor> Editors;
-@inject IApplicationScope AppScope
 
 @if (propertiesDict.Keys.Any() && propertiesDict.Keys.All(c => c == GeneralCategory))
 {

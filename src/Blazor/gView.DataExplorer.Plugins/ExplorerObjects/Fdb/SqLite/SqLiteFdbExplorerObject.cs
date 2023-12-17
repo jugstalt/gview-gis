@@ -8,6 +8,7 @@ using gView.Framework.Blazor.Services.Abstraction;
 using gView.Framework.Core.Common;
 using gView.Framework.DataExplorer.Abstraction;
 using gView.Framework.DataExplorer.Events;
+using gView.Framework.DataExplorer.Services.Abstraction;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -212,7 +213,7 @@ internal class SqLiteFdbExplorerObject : ExplorerParentObject<IExplorerObject>,
         return false;
     }
 
-    async public Task<IExplorerObject?> CreateExplorerObjectAsync(IApplicationScope scope,
+    async public Task<IExplorerObject?> CreateExplorerObjectAsync(IExplorerApplicationScopeService scope,
                                                                   IExplorerObject parentExObject)
     {
         if (!CanCreate(parentExObject))
@@ -220,7 +221,7 @@ internal class SqLiteFdbExplorerObject : ExplorerParentObject<IExplorerObject>,
             return null;
         }
 
-        var model = await scope.ToExplorerScopeService().ShowModalDialog(
+        var model = await scope.ShowModalDialog(
             typeof(gView.DataExplorer.Razor.Components.Dialogs.InputBoxDialog),
             "Create",
             new InputBoxModel()

@@ -11,9 +11,9 @@ internal class CartoDocumentService : ICartoDocumentService
 {
     private readonly ICartoDocument _document;
 
-    public CartoDocumentService(IApplicationScope appScope)
+    public CartoDocumentService(ICartoApplicationScopeService appScope)
     {
-        _document = appScope.ToCartoScopeService().Document;
+        _document = appScope.Document;
     }
 
     public ICartoDocument Document => _document;

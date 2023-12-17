@@ -1,4 +1,5 @@
 ﻿using gView.Blazor.Core.Extensions;
+using gView.Carto.Core.Services.Abstraction;
 using gView.Carto.Plugins.Extensions;
 using gView.Framework.Blazor.Models;
 using gView.Framework.Blazor.Services.Abstraction;
@@ -30,16 +31,14 @@ namespace gView.Carto.Plugins.CartoTools
 
         }
 
-        public bool IsEnabled(IApplicationScope scope)
-            => scope.ToCartoScopeService().SelectedTocTreeNode != null;
+        public bool IsEnabled(ICartoApplicationScopeService scope)
+            => scope.SelectedTocTreeNode is not null;
 
-        async public Task<bool> OnEvent(IApplicationScope scope)
+        async public Task<bool> OnEvent(ICartoApplicationScopeService scope)
         {
-            var scopeService = scope.ToCartoScopeService();
+            await scope.EventBus.FireCloseTocInlineEditorsAsync();
 
-            await scopeService.EventBus.FireCloseTocInlineEditorsAsync();
-
-            var originalMap = scopeService.Document.Map as Map;
+            var originalMap = scope.Document.Map as Map;
             var clonedMap = originalMap?.Clone() as Map;
 
             if (originalMap is null || clonedMap is null)
@@ -47,7 +46,7 @@ namespace gView.Carto.Plugins.CartoTools
                 return false;
             }
 
-            var originalLayer = scopeService.SelectedTocTreeNode?.TocElement?.Layers?.FirstOrDefault() as Layer;
+            var originalLayer = scope.SelectedTocTreeNode?.TocElement?.Layers?.FirstOrDefault() as Layer;
             var clonedLayer = originalLayer?.PersistedClone();
 
             if (originalLayer is null || clonedLayer is null)  // todo: clone layer?
@@ -59,7 +58,7 @@ namespace gView.Carto.Plugins.CartoTools
 
             var tocElement = originalMap.TOC.GetTocElementByLayerId(originalLayer.ID);
 
-            var model = await scopeService.ShowModalDialog(typeof(gView.Carto.Razor.Components.Dialogs.LayerSettingsDialog),
+            var model = await scope.ShowModalDialog(typeof(gView.Carto.Razor.Components.Dialogs.LayerSettingsDialog),
                                                                 $"Layer: {tocElement?.Name}",
                                                                 new Razor.Components.Dialogs.Models.LayerSettingsModel()
                                                                 {
@@ -89,7 +88,7 @@ namespace gView.Carto.Plugins.CartoTools
 
             #endregion
 
-            await scopeService.EventBus.FireMapSettingsChangedAsync();
+            await scope.EventBus.FireMapSettingsChangedAsync();
 
             return true;
         }

@@ -1,4 +1,4 @@
-﻿using gView.Framework.Blazor.Services.Abstraction;
+﻿using gView.Framework.DataExplorer.Services.Abstraction;
 using System.Threading.Tasks;
 
 namespace gView.Framework.DataExplorer.Abstraction;
@@ -6,6 +6,6 @@ namespace gView.Framework.DataExplorer.Abstraction;
 public interface IExplorerObjectCreatable : IExplorerObject
 {
     bool CanCreate(IExplorerObject parentExObject);
-    Task<IExplorerObject?> CreateExplorerObjectAsync(IApplicationScope scope,
+    Task<IExplorerObject?> CreateExplorerObjectAsync(IExplorerApplicationScopeService scope,
                                                      IExplorerObject parentExObject);
 }

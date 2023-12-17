@@ -2,6 +2,7 @@
 using gView.DataExplorer.Razor.Components.Dialogs.Models;
 using gView.Framework.Blazor.Services.Abstraction;
 using gView.Framework.DataExplorer.Abstraction;
+using gView.Framework.DataExplorer.Services.Abstraction;
 using System.Threading.Tasks;
 
 namespace gView.DataExplorer.Plugins.ExplorerObjects.Base.ContextTools;
@@ -13,16 +14,16 @@ public class UpdateConnectionString : IExplorerObjectContextTool
 
     public string Icon => "basic:edit-database";
 
-    public bool IsEnabled(IApplicationScope scope, IExplorerObject exObject)
+    public bool IsEnabled(IExplorerApplicationScopeService scope, IExplorerObject exObject)
     {
         return exObject is IUpdateConnectionString;
     }
 
-    async public Task<bool> OnEvent(IApplicationScope scope, IExplorerObject exObject)
+    async public Task<bool> OnEvent(IExplorerApplicationScopeService scope, IExplorerObject exObject)
     {
         var dbConnectionString = ((IUpdateConnectionString)exObject).GetDbConnectionString();
 
-        var model = await scope.ToExplorerScopeService().ShowKnownDialog(Framework.Blazor.KnownDialogs.ConnectionString,
+        var model = await scope.ShowKnownDialog(Framework.Blazor.KnownDialogs.ConnectionString,
                                                                  model: new ConnectionStringModel(dbConnectionString));
 
         if (model != null)

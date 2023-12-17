@@ -6,6 +6,7 @@ using gView.Framework.Blazor;
 using gView.Framework.Blazor.Services.Abstraction;
 using gView.Framework.Core.Common;
 using gView.Framework.DataExplorer.Abstraction;
+using gView.Framework.DataExplorer.Services.Abstraction;
 using gView.Server.Clients;
 using System;
 using System.Collections.Generic;
@@ -23,13 +24,11 @@ internal class RenderTileCache : IExplorerToolCommand
 
     public string Icon => String.Empty;
 
-    async public Task<bool> OnEvent(IApplicationScope scope)
+    async public Task<bool> OnEvent(IExplorerApplicationScopeService scope)
     {
-        var scopeService = scope.ToExplorerScopeService();
-
         #region Select Server/Service
 
-        var serviceModel = await scopeService.ShowModalDialog(
+        var serviceModel = await scope.ShowModalDialog(
                                 typeof(Razor.Components.Dialogs.SelectMapServerServiceDialog),
                                 "Select Service",
                                 new SelectMapServerServiceModel());
@@ -56,7 +55,7 @@ internal class RenderTileCache : IExplorerToolCommand
 
         #region Get Render Parameters
 
-        var model = await scopeService.ShowModalDialog(
+        var model = await scope.ShowModalDialog(
                                         typeof(Razor.Components.Dialogs.RenderTileCacheDialog),
                                         "Render Parameters",
                                         new RenderTileCacheModel(serviceModel.Server, serviceModel.Service,
@@ -90,7 +89,7 @@ internal class RenderTileCache : IExplorerToolCommand
             parameters.Add("compact", true);
         }
 
-        await scopeService.ShowKnownDialog(
+        await scope.ShowKnownDialog(
                     KnownDialogs.ExecuteCommand,
                     $"Render Service Tiles",
                     new ExecuteCommandModel()

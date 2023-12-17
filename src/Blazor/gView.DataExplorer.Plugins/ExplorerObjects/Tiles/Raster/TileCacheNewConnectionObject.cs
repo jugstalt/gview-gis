@@ -5,6 +5,7 @@ using gView.DataExplorer.Razor.Components.Dialogs.Models.Extensions;
 using gView.Framework.Blazor.Services.Abstraction;
 using gView.Framework.DataExplorer.Abstraction;
 using gView.Framework.DataExplorer.Events;
+using gView.Framework.DataExplorer.Services.Abstraction;
 using gView.Framework.IO;
 using System.Threading.Tasks;
 
@@ -46,9 +47,9 @@ public class TileCacheNewConnectionObject : ExplorerObjectCls<TileCacheGroupExpl
 
     #region IExplorerObjectDoubleClick Members
 
-    async public Task ExplorerObjectDoubleClick(IApplicationScope appScope, ExplorerObjectEventArgs e)
+    async public Task ExplorerObjectDoubleClick(IExplorerApplicationScopeService appScope, ExplorerObjectEventArgs e)
     {
-        var model = await appScope.ToExplorerScopeService().ShowModalDialog(
+        var model = await appScope.ShowModalDialog(
                                typeof(gView.DataExplorer.Razor.Components.Dialogs.RasterTileCacheConnectionDialog),
                                "Raster-Tile-Cache Connection",
                                new RasterTileCacheConnectionModel());
@@ -89,7 +90,7 @@ public class TileCacheNewConnectionObject : ExplorerObjectCls<TileCacheGroupExpl
         return (parentExObject is TileCacheGroupExplorerObject);
     }
 
-    async public Task<IExplorerObject?> CreateExplorerObjectAsync(IApplicationScope appScope, IExplorerObject parentExObject)
+    async public Task<IExplorerObject?> CreateExplorerObjectAsync(IExplorerApplicationScopeService appScope, IExplorerObject parentExObject)
     {
         ExplorerObjectEventArgs e = new ExplorerObjectEventArgs();
         await ExplorerObjectDoubleClick(appScope, e);

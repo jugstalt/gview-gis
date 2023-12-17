@@ -6,6 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\gView.Carto.Core\gView.Carto.Core.csproj" />
     <ProjectReference Include="..\gView.Framework.Blazor\gView.Framework.Blazor.csproj" />
   </ItemGroup>
 

@@ -9,6 +9,7 @@ using gView.Framework.DataExplorer.Abstraction;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using gView.Framework.DataExplorer.Services.Abstraction;
 
 namespace gView.DataExplorer.Plugins.ExplorerObjects.Fdb.SqLite;
 
@@ -23,7 +24,7 @@ public class SqLiteFdbLinkedFeatureclassExplorerObject : IExplorerSimpleObject,
         return parentExObject is SqLiteFdbDatasetExplorerObject;
     }
 
-    async public Task<IExplorerObject?> CreateExplorerObjectAsync(IApplicationScope scope, IExplorerObject? parentExObject)
+    async public Task<IExplorerObject?> CreateExplorerObjectAsync(IExplorerApplicationScopeService scope, IExplorerObject? parentExObject)
     {
         SqLiteFdbDatasetExplorerObject? parent = (SqLiteFdbDatasetExplorerObject?)parentExObject;
         if (parent == null)
@@ -43,7 +44,7 @@ public class SqLiteFdbLinkedFeatureclassExplorerObject : IExplorerSimpleObject,
             return null;
         }
 
-        var model = await scope.ToExplorerScopeService().ShowKnownDialog(
+        var model = await scope.ShowKnownDialog(
             Framework.Blazor.KnownDialogs.ExplorerDialog,
             model: new ExplorerDialogModel()
             {
@@ -66,7 +67,7 @@ public class SqLiteFdbLinkedFeatureclassExplorerObject : IExplorerSimpleObject,
                 }
             }
 
-            await scope.ToExplorerScopeService().ForceContentRefresh();
+            await scope.ForceContentRefresh();
         }
 
         return null;

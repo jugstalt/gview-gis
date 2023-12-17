@@ -10,7 +10,7 @@ static public class SymbolRotationExtensions
 {
     async static public Task EditProperties(
         this SymbolRotation? symbolRotation,
-        IApplicationScope appScope,
+        IApplicationScopeFactory appScopeFactory,
         ITableClass? tableClass = null)
     {
         if(symbolRotation is null)
@@ -18,7 +18,7 @@ static public class SymbolRotationExtensions
             return;
         }
 
-        var model = await appScope.ShowModalDialog
+        var model = await appScopeFactory.ShowModalDialog
             (typeof(SymbolRotationDialog),
             "Symbol Rotation",
             new SymbolRotationModel()

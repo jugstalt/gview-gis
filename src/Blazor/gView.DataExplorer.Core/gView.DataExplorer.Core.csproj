@@ -10,8 +10,6 @@
     <ProjectReference Include="..\..\gView.Framework.Data\gView.Framework.Data.csproj" />
     <ProjectReference Include="..\..\gView.Framework\gView.Framework.csproj" />
     <ProjectReference Include="..\gView.Blazor.Core\gView.Blazor.Core.csproj" />
-    <ProjectReference Include="..\gView.Blazor.Models\gView.Blazor.Models.csproj" />
-    <ProjectReference Include="..\gView.Framework.DataExplorer\gView.Framework.DataExplorer.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -1,21 +1,21 @@
 ﻿using gView.DataExplorer.Plugins.ExplorerObjects.Base;
-using gView.DataExplorer.Plugins.Extensions;
 using gView.DataExplorer.Razor.Components.Dialogs.Models;
 using gView.DataSources.EventTable;
 using gView.Framework.Blazor.Services.Abstraction;
 using gView.Framework.Core.Common;
 using gView.Framework.DataExplorer.Abstraction;
 using gView.Framework.DataExplorer.Events;
+using gView.Framework.DataExplorer.Services.Abstraction;
 using gView.Framework.IO;
 using System.Threading.Tasks;
 
 namespace gView.DataExplorer.Plugins.ExplorerObjects.EventTable;
 
 [RegisterPlugIn("F45B7E98-B20A-47bf-A45D-E78D52F36314")]
-public class EventTableNewConnectionObject : 
-                ExplorerObjectCls<IExplorerObject>, 
-                IExplorerSimpleObject, 
-                IExplorerObjectDoubleClick, 
+public class EventTableNewConnectionObject :
+                ExplorerObjectCls<IExplorerObject>,
+                IExplorerSimpleObject,
+                IExplorerObjectDoubleClick,
                 IExplorerObjectCreatable
 {
     public EventTableNewConnectionObject()
@@ -40,7 +40,7 @@ public class EventTableNewConnectionObject :
 
     public string FullName => string.Empty;
 
-    public string Type => "New Eventtable Connection"; 
+    public string Type => "New Eventtable Connection";
 
     public void Dispose()
     {
@@ -53,9 +53,9 @@ public class EventTableNewConnectionObject :
 
     #region IExplorerObjectDoubleClick Members
 
-    async public Task ExplorerObjectDoubleClick(IApplicationScope appScope, ExplorerObjectEventArgs e)
+    async public Task ExplorerObjectDoubleClick(IExplorerApplicationScopeService appScope, ExplorerObjectEventArgs e)
     {
-        var model = await appScope.ToExplorerScopeService().ShowModalDialog(typeof(gView.DataExplorer.Razor.Components.Dialogs.EventTableConnection),
+        var model = await appScope.ShowModalDialog(typeof(gView.DataExplorer.Razor.Components.Dialogs.EventTableConnection),
                                                                     "EventTable Connection",
                                                                     new EventTableConnectionModel());
 
@@ -99,7 +99,7 @@ public class EventTableNewConnectionObject :
         return (parentExObject is EventTableGroupObject);
     }
 
-    async public Task<IExplorerObject?> CreateExplorerObjectAsync(IApplicationScope appScope, IExplorerObject parentExObject)
+    async public Task<IExplorerObject?> CreateExplorerObjectAsync(IExplorerApplicationScopeService appScope, IExplorerObject parentExObject)
     {
         ExplorerObjectEventArgs e = new ExplorerObjectEventArgs();
 

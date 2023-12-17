@@ -1,6 +1,6 @@
 @inherits BaseHandler
 
-@inject IApplicationScope AppScope
+@inject IApplicationScopeFactory AppScopeFactory
 @inject ICartoDocumentService CartoDocument
 
 @if(_renderer is not null && _layer is not null)
@@ -283,7 +283,7 @@
             return;
         }
 
-        var newSymbol = await _renderer.TextSymbol.Compose(AppScope);
+        var newSymbol = await _renderer.TextSymbol.Compose(AppScopeFactory);
 
         if(newSymbol is ITextSymbol textSymbol)
         {
@@ -332,7 +332,7 @@
     }
 
     private Task SetRotation() => HandleAsync(() =>
-        _renderer?.SymbolRotation.EditProperties(AppScope, _layer?.FeatureClass)
+        _renderer?.SymbolRotation.EditProperties(AppScopeFactory, _layer?.FeatureClass)
         ?? Task.CompletedTask);
 
 
@@ -343,7 +343,7 @@
             return;
         }
 
-        var model = await AppScope.ShowModalDialog
+        var model = await AppScopeFactory.ShowModalDialog
             (typeof(LineLabelingCartographicMethodDialog),
             "Cartographic Method",
             new LineLabelingCartographicMethodModel()
@@ -368,7 +368,7 @@
             return;
         }
 
-        var model = await AppScope.ShowModalDialog
+        var model = await AppScopeFactory.ShowModalDialog
             (typeof(LabelExpressionDialog),
             "Cartographic Method",
             new LabelExpressionModel()

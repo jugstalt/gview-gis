@@ -1,7 +1,7 @@
 @using gView.Framework.Data.Filters
 
 @inherits BaseHandler
-@inject IApplicationScope AppScope
+@inject IApplicationScopeFactory AppScopeFactory
 @inject ICartoDocumentService CartoDocument
 
 @if (_renderer is not null && _layer is not null)
@@ -229,7 +229,7 @@
     {
         if (dropItem.Symbol is not null)
         {
-            var newSymbol = await dropItem.Symbol.Compose(AppScope);
+            var newSymbol = await dropItem.Symbol.Compose(AppScopeFactory);
 
             if (newSymbol is not null)
             {

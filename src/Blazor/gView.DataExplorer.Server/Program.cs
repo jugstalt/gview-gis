@@ -1,5 +1,6 @@
 using gView.Blazor.Core.Extensions.DependencyInjection;
 using gView.DataExplorer.Plugins.Extensions.DependencyInjection;
+using gView.Razor.Extensions.DependencyInjection;
 using gView.Razor.Leaflet.Extensions.DependencyInjection;
 using MudBlazor;
 using MudBlazor.Services;
@@ -10,7 +11,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 
-builder.Services.AddMudServices(config => {
+builder.Services.AddMudServices(config =>
+{
     config.SnackbarConfiguration.PositionClass = Defaults.Classes.Position.BottomLeft;
 
     config.SnackbarConfiguration.PreventDuplicates = true;
@@ -21,6 +23,8 @@ builder.Services.AddMudServices(config => {
     config.SnackbarConfiguration.ShowTransitionDuration = 500;
     config.SnackbarConfiguration.SnackbarVariant = Variant.Filled;
 });
+
+builder.Services.AddApplicationScopeFactory();
 
 builder.Services.AddExplorerDesktopApplicationService();
 builder.Services.AddExplorerApplicationScopeService(config =>

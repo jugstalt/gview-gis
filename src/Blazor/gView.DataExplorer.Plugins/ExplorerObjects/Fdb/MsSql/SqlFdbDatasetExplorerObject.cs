@@ -2,15 +2,14 @@
 using gView.DataExplorer.Plugins.ExplorerObjects.Base;
 using gView.DataExplorer.Plugins.ExplorerObjects.Fdb.ContextTools;
 using gView.DataExplorer.Plugins.ExplorerObjects.Fdb.Extensions;
-using gView.DataExplorer.Plugins.Extensions;
 using gView.DataSources.Fdb.MSAccess;
 using gView.DataSources.Fdb.MSSql;
-using gView.Framework.Blazor.Services.Abstraction;
+using gView.Framework.Core.Common;
 using gView.Framework.Core.Data;
 using gView.Framework.Core.FDB;
-using gView.Framework.Core.Common;
 using gView.Framework.DataExplorer.Abstraction;
 using gView.Framework.DataExplorer.Events;
+using gView.Framework.DataExplorer.Services.Abstraction;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -233,16 +232,14 @@ public class SqlFdbDatasetExplorerObject : ExplorerParentObject<SqlFdbExplorerOb
         return false;
     }
 
-    async public Task<IExplorerObject?> CreateExplorerObjectAsync(IApplicationScope scope, IExplorerObject parentExObject)
+    async public Task<IExplorerObject?> CreateExplorerObjectAsync(IExplorerApplicationScopeService scope, IExplorerObject parentExObject)
     {
         if (parentExObject == null || !CanCreate(parentExObject))
         {
             return null;
         }
 
-        var scopeService = scope.ToExplorerScopeService();
-
-        var element = await scopeService.CreateDataset(parentExObject);
+        var element = await scope.CreateDataset(parentExObject);
 
         if (parentExObject is SqlFdbExplorerObject && element != null)
         {
@@ -252,7 +249,7 @@ public class SqlFdbDatasetExplorerObject : ExplorerParentObject<SqlFdbExplorerOb
         }
         else
         {
-            await scopeService.ForceContentRefresh();
+            await scope.ForceContentRefresh();
 
             return null;
         }

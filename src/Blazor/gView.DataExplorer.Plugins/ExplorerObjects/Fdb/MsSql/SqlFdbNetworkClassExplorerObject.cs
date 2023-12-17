@@ -5,6 +5,7 @@ using gView.DataSources.Fdb.MSSql;
 using gView.Framework.Blazor.Services.Abstraction;
 using gView.Framework.Core.Common;
 using gView.Framework.DataExplorer.Abstraction;
+using gView.Framework.DataExplorer.Services.Abstraction;
 using System;
 using System.Threading.Tasks;
 
@@ -73,18 +74,16 @@ public class SqlFdbNetworkClassExplorerObject : ExplorerObjectCls<IExplorerObjec
         return false;
     }
 
-    public async Task<IExplorerObject?> CreateExplorerObjectAsync(IApplicationScope scope, IExplorerObject? parentExObject)
+    public async Task<IExplorerObject?> CreateExplorerObjectAsync(IExplorerApplicationScopeService scope, IExplorerObject? parentExObject)
     {
         if (parentExObject == null)
         {
             throw new ArgumentNullException(nameof(parentExObject));
         }
 
-        var scopeService = scope.ToExplorerScopeService();
-
-        if (await scopeService.CreateNetworkClass(parentExObject))
+        if (await scope.CreateNetworkClass(parentExObject))
         {
-            await scopeService.ForceContentRefresh();
+            await scope.ForceContentRefresh();
         }
 
         return null;

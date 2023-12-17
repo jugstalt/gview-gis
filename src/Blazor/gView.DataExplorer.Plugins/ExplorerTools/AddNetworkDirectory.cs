@@ -5,6 +5,7 @@ using gView.Framework.Blazor.Services.Abstraction;
 using gView.Framework.Core.Common;
 using gView.Framework.DataExplorer;
 using gView.Framework.DataExplorer.Abstraction;
+using gView.Framework.DataExplorer.Services.Abstraction;
 using gView.Framework.IO;
 using System.IO;
 using System.Threading.Tasks;
@@ -18,7 +19,7 @@ internal class AddNetworkDirectory : IExplorerTool
 
     public string Name => "Map (network) folder...";
 
-    public bool IsEnabled(IApplicationScope scope) => true;
+    public bool IsEnabled(IExplorerApplicationScopeService scope) => true;
 
     public string ToolTip => "";
 
@@ -26,20 +27,19 @@ internal class AddNetworkDirectory : IExplorerTool
 
     public ExplorerToolTarget Target => ExplorerToolTarget.General;
 
-    public async Task<bool> OnEvent(IApplicationScope scope)
+    public async Task<bool> OnEvent(IExplorerApplicationScopeService scope)
     {
         MapNetworkFolderModel? model = null;
-        var scopeService = scope.ToExplorerScopeService();
 
-        if (scopeService.CurrentExplorerObject is DirectoryObject)
+        if (scope.CurrentExplorerObject is DirectoryObject)
         {
             model = new MapNetworkFolderModel()
             {
-                FolderPath = ((DirectoryObject)scopeService.CurrentExplorerObject).FullName
+                FolderPath = ((DirectoryObject)scope.CurrentExplorerObject).FullName
             };
         }
 
-        model = await scopeService.ShowModalDialog(
+        model = await scope.ShowModalDialog(
             typeof(Razor.Components.Dialogs.MapNetworkFolderDialog),
             this.Name,
             model);
@@ -50,7 +50,7 @@ internal class AddNetworkDirectory : IExplorerTool
             ConfigConnections connStream = new ConfigConnections("directories");
             connStream.Add(model.FolderPath.Trim(), model.FolderPath.Trim());
 
-            await scopeService.ForceContentRefresh();
+            await scope.ForceContentRefresh();
         }
 
         return true;

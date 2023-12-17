@@ -2,6 +2,7 @@ using gView.Blazor.Core.Extensions.DependencyInjection;
 using gView.Carto.Plugins.Extensions.DependencyInjection;
 using gView.Carto.Web.Components;
 using gView.DataExplorer.Plugins.Extensions.DependencyInjection;
+using gView.Razor.Extensions.DependencyInjection;
 using gView.Razor.Leaflet.Extensions.DependencyInjection;
 using MudBlazor;
 using MudBlazor.Services;
@@ -24,6 +25,8 @@ builder.Services.AddMudServices(config =>
     config.SnackbarConfiguration.ShowTransitionDuration = 500;
     config.SnackbarConfiguration.SnackbarVariant = Variant.Filled;
 });
+
+builder.Services.AddApplicationScopeFactory();
 
 builder.Services.AddExplorerDesktopApplicationService();
 builder.Services.AddCartoDesktopApplicationService();

@@ -14,6 +14,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
+using gView.Framework.DataExplorer.Services.Abstraction;
 
 namespace gView.DataExplorer.Plugins.ExplorerObjects.FileSystem;
 
@@ -273,10 +274,10 @@ public class DirectoryObject : ExplorerParentObject<IExplorerObject>,
         return false;
     }
 
-    public async Task<IExplorerObject?> CreateExplorerObjectAsync(IApplicationScope scope,
-                                                            IExplorerObject parentExObject)
+    public async Task<IExplorerObject?> CreateExplorerObjectAsync(IExplorerApplicationScopeService scope,
+                                                                  IExplorerObject parentExObject)
     {
-        var model = await scope.ToExplorerScopeService().ShowModalDialog(
+        var model = await scope.ShowModalDialog(
             typeof(Razor.Components.Dialogs.InputBoxDialog),
             "Create",
             new InputBoxModel()

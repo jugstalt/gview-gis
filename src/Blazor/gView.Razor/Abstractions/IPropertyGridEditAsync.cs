@@ -5,7 +5,7 @@ namespace gView.Razor.Abstractions;
 
 public interface IPropertyGridEditAsync : IPropertyGridEditor
 {
-    Task<object?> EditAsync(IApplicationScope scope,
+    Task<object?> EditAsync(IApplicationScopeFactory scope,
                             object instance,
                             PropertyInfo propertyInfo);
 }

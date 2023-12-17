@@ -1,4 +1,5 @@
-﻿using gView.Carto.Plugins.Extensions;
+﻿using gView.Carto.Core.Services.Abstraction;
+using gView.Carto.Plugins.Extensions;
 using gView.Framework.Blazor.Services.Abstraction;
 using gView.Framework.Carto;
 using gView.Framework.Carto.Abstraction;
@@ -27,12 +28,11 @@ internal class MapSettings : ICartoTool
 
     }
 
-    public bool IsEnabled(IApplicationScope scope) => true;
+    public bool IsEnabled(ICartoApplicationScopeService scope) => true;
 
-    async public Task<bool> OnEvent(IApplicationScope scope)
+    async public Task<bool> OnEvent(ICartoApplicationScopeService scope)
     {
-        var scopeService = scope.ToCartoScopeService();
-        var original = scopeService.Document.Map as Map;
+        var original = scope.Document.Map as Map;
         var clone = original?.Clone() as Map;
 
         if (original is null || clone is null)
@@ -44,7 +44,7 @@ internal class MapSettings : ICartoTool
         clone.Display.ImageWidth = original.Display.ImageWidth;
         clone.Display.ImageHeight = original.Display.ImageHeight;
 
-        var model = await scopeService.ShowModalDialog(typeof(gView.Carto.Razor.Components.Dialogs.MapSettingsDialog),
+        var model = await scope.ShowModalDialog(typeof(gView.Carto.Razor.Components.Dialogs.MapSettingsDialog),
                                                     "Map Settings",
                                                     new Razor.Components.Dialogs.Models.MapSettingsModel()
                                                     {
@@ -86,7 +86,7 @@ internal class MapSettings : ICartoTool
 
             #endregion
 
-            await scopeService.EventBus.FireRefreshMapAsync();
+            await scope.EventBus.FireRefreshMapAsync();
         }
 
         return true;

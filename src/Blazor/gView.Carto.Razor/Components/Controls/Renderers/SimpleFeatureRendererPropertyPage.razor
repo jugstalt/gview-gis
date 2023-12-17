@@ -1,6 +1,6 @@
 @inherits BaseHandler
 
-@inject IApplicationScope AppScope
+@inject IApplicationScopeFactory AppScopeFactory
 
 @if (_renderer is not null)
 {
@@ -68,6 +68,6 @@
     }
 
     private Task SetRotation() => HandleAsync(() =>
-        _renderer?.SymbolRotation.EditProperties(AppScope, _layer?.FeatureClass)
+        _renderer?.SymbolRotation.EditProperties(AppScopeFactory, _layer?.FeatureClass)
         ?? Task.CompletedTask);
 }

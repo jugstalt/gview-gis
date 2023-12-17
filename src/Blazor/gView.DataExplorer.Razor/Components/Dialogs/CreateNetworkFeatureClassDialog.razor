@@ -1,7 +1,7 @@
 @using gView.Framework.Network.Algorthm
 
 @inherits ModalDialogFormBase<CreateNetworkFeatureClassModel>
-@inject IApplicationScope AppScope
+@inject IApplicationScopeFactory AppScopeFactory
 
 <ModalDialogFormBase T="CreateNetworkFeatureClassModel"
                      OnDialogClose="base.OnDialogClose"
@@ -386,7 +386,7 @@
 
     private Task EditCalculatorProperties(ISimpleNumberCalculation calculator) => HandleAsync(async () =>
     {
-        var model = await AppScope.ShowKnownDialog(Framework.Blazor.KnownDialogs.PropertyGridDialog,
+        var model = await AppScopeFactory.ShowKnownDialog(Framework.Blazor.KnownDialogs.PropertyGridDialog,
                                  calculator.Name,
                                  new PropertyGridDialogModel()
                                  {

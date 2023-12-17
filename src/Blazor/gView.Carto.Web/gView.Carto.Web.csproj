@@ -15,6 +15,7 @@
     <ProjectReference Include="..\gView.Carto.Razor\gView.Carto.Razor.csproj" />
     <ProjectReference Include="..\gView.DataExplorer.Plugins\gView.DataExplorer.Plugins.csproj" />
     <ProjectReference Include="..\gView.Razor.Leaflet\gView.Razor.Leaflet.csproj" />
+    <ProjectReference Include="..\gView.Razor\gView.Razor.csproj" />
   </ItemGroup>
 
 </Project>

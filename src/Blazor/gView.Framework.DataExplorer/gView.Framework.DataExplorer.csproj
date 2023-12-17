@@ -6,8 +6,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\gView.Framework\gView.Framework.csproj" />
-    <ProjectReference Include="..\gView.Framework.Blazor\gView.Framework.Blazor.csproj" />
+        <ProjectReference Include="..\..\gView.Framework\gView.Framework.csproj" />
+        <ProjectReference Include="..\gView.Framework.Blazor\gView.Framework.Blazor.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Models\" />
   </ItemGroup>
 
 </Project>

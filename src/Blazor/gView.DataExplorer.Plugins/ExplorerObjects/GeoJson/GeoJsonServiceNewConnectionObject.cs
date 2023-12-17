@@ -9,6 +9,7 @@ using gView.Framework.DataExplorer.Events;
 using gView.Framework.IO;
 using System.Threading.Tasks;
 using gView.Framework.Common.Extensions;
+using gView.Framework.DataExplorer.Services.Abstraction;
 
 namespace gView.DataExplorer.Plugins.ExplorerObjects.GeoJson
 {
@@ -54,9 +55,9 @@ namespace gView.DataExplorer.Plugins.ExplorerObjects.GeoJson
 
         #region IExplorerObjectDoubleClick Members
 
-        async public Task ExplorerObjectDoubleClick(IApplicationScope appScope, ExplorerObjectEventArgs e)
+        async public Task ExplorerObjectDoubleClick(IExplorerApplicationScopeService appScope, ExplorerObjectEventArgs e)
         {
-            var model = await appScope.ToExplorerScopeService().ShowModalDialog(typeof(gView.DataExplorer.Razor.Components.Dialogs.GeoJsonConnectionDialog),
+            var model = await appScope.ShowModalDialog(typeof(gView.DataExplorer.Razor.Components.Dialogs.GeoJsonConnectionDialog),
                                                                     "GeoJson Connection",
                                                                     new GeoJsonConnectionModel());
 
@@ -95,7 +96,7 @@ namespace gView.DataExplorer.Plugins.ExplorerObjects.GeoJson
             return (parentExObject is GeoJsonServiceGroupObject);
         }
 
-        async public Task<IExplorerObject?> CreateExplorerObjectAsync(IApplicationScope appScope, IExplorerObject parentExObject)
+        async public Task<IExplorerObject?> CreateExplorerObjectAsync(IExplorerApplicationScopeService appScope, IExplorerObject parentExObject)
         {
             ExplorerObjectEventArgs e = new ExplorerObjectEventArgs();
             await ExplorerObjectDoubleClick(appScope, e);

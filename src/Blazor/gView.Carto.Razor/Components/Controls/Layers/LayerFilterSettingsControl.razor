@@ -1,7 +1,7 @@
 @using gView.Framework.Data.Filters
 
 @inherits BaseHandler
-@inject IApplicationScope AppScope
+@inject IApplicationScopeFactory AppScopeFactory
 
 @if(Layer is not null)
 {
@@ -49,7 +49,7 @@
 
     private Task ShowQueryBuilder() => HandleAsync(async () =>
     {
-        var model = await AppScope.ShowModalDialog(
+        var model = await AppScopeFactory.ShowModalDialog(
             typeof(gView.Carto.Razor.Components.Dialogs.QueryBuilderDialog),
             "Query Builder",
             new QueryBuilderModel()

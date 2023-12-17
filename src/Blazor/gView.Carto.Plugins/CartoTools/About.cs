@@ -5,6 +5,7 @@ using gView.Framework.Core.Common;
 using gView.Razor.Dialogs.Models;
 using gView.Framework.Carto;
 using gView.Framework.Common;
+using gView.Carto.Core.Services.Abstraction;
 
 namespace gView.Carto.Plugins.CartoTools;
 
@@ -30,13 +31,11 @@ internal class About : ICartoTool
 
     }
 
-    public bool IsEnabled(IApplicationScope scope) => true;
+    public bool IsEnabled(ICartoApplicationScopeService scope) => true;
 
-    async public Task<bool> OnEvent(IApplicationScope scope)
+    async public Task<bool> OnEvent(ICartoApplicationScopeService scope)
     {
-        var scopeService = scope.ToCartoScopeService();
-
-        await scopeService.ShowModalDialog(typeof(gView.Razor.Dialogs.AboutDialog),
+        await scope.ShowModalDialog(typeof(gView.Razor.Dialogs.AboutDialog),
                                      "About",
                                      new AboutDialogModel()
                                      {

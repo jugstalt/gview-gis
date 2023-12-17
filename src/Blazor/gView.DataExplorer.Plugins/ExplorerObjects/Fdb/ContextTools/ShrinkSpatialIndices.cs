@@ -9,6 +9,7 @@ using gView.Framework.DataExplorer.Abstraction;
 using gView.Framework.Common;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using gView.Framework.DataExplorer.Services.Abstraction;
 
 namespace gView.DataExplorer.Plugins.ExplorerObjects.Fdb.ContextTools;
 
@@ -18,14 +19,13 @@ internal class ShrinkSpatialIndices : IExplorerObjectContextTool
 
     public string Icon => "basic:warning_yellow";
 
-    public bool IsEnabled(IApplicationScope scope, IExplorerObject exObject)
+    public bool IsEnabled(IExplorerApplicationScopeService scope, IExplorerObject exObject)
     {
         return true;
     }
 
-    async public Task<bool> OnEvent(IApplicationScope scope, IExplorerObject exObject)
+    async public Task<bool> OnEvent(IExplorerApplicationScopeService scope, IExplorerObject exObject)
     {
-        var scopeService = scope.ToExplorerScopeService();
         var instance = await exObject.GetInstanceAsync();
 
         IDictionary<string, object>? parameters = null;
@@ -62,7 +62,7 @@ internal class ShrinkSpatialIndices : IExplorerObjectContextTool
             return false;
         }
 
-        await scopeService.ShowKnownDialog(
+        await scope.ShowKnownDialog(
                     KnownDialogs.ExecuteCommand,
                     $"Shrink spatial index",
                     new ExecuteCommandModel()

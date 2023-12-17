@@ -11,6 +11,7 @@ using gView.Framework.Common;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using gView.Framework.DataExplorer.Services.Abstraction;
 
 namespace gView.DataExplorer.Plugins.ExplorerTools;
 
@@ -25,29 +26,25 @@ internal class Paste : IExplorerTool
 
     public ExplorerToolTarget Target => ExplorerToolTarget.SelectedContextExplorerObjects;
 
-    public bool IsEnabled(IApplicationScope scope)
+    public bool IsEnabled(IExplorerApplicationScopeService scope)
     {
-        var scopeService = scope.ToExplorerScopeService();
-
-        if (scopeService.GetClipboardItemType() == typeof(IFeatureClass))
+        if (scope.GetClipboardItemType() == typeof(IFeatureClass))
         {
-            return scopeService.CurrentExplorerObject?.ObjectType != null &&
-                scopeService.CurrentExplorerObject.ObjectType.IsAssignableTo(typeof(IFeatureDataset));
+            return scope.CurrentExplorerObject?.ObjectType != null &&
+                   scope.CurrentExplorerObject.ObjectType.IsAssignableTo(typeof(IFeatureDataset));
         }
 
         return false;
     }
 
-    async public Task<bool> OnEvent(IApplicationScope scope)
+    async public Task<bool> OnEvent(IExplorerApplicationScopeService scope)
     {
-        var scopeService = scope.ToExplorerScopeService();
-
-        if (scopeService.CurrentExplorerObject is null)
+        if (scope.CurrentExplorerObject is null)
         {
             return false;
         }
 
-        var destination = await scopeService.CurrentExplorerObject.GetInstanceAsync();
+        var destination = await scope.CurrentExplorerObject.GetInstanceAsync();
         if (destination is IFeatureDataset)
         {
             IFeatureDataset destDataset = (IFeatureDataset)destination;
@@ -60,7 +57,7 @@ internal class Paste : IExplorerTool
 
             List<CommandItem> commandItems = new();
 
-            foreach (var featureClass in scopeService.GetClipboardElements<IFeatureClass>())
+            foreach (var featureClass in scope.GetClipboardElements<IFeatureClass>())
             {
                 var sourceDataset = featureClass.Dataset;
                 var sourceDatasetGuid = PlugInManager.PlugInID(sourceDataset);
@@ -85,12 +82,12 @@ internal class Paste : IExplorerTool
                 });
             }
 
-            await scopeService.ShowKnownDialog(
+            await scope.ShowKnownDialog(
                     KnownDialogs.ExecuteCommand,
                     $"Copy {commandItems.Count} FeatureClasses",
                     new ExecuteCommandModel() { CommandItems = commandItems });
 
-            await scopeService.ForceContentRefresh();
+            await scope.ForceContentRefresh();
         }
 
         return false;

@@ -15,7 +15,7 @@ static public class ServicesExtensions
                 .AddSingleton<ICartoApplicationService, CartoDesktopApplicationService>();
 
     static public IServiceCollection AddCartoApplicationScopeService(this IServiceCollection services,
-                                                                        Action<CartoApplicationScopeServiceOptions> configureOptions)
+                                                                     Action<CartoApplicationScopeServiceOptions> configureOptions)
     {
         return services
             .AddTransient<IPropertyGridEditor, SymbolPropertyEditor>()
@@ -27,6 +27,6 @@ static public class ServicesExtensions
             .AddTransient<ICartoDocumentService, CartoDocumentService>()
             .Configure(configureOptions)
             .AddEventBus()
-            .AddScoped<IApplicationScope, CartoApplicationScopeService>();
+            .AddScoped<ICartoApplicationScopeService, CartoApplicationScopeService>();
     }
 }

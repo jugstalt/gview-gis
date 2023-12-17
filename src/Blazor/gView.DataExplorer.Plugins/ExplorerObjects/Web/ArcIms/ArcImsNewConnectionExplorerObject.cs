@@ -9,6 +9,7 @@ using gView.Framework.DataExplorer.Events;
 using gView.Framework.IO;
 using System.Threading.Tasks;
 using gView.Framework.Common.Extensions;
+using gView.Framework.DataExplorer.Services.Abstraction;
 
 namespace gView.DataExplorer.Plugins.ExplorerObjects.Web.ArcIms;
 
@@ -49,9 +50,9 @@ public class ArcImsNewConnectionExplorerObject : ExplorerObjectCls<IExplorerObje
 
     #region IExplorerObjectDoubleClick Member
 
-    async public Task ExplorerObjectDoubleClick(IApplicationScope appScope, ExplorerObjectEventArgs e)
+    async public Task ExplorerObjectDoubleClick(IExplorerApplicationScopeService appScope, ExplorerObjectEventArgs e)
     {
-        var model = await appScope.ToExplorerScopeService().ShowModalDialog(
+        var model = await appScope.ShowModalDialog(
             typeof(gView.DataExplorer.Razor.Components.Dialogs.ArcImsConnectionDialog),
             "GeoServices Connection",
             new ArcImsConnectionModel());
@@ -91,7 +92,7 @@ public class ArcImsNewConnectionExplorerObject : ExplorerObjectCls<IExplorerObje
         return (parentExObject is ArcImsExplorerObjects);
     }
 
-    async public Task<IExplorerObject?> CreateExplorerObjectAsync(IApplicationScope appScope, IExplorerObject parentExObject)
+    async public Task<IExplorerObject?> CreateExplorerObjectAsync(IExplorerApplicationScopeService appScope, IExplorerObject parentExObject)
     {
         ExplorerObjectEventArgs e = new ExplorerObjectEventArgs();
         await ExplorerObjectDoubleClick(appScope, e);

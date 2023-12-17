@@ -9,6 +9,8 @@ using gView.Framework.Carto.Abstraction;
 using gView.Framework.Core.Common;
 using gView.Framework.IO;
 using gView.Framework.Common;
+using gView.Carto.Core.Services.Abstraction;
+using gView.Carto.Plugins.Services;
 
 namespace gView.Carto.Plugins.CartoTools;
 
@@ -32,16 +34,14 @@ public class LoadDocument : ICartoInitialTool
 
     }
 
-    public bool IsEnabled(IApplicationScope scope)
+    public bool IsEnabled(ICartoApplicationScopeService scope)
     {
         return true;
     }
 
-    async public Task<bool> OnEvent(IApplicationScope scope)
+    async public Task<bool> OnEvent(ICartoApplicationScopeService scope)
     {
-        var scopeService = scope.ToCartoScopeService();
-
-        var model = await scopeService.ShowKnownDialog(KnownDialogs.ExplorerDialog,
+        var model = await scope.ShowKnownDialog(KnownDialogs.ExplorerDialog,
                                                        title: "Load existing map",
                                                        model: new ExplorerDialogModel()
                                                        {
@@ -66,7 +66,7 @@ public class LoadDocument : ICartoInitialTool
 
             if (cartoDocument.Map?.ErrorMessages?.Any() == true)
             {
-                if (await scopeService.ShowKnownDialog(
+                if (await scope.ShowKnownDialog(
                                     KnownDialogs.WarningsDialog,
                                     model: new WarningsDialogModel()
                                     {
@@ -79,7 +79,7 @@ public class LoadDocument : ICartoInitialTool
             }
 
             //((TOC)cartoDocument.Map.TOC).Modifier = TocModifier.Private;
-            scopeService.Document = cartoDocument;
+            ((CartoApplicationScopeService)scope).Document = cartoDocument;
         }
 
         return true;

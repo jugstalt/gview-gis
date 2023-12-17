@@ -8,6 +8,7 @@ using gView.Framework.DataExplorer.Events;
 using gView.Framework.IO;
 using gView.Framework.Common;
 using System.Threading.Tasks;
+using gView.Framework.DataExplorer.Services.Abstraction;
 
 namespace gView.DataExplorer.Plugins.ExplorerObjects.OSGeo.Ogr;
 
@@ -48,9 +49,9 @@ public class OgrNewConnectionObject : ExplorerObjectCls<OgrDatasetGroupObject>,
 
     #region IExplorerObjectDoubleClick Members
 
-    async public Task ExplorerObjectDoubleClick(IApplicationScope appScope, ExplorerObjectEventArgs e)
+    async public Task ExplorerObjectDoubleClick(IExplorerApplicationScopeService appScope, ExplorerObjectEventArgs e)
     {
-        var model = await appScope.ToExplorerScopeService().ShowModalDialog(typeof(gView.DataExplorer.Razor.Components.Dialogs.OgrConnectionDialog),
+        var model = await appScope.ShowModalDialog(typeof(gView.DataExplorer.Razor.Components.Dialogs.OgrConnectionDialog),
                                                                     "EventTable Connection",
                                                                     new OgrConnectionModel());
 
@@ -91,7 +92,7 @@ public class OgrNewConnectionObject : ExplorerObjectCls<OgrDatasetGroupObject>,
         return (parentExObject is OgrDatasetGroupObject);
     }
     
-    async public Task<IExplorerObject?> CreateExplorerObjectAsync(IApplicationScope appScope, IExplorerObject parentExObject)
+    async public Task<IExplorerObject?> CreateExplorerObjectAsync(IExplorerApplicationScopeService appScope, IExplorerObject parentExObject)
     {
         ExplorerObjectEventArgs e = new ExplorerObjectEventArgs();
         await ExplorerObjectDoubleClick(appScope, e);

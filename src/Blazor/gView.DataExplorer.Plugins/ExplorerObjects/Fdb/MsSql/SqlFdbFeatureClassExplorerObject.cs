@@ -15,6 +15,7 @@ using gView.Framework.DataExplorer.Events;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using gView.Framework.DataExplorer.Services.Abstraction;
 
 namespace gView.DataExplorer.Plugins.ExplorerObjects.Fdb.MsSql;
 
@@ -306,16 +307,14 @@ public class SqlFdbFeatureClassExplorerObject : ExplorerObjectCls<SqlFdbDatasetE
         return false;
     }
 
-    async public Task<IExplorerObject?> CreateExplorerObjectAsync(IApplicationScope scope, IExplorerObject parentExObject)
+    async public Task<IExplorerObject?> CreateExplorerObjectAsync(IExplorerApplicationScopeService scope, IExplorerObject parentExObject)
     {
         if (!CanCreate(parentExObject))
         {
             return null;
         }
 
-        var scopeService = scope.ToExplorerScopeService();
-
-        var element = await scopeService.CreateCeatureClass(parentExObject);
+        var element = await scope.CreateCeatureClass(parentExObject);
 
         if (parentExObject is SqlFdbDatasetExplorerObject && element != null)
         {
@@ -326,7 +325,7 @@ public class SqlFdbFeatureClassExplorerObject : ExplorerObjectCls<SqlFdbDatasetE
         }
         else
         {
-            await scopeService.ForceContentRefresh();
+            await scope.ForceContentRefresh();
 
             return null;
         }

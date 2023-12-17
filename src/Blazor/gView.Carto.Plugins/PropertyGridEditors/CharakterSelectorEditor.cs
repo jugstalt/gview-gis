@@ -1,4 +1,4 @@
-﻿using gView.Carto.Plugins.Extensions;
+﻿using gView.Carto.Core.Services.Abstraction;
 using gView.Carto.Razor.Components.Dialogs.Models;
 using gView.Framework.Blazor.Services.Abstraction;
 using gView.Framework.Symbology.Models;
@@ -13,12 +13,10 @@ internal class CharakterSelectorEditor : IPropertyGridEditAsync
 {
     public Type PropertyType => typeof(Charakter);
 
-    async public Task<object?> EditAsync(IApplicationScope scope,
+    async public Task<object?> EditAsync(IApplicationScopeFactory scope,
                                          object instance,
                                          PropertyInfo propertyInfo)
     {
-        var scopeService = scope.ToCartoScopeService();
-
         var charakter = propertyInfo.GetValue(instance) as Charakter;
         if (charakter == null)
         {
@@ -32,7 +30,7 @@ internal class CharakterSelectorEditor : IPropertyGridEditAsync
         var fontName = (fontPropertyInfo?.GetValue(instance) as IFont)?.Name ??
                         Current.Engine.GetDefaultFontName();
 
-        var model = await scopeService.ShowModalDialog(
+        var model = await scope.ShowModalDialog(
             typeof(gView.Carto.Razor.Components.Dialogs.CharakterSelectorDialog),
             "Select Charakter",
             new CharakterSelectorModel()

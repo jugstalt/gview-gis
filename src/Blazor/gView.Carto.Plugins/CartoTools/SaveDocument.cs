@@ -5,6 +5,7 @@ using gView.Framework.Carto.Abstraction;
 using gView.Framework.Core.Common;
 using gView.Framework.IO;
 using gView.Framework.Common;
+using gView.Carto.Core.Services.Abstraction;
 
 namespace gView.Carto.Plugins.CartoTools;
 
@@ -28,21 +29,19 @@ public class SaveDocument : ICartoTool
         
     }
 
-    public bool IsEnabled(IApplicationScope scope)
+    public bool IsEnabled(ICartoApplicationScopeService scope)
     {
-        return !String.IsNullOrEmpty(scope.ToCartoScopeService().Document.FilePath);
+        return !String.IsNullOrEmpty(scope.Document.FilePath);
     }
 
-    public Task<bool> OnEvent(IApplicationScope scope)
+    public Task<bool> OnEvent(ICartoApplicationScopeService scope)
     {
-        var scopeService = scope.ToCartoScopeService();
-
-        if (File.Exists(scopeService.Document.FilePath))
+        if (File.Exists(scope.Document.FilePath))
         {
             XmlStream stream = new XmlStream("MapApplication", true);
-            stream.Save("MapDocument", scopeService.Document);
+            stream.Save("MapDocument", scope.Document);
 
-            stream.WriteStream(scopeService.Document.FilePath);
+            stream.WriteStream(scope.Document.FilePath);
 
             return Task.FromResult(true);
         }

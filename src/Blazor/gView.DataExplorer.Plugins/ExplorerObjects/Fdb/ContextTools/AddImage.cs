@@ -12,6 +12,7 @@ using gView.Framework.Blazor;
 using gView.Framework.Blazor.Services.Abstraction;
 using gView.Framework.Core.Data;
 using gView.Framework.DataExplorer.Abstraction;
+using gView.Framework.DataExplorer.Services.Abstraction;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -23,17 +24,16 @@ internal class AddImage : IExplorerObjectContextTool
 
     public string Icon => "basic:round-plus";
 
-    public bool IsEnabled(IApplicationScope scope, IExplorerObject exObject)
+    public bool IsEnabled(IExplorerApplicationScopeService scope, IExplorerObject exObject)
     {
         return true;
     }
 
-    async public Task<bool> OnEvent(IApplicationScope scope, IExplorerObject exObject)
+    async public Task<bool> OnEvent(IExplorerApplicationScopeService scope, IExplorerObject exObject)
     {
-        var scopeService = scope.ToExplorerScopeService();
         var instance = await exObject.GetInstanceAsync() as IRasterCatalogClass;
 
-        var model = await scopeService.ShowKnownDialog(Framework.Blazor.KnownDialogs.ExplorerDialog,
+        var model = await scope.ShowKnownDialog(Framework.Blazor.KnownDialogs.ExplorerDialog,
                                                        title: "Select Image",
                                                        model: new ExplorerDialogModel()
                                                        {
@@ -76,7 +76,7 @@ internal class AddImage : IExplorerObjectContextTool
             });
 
 
-            await scopeService.ShowKnownDialog(
+            await scope.ShowKnownDialog(
                     KnownDialogs.ExecuteCommand,
                     $"Add File",
                     new ExecuteCommandModel()

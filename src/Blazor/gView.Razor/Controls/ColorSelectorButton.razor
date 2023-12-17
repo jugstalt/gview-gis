@@ -2,7 +2,7 @@
 @using gView.GraphicsEngine
 
 @inherits BaseHandler
-@inject IApplicationScope AppScope
+@inject IApplicationScopeFactory AppScopeFactory
 
 @if(_color is not null)
 {
@@ -34,7 +34,7 @@
 
     private Task OpenColorPicker() => HandleAsync(async () =>
         {
-            var model = await AppScope.ShowModalDialog(
+            var model = await AppScopeFactory.ShowModalDialog(
                 typeof(gView.Razor.Dialogs.ColorPickerDialog),
                 "Color Picker",
                 new ColorPickerModel()

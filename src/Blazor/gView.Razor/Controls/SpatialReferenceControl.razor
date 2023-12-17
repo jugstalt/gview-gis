@@ -1,5 +1,5 @@
 @inherits BaseHandler
-@inject IApplicationScope AppScope
+@inject IApplicationScopeFactory AppScopeFactory
 
 <GvGrid ColumnCount="1">
     <GvGridItem>
@@ -57,7 +57,7 @@
     private Task SelectProjection()
         => HandleAsync(async () =>
         {
-            var model = await AppScope.ShowKnownDialog<BaseDialogModel<ISpatialReference>>(KnownDialogs.GeographicProjectionSelectorDialog);
+            var model = await AppScopeFactory.ShowKnownDialog<BaseDialogModel<ISpatialReference>>(KnownDialogs.GeographicProjectionSelectorDialog);
 
             if (model?.Value != null)
             {
@@ -69,7 +69,7 @@
     private Task SelectDatum()
         => HandleAsync(async () =>
             {
-                var model = await AppScope.ShowKnownDialog<BaseDialogModel<IGeodeticDatum>>(KnownDialogs.GeographicDatumSelectorDialog);
+                var model = await AppScopeFactory.ShowKnownDialog<BaseDialogModel<IGeodeticDatum>>(KnownDialogs.GeographicDatumSelectorDialog);
 
                 if (model?.Value != null && this.SpatialReference is SpatialReference)
                 {

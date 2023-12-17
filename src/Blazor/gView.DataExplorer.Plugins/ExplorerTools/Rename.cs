@@ -4,6 +4,7 @@ using gView.Framework.Blazor.Services.Abstraction;
 using gView.Framework.Core.Common;
 using gView.Framework.DataExplorer;
 using gView.Framework.DataExplorer.Abstraction;
+using gView.Framework.DataExplorer.Services.Abstraction;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -22,20 +23,16 @@ public class Rename : IExplorerTool
 
     public ExplorerToolTarget Target => ExplorerToolTarget.SelectedContextExplorerObjects;
 
-    public bool IsEnabled(IApplicationScope scope)
+    public bool IsEnabled(IExplorerApplicationScopeService scope)
     {
-        var scopeService = scope.ToExplorerScopeService();
-
-        return scopeService.ContextExplorerObjects?
+        return scope.ContextExplorerObjects?
             .Where(e => e is IExplorerObjectRenamable)
             .Count() == 1;
     }
 
-    async public Task<bool> OnEvent(IApplicationScope scope)
+    async public Task<bool> OnEvent(IExplorerApplicationScopeService scope)
     {
-        var scopeService = scope.ToExplorerScopeService();
-
-        var exObject = scopeService.ContextExplorerObjects?
+        var exObject = scope.ContextExplorerObjects?
             .Where(e => e is IExplorerObjectRenamable)
             .FirstOrDefault();
 
@@ -43,7 +40,7 @@ public class Rename : IExplorerTool
         {
             var model = new RenameObjectModel() { ExplorerObject = exObject };
 
-            model = await scopeService.ShowModalDialog(
+            model = await scope.ShowModalDialog(
                    typeof(Razor.Components.Dialogs.RenameObjectDialog),
                    this.Name,
                    model);
@@ -53,7 +50,7 @@ public class Rename : IExplorerTool
                 await (exObject as IExplorerObjectRenamable)!
                              .RenameExplorerObject(model.NewName);
 
-                await scopeService.ForceContentRefresh();
+                await scope.ForceContentRefresh();
             }
         }
 

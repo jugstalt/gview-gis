@@ -1,4 +1,5 @@
-﻿using gView.Carto.Plugins.Extensions;
+﻿using gView.Carto.Core.Services.Abstraction;
+using gView.Carto.Plugins.Extensions;
 using gView.DataExplorer.Razor.Components.Dialogs.Filters;
 using gView.DataExplorer.Razor.Components.Dialogs.Models;
 using gView.Framework.Blazor;
@@ -30,16 +31,14 @@ public class SaveDocumentAs : ICartoTool
 
     }
 
-    public bool IsEnabled(IApplicationScope scope)
+    public bool IsEnabled(ICartoApplicationScopeService scope)
     {
         return true;
     }
 
-    async public Task<bool> OnEvent(IApplicationScope scope)
+    async public Task<bool> OnEvent(ICartoApplicationScopeService scope)
     {
-        var scopeService = scope.ToCartoScopeService();
-
-        var model = await scopeService.ShowKnownDialog(KnownDialogs.ExplorerDialog,
+        var model = await scope.ShowKnownDialog(KnownDialogs.ExplorerDialog,
                                                        title: "Save current map",
                                                        model: new ExplorerDialogModel()
                                                        {
@@ -64,11 +63,11 @@ public class SaveDocumentAs : ICartoTool
             bool performEncryption = true;
 
             XmlStream stream = new XmlStream("MapApplication", performEncryption);
-            stream.Save("MapDocument", scopeService.Document);
+            stream.Save("MapDocument", scope.Document);
 
             stream.WriteStream(mxlFilenPath);
 
-            scopeService.Document.FilePath = mxlFilenPath;
+            scope.Document.FilePath = mxlFilenPath;
         }
 
         return true;

@@ -1,5 +1,5 @@
-﻿using gView.Framework.Blazor.Services.Abstraction;
-using gView.Framework.Core.UI;
+﻿using gView.Framework.Core.UI;
+using gView.Framework.DataExplorer.Services.Abstraction;
 using System;
 using System.Threading.Tasks;
 
@@ -9,7 +9,7 @@ namespace gView.Framework.DataExplorer.Abstraction
     {
         string Name { get; }
 
-        bool IsEnabled(IApplicationScope scope);
+        bool IsEnabled(IExplorerApplicationScopeService scope);
 
         string ToolTip { get; }
 
@@ -17,6 +17,6 @@ namespace gView.Framework.DataExplorer.Abstraction
 
         ExplorerToolTarget Target { get; }
 
-        Task<bool> OnEvent(IApplicationScope scope);
+        Task<bool> OnEvent(IExplorerApplicationScopeService scope);
     }
 }

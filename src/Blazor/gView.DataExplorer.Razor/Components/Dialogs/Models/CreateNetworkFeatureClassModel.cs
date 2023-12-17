@@ -1,18 +1,18 @@
 ﻿using gView.Blazor.Models.Dialogs;
 using gView.Cmd.Fdb.Lib.Model;
-using gView.Framework.Blazor.Services.Abstraction;
+using gView.Framework.Common.Extensions;
 using gView.Framework.Core.Data;
 using gView.Framework.Core.Geometry;
 using gView.Framework.Core.Network;
+using gView.Framework.DataExplorer.Services.Abstraction;
 using gView.Framework.IO;
 using System.Text;
-using gView.Framework.Common.Extensions;
 
 namespace gView.DataExplorer.Razor.Components.Dialogs.Models;
 
 public class CreateNetworkFeatureClassModel : IDialogResultItem
 {
-    private readonly IApplicationScope? _applicationScope;
+    private readonly IExplorerApplicationScopeService? _applicationScope;
     private readonly string _exObjectFullname;
 
     public CreateNetworkFeatureClassModel()
@@ -21,14 +21,14 @@ public class CreateNetworkFeatureClassModel : IDialogResultItem
         _exObjectFullname = string.Empty;
     }
 
-    public CreateNetworkFeatureClassModel(IApplicationScope? scope = null,
+    public CreateNetworkFeatureClassModel(IExplorerApplicationScopeService? scope = null,
                                           string exObjectFullname = "")
     {
         _applicationScope = scope;
         _exObjectFullname = exObjectFullname;
     }
 
-    public CreateNetworkFeatureClassModel(IApplicationScope? scope,
+    public CreateNetworkFeatureClassModel(IExplorerApplicationScopeService? scope,
                                           string exObjectFullname,
                                           IFeatureDataset featureDataset)
         : this(scope, exObjectFullname)
@@ -151,7 +151,7 @@ public class CreateNetworkFeatureClassModel : IDialogResultItem
         this.Result.UseSnapTolerance = commandModel.UseSnapTolerance;
         this.Result.SnapTolerance = commandModel.SnapTolerance;
 
-        foreach(var weight in commandModel.Weights)
+        foreach (var weight in commandModel.Weights)
         {
             this.Result.Weights.Add(weight);
         }

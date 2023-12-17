@@ -10,6 +10,8 @@ using gView.Framework.Core.Data;
 using gView.Framework.Core.Common;
 using gView.Framework.Data;
 using gView.Framework.Common;
+using gView.Blazor.Core.Services;
+using gView.Carto.Core.Services.Abstraction;
 
 namespace gView.Carto.Plugins.CartoTools;
 
@@ -33,24 +35,21 @@ internal class AddDataToGroupLayer : ICartoTool
 
     }
 
-    public bool IsEnabled(IApplicationScope scope)
+    public bool IsEnabled(ICartoApplicationScopeService scope)
     {
-        var scopeService = scope.ToCartoScopeService();
-
-        return scopeService.SelectedTocTreeNode is TocParentNode;
+        return scope.SelectedTocTreeNode is TocParentNode;
     }
 
-    async public Task<bool> OnEvent(IApplicationScope scope)
+    async public Task<bool> OnEvent(ICartoApplicationScopeService scope)
     {
-        var scopeService = scope.ToCartoScopeService();
-        var groupLayer = (scopeService.SelectedTocTreeNode as TocParentNode)?.TocElement?.Layers?.FirstOrDefault() as IGroupLayer;
+        var groupLayer = (scope.SelectedTocTreeNode as TocParentNode)?.TocElement?.Layers?.FirstOrDefault() as IGroupLayer;
 
         if (groupLayer is null)
         {
             return false;
         }
 
-        var model = await scopeService.ShowKnownDialog(
+        var model = await scope.ShowKnownDialog(
                                             KnownDialogs.ExplorerDialog,
                                             title: "Add Data",
                                             model: new ExplorerDialogModel()
@@ -66,9 +65,9 @@ internal class AddDataToGroupLayer : ICartoTool
             return false;
         }
 
-        var map = scopeService.Document.Map;
+        var map = scope.Document.Map;
         bool firstLayer = map.MapElements!.Any() != true;
-        var layersResult = await model.GetLayers(scopeService.GeoTransformer, map.Display.SpatialReference);
+        var layersResult = await model.GetLayers(scope.GeoTransformer, map.Display.SpatialReference);
 
         foreach (var layer in layersResult.layers.OrderLayersByGeometryType().Where(l => l is Layer).Select(l => (Layer)l))
         {
@@ -79,21 +78,21 @@ internal class AddDataToGroupLayer : ICartoTool
             if (map.TOC?.Elements != null)
             {
                 var nextLayer = groupLayer.ChildLayer.FirstOrHigherIndexOfGeometryTypeOrder(layer);
-                var nextTocElement = scopeService.Document.Map.TOC.Elements.FirstOrDefault(e => e.Layers != null && e.Layers.Contains(nextLayer));
-                pos = scopeService.Document.Map.TOC.Elements.IndexOf(nextTocElement);
+                var nextTocElement = scope.Document.Map.TOC.Elements.FirstOrDefault(e => e.Layers != null && e.Layers.Contains(nextLayer));
+                pos = scope.Document.Map.TOC.Elements.IndexOf(nextTocElement);
             }
 
-            scopeService.Document.Map.AddLayer(layer, pos);
+            scope.Document.Map.AddLayer(layer, pos);
         }
 
         if (layersResult.layersExtent is not null)
         {
             if (firstLayer || layersResult.layersExtent.Intersects(map.Display.Envelope) == false)
             {
-                await scopeService.EventBus.FireMapZoomToAsync(layersResult.layersExtent);
+                await scope.EventBus.FireMapZoomToAsync(layersResult.layersExtent);
             }
         }
-        await scopeService.EventBus.FireMapSettingsChangedAsync();
+        await scope.EventBus.FireMapSettingsChangedAsync();
 
         return true;
     }
