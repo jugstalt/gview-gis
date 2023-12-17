@@ -9,6 +9,12 @@
 
     //let splitterElement = document.querySelector('.tree-content-splitter');
 
+    document.onkeydown = function (e) {
+        if (e.keyCode === 116) {  // F5
+            return false;
+        }
+    };
+
     window.addEventListener('mousedown', function (e) {
         //if (e.target === splitterElement) {
         if (e.target.classList.contains('tree-content-splitter')) {

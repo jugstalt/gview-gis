@@ -1,0 +1,70 @@
+@using Microsoft.JSInterop
+
+@inject NavigationManager Nav
+@inject IJSRuntime JSRuntime
+
+@rendermode InteractiveServer
+
+<MudThemeProvider @bind-IsDarkMode="@_isDarkMode" Theme="_theme" />
+
+<div style="max-width:600px;margin:40px auto;text-align:center">
+    <h1>gView GIS</h1>
+    <GvGrid ColumnCount="2">
+        <GvGridItem>
+            <MudPaper @onclick="()=>NavigateTo(CartoUri)"
+                      Style="min-height:250px;cursor:pointer;padding:20px;position:relative"
+                      Elevation="25">
+                <MudText Typo="Typo.h5">gView Carto</MudText>
+
+                <MudText Typo="Typo.body1">
+                    Create maps, include geographic data sources, render with cartographics capabilites
+                </MudText>
+
+                <MudFab Color="Color.Primary" Style="position:absolute;right:20px;bottom:20px"
+                        StartIcon="@Icons.Material.Filled.OpenInNew"
+                        OnClick="()=>NavigateTo(CartoUri, true)" />
+            </MudPaper>
+        </GvGridItem>
+        <GvGridItem>
+            <MudPaper @onclick="()=>NavigateTo(ExplorerUri)"
+                      style="min-height:250px;cursor:pointer;padding:20px;position:relative"
+                      Elevation="25">
+                <MudText Typo="Typo.h5">gView Explorer</MudText>
+
+                <MudText Typo="Typo.body1">
+                    Explore geographic data, copy data between datasets, run workloads to manage your data
+                </MudText>
+
+                <MudFab Color="Color.Primary" Style="position:absolute;right:20px;bottom:20px"
+                        StartIcon="@Icons.Material.Filled.OpenInNew"
+                        OnClick="()=>NavigateTo(ExplorerUri, true)" />
+            </MudPaper>
+        </GvGridItem>
+    </GvGrid>
+</div>
+
+
+@code {
+    private const string CartoUri = "carto";
+    private const string ExplorerUri = "explorer";
+
+    private MudTheme _theme = new();
+    private bool _isDarkMode = true;
+
+    private void ToggleDarkmode()
+    {
+        _isDarkMode = !_isDarkMode;
+    }
+
+    async private Task NavigateTo(string uri, bool newTab = false)
+    {
+        if (newTab)
+        {
+            await JSRuntime.InvokeVoidAsync("open", uri, "_blank");
+        }
+        else
+        {
+            Nav.NavigateTo(uri, true);
+        }
+    }
+}
