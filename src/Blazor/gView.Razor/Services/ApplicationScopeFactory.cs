@@ -14,7 +14,7 @@ internal class ApplicationScopeFactory : IApplicationScopeFactory, IDisposable
 {
     private readonly IDialogService _dialogService;
     private readonly IEnumerable<IKnownDialogService> _knownDialogs;
-    private readonly IServiceScope _serviceScope;
+    private readonly IServiceProvider _serviceProvider;
 
     public ApplicationScopeFactory(IDialogService dialogService,
                                    IEnumerable<IKnownDialogService> knownDialogs,
@@ -22,19 +22,17 @@ internal class ApplicationScopeFactory : IApplicationScopeFactory, IDisposable
     {
         _dialogService = dialogService;
         _knownDialogs = knownDialogs;
-        _serviceScope = serviceProvider.CreateScope();
+        _serviceProvider = serviceProvider;
     }
 
     #region IApplicationScopeFactory
 
-    public T GetInstance<T>() where T : IApplicationScope
+    public T GetApplicationScope<T>() where T : IApplicationScope
     {
-        var instance = (_serviceScope.ServiceProvider.GetRequiredService<T>() as IApplicationScope)
+        var instance = (_serviceProvider.GetRequiredService<T>() as IApplicationScope)
             .ThrowIfNull(() => $"Can't resolve {typeof(T)} IApplicationService as IApplicationScope");
 
         return (T)instance;
-
-        
     }
 
     async public Task<T?> ShowModalDialog<T>(Type razorComponent,
@@ -127,7 +125,7 @@ internal class ApplicationScopeFactory : IApplicationScopeFactory, IDisposable
 
     public void Dispose()
     {
-        _serviceScope.Dispose();
+        
     }
 
     #endregion

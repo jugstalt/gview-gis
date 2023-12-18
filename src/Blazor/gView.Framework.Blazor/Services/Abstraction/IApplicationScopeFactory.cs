@@ -15,5 +15,6 @@ public interface IApplicationScopeFactory
                                              string? title = null,
                                              T? model = default);
 
-    T GetInstance<T>() where T : IApplicationScope;
+    T GetApplicationScope<T>() where T : IApplicationScope;
 }
+ 

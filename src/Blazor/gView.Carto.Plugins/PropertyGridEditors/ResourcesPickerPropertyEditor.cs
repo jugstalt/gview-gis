@@ -1,5 +1,4 @@
 ﻿using gView.Carto.Core.Services.Abstraction;
-using gView.Carto.Plugins.Extensions;
 using gView.Carto.Razor.Components.Dialogs.Models;
 using gView.Framework.Blazor.Services.Abstraction;
 using gView.Razor.Abstractions;
@@ -15,12 +14,14 @@ internal class ResourcesPickerPropertyEditor : IPropertyGridEditAsync
                                    object instance,
                                    PropertyInfo propertyInfo)
     {
+        var service = scope.GetApplicationScope<ICartoApplicationScopeService>();
+
         var model = await scope.ShowModalDialog(
             typeof(gView.Carto.Razor.Components.Dialogs.ListSelectorDialog<string>),
             $"Color Gradient",
             new ListSelectorModel<string>()
             {
-                //Items = scopeService.Document?.Map?.ResourceContainer?.Names ?? []
+                Items = service.Document?.Map?.ResourceContainer?.Names ?? []
             });
 
         var resourceName = model?.Result.SelectedItem;
