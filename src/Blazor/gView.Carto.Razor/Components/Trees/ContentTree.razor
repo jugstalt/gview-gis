@@ -9,16 +9,16 @@
 
 <div style="padding:2px 10px">
     <MudText Typo="Typo.h6">
-        @(((ICartoApplicationScopeService)AppScope).Document?.Map?.Name)
+        @AppScope.Document?.Map?.Name
     </MudText>
 </div>
 
 @if (_treeNodes.Any())
 {
     <MudTreeView  Items="_treeNodes"
-    ExpandOnDoubleClick="true" 
-    MultiSelection="false" 
-    Hover="true" Dense="true" @key="@fullReloadKey">
+                  ExpandOnDoubleClick="true" 
+                  MultiSelection="false" 
+                  Hover="true" Dense="true" @key="@fullReloadKey">
         <ItemTemplate>
             <div style="white-space:nowrap; overflow-x:hidden;"
                  class="treenode">
@@ -40,7 +40,19 @@
                                          Checked="@context.IsChecked"
                                          Color="Color.Surface"
                                          CheckedChanged="@((e) => OnCheckboxClickedAsync(context,e))" />
-                            <MudText>@context.Text</MudText>
+                            @if(_editNameTocNode == context)
+                            {
+                                <InlineInput @bind-Value="@context.TocElement.Name"
+                                             OnEnter="() => _editNameTocNode = null"
+                                             OnBlur="() => _editNameTocNode = null" />
+                            } 
+                            else
+                            {
+                                <MudText @ondblclick="() => _editNameTocNode = context">
+                                    @context.Text
+                                </MudText>
+                            }
+                        
                         </Content>
                     </MudTreeViewItem>
             }
@@ -79,7 +91,7 @@
         </ItemTemplate>
     </MudTreeView>
 }
-else if(_cartoInitialTools != null)
+else if(_cartoInitialTools is not null)
 {
     <div style="padding:10px">
         @GvUtilities.InfoText("This is an empty map now. To start use one of the this tools:")
@@ -101,7 +113,7 @@ else if(_cartoInitialTools != null)
     private HashSet<TocTreeNode> _treeNodes = new HashSet<TocTreeNode>();
     private ICartoTool[]? _cartoInitialTools;
 
-    private ICartoApplicationScopeService? _cartoAppService;
+    private TocTreeNode? _editNameTocNode;
 
     // force a full reload after rebuild
     // otherwise some items (legends) will be cached!
@@ -116,8 +128,7 @@ else if(_cartoInitialTools != null)
             .OrderBy(t => t.SortOrder)
             .ToArray();
 
-        _cartoAppService = (ICartoApplicationScopeService)AppScope;
-        await SetAppScope(_cartoAppService);
+        await SetAppScope(AppScope);
     });
 
     private void OnNodeExpandedChanged(TocTreeNode node, bool expanded) => base.Handle(() =>
@@ -144,9 +155,9 @@ else if(_cartoInitialTools != null)
 
         node.IsSelected = !isSelected;
 
-        if(_cartoAppService!=null)
+        if(AppScope is not null)
         {
-            await _cartoAppService.SetSelectedTocTreeNode(node.IsSelected ? node : null);
+            await AppScope.SetSelectedTocTreeNode(node.IsSelected ? node : null);
         }
     });
 
