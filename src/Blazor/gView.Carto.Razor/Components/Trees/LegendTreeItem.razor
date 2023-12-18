@@ -42,10 +42,16 @@
                 {
                     <td>
                         <img src="@item.ToBase64ImageSource(CartoDocument.CurrentMap)"
-                             @ondblclick="() => ShowInlineEditor(item)" />
+                             @ondblclick="() => ShowInlineSymbolEditor(item)" />
                     </td>
-                    <td style="width:100%">
-                        <span @ondblclick="() => ShowInlineEditor(item)">
+                    <td style="width:100%" @ondblclick="() => ShowInlineLabelEditor(item)">
+                        @if(_inlineEditorLegendLabel is not null && _inlineEditorLegendLabel == item)
+                        {
+                            <InlineInput @bind-Value="_inlineEditorLegendLabel.LegendLabel"
+                                         OnBlur="() => _inlineEditorLegendLabel = null"
+                                         OnEnter="() => _inlineEditorLegendLabel = null"/>
+                        }
+                        <span >
                             @item.LegendLabel
                         </span>
                     </td>
@@ -62,6 +68,7 @@
 
     private IEnumerable<ISymbol>? _legendItems;
     private ISymbol? _inlineEditorSymbol = null;
+    private ILegendItem? _inlineEditorLegendLabel = null;
 
     protected override void OnInitialized()
     {
@@ -75,14 +82,22 @@
     private Task OnCloseTocInlineEditors() => HandleAsync(() =>
     {
         _inlineEditorSymbol = null;
+        _inlineEditorLegendLabel = null;
 
         return InvokeAsync(() => StateHasChanged());
     });
 
-    private Task ShowInlineEditor(ISymbol item) => HandleAsync(async () =>
+    private Task ShowInlineSymbolEditor(ISymbol item) => HandleAsync(async () =>
     {
         await EventBus.FireCloseTocInlineEditorsAsync();
+
+        _inlineEditorLegendLabel = null;
         _inlineEditorSymbol = item;
+    });
+
+    private void ShowInlineLabelEditor(ISymbol symbol) => Handle(() =>
+    {
+        _inlineEditorLegendLabel = symbol as ILegendItem;
     });
 
     private void OnSymbolChanged(ISymbol symbol, ISymbol newSymbol) => Handle(() =>
