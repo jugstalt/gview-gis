@@ -11,7 +11,6 @@ namespace gView.Carto.Plugins.CartoTools;
 
 
 [RegisterPlugIn("C88FB907-852E-4799-8788-C34E04A73FFB")]
-
 internal class About : ICartoTool
 {
     public string Name => "About";

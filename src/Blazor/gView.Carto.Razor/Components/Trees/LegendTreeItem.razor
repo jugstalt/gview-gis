@@ -48,8 +48,7 @@
                         @if(_inlineEditorLegendLabel is not null && _inlineEditorLegendLabel == item)
                         {
                             <InlineInput @bind-Value="_inlineEditorLegendLabel.LegendLabel"
-                                         OnBlur="() => _inlineEditorLegendLabel = null"
-                                         OnEnter="() => _inlineEditorLegendLabel = null"/>
+                                         OnCommit="() => _inlineEditorLegendLabel = null"/>
                         }
                         <span >
                             @item.LegendLabel

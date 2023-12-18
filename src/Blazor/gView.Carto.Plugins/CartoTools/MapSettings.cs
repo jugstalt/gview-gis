@@ -55,8 +55,13 @@ internal class MapSettings : ICartoTool
         {
             #region General
 
-            original.Name = clone.Name;
+            if (original.Name?.Equals(clone.Name) == false
+                && !string.IsNullOrEmpty(clone.Name = clone.Name?.Trim()))
+            {
+                original.Name = clone.Name;
 
+                await scope.EventBus.FireRefreshContentTreeAsync();
+            }
             original.ReferenceScale = clone.ReferenceScale;
             original.Display.MapUnits = clone.Display.MapUnits;
             original.Display.DisplayUnits = clone.Display.DisplayUnits;
@@ -85,7 +90,7 @@ internal class MapSettings : ICartoTool
             // changes are live (no cancel!)
 
             #endregion
-
+            
             await scope.EventBus.FireRefreshMapAsync();
         }
 

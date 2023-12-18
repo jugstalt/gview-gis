@@ -1,0 +1,38 @@
+@if(Toc is not null)
+{
+    <MudDropContainer T="ITocElement" 
+                      Items="_groupElements"
+                      ItemsSelector="@((item,dropzone) => true)"
+                      ItemDropped="TocItemDropped">
+        <ChildContent>
+            <MudPaper Class="d-flex flex-1">
+                <GvScrollable>
+                    <MudList Clickable="true" Dense="true">
+                        <MudDropZone T="ITocElement" Identifier="@string.Empty" OnlyZone="true">
+                            <MudListItem Text="@MapName" InitiallyExpanded="true"
+                                         Value="null">
+                            <NestedList>
+                                <TocOrderingGroupNodesControl Toc="Toc"
+                                                              ParentGroup="null" />
+                                </NestedList>
+                            </MudListItem>
+                        </MudDropZone>
+                    </MudList>
+                </GvScrollable>
+            </MudPaper>
+        </ChildContent>
+    </MudDropContainer>
+}
+
+@code {
+    [Parameter] public IToc? Toc { get; set; }
+    [Parameter] public string MapName { get; set; } = "Map";
+
+    private IEnumerable<ITocElement>? _groupElements;
+    private ITocElement? _selectedGroup;
+
+    private void TocItemDropped(MudItemDropInfo<ITocElement> dropItem)
+    {
+        
+    }
+}

@@ -86,4 +86,8 @@ static public class TocElementExtensions
 
         return false;
     }
+
+    static public bool IsGroupElement(this ITocElement tocElement)
+        => tocElement.ElementType == TocElementType.ClosedGroup
+           || tocElement.ElementType == TocElementType.OpenedGroup;
 }

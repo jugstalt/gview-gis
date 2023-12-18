@@ -64,8 +64,7 @@
                     @if (_editLabelKey is not null && _editLabelKey.Equals(context.Key))
                     {
                         <InlineInput @bind-Value="@context.LegendLabel"
-                                     OnEnter="OnLegendItemChanged"
-                                     OnBlur="OnLegendItemChanged " />
+                                     OnCommit="OnLegendItemChanged"/>
                     }
                     else
                     {

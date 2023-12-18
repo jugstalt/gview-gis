@@ -1,0 +1,41 @@
+@if(Toc is not null) 
+{
+    @foreach (var groupElement in Toc.Elements.Where(e => e.ParentGroup == ParentGroup && e.IsGroupElement()))
+    {
+        var hasChildGroupElements = Toc.Elements.Any(e => e.ParentGroup == groupElement && e.IsGroupElement());
+
+        @if(hasChildGroupElements)
+        {
+            <MudDropZone T="ITocElement" Identifier="@groupElement.Name" OnlyZone="true">
+                <MudListItem Text="@groupElement.Name"
+                             Value="groupElement"
+                             Style="@($"padding-left:{(16+16*Level)}px!important")">
+
+                    <NestedList>
+                        <TocOrderingGroupNodesControl Toc="Toc" Level="@(Level+1)"
+                                                      ParentGroup="groupElement" />
+                    </NestedList>
+
+                </MudListItem>
+            </MudDropZone>
+        } 
+        else
+        {
+            <MudDropZone T="ITocElement" Identifier="@groupElement.Name" OnlyZone="true">
+                <MudListItem Text="@groupElement.Name"
+                             Value="groupElement"
+                             Style="@($"padding-left:{(16+16*Level)}px!important")">
+
+
+                </MudListItem>
+            </MudDropZone>
+        }
+        
+    }
+}
+
+@code {
+    [Parameter] public IToc? Toc { get; set; }
+    [Parameter] public ITocElement? ParentGroup { get; set; }
+    [Parameter] public int Level { get; set; } = 1;
+}

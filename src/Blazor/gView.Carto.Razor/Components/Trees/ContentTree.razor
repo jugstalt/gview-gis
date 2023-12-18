@@ -8,9 +8,19 @@
 @inject CartoEventBusService EventBus
 
 <div style="padding:2px 10px">
-    <MudText Typo="Typo.h6">
-        @AppScope.Document?.Map?.Name
-    </MudText>
+
+    @if (_editMapName)
+    {
+        <InlineInput @bind-Value="_editedName"
+                     OnCommit="CommitEditMapName" />
+    }
+    else
+    {
+        <MudText Typo="Typo.h6"
+                 @ondblclick="StartEditMapName">
+            @AppScope.Document.Map.Name
+        </MudText>
+    }
 </div>
 
 @if (_treeNodes.Any())
@@ -26,11 +36,11 @@
             {
                 
                 <MudTreeViewItem Value="@context"
-                    Class="@(context.IsSelected ? "toctreenode-selected" :"")"
-                    Items="@context.Children"
-                    CanExpand="@context.HasChildren"
-                    Expanded="@context.IsExpanded"
-                    ExpandedChanged="@((expanded) => OnNodeExpandedChanged(context, expanded))"
+                                 Class="@(context.IsSelected ? "toctreenode-selected" :"")"
+                                 Items="@context.Children"
+                                 CanExpand="@context.HasChildren"
+                                 Expanded="@context.IsExpanded"
+                                 ExpandedChanged="@((expanded) => OnNodeExpandedChanged(context, expanded))"
                     @onclick="@((e) => OnNodeClickAsync(context,e))">
                         <Content>
                             <MudTreeViewItemToggleButton @bind-Expanded="@context.IsExpanded" 
@@ -42,13 +52,12 @@
                                          CheckedChanged="@((e) => OnCheckboxClickedAsync(context,e))" />
                             @if(_editNameTocNode == context)
                             {
-                                <InlineInput @bind-Value="@context.TocElement.Name"
-                                             OnEnter="() => _editNameTocNode = null"
-                                             OnBlur="() => _editNameTocNode = null" />
+                                <InlineInput @bind-Value="_editedName"
+                                             OnCommit="CommitEditLayerName" />
                             } 
                             else
                             {
-                                <MudText @ondblclick="() => _editNameTocNode = context">
+                                <MudText @ondblclick="() => StartEditLayerName(context)">
                                     @context.Text
                                 </MudText>
                             }
@@ -83,7 +92,19 @@
                                          Checked="@context.IsChecked"
                                          Color="Color.Primary"
                                          CheckedChanged="@((e) => OnCheckboxClickedAsync(context,e ))" />
-                            <MudText Class="grouplayer-text">@context.Text</MudText>
+                            @if(_editNameTocNode == context)
+                            {
+                                <InlineInput @bind-Value="_editedName"
+                                             OnCommit="CommitEditLayerName" />
+                            }  
+                            else
+                            {
+                                <MudText Class="grouplayer-text"
+                                         @ondblclick="() => StartEditLayerName(context)">
+                                    @context.Text
+                                </MudText>
+                            }
+                        
                         </Content>
                     </MudTreeViewItem>
             }
@@ -114,6 +135,8 @@ else if(_cartoInitialTools is not null)
     private ICartoTool[]? _cartoInitialTools;
 
     private TocTreeNode? _editNameTocNode;
+    private string _editedName = "";
+    private bool _editMapName = false;
 
     // force a full reload after rebuild
     // otherwise some items (legends) will be cached!
@@ -160,6 +183,54 @@ else if(_cartoInitialTools is not null)
             await AppScope.SetSelectedTocTreeNode(node.IsSelected ? node : null);
         }
     });
+
+    private void StartEditLayerName(TocTreeNode node)
+    {
+        if(_editMapName)
+        {
+            CommitEditMapName();
+        }
+
+        _editNameTocNode = node;
+        _editedName = node?.Text ?? "";
+    }
+
+    async private Task CommitEditLayerName()
+    {
+        if(_editNameTocNode is not null 
+            && !String.IsNullOrEmpty(_editedName = _editedName.Trim()))
+        {
+            _editNameTocNode.TocElement.Name = _editedName;
+            _editNameTocNode = null;
+
+            await Rebuild();
+        } 
+        else
+        {
+            _editNameTocNode = null;
+        }
+    }
+
+    private Task StartEditMapName() => HandleAsync(async () =>
+    {
+        if (_editNameTocNode is not null)
+        {
+            await CommitEditLayerName();
+        }
+
+        _editMapName = true;
+        _editedName = AppScope.Document.Map.Name;
+    });
+
+    private void CommitEditMapName()
+    {
+        if(_editMapName 
+            && !String.IsNullOrEmpty(_editedName = _editedName.Trim()))
+        {
+            AppScope.Document.Map.Name = _editedName;
+            _editMapName = false;
+        }
+    }
 
     #region Helper
 
