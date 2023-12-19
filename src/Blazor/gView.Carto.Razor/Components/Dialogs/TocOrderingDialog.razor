@@ -3,7 +3,12 @@
 <ModalDialogFormBase T="TocOrderingModel"
                      OnDialogClose="base.OnDialogClose"
                      Model="base.Model">
-    <FormContent>
-        <TocOrderingControl Toc="Model.Toc" MapName="@Model.MapName"/>
-    </FormContent>
+    <DialogBody>
+        <TocOrderingControl Toc="Model.Toc" 
+                            MapName="@Model.MapName" 
+                            SelectedGroupElement="Model.SelectedGroupElement"/>
+    </DialogBody>
+    <DialogButtons>
+
+    </DialogButtons>
 </ModalDialogFormBase>

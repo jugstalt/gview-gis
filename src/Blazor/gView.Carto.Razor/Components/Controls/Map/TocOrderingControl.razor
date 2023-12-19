@@ -2,37 +2,99 @@
 {
     <MudDropContainer T="ITocElement" 
                       Items="_groupElements"
-                      ItemsSelector="@((item,dropzone) => true)"
+                      ItemsSelector="@((item,dropzone) =>
+                               item.ParentGroup.FullPath() == dropzone)"
                       ItemDropped="TocItemDropped">
         <ChildContent>
-            <MudPaper Class="d-flex flex-1">
-                <GvScrollable>
-                    <MudList Clickable="true" Dense="true">
-                        <MudDropZone T="ITocElement" Identifier="@string.Empty" OnlyZone="true">
-                            <MudListItem Text="@MapName" InitiallyExpanded="true"
-                                         Value="null">
-                            <NestedList>
+            <GvGrid ColumnCount="2">
+                <GvGridItem>
+                    <MudPaper>
+                        <GvScrollable>
+                            <MudList Clickable="true"
+                                     SelectedValue="SelectedGroupElement"
+                                     SelectedValueChanged="OnGroupElementSelected"
+                                     Dense="true">
+                                <MudDropZone T="ITocElement" Identifier="@string.Empty" OnlyZone="true">
+                                    <MudListItem Text="@MapName" InitiallyExpanded="true"
+                                                 Value="((ITocElement?)null).FullPath()" />
+                                </MudDropZone>
                                 <TocOrderingGroupNodesControl Toc="Toc"
                                                               ParentGroup="null" />
-                                </NestedList>
-                            </MudListItem>
-                        </MudDropZone>
+                            </MudList>
+                        </GvScrollable>
+                    </MudPaper>
+                </GvGridItem>
+                <GvGridItem>
+                    <MudList Dense="true" Clickable="true">
+                        <MudDropZone T="ITocElement"
+                                     AllowReorder="true"
+                                     Identifier="@SelectedGroupElement.FullPath()"
+                                     Class="flex-grow-1" />
                     </MudList>
-                </GvScrollable>
-            </MudPaper>
+                </GvGridItem>
+            </GvGrid>
         </ChildContent>
+        <ItemRenderer>
+            <MudListItem Text="@context.Name"
+                         Style="@($"color:{(context.IsGroupElement() ? "var(--mud-palette-primary)" : "inherit")}")" />
+            <MudDivider />
+        </ItemRenderer>
     </MudDropContainer>
 }
 
 @code {
     [Parameter] public IToc? Toc { get; set; }
     [Parameter] public string MapName { get; set; } = "Map";
+    [Parameter] public ITocElement? SelectedGroupElement { get; set; }
 
     private IEnumerable<ITocElement>? _groupElements;
-    private ITocElement? _selectedGroup;
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+
+        _groupElements = Toc?.Elements;
+    }
+
+    private void OnGroupElementSelected(object item)
+    {
+        SelectedGroupElement = item as ITocElement;
+    }
 
     private void TocItemDropped(MudItemDropInfo<ITocElement> dropItem)
     {
-        
+        if(Toc is null || dropItem.Item is null)
+        {
+            return;    
+        }
+
+        var groupElement = Toc.Elements
+            .FirstOrDefault(e => e.IsGroupElement() && e.FullPath() == dropItem.DropzoneIdentifier);
+
+        if(dropItem.Item.ParentGroup == groupElement)
+        {
+            var groupItems = Toc.Elements
+                                .Where(e => e.ParentGroup.FullPath() == SelectedGroupElement.FullPath())
+                                .ToArray();
+
+            if(groupItems.Length>dropItem.IndexInZone)
+            {
+                var nextItem = groupItems[dropItem.IndexInZone];
+
+                if(nextItem != dropItem.Item)
+                {
+                    Toc.MoveElement(dropItem.Item, nextItem,
+                        dropItem.IndexInZone == groupItems.Length - 1);
+                }
+            }
+        }
+        else
+        {
+            Toc.Add2Group(dropItem.Item, groupElement);
+        }
     }
+
+    #region Item Classes
+
+    #endregion
 }

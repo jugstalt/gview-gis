@@ -90,4 +90,11 @@ static public class TocElementExtensions
     static public bool IsGroupElement(this ITocElement tocElement)
         => tocElement.ElementType == TocElementType.ClosedGroup
            || tocElement.ElementType == TocElementType.OpenedGroup;
+
+    static public string FullPath(this ITocElement? tocElement,
+                                  string rootName = "Map",
+                                  char separator = '/')
+        =>  tocElement is null 
+            ? rootName
+            : $"{tocElement.ParentGroup.FullPath(rootName, separator)}{separator}{tocElement.Name}";
 }

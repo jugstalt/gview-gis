@@ -4,6 +4,8 @@ using gView.Framework.Carto;
 using gView.Carto.Core.Services.Abstraction;
 using gView.Carto.Razor.Components.Dialogs.Models;
 using gView.Framework.Cartography;
+using gView.Framework.Blazor.Models;
+using gView.Carto.Core.Extensions;
 
 namespace gView.Carto.Plugins.CartoTools;
 
@@ -39,19 +41,30 @@ internal class TocSettings : ICartoTool
             return false;
         }
 
+        var selectedTocElement = scope.SelectedTocTreeNode?.TocElement;
+        var selectedGroupElement = selectedTocElement is null || selectedTocElement.IsGroupElement()
+                                     ? selectedTocElement
+                                     : selectedTocElement.ParentGroup;
+
         var model = await scope.ShowModalDialog(
             typeof(Razor.Components.Dialogs.TocOrderingDialog),
                     "Toc Ordering",
                     new TocOrderingModel()
                     {
+                        SelectedGroupElement = selectedGroupElement,
                         MapName = original.Name,
-                        Toc = clone.TOC
+                        Toc = original.TOC
+                    },
+                    new ModalDialogOptions(){
+                        Width = ModalDialogWidth.ExtraExtraLarge
                     });
 
-        if(model?.Toc is not null)
-        {
-            //((Map)original).TOC = model.Toc;
-        }
+        //if(model?.Toc is not null)
+        //{
+        //    ((Map)original).TOC = model.Toc;
+        //}
+
+        await scope.EventBus.FireMapSettingsChangedAsync();
 
         return true;
     }

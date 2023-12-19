@@ -4,31 +4,20 @@
     {
         var hasChildGroupElements = Toc.Elements.Any(e => e.ParentGroup == groupElement && e.IsGroupElement());
 
+
+        <MudDropZone T="ITocElement" Identifier="@groupElement.FullPath()" OnlyZone="true">
+            <MudListItem Text="@groupElement.Name"
+                         Value="groupElement"
+                         Style="@($"padding-left:{(16+16*Level)}px!important;color:var(--mud-palette-primary);")">
+
+
+            </MudListItem>
+        </MudDropZone>
+
         @if(hasChildGroupElements)
         {
-            <MudDropZone T="ITocElement" Identifier="@groupElement.Name" OnlyZone="true">
-                <MudListItem Text="@groupElement.Name"
-                             Value="groupElement"
-                             Style="@($"padding-left:{(16+16*Level)}px!important")">
-
-                    <NestedList>
-                        <TocOrderingGroupNodesControl Toc="Toc" Level="@(Level+1)"
-                                                      ParentGroup="groupElement" />
-                    </NestedList>
-
-                </MudListItem>
-            </MudDropZone>
-        } 
-        else
-        {
-            <MudDropZone T="ITocElement" Identifier="@groupElement.Name" OnlyZone="true">
-                <MudListItem Text="@groupElement.Name"
-                             Value="groupElement"
-                             Style="@($"padding-left:{(16+16*Level)}px!important")">
-
-
-                </MudListItem>
-            </MudDropZone>
+            <TocOrderingGroupNodesControl Toc="Toc" Level="@(Level+1)"
+                                          ParentGroup="groupElement" />
         }
         
     }
