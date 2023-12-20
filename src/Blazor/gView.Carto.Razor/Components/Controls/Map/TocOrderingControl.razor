@@ -1,9 +1,12 @@
-@if(Toc is not null)
+@inject ICartoApplicationScopeService AppScope
+@inherits BaseHandler
+
+@if(_elements is not null)
 {
-    <MudDropContainer T="ITocElement" 
-                      Items="_groupElements"
+    <MudDropContainer T="TocElementWrapper" 
+                      Items="_elements"
                       ItemsSelector="@((item,dropzone) =>
-                               item.ParentGroup.FullPath() == dropzone)"
+                               item.TocElement.ParentGroup.FullPath() == dropzone)"
                       ItemDropped="TocItemDropped">
         <ChildContent>
             <GvGrid ColumnCount="2">
@@ -14,29 +17,49 @@
                                      SelectedValue="SelectedGroupElement"
                                      SelectedValueChanged="OnGroupElementSelected"
                                      Dense="true">
-                                <MudDropZone T="ITocElement" Identifier="@string.Empty" OnlyZone="true">
+                                <MudDropZone T="TocElementWrapper" Identifier="@string.Empty" OnlyZone="true">
                                     <MudListItem Text="@MapName" InitiallyExpanded="true"
                                                  Value="((ITocElement?)null).FullPath()" />
                                 </MudDropZone>
-                                <TocOrderingGroupNodesControl Toc="Toc"
+                                <TocOrderingGroupNodesControl Elements="_elements"
                                                               ParentGroup="null" />
                             </MudList>
                         </GvScrollable>
                     </MudPaper>
                 </GvGridItem>
                 <GvGridItem>
-                    <MudList Dense="true" Clickable="true">
-                        <MudDropZone T="ITocElement"
+                    <GvScrollable>
+                    <MudList Dense="true" 
+                             Clickable="true">
+                        <MudPaper Elevation="25" Style="padding:6px">
+                            <MudToolBar DisableGutters="true" Dense="true">
+                                <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                               OnClick="RemoveSelected"
+                                               Color="Color.Secondary"/>
+                                <MudDivider Vertical="true" />
+                                <MudTextField @bind-Value="@_newGroupText"
+                                              Label="New Group" />
+                                <MudIconButton Icon="@Icons.Material.Filled.AddCircle"
+                                               OnClick="AddGroup"
+                                               Color="Color.Primary"/>
+                            </MudToolBar>
+                        </MudPaper>
+                        <MudDivider />
+                        <MudDropZone T="TocElementWrapper"
                                      AllowReorder="true"
                                      Identifier="@SelectedGroupElement.FullPath()"
                                      Class="flex-grow-1" />
-                    </MudList>
+                        </MudList>
+                    </GvScrollable>
                 </GvGridItem>
             </GvGrid>
         </ChildContent>
         <ItemRenderer>
-            <MudListItem Text="@context.Name"
-                         Style="@($"color:{(context.IsGroupElement() ? "var(--mud-palette-primary)" : "inherit")}")" />
+            <MudListItem Style="@($"color:{(context.TocElement.IsGroupElement() ? "var(--mud-palette-primary)" : "inherit")}")">
+                <MudCheckBox @bind-Checked="@context.Selected" 
+                             T="bool" 
+                             Label="@context.Name" />
+            </MudListItem>
             <MudDivider />
         </ItemRenderer>
     </MudDropContainer>
@@ -47,21 +70,40 @@
     [Parameter] public string MapName { get; set; } = "Map";
     [Parameter] public ITocElement? SelectedGroupElement { get; set; }
 
-    private IEnumerable<ITocElement>? _groupElements;
+    private IEnumerable<TocElementWrapper>? _elements;
+    private string _newGroupText = "";
 
     protected override void OnParametersSet()
     {
         base.OnParametersSet();
 
-        _groupElements = Toc?.Elements;
+        if (_elements is null) 
+        {
+            WrapTocElements();
+        }
+    }
+
+    private void WrapTocElements()
+    {
+        _elements = Toc?.Elements.Select(e => new TocElementWrapper(e));
+    }
+
+    async private Task HardReload()
+    {
+        _elements = null;
+        await ForceRenderComponent();
+
+        WrapTocElements();
+        await ForceRenderComponent();
     }
 
     private void OnGroupElementSelected(object item)
     {
+        _newGroupText = "";
         SelectedGroupElement = item as ITocElement;
     }
 
-    private void TocItemDropped(MudItemDropInfo<ITocElement> dropItem)
+    private void TocItemDropped(MudItemDropInfo<TocElementWrapper> dropItem)
     {
         if(Toc is null || dropItem.Item is null)
         {
@@ -71,28 +113,90 @@
         var groupElement = Toc.Elements
             .FirstOrDefault(e => e.IsGroupElement() && e.FullPath() == dropItem.DropzoneIdentifier);
 
-        if(dropItem.Item.ParentGroup == groupElement)
+        var tocElementItem = dropItem.Item.TocElement;
+
+        if(tocElementItem.ParentGroup == groupElement)
         {
             var groupItems = Toc.Elements
                                 .Where(e => e.ParentGroup.FullPath() == SelectedGroupElement.FullPath())
                                 .ToArray();
 
-            if(groupItems.Length>dropItem.IndexInZone)
+            if(groupItems.Length > dropItem.IndexInZone)
             {
+                var itemIndex = groupItems.IndexOf(tocElementItem);
                 var nextItem = groupItems[dropItem.IndexInZone];
 
-                if(nextItem != dropItem.Item)
+                if(nextItem != tocElementItem)
                 {
-                    Toc.MoveElement(dropItem.Item, nextItem,
-                        dropItem.IndexInZone == groupItems.Length - 1);
+                    Toc.MoveElement(tocElementItem, nextItem,
+                        insertAfter: itemIndex < dropItem.IndexInZone);
                 }
             }
         }
         else
         {
-            Toc.Add2Group(dropItem.Item, groupElement);
+
+            Toc.Add2Group(tocElementItem, groupElement);
         }
+
+        // rewrap Toc elements to ensure
+        // ui is display elements in corret order
+        WrapTocElements();
     }
+
+    private Task AddGroup() => HandleAsync(async () => 
+    {
+        if (Toc is null)
+        {
+            return;
+        }
+
+        _newGroupText = _newGroupText.Trim();
+
+        if (String.IsNullOrEmpty(_newGroupText))
+        {
+            return;
+        }
+
+        GroupLayer groupLayer = new GroupLayer()
+            {
+                Title = _newGroupText
+            };
+
+        _newGroupText = string.Empty;
+
+        AppScope.Document.Map.AddLayer(groupLayer);
+        var groupTocElement = Toc.GetTOCElement(groupLayer);
+
+        if (groupTocElement is null)
+        {
+            AppScope.Document.Map.RemoveLayer(groupLayer);
+            throw new Exception("Unkown error: Can't add group layer");
+        }
+        Toc.Add2Group(groupTocElement, SelectedGroupElement);
+
+        // dropcontainer need a full hard refresh!
+        await HardReload();
+        /////////////////////////////////////////
+    });
+
+    private Task RemoveSelected() => HandleAsync(async () =>
+    {
+        if (_elements is null)
+        {
+            return;
+        }
+
+        foreach (var element in _elements.Where(e => e.Selected).ToArray())
+        {
+            foreach (var layer in element.TocElement.Layers.ToArray())
+            {
+                AppScope.Document.Map.RemoveLayer(layer);
+            }
+        }
+
+        await HardReload();
+    });
 
     #region Item Classes
 

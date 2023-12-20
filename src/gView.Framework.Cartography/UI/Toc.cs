@@ -457,7 +457,13 @@ public class Toc : IToc
             return;
         }
 
-        if (Group == null || Group.Layers.Count != 1 ||
+        if(Group == null)
+        {
+            ((TocElement)element).ParentGroup = null;
+            return;
+        }
+
+        if (/*Group == null || */Group.Layers.Count != 1 ||
             !(Group.Layers[0] is GroupLayer))
         {
             return;
