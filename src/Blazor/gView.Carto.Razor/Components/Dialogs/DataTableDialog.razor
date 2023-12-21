@@ -1,0 +1,159 @@
+@using gView.Framework.Core.Data.Cursors
+@using gView.Framework.Data.Filters
+
+@inherits ModalDialogFormBase<DataTableModel>
+@implements IDisposable
+
+<ModalDialogFormBase T="DataTableModel" ContentStyle="DialogContentStyle.Full"
+                     OnDialogClose="base.OnDialogClose"
+                     Model="base.Model">
+    <DialogBody>
+        @if (_tableClass is not null 
+            && _tableFields is not null)
+        {
+            <MudTable Items="_rows" FixedHeader="true" Height="70vh" Virtualize="true">
+                <HeaderContent>
+                    <MudTh>
+
+                    </MudTh>
+                    @foreach(var field in _tableFields)
+                    {
+                        <MudTh>
+                            <MudText Typo="Typo.body2" Color="Color.Primary">
+                                @field.name
+                            </MudText>
+                            <MudTextField @bind-Value="_columnFilters[field.name]"
+                                          Label="Filter..." />
+                        </MudTh>
+                    }
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd>
+                        <MudIconButton Icon="@Icons.Material.Filled.Search" 
+                                       Size="MudBlazor.Size.Small"
+                                       Color="Color.Primary"
+                                       aria-label="zoomto">
+                        </MudIconButton>
+                    </MudTd>
+                    @foreach(var field in _tableFields)
+                    {
+                        <MudTd DataLabel="@field.name">@context[field.name]</MudTd>
+                    }
+                </RowTemplate>
+            </MudTable>
+        }
+    </DialogBody>
+    <DialogButtons>
+        <GvGrid ColumnCount="@(_hasMore ? 2 : 1)">
+            <GvGridItem>
+                <MudText Typo="Typo.body1">@($"Loaded {_rows.Count} items")</MudText>
+            </GvGridItem>
+            @if(_hasMore)
+            {
+                <GvGridItem>
+                    <MudButton Variant="Variant.Filled" Style="float:right"
+                               OnClick="() => LoadData()">Load more...</MudButton>
+                </GvGridItem>
+            }
+        </GvGrid>
+    </DialogButtons>
+</ModalDialogFormBase>
+
+@code {
+    private ITableClass? _tableClass;
+    private IEnumerable<IField>? _tableFields;
+    private ICursor? _cursor;
+
+    private Dictionary<string, string> _columnFilters = new();
+    private List<IRow> _rows = new();
+    private bool _hasMore = false;
+
+    async protected override Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+
+        if (Model?.Layer?.Class is not ITableClass)
+        {
+            return;
+        }
+
+        _tableClass = (ITableClass)Model.Layer.Class;
+        _tableFields = _tableClass.Fields.ToEnumerable();
+
+        foreach (var field in _tableFields)
+        {
+            _columnFilters[field.name] = String.Empty;
+        }
+
+        await CreateCursor();
+        await LoadData();
+    }
+
+    async private Task CreateCursor()
+    {
+        ReleaseCursor();
+        _rows.Clear();
+
+        if(_tableClass is null)
+        {
+            return;
+        }
+
+        var queryFilter = new QueryFilter()
+        {
+            SubFields = "*"
+        };
+
+        _cursor = await _tableClass.Search(queryFilter);
+    }
+
+    private void ReleaseCursor()
+    {
+        if(_cursor is not null)
+        {
+            _cursor.Dispose();
+        }
+
+        _cursor = null;
+    }
+
+    private async Task LoadData(int count = 10000)
+    {
+        _hasMore = false;
+
+        if (_cursor is null)
+        {
+            return;
+        }
+
+        for (int i = 0; i < count; i++)
+        {
+            var row = _cursor switch
+            {
+                IFeatureCursor featureCursor => await featureCursor.NextFeature(),
+                IRowCursor rowCursor => await rowCursor.NextRow(),
+                _ => null
+            };
+
+            if (row is null)
+            {
+                ReleaseCursor();
+                return;
+            }
+
+            _rows.Add(row);
+
+            if (_rows.Count % 100 == 0)
+            {
+                await ForceRenderComponent();
+            }
+        }
+
+        _hasMore = true;
+    }
+
+    public void Dispose()
+    {
+        ReleaseCursor();
+    }
+}

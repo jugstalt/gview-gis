@@ -95,18 +95,19 @@ namespace gView.Framework.Data.Filters
             // Nicht möglich
         }
 
-        async public static Task<object> QueryScalar(IFeatureClass fc, FunctionFilter filter, string fieldName)
+        async public static Task<object> QueryScalar(ITableClass tableClass, FunctionFilter filter, string fieldName)
         {
-            if (fc == null || filter == null)
+            if (tableClass == null || filter == null)
             {
                 return null;
             }
 
-            using (IFeatureCursor cursor = await fc.Search(filter) as IFeatureCursor)
+            using (ICursor cursor = await tableClass.Search(filter))
             {
                 if (cursor is IFeatureCursorSkills && ((IFeatureCursorSkills)cursor).KnowsFunctions == false)
                 {
                     double ret = 0D;
+
                     #region Init 
 
                     switch (filter._function.ToLower())
@@ -124,10 +125,16 @@ namespace gView.Framework.Data.Filters
 
                     #endregion
 
-                    IFeature feature = null;
+                    IRow feature = null;
                     string subField = filter.SubFields.Split(' ')[0];
                     bool hasFeature = false;
-                    while ((feature = await cursor.NextFeature()) != null)
+                    while ((feature = cursor switch
+                            {
+                                IFeatureCursor featursCursor => await featursCursor.NextFeature(),
+                                IRowCursor rowCursor => await rowCursor.NextRow(),
+                                _ => null
+                            }
+                    ) != null)
                     {
                         hasFeature = true;
                         double val = Convert.ToDouble(feature[subField]);
@@ -160,13 +167,19 @@ namespace gView.Framework.Data.Filters
                         return null;
                     }
 
-                    IFeature feature = await cursor.NextFeature();
-                    if (feature == null)
+                    IRow row = cursor switch
+                    {
+                        IFeatureCursor featursCursor => await featursCursor.NextFeature(),
+                        IRowCursor rowCursor => await rowCursor.NextRow(),
+                        _ => null
+                    };
+
+                    if (row == null)
                     {
                         return null;
                     }
 
-                    return feature[fieldName];
+                    return row[fieldName];
                 }
             }
         }
