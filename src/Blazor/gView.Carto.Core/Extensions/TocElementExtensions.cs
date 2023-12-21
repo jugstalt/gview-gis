@@ -92,7 +92,7 @@ static public class TocElementExtensions
            || tocElement.ElementType == TocElementType.OpenedGroup;
 
     static public string FullPath(this ITocElement? tocElement,
-                                  string rootName = "Map",
+                                  string rootName = "",
                                   char separator = '/')
         =>  tocElement is null 
             ? rootName

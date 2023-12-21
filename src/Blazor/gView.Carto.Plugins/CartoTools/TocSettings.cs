@@ -29,7 +29,7 @@ internal class TocSettings : ICartoTool
     }
 
     public bool IsEnabled(ICartoApplicationScopeService scope)
-        => scope.Document.Map.TOC.Elements.Count() > 0;
+        => true; //  scope.Document.Map.TOC.Elements.Count() > 0;
 
     async public Task<bool> OnEvent(ICartoApplicationScopeService scope)
     {

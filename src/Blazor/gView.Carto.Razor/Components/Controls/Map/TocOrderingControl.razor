@@ -1,68 +1,91 @@
 @inject ICartoApplicationScopeService AppScope
 @inherits BaseHandler
 
-@if(_elements is not null)
+@if(_items is not null)
 {
-    <MudDropContainer T="TocElementWrapper" 
-                      Items="_elements"
-                      ItemsSelector="@((item,dropzone) =>
-                               item.TocElement.ParentGroup.FullPath() == dropzone)"
-                      ItemDropped="TocItemDropped">
-        <ChildContent>
-            <GvGrid ColumnCount="2">
-                <GvGridItem>
-                    <MudPaper>
+    @if(_showRemoveDialog == true)
+    {
+        <MudList>
+            @foreach(var item in _items.Where(e => e.Selected))
+            {
+                <MudListItem Style="@($"color:{(item.TocElement.IsGroupElement() ? "var(--mud-palette-primary)" : "inherit")}")"
+                             Text="@($"{item.TocElement.ParentGroup.FullPath()}/{item.TocElement.Name}")" />
+            }
+        </MudList> 
+        <MudButton Variant="Variant.Filled" 
+                   OnClick="() => _showRemoveDialog = false">Cancel</MudButton>
+        <MudButton Variant="Variant.Filled" 
+                   Color="Color.Secondary"
+                   OnClick="RemoveSelectedItemsFromMap">Remove</MudButton>
+    } 
+    else 
+    { 
+        <MudDropContainer T="TocElementWrapper" 
+                          Items="_items"
+                          ItemsSelector="@((item,dropzone) =>
+                                   item.TocElement.ParentGroup.FullPath() == dropzone)"
+                          ItemDropped="TocItemDropped">
+            <ChildContent>
+                <GvGrid ColumnCount="2">
+                    <GvGridItem>
+                        <MudPaper>
+                            <GvScrollable>
+                                <MudList Clickable="true"
+                                         SelectedValue="SelectedGroupElement"
+                                         SelectedValueChanged="OnGroupElementSelected"
+                                         Dense="true">
+                                    <MudDropZone T="TocElementWrapper" Identifier="@string.Empty" OnlyZone="true">
+                                        <MudListItem Text="@MapName" InitiallyExpanded="true"
+                                                     Value="((ITocElement?)null).FullPath()" />
+                                    </MudDropZone>
+                                    <TocOrderingGroupNodesControl Elements="_items"
+                                                                  ParentGroup="null" />
+                                </MudList>
+                            </GvScrollable>
+                        </MudPaper>
+                    </GvGridItem>
+                    <GvGridItem>
                         <GvScrollable>
-                            <MudList Clickable="true"
-                                     SelectedValue="SelectedGroupElement"
-                                     SelectedValueChanged="OnGroupElementSelected"
-                                     Dense="true">
-                                <MudDropZone T="TocElementWrapper" Identifier="@string.Empty" OnlyZone="true">
-                                    <MudListItem Text="@MapName" InitiallyExpanded="true"
-                                                 Value="((ITocElement?)null).FullPath()" />
-                                </MudDropZone>
-                                <TocOrderingGroupNodesControl Elements="_elements"
-                                                              ParentGroup="null" />
+                        <MudList Dense="true" 
+                                 Clickable="true">
+                            <MudPaper Elevation="25" Style="padding:6px">
+                                <MudToolBar DisableGutters="true" Dense="true">
+                                    <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                                   OnClick="() => _showRemoveDialog = true"
+                                                   Disabled="!_items.Any(e => e.Selected)"
+                                                   Color="Color.Secondary"/>
+                                    <MudTextField @bind-Value="@_newGroupText"
+                                                  Label="New Group" />
+                                    <MudIconButton Icon="@Icons.Material.Filled.AddCircle"
+                                                   OnClick="CreateAndAddGroup"
+                                                   Color="Color.Primary"/>
+                                </MudToolBar>
+                            </MudPaper>
+                            <MudDivider />
+                            <MudDropZone T="TocElementWrapper"
+                                         AllowReorder="true"
+                                         Identifier="@SelectedGroupElement.FullPath()"
+                                         Class="flex-grow-1" />
                             </MudList>
                         </GvScrollable>
-                    </MudPaper>
-                </GvGridItem>
-                <GvGridItem>
-                    <GvScrollable>
-                    <MudList Dense="true" 
-                             Clickable="true">
-                        <MudPaper Elevation="25" Style="padding:6px">
-                            <MudToolBar DisableGutters="true" Dense="true">
-                                <MudIconButton Icon="@Icons.Material.Filled.Delete"
-                                               OnClick="RemoveSelected"
-                                               Color="Color.Secondary"/>
-                                <MudDivider Vertical="true" />
-                                <MudTextField @bind-Value="@_newGroupText"
-                                              Label="New Group" />
-                                <MudIconButton Icon="@Icons.Material.Filled.AddCircle"
-                                               OnClick="AddGroup"
-                                               Color="Color.Primary"/>
-                            </MudToolBar>
-                        </MudPaper>
-                        <MudDivider />
-                        <MudDropZone T="TocElementWrapper"
-                                     AllowReorder="true"
-                                     Identifier="@SelectedGroupElement.FullPath()"
-                                     Class="flex-grow-1" />
-                        </MudList>
-                    </GvScrollable>
-                </GvGridItem>
-            </GvGrid>
-        </ChildContent>
-        <ItemRenderer>
-            <MudListItem Style="@($"color:{(context.TocElement.IsGroupElement() ? "var(--mud-palette-primary)" : "inherit")}")">
-                <MudCheckBox @bind-Checked="@context.Selected" 
-                             T="bool" 
-                             Label="@context.Name" />
-            </MudListItem>
-            <MudDivider />
-        </ItemRenderer>
-    </MudDropContainer>
+                    </GvGridItem>
+                </GvGrid>
+            </ChildContent>
+            <ItemRenderer>
+                <MudListItem Style="@($"color:{(context.TocElement.IsGroupElement() ? "var(--mud-palette-primary)" : "inherit")}")">
+                    <GvGrid ColumnCount="12">
+                        <GvGridItem>
+                            <MudCheckBox @bind-Checked="context.Selected" T="bool" />
+                        </GvGridItem>
+                        <GvGridItem Span="11">
+                            <MudText Typo="Typo.body1">@context.Name</MudText>
+                        </GvGridItem>
+                    </GvGrid>
+                </MudListItem>
+                <MudDivider />
+            </ItemRenderer>
+        </MudDropContainer>
+    }
 }
 
 @code {
@@ -70,14 +93,15 @@
     [Parameter] public string MapName { get; set; } = "Map";
     [Parameter] public ITocElement? SelectedGroupElement { get; set; }
 
-    private IEnumerable<TocElementWrapper>? _elements;
+    private TocElementWrapper[]? _items;
     private string _newGroupText = "";
+    private bool _showRemoveDialog = false;
 
     protected override void OnParametersSet()
     {
         base.OnParametersSet();
 
-        if (_elements is null) 
+        if (_items is null) 
         {
             WrapTocElements();
         }
@@ -85,12 +109,21 @@
 
     private void WrapTocElements()
     {
-        _elements = Toc?.Elements.Select(e => new TocElementWrapper(e));
+        _items = Toc?.Elements
+                        .Select(e => new TocElementWrapper(e)
+                        {
+                            // copy selection state from previous items
+                            Selected = _items?.FirstOrDefault(i => i.TocElement == e)?.Selected == true
+                        })
+                        .ToArray();
     }
+
+    private void ClearSelection() 
+        => _items?.ToList().ForEach(e => e.Selected = false);
 
     async private Task HardReload()
     {
-        _elements = null;
+        _items = null;
         await ForceRenderComponent();
 
         WrapTocElements();
@@ -100,14 +133,15 @@
     private void OnGroupElementSelected(object item)
     {
         _newGroupText = "";
+        ClearSelection();
         SelectedGroupElement = item as ITocElement;
     }
 
-    private void TocItemDropped(MudItemDropInfo<TocElementWrapper> dropItem)
+    private void TocItemDropped(MudItemDropInfo<TocElementWrapper> dropItem) => Handle(() =>
     {
-        if(Toc is null || dropItem.Item is null)
+        if (Toc is null || dropItem.Item is null || _items is null)
         {
-            return;    
+            return;
         }
 
         var groupElement = Toc.Elements
@@ -115,36 +149,49 @@
 
         var tocElementItem = dropItem.Item.TocElement;
 
-        if(tocElementItem.ParentGroup == groupElement)
+        if (tocElementItem.ParentGroup == groupElement)
         {
+            if(dropItem.IndexInZone < 0)
+            {
+                throw new Exception($"Item already included in {groupElement.FullPath()}");
+
+            }
             var groupItems = Toc.Elements
                                 .Where(e => e.ParentGroup.FullPath() == SelectedGroupElement.FullPath())
                                 .ToArray();
 
-            if(groupItems.Length > dropItem.IndexInZone)
+            if (groupItems.Length > dropItem.IndexInZone)
             {
                 var itemIndex = groupItems.IndexOf(tocElementItem);
                 var nextItem = groupItems[dropItem.IndexInZone];
 
-                if(nextItem != tocElementItem)
+                if (nextItem != tocElementItem)
                 {
                     Toc.MoveElement(tocElementItem, nextItem,
                         insertAfter: itemIndex < dropItem.IndexInZone);
                 }
             }
         }
+        else if (dropItem.Item.Selected)  // Move all selected
+        {
+            var selectedItems = _items.Where(e => e.Selected).ToList();
+
+            foreach (var selectedItem in selectedItems)
+            {
+                Toc.Add2Group(selectedItem.TocElement, groupElement);
+            }
+        }
         else
         {
-
             Toc.Add2Group(tocElementItem, groupElement);
         }
 
         // rewrap Toc elements to ensure
         // ui is display elements in corret order
         WrapTocElements();
-    }
+    });
 
-    private Task AddGroup() => HandleAsync(async () => 
+    private Task CreateAndAddGroup() => HandleAsync(async () => 
     {
         if (Toc is null)
         {
@@ -180,14 +227,14 @@
         /////////////////////////////////////////
     });
 
-    private Task RemoveSelected() => HandleAsync(async () =>
+    private Task RemoveSelectedItemsFromMap() => HandleAsync(async () =>
     {
-        if (_elements is null)
+        if (_items is null)
         {
             return;
         }
 
-        foreach (var element in _elements.Where(e => e.Selected).ToArray())
+        foreach (var element in _items.Where(e => e.Selected).ToArray())
         {
             foreach (var layer in element.TocElement.Layers.ToArray())
             {
@@ -195,10 +242,8 @@
             }
         }
 
+        _showRemoveDialog = false;
+
         await HardReload();
     });
-
-    #region Item Classes
-
-    #endregion
 }
