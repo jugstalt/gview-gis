@@ -45,6 +45,10 @@ public class LMap
     public double MinZoom { get; set; }
     public double MaxZoom { get; set; }
 
+    public bool ContinuousWorld { get; set; }
+    public bool WorldCopyJump { get; set; }
+    public bool BounceAtZoomLimits { get; set; }
+
     #endregion
 
     #region Events
@@ -214,3 +218,10 @@ public class LMap
 
     #endregion
 }
+
+public class LCrs 
+{ 
+    public int Id { get; set; }
+    public string Proj4Parameters { get; set; } = "";
+}
+

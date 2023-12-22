@@ -19,8 +19,8 @@ public class LeafletInteropService : IDisposable
         _layerReferences = new ConcurrentDictionary<string, (IDisposable, string, Layer)>();
     }
 
-    internal ValueTask Create(LMap map) =>
-            _jsRuntime.InvokeVoidAsync($"{_gViewLeaflet}.create", map, DotNetObjectReference.Create(map));
+    internal ValueTask Create(LMap map, LCrs? crs) =>
+            _jsRuntime.InvokeVoidAsync($"{_gViewLeaflet}.create", map, crs, DotNetObjectReference.Create(map));
 
     internal ValueTask AddLayer(string mapId, Layer layer)
     {

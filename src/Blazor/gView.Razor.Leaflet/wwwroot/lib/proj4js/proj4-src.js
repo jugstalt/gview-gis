@@ -685,6 +685,9 @@
       if (!wkt.lat_ts && wkt.lat1 && (wkt.projName === 'Stereographic_South_Pole' || wkt.projName === 'Polar Stereographic (variant B)')) {
         wkt.lat0 = d2r(wkt.lat1 > 0 ? 90 : -90);
         wkt.lat_ts = wkt.lat1;
+      } else if (!wkt.lat_ts && wkt.lat0 && wkt.projName === 'Polar_Stereographic') {
+        wkt.lat_ts = wkt.lat0;
+        wkt.lat0 = d2r(wkt.lat0 > 0 ? 90 : -90);
       }
     }
     var wkt = function(wkt) {
@@ -1470,9 +1473,6 @@
       var view = new DataView(data);
       var isLittleEndian = detectLittleEndian(view);
       var header = readHeader(view, isLittleEndian);
-      if (header.nSubgrids > 1) {
-        console.log('Only single NTv2 subgrids are currently supported, subsequent sub grids are ignored');
-      }
       var subgrids = readSubgrids(view, header, isLittleEndian);
       var nadgrid = {header: header, subgrids: subgrids};
       loadedNadgrids[key] = nadgrid;
@@ -1559,6 +1559,7 @@
           count: subHeader.gridNodeCount,
           cvs: mapNodes(nodes)
         });
+        gridOffset += 176 + subHeader.gridNodeCount * 16;
       }
       return grids;
     }
@@ -1979,6 +1980,7 @@
       var input = {x: -point.x, y: point.y};
       var output = {x: Number.NaN, y: Number.NaN};
       var attemptedGrids = [];
+      outer:
       for (var i = 0; i < source.grids.length; i++) {
         var grid = source.grids[i];
         attemptedGrids.push(grid.name);
@@ -1993,19 +1995,22 @@
           }
           continue;
         }
-        var subgrid = grid.grid.subgrids[0];
-        // skip tables that don't match our point at all
-        var epsilon = (Math.abs(subgrid.del[1]) + Math.abs(subgrid.del[0])) / 10000.0;
-        var minX = subgrid.ll[0] - epsilon;
-        var minY = subgrid.ll[1] - epsilon;
-        var maxX = subgrid.ll[0] + (subgrid.lim[0] - 1) * subgrid.del[0] + epsilon;
-        var maxY = subgrid.ll[1] + (subgrid.lim[1] - 1) * subgrid.del[1] + epsilon;
-        if (minY > input.y || minX > input.x || maxY < input.y || maxX < input.x ) {
-          continue;
-        }
-        output = applySubgridShift(input, inverse, subgrid);
-        if (!isNaN(output.x)) {
-          break;
+        var subgrids = grid.grid.subgrids;
+        for (var j = 0, jj = subgrids.length; j < jj; j++) {
+          var subgrid = subgrids[j];
+          // skip tables that don't match our point at all
+          var epsilon = (Math.abs(subgrid.del[1]) + Math.abs(subgrid.del[0])) / 10000.0;
+          var minX = subgrid.ll[0] - epsilon;
+          var minY = subgrid.ll[1] - epsilon;
+          var maxX = subgrid.ll[0] + (subgrid.lim[0] - 1) * subgrid.del[0] + epsilon;
+          var maxY = subgrid.ll[1] + (subgrid.lim[1] - 1) * subgrid.del[1] + epsilon;
+          if (minY > input.y || minX > input.x || maxY < input.y || maxX < input.x ) {
+            continue;
+          }
+          output = applySubgridShift(input, inverse, subgrid);
+          if (!isNaN(output.x)) {
+            break outer;
+          }
         }
       }
       if (isNaN(output.x)) {
@@ -2272,7 +2277,7 @@
         return adjust_axis(dest, true, point);
       }
 
-      if (!hasZ) {
+      if (point && !hasZ) {
         delete point.z;
       }
       return point;
@@ -3761,7 +3766,7 @@
       return p;
     }
 
-    var names$6 = ["Stereographic_North_Pole", "Oblique_Stereographic", "Polar_Stereographic", "sterea","Oblique Stereographic Alternative","Double_Stereographic"];
+    var names$6 = ["Stereographic_North_Pole", "Oblique_Stereographic", "sterea","Oblique Stereographic Alternative","Double_Stereographic"];
     var sterea = {
       init: init$5,
       forward: forward$4,
@@ -3775,6 +3780,13 @@
     }
 
     function init$7() {
+
+      // setting default parameters
+      this.x0 = this.x0 || 0;
+      this.y0 = this.y0 || 0;
+      this.lat0 = this.lat0 || 0;
+      this.long0 = this.long0 || 0;
+
       this.coslat0 = Math.cos(this.lat0);
       this.sinlat0 = Math.sin(this.lat0);
       if (this.sphere) {
@@ -3796,7 +3808,9 @@
           }
         }
         this.cons = Math.sqrt(Math.pow(1 + this.e, 1 + this.e) * Math.pow(1 - this.e, 1 - this.e));
-        if (this.k0 === 1 && !isNaN(this.lat_ts) && Math.abs(this.coslat0) <= EPSLN) {
+        if (this.k0 === 1 && !isNaN(this.lat_ts) && Math.abs(this.coslat0) <= EPSLN && Math.abs(Math.cos(this.lat_ts)) > EPSLN) {
+          // When k0 is 1 (default value) and lat_ts is a vaild number and lat0 is at a pole and lat_ts is not at a pole
+          // Recalculate k0 using formula 21-35 from p161 of Snyder, 1987
           this.k0 = 0.5 * this.cons * msfnz(this.e, Math.sin(this.lat_ts), Math.cos(this.lat_ts)) / tsfnz(this.e, this.con * this.lat_ts, this.con * Math.sin(this.lat_ts));
         }
         this.ms1 = msfnz(this.e, this.sinlat0, this.coslat0);
@@ -3927,7 +3941,7 @@
 
     }
 
-    var names$8 = ["stere", "Stereographic_South_Pole", "Polar Stereographic (variant B)"];
+    var names$8 = ["stere", "Stereographic_South_Pole", "Polar Stereographic (variant B)", "Polar_Stereographic"];
     var stere = {
       init: init$7,
       forward: forward$6,
@@ -7347,7 +7361,7 @@
     proj4$1.nadgrid = nadgrid;
     proj4$1.transform = transform;
     proj4$1.mgrs = mgrs;
-    proj4$1.version = '2.9.0';
+    proj4$1.version = '2.9.2';
     includedProjections(proj4$1);
 
     return proj4$1;

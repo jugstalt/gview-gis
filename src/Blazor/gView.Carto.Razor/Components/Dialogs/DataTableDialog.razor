@@ -4,6 +4,8 @@
 @inherits ModalDialogFormBase<DataTableModel>
 @implements IDisposable
 
+@inject ICartoApplicationScopeService AppScope
+
 <ModalDialogFormBase T="DataTableModel" ContentStyle="DialogContentStyle.Full"
                      OnDialogClose="base.OnDialogClose"
                      Model="base.Model">
@@ -11,7 +13,30 @@
         @if (_tableClass is not null 
             && _tableFields is not null)
         {
-            <MudTable Items="_rows" FixedHeader="true" Height="70vh" Virtualize="true">
+            <MudTable Items="_rows" Dense="true" Hover="true"
+                      MultiSelection="_tableClass is IFeatureClass"
+                      @bind-SelectedItems="_selectedRows"
+                      Filter="new Func<IRow,bool>(FilterFunc)"
+                      FixedHeader="true" 
+                      Height="70vh" 
+                      Virtualize="true">
+                <ToolBarContent>
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary"
+                           OnClick="SetFilter"
+                           StartIcon="@Icons.Material.Filled.QueryBuilder">Filter</MudButton>
+                    @if(!string.IsNullOrEmpty(_filterWhereClause))
+                    {
+                        <MudButton Variant="Variant.Filled" Color="Color.Secondary"
+                               OnClick="UnsetFilter"
+                               StartIcon="@Icons.Material.Filled.Remove">Remove Filter</MudButton>
+                    }
+                    <MudSpacer />
+                    <MudTextField @bind-Value="_searchString"
+                                  Placeholder="Filter loaded rows" 
+                                  Adornment="Adornment.Start" 
+                                  AdornmentIcon="@Icons.Material.Filled.Search" 
+                                  IconSize="MudBlazor.Size.Medium" Class="mt-0"></MudTextField>
+                </ToolBarContent>
                 <HeaderContent>
                     <MudTh>
 
@@ -19,11 +44,15 @@
                     @foreach(var field in _tableFields)
                     {
                         <MudTh>
-                            <MudText Typo="Typo.body2" Color="Color.Primary">
+                            <MudTableSortLabel SortBy="new Func<IRow, object>((e) => e[field.name])">
+                                 @field.name
+                            </MudTableSortLabel>
+                            @*<MudText Typo="Typo.body2" Color="Color.Primary">
                                 @field.name
                             </MudText>
+                            
                             <MudTextField @bind-Value="_columnFilters[field.name]"
-                                          Label="Filter..." />
+                                          Label="Filter..." />*@
                         </MudTh>
                     }
                 </HeaderContent>
@@ -66,7 +95,10 @@
 
     private Dictionary<string, string> _columnFilters = new();
     private List<IRow> _rows = new();
+    private HashSet<IRow> _selectedRows = new HashSet<IRow>();
     private bool _hasMore = false;
+    private string _filterWhereClause = "";
+    private string _searchString = "";
 
     async protected override Task OnInitializedAsync()
     {
@@ -103,6 +135,17 @@
         {
             SubFields = "*"
         };
+
+        if(Model.Layer is IFeatureLayer featureLayer)
+        {
+            queryFilter.WhereClause = featureLayer.FilterQuery?.WhereClause;
+        }
+
+        queryFilter.WhereClause = string.IsNullOrEmpty(queryFilter.WhereClause)
+            ? _filterWhereClause
+            : string.IsNullOrEmpty(_filterWhereClause)
+                ? queryFilter.WhereClause
+                : $"({queryFilter.WhereClause}) and ({_filterWhereClause})";
 
         _cursor = await _tableClass.Search(queryFilter);
     }
@@ -150,6 +193,74 @@
         }
 
         _hasMore = true;
+    }
+
+    private async Task SetFilter()
+    {
+        var model = await AppScope.ShowModalDialog(typeof(QueryBuilderDialog),
+            "Query Builder",
+            new QueryBuilderModel()
+            {
+                QueryString = _filterWhereClause,
+                TableClass = _tableClass
+            });
+
+        if(model is not null)
+        {
+            _filterWhereClause = model.QueryString;
+
+            await CreateCursor();
+            await LoadData();
+        }
+    }
+
+    private async Task UnsetFilter()
+    {
+        _filterWhereClause = _searchString = "";
+
+        await CreateCursor();
+        await LoadData();
+    }
+
+    private bool FilterFunc(IRow row)
+    {
+        if(_tableFields is null)
+        {
+            return false;
+        }
+
+        if (string.IsNullOrWhiteSpace(_searchString))
+            return true;
+
+        var searchStringWords = _searchString
+                                    .Split(' ')
+                                    .Where(s => !string.IsNullOrWhiteSpace(s))
+                                    .ToArray();
+
+        foreach (var searchStringWord in searchStringWords)
+        {
+            bool found = false;
+
+            foreach(var field in _tableFields)
+            {
+                var val = row[field.name];
+
+                found = val switch
+                {
+                    string str => str.Contains(searchStringWord, StringComparison.OrdinalIgnoreCase),
+                    _ => val?.ToString() == searchStringWord
+                };
+
+                if(found) { break; }
+            }
+
+            if(!found)
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     public void Dispose()

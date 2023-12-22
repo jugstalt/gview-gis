@@ -133,15 +133,22 @@ var gViewLeaflet = new function () {
 }();
 
 window.gViewLeafletInterops = {
-    create: function(map, objectReference) {
-        var leafletMap = L.map(map.id, {
+    create: function (map, crs, objectReference) {
+        var mapOptions = {
             center: map.center,
             zoom: map.zoom,
             zoomControl: map.zoomControl,
             minZoom: map.minZoom ? map.minZoom : undefined,
             maxZoom: map.maxZoom ? map.maxZoom : undefined,
             maxBounds: map.maxBounds && map.maxBounds.item1 && map.maxBounds.item2 ? L.latLngBounds(map.maxBounds.item1, map.maxBounds.item2) : undefined,
-        });
+            continuousWorld: map.continuousWorld,
+            worldCopyJump: map.worldCopyJump,
+            bounceAtZoomLimits: map.bounceAtZoomLimits
+        }
+
+        console.log(crs, crs);
+
+        var leafletMap = L.map(map.id, mapOptions);
 
         gViewLeaflet.connectMapEvents(leafletMap, objectReference);
         gViewLeaflet.maps[map.id] = leafletMap;

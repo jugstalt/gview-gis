@@ -9,11 +9,12 @@
 
 @if (MapControl != null)
 {
-    <LeafletMap Map="MapControl" />
+    <LeafletMap Map="MapControl" Crs="MapControlCrs" />
 }
 
 @code{
     private LMap? MapControl { get; set; }
+    private LCrs? MapControlCrs { get; set; }
     private ImageLayer? ImageLayer = null;
 
     private ISpatialReference _mapControlSRef = new SpatialReference("epsg:3857");
@@ -136,7 +137,16 @@
     {
         bool reused = true;
 
-        if (MapControl == null)
+        if(MapControlCrs is null && _mapControlSRef is not null)
+        {
+            MapControlCrs = new()
+            {
+                Id = int.Parse(_mapControlSRef.Name.Split(':')[1]),
+                Proj4Parameters = String.Join(" ", _mapControlSRef.Parameters)
+            };
+        }
+
+        if (MapControl is null)
         {
             MapControl = Leaflet.CreateMap(MapControl?.Id);
             MapControl.OnIntialized += OnMapControlInitialized;

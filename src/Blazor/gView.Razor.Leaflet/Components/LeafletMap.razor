@@ -4,6 +4,7 @@
 
 @code {
     [Parameter] public required LMap Map { get; set; }
+    [Parameter] public LCrs? Crs { get; set; }
 
     private bool _firstRenderDone = false;
 
@@ -22,7 +23,7 @@
 
                 await Task.Delay(100);
 
-                await LeafletJs.Create(Map);
+                await LeafletJs.Create(Map, Crs);
                 await Map.FireOnIntialized();
             }
         }
