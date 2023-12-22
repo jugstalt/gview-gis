@@ -9,15 +9,15 @@
 @inject MapControlBackgroundTilesService BackgroundTiles
 @inject MapControlCrsService CrsService 
 
-@if (MapControl != null)
+@if (_mapControl != null)
 {
-    <LeafletMap Map="MapControl" Crs="MapControlCrs" />
+    <LeafletMap Map="_mapControl" Crs="_mapControlCrs" />
 }
 
 @code{
-    private LMap? MapControl { get; set; }
-    private LCrs? MapControlCrs { get; set; }
-    private ImageLayer? ImageLayer = null;
+    private LMap? _mapControl;
+    private LCrs? _mapControlCrs;
+    private ImageLayer? _imageLayer = null;
 
     private ISpatialReference _mapControlSRef = new SpatialReference("epsg:3857");
     private bool _firstRendered = false;
@@ -59,11 +59,11 @@
 
             MapRenderer.InitMap(map, _mapControlSRef);
 
-            if (reused && MapControl is not null)
+            if (reused && _mapControl is not null)
             {
                 var boundsWgs84 = GeoTransformer.ToWGS84(new Envelope(mapBounds), _mapControlSRef).Envelope;
 
-                await MapControl.FitBounds(new LatLng(boundsWgs84.LowerLeft.Y, boundsWgs84.LowerLeft.X),
+                await _mapControl.FitBounds(new LatLng(boundsWgs84.LowerLeft.Y, boundsWgs84.LowerLeft.X),
                                            new LatLng(boundsWgs84.UpperRight.Y, boundsWgs84.UpperRight.X));
             }
         }
@@ -78,11 +78,11 @@
 
     private Task OnMapZoomToAsync(IEnvelope zoomTo) => HandleAsync(async () =>
     {
-        if(MapControl is not null) 
+        if(_mapControl is not null) 
         {
             var zoomToWgs84 = GeoTransformer.ToWGS84(zoomTo, _mapControlSRef).Envelope;
 
-            await MapControl.FitBounds(
+            await _mapControl.FitBounds(
                 new LatLng(zoomToWgs84.LowerLeft.Y, zoomToWgs84.LowerLeft.X),
                 new LatLng(zoomToWgs84.UpperRight.Y, zoomToWgs84.UpperRight.X));
         }
@@ -90,38 +90,38 @@
 
     async private Task OnRefreshMapImage(byte[]? data)
     {
-        if (ImageLayer is null || MapControl is null)
+        if (_imageLayer is null || _mapControl is null)
         {
             return;
         }
 
-        await MapControl.UpdateImageLayer(ImageLayer, $"data:image/png;base64, {Convert.ToBase64String(data ?? Array.Empty<byte>())}", null, null);
+        await _mapControl.UpdateImageLayer(_imageLayer, $"data:image/png;base64, {Convert.ToBase64String(data ?? Array.Empty<byte>())}", null, null);
     }
 
     async private Task OnMapViewRest(object sender, Event e)
     {
-        if (MapControl == null)
+        if (_mapControl == null)
         {
             return;
         }
 
-        using (var mutex = await FuzzyMutexAsync.LockAsync(MapControl.Id))
+        using (var mutex = await FuzzyMutexAsync.LockAsync(_mapControl.Id))
         {
             if (mutex.WasBlocked == false)
             {
                 await Task.Delay(300);
 
-                var bounds = await MapControl.GetBounds();
-                var size = await MapControl.GetImageSize();
+                var bounds = await _mapControl.GetBounds();
+                var size = await _mapControl.GetImageSize();
 
-                if (ImageLayer == null)
+                if (_imageLayer == null)
                 {
-                    ImageLayer = new ImageLayer("", bounds.SouthWest, bounds.NorthEast) { Opacity = 0.8f };
-                    await MapControl.AddLayer(ImageLayer);
+                    _imageLayer = new ImageLayer("", bounds.SouthWest, bounds.NorthEast) { Opacity = 0.8f };
+                    await _mapControl.AddLayer(_imageLayer);
                 }
                 else
                 {
-                    await MapControl.UpdateImageLayer(ImageLayer, "", bounds.SouthWest, bounds.NorthEast);
+                    await _mapControl.UpdateImageLayer(_imageLayer, "", bounds.SouthWest, bounds.NorthEast);
                 }
 
                 await OnRefreshMapImage(null);
@@ -149,12 +149,12 @@
     {
         bool reused = true;
 
-        if(MapControlCrs is null)
+        if(_mapControlCrs is null)
         {
             var crsModel = CrsService.GetDefaultOrAny();
             _mapControlSRef = new SpatialReference($"epsg:{crsModel.Epsg}");
 
-            MapControlCrs = new LCrs()
+            _mapControlCrs = new LCrs()
             {
                 Id = crsModel.Epsg,
                 Proj4Parameters =
@@ -165,17 +165,17 @@
             };
         }
 
-        if (MapControl is null)
+        if (_mapControl is null)
         {
-            MapControl = Leaflet.CreateMap(MapControl?.Id);
-            MapControl.OnIntialized += OnMapControlInitialized;
+            _mapControl = Leaflet.CreateMap(_mapControl?.Id);
+            _mapControl.OnIntialized += OnMapControlInitialized;
 
             //LeafletMap.OnViewReset += OnMapViewRest;
-            MapControl.OnZoomEnd += OnMapViewRest;
-            MapControl.OnMoveEnd += OnMapViewRest;
+            _mapControl.OnZoomEnd += OnMapViewRest;
+            _mapControl.OnMoveEnd += OnMapViewRest;
 
-            MapControl.OnClick += OnMapClick;
-            MapControl.OnBBox += OnBBox;
+            _mapControl.OnClick += OnMapClick;
+            _mapControl.OnBBox += OnBBox;
 
             reused = false;
         }
@@ -189,7 +189,7 @@
     {
         var tiles = BackgroundTiles.GetDefaultOrAny();
 
-        await MapControl!.AddLayer(new gView.Razor.Leaflet.Models.Layers.TileLayer()
+        await _mapControl!.AddLayer(new gView.Razor.Leaflet.Models.Layers.TileLayer()
         {
             UrlTemplate = tiles.UrlTemplate,
             Attribution = tiles.Attribution,
@@ -197,22 +197,22 @@
             MinimumZoom = tiles.MinZoom,
             MaximumZoom = tiles.MaxZoom > 0
                 ? tiles.MaxZoom
-                : MapControlCrs?.Resolutions.Length - 1 ?? tiles.MaxNativeZoom,
+                : _mapControlCrs?.Resolutions.Length - 1 ?? tiles.MaxNativeZoom,
             MaxNativeZoom = tiles.MaxNativeZoom,
             TileSize = tiles.TileSize?.Length == 2 && tiles.TileSize[0] > 0 && tiles.TileSize[1] > 0
                 ? new gView.Razor.Leaflet.Models.Size(tiles.TileSize[0], tiles.TileSize[1])
                 : new gView.Razor.Leaflet.Models.Size(256, 256)
         });
 
-        var boundsWgs84 = MapControlCrs?.Bounds?.Length == 4
+        var boundsWgs84 = _mapControlCrs?.Bounds?.Length == 4
                 ? GeoTransformer.ToWGS84(
-                                new Envelope(MapControlCrs.Bounds[0], MapControlCrs.Bounds[1],
-                                             MapControlCrs.Bounds[2], MapControlCrs.Bounds[3]),
+                                new Envelope(_mapControlCrs.Bounds[0], _mapControlCrs.Bounds[1],
+                                             _mapControlCrs.Bounds[2], _mapControlCrs.Bounds[3]),
                                 _mapControlSRef
                             ).Envelope
                 : new Envelope(-180, -80, 180, 80);
 
-        await MapControl.FitBounds(new LatLng(boundsWgs84.LowerLeft.Y, boundsWgs84.LowerLeft.X),
+        await _mapControl.FitBounds(new LatLng(boundsWgs84.LowerLeft.Y, boundsWgs84.LowerLeft.X),
                                new LatLng(boundsWgs84.UpperRight.Y, boundsWgs84.UpperRight.X));
 
     });
@@ -234,22 +234,22 @@
 
     async public ValueTask DestroyMapControl()
     {
-        if (MapControl != null)
+        if (_mapControl != null)
         {
-            MapControl.OnIntialized -= OnMapControlInitialized;
+            _mapControl.OnIntialized -= OnMapControlInitialized;
 
             //LeafletMap.OnViewReset -= OnMapViewRest;
-            MapControl.OnZoomEnd -= OnMapViewRest;
-            MapControl.OnMoveEnd -= OnMapViewRest;
+            _mapControl.OnZoomEnd -= OnMapViewRest;
+            _mapControl.OnMoveEnd -= OnMapViewRest;
 
-            MapControl.OnClick -= OnMapClick;
-            MapControl.OnBBox -= OnBBox;
+            _mapControl.OnClick -= OnMapClick;
+            _mapControl.OnBBox -= OnBBox;
 
             if (_firstRendered) {
-                await MapControl.Destroy();
+                await _mapControl.Destroy();
             }
 
-            ImageLayer = null;
+            _imageLayer = null;
         }
     }
 

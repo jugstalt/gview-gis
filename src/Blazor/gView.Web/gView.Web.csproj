@@ -7,9 +7,23 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="misc\tiling\import\basemap_at.xml" />
+    <None Remove="misc\tiling\import\osm.xml" />
+  </ItemGroup>
+
+  <ItemGroup>
     <_WebToolingArtifacts Remove="Properties\PublishProfiles\docker-linux64.pubxml" />
     <_WebToolingArtifacts Remove="Properties\PublishProfiles\linux64.pubxml" />
     <_WebToolingArtifacts Remove="Properties\PublishProfiles\win64.pubxml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="misc\tiling\import\basemap_at.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="misc\tiling\import\osm.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
   <ItemGroup>
