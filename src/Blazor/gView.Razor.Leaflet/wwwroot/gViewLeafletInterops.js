@@ -60,6 +60,7 @@ var gViewLeaflet = new function () {
 
     this.connectMapEvents = function (map, objectReference) {
         this.connectInteractionEvents(map, objectReference);
+        this.connectBBoxEvents(map);
 
         this.mapEvents(map, objectReference, {
             "zoomlevelschange": "NotifyZoomLevelsChange",
@@ -74,12 +75,73 @@ var gViewLeaflet = new function () {
             "zoomend": "NotifyZoomEnd",
             "moveend": "NotifyMoveEnd",
             "mousemove": "NotifyMouseMove",
+            "click": "NotifyMouseClick",
             "keypress": "NotifyKeyPress",
             "keydown": "NotifyKeyDown",
             "keyup": "NotifyKeyUp",
             "preclick": "NotifyPreClick",
+            "bbox": "NotifyBBox"
         });
     };
+
+    this.connectBBoxEvents = function (map) {
+        let bboxMode = false;
+
+        let _enableBBoxToolHandling = function (map) {
+
+            map.dragging.disable();
+            map.boxZoom.disable();
+            map.keyboard.disable();
+            //this.touchEventHandlers.bindBoxEvents();
+        };
+        let _disableBBoxToolHandling = function (map) {
+            map.dragging.enable();
+            map.touchZoom.enable();
+            map.doubleClickZoom.enable();
+            map.scrollWheelZoom.enable();
+            map.boxZoom.enable();
+            map.keyboard.enable();
+        };
+
+        let toolBoxLayer;
+
+        map.on('mousedown', function (e) {
+            bboxMode = e.originalEvent.ctrlKey;
+
+            if (bboxMode) {
+                _enableBBoxToolHandling(map);
+
+                let bounds = L.latLngBounds(e.latlng, e.latlng);
+                toolBoxLayer = L.rectangle(bounds, { color: '#ff7800', weight: 2 });
+                map.addLayer(toolBoxLayer);
+            }
+        });
+        map.on('mousemove', function (e) {
+            if (bboxMode) {
+                if (toolBoxLayer) {
+                    let bounds = L.latLngBounds(toolBoxLayer.getBounds().getNorthWest(), e.latlng);
+                    toolBoxLayer.setBounds(bounds);
+                }
+            }
+        });
+        map.on('mouseup', function (e) {
+            if (bboxMode) {
+                map.removeLayer(toolBoxLayer);
+
+                _disableBBoxToolHandling(map);
+                bboxMode = false;
+
+                var eventArgs = {
+                    northWest: toolBoxLayer.getBounds().getNorthWest(),
+                    southEast: toolBoxLayer.getBounds().getSouthEast()
+                };
+
+                console.log('bbox-args', eventArgs);
+
+                map.fire('bbox', eventArgs);
+            }
+        });
+    }
 
     this.connectLayerEvents = function (layer, objectReference) {
         this.mapEvents(layer, objectReference, {
@@ -134,7 +196,7 @@ var gViewLeaflet = new function () {
 
 window.gViewLeafletInterops = {
     create: function (map, crs, objectReference) {
-        var mapOptions = {
+        let mapOptions = {
             center: map.center,
             zoom: map.zoom,
             zoomControl: map.zoomControl,
@@ -146,16 +208,25 @@ window.gViewLeafletInterops = {
             bounceAtZoomLimits: map.bounceAtZoomLimits
         }
 
-        console.log(crs, crs);
+        console.log('crs', crs);
+        if (crs) {
+            let lCrs = new L.Proj.CRS('EPSG:' + crs.id, crs.proj4Parameters, {
+                resolutions: crs.resolutions,
+                origin: crs.origin
+            });
+            mapOptions.crs = lCrs;
+            mapOptions.maxZoom = mapOptions.maxZoom || crs.resolutions.length;
+        }
 
-        var leafletMap = L.map(map.id, mapOptions);
+        //console.log('mapOptions', mapOptions);
+        let leafletMap = L.map(map.id, mapOptions);
 
         gViewLeaflet.connectMapEvents(leafletMap, objectReference);
         gViewLeaflet.maps[map.id] = leafletMap;
         gViewLeaflet.layers[map.id] = [];
     },
     addTilelayer: function (mapId, tileLayer, objectReference) {
-        const layer = L.tileLayer(tileLayer.urlTemplate, {
+        let tileLayerOptions = {
             attribution: tileLayer.attribution,
             pane: tileLayer.pane,
             // ---
@@ -166,8 +237,10 @@ window.gViewLeafletInterops = {
             zIndex: tileLayer.zIndex,
             bounds: tileLayer.bounds && tileLayer.bounds.item1 && tileLayer.bounds.item2 ? L.latLngBounds(tileLayer.bounds.item1, tileLayer.bounds.item2) : undefined,
             // ---
+            continuousWorld: true,
             minZoom: tileLayer.minimumZoom,
             maxZoom: tileLayer.maximumZoom,
+            maxNativeZoom: tileLayer.maxNativeZoom ? tileLayer.maxNativeZoom : tileLayer.maximumZoom,
             subdomains: tileLayer.subdomains,
             errorTileUrl: tileLayer.errorTileUrl,
             zoomOffset: tileLayer.zoomOffset,
@@ -175,7 +248,10 @@ window.gViewLeafletInterops = {
             zoomReverse: tileLayer.isZoomReversed,
             detectRetina: tileLayer.detectRetina,
             // crossOrigin
-        });
+        };
+
+        console.log('tileLayerOptions', tileLayerOptions);
+        const layer = L.tileLayer(tileLayer.urlTemplate, tileLayerOptions);
 
         gViewLeaflet.addLayer(mapId, layer, tileLayer.id);
     },

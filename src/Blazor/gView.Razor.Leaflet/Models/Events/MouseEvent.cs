@@ -12,3 +12,9 @@ public class MouseEvent : Event
     public Point2d ContainerPoint { get; set; }
 
 }
+
+public class BBoxEvent : Event
+{
+    public LatLng? NorthWest { get; set; }
+    public LatLng? SouthEast { get; set; }
+}

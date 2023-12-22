@@ -8,6 +8,8 @@ public class TileLayer : GridLayer
 
     public float MaximumZoom { get; set; } = 18;
 
+    public float MaxNativeZoom { get; set; }
+
     public string[] Subdomains { get; set; } = new string[] { "abc" };
 
 

@@ -166,6 +166,10 @@ public class LMap
     [JSInvokable]
     public void NotifyMouseMove(MouseEvent eventArgs) => OnMouseMove?.Invoke(this, eventArgs);
 
+    public event MouseEventHandler? OnMouseClick;
+    [JSInvokable]
+    public void NotifyMouseClick(MouseEvent eventArgs) => OnMouseClick?.Invoke(this, eventArgs);
+
     public event MapEventHandler? OnKeyPress;
     [JSInvokable]
     public void NotifyKeyPress(Event eventArgs) => OnKeyPress?.Invoke(this, eventArgs);
@@ -186,7 +190,8 @@ public class LMap
 
     #region Interactive Layer Events
 
-    public delegate void MouseEventHandler(LMap sender, MouseEvent e);
+    public delegate Task MouseEventHandler(LMap sender, MouseEvent e);
+    public delegate Task BBoxEventHandler(LMap sender, BBoxEvent e);
 
     public event MouseEventHandler? OnClick;
     [JSInvokable]
@@ -216,12 +221,9 @@ public class LMap
     [JSInvokable]
     public void NotifyContextMenu(MouseEvent eventArgs) => OnContextMenu?.Invoke(this, eventArgs);
 
+    public event BBoxEventHandler? OnBBox;
+    [JSInvokable]
+    public void NotifyBBox(BBoxEvent eventArgs) => OnBBox?.Invoke(this, eventArgs);
+
     #endregion
 }
-
-public class LCrs 
-{ 
-    public int Id { get; set; }
-    public string Proj4Parameters { get; set; } = "";
-}
-

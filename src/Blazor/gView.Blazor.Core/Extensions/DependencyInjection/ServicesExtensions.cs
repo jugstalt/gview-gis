@@ -1,5 +1,6 @@
 ﻿using gView.Blazor.Core.Services;
 using Microsoft.Extensions.DependencyInjection;
+using System;
 
 namespace gView.Blazor.Core.Extensions.DependencyInjection;
 
@@ -18,4 +19,18 @@ public static class ServicesExtensions
     {
         return services.AddTransient<IconService>();   
     }
+
+    static public IServiceCollection AddMapControlCrsService(
+        this IServiceCollection services,
+        Action<MapControlCrsServiceOptions> setupAction)
+        => services
+                .Configure(setupAction)
+                .AddSingleton<MapControlCrsService>();
+
+    static public IServiceCollection AddMapControlBackgroundTilesService(
+        this IServiceCollection services,
+        Action<MapControlBackgroundTilesServiceOptions> setupAction)
+        => services
+                .Configure(setupAction)
+                .AddSingleton<MapControlBackgroundTilesService>();
 }

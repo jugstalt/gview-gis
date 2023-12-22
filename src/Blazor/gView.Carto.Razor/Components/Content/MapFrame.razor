@@ -6,6 +6,8 @@
 @inject GeoTransformerService GeoTransformer
 @inject ICartoApplicationScopeService AppScope
 @inject CartoEventBusService EventBus
+@inject MapControlBackgroundTilesService BackgroundTiles
+@inject MapControlCrsService CrsService 
 
 @if (MapControl != null)
 {
@@ -131,18 +133,35 @@
         }
     }
 
+    async private Task OnMapClick(LMap sender, BlazorLeaflet.Models.Events.MouseEvent e)
+    {
+
+    }
+
+    async private Task OnBBox(LMap sender, BlazorLeaflet.Models.Events.BBoxEvent e)
+    {
+
+    }
+
     #region Create/Intialize Map
 
     public Task<bool> CreateMapControl()
     {
         bool reused = true;
 
-        if(MapControlCrs is null && _mapControlSRef is not null)
+        if(MapControlCrs is null)
         {
-            MapControlCrs = new()
+            var crsModel = CrsService.GetDefaultOrAny();
+            _mapControlSRef = new SpatialReference($"epsg:{crsModel.Epsg}");
+
+            MapControlCrs = new LCrs()
             {
-                Id = int.Parse(_mapControlSRef.Name.Split(':')[1]),
-                Proj4Parameters = String.Join(" ", _mapControlSRef.Parameters)
+                Id = crsModel.Epsg,
+                Proj4Parameters =
+                    $"{String.Join(" ", _mapControlSRef.Parameters)} {_mapControlSRef.Datum?.Parameter}".Trim(),
+                Origin = crsModel.Origin!,
+                Resolutions = crsModel.Resolutions!,
+                Bounds = crsModel.Bounds
             };
         }
 
@@ -155,6 +174,9 @@
             MapControl.OnZoomEnd += OnMapViewRest;
             MapControl.OnMoveEnd += OnMapViewRest;
 
+            MapControl.OnClick += OnMapClick;
+            MapControl.OnBBox += OnBBox;
+
             reused = false;
         }
 
@@ -165,15 +187,34 @@
 
     private Task OnMapControlInitialized() => HandleAsync(async () =>
     {
+        var tiles = BackgroundTiles.GetDefaultOrAny();
+
         await MapControl!.AddLayer(new gView.Razor.Leaflet.Models.Layers.TileLayer()
         {
-            UrlTemplate = "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
-            Attribution = "&copy; <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a> contributors",
-            Opacity = 0.2
+            UrlTemplate = tiles.UrlTemplate,
+            Attribution = tiles.Attribution,
+            Opacity = Math.Max(tiles.Opacity, 0.1),
+            MinimumZoom = tiles.MinZoom,
+            MaximumZoom = tiles.MaxZoom > 0
+                ? tiles.MaxZoom
+                : MapControlCrs?.Resolutions.Length - 1 ?? tiles.MaxNativeZoom,
+            MaxNativeZoom = tiles.MaxNativeZoom,
+            TileSize = tiles.TileSize?.Length == 2 && tiles.TileSize[0] > 0 && tiles.TileSize[1] > 0
+                ? new gView.Razor.Leaflet.Models.Size(tiles.TileSize[0], tiles.TileSize[1])
+                : new gView.Razor.Leaflet.Models.Size(256, 256)
         });
 
-        await MapControl.FitBounds(new LatLng(-80,-180),
-                                   new LatLng( 80, 180));
+        var boundsWgs84 = MapControlCrs?.Bounds?.Length == 4
+                ? GeoTransformer.ToWGS84(
+                                new Envelope(MapControlCrs.Bounds[0], MapControlCrs.Bounds[1],
+                                             MapControlCrs.Bounds[2], MapControlCrs.Bounds[3]),
+                                _mapControlSRef
+                            ).Envelope
+                : new Envelope(-180, -80, 180, 80);
+
+        await MapControl.FitBounds(new LatLng(boundsWgs84.LowerLeft.Y, boundsWgs84.LowerLeft.X),
+                               new LatLng(boundsWgs84.UpperRight.Y, boundsWgs84.UpperRight.X));
+
     });
 
     #endregion
@@ -200,6 +241,9 @@
             //LeafletMap.OnViewReset -= OnMapViewRest;
             MapControl.OnZoomEnd -= OnMapViewRest;
             MapControl.OnMoveEnd -= OnMapViewRest;
+
+            MapControl.OnClick -= OnMapClick;
+            MapControl.OnBBox -= OnBBox;
 
             if (_firstRendered) {
                 await MapControl.Destroy();

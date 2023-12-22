@@ -43,6 +43,14 @@ builder.Services.AddExplorerApplicationScopeService(config =>
 builder.Services.AddKnownExplorerDialogsServices();
 builder.Services.AddFrameworkServices();
 builder.Services.AddIconService();
+builder.Services.AddMapControlBackgroundTilesService(config =>
+{
+    config.Default = "e-ortsplan"; //  "basemap_at";
+});
+builder.Services.AddMapControlCrsService(config =>
+{
+    config.Default = "stmk_m34"; //"webmercator_at";
+});
 builder.Services.AddLeafletService();
 
 var app = builder.Build();
