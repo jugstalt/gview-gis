@@ -1,5 +1,6 @@
 @using gView.Framework.Core.Data.Cursors
 @using gView.Framework.Data.Filters
+@using System.Text
 
 @inherits ModalDialogFormBase<DataTableModel>
 @implements IDisposable
@@ -50,9 +51,15 @@
                             @*<MudText Typo="Typo.body2" Color="Color.Primary">
                                 @field.name
                             </MudText>
-                            
-                            <MudTextField @bind-Value="_columnFilters[field.name]"
-                                          Label="Filter..." />*@
+                            *@
+                            @if(_columnFilters.ContainsKey(field.name)) 
+                            {
+                                <MudTextField @bind-Value="_columnFilters[field.name]"
+                                              @onblur="RebuildFilterWhereClause"
+                                              @onkeypress="HandleFilterKeyPress"
+                                              Variant="Variant.Text"
+                                              Label="Filter..." />
+                            }
                         </MudTh>
                     }
                 </HeaderContent>
@@ -194,6 +201,47 @@
 
         _hasMore = true;
     }
+
+    private async Task RebuildFilterWhereClause()
+    {
+        StringBuilder whereClause = new();
+
+        foreach(var fieldName in _columnFilters.Keys)
+        {
+            var filterValue = _columnFilters[fieldName];
+
+            if (String.IsNullOrWhiteSpace(filterValue))
+            {
+                continue;
+            }
+
+            var field = _tableFields?.FirstOrDefault(f => f.name == fieldName);
+            if(field is null)
+            {
+                continue;
+            }
+
+            if(whereClause.Length>0)
+            {
+                whereClause.Append(" AND ");
+            }
+
+            whereClause.Append(field.FieldWhereClauseSegment(filterValue));
+        }
+
+        if (whereClause.Length > 0 && _filterWhereClause != whereClause.ToString())
+        {
+            _filterWhereClause = whereClause.ToString();
+
+            await CreateCursor();
+            await LoadData();
+        }
+    }
+    private Task HandleFilterKeyPress(KeyboardEventArgs e) => HandleAsync(() =>
+        e.Key == "Enter"
+            ? RebuildFilterWhereClause()
+            : Task.CompletedTask
+    );
 
     private async Task SetFilter()
     {

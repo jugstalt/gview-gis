@@ -174,15 +174,7 @@
                 }
             }
 
-            _fieldTemplate = _currentField.type switch
-            {
-                gView.Framework.Core.Data.FieldType.Date => "'{0}'",
-                gView.Framework.Core.Data.FieldType.character => "'{0}'",
-                gView.Framework.Core.Data.FieldType.guid => "'{0}'",
-                gView.Framework.Core.Data.FieldType.NString => "'{0}'",
-                gView.Framework.Core.Data.FieldType.String => "'{0}'",
-                _ => "{0}"
-            };
+            _fieldTemplate = _currentField.FieldValueFormatString();
 
             _hasMore = count >= QueryLimit;
         } 
