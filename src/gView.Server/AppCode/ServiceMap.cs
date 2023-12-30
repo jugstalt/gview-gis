@@ -343,11 +343,11 @@ namespace gView.Server.AppCode
             return await toc.Legend();
         }
 
-        async override public Task<bool> RefreshMap(DrawPhase phase, ICancelTracker cancelTracker)
+        async private Task<bool> RefreshMap(DrawPhase drawPhase, ICancelTracker cancelTracker)
         {
             base.ResetRequestExceptions();
 
-            if (_canvas != null && phase == DrawPhase.Graphics)
+            if (_canvas != null && drawPhase == DrawPhase.Graphics)
             {
                 return true;
             }
@@ -381,7 +381,7 @@ namespace gView.Server.AppCode
                     }
                 }
 
-                if (phase == DrawPhase.All || phase == DrawPhase.Geography)
+                if (drawPhase == DrawPhase.All || drawPhase == DrawPhase.Geography)
                 {
                     this.GeometricTransformer = geoTransformer;
 
@@ -694,7 +694,7 @@ namespace gView.Server.AppCode
 #endif
                 }
 
-                if (phase == DrawPhase.All || phase == DrawPhase.Graphics)
+                if (drawPhase == DrawPhase.All || drawPhase == DrawPhase.Graphics)
                 {
                     foreach (IGraphicElement grElement in Display.GraphicsContainer.Elements)
                     {
@@ -717,7 +717,7 @@ namespace gView.Server.AppCode
             return this.HasRequestExceptions == false;
         }
 
-        async override protected Task DrawRasterParentLayer(IParentRasterLayer rLayer, ICancelTracker cancelTracker, IRasterLayer rootLayer)
+        async private Task DrawRasterParentLayer(IParentRasterLayer rLayer, ICancelTracker cancelTracker, IRasterLayer rootLayer)
         {
             IRasterPaintContext paintContext = null;
 
@@ -868,6 +868,30 @@ namespace gView.Server.AppCode
         }
 
         #endregion
+
+        public void MapRequestThread_finished(RenderServiceRequest sender, bool succeeded, GeorefBitmap image, int order)
+        {
+            //if (DrawingLayerFinished != null && sender != null && sender.WebServiceLayer != null)
+            //{
+            //    try
+            //    {
+            //        IDataset ds = this[sender.WebServiceLayer.DatasetID];
+            //        DrawingLayerFinished(this, new TimeEvent("Map Request: " +
+            //            sender.WebServiceLayer.Title +
+            //            (ds != null ? " (" + ds.DatasetName + ")" : string.Empty),
+            //            sender.StartTime, sender.FinishTime));
+            //    }
+            //    catch { }
+            //}
+            if (succeeded)
+            {
+                m_imageMerger.Add(image, order);
+            }
+            else
+            {
+                m_imageMerger.max--;
+            }
+        }
 
         #endregion
 

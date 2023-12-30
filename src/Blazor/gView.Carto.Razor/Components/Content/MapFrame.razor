@@ -1,3 +1,6 @@
+@using gView.Blazor.Core
+@using gView.Blazor.Core.Extensions
+
 @inherits BaseHandler
 @implements IAsyncDisposable
 
@@ -17,7 +20,7 @@
 @code{
     private LMap? _mapControl;
     private LCrs? _mapControlCrs;
-    private ImageLayer? _imageLayer = null;
+    private readonly DrawPhaseObjectDictionary<ImageLayer> _imageLayers = new();
 
     private ISpatialReference _mapControlSRef = new SpatialReference("epsg:3857");
     private bool _firstRendered = false;
@@ -88,17 +91,20 @@
         }
     });
 
-    async private Task OnRefreshMapImage(byte[]? data)
+    async private Task OnRefreshMapImage(DrawPhase drawPhase, byte[]? data)
     {
-        if (_imageLayer is null || _mapControl is null)
+        if (_mapControl is null)
         {
             return;
         }
 
-        await _mapControl.UpdateImageLayer(_imageLayer, $"data:image/png;base64, {Convert.ToBase64String(data ?? Array.Empty<byte>())}", null, null);
+        _imageLayers.ForAny(drawPhase, async (imageLayer) =>
+        {
+            await _mapControl.UpdateImageLayer(imageLayer, $"data:image/png;base64, {Convert.ToBase64String(data ?? Array.Empty<byte>())}", null, null);
+        });
     }
 
-    async private Task OnMapViewRest(object sender, Event e)
+    async private Task OnMapViewReset(object sender, Event e)
     {
         if (_mapControl == null)
         {
@@ -114,21 +120,27 @@
                 var bounds = await _mapControl.GetBounds();
                 var size = await _mapControl.GetImageSize();
 
-                if (_imageLayer == null)
+                DrawPhase.All.WithNormalized(async (drawPhase) =>
                 {
-                    _imageLayer = new ImageLayer("", bounds.SouthWest, bounds.NorthEast) { Opacity = 0.8f };
-                    await _mapControl.AddLayer(_imageLayer);
-                }
-                else
-                {
-                    await _mapControl.UpdateImageLayer(_imageLayer, "", bounds.SouthWest, bounds.NorthEast);
-                }
+                    var imageLayer = _imageLayers.Get(drawPhase);
 
-                await OnRefreshMapImage(null);
+                    if (imageLayer is null)
+                    {
+                        imageLayer = new ImageLayer("", bounds.SouthWest, bounds.NorthEast) { Opacity = 0.8f };
+                        await _mapControl.AddLayer(imageLayer);
+                        _imageLayers.Set(drawPhase, imageLayer);
+                    }
+                    else
+                    {
+                        await _mapControl.UpdateImageLayer(imageLayer, "", bounds.SouthWest, bounds.NorthEast);
+                    }
+                });
+
+                await OnRefreshMapImage(DrawPhase.All, null);
 
                 var mapBounds = GeoTransformer.FromWGS84(new Envelope(bounds.SouthWest.Lng, bounds.SouthWest.Lat, bounds.NorthEast.Lng, bounds.NorthEast.Lat), _mapControlSRef).Envelope;
                 MapRenderer.SetBoundsAndSize(mapBounds, size.Width, size.Height);
-                MapRenderer.BeginRender();
+                await MapRenderer.Rerender();
             }
         }
     }
@@ -171,8 +183,8 @@
             _mapControl.OnIntialized += OnMapControlInitialized;
 
             //LeafletMap.OnViewReset += OnMapViewRest;
-            _mapControl.OnZoomEnd += OnMapViewRest;
-            _mapControl.OnMoveEnd += OnMapViewRest;
+            _mapControl.OnZoomEnd += OnMapViewReset;
+            _mapControl.OnMoveEnd += OnMapViewReset;
 
             _mapControl.OnClick += OnMapClick;
             _mapControl.OnBBox += OnBBox;
@@ -239,8 +251,8 @@
             _mapControl.OnIntialized -= OnMapControlInitialized;
 
             //LeafletMap.OnViewReset -= OnMapViewRest;
-            _mapControl.OnZoomEnd -= OnMapViewRest;
-            _mapControl.OnMoveEnd -= OnMapViewRest;
+            _mapControl.OnZoomEnd -= OnMapViewReset;
+            _mapControl.OnMoveEnd -= OnMapViewReset;
 
             _mapControl.OnClick -= OnMapClick;
             _mapControl.OnBBox -= OnBBox;
@@ -249,7 +261,7 @@
                 await _mapControl.Destroy();
             }
 
-            _imageLayer = null;
+            _imageLayers.Clear(DrawPhase.All);
         }
     }
 

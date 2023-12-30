@@ -1,3 +1,5 @@
+@using gView.Framework.Core.Carto;
+
 @inherits BaseHandler
 @implements IAsyncDisposable
 @inject LeafletService Leaflet
@@ -104,18 +106,18 @@
         {
             if (mutex.WasBlocked == false)
             {
-                await OnRefreshMapImage(null);
+                await OnRefreshMapImage(DrawPhase.All, null);
 
                 await Task.Delay(300);
 
                 var mapBounds = GeoTransformer.FromWGS84(new Envelope(bounds.SouthWest.Lng, bounds.SouthWest.Lat, bounds.NorthEast.Lng, bounds.NorthEast.Lat), _mapSRef).Envelope;
                 MapRenderer.SetBoundsAndSize(mapBounds, size.Width, size.Height);
-                MapRenderer.BeginRender();
+                await MapRenderer.Rerender();
             }
         }
     }
 
-    async private Task OnRefreshMapImage(byte[]? data)
+    async private Task OnRefreshMapImage(DrawPhase drawPhase, byte[]? data)
     {
         if (ImageLayer == null || MapControl == null)
         {

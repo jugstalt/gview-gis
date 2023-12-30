@@ -41,4 +41,14 @@ static public class DictionaryExtensions
             action(key, dict[key]);
         }
     }
+
+    static public void SetAllValues<TKey, TValue>(
+        this IDictionary<TKey, TValue> dict,
+        TValue value)
+    {
+        foreach(var key in dict.Keys)
+        {
+            dict[key] = value;
+        }
+    }
 }

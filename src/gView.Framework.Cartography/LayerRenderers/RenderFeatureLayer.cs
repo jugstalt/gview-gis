@@ -19,6 +19,7 @@ namespace gView.Framework.Cartography.LayerRenderers
     public sealed class RenderFeatureLayer
     {
         private Map _map;
+        private IMapRenderer? _mapRenderer;
         private IDatasetCachingContext _datasetCachingContext;
         private IFeatureLayer _layer;
         private ICancelTracker _cancelTracker;
@@ -26,7 +27,11 @@ namespace gView.Framework.Cartography.LayerRenderers
         private FeatureCounter _counter;
         private bool _isServiceMap = false;
 
-        public RenderFeatureLayer(Map map, IDatasetCachingContext datasetCachingContext, IFeatureLayer layer, ICancelTracker cancelTracker, FeatureCounter counter)
+        public RenderFeatureLayer(Map map, 
+                                  IDatasetCachingContext datasetCachingContext, 
+                                  IFeatureLayer layer, ICancelTracker cancelTracker, 
+                                  FeatureCounter counter,
+                                  IMapRenderer mapRenderer = null)
         {
             _map = map;
             _datasetCachingContext = datasetCachingContext;
@@ -35,6 +40,7 @@ namespace gView.Framework.Cartography.LayerRenderers
             _cancelTracker = cancelTracker == null ? new CancelTracker() : cancelTracker;
             _counter = counter;
             _counter.Counter = 0;
+            _mapRenderer = mapRenderer;
         }
 
         public bool UseLabelRenderer
@@ -301,7 +307,7 @@ namespace gView.Framework.Cartography.LayerRenderers
                                 {
                                     if (_counter.Counter % 100 == 0)
                                     {
-                                        _map.FireRefreshMapView();
+                                        _mapRenderer?.FireRefreshMapView(DrawPhase.Geography);
                                     }
                                 }
                             }

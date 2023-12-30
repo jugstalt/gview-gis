@@ -343,6 +343,7 @@ window.gViewLeafletInterops = {
         let layer = gViewLeaflet.layers[mapId].find(l => l.id === layerId);
         if (layer !== undefined) {
             if (url) {
+                console.log(layer, url);
                 layer.setUrl(url);
             }
             if (southWest && northEast) {

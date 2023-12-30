@@ -1,11 +1,15 @@
-﻿namespace gView.Framework.Core.Carto
+﻿using System;
+
+namespace gView.Framework.Core.Carto
 {
+    [Flags]
     public enum DrawPhase
     {
         All = 7,
         Geography = 4,
         Selection = 2,
-        Graphics = 1
+        Graphics = 1,
+        Empty = 0
     }
 
     public enum GeoUnits

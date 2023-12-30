@@ -1,0 +1,345 @@
+@using gView.Framework.Core.Data.Cursors
+@using gView.Framework.Data.Filters
+@using System.Text
+
+@inherits BaseHandler
+@implements IDisposable
+
+@inject IconService IconService
+@inject ICartoApplicationScopeService AppScope
+
+@if (_tableClass is not null 
+    && _tableFields is not null
+    && _rows is not null)
+{
+    <MudTable Items="_rows" Dense="true" Hover="true"
+                T="IRow"
+                MultiSelection="_multiSelection"
+                SelectedItems="_selectedRows" 
+                SelectedItemsChanged="SelectionChanged"
+                Filter="new Func<IRow,bool>(FilterFunc)"
+                FixedHeader="true" 
+                Height="70vh" 
+                Virtualize="true">
+        <ToolBarContent>
+            <MudSpacer />
+            <MudTextField @bind-Value="_searchString"
+                            Placeholder="Filter loaded rows" 
+                            Adornment="Adornment.Start" 
+                            AdornmentIcon="@Icons.Material.Filled.Search" 
+                            IconSize="MudBlazor.Size.Medium" Class="mt-0"></MudTextField>
+        </ToolBarContent>
+        <HeaderContent>
+            <MudTh>
+                <MudText Typo="Typo.body1">Filter</MudText>
+                <MudFab Color="Color.Primary"
+                        Size="MudBlazor.Size.Small"
+                        OnClick="SetFilter"
+                        StartIcon="@IconService.FromString("basic:filter")" />
+                @if(!string.IsNullOrEmpty(_filterWhereClause))
+                {
+                    <MudFab Color="Color.Secondary"
+                            Size="MudBlazor.Size.Small"
+                            OnClick="UnsetFilter"
+                            StartIcon="@IconService.FromString("basic:filter-remove")" />
+                }
+            </MudTh>
+            @foreach(var field in _tableFields)
+            {
+                <MudTh>
+                    <MudTableSortLabel SortBy="new Func<IRow, object>((e) => e[field.name])">
+                            @field.name
+                    </MudTableSortLabel>
+                    @*<MudText Typo="Typo.body2" Color="Color.Primary">
+                        @field.name
+                    </MudText>
+                    *@
+                    @if(_columnFilters.ContainsKey(field.name)) 
+                    {
+                        <MudTextField @bind-Value="_columnFilters[field.name]"
+                                        @onblur="RebuildFilterWhereClause"
+                                        @onkeyup="HandleFilterKeyPress"
+                                        Variant="Variant.Text"
+                                        />
+                    }
+                </MudTh>
+            }
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd>
+                <MudIconButton Icon="@Icons.Material.Filled.Search" 
+                                Size="MudBlazor.Size.Small"
+                                Color="Color.Primary"
+                                aria-label="zoomto">
+                </MudIconButton>
+            </MudTd>
+            @foreach(var field in _tableFields)
+            {
+                <MudTd DataLabel="@field.name">@context[field.name]</MudTd>
+            }
+        </RowTemplate>
+    </MudTable>
+
+    <GvGrid ColumnCount="@(_hasMore ? 2 : 1)">
+        <GvGridItem>
+            <MudText Typo="Typo.body1">@($"Loaded {_rows.Count} items")</MudText>
+        </GvGridItem>
+        @if(_hasMore)
+        {
+            <GvGridItem>
+                <MudButton Variant="Variant.Filled" Style="float:right"
+                            OnClick="() => LoadData()">Load more...</MudButton>
+            </GvGridItem>
+        }
+    </GvGrid>
+}
+
+@code  {
+    [Parameter] public ILayer? Layer { get; set; }
+
+    private ITableClass? _tableClass;
+    private IEnumerable<IField>? _tableFields;
+    private ICursor? _cursor;
+
+    private Dictionary<string, string> _columnFilters = new();
+    private List<IRow> _rows = new();
+    private bool _hasMore = false;
+    private string _filterWhereClause = "";
+    private string _searchString = "";
+
+    private ISelectionSet? _selectionSet;
+    private bool _multiSelection = false;
+    private HashSet<IRow> _selectedRows = [];
+
+    async protected override Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+
+        if (Layer?.Class is not ITableClass)
+        {
+            return;
+        }
+
+        _tableClass = (ITableClass)Layer.Class;
+        _tableFields = _tableClass.Fields.ToEnumerable();
+        _selectionSet = (Layer as IFeatureSelection)?.SelectionSet;
+        _multiSelection = _selectionSet.CanHandleRowsSelection();
+
+        foreach (var field in _tableFields)
+        {
+            _columnFilters[field.name] = String.Empty;
+        }
+
+        await CreateCursor();
+        await LoadData();
+    }
+
+    async private Task CreateCursor()
+    {
+        ReleaseCursor();
+        _rows.Clear();
+
+        if(_tableClass is null)
+        {
+            return;
+        }
+
+        var queryFilter = new QueryFilter()
+        {
+            SubFields = "*"
+        };
+
+        if(Layer is IFeatureLayer featureLayer)
+        {
+            queryFilter.WhereClause = featureLayer.FilterQuery?.WhereClause;
+        }
+
+        queryFilter.WhereClause = string.IsNullOrEmpty(queryFilter.WhereClause)
+            ? _filterWhereClause
+            : string.IsNullOrEmpty(_filterWhereClause)
+                ? queryFilter.WhereClause
+                : $"({queryFilter.WhereClause}) and ({_filterWhereClause})";
+
+        _cursor = await _tableClass.Search(queryFilter);
+    }
+
+    private void ReleaseCursor()
+    {
+        if(_cursor is not null)
+        {
+            _cursor.Dispose();
+        }
+
+        _cursor = null;
+    }
+
+    private async Task LoadData(int count = 10000)
+    {
+        try
+        {
+            _hasMore = false;
+
+            if (_cursor is null)
+            {
+                return;
+            }
+
+            for (int i = 0; i < count; i++)
+            {
+                var row = _cursor switch
+                {
+                    IFeatureCursor featureCursor => await featureCursor.NextFeature(),
+                    IRowCursor rowCursor => await rowCursor.NextRow(),
+                    _ => null
+                };
+
+                if (row is null)
+                {
+                    ReleaseCursor();
+                    return;
+                }
+
+                _rows.Add(row);
+
+                if (_rows.Count % 100 == 0)
+                {
+                    await ForceRenderComponent();
+                }
+            }
+
+            _hasMore = true;
+        }
+        finally
+        {
+            _selectedRows = _selectionSet.SelectedRows(_rows);
+        }
+    }
+
+    private void SelectionChanged(HashSet<IRow> selectedRows)
+    {
+        _selectedRows = selectedRows;
+        
+        if(_selectionSet.TryFromSelectedRows(selectedRows))
+        {
+            //_selectedRows = _selectionSet.SelectedRows(selectedRows);
+        }
+    }
+
+    private async Task RebuildFilterWhereClause()
+    {
+        StringBuilder whereClause = new();
+
+        foreach(var fieldName in _columnFilters.Keys)
+        {
+            var filterValue = _columnFilters[fieldName];
+
+            if (String.IsNullOrWhiteSpace(filterValue))
+            {
+                continue;
+            }
+
+            var field = _tableFields?.FirstOrDefault(f => f.name == fieldName);
+            if(field is null)
+            {
+                continue;
+            }
+
+            if(whereClause.Length>0)
+            {
+                whereClause.Append(" AND ");
+            }
+
+            whereClause.Append(field.FieldWhereClauseSegment(filterValue));
+        }
+
+        if (whereClause.Length > 0 && _filterWhereClause != whereClause.ToString())
+        {
+            _filterWhereClause = whereClause.ToString();
+
+            await CreateCursor();
+            await LoadData();
+        }
+    }
+
+    private Task HandleFilterKeyPress(KeyboardEventArgs e) => HandleAsync(() =>
+        e.Key == "Enter"
+            ? RebuildFilterWhereClause()
+            : Task.CompletedTask
+    );
+
+    private async Task SetFilter()
+    {
+        var model = await AppScope.ShowModalDialog(typeof(QueryBuilderDialog),
+            "Query Builder",
+            new QueryBuilderModel()
+            {
+                QueryString = _filterWhereClause,
+                TableClass = _tableClass
+            });
+
+        if(model is not null &&
+            _filterWhereClause != model.QueryString)
+        {
+            _columnFilters.SetAllValues("");
+            _filterWhereClause = model.QueryString;
+
+            await CreateCursor();
+            await LoadData();
+        }
+    }
+
+    private async Task UnsetFilter()
+    {
+        _filterWhereClause = _searchString = "";
+        _columnFilters.SetAllValues("");
+
+        await CreateCursor();
+        await LoadData();
+    }
+
+    private bool FilterFunc(IRow row)
+    {
+        if(_tableFields is null)
+        {
+            return false;
+        }
+
+        if (string.IsNullOrWhiteSpace(_searchString))
+            return true;
+
+        var searchStringWords = _searchString
+                                    .Split(' ')
+                                    .Where(s => !string.IsNullOrWhiteSpace(s))
+                                    .ToArray();
+
+        foreach (var searchStringWord in searchStringWords)
+        {
+            bool found = false;
+
+            foreach(var field in _tableFields)
+            {
+                var val = row[field.name];
+
+                found = val switch
+                {
+                    string str => str.Contains(searchStringWord, StringComparison.OrdinalIgnoreCase),
+                    _ => val?.ToString() == searchStringWord
+                };
+
+                if(found) { break; }
+            }
+
+            if(!found)
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    public void Dispose()
+    {
+        ReleaseCursor();
+    }
+}

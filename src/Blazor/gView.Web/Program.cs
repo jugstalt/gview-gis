@@ -45,11 +45,11 @@ builder.Services.AddFrameworkServices();
 builder.Services.AddIconService();
 builder.Services.AddMapControlBackgroundTilesService(config =>
 {
-    config.Default = "e-ortsplan"; //  "basemap_at";
+    config.Default = "basemap_at";
 });
 builder.Services.AddMapControlCrsService(config =>
 {
-    config.Default = "stmk_m34"; //"webmercator_at";
+    config.Default = "webmercator_at";
 });
 builder.Services.AddLeafletService();
 

@@ -9,9 +9,9 @@ namespace gView.Framework.Core.Carto
     //public delegate void DatasetAddedEvent(IMap sender,IDataset dataset);
     public delegate void LayerAddedEvent(IMap sender, ILayer layer);
     public delegate void LayerRemovedEvent(IMap sender, ILayer layer);
-    public delegate void NewBitmapEvent(GraphicsEngine.Abstraction.IBitmap bitmap);
-    public delegate void DoRefreshMapViewEvent();
-    public delegate void StartRefreshMapEvent(IMap sender);
+    public delegate void NewBitmapEvent(object sender, GraphicsEngine.Abstraction.IBitmap bitmap);
+    public delegate void DoRefreshMapViewEvent(object sender);
+    public delegate void StartRefreshMapEvent(IMapRenderer sender);
     public delegate void DrawingLayerEvent(string layerName);
     public delegate void TOCChangedEvent(IMap sender);
     public delegate void NewExtentRenderedEvent(IMap sender, IEnvelope extent);

@@ -32,12 +32,6 @@ namespace gView.Framework.Cartography
         public virtual event LayerAddedEvent LayerAdded;
         public virtual event LayerRemovedEvent LayerRemoved;
         public virtual event TOCChangedEvent TOCChanged;
-        public virtual event NewBitmapEvent NewBitmap;
-        public virtual event DoRefreshMapViewEvent DoRefreshMapView;
-        public virtual event DrawingLayerEvent DrawingLayer;
-        public event DrawingLayerFinishedEvent DrawingLayerFinished;
-        public event StartRefreshMapEvent StartRefreshMap;
-        public event NewExtentRenderedEvent NewExtentRendered;
         public event EventHandler MapRenamed;
         public event UserIntefaceEvent OnUserInterface;
 
@@ -304,44 +298,7 @@ namespace gView.Framework.Cartography
         }
         */
 
-        public void MapRequestThread_finished(RenderServiceRequest sender, bool succeeded, GeorefBitmap image, int order)
-        {
-            if (DrawingLayerFinished != null && sender != null && sender.WebServiceLayer != null)
-            {
-                try
-                {
-                    IDataset ds = this[sender.WebServiceLayer.DatasetID];
-                    DrawingLayerFinished(this, new TimeEvent("Map Request: " +
-                        sender.WebServiceLayer.Title +
-                        (ds != null ? " (" + ds.DatasetName + ")" : string.Empty),
-                        sender.StartTime, sender.FinishTime));
-                }
-                catch { }
-            }
-            if (succeeded)
-            {
-                m_imageMerger.Add(image, order);
-            }
-            else
-            {
-                m_imageMerger.max--;
-            }
-        }
-
-        internal void FireDrawingLayerFinished(ITimeEvent timeEvent)
-        {
-            DrawingLayerFinished?.Invoke(this, timeEvent);
-        }
-
-        internal void FireStartRefreshMap()
-        {
-            StartRefreshMap?.Invoke(this);
-        }
-
-        internal void FireNewExtentRendered()
-        {
-            NewExtentRendered?.Invoke(this, Display.Envelope);
-        }
+        
 
         #region getLayer
 
@@ -1008,23 +965,6 @@ namespace gView.Framework.Cartography
             }
         }
 
-        public bool IsRefreshing { get; protected set; }
-
-        virtual public Task<bool> RefreshMap(DrawPhase phase, ICancelTracker cancelTracker)
-        {
-            return Task.FromResult(false);
-        }
-
-        virtual public void HighlightGeometry(IGeometry geometry, int milliseconds)
-        {
-            var mapRenderInstance = MapRenderInstance.CreateAsync(this).Result;
-
-            mapRenderInstance.NewBitmap += (bitmap) => NewBitmap?.Invoke(bitmap);
-            mapRenderInstance.DoRefreshMapView += () => DoRefreshMapView?.Invoke();
-
-            mapRenderInstance.HighlightGeometry(geometry, milliseconds);
-        }
-
         public IToc TOC
         {
             get
@@ -1054,19 +994,6 @@ namespace gView.Framework.Cartography
             set;
         }
         #endregion
-
-        private DateTime _lastRefresh = DateTime.UtcNow;
-        internal virtual void FireRefreshMapView(double suppressPeriode = 500/* ms */)
-        {
-            if (DoRefreshMapView != null)
-            {
-                if ((DateTime.UtcNow - _lastRefresh).TotalMilliseconds > suppressPeriode)
-                {
-                    DoRefreshMapView();
-                    _lastRefresh = DateTime.UtcNow;
-                }
-            }
-        }
 
         private bool LayerIDExists(int layerID)
         {
@@ -1139,99 +1066,6 @@ namespace gView.Framework.Cartography
 
             geotransformer.SetSpatialReferences(layerSR, SpatialReference);
             Display.GeometricTransformer = geotransformer;
-        }
-
-        async virtual protected Task DrawRasterParentLayer(IParentRasterLayer rLayer, ICancelTracker cancelTracker, IRasterLayer rootLayer)
-        {
-            IRasterPaintContext paintContext = null;
-
-            try
-            {
-                if (rLayer is ILayer && ((ILayer)rLayer).Class is IRasterClass)
-                {
-                    paintContext = await ((IRasterClass)((ILayer)rLayer).Class).BeginPaint(Display, cancelTracker);
-                }
-                else if (rLayer is IRasterClass)
-                {
-                    paintContext = await ((IRasterClass)rLayer).BeginPaint(Display, cancelTracker);
-                }
-                string filterClause = string.Empty;
-                if (rootLayer is IRasterCatalogLayer)
-                {
-                    filterClause = ((IRasterCatalogLayer)rootLayer).FilterQuery != null ?
-                        ((IRasterCatalogLayer)rootLayer).FilterQuery.WhereClause : string.Empty;
-                }
-
-                using (IRasterLayerCursor cursor = await rLayer.ChildLayers(this, filterClause))
-                {
-                    ILayer child;
-
-                    int rasterCounter = 0;
-                    DateTime rasterCounterTime = DateTime.Now;
-
-                    if (cursor != null)
-                    {
-                        while ((child = await cursor.NextRasterLayer()) != null)
-                        //foreach (ILayer child in ((IParentRasterLayer)rLayer).ChildLayers(this, filterClause))
-                        {
-                            if (!cancelTracker.Continue)
-                            {
-                                break;
-                            }
-
-                            if (child.Class is IParentRasterLayer)
-                            {
-                                await DrawRasterParentLayer((IParentRasterLayer)child.Class, cancelTracker, rootLayer);
-                                continue;
-                            }
-                            if (!(child is IRasterLayer))
-                            {
-                                continue;
-                            }
-
-                            IRasterLayer cLayer = (IRasterLayer)child;
-
-                            RenderRasterLayer rlt = new RenderRasterLayer(this, cLayer, rootLayer, cancelTracker);
-
-                            if (DrawingLayer != null && cancelTracker.Continue)
-                            {
-                                if (rLayer is ILayer)
-                                {
-                                    DrawingLayer?.Invoke(((ILayer)rLayer).Title);
-                                }
-                            }
-
-                            await rlt.Render();
-
-                            if (rasterCounter++ % 10 == 0 && (DateTime.Now - rasterCounterTime).TotalMilliseconds > 500D)
-                            {
-                                if (DoRefreshMapView != null && cancelTracker.Continue)
-                                {
-                                    DoRefreshMapView();
-                                }
-                                rasterCounterTime = DateTime.Now;
-                            }
-
-                            if (child.Class is IDisposable)
-                            {
-                                ((IDisposable)child.Class).Dispose();
-                            }
-                        }
-
-                        if (DoRefreshMapView != null && cancelTracker.Continue)
-                        {
-                            DoRefreshMapView();
-                        }
-                    }
-                }
-            }
-            finally
-            {
-                if (paintContext != null)
-                {
-                    paintContext.Dispose();
-                }
-            }
         }
 
         #region IPersistable Member
@@ -1880,6 +1714,7 @@ namespace gView.Framework.Cartography
 
         private ConcurrentBag<Exception> _requestExceptions = null;
         private object exceptionLocker = new object();
+
         public void AddRequestException(Exception ex)
         {
             lock (exceptionLocker)
@@ -1955,11 +1790,6 @@ namespace gView.Framework.Cartography
         {
             OnUserInterface?.Invoke(this, lockUI);
 
-        }
-
-        internal void FireDrawingLayer(string layername)
-        {
-            DrawingLayer?.Invoke(layername);
         }
 
         protected void SetResourceContainer(IResourceContainer resourceContainer)

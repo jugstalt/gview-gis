@@ -13,13 +13,7 @@ namespace gView.Framework.Core.Carto
     {
         event LayerAddedEvent LayerAdded;
         event LayerRemovedEvent LayerRemoved;
-        event NewBitmapEvent NewBitmap;
-        event DoRefreshMapViewEvent DoRefreshMapView;
-        event DrawingLayerEvent DrawingLayer;
         event TOCChangedEvent TOCChanged;
-        event NewExtentRenderedEvent NewExtentRendered;
-        event DrawingLayerFinishedEvent DrawingLayerFinished;
-        event StartRefreshMapEvent StartRefreshMap;
         event EventHandler MapRenamed;
         event UserIntefaceEvent OnUserInterface;
 
@@ -59,17 +53,12 @@ namespace gView.Framework.Core.Carto
 
         IToc TOC { get; }
 
-        Task<bool> RefreshMap(DrawPhase phase, ICancelTracker cancelTracker);
-
         ISelectionEnvironment SelectionEnvironment { get; }
-
-        void HighlightGeometry(IGeometry geometry, int milliseconds);
 
         IDisplay Display { get; }
 
         void Release();
 
-        bool IsRefreshing { get; }
 
         ISpatialReference LayerDefaultSpatialReference
         {

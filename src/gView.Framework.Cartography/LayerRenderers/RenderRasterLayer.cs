@@ -13,6 +13,7 @@ namespace gView.Framework.Cartography.LayerRenderers
     public sealed class RenderRasterLayer
     {
         private Map _map;
+        private IMapRenderer _mapRenderer;
         private IRasterLayer _layer;
         private ICancelTracker _cancelTracker;
         private InterpolationMethod _interpolMethod = InterpolationMethod.Fast;
@@ -20,7 +21,11 @@ namespace gView.Framework.Cartography.LayerRenderers
         private float _transparency = 0.0f;
         private GraphicsEngine.ArgbColor _transColor = GraphicsEngine.ArgbColor.Transparent;
 
-        public RenderRasterLayer(Map map, IRasterLayer layer, IRasterLayer rLayer, ICancelTracker cancelTracker)
+        public RenderRasterLayer(Map map, 
+            IRasterLayer layer, 
+            IRasterLayer rLayer, 
+            ICancelTracker cancelTracker,
+            IMapRenderer mapRenderer = null)
         {
             _map = map;
             _layer = layer;
@@ -32,6 +37,7 @@ namespace gView.Framework.Cartography.LayerRenderers
                 _transColor = rLayer.TransparentColor;
                 _filter = rLayer.FilterImplementation;
             }
+            _mapRenderer = mapRenderer;
         }
 
         // Thread
@@ -211,7 +217,7 @@ namespace gView.Framework.Cartography.LayerRenderers
                                   rect,
                                   opacity: opaque);
 
-                    _map.FireRefreshMapView();
+                    _mapRenderer?.FireRefreshMapView(DrawPhase.Geography);
                 }
             }
             catch (Exception ex)
