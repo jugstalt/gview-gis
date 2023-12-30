@@ -1,16 +1,15 @@
-﻿using gView.Framework.Core.Carto;
+﻿using gView.Framework.Common;
+using gView.Framework.Core.Carto;
+using gView.Framework.Core.Common;
 using gView.Framework.Core.Data;
 using gView.Framework.Core.Data.Cursors;
 using gView.Framework.Core.Data.Filters;
 using gView.Framework.Core.Geometry;
 using gView.Framework.Core.IO;
-using gView.Framework.Core.Common;
-using gView.Framework.Data;
 using gView.Framework.Data.Cursors;
 using gView.Framework.Data.Filters;
 using gView.Framework.Geometry;
 using gView.Framework.Geometry.GeoProcessing;
-using gView.Framework.Common;
 using gView.GraphicsEngine;
 using System;
 using System.Collections.Generic;
@@ -544,7 +543,7 @@ namespace gView.DataSources.Fdb.PostgreSql
             }
 
             List<IRow> cursorRows = new List<IRow>();
-            
+
             using (var contextDict = new DisposableDictionary<IPointIdentify, IPointIdentifyContext>())
             {
                 for (int i = 0; i < mPoint.PointCount; i++)

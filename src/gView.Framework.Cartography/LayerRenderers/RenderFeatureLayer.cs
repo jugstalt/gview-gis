@@ -274,7 +274,11 @@ namespace gView.Framework.Cartography.LayerRenderers
                             if (useCompostionModeCopy)
                             {
                                 originalCanvas = _map.Display.Canvas;
-                                compositionModeCopyBitmap = GraphicsEngine.Current.Engine.CreateBitmap(_map.Display.Bitmap.Width, _map.Display.Bitmap.Height, GraphicsEngine.PixelFormat.Rgba32);
+                                compositionModeCopyBitmap = GraphicsEngine.Current.Engine.CreateBitmap(
+                                    _map.Display.Bitmap.Width, 
+                                    _map.Display.Bitmap.Height, 
+                                    GraphicsEngine.PixelFormat.Rgba32);
+
                                 compositionModeCopyCanvas = compositionModeCopyBitmap.CreateCanvas();
 
                                 compositionModeCopyBitmap.MakeTransparent();

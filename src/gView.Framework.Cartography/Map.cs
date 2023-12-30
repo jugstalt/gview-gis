@@ -236,7 +236,6 @@ namespace gView.Framework.Cartography
 
         public virtual void Dispose()
         {
-            DisposeGraphicsAndImage();
             if (m_imageMerger != null)
             {
                 m_imageMerger.Dispose();
@@ -247,21 +246,6 @@ namespace gView.Framework.Cartography
         public void Release()
         {
             Dispose();
-        }
-
-        public void DisposeGraphicsAndImage()
-        {
-            if (_canvas != null)
-            {
-                try { _canvas.Dispose(); }
-                catch { }
-                _canvas = null;
-            }
-            if (_bitmap != null)
-            {
-                _bitmap.Dispose();
-                _bitmap = null;
-            }
         }
 
         public string Name

@@ -16,7 +16,8 @@
                 T="IRow"
                 MultiSelection="_multiSelection"
                 SelectedItems="_selectedRows" 
-                SelectedItemsChanged="SelectionChanged"
+                SelectedItemsChanged="SelectionChanged" 
+                RowClassFunc="((row, i) => _selectedRows.Contains(row) ? SelectedRowClass : String.Empty)"
                 Filter="new Func<IRow,bool>(FilterFunc)"
                 FixedHeader="true" 
                 Height="70vh" 
@@ -69,7 +70,7 @@
             <MudTd>
                 <MudIconButton Icon="@Icons.Material.Filled.Search" 
                                 Size="MudBlazor.Size.Small"
-                                Color="Color.Primary"
+                                Color="@(_selectedRows.Contains(context) ? Color.Default : Color.Primary)"
                                 aria-label="zoomto">
                 </MudIconButton>
             </MudTd>
@@ -96,6 +97,8 @@
 
 @code  {
     [Parameter] public ILayer? Layer { get; set; }
+
+    private const string SelectedRowClass = "selected";
 
     private ITableClass? _tableClass;
     private IEnumerable<IField>? _tableFields;

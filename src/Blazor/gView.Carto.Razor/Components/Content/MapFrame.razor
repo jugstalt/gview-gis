@@ -72,11 +72,11 @@
         }
     });
 
-    private Task OnRefreshMapAsync(int delay) => HandleAsync(() =>
-        MapRenderer.Rerender(delay));
+    private Task OnRefreshMapAsync(DrawPhase drawPhase, int delay) => HandleAsync(() =>
+        MapRenderer.Rerender(drawPhase, delay));
 
     private Task OnMapSettingsChanged() => HandleAsync(() =>
-        MapRenderer.Rerender(300));
+        MapRenderer.Rerender(delay: 300));
 
 
     private Task OnMapZoomToAsync(IEnvelope zoomTo) => HandleAsync(async () =>

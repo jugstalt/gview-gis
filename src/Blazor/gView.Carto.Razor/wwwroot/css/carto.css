@@ -52,7 +52,7 @@
             height: 94px;
             vertical-align: top;
             border: 1px solid #ccc;
-            border-radius: 8px;
+            border-radius: 4px;
             box-sizing: border-box;
             background: var(--mud-palette-primary-hover);
         }
@@ -64,7 +64,7 @@
                 right: 0px;
                 height: 20px;
                 text-align: center;
-                color: #888;
+                color: #ccc;
                 font-size: 11px;
                 white-space: nowrap;
                 overflow: hidden;
@@ -110,8 +110,8 @@
 
         .carto-main .toc .toctreenode-selected > .mud-treeview-item-content,
         .carto-main .toc .toctreenode-selected > .mud-treeview-item-content .grouplayer-text {
-            background-color: #0094ff;
-            color: #efefef;
+            background-color: var(--mud-palette-primary);
+            color: var(--mud-palette-primary-hover-text);
         }
 
         .carto-main .toc .carto-initial-tool {
@@ -181,8 +181,8 @@
 }
 
 .tocnode.selected > li > div:first-child {
-    background: #0078d476;
-    color: #333;
+    background: var(--mud-palette-primary);
+    color: var(--mud-palette-primary-text);
 }
 
 .carto-main .context-selected {
@@ -190,7 +190,8 @@
 }
 
 .carto-main .current-selected {
-    background: #0078d476;
+    background: var(--mud-palette-primary);
+    color: var(--mud-palette-primary-text);
 }
 
 /**** Darkmode ****/
@@ -202,7 +203,7 @@
 }
 
 .explorer-dialog-item.selected {
-    background: #0078d476 !important;
+    background: var(--mud-palette-primary) !important;
 }
 
 .carto-main.dark .toolbar {
@@ -398,6 +399,10 @@
     white-space: nowrap;
 }
 
+.mud-table-row.selected {
+    background-color: var(--mud-palette-primary);
+    color: var(--mud-palette-primary-text);
+}
 /* Checkbox in toc */
 .mud-input-control.mud-input-control-boolean-input {
     position: relative;

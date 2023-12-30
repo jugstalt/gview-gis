@@ -1,10 +1,13 @@
-﻿using gView.Carto.Core.Services.Abstraction;
+﻿using gView.Blazor.Core.Extensions;
+using gView.Carto.Core.Services.Abstraction;
 using gView.Carto.Razor.Components.Dialogs.Models;
 using gView.Framework.Blazor.Models;
 using gView.Framework.Carto;
 using gView.Framework.Carto.Abstraction;
+using gView.Framework.Core.Carto;
 using gView.Framework.Core.Common;
 using gView.Framework.Core.Data;
+using gView.Framework.Data;
 using static System.Formats.Asn1.AsnWriter;
 
 namespace gView.Carto.Plugins.CartoTools;
@@ -44,6 +47,13 @@ internal class DataTable : ICartoTool
                 .TocElement?
                 .Layers?.FirstOrDefault();
 
+        IDSelectionSet idSelectionSet = new();
+        IFeatureSelection? featureSelection = layer as IFeatureSelection;
+        if(featureSelection is not null)
+        {
+            idSelectionSet.Combine(featureSelection.SelectionSet, CombinationMethod.New);
+        }
+
         var tableClass = layer?.Class as ITableClass;
 
         if(tableClass is null)
@@ -63,6 +73,12 @@ internal class DataTable : ICartoTool
                 Width = ModalDialogWidth.ExtraExtraLarge,
                 FullWidth = true,
             });
+
+        if (featureSelection is not null &&
+            idSelectionSet.IsNotEqual(featureSelection.SelectionSet))
+        {
+            await scope.EventBus.FireRefreshMapAsync(DrawPhase.Selection);
+        }
 
         return true;
     }

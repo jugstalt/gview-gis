@@ -167,14 +167,6 @@ namespace gView.MxUtil.Lib
                     this.AddMap(value);
                 }
 
-                foreach (IMap map in _maps)
-                {
-                    if (!(map is Map))
-                    {
-                        continue;
-                    } ((Map)map).DisposeGraphicsAndImage();
-                }
-
                 _focusMapIndex = _maps.IndexOf(value);
 
                 if (AfterSetFocusMap != null)

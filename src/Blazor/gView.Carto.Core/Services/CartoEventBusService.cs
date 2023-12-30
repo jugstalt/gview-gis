@@ -1,6 +1,7 @@
 ﻿using gView.Carto.Core.Abstractions;
 using gView.Carto.Core.Extensions;
 using gView.Carto.Core.Models.Tree;
+using gView.Framework.Core.Carto;
 using gView.Framework.Core.Geometry;
 using System;
 using System.Threading.Tasks;
@@ -32,9 +33,9 @@ public class CartoEventBusService
     public Task FireRefreshContentTreeAsync()
         => OnRefreshContentTreeAsync?.FireAsync() ?? Task.CompletedTask;
 
-    public event Func<int, Task>? OnRefreshMapAsync;
-    public Task FireRefreshMapAsync(int delay = 0)
-        => OnRefreshMapAsync?.FireAsync(delay) ?? Task.CompletedTask;
+    public event Func<DrawPhase, int, Task>? OnRefreshMapAsync;
+    public Task FireRefreshMapAsync(DrawPhase drawPhase = DrawPhase.All, int delay = 0)
+        => OnRefreshMapAsync?.FireAsync(drawPhase, delay) ?? Task.CompletedTask;
 
     public event Func<IEnvelope, Task>? OnMapZoomToAsync;
     public Task FireMapZoomToAsync(IEnvelope envelope)

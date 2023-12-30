@@ -90,7 +90,6 @@
                                                          ExpandedIconColor="Color.Primary" />
                             <MudCheckBox T="bool"
                                          Checked="@context.IsChecked"
-                                         Color="Color.Primary"
                                          CheckedChanged="@((e) => OnCheckboxClickedAsync(context,e ))" />
                             @if(_editNameTocNode == context)
                             {
@@ -163,7 +162,7 @@ else if(_cartoInitialTools is not null)
     {
         node.IsChecked = isChecked;
 
-        await EventBus.FireRefreshMapAsync(500);
+        await EventBus.FireRefreshMapAsync(delay: 500);
     });
 
     private Task OnNodeClickAsync(TocTreeNode node, MouseEventArgs e) => base.HandleAsync(async () =>

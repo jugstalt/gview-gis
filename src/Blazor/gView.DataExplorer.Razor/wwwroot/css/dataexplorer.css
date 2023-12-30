@@ -161,8 +161,8 @@
 }
 
 .treenode.selected > li > div:first-child {
-    background: #0078d476;
-    color:#333;
+    background: var(--mud-palette-primary);
+    color: var(--mud-palette-primary-text);
 }
 
 .dataexplorer-main .context-selected {
@@ -170,7 +170,8 @@
 }
 
 .dataexplorer-main .current-selected {
-    background: #0078d476;
+    background: var(--mud-palette-primary);
+    color: var(--mud-palette-primary-text);
 }
 
 /**** Darkmode ****/
@@ -179,7 +180,7 @@
 }
 
 .explorer-dialog-item.selected {
-    background: #0078d476 !important;
+    background: var(--mud-palette-primary) !important;
 }
 
 .dataexplorer-main.dark .toolbar {

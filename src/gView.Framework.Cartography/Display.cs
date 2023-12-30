@@ -1,10 +1,9 @@
-﻿using gView.Framework.Cartography;
+﻿using gView.Framework.Common;
 using gView.Framework.Core.Carto;
 using gView.Framework.Core.Geometry;
 using gView.Framework.Core.Symbology;
 using gView.Framework.Data.Metadata;
 using gView.Framework.Geometry;
-using gView.Framework.Common;
 using System;
 
 namespace gView.Framework.Cartography
@@ -64,15 +63,6 @@ namespace gView.Framework.Cartography
             //m_fixScales = new ArrayList();
 
             _labelEngine = createLabelEngine ? new LabelEngine2() : null;
-        }
-
-        public void setLimit(double minx, double miny, double maxx, double maxy)
-        {
-            m_minX = m_actMinX = minx;
-            m_maxX = m_actMaxX = maxx;
-            m_minY = m_actMinY = miny;
-            m_maxY = m_actMaxY = maxy;
-            ZoomTo(m_actMinX, m_actMinY, m_actMaxX, m_actMaxY);
         }
 
         public void World2Image(ref double x, ref double y)
@@ -229,7 +219,8 @@ namespace gView.Framework.Cartography
             get { return _graphicsContainer; }
         }
 
-        #region Eigenschaften
+        #region Properties
+
         public int ImageWidth
         {
             get { return m_iWidth; }
@@ -241,22 +232,6 @@ namespace gView.Framework.Cartography
             set { m_iHeight = value; }
         }
 
-        public double left
-        {
-            get { return m_actMinX; }
-        }
-        public double right
-        {
-            get { return m_actMaxX; }
-        }
-        public double bottom
-        {
-            get { return m_actMinY; }
-        }
-        public double top
-        {
-            get { return m_actMaxY; }
-        }
         public IEnvelope Limit
         {
             get
@@ -317,10 +292,12 @@ namespace gView.Framework.Cartography
                 m_actMaxY = value.maxy;
             }
         }
+
         public GraphicsEngine.Abstraction.IBitmap Bitmap
         {
             get { return _bitmap; }
         }
+
         public GraphicsEngine.ArgbColor BackgroundColor
         {
             get { return _backgroundColor; }
@@ -338,6 +315,7 @@ namespace gView.Framework.Cartography
             get { return _makeTransparent; }
             set { _makeTransparent = value; }
         }
+
         #endregion
 
         #region Scale
@@ -431,7 +409,8 @@ namespace gView.Framework.Cartography
         #endregion
 
         #region Zoom
-        public void setScale(double scale, double cx, double cy)
+
+        private void SetScale(double scale, double cx, double cy)
         {
             if (scale == 0.0)
             {
@@ -498,11 +477,11 @@ namespace gView.Framework.Cartography
                 MapScaleChanged(this);
             }
         }
-        public void setScale(double scale)
+        private void SetScale(double scale)
         {
             double cx = m_actMaxX * 0.5 + m_actMinX * 0.5;
             double cy = m_actMaxY * 0.5 + m_actMinY * 0.5;
-            setScale(scale, cx, cy);
+            SetScale(scale, cx, cy);
         }
 
         public double MapScale
@@ -510,7 +489,7 @@ namespace gView.Framework.Cartography
             get { return m_scale; }
             set
             {
-                setScale(value);
+                SetScale(value);
             }
         }
 
@@ -556,7 +535,7 @@ namespace gView.Framework.Cartography
 
             if (m_scale < 1.0)
             {
-                setScale(1.0);
+                SetScale(1.0);
             }
             else
             {
@@ -605,30 +584,16 @@ namespace gView.Framework.Cartography
         #endregion
 
         #region Pan
+        
         public void Pan(double px, double py)
         {
             double cx = m_actMaxX * 0.5 + m_actMinX * 0.5;
             double cy = m_actMaxY * 0.5 + m_actMinY * 0.5;
             cx += px;
             cy += py;
-            setScale(m_scale, cx, cy);
+            SetScale(m_scale, cx, cy);
         }
-        public void PanW()
-        {
-            Pan(-Math.Abs(m_actMaxX - m_actMinX) * 0.5, 0.0);
-        }
-        public void PanE()
-        {
-            Pan(Math.Abs(m_actMaxX - m_actMinX) * 0.5, 0.0);
-        }
-        public void PanN()
-        {
-            Pan(0.0, Math.Abs(m_actMaxY - m_actMinY) * 0.5);
-        }
-        public void PanS()
-        {
-            Pan(0.0, -Math.Abs(m_actMaxY - m_actMinY) * 0.5);
-        }
+
         #endregion
 
         public ILabelEngine LabelEngine { get { return _labelEngine; } }
@@ -656,7 +621,6 @@ namespace gView.Framework.Cartography
 
             return geom;
         }
-
 
         public GeoUnits MapUnits
         {

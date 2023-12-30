@@ -216,12 +216,12 @@ public class MapRenderService : IDisposable
         _cancelTrackers.Clear();
     }
 
-    public async Task Rerender(int delay = 0)
+    public async Task Rerender(DrawPhase drawPhase = DrawPhase.All, int delay = 0)
     {
         if (delay <= 0)
         {
             CancelRender();
-            BeginRender(DrawPhase.All);
+            BeginRender(drawPhase);
         }
 
         using (var mutex = await FuzzyMutexAsync.LockAsync(_scopeId))
@@ -231,7 +231,7 @@ public class MapRenderService : IDisposable
                 await Task.Delay(delay);
 
                 CancelRender();
-                BeginRender(DrawPhase.All);
+                BeginRender(drawPhase);
             }
         }
     }

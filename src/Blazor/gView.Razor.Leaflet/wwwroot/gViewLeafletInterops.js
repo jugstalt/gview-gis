@@ -136,7 +136,7 @@ var gViewLeaflet = new function () {
                     southEast: toolBoxLayer.getBounds().getSouthEast()
                 };
 
-                console.log('bbox-args', eventArgs);
+                //console.log('bbox-args', eventArgs);
 
                 map.fire('bbox', eventArgs);
             }
@@ -208,7 +208,7 @@ window.gViewLeafletInterops = {
             bounceAtZoomLimits: map.bounceAtZoomLimits
         }
 
-        console.log('crs', crs);
+        //console.log('crs', crs);
         if (crs) {
             let lCrs = new L.Proj.CRS('EPSG:' + crs.id, crs.proj4Parameters, {
                 resolutions: crs.resolutions,
@@ -250,7 +250,7 @@ window.gViewLeafletInterops = {
             // crossOrigin
         };
 
-        console.log('tileLayerOptions', tileLayerOptions);
+        //console.log('tileLayerOptions', tileLayerOptions);
         const layer = L.tileLayer(tileLayer.urlTemplate, tileLayerOptions);
 
         gViewLeaflet.addLayer(mapId, layer, tileLayer.id);
@@ -335,7 +335,7 @@ window.gViewLeafletInterops = {
     refresh: function (mapId) {
         const map = gViewLeaflet.maps[mapId];
         if (map) {
-            console.log('refresh map');
+            //console.log('refresh map');
             map.invalidateSize();
         }
     },
@@ -343,7 +343,7 @@ window.gViewLeafletInterops = {
         let layer = gViewLeaflet.layers[mapId].find(l => l.id === layerId);
         if (layer !== undefined) {
             if (url) {
-                console.log(layer, url);
+                //console.log(layer, url);
                 layer.setUrl(url);
             }
             if (southWest && northEast) {

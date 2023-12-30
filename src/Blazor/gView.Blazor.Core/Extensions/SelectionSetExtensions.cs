@@ -68,4 +68,7 @@ static public class SelectionSetExtensions
 
         return false;
     }
+
+    static public bool IsNotEqual(this ISelectionSet? selectionSet, ISelectionSet? canditate)
+        => selectionSet.IsEqual(canditate) == false;
 }
