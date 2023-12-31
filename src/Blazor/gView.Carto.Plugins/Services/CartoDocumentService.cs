@@ -5,13 +5,13 @@ using gView.Framework.Core.Carto;
 namespace gView.Carto.Plugins.Services;
 internal class CartoDocumentService : ICartoDocumentService
 {
-    private readonly ICartoDocument _document;
+    private readonly ICartoApplicationScopeService _appScope;
 
     public CartoDocumentService(ICartoApplicationScopeService appScope)
     {
-        _document = appScope.Document;
+        _appScope = appScope;
     }
 
-    public ICartoDocument Document => _document;
+    public ICartoDocument Document => _appScope.Document;
     public IMap CurrentMap => Document.Map;
 }

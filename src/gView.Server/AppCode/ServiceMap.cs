@@ -453,7 +453,7 @@ namespace gView.Server.AppCode
 
 
                         var srt = new RenderServiceRequest(this, wsLayer, webServiceOrder++);
-                        srt.finish += new RenderServiceRequest.RequestThreadFinished(MapRequestThread_finished);
+                        srt.finish += new RenderServiceRequest.RequestThreadFinished(RenderWebServiceRequestFinished);
                         //Thread thread = new Thread(new ThreadStart(srt.ImageRequest));
                         m_imageMerger.max++;
                         //thread.Start();
@@ -471,7 +471,7 @@ namespace gView.Server.AppCode
                             wsLayer.WebServiceClass.SpatialReference = this.SpatialReference;
 
                             srt = new RenderServiceRequest(this, wsLayer, (++webServiceOrder2) + webServices.Count);
-                            srt.finish += new RenderServiceRequest.RequestThreadFinished(MapRequestThread_finished);
+                            srt.finish += new RenderServiceRequest.RequestThreadFinished(RenderWebServiceRequestFinished);
                             //thread = new Thread(new ThreadStart(srt.ImageRequest));
                             m_imageMerger.max++;
                             //thread.Start();
@@ -869,20 +869,8 @@ namespace gView.Server.AppCode
 
         #endregion
 
-        public void MapRequestThread_finished(RenderServiceRequest sender, bool succeeded, GeorefBitmap image, int order)
+        private void RenderWebServiceRequestFinished(RenderServiceRequest sender, bool succeeded, GeorefBitmap image, int order)
         {
-            //if (DrawingLayerFinished != null && sender != null && sender.WebServiceLayer != null)
-            //{
-            //    try
-            //    {
-            //        IDataset ds = this[sender.WebServiceLayer.DatasetID];
-            //        DrawingLayerFinished(this, new TimeEvent("Map Request: " +
-            //            sender.WebServiceLayer.Title +
-            //            (ds != null ? " (" + ds.DatasetName + ")" : string.Empty),
-            //            sender.StartTime, sender.FinishTime));
-            //    }
-            //    catch { }
-            //}
             if (succeeded)
             {
                 m_imageMerger.Add(image, order);

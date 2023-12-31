@@ -101,7 +101,7 @@
         _cartoTools = PluginManager.GetPlugins<ICartoTool>(gView.Framework.Common.Plugins.Type.ICartoTool).ToArray();
         _cartoAppService = (ICartoApplicationScopeService)AppScope;
 
-        EventBus.OnSelectedTocTreeNodeChangedAsync += OnSelectedTocTreeNodeChangedAsync;
+        EventBus.OnSelectedTocTreeNodeChangedAsync += HandleSelectedTocTreeNodeChangedAsync;
     });
 
     private Task ToolClickAsync(ICartoTool cartoTool)
@@ -112,7 +112,7 @@
         await ToggleDarkmode.InvokeAsync();
     }
 
-    private async Task OnSelectedTocTreeNodeChangedAsync(TocTreeNode? selectedTreeNode)
+    private async Task HandleSelectedTocTreeNodeChangedAsync(TocTreeNode? selectedTreeNode)
     {
         await this.InvokeAsync(() =>
             StateHasChanged());
@@ -120,6 +120,6 @@
 
     public void Dispose() 
     {
-        EventBus.OnSelectedTocTreeNodeChangedAsync -= OnSelectedTocTreeNodeChangedAsync;
+        EventBus.OnSelectedTocTreeNodeChangedAsync -= HandleSelectedTocTreeNodeChangedAsync;
     }
 }

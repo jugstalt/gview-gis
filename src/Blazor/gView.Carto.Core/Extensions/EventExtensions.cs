@@ -42,4 +42,16 @@ internal static class EventExtensions
             }
         }
     }
+
+    async static public Task FireAsync<T1, T2, T3>(this Func<T1, T2, T3, Task> eventFunction, T1 eventArg1, T2 eventArg2, T3 eventArg3)
+    {
+        if (eventFunction != null)
+        {
+            foreach (var handler in eventFunction.GetInvocationList()
+                                                 .OfType<Func<T1, T2, T3, Task>>())
+            {
+                await handler.Invoke(eventArg1, eventArg2, eventArg3);
+            }
+        }
+    }
 }

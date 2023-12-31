@@ -72,22 +72,15 @@ public class MapRendererInstance : Map, IMapRenderer
         return mapRenderInstance;
     }
 
-    #region IMap
-
-    #region Fields
-
-    //private Envelope _lastRenderExtent = null;
-    //private MemoryStream _msGeometry = null;
-
-    #endregion
+    #region IMapRenderer
 
     #region Events
 
-    public event NewBitmapEvent NewBitmap;
-    public event DrawingLayerEvent DrawingLayer;
-    public event DoRefreshMapViewEvent DoRefreshMapView;
-    public event DrawingLayerFinishedEvent DrawingLayerFinished;
     public event StartRefreshMapEvent StartRefreshMap;
+    public event NewBitmapEvent NewBitmap;
+    public event DoRefreshMapViewEvent DoRefreshMapView;
+    public event StartDrawingLayerEvent StartDrawingLayer;
+    public event FinishedDrawingLayerEvent FinishedDrawingLayer;
 
     #endregion
 
@@ -176,7 +169,7 @@ public class MapRendererInstance : Map, IMapRenderer
                         }
 
                         RenderServiceRequest srt = new RenderServiceRequest(this, element, webServiceOrder++);
-                        srt.finish += new RenderServiceRequest.RequestThreadFinished(RenderServiceRequestFinished);
+                        srt.finish += new RenderServiceRequest.RequestThreadFinished(RenderWebServiceRequestFinished);
                         //Thread thread = new Thread(new ThreadStart(srt.ImageRequest));
                         m_imageMerger.max++;
                         //thread.Start();
@@ -276,7 +269,7 @@ public class MapRendererInstance : Map, IMapRenderer
 
                                 if (cancelTracker.Continue)
                                 {
-                                    DrawingLayer?.Invoke(layer.Title);
+                                    StartDrawingLayer?.Invoke(this, layer.Title);
                                 }
 
                                 await rlt.Render();
@@ -302,7 +295,7 @@ public class MapRendererInstance : Map, IMapRenderer
                                 {
                                     if (cancelTracker.Continue)
                                     {
-                                        DrawingLayer?.Invoke(layer.Title);
+                                        StartDrawingLayer?.Invoke(this, layer.Title);
                                     }
 
                                     await DrawRasterParentLayer((IParentRasterLayer)rLayer.Class, cancelTracker, rLayer);
@@ -313,7 +306,7 @@ public class MapRendererInstance : Map, IMapRenderer
 
                                     if (cancelTracker.Continue)
                                     {
-                                        DrawingLayer?.Invoke(layer.Title);
+                                        StartDrawingLayer?.Invoke(this, layer.Title);
                                     }
 
                                     await rlt.Render();
@@ -346,7 +339,7 @@ public class MapRendererInstance : Map, IMapRenderer
 
                             if (cancelTracker.Continue)
                             {
-                                DrawingLayer?.Invoke(fLayer.Title);
+                                StartDrawingLayer?.Invoke(this, fLayer.Title);
                             }
 
                             await rlt.Render();
@@ -369,7 +362,7 @@ public class MapRendererInstance : Map, IMapRenderer
                     {
                         if (webServices != null && webServices.Count != 0)
                         {
-                            DrawingLayer?.Invoke("...Waiting for WebServices...");
+                            StartDrawingLayer?.Invoke(this, "...Waiting for WebServices...");
                         }
 
                         while (m_imageMerger.Count < m_imageMerger.max)
@@ -578,11 +571,11 @@ public class MapRendererInstance : Map, IMapRenderer
 
                         RenderRasterLayer rlt = new RenderRasterLayer(this, cLayer, rootLayer, cancelTracker, this);
 
-                        if (DrawingLayer != null && cancelTracker.Continue)
+                        if (StartDrawingLayer != null && cancelTracker.Continue)
                         {
-                            if (rLayer is ILayer)
+                            if (rLayer is ILayer l)
                             {
-                                DrawingLayer?.Invoke(((ILayer)rLayer).Title);
+                                StartDrawingLayer?.Invoke(this, l.Title);
                             }
                         }
 
@@ -592,7 +585,7 @@ public class MapRendererInstance : Map, IMapRenderer
                         {
                             if (DoRefreshMapView != null && cancelTracker.Continue)
                             {
-                                DoRefreshMapView(DrawPhase.Geography);
+                                DoRefreshMapView(this);
                             }
                             rasterCounterTime = DateTime.Now;
                         }
@@ -605,7 +598,7 @@ public class MapRendererInstance : Map, IMapRenderer
 
                     if (DoRefreshMapView != null && cancelTracker.Continue)
                     {
-                        DoRefreshMapView(DrawPhase.Geography);
+                        DoRefreshMapView(this);
                     }
                 }
             }
@@ -727,7 +720,7 @@ public class MapRendererInstance : Map, IMapRenderer
         //Thread thread = new Thread(new ThreadStart(rlt.Render));
         //thread.Start();
 
-        DrawingLayer?.Invoke(fLayer.Title);
+        StartDrawingLayer?.Invoke(this, fLayer.Title);
 
         await rlt.Render();
         //while (thread.IsAlive)
@@ -745,16 +738,14 @@ public class MapRendererInstance : Map, IMapRenderer
         }
     }
 
-    #endregion
-
-    private void RenderServiceRequestFinished(RenderServiceRequest sender, bool succeeded, GeorefBitmap image, int order)
+    private void RenderWebServiceRequestFinished(RenderServiceRequest sender, bool succeeded, GeorefBitmap image, int order)
     {
-        if (DrawingLayerFinished != null && sender != null && sender.WebServiceLayer != null)
+        if (FinishedDrawingLayer != null && sender != null && sender.WebServiceLayer != null)
         {
             try
             {
                 IDataset ds = this[sender.WebServiceLayer.DatasetID];
-                DrawingLayerFinished(this, new TimeEvent("Map Request: " +
+                FinishedDrawingLayer(this, new TimeEvent("Map Request: " +
                     sender.WebServiceLayer.Title +
                     (ds != null ? " (" + ds.DatasetName + ")" : string.Empty),
                     sender.StartTime, sender.FinishTime));
@@ -773,8 +764,10 @@ public class MapRendererInstance : Map, IMapRenderer
 
     private void FireDrawingLayerFinished(ITimeEvent timeEvent)
     {
-        DrawingLayerFinished?.Invoke(this, timeEvent);
+        FinishedDrawingLayer?.Invoke(this, timeEvent);
     }
+
+    #endregion
 
     #region Disposing
 

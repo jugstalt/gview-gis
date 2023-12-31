@@ -2,6 +2,7 @@
 using gView.Carto.Core.Extensions;
 using gView.Carto.Core.Models.Tree;
 using gView.Framework.Core.Carto;
+using gView.Framework.Core.Common;
 using gView.Framework.Core.Geometry;
 using System;
 using System.Threading.Tasks;
@@ -40,4 +41,24 @@ public class CartoEventBusService
     public event Func<IEnvelope, Task>? OnMapZoomToAsync;
     public Task FireMapZoomToAsync(IEnvelope envelope)
         => OnMapZoomToAsync?.FireAsync(envelope) ?? Task.CompletedTask;
+
+    public event Func<IMapRenderer, Task>? OnStartRenderMap;
+    public Task FireStartRenderMap(IMapRenderer mapRenderer)
+        => OnStartRenderMap?.FireAsync(mapRenderer) ?? Task.CompletedTask;
+
+    public event Func<IMapRenderer, Task>? OnFinishedRenderMap;
+    public Task FireFinishedRenderMap(IMapRenderer mapRenderer)
+        => OnFinishedRenderMap?.FireAsync(mapRenderer) ?? Task.CompletedTask;
+
+    public event Func<IMapRenderer, string, Task>? OnStartRendererLayer;
+    public Task FireStartRendererLayer(IMapRenderer mapRenderer, string layerName)
+        => OnStartRendererLayer?.FireAsync(mapRenderer, layerName) ?? Task.CompletedTask;
+
+    public event Func<IMapRenderer, string, ITimeEvent?, Task>? OnFinishedRendererLayer;
+    public Task FireFinishedRendererLayer(IMapRenderer mapRenderer, string layerName, ITimeEvent? timeEvent)
+        => OnFinishedRendererLayer?.FireAsync(mapRenderer, layerName, timeEvent) ?? Task.CompletedTask;
+
+    public event Func<IPoint, IPoint, Task>? OnMapMouseMove;
+    public Task FireMapMouseMove(IPoint latLong, IPoint layerPoint)
+        => OnMapMouseMove?.FireAsync(latLong, layerPoint) ?? Task.CompletedTask;
 }

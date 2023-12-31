@@ -8,8 +8,8 @@ namespace gView.Framework.Core.Carto
     {
         event NewBitmapEvent NewBitmap;
         event DoRefreshMapViewEvent DoRefreshMapView;
-        event DrawingLayerEvent DrawingLayer;
-        event DrawingLayerFinishedEvent DrawingLayerFinished;
+        event StartDrawingLayerEvent StartDrawingLayer;
+        event FinishedDrawingLayerEvent FinishedDrawingLayer;
         event StartRefreshMapEvent StartRefreshMap;
 
         DrawPhase DrawPhase { get; }

@@ -106,7 +106,7 @@
         {
             if (mutex.WasBlocked == false)
             {
-                await OnRefreshMapImage(DrawPhase.All, null);
+                await OnRefreshMapImage(null, null);
 
                 await Task.Delay(300);
 
@@ -117,7 +117,7 @@
         }
     }
 
-    async private Task OnRefreshMapImage(DrawPhase drawPhase, byte[]? data)
+    async private Task OnRefreshMapImage(IMapRenderer? mapRenderer, byte[]? data)
     {
         if (ImageLayer == null || MapControl == null)
         {

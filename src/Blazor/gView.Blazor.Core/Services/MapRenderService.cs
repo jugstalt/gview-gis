@@ -1,20 +1,19 @@
 ﻿using gView.Blazor.Core.Exceptions;
+using gView.Blazor.Core.Extensions;
 using gView.Framework.Cartography;
+using gView.Framework.Common;
+using gView.Framework.Common.Extensions;
 using gView.Framework.Core.Carto;
+using gView.Framework.Core.Common;
 using gView.Framework.Core.Data;
 using gView.Framework.Core.Geometry;
-using gView.Framework.Core.Common;
 using gView.Framework.Data;
 using gView.Framework.Geometry;
-using gView.Framework.Common;
 using gView.GraphicsEngine.Abstraction;
 using System;
+using System.Collections.Concurrent;
 using System.IO;
 using System.Threading.Tasks;
-using gView.Framework.Common.Extensions;
-using gView.Blazor.Core.Extensions;
-using System.Collections.Concurrent;
-using static gView.Blazor.Core.Services.MapRenderService;
 
 namespace gView.Blazor.Core.Services;
 
@@ -181,8 +180,11 @@ public class MapRenderService : IDisposable
                 {
                     renderer = await MapRendererInstance.CreateAsync(_map);
 
-                    renderer.NewBitmap += NewBitmapCreated;
-                    renderer.DoRefreshMapView += MakeMapViewRefresh;
+                    renderer.StartRefreshMap += HandleStartRefreshMap;
+                    renderer.NewBitmap += HandleNewBitmapCreated;
+                    renderer.DoRefreshMapView += HandleMakeMapViewRefresh;
+                    renderer.StartDrawingLayer += HandleStartDrawingLayer;
+                    renderer.FinishedDrawingLayer += HandleFinishedDrawingLayer;
 
                     var cancelTracker = _cancelTrackers.GetOrAdd(renderer.GetHashCode(), new CancelTracker());
 
@@ -190,13 +192,17 @@ public class MapRenderService : IDisposable
                     renderer.Display.ZoomTo(_mapControlBounds);
 
                     await renderer.RefreshMap(phase, cancelTracker);
-                } 
+                    await FireFinishedRenderMap(renderer);
+                }
                 finally
                 {
-                    if(renderer is not null)
+                    if (renderer is not null)
                     {
-                        renderer.DoRefreshMapView -= MakeMapViewRefresh;
-                        renderer.NewBitmap -= NewBitmapCreated;
+                        renderer.StartRefreshMap -= HandleStartRefreshMap;
+                        renderer.NewBitmap -= HandleNewBitmapCreated;
+                        renderer.DoRefreshMapView -= HandleMakeMapViewRefresh;
+                        renderer.StartDrawingLayer -= HandleStartDrawingLayer;
+                        renderer.FinishedDrawingLayer -= HandleFinishedDrawingLayer;
 
                         _cancelTrackers.RemoveIfExists(renderer.GetHashCode());
 
@@ -278,19 +284,46 @@ public class MapRenderService : IDisposable
 
     #region Events
 
-    public delegate Task RefreshMapImage(DrawPhase drawPhase, byte[] data);
-    public event RefreshMapImage? OnRefreshMapImage;
+    public delegate Task StartRenderMap(IMapRenderer mapRenderer);
+    public delegate Task FinishedRenderMap(IMapRenderer mapRenderer);
+    public delegate Task RefreshMapImage(IMapRenderer mapRenderer, byte[] data);
+    public delegate Task StartDrawingLayer(IMapRenderer mapRenderer, string layerName);
+    public delegate Task FinsishedDrawingLayer(IMapRenderer mapRenderer, ITimeEvent timeEvent);
 
-    public void FireRefreshMapImage(DrawPhase drawPhase, byte[]? data)
-        => OnRefreshMapImage?.Invoke(drawPhase, data ?? Array.Empty<byte>());
+    public event StartRenderMap? OnStartRenderMap;
+    public event FinishedRenderMap? OnFinishedRenderMap;
+    public event RefreshMapImage? OnRefreshMapImage;
+    public event StartDrawingLayer? OnStartDrawingLayer;
+    public event FinsishedDrawingLayer? OnFinishedDrawingLayer;
+
+
+    private Task FireStartRenderMap(IMapRenderer mapRenderer)
+        => OnStartRenderMap?.Invoke(mapRenderer)
+        ?? Task.CompletedTask;
+
+    private Task FireFinishedRenderMap(IMapRenderer mapRenderer)
+        => OnFinishedRenderMap?.Invoke(mapRenderer)
+        ?? Task.CompletedTask;
+
+    private Task FireRefreshMapImage(IMapRenderer mapRenderer, byte[]? data)
+        => OnRefreshMapImage?.Invoke(mapRenderer, data ?? Array.Empty<byte>())
+        ?? Task.CompletedTask;
+
+    private Task FireStartDrawingLayer(IMapRenderer mapRenderer, string layerName)
+        => OnStartDrawingLayer?.Invoke(mapRenderer, layerName)
+        ?? Task.CompletedTask;
+
+    private Task FireFinsishedDrawingLayer(IMapRenderer mapRenderer, ITimeEvent timeEvent)
+        => OnFinishedDrawingLayer?.Invoke(mapRenderer, timeEvent)
+        ?? Task.CompletedTask;
 
     #endregion
 
     #region EventHandlers
 
-    private void NewBitmapCreated(object sender, IBitmap? bitmap)
+    private void HandleNewBitmapCreated(IMapRenderer renderer, IBitmap? bitmap)
     {
-        if (sender is IMapRenderer renderer)
+        if (renderer is not null)
         {
             _cancelTrackers.TryGetValue(renderer.GetHashCode(), out ICancelTracker? cancelTracker);
 
@@ -303,15 +336,15 @@ public class MapRenderService : IDisposable
                 _iBitmaps.TryAdd(renderer.GetHashCode(), bitmap);
                 if (cancelTracker?.Continue == true)
                 {
-                    FireRefreshMapImage(renderer.DrawPhase, CreateBitmapSnapshot(renderer.GetHashCode()));
+                    FireRefreshMapImage(renderer, CreateBitmapSnapshot(renderer.GetHashCode()));
                 }
-            } 
+            }
         }
     }
 
-    private void MakeMapViewRefresh(object sender)
+    private void HandleMakeMapViewRefresh(IMapRenderer renderer)
     {
-        if (sender is IMapRenderer renderer)
+        if (renderer is not null)
         {
             _cancelTrackers.TryGetValue(renderer.GetHashCode(), out ICancelTracker? cancelTracker);
 
@@ -320,8 +353,32 @@ public class MapRenderService : IDisposable
                 if (renderer.DrawPhase == DrawPhase.Geography)
                     Console.WriteLine($"{renderer.GetHashCode()} {renderer.DrawPhase}");
 
-                FireRefreshMapImage(renderer.DrawPhase, CreateBitmapSnapshot(renderer.GetHashCode()));
+                FireRefreshMapImage(renderer, CreateBitmapSnapshot(renderer.GetHashCode()));
             }
+        }
+    }
+
+    private void HandleStartDrawingLayer(IMapRenderer renderer, string layerName)
+    {
+        if (renderer is not null)
+        {
+            FireStartDrawingLayer(renderer, layerName);
+        }
+    }
+
+    private void HandleFinishedDrawingLayer(IMapRenderer renderer, ITimeEvent timeEvent)
+    {
+        if (renderer is not null)
+        {
+            FireFinsishedDrawingLayer(renderer, timeEvent);
+        }
+    }
+
+    private void HandleStartRefreshMap(IMapRenderer renderer)
+    {
+        if (renderer is not null)
+        {
+            FireStartRenderMap(renderer);
         }
     }
 
