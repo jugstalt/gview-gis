@@ -7,6 +7,7 @@ using gView.Framework.Carto;
 using gView.Framework.Carto.Abstraction;
 using gView.Framework.Cartography;
 using gView.Framework.Core.Common;
+using gView.Framework.Core.Data;
 using gView.Framework.Data;
 
 namespace gView.Carto.Plugins.CartoTools
@@ -76,12 +77,15 @@ namespace gView.Carto.Plugins.CartoTools
                 return false;
             }
 
-            #region Description
-
-            //scopeService!.SelectedTocTreeNode!.TocElement.RemoveLayer(originalLayer);
-            //scopeService.SelectedTocTreeNode.TocElement.AddLayer(clonedLayer);
-
+            // Copy Selection
+            if(clonedLayer is IFeatureSelection clonedSelection 
+               && originalLayer is IFeatureSelection originalSelection)
+            {
+                clonedSelection.SelectionSet = originalSelection.SelectionSet;
+            }
             originalMap.ReplaceLayer(originalLayer, clonedLayer);
+
+            #region Description
 
             originalMap.SetLayerDescription(originalLayer.ID, clonedMap.GetLayerDescription(originalLayer.ID));
             originalMap.SetLayerCopyrightText(originalLayer.ID, clonedMap.GetLayerCopyrightText(originalLayer.ID));

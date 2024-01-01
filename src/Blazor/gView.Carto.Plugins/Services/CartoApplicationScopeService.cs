@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Options;
 using Microsoft.JSInterop;
 using MudBlazor;
+using static gView.Interoperability.GeoServices.Rest.Json.JsonServices;
 
 namespace gView.Carto.Plugins.Services;
 public class CartoApplicationScopeService : ApplictionBusyHandler, ICartoApplicationScopeService
@@ -33,6 +34,8 @@ public class CartoApplicationScopeService : ApplictionBusyHandler, ICartoApplica
                                         IJSRuntime jsRuntime,
                                         ISnackbar snackbar,
                                         GeoTransformerService geoTransformer,
+                                        MapControlCrsService crsService,
+                                        SpatialReferenceService sRefService,
                                         IOptions<CartoApplicationScopeServiceOptions> options)
     {
         _dialogService = dialogService;
@@ -44,6 +47,12 @@ public class CartoApplicationScopeService : ApplictionBusyHandler, ICartoApplica
         _options = options.Value;
 
         _cartoDocument = this.Document = new CartoDocument();
+
+        if(_cartoDocument.Map.Display.SpatialReference is null)
+        {
+            _cartoDocument.Map.Display.SpatialReference =
+                sRefService.GetSpatialReference($"epsg:{crsService.GetDefaultOrAny().Epsg}").Result;
+        }
     }
 
     public CartoEventBusService EventBus => _eventBus;

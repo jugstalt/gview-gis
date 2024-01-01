@@ -61,7 +61,7 @@ namespace gView.Framework.Cartography.Rendering
                 case GeometryType.Envelope:
                 case GeometryType.Polygon:
                     symbol = new SimpleFillSymbol();
-                    ((SimpleFillSymbol)symbol).Color = ArgbColor.Transparent;
+                    ((SimpleFillSymbol)symbol).Color = ArgbColor.FromArgb(85, ArgbColor.Cyan);
                     ((SimpleFillSymbol)symbol).SmoothingMode = SymbolSmoothing.AntiAlias;
                     ((SimpleFillSymbol)symbol).OutlineSymbol = new SimpleLineSymbol();
                     ((SimpleLineSymbol)((SimpleFillSymbol)symbol).OutlineSymbol).Color = ArgbColor.Cyan;
@@ -71,13 +71,14 @@ namespace gView.Framework.Cartography.Rendering
                 case GeometryType.Polyline:
                     symbol = new SimpleLineSymbol();
                     ((SimpleLineSymbol)symbol).Color = ArgbColor.Cyan;
-                    ((SimpleLineSymbol)symbol).Width = 3;
+                    ((SimpleLineSymbol)symbol).Width = 5;
                     ((SimpleLineSymbol)symbol).Smoothingmode = SymbolSmoothing.AntiAlias;
                     break;
                 case GeometryType.Point:
                     symbol = new SimplePointSymbol();
                     ((SimplePointSymbol)symbol).Color = ArgbColor.Cyan;
-                    ((SimplePointSymbol)symbol).Size = 5;
+                    ((SimplePointSymbol)symbol).OutlineColor = ArgbColor.Cyan;
+                    ((SimplePointSymbol)symbol).Size = 10;
                     ((SimplePointSymbol)symbol).Smoothingmode = SymbolSmoothing.AntiAlias;
                     break;
             }

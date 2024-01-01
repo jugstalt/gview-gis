@@ -1,8 +1,9 @@
 ﻿using gView.Framework.Core.Data;
+using System;
 
-namespace gView.Carto.Razor.Extensions;
+namespace gView.Blazor.Core.Extensions;
 
-static internal class FieldExtensions
+static public class FieldExtensions
 {
     static public string FieldValueFormatString(this IField field)
         => field.type switch
@@ -28,4 +29,15 @@ static internal class FieldExtensions
 
         return $"{field.name}{queryOperator}{String.Format(formatString, value)}";
     }
+
+    static public bool IsDataTableField(this IField field)
+        => field.type switch 
+        {
+            FieldType.GEOMETRY => false,
+            FieldType.GEOGRAPHY => false,
+            FieldType.binary => false,
+            FieldType.Shape => false,
+            _ => true
+        };
+
 }

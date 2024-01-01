@@ -90,7 +90,11 @@
     {
         if(_mapControl is not null) 
         {
-            var zoomToWgs84 = GeoTransformer.ToWGS84(zoomTo, _mapControlSRef).Envelope;
+            var zoomToWgs84 = zoomTo.Srs switch
+            {
+                4326 => zoomTo,
+                _ => GeoTransformer.ToWGS84(zoomTo, _mapControlSRef).Envelope
+            };
 
             await _mapControl.FitBounds(
                 new LatLng(zoomToWgs84.LowerLeft.Y, zoomToWgs84.LowerLeft.X),

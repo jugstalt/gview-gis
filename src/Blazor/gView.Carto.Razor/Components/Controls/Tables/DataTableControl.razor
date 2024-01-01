@@ -7,6 +7,8 @@
 
 @inject IconService IconService
 @inject ICartoApplicationScopeService AppScope
+@inject GeoTransformerService GeoTransformer
+@inject CartoEventBusService EventBus
 
 @if (_tableClass is not null 
     && _tableFields is not null
@@ -71,6 +73,7 @@
                 <MudIconButton Icon="@Icons.Material.Filled.Search" 
                                 Size="MudBlazor.Size.Small"
                                 Color="@(_selectedRows.Contains(context) ? Color.Default : Color.Primary)"
+                                OnClick="() => ZoomTo(context)"
                                 aria-label="zoomto">
                 </MudIconButton>
             </MudTd>
@@ -124,7 +127,9 @@
         }
 
         _tableClass = (ITableClass)Layer.Class;
-        _tableFields = _tableClass.Fields.ToEnumerable();
+        _tableFields = _tableClass.Fields
+                                  .ToEnumerable()
+                                  .Where(f => f.IsDataTableField());
         _selectionSet = (Layer as IFeatureSelection)?.SelectionSet;
         _multiSelection = _selectionSet.CanHandleRowsSelection();
 
@@ -221,7 +226,7 @@
     private void SelectionChanged(HashSet<IRow> selectedRows)
     {
         _selectedRows = selectedRows;
-        
+
         if(_selectionSet.TryFromSelectedRows(selectedRows))
         {
             //_selectedRows = _selectionSet.SelectedRows(selectedRows);
@@ -339,6 +344,21 @@
         }
 
         return true;
+    }
+
+    async private Task ZoomTo(IRow row)
+    {
+        if(row is IFeature feature 
+            && feature.Shape is not null 
+            && _tableClass is IFeatureClass featureClass
+            && featureClass.SpatialReference is not null)
+        {
+            var bounds = feature.Shape.Envelope;
+            var boundsWgs84 = GeoTransformer.ToWGS84(bounds, featureClass.SpatialReference).Envelope;
+            boundsWgs84.Srs = 4326;
+
+            await EventBus.FireMapZoomToAsync(boundsWgs84);
+        }
     }
 
     public void Dispose()

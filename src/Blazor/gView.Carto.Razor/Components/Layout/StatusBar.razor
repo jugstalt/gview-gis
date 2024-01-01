@@ -7,8 +7,8 @@
 @implements IDisposable
 @inherits BaseHandler
 
-<GvGrid ColumnCount="12">
-    <GvGridItem Span="1"> 
+<GvGrid ColumnCount="12" Spacing="0">
+    <GvGridItem Span="2"> 
         @* Current Tool *@
         <MudPaper Elevation="12" Style="@PaperStyle">
             <MudText Typo="Typo.body2">
@@ -16,7 +16,7 @@
             </MudText>
         </MudPaper>
     </GvGridItem>
-    <GvGridItem Span="4">
+    <GvGridItem Span="3">
         @* Busy *@
         <MudPaper Elevation="12" Style="@PaperStyle">
             @if (_currentDrawPhases.Count > 0)
