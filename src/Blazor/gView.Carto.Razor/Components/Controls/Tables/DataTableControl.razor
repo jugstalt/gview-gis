@@ -21,9 +21,15 @@
                 SelectedItemsChanged="SelectionChanged" 
                 RowClassFunc="((row, i) => _selectedRows.Contains(row) ? SelectedRowClass : String.Empty)"
                 Filter="new Func<IRow,bool>(FilterFunc)"
-                FixedHeader="true" 
+                FixedHeader="true" Height="calc(100% - 95px)"
                 Virtualize="true">
-        <ToolBarContent>
+       <ToolBarContent>
+            <MudSelect T="ILayer">
+                @foreach(var dataTableLayer in AppScope.DataTableService.Layers)
+                {
+                    <MudSelectItem Value="dataTableLayer">@dataTableLayer.Title</MudSelectItem>
+                }
+            </MudSelect>     
             <MudSpacer />
             <MudTextField @bind-Value="_searchString"
                             Placeholder="Filter loaded rows" 
@@ -33,7 +39,7 @@
         </ToolBarContent>
         <HeaderContent>
             <MudTh>
-                <MudText Typo="Typo.body1">Filter</MudText>
+                @* <MudText Typo="Typo.body1">Filter</MudText> *@
                 <MudFab Color="Color.Primary"
                         Size="MudBlazor.Size.Small"
                         OnClick="SetFilter"
@@ -49,20 +55,22 @@
             @foreach(var field in _tableFields)
             {
                 <MudTh>
-                    <MudTableSortLabel SortBy="new Func<IRow, object>((e) => e[field.name])">
-                            @field.name
-                    </MudTableSortLabel>
-                    @*<MudText Typo="Typo.body2" Color="Color.Primary">
-                        @field.name
-                    </MudText>
-                    *@
                     @if(_columnFilters.ContainsKey(field.name)) 
                     {
+                        <MudTableSortLabel SortBy="new Func<IRow, object>((e) => e[field.name])">
                         <MudTextField @bind-Value="_columnFilters[field.name]"
                                         @onblur="RebuildFilterWhereClause"
                                         @onkeyup="HandleFilterKeyPress"
                                         Variant="Variant.Text"
+                                        Label="@field.name"
                                         />
+                        </MudTableSortLabel>
+                    } 
+                    else 
+                    {
+                        <MudTableSortLabel SortBy="new Func<IRow, object>((e) => e[field.name])">
+                            @field.name
+                        </MudTableSortLabel>
                     }
                 </MudTh>
             }
@@ -83,18 +91,21 @@
         </RowTemplate>
     </MudTable>
 
-    <GvGrid ColumnCount="@(_hasMore ? 2 : 1)">
-        <GvGridItem>
-            <MudText Typo="Typo.body1">@($"Loaded {_rows.Count} items")</MudText>
-        </GvGridItem>
-        @if(_hasMore)
-        {
+    <div style="position:absolute;bottom:0;width:100%;height:30px">
+        <GvGrid ColumnCount="@(_hasMore ? 2 : 1)">
             <GvGridItem>
-                <MudButton Variant="Variant.Filled" Style="float:right"
-                            OnClick="() => LoadData()">Load more...</MudButton>
+                <MudText Typo="Typo.body1">@($"Loaded {_rows.Count} items")</MudText>
             </GvGridItem>
-        }
-    </GvGrid>
+            @if(_hasMore)
+            {
+                <GvGridItem>
+                    <MudButton Variant="Variant.Filled" Style="float:right"
+                                OnClick="() => LoadData()">Load more...</MudButton>
+                </GvGridItem>
+            }
+        </GvGrid>
+    </div>
+    
 }
 
 @code  {
@@ -116,29 +127,28 @@
     private bool _multiSelection = false;
     private HashSet<IRow> _selectedRows = [];
 
-    async protected override Task OnInitializedAsync()
+    async protected override Task OnParametersSetAsync()
     {
-        await base.OnInitializedAsync();
+        await base.OnParametersSetAsync();
 
-        if (Layer?.Class is not ITableClass)
+        if (Layer?.Class is ITableClass tableClass
+            && _tableClass != tableClass)
         {
-            return;
+            _tableClass = tableClass;
+            _tableFields = _tableClass.Fields
+                                      .ToEnumerable()
+                                      .Where(f => f.IsDataTableField());
+            _selectionSet = (Layer as IFeatureSelection)?.SelectionSet;
+            _multiSelection = _selectionSet.CanHandleRowsSelection();
+
+            foreach (var field in _tableFields)
+            {
+                _columnFilters[field.name] = String.Empty;
+            }
+
+            await CreateCursor();
+            await LoadData();
         }
-
-        _tableClass = (ITableClass)Layer.Class;
-        _tableFields = _tableClass.Fields
-                                  .ToEnumerable()
-                                  .Where(f => f.IsDataTableField());
-        _selectionSet = (Layer as IFeatureSelection)?.SelectionSet;
-        _multiSelection = _selectionSet.CanHandleRowsSelection();
-
-        foreach (var field in _tableFields)
-        {
-            _columnFilters[field.name] = String.Empty;
-        }
-
-        await CreateCursor();
-        await LoadData();
     }
 
     async private Task CreateCursor()

@@ -350,9 +350,6 @@ public class MapRenderService : IDisposable
 
             if (cancelTracker?.Continue == true)
             {
-                if (renderer.DrawPhase == DrawPhase.Geography)
-                    Console.WriteLine($"{renderer.GetHashCode()} {renderer.DrawPhase}");
-
                 FireRefreshMapImage(renderer, CreateBitmapSnapshot(renderer.GetHashCode()));
             }
         }

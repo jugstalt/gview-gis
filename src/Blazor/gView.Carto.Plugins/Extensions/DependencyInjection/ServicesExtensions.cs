@@ -27,6 +27,7 @@ static public class ServicesExtensions
             .AddTransient<ICartoDocumentService, CartoDocumentService>()
             .Configure(configureOptions)
             .AddEventBus()
+            .AddDataTables()
             .AddScoped<ICartoApplicationScopeService, CartoApplicationScopeService>();
     }
 }

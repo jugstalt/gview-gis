@@ -6,8 +6,6 @@ using gView.Framework.Core.Common;
 using gView.Framework.Core.Data;
 using gView.Framework.Core.Geometry;
 using System;
-using System.Data.Entity.Core.Common.EntitySql;
-using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
 namespace gView.Carto.Core.Services;

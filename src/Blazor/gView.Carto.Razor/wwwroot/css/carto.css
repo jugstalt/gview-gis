@@ -181,7 +181,12 @@
         right:0px;
         bottom: 27px;
         height:0px;
+        overflow:hidden;
     }
+        .carto-main .data .mud-table {
+            position: absolute;
+            inset: 0;
+        }
     .carto-main .status-bar {
         position: absolute;
         left: 0px;
@@ -415,9 +420,10 @@
     white-space: nowrap;
 }
 
-.mud-table-row.selected {
-    background-color: var(--mud-palette-primary);
-    color: var(--mud-palette-primary-text);
+.mud-table-row.selected,
+.mud-table-row.selected:hover {
+    background-color: var(--mud-palette-primary) !important;
+    color: var(--mud-palette-primary-text) !important;
 }
 /* Checkbox in toc */
 .mud-input-control.mud-input-control-boolean-input {

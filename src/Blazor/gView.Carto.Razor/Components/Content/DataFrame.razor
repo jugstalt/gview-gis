@@ -1,16 +1,14 @@
 @inject CartoEventBusService EventBus
 @implements IDisposable
 
-@if(_layer is not null)
+@inject ICartoApplicationScopeService AppScope
+
+@if (AppScope.DataTableService.CurrentLayer is not null)
 {
-    <div style="position:absolute;left:0px;right:0px;top:0px;bottom:0px;overflow:auto">
-        <DataTableControl Layer="_layer" />
-    </div>
+    <DataTableControl Layer="@AppScope.DataTableService.CurrentLayer" />
 }
 
 @code {
-    private ILayer? _layer;
-
     protected override void OnInitialized()
     {
         base.OnInitialized();
@@ -20,7 +18,10 @@
 
     private Task HandleShowTable(ILayer? layer)
     {
-        _layer = layer;
+        if (layer is not null)
+        {
+            AppScope.DataTableService.AddIfNotExists(layer, true);
+        }
 
         return InvokeAsync(() => StateHasChanged());
     }

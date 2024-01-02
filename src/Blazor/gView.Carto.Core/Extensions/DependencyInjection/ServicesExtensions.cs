@@ -5,8 +5,8 @@ namespace gView.Carto.Core.Extensions.DependencyInjection;
 static public class ServicesExtensions
 {
     static public IServiceCollection AddEventBus(this IServiceCollection services)
-    {
-        return services
-            .AddScoped<CartoEventBusService>();
-    }
+        => services.AddScoped<CartoEventBusService>();
+
+    static public IServiceCollection AddDataTables(this IServiceCollection services)
+        => services.AddScoped<CartoDataTableService>();
 }

@@ -21,6 +21,7 @@ public class CartoApplicationScopeService : ApplictionBusyHandler, ICartoApplica
     private readonly IDialogService _dialogService;
     private readonly IEnumerable<IKnownDialogService> _knownDialogs;
     private readonly CartoEventBusService _eventBus;
+    private readonly CartoDataTableService _dataTables;
     private readonly IJSRuntime _jsRuntime;
     private readonly ISnackbar _snackbar;
     private readonly CartoApplicationScopeServiceOptions _options;
@@ -31,6 +32,7 @@ public class CartoApplicationScopeService : ApplictionBusyHandler, ICartoApplica
     public CartoApplicationScopeService(IDialogService dialogService,
                                         IEnumerable<IKnownDialogService> knownDialogs,
                                         CartoEventBusService eventBus,
+                                        CartoDataTableService dataTables,
                                         IJSRuntime jsRuntime,
                                         ISnackbar snackbar,
                                         GeoTransformerService geoTransformer,
@@ -41,6 +43,7 @@ public class CartoApplicationScopeService : ApplictionBusyHandler, ICartoApplica
         _dialogService = dialogService;
         _knownDialogs = knownDialogs;
         _eventBus = eventBus;
+        _dataTables = dataTables;
         _jsRuntime = jsRuntime;
         _snackbar = snackbar;
         _geoTransformer = geoTransformer;
@@ -76,6 +79,7 @@ public class CartoApplicationScopeService : ApplictionBusyHandler, ICartoApplica
     public Task SetSelectedTocTreeNode(TocTreeNode? selectedTocTreeNode)
         => _eventBus.FireSelectedTocTreeNodeChangedAsync(this.SelectedTocTreeNode = selectedTocTreeNode);
 
+    public CartoDataTableService DataTableService => _dataTables;
 
     public GeoTransformerService GeoTransformer => _geoTransformer;
 

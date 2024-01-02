@@ -11,6 +11,8 @@ public interface ICartoApplicationScopeService : IApplicationScope
 
     CartoEventBusService EventBus { get; }
 
+    CartoDataTableService DataTableService { get; }
+
     GeoTransformerService GeoTransformer { get; }
 
     TocTreeNode? SelectedTocTreeNode { get; }
