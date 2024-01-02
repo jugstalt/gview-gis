@@ -61,24 +61,26 @@ internal class DataTable : ICartoTool
             return false;
         }
 
-        var model = await scope.ShowModalDialog(
-            typeof(gView.Carto.Razor.Components.Dialogs.DataTableDialog),
-            tableClass.Name,
-            new DataTableModel()
-            {
-                Layer = layer
-            },
-            modalDialogOptions: new ModalDialogOptions()
-            {
-                Width = ModalDialogWidth.ExtraExtraLarge,
-                FullWidth = true,
-            });
+        //var model = await scope.ShowModalDialog(
+        //    typeof(gView.Carto.Razor.Components.Dialogs.DataTableDialog),
+        //    tableClass.Name,
+        //    new DataTableModel()
+        //    {
+        //        Layer = layer
+        //    },
+        //    modalDialogOptions: new ModalDialogOptions()
+        //    {
+        //        Width = ModalDialogWidth.ExtraExtraLarge,
+        //        FullWidth = true,
+        //    });
 
-        if (featureSelection is not null &&
-            idSelectionSet.IsNotEqual(featureSelection.SelectionSet))
-        {
-            await scope.EventBus.FireRefreshMapAsync(DrawPhase.Selection);
-        }
+        //if (featureSelection is not null &&
+        //    idSelectionSet.IsNotEqual(featureSelection.SelectionSet))
+        //{
+        //    await scope.EventBus.FireRefreshMapAsync(DrawPhase.Selection);
+        //}
+
+        await scope.EventBus.FireShowDataTable(layer!);
 
         return true;
     }

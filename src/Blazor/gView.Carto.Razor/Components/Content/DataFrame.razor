@@ -1,0 +1,32 @@
+@inject CartoEventBusService EventBus
+@implements IDisposable
+
+@if(_layer is not null)
+{
+    <div style="position:absolute;left:0px;right:0px;top:0px;bottom:0px;overflow:auto">
+        <DataTableControl Layer="_layer" />
+    </div>
+}
+
+@code {
+    private ILayer? _layer;
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+
+        EventBus.OnShowDataTable += HandleShowTable;
+    }
+
+    private Task HandleShowTable(ILayer? layer)
+    {
+        _layer = layer;
+
+        return InvokeAsync(() => StateHasChanged());
+    }
+
+    public void Dispose()
+    {
+        EventBus.OnShowDataTable -= HandleShowTable;
+    }
+}

@@ -3,8 +3,11 @@ using gView.Carto.Core.Extensions;
 using gView.Carto.Core.Models.Tree;
 using gView.Framework.Core.Carto;
 using gView.Framework.Core.Common;
+using gView.Framework.Core.Data;
 using gView.Framework.Core.Geometry;
 using System;
+using System.Data.Entity.Core.Common.EntitySql;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
 namespace gView.Carto.Core.Services;
@@ -61,4 +64,8 @@ public class CartoEventBusService
     public event Func<IPoint, IPoint, Task>? OnMapMouseMove;
     public Task FireMapMouseMove(IPoint latLong, IPoint layerPoint)
         => OnMapMouseMove?.FireAsync(latLong, layerPoint) ?? Task.CompletedTask;
+
+    public event Func<ILayer, Task>? OnShowDataTable;
+    public Task FireShowDataTable(ILayer layer)
+        => OnShowDataTable?.FireAsync(layer) ?? Task.CompletedTask;
 }
