@@ -1,5 +1,6 @@
 using gView.Blazor.Core.Extensions.DependencyInjection;
 using gView.Carto.Plugins.Extensions.DependencyInjection;
+using gView.Carto.Razor.Extensions.DependencyInjection;
 using gView.DataExplorer.Plugins.Extensions.DependencyInjection;
 using gView.Razor.Extensions.DependencyInjection;
 using gView.Razor.Leaflet.Extensions.DependencyInjection;
@@ -29,6 +30,7 @@ builder.Services.AddMudServices(config =>
 builder.Services.AddApplicationScopeFactory();
 
 builder.Services.AddCartoDesktopApplicationService();
+builder.Services.AddCartoInteropServices();
 builder.Services.AddCartoApplicationScopeService(config =>
 {
     config.ConfigRootPath = Path.Combine("C:\\temp", "gview-explorer");
@@ -43,6 +45,10 @@ builder.Services.AddExplorerApplicationScopeService(config =>
 builder.Services.AddKnownExplorerDialogsServices();
 builder.Services.AddFrameworkServices();
 builder.Services.AddIconService();
+builder.Services.AddPersistentSettingsService(config =>
+{
+    config.Path = "gview-web-settings.db";
+});
 builder.Services.AddMapControlBackgroundTilesService(config =>
 {
     config.Default = "basemap_at";

@@ -111,7 +111,7 @@
         .carto-main .toc .toctreenode-selected > .mud-treeview-item-content,
         .carto-main .toc .toctreenode-selected > .mud-treeview-item-content .grouplayer-text {
             background-color: var(--mud-palette-primary);
-            color: var(--mud-palette-primary-hover-text);
+            color: var(--mud-palette-primary-text);
         }
 
         .carto-main .toc .carto-initial-tool {
@@ -421,7 +421,8 @@
 }
 
 .mud-table-row.selected,
-.mud-table-row.selected:hover {
+.mud-table-row.selected:hover,
+.mud-table-row.selected .mud-table-cell {
     background-color: var(--mud-palette-primary) !important;
     color: var(--mud-palette-primary-text) !important;
 }

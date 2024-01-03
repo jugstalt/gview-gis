@@ -72,6 +72,8 @@ namespace gView.Framework.Data
             }
         }
 
+        public bool Contains(T id) => _IDs.Contains(id);
+
         override public List<T> IDs
         {
             get

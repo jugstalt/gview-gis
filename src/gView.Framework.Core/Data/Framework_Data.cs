@@ -793,6 +793,8 @@ namespace gView.Framework.Core.Data
         void RemoveID(int ID);
         void RemoveIDs(List<int> IDs);
 
+        bool Contains(int id);
+
         List<int> IDs { get; }
     }
 

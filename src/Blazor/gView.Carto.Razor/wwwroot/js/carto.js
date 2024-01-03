@@ -35,18 +35,9 @@
         }
         else if (isDataResizing) {
             let container = document.querySelector('.carto-main');
-
             let bottomHeight = (container.clientHeight - 30) - (e.clientY - container.offsetTop);
 
-            bottomHeight = Math.max(bottomHeight, 0);
-            bottomHeight = Math.min(bottomHeight, container.clientHeight - 10 - 25 /*statusbar*/ - 100 /*toolbar*/);
-
-            console.log('bottomHeight', bottomHeight);
-
-            document.querySelector('.toc').style.bottom = (32 + bottomHeight) + 'px';
-            document.querySelector('.content').style.bottom = (32 + bottomHeight) + 'px';
-            document.querySelector('.data-content-splitter').style.bottom = (27 + bottomHeight) + 'px';
-            document.querySelector('.data').style.height = bottomHeight + 'px';
+            window.cartoInterops.setDataFrameSize(bottomHeight);
         }
     });
 
@@ -54,9 +45,40 @@
         if (isTocResizing === true || isDataResizing === true) {
             isTocResizing = isDataResizing = false;
 
-            if (window.gViewLeaflet) {
-                window.gViewLeaflet.resizeAllMaps();
-            }
+            window.cartoInterops.refreshMapFrame();
         }
     });
 }());
+
+window.cartoInterops = {
+
+    refreshMapFrame: function () {
+        if (window.gViewLeaflet) {
+            window.gViewLeaflet.resizeAllMaps();
+        }
+    },
+    setDataFrameSize: function (size) {
+        let container = document.querySelector('.carto-main');
+
+        bottomHeight = Math.max(size, 0);
+        bottomHeight = Math.min(size, container.clientHeight - 10 - 25 /*statusbar*/ - 100 /*toolbar*/);
+
+        //console.log('dataFrameSize', size);
+
+        document.querySelector('.toc').style.bottom = (32 + size) + 'px';
+        document.querySelector('.content').style.bottom = (32 + size) + 'px';
+        document.querySelector('.data-content-splitter').style.bottom = (27 + size) + 'px';
+        document.querySelector('.data').style.height = size + 'px';
+    },
+    showDataFrame: function (minSize) {
+        minSize = minSize || 400;
+
+        var size = parseInt(document.querySelector('.data').style.height) || 0;
+        //console.log(size, minSize);
+
+        if (isNaN(size) || size < minSize) {
+            this.setDataFrameSize(minSize);
+            this.refreshMapFrame();
+        }
+    }
+};

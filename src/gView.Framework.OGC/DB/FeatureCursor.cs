@@ -19,6 +19,7 @@ namespace gView.Framework.OGC.DB
     {
         private DbConnection _conn = null;
         private DbDataReader _reader = null;
+        private DbCommand _command = null;
         private ISpatialFilter _spatialfilter = null;
         private string[] _subFields = null;
         private string _shapeField = "", _idField = "";
@@ -70,6 +71,7 @@ namespace gView.Framework.OGC.DB
 
                     featureCursor._spatialfilter = (ISpatialFilter)filter;
                 }
+
                 DbCommand command = ((OgcSpatialDataset)fc.Dataset).SelectCommand(
                     fc, filter, out featureCursor._shapeField);
                 if (command == null)
@@ -98,6 +100,7 @@ namespace gView.Framework.OGC.DB
 
                 //featureCursor._reader = await command.ExecuteReaderAsync();
                 //featureCursor._reader = await featureCursor._diagnostics.StopIdleTimeAsync(command.ExecuteReaderAsync());
+                featureCursor._command = command;
                 featureCursor._reader = await (command.ExecuteReaderAsync().StopIdleAsync(featureCursor.DiagnosticParameters));
 
                 return featureCursor;
@@ -130,7 +133,9 @@ namespace gView.Framework.OGC.DB
                 try
                 {
                     if (_reader == null || !await _reader.ReadAsync().StopIdleAsync(base.DiagnosticParameters))
-                    {
+                    { 
+                        _command = null; // reader finished, avoid _command.cancel() on dispose
+
                         return null;
                     }
 
@@ -198,24 +203,20 @@ namespace gView.Framework.OGC.DB
             base.Dispose();
             //lock (lockThis)
             {
-                if (_reader != null)
+                if (_reader is not null)
                 {
-                    //_reader.Close();
-                    //try
-                    //{
-                    //    while (_reader.Read())
-                    //    {
-                    //        //_command.Cancel();
-                    //    }
-                    //}
-                    //catch (Exception)
-                    //{
+                    if (_command is not null)
+                    {
+                        _command.Cancel();
+                        _reader.Close();
 
-                    //}
-                    //_reader.Dispose();
+                        _command.Dispose();
+                        _command = null;
+                    }
+
                     _reader = null;
                 }
-                if (_conn != null && _conn.State != ConnectionState.Closed)
+                if (_conn is not null && _conn.State != ConnectionState.Closed)
                 {
                     _conn.Close();
                     _conn.Dispose();

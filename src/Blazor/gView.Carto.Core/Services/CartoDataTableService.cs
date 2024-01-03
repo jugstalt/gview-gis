@@ -13,9 +13,9 @@ public class CartoDataTableService
 
     public bool AddIfNotExists(ILayer layer, bool setCurrent = true)
     {
-        if (_layers.ContainsKey(layer))
+        if (!_layers.ContainsKey(layer))
         {
-            if (_layers.TryAdd(layer, new()))
+            if (!_layers.TryAdd(layer, new()))
             {
                 return false;
             }

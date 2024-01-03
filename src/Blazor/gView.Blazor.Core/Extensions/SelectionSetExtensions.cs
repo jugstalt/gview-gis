@@ -1,6 +1,7 @@
 ﻿using gView.Framework.Core.Data;
 using Proj4Net.Core.Units;
 using System.Collections.Generic;
+using System.Data.Entity.Core.Common.CommandTrees.ExpressionBuilder;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
@@ -8,11 +9,18 @@ using System.Security.Cryptography;
 namespace gView.Blazor.Core.Extensions;
 static public class SelectionSetExtensions
 {
-    static public HashSet<IRow> SelectedRows(this ISelectionSet? selectionSet, IEnumerable<IRow> rows)
+    //static public HashSet<IRow> SelectedRows(this ISelectionSet? selectionSet, IEnumerable<IRow> rows)
+    //    => selectionSet switch
+    //    {
+    //        IIDSelectionSet idSelection => new HashSet<IRow>(rows.Where(r => idSelection.IDs.Contains(r.OID))),
+    //        _ => new HashSet<IRow>()
+    //    };
+
+    static public bool Contains(this ISelectionSet? selectionSet, IRow row)
         => selectionSet switch
         {
-            IIDSelectionSet idSelection => new HashSet<IRow>(rows.Where(r => idSelection.IDs.Contains(r.OID))),
-            _ => new HashSet<IRow>()
+            IIDSelectionSet idSelection => idSelection.Contains(row.OID),
+            _ => false
         };
 
     static public bool TryFromSelectedRows(this ISelectionSet? selectionSet, IEnumerable<IRow> rows)
