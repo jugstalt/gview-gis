@@ -467,10 +467,10 @@ namespace gView.Cmd.FillLuceneServer
             {
                 env = ((IGeometry)transformer.Transform2D(env)).Envelope;
 
-                return Math.Round(env.minx, 7).ToString(_nhi) + "," +
-                       Math.Round(env.miny, 7).ToString(_nhi) + "," +
-                       Math.Round(env.maxx, 7).ToString(_nhi) + "," +
-                       Math.Round(env.maxy, 7).ToString(_nhi);
+                return Math.Round(env.MinX, 7).ToString(_nhi) + "," +
+                       Math.Round(env.MinY, 7).ToString(_nhi) + "," +
+                       Math.Round(env.MaxX, 7).ToString(_nhi) + "," +
+                       Math.Round(env.MaxY, 7).ToString(_nhi);
             }
             catch { return String.Empty; }
         }

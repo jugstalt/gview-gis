@@ -89,10 +89,10 @@ namespace gView.Interoperability.GeoServices.Request.Extensions
             {
                 return new JsonGeometry()
                 {
-                    XMin = ((IEnvelope)shape).minx,
-                    YMin = ((IEnvelope)shape).miny,
-                    XMax = ((IEnvelope)shape).maxx,
-                    YMax = ((IEnvelope)shape).maxy,
+                    XMin = ((IEnvelope)shape).MinX,
+                    YMin = ((IEnvelope)shape).MinY,
+                    XMax = ((IEnvelope)shape).MaxX,
+                    YMax = ((IEnvelope)shape).MaxY,
                 };
             }
             if (shape is IPolyline)

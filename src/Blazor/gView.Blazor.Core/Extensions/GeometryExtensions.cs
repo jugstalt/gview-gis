@@ -20,6 +20,24 @@ static public class GeometryExtensions
         var union = new Envelope(envelope);
         union.Union(candidate);
 
-        return union;   
+        return union;
+    }
+
+    static public IEnvelope ToMinSize(this IEnvelope envelope, double minWidth = 2e-4, double minHeight = 2e-4)
+    {
+        var center = envelope.Center;
+
+        if (envelope.Width < minWidth)
+        {
+            envelope.MinX = center.X - minWidth/2.0;
+            envelope.MaxX = center.X + minWidth/2.0;
+        }
+        if (envelope.Height < minHeight)
+        {
+            envelope.MinY = center.Y - minHeight/2.0;
+            envelope.MaxY = center.Y + minHeight/2.0;
+        }
+
+        return envelope;
     }
 }

@@ -542,10 +542,10 @@ namespace gView.Interoperability.OGC.Dataset.WMS
             request.Append("&HEIGHT=" + iHeight);
             request.Append("&FORMAT=" + _getMap.Formats[_getMap.FormatIndex]);
             request.Append("&BBOX=" +
-                displayEnv.minx.ToString(_nhi) + "," +
-                displayEnv.miny.ToString(_nhi) + "," +
-                displayEnv.maxx.ToString(_nhi) + "," +
-                displayEnv.maxy.ToString(_nhi));
+                displayEnv.MinX.ToString(_nhi) + "," +
+                displayEnv.MinY.ToString(_nhi) + "," +
+                displayEnv.MaxX.ToString(_nhi) + "," +
+                displayEnv.MaxY.ToString(_nhi));
             //request.Append("&BGCOLOR=FFFFFF");
             request.Append("&TRANSPARENT=TRUE");
 

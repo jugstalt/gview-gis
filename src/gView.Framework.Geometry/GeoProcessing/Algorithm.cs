@@ -161,22 +161,22 @@ namespace gView.Framework.Geometry.GeoProcessing
                         }
                     }
 
-                    if (Jordan(polygon, envelope.minx, envelope.miny))
+                    if (Jordan(polygon, envelope.MinX, envelope.MinY))
                     {
                         return true;
                     }
 
-                    if (Jordan(polygon, envelope.maxx, envelope.maxy))
+                    if (Jordan(polygon, envelope.MaxX, envelope.MaxY))
                     {
                         return true;
                     }
 
-                    if (Jordan(polygon, envelope.minx, envelope.maxy))
+                    if (Jordan(polygon, envelope.MinX, envelope.MaxY))
                     {
                         return true;
                     }
 
-                    if (Jordan(polygon, envelope.maxx, envelope.miny))
+                    if (Jordan(polygon, envelope.MaxX, envelope.MinY))
                     {
                         return true;
                     }
@@ -205,7 +205,7 @@ namespace gView.Framework.Geometry.GeoProcessing
                 return false;
             }
 
-            if (point.X >= env.minx && point.X <= env.maxx && point.Y >= env.miny && point.Y <= env.maxy)
+            if (point.X >= env.MinX && point.X <= env.MaxX && point.Y >= env.MinY && point.Y <= env.MaxY)
             {
                 return true;
             }
@@ -214,22 +214,22 @@ namespace gView.Framework.Geometry.GeoProcessing
         }
         private static bool PathIntersectBox(IPath path, IEnvelope envelope)
         {
-            if (PathIntersectLine(path, envelope.minx, envelope.miny, envelope.minx, envelope.maxy))
+            if (PathIntersectLine(path, envelope.MinX, envelope.MinY, envelope.MinX, envelope.MaxY))
             {
                 return true;
             }
 
-            if (PathIntersectLine(path, envelope.minx, envelope.maxy, envelope.maxx, envelope.maxy))
+            if (PathIntersectLine(path, envelope.MinX, envelope.MaxY, envelope.MaxX, envelope.MaxY))
             {
                 return true;
             }
 
-            if (PathIntersectLine(path, envelope.maxx, envelope.maxy, envelope.maxx, envelope.miny))
+            if (PathIntersectLine(path, envelope.MaxX, envelope.MaxY, envelope.MaxX, envelope.MinY))
             {
                 return true;
             }
 
-            if (PathIntersectLine(path, envelope.maxx, envelope.miny, envelope.minx, envelope.miny))
+            if (PathIntersectLine(path, envelope.MaxX, envelope.MinY, envelope.MinX, envelope.MinY))
             {
                 return true;
             }
@@ -775,8 +775,8 @@ namespace gView.Framework.Geometry.GeoProcessing
                         continue;
                     }
 
-                    if (point.X < env.minx || point.X > env.maxx ||
-                        point.Y < env.miny || point.Y > env.maxy)
+                    if (point.X < env.MinX || point.X > env.MaxX ||
+                        point.Y < env.MinY || point.Y > env.MaxY)
                     {
                         return false;
                     }
@@ -1352,10 +1352,10 @@ namespace gView.Framework.Geometry.GeoProcessing
             else if (geometry is IEnvelope)
             {
                 Ring ring = new Ring();
-                ring.AddPoint(new Point(((IEnvelope)geometry).minx, ((IEnvelope)geometry).miny));
-                ring.AddPoint(new Point(((IEnvelope)geometry).minx, ((IEnvelope)geometry).maxy));
-                ring.AddPoint(new Point(((IEnvelope)geometry).maxx, ((IEnvelope)geometry).maxy));
-                ring.AddPoint(new Point(((IEnvelope)geometry).maxx, ((IEnvelope)geometry).miny));
+                ring.AddPoint(new Point(((IEnvelope)geometry).MinX, ((IEnvelope)geometry).MinY));
+                ring.AddPoint(new Point(((IEnvelope)geometry).MinX, ((IEnvelope)geometry).MaxY));
+                ring.AddPoint(new Point(((IEnvelope)geometry).MaxX, ((IEnvelope)geometry).MaxY));
+                ring.AddPoint(new Point(((IEnvelope)geometry).MaxX, ((IEnvelope)geometry).MinY));
                 paths.Add(ring);
             }
             else if (geometry is IAggregateGeometry)
@@ -1919,11 +1919,11 @@ namespace gView.Framework.Geometry.GeoProcessing
                     {
                         IPoint point = new Point(ring[i]); // Always create new Point -> never change existing geometry!!!
 
-                        point.X = Math.Max(point.X, envelope.minx);
-                        point.Y = Math.Max(point.Y, envelope.miny);
+                        point.X = Math.Max(point.X, envelope.MinX);
+                        point.Y = Math.Max(point.Y, envelope.MinY);
 
-                        point.X = Math.Min(point.X, envelope.maxx);
-                        point.Y = Math.Min(point.Y, envelope.maxy);
+                        point.X = Math.Min(point.X, envelope.MaxX);
+                        point.Y = Math.Min(point.Y, envelope.MaxY);
 
                         newRing.AddPoint(point);
                     }
@@ -2078,8 +2078,8 @@ namespace gView.Framework.Geometry.GeoProcessing
                 IEnvelope env = _ring.Envelope;
                 double R =
                     Math.Max(
-                    Math.Max(Math.Abs(env.minx - _centerPoint.X), Math.Abs(env.maxx - _centerPoint.X)),
-                    Math.Max(Math.Abs(env.miny - _centerPoint.Y), Math.Abs(env.maxy - _centerPoint.Y)));
+                    Math.Max(Math.Abs(env.MinX - _centerPoint.X), Math.Abs(env.MaxX - _centerPoint.X)),
+                    Math.Max(Math.Abs(env.MinY - _centerPoint.Y), Math.Abs(env.MaxY - _centerPoint.Y)));
                 double dr = 20.0 * display.MapScale / display.Dpm;
 
                 for (double r = dr; r < R; r += dr)

@@ -154,8 +154,8 @@ namespace gView.Interoperability.OGC.Dataset.GML
                     }
 
                     coords.InnerText =
-                        value.minx.ToString(_nhi) + "," + value.miny.ToString(_nhi) + " " +
-                        value.maxx.ToString(_nhi) + "," + value.maxy.ToString(_nhi);
+                        value.MinX.ToString(_nhi) + "," + value.MinY.ToString(_nhi) + " " +
+                        value.MaxX.ToString(_nhi) + "," + value.MaxY.ToString(_nhi);
 
                 }
                 catch
@@ -177,8 +177,8 @@ namespace gView.Interoperability.OGC.Dataset.GML
                 return false;
             }
 
-            if (envelope.minx == 0.0 && envelope.maxx == 0.0 &&
-                envelope.miny == 0.0 && envelope.maxy == 0.0)
+            if (envelope.MinX == 0.0 && envelope.MaxX == 0.0 &&
+                envelope.MinY == 0.0 && envelope.MaxY == 0.0)
             {
                 envelope = append;
             }

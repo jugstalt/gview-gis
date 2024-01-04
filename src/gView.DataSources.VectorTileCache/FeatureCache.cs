@@ -43,11 +43,11 @@ namespace gView.DataSources.VectorTileCache
             dispEnvelope = GeometricTransformerFactory.Transform2D(dispEnvelope, _dataset.SpatialReference, _dataset.WebMercatorSpatialReference)?.Envelope;
 
             double res = _grid.GetLevelResolution(level);
-            int col0 = _grid.TileColumn(dispEnvelope.minx, res);
-            int row0 = _grid.TileRow(dispEnvelope.maxy, res);
+            int col0 = _grid.TileColumn(dispEnvelope.MinX, res);
+            int row0 = _grid.TileRow(dispEnvelope.MaxY, res);
 
-            int col1 = _grid.TileColumn(dispEnvelope.maxx, res);
-            int row1 = _grid.TileRow(dispEnvelope.miny, res);
+            int col1 = _grid.TileColumn(dispEnvelope.MaxX, res);
+            int row1 = _grid.TileRow(dispEnvelope.MinY, res);
 
             int col_from = Math.Max(0, Math.Min(col0, col1)), col_to = Math.Min((int)Math.Round(_grid.Extent.Width / (_grid.TileSizeX * res), 0) - 1, Math.Max(col0, col1));
             int row_from = Math.Max(0, Math.Min(row0, row1)), row_to = Math.Min((int)Math.Round(_grid.Extent.Height / (_grid.TileSizeY * res), 0) - 1, Math.Max(row0, row1));

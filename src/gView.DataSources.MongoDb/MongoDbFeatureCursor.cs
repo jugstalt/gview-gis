@@ -47,15 +47,15 @@ namespace gView.DataSources.MongoDb
                 ISpatialFilter sFilter = (ISpatialFilter)filter;
                 var env = sFilter.Geometry.Envelope;
 
-                env.minx = Math.Max(-180, env.minx);
-                env.miny = Math.Max(-90, env.miny);
-                env.maxx = Math.Min(180, env.maxx);
-                env.maxy = Math.Min(90, env.maxy);
+                env.MinX = Math.Max(-180, env.MinX);
+                env.MinY = Math.Max(-90, env.MinY);
+                env.MaxX = Math.Min(180, env.MaxX);
+                env.MaxY = Math.Min(90, env.MaxY);
 
-                GeoJson2DGeographicCoordinates bottomleft = new GeoJson2DGeographicCoordinates(env.minx, env.miny);
-                GeoJson2DGeographicCoordinates topleft = new GeoJson2DGeographicCoordinates(env.minx, env.maxy);
-                GeoJson2DGeographicCoordinates topright = new GeoJson2DGeographicCoordinates(env.maxx, env.maxy);
-                GeoJson2DGeographicCoordinates bottomright = new GeoJson2DGeographicCoordinates(env.maxx, env.miny);
+                GeoJson2DGeographicCoordinates bottomleft = new GeoJson2DGeographicCoordinates(env.MinX, env.MinY);
+                GeoJson2DGeographicCoordinates topleft = new GeoJson2DGeographicCoordinates(env.MinX, env.MaxY);
+                GeoJson2DGeographicCoordinates topright = new GeoJson2DGeographicCoordinates(env.MaxX, env.MaxY);
+                GeoJson2DGeographicCoordinates bottomright = new GeoJson2DGeographicCoordinates(env.MaxX, env.MinY);
                 GeoJson2DGeographicCoordinates[] coord_array = new GeoJson2DGeographicCoordinates[] { bottomleft, topleft, topright, bottomright, bottomleft };
                 GeoJsonLinearRingCoordinates<GeoJson2DGeographicCoordinates> ringcoord = new GeoJsonLinearRingCoordinates<GeoJson2DGeographicCoordinates>(coord_array);
                 GeoJsonPolygonCoordinates<GeoJson2DGeographicCoordinates> boxcoord = new GeoJsonPolygonCoordinates<GeoJson2DGeographicCoordinates>(ringcoord);

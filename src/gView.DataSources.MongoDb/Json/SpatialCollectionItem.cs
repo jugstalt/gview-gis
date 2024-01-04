@@ -104,10 +104,10 @@ namespace gView.DataSources.MongoDb.Json
             public Bounds() { }
             public Bounds(IEnvelope envelpe)
             {
-                this.MinX = envelpe.minx;
-                this.MinY = envelpe.miny;
-                this.MaxX = envelpe.maxx;
-                this.MaxY = envelpe.maxy;
+                this.MinX = envelpe.MinX;
+                this.MinY = envelpe.MinY;
+                this.MaxX = envelpe.MaxX;
+                this.MaxY = envelpe.MaxY;
             }
 
             [BsonElement("minx")]

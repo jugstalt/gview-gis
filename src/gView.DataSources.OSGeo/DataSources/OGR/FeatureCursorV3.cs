@@ -25,7 +25,7 @@ namespace gView.DataSources.OGR
             if (filter is ISpatialFilter)
             {
                 IEnvelope env = ((ISpatialFilter)filter).Geometry.Envelope;
-                _layer.SetSpatialFilterRect(env.minx, env.miny, env.maxx, env.maxy);
+                _layer.SetSpatialFilterRect(env.MinX, env.MinY, env.MaxX, env.MaxY);
                 if (!String.IsNullOrEmpty(filter.WhereClause))
                 {
                     _layer.SetAttributeFilter(filter.WhereClause);

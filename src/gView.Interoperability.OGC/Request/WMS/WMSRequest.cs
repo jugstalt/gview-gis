@@ -322,17 +322,17 @@ namespace gView.Interoperability.OGC
                                 Array.Resize<Framework.OGC.WMS.Version_1_1_1.BoundingBox>(ref bboxes, bboxes.Length + 1);
                                 bboxes[bboxes.Length - 1] = new Framework.OGC.WMS.Version_1_1_1.BoundingBox();
                                 bboxes[bboxes.Length - 1].SRS = s;
-                                bboxes[bboxes.Length - 1].minx = env.minx.ToString(_nhi);
-                                bboxes[bboxes.Length - 1].miny = env.miny.ToString(_nhi);
-                                bboxes[bboxes.Length - 1].maxx = env.maxx.ToString(_nhi);
-                                bboxes[bboxes.Length - 1].maxy = env.maxy.ToString(_nhi);
+                                bboxes[bboxes.Length - 1].minx = env.MinX.ToString(_nhi);
+                                bboxes[bboxes.Length - 1].miny = env.MinY.ToString(_nhi);
+                                bboxes[bboxes.Length - 1].maxx = env.MaxX.ToString(_nhi);
+                                bboxes[bboxes.Length - 1].maxy = env.MaxY.ToString(_nhi);
                             }
                             caps.Capability.Layer.BoundingBox = bboxes;
                             caps.Capability.Layer.LatLonBoundingBox = new Framework.OGC.WMS.Version_1_1_1.LatLonBoundingBox();
-                            caps.Capability.Layer.LatLonBoundingBox.minx = env4326.minx.ToString(_nhi);
-                            caps.Capability.Layer.LatLonBoundingBox.miny = env4326.miny.ToString(_nhi);
-                            caps.Capability.Layer.LatLonBoundingBox.maxx = env4326.maxx.ToString(_nhi);
-                            caps.Capability.Layer.LatLonBoundingBox.maxy = env4326.maxy.ToString(_nhi);
+                            caps.Capability.Layer.LatLonBoundingBox.minx = env4326.MinX.ToString(_nhi);
+                            caps.Capability.Layer.LatLonBoundingBox.miny = env4326.MinY.ToString(_nhi);
+                            caps.Capability.Layer.LatLonBoundingBox.maxx = env4326.MaxX.ToString(_nhi);
+                            caps.Capability.Layer.LatLonBoundingBox.maxy = env4326.MaxY.ToString(_nhi);
                         }
 
                         List<Framework.OGC.WMS.Version_1_1_1.Layer> fTypes = new List<Framework.OGC.WMS.Version_1_1_1.Layer>();
@@ -495,18 +495,18 @@ namespace gView.Interoperability.OGC
                                 Array.Resize<Framework.OGC.WMS.Version_1_3_0.BoundingBox>(ref bboxes, bboxes.Length + 1);
                                 bboxes[bboxes.Length - 1] = new Framework.OGC.WMS.Version_1_3_0.BoundingBox();
                                 bboxes[bboxes.Length - 1].CRS = s;
-                                bboxes[bboxes.Length - 1].minx = env.minx;
-                                bboxes[bboxes.Length - 1].miny = env.miny;
-                                bboxes[bboxes.Length - 1].maxx = env.maxx;
-                                bboxes[bboxes.Length - 1].maxy = env.maxy;
+                                bboxes[bboxes.Length - 1].minx = env.MinX;
+                                bboxes[bboxes.Length - 1].miny = env.MinY;
+                                bboxes[bboxes.Length - 1].maxx = env.MaxX;
+                                bboxes[bboxes.Length - 1].maxy = env.MaxY;
                             }
                             caps.Capability.Layer[0].BoundingBox = bboxes;
 
                             caps.Capability.Layer[0].EX_GeographicBoundingBox = new Framework.OGC.WMS.Version_1_3_0.EX_GeographicBoundingBox();
-                            caps.Capability.Layer[0].EX_GeographicBoundingBox.westBoundLongitude = env4326.minx;
-                            caps.Capability.Layer[0].EX_GeographicBoundingBox.southBoundLatitude = env4326.miny;
-                            caps.Capability.Layer[0].EX_GeographicBoundingBox.eastBoundLongitude = env4326.maxx;
-                            caps.Capability.Layer[0].EX_GeographicBoundingBox.northBoundLatitude = env4326.maxy;
+                            caps.Capability.Layer[0].EX_GeographicBoundingBox.westBoundLongitude = env4326.MinX;
+                            caps.Capability.Layer[0].EX_GeographicBoundingBox.southBoundLatitude = env4326.MinY;
+                            caps.Capability.Layer[0].EX_GeographicBoundingBox.eastBoundLongitude = env4326.MaxX;
+                            caps.Capability.Layer[0].EX_GeographicBoundingBox.northBoundLatitude = env4326.MaxY;
                         }
 
                         List<Framework.OGC.WMS.Version_1_3_0.Layer> fTypes = new List<Framework.OGC.WMS.Version_1_3_0.Layer>();
@@ -647,8 +647,8 @@ namespace gView.Interoperability.OGC
                         // Zurück in das richtige Koordinatenfenster verzerren
                         //
                         double minx, miny, maxx, maxy;
-                        minx = _parameters.BBOX.minx; miny = _parameters.BBOX.miny;
-                        maxx = _parameters.BBOX.maxx; maxy = _parameters.BBOX.maxy;
+                        minx = _parameters.BBOX.MinX; miny = _parameters.BBOX.MinY;
+                        maxx = _parameters.BBOX.MaxX; maxy = _parameters.BBOX.MaxY;
 
                         map.Display.World2Image(ref minx, ref miny);
                         map.Display.World2Image(ref maxx, ref maxy);

@@ -96,8 +96,8 @@ public class TileCacheFromTemplate : ExplorerObjectCls<TileCacheGroupExplorerObj
             }
             else
             {
-                connectionModel.TileOrigin.Origin = new Point(connectionModel.Extent.minx,
-                    connectionModel.TileOrigin.TileOrigin == TileOrigin.LowerLeft ? connectionModel.Extent.miny : connectionModel.Extent.maxy);
+                connectionModel.TileOrigin.Origin = new Point(connectionModel.Extent.MinX,
+                    connectionModel.TileOrigin.TileOrigin == TileOrigin.LowerLeft ? connectionModel.Extent.MinY : connectionModel.Extent.MaxY);
             }
 
             connectionModel.TileWidth = (int)stream.Load("tile_width", 100);

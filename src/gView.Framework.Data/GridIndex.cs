@@ -41,7 +41,7 @@ namespace gView.Framework.Data
                 return -1;
             }
 
-            int i = (int)Math.Floor((p.X - _bounds.minx) / _cX);
+            int i = (int)Math.Floor((p.X - _bounds.MinX) / _cX);
             if (i < 0 || i >= _cellsX)
             {
                 return -1;
@@ -56,7 +56,7 @@ namespace gView.Framework.Data
                 return -1;
             }
 
-            int i = (int)Math.Floor((p.Y - _bounds.miny) / _cY);
+            int i = (int)Math.Floor((p.Y - _bounds.MinY) / _cY);
             if (i < 0 || i >= _cellsY)
             {
                 return -1;
@@ -80,22 +80,22 @@ namespace gView.Framework.Data
         {
             List<int> ret = new List<int>();
 
-            int i = XYIndex(new Point(env.minx, env.miny));
+            int i = XYIndex(new Point(env.MinX, env.MinY));
             ret.Add(i);
 
-            i = XYIndex(new Point(env.minx, env.maxy));
+            i = XYIndex(new Point(env.MinX, env.MaxY));
             if (!ret.Contains(i))
             {
                 ret.Add(i);
             }
 
-            i = XYIndex(new Point(env.maxx, env.maxy));
+            i = XYIndex(new Point(env.MaxX, env.MaxY));
             if (!ret.Contains(i))
             {
                 ret.Add(i);
             }
 
-            i = XYIndex(new Point(env.maxx, env.miny));
+            i = XYIndex(new Point(env.MaxX, env.MinY));
             if (!ret.Contains(i))
             {
                 ret.Add(i);

@@ -9,6 +9,7 @@
         ConnectionString,
         ExecuteCommand,
         PropertyGridDialog,
-        WarningsDialog
+        WarningsDialog,
+        PromptDialog
     }
 }

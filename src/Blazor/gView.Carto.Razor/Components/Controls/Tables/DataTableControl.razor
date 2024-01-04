@@ -12,7 +12,7 @@
 @inject CartoInteropService CartoInterop
 
 @if (_tableClass is not null 
-    && _tableFields is not null
+    && _tableProperties is not null
     && _rows is not null)
 {
     <MudTable Items="_rows" Dense="true" Hover="true"
@@ -31,14 +31,14 @@
                 }
             </MudSelect>     
             <MudSpacer />
-            <MudTextField @bind-Value="_searchString"
+            <MudTextField @bind-Value="_tableProperties.SearchString"
                             Placeholder="Filter loaded rows" 
                             Adornment="Adornment.Start" 
                             AdornmentIcon="@Icons.Material.Filled.Search" 
                             IconSize="MudBlazor.Size.Medium" Class="mt-0"></MudTextField>
         </ToolBarContent>
        <HeaderContent>
-            @if(_canSelect)
+            @if(_tableProperties.CanSelect)
             {
                 <MudTh>
                     <MudCheckBox T="bool" />
@@ -50,7 +50,7 @@
                         Size="MudBlazor.Size.Small"
                         OnClick="OnSetFilter"
                         StartIcon="@IconService.FromString("basic:filter")" />
-                @if(!string.IsNullOrEmpty(_filterWhereClause))
+                @if(!string.IsNullOrEmpty(_tableProperties.FilterWhereClause))
                 {
                     <MudFab Color="Color.Secondary"
                             Size="MudBlazor.Size.Small"
@@ -58,37 +58,28 @@
                             StartIcon="@IconService.FromString("basic:filter-remove")" />
                 }
             </MudTh>
-            @foreach(var field in _tableFields)
+            @foreach(var field in _tableProperties.TableFields)
             {
                 <MudTh>
-                    @if(_columnFilters.ContainsKey(field.name)) 
-                    {
-                        <MudTableSortLabel SortBy="new Func<IRow, object>((e) => e[field.name])">
-                        <MudTextField @bind-Value="_columnFilters[field.name]"
-                                        @onblur="RebuildFilterWhereClause"
-                                        @onkeyup="HandleFilterKeyPress"
-                                        Variant="Variant.Text"
-                                        Label="@field.name"
-                                        />
-                        </MudTableSortLabel>
-                    } 
-                    else 
-                    {
-                        <MudTableSortLabel SortBy="new Func<IRow, object>((e) => e[field.name])">
-                            @field.name
-                        </MudTableSortLabel>
-                    }
+                    <MudTableSortLabel SortBy="new Func<IRow, object>((e) => e[field.name])">
+                        @field.name
+                        <MudIconButton Icon="@Icons.Material.Filled.FilterAlt" 
+                                Size="MudBlazor.Size.Small"
+                                Color="_tableProperties.ColumnFilters.ContainsKey(field.name) && !string.IsNullOrEmpty(_tableProperties.ColumnFilters[field.name]) ? Color.Secondary : Color.Default"
+                                OnClick="() => OnSetColumnFilter(field.name)"
+                                aria-label="filter" />
+                    </MudTableSortLabel>
                 </MudTh>
             }
         </HeaderContent>
        <RowTemplate>
-            @if(_canSelect)
+            @if(_tableProperties.CanSelect)
             {
-                <MudTh>
+                <MudTd>
                     <MudCheckBox T="bool" 
                                   Checked="@_selectionSet.Contains(context)"
                                   CheckedChanged ="(chk) => OnSelectRow(context, chk)" />
-                </MudTh>
+                </MudTd>
             }
             <MudTd>
                 <MudIconButton Icon="@Icons.Material.Filled.Search" 
@@ -98,19 +89,19 @@
                                 aria-label="zoomto">
                 </MudIconButton>
             </MudTd>
-            @foreach(var field in _tableFields)
+            @foreach(var field in _tableProperties.TableFields)
             {
                 <MudTd DataLabel="@field.name">@context[field.name]</MudTd>
             }
         </RowTemplate>
     </MudTable>
 
-    <div style="position:absolute;bottom:0;width:100%;height:30px">
-        <GvGrid ColumnCount="@(_hasMore ? 2 : 1)">
+    <div style="position:absolute;bottom:0;width:100%;height:30px;overflow:hidden">
+        <GvGrid ColumnCount="@(_tableProperties.HasMore ? 2 : 1)">
             <GvGridItem>
                 <MudText Typo="Typo.body1">@($"Loaded {_rows.Count} items")</MudText>
             </GvGridItem>
-            @if(_hasMore)
+            @if(_tableProperties.HasMore)
             {
                 <GvGridItem>
                     <MudButton Variant="Variant.Filled" Style="float:right"
@@ -129,17 +120,11 @@
 
     private ILayer? _currentLayer;
     private ITableClass? _tableClass;
-    private IEnumerable<IField>? _tableFields;
+    private DataTableProperties? _tableProperties;
     private ICursor? _cursor;
-
-    private Dictionary<string, string> _columnFilters = new();
     private List<IRow> _rows = new();
-    private bool _hasMore = false;
-    private string _filterWhereClause = "";
-    private string _searchString = "";
 
     private ISelectionSet? _selectionSet;
-    private bool _canSelect = false;
 
     protected override Task OnInitializedAsync() => HandleAsync(async () =>
     {
@@ -160,7 +145,7 @@
         ReleaseCursor();
         _rows.Clear();
 
-        if(_tableClass is null)
+        if(_tableClass is null || _tableProperties is null)
         {
             return;
         }
@@ -176,10 +161,10 @@
         }
 
         queryFilter.WhereClause = string.IsNullOrEmpty(queryFilter.WhereClause)
-            ? _filterWhereClause
-            : string.IsNullOrEmpty(_filterWhereClause)
+            ? _tableProperties.FilterWhereClause
+            : string.IsNullOrEmpty(_tableProperties.FilterWhereClause)
                 ? queryFilter.WhereClause
-                : $"({queryFilter.WhereClause}) and ({_filterWhereClause})";
+                : $"({queryFilter.WhereClause}) and ({_tableProperties.FilterWhereClause})";
 
         _cursor = await _tableClass.Search(queryFilter);
     }
@@ -197,7 +182,12 @@
     private async Task LoadData(int count = 10000)
     {
 
-        _hasMore = false;
+        if(_tableProperties is null)
+        {
+            return;
+        }
+
+        _tableProperties.HasMore = false;
 
         if (_cursor is null)
         {
@@ -227,23 +217,28 @@
             }
         }
 
-        _hasMore = true;
+        _tableProperties.HasMore = true;
     }
 
     private async Task RebuildFilterWhereClause()
     {
+        if(_tableProperties is null)
+        {
+            return;
+        }
+
         StringBuilder whereClause = new();
 
-        foreach(var fieldName in _columnFilters.Keys)
+        foreach(var fieldName in _tableProperties.ColumnFilters.Keys)
         {
-            var filterValue = _columnFilters[fieldName];
+            var filterValue = _tableProperties.ColumnFilters[fieldName];
 
             if (String.IsNullOrWhiteSpace(filterValue))
             {
                 continue;
             }
 
-            var field = _tableFields?.FirstOrDefault(f => f.name == fieldName);
+            var field = _tableProperties.TableFields.FirstOrDefault(f => f.name == fieldName);
             if(field is null)
             {
                 continue;
@@ -257,36 +252,36 @@
             whereClause.Append(field.FieldWhereClauseSegment(filterValue));
         }
 
-        if (whereClause.Length > 0 && _filterWhereClause != whereClause.ToString())
+        if (whereClause.Length > 0 
+            && _tableProperties.FilterWhereClause != whereClause.ToString())
         {
-            _filterWhereClause = whereClause.ToString();
+            _tableProperties.FilterWhereClause = whereClause.ToString();
 
             await CreateCursor();
             await LoadData();
         }
     }
 
-    private Task HandleFilterKeyPress(KeyboardEventArgs e) => HandleAsync(() =>
-        e.Key == "Enter"
-            ? RebuildFilterWhereClause()
-            : Task.CompletedTask
-    );
-
     private Task OnSetFilter() => HandleAsync(async () =>
     {
+        if(_tableProperties is null)
+        {
+            return;    
+        }
+
         var model = await AppScope.ShowModalDialog(typeof(QueryBuilderDialog),
             "Query Builder",
             new QueryBuilderModel()
                 {
-                    QueryString = _filterWhereClause,
+                    QueryString = _tableProperties.FilterWhereClause,
                     TableClass = _tableClass
                 });
 
         if (model is not null &&
-            _filterWhereClause != model.QueryString)
+            _tableProperties.FilterWhereClause != model.QueryString)
         {
-            _columnFilters.SetAllValues("");
-            _filterWhereClause = model.QueryString;
+            _tableProperties.ColumnFilters.SetAllValues("");
+            _tableProperties.FilterWhereClause = model.QueryString;
 
             await CreateCursor();
             await LoadData();
@@ -295,8 +290,13 @@
 
     private Task OnUnsetFilter() => HandleAsync(async () =>
     {
-        _filterWhereClause = _searchString = "";
-        _columnFilters.SetAllValues("");
+        if(_tableProperties is null)
+        {
+            return;    
+        }
+
+        _tableProperties.FilterWhereClause = _tableProperties.SearchString = "";
+        _tableProperties.ColumnFilters.SetAllValues("");
 
         await CreateCursor();
         await LoadData();
@@ -304,15 +304,17 @@
 
     private bool FilterFunc(IRow row)
     {
-        if(_tableFields is null)
+        if(_tableProperties is null)
         {
             return false;
         }
 
-        if (string.IsNullOrWhiteSpace(_searchString))
+        if (string.IsNullOrWhiteSpace(_tableProperties.SearchString))
+        {
             return true;
+        }
 
-        var searchStringWords = _searchString
+        var searchStringWords = _tableProperties.SearchString
                                     .Split(' ')
                                     .Where(s => !string.IsNullOrWhiteSpace(s))
                                     .ToArray();
@@ -321,7 +323,7 @@
         {
             bool found = false;
 
-            foreach(var field in _tableFields)
+            foreach(var field in _tableProperties.TableFields)
             {
                 var val = row[field.name];
 
@@ -371,15 +373,23 @@
             && _tableClass != tableClass)
         {
             _tableClass = tableClass;
-            _tableFields = _tableClass.Fields
-                                      .ToEnumerable()
-                                      .Where(f => f.IsDataTableField());
-            _selectionSet = (_currentLayer as IFeatureSelection)?.SelectionSet;
-            _canSelect = _selectionSet.CanHandleRowsSelection();
 
-            foreach (var field in _tableFields)
+            _tableProperties = AppScope.DataTableService.GetProperties(_currentLayer);
+            _selectionSet = (_currentLayer as IFeatureSelection)?.SelectionSet;
+            _rows = new();
+
+            if (!_tableProperties.IsInitialized)
             {
-                _columnFilters[field.name] = String.Empty;
+                _tableProperties.TableFields = _tableClass.Fields
+                                          .ToEnumerable()
+                                          .Where(f => f.IsDataTableField());
+
+                _tableProperties.CanSelect = _selectionSet.CanHandleRowsSelection();
+
+                foreach (var field in _tableProperties.TableFields)
+                {
+                    _tableProperties.ColumnFilters[field.name] = String.Empty;
+                }
             }
 
             await CreateCursor();
@@ -401,6 +411,33 @@
             }
 
             await EventBus.FireRefreshMapAsync(DrawPhase.Selection);
+        }
+    });
+
+    private Task OnSetColumnFilter(string fieldName) => HandleAsync(async () =>
+    {
+        if (_tableProperties is null ||
+           !_tableProperties.ColumnFilters.ContainsKey(fieldName))
+        {
+            return;
+        }
+
+        var model = await AppScope.ShowKnownDialog(
+            Framework.Blazor.KnownDialogs.PromptDialog,
+            "Column Filter",
+            new PromptDialogModel()
+            {
+                Prompt = fieldName,
+                HelperText = "Filter for this field. You can/should use Wildcard (%) if necessary.",
+                Value = _tableProperties.ColumnFilters[fieldName]
+            });
+
+        if(model is not null
+            && _tableProperties.ColumnFilters[fieldName] != model.Value)
+        {
+            _tableProperties.ColumnFilters[fieldName] = model.Value;
+
+            await this.RebuildFilterWhereClause();
         }
     });
 

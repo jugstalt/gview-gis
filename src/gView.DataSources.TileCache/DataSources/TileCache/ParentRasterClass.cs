@@ -124,7 +124,7 @@ namespace gView.DataSources.TileCache
             double displayResolution = display.MapScale / (display.Dpi / 0.0254);
 
             Grid grid = new Grid(
-                _dataset.OriginPoint == null ? new Point(_dataset.Extent.minx, _dataset.Extent.maxy) : new Point(_dataset.OriginPoint),
+                _dataset.OriginPoint == null ? new Point(_dataset.Extent.MinX, _dataset.Extent.MaxY) : new Point(_dataset.OriginPoint),
                 _dataset.TileWidth,
                 _dataset.TileHeight,
                 dpi,
@@ -143,16 +143,16 @@ namespace gView.DataSources.TileCache
 
             int level = grid.GetBestLevel(displayResolution, 90D);
             double res = grid.GetLevelResolution(level);
-            int col0 = grid.TileColumn(dispEnvelope.minx, res);
-            int row0 = grid.TileRow(dispEnvelope.maxy, res);
+            int col0 = grid.TileColumn(dispEnvelope.MinX, res);
+            int row0 = grid.TileRow(dispEnvelope.MaxY, res);
 
-            int col1 = grid.TileColumn(dispEnvelope.maxx, res);
-            int row1 = grid.TileRow(dispEnvelope.miny, res);
+            int col1 = grid.TileColumn(dispEnvelope.MaxX, res);
+            int row1 = grid.TileRow(dispEnvelope.MinY, res);
 
-            int col_from = Math.Max(grid.TileColumn(_dataset.Extent.minx, res) , Math.Min(col0, col1)),
-                col_to = Math.Min(grid.TileColumn(_dataset.Extent.maxx, res), Math.Max(col0, col1));
-            int row_from = Math.Max(grid.TileRow(_dataset.Extent.maxy, res), Math.Min(row0, row1)),
-                row_to = Math.Min(grid.TileRow(_dataset.Extent.miny, res), Math.Max(row0, row1));
+            int col_from = Math.Max(grid.TileColumn(_dataset.Extent.MinX, res) , Math.Min(col0, col1)),
+                col_to = Math.Min(grid.TileColumn(_dataset.Extent.MaxX, res), Math.Max(col0, col1));
+            int row_from = Math.Max(grid.TileRow(_dataset.Extent.MaxY, res), Math.Min(row0, row1)),
+                row_to = Math.Min(grid.TileRow(_dataset.Extent.MinY, res), Math.Max(row0, row1));
 
             LayerCursor cursor = new LayerCursor();
             for (int r = row_from; r <= row_to; r++)

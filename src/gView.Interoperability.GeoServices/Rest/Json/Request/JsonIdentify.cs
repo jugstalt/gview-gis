@@ -53,7 +53,7 @@ namespace gView.Interoperability.GeoServices.Rest.Json.Request
 
                     if (fullExtent != null)
                     {
-                        MapExtent = $"{fullExtent.minx.ToDoubleString()},{fullExtent.miny.ToDoubleString()},{fullExtent.maxx.ToDoubleString()},{fullExtent.maxy.ToDoubleString()}";
+                        MapExtent = $"{fullExtent.MinX.ToDoubleString()},{fullExtent.MinY.ToDoubleString()},{fullExtent.MaxX.ToDoubleString()},{fullExtent.MaxY.ToDoubleString()}";
                         this.Geometry = $"{fullExtent.Center.X.ToDoubleString()},{fullExtent.Center.Y.ToDoubleString()}";
                     }
                 }

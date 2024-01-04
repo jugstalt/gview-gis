@@ -159,22 +159,22 @@ namespace gView.Framework.Data
             IEnvelope Box1,
             IEnvelope Box2)
         {
-            if (Box2.maxx < Box1.minx)
+            if (Box2.MaxX < Box1.MinX)
             {
                 return false;
             }
 
-            if (Box2.maxy < Box2.miny)
+            if (Box2.MaxY < Box2.MinY)
             {
                 return false;
             }
 
-            if (Box1.maxx < Box2.minx)
+            if (Box1.MaxX < Box2.MinX)
             {
                 return false;
             }
 
-            if (Box1.maxy < Box2.miny)
+            if (Box1.MaxY < Box2.MinY)
             {
                 return false;
             }
@@ -196,14 +196,14 @@ namespace gView.Framework.Data
         private bool SHPCheckObjectContained(SHPObject psObject,
             IEnvelope Bounds)
         {
-            if (psObject.env.minx < Bounds.minx
-                || psObject.env.maxx > Bounds.maxx)
+            if (psObject.env.MinX < Bounds.MinX
+                || psObject.env.MaxX > Bounds.MaxX)
             {
                 return false;
             }
 
-            if (psObject.env.miny < Bounds.miny
-                || psObject.env.maxy > Bounds.maxy)
+            if (psObject.env.MinY < Bounds.MinY
+                || psObject.env.MaxY > Bounds.MaxY)
             {
                 return false;
             }
@@ -252,14 +252,14 @@ namespace gView.Framework.Data
             /* -------------------------------------------------------------------- */
             //if( (padfBoundsMaxIn[0] - padfBoundsMinIn[0])
             //	> (padfBoundsMaxIn[1] - padfBoundsMinIn[1]) )
-            if ((BoundsIn.maxx - BoundsIn.minx)
-                > (BoundsIn.maxy - BoundsIn.miny))
+            if ((BoundsIn.MaxX - BoundsIn.MinX)
+                > (BoundsIn.MaxY - BoundsIn.MinY))
             {
-                double dfRange = BoundsIn.maxx - BoundsIn.minx;
+                double dfRange = BoundsIn.MaxX - BoundsIn.MinX;
                 //double	dfRange = padfBoundsMaxIn[0] - padfBoundsMinIn[0];
 
-                Bounds1.maxx = BoundsIn.minx + dfRange * SHP_SPLIT_RATIO;
-                Bounds2.minx = BoundsIn.maxx - dfRange * SHP_SPLIT_RATIO;
+                Bounds1.MaxX = BoundsIn.MinX + dfRange * SHP_SPLIT_RATIO;
+                Bounds2.MinX = BoundsIn.MaxX - dfRange * SHP_SPLIT_RATIO;
                 //padfBoundsMax1[0] = padfBoundsMinIn[0] + dfRange * SHP_SPLIT_RATIO;
                 //padfBoundsMin2[0] = padfBoundsMaxIn[0] - dfRange * SHP_SPLIT_RATIO;
             }
@@ -269,11 +269,11 @@ namespace gView.Framework.Data
             /* -------------------------------------------------------------------- */
             else
             {
-                double dfRange = BoundsIn.maxy - BoundsIn.miny;
+                double dfRange = BoundsIn.MaxY - BoundsIn.MinY;
                 //double	dfRange = padfBoundsMaxIn[1] - padfBoundsMinIn[1];
 
-                Bounds1.maxy = BoundsIn.miny + dfRange * SHP_SPLIT_RATIO;
-                Bounds2.miny = BoundsIn.maxy - dfRange * SHP_SPLIT_RATIO;
+                Bounds1.MaxY = BoundsIn.MinY + dfRange * SHP_SPLIT_RATIO;
+                Bounds2.MinY = BoundsIn.MaxY - dfRange * SHP_SPLIT_RATIO;
                 //padfBoundsMax1[1] = padfBoundsMinIn[1] + dfRange * SHP_SPLIT_RATIO;
                 //padfBoundsMin2[1] = padfBoundsMaxIn[1] - dfRange * SHP_SPLIT_RATIO;
             }
@@ -504,7 +504,7 @@ namespace gView.Framework.Data
         private void write(System.IO.StreamWriter sw, SHPTreeNode node, int level)
         {
             sw.WriteLine("\n\n\n" + (_nodenr++).ToString() + " node (level=" + level.ToString() + ")");
-            sw.WriteLine(node.Bounds.minx.ToString() + "\t" + node.Bounds.miny.ToString() + "\t" + node.Bounds.maxx.ToString() + "\t" + node.Bounds.maxy.ToString());
+            sw.WriteLine(node.Bounds.MinX.ToString() + "\t" + node.Bounds.MinY.ToString() + "\t" + node.Bounds.MaxX.ToString() + "\t" + node.Bounds.MaxY.ToString());
             foreach (object obj in node.panShapeIds)
             {
                 sw.Write(obj.ToString() + ", ");
@@ -527,10 +527,10 @@ namespace gView.Framework.Data
         private void writeSIXNode(BinaryWriter bw, SHPTreeNode node)
         {
             // BoundingBox
-            bw.Write((double)node.Bounds.minx);
-            bw.Write((double)node.Bounds.miny);
-            bw.Write((double)node.Bounds.maxx);
-            bw.Write((double)node.Bounds.maxy);
+            bw.Write((double)node.Bounds.MinX);
+            bw.Write((double)node.Bounds.MinY);
+            bw.Write((double)node.Bounds.MaxX);
+            bw.Write((double)node.Bounds.MaxY);
 
             // IDs
             bw.Write((System.Int32)node.panShapeIds.Count);
@@ -563,8 +563,8 @@ namespace gView.Framework.Data
             IEnvelope env1 = ((SpatialIndexNode)x).Rectangle.Envelope;
             IEnvelope env2 = ((SpatialIndexNode)y).Rectangle.Envelope;
 
-            double s1 = Math.Sqrt((env1.minx - _x0) * (env1.minx - _x0) + (env1.maxy - _y0) * (env1.maxy - _y0));
-            double s2 = Math.Sqrt((env2.minx - _x0) * (env2.minx - _x0) + (env2.maxy - _y0) * (env2.maxy - _y0));
+            double s1 = Math.Sqrt((env1.MinX - _x0) * (env1.MinX - _x0) + (env1.MaxY - _y0) * (env1.MaxY - _y0));
+            double s2 = Math.Sqrt((env2.MinX - _x0) * (env2.MinX - _x0) + (env2.MaxY - _y0) * (env2.MaxY - _y0));
 
             if (s1 == s2)
             {
@@ -605,24 +605,24 @@ namespace gView.Framework.Data
                 return;
             }
 
-            double w = Bounds.maxx - Bounds.minx;
-            double h = Bounds.maxy - Bounds.miny;
+            double w = Bounds.MaxX - Bounds.MinX;
+            double h = Bounds.MaxY - Bounds.MinY;
             double minx, miny, maxx, maxy;
 
             if (w > h)
             {
-                minx = Bounds.minx; maxx = minx + w * SPLIT_RATIO;
-                miny = Bounds.miny; maxy = miny + h;
+                minx = Bounds.MinX; maxx = minx + w * SPLIT_RATIO;
+                miny = Bounds.MinY; maxy = miny + h;
                 SubNodes.Add(DualTreeNode.CreateNode(new Envelope(minx, miny, maxx, maxy), 0));
-                minx = Bounds.maxx - w * SPLIT_RATIO; maxx = Bounds.maxx;
+                minx = Bounds.MaxX - w * SPLIT_RATIO; maxx = Bounds.MaxX;
                 SubNodes.Add(DualTreeNode.CreateNode(new Envelope(minx, miny, maxx, maxy), 1));
             }
             else
             {
-                minx = Bounds.minx; maxx = minx + w;
-                miny = Bounds.miny; maxy = miny + h * SPLIT_RATIO;
+                minx = Bounds.MinX; maxx = minx + w;
+                miny = Bounds.MinY; maxy = miny + h * SPLIT_RATIO;
                 SubNodes.Add(DualTreeNode.CreateNode(new Envelope(minx, miny, maxx, maxy), 0));
-                miny = Bounds.maxy - h * SPLIT_RATIO; maxy = Bounds.maxy;
+                miny = Bounds.MaxY - h * SPLIT_RATIO; maxy = Bounds.MaxY;
                 SubNodes.Add(DualTreeNode.CreateNode(new Envelope(minx, miny, maxx, maxy), 1));
             }
 
@@ -639,14 +639,14 @@ namespace gView.Framework.Data
 
         private bool CheckObjectContained(SHPObject psObject)
         {
-            if (psObject.env.minx < Bounds.minx
-                || psObject.env.maxx > Bounds.maxx)
+            if (psObject.env.MinX < Bounds.MinX
+                || psObject.env.MaxX > Bounds.MaxX)
             {
                 return false;
             }
 
-            if (psObject.env.miny < Bounds.miny
-                || psObject.env.maxy > Bounds.maxy)
+            if (psObject.env.MinY < Bounds.MinY
+                || psObject.env.MaxY > Bounds.MaxY)
             {
                 return false;
             }
@@ -810,7 +810,7 @@ namespace gView.Framework.Data
         private void write(System.IO.StreamWriter sw, DualTreeNode node, int level)
         {
             sw.WriteLine("\n\n\n" + (_nodenr++).ToString() + " node (level=" + level.ToString() + ")");
-            sw.WriteLine(node.Bounds.minx.ToString() + "\t" + node.Bounds.miny.ToString() + "\t" + node.Bounds.maxx.ToString() + "\t" + node.Bounds.maxy.ToString());
+            sw.WriteLine(node.Bounds.MinX.ToString() + "\t" + node.Bounds.MinY.ToString() + "\t" + node.Bounds.MaxX.ToString() + "\t" + node.Bounds.MaxY.ToString());
             foreach (object obj in node.ShapeIds)
             {
                 sw.Write(obj.ToString() + ", ");
@@ -906,10 +906,10 @@ namespace gView.Framework.Data
             {
                 bw.Write((int)node.NID);
                 bw.Write((int)node.PID);
-                bw.Write((double)node.Rectangle.Envelope.minx);
-                bw.Write((double)node.Rectangle.Envelope.miny);
-                bw.Write((double)node.Rectangle.Envelope.maxx);
-                bw.Write((double)node.Rectangle.Envelope.maxy);
+                bw.Write((double)node.Rectangle.Envelope.MinX);
+                bw.Write((double)node.Rectangle.Envelope.MinY);
+                bw.Write((double)node.Rectangle.Envelope.MaxX);
+                bw.Write((double)node.Rectangle.Envelope.MaxY);
                 bw.Write((int)node.IDs.Count);
                 foreach (uint id in node.IDs)
                 {
@@ -937,7 +937,7 @@ namespace gView.Framework.Data
                 List<SpatialIndexNode> nodes = new List<SpatialIndexNode>();
                 writeFDB_FC_Index_nodes(_root, nodes, _NID++, -1);
 
-                nodes.Sort(new SpatialIndexNodeComparer(_root.Bounds.minx, _root.Bounds.maxy));
+                nodes.Sort(new SpatialIndexNodeComparer(_root.Bounds.MinX, _root.Bounds.MaxY));
                 ReorderNodes(nodes);
 
                 return nodes;
@@ -1013,9 +1013,9 @@ namespace gView.Framework.Data
             SpatialIndexNode node = new SpatialIndexNode();
             Polygon p = new Polygon();
             Ring ring = new Ring();
-            ring.AddPoint(new Point(dnode.Bounds.minx, dnode.Bounds.miny));
+            ring.AddPoint(new Point(dnode.Bounds.MinX, dnode.Bounds.MinY));
             //ring.AddPoint(new Point(node.Bounds.maxx,node.Bounds.miny));
-            ring.AddPoint(new Point(dnode.Bounds.maxx, dnode.Bounds.maxy));
+            ring.AddPoint(new Point(dnode.Bounds.MaxX, dnode.Bounds.MaxY));
             //ring.AddPoint(new Point(node.Bounds.minx,node.Bounds.maxy));
             //ring.AddPoint(new Point(node.Bounds.minx,node.Bounds.miny));
             p.AddRing(ring);
@@ -1118,27 +1118,27 @@ namespace gView.Framework.Data
                 return;
             }
 
-            double w = parentBounds.maxx - parentBounds.minx;
-            double h = parentBounds.maxy - parentBounds.miny;
+            double w = parentBounds.MaxX - parentBounds.MinX;
+            double h = parentBounds.MaxY - parentBounds.MinY;
             double minx0, miny0, maxx0, maxy0;
             double minx1, miny1, maxx1, maxy1;
 
             if (w > h)
             {
-                minx0 = parentBounds.minx; maxx0 = minx0 + w * _spatialRatio;
-                miny0 = parentBounds.miny; maxy0 = miny0 + h;
+                minx0 = parentBounds.MinX; maxx0 = minx0 + w * _spatialRatio;
+                miny0 = parentBounds.MinY; maxy0 = miny0 + h;
                 //SubNodes.Add(DualTreeNode.CreateNode(new Envelope(minx,miny,maxx,maxy),0));
-                minx1 = parentBounds.maxx - w * _spatialRatio; maxx1 = parentBounds.maxx;
+                minx1 = parentBounds.MaxX - w * _spatialRatio; maxx1 = parentBounds.MaxX;
                 miny1 = miny0; maxy1 = maxy0;
                 //SubNodes.Add(DualTreeNode.CreateNode(new Envelope(minx,miny,maxx,maxy),1));
             }
             else
             {
-                minx0 = parentBounds.minx; maxx0 = minx0 + w;
-                miny0 = parentBounds.miny; maxy0 = miny0 + h * _spatialRatio;
+                minx0 = parentBounds.MinX; maxx0 = minx0 + w;
+                miny0 = parentBounds.MinY; maxy0 = miny0 + h * _spatialRatio;
                 //SubNodes.Add(DualTreeNode.CreateNode(new Envelope(minx,miny,maxx,maxy),0));
                 minx1 = minx0; maxx1 = maxx0;
-                miny1 = parentBounds.maxy - h * _spatialRatio; maxy1 = parentBounds.maxy;
+                miny1 = parentBounds.MaxY - h * _spatialRatio; maxy1 = parentBounds.MaxY;
                 //SubNodes.Add(DualTreeNode.CreateNode(new Envelope(minx,miny,maxx,maxy),1));
             }
 

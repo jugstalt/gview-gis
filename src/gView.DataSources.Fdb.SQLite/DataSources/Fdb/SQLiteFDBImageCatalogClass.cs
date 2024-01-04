@@ -79,10 +79,10 @@ namespace gView.DataSources.Fdb.SQLite
 
             _polygon = new Polygon();
             Ring ring = new Ring();
-            ring.AddPoint(new Point(env.minx, env.miny));
-            ring.AddPoint(new Point(env.maxx, env.miny));
-            ring.AddPoint(new Point(env.maxx, env.maxy));
-            ring.AddPoint(new Point(env.minx, env.maxy));
+            ring.AddPoint(new Point(env.MinX, env.MinY));
+            ring.AddPoint(new Point(env.MaxX, env.MinY));
+            ring.AddPoint(new Point(env.MaxX, env.MaxY));
+            ring.AddPoint(new Point(env.MinX, env.MaxY));
             _polygon.AddRing(ring);
         }
 

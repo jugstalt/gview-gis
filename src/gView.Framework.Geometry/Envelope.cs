@@ -36,10 +36,10 @@ namespace gView.Framework.Geometry
                 return;
             }
 
-            m_minx = env.minx;
-            m_miny = env.miny;
-            m_maxx = env.maxx;
-            m_maxy = env.maxy;
+            m_minx = env.MinX;
+            m_miny = env.MinY;
+            m_maxx = env.MaxX;
+            m_maxy = env.MaxY;
         }
 
         public Envelope(XmlNode env)
@@ -49,10 +49,10 @@ namespace gView.Framework.Geometry
                 return;
             }
 
-            minx = Convert.ToDouble(env.Attributes["minx"].Value.Replace(".", ","));
-            miny = Convert.ToDouble(env.Attributes["miny"].Value.Replace(".", ","));
-            maxx = Convert.ToDouble(env.Attributes["maxx"].Value.Replace(".", ","));
-            maxy = Convert.ToDouble(env.Attributes["maxy"].Value.Replace(".", ","));
+            MinX = Convert.ToDouble(env.Attributes["minx"].Value.Replace(".", ","));
+            MinY = Convert.ToDouble(env.Attributes["miny"].Value.Replace(".", ","));
+            MaxX = Convert.ToDouble(env.Attributes["maxx"].Value.Replace(".", ","));
+            MaxY = Convert.ToDouble(env.Attributes["maxy"].Value.Replace(".", ","));
         }
 
         public Envelope(IPoint lowerLeft, IPoint upperRight)
@@ -69,7 +69,7 @@ namespace gView.Framework.Geometry
         /// <summary>
         /// The position of the left side
         /// </summary>
-        public double minx
+        public double MinX
         {
             get { return m_minx; }
             set { m_minx = value; }
@@ -78,7 +78,7 @@ namespace gView.Framework.Geometry
         /// <summary>
         /// The position of the bottom side
         /// </summary>
-        public double miny
+        public double MinY
         {
             get { return m_miny; }
             set { m_miny = value; }
@@ -87,7 +87,7 @@ namespace gView.Framework.Geometry
         /// <summary>
         /// The position of the right side
         /// </summary>
-        public double maxx
+        public double MaxX
         {
             get { return m_maxx; }
             set { m_maxx = value; }
@@ -96,7 +96,7 @@ namespace gView.Framework.Geometry
         /// <summary>
         /// The position of the top side
         /// </summary>
-        public double maxy
+        public double MaxY
         {
             get { return m_maxy; }
             set { m_maxy = value; }
@@ -104,7 +104,7 @@ namespace gView.Framework.Geometry
 
         public IPoint LowerLeft
         {
-            get { return new Point(minx, miny); }
+            get { return new Point(MinX, MinY); }
             set
             {
                 if (value == null)
@@ -118,7 +118,7 @@ namespace gView.Framework.Geometry
         }
         public IPoint LowerRight
         {
-            get { return new Point(maxx, miny); }
+            get { return new Point(MaxX, MinY); }
             set
             {
                 if (value == null)
@@ -132,7 +132,7 @@ namespace gView.Framework.Geometry
         }
         public IPoint UpperRight
         {
-            get { return new Point(maxx, maxy); }
+            get { return new Point(MaxX, MaxY); }
             set
             {
                 if (value == null)
@@ -146,7 +146,7 @@ namespace gView.Framework.Geometry
         }
         public IPoint UpperLeft
         {
-            get { return new Point(minx, maxy); }
+            get { return new Point(MinX, MaxY); }
             set
             {
                 if (value == null)
@@ -162,7 +162,7 @@ namespace gView.Framework.Geometry
         {
             get
             {
-                return new Point(minx * 0.5 + maxx * 0.5, miny * 0.5 + maxy * 0.5);
+                return new Point(MinX * 0.5 + MaxX * 0.5, MinY * 0.5 + MaxY * 0.5);
             }
             set
             {
@@ -263,10 +263,10 @@ namespace gView.Framework.Geometry
                 return;
             }
 
-            m_minx = Math.Min(m_minx, envelope.minx);
-            m_miny = Math.Min(m_miny, envelope.miny);
-            m_maxx = Math.Max(m_maxx, envelope.maxx);
-            m_maxy = Math.Max(m_maxy, envelope.maxy);
+            m_minx = Math.Min(m_minx, envelope.MinX);
+            m_miny = Math.Min(m_miny, envelope.MinY);
+            m_maxx = Math.Max(m_maxx, envelope.MaxX);
+            m_maxy = Math.Max(m_maxy, envelope.MaxY);
         }
 
         public void Raise(double percent)
@@ -292,8 +292,8 @@ namespace gView.Framework.Geometry
             }
 
             percent /= 100;
-            double w1 = point.X - minx, w2 = maxx - point.X;
-            double h1 = point.Y - miny, h2 = maxy - point.Y;
+            double w1 = point.X - MinX, w2 = MaxX - point.X;
+            double h1 = point.Y - MinY, h2 = MaxY - point.Y;
 
             w1 = w1 * percent; w2 = w2 * percent;
             h1 = h1 * percent; h2 = h2 * percent;
@@ -306,10 +306,10 @@ namespace gView.Framework.Geometry
 
         public bool Intersects(IEnvelope envelope)
         {
-            if (envelope.maxx >= m_minx &&
-                envelope.minx <= m_maxx &&
-                envelope.maxy >= m_miny &&
-                envelope.miny <= m_maxy)
+            if (envelope.MaxX >= m_minx &&
+                envelope.MinX <= m_maxx &&
+                envelope.MaxY >= m_miny &&
+                envelope.MinY <= m_maxy)
             {
                 return true;
             }
@@ -319,14 +319,14 @@ namespace gView.Framework.Geometry
 
         public bool Contains(IEnvelope envelope)
         {
-            if (envelope.minx < m_minx ||
-                envelope.maxx > m_maxx)
+            if (envelope.MinX < m_minx ||
+                envelope.MaxX > m_maxx)
             {
                 return false;
             }
 
-            if (envelope.miny < m_miny ||
-                envelope.maxy > m_maxy)
+            if (envelope.MinY < m_miny ||
+                envelope.MaxY > m_maxy)
             {
                 return false;
             }
@@ -429,7 +429,7 @@ namespace gView.Framework.Geometry
             {
                 for (int x = 0; x <= accuracy + 1; x++)
                 {
-                    pColl.AddPoint(new Point(this.minx + stepx * x, this.miny + stepy * y));
+                    pColl.AddPoint(new Point(this.MinX + stepx * x, this.MinY + stepy * y));
                 }
             }
             return pColl;
@@ -438,8 +438,8 @@ namespace gView.Framework.Geometry
         {
 
             double[] min = new double[4];
-            min[0] = e.minx;
-            min[1] = e.miny;
+            min[0] = e.MinX;
+            min[1] = e.MinY;
             min[2] = min[3] = 0;
             return min;
 
@@ -448,8 +448,8 @@ namespace gView.Framework.Geometry
         {
 
             double[] max = new double[4];
-            max[0] = e.maxx;
-            max[1] = e.maxy;
+            max[0] = e.MaxX;
+            max[1] = e.MaxY;
             max[2] = max[3] = 0;
             return max;
 
@@ -517,10 +517,10 @@ namespace gView.Framework.Geometry
 
             IEnvelope env2 = (IEnvelope)obj;
             return
-                Math.Abs(minx - env2.minx) <= epsi &&
-                Math.Abs(miny - env2.miny) <= epsi &&
-                Math.Abs(maxx - env2.maxx) <= epsi &&
-                Math.Abs(maxy - env2.maxy) <= epsi;
+                Math.Abs(MinX - env2.MinX) <= epsi &&
+                Math.Abs(MinY - env2.MinY) <= epsi &&
+                Math.Abs(MaxX - env2.MaxX) <= epsi &&
+                Math.Abs(MaxY - env2.MaxY) <= epsi;
         }
 
         #region ICloneable Member
@@ -571,18 +571,18 @@ namespace gView.Framework.Geometry
                 return true;
             }
 
-            if (Math.Abs(envelope.minx) < double.Epsilon &&
-                Math.Abs(envelope.miny) < double.Epsilon &&
-                Math.Abs(envelope.maxx) < double.Epsilon &&
-                Math.Abs(envelope.maxy) < double.Epsilon)
+            if (Math.Abs(envelope.MinX) < double.Epsilon &&
+                Math.Abs(envelope.MinY) < double.Epsilon &&
+                Math.Abs(envelope.MaxX) < double.Epsilon &&
+                Math.Abs(envelope.MaxY) < double.Epsilon)
             {
                 return true;
             }
 
-            if (double.IsNaN(envelope.minx) ||
-                double.IsNaN(envelope.miny) ||
-                double.IsNaN(envelope.maxx) ||
-                double.IsNaN(envelope.maxy))
+            if (double.IsNaN(envelope.MinX) ||
+                double.IsNaN(envelope.MinY) ||
+                double.IsNaN(envelope.MaxX) ||
+                double.IsNaN(envelope.MaxY))
             {
                 return true;
             }

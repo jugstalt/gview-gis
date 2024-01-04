@@ -28,10 +28,10 @@ namespace gView.Framework.Cartography
 
             IEnvelope classEnvelope = ((IGeometry)display.GeometricTransformer.Transform2D(fc.Envelope)).Envelope;
 
-            classEnvelope.minx = Math.Max(classEnvelope.minx, display.Envelope.minx);
-            classEnvelope.miny = Math.Max(classEnvelope.miny, display.Envelope.miny);
-            classEnvelope.maxx = Math.Min(classEnvelope.maxx, display.Envelope.maxx);
-            classEnvelope.maxy = Math.Min(classEnvelope.maxy, display.Envelope.maxy);
+            classEnvelope.MinX = Math.Max(classEnvelope.MinX, display.Envelope.MinX);
+            classEnvelope.MinY = Math.Max(classEnvelope.MinY, display.Envelope.MinY);
+            classEnvelope.MaxX = Math.Min(classEnvelope.MaxX, display.Envelope.MaxX);
+            classEnvelope.MaxY = Math.Min(classEnvelope.MaxY, display.Envelope.MaxY);
 
             IEnvelope filterGeom = ((IGeometry)display.GeometricTransformer.InvTransform2D(classEnvelope)).Envelope;
             //feature = new Feature();

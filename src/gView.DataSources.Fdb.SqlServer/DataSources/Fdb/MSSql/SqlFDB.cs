@@ -1997,10 +1997,10 @@ namespace gView.DataSources.Fdb.MSSql
 
                     SqlCommand command = new SqlCommand("", connection);
                     command.CommandText = "UPDATE [FDB_FeatureClasses] SET SI='" + index.GeometryType.ToString() + "'";
-                    command.CommandText += ",SIMinX=" + ((index.SpatialIndexBounds != null) ? index.SpatialIndexBounds.minx.ToString(_nhi) : "0");
-                    command.CommandText += ",SIMinY=" + ((index.SpatialIndexBounds != null) ? index.SpatialIndexBounds.miny.ToString(_nhi) : "0");
-                    command.CommandText += ",SIMaxX=" + ((index.SpatialIndexBounds != null) ? index.SpatialIndexBounds.maxx.ToString(_nhi) : "0");
-                    command.CommandText += ",SIMaxY=" + ((index.SpatialIndexBounds != null) ? index.SpatialIndexBounds.maxy.ToString(_nhi) : "0");
+                    command.CommandText += ",SIMinX=" + ((index.SpatialIndexBounds != null) ? index.SpatialIndexBounds.MinX.ToString(_nhi) : "0");
+                    command.CommandText += ",SIMinY=" + ((index.SpatialIndexBounds != null) ? index.SpatialIndexBounds.MinY.ToString(_nhi) : "0");
+                    command.CommandText += ",SIMaxX=" + ((index.SpatialIndexBounds != null) ? index.SpatialIndexBounds.MaxX.ToString(_nhi) : "0");
+                    command.CommandText += ",SIMaxY=" + ((index.SpatialIndexBounds != null) ? index.SpatialIndexBounds.MaxY.ToString(_nhi) : "0");
                     command.CommandText += ",MaxPerNode=" + index.CellsPerObject.ToString();
                     command.CommandText += ",MaxLevels=" + ((int)index.Level1 + ((int)index.Level2 << 4) + ((int)index.Level3 << 8) + ((int)index.Level4 << 12)).ToString();
                     command.CommandText += " WHERE Name='" + fcName + "'";

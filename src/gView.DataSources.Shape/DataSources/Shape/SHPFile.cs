@@ -1145,10 +1145,10 @@ namespace gView.DataSources.Shape
             }
             else
             {
-                bw.Write(he.minx = envelope.minx);
-                bw.Write(he.miny = envelope.miny);
-                bw.Write(he.maxx = envelope.maxx);
-                bw.Write(he.maxy = envelope.maxy);
+                bw.Write(he.minx = envelope.MinX);
+                bw.Write(he.miny = envelope.MinY);
+                bw.Write(he.maxx = envelope.MaxX);
+                bw.Write(he.maxy = envelope.MaxY);
             }
         }
         private void WritePoint(BinaryWriter bw, IPoint point)

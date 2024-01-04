@@ -387,8 +387,8 @@ namespace gView.Framework.OGC.WMS
                     double MaxX = bbox[2].ToDouble();
                     double MaxY = bbox[3].ToDouble();
                     Envelope box = new Envelope(MinX, MinY, MaxX, MaxY);
-                    if (box.minx >= box.maxx ||
-                        box.miny >= box.maxy)
+                    if (box.MinX >= box.MaxX ||
+                        box.MinY >= box.MaxY)
                     {
                         return WriteError("Invalid BBOX parameter. MinX must not be greater than MaxX, and MinY must not be greater than MaxY");
                     }

@@ -127,10 +127,10 @@ namespace gView.Interoperability.OGC.Dataset.WMS
             request.Append("&HEIGHT=" + display.ImageHeight);
             request.Append("&INFOFORMAT=" + _getFeatureInfo.Formats[_getFeatureInfo.FormatIndex]);
             request.Append("&INFO_FORMAT=" + _getFeatureInfo.Formats[_getFeatureInfo.FormatIndex]);
-            request.Append("&BBOX=" + dispEnvelope.minx.ToString(_nhi) + "," +
-                dispEnvelope.miny.ToString(_nhi) + "," +
-                dispEnvelope.maxx.ToString(_nhi) + "," +
-                dispEnvelope.maxy.ToString(_nhi));
+            request.Append("&BBOX=" + dispEnvelope.MinX.ToString(_nhi) + "," +
+                dispEnvelope.MinY.ToString(_nhi) + "," +
+                dispEnvelope.MaxX.ToString(_nhi) + "," +
+                dispEnvelope.MaxY.ToString(_nhi));
             request.Append("&X=" + (int)x);
             request.Append("&Y=" + (int)y);
 

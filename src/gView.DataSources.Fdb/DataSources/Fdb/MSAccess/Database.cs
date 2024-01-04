@@ -379,10 +379,10 @@ namespace gView.DataSources.Fdb.MSAccess
 
                         row["DatasetID"] = dsID;
                         row["GeometryType"] = (int)FieldType.Shape;
-                        row["SIMinX"] = gvIndex.SpatialIndexBounds != null ? gvIndex.SpatialIndexBounds.minx : 0.0;
-                        row["SIMinY"] = gvIndex.SpatialIndexBounds != null ? gvIndex.SpatialIndexBounds.miny : 0.0;
-                        row["SIMaxX"] = gvIndex.SpatialIndexBounds != null ? gvIndex.SpatialIndexBounds.maxx : 0.0;
-                        row["SIMaxY"] = gvIndex.SpatialIndexBounds != null ? gvIndex.SpatialIndexBounds.maxy : 0.0;
+                        row["SIMinX"] = gvIndex.SpatialIndexBounds != null ? gvIndex.SpatialIndexBounds.MinX : 0.0;
+                        row["SIMinY"] = gvIndex.SpatialIndexBounds != null ? gvIndex.SpatialIndexBounds.MinY : 0.0;
+                        row["SIMaxX"] = gvIndex.SpatialIndexBounds != null ? gvIndex.SpatialIndexBounds.MaxX : 0.0;
+                        row["SIMaxY"] = gvIndex.SpatialIndexBounds != null ? gvIndex.SpatialIndexBounds.MaxY : 0.0;
                         row["SIRATIO"] = gvIndex.SplitRatio;
                         row["MaxPerNode"] = gvIndex.MaxPerNode;
                         row["MaxLevels"] = gvIndex.Levels;
@@ -396,10 +396,10 @@ namespace gView.DataSources.Fdb.MSAccess
                         {
                             row["DatasetID"] = dsID;
                             row["GeometryType"] = (int)FieldType.GEOMETRY;
-                            row["SIMinX"] = msIndex.SpatialIndexBounds != null ? msIndex.SpatialIndexBounds.minx : 0.0;
-                            row["SIMinY"] = msIndex.SpatialIndexBounds != null ? msIndex.SpatialIndexBounds.miny : 0.0;
-                            row["SIMaxX"] = msIndex.SpatialIndexBounds != null ? msIndex.SpatialIndexBounds.maxx : 0.0;
-                            row["SIMaxY"] = msIndex.SpatialIndexBounds != null ? msIndex.SpatialIndexBounds.maxy : 0.0;
+                            row["SIMinX"] = msIndex.SpatialIndexBounds != null ? msIndex.SpatialIndexBounds.MinX : 0.0;
+                            row["SIMinY"] = msIndex.SpatialIndexBounds != null ? msIndex.SpatialIndexBounds.MinY : 0.0;
+                            row["SIMaxX"] = msIndex.SpatialIndexBounds != null ? msIndex.SpatialIndexBounds.MaxX : 0.0;
+                            row["SIMaxY"] = msIndex.SpatialIndexBounds != null ? msIndex.SpatialIndexBounds.MaxY : 0.0;
                             row["SIRATIO"] = 0.0;
                             row["MaxPerNode"] = msIndex.CellsPerObject;
                             row["MaxLevels"] = msIndex.Levels;
@@ -1793,10 +1793,10 @@ namespace gView.DataSources.Fdb.MSAccess
                 return false;
             }
             tab.Rows[0]["SI"] = TreeType;
-            tab.Rows[0]["SIMinX"] = Bounds.minx;
-            tab.Rows[0]["SIMinY"] = Bounds.miny;
-            tab.Rows[0]["SIMaxX"] = Bounds.maxx;
-            tab.Rows[0]["SIMaxY"] = Bounds.maxy;
+            tab.Rows[0]["SIMinX"] = Bounds.MinX;
+            tab.Rows[0]["SIMinY"] = Bounds.MinY;
+            tab.Rows[0]["SIMaxX"] = Bounds.MaxX;
+            tab.Rows[0]["SIMaxY"] = Bounds.MaxY;
             tab.Rows[0]["SIRATIO"] = SpatialRatio;
             tab.Rows[0]["MaxPerNode"] = maxPerNode;
             if (tab.Columns["MaxLevels"] != null)
@@ -2324,10 +2324,10 @@ namespace gView.DataSources.Fdb.MSAccess
                 tab.Rows[0]["SI"] = info.type;
                 tab.Rows[0]["SIRATIO"] = info.SpatialRatio;
                 tab.Rows[0]["MaxPerNode"] = info.MaxFeaturesPerNode;
-                tab.Rows[0]["SIMinX"] = info.Bounds.minx;
-                tab.Rows[0]["SIMinY"] = info.Bounds.miny;
-                tab.Rows[0]["SIMaxX"] = info.Bounds.maxx;
-                tab.Rows[0]["SIMaxY"] = info.Bounds.maxy;
+                tab.Rows[0]["SIMinX"] = info.Bounds.MinX;
+                tab.Rows[0]["SIMinY"] = info.Bounds.MinY;
+                tab.Rows[0]["SIMaxX"] = info.Bounds.MaxX;
+                tab.Rows[0]["SIMaxY"] = info.Bounds.MaxY;
                 if (!_conn.Update(tab))
                 {
                     _errMsg = _conn.errorMessage;
@@ -2474,10 +2474,10 @@ namespace gView.DataSources.Fdb.MSAccess
                     _errMsg = "Featureclass '" + fcName + "' don't exists!";
                     return false;
                 }
-                featureclasses.Rows[0]["SIMinX"] = def.Bounds.minx;
-                featureclasses.Rows[0]["SIMinY"] = def.Bounds.miny;
-                featureclasses.Rows[0]["SIMaxX"] = def.Bounds.maxx;
-                featureclasses.Rows[0]["SIMaxY"] = def.Bounds.maxy;
+                featureclasses.Rows[0]["SIMinX"] = def.Bounds.MinX;
+                featureclasses.Rows[0]["SIMinY"] = def.Bounds.MinY;
+                featureclasses.Rows[0]["SIMaxX"] = def.Bounds.MaxX;
+                featureclasses.Rows[0]["SIMaxY"] = def.Bounds.MaxY;
                 featureclasses.Rows[0]["MaxLevels"] = def.MaxLevel;
                 if (!_conn.Update(featureclasses))
                 {
@@ -3149,10 +3149,10 @@ namespace gView.DataSources.Fdb.MSAccess
             }
 
             DataRow fcRow = ds.Tables[0].Rows[0];
-            fcRow["MinX"] = envelope.minx;
-            fcRow["MinY"] = envelope.miny;
-            fcRow["MaxX"] = envelope.maxx;
-            fcRow["MaxY"] = envelope.maxy;
+            fcRow["MinX"] = envelope.MinX;
+            fcRow["MinY"] = envelope.MinY;
+            fcRow["MaxX"] = envelope.MaxX;
+            fcRow["MaxY"] = envelope.MaxY;
 
             if (!_conn.UpdateData(ref ds, "FCS"))
             {

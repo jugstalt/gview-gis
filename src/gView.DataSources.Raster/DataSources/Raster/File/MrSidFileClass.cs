@@ -290,16 +290,16 @@ namespace gView.DataSources.Raster.File
                 }
 
                 IEnvelope picEnv = vector2.IntegerEnvelope(vecs);
-                picEnv.minx = Math.Max(0, picEnv.minx);
-                picEnv.miny = Math.Max(0, picEnv.miny);
-                picEnv.maxx = Math.Min(picEnv.maxx, _geoCoord.iWidth);
-                picEnv.maxy = Math.Min(picEnv.maxy, _geoCoord.iHeight);
+                picEnv.MinX = Math.Max(0, picEnv.MinX);
+                picEnv.MinY = Math.Max(0, picEnv.MinY);
+                picEnv.MaxX = Math.Min(picEnv.MaxX, _geoCoord.iWidth);
+                picEnv.MaxY = Math.Min(picEnv.MaxY, _geoCoord.iHeight);
 
                 // Ecken zurücktransformieren -> Welt
                 vecs = new vector2[3];
-                vecs[0] = new vector2(picEnv.minx, picEnv.miny);
-                vecs[1] = new vector2(picEnv.maxx, picEnv.miny);
-                vecs[2] = new vector2(picEnv.minx, picEnv.maxy);
+                vecs[0] = new vector2(picEnv.MinX, picEnv.MinY);
+                vecs[1] = new vector2(picEnv.MaxX, picEnv.MinY);
+                vecs[2] = new vector2(picEnv.MinX, picEnv.MaxY);
                 tfw.Project(vecs);
                 var p1 = new gView.Framework.Geometry.Point(vecs[0].x, vecs[0].y);
                 var p2 = new gView.Framework.Geometry.Point(vecs[1].x, vecs[1].y);
@@ -322,8 +322,8 @@ namespace gView.DataSources.Raster.File
                     mag = (float)_geoCoord.MinMagnification;
                 }
 
-                x = (int)(picEnv.minx * mag);
-                y = (int)(picEnv.miny * mag);
+                x = (int)(picEnv.MinX * mag);
+                y = (int)(picEnv.MinY * mag);
                 iWidth = (int)((picEnv.Width - 1) * mag);
                 iHeight = (int)((picEnv.Height - 1) * mag);
 

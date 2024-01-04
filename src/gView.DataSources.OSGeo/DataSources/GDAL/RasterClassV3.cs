@@ -275,16 +275,16 @@ namespace gView.DataSources.GDAL
                 }
 
                 IEnvelope picEnv = vector2.IntegerEnvelope(vecs);
-                picEnv.minx = Math.Max(0, picEnv.minx);
-                picEnv.miny = Math.Max(0, picEnv.miny);
-                picEnv.maxx = Math.Min(picEnv.maxx, _iWidth);
-                picEnv.maxy = Math.Min(picEnv.maxy, _iHeight);
+                picEnv.MinX = Math.Max(0, picEnv.MinX);
+                picEnv.MinY = Math.Max(0, picEnv.MinY);
+                picEnv.MaxX = Math.Min(picEnv.MaxX, _iWidth);
+                picEnv.MaxY = Math.Min(picEnv.MaxY, _iHeight);
 
                 // Ecken zurücktransformieren -> Welt
                 vecs = new vector2[3];
-                vecs[0] = new vector2(picEnv.minx, picEnv.miny);
-                vecs[1] = new vector2(picEnv.maxx, picEnv.miny);
-                vecs[2] = new vector2(picEnv.minx, picEnv.maxy);
+                vecs[0] = new vector2(picEnv.MinX, picEnv.MinY);
+                vecs[1] = new vector2(picEnv.MaxX, picEnv.MinY);
+                vecs[2] = new vector2(picEnv.MinX, picEnv.MaxY);
                 tfw.Project(vecs);
                 var p1 = new gView.Framework.Geometry.Point(vecs[0].x, vecs[0].y);
                 var p2 = new gView.Framework.Geometry.Point(vecs[1].x, vecs[1].y);
@@ -300,8 +300,8 @@ namespace gView.DataSources.GDAL
                     mag = 1.0;
                 }
 
-                int x = (int)(picEnv.minx);
-                int y = (int)(picEnv.miny);
+                int x = (int)(picEnv.MinX);
+                int y = (int)(picEnv.MinY);
                 int wWidth = (int)(picEnv.Width);
                 int wHeight = (int)(picEnv.Height);
 

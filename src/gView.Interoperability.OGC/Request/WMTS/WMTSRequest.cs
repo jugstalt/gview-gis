@@ -541,24 +541,24 @@ namespace gView.Interoperability.OGC.Request.WMTS
                 ISpatialReference sRef = SpatialReference.FromID("epsg:" + epsg);
                 IEnvelope extent4326 = GeometricTransformerFactory.Transform2D(extent, sRef, sRef4326).Envelope;
 
-                if (double.IsInfinity(extent4326.minx))
+                if (double.IsInfinity(extent4326.MinX))
                 {
-                    extent4326.minx = -180D;
+                    extent4326.MinX = -180D;
                 }
 
-                if (double.IsInfinity(extent4326.miny))
+                if (double.IsInfinity(extent4326.MinY))
                 {
-                    extent4326.miny = -90D;
+                    extent4326.MinY = -90D;
                 }
 
-                if (double.IsInfinity(extent4326.maxx))
+                if (double.IsInfinity(extent4326.MaxX))
                 {
-                    extent4326.maxx = 180D;
+                    extent4326.MaxX = 180D;
                 }
 
-                if (double.IsInfinity(extent4326.maxy))
+                if (double.IsInfinity(extent4326.MaxY))
                 {
-                    extent4326.maxy = 90D;
+                    extent4326.MaxY = 90D;
                 }
 
                 foreach (string cacheType in new string[] { "classic", "compact" })
@@ -672,8 +672,8 @@ namespace gView.Interoperability.OGC.Request.WMTS
 
                     #region Matrix Set
 
-                    double matrixSetWidth = Math.Abs(extent.maxx - origin.X); // extent.Width;
-                    double matrixSetHeight = Math.Abs(origin.Y - extent.miny); // extent.Height;
+                    double matrixSetWidth = Math.Abs(extent.MaxX - origin.X); // extent.Width;
+                    double matrixSetHeight = Math.Abs(origin.Y - extent.MinY); // extent.Height;
 
                     var matrixSet = new gView.Framework.OGC.WMTS.Version_1_0_0.TileMatrixSet();
 

@@ -237,10 +237,10 @@ namespace gView.Interoperability.GeoServices.Request
                                 Scale = serviceMap.Display.MapScale,
                                 Extent = new JsonExtent()
                                 {
-                                    Xmin = serviceMap.Display.Envelope.minx,
-                                    Ymin = serviceMap.Display.Envelope.miny,
-                                    Xmax = serviceMap.Display.Envelope.maxx,
-                                    Ymax = serviceMap.Display.Envelope.maxy
+                                    Xmin = serviceMap.Display.Envelope.MinX,
+                                    Ymin = serviceMap.Display.Envelope.MinY,
+                                    Xmax = serviceMap.Display.Envelope.MaxX,
+                                    Ymax = serviceMap.Display.Envelope.MaxY
                                     // ToDo: SpatialReference
                                 },
                                 IdleMilliseconds = ContextVariables.UseMetrics ? serviceMap.Metrics : null,
@@ -811,10 +811,10 @@ namespace gView.Interoperability.GeoServices.Request
                     {
                         Extend = new JsonExtent()
                         {
-                            Xmin = extent != null ? extent.minx : double.NaN,
-                            Ymin = extent != null ? extent.miny : double.NaN,
-                            Xmax = extent != null ? extent.maxx : double.NaN,
-                            Ymax = extent != null ? extent.maxy : double.NaN,
+                            Xmin = extent != null ? extent.MinX : double.NaN,
+                            Ymin = extent != null ? extent.MinY : double.NaN,
+                            Xmax = extent != null ? extent.MaxX : double.NaN,
+                            Ymax = extent != null ? extent.MaxY : double.NaN,
                             SpatialReference = featureSref
                         }
                     };

@@ -72,7 +72,7 @@ namespace gView.Framework.Metadata
             var envelope = GetEPSGEnvelope(epsg);
             if (envelope != null)
             {
-                return new Point(envelope.minx, envelope.maxy);
+                return new Point(envelope.MinX, envelope.MaxY);
             }
 
             return null;
@@ -87,7 +87,7 @@ namespace gView.Framework.Metadata
             var envelope = GetEPSGEnvelope(epsg);
             if (envelope != null)
             {
-                return new Point(envelope.minx, envelope.miny);
+                return new Point(envelope.MinX, envelope.MinY);
             }
 
             return null;
@@ -364,10 +364,10 @@ namespace gView.Framework.Metadata
                 stream.Save("epsg" + counter, epsg);
 
                 IEnvelope extent = _properties.Extents.ContainsKey(epsg) ? _properties.Extents[epsg].ToEnvelope() : new Envelope();
-                stream.Save("extent_minx" + counter, extent.minx);
-                stream.Save("extent_miny" + counter, extent.miny);
-                stream.Save("extent_maxx" + counter, extent.maxx);
-                stream.Save("extent_maxy" + counter, extent.maxy);
+                stream.Save("extent_minx" + counter, extent.MinX);
+                stream.Save("extent_miny" + counter, extent.MinY);
+                stream.Save("extent_maxx" + counter, extent.MaxX);
+                stream.Save("extent_maxy" + counter, extent.MaxY);
 
                 IPoint ul = GetOriginUpperLeft(epsg) != null ? GetOriginUpperLeft(epsg) : new Point();
                 stream.Save("origin_ul_x" + counter, ul.X);
@@ -540,10 +540,10 @@ namespace gView.Framework.Metadata
                 public EnvelopeModel() { }
                 public EnvelopeModel(IEnvelope envelope)
                 {
-                    this.MinX = envelope.minx;
-                    this.MinY = envelope.miny;
-                    this.MaxX = envelope.maxx;
-                    this.MaxY = envelope.maxy;
+                    this.MinX = envelope.MinX;
+                    this.MinY = envelope.MinY;
+                    this.MaxX = envelope.MaxX;
+                    this.MaxY = envelope.MaxY;
                 }
                 public double MinX { get; set; }
                 public double MinY { get; set; }

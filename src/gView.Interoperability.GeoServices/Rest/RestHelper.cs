@@ -128,10 +128,10 @@ namespace gView.Interoperability.GeoServices.Rest
         private static string Convert2DEnvelopeToJsonString(IEnvelope envelope, int spatialReferenceId)
         {
             return
-            @"{""xmin"":" + envelope.minx.ToDoubleString() +
-            @",""ymin"":" + envelope.miny.ToDoubleString() +
-            @",""xmax"":" + envelope.maxx.ToDoubleString() +
-            @",""ymax"":" + envelope.maxy.ToDoubleString() +
+            @"{""xmin"":" + envelope.MinX.ToDoubleString() +
+            @",""ymin"":" + envelope.MinY.ToDoubleString() +
+            @",""xmax"":" + envelope.MaxX.ToDoubleString() +
+            @",""ymax"":" + envelope.MaxY.ToDoubleString() +
             @",""spatialReference"":{""wkid"":" + spatialReferenceId + "}" +
             "}";
         }

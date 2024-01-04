@@ -82,10 +82,10 @@ static internal class ApplicationScopeServiceExtensions
         {
             var pluginmananger = new PlugInManager();
 
-            parameters.Add("si_bounds_minx", model.SpatialIndex.Bounds.minx);
-            parameters.Add("si_bounds_miny", model.SpatialIndex.Bounds.miny);
-            parameters.Add("si_bounds_maxx", model.SpatialIndex.Bounds.maxx);
-            parameters.Add("si_bounds_maxy", model.SpatialIndex.Bounds.maxy);
+            parameters.Add("si_bounds_minx", model.SpatialIndex.Bounds.MinX);
+            parameters.Add("si_bounds_miny", model.SpatialIndex.Bounds.MinY);
+            parameters.Add("si_bounds_maxx", model.SpatialIndex.Bounds.MaxX);
+            parameters.Add("si_bounds_maxy", model.SpatialIndex.Bounds.MaxY);
             parameters.Add("si_max_levels", model.SpatialIndex.MaxLevel);
 
             parameters.Add("autofields",
@@ -142,10 +142,10 @@ static internal class ApplicationScopeServiceExtensions
                 // Geometry Type
                 { "geometry_type", model.GeometryType.ToString() },
                 // Spatial Index Def
-                { "bounds_minx", model.SpatialIndex.Bounds.minx },
-                { "bounds_miny", model.SpatialIndex.Bounds.miny },
-                { "bounds_maxx", model.SpatialIndex.Bounds.maxx },
-                { "bounds_maxy", model.SpatialIndex.Bounds.maxy },
+                { "bounds_minx", model.SpatialIndex.Bounds.MinX },
+                { "bounds_miny", model.SpatialIndex.Bounds.MinY },
+                { "bounds_maxx", model.SpatialIndex.Bounds.MaxX },
+                { "bounds_maxy", model.SpatialIndex.Bounds.MaxY },
                 { "max_levels", model.SpatialIndex.MaxLevel },
                 // Fields
                 { "fields", JsonConvert.SerializeObject(

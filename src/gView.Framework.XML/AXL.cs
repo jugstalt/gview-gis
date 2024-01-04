@@ -776,10 +776,10 @@ namespace gView.Framework.XML
             {
                 IEnvelope env = (IEnvelope)geom;
                 axl.Append("<ENVELOPE ");
-                axl.Append("minx=\"" + env.minx.ToString() + "\" ");
-                axl.Append("miny=\"" + env.miny.ToString() + "\" ");
-                axl.Append("maxx=\"" + env.maxx.ToString() + "\" ");
-                axl.Append("maxy=\"" + env.maxy.ToString() + "\" ");
+                axl.Append("minx=\"" + env.MinX.ToString() + "\" ");
+                axl.Append("miny=\"" + env.MinY.ToString() + "\" ");
+                axl.Append("maxx=\"" + env.MaxX.ToString() + "\" ");
+                axl.Append("maxy=\"" + env.MaxY.ToString() + "\" ");
                 axl.Append(SrsAttribute(geom));
                 axl.Append("/>");
             }

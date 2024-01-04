@@ -149,17 +149,17 @@ namespace gView.Framework.Geometry.Tiling
             switch (key)
             {
                 case 0:
-                    return new Envelope(quad.minx, quad.miny + quad.Height / 2.0,
-                                        quad.minx + quad.Width / 2.0, quad.maxy);
+                    return new Envelope(quad.MinX, quad.MinY + quad.Height / 2.0,
+                                        quad.MinX + quad.Width / 2.0, quad.MaxY);
                 case 1:
-                    return new Envelope(quad.minx + quad.Width / 2.0, quad.miny + quad.Height / 2.0,
-                                        quad.maxx, quad.maxy);
+                    return new Envelope(quad.MinX + quad.Width / 2.0, quad.MinY + quad.Height / 2.0,
+                                        quad.MaxX, quad.MaxY);
                 case 2:
-                    return new Envelope(quad.minx, quad.miny,
-                                        quad.minx + quad.Width / 2.0, quad.miny + quad.Height / 2.0);
+                    return new Envelope(quad.MinX, quad.MinY,
+                                        quad.MinX + quad.Width / 2.0, quad.MinY + quad.Height / 2.0);
                 case 3:
-                    return new Envelope(quad.minx + quad.Width / 2.0, quad.miny,
-                                        quad.maxx, quad.miny + quad.Height / 2.0);
+                    return new Envelope(quad.MinX + quad.Width / 2.0, quad.MinY,
+                                        quad.MaxX, quad.MinY + quad.Height / 2.0);
             }
 
             throw new ArgumentException("Quadkey must be [0..3]");

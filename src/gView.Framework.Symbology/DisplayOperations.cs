@@ -138,8 +138,8 @@ namespace gView.Framework.Symbology
 
         private static IGraphicsPath ConvertEnvelopeFromPoints(IDisplay display, IEnvelope envelope, IGraphicsPath gp)
         {
-            double minx = envelope.minx, miny = envelope.miny;
-            double maxx = envelope.maxx, maxy = envelope.maxy;
+            double minx = envelope.MinX, miny = envelope.MinY;
+            double maxx = envelope.MaxX, maxy = envelope.MaxY;
             display.World2Image(ref minx, ref miny);
             display.World2Image(ref maxx, ref maxy);
 
@@ -272,8 +272,8 @@ namespace gView.Framework.Symbology
 
         private static IGraphicsPath ConvertEnvelope(IDisplay display, IEnvelope envelope, IGraphicsPath gp)
         {
-            double minx = envelope.minx, miny = envelope.miny;
-            double maxx = envelope.maxx, maxy = envelope.maxy;
+            double minx = envelope.MinX, miny = envelope.MinY;
+            double maxx = envelope.MaxX, maxy = envelope.MaxY;
             display.World2Image(ref minx, ref miny);
             display.World2Image(ref maxx, ref maxy);
 

@@ -71,20 +71,20 @@ namespace gView.Framework.OGC
             if (sRef == null)
             {
                 string box2 = "box2d('BOX3D(" +
-                                envelope.minx.ToString(numberFormat_EnUS) + " " +
-                                envelope.miny.ToString(numberFormat_EnUS) + "," +
-                                envelope.maxx.ToString(numberFormat_EnUS) + " " +
-                                envelope.maxy.ToString(numberFormat_EnUS) + ")'::box3d)";
+                                envelope.MinX.ToString(numberFormat_EnUS) + " " +
+                                envelope.MinY.ToString(numberFormat_EnUS) + "," +
+                                envelope.MaxX.ToString(numberFormat_EnUS) + " " +
+                                envelope.MaxY.ToString(numberFormat_EnUS) + ")'::box3d)";
                 return box2;
             }
             else
             {
                 string[] srid = sRef.Name.Split(':');
                 string box2 = "st_setsrid(box2d('BOX3D(" +
-                                envelope.minx.ToString(numberFormat_EnUS) + " " +
-                                envelope.miny.ToString(numberFormat_EnUS) + "," +
-                                envelope.maxx.ToString(numberFormat_EnUS) + " " +
-                                envelope.maxy.ToString(numberFormat_EnUS) + ")'::box3d)," + srid[srid.Length - 1] + ")";
+                                envelope.MinX.ToString(numberFormat_EnUS) + " " +
+                                envelope.MinY.ToString(numberFormat_EnUS) + "," +
+                                envelope.MaxX.ToString(numberFormat_EnUS) + " " +
+                                envelope.MaxY.ToString(numberFormat_EnUS) + ")'::box3d)," + srid[srid.Length - 1] + ")";
                 return box2;
             }
         }

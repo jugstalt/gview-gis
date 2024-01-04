@@ -2043,10 +2043,10 @@ namespace gView.Interoperability.ArcXML
             }
 
             xWriter.WriteStartElement("ENVELOPE");
-            xWriter.WriteAttributeString("minx", envelope.minx.ToString());
-            xWriter.WriteAttributeString("miny", envelope.miny.ToString());
-            xWriter.WriteAttributeString("maxx", envelope.maxx.ToString());
-            xWriter.WriteAttributeString("maxy", envelope.maxy.ToString());
+            xWriter.WriteAttributeString("minx", envelope.MinX.ToString());
+            xWriter.WriteAttributeString("miny", envelope.MinY.ToString());
+            xWriter.WriteAttributeString("maxx", envelope.MaxX.ToString());
+            xWriter.WriteAttributeString("maxy", envelope.MaxY.ToString());
             if (name != String.Empty)
             {
                 xWriter.WriteAttributeString("name", name);

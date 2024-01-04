@@ -355,10 +355,10 @@ namespace gView.Framework.Geometry
             PersistablePoint lowerleft = (PersistablePoint)stream.Load("lowerleft", new PersistablePoint(new Point()), new PersistablePoint(new Point()));
             PersistablePoint upperright = (PersistablePoint)stream.Load("upperright", new PersistablePoint(new Point()), new PersistablePoint(new Point()));
 
-            _envelope.minx = Math.Min(lowerleft.Point.X, upperright.Point.X);
-            _envelope.miny = Math.Min(lowerleft.Point.Y, upperright.Point.Y);
-            _envelope.maxx = Math.Max(lowerleft.Point.X, upperright.Point.X);
-            _envelope.maxy = Math.Max(lowerleft.Point.Y, upperright.Point.Y);
+            _envelope.MinX = Math.Min(lowerleft.Point.X, upperright.Point.X);
+            _envelope.MinY = Math.Min(lowerleft.Point.Y, upperright.Point.Y);
+            _envelope.MaxX = Math.Max(lowerleft.Point.X, upperright.Point.X);
+            _envelope.MaxY = Math.Max(lowerleft.Point.Y, upperright.Point.Y);
         }
 
         public void Save(IPersistStream stream)

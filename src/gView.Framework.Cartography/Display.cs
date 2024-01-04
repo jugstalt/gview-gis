@@ -210,7 +210,7 @@ namespace gView.Framework.Cartography
                 return;
             }
 
-            ZoomTo(envelope.minx, envelope.miny, envelope.maxx, envelope.maxy);
+            ZoomTo(envelope.MinX, envelope.MinY, envelope.MaxX, envelope.MaxY);
         }
 
         private IGraphicsContainer _graphicsContainer = new GraphicsContainer();
@@ -242,10 +242,10 @@ namespace gView.Framework.Cartography
             {
                 if (value != null)
                 {
-                    m_minX = value.minx;
-                    m_minY = value.miny;
-                    m_maxX = value.maxx;
-                    m_maxY = value.maxy;
+                    m_minX = value.MinX;
+                    m_minY = value.MinY;
+                    m_maxX = value.MaxX;
+                    m_maxY = value.MaxY;
                 }
             }
         }
@@ -286,10 +286,10 @@ namespace gView.Framework.Cartography
             }
             set
             {
-                m_actMinX = value.minx;
-                m_actMinY = value.miny;
-                m_actMaxX = value.maxx;
-                m_actMaxY = value.maxy;
+                m_actMinX = value.MinX;
+                m_actMinY = value.MinY;
+                m_actMaxX = value.MaxX;
+                m_actMaxY = value.MaxY;
             }
         }
 

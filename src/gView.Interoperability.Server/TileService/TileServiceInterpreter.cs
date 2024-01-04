@@ -732,7 +732,7 @@ namespace gView.Interoperability.Server.TileService
                 Epsg = epsg,
                 Dpi = metadata.Dpi,
                 Origin = new double[] { origin.X, origin.Y },
-                Extent = new double[] { bounds.minx, bounds.miny, bounds.maxx, bounds.maxy },
+                Extent = new double[] { bounds.MinX, bounds.MinY, bounds.MaxX, bounds.MaxY },
                 TileSize = new int[] { metadata.TileWidth, metadata.TileHeight },
                 Format = format,
                 Orientation = orientation.ToString(),
@@ -1087,12 +1087,12 @@ namespace gView.Interoperability.Server.TileService
             sb.Append("<Abstract>gView Tile Cache</Abstract>");
             sb.Append("<SRS>EPSG:" + srs + "</SRS>");
 
-            sb.Append("<BoundingBox minx=\"" + box.minx.ToString(_nhi) +
-                                "\" miny=\"" + box.miny.ToString(_nhi) +
-                                "\" maxx=\"" + box.maxx.ToString(_nhi) +
-                                "\" maxy=\"" + box.maxy.ToString(_nhi) + "\" />");
-            sb.Append("<Origin x=\"" + box.minx.ToString(_nhi) +
-                           "\" y=\"" + box.miny.ToString(_nhi) + "\" />");
+            sb.Append("<BoundingBox minx=\"" + box.MinX.ToString(_nhi) +
+                                "\" miny=\"" + box.MinY.ToString(_nhi) +
+                                "\" maxx=\"" + box.MaxX.ToString(_nhi) +
+                                "\" maxy=\"" + box.MaxY.ToString(_nhi) + "\" />");
+            sb.Append("<Origin x=\"" + box.MinX.ToString(_nhi) +
+                           "\" y=\"" + box.MinY.ToString(_nhi) + "\" />");
 
             sb.Append("<TileFormat width=\"" + metadata.TileWidth + "\" height=\"" + metadata.TileHeight + "\" mime-type=\"image/png\" extension=\"png\" />");
             sb.Append("<TileSets>");

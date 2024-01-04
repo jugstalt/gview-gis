@@ -52,10 +52,10 @@ namespace gView.DataSources.EventTable
                     }
                     IEnvelope env = ((ISpatialFilter)filter).Geometry.Envelope;
                     appendWhere =
-                        etconn.XFieldName + ">=" + env.minx.ToString(_nhi) + " AND " +
-                        etconn.XFieldName + "<=" + env.maxx.ToString(_nhi) + " AND " +
-                        etconn.YFieldName + ">=" + env.miny.ToString(_nhi) + " AND " +
-                        etconn.YFieldName + "<=" + env.maxy.ToString(_nhi);
+                        etconn.XFieldName + ">=" + env.MinX.ToString(_nhi) + " AND " +
+                        etconn.XFieldName + "<=" + env.MaxX.ToString(_nhi) + " AND " +
+                        etconn.YFieldName + ">=" + env.MinY.ToString(_nhi) + " AND " +
+                        etconn.YFieldName + "<=" + env.MaxY.ToString(_nhi);
                 }
                 if (filter is IRowIDFilter)
                 {

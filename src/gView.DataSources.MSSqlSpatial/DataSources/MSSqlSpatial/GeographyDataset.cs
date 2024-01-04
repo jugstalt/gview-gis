@@ -164,20 +164,20 @@ namespace gView.DataSources.MSSqlSpatial
 
                     where = fc.ShapeFieldName + ".Filter(";
                     where += "geography::STGeomFromText('POLYGON((";
-                    where += Math.Max(-179.99, env.minx).ToString(_nhi) + " ";
-                    where += Math.Max(-89.99, env.miny).ToString(_nhi) + ",";
+                    where += Math.Max(-179.99, env.MinX).ToString(_nhi) + " ";
+                    where += Math.Max(-89.99, env.MinY).ToString(_nhi) + ",";
 
-                    where += Math.Min(179.99, env.maxx).ToString(_nhi) + " ";
-                    where += Math.Max(-89.99, env.miny).ToString(_nhi) + ",";
+                    where += Math.Min(179.99, env.MaxX).ToString(_nhi) + " ";
+                    where += Math.Max(-89.99, env.MinY).ToString(_nhi) + ",";
 
-                    where += Math.Min(179.99, env.maxx).ToString(_nhi) + " ";
-                    where += Math.Min(89.99, env.maxy).ToString(_nhi) + ",";
+                    where += Math.Min(179.99, env.MaxX).ToString(_nhi) + " ";
+                    where += Math.Min(89.99, env.MaxY).ToString(_nhi) + ",";
 
-                    where += Math.Max(-179.99, env.minx).ToString(_nhi) + " ";
-                    where += Math.Min(89.99, env.maxy).ToString(_nhi) + ",";
+                    where += Math.Max(-179.99, env.MinX).ToString(_nhi) + " ";
+                    where += Math.Min(89.99, env.MaxY).ToString(_nhi) + ",";
 
-                    where += Math.Max(-179.99, env.minx).ToString(_nhi) + " ";
-                    where += Math.Max(-89.99, env.miny).ToString(_nhi) + "))',4326))=1";
+                    where += Math.Max(-179.99, env.MinX).ToString(_nhi) + " ";
+                    where += Math.Max(-89.99, env.MinY).ToString(_nhi) + "))',4326))=1";
                 }
                 else if (sFilter.Geometry != null)
                 {
@@ -185,20 +185,20 @@ namespace gView.DataSources.MSSqlSpatial
 
                     where = fc.ShapeFieldName + ".STIntersects(";
                     where += "geography::STGeomFromText('POLYGON((";
-                    where += Math.Max(-180.0, env.minx).ToString(_nhi) + " ";
-                    where += Math.Max(-89.99, env.miny).ToString(_nhi) + ",";
+                    where += Math.Max(-180.0, env.MinX).ToString(_nhi) + " ";
+                    where += Math.Max(-89.99, env.MinY).ToString(_nhi) + ",";
 
-                    where += Math.Max(-180.0, env.minx).ToString(_nhi) + " ";
-                    where += Math.Min(89.99, env.maxy).ToString(_nhi) + ",";
+                    where += Math.Max(-180.0, env.MinX).ToString(_nhi) + " ";
+                    where += Math.Min(89.99, env.MaxY).ToString(_nhi) + ",";
 
-                    where += Math.Min(180.0, env.maxx).ToString(_nhi) + " ";
-                    where += Math.Min(89.99, env.maxy).ToString(_nhi) + ",";
+                    where += Math.Min(180.0, env.MaxX).ToString(_nhi) + " ";
+                    where += Math.Min(89.99, env.MaxY).ToString(_nhi) + ",";
 
-                    where += Math.Min(180.0, env.maxx).ToString(_nhi) + " ";
-                    where += Math.Max(-89.99, env.miny).ToString(_nhi) + ",";
+                    where += Math.Min(180.0, env.MaxX).ToString(_nhi) + " ";
+                    where += Math.Max(-89.99, env.MinY).ToString(_nhi) + ",";
 
-                    where += Math.Max(-180.0, env.minx).ToString(_nhi) + " ";
-                    where += Math.Max(-89.99, env.miny).ToString(_nhi) + "))',4326))=1";
+                    where += Math.Max(-180.0, env.MinX).ToString(_nhi) + " ";
+                    where += Math.Max(-89.99, env.MinY).ToString(_nhi) + "))',4326))=1";
                 }
                 filter.AddField(fc.ShapeFieldName);
             }

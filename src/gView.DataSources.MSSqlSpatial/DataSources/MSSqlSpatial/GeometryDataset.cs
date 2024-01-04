@@ -708,10 +708,10 @@ namespace gView.DataSources.MSSqlSpatial
                     command.CommandText += " ON " + destFc.Name + "(" + destFc.ShapeFieldName + ")";
                     command.CommandText += " USING GEOMETRY_GRID WITH (";
                     command.CommandText += "BOUNDING_BOX = (";
-                    command.CommandText += "xmin=" + env.minx.ToString(_nhi) + ",";
-                    command.CommandText += "ymin=" + env.miny.ToString(_nhi) + ",";
-                    command.CommandText += "xmax=" + env.maxx.ToString(_nhi) + ",";
-                    command.CommandText += "ymax=" + env.maxy.ToString(_nhi) + ")";
+                    command.CommandText += "xmin=" + env.MinX.ToString(_nhi) + ",";
+                    command.CommandText += "ymin=" + env.MinY.ToString(_nhi) + ",";
+                    command.CommandText += "xmax=" + env.MaxX.ToString(_nhi) + ",";
+                    command.CommandText += "ymax=" + env.MaxY.ToString(_nhi) + ")";
                     command.CommandText += ",GRIDS = (LEVEL_1 = LOW, LEVEL_2 = LOW, LEVEL_3 = LOW, LEVEL_4 = LOW)";
                     command.CommandText += ",CELLS_PER_OBJECT = 256";
                     command.CommandText += ")";

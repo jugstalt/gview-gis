@@ -61,10 +61,10 @@ internal class SpatialIndexDefinition : IExplorerObjectContextTool
                 { "dataset_connstr", featureDataset.ConnectionString },
                 { "dataset_guid", featureDatasetGuid.ToString() },
                 { "dataset_fc", featureClass.Name },
-                { "bounds_minx", model.Value.Bounds.minx },
-                { "bounds_miny", model.Value.Bounds.miny },
-                { "bounds_maxx", model.Value.Bounds.maxx },
-                { "bounds_maxy", model.Value.Bounds.maxy },
+                { "bounds_minx", model.Value.Bounds.MinX },
+                { "bounds_miny", model.Value.Bounds.MinY },
+                { "bounds_maxx", model.Value.Bounds.MaxX },
+                { "bounds_maxy", model.Value.Bounds.MaxY },
                 { "max_levels", model.Value.MaxLevel }
             };
 

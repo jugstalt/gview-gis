@@ -12,14 +12,14 @@ namespace gView.Interoperability.GeoServices.Extensions
             {
                 IEnvelope envelope = (IEnvelope)geometry;
 
-                double minX = envelope.minx, minY = envelope.miny, maxX = envelope.maxx, maxY = envelope.maxy;
+                double minX = envelope.MinX, minY = envelope.MinY, maxX = envelope.MaxX, maxY = envelope.MaxY;
                 display.Image2World(ref minX, ref minY);
                 display.Image2World(ref maxX, ref maxY);
 
-                envelope.minx = minX;
-                envelope.miny = minY;
-                envelope.maxx = maxX;
-                envelope.maxy = maxY;
+                envelope.MinX = minX;
+                envelope.MinY = minY;
+                envelope.MaxX = maxX;
+                envelope.MaxY = maxY;
             }
             else
             {

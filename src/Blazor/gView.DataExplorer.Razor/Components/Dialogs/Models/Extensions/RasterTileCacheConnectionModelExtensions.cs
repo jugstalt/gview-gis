@@ -11,7 +11,7 @@ static public class RasterTileCacheConnectionModelExtensions
         StringBuilder sb = new StringBuilder();
 
         sb.Append($"name={connectionModel.Name}");
-        sb.Append($";extent={connectionModel.Extent.minx.ToString(Numbers.Nhi)},{connectionModel.Extent.miny.ToString(Numbers.Nhi)},{connectionModel.Extent.maxx.ToString(Numbers.Nhi)},{connectionModel.Extent.maxy.ToString(Numbers.Nhi)}");
+        sb.Append($";extent={connectionModel.Extent.MinX.ToString(Numbers.Nhi)},{connectionModel.Extent.MinY.ToString(Numbers.Nhi)},{connectionModel.Extent.MaxX.ToString(Numbers.Nhi)},{connectionModel.Extent.MaxY.ToString(Numbers.Nhi)}");
         sb.Append($";origin={(int)connectionModel.TileOrigin.TileOrigin}");
         sb.Append($";origin_x={connectionModel.TileOrigin.Origin.X.ToString(Numbers.Nhi)}");
         sb.Append($";origin_y={connectionModel.TileOrigin.Origin.Y.ToString(Numbers.Nhi)}");

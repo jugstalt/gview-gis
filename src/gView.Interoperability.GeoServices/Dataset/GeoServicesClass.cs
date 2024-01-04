@@ -81,7 +81,7 @@ namespace gView.Interoperability.GeoServices.Dataset
             if (display?.Envelope != null)
             {
                 var env = display.Envelope;
-                jsonExportMap.BBox = $"{env.minx.ToDoubleString()},{env.miny.ToDoubleString()},{env.maxx.ToDoubleString()},{env.maxy.ToDoubleString()}";
+                jsonExportMap.BBox = $"{env.MinX.ToDoubleString()},{env.MinY.ToDoubleString()},{env.MaxX.ToDoubleString()},{env.MaxY.ToDoubleString()}";
             }
 
             var sRef = display.SpatialReference ?? this.SpatialReference;

@@ -58,7 +58,7 @@ namespace gView.Framework.Cartography.LayerRenderers
                 }
 
                 IEnvelope env = _layer.RasterClass.Polygon.Envelope;
-                double minx = env.minx, miny = env.miny, maxx = env.maxx, maxy = env.maxy;
+                double minx = env.MinX, miny = env.MinY, maxx = env.MaxX, maxy = env.MaxY;
 
                 _map.World2Image(ref minx, ref miny);
                 _map.World2Image(ref maxx, ref maxy);
@@ -84,10 +84,10 @@ namespace gView.Framework.Cartography.LayerRenderers
 
                     //System.Windows.Forms.MessageBox.Show("begin");
 
-                    double W = _map.Envelope.maxx - _map.Envelope.minx;
-                    double H = _map.Envelope.maxy - _map.Envelope.miny;
-                    double MinX = _map.Envelope.minx;
-                    double MinY = _map.Envelope.miny;
+                    double W = _map.Envelope.MaxX - _map.Envelope.MinX;
+                    double H = _map.Envelope.MaxY - _map.Envelope.MinY;
+                    double MinX = _map.Envelope.MinX;
+                    double MinY = _map.Envelope.MinY;
 
                     //_lastRasterLayer = _layer;
 

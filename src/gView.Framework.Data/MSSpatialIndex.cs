@@ -177,10 +177,10 @@ namespace gView.Framework.Data
                 if (_extent != null)
                 {
                     sb.Append("BOUNDING_BOX = (");
-                    sb.Append("xmin=" + _extent.minx.ToString(_nhi) + ",");
-                    sb.Append("ymin=" + _extent.miny.ToString(_nhi) + ",");
-                    sb.Append("xmax=" + _extent.maxx.ToString(_nhi) + ",");
-                    sb.Append("ymax=" + _extent.maxy.ToString(_nhi) + "),");
+                    sb.Append("xmin=" + _extent.MinX.ToString(_nhi) + ",");
+                    sb.Append("ymin=" + _extent.MinY.ToString(_nhi) + ",");
+                    sb.Append("xmax=" + _extent.MaxX.ToString(_nhi) + ",");
+                    sb.Append("ymax=" + _extent.MaxY.ToString(_nhi) + "),");
                 }
                 sb.Append("GRIDS = (LEVEL_1 = " + _level1.ToString() + ", LEVEL_2 = " + _level2.ToString() + ", LEVEL_3 = " + _level3.ToString() + ", LEVEL_4 = " + _level4.ToString() + ")");
                 sb.Append(",CELLS_PER_OBJECT = " + _cellsPerObject.ToString());

@@ -256,9 +256,9 @@ namespace gView.Framework.Cartography
                                 }
                                 else
                                 {
-                                    x0 = geoBmp.Envelope.minx; y0 = geoBmp.Envelope.maxy;
-                                    x1 = geoBmp.Envelope.maxx; y1 = geoBmp.Envelope.maxy;
-                                    x2 = geoBmp.Envelope.minx; y2 = geoBmp.Envelope.miny;
+                                    x0 = geoBmp.Envelope.MinX; y0 = geoBmp.Envelope.MaxY;
+                                    x1 = geoBmp.Envelope.MaxX; y1 = geoBmp.Envelope.MaxY;
+                                    x2 = geoBmp.Envelope.MinX; y2 = geoBmp.Envelope.MinY;
                                 }
 
                                 display.World2Image(ref x0, ref y0);

@@ -469,10 +469,10 @@ namespace gView.Framework.Cartography.Rendering
                                 {
                                     IPoint p1 = path[iPoint];
                                     IPoint p2 = path[iPoint + 1];
-                                    if (dispEnv.minx <= p1.X && dispEnv.maxx >= p1.X &&
-                                        dispEnv.miny <= p1.Y && dispEnv.maxy >= p1.Y &&
-                                        dispEnv.minx <= p2.X && dispEnv.maxx >= p2.X &&
-                                        dispEnv.miny <= p2.Y && dispEnv.maxy >= p2.Y)
+                                    if (dispEnv.MinX <= p1.X && dispEnv.MaxX >= p1.X &&
+                                        dispEnv.MinY <= p1.Y && dispEnv.MaxY >= p1.Y &&
+                                        dispEnv.MinX <= p2.X && dispEnv.MaxX >= p2.X &&
+                                        dispEnv.MinY <= p2.Y && dispEnv.MaxY >= p2.Y)
                                     {
                                         double len = /*Math.Sqrt*/(p1.X - p2.X) * (p1.X - p2.X) + (p1.Y - p2.Y) * (p1.Y - p2.Y);
                                         if (len > maxLenght2)
@@ -555,10 +555,10 @@ namespace gView.Framework.Cartography.Rendering
                                 {
                                     IPoint p1 = path[iPoint];
                                     IPoint p2 = path[iPoint + 1];
-                                    if (dispEnv.minx <= p1.X && dispEnv.maxx >= p1.X &&
-                                        dispEnv.miny <= p1.Y && dispEnv.maxy >= p1.Y &&
-                                        dispEnv.minx <= p2.X && dispEnv.maxx >= p2.X &&
-                                        dispEnv.miny <= p2.Y && dispEnv.maxy >= p2.Y)
+                                    if (dispEnv.MinX <= p1.X && dispEnv.MaxX >= p1.X &&
+                                        dispEnv.MinY <= p1.Y && dispEnv.MaxY >= p1.Y &&
+                                        dispEnv.MinX <= p2.X && dispEnv.MaxX >= p2.X &&
+                                        dispEnv.MinY <= p2.Y && dispEnv.MaxY >= p2.Y)
                                     {
                                         double len2 = /*Math.Sqrt*/(p1.X - p2.X) * (p1.X - p2.X) + (p1.Y - p2.Y) * (p1.Y - p2.Y);
                                         if (len2 > maxLenght2)

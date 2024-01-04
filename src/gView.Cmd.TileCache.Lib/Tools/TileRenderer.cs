@@ -104,8 +104,8 @@ namespace gView.Cmd.TileCache.Lib.Tools
             foreach (double scale in _preRenderScales ?? _metadata.Scales.InnerList)
             {
                 double res = scale / (96.0 / 0.0254) * dpu;
-                int col0 = grid.TileColumn(_bbox.minx, res), col1 = grid.TileColumn(_bbox.maxx, res);
-                int row0 = grid.TileRow(_bbox.maxy, res), row1 = grid.TileRow(_bbox.miny, res);
+                int col0 = grid.TileColumn(_bbox.MinX, res), col1 = grid.TileColumn(_bbox.MaxX, res);
+                int row0 = grid.TileRow(_bbox.MaxY, res), row1 = grid.TileRow(_bbox.MinY, res);
 
                 featureMax += Math.Max(1, (Math.Abs(col1 - col0) + 1) * (Math.Abs(row1 - row0) + 1) / step / step);
             }
@@ -129,8 +129,8 @@ namespace gView.Cmd.TileCache.Lib.Tools
             foreach (double scale in _preRenderScales ?? _metadata.Scales.InnerList)
             {
                 double res = scale / (96.0 / 0.0254) * dpu;
-                int col0 = grid.TileColumn(_bbox.minx, res), col1 = grid.TileColumn(_bbox.maxx, res);
-                int row0 = grid.TileRow(_bbox.maxy, res), row1 = grid.TileRow(_bbox.miny, res);
+                int col0 = grid.TileColumn(_bbox.MinX, res), col1 = grid.TileColumn(_bbox.MaxX, res);
+                int row0 = grid.TileRow(_bbox.MaxY, res), row1 = grid.TileRow(_bbox.MinY, res);
                 int cols = Math.Abs(col1 - col0) + 1;
                 int rows = Math.Abs(row1 - row0) + 1;
                 col0 = Math.Min(col0, col1);

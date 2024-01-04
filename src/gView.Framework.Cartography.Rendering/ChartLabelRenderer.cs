@@ -264,10 +264,10 @@ namespace gView.Framework.Cartography.Rendering
                     {
                         IPoint p1 = path[iPoint];
                         IPoint p2 = path[iPoint + 1];
-                        if (dispEnv.minx <= p1.X && dispEnv.maxx >= p1.X &&
-                            dispEnv.miny <= p1.Y && dispEnv.maxy >= p1.Y &&
-                            dispEnv.minx <= p2.X && dispEnv.maxx >= p2.X &&
-                            dispEnv.miny <= p2.Y && dispEnv.maxy >= p2.Y)
+                        if (dispEnv.MinX <= p1.X && dispEnv.MaxX >= p1.X &&
+                            dispEnv.MinY <= p1.Y && dispEnv.MaxY >= p1.Y &&
+                            dispEnv.MinX <= p2.X && dispEnv.MaxX >= p2.X &&
+                            dispEnv.MinY <= p2.Y && dispEnv.MaxY >= p2.Y)
                         {
                             point = new Point((p1.X + p2.X) * 0.5, (p1.Y + p2.Y) * 0.5);
                             if (disp.LabelEngine.TryAppend(disp,
@@ -466,8 +466,8 @@ namespace gView.Framework.Cartography.Rendering
                     }
                 }
 
-                double x1 = chartEnvelope.minx, y1 = chartEnvelope.maxy,
-                       x2 = chartEnvelope.maxx, y2 = chartEnvelope.miny;
+                double x1 = chartEnvelope.MinX, y1 = chartEnvelope.MaxY,
+                       x2 = chartEnvelope.MaxX, y2 = chartEnvelope.MinY;
                 disp.World2Image(ref x1, ref y1);
                 disp.World2Image(ref x2, ref y2);
 

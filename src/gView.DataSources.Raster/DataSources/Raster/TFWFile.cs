@@ -290,10 +290,10 @@ namespace gView.DataSources.Raster
                 }
                 else
                 {
-                    env.minx = Math.Min(env.minx, vec.x);
-                    env.miny = Math.Min(env.miny, vec.y);
-                    env.maxx = Math.Max(env.maxx, vec.x);
-                    env.maxy = Math.Max(env.maxy, vec.y);
+                    env.MinX = Math.Min(env.MinX, vec.x);
+                    env.MinY = Math.Min(env.MinY, vec.y);
+                    env.MaxX = Math.Max(env.MaxX, vec.x);
+                    env.MaxY = Math.Max(env.MaxY, vec.y);
                 }
             }
             return env;
@@ -303,10 +303,10 @@ namespace gView.DataSources.Raster
         {
             IEnvelope env = vector2.Envelope(vecs);
 
-            env.minx = Math.Floor(env.minx);
-            env.miny = Math.Floor(env.miny);
-            env.maxx = Math.Floor(env.maxx) + 1;
-            env.maxy = Math.Floor(env.maxy) + 1;
+            env.MinX = Math.Floor(env.MinX);
+            env.MinY = Math.Floor(env.MinY);
+            env.MaxX = Math.Floor(env.MaxX) + 1;
+            env.MaxY = Math.Floor(env.MaxY) + 1;
 
             return env;
         }

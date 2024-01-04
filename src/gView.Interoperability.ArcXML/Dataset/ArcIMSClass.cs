@@ -145,7 +145,7 @@ namespace gView.Interoperability.ArcXML.Dataset
                     iWidth = (int)(bounds.Width * display.Dpm / display.MapScale);
                     iHeight = (int)(bounds.Height * display.Dpm / display.MapScale);
                 }
-                sb.Append("<ENVELOPE minx='" + bounds.minx.ToString() + "' miny='" + bounds.miny.ToString() + "' maxx='" + bounds.maxx.ToString() + "' maxy='" + bounds.maxy.ToString() + "' />");
+                sb.Append("<ENVELOPE minx='" + bounds.MinX.ToString() + "' miny='" + bounds.MinY.ToString() + "' maxx='" + bounds.MaxX.ToString() + "' maxy='" + bounds.MaxY.ToString() + "' />");
                 sb.Append("<IMAGESIZE width='" + iWidth + "' height='" + iHeight + "' />");
                 sb.Append("<BACKGROUND color='" + Color2AXL(display.BackgroundColor) + "' transcolor='" + Color2AXL(display.TransparentColor) + "' />");
 
@@ -391,7 +391,7 @@ namespace gView.Interoperability.ArcXML.Dataset
                 sb.Append("<REQUEST>");
                 sb.Append("<GET_IMAGE>");
                 sb.Append("<PROPERTIES>");
-                sb.Append("<ENVELOPE minx='" + display.Envelope.minx.ToString() + "' miny='" + display.Envelope.miny.ToString() + "' maxx='" + display.Envelope.maxx.ToString() + "' maxy='" + display.Envelope.maxy.ToString() + "' />");
+                sb.Append("<ENVELOPE minx='" + display.Envelope.MinX.ToString() + "' miny='" + display.Envelope.MinY.ToString() + "' maxx='" + display.Envelope.MaxX.ToString() + "' maxy='" + display.Envelope.MaxY.ToString() + "' />");
                 sb.Append("<IMAGESIZE width='" + display.ImageWidth + "' height='" + display.ImageHeight + "' />");
                 sb.Append("<BACKGROUND color='255,255,255' transcolor='255,255,255' />");
 

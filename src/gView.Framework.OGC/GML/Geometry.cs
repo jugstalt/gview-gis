@@ -515,8 +515,8 @@ namespace gView.Framework.OGC.GML
             //sb.Append(@"</gml:Envelope>");
             sb.Append(@"<gml:Box srsName=""" + srsName + @""">");
             sb.Append(@"<gml:coordinates>");
-            sb.Append(CoordinateString(new Point(envelope.minx, envelope.miny), sRef) + " ");
-            sb.Append(CoordinateString(new Point(envelope.maxx, envelope.maxy), sRef));
+            sb.Append(CoordinateString(new Point(envelope.MinX, envelope.MinY), sRef) + " ");
+            sb.Append(CoordinateString(new Point(envelope.MaxX, envelope.MaxY), sRef));
             sb.Append(@"</gml:coordinates>");
             sb.Append(@"</gml:Box>");
             return sb.ToString();

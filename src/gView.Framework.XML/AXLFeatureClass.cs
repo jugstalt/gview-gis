@@ -1210,8 +1210,8 @@ namespace gView.Framework.XML
                     axl.WriteAttribute("iheight", display.ImageHeight.ToString());
                     if (display.Envelope != null)
                     {
-                        axl.WriteEnvelope(display.Envelope.minx, display.Envelope.miny,
-                                          display.Envelope.maxx, display.Envelope.maxy);
+                        axl.WriteEnvelope(display.Envelope.MinX, display.Envelope.MinY,
+                                          display.Envelope.MaxX, display.Envelope.MaxY);
                     }
 
                     axl.WriteEndElement(); // gv_display

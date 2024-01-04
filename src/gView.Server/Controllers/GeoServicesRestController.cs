@@ -200,18 +200,18 @@ namespace gView.Server.Controllers
                         SpatialReferenceInstance = epsgCode > 0 ? new JsonMapService.SpatialReference(epsgCode) : null,
                         InitialExtend = map.Display.Envelope == null ? null : new JsonMapService.Extent()
                         {
-                            XMin = fullExtent != null ? fullExtent.minx : 0D,
-                            YMin = fullExtent != null ? fullExtent.miny : 0D,
-                            XMax = fullExtent != null ? fullExtent.maxx : 0D,
-                            YMax = fullExtent != null ? fullExtent.maxy : 0D,
+                            XMin = fullExtent != null ? fullExtent.MinX : 0D,
+                            YMin = fullExtent != null ? fullExtent.MinY : 0D,
+                            XMax = fullExtent != null ? fullExtent.MaxX : 0D,
+                            YMax = fullExtent != null ? fullExtent.MaxY : 0D,
                             SpatialReference = new JsonMapService.SpatialReference(epsgCode)
                         },
                         FullExtent = new JsonMapService.Extent()
                         {
-                            XMin = fullExtent != null ? fullExtent.minx : 0D,
-                            YMin = fullExtent != null ? fullExtent.miny : 0D,
-                            XMax = fullExtent != null ? fullExtent.maxx : 0D,
-                            YMax = fullExtent != null ? fullExtent.maxy : 0D,
+                            XMin = fullExtent != null ? fullExtent.MinX : 0D,
+                            YMin = fullExtent != null ? fullExtent.MinY : 0D,
+                            XMax = fullExtent != null ? fullExtent.MaxX : 0D,
+                            YMax = fullExtent != null ? fullExtent.MaxY : 0D,
                             SpatialReference = new JsonMapService.SpatialReference(epsgCode)
                         },
                     });
@@ -646,18 +646,18 @@ namespace gView.Server.Controllers
                     SpatialReferenceInstance = epsg > 0 ? new JsonMapService.SpatialReference(epsg) : null,
                     InitialExtend = new JsonMapService.Extent()
                     {
-                        XMin = fullExtent != null ? fullExtent.minx : 0D,
-                        YMin = fullExtent != null ? fullExtent.miny : 0D,
-                        XMax = fullExtent != null ? fullExtent.maxx : 0D,
-                        YMax = fullExtent != null ? fullExtent.maxy : 0D,
+                        XMin = fullExtent != null ? fullExtent.MinX : 0D,
+                        YMin = fullExtent != null ? fullExtent.MinY : 0D,
+                        XMax = fullExtent != null ? fullExtent.MaxX : 0D,
+                        YMax = fullExtent != null ? fullExtent.MaxY : 0D,
                         SpatialReference = new JsonMapService.SpatialReference(epsg)
                     },
                     FullExtent = new JsonMapService.Extent()
                     {
-                        XMin = fullExtent != null ? fullExtent.minx : 0D,
-                        YMin = fullExtent != null ? fullExtent.miny : 0D,
-                        XMax = fullExtent != null ? fullExtent.maxx : 0D,
-                        YMax = fullExtent != null ? fullExtent.maxy : 0D,
+                        XMin = fullExtent != null ? fullExtent.MinX : 0D,
+                        YMin = fullExtent != null ? fullExtent.MinY : 0D,
+                        XMax = fullExtent != null ? fullExtent.MaxX : 0D,
+                        YMax = fullExtent != null ? fullExtent.MaxY : 0D,
                         SpatialReference = new JsonMapService.SpatialReference(epsg)
                     }
                 });
@@ -1066,19 +1066,19 @@ namespace gView.Server.Controllers
                                     {
                                         extent = new JsonExtent()
                                         {
-                                            Xmin = featureClass.Envelope.minx,
-                                            Ymin = featureClass.Envelope.miny,
-                                            Xmax = featureClass.Envelope.maxx,
-                                            Ymax = featureClass.Envelope.maxy,
+                                            Xmin = featureClass.Envelope.MinX,
+                                            Ymin = featureClass.Envelope.MinY,
+                                            Xmax = featureClass.Envelope.MaxX,
+                                            Ymax = featureClass.Envelope.MaxY,
                                             SpatialReference = spatialReference
                                         };
                                     }
                                     else
                                     {
-                                        extent.Xmin = Math.Min(extent.Xmin, featureClass.Envelope.minx);
-                                        extent.Ymin = Math.Min(extent.Ymin, featureClass.Envelope.miny);
-                                        extent.Xmax = Math.Min(extent.Xmax, featureClass.Envelope.maxx);
-                                        extent.Ymax = Math.Min(extent.Ymax, featureClass.Envelope.maxy);
+                                        extent.Xmin = Math.Min(extent.Xmin, featureClass.Envelope.MinX);
+                                        extent.Ymin = Math.Min(extent.Ymin, featureClass.Envelope.MinY);
+                                        extent.Xmax = Math.Min(extent.Xmax, featureClass.Envelope.MaxX);
+                                        extent.Ymax = Math.Min(extent.Ymax, featureClass.Envelope.MaxY);
                                     }
                                 }
                             }
@@ -1134,10 +1134,10 @@ namespace gView.Server.Controllers
                     extent = new JsonExtent()
                     {
                         // DoTo: SpatialReference
-                        Xmin = ((IFeatureClass)datasetElement.Class).Envelope.minx,
-                        Ymin = ((IFeatureClass)datasetElement.Class).Envelope.miny,
-                        Xmax = ((IFeatureClass)datasetElement.Class).Envelope.maxx,
-                        Ymax = ((IFeatureClass)datasetElement.Class).Envelope.maxy,
+                        Xmin = ((IFeatureClass)datasetElement.Class).Envelope.MinX,
+                        Ymin = ((IFeatureClass)datasetElement.Class).Envelope.MinY,
+                        Xmax = ((IFeatureClass)datasetElement.Class).Envelope.MaxX,
+                        Ymax = ((IFeatureClass)datasetElement.Class).Envelope.MaxY,
                         SpatialReference = new JsonSpatialReference(epsgCode)
                     };
                 }

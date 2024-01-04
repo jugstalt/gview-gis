@@ -51,7 +51,7 @@ namespace gView.Interoperability.GeoServices.Rest.Json.Request
 
                     if (fullExtent != null)
                     {
-                        BBox = $"{fullExtent.minx.ToDoubleString()},{fullExtent.miny.ToDoubleString()},{fullExtent.maxx.ToDoubleString()},{fullExtent.maxy.ToDoubleString()}";
+                        BBox = $"{fullExtent.MinX.ToDoubleString()},{fullExtent.MinY.ToDoubleString()},{fullExtent.MaxX.ToDoubleString()},{fullExtent.MaxY.ToDoubleString()}";
                     }
                 }
 

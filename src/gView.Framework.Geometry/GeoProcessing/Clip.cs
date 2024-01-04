@@ -44,8 +44,8 @@ namespace gView.Framework.Geometry.GeoProcessing
                 return null;
             }
 
-            if (geomEnv.minx >= envelope.minx && geomEnv.maxx <= envelope.maxx &&
-                geomEnv.miny >= envelope.miny && geomEnv.maxy <= envelope.maxy)
+            if (geomEnv.MinX >= envelope.MinX && geomEnv.MaxX <= envelope.MaxX &&
+                geomEnv.MinY >= envelope.MinY && geomEnv.MaxY <= envelope.MaxY)
             {
                 // Full included...
                 return clippee;
@@ -86,8 +86,8 @@ namespace gView.Framework.Geometry.GeoProcessing
 
         private static IPoint ClipPoint2Envelope(IEnvelope envelope, IPoint point)
         {
-            if (point.X >= envelope.minx && point.X <= envelope.maxx &&
-                point.Y >= envelope.miny && point.Y <= envelope.maxy)
+            if (point.X >= envelope.MinX && point.X <= envelope.MaxX &&
+                point.Y >= envelope.MinY && point.Y <= envelope.MaxY)
             {
                 return new Point(point.X, point.Y);
             }
@@ -221,19 +221,19 @@ namespace gView.Framework.Geometry.GeoProcessing
                 {
                     case 0:
                         N[0] = -1.0; N[1] = 0.0;
-                        pe[0] = envelope.minx; pe[1] = 0.0;
+                        pe[0] = envelope.MinX; pe[1] = 0.0;
                         break;
                     case 1:
                         N[0] = 0.0; N[1] = -1.0;
-                        pe[0] = 0.0; pe[1] = envelope.miny;
+                        pe[0] = 0.0; pe[1] = envelope.MinY;
                         break;
                     case 2:
                         N[0] = 1.0; N[1] = 0.0;
-                        pe[0] = envelope.maxx; pe[1] = 0.0;
+                        pe[0] = envelope.MaxX; pe[1] = 0.0;
                         break;
                     case 3:
                         N[0] = 0.0; N[1] = 1.0;
-                        pe[0] = 0.0; pe[1] = envelope.maxy;
+                        pe[0] = 0.0; pe[1] = envelope.MaxY;
                         break;
                 }
 
@@ -313,22 +313,22 @@ namespace gView.Framework.Geometry.GeoProcessing
             //   1010   0010   0110
 
             int code = 0;
-            if (p.X < env.minx)
+            if (p.X < env.MinX)
             {
                 code = code | 0x1000;
             }
 
-            if (p.X > env.maxx)
+            if (p.X > env.MaxX)
             {
                 code = code | 0x0100;
             }
 
-            if (p.Y < env.miny)
+            if (p.Y < env.MinY)
             {
                 code = code | 0x0010;
             }
 
-            if (p.Y > env.maxy)
+            if (p.Y > env.MaxY)
             {
                 code = code | 0x0001;
             }

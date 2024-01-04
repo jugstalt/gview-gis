@@ -124,20 +124,20 @@ namespace gView.Framework.OGC.WKT
             {
                 IEnvelope env = (IEnvelope)geometry;
                 sb.Append("POLYGON((");
-                sb.Append(env.minx.ToString(_nhi) + " ");
-                sb.Append(env.miny.ToString(_nhi) + ",");
+                sb.Append(env.MinX.ToString(_nhi) + " ");
+                sb.Append(env.MinY.ToString(_nhi) + ",");
 
-                sb.Append(env.maxx.ToString(_nhi) + " ");
-                sb.Append(env.miny.ToString(_nhi) + ",");
+                sb.Append(env.MaxX.ToString(_nhi) + " ");
+                sb.Append(env.MinY.ToString(_nhi) + ",");
 
-                sb.Append(env.maxx.ToString(_nhi) + " ");
-                sb.Append(env.maxy.ToString(_nhi) + ",");
+                sb.Append(env.MaxX.ToString(_nhi) + " ");
+                sb.Append(env.MaxY.ToString(_nhi) + ",");
 
-                sb.Append(env.minx.ToString(_nhi) + " ");
-                sb.Append(env.maxy.ToString(_nhi) + ",");
+                sb.Append(env.MinX.ToString(_nhi) + " ");
+                sb.Append(env.MaxY.ToString(_nhi) + ",");
 
-                sb.Append(env.minx.ToString(_nhi) + " ");
-                sb.Append(env.miny.ToString(_nhi) + "))");
+                sb.Append(env.MinX.ToString(_nhi) + " ");
+                sb.Append(env.MinY.ToString(_nhi) + "))");
             }
             return sb.ToString();
         }

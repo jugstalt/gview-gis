@@ -31,6 +31,7 @@ builder.Services.AddApplicationScopeFactory();
 
 builder.Services.AddCartoDesktopApplicationService();
 builder.Services.AddCartoInteropServices();
+builder.Services.AddKnownCartoDialogsServices();
 builder.Services.AddCartoApplicationScopeService(config =>
 {
     config.ConfigRootPath = Path.Combine("C:\\temp", "gview-explorer");

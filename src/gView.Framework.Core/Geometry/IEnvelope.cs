@@ -2,25 +2,25 @@
 {
     public interface IEnvelope : IGeometry
     {
-        double minx
+        double MinX
         {
             get;
             set;
         }
 
-        double miny
+        double MinY
         {
             get;
             set;
         }
 
-        double maxx
+        double MaxX
         {
             get;
             set;
         }
 
-        double maxy
+        double MaxY
         {
             get;
             set;

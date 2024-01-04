@@ -87,7 +87,7 @@ namespace gView.Interoperability.Server
                 sb.Append("<REQUEST>");
                 sb.Append("<GET_IMAGE>");
                 sb.Append("<PROPERTIES>");
-                sb.Append("<ENVELOPE minx='" + display.Envelope.minx.ToString() + "' miny='" + display.Envelope.miny.ToString() + "' maxx='" + display.Envelope.maxx.ToString() + "' maxy='" + display.Envelope.maxy.ToString() + "' />");
+                sb.Append("<ENVELOPE minx='" + display.Envelope.MinX.ToString() + "' miny='" + display.Envelope.MinY.ToString() + "' maxx='" + display.Envelope.MaxX.ToString() + "' maxy='" + display.Envelope.MaxY.ToString() + "' />");
                 sb.Append("<IMAGESIZE width='" + iWidth + "' height='" + iHeight + "' />");
                 sb.Append("<BACKGROUND color='255,255,255' transcolor='255,255,255' />");
                 //if (display.SpatialReference != null && !display.SpatialReference.Equals(_sRef))

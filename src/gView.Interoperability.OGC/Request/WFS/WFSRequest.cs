@@ -207,10 +207,10 @@ namespace gView.Interoperability.OGC
                             if (env4326 != null)
                             {
                                 fType.LatLongBoundingBox = new Framework.OGC.WFS.Version_1_0_0.LatLongBoundingBoxType[] { new Framework.OGC.WFS.Version_1_0_0.LatLongBoundingBoxType() };
-                                fType.LatLongBoundingBox[0].minx = env4326.minx.ToString(nfi);
-                                fType.LatLongBoundingBox[0].miny = env4326.miny.ToString(nfi);
-                                fType.LatLongBoundingBox[0].maxx = env4326.maxx.ToString(nfi);
-                                fType.LatLongBoundingBox[0].maxy = env4326.maxy.ToString(nfi);
+                                fType.LatLongBoundingBox[0].minx = env4326.MinX.ToString(nfi);
+                                fType.LatLongBoundingBox[0].miny = env4326.MinY.ToString(nfi);
+                                fType.LatLongBoundingBox[0].maxx = env4326.MaxX.ToString(nfi);
+                                fType.LatLongBoundingBox[0].maxy = env4326.MaxY.ToString(nfi);
                             }
                             if (map.Display.SpatialReference != null)
                             {
@@ -340,8 +340,8 @@ namespace gView.Interoperability.OGC
                             if (env4326 != null)
                             {
                                 fType.WGS84BoundingBox = new Framework.OGC.WFS.Version_1_1_0.WGS84BoundingBoxType[] { new Framework.OGC.WFS.Version_1_1_0.WGS84BoundingBoxType() };
-                                fType.WGS84BoundingBox[0].LowerCorner = env4326.minx.ToString(nfi) + " " + env4326.miny.ToString(nfi);
-                                fType.WGS84BoundingBox[0].UpperCorner = env4326.maxx.ToString(nfi) + " " + env4326.maxy.ToString(nfi);
+                                fType.WGS84BoundingBox[0].LowerCorner = env4326.MinX.ToString(nfi) + " " + env4326.MinY.ToString(nfi);
+                                fType.WGS84BoundingBox[0].UpperCorner = env4326.MaxX.ToString(nfi) + " " + env4326.MaxY.ToString(nfi);
                             }
                             fType.OutputFormats = new Framework.OGC.WFS.Version_1_1_0.OutputFormatListType();
                             fType.OutputFormats.Format = new string[] { "text/xml; subtype=gml/3.1.1" };
@@ -875,13 +875,13 @@ namespace gView.Interoperability.OGC
                     //sb_env.Append("\" />");
                 }
                 sw.Write("\r\n         <LatLonBoundingBox minx=\"");
-                sw.Write(env4326.minx.ToString(nfi));
+                sw.Write(env4326.MinX.ToString(nfi));
                 sw.Write("\" miny=\"");
-                sw.Write(env4326.miny.ToString(nfi));
+                sw.Write(env4326.MinY.ToString(nfi));
                 sw.Write("\" maxx=\"");
-                sw.Write(env4326.maxx.ToString(nfi));
+                sw.Write(env4326.MaxX.ToString(nfi));
                 sw.Write("\" maxy=\"");
-                sw.Write(env4326.maxy.ToString(nfi));
+                sw.Write(env4326.MaxY.ToString(nfi));
                 sw.WriteLine("\" />");
                 sw.WriteLine(sb_env.ToString());
             }

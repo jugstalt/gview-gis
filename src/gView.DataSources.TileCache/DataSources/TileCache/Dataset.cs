@@ -76,7 +76,7 @@ namespace gView.DataSources.TileCache
             else
             {
                 this.OriginPoint = new Point(
-                    this.Extent.minx, this.OriginOrientation == GridOrientation.LowerLeft ? this.Extent.miny : this.Extent.maxy);
+                    this.Extent.MinX, this.OriginOrientation == GridOrientation.LowerLeft ? this.Extent.MinY : this.Extent.MaxY);
             }
 
             string sref64 = ConfigTextStream.ExtractValue(value, "sref64");

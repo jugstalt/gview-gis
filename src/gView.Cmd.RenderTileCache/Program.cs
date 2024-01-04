@@ -197,7 +197,7 @@ namespace gView.Cmd.RenderTileCache
                             var envelope = metadata.GetEPSGEnvelope(epsgCode);
                             if (envelope != null)
                             {
-                                Console.WriteLine($"  EPSG:{epsgCode}: {envelope.minx}, {envelope.miny}, {envelope.maxx}, {envelope.maxy}");
+                                Console.WriteLine($"  EPSG:{epsgCode}: {envelope.MinX}, {envelope.MinY}, {envelope.MaxX}, {envelope.MaxY}");
                             }
                         }
                     }

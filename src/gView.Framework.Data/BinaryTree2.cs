@@ -151,24 +151,24 @@ namespace gView.Framework.Data
             {
                 if (first)
                 {
-                    minx = Bounds.minx; maxx = minx + w * SPLIT_RATIO;
+                    minx = Bounds.MinX; maxx = minx + w * SPLIT_RATIO;
                 }
                 else
                 {
-                    minx = Bounds.maxx - w * SPLIT_RATIO; maxx = Bounds.maxx;
+                    minx = Bounds.MaxX - w * SPLIT_RATIO; maxx = Bounds.MaxX;
                 }
-                miny = Bounds.miny; maxy = miny + h;
+                miny = Bounds.MinY; maxy = miny + h;
             }
             else
             {
-                minx = Bounds.minx; maxx = minx + w;
+                minx = Bounds.MinX; maxx = minx + w;
                 if (first)
                 {
-                    miny = Bounds.miny; maxy = miny + h * SPLIT_RATIO;
+                    miny = Bounds.MinY; maxy = miny + h * SPLIT_RATIO;
                 }
                 else
                 {
-                    miny = Bounds.maxy - h * SPLIT_RATIO; maxy = Bounds.maxy;
+                    miny = Bounds.MaxY - h * SPLIT_RATIO; maxy = Bounds.MaxY;
                 }
             }
             return new Envelope(minx, miny, maxx, maxy);
@@ -1231,10 +1231,10 @@ namespace gView.Framework.Data
             }
 
             StringBuilder sb = new StringBuilder();
-            sb.Append(_bounds.minx.ToString(nhi) + ";");
-            sb.Append(_bounds.miny.ToString(nhi) + ";");
-            sb.Append(_bounds.maxx.ToString(nhi) + ";");
-            sb.Append(_bounds.maxy.ToString(nhi) + ";");
+            sb.Append(_bounds.MinX.ToString(nhi) + ";");
+            sb.Append(_bounds.MinY.ToString(nhi) + ";");
+            sb.Append(_bounds.MaxX.ToString(nhi) + ";");
+            sb.Append(_bounds.MaxY.ToString(nhi) + ";");
             sb.Append(_maxLevel.ToString() + ";");
             sb.Append(_maxPerNode.ToString() + ";");
             sb.Append(_split_radio.ToString(nhi));

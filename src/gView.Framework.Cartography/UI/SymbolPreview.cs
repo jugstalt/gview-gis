@@ -32,12 +32,12 @@ namespace gView.Framework.Cartography.UI
             }
             else if (symbol is IPointSymbol || symbol is ITextSymbol)
             {
-                geometry = new Point((env.minx + env.maxx) / 2, Math.Abs(env.miny - env.maxy) / 2);
+                geometry = new Point((env.MinX + env.MaxX) / 2, Math.Abs(env.MinY - env.MaxY) / 2);
             }
             else if (symbol is ILineSymbol)
             {
-                IPoint p1 = new Point(env.minx + 5, Math.Abs(env.miny - env.maxy) / 2);
-                IPoint p2 = new Point(env.maxx - 5, Math.Abs(env.miny - env.maxy) / 2);
+                IPoint p1 = new Point(env.MinX + 5, Math.Abs(env.MinY - env.MaxY) / 2);
+                IPoint p2 = new Point(env.MaxX - 5, Math.Abs(env.MinY - env.MaxY) / 2);
                 IPath path = new Path();
                 path.AddPoint(p1);
                 path.AddPoint(p2);
@@ -47,10 +47,10 @@ namespace gView.Framework.Cartography.UI
             }
             else if (symbol is IFillSymbol)
             {
-                IPoint p1 = new Point(env.minx + 5, 5);
-                IPoint p2 = new Point(env.maxx - 5, 5);
-                IPoint p3 = new Point(env.maxx - 5, Math.Abs(env.miny - env.maxy) - 5);
-                IPoint p4 = new Point(env.minx + 5, Math.Abs(env.miny - env.maxy) - 5);
+                IPoint p1 = new Point(env.MinX + 5, 5);
+                IPoint p2 = new Point(env.MaxX - 5, 5);
+                IPoint p3 = new Point(env.MaxX - 5, Math.Abs(env.MinY - env.MaxY) - 5);
+                IPoint p4 = new Point(env.MinX + 5, Math.Abs(env.MinY - env.MaxY) - 5);
                 IRing ring = new Ring();
                 ring.AddPoint(p1);
                 ring.AddPoint(p2);
@@ -79,9 +79,9 @@ namespace gView.Framework.Cartography.UI
             display.Dpi = GraphicsEngine.Current.Engine.ScreenDpi; //96f; // canvas.DpiX;
 
             IEnvelope env = display.Limit = new Envelope(0, rectangle.Top + rectangle.Height, rectangle.Left + rectangle.Width, 0);
-            display.ImageWidth = (int)env.maxx;
-            display.ImageHeight = (int)env.maxy;
-            display.ZoomTo(env.minx, env.miny, env.maxx, env.maxy);
+            display.ImageWidth = (int)env.MaxX;
+            display.ImageHeight = (int)env.MaxY;
+            display.ZoomTo(env.MinX, env.MinY, env.MaxX, env.MaxY);
 
             IGeometry? geometry = GeometryFromSymbol(symbol, new Envelope(rectangle.Left,
                                                                          rectangle.Height + rectangle.Top,
