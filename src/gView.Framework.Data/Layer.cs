@@ -199,7 +199,7 @@ namespace gView.Framework.Data
             }
         }
 
-        static private void minimumScale(ILayer layer, ref double scale)
+        static private void MinimumTocDependentScale(ILayer layer, ref double scale)
         {
             if (layer == null || layer.GroupLayer == null)
             {
@@ -215,7 +215,7 @@ namespace gView.Framework.Data
                 scale = Math.Max(layer.GroupLayer.MinimumScale, scale);
             }
         }
-        static private void maximumScale(ILayer layer, ref double scale)
+        static private void MaximumTocDependentScale(ILayer layer, ref double scale)
         {
             if (layer == null || layer.GroupLayer == null)
             {
@@ -316,7 +316,7 @@ namespace gView.Framework.Data
             get
             {
                 double scale = _minimumScale;
-                Layer.minimumScale(this, ref scale);
+                Layer.MinimumTocDependentScale(this, ref scale);
                 return scale;
             }
             set { _minimumScale = value; }
@@ -326,7 +326,7 @@ namespace gView.Framework.Data
             get
             {
                 double scale = _maximumScale;
-                Layer.maximumScale(this, ref scale);
+                Layer.MaximumTocDependentScale(this, ref scale);
                 return scale;
             }
             set { _maximumScale = value; }

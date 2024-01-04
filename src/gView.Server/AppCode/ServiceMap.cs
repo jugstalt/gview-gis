@@ -481,16 +481,9 @@ namespace gView.Server.AppCode
                     #endregion
 
                     List<ILayer> layers = new List<ILayer>();
-                    if (this.TOC != null)
+                    if (this.TOC is not null)
                     {
-                        if (this.GetType().Equals(typeof(ServiceMap)))
-                        {
-                            layers = ListOperations<ILayer>.Swap(this.TOC.Layers);
-                        }
-                        else
-                        {
-                            layers = ListOperations<ILayer>.Swap(this.TOC.VisibleLayers);
-                        }
+                        layers = ListOperations<ILayer>.Swap(this.TOC.Layers);
                     }
                     else
                     {
@@ -509,7 +502,7 @@ namespace gView.Server.AppCode
                         }
                     }
 
-                    if (BeforeRenderLayers != null)
+                    if (BeforeRenderLayers is not null)
                     {
                         //
                         // Kopie der Original Layer erstellen

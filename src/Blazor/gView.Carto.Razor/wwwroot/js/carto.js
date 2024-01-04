@@ -60,10 +60,10 @@ window.cartoInterops = {
     setDataFrameSize: function (size) {
         let container = document.querySelector('.carto-main');
 
-        bottomHeight = Math.max(size, 0);
-        bottomHeight = Math.min(size, container.clientHeight - 10 - 25 /*statusbar*/ - 100 /*toolbar*/);
+        size = Math.max(size, 0);
+        size = Math.min(size, container.clientHeight - 10 - 25 /*statusbar*/ - 100 /*toolbar*/);
 
-        //console.log('dataFrameSize', size);
+        //console.logsizedataFrameSize', size);
 
         document.querySelector('.toc').style.bottom = (32 + size) + 'px';
         document.querySelector('.content').style.bottom = (32 + size) + 'px';

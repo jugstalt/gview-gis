@@ -183,16 +183,9 @@ public class MapRendererInstance : Map, IMapRenderer
                     #region Layerlisten erstellen
 
                     List<ILayer> layers;
-                    if (TOC != null)
+                    if (TOC is not null)
                     {
-                        if (ToString() == "gView.MapServer.Instance.ServiceMap")
-                        {
-                            layers = ListOperations<ILayer>.Swap(TOC.Layers);
-                        }
-                        else
-                        {
-                            layers = ListOperations<ILayer>.Swap(TOC.VisibleLayers);
-                        }
+                        layers = ListOperations<ILayer>.Swap(TOC.VisibleLayers);
                     }
                     else
                     {

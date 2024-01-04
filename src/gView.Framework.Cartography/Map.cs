@@ -776,6 +776,19 @@ namespace gView.Framework.Cartography
                     //tocElement.Layers.Insert(Math.Max(0, tocIndex), newLayer);
                     tocElement.RemoveLayer(oldLayer);
                     tocElement.AddLayer(newLayer);
+
+                    if (newLayer is IGroupLayer newGroupLayer)
+                    {
+                        _toc.Elements.Where(t => t.ParentGroup == tocElement)
+                             .ToList()
+                             .ForEach(t =>
+                             {
+                                 foreach (ILayer layer in t.Layers?.Where(l=>l is Layer && l.GroupLayer == oldLayer) ?? [])
+                                 {
+                                     ((Layer)layer).GroupLayer = newGroupLayer;
+                                 }
+                             });
+                    }
                 }
             }
         }
