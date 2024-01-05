@@ -48,7 +48,7 @@ namespace gView.Carto.Plugins.CartoTools
             }
 
             var originalLayer = scope.SelectedTocTreeNode?.TocElement?.Layers?.FirstOrDefault() as Layer;
-            var clonedLayer = originalLayer?.PersistedClone();
+            var clonedLayer = originalLayer?.Clone();
 
             if (originalLayer is null || clonedLayer is null)  // todo: clone layer?
             {
@@ -83,6 +83,7 @@ namespace gView.Carto.Plugins.CartoTools
             {
                 clonedSelection.SelectionSet = originalSelection.SelectionSet;
             }
+
             originalMap.ReplaceLayer(originalLayer, clonedLayer);
 
             #region Description
@@ -92,6 +93,7 @@ namespace gView.Carto.Plugins.CartoTools
 
             #endregion
 
+            await scope.EventBus.FireLayerSettingsChangedAsync(originalLayer, clonedLayer);
             await scope.EventBus.FireMapSettingsChangedAsync();
 
             return true;

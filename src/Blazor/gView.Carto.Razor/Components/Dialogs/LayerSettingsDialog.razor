@@ -53,6 +53,13 @@
                                          OnClick="() => _drawerIsOpen = false" />
                         }
 
+                        @if(Model.Layer.IsFeatureLyer())
+                        {
+                            <MudListItem Icon="@IconService.FromString("basic:table")" Style="white-space:nowrap"
+                                         Value="Page.LayerFields" Text="Fields"
+                                         OnClick="() => _drawerIsOpen = false" />
+                        }
+
                         @if(Model.Layer.IsGroupLayer()) {
                             <MudListItem Icon="@IconService.FromString("basic:cloud-connect")" Style="white-space:nowrap"
                                          Value="Page.MapServiceBehavoir" Text="Map Service Behavoir"
@@ -102,7 +109,7 @@
                 </MudDrawer>
             </MudDrawerContainer>
 
-            <MudContainer Style="padding-left:50px;padding-right:10px">
+            <MudContainer Style="padding-left:50px;padding-right:10px;min-height:70vh">
                 @if (Page.General.Equals(_currentTab))
                 {
                     <LayerGeneralSettingsControl Layer="Model.Layer" />
@@ -150,6 +157,10 @@
                 {
                     <LayerFilterSettingsControl Layer="Model.Layer as IFeatureLayer" />
                 }
+                else if(Page.LayerFields.Equals(_currentTab))
+                {
+                    <LayerFieldsSettingsControl Layer="Model.Layer as IFeatureLayer" />
+                }
                 else if (Page.Raster.Equals(_currentTab))
                 {
                     <RasterLayerSettingsControl Layer="Model.Layer as IRasterLayer" />
@@ -184,6 +195,7 @@
         General,
         FeatureRenderer,
         FeatureSelectionRenderer,
+        LayerFields,
         LabelRenderer,
         Description,
         SpatialReference,

@@ -9,9 +9,11 @@ using gView.Carto.Core.Services.Abstraction;
 using gView.Framework.Blazor;
 using gView.Framework.Blazor.Models;
 using gView.Framework.Blazor.Services;
+using gView.Framework.Core.Data;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Options;
 using Microsoft.JSInterop;
+using Microsoft.SqlServer.Management.SqlParser.SqlCodeDom;
 using MudBlazor;
 using static gView.Interoperability.GeoServices.Rest.Json.JsonServices;
 
@@ -56,6 +58,8 @@ public class CartoApplicationScopeService : ApplictionBusyHandler, ICartoApplica
             _cartoDocument.Map.Display.SpatialReference =
                 sRefService.GetSpatialReference($"epsg:{crsService.GetDefaultOrAny().Epsg}").Result;
         }
+
+        _eventBus.OnLayerSettingsChangedAsync += HandleLayerSettingsChanged;
     }
 
     public CartoEventBusService EventBus => _eventBus;
@@ -83,11 +87,30 @@ public class CartoApplicationScopeService : ApplictionBusyHandler, ICartoApplica
 
     public GeoTransformerService GeoTransformer => _geoTransformer;
 
+    #region Event Handlers
+
+    private Task HandleLayerSettingsChanged(ILayer oldLayer, ILayer newLayer)
+    {
+        if (_dataTables.Layers.Contains(oldLayer))
+        {
+            var oldTableProperties = _dataTables.GetProperties(oldLayer);
+
+            _dataTables.RemoveLayer(oldLayer);
+            _dataTables.AddIfNotExists(newLayer, tableProperties: oldTableProperties);
+
+            return _eventBus.FireRefreshDataTable(newLayer, oldLayer);
+        }
+
+        return Task.CompletedTask;
+    }
+
+    #endregion
+
     #region IDisposable
 
     public void Dispose()
     {
-
+        _eventBus.OnLayerSettingsChangedAsync -= HandleLayerSettingsChanged;
     }
 
     #endregion

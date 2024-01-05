@@ -1,0 +1,12 @@
+<MudPaper Elevation="Elevation" Style="@($"margin-bottom:{Spacing}px;padding:18px")">
+    @if (ChildContent is not null)
+    {
+        @ChildContent
+    }
+</MudPaper>
+
+@code {
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public int Elevation { get; set; } = 12;
+    [Parameter] public int Spacing { get; set; } = 12;
+}

@@ -31,6 +31,10 @@ public class CartoEventBusService
     public Task FireMapSettingsChangedAsync()
         => OnMapSettingsChangedAsync?.FireAsync() ?? Task.CompletedTask;
 
+    public event Func<ILayer, ILayer, Task>? OnLayerSettingsChangedAsync;
+    public Task FireLayerSettingsChangedAsync(ILayer oldLayer, ILayer newLayer)
+        => OnLayerSettingsChangedAsync?.FireAsync(oldLayer, newLayer) ?? Task.CompletedTask;
+
     public event Func<Task>? OnRefreshContentTreeAsync;
     public Task FireRefreshContentTreeAsync()
         => OnRefreshContentTreeAsync?.FireAsync() ?? Task.CompletedTask;
@@ -66,4 +70,8 @@ public class CartoEventBusService
     public event Func<ILayer, Task>? OnShowDataTable;
     public Task FireShowDataTable(ILayer layer)
         => OnShowDataTable?.FireAsync(layer) ?? Task.CompletedTask;
+
+    public event Func<ILayer, ILayer?, Task>? OnRefreshDataTable;
+    public Task FireRefreshDataTable(ILayer layer, ILayer? oldLayer)
+        => OnRefreshDataTable?.FireAsync(layer, oldLayer) ?? Task.CompletedTask;
 }

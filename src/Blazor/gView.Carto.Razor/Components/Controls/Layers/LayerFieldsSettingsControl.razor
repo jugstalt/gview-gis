@@ -1,0 +1,165 @@
+@inherits BaseHandler
+@inject ICartoApplicationScopeService AppScope
+
+@if(Layer?.Fields is not null)
+{
+    <GvPaper>
+        <MudSelect T="IField" 
+                   Label="Primary Display Field"
+                   @bind-Value="Layer.Fields.PrimaryDisplayField" >
+            @foreach(var field in Layer.Fields.ToEnumerable())
+            {
+                <MudSelectItem Value="field">@field.name</MudSelectItem>
+            }
+        </MudSelect>
+    </GvPaper>
+}
+
+@if (_items is not null)
+{
+    <GvPaper>
+        <MudDropContainer T="FieldItem"
+                          Items="_items"
+                          ItemDropped="ReorderItems"
+                          ItemsSelector="@((item,zone) => true)">
+            <ChildContent>
+                <MudDropZone T="FieldItem"
+                             AllowReorder="true">
+                    <GvGrid ColumnCount="12">
+                        <GvGridItem>
+                            <MudText Typo="Typo.body2">Visible</MudText>
+                        </GvGridItem>
+                        <GvGridItem Span="4">
+                            <MudText Typo="Typo.body2">Name</MudText>
+                        </GvGridItem>
+                        <GvGridItem Span="2">
+                            <MudText Typo="Typo.body2">Type</MudText>
+                        </GvGridItem>
+                        <GvGridItem Span="4">
+                            <MudText Typo="Typo.body2">Aliasname</MudText>
+                        </GvGridItem>
+                    </GvGrid>
+                </MudDropZone>
+            </ChildContent>
+            <ItemRenderer>
+                <div style="border-top:1px solid #777">
+                <GvGrid ColumnCount="12">
+                    <GvGridItem>
+                        <MudCheckBox Dense="true" 
+                                     @bind-Checked="context.Field.visible" />
+                    </GvGridItem>
+                    <GvGridItem Span="4">
+                        <div style="padding:5px 0px">
+                            @context.Field.name
+                        </div>
+                    </GvGridItem>
+                    <GvGridItem Span="2">
+                        <div style="padding:5px 0px">
+                            @context.Field.type
+                        </div>
+                    </GvGridItem>
+                    <GvGridItem Span="4">
+                       <div style="padding:5px 0px;cursor:pointer"
+                            @ondblclick="() => OnSetAliasname(context)">
+                            @context.Field.aliasname
+                       </div>
+                        
+                    </GvGridItem>
+                </GvGrid>
+                </div>
+            </ItemRenderer>
+        </MudDropContainer>
+    </GvPaper>
+}
+
+@code {
+    [Parameter] public IFeatureLayer? Layer { get; set; }
+    private IEnumerable<FieldItem>? _items;
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+
+        _items = Layer?.Fields?.ToEnumerable()
+                               .Where(f => f is Field)
+                               .Select(f => new FieldItem((Field)f));
+    }
+
+    private void ReorderItems(MudItemDropInfo<FieldItem> dropInfo)
+    {
+        if(_items is null 
+            || !(Layer?.Fields is FieldCollection fieldCollection)
+            || dropInfo.Item is null)
+        {
+            return;
+        }
+
+        List<FieldItem> orderedItems = new();
+        bool added = false;
+        int priority = 0;
+
+        foreach(var item in _items)
+        {
+            if(orderedItems.Count() == dropInfo.IndexInZone)
+            {
+                orderedItems.Add(dropInfo.Item.Clone(priority++));
+                added = true;
+            }
+
+            if(item.Field != dropInfo.Item.Field)
+            {
+                orderedItems.Add(item.Clone(priority++));
+            }
+        }
+        if(!added)
+        {
+            orderedItems.Add(dropInfo.Item.Clone(priority++));
+        }
+
+        _items = orderedItems;
+    }
+
+    private Task OnSetAliasname(FieldItem fieldItem) => HandleAsync(async () =>
+    {
+        var model = await AppScope.ShowKnownDialog(
+            Framework.Blazor.KnownDialogs.PromptDialog,
+            "Field Aliasname",
+            new PromptDialogModel()
+            {
+                Prompt = fieldItem.Field.name,
+                Value = fieldItem.Field.aliasname
+            });
+
+        if(model is not null)
+        {
+            fieldItem.Field.aliasname =
+                fieldItem.Field.name == model.Value
+                ? ""
+                : model.Value;
+        }
+    });
+
+    #region ItemClasses
+
+    private class FieldItem
+    {
+        public FieldItem(Field field)
+        {
+            this.Field = field;
+        }
+
+        public Field Field { get; set; }
+
+        public FieldItem Clone(int priority=-1)
+        {
+            if(priority>=0)
+            {
+                this.Field.Priority = priority;
+            }
+
+            return new FieldItem(this.Field);
+        }
+    }
+
+    #endregion
+}

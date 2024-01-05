@@ -6,8 +6,6 @@ namespace gView.Carto.Core.Models.DataTable;
 
 public class DataTableProperties
 {
-    public bool IsInitialized => TableFields.Count() > 0;
-
     public IEnumerable<IField> TableFields { get; set; } = [];
     public bool CanSelect { get; set; }
 

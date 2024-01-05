@@ -12,11 +12,12 @@ public class CartoDataTableService
 
     public CartoDataTableService() { }
 
-    public bool AddIfNotExists(ILayer layer, bool setCurrent = true)
+    public bool AddIfNotExists(ILayer layer, bool setCurrent = true,
+                               DataTableProperties? tableProperties = null)
     {
         if (!_layers.ContainsKey(layer))
         {
-            if (!_layers.TryAdd(layer, new()))
+            if (!_layers.TryAdd(layer, tableProperties ?? new()))
             {
                 return false;
             }
@@ -33,6 +34,9 @@ public class CartoDataTableService
     public ILayer? CurrentLayer => _currentLayer;
 
     public IEnumerable<ILayer> Layers => _layers.Keys;
+
+    public bool RemoveLayer(ILayer layer)
+        => _layers.TryRemove(layer, out _);
 
     public DataTableProperties GetProperties(ILayer layer)
         => _layers.ContainsKey(layer)

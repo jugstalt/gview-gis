@@ -62,7 +62,7 @@
             {
                 <MudTh>
                     <MudTableSortLabel SortBy="new Func<IRow, object>((e) => e[field.name])">
-                        @field.name
+                        @field.aliasname
                         <MudIconButton Icon="@Icons.Material.Filled.FilterAlt" 
                                 Size="MudBlazor.Size.Small"
                                 Color="_tableProperties.ColumnFilters.ContainsKey(field.name) && !string.IsNullOrEmpty(_tableProperties.ColumnFilters[field.name]) ? Color.Secondary : Color.Default"
@@ -129,6 +129,8 @@
     protected override Task OnInitializedAsync() => HandleAsync(async () =>
     {
         await base.OnInitializedAsync();
+
+        EventBus.OnRefreshDataTable += HandleRefreshDataTable;
 
         await OnSetCurrentLayer(Layer);
     });
@@ -252,8 +254,7 @@
             whereClause.Append(field.FieldWhereClauseSegment(filterValue));
         }
 
-        if (whereClause.Length > 0 
-            && _tableProperties.FilterWhereClause != whereClause.ToString())
+        if (_tableProperties.FilterWhereClause != whereClause.ToString())
         {
             _tableProperties.FilterWhereClause = whereClause.ToString();
 
@@ -378,18 +379,22 @@
             _selectionSet = (_currentLayer as IFeatureSelection)?.SelectionSet;
             _rows = new();
 
-            if (!_tableProperties.IsInitialized)
+            _tableProperties.TableFields = _currentLayer switch
             {
-                _tableProperties.TableFields = _tableClass.Fields
-                                          .ToEnumerable()
-                                          .Where(f => f.IsDataTableField());
+                IFeatureLayer fLayer => fLayer.Fields.ToEnumerable()
+                                          .Where(f => f.IsDataTableField() && f.visible),
+                _ => _tableClass.Fields.ToEnumerable()
+                                    .Where(f => f.IsDataTableField())
+            };
 
-                _tableProperties.CanSelect = _selectionSet.CanHandleRowsSelection();
+            _tableProperties.CanSelect = _selectionSet.CanHandleRowsSelection();
 
-                foreach (var field in _tableProperties.TableFields)
-                {
-                    _tableProperties.ColumnFilters[field.name] = String.Empty;
-                }
+            foreach (var field in _tableProperties.TableFields)
+            {
+                _tableProperties.ColumnFilters[field.name] =
+                    _tableProperties.ColumnFilters.ContainsKey(field.name)
+                    ? _tableProperties.ColumnFilters[field.name]
+                    : String.Empty;
             }
 
             await CreateCursor();
@@ -441,8 +446,22 @@
         }
     });
 
+    private Task HandleRefreshDataTable(ILayer layer, ILayer? oldLayer) => HandleAsync(async () =>
+    {
+        if(_currentLayer == layer 
+            || _currentLayer == oldLayer)
+        {
+            _tableClass = null;  // force a refresh!
+            await OnSetCurrentLayer(layer);         
+        }
+
+        await this.InvokeAsync(() => StateHasChanged());
+    });
+
     public void Dispose()
     {
+        EventBus.OnRefreshDataTable -= HandleRefreshDataTable;
+
         ReleaseCursor();
     }
 }
