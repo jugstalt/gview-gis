@@ -1,7 +1,6 @@
 ﻿using gView.Framework.Core.Data;
 using System;
 using System.Linq;
-using System.Runtime.CompilerServices;
 
 namespace gView.Blazor.Core.Extensions;
 
@@ -19,11 +18,11 @@ static public class FieldExtensions
         };
 
     static private string[] KnownOperators
-        = ["=", "<>", ">=","<=", "<", ">"];
+        = ["=", "<>", ">=", "<=", "<", ">"];
 
     static public string FieldWhereClauseSegment(
-            this IField field, 
-            string value, 
+            this IField field,
+            string value,
             IDatasetCapabilities? datasetCapabilities = null
         )
     {
@@ -34,7 +33,7 @@ static public class FieldExtensions
             .Where(o => value.StartsWith(o, StringComparison.OrdinalIgnoreCase))
             .FirstOrDefault();
 
-        if(knownOperator is not null)
+        if (knownOperator is not null)
         {
             queryOperator = knownOperator;
             value = value.Substring(queryOperator.Length).Trim();
@@ -51,7 +50,7 @@ static public class FieldExtensions
     }
 
     static public bool IsDataTableField(this IField field)
-        => field.type switch 
+        => field.type switch
         {
             FieldType.GEOMETRY => false,
             FieldType.GEOGRAPHY => false,
