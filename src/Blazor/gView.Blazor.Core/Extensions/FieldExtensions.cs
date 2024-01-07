@@ -1,5 +1,7 @@
 ﻿using gView.Framework.Core.Data;
 using System;
+using System.Linq;
+using System.Runtime.CompilerServices;
 
 namespace gView.Blazor.Core.Extensions;
 
@@ -16,14 +18,32 @@ static public class FieldExtensions
             _ => "{0}"
         };
 
-    static public string FieldWhereClauseSegment(this IField field, string value)
+    static private string[] KnownOperators
+        = ["=", "<>", ">=","<=", "<", ">"];
+
+    static public string FieldWhereClauseSegment(
+            this IField field, 
+            string value, 
+            IDatasetCapabilities? datasetCapabilities = null
+        )
     {
         var formatString = field.FieldValueFormatString();
+        string? queryOperator = null;
 
-        var queryOperator = field.type switch
+        var knownOperator = KnownOperators
+            .Where(o => value.StartsWith(o, StringComparison.OrdinalIgnoreCase))
+            .FirstOrDefault();
+
+        if(knownOperator is not null)
         {
-            FieldType.String /*when value.Contains("%")*/ => " like ",  // aways like... also solves case insensiv
-            FieldType.NString /*when value.Contains("%")*/ => " like ",
+            queryOperator = knownOperator;
+            value = value.Substring(queryOperator.Length).Trim();
+        }
+
+        queryOperator = queryOperator ?? field.type switch
+        {
+            FieldType.String /*when value.Contains("%")*/ => $" {datasetCapabilities.GetLikeOperator()} ",  // aways like... also solves case insensiv
+            FieldType.NString /*when value.Contains("%")*/ => $" {datasetCapabilities.GetLikeOperator()} ",
             _ => "="
         };
 
@@ -40,4 +60,10 @@ static public class FieldExtensions
             _ => true
         };
 
+    static private string GetLikeOperator(this IDatasetCapabilities? datasetCapabilities)
+        => datasetCapabilities switch
+        {
+            null => "like",
+            _ => datasetCapabilities.CaseInsensitivLikeOperator
+        };
 }

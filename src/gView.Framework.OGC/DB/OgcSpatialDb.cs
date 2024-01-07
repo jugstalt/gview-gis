@@ -1358,6 +1358,8 @@ namespace gView.Framework.OGC.DB
             return Array.Empty<string>();
         }
 
+        virtual public string CaseInsensitivLikeOperator => "like";
+
         #endregion
     }
 }

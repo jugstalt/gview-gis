@@ -251,7 +251,10 @@
                 whereClause.Append(" AND ");
             }
 
-            whereClause.Append(field.FieldWhereClauseSegment(filterValue));
+            whereClause.Append(field.FieldWhereClauseSegment(
+                    filterValue,
+                    datasetCapabilities: _tableClass?.Dataset as IDatasetCapabilities
+                ));
         }
 
         if (_tableProperties.FilterWhereClause != whereClause.ToString())
