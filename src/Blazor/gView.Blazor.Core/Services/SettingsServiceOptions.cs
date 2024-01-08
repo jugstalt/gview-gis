@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace gView.Blazor.Core.Services;
-public class PersistentSettingsServiceOptions
+public class SettingsServiceOptions
 {
     public string Path { get; set; }
 }

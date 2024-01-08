@@ -1,6 +1,7 @@
 ﻿using gView.Blazor.Core.Exceptions;
 using gView.Blazor.Core.Services;
 using gView.Blazor.Core.Services.Abstraction;
+using gView.Blazor.Models.Settings;
 using gView.Carto.Core;
 using gView.Carto.Core.Abstractions;
 using gView.Carto.Core.Models.Tree;
@@ -28,6 +29,8 @@ public class CartoApplicationScopeService : ApplictionBusyHandler, ICartoApplica
     private readonly ISnackbar _snackbar;
     private readonly CartoApplicationScopeServiceOptions _options;
     private readonly GeoTransformerService _geoTransformer;
+    private readonly IUserIdentityService _userIdentity;
+    private readonly SettingsService _settings;
 
     private ICartoDocument _cartoDocument;
 
@@ -40,6 +43,8 @@ public class CartoApplicationScopeService : ApplictionBusyHandler, ICartoApplica
                                         GeoTransformerService geoTransformer,
                                         MapControlCrsService crsService,
                                         SpatialReferenceService sRefService,
+                                        IUserIdentityService userIdentity,
+                                        SettingsService settings,
                                         IOptions<CartoApplicationScopeServiceOptions> options)
     {
         _dialogService = dialogService;
@@ -49,6 +54,8 @@ public class CartoApplicationScopeService : ApplictionBusyHandler, ICartoApplica
         _jsRuntime = jsRuntime;
         _snackbar = snackbar;
         _geoTransformer = geoTransformer;
+        _userIdentity = userIdentity;
+        _settings = settings;
         _options = options.Value;
 
         _cartoDocument = this.Document = new CartoDocument();
@@ -60,6 +67,7 @@ public class CartoApplicationScopeService : ApplictionBusyHandler, ICartoApplica
         }
 
         _eventBus.OnLayerSettingsChangedAsync += HandleLayerSettingsChanged;
+        _eventBus.OnCartoDocumentLoadedAsync += HandleCartoDocumentLoaded;
     }
 
     public CartoEventBusService EventBus => _eventBus;
@@ -104,6 +112,9 @@ public class CartoApplicationScopeService : ApplictionBusyHandler, ICartoApplica
         return Task.CompletedTask;
     }
 
+    private Task HandleCartoDocumentLoaded(ICartoDocument cartoDocument)
+        => _settings.StoreMapDocumentLastAccess(cartoDocument.FilePath);
+
     #endregion
 
     #region IDisposable
@@ -111,6 +122,7 @@ public class CartoApplicationScopeService : ApplictionBusyHandler, ICartoApplica
     public void Dispose()
     {
         _eventBus.OnLayerSettingsChangedAsync -= HandleLayerSettingsChanged;
+        _eventBus.OnCartoDocumentLoadedAsync -= HandleCartoDocumentLoaded;
     }
 
     #endregion

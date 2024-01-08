@@ -1,5 +1,4 @@
 ﻿using gView.Blazor.Core.Services;
-using gView.Framework.Core.Data;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 
@@ -9,21 +8,23 @@ public static class ServicesExtensions
 {
     static public IServiceCollection AddFrameworkServices(this IServiceCollection services)
         => services
-            .AddTransient<SpatialReferenceService>()
-            .AddTransient<GeoTransformerService>()
-            .AddTransient<PluginManagerService>()
-            .AddScoped<MapRenderService>();
-    
+                .AddTransient<SpatialReferenceService>()
+                .AddTransient<GeoTransformerService>()
+                .AddTransient<PluginManagerService>()
+                .AddScoped<MapRenderService>();
+
 
     static public IServiceCollection AddIconService(this IServiceCollection services)
-        => services.AddTransient<IconService>();   
-    
+        => services.AddTransient<IconService>();
 
-    static public IServiceCollection AddPersistentSettingsService(
+
+    static public IServiceCollection AddSettingsService(
         this IServiceCollection services,
-        Action<PersistentSettingsServiceOptions> setupAction)
-        => services.Configure(setupAction)
-                   .AddTransient<PersistentSettingsService>();
+        Action<SettingsServiceOptions> setupAction)
+        => services
+                .Configure(setupAction)
+                .AddTransient<SettingsService>()
+                .AddTransient<PersistentSettingsService>();
 
     static public IServiceCollection AddMapControlCrsService(
         this IServiceCollection services,

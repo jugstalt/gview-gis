@@ -1,14 +1,16 @@
 ﻿using gView.Blazor.Models.Settings.Abstraction;
 using LiteDB;
 using Microsoft.Extensions.Options;
+using System;
 using System.Collections.Generic;
+using System.Linq.Expressions;
 
 namespace gView.Blazor.Core.Services;
 public class PersistentSettingsService
 {
-    private readonly PersistentSettingsServiceOptions _options;
+    private readonly SettingsServiceOptions _options;
 
-    public PersistentSettingsService(IOptions<PersistentSettingsServiceOptions> options)
+    public PersistentSettingsService(IOptions<SettingsServiceOptions> options)
     {
         _options = options.Value;
     }
@@ -16,14 +18,27 @@ public class PersistentSettingsService
     public bool Insert<T>(T item, string collectionName)
         where T : ISettingsItem
     {
-        using (var db = new LiteDatabase(_options.Path))
+        try
         {
-            var collection = db.GetCollection<T>(collectionName);
+            using (var db = new LiteDatabase(_options.Path))
+            {
+                var collection = db.GetCollection<T>(collectionName);
 
-            collection.EnsureIndex(x => x.ItemId, true);
-            collection.Insert(item);
+                if (item.ItemId == LiteDB.ObjectId.Empty)
+                {
+                    item.ItemId = LiteDB.ObjectId.NewObjectId();
+                }
 
-            return true;
+                collection.Insert(item);
+
+                return true;
+            }
+        }
+        catch (Exception ex)
+        {
+            var msg = ex.Message;
+
+            return false;
         }
     }
 
@@ -53,14 +68,15 @@ public class PersistentSettingsService
         }
     }
 
-    public IEnumerable<T> GetItems<T>(string collectionName)
+    public IEnumerable<T> GetItems<T>(string collectionName, Expression<Func<T, bool>> expression)
         where T : ISettingsItem
     {
         using (var db = new LiteDatabase(_options.Path))
         {
             var collection = GetCollection<T>(db, collectionName);
-
-            return collection.FindAll();
+            return collection.Query()
+                             .Where(expression)?
+                             .ToArray() ?? [];
         }
     }
 

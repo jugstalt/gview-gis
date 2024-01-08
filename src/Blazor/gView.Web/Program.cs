@@ -5,14 +5,18 @@ using gView.DataExplorer.Plugins.Extensions.DependencyInjection;
 using gView.Razor.Extensions.DependencyInjection;
 using gView.Razor.Leaflet.Extensions.DependencyInjection;
 using gView.Web.Components;
+using gView.Web.Extensions.DependencyInjection;
 using MudBlazor;
 using MudBlazor.Services;
+using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
+
+builder.Services.AddDefaultUserIdentifyService();
 
 builder.Services.AddMudServices(config =>
 {
@@ -46,9 +50,9 @@ builder.Services.AddExplorerApplicationScopeService(config =>
 builder.Services.AddKnownExplorerDialogsServices();
 builder.Services.AddFrameworkServices();
 builder.Services.AddIconService();
-builder.Services.AddPersistentSettingsService(config =>
+builder.Services.AddSettingsService(config =>
 {
-    config.Path = "gview-web-settings.db";
+    config.Path = Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly()!.Location)!, "gview-web-settings.db");
 });
 builder.Services.AddMapControlBackgroundTilesService(config =>
 {

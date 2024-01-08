@@ -78,9 +78,9 @@
                         }
                         @foreach (var exObject in currentListExplorerObjects)
                         {
-                            <MudListItem @ondblclick="() => ListItemDoubleClick(exObject)"
-                                         Class="@($"explorer-dialog-item {(Model.Result.ExplorerObjects.Contains(exObject) ? "selected" : "")}")"
-                                         OnClick="async (mEvent) => await ListItemClick(mEvent, exObject)">
+                            <MudListItem Class="@($"explorer-dialog-item {(Model.Result.ExplorerObjects.Contains(exObject) ? "selected" : "")}")"
+                                          OnClick="async (mEvent) => await ListItemClick(mEvent, exObject)" 
+                                          @ondblclick="() => ListItemDoubleClick(exObject)" >
                                 <div style="display: flex; align-items: center;" >
                                     <MudIcon Icon="@Icons.FromString(exObject.Icon)" Style="margin-right: 6px;" />
                                     <MudText>@exObject.Name</MudText>
@@ -92,7 +92,7 @@
 
             @if(Model.Mode == ExploerDialogMode.Open) 
             {
-                    <MudTextField Value="@String.Join(", ",Model.Result.ExplorerObjects.Select(e=>e.Name))" 
+                    <MudTextField Value="@String.Join(", ",Model.Result.ExplorerObjects.Select(e => e.Name))" 
                                   Label="Selected"
                                   Required="true"
                                   ReadOnly="true" 
@@ -153,84 +153,89 @@
     private bool placeToSave = false;
     private bool _isSubmitting = true;
 
-    protected override Task OnInitializedAsync()
-        => HandleAsync(async () =>
-        {
-            //await Task.Delay(2000);
-            _isSubmitting = false;
-
-            #region Initialize Select
-
-            selectedRoot = ExplorerApplication.RootExplorerObject;
-            rootExplorerObjects.Add(selectedRoot);
-            levels[selectedRoot] = 0;
-
-            if (selectedRoot is IExplorerParentObject)
-            {
-                foreach (var exObject in await ((IExplorerParentObject)selectedRoot).ChildObjects())
-                {
-                    rootExplorerObjects.Add(exObject);
-                    levels[exObject] = 1;
-                }
-            }
-
-            selectedFilter = Model.Filters.FirstOrDefault();
-
-            #endregion
-        });
-
-    private void ListItemDoubleClick(IExplorerObject exObject)
-        => Handle(() =>
-        {
-            if (exObject is IExplorerParentObject)
-            {
-                selectedRoot = exObject;
-                Model.Result.ExplorerObjects.Clear();
-            }
-        });
-
-    private Task ListItemClick(MouseEventArgs mEvent, IExplorerObject exObject)
+    protected override Task OnInitializedAsync() => HandleAsync(async () =>
     {
-        return HandleAsync(async () =>
+        //await Task.Delay(2000);
+        _isSubmitting = false;
+
+        #region Initialize Select
+
+        selectedRoot = ExplorerApplication.RootExplorerObject;
+        rootExplorerObjects.Add(selectedRoot);
+        levels[selectedRoot] = 0;
+
+        if (selectedRoot is IExplorerParentObject)
         {
-            if (Model.Mode == ExploerDialogMode.Open)
+            foreach (var exObject in await ((IExplorerParentObject)selectedRoot).ChildObjects())
             {
-                List<IExplorerObject> matchingExplorerObjects = new();
+                rootExplorerObjects.Add(exObject);
+                levels[exObject] = 1;
+            }
+        }
 
-                #region Collect filter matching list items
+        selectedFilter = Model.Filters.FirstOrDefault();
 
-                if (selectedFilter != null)
+        #endregion
+    });
+
+    private Task ListItemDoubleClick(IExplorerObject exObject) => HandleAsync (() =>
+    {
+        if (exObject is IExplorerParentObject)
+        {
+            selectedRoot = exObject;
+            Model.Result.ExplorerObjects.Clear();
+        }
+
+        if (Model.Mode == ExploerDialogMode.Open
+            && Model.Result.ExplorerObjects.Count() == 1
+            && Model.Result.ExplorerObjects.First() == exObject)
+        {
+            // open this item
+            return Apply();
+        }
+
+        return Task.CompletedTask;
+    });
+
+    private Task ListItemClick(MouseEventArgs mEvent, IExplorerObject exObject) => HandleAsync(async () =>
+    {
+        if (Model.Mode == ExploerDialogMode.Open)
+        {
+            List<IExplorerObject> matchingExplorerObjects = new();
+
+            #region Collect filter matching list items
+
+            if (selectedFilter != null)
+            {
+                foreach (var item in currentListExplorerObjects)
                 {
-                    foreach (var item in currentListExplorerObjects)
+                    if (await selectedFilter.Match(exObject))
                     {
-                        if (await selectedFilter.Match(exObject))
-                        {
-                            matchingExplorerObjects.Add(item);
-                        }
+                        matchingExplorerObjects.Add(item);
                     }
                 }
-
-                #endregion
-
-                if (matchingExplorerObjects.Contains(exObject))
-                {
-                    Model.Result.ExplorerObjects.ReplaceItems(
-                        exObject.AddToSelection(Model.Result.ExplorerObjects,
-                                                matchingExplorerObjects,
-                                                mEvent switch
-                                                {
-                                                    { ShiftKey: true } => GenericAddToStrategy.AddAllBetweenLastItem,
-                                                    { CtrlKey: true } => GenericAddToStrategy.AddOrRemoveIfExists,
-                                                    _ => GenericAddToStrategy.RemoveOthers
-                                                }));
-                }
-                else
-                {
-                    Model.Result.ExplorerObjects.Clear();
-                }
             }
-        });
-    }
+
+            #endregion
+
+            if (matchingExplorerObjects.Contains(exObject))
+            {
+                Model.Result.ExplorerObjects.ReplaceItems(
+                    exObject.AddToSelection(Model.Result.ExplorerObjects,
+                                            matchingExplorerObjects,
+                                            mEvent switch
+                                            {
+                                                { ShiftKey: true } => GenericAddToStrategy.AddAllBetweenLastItem,
+                                                { CtrlKey: true } => GenericAddToStrategy.AddOrRemoveIfExists,
+                                                _ => GenericAddToStrategy.RemoveOthers
+                                            }));
+            }
+            else
+            {
+                Model.Result.ExplorerObjects.Clear();
+            }
+        }
+    });
 
     private void MoveUp() => Handle(() =>
     {
