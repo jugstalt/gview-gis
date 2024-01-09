@@ -24,19 +24,14 @@ public class PersistentSettingsService
             {
                 var collection = db.GetCollection<T>(collectionName);
 
-                if (item.ItemId == LiteDB.ObjectId.Empty)
-                {
-                    item.ItemId = LiteDB.ObjectId.NewObjectId();
-                }
-
                 collection.Insert(item);
 
                 return true;
             }
         }
-        catch (Exception ex)
+        catch (Exception /*ex*/)
         {
-            var msg = ex.Message;
+            //var msg = ex.Message;
 
             return false;
         }
