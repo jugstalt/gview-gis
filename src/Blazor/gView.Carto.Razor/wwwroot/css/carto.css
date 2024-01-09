@@ -131,6 +131,12 @@
                 display: inline-block;
             }
 
+            .carto-main .toc .carto-initial-tool .sub-title {
+                display: inline-block;
+                padding-left: 24px;
+                opacity:.5;
+            }
+
     .carto-main .toc-content-splitter {
         position: absolute;
         left: 325px;

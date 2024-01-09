@@ -17,4 +17,6 @@ public interface ICartoApplicationScopeService : IApplicationScope
 
     TocTreeNode? SelectedTocTreeNode { get; }
     Task SetSelectedTocTreeNode(TocTreeNode? selectedTocTreeNode);
+
+    Task<bool> LoadCartoDocument(string mxlFilePath);
 }

@@ -52,36 +52,12 @@ public class LoadDocument : ICartoInitialTool
                                                        });
 
         string? mxlFilePath = model?.Result.ExplorerObjects.FirstOrDefault()?.FullName;
+
         if (!String.IsNullOrEmpty(mxlFilePath))
         {
-            XmlStream stream = new XmlStream("");
-            stream.ReadStream(mxlFilePath);
-
-            var cartoDocument = new CartoDocument()
-            {
-                FilePath = mxlFilePath
-            };
-
-            await stream.LoadAsync("MapDocument", cartoDocument);
-
-            if (cartoDocument.Map?.ErrorMessages?.Any() == true)
-            {
-                if (await scope.ShowKnownDialog(
-                                    KnownDialogs.WarningsDialog,
-                                    model: new WarningsDialogModel()
-                                    {
-                                        Warnings = cartoDocument.Map.ErrorMessages
-                                    })
-                    is null)
-                {
-                    return false;
-                }
-            }
-
-            //((TOC)cartoDocument.Map.TOC).Modifier = TocModifier.Private;
-            ((CartoApplicationScopeService)scope).Document = cartoDocument;
+            return await ((CartoApplicationScopeService)scope).LoadCartoDocument(mxlFilePath);
         }
 
-        return true;
+        return false;
     }
 }

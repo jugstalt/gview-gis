@@ -1,3 +1,5 @@
+@using gView.Blazor.Models.Settings
+
 @inherits BaseHandler
 @implements IDisposable
 
@@ -6,6 +8,7 @@
 @inject ICartoApplicationScopeService AppScope
 @inject PluginManagerService PluginManager
 @inject CartoEventBusService EventBus
+@inject SettingsService Settings
 
 <div style="padding:2px 10px">
 
@@ -125,6 +128,19 @@ else if(_cartoInitialTools is not null)
                 <div class="title">@cartoTool.Name</div>
             </div>
         }
+
+        @if(_lastAccessed is not null)
+        {
+            @foreach(var mapFile in _lastAccessed.OrderByDescending(m=>m.LastAccess))
+            {
+                <div class="carto-initial-tool"
+                     @onclick="async () => await LoadMap(mapFile)">
+                <div class="@(IconService.FromString("basic:globe-table")) icon"></div>
+                <div class="title">@(new System.IO.FileInfo(@mapFile.Path).Name)</div>
+                <div class="sub-title">@mapFile.LastAccess</div>
+            </div>
+            }
+        }
     </div>
     
 }
@@ -132,6 +148,7 @@ else if(_cartoInitialTools is not null)
 @code {
     private HashSet<TocTreeNode> _treeNodes = new HashSet<TocTreeNode>();
     private ICartoTool[]? _cartoInitialTools;
+    private IEnumerable<MapFileItem>? _lastAccessed;
 
     private TocTreeNode? _editNameTocNode;
     private string _editedName = "";
@@ -150,6 +167,8 @@ else if(_cartoInitialTools is not null)
             .OrderBy(t => t.SortOrder)
             .ToArray();
 
+        _lastAccessed = (await Settings.GetLastAccessedDocuments()).OrderByDescending(m => m.LastAccess);
+
         await SetAppScope(AppScope);
     });
 
@@ -157,6 +176,9 @@ else if(_cartoInitialTools is not null)
     {
         node.IsExpanded = expanded;
     });
+
+    private Task LoadMap(MapFileItem mapFile)
+        => AppScope.LoadCartoDocument(mapFile.Path);
 
     private Task OnCheckboxClickedAsync(TocTreeNode node, bool isChecked) => base.HandleAsync(async () =>
     {

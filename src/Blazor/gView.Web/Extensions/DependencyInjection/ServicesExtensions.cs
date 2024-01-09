@@ -9,4 +9,7 @@ static public class ServicesExtensions
         => services
             .AddHttpContextAccessor()
             .AddScoped<IUserIdentityService, UserIdentityService>();
+
+    static public IServiceCollection AddWebScopeContextService(this IServiceCollection services)
+        => services.AddScoped<IScopeContextService, WebScopeContextService>();
 }

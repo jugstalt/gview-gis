@@ -1,4 +1,8 @@
+@using gView.Blazor.Core.Services.Abstraction
 
+@inject IScopeContextService ScopeContext
+@inject SettingsService Settings
+@inject ICartoApplicationScopeService AppScope
 
 <div class="carto-main @(_isDarkMode ? "dark": "light")">
     <MudThemeProvider @bind-IsDarkMode="@_isDarkMode" Theme="_theme" />
@@ -38,5 +42,16 @@
     private void ToggleDarkmode()
     {
         _isDarkMode = !_isDarkMode;
+    }
+
+    async protected override Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+
+        Task.Run(async () =>
+        {
+            await Task.Delay(2000);
+            
+        });
     }
 }

@@ -1,22 +1,22 @@
 ﻿using gView.Blazor.Core.Exceptions;
 using gView.Blazor.Core.Services;
 using gView.Blazor.Core.Services.Abstraction;
-using gView.Blazor.Models.Settings;
 using gView.Carto.Core;
 using gView.Carto.Core.Abstractions;
 using gView.Carto.Core.Models.Tree;
 using gView.Carto.Core.Services;
 using gView.Carto.Core.Services.Abstraction;
+using gView.DataExplorer.Razor.Components.Dialogs.Models;
 using gView.Framework.Blazor;
 using gView.Framework.Blazor.Models;
 using gView.Framework.Blazor.Services;
 using gView.Framework.Core.Data;
+using gView.Framework.IO;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Options;
 using Microsoft.JSInterop;
-using Microsoft.SqlServer.Management.SqlParser.SqlCodeDom;
 using MudBlazor;
-using static gView.Interoperability.GeoServices.Rest.Json.JsonServices;
+using static System.Formats.Asn1.AsnWriter;
 
 namespace gView.Carto.Plugins.Services;
 public class CartoApplicationScopeService : ApplictionBusyHandler, ICartoApplicationScopeService
@@ -45,7 +45,8 @@ public class CartoApplicationScopeService : ApplictionBusyHandler, ICartoApplica
                                         SpatialReferenceService sRefService,
                                         IUserIdentityService userIdentity,
                                         SettingsService settings,
-                                        IOptions<CartoApplicationScopeServiceOptions> options)
+                                        IOptions<CartoApplicationScopeServiceOptions> options,
+                                        IScopeContextService? scopeContext = null)
     {
         _dialogService = dialogService;
         _knownDialogs = knownDialogs;
@@ -60,7 +61,7 @@ public class CartoApplicationScopeService : ApplictionBusyHandler, ICartoApplica
 
         _cartoDocument = this.Document = new CartoDocument();
 
-        if(_cartoDocument.Map.Display.SpatialReference is null)
+        if (_cartoDocument.Map.Display.SpatialReference is null)
         {
             _cartoDocument.Map.Display.SpatialReference =
                 sRefService.GetSpatialReference($"epsg:{crsService.GetDefaultOrAny().Epsg}").Result;
@@ -84,6 +85,37 @@ public class CartoApplicationScopeService : ApplictionBusyHandler, ICartoApplica
 
             _eventBus.FireCartoDocumentLoadedAsync(value);
         }
+    }
+
+    async public Task<bool> LoadCartoDocument(string mxlFilePath)
+    {
+        XmlStream stream = new XmlStream("");
+        stream.ReadStream(mxlFilePath);
+
+        var cartoDocument = new CartoDocument()
+        {
+            FilePath = mxlFilePath
+        };
+
+        await stream.LoadAsync("MapDocument", cartoDocument);
+
+        if (cartoDocument.Map?.ErrorMessages?.Any() == true)
+        {
+            if (await this.ShowKnownDialog(
+                                KnownDialogs.WarningsDialog,
+                                model: new WarningsDialogModel()
+                                {
+                                    Warnings = cartoDocument.Map.ErrorMessages
+                                })
+                is null)
+            {
+                return false;
+            }
+        }
+
+        this.Document = cartoDocument;
+
+        return true;
     }
 
     public TocTreeNode? SelectedTocTreeNode { get; private set; }

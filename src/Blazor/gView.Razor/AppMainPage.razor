@@ -2,7 +2,6 @@
 
 @inject NavigationManager Nav
 @inject IJSRuntime JSRuntime
-@inject SettingsService Settings
 
 <MudThemeProvider @bind-IsDarkMode="@_isDarkMode" Theme="_theme" />
 
@@ -40,21 +39,6 @@
             </MudPaper>
         </GvGridItem>
     </GvGrid>
-
-    @if(_lastAccessed is not null) 
-    {
-        <MudList>
-            @foreach (var mapFile in _lastAccessed.OrderByDescending(m => m.LastAccess))
-            {
-                <MudListItem Value="@mapFile.ItemId">
-                    <MudPaper Style="min-height:50px;cursor:pointer;padding:15px"
-                              @onclick="@(()=>NavigateTo($"{CartoUri}?m={mapFile.ItemId.ToString()}", true))">
-                       @(new System.IO.FileInfo(@mapFile.Path).Name)
-                    </MudPaper>
-                </MudListItem>
-            }
-        </MudList>
-    }
 </div>
 
 
@@ -62,15 +46,8 @@
     private const string CartoUri = "carto";
     private const string ExplorerUri = "explorer";
 
-    private IEnumerable<MapFileItem>? _lastAccessed;
-
     private MudTheme _theme = new();
     private bool _isDarkMode = true;
-
-    async protected override Task OnInitializedAsync()
-    {
-        _lastAccessed = (await Settings.GetLastAccessedDocuments()).OrderByDescending(m => m.LastAccess);
-    }
 
     private void ToggleDarkmode()
     {

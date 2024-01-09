@@ -16,7 +16,10 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
-builder.Services.AddDefaultUserIdentifyService();
+builder.Services
+    .AddDefaultUserIdentifyService()
+    .AddWebScopeContextService();
+
 
 builder.Services.AddMudServices(config =>
 {
