@@ -10,139 +10,149 @@
 @inject CartoEventBusService EventBus
 @inject SettingsService Settings
 
-<div style="padding:2px 10px">
-
-    @if (_editMapName)
-    {
-        <InlineInput @bind-Value="_editedName"
-                     OnCommit="CommitEditMapName" />
-    }
-    else
-    {
-        <MudText Typo="Typo.h6"
-                 @ondblclick="StartEditMapName">
-            @AppScope.Document.Map.Name
-        </MudText>
-    }
-</div>
-
-@if (_treeNodes.Any())
+@if(_isLoadingMap)
 {
-    <MudTreeView  Items="_treeNodes"
-                  ExpandOnDoubleClick="true" 
-                  MultiSelection="false" 
-                  Hover="true" Dense="true" @key="@fullReloadKey">
-        <ItemTemplate>
-            <div style="white-space:nowrap; overflow-x:hidden;"
-                 class="treenode">
-            @if (context is TocLayerNode)
-            {
-                
-                <MudTreeViewItem Value="@context"
-                                 Class="@(context.IsSelected ? "toctreenode-selected" :"")"
-                                 Items="@context.Children"
-                                 CanExpand="@context.HasChildren"
-                                 Expanded="@context.IsExpanded"
-                                 ExpandedChanged="@((expanded) => OnNodeExpandedChanged(context, expanded))"
-                    @onclick="@((e) => OnNodeClickAsync(context,e))">
-                        <Content>
-                            <MudTreeViewItemToggleButton @bind-Expanded="@context.IsExpanded" 
-                                                         Visible="@context.HasChildren" 
-                                                         ExpandedIcon="@Icons.Material.Rounded.ArrowRight" />
-                            <MudCheckBox T="bool" 
-                                         Checked="@context.IsChecked"
-                                         Color="Color.Surface"
-                                         CheckedChanged="@((e) => OnCheckboxClickedAsync(context,e))" />
-                            @if(_editNameTocNode == context)
-                            {
-                                <InlineInput @bind-Value="_editedName"
-                                             OnCommit="CommitEditLayerName" />
-                            } 
-                            else
-                            {
-                                <MudText @ondblclick="() => StartEditLayerName(context)">
-                                    @context.Text
-                                </MudText>
-                            }
-                        
-                        </Content>
-                    </MudTreeViewItem>
-            }
-            else if (context is TocLegendNode)
-            {
-                <MudTreeViewItem Value="@context">
-                    <Content>
-                        <div style="white-space:nowrap; overflow-x:hidden; width:100%">
-                            <LegendTreeItem ParentElement="context.TocElement" />
-                        </div>
-                    </Content>
-                </MudTreeViewItem>
-            }
-            else
-            {
-                <MudTreeViewItem Value="@context"
-                    Class="@(context.IsSelected ? "toctreenode-selected" :"")"
-                    Items="@context.Children"
-                    CanExpand="true"
-                    Expanded="@context.IsExpanded"
-                    ExpandedChanged="@((expanded) => OnNodeExpandedChanged(context, expanded))"
-                    @onclick="@((e) => OnNodeClickAsync(context,e))">
-                        <Content>
-                            <MudTreeViewItemToggleButton @bind-Expanded="@context.IsExpanded" 
-                                                         Visible="true" 
-                                                         ExpandedIconColor="Color.Primary" />
-                            <MudCheckBox T="bool"
-                                         Checked="@context.IsChecked"
-                                         CheckedChanged="@((e) => OnCheckboxClickedAsync(context,e ))" />
-                            @if(_editNameTocNode == context)
-                            {
-                                <InlineInput @bind-Value="_editedName"
-                                             OnCommit="CommitEditLayerName" />
-                            }  
-                            else
-                            {
-                                <MudText Class="grouplayer-text"
-                                         @ondblclick="() => StartEditLayerName(context)">
-                                    @context.Text
-                                </MudText>
-                            }
-                        
-                        </Content>
-                    </MudTreeViewItem>
-            }
-            </div>
-        </ItemTemplate>
-    </MudTreeView>
-}
-else if(_cartoInitialTools is not null)
+    <MudProgressCircular Indeterminate="true" Size="MudBlazor.Size.Small" />
+    <div>
+        Loading map ...
+    </div>  
+} 
+else
 {
-    <div style="padding:10px">
-        @GvUtilities.InfoText("This is an empty map now. To start use one of the this tools:")
-            
-        @foreach(var cartoTool in _cartoInitialTools)
+    <div style="padding:2px 10px">
+
+        @if (_editMapName)
         {
-            <div class="carto-initial-tool"
-                 alt="@cartoTool.ToolTip"
-                 @onclick="async () => await cartoTool.OnEvent(AppScope)">
-                <div class="@(IconService.FromString(cartoTool.Icon)) icon"></div>
-                <div class="title">@cartoTool.Name</div>
-            </div>
+            <InlineInput @bind-Value="_editedName"
+                         OnCommit="CommitEditMapName" />
         }
-
-        @if(_lastAccessed is not null)
+        else
         {
-            @foreach(var mapFile in _lastAccessed.OrderByDescending(m=>m.LastAccess))
-            {
-                <div class="carto-initial-tool"
-                     @onclick="async () => await LoadMap(mapFile)">
-                <div class="@(IconService.FromString("basic:globe-table")) icon"></div>
-                <div class="title">@(new System.IO.FileInfo(@mapFile.Path).Name)</div>
-                <div class="sub-title">@mapFile.LastAccess</div>
-            </div>
-            }
+            <MudText Typo="Typo.h6"
+                     @ondblclick="StartEditMapName">
+                @AppScope.Document.Map.Name
+            </MudText>
         }
     </div>
+
+    @if (_treeNodes.Any())
+    {
+        <MudTreeView  Items="_treeNodes"
+                      ExpandOnDoubleClick="true" 
+                      MultiSelection="false" 
+                      Hover="true" Dense="true" @key="@fullReloadKey">
+            <ItemTemplate>
+                <div style="white-space:nowrap; overflow-x:hidden;"
+                     class="treenode">
+                @if (context is TocLayerNode)
+                {
+                
+                    <MudTreeViewItem Value="@context"
+                                     Class="@(context.IsSelected ? "toctreenode-selected" :"")"
+                                     Items="@context.Children"
+                                     CanExpand="@context.HasChildren"
+                                     Expanded="@context.IsExpanded"
+                                     ExpandedChanged="@((expanded) => OnNodeExpandedChanged(context, expanded))"
+                        @onclick="@((e) => OnNodeClickAsync(context,e))">
+                            <Content>
+                                <MudTreeViewItemToggleButton @bind-Expanded="@context.IsExpanded" 
+                                                             Visible="@context.HasChildren" 
+                                                             ExpandedIcon="@Icons.Material.Rounded.ArrowRight" />
+                                <MudCheckBox T="bool" 
+                                             Checked="@context.IsChecked"
+                                             Color="Color.Surface"
+                                             CheckedChanged="@((e) => OnCheckboxClickedAsync(context,e))" />
+                                @if(_editNameTocNode == context)
+                                {
+                                    <InlineInput @bind-Value="_editedName"
+                                                 OnCommit="CommitEditLayerName" />
+                                } 
+                                else
+                                {
+                                    <MudText @ondblclick="() => StartEditLayerName(context)">
+                                        @context.Text
+                                    </MudText>
+                                }
+                        
+                            </Content>
+                        </MudTreeViewItem>
+                }
+                else if (context is TocLegendNode)
+                {
+                    <MudTreeViewItem Value="@context">
+                        <Content>
+                            <div style="white-space:nowrap; overflow-x:hidden; width:100%">
+                                <LegendTreeItem ParentElement="context.TocElement" />
+                            </div>
+                        </Content>
+                    </MudTreeViewItem>
+                }
+                else
+                {
+                    <MudTreeViewItem Value="@context"
+                        Class="@(context.IsSelected ? "toctreenode-selected" :"")"
+                        Items="@context.Children"
+                        CanExpand="true"
+                        Expanded="@context.IsExpanded"
+                        ExpandedChanged="@((expanded) => OnNodeExpandedChanged(context, expanded))"
+                        @onclick="@((e) => OnNodeClickAsync(context,e))">
+                            <Content>
+                                <MudTreeViewItemToggleButton @bind-Expanded="@context.IsExpanded" 
+                                                             Visible="true" 
+                                                             ExpandedIconColor="Color.Primary" />
+                                <MudCheckBox T="bool"
+                                             Checked="@context.IsChecked"
+                                             CheckedChanged="@((e) => OnCheckboxClickedAsync(context,e ))" />
+                                @if(_editNameTocNode == context)
+                                {
+                                    <InlineInput @bind-Value="_editedName"
+                                                 OnCommit="CommitEditLayerName" />
+                                }  
+                                else
+                                {
+                                    <MudText Class="grouplayer-text"
+                                             @ondblclick="() => StartEditLayerName(context)">
+                                        @context.Text
+                                    </MudText>
+                                }
+                        
+                            </Content>
+                        </MudTreeViewItem>
+                }
+                </div>
+            </ItemTemplate>
+        </MudTreeView>
+    }
+    else if(_cartoInitialTools is not null)
+    {
+        <div style="padding:10px">
+            @GvUtilities.InfoText("This is an empty map now. To start use one of the this tools:")
+            
+            @foreach(var cartoTool in _cartoInitialTools)
+            {
+                <div class="carto-initial-tool"
+                     alt="@cartoTool.ToolTip"
+                     @onclick="async () => await cartoTool.OnEvent(AppScope)">
+                    <div class="@(IconService.FromString(cartoTool.Icon)) icon"></div>
+                    <div class="title">@cartoTool.Name</div>
+                </div>
+            }
+
+            @if(_lastAccessed is not null)
+            {
+                @foreach(var mapFile in _lastAccessed.OrderByDescending(m=>m.LastAccess))
+                {
+                    <div class="carto-initial-tool"
+                         @onclick="async () => await LoadMap(mapFile)">
+                    <div class="@(IconService.FromString("basic:globe-table")) icon"></div>
+                    <div class="title">@(new System.IO.FileInfo(@mapFile.Path).Name)</div>
+                    <div class="sub-title">@mapFile.LastAccess</div>
+                </div>
+                }
+            }
+        </div>
     
+    }
 }
 
 @code {
@@ -153,6 +163,7 @@ else if(_cartoInitialTools is not null)
     private TocTreeNode? _editNameTocNode;
     private string _editedName = "";
     private bool _editMapName = false;
+    private bool _isLoadingMap = false;
 
     // force a full reload after rebuild
     // otherwise some items (legends) will be cached!
@@ -177,8 +188,15 @@ else if(_cartoInitialTools is not null)
         node.IsExpanded = expanded;
     });
 
-    private Task LoadMap(MapFileItem mapFile)
-        => AppScope.LoadCartoDocument(mapFile.Path);
+    async private Task LoadMap(MapFileItem mapFile)
+    {
+        _isLoadingMap = true;
+
+        await base.ForceRenderComponent();
+        await AppScope.LoadCartoDocument(mapFile.Path);
+
+        _isLoadingMap = false;
+    }
 
     private Task OnCheckboxClickedAsync(TocTreeNode node, bool isChecked) => base.HandleAsync(async () =>
     {
