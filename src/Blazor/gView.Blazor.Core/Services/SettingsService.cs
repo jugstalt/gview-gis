@@ -55,11 +55,14 @@ public class SettingsService
         }
     }
 
-    public Task<IEnumerable<MapFileItem>> GetLastAccessedDocuments()
+    public Task<IEnumerable<MapFileItem>> GetLastAccessedDocuments(int count = 10)
     {
         try
         {
-            return Task.FromResult<IEnumerable<MapFileItem>>(_persistentSettings.GetItems<MapFileItem>(UserCollection("mapfiles"), m => true));
+            return Task.FromResult<IEnumerable<MapFileItem>>(_persistentSettings.GetItems<MapFileItem>(UserCollection("mapfiles"), m => true)
+                .OrderByDescending(m => m.LastAccess)
+                .Take(count)
+                .ToArray());
         }
         catch (Exception /*ex*/)
         {

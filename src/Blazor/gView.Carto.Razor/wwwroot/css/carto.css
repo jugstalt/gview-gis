@@ -402,6 +402,33 @@
     }
 }
 
+.carto-tile {
+    display:inline-block;
+    width:300px;
+    height:130px;
+    border: 1px solid var(--mud-palette-lines-default);
+    background-color: var(--mud-palette-primary-hover);
+    border-radius: 5px;
+    padding: 10px;
+    margin: 4px 7px;
+    cursor: pointer;
+    overflow: hidden;
+}
+
+    .carto-tile .icon {
+        display: inline-block;
+        vertical-align: bottom;
+    }
+
+    .carto-tile .title {
+        display: inline-block;
+    }
+
+    .carto-tile .sub-title {
+        display: inline-block;
+        padding-left: 24px;
+        opacity: .5;
+    }
 
 /* Icons */
 .sketchpen-icon-basic-bg-light-24 {

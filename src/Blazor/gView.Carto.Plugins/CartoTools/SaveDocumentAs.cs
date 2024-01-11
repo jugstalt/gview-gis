@@ -1,5 +1,7 @@
-﻿using gView.Carto.Core.Services.Abstraction;
+﻿using gView.Blazor.Core.Extensions;
+using gView.Carto.Core.Services.Abstraction;
 using gView.Carto.Plugins.Extensions;
+using gView.Carto.Razor.Components.Dialogs.Models;
 using gView.DataExplorer.Razor.Components.Dialogs.Filters;
 using gView.DataExplorer.Razor.Components.Dialogs.Models;
 using gView.Framework.Blazor;
@@ -31,23 +33,55 @@ public class SaveDocumentAs : ICartoTool
 
     }
 
-    public bool IsEnabled(ICartoApplicationScopeService scope)
-    {
-        return true;
-    }
+    public bool IsEnabled(ICartoApplicationScopeService scope) => true;
 
     async public Task<bool> OnEvent(ICartoApplicationScopeService scope)
     {
-        var model = await scope.ShowKnownDialog(KnownDialogs.ExplorerDialog,
-                                                       title: "Save current map",
-                                                       model: new ExplorerDialogModel()
-                                                       {
-                                                           Filters = new List<ExplorerDialogFilter> {
-                                                                new SaveFileFilter("Map", "*.mxl")
-                                                           },
-                                                           Mode = ExploerDialogMode.Save
-                                                       });
+        var lastAccessedDocuments = await scope.Settings.GetLastAccessedDocuments() ?? [];
 
+        var model = lastAccessedDocuments.Count() == 0 || scope.Document?.Map.IsEmpty() != false
+            ? new() // on empty maps dont show this dialog.
+            : await scope.ShowModalDialog(
+                typeof(Razor.Components.Dialogs.OpenPreviousMapDialog),
+                "Override existing map ...",
+                new Razor.Components.Dialogs.Models.OpenPreviousMapDialogModel()
+                {
+                    Items = lastAccessedDocuments
+                }
+            );
+
+        string? mxlFilePath = model?.Selected switch
+        {
+            null => await FromCreateFileDialogAsync(scope),
+            _ => model.Selected.Path
+        };
+
+        if (!String.IsNullOrEmpty(mxlFilePath)) 
+        {
+            bool? performEncryption = await PromptPerformEncrypted(scope);
+
+            if (performEncryption.HasValue) // otherweise user has canceled 
+            {
+                return await scope.SaveCartoDocument(mxlFilePath, performEncryption.Value);
+            }
+        }
+
+        return false;
+    }
+
+    async private Task<string?> FromCreateFileDialogAsync(ICartoApplicationScopeService scope)
+    {
+        var model = await scope.ShowKnownDialog(
+                KnownDialogs.ExplorerDialog,
+                title: "Save current map",
+                model: new ExplorerDialogModel()
+                {
+                    Filters = new List<ExplorerDialogFilter> {
+                        new SaveFileFilter("Map", "*.mxl")
+                    },
+                    Mode = ExploerDialogMode.Save
+                }
+             );
 
         if (model?.Result.ExplorerObjects != null
             && model.Result.ExplorerObjects.Count == 1
@@ -59,17 +93,32 @@ public class SaveDocumentAs : ICartoTool
                 fileTitle = $"{fileTitle}.mxl";
             }
 
-            string? mxlFilenPath = Path.Combine(model.Result.ExplorerObjects.First().FullName, fileTitle);
-            bool performEncryption = true;
+            return Path.Combine(model.Result.ExplorerObjects.First().FullName, fileTitle);
 
-            XmlStream stream = new XmlStream("MapApplication", performEncryption);
-            stream.Save("MapDocument", scope.Document);
-
-            stream.WriteStream(mxlFilenPath);
-
-            scope.Document.FilePath = mxlFilenPath;
         }
 
-        return true;
+        return null;
     }
+
+    async private Task<bool?> PromptPerformEncrypted(ICartoApplicationScopeService scope)
+    {
+        var model = await scope.ShowKnownDialog(
+                KnownDialogs.PromptBoolDialog,
+                title: "Encryption",
+                model: new PromptDialogModel<bool>
+                {
+                    Value = true,
+                    Prompt = "Encrypt connection strings",
+                    HelperText = "If this is not checked, connectionstring are stored in clear text in the mapping file"
+                }
+            );
+
+        return model switch
+        {
+            null => null,
+            _ => model.Value
+        };
+    }
+
+
 }

@@ -433,7 +433,7 @@
         var model = await AppScope.ShowKnownDialog(
             Framework.Blazor.KnownDialogs.PromptDialog,
             "Column Filter",
-            new PromptDialogModel()
+            new PromptDialogModel<string>()
             {
                 Prompt = fieldName,
                 HelperText = "Filter for this field. You can/should use Wildcard (%) if necessary.",

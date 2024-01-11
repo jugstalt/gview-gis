@@ -2,10 +2,10 @@
 
 namespace gView.Carto.Razor.Components.Dialogs.Models;
 
-public class PromptDialogModel : IDialogResultItem
+public class PromptDialogModel<T> : IDialogResultItem
 {
     public string Prompt { get; set; } = "Input Value";
     public string HelperText { get; set; } = "";
-    public string Value { get; set; } = "";
+    public T? Value { get; set; } = default(T);
     public bool Required { get; set; } = false;
 }

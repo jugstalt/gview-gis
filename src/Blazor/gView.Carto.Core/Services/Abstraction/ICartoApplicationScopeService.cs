@@ -15,8 +15,11 @@ public interface ICartoApplicationScopeService : IApplicationScope
 
     GeoTransformerService GeoTransformer { get; }
 
+    SettingsService Settings { get; }
+
     TocTreeNode? SelectedTocTreeNode { get; }
     Task SetSelectedTocTreeNode(TocTreeNode? selectedTocTreeNode);
 
     Task<bool> LoadCartoDocument(string mxlFilePath);
+    Task<bool> SaveCartoDocument(string xmlFilePath, bool performEncryption);
 }

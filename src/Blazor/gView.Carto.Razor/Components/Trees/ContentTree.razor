@@ -144,10 +144,10 @@ else
                 {
                     <div class="carto-initial-tool"
                          @onclick="async () => await LoadMap(mapFile)">
-                    <div class="@(IconService.FromString("basic:globe-table")) icon"></div>
-                    <div class="title">@(new System.IO.FileInfo(@mapFile.Path).Name)</div>
-                    <div class="sub-title">@mapFile.LastAccess</div>
-                </div>
+                        <div class="@(IconService.FromString("basic:globe-table")) icon"></div>
+                        <div class="title">@mapFile.DisplayPath()</div>
+                        <div class="sub-title">@mapFile.LastAccess</div>
+                    </div>
                 }
             }
         </div>
@@ -178,7 +178,7 @@ else
             .OrderBy(t => t.SortOrder)
             .ToArray();
 
-        _lastAccessed = (await Settings.GetLastAccessedDocuments()).OrderByDescending(m => m.LastAccess);
+        _lastAccessed = (await Settings.GetLastAccessedDocuments());
 
         await SetAppScope(AppScope);
     });

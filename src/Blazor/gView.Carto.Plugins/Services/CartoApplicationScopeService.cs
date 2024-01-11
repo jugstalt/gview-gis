@@ -68,7 +68,7 @@ public class CartoApplicationScopeService : ApplictionBusyHandler, ICartoApplica
         }
 
         _eventBus.OnLayerSettingsChangedAsync += HandleLayerSettingsChanged;
-        _eventBus.OnCartoDocumentLoadedAsync += HandleCartoDocumentLoaded;
+        _eventBus.OnCartoDocumentLoadedAsync += HandleCartoDocumentTouched;
     }
 
     public CartoEventBusService EventBus => _eventBus;
@@ -118,12 +118,28 @@ public class CartoApplicationScopeService : ApplictionBusyHandler, ICartoApplica
         return true;
     }
 
+    async public Task<bool> SaveCartoDocument(string xmlFilePath, bool performEncryption)
+    {
+        XmlStream stream = new XmlStream("MapApplication", performEncryption);
+        stream.Save("MapDocument", this.Document);
+
+        stream.WriteStream(xmlFilePath);
+
+        this.Document.FilePath = xmlFilePath;
+
+        await HandleCartoDocumentTouched(Document);
+
+        return true;
+    }
+
     public TocTreeNode? SelectedTocTreeNode { get; private set; }
 
     public Task SetSelectedTocTreeNode(TocTreeNode? selectedTocTreeNode)
         => _eventBus.FireSelectedTocTreeNodeChangedAsync(this.SelectedTocTreeNode = selectedTocTreeNode);
 
     public CartoDataTableService DataTableService => _dataTables;
+
+    public SettingsService Settings => _settings;
 
     public GeoTransformerService GeoTransformer => _geoTransformer;
 
@@ -144,7 +160,7 @@ public class CartoApplicationScopeService : ApplictionBusyHandler, ICartoApplica
         return Task.CompletedTask;
     }
 
-    private Task HandleCartoDocumentLoaded(ICartoDocument cartoDocument)
+    private Task HandleCartoDocumentTouched(ICartoDocument cartoDocument)
         => _settings.StoreMapDocumentLastAccess(cartoDocument.FilePath);
 
     #endregion
@@ -154,7 +170,7 @@ public class CartoApplicationScopeService : ApplictionBusyHandler, ICartoApplica
     public void Dispose()
     {
         _eventBus.OnLayerSettingsChangedAsync -= HandleLayerSettingsChanged;
-        _eventBus.OnCartoDocumentLoadedAsync -= HandleCartoDocumentLoaded;
+        _eventBus.OnCartoDocumentLoadedAsync -= HandleCartoDocumentTouched;
     }
 
     #endregion

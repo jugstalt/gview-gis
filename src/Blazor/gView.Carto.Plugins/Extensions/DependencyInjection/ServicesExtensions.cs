@@ -37,6 +37,7 @@ static public class ServicesExtensions
     static public IServiceCollection AddKnownCartoDialogsServices(this IServiceCollection services)
     {
         return services
-            .AddTransient<IKnownDialogService, PromptDialogService>();
+            .AddTransient<IKnownDialogService, PromptDialogService>()
+            .AddTransient<IKnownDialogService, PromptBoolDialogService>();
     }
 }

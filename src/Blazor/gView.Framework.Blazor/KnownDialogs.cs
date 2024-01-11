@@ -10,6 +10,7 @@
         ExecuteCommand,
         PropertyGridDialog,
         WarningsDialog,
-        PromptDialog
+        PromptDialog,
+        PromptBoolDialog
     }
 }

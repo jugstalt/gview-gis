@@ -30,22 +30,13 @@ public class SaveDocument : ICartoTool
     }
 
     public bool IsEnabled(ICartoApplicationScopeService scope)
-    {
-        return !String.IsNullOrEmpty(scope.Document.FilePath);
-    }
+        => !String.IsNullOrEmpty(scope.Document.FilePath); 
 
     public Task<bool> OnEvent(ICartoApplicationScopeService scope)
-    {
-        if (File.Exists(scope.Document.FilePath))
+        => File.Exists(scope.Document.FilePath) switch
         {
-            XmlStream stream = new XmlStream("MapApplication", true);
-            stream.Save("MapDocument", scope.Document);
-
-            stream.WriteStream(scope.Document.FilePath);
-
-            return Task.FromResult(true);
-        }
-
-        return Task.FromResult(false);
-    }
+            true => scope.SaveCartoDocument(scope.Document.FilePath, true),
+            false => Task.FromResult(false)
+        };
+    
 }

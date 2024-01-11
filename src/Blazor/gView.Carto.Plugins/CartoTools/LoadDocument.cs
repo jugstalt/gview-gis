@@ -1,16 +1,13 @@
-﻿using gView.Carto.Core;
-using gView.Carto.Plugins.Extensions;
+﻿using gView.Blazor.Core.Extensions;
+using gView.Carto.Core.Services.Abstraction;
+using gView.Carto.Plugins.Services;
 using gView.DataExplorer.Razor.Components.Dialogs.Filters;
 using gView.DataExplorer.Razor.Components.Dialogs.Models;
 using gView.Framework.Blazor;
-using gView.Framework.Blazor.Services.Abstraction;
 using gView.Framework.Carto;
 using gView.Framework.Carto.Abstraction;
 using gView.Framework.Core.Common;
-using gView.Framework.IO;
-using gView.Framework.Common;
-using gView.Carto.Core.Services.Abstraction;
-using gView.Carto.Plugins.Services;
+using static System.Formats.Asn1.AsnWriter;
 
 namespace gView.Carto.Plugins.CartoTools;
 
@@ -41,23 +38,51 @@ public class LoadDocument : ICartoInitialTool
 
     async public Task<bool> OnEvent(ICartoApplicationScopeService scope)
     {
-        var model = await scope.ShowKnownDialog(KnownDialogs.ExplorerDialog,
-                                                       title: "Load existing map",
-                                                       model: new ExplorerDialogModel()
-                                                       {
-                                                           Filters = new List<ExplorerDialogFilter> {
-                                                                new OpenFileFilter("Map", "*.mxl")
-                                                           },
-                                                           Mode = ExploerDialogMode.Open
-                                                       });
+        var lastAccessedDocuments = await scope.Settings.GetLastAccessedDocuments() ?? [];
 
-        string? mxlFilePath = model?.Result.ExplorerObjects.FirstOrDefault()?.FullName;
+        var model = lastAccessedDocuments.Count() == 0 || scope.Document?.Map.IsEmpty() != false
+            ? new() // on empty maps dont show this dialog. User see previous maps on the initial tools panel
+            : await scope.ShowModalDialog(
+                typeof(Razor.Components.Dialogs.OpenPreviousMapDialog),
+                "Previous opened maps ...",
+                new Razor.Components.Dialogs.Models.OpenPreviousMapDialogModel()
+                {
+                    Items = lastAccessedDocuments
+                }
+            );
 
-        if (!String.IsNullOrEmpty(mxlFilePath))
+        if(model is null)
         {
-            return await ((CartoApplicationScopeService)scope).LoadCartoDocument(mxlFilePath);
+            return false;
         }
 
-        return false;
+        string? mxlFilePath = model.Selected switch
+        {
+            null => await FromOpenFileDialogAsync(scope),
+            _ => model.Selected.Path
+        };
+
+        return !String.IsNullOrEmpty(mxlFilePath) switch
+        {
+            false => false,
+            true => await scope.LoadCartoDocument(mxlFilePath)
+        };
+    }
+
+    async private Task<string?> FromOpenFileDialogAsync(ICartoApplicationScopeService scope)
+    {
+        var model = await scope.ShowKnownDialog(
+                    KnownDialogs.ExplorerDialog,
+                    title: "Load existing map",
+                    model: new ExplorerDialogModel()
+                    {
+                        Filters = new List<ExplorerDialogFilter> {
+                        new OpenFileFilter("Map", "*.mxl")
+                        },
+                        Mode = ExploerDialogMode.Open
+                    }
+                );
+
+        return model?.Result.ExplorerObjects.FirstOrDefault()?.FullName;
     }
 }
