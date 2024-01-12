@@ -11,451 +11,55 @@
 @inject CartoEventBusService EventBus
 @inject CartoInteropService CartoInterop
 
-@if (_tableClass is not null 
-    && _tableProperties is not null
-    && _rows is not null)
+@if(Layer is not null)
 {
-    <MudTable Items="_rows" Dense="true" Hover="true"
-                T="IRow"
-                RowClassFunc="((row, i) => _selectionSet.Contains(row) ? SelectedRowClass : String.Empty)"
-                Filter="new Func<IRow,bool>(FilterFunc)"
-                FixedHeader="true" Height="calc(100% - 95px)"
-                Virtualize="true">
-       <ToolBarContent>
-            <MudSelect T="ILayer" 
-                        Value="_currentLayer"
-                        ValueChanged="OnSetCurrentLayer" >
-                @foreach(var dataTableLayer in AppScope.DataTableService.Layers)
+    <TableBaseControl Layer="Layer" ApplicationScope="AppScope"
+                      OnSelectionChanged="() => EventBus.FireRefreshMapAsync(DrawPhase.Selection)"
+                      OnZoomToClicked="(env) => EventBus.FireMapZoomToAsync(env)"
+                      OnOpenTable="() => CartoInterop.ShowDataFrame()"
+                      ProvideTableProperties="(layer) => AppScope.DataTableService.GetProperties(layer)">
+        <CustomToolBarContent>
+            <MudSelect T="ILayer"
+                       Value="Layer"
+                       ValueChanged="(layer) => HandleRefreshDataTable(layer, null)">
+                @foreach (var dataTableLayer in AppScope.DataTableService.Layers)
                 {
                     <MudSelectItem Value="dataTableLayer">@AppScope.Document.LayerTocName(dataTableLayer)</MudSelectItem>
                 }
-            </MudSelect>     
-            <MudSpacer />
-            <MudTextField @bind-Value="_tableProperties.SearchString"
-                            Placeholder="Filter loaded rows" 
-                            Adornment="Adornment.Start" 
-                            AdornmentIcon="@Icons.Material.Filled.Search" 
-                            IconSize="MudBlazor.Size.Medium" Class="mt-0"></MudTextField>
-        </ToolBarContent>
-       <HeaderContent>
-            @if(_tableProperties.CanSelect)
-            {
-                <MudTh>
-                    <MudCheckBox T="bool" />
-                </MudTh>
-            }
-            <MudTh>
-                @* <MudText Typo="Typo.body1">Filter</MudText> *@
-                <MudFab Color="Color.Primary"
-                        Size="MudBlazor.Size.Small"
-                        OnClick="OnSetFilter"
-                        StartIcon="@IconService.FromString("basic:filter")" />
-                @if(!string.IsNullOrEmpty(_tableProperties.FilterWhereClause))
-                {
-                    <MudFab Color="Color.Secondary"
-                            Size="MudBlazor.Size.Small"
-                            OnClick="OnUnsetFilter"
-                            StartIcon="@IconService.FromString("basic:filter-remove")" />
-                }
-            </MudTh>
-            @foreach(var field in _tableProperties.TableFields)
-            {
-                <MudTh>
-                    <MudTableSortLabel SortBy="new Func<IRow, object>((e) => e[field.name])">
-                        @field.aliasname
-                        <MudIconButton Icon="@Icons.Material.Filled.FilterAlt" 
-                                Size="MudBlazor.Size.Small"
-                                Color="_tableProperties.ColumnFilters.ContainsKey(field.name) && !string.IsNullOrEmpty(_tableProperties.ColumnFilters[field.name]) ? Color.Secondary : Color.Default"
-                                OnClick="() => OnSetColumnFilter(field.name)"
-                                aria-label="filter" />
-                    </MudTableSortLabel>
-                </MudTh>
-            }
-        </HeaderContent>
-       <RowTemplate>
-            @if(_tableProperties.CanSelect)
-            {
-                <MudTd>
-                    <MudCheckBox T="bool" 
-                                  Checked="@_selectionSet.Contains(context)"
-                                  CheckedChanged ="(chk) => OnSelectRow(context, chk)" />
-                </MudTd>
-            }
-            <MudTd>
-                <MudIconButton Icon="@Icons.Material.Filled.Search" 
-                                Size="MudBlazor.Size.Small"
-                                Color="@(_selectionSet.Contains(context) ? Color.Default : Color.Primary)"
-                                OnClick="() => OnZoomTo(context)"
-                                aria-label="zoomto">
-                </MudIconButton>
-            </MudTd>
-            @foreach(var field in _tableProperties.TableFields)
-            {
-                <MudTd DataLabel="@field.name">@context[field.name]</MudTd>
-            }
-        </RowTemplate>
-    </MudTable>
-
-    <div style="position:absolute;bottom:0;width:100%;height:30px;overflow:hidden">
-        <GvGrid ColumnCount="@(_tableProperties.HasMore ? 2 : 1)">
-            <GvGridItem>
-                <MudText Typo="Typo.body1">@($"Loaded {_rows.Count} items")</MudText>
-            </GvGridItem>
-            @if(_tableProperties.HasMore)
-            {
-                <GvGridItem>
-                    <MudButton Variant="Variant.Filled" Style="float:right"
-                                OnClick="() => LoadData()">Load more...</MudButton>
-                </GvGridItem>
-            }
-        </GvGrid>
-    </div>
-    
+            </MudSelect>
+        </CustomToolBarContent>
+    </TableBaseControl>
 }
 
 @code  {
     [Parameter] public ILayer? Layer { get; set; }
-
-    private const string SelectedRowClass = "selected";
-
-    private ILayer? _currentLayer;
-    private ITableClass? _tableClass;
-    private DataTableProperties? _tableProperties;
-    private ICursor? _cursor;
-    private List<IRow> _rows = new();
-
-    private ISelectionSet? _selectionSet;
 
     protected override Task OnInitializedAsync() => HandleAsync(async () =>
     {
         await base.OnInitializedAsync();
 
         EventBus.OnRefreshDataTable += HandleRefreshDataTable;
-
-        await OnSetCurrentLayer(Layer);
     });
 
     protected override Task OnParametersSetAsync() => HandleAsync(async () =>
     {
         await base.OnParametersSetAsync();
 
-        await OnSetCurrentLayer(Layer);
-    });
-
-    async private Task CreateCursor()
-    {
-        ReleaseCursor();
-        _rows.Clear();
-
-        if(_tableClass is null || _tableProperties is null)
+        if (Layer is not null) 
         {
-            return;
-        }
-
-        var queryFilter = new QueryFilter()
-        {
-            SubFields = "*"
-        };
-
-        if(_currentLayer is IFeatureLayer featureLayer)
-        {
-            queryFilter.WhereClause = featureLayer.FilterQuery?.WhereClause;
-        }
-
-        queryFilter.WhereClause = string.IsNullOrEmpty(queryFilter.WhereClause)
-            ? _tableProperties.FilterWhereClause
-            : string.IsNullOrEmpty(_tableProperties.FilterWhereClause)
-                ? queryFilter.WhereClause
-                : $"({queryFilter.WhereClause}) and ({_tableProperties.FilterWhereClause})";
-
-        _cursor = await _tableClass.Search(queryFilter);
-    }
-
-    private void ReleaseCursor()
-    {
-        if(_cursor is not null)
-        {
-            _cursor.Dispose();
-        }
-
-        _cursor = null;
-    }
-
-    private async Task LoadData(int count = 10000)
-    {
-
-        if(_tableProperties is null)
-        {
-            return;
-        }
-
-        _tableProperties.HasMore = false;
-
-        if (_cursor is null)
-        {
-            return;
-        }
-
-        for (int i = 0; i < count; i++)
-        {
-            var row = _cursor switch
-            {
-                IFeatureCursor featureCursor => await featureCursor.NextFeature(),
-                IRowCursor rowCursor => await rowCursor.NextRow(),
-                _ => null
-            };
-
-            if (row is null)
-            {
-                ReleaseCursor();
-                return;
-            }
-
-            _rows.Add(row);
-
-            if (_rows.Count % 100 == 0)
-            {
-                await ForceRenderComponent();
-            }
-        }
-
-        _tableProperties.HasMore = true;
-    }
-
-    private async Task RebuildFilterWhereClause()
-    {
-        if(_tableProperties is null)
-        {
-            return;
-        }
-
-        StringBuilder whereClause = new();
-
-        foreach(var fieldName in _tableProperties.ColumnFilters.Keys)
-        {
-            var filterValue = _tableProperties.ColumnFilters[fieldName];
-
-            if (String.IsNullOrWhiteSpace(filterValue))
-            {
-                continue;
-            }
-
-            var field = _tableProperties.TableFields.FirstOrDefault(f => f.name == fieldName);
-            if(field is null)
-            {
-                continue;
-            }
-
-            if(whereClause.Length>0)
-            {
-                whereClause.Append(" AND ");
-            }
-
-            whereClause.Append(field.FieldWhereClauseSegment(
-                    filterValue,
-                    datasetCapabilities: _tableClass?.Dataset as IDatasetCapabilities
-                ));
-        }
-
-        if (_tableProperties.FilterWhereClause != whereClause.ToString())
-        {
-            _tableProperties.FilterWhereClause = whereClause.ToString();
-
-            await CreateCursor();
-            await LoadData();
-        }
-    }
-
-    private Task OnSetFilter() => HandleAsync(async () =>
-    {
-        if(_tableProperties is null)
-        {
-            return;    
-        }
-
-        var model = await AppScope.ShowModalDialog(typeof(QueryBuilderDialog),
-            "Query Builder",
-            new QueryBuilderModel()
-                {
-                    QueryString = _tableProperties.FilterWhereClause,
-                    TableClass = _tableClass
-                });
-
-        if (model is not null &&
-            _tableProperties.FilterWhereClause != model.QueryString)
-        {
-            _tableProperties.ColumnFilters.SetAllValues("");
-            _tableProperties.FilterWhereClause = model.QueryString;
-
-            await CreateCursor();
-            await LoadData();
-        }
-    });
-
-    private Task OnUnsetFilter() => HandleAsync(async () =>
-    {
-        if(_tableProperties is null)
-        {
-            return;    
-        }
-
-        _tableProperties.FilterWhereClause = _tableProperties.SearchString = "";
-        _tableProperties.ColumnFilters.SetAllValues("");
-
-        await CreateCursor();
-        await LoadData();
-    });
-
-    private bool FilterFunc(IRow row)
-    {
-        if(_tableProperties is null)
-        {
-            return false;
-        }
-
-        if (string.IsNullOrWhiteSpace(_tableProperties.SearchString))
-        {
-            return true;
-        }
-
-        var searchStringWords = _tableProperties.SearchString
-                                    .Split(' ')
-                                    .Where(s => !string.IsNullOrWhiteSpace(s))
-                                    .ToArray();
-
-        foreach (var searchStringWord in searchStringWords)
-        {
-            bool found = false;
-
-            foreach(var field in _tableProperties.TableFields)
-            {
-                var val = row[field.name];
-
-                found = val switch
-                {
-                    string str => str.Contains(searchStringWord, StringComparison.OrdinalIgnoreCase),
-                    _ => val?.ToString() == searchStringWord
-                };
-
-                if(found) { break; }
-            }
-
-            if(!found)
-            {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    private Task OnZoomTo(IRow row) => HandleAsync(async () =>
-    {
-        if (row is IFeature feature
-            && feature.Shape is not null
-            && _tableClass is IFeatureClass featureClass
-            && featureClass.SpatialReference is not null)
-        {
-            var bounds = feature.Shape.Envelope;
-            var boundsWgs84 = GeoTransformer.ToWGS84(bounds, featureClass.SpatialReference).Envelope;
-            boundsWgs84.Srs = 4326;
-
-            await EventBus.FireMapZoomToAsync(boundsWgs84);
-        }
-    });
-
-    private Task OnSetCurrentLayer(ILayer? layer) => HandleAsync(async () =>
-    {
-        _currentLayer = layer;
-
-        if (_currentLayer is not null)
-        {
-            await CartoInterop.ShowDataFrame();
-        }
-
-        if (_currentLayer?.Class is ITableClass tableClass
-            && _tableClass != tableClass)
-        {
-            _tableClass = tableClass;
-
-            _tableProperties = AppScope.DataTableService.GetProperties(_currentLayer);
-            _selectionSet = (_currentLayer as IFeatureSelection)?.SelectionSet;
-            _rows = new();
-
-            _tableProperties.TableFields = _currentLayer switch
-            {
-                IFeatureLayer fLayer => fLayer.Fields.ToEnumerable()
-                                          .Where(f => f.IsDataTableField() && f.visible),
-                _ => _tableClass.Fields.ToEnumerable()
-                                    .Where(f => f.IsDataTableField())
-            };
-
-            _tableProperties.CanSelect = _selectionSet.CanHandleRowsSelection();
-
-            foreach (var field in _tableProperties.TableFields)
-            {
-                _tableProperties.ColumnFilters[field.name] =
-                    _tableProperties.ColumnFilters.ContainsKey(field.name)
-                    ? _tableProperties.ColumnFilters[field.name]
-                    : String.Empty;
-            }
-
-            await CreateCursor();
-            await LoadData();
-        }
-    });
-
-    private Task OnSelectRow(IRow row, bool select) => HandleAsync(async () =>
-    {
-        if (_selectionSet is IIDSelectionSet idSelectionSet)
-        {
-            if (select)
-            {
-                idSelectionSet.AddID(row.OID);
-            }
-            else
-            {
-                idSelectionSet.RemoveID(row.OID);
-            }
-
-            await EventBus.FireRefreshMapAsync(DrawPhase.Selection);
-        }
-    });
-
-    private Task OnSetColumnFilter(string fieldName) => HandleAsync(async () =>
-    {
-        if (_tableProperties is null ||
-           !_tableProperties.ColumnFilters.ContainsKey(fieldName))
-        {
-            return;
-        }
-
-        var model = await AppScope.ShowKnownDialog(
-            Framework.Blazor.KnownDialogs.PromptDialog,
-            "Column Filter",
-            new PromptDialogModel<string>()
-            {
-                Prompt = fieldName,
-                HelperText = "Filter for this field. You can/should use Wildcard (%) if necessary.",
-                Value = _tableProperties.ColumnFilters[fieldName]
-            });
-
-        if(model is not null
-            && _tableProperties.ColumnFilters[fieldName] != model.Value)
-        {
-            _tableProperties.ColumnFilters[fieldName] = model.Value;
-
-            await this.RebuildFilterWhereClause();
+            await HandleRefreshDataTable(Layer, null);
         }
     });
 
     private Task HandleRefreshDataTable(ILayer layer, ILayer? oldLayer) => HandleAsync(async () =>
     {
-        if(_currentLayer == layer 
-            || _currentLayer == oldLayer)
+        if(Layer == layer 
+           || Layer == oldLayer
+           || oldLayer == null)
         {
-            _tableClass = null;  // force a refresh!
-            await OnSetCurrentLayer(layer);         
+            Layer = null;
+            await base.InvokeForceRenderComponent();
+            Layer = layer;
         }
 
         await this.InvokeAsync(() => StateHasChanged());
@@ -464,7 +68,5 @@
     public void Dispose()
     {
         EventBus.OnRefreshDataTable -= HandleRefreshDataTable;
-
-        ReleaseCursor();
     }
-}
+}   

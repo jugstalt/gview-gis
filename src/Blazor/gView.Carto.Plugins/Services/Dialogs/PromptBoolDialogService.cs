@@ -8,7 +8,7 @@ internal class PromptBoolDialogService : IKnownDialogService
 {
     public KnownDialogs Dialog => KnownDialogs.PromptBoolDialog;
 
-    public Type RazorType => typeof(Razor.Components.Dialogs.PromptBoolDialog);
+    public Type RazorType => typeof(gView.Razor.Dialogs.PromptBoolDialog);
 
     public string Title => "Prompt";
 

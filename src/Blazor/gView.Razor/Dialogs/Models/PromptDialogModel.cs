@@ -1,6 +1,6 @@
 ﻿using gView.Blazor.Models.Dialogs;
 
-namespace gView.Carto.Razor.Components.Dialogs.Models;
+namespace gView.Razor.Dialogs.Models;
 
 public class PromptDialogModel<T> : IDialogResultItem
 {

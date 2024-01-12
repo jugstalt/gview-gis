@@ -1,8 +1,7 @@
 ﻿using gView.Framework.Core.Data;
 using System.Collections.Generic;
-using System.Linq;
 
-namespace gView.Carto.Core.Models.DataTable;
+namespace gView.Blazor.Models.DataTable;
 
 public class DataTableProperties
 {

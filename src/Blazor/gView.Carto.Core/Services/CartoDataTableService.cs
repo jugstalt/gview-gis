@@ -1,4 +1,4 @@
-﻿using gView.Carto.Core.Models.DataTable;
+﻿using gView.Blazor.Models.DataTable;
 using gView.Framework.Core.Data;
 using System.Collections.Concurrent;
 using System.Collections.Generic;

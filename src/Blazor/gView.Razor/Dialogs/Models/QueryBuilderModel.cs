@@ -1,7 +1,7 @@
 ﻿using gView.Blazor.Models.Dialogs;
 using gView.Framework.Core.Data;
 
-namespace gView.Carto.Razor.Components.Dialogs.Models;
+namespace gView.Razor.Dialogs.Models;
 
 public class QueryBuilderModel : IDialogResultItem
 {

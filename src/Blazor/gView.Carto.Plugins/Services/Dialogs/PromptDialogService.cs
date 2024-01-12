@@ -8,7 +8,7 @@ internal class PromptDialogService : IKnownDialogService
 {
     public KnownDialogs Dialog => KnownDialogs.PromptDialog;
 
-    public Type RazorType => typeof(Razor.Components.Dialogs.PromptDialog);
+    public Type RazorType => typeof(gView.Razor.Dialogs.PromptDialog);
 
     public string Title => "Prompt";
 

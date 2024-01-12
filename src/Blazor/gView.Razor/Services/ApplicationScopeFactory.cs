@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
 using MudBlazor;
 
-namespace gView.Rator.Services;
+namespace gView.Razor.Services;
 
 internal class ApplicationScopeFactory : IApplicationScopeFactory, IDisposable
 {

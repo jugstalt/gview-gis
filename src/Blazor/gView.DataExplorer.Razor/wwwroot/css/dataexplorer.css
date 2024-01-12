@@ -146,6 +146,18 @@
                     overflow: unset !important;
                 }
 
+                .dataexplorer-main .content .mud-tabs .mud-tabs-panels .data .mud-table-container {
+                    overflow: auto !important;
+                }
+
+                .dataexplorer-main .content .mud-tabs .mud-tabs-panels .dataview-divider {
+                    text-align:right;
+                }
+
+                    .dataexplorer-main .content .mud-tabs .mud-tabs-panels .dataview-divider .mud-icon-button {
+                        padding:1px;
+                    }
+
     .dataexplorer-main .status-bar {
         position: absolute;
         left: 0px;
@@ -172,6 +184,11 @@
 .dataexplorer-main .current-selected {
     background: var(--mud-palette-primary);
     color: var(--mud-palette-primary-text);
+}
+
+.dataexplorer-main .data .mud-table {
+    position: absolute;
+    inset: 0;
 }
 
 /**** Darkmode ****/

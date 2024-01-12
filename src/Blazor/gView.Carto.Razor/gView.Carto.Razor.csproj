@@ -17,7 +17,6 @@
     <None Include="Components\Controls\Classes\WmsClassSettingsControl.razor" />
     <None Include="Components\Controls\Map\TocOrderingControl.razor" />
     <None Include="Components\Controls\Renderers\SimpleFeatureRendererPropertyPage.razor" />
-    <None Include="Components\Controls\Tables\QueryBuilderControl.razor" />
     <None Include="Components\Dialogs\NewMapDialog.razor" />
   </ItemGroup>
 

@@ -50,7 +50,7 @@
     private Task ShowQueryBuilder() => HandleAsync(async () =>
     {
         var model = await AppScopeFactory.ShowModalDialog(
-            typeof(gView.Carto.Razor.Components.Dialogs.QueryBuilderDialog),
+            typeof(gView.Razor.Dialogs.QueryBuilderDialog),
             "Query Builder",
             new QueryBuilderModel()
             {

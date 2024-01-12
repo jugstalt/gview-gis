@@ -1,5 +1,5 @@
 ﻿using gView.Framework.Blazor.Services.Abstraction;
-using gView.Rator.Services;
+using gView.Razor.Services;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace gView.Razor.Extensions.DependencyInjection;

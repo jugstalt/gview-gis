@@ -74,4 +74,7 @@
         await Task.Delay(1);
         StateHasChanged();
     }
+
+    protected Task InvokeForceRenderComponent()
+        => this.InvokeAsync(async () => await ForceRenderComponent());
 }

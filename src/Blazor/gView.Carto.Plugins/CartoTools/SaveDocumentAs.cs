@@ -1,15 +1,12 @@
 ﻿using gView.Blazor.Core.Extensions;
 using gView.Carto.Core.Services.Abstraction;
-using gView.Carto.Plugins.Extensions;
-using gView.Carto.Razor.Components.Dialogs.Models;
 using gView.DataExplorer.Razor.Components.Dialogs.Filters;
 using gView.DataExplorer.Razor.Components.Dialogs.Models;
 using gView.Framework.Blazor;
-using gView.Framework.Blazor.Services.Abstraction;
 using gView.Framework.Carto;
 using gView.Framework.Carto.Abstraction;
 using gView.Framework.Core.Common;
-using gView.Framework.IO;
+using gView.Razor.Dialogs.Models;
 
 namespace gView.Carto.Plugins.CartoTools;
 
@@ -56,7 +53,7 @@ public class SaveDocumentAs : ICartoTool
             _ => model.Selected.Path
         };
 
-        if (!String.IsNullOrEmpty(mxlFilePath)) 
+        if (!String.IsNullOrEmpty(mxlFilePath))
         {
             bool? performEncryption = await PromptPerformEncrypted(scope);
 

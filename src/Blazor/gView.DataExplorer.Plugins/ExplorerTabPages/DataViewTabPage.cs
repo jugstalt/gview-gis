@@ -9,15 +9,15 @@ using System.Threading.Tasks;
 namespace gView.DataExplorer.Plugins.ExplorerTabPages;
 
 [RegisterPlugIn("3143FA90-587B-4cd0-B508-1BE88882E6B3")]
-public class MapTabPage : IExplorerTabPage
+public class DataViewTabPage : IExplorerTabPage
 {
     private IExplorerObject? _exObject;
 
     #region IExplorerTabPage
 
-    public Type RazorComponent => typeof(gView.DataExplorer.Razor.Components.Contents.TabPageMap);
+    public Type RazorComponent => typeof(gView.DataExplorer.Razor.Components.Contents.TabPageDataView);
 
-    public string Title => "Map";
+    public string Title => "Data View";
 
     public IExplorerObject? GetExplorerObject()
     {
