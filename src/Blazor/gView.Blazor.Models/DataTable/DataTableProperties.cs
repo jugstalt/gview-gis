@@ -12,4 +12,6 @@ public class DataTableProperties
     public bool HasMore { get; set; }
     public string FilterWhereClause { get; set; } = "";
     public string SearchString { get; set; } = "";
+
+    public Mode DataMode { get; set; } = Mode.Data;
 }

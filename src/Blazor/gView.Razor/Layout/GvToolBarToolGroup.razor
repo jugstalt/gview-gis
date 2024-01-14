@@ -1,0 +1,10 @@
+<MudPaper Outlined="true" Style="@($"margin-left:4px;padding:0px 8px")">
+    @if (ChildContent is not null)
+    {
+        @ChildContent
+    }
+</MudPaper>
+
+@code {
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+}

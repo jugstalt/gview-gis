@@ -5,9 +5,18 @@
 
 <MudThemeProvider @bind-IsDarkMode="@_isDarkMode" Theme="_theme" />
 
+<div class="gview-splashscreen" style="opacity:.2">
+    <div></div>
+</div>
+
 <div style="max-width:600px;margin:40px auto;text-align:center">
-    <h1>gView GIS</h1>
+    
     <GvGrid ColumnCount="2">
+        <GvGridItem Span="2">
+            <MudPaper Elevation="25" Style="padding:20px;position:relative">
+                <MudText Typo="Typo.h2">gView GIS</MudText>
+            </MudPaper>
+        </GvGridItem>
         <GvGridItem>
             <MudPaper @onclick="()=>NavigateTo(CartoUri)"
                       Style="min-height:250px;cursor:pointer;padding:20px;position:relative"
@@ -25,8 +34,8 @@
         </GvGridItem>
         <GvGridItem>
             <MudPaper @onclick="()=>NavigateTo(ExplorerUri)"
-                      style="min-height:250px;cursor:pointer;padding:20px;position:relative"
-                      Elevation="25">
+                     style="min-height:250px;cursor:pointer;padding:20px;position:relative"
+                     Elevation="25">
                 <MudText Typo="Typo.h5">gView Explorer</MudText>
 
                 <MudText Typo="Typo.body1">

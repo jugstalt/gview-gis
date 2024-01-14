@@ -21,6 +21,7 @@
         <CustomToolBarContent>
             <MudSelect T="ILayer"
                        Value="Layer"
+                       Label="Layer"
                        ValueChanged="(layer) => HandleRefreshDataTable(layer, null)">
                 @foreach (var dataTableLayer in AppScope.DataTableService.Layers)
                 {

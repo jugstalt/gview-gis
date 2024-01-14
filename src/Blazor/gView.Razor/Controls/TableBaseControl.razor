@@ -16,7 +16,7 @@
     <MudTable Items="_rows" Dense="true" Hover="true"
               T="IRow"
               RowClassFunc="((row, i) => _selectionSet.Contains(row) ? SelectedRowClass : String.Empty)"
-              Filter="new Func<IRow,bool>(FilterFunc)"
+              Filter="FilterFunc"
               FixedHeader="true" 
               Height="calc(100% - 95px)"
               Virtualize="true">
@@ -25,33 +25,70 @@
             {
                 @CustomToolBarContent
             }
+
+            @if(HasSelection()) 
+            { 
+                <GvToolBarToolGroup>
+                    <MudToggleIconButton Icon="@IconService.FromString("basic:database")"
+                                         ToggledIcon="@IconService.FromString("basic:table")"
+                                         Toggled="_tableProperties.DataMode == Mode.Selection"
+                                         ToggledChanged="OnSetSelectionMode" />
+                    <MudText Typo="Typo.caption">@($"{_tableProperties.DataMode}")</MudText>
+                </GvToolBarToolGroup>
+               
+            }
+            <GvToolBarToolGroup>
+                <MudText Typo="Typo.caption">Filter:</MudText>
+                <MudIconButton Color="string.IsNullOrEmpty(_tableProperties.FilterWhereClause) ? Color.Surface : Color.Primary"
+                               OnClick="OnSetFilter"
+                               Icon="@IconService.FromString("basic:filter")" />
+                @if(!string.IsNullOrEmpty(_tableProperties.FilterWhereClause))
+                {
+                    <MudIconButton Color="Color.Secondary"
+                                   OnClick="OnUnsetFilter"
+                                   Icon="@IconService.FromString("basic:filter-remove")" />
+                }
+            </GvToolBarToolGroup>
+            @if (HasSelection())
+            {
+                <GvToolBarToolGroup>
+                    <MudText Typo="Typo.caption">Selection:</MudText>
+                
+                    <MudIconButton Icon="@IconService.FromString("webgis:zoom-marker")"
+                                   OnClick="OnZoomToSelected" />
+                    <MudIconButton Icon="@IconService.FromString("webgis:marker-remove")"
+                                   OnClick="OnRemoveSelection" />
+                </GvToolBarToolGroup>
+            }
+
             <MudSpacer />
             <MudTextField @bind-Value="_tableProperties.SearchString"
-                            Placeholder="Filter loaded rows" 
-                            Adornment="Adornment.Start" 
-                            AdornmentIcon="@Icons.Material.Filled.Search" 
-                            IconSize="MudBlazor.Size.Medium" Class="mt-0"></MudTextField>
+                          Placeholder="Filter loaded rows" 
+                          Adornment="Adornment.Start" 
+                          AdornmentIcon="@Icons.Material.Filled.Search" 
+                          IconSize="MudBlazor.Size.Medium" Class="mt-0"></MudTextField>
+            @if(!String.IsNullOrEmpty(_tableProperties.SearchString)) 
+            {
+                <MudIconButton Icon="@Icons.Material.Outlined.Close"
+                               OnClick="() => _tableProperties.SearchString=string.Empty"/>
+            }
         </ToolBarContent>
        <HeaderContent>
             @if(_tableProperties.CanSelect)
             {
                 <MudTh>
-                    <MudCheckBox T="bool" />
+                    <MudCheckBox T="bool?" 
+                                 Checked="VisibleRowSelectionState()"
+                                 CheckedChanged="(chk) => OnSelectVisibleRows(chk!.Value)" />
                 </MudTh>
             }
             <MudTh>
-                @* <MudText Typo="Typo.body1">Filter</MudText> *@
-                <MudFab Color="Color.Primary"
-                        Size="MudBlazor.Size.Small"
-                        OnClick="OnSetFilter"
-                        StartIcon="@IconService.FromString("basic:filter")" />
-                @if(!string.IsNullOrEmpty(_tableProperties.FilterWhereClause))
-                {
-                    <MudFab Color="Color.Secondary"
-                            Size="MudBlazor.Size.Small"
-                            OnClick="OnUnsetFilter"
-                            StartIcon="@IconService.FromString("basic:filter-remove")" />
-                }
+                <MudIconButton Icon="@Icons.Material.Filled.Search" 
+                                Size="MudBlazor.Size.Small"
+                                Color="Color.Primary"
+                                OnClick="OnZoomToVisible"
+                                aria-label="zoomto">
+                </MudIconButton>
             </MudTh>
             @foreach(var field in _tableProperties.TableFields)
             {
@@ -105,7 +142,6 @@
             }
         </GvGrid>
     </div>
-    
 }
 
 @code {
@@ -126,7 +162,6 @@
     protected List<IRow> _rows = new();
     protected ISelectionSet? _selectionSet;
 
-
     private ICursor? _cursor;
 
     protected override Task OnInitializedAsync() => HandleAsync(async () =>
@@ -136,7 +171,7 @@
         await OnSetCurrentLayer(Layer);
     });
 
-    async protected Task CreateCursor()
+    async private Task CreateCursor()
     {
         ReleaseCursor();
         _rows.Clear();
@@ -165,7 +200,7 @@
         _cursor = await _tableClass.Search(queryFilter);
     }
 
-    protected void ReleaseCursor()
+    private void ReleaseCursor()
     {
         if(_cursor is not null)
         {
@@ -175,7 +210,7 @@
         _cursor = null;
     }
 
-    protected async Task LoadData(int count = 10000)
+    private async Task LoadData(int count = 10000)
     {
 
         if(_tableProperties is null)
@@ -216,7 +251,7 @@
         _tableProperties.HasMore = true;
     }
 
-    protected async Task RebuildFilterWhereClause()
+    private async Task RebuildFilterWhereClause()
     {
         if(_tableProperties is null)
         {
@@ -262,6 +297,124 @@
         }
     }
 
+    private bool FilterFunc(IRow row)
+    {
+        if(_tableProperties is null)
+        {
+            return false;
+        }
+
+        if (string.IsNullOrWhiteSpace(_tableProperties.SearchString))
+        {
+            return true;
+        }
+
+        var searchStringWords = _tableProperties.SearchString
+                                    .Split(' ')
+                                    .Where(s => !string.IsNullOrWhiteSpace(s))
+                                    .ToArray();
+
+        foreach (var searchStringWord in searchStringWords)
+        {
+            bool found = false;
+
+            foreach(var field in _tableProperties.TableFields)
+            {
+                var val = row[field.name];
+
+                found = val switch
+                {
+                    string str => str.Contains(searchStringWord, StringComparison.OrdinalIgnoreCase),
+                    _ => val?.ToString() == searchStringWord
+                };
+
+                if(found) { break; }
+            }
+
+            if(!found)
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private bool? VisibleRowSelectionState()
+    {
+        if (_tableProperties?.CanSelect == true
+            && _selectionSet is IIDSelectionSet idSelectionSet)
+        {
+            var visibleRows = _rows.Where(r => FilterFunc(r)).ToArray();
+            var selectedIds = idSelectionSet.IDs ?? [];
+            int count = visibleRows.Count(r=>selectedIds.Contains(r.OID));
+
+            return count switch
+            {
+                var x when x == visibleRows.Length => true,
+                0 => false,
+                _ => null
+            };
+        }
+
+        return null;
+    }
+
+    private bool HasSelection()
+        => _selectionSet is IIDSelectionSet { Count: > 0 };
+
+    async private Task ZoomToRows(IEnumerable<IRow> rows)
+    {
+        IEnvelope? bounds = null;
+
+        // Collect and uinion
+        foreach(var row in rows)
+        {
+            if (row is IFeature { Shape: not null } feature)
+            {
+                if(bounds is null)
+                {
+                    bounds = new Envelope(feature.Shape.Envelope);
+                } 
+                else
+                {
+                    bounds.Union(feature.Shape.Envelope);   
+                }
+            }
+        }
+
+        if (bounds is not null 
+            && _tableClass is IFeatureClass { SpatialReference: not null } featureClass)
+        {
+            var boundsWgs84 = GeoTransformer.ToWGS84(bounds, featureClass.SpatialReference).Envelope;
+            boundsWgs84.Srs = 4326;
+
+            await OnZoomToClicked.InvokeAsync(boundsWgs84);
+        }
+    }
+
+    async private Task RefreshData()
+    {
+        if(_tableClass is null 
+           || _selectionSet is null
+           || _tableProperties is null)
+        {
+            return;
+        }
+
+        if(_tableProperties.DataMode == Mode.Data)
+        {
+            await CreateCursor();
+            await LoadData();
+        }
+        else if(_tableProperties.DataMode == Mode.Selection)
+        {
+            _rows = new List<IRow>(await _tableClass.GetSelectedRows(_selectionSet));
+        }
+    }
+
+    #region Razor Event Hanldlers
+
     async private Task OnSetCurrentLayer(ILayer? layer)
     {
         _currentLayer = layer;
@@ -294,9 +447,7 @@
             }
 
             await OnOpenTable.InvokeAsync();
-
-            await CreateCursor();
-            await LoadData();
+            await RefreshData();
         }
     }
 
@@ -345,55 +496,11 @@
         await LoadData();
     });
 
-    private bool FilterFunc(IRow row)
-    {
-        if(_tableProperties is null)
-        {
-            return false;
-        }
-
-        if (string.IsNullOrWhiteSpace(_tableProperties.SearchString))
-        {
-            return true;
-        }
-
-        var searchStringWords = _tableProperties.SearchString
-                                    .Split(' ')
-                                    .Where(s => !string.IsNullOrWhiteSpace(s))
-                                    .ToArray();
-
-        foreach (var searchStringWord in searchStringWords)
-        {
-            bool found = false;
-
-            foreach(var field in _tableProperties.TableFields)
-            {
-                var val = row[field.name];
-
-                found = val switch
-                {
-                    string str => str.Contains(searchStringWord, StringComparison.OrdinalIgnoreCase),
-                    _ => val?.ToString() == searchStringWord
-                };
-
-                if(found) { break; }
-            }
-
-            if(!found)
-            {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
     private Task OnZoomTo(IRow row) => HandleAsync(async () =>
     {
-        if (row is IFeature feature
-            && feature.Shape is not null
-            && _tableClass is IFeatureClass featureClass
-            && featureClass.SpatialReference is not null)
+        if (row is IFeature {Shape: not null } feature
+           && _tableClass is IFeatureClass { SpatialReference: not null } featureClass
+           )
         {
             var bounds = feature.Shape.Envelope;
             var boundsWgs84 = GeoTransformer.ToWGS84(bounds, featureClass.SpatialReference).Envelope;
@@ -401,6 +508,22 @@
 
             await OnZoomToClicked.InvokeAsync(boundsWgs84);
         }
+    });
+
+    private Task OnZoomToVisible() => HandleAsync(() => 
+        ZoomToRows(_rows.Where(r => FilterFunc(r)))
+    );
+
+    private Task OnZoomToSelected() => HandleAsync(async () =>
+    {
+        if (_tableClass is null || _selectionSet is null)
+        {
+            return;
+        }
+
+        var selectedRows = await _tableClass.GetSelectedRows(_selectionSet);
+
+        await ZoomToRows(selectedRows);    
     });
 
     private Task OnSelectRow(IRow row, bool select) => HandleAsync(async () =>
@@ -414,11 +537,69 @@
             else
             {
                 idSelectionSet.RemoveID(row.OID);
+
+                if(_tableProperties?.DataMode == Mode.Selection)
+                {
+                    _rows.Remove(row);
+                }
             }
 
             await OnSelectionChanged.InvokeAsync();
         }
     });
+
+    private Task OnSelectVisibleRows(bool select) => HandleAsync(async () =>
+    {
+        if (_selectionSet is IIDSelectionSet idSelectionSet)
+        {
+            foreach(var row in _rows.Where(r=>FilterFunc(r)))
+            {
+                if (select)
+                {
+                    idSelectionSet.AddID(row.OID);
+                }
+                else
+                {
+                    idSelectionSet.RemoveID(row.OID);
+                }
+            }
+
+            await OnSelectionChanged.InvokeAsync();
+        }
+    });
+
+    private Task OnRemoveSelection() => HandleAsync(async () =>
+    {
+        _selectionSet?.Clear();
+        await OnSelectionChanged.InvokeAsync();
+
+        if(_tableProperties?.DataMode == Mode.Selection) 
+        {
+            _tableProperties.DataMode = Mode.Data;
+
+            await CreateCursor();
+            await LoadData();
+        }
+    });
+
+    private Task OnSetSelectionMode(bool set)
+    {
+        if(_tableProperties is null)
+        {
+            return Task.CompletedTask;
+        }
+
+        if(set)
+        {
+            _tableProperties.DataMode = Mode.Selection;
+        } 
+        else
+        {
+            _tableProperties.DataMode = Mode.Data;
+        }
+
+        return RefreshData();
+    }
 
     private Task OnSetColumnFilter(string fieldName) => HandleAsync(async () =>
     {
@@ -447,6 +628,8 @@
             await this.RebuildFilterWhereClause();
         }
     });
+
+    #endregion
 
     #region IDisposable
 
