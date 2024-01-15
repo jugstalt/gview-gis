@@ -707,7 +707,7 @@ public class MapRendererInstance : Map, IMapRenderer
             return;
         }
 
-        RenderFeatureLayerSelection rlt = new RenderFeatureLayerSelection(this, fLayer, cancelTracker);
+        RenderFeatureLayerSelection rlt = new RenderFeatureLayerSelection(this, fLayer, cancelTracker, this);
         //rlt.Render();
 
         //Thread thread = new Thread(new ThreadStart(rlt.Render));
