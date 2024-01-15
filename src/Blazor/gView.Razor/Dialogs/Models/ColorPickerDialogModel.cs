@@ -3,7 +3,7 @@ using gView.GraphicsEngine;
 
 namespace gView.Razor.Dialogs.Models;
 
-public class ColorPickerModel : IDialogResultItem
+public class ColorPickerDialogModel : IDialogResultItem
 {
     public ArgbColor ArgbColor { get; set; }
 }

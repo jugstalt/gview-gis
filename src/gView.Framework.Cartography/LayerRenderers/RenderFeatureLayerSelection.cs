@@ -10,6 +10,7 @@ using gView.Framework.Common;
 using gView.GraphicsEngine.Extensions;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using System.Linq;
 
 namespace gView.Framework.Cartography.LayerRenderers
 {
@@ -18,12 +19,13 @@ namespace gView.Framework.Cartography.LayerRenderers
         private Map _map;
         private IFeatureLayer _layer;
         private ICancelTracker _cancelTracker;
-
-        public RenderFeatureLayerSelection(Map map, IFeatureLayer layer, ICancelTracker cancelTracker)
+        private int _max = 10_000;
+        public RenderFeatureLayerSelection(Map map, IFeatureLayer layer, ICancelTracker cancelTracker, int max = -1)
         {
             _map = map;
             _layer = layer;
             _cancelTracker = cancelTracker == null ? new CancelTracker() : cancelTracker;
+            _max = max > 0 ? max: _max;
         }
 
         async public Task Render()
@@ -78,22 +80,22 @@ namespace gView.Framework.Cartography.LayerRenderers
             //List<int> IDs=new List<int>();  // Sollte nicht null sein...
             if (selectionSet is ISpatialIndexedIDSelectionSet)
             {
-                List<int> IDs = ((ISpatialIndexedIDSelectionSet)selectionSet).IDsInEnvelope(filterGeom.Envelope);
+                List<int> IDs = ((ISpatialIndexedIDSelectionSet)selectionSet).IDsInEnvelope(filterGeom.Envelope).Take(_max).ToList();
                 filter = new RowIDFilter(fClass.IDFieldName, IDs);
             }
             else if (selectionSet is IIDSelectionSet)
             {
-                List<int> IDs = ((IIDSelectionSet)selectionSet).IDs;
+                List<int> IDs = ((IIDSelectionSet)selectionSet).IDs.Take(_max).ToList();
                 filter = new RowIDFilter(fClass.IDFieldName, IDs);
             }
             else if (selectionSet is ISpatialIndexedGlobalIDSelectionSet)
             {
-                List<long> IDs = ((ISpatialIndexedGlobalIDSelectionSet)selectionSet).IDsInEnvelope(filterGeom.Envelope);
+                List<long> IDs = ((ISpatialIndexedGlobalIDSelectionSet)selectionSet).IDsInEnvelope(filterGeom.Envelope).Take(_max).ToList();
                 filter = new GlobalRowIDFilter(fClass.IDFieldName, IDs);
             }
             else if (selectionSet is IGlobalIDSelectionSet)
             {
-                List<long> IDs = ((IGlobalIDSelectionSet)selectionSet).IDs;
+                List<long> IDs = ((IGlobalIDSelectionSet)selectionSet).IDs.Take(_max).ToList();
                 filter = new GlobalRowIDFilter(fClass.IDFieldName, IDs);
             }
             else if (selectionSet is IQueryFilteredSelectionSet)

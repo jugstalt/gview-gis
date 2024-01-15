@@ -20,7 +20,7 @@
     <GvPaper>
         <MudDropContainer T="FieldItem"
                           Items="_items"
-                          ItemDropped="ReorderItems"
+                          ItemDropped="OnReorderItems"
                           ItemsSelector="@((item,zone) => true)">
             <ChildContent>
                 <MudDropZone T="FieldItem"
@@ -43,29 +43,29 @@
             </ChildContent>
             <ItemRenderer>
                 <div style="border-top:1px solid #777">
-                <GvGrid ColumnCount="12">
-                    <GvGridItem>
-                        <MudCheckBox Dense="true" 
-                                     @bind-Checked="context.Field.visible" />
-                    </GvGridItem>
-                    <GvGridItem Span="4">
-                        <div style="padding:5px 0px">
-                            @context.Field.name
-                        </div>
-                    </GvGridItem>
-                    <GvGridItem Span="2">
-                        <div style="padding:5px 0px">
-                            @context.Field.type
-                        </div>
-                    </GvGridItem>
-                    <GvGridItem Span="4">
-                       <div style="padding:5px 0px;cursor:pointer"
-                            @ondblclick="() => OnSetAliasname(context)">
-                            @context.Field.aliasname
-                       </div>
+                    <GvGrid ColumnCount="12">
+                        <GvGridItem>
+                            <MudCheckBox Dense="true" 
+                                         @bind-Checked="context.Field.visible" />
+                        </GvGridItem>
+                        <GvGridItem Span="4">
+                            <div style="padding:5px 0px">
+                                @context.Field.name
+                            </div>
+                        </GvGridItem>
+                        <GvGridItem Span="2">
+                            <div style="padding:5px 0px">
+                                @context.Field.type
+                            </div>
+                        </GvGridItem>
+                        <GvGridItem Span="4">
+                           <div style="padding:5px 0px;cursor:pointer"
+                                @ondblclick="() => OnSetAliasname(context)">
+                                @context.Field.aliasname
+                           </div>
                         
-                    </GvGridItem>
-                </GvGrid>
+                        </GvGridItem>
+                    </GvGrid>
                 </div>
             </ItemRenderer>
         </MudDropContainer>
@@ -74,6 +74,7 @@
 
 @code {
     [Parameter] public IFeatureLayer? Layer { get; set; }
+
     private IEnumerable<FieldItem>? _items;
 
     protected override void OnInitialized()
@@ -85,7 +86,7 @@
                                .Select(f => new FieldItem((Field)f));
     }
 
-    private void ReorderItems(MudItemDropInfo<FieldItem> dropInfo)
+    private void OnReorderItems(MudItemDropInfo<FieldItem> dropInfo)
     {
         if(_items is null 
             || !(Layer?.Fields is FieldCollection fieldCollection)

@@ -8,6 +8,27 @@
                              QueryString="@Model.QueryString"
                              QueryStringChanged="(queryString) => Model.QueryString = queryString" />
     </DialogBody>
+    <DialogButtons>
+        <MudButton Variant="Variant.Filled" 
+                   OnClick="() => base.Close()">
+            Cancel
+        </MudButton>
+
+        @if (Model.CanSelect)
+        {
+            <MudButton Variant="Variant.Filled"
+                       Color="Color.Primary"
+                       OnClick="() => { Model.Select = true; return base.Submit(); }">
+                Select Rows
+            </MudButton>
+        }
+
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Primary" 
+                   OnClick="() => base.Submit()">
+            Confirm
+        </MudButton>
+    </DialogButtons>
 </ModalDialogFormBase>
 
 @code {
