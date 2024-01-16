@@ -48,41 +48,4 @@ static public class TableClassExtensions
 
         return Array.Empty<IRow>();
     }
-
-    static async public Task<bool> SelectRows(
-            this ITableClass tableClass,
-            ISelectionSet selectionSet,
-            string whereClause
-        )
-    {
-        if(selectionSet is IIDSelectionSet idSelectionSet)
-        {
-            idSelectionSet.Clear();
-
-            var filter = new QueryFilter()
-            {
-                SubFields = tableClass.IDFieldName,
-                WhereClause = whereClause
-            };
-
-            using ICursor cursor = await tableClass.Search(filter);
-            IRow? row = null;
-            List<IRow> rows = new();
-
-            while ((row = cursor switch
-            {
-                IFeatureCursor fCursor => await fCursor.NextFeature(),
-                IRowCursor rCursor => await rCursor.NextRow(),
-                _ => null
-            }
-                  ) != null)
-            {
-                idSelectionSet.AddID(row.OID);
-            }
-
-            return true;
-        }
-
-        return false;
-    }
 }

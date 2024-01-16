@@ -145,6 +145,7 @@ namespace gView.Framework.Data
                     break;
             }
         }
+        
         #endregion
 
         #region ISelectionSet Member

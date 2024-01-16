@@ -361,7 +361,7 @@ namespace gView.Framework.OGC.DB
         async public Task<ISelectionSet> Select(IQueryFilter filter)
         {
             filter.SubFields = this.IDFieldName;
-            if (filter is ISpatialFilter)
+            //if (filter is ISpatialFilter)
             {
                 filter.AddField(this.ShapeFieldName);
             }

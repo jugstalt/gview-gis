@@ -500,7 +500,7 @@
             new QueryBuilderModel()
             {
                 QueryString = _tableProperties.FilterWhereClause,
-                CanSelect = _selectionSet is IIDSelectionSet,
+                CanSelect = _currentLayer is IFeatureSelection,
                 TableClass = _tableClass
             });
 
@@ -512,14 +512,15 @@
 
             await OnSetWhereFilter.InvokeAsync(model.QueryString);
 
-            if(model.Select == true && _selectionSet is not null)
+            if (model.Select == true && _selectionSet is not null)
             {
                 _rows.Clear();
                 _loading = true;
                 await ForceRenderComponent();
 
-                if(await _tableClass.SelectRows(_selectionSet, _tableProperties.FilterWhereClause))
+                if (await _tableClass.Select(new QueryFilter() { WhereClause = _tableProperties.FilterWhereClause }) is ISelectionSet selectionSet)
                 {
+                   ((IFeatureSelection)_currentLayer).SelectionSet = _selectionSet = selectionSet;
                     _tableProperties.DataMode = Mode.Selection;
                 }
             }

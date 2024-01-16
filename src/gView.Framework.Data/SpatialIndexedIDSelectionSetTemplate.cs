@@ -32,7 +32,7 @@ namespace gView.Framework.Data
         {
             IndexList<T> ids;
 
-            long NID = (geometry != null) ? _tree.InsertSINode(geometry.Envelope) : 0;
+            long NID = (geometry != null) ? _tree.InsertSINodeFast(geometry.Envelope) : 0;
             _tree.AddNodeNumber(NID);
 
             if (!_NIDs.TryGetValue(NID, out ids))
@@ -106,6 +106,7 @@ namespace gView.Framework.Data
             }
             return null;
         }
+
         #region ISelectionSet Members
 
         public void AddID(T ID)
