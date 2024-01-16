@@ -180,6 +180,7 @@ namespace gView.Framework.Data
 
                 long NID = (feature.Shape != null && _tree != null) ?
                     _tree.InsertSINode(feature.Shape.Envelope) : 0;
+
                 if (_tree != null)
                 {
                     _tree.AddNodeNumber(NID);

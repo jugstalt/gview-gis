@@ -5,7 +5,7 @@
                      Model="base.Model">
     <FormContent>
         @if(_isStarted) {
-            <pre style="width:800px;height:500px;background-color:#333;color:#eee;padding:8px;white-space:pre-wrap">
+            <pre style="width:800px;height:500px;background-color:#333;color:#eee;padding:8px;white-space:pre-wrap;overflow:auto">
                 @foreach(var line in _logLines)
                 {
                     if (line.Contains("error", StringComparison.OrdinalIgnoreCase))

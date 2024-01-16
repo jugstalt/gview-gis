@@ -523,6 +523,7 @@
                 {
                    ((IFeatureSelection)_currentLayer).SelectionSet = _selectionSet = selectionSet;
                     _tableProperties.DataMode = Mode.Selection;
+                    await OnSelectionChanged.InvokeAsync();
                 }
             }
 

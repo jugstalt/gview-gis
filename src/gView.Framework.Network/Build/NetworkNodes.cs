@@ -10,6 +10,7 @@ namespace gView.Framework.Network.Build
     {
         private GridIndex<List<NetworkNode>> _grid;
         private int _nodeIdSequence = 0;
+        private Dictionary<int, NetworkNode> _nodeIndex = new();
 
         public NetworkNodes(IEnvelope bounds)
         {
@@ -38,7 +39,10 @@ namespace gView.Framework.Network.Build
             }
 
             NetworkNode node = new NetworkNode(++_nodeIdSequence, p);
+
             nodes.Add(node);
+            _nodeIndex[node.Id] = node;
+
             return node.Id;
         }
         public NetworkNode Find(IPoint p, double tolerance)
@@ -117,6 +121,7 @@ namespace gView.Framework.Network.Build
         public List<NetworkNode> ToList()
         {
             List<NetworkNode> list = new List<NetworkNode>();
+
             foreach (List<NetworkNode> t in _grid.AllCells)
             {
                 list.AddRange(t);
@@ -129,17 +134,22 @@ namespace gView.Framework.Network.Build
         {
             get
             {
-                List<NetworkNode> list = new List<NetworkNode>();
-                foreach (List<NetworkNode> t in _grid.AllCells)
+                if(_nodeIndex.TryGetValue(nodeId, out var node))
                 {
-                    foreach (NetworkNode node in t)
-                    {
-                        if (node.Id == nodeId)
-                        {
-                            return node;
-                        }
-                    }
+                    return node;
                 }
+
+                //foreach (List<NetworkNode> t in _grid.AllCells)
+                //{
+                //    foreach (NetworkNode node in t)
+                //    {
+                //        if (node.Id == nodeId)
+                //        {
+                //            return node;
+                //        }
+                //    }
+                //}
+
                 return null;
             }
         }
@@ -168,15 +178,16 @@ namespace gView.Framework.Network.Build
         #endregion
     }
 
-    class NetworkNodes_old //: List<NetworkNode>
+    public class NetworkNodes_old //: List<NetworkNode>
     {
         private Dictionary<long, List<NetworkNode>> _NIDs;
+        private Dictionary<int, NetworkNode> _nodeIndex = new();
         private BinarySearchTree2 _tree;
         private int _nodeIdSequence = 0;
 
         public NetworkNodes_old(IEnvelope bounds)
         {
-            _tree = new BinarySearchTree2(bounds, 10, 200, 0.55, null);
+            _tree = new BinarySearchTree2(bounds, 32, 200, 0.55, null);
             _NIDs = new Dictionary<long, List<NetworkNode>>();
             _NIDs.Add((long)0, new List<NetworkNode>());
         }
@@ -193,7 +204,7 @@ namespace gView.Framework.Network.Build
                 return index;
             }
 
-            long nid = _tree.InsertSINode(p.Envelope);
+            long nid = _tree.InsertSINodeFast(p.Envelope);
             if (!_NIDs.ContainsKey(nid))
             {
                 _NIDs.Add(nid, new List<NetworkNode>());
@@ -201,9 +212,26 @@ namespace gView.Framework.Network.Build
 
             List<NetworkNode> nodes = _NIDs[nid];
             NetworkNode node = new NetworkNode(++_nodeIdSequence, p);
+
             nodes.Add(node);
+            _nodeIndex.Add(node.Id, node);
+
             return node.Id;
         }
+
+        public NetworkNode this[int nodeId]
+        {
+            get
+            {
+                if (_nodeIndex.ContainsKey(nodeId))
+                {
+                    return _nodeIndex[nodeId];
+                }
+
+                return null;
+            }
+        }
+
         public NetworkNode Find(IPoint p, double tolerance)
         {
             if (p == null)

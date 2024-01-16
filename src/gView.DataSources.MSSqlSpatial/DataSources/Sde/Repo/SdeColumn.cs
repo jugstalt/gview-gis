@@ -9,7 +9,9 @@ namespace gView.DataSources.MSSqlSpatial.DataSources.Sde.Repo
 
         public SdeColumn(DbDataReader reader)
         {
-            this.DatabaseName = reader["database_name"]?.ToString();
+            //not supported in SDE 11.x
+            //this.DatabaseName = reader["database_name"]?.ToString();
+
             this.TableName = reader["table_name"]?.ToString();
             this.Owner = reader["owner"]?.ToString();
 
@@ -21,7 +23,7 @@ namespace gView.DataSources.MSSqlSpatial.DataSources.Sde.Repo
             this.Flags = Convert.ToInt32(reader["object_flags"]);
         }
 
-        public string DatabaseName { get; set; }
+        //public string DatabaseName { get; set; }
         public string TableName { get; set; }
         public string Owner { get; set; }
 

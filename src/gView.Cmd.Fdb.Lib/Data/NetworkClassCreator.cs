@@ -154,6 +154,9 @@ namespace gView.Cmd.Fdb.Lib.Data
                     return;
                 }
 
+                // Load all DatasetElements => ensures, that envelope is created for all elements
+                var datasetElements = await _dataset.Elements();
+
                 NetworkBuilder networkBuilder = new NetworkBuilder(await _dataset.Envelope(), _tolerance);
                 if (ReportProgress != null)
                 {
