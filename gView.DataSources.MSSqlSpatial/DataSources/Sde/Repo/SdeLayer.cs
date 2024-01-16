@@ -13,7 +13,8 @@ namespace gView.DataSources.MSSqlSpatial.DataSources.Sde.Repo
             this.LayerId = Convert.ToInt32(reader["layer_id"]);
             this.Description = reader["description"]?.ToString();
 
-            this.DatabaseName = reader["database_name"]?.ToString();
+            // not supported in SDE 11.x
+            //this.DatabaseName = reader["database_name"]?.ToString();
             this.TableName = reader["table_name"]?.ToString();
             this.Owner = reader["owner"]?.ToString();
             this.SpatialColumn = reader["spatial_column"]?.ToString();
@@ -46,7 +47,7 @@ namespace gView.DataSources.MSSqlSpatial.DataSources.Sde.Repo
         public int LayerId { get; set; }
         public string Description { get; set; }
 
-        public string DatabaseName { get; set; }
+        //public string DatabaseName { get; set; }
         public string TableName { get; set; }
         public string Owner { get; set; }
 
