@@ -17,7 +17,7 @@ namespace gView.Framework.Carto.Rendering.UI
             _fieldNames = fieldNames;
         }
 
-        private void PropertyForm_ChartLabelRenderer_MaxValues_Load(object sender, EventArgs e)
+        async private void PropertyForm_ChartLabelRenderer_MaxValues_Load(object sender, EventArgs e)
         {
             if (_fc != null && _fieldNames != null)
             {
@@ -29,11 +29,11 @@ namespace gView.Framework.Carto.Rendering.UI
                         continue;
                     }
 
-                    object minObj = FunctionFilter.QueryScalar(
+                    object minObj = await FunctionFilter.QueryScalar(
                         _fc,
                          new FunctionFilter("MIN", fieldName, "fieldMin"),
                         "fieldMin");
-                    object maxObj = FunctionFilter.QueryScalar(
+                    object maxObj = await FunctionFilter.QueryScalar(
                         _fc,
                         new FunctionFilter("MAX", fieldName, "fieldMax"),
                         "fieldMax");

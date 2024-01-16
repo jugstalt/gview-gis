@@ -26,7 +26,7 @@ namespace gView.Framework.Carto.Rendering.UI
             _fc = fc;
         }
 
-        private void PropertyForm_QuantityRenderer_Wizard_Load(object sender, EventArgs e)
+        async private void PropertyForm_QuantityRenderer_Wizard_Load(object sender, EventArgs e)
         {
             if (_fc == null || _renderer == null ||
                 String.IsNullOrEmpty(_renderer.ValueField))
@@ -69,11 +69,11 @@ namespace gView.Framework.Carto.Rendering.UI
                     break;
             }
 
-            object minObj = FunctionFilter.QueryScalar(
+            object minObj = await FunctionFilter.QueryScalar(
                 _fc,
                 new FunctionFilter("MIN", _renderer.ValueField, "fieldMin"),
                 "fieldMin");
-            object maxObj = FunctionFilter.QueryScalar(
+            object maxObj = await FunctionFilter.QueryScalar(
                 _fc,
                 new FunctionFilter("MAX", _renderer.ValueField, "fieldMax"),
                 "fieldMax");
