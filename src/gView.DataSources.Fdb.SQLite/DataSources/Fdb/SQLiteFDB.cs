@@ -81,12 +81,12 @@ namespace gView.DataSources.Fdb.SQLite
                 _filename = connectionString;
             }
 
-            if (!_filename.Contains("="))
-            {
-                _filename = "Data Source=" + _filename;
-            }
+            //if (!_filename.Contains("="))
+            //{
+            //    _filename = "Data Source=" + _filename;
+            //}
 
-            _conn = new SqliteConn(_filename);
+            _conn = new SqliteConn("Data Source=" + _filename);
 
             await SetVersion();
             return true;

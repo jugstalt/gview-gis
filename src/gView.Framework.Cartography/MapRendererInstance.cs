@@ -64,6 +64,11 @@ public class MapRendererInstance : Map, IMapRenderer
         mapRenderInstance.Display.Dpi = original.Display.Dpi;
         mapRenderInstance.Display.TransparentColor = original.Display.TransparentColor;
 
+        foreach (var element in original.Display.GraphicsContainer.Elements)
+        {
+            mapRenderInstance.Display.GraphicsContainer.Elements.Add(element);
+        }
+
         //mapRenderInstance.DrawingLayer += (layerName) =>
         //{
         //    original.FireDrawingLayer(layerName);
