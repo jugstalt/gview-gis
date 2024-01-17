@@ -58,6 +58,11 @@ namespace gView.Framework.Carto
             mapRenderInstance.Display.ZoomTo(original.Envelope);
             mapRenderInstance.Display.dpi = original.Display.dpi;
 
+            foreach (var element in original.Display.GraphicsContainer.Elements)
+            {
+                mapRenderInstance.Display.GraphicsContainer.Elements.Add(element);  
+            }
+
             mapRenderInstance.DrawingLayer += (string layerName) =>
             {
                 original.FireDrawingLayer(layerName);

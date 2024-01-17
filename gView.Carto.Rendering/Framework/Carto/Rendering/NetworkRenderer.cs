@@ -285,7 +285,15 @@ namespace gView.Framework.Carto.Rendering
 
         public void Release()
         {
-            throw new NotImplementedException();
+            if (_renderers != null)
+            {
+                foreach (var renderer in _renderers)
+                {
+                    renderer.Release();
+                }
+
+                _renderers.Clear();
+            }
         }
 
         #endregion
