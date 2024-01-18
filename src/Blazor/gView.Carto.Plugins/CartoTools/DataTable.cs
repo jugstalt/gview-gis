@@ -1,14 +1,9 @@
-﻿using gView.Blazor.Core.Extensions;
+﻿using gView.Carto.Core;
+using gView.Carto.Core.Abstraction;
 using gView.Carto.Core.Services.Abstraction;
-using gView.Carto.Razor.Components.Dialogs.Models;
-using gView.Framework.Blazor.Models;
-using gView.Framework.Carto;
-using gView.Framework.Carto.Abstraction;
-using gView.Framework.Core.Carto;
 using gView.Framework.Core.Common;
 using gView.Framework.Core.Data;
 using gView.Framework.Data;
-using static System.Formats.Asn1.AsnWriter;
 
 namespace gView.Carto.Plugins.CartoTools;
 
@@ -19,7 +14,7 @@ internal class DataTable : ICartoTool
 
     public string ToolTip => "Show Data Table";
 
-    public ToolType ToolType => ToolType.Click;
+    public ToolType ToolType => ToolType.Command;
 
     public string Icon => "basic:table";
 
@@ -29,7 +24,7 @@ internal class DataTable : ICartoTool
 
     public void Dispose()
     {
-        
+
     }
 
     public bool IsEnabled(ICartoApplicationScopeService scope)
@@ -49,14 +44,14 @@ internal class DataTable : ICartoTool
 
         IDSelectionSet idSelectionSet = new();
         IFeatureSelection? featureSelection = layer as IFeatureSelection;
-        if(featureSelection is not null)
+        if (featureSelection is not null)
         {
             idSelectionSet.Combine(featureSelection.SelectionSet, CombinationMethod.New);
         }
 
         var tableClass = layer?.Class as ITableClass;
 
-        if(tableClass is null)
+        if (tableClass is null)
         {
             return false;
         }

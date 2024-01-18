@@ -1,3 +1,4 @@
+using gView.Framework.Common.Extensions;
 using gView.Framework.Core.Common;
 using gView.Framework.Core.UI;
 using System;
@@ -189,7 +190,7 @@ namespace gView.Framework.Common
             foreach (var pluginType in _pluginTypes.Values)
             {
                 foreach (var interfaceType in pluginType.GetInterfaces()
-                    .Where(t => t.ToString().ToLower().StartsWith("gview.framework.")))
+                    .Where(t => t.IsValidPluginInterfaceType()))
                 {
                     if (interfaceType.ToString().Substring(interfaceType.ToString().LastIndexOf(".") + 1).ToLower() == type.ToString().ToLower())
                     {

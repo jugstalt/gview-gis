@@ -16,4 +16,17 @@ static public class EnumExtensions
 
         return attribute == null ? value.ToString() : attribute.Description;
     }
+
+    public static bool IsOnOf(this Enum value, params Enum[] candidates)
+    {
+        foreach(var candidate in candidates )
+        {
+            if(candidate.Equals(value))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
 }

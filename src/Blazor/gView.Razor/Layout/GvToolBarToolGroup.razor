@@ -1,4 +1,4 @@
-<MudPaper Outlined="true" Style="@($"margin-left:4px;padding:0px 8px")">
+<MudPaper Outlined="true" Style="@($"margin-left:4px;padding:{PaddingTopButton}px {PaddingLeftRight}px;min-height:{MinHeight}")">
     @if (ChildContent is not null)
     {
         @ChildContent
@@ -7,4 +7,8 @@
 
 @code {
     [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    [Parameter] public int MinHeight {get;set;} = 0;
+    [Parameter] public int PaddingTopButton { get; set; } = 0;
+    [Parameter] public int PaddingLeftRight { get; set; } = 8;
 }

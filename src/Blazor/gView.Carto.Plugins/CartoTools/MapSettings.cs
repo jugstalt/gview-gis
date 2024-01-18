@@ -1,8 +1,6 @@
-﻿using gView.Carto.Core.Services.Abstraction;
-using gView.Carto.Plugins.Extensions;
-using gView.Framework.Blazor.Services.Abstraction;
-using gView.Framework.Carto;
-using gView.Framework.Carto.Abstraction;
+﻿using gView.Carto.Core;
+using gView.Carto.Core.Abstraction;
+using gView.Carto.Core.Services.Abstraction;
 using gView.Framework.Cartography;
 using gView.Framework.Core.Common;
 
@@ -15,7 +13,7 @@ internal class MapSettings : ICartoTool
 
     public string ToolTip => "";
 
-    public ToolType ToolType => ToolType.Click;
+    public ToolType ToolType => ToolType.Command;
 
     public string Icon => "basic:settings";
 
@@ -90,7 +88,7 @@ internal class MapSettings : ICartoTool
             // changes are live (no cancel!)
 
             #endregion
-            
+
             await scope.EventBus.FireRefreshMapAsync();
         }
 

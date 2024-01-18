@@ -1,4 +1,4 @@
-﻿namespace gView.Framework.Carto.Abstraction;
+﻿namespace gView.Framework.Shared.Abstraction;
 
 public interface ICartoInitialTool : ICartoTool
 {

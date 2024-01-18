@@ -1,14 +1,10 @@
 ﻿using gView.Carto.Core.Services.Abstraction;
-using gView.Framework.Blazor.Services.Abstraction;
 using gView.Framework.Core.UI;
-using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 
-namespace gView.Framework.Carto.Abstraction;
+namespace gView.Framework.Shared.Abstraction;
 
-public interface ICartoTool : IOrder, IDisposable
+public interface ICartoTool : IOrder
 {
     string Name { get; }
 

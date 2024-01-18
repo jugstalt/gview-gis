@@ -66,6 +66,23 @@
             }
         </div>
 
+        <div class="carto-tool-box">
+            <div class="carto-tool-sub-box">
+                @foreach (var cartoTool in _cartoTools
+                                               .Where(t => t.Target == CartoToolTarget.Tools)
+                                               .Where(t => t.IsEnabled(AppScope))
+                                               .OrderBy(t => t.SortOrder))
+                {
+                    <div class="carto-tool"
+                         alt="@cartoTool.ToolTip"
+                         @onclick="async () => await ToolClickAsync(cartoTool)">
+                        <div class=@Icons.FromString(cartoTool.Icon)></div>
+                        <div class="title">@cartoTool.Name</div>
+                    </div>
+                }
+            </div>
+        </div>
+
         <div class="carto-tool-box" style="float:right">
             @foreach (var cartoTool in _cartoTools
                                                .Where(t => t.Target == CartoToolTarget.General)
@@ -85,6 +102,8 @@
                 <div class="title">Color Scheme</div>
             </div>
         </div>
+
+        
     </div>
 }
 
@@ -104,8 +123,19 @@
         EventBus.OnSelectedTocTreeNodeChangedAsync += HandleSelectedTocTreeNodeChangedAsync;
     });
 
-    private Task ToolClickAsync(ICartoTool cartoTool)
-       => base.HandleAsync(() => cartoTool.OnEvent(AppScope));
+    private Task ToolClickAsync(ICartoTool cartoTool) => base.HandleAsync(() => {
+
+        if (cartoTool.ToolType.IsOnOf(
+             gView.Carto.Core.ToolType.Click,
+             gView.Carto.Core.ToolType.Rubberband,
+             gView.Carto.Core.ToolType.Sketch))
+        {
+            AppScope.CurrentTool = cartoTool;
+            return Task.CompletedTask;
+        }
+
+        return cartoTool.OnEvent(AppScope);
+    });
 
     async private Task DarkmodeClick()
     {

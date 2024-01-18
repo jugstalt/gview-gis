@@ -1,5 +1,5 @@
 ﻿using gView.Blazor.Core.Services;
-using gView.Carto.Core.Abstractions;
+using gView.Carto.Core.Abstraction;
 using gView.Carto.Core.Models.Tree;
 using gView.Framework.Blazor.Services.Abstraction;
 using System.Threading.Tasks;
@@ -8,6 +8,8 @@ namespace gView.Carto.Core.Services.Abstraction;
 public interface ICartoApplicationScopeService : IApplicationScope
 {
     ICartoDocument Document { get; }
+
+    ICartoTool CurrentTool { get; set; }
 
     CartoEventBusService EventBus { get; }
 

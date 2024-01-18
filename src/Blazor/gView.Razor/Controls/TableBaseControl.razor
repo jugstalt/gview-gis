@@ -26,17 +26,20 @@
                 @CustomToolBarContent
             }
 
-            @if(HasSelection()) 
-            { 
-                <GvToolBarToolGroup>
-                    <MudToggleIconButton Icon="@IconService.FromString("basic:database")"
-                                         ToggledIcon="@IconService.FromString("basic:table")"
-                                         Toggled="_tableProperties.DataMode == Mode.Selection"
-                                         ToggledChanged="OnSetSelectionMode" />
-                    <MudText Typo="Typo.caption">@($"{_tableProperties.DataMode}")</MudText>
-                </GvToolBarToolGroup>
-               
-            }
+            <GvToolBarToolGroup MinHeight="50" PaddingTopButton="6">
+                <MudMenu StartIcon="@IconService.FromString("basic:table")"
+                         EndIcon="@Icons.Material.Filled.KeyboardArrowDown" 
+                         Label="@($"Show {_tableProperties.DataMode}")" 
+                         Variant="Variant.Text">
+                    @foreach(var mode in Enum.GetValues<Mode>())
+                    {
+                        <MudMenuItem OnClick="() => OnSetDataMode(mode)">
+                            @mode.ToString().SplitCamelCase()
+                        </MudMenuItem>
+                    }
+                </MudMenu>
+            </GvToolBarToolGroup>
+                
             <GvToolBarToolGroup>
                 <MudText Typo="Typo.caption">Filter:</MudText>
                 <MudIconButton OnClick="OnSetFilter"
@@ -79,8 +82,8 @@
             {
                 <MudTh>
                     <MudCheckBox T="bool?" 
-                                 Checked="VisibleRowSelectionState()"
-                                 CheckedChanged="(chk) => OnSelectVisibleRows(chk!.Value)" />
+                                 Value="VisibleRowSelectionState()"
+                                 ValueChanged="(chk) => OnSelectVisibleRows(chk!.Value)" />
                 </MudTh>
             }
             <MudTh>
@@ -110,8 +113,8 @@
             {
                 <MudTd>
                     <MudCheckBox T="bool" 
-                                  Checked="@_selectionSet.Contains(context)"
-                                  CheckedChanged ="(chk) => OnSelectRow(context, chk)" />
+                                  Value="@_selectionSet.Contains(context)"
+                                  ValueChanged ="(chk) => OnSelectRow(context, chk)" />
                 </MudTd>
             }
             <MudTd>
@@ -157,7 +160,7 @@
             {
                 <GvGridItem>
                     <MudButton Variant="Variant.Filled" Style="float:right"
-                                OnClick="() => LoadData()">Load more...</MudButton>
+                               OnClick="() => LoadData()">Load more...</MudButton>
                 </GvGridItem>
             }
         </GvGrid>
@@ -241,44 +244,51 @@
 
     private async Task LoadData(int count = 10000)
     {
+        _loading = true;
 
-        if(_tableProperties is null)
+        try 
         {
-            return;
-        }
-
-        _tableProperties.HasMore = false;
-
-        if (_cursor is null)
-        {
-            return;
-        }
-
-        for (int i = 0; i < count; i++)
-        {
-            var row = _cursor switch
+            if(_tableProperties is null)
             {
-                IFeatureCursor featureCursor => await featureCursor.NextFeature(),
-                IRowCursor rowCursor => await rowCursor.NextRow(),
-                _ => null
-            };
-
-            if (row is null)
-            {
-                ReleaseCursor();
                 return;
             }
 
-            _rows.Add(row);
+            _tableProperties.HasMore = false;
 
-            if (_rows.Count % 100 == 0)
+            if (_cursor is null)
             {
-                await ForceRenderComponent();
+                return;
             }
-        }
 
-        _loading = false;
-        _tableProperties.HasMore = true;
+            for (int i = 0; i < count; i++)
+            {
+                var row = _cursor switch
+                {
+                    IFeatureCursor featureCursor => await featureCursor.NextFeature(),
+                    IRowCursor rowCursor => await rowCursor.NextRow(),
+                    _ => null
+                };
+
+                if (row is null)
+                {
+                    ReleaseCursor();
+                    return;
+                }
+
+                _rows.Add(row);
+
+                if (_rows.Count % 100 == 0)
+                {
+                    await ForceRenderComponent();
+                }
+            }
+
+            _tableProperties.HasMore = true;
+        } 
+        finally
+        {
+            _loading = false;
+        }
     }
 
     private async Task RebuildFilterWhereClause()
@@ -501,30 +511,54 @@
             new QueryBuilderModel()
             {
                 QueryString = _tableProperties.FilterWhereClause,
-                CanSelect = _currentLayer is IFeatureSelection,
+                Actions = QueryBuilderAction.Query 
+                    | (_currentLayer is IFeatureSelection 
+                            ? QueryBuilderAction.Select | QueryBuilderAction.QueryAndSelect 
+                            : QueryBuilderAction.None),
                 TableClass = _tableClass
             });
 
-        if (model is not null &&
-            _tableProperties.FilterWhereClause != model.QueryString)
+        if(model is null)
         {
-            _tableProperties.ColumnFilters.SetAllValues("");
-            _tableProperties.FilterWhereClause = model.QueryString;
+            return;
 
-            await OnSetWhereFilter.InvokeAsync(model.QueryString);
+        }
 
-            if (model.Select == true && _selectionSet is not null)
+        if ((model.SelectedAction == QueryBuilderAction.Select 
+            || model.SelectedAction == QueryBuilderAction.QueryAndSelect
+            )
+            && _selectionSet is not null
+            && !String.IsNullOrEmpty(model.QueryString))
+        {
+            if (await _tableClass.Select(new QueryFilter() { WhereClause = model.QueryString }) is ISelectionSet selectionSet)
             {
-                _rows.Clear();
-                _loading = true;
-                await ForceRenderComponent();
+                ((IFeatureSelection)_currentLayer).SelectionSet = _selectionSet = selectionSet;
+                _tableProperties.DataMode = Mode.Selection;
+                await OnSelectionChanged.InvokeAsync();
+            }
+        }
 
-                if (await _tableClass.Select(new QueryFilter() { WhereClause = _tableProperties.FilterWhereClause }) is ISelectionSet selectionSet)
-                {
-                   ((IFeatureSelection)_currentLayer).SelectionSet = _selectionSet = selectionSet;
-                    _tableProperties.DataMode = Mode.Selection;
-                    await OnSelectionChanged.InvokeAsync();
-                }
+        if (_tableProperties.FilterWhereClause != model.QueryString)
+        {
+            _rows.Clear();
+            _loading = true;
+            await ForceRenderComponent();
+
+            if (model.SelectedAction == QueryBuilderAction.Query
+               || model.SelectedAction == QueryBuilderAction.QueryAndSelect)
+            {
+                _tableProperties.ColumnFilters.SetAllValues("");
+                _tableProperties.FilterWhereClause = model.QueryString;
+
+                await OnSetWhereFilter.InvokeAsync(model.QueryString);
+            }
+
+            if(String.IsNullOrEmpty(model.QueryString) 
+               && _selectionSet is not null
+               && _selectionSet.Count > 0) 
+            {
+                _selectionSet?.Clear();
+                await OnSelectionChanged.InvokeAsync();
             }
 
             await RefreshData();
@@ -665,21 +699,14 @@
         }
     });
 
-    private Task OnSetSelectionMode(bool set)
+    private Task OnSetDataMode(Mode dataMode)
     {
         if(_tableProperties is null)
         {
             return Task.CompletedTask;
         }
 
-        if(set)
-        {
-            _tableProperties.DataMode = Mode.Selection;
-        } 
-        else
-        {
-            _tableProperties.DataMode = Mode.Data;
-        }
+        _tableProperties.DataMode = dataMode;
 
         return RefreshData();
     }

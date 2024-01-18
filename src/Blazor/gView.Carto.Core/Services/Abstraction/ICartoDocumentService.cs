@@ -1,4 +1,4 @@
-﻿using gView.Carto.Core.Abstractions;
+﻿using gView.Carto.Core.Abstraction;
 using gView.Framework.Core.Carto;
 
 namespace gView.Carto.Core.Services.Abstraction;

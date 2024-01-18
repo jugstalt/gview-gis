@@ -1,11 +1,7 @@
-﻿using gView.Carto.Plugins.Extensions;
-using gView.Framework.Blazor.Services.Abstraction;
-using gView.Framework.Carto;
-using gView.Framework.Carto.Abstraction;
-using gView.Framework.Core.Common;
-using gView.Framework.IO;
-using gView.Framework.Common;
+﻿using gView.Carto.Core;
+using gView.Carto.Core.Abstraction;
 using gView.Carto.Core.Services.Abstraction;
+using gView.Framework.Core.Common;
 
 namespace gView.Carto.Plugins.CartoTools;
 
@@ -26,11 +22,11 @@ public class SaveDocument : ICartoTool
 
     public void Dispose()
     {
-        
+
     }
 
     public bool IsEnabled(ICartoApplicationScopeService scope)
-        => !String.IsNullOrEmpty(scope.Document.FilePath); 
+        => !String.IsNullOrEmpty(scope.Document.FilePath);
 
     public Task<bool> OnEvent(ICartoApplicationScopeService scope)
         => File.Exists(scope.Document.FilePath) switch
@@ -38,5 +34,5 @@ public class SaveDocument : ICartoTool
             true => scope.SaveCartoDocument(scope.Document.FilePath, true),
             false => Task.FromResult(false)
         };
-    
+
 }

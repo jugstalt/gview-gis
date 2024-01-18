@@ -1,17 +1,14 @@
-﻿using gView.Carto.Core.Models.Tree;
+﻿using gView.Carto.Core;
+using gView.Carto.Core.Abstraction;
+using gView.Carto.Core.Models.Tree;
+using gView.Carto.Core.Services.Abstraction;
 using gView.Carto.Plugins.Extensions;
 using gView.DataExplorer.Razor.Components.Dialogs.Filters;
 using gView.DataExplorer.Razor.Components.Dialogs.Models;
 using gView.Framework.Blazor;
-using gView.Framework.Blazor.Services.Abstraction;
-using gView.Framework.Carto;
-using gView.Framework.Carto.Abstraction;
-using gView.Framework.Core.Data;
 using gView.Framework.Core.Common;
+using gView.Framework.Core.Data;
 using gView.Framework.Data;
-using gView.Framework.Common;
-using gView.Blazor.Core.Services;
-using gView.Carto.Core.Services.Abstraction;
 
 namespace gView.Carto.Plugins.CartoTools;
 
@@ -71,7 +68,7 @@ internal class AddDataToGroupLayer : ICartoTool
 
         foreach (var layer in layersResult.layers.OrderLayersByGeometryType().Where(l => l is Layer).Select(l => (Layer)l))
         {
-            
+
             layer.GroupLayer = groupLayer;
 
             int pos = 1;

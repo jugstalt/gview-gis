@@ -2,7 +2,7 @@
 using gView.Blazor.Core.Services;
 using gView.Blazor.Core.Services.Abstraction;
 using gView.Carto.Core;
-using gView.Carto.Core.Abstractions;
+using gView.Carto.Core.Abstraction;
 using gView.Carto.Core.Models.Tree;
 using gView.Carto.Core.Services;
 using gView.Carto.Core.Services.Abstraction;
@@ -16,7 +16,6 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Options;
 using Microsoft.JSInterop;
 using MudBlazor;
-using static System.Formats.Asn1.AsnWriter;
 
 namespace gView.Carto.Plugins.Services;
 public class CartoApplicationScopeService : ApplictionBusyHandler, ICartoApplicationScopeService
@@ -142,6 +141,8 @@ public class CartoApplicationScopeService : ApplictionBusyHandler, ICartoApplica
     public SettingsService Settings => _settings;
 
     public GeoTransformerService GeoTransformer => _geoTransformer;
+
+    public ICartoTool CurrentTool { get; set; }
 
     #region Event Handlers
 

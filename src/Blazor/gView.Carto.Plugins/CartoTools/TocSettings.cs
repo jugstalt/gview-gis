@@ -1,11 +1,11 @@
-﻿using gView.Framework.Carto.Abstraction;
-using gView.Framework.Core.Common;
-using gView.Framework.Carto;
+﻿using gView.Carto.Core;
+using gView.Carto.Core.Abstraction;
+using gView.Carto.Core.Extensions;
 using gView.Carto.Core.Services.Abstraction;
 using gView.Carto.Razor.Components.Dialogs.Models;
-using gView.Framework.Cartography;
 using gView.Framework.Blazor.Models;
-using gView.Carto.Core.Extensions;
+using gView.Framework.Cartography;
+using gView.Framework.Core.Common;
 
 namespace gView.Carto.Plugins.CartoTools;
 
@@ -16,7 +16,7 @@ internal class TocSettings : ICartoTool
 
     public string ToolTip => "Edit TOC Settings";
 
-    public ToolType ToolType => ToolType.Click;
+    public ToolType ToolType => ToolType.Command;
 
     public string Icon => "basic:edit-text";
 
@@ -25,7 +25,7 @@ internal class TocSettings : ICartoTool
     public int SortOrder => 98;
 
     public void Dispose()
-    { 
+    {
     }
 
     public bool IsEnabled(ICartoApplicationScopeService scope)
@@ -55,7 +55,8 @@ internal class TocSettings : ICartoTool
                         MapName = original.Name,
                         Toc = original.TOC
                     },
-                    new ModalDialogOptions(){
+                    new ModalDialogOptions()
+                    {
                         Width = ModalDialogWidth.ExtraExtraLarge
                     });
 

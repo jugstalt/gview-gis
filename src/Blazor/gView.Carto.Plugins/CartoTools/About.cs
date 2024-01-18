@@ -1,11 +1,10 @@
-﻿using gView.Carto.Plugins.Extensions;
-using gView.Framework.Blazor.Services.Abstraction;
-using gView.Framework.Carto.Abstraction;
-using gView.Framework.Core.Common;
-using gView.Razor.Dialogs.Models;
+﻿using gView.Carto.Core;
+using gView.Carto.Core.Abstraction;
+using gView.Carto.Core.Services.Abstraction;
 using gView.Framework.Carto;
 using gView.Framework.Common;
-using gView.Carto.Core.Services.Abstraction;
+using gView.Framework.Core.Common;
+using gView.Razor.Dialogs.Models;
 
 namespace gView.Carto.Plugins.CartoTools;
 
@@ -17,7 +16,7 @@ internal class About : ICartoTool
 
     public string ToolTip => "";
 
-    public ToolType ToolType => ToolType.Click;
+    public ToolType ToolType => ToolType.Command;
 
     public string Icon => "basic:help";
 

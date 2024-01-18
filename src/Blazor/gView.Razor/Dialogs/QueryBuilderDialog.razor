@@ -14,20 +14,31 @@
             Cancel
         </MudButton>
 
-        @if (Model.CanSelect)
+        @if (Model.Actions == QueryBuilderAction.Query)
         {
             <MudButton Variant="Variant.Filled"
                        Color="Color.Primary"
-                       OnClick="() => { Model.Select = true; return base.Submit(); }">
-                Select Rows
+                       OnClick="() => { Model.SelectedAction = QueryBuilderAction.Query; return base.Submit(); }">
+                Commit
             </MudButton>
+        } 
+        else
+        {
+            <MudMenu EndIcon="@Icons.Material.Filled.KeyboardArrowDown" 
+                     Label="Commit" 
+                     Color="Color.Primary"
+                     Variant="Variant.Filled">
+                @foreach (QueryBuilderAction action in Enum.GetValues(typeof(QueryBuilderAction)))
+                {
+                    @if(action != QueryBuilderAction.None && Model.Actions.HasFlag(action))
+                    {
+                        <MudMenuItem OnClick="() => { Model.SelectedAction = action; return base.Submit(); }">
+                            @action.ToString().SplitCamelCase()
+                        </MudMenuItem>
+                    }
+                }
+            </MudMenu>
         }
-
-        <MudButton Variant="Variant.Filled"
-                   Color="Color.Primary" 
-                   OnClick="() => base.Submit()">
-            Confirm
-        </MudButton>
     </DialogButtons>
 </ModalDialogFormBase>
 

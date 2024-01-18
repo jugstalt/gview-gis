@@ -1,13 +1,11 @@
 ﻿using gView.Blazor.Core.Extensions;
+using gView.Carto.Core;
+using gView.Carto.Core.Abstraction;
 using gView.Carto.Core.Services.Abstraction;
-using gView.Carto.Plugins.Services;
 using gView.DataExplorer.Razor.Components.Dialogs.Filters;
 using gView.DataExplorer.Razor.Components.Dialogs.Models;
 using gView.Framework.Blazor;
-using gView.Framework.Carto;
-using gView.Framework.Carto.Abstraction;
 using gView.Framework.Core.Common;
-using static System.Formats.Asn1.AsnWriter;
 
 namespace gView.Carto.Plugins.CartoTools;
 
@@ -51,7 +49,7 @@ public class LoadDocument : ICartoInitialTool
                 }
             );
 
-        if(model is null)
+        if (model is null)
         {
             return false;
         }
