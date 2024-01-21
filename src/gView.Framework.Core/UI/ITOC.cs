@@ -15,7 +15,7 @@ namespace gView.Framework.Core.UI
 
         ITocElement NextVisibleElement { get; }
 
-        List<ITocElement> GroupedElements(ITocElement group);
+        List<ITocElement> GetChildElements(ITocElement group, bool recursive = true);
 
         /*
 		void AddGroup(string GroupName,ITOCElement parent);

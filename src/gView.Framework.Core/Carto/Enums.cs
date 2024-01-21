@@ -5,7 +5,8 @@ namespace gView.Framework.Core.Carto
     [Flags]
     public enum DrawPhase
     {
-        All = 7,
+        All = 15,
+        Highlighing = 8,
         Geography = 4,
         Selection = 2,
         Graphics = 1,

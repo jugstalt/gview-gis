@@ -1,19 +1,17 @@
 ﻿using gView.Carto.Core;
-using gView.Carto.Core.Abstraction;
 using gView.Carto.Core.Services.Abstraction;
+using gView.Framework.Carto.Abstraction;
 using gView.Framework.Cartography;
 using gView.Framework.Core.Common;
 
 namespace gView.Carto.Plugins.CartoTools;
 
 [RegisterPlugIn("20BB9506-D6AE-4A81-AC2D-733DEE4465A4")]
-internal class MapSettings : ICartoTool
+internal class MapSettings : ICartoButton
 {
     public string Name => "Map Settings";
 
     public string ToolTip => "";
-
-    public ToolType ToolType => ToolType.Command;
 
     public string Icon => "basic:settings";
 
@@ -28,7 +26,7 @@ internal class MapSettings : ICartoTool
 
     public bool IsEnabled(ICartoApplicationScopeService scope) => true;
 
-    async public Task<bool> OnEvent(ICartoApplicationScopeService scope)
+    async public Task<bool> OnClick(ICartoApplicationScopeService scope)
     {
         var original = scope.Document.Map as Map;
         var clone = original?.Clone() as Map;

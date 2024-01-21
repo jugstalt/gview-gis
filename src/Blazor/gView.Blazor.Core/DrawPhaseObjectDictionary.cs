@@ -1,5 +1,4 @@
-﻿using gView.Blazor.Core.Extensions;
-using gView.Framework.Core.Carto;
+﻿using gView.Framework.Core.Carto;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -17,6 +16,7 @@ public class DrawPhaseObjectDictionary<T>
             Set(DrawPhase.Geography, value);
             Set(DrawPhase.Selection, value);
             Set(DrawPhase.Graphics, value);
+            Set(DrawPhase.Highlighing, value);
         }
         else
         {
@@ -33,9 +33,10 @@ public class DrawPhaseObjectDictionary<T>
         //    return _dict[DrawPhase.Geography]
         //        ?? _dict[DrawPhase.Selection]
         //        ?? _dict[DrawPhase.Graphics];
+        //        ?? _dict[DrawPhase.Highlighing];
         //}
 
-        if(_dict.ContainsKey(drawPhase))
+        if (_dict.ContainsKey(drawPhase))
             return _dict[drawPhase];
 
         return default(T?);
@@ -53,6 +54,8 @@ public class DrawPhaseObjectDictionary<T>
                 list.Add(_dict[DrawPhase.Selection]);
             if (_dict.ContainsKey(DrawPhase.Graphics))
                 list.Add(_dict[DrawPhase.Graphics]);
+            if (_dict.ContainsKey(DrawPhase.Highlighing))
+                list.Add(_dict[DrawPhase.Highlighing]);
         }
         else
         {
@@ -69,12 +72,13 @@ public class DrawPhaseObjectDictionary<T>
 
     public DrawPhaseObjectDictionary<T> Clear(DrawPhase drawPhase)
     {
-        if(drawPhase == DrawPhase.All)
+        if (drawPhase == DrawPhase.All)
         {
             Clear(DrawPhase.Geography);
             Clear(DrawPhase.Selection);
             Clear(DrawPhase.Graphics);
-        } 
+            Clear(DrawPhase.Highlighing);
+        }
         else
         {
             if (_dict.ContainsKey(drawPhase))

@@ -13,7 +13,7 @@
     {
         base.OnInitialized();
 
-        EventBus.OnShowDataTable += HandleShowTable;
+        EventBus.OnShowDataTableAsync += HandleShowTable;
     }
 
     private Task HandleShowTable(ILayer? layer)
@@ -28,6 +28,6 @@
 
     public void Dispose()
     {
-        EventBus.OnShowDataTable -= HandleShowTable;
+        EventBus.OnShowDataTableAsync -= HandleShowTable;
     }
 }

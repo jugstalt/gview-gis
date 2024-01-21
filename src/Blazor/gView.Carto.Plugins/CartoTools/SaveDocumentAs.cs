@@ -1,23 +1,21 @@
 ﻿using gView.Blazor.Core.Extensions;
 using gView.Carto.Core;
-using gView.Carto.Core.Abstraction;
 using gView.Carto.Core.Services.Abstraction;
 using gView.DataExplorer.Razor.Components.Dialogs.Filters;
 using gView.DataExplorer.Razor.Components.Dialogs.Models;
 using gView.Framework.Blazor;
+using gView.Framework.Carto.Abstraction;
 using gView.Framework.Core.Common;
 using gView.Razor.Dialogs.Models;
 
 namespace gView.Carto.Plugins.CartoTools;
 
 [RegisterPlugIn("1CA4CC29-FA96-4E0B-862F-C1D8CEDA7335")]
-public class SaveDocumentAs : ICartoTool
+public class SaveDocumentAs : ICartoButton
 {
     public string Name => "Save As ...";
 
     public string ToolTip => "Save the current map under a new filename";
-
-    public ToolType ToolType => ToolType.Command;
 
     public string Icon => "basic:disks-white";
 
@@ -32,7 +30,7 @@ public class SaveDocumentAs : ICartoTool
 
     public bool IsEnabled(ICartoApplicationScopeService scope) => true;
 
-    async public Task<bool> OnEvent(ICartoApplicationScopeService scope)
+    async public Task<bool> OnClick(ICartoApplicationScopeService scope)
     {
         var lastAccessedDocuments = await scope.Settings.GetLastAccessedDocuments() ?? [];
 

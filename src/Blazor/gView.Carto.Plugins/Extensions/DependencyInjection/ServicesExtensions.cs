@@ -31,6 +31,7 @@ static public class ServicesExtensions
             .Configure(configureOptions)
             .AddEventBus()
             .AddDataTables()
+            .AddScoped<ICartoInteractiveToolService, CartoInteractiveToolService>()
             .AddScoped<ICartoApplicationScopeService, CartoApplicationScopeService>();
     }
 

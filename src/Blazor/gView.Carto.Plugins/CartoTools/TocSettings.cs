@@ -1,22 +1,20 @@
 ﻿using gView.Carto.Core;
-using gView.Carto.Core.Abstraction;
 using gView.Carto.Core.Extensions;
 using gView.Carto.Core.Services.Abstraction;
 using gView.Carto.Razor.Components.Dialogs.Models;
 using gView.Framework.Blazor.Models;
+using gView.Framework.Carto.Abstraction;
 using gView.Framework.Cartography;
 using gView.Framework.Core.Common;
 
 namespace gView.Carto.Plugins.CartoTools;
 
 [RegisterPlugIn("D1464197-2220-4895-954A-23A1379CFDFB")]
-internal class TocSettings : ICartoTool
+internal class TocSettings : ICartoButton
 {
     public string Name => "TOC Settings";
 
     public string ToolTip => "Edit TOC Settings";
-
-    public ToolType ToolType => ToolType.Command;
 
     public string Icon => "basic:edit-text";
 
@@ -31,7 +29,7 @@ internal class TocSettings : ICartoTool
     public bool IsEnabled(ICartoApplicationScopeService scope)
         => true; //  scope.Document.Map.TOC.Elements.Count() > 0;
 
-    async public Task<bool> OnEvent(ICartoApplicationScopeService scope)
+    async public Task<bool> OnClick(ICartoApplicationScopeService scope)
     {
         var original = scope.Document.Map as Map;
         var clone = original?.Clone() as Map;

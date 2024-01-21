@@ -6,19 +6,19 @@
 @inject IconService Icons
 @inject CartoEventBusService EventBus
 
-@if(_cartoTools != null)
+@if(_cartoButtons != null)
 {
     <div style="width:100%">
         <div class="carto-tool-box">
             <div class="carto-tool-sub-box">
-                @foreach(var cartoTool in _cartoTools
+                @foreach(var cartoTool in _cartoButtons
                                                .Where(t => t.Target == CartoToolTarget.File)
                                                .Where(t => t.IsEnabled(AppScope))
                                                .OrderBy(t => t.SortOrder))
                 {
                     <div class="carto-tool"
                          alt="@cartoTool.ToolTip"
-                         @onclick="async () => await ToolClickAsync(cartoTool)">
+                         @onclick="async () => await OnButtonClickAsync(cartoTool)">
                         <div class=@Icons.FromString(cartoTool.Icon)></div>
                         <div class="title">@cartoTool.Name</div>
                     </div>
@@ -29,14 +29,14 @@
 
         <div class="carto-tool-box">
             <div class="carto-tool-sub-box">
-                @foreach (var cartoTool in _cartoTools
+                @foreach (var cartoTool in _cartoButtons
                                                .Where(t => t.Target == CartoToolTarget.Map)
                                                .Where(t => t.IsEnabled(AppScope))
                                                .OrderBy(t => t.SortOrder))
                 {
                         <div class="carto-tool"
                              alt="@cartoTool.ToolTip"
-                             @onclick="async () => await ToolClickAsync(cartoTool)">
+                             @onclick="async () => await OnButtonClickAsync(cartoTool)">
                         <div class=@Icons.FromString(cartoTool.Icon)></div>
                         <div class="title">@cartoTool.Name</div>
                     </div>
@@ -49,49 +49,64 @@
             @if(_cartoAppService?.SelectedTocTreeNode != null)
             {
                 <div class="carto-tool-sub-box">
-                    @foreach (var cartoTool in _cartoTools
+                    @foreach (var cartoTool in _cartoButtons
                                                .Where(t => t.Target == CartoToolTarget.SelectedTocItem)
                                                .Where(t => t.IsEnabled(AppScope))
                                                .OrderBy(t => t.SortOrder))
                     {
                         <div class="carto-tool"
                              alt="@cartoTool.ToolTip"
-                             @onclick="async () => await ToolClickAsync(cartoTool)">
+                             @onclick="async () => await OnButtonClickAsync(cartoTool)">
                             <div class=@Icons.FromString(cartoTool.Icon)></div>
                             <div class="title">@cartoTool.Name</div>
                         </div>
                     }
-                        <div class="title">Context: @_cartoAppService.SelectedTocTreeNode.Text</div>
+                    <div class="title">Context: @_cartoAppService.SelectedTocTreeNode.Text</div>
                 </div>
             }
         </div>
 
-        <div class="carto-tool-box">
-            <div class="carto-tool-sub-box">
-                @foreach (var cartoTool in _cartoTools
-                                               .Where(t => t.Target == CartoToolTarget.Tools)
-                                               .Where(t => t.IsEnabled(AppScope))
-                                               .OrderBy(t => t.SortOrder))
-                {
-                    <div class="carto-tool"
-                         alt="@cartoTool.ToolTip"
-                         @onclick="async () => await ToolClickAsync(cartoTool)">
-                        <div class=@Icons.FromString(cartoTool.Icon)></div>
-                        <div class="title">@cartoTool.Name</div>
-                    </div>
-                }
+        @if(AppScope.Tools.CurrentTool is not null)
+        {
+            <div class="carto-tool-box">
+                <div class="carto-tool-sub-box current-tool">
+                    <DynamicComponent Type="AppScope.Tools.CurrentTool.UIComponent" />
+                    <MudButton OnClick="() => AppScope.Tools.CurrentTool = null">
+                        Close
+                    </MudButton>
+                    <div class="title">@($"Tool: {AppScope.Tools.CurrentTool.Name}")</div>
+                </div>
             </div>
-        </div>
+        } 
+        else 
+        {
+            <div class="carto-tool-box">
+                <div class="carto-tool-sub-box">
+                    @foreach (var cartoTool in _cartoButtons
+                                                   .Where(t => t.Target == CartoToolTarget.Tools)
+                                                   .Where(t => t.IsEnabled(AppScope))
+                                                   .OrderBy(t => t.SortOrder))
+                    {
+                        <div class="carto-tool"
+                             alt="@cartoTool.ToolTip"
+                             @onclick="async () => await OnButtonClickAsync(cartoTool)">
+                            <div class=@Icons.FromString(cartoTool.Icon)></div>
+                            <div class="title">@cartoTool.Name</div>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
 
         <div class="carto-tool-box" style="float:right">
-            @foreach (var cartoTool in _cartoTools
+            @foreach (var cartoTool in _cartoButtons
                                                .Where(t => t.Target == CartoToolTarget.General)
                                                .Where(t => t.IsEnabled(AppScope))
                                                .OrderBy(t => t.SortOrder))
             {
                 <div class="carto-tool"
                      alt="@cartoTool.ToolTip"
-                     @onclick="async () => await ToolClickAsync(cartoTool)">
+                     @onclick="async () => await OnButtonClickAsync(cartoTool)">
                     <div class=@Icons.FromString(cartoTool.Icon)></div>
                     <div class="title">@cartoTool.Name</div>
                 </div>
@@ -110,31 +125,27 @@
 
 
 @code{
-    private ICartoTool[]? _cartoTools;
+    private ICartoButton[]? _cartoButtons;
     private ICartoApplicationScopeService? _cartoAppService;
 
     [Parameter] public EventCallback ToggleDarkmode { get; set; }
 
     protected override void OnInitialized() => base.Handle(() =>
     {
-        _cartoTools = PluginManager.GetPlugins<ICartoTool>(gView.Framework.Common.Plugins.Type.ICartoTool).ToArray();
+        _cartoButtons = PluginManager.GetPlugins<ICartoButton>(gView.Framework.Common.Plugins.Type.ICartoButton).ToArray();
         _cartoAppService = (ICartoApplicationScopeService)AppScope;
 
         EventBus.OnSelectedTocTreeNodeChangedAsync += HandleSelectedTocTreeNodeChangedAsync;
     });
 
-    private Task ToolClickAsync(ICartoTool cartoTool) => base.HandleAsync(() => {
+    private Task OnButtonClickAsync(ICartoButton cartoButton) => base.HandleAsync(() => {
 
-        if (cartoTool.ToolType.IsOnOf(
-             gView.Carto.Core.ToolType.Click,
-             gView.Carto.Core.ToolType.Rubberband,
-             gView.Carto.Core.ToolType.Sketch))
+        if (cartoButton is ICartoInteractiveTool)
         {
-            AppScope.CurrentTool = cartoTool;
-            return Task.CompletedTask;
+            AppScope.Tools.CurrentTool = cartoButton as ICartoInteractiveTool;
         }
 
-        return cartoTool.OnEvent(AppScope);
+        return cartoButton.OnClick(AppScope);
     });
 
     async private Task DarkmodeClick()
@@ -148,7 +159,7 @@
             StateHasChanged());
     }
 
-    public void Dispose() 
+    public void Dispose()
     {
         EventBus.OnSelectedTocTreeNodeChangedAsync -= HandleSelectedTocTreeNodeChangedAsync;
     }

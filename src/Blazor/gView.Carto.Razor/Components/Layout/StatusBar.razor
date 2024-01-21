@@ -79,13 +79,13 @@
     {
         base.OnInitialized();
 
-        EventBus.OnStartRenderMap += HandleStartRenderMap;
-        EventBus.OnFinishedRenderMap += HandleFinishedRenderMap;
+        EventBus.OnStartRenderMapAsync += HandleStartRenderMap;
+        EventBus.OnFinishedRenderMapAsync += HandleFinishedRenderMap;
 
-        EventBus.OnStartRendererLayer += HandleStartRenderLayer;
-        EventBus.OnFinishedRendererLayer += HandleFinishedRendererLayer;
+        EventBus.OnStartRendererLayerAsync += HandleStartRenderLayer;
+        EventBus.OnFinishedRendererLayerAsync += HandleFinishedRendererLayer;
 
-        EventBus.OnMapMouseMove += HandleMapMouseMove;
+        EventBus.OnMapMouseMoveAsync += HandleMapMouseMove;
     }
 
     #region EventHandlers
@@ -146,12 +146,12 @@
 
     public void Dispose()
     {
-        EventBus.OnStartRenderMap -= HandleStartRenderMap;
-        EventBus.OnFinishedRenderMap -= HandleFinishedRenderMap;
+        EventBus.OnStartRenderMapAsync -= HandleStartRenderMap;
+        EventBus.OnFinishedRenderMapAsync -= HandleFinishedRenderMap;
 
-        EventBus.OnStartRendererLayer -= HandleStartRenderLayer;
-        EventBus.OnFinishedRendererLayer -= HandleFinishedRendererLayer;
+        EventBus.OnStartRendererLayerAsync -= HandleStartRenderLayer;
+        EventBus.OnFinishedRendererLayerAsync -= HandleFinishedRendererLayer;
 
-        EventBus.OnMapMouseMove -= HandleMapMouseMove;
+        EventBus.OnMapMouseMoveAsync -= HandleMapMouseMove;
     }
 }

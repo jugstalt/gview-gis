@@ -3,6 +3,7 @@ using gView.Blazor.Core.Services;
 using gView.Blazor.Core.Services.Abstraction;
 using gView.Carto.Core;
 using gView.Carto.Core.Abstraction;
+using gView.Carto.Core.Models.MapEvents;
 using gView.Carto.Core.Models.Tree;
 using gView.Carto.Core.Services;
 using gView.Carto.Core.Services.Abstraction;
@@ -11,6 +12,7 @@ using gView.Framework.Blazor;
 using gView.Framework.Blazor.Models;
 using gView.Framework.Blazor.Services;
 using gView.Framework.Core.Data;
+using gView.Framework.Core.Geometry;
 using gView.Framework.IO;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Options;
@@ -29,6 +31,7 @@ public class CartoApplicationScopeService : ApplictionBusyHandler, ICartoApplica
     private readonly CartoApplicationScopeServiceOptions _options;
     private readonly GeoTransformerService _geoTransformer;
     private readonly IUserIdentityService _userIdentity;
+    private readonly ICartoInteractiveToolService _toolService;
     private readonly SettingsService _settings;
 
     private ICartoDocument _cartoDocument;
@@ -44,6 +47,7 @@ public class CartoApplicationScopeService : ApplictionBusyHandler, ICartoApplica
                                         SpatialReferenceService sRefService,
                                         IUserIdentityService userIdentity,
                                         SettingsService settings,
+                                        ICartoInteractiveToolService toolService,
                                         IOptions<CartoApplicationScopeServiceOptions> options,
                                         IScopeContextService? scopeContext = null)
     {
@@ -56,6 +60,7 @@ public class CartoApplicationScopeService : ApplictionBusyHandler, ICartoApplica
         _geoTransformer = geoTransformer;
         _userIdentity = userIdentity;
         _settings = settings;
+        _toolService = toolService;
         _options = options.Value;
 
         _cartoDocument = this.Document = new CartoDocument();
@@ -66,8 +71,11 @@ public class CartoApplicationScopeService : ApplictionBusyHandler, ICartoApplica
                 sRefService.GetSpatialReference($"epsg:{crsService.GetDefaultOrAny().Epsg}").Result;
         }
 
-        _eventBus.OnLayerSettingsChangedAsync += HandleLayerSettingsChanged;
-        _eventBus.OnCartoDocumentLoadedAsync += HandleCartoDocumentTouched;
+        _eventBus.OnLayerSettingsChangedAsync += HandleLayerSettingsChangedAsync;
+        _eventBus.OnCartoDocumentLoadedAsync += HandleCartoDocumentTouchedAsync;
+
+        _eventBus.OnMapClickAsync += HandleMapClickAsync;
+        _eventBus.OnMapBBoxAsync += HandleMapBBoxAsync;
     }
 
     public CartoEventBusService EventBus => _eventBus;
@@ -126,7 +134,7 @@ public class CartoApplicationScopeService : ApplictionBusyHandler, ICartoApplica
 
         this.Document.FilePath = xmlFilePath;
 
-        await HandleCartoDocumentTouched(Document);
+        await HandleCartoDocumentTouchedAsync(Document);
 
         return true;
     }
@@ -142,11 +150,11 @@ public class CartoApplicationScopeService : ApplictionBusyHandler, ICartoApplica
 
     public GeoTransformerService GeoTransformer => _geoTransformer;
 
-    public ICartoTool CurrentTool { get; set; }
+    public ICartoInteractiveToolService Tools => _toolService;
 
     #region Event Handlers
 
-    private Task HandleLayerSettingsChanged(ILayer oldLayer, ILayer newLayer)
+    private Task HandleLayerSettingsChangedAsync(ILayer oldLayer, ILayer newLayer)
     {
         if (_dataTables.Layers.Contains(oldLayer))
         {
@@ -155,14 +163,36 @@ public class CartoApplicationScopeService : ApplictionBusyHandler, ICartoApplica
             _dataTables.RemoveLayer(oldLayer);
             _dataTables.AddIfNotExists(newLayer, tableProperties: oldTableProperties);
 
-            return _eventBus.FireRefreshDataTable(newLayer, oldLayer);
+            return _eventBus.FireRefreshDataTableAsync(newLayer, oldLayer);
         }
 
         return Task.CompletedTask;
     }
 
-    private Task HandleCartoDocumentTouched(ICartoDocument cartoDocument)
+    private Task HandleCartoDocumentTouchedAsync(ICartoDocument cartoDocument)
         => _settings.StoreMapDocumentLastAccess(cartoDocument.FilePath);
+
+    private Task HandleMapClickAsync(IPoint point)
+    {
+        if(Tools.CurrentTool?.ToolType.HasFlag(ToolType.Click) == true)
+        {
+            return Tools.CurrentTool.OnEvent(this,
+                new MapClickEvent() { Point = point });
+        }
+
+        return Task.CompletedTask;
+    }
+
+    private Task HandleMapBBoxAsync(IEnvelope bbox)
+    {
+        if (Tools.CurrentTool?.ToolType.HasFlag(ToolType.BBox) == true)
+        {
+            return Tools.CurrentTool.OnEvent(this,
+                new MapBBoxEvent() { BBox = bbox });
+        }
+
+        return Task.CompletedTask;
+    }
 
     #endregion
 
@@ -170,8 +200,11 @@ public class CartoApplicationScopeService : ApplictionBusyHandler, ICartoApplica
 
     public void Dispose()
     {
-        _eventBus.OnLayerSettingsChangedAsync -= HandleLayerSettingsChanged;
-        _eventBus.OnCartoDocumentLoadedAsync -= HandleCartoDocumentTouched;
+        _eventBus.OnLayerSettingsChangedAsync -= HandleLayerSettingsChangedAsync;
+        _eventBus.OnCartoDocumentLoadedAsync -= HandleCartoDocumentTouchedAsync;
+
+        _eventBus.OnMapClickAsync -= HandleMapClickAsync;
+        _eventBus.OnMapBBoxAsync -= HandleMapBBoxAsync;
     }
 
     #endregion

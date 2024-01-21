@@ -1,6 +1,7 @@
 @using gView.Blazor.Core
 @using gView.Blazor.Core.Extensions
 @using gView.Blazor.Core.Services.Abstraction
+@using Framework.Core.Data.Filters
 
 @inherits BaseHandler
 @implements IAsyncDisposable
@@ -34,6 +35,7 @@
         EventBus.OnRefreshMapAsync += HandleRefreshMapAsync;
         EventBus.OnMapSettingsChangedAsync += HandleMapSettingsChanged;
         EventBus.OnMapZoomToAsync += HandleMapZoomToAsync;
+        EventBus.OnHighlightFeaturesAsync += HandleHighlightFeaturesAsync;
 
         MapRenderer.OnRefreshMapImage += HandleRefreshMapImage;
         MapRenderer.OnStartRenderMap += HandleStartRenderMap;
@@ -96,7 +98,7 @@
                 4326 => zoomTo.ToMinSize(),
                 _ => GeoTransformer.ToWGS84(zoomTo, _mapControlSRef).Envelope.ToMinSize()
             };
-            
+
             await _mapControl.FitBounds(
                 new LatLng(zoomToWgs84.LowerLeft.Y, zoomToWgs84.LowerLeft.X),
                 new LatLng(zoomToWgs84.UpperRight.Y, zoomToWgs84.UpperRight.X));
@@ -181,14 +183,19 @@
     }
 
     private Task HandleMapClick(LMap sender, BlazorLeaflet.Models.Events.MouseEvent e)
-        => Task.CompletedTask;
+        => e.LatLng is not null
+        ? EventBus.FireMapClickAsync(new Point(e.LatLng.Lng, e.LatLng.Lat) { Srs = 4326 })
+        : Task.CompletedTask;
 
     private Task HandleBBox(LMap sender, BlazorLeaflet.Models.Events.BBoxEvent e)
-        => Task.CompletedTask;
+        => e.NorthWest is not null && e.SouthEast is not null
+        ? EventBus.FireMapBBoxAsync(new Envelope(
+            e.NorthWest.Lng, e.SouthEast.Lat, e.SouthEast.Lng, e.NorthWest.Lat) { Srs = 4326 })
+        : Task.CompletedTask;
 
     private Task HandleMapMouseMove(LMap sender, BlazorLeaflet.Models.Events.MouseEvent e)
         => e.LatLng is not null
-        ? EventBus.FireMapMouseMove(
+        ? EventBus.FireMapMouseMoveAsync(
             new PointStruct(e.LatLng.Lng, e.LatLng.Lat),
             new PointStruct(e.LayerPoint.X, e.LayerPoint.Y))
         : Task.CompletedTask;
@@ -214,17 +221,24 @@
         return Task.CompletedTask;
     }
 
+    private Task HandleHighlightFeaturesAsync(ILayer layer, IQueryFilter? filter)
+    {
+        AppScope.Document.SetHighlightLayer(layer, filter);
+
+        return MapRenderer.Rerender(DrawPhase.Highlighing);
+    }
+
     private Task HandleStartRenderMap(IMapRenderer mapRenderer)
-        => EventBus.FireStartRenderMap(mapRenderer);
+        => EventBus.FireStartRenderMapAsync(mapRenderer);
 
     private Task HandleFinishedRenderMap(IMapRenderer mapRenderer)
-        => EventBus.FireFinishedRenderMap(mapRenderer);
+        => EventBus.FireFinishedRenderMapAsync(mapRenderer);
 
     private Task HandleStartDrawingLayer(IMapRenderer mapRenderer, string layerName)
-        => EventBus.FireStartRendererLayer(mapRenderer, layerName);
+        => EventBus.FireStartRendererLayerAsync(mapRenderer, layerName);
 
     private Task HandleFinishedDrawingLayer(IMapRenderer mapRenderer, ITimeEvent timeEvent)
-        => EventBus.FireFinishedRendererLayer(mapRenderer, timeEvent?.Name ?? String.Empty, timeEvent);
+        => EventBus.FireFinishedRendererLayerAsync(mapRenderer, timeEvent?.Name ?? String.Empty, timeEvent);
 
     #endregion
 
@@ -283,6 +297,7 @@
         EventBus.OnRefreshMapAsync -= HandleRefreshMapAsync;
         EventBus.OnMapSettingsChangedAsync -= HandleMapSettingsChanged;
         EventBus.OnMapZoomToAsync -= HandleMapZoomToAsync;
+        EventBus.OnHighlightFeaturesAsync -= HandleHighlightFeaturesAsync;
 
         MapRenderer.OnRefreshMapImage -= HandleRefreshMapImage;
         MapRenderer.OnStartRenderMap -= HandleStartRenderMap;

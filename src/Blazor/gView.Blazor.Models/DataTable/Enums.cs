@@ -8,6 +8,7 @@ namespace gView.Blazor.Models.DataTable;
 
 public enum Mode
 {
-    Data = 0,
-    Selection = 1
+    AllData = 0,
+    Selection = 1,
+    Identify = 2
 };

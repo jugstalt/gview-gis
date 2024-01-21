@@ -448,6 +448,31 @@ public class MapRendererInstance : Map, IMapRenderer
 
                 #endregion
 
+                #region Draw Highlighting
+
+                if(Bit.Has(DrawPhase, DrawPhase.Highlighing))
+                {
+                    foreach (IDatasetElement layer in MapElements)
+                    {
+                        if (!cancelTracker.Continue)
+                        {
+                            break;
+                        }
+
+                        if(layer is IFeatureHighlighting featureHighlighting
+                            && featureHighlighting.FeatureHighlightFilter is not null)
+                        {
+                            if (layer is IFeatureLayer featureLayer)
+                            {
+                                SetGeotransformer((ILayer)layer, geoTransformer);
+                                await RenderHighlighting(featureLayer, cancelTracker);
+                            }
+                        }
+                    }
+                }
+
+                #endregion
+
                 #region Graphics
 
                 if (Bit.Has(drawPhase, DrawPhase.Graphics))
@@ -712,24 +737,36 @@ public class MapRendererInstance : Map, IMapRenderer
             return;
         }
 
-        RenderFeatureLayerSelection rlt = new RenderFeatureLayerSelection(this, fLayer, cancelTracker, this);
-        //rlt.Render();
-
-        //Thread thread = new Thread(new ThreadStart(rlt.Render));
-        //thread.Start();
+        var rlt = new RenderFeatureLayerSelection(this, fLayer, cancelTracker, this);
 
         StartDrawingLayer?.Invoke(this, fLayer.Title);
 
         await rlt.Render();
-        //while (thread.IsAlive)
-        //{
-        //    Thread.Sleep(10);
-        //    if (DoRefreshMapView != null && (count % 100) == 0 && cancelTracker.Continue)
-        //    {
-        //        DoRefreshMapView();
-        //    }
-        //    count++;
-        //}
+
+        if (cancelTracker.Continue)
+        {
+            DoRefreshMapView?.Invoke(this);
+        }
+    }
+
+    async private Task RenderHighlighting(IFeatureLayer fLayer, ICancelTracker cancelTracker)
+    {
+        if (fLayer == null || !(fLayer is IFeatureSelection))
+        {
+            return;
+        }
+
+        if (fLayer.SelectionRenderer == null)
+        {
+            return;
+        }
+
+        var rlt = new RenderFeatureLayerHighlighting(this, fLayer, cancelTracker, this);
+
+        StartDrawingLayer?.Invoke(this, fLayer.Title);
+
+        await rlt.Render();
+
         if (cancelTracker.Continue)
         {
             DoRefreshMapView?.Invoke(this);

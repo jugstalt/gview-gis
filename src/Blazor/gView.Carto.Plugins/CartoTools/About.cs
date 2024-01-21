@@ -1,7 +1,6 @@
 ﻿using gView.Carto.Core;
-using gView.Carto.Core.Abstraction;
 using gView.Carto.Core.Services.Abstraction;
-using gView.Framework.Carto;
+using gView.Framework.Carto.Abstraction;
 using gView.Framework.Common;
 using gView.Framework.Core.Common;
 using gView.Razor.Dialogs.Models;
@@ -10,13 +9,11 @@ namespace gView.Carto.Plugins.CartoTools;
 
 
 [RegisterPlugIn("C88FB907-852E-4799-8788-C34E04A73FFB")]
-internal class About : ICartoTool
+internal class About : ICartoButton
 {
     public string Name => "About";
 
     public string ToolTip => "";
-
-    public ToolType ToolType => ToolType.Command;
 
     public string Icon => "basic:help";
 
@@ -31,7 +28,7 @@ internal class About : ICartoTool
 
     public bool IsEnabled(ICartoApplicationScopeService scope) => true;
 
-    async public Task<bool> OnEvent(ICartoApplicationScopeService scope)
+    async public Task<bool> OnClick(ICartoApplicationScopeService scope)
     {
         await scope.ShowModalDialog(typeof(gView.Razor.Dialogs.AboutDialog),
                                      "About",

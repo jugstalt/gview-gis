@@ -1,4 +1,5 @@
 ﻿using gView.Framework.Core.Data;
+using gView.Framework.Core.Data.Filters;
 using System.Collections.Generic;
 
 namespace gView.Blazor.Models.DataTable;
@@ -14,5 +15,7 @@ public class DataTableProperties
     public string OrderByClause { get; set; } = "";
     public string SearchString { get; set; } = "";
 
-    public Mode DataMode { get; set; } = Mode.Data;
+    public ISpatialFilter? IdentifyFilter { get; set; }
+
+    public Mode DataMode { get; set; } = Mode.AllData;
 }

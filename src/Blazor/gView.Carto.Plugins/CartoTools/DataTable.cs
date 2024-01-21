@@ -1,6 +1,6 @@
 ﻿using gView.Carto.Core;
-using gView.Carto.Core.Abstraction;
 using gView.Carto.Core.Services.Abstraction;
+using gView.Framework.Carto.Abstraction;
 using gView.Framework.Core.Common;
 using gView.Framework.Core.Data;
 using gView.Framework.Data;
@@ -8,13 +8,11 @@ using gView.Framework.Data;
 namespace gView.Carto.Plugins.CartoTools;
 
 [RegisterPlugIn("805D37BF-94CB-45AB-838B-7087036CAB0C")]
-internal class DataTable : ICartoTool
+internal class DataTable : ICartoButton
 {
     public string Name => "Data Table";
 
     public string ToolTip => "Show Data Table";
-
-    public ToolType ToolType => ToolType.Command;
 
     public string Icon => "basic:table";
 
@@ -36,7 +34,7 @@ internal class DataTable : ICartoTool
                 .Layers.First()
                 .Class is ITableClass;
 
-    async public Task<bool> OnEvent(ICartoApplicationScopeService scope)
+    async public Task<bool> OnClick(ICartoApplicationScopeService scope)
     {
         var layer = scope.SelectedTocTreeNode?
                 .TocElement?
@@ -75,7 +73,7 @@ internal class DataTable : ICartoTool
         //    await scope.EventBus.FireRefreshMapAsync(DrawPhase.Selection);
         //}
 
-        await scope.EventBus.FireShowDataTable(layer!);
+        await scope.EventBus.FireShowDataTableAsync(layer!);
 
         return true;
     }

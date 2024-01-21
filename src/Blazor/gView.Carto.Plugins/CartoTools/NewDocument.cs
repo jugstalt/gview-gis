@@ -11,13 +11,11 @@ using gView.Framework.Core.Common;
 namespace gView.Carto.Plugins.CartoTools;
 
 [RegisterPlugIn("D6A44B2E-1883-4D69-984B-2468E98216CD")]
-public class NewDocument : ICartoInitialTool
+public class NewDocument : ICartoInitialButton
 {
     public string Name => "New Map";
 
     public string ToolTip => "Create a new empty map";
-
-    public ToolType ToolType => ToolType.Command;
 
     public string Icon => "basic:bulb-shining";
 
@@ -35,7 +33,7 @@ public class NewDocument : ICartoInitialTool
         return true;
     }
 
-    async public Task<bool> OnEvent(ICartoApplicationScopeService scope)
+    async public Task<bool> OnClick(ICartoApplicationScopeService scope)
     {
         var model = await scope.ShowModalDialog(typeof(gView.Carto.Razor.Components.Dialogs.NewMapDialog),
                                                     "Create New Map",

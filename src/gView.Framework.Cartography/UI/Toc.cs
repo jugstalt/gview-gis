@@ -87,10 +87,11 @@ public class Toc : IToc
         }
     }
 
-    public List<ITocElement> GroupedElements(ITocElement group)
+    public List<ITocElement> GetChildElements (ITocElement group, bool recursive = true)
     {
         List<ITocElement> elements = new List<ITocElement>();
-        if (group == null || group.ElementType != TocElementType.OpenedGroup)
+        if (group == null 
+            || (group.ElementType != TocElementType.OpenedGroup && group.ElementType != TocElementType.ClosedGroup))
         {
             return elements;
         }
@@ -115,9 +116,13 @@ public class Toc : IToc
             }
 
             elements.Add(element);
-            if (element.ElementType == TocElementType.OpenedGroup)
+
+            if (recursive && 
+                (element.ElementType == TocElementType.OpenedGroup 
+                || element.ElementType == TocElementType.ClosedGroup)
+                )
             {
-                foreach (ITocElement childElement in GroupedElements(element))
+                foreach (ITocElement childElement in GetChildElements(element))
                 {
                     elements.Add(childElement);
                 }

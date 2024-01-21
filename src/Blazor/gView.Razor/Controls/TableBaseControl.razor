@@ -1,6 +1,7 @@
 @using gView.Framework.Core.Data
 @using gView.Framework.Core.Data.Cursors
 @using gView.Blazor.Models.DataTable
+@using gView.Framework.Core.Data.Filters
 @using gView.Framework.Data.Filters
 
 @inherits BaseHandler
@@ -27,14 +28,16 @@
             }
 
             <GvToolBarToolGroup MinHeight="50" PaddingTopButton="6">
-                <MudMenu StartIcon="@IconService.FromString("basic:table")"
+                @* StartIcon="@IconService.FromString(_tableProperties.DataMode.IconString())" *@
+                <MudMenu 
                          EndIcon="@Icons.Material.Filled.KeyboardArrowDown" 
-                         Label="@($"Show {_tableProperties.DataMode}")" 
+                         Label="@_tableProperties.DataMode.ToString().SplitCamelCase()" 
                          Variant="Variant.Text">
-                    @foreach(var mode in Enum.GetValues<Mode>())
+                    @foreach (var mode in Enum.GetValues<Mode>().Where(m => m.AsApplicable(_tableProperties)))
                     {
                         <MudMenuItem OnClick="() => OnSetDataMode(mode)">
-                            @mode.ToString().SplitCamelCase()
+                            <MudIcon Icon="@IconService.FromString(mode.IconString())" />
+                            @mode.Title(_currentLayer)
                         </MudMenuItem>
                     }
                 </MudMenu>
@@ -53,6 +56,7 @@
                 <MudIconButton OnClick="OnSetOrderBy" 
                                Icon="@IconService.FromString("webgis:construct-swap-direction")" />
             </GvToolBarToolGroup>
+            
             @if (HasSelection())
             {
                 <GvToolBarToolGroup>
@@ -133,9 +137,9 @@
     </MudTable>
 
     <div style="position:absolute;bottom:0;width:100%;height:30px;overflow:hidden">
-        <GvGrid ColumnCount="@(_tableProperties.HasMore && _tableProperties.DataMode == Mode.Data ? 2 : 1)">
+        <GvGrid ColumnCount="@(_tableProperties.HasMore && _tableProperties.DataMode == Mode.AllData ? 2 : 1)">
             <GvGridItem>
-                @if (_tableProperties.DataMode == Mode.Data)
+                @if (_tableProperties.DataMode == Mode.AllData)
                 {
                     <MudText Typo="Typo.body1">
                         @if (_loading)
@@ -156,7 +160,7 @@
                     </MudText>
                 }
             </GvGridItem>
-            @if(_tableProperties.HasMore && _tableProperties.DataMode == Mode.Data)
+            @if(_tableProperties.HasMore && _tableProperties.DataMode == Mode.AllData)
             {
                 <GvGridItem>
                     <MudButton Variant="Variant.Filled" Style="float:right"
@@ -175,6 +179,7 @@
     [Parameter] public EventCallback<IEnvelope> OnZoomToClicked { get; set; }
     [Parameter] public EventCallback OnOpenTable { get; set; }
     [Parameter] public EventCallback<string> OnSetWhereFilter { get; set; }
+    [Parameter] public EventCallback<HighlightFeaturesEventArgs> OnHighlightFeatures{ get; set; }
     [Parameter] public Func<ILayer, DataTableProperties>? ProvideTableProperties { get; set; }
 
     private const string SelectedRowClass = "selected";
@@ -195,7 +200,7 @@
         await OnSetCurrentLayer(Layer);
     });
 
-    async private Task CreateCursor()
+    async private Task CreateCursor(IQueryFilter? queryFilter = null)
     {
         ReleaseCursor();
         _rows.Clear();
@@ -208,7 +213,7 @@
         _loading = true;
         await base.ForceRenderComponent();
 
-        var queryFilter = new QueryFilter()
+        queryFilter ??= new QueryFilter()
         {
             SubFields = "*"
         };
@@ -442,7 +447,7 @@
             return;
         }
 
-        if(_tableProperties.DataMode == Mode.Data)
+        if(_tableProperties.DataMode == Mode.AllData)
         {
             await CreateCursor();
             await LoadData();
@@ -455,6 +460,12 @@
             _rows = new List<IRow>(await _tableClass.GetSelectedRows(_selectionSet, _tableProperties.OrderByClause));
             _loading = false;
 
+        }
+        else if(_tableProperties.DataMode == Mode.Identify 
+            && _tableProperties.IdentifyFilter is not null)
+        {
+            await CreateCursor(_tableProperties.IdentifyFilter);
+            await LoadData();
         }
     }
 
@@ -489,6 +500,16 @@
                     _tableProperties.ColumnFilters.ContainsKey(field.name)
                     ? _tableProperties.ColumnFilters[field.name]
                     : String.Empty;
+            }
+
+            if(_tableProperties.DataMode == Mode.Identify 
+                && _currentLayer is IFeatureHighlighting highlighing)
+            {
+                await OnHighlightFeatures.InvokeAsync(
+                    new HighlightFeaturesEventArgs(
+                        _currentLayer,
+                        _tableProperties.IdentifyFilter)
+                );
             }
 
             await OnOpenTable.InvokeAsync();
@@ -654,7 +675,7 @@
 
                     if(_rows.Count == 0)
                     {
-                        _tableProperties.DataMode = Mode.Data;
+                        _tableProperties.DataMode = Mode.AllData;
 
                         await RefreshData();
                     }
@@ -692,7 +713,7 @@
 
         if(_tableProperties?.DataMode == Mode.Selection) 
         {
-            _tableProperties.DataMode = Mode.Data;
+            _tableProperties.DataMode = Mode.AllData;
 
             await CreateCursor();
             await LoadData();

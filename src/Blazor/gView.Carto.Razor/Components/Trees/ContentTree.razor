@@ -132,7 +132,7 @@ else
             {
                 <div class="carto-initial-tool"
                      alt="@cartoTool.ToolTip"
-                     @onclick="async () => await cartoTool.OnEvent(AppScope)">
+                     @onclick="async () => await cartoTool.OnClick(AppScope)">
                     <div class="@(IconService.FromString(cartoTool.Icon)) icon"></div>
                     <div class="title">@cartoTool.Name</div>
                 </div>
@@ -157,7 +157,7 @@ else
 
 @code {
     private HashSet<TocTreeNode> _treeNodes = new HashSet<TocTreeNode>();
-    private ICartoTool[]? _cartoInitialTools;
+    private ICartoButton[]? _cartoInitialTools;
     private IEnumerable<MapFileItem>? _lastAccessed;
 
     private TocTreeNode? _editNameTocNode;
@@ -173,8 +173,8 @@ else
     {
         await base.OnInitializedAsync();
 
-        _cartoInitialTools = PluginManager.GetPlugins<ICartoTool>(gView.Framework.Common.Plugins.Type.ICartoTool)
-            .Where(t => t is ICartoInitialTool)
+        _cartoInitialTools = PluginManager.GetPlugins<ICartoButton>(gView.Framework.Common.Plugins.Type.ICartoButton)
+            .Where(t => t is ICartoInitialButton)
             .OrderBy(t => t.SortOrder)
             .ToArray();
 

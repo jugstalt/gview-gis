@@ -9,7 +9,7 @@ public interface ICartoApplicationScopeService : IApplicationScope
 {
     ICartoDocument Document { get; }
 
-    ICartoTool CurrentTool { get; set; }
+    ICartoInteractiveToolService Tools { get; }
 
     CartoEventBusService EventBus { get; }
 

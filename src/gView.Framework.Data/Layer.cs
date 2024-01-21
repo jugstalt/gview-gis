@@ -1325,7 +1325,23 @@ namespace gView.Framework.Data
         #endregion
     }
 
-    public class FeatureSelection : FeatureLayer, IFeatureSelection
+    public class FeatureHighlighting : FeatureLayer, IFeatureHighlighting
+    {
+        public FeatureHighlighting() { }
+        public FeatureHighlighting(IFeatureClass featureClass)
+            : base(featureClass)
+        {
+        }
+
+        public FeatureHighlighting(IFeatureLayer layer)
+            : base(layer)
+        {
+        }
+
+        public IQueryFilter? FeatureHighlightFilter { get; set; }
+    }
+
+    public class FeatureSelection : FeatureHighlighting, IFeatureSelection
     {
         ISelectionSet _selectionSet = new IDSelectionSet();
 

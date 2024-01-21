@@ -1,4 +1,5 @@
-﻿using gView.Framework.Core.Data;
+﻿using gView.Blazor.Core.Extensions;
+using gView.Framework.Core.Data;
 using gView.Framework.Core.Symbology;
 using gView.Framework.Core.UI;
 using System.Collections.Generic;
@@ -90,6 +91,35 @@ static public class TocElementExtensions
     static public bool IsGroupElement(this ITocElement tocElement)
         => tocElement.ElementType == TocElementType.ClosedGroup
            || tocElement.ElementType == TocElementType.OpenedGroup;
+
+    static public bool IsQueryable(this ITocElement tocElement)
+        => tocElement.CollectQueryableLayers().Any();
+
+    static public IEnumerable<ILayer> CollectQueryableLayers(this ITocElement tocElement, List<ILayer>? appendTo = null)
+    {
+        appendTo ??= new();
+
+        if (tocElement?.IsGroupElement() == true)
+        {
+            var childTocElements = tocElement.TOC.GetChildElements(tocElement);
+            foreach (var childTocElement in childTocElements?.Where(e => !e.IsGroupElement()) ?? [])
+            {
+                childTocElement.CollectQueryableLayers(appendTo);
+            }
+        }
+        else
+        {
+            foreach (var layer in tocElement?.Layers ?? [])
+            {
+                if (layer?.Class is IFeatureClass || layer?.Class is IRasterClass)
+                {
+                    appendTo.Add(layer);
+                }
+            }
+        }
+
+        return appendTo;
+    }
 
     static public string FullPath(this ITocElement? tocElement,
                                   string rootName = "",

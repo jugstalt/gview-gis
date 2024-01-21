@@ -522,7 +522,7 @@ namespace gView.Framework.Common
             IDataset,
             ITool,
             IExTool,
-            ICartoTool,
+            ICartoButton,
             IExplorerTool,
             IExplorerToolCommand,
             IDatasetElementContextMenuItem,

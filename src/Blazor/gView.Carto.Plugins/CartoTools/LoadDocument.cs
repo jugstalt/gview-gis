@@ -1,22 +1,20 @@
 ﻿using gView.Blazor.Core.Extensions;
 using gView.Carto.Core;
-using gView.Carto.Core.Abstraction;
 using gView.Carto.Core.Services.Abstraction;
 using gView.DataExplorer.Razor.Components.Dialogs.Filters;
 using gView.DataExplorer.Razor.Components.Dialogs.Models;
 using gView.Framework.Blazor;
+using gView.Framework.Carto.Abstraction;
 using gView.Framework.Core.Common;
 
 namespace gView.Carto.Plugins.CartoTools;
 
 [RegisterPlugIn("891D1698-1D8C-4785-9197-D8EFD8492C23")]
-public class LoadDocument : ICartoInitialTool
+public class LoadDocument : ICartoInitialButton
 {
     public string Name => "Open Map";
 
     public string ToolTip => "Open an existing map document";
-
-    public ToolType ToolType => ToolType.Command;
 
     public string Icon => "basic:folder-white";
 
@@ -34,7 +32,7 @@ public class LoadDocument : ICartoInitialTool
         return true;
     }
 
-    async public Task<bool> OnEvent(ICartoApplicationScopeService scope)
+    async public Task<bool> OnClick(ICartoApplicationScopeService scope)
     {
         var lastAccessedDocuments = await scope.Settings.GetLastAccessedDocuments() ?? [];
 

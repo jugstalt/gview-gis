@@ -865,6 +865,11 @@ namespace gView.Framework.Core.Data
         void FireSelectionChangedEvent();
     }
 
+    public interface IFeatureHighlighting
+    {
+        IQueryFilter? FeatureHighlightFilter { get; set; }
+    }
+
     public interface IConnectionString
     {
         string ConnectionString { get; set; }

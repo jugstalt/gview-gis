@@ -1,8 +1,8 @@
 ﻿using gView.Blazor.Core.Extensions;
 using gView.Carto.Core;
-using gView.Carto.Core.Abstraction;
 using gView.Carto.Core.Services.Abstraction;
 using gView.Framework.Blazor.Models;
+using gView.Framework.Carto.Abstraction;
 using gView.Framework.Cartography;
 using gView.Framework.Core.Common;
 using gView.Framework.Core.Data;
@@ -11,13 +11,11 @@ using gView.Framework.Data;
 namespace gView.Carto.Plugins.CartoTools;
 
 [RegisterPlugIn("EB3EDA0D-1B27-4314-B1DE-915E27B27982")]
-internal class LayerSettings : ICartoTool
+internal class LayerSettings : ICartoButton
 {
     public string Name => "Layer Settings";
 
     public string ToolTip => "";
-
-    public ToolType ToolType => ToolType.Command;
 
     public string Icon => "basic:settings";
 
@@ -33,7 +31,7 @@ internal class LayerSettings : ICartoTool
     public bool IsEnabled(ICartoApplicationScopeService scope)
         => scope.SelectedTocTreeNode is not null;
 
-    async public Task<bool> OnEvent(ICartoApplicationScopeService scope)
+    async public Task<bool> OnClick(ICartoApplicationScopeService scope)
     {
         await scope.EventBus.FireCloseTocInlineEditorsAsync();
 

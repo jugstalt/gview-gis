@@ -1,22 +1,20 @@
 ﻿using gView.Carto.Core;
-using gView.Carto.Core.Abstraction;
 using gView.Carto.Core.Services.Abstraction;
 using gView.Carto.Plugins.Extensions;
 using gView.DataExplorer.Razor.Components.Dialogs.Filters;
 using gView.DataExplorer.Razor.Components.Dialogs.Models;
 using gView.Framework.Blazor;
+using gView.Framework.Carto.Abstraction;
 using gView.Framework.Core.Common;
 
 namespace gView.Carto.Plugins.CartoTools;
 
 [RegisterPlugIn("7C9CA04B-7DFC-4028-8CEF-25D2A02272ED")]
-internal class AddData : ICartoInitialTool
+internal class AddData : ICartoInitialButton
 {
     public string Name => "Add Data";
 
     public string ToolTip => "Add spatial data to map";
-
-    public ToolType ToolType => ToolType.Command;
 
     public string Icon => "basic:database-plus";
 
@@ -31,7 +29,7 @@ internal class AddData : ICartoInitialTool
 
     public bool IsEnabled(ICartoApplicationScopeService scope) => true;
 
-    async public Task<bool> OnEvent(ICartoApplicationScopeService scope)
+    async public Task<bool> OnClick(ICartoApplicationScopeService scope)
     {
         var model = await scope.ShowKnownDialog(KnownDialogs.ExplorerDialog,
                                                        title: "Add Data",

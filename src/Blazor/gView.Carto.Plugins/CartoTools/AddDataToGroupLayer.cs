@@ -1,11 +1,11 @@
 ﻿using gView.Carto.Core;
-using gView.Carto.Core.Abstraction;
 using gView.Carto.Core.Models.Tree;
 using gView.Carto.Core.Services.Abstraction;
 using gView.Carto.Plugins.Extensions;
 using gView.DataExplorer.Razor.Components.Dialogs.Filters;
 using gView.DataExplorer.Razor.Components.Dialogs.Models;
 using gView.Framework.Blazor;
+using gView.Framework.Carto.Abstraction;
 using gView.Framework.Core.Common;
 using gView.Framework.Core.Data;
 using gView.Framework.Data;
@@ -13,13 +13,11 @@ using gView.Framework.Data;
 namespace gView.Carto.Plugins.CartoTools;
 
 [RegisterPlugIn("14A1B7E6-6D73-4062-A7BF-5CB7600A6DB3")]
-internal class AddDataToGroupLayer : ICartoTool
+internal class AddDataToGroupLayer : ICartoButton
 {
     public string Name => "Add Data";
 
     public string ToolTip => "Add spatial data to group";
-
-    public ToolType ToolType => ToolType.Command;
 
     public string Icon => "basic:database-plus";
 
@@ -37,7 +35,7 @@ internal class AddDataToGroupLayer : ICartoTool
         return scope.SelectedTocTreeNode is TocParentNode;
     }
 
-    async public Task<bool> OnEvent(ICartoApplicationScopeService scope)
+    async public Task<bool> OnClick(ICartoApplicationScopeService scope)
     {
         var groupLayer = (scope.SelectedTocTreeNode as TocParentNode)?.TocElement?.Layers?.FirstOrDefault() as IGroupLayer;
 

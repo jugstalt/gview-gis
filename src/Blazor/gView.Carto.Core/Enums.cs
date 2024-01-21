@@ -1,12 +1,14 @@
-﻿namespace gView.Carto.Core;
+﻿using System;
 
+namespace gView.Carto.Core;
+
+[Flags]
 public enum ToolType
 {
-    Rubberband,
-    Click,
-    Command,
-    Sketch,
-    Userdefined
+    Userdefined = 0,
+    Click = 1,
+    BBox = 2,
+    Sketch = 4,
 }
 
 public enum CartoToolTarget
