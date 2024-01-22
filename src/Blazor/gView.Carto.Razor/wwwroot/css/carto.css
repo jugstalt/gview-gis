@@ -484,10 +484,11 @@
 .mud-table-row.highlighted,
 .mud-table-row.highlighted:hover,
 .mud-table-row.highlighted .mud-table-cell {
-    border-top: 2px solid #ffa;
+    /*border-top: 2px solid #ffa;
     border-bottom: 2px solid #ffa;
-    /*background-color: #ffa !important;
+    background-color: #ffa !important;
     color: #333 !important;*/
+    color: #aa0 !important;
 }
 
 /* Checkbox in toc */
