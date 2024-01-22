@@ -471,12 +471,25 @@
     white-space: nowrap;
 }
 
+.mud-table-row.table-base-row {
+    cursor:pointer;
+}
 .mud-table-row.selected,
 .mud-table-row.selected:hover,
 .mud-table-row.selected .mud-table-cell {
     background-color: var(--mud-palette-primary) !important;
     color: var(--mud-palette-primary-text) !important;
 }
+
+.mud-table-row.highlighted,
+.mud-table-row.highlighted:hover,
+.mud-table-row.highlighted .mud-table-cell {
+    border-top: 2px solid #ffa;
+    border-bottom: 2px solid #ffa;
+    /*background-color: #ffa !important;
+    color: #333 !important;*/
+}
+
 /* Checkbox in toc */
 .mud-input-control.mud-input-control-boolean-input {
     position: relative;

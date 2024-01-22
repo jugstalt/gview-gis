@@ -16,8 +16,9 @@
 {
     <MudTable Items="_rows" Dense="true" Hover="true"
               T="IRow"
-              RowClassFunc="((row, i) => _selectionSet.Contains(row) ? SelectedRowClass : String.Empty)"
-              Filter="FilterFunc"
+              RowClassFunc="RowClassFunc"
+              Filter="FilterFunc" 
+              OnRowClick="OnRowClick"
               FixedHeader="true" 
               Height="calc(100% - 95px)"
               Virtualize="true">
@@ -183,6 +184,7 @@
     [Parameter] public Func<ILayer, DataTableProperties>? ProvideTableProperties { get; set; }
 
     private const string SelectedRowClass = "selected";
+    private const string HighlightedRowClass = "highlighted";
 
     protected ILayer? _currentLayer;
     protected ITableClass? _tableClass;
@@ -192,6 +194,7 @@
 
     private ICursor? _cursor;
     private bool _loading = false;
+    private List<int> _highlightedRows = new();
 
     protected override Task OnInitializedAsync() => HandleAsync(async () =>
     {
@@ -385,6 +388,11 @@
         return true;
     }
 
+    private string RowClassFunc(IRow row, int index)
+
+        => $"table-base-row {(_selectionSet.Contains(row) ? SelectedRowClass : String.Empty)} {(_highlightedRows.Contains(row.OID) ? HighlightedRowClass : String.Empty)}";
+
+
     private bool? VisibleRowSelectionState()
     {
         if (_tableProperties?.CanSelect == true
@@ -435,6 +443,8 @@
             boundsWgs84.Srs = 4326;
 
             await OnZoomToClicked.InvokeAsync(boundsWgs84);
+
+            await HighlightRows(rows);
         }
     }
 
@@ -464,9 +474,33 @@
         else if(_tableProperties.DataMode == Mode.Identify 
             && _tableProperties.IdentifyFilter is not null)
         {
-            await CreateCursor(_tableProperties.IdentifyFilter);
+            await CreateCursor(_tableProperties.IdentifyFilter.Clone() as IQueryFilter);
             await LoadData();
         }
+    }
+
+    private Task HighlightRows(IEnumerable<IRow>? rows)
+    {
+        if (_currentLayer is null)
+        {
+            return Task.CompletedTask;
+        }
+
+        var hightlightFilter = !String.IsNullOrEmpty(_tableClass?.IDFieldName) && rows is not null && rows.Any()
+            ? new RowIDFilter(_tableClass.IDFieldName, rows.Select(r=>r.OID).ToList())
+            : null;
+
+        _highlightedRows.Clear();
+        if(hightlightFilter is not null)
+        {
+            _highlightedRows.AddRange(rows!.Select(r => r.OID).ToList());
+        }
+
+        return OnHighlightFeatures.InvokeAsync(
+                    new HighlightFeaturesEventArgs(
+                        _currentLayer,
+                        hightlightFilter)
+            );
     }
 
     #region Razor Event Hanldlers
@@ -637,6 +671,8 @@
             boundsWgs84.Srs = 4326;
 
             await OnZoomToClicked.InvokeAsync(boundsWgs84);
+
+            await HighlightRows([row]);
         }
     });
 
@@ -759,6 +795,9 @@
             await this.RebuildFilterWhereClause();
         }
     });
+
+    private Task OnRowClick(TableRowClickEventArgs<IRow> args)
+        => HighlightRows(_highlightedRows.Count == 1 && _highlightedRows.Contains(args.Item.OID) ? null : [args.Item]);  // if row alreaded highlighted remove highlight (null)
 
     #endregion
 

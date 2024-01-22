@@ -96,19 +96,19 @@ namespace gView.Framework.Cartography.Rendering
                     ((SimpleFillSymbol)symbol).Color = ArgbColor.FromArgb(100, 255, 255, 0);
                     ((SimpleFillSymbol)symbol).SmoothingMode = SymbolSmoothing.AntiAlias;
                     ((SimpleFillSymbol)symbol).OutlineSymbol = new SimpleLineSymbol();
-                    ((SimpleLineSymbol)((SimpleFillSymbol)symbol).OutlineSymbol).Color = ArgbColor.Yellow;
-                    ((SimpleLineSymbol)((SimpleFillSymbol)symbol).OutlineSymbol).Width = 5;
+                    ((SimpleLineSymbol)((SimpleFillSymbol)symbol).OutlineSymbol).Color = ArgbColor.FromArgb(150, 255, 255, 0);
+                    ((SimpleLineSymbol)((SimpleFillSymbol)symbol).OutlineSymbol).Width = 3;
                     ((SimpleLineSymbol)((SimpleFillSymbol)symbol).OutlineSymbol).Smoothingmode = SymbolSmoothing.AntiAlias;
                     break;
                 case GeometryType.Polyline:
                     symbol = new SimpleLineSymbol();
-                    ((SimpleLineSymbol)symbol).Color = ArgbColor.Yellow;
+                    ((SimpleLineSymbol)symbol).Color = ArgbColor.FromArgb(150, 255, 255, 0);
                     ((SimpleLineSymbol)symbol).Width = 5;
                     ((SimpleLineSymbol)symbol).Smoothingmode = SymbolSmoothing.AntiAlias;
                     break;
                 case GeometryType.Point:
                     symbol = new SimplePointSymbol();
-                    ((SimplePointSymbol)symbol).Color = ArgbColor.Yellow;
+                    ((SimplePointSymbol)symbol).Color = ArgbColor.FromArgb(150, 255, 255, 0);
                     ((SimplePointSymbol)symbol).Size = 10;
                     ((SimplePointSymbol)symbol).Smoothingmode = SymbolSmoothing.AntiAlias;
                     break;

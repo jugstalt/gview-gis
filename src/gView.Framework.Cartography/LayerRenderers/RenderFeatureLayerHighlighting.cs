@@ -3,11 +3,12 @@ using gView.Framework.Core.Carto;
 using gView.Framework.Core.Common;
 using gView.Framework.Core.Data;
 using gView.Framework.Core.Data.Cursors;
+using gView.Framework.Core.Data.Filters;
 using gView.Framework.Core.Geometry;
 using gView.Framework.Core.Symbology;
-using gView.Framework.Data;
-using gView.Framework.Symbology;
-using gView.GraphicsEngine.Extensions;
+using gView.Framework.Data.Filters;
+using gView.Framework.Geometry;
+using gView.Framework.Geometry.GeoProcessing.Clipper;
 using System.Threading.Tasks;
 
 namespace gView.Framework.Cartography.LayerRenderers
@@ -54,90 +55,90 @@ namespace gView.Framework.Cartography.LayerRenderers
                 return;
             }
 
-            IDataset dataset = _map[_layer];
-            if (dataset == null)
+            var filter = ((IFeatureHighlighting)_layer).FeatureHighlightFilter.Clone() as IQueryFilter;
+
+            if (filter == null)
             {
                 return;
             }
 
-            if (!(dataset is IFeatureDataset))
+            // clip with map envelope
+            if (filter is ISpatialFilter spatialFilter 
+                && spatialFilter.FilterSpatialReference is not null
+                && _map.SpatialReference is not null)
             {
-                return;
+                var mapBounds = new Envelope(
+                    GeometricTransformerFactory.Transform2D(
+                        new Envelope(_map.Envelope),
+                        _map.SpatialReference,
+                        spatialFilter.FilterSpatialReference).Envelope);
+
+                spatialFilter.Geometry = spatialFilter.Geometry switch
+                {
+                    IEnvelope env => env.ToPolygon(0).Clip(mapBounds),
+                    IPolygon poly => poly.Clip(mapBounds),
+                    _ => spatialFilter.Geometry
+                };
+
+                if(spatialFilter.Geometry == null)
+                {
+                    return;
+                }
             }
 
-            IGeometry filterGeom = _map.Display.Envelope;
+            filter.SubFields = fClass.ShapeFieldName;
 
-            if (_map.Display.GeometricTransformer != null)
+            // append layer defintion query
+            if (_layer is IFeatureLayer featureLayer)
             {
-                filterGeom = MapHelper.Project(fClass, _map.Display);
-                //filterGeom = (IGeometry)_map.Display.GeometricTransformer.InvTransform2D(filterGeom);
+                filter.WhereClause = string.IsNullOrEmpty(filter.WhereClause)
+                    ? featureLayer.FilterQuery?.WhereClause
+                    : string.IsNullOrEmpty(featureLayer.FilterQuery?.WhereClause)
+                        ? filter.WhereClause
+                        : $"({filter.WhereClause}) and ({featureLayer.FilterQuery?.WhereClause})";
+            }
+
+            ISymbol symbol = null;
+            var pluginManager = new PlugInManager();
+            IFeatureRenderer renderer = pluginManager.CreateInstance(KnownObjects.Carto_SimpleRenderer) as IFeatureRenderer;
+            if (renderer is ISymbolCreator)
+            {
+                symbol = ((ISymbolCreator)renderer).CreateStandardHighlightSymbol(_layer.LayerGeometryType);
+            }
+            if (symbol == null)
+            {
+                return;
             }
 
             int counter = 0;
-            while (true)
+            using (IFeatureCursor fCursor = fClass is ISelectionCache
+                                                ? ((ISelectionCache)fClass).GetSelectedFeatures(_map.Display)
+                                                : await fClass.GetFeatures(filter))
             {
-                bool hasMore = false;
-
-                var filter = ((IFeatureHighlighting)_layer).FeatureHighlightFilter;
-
-                if (filter == null)
+                if (fCursor != null)
                 {
-                    return;
-                }
+                    IFeature feature;
 
-                filter.SubFields = fClass.ShapeFieldName;
-                //filter.AddField(fClass.ShapeFieldName);
-
-                //todo: append layer defintion query
-                //todo: intersect with map envelope
-
-                ISymbol symbol = null;
-                var pluginManager = new PlugInManager();
-                IFeatureRenderer renderer = pluginManager.CreateInstance(KnownObjects.Carto_SimpleRenderer) as IFeatureRenderer;
-                if (renderer is ISymbolCreator)
-                {
-                    symbol = ((ISymbolCreator)renderer).CreateStandardHighlightSymbol(_layer.LayerGeometryType);
-                }
-                if (symbol == null)
-                {
-                    return;
-                }
-
-                using (IFeatureCursor fCursor = fClass is ISelectionCache ? ((ISelectionCache)fClass).GetSelectedFeatures(_map.Display) : await fClass.GetFeatures(filter))
-                {
-                    if (fCursor != null)
+                    while ((feature = await fCursor.NextFeature()) != null)
                     {
-                        //_layer.SelectionRenderer.Draw(_map, fCursor, DrawPhase.Geography, _cancelTracker);
-                        IFeature feature;
-                        while ((feature = await fCursor.NextFeature()) != null)
+                        if (_cancelTracker?.Continue == false)
                         {
-                            if (_cancelTracker != null)
+                            break;
+                        }
+
+                        _map.Draw(symbol, feature.Shape);
+
+                        counter++;
+
+                        if (_isServiceMap == false)
+                        {
+                            if (counter % 100 == 0)
                             {
-                                if (!_cancelTracker.Continue)
-                                {
-                                    break;
-                                }
-                            }
-
-                            symbol.Draw(_map, feature.Shape);
-
-                            counter++;
-
-                            if (_isServiceMap == false)
-                            {
-                                if (counter % 100 == 0)
-                                {
-                                    _mapRenderer?.FireRefreshMapView(DrawPhase.Highlighing);
-                                }
+                                _mapRenderer?.FireRefreshMapView(DrawPhase.Highlighing);
                             }
                         }
-                        fCursor.Dispose();
                     }
-                }
-
-                if (!hasMore)
-                {
-                    break;
+                    fCursor.Dispose();
                 }
             }
         }

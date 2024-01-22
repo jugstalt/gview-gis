@@ -191,7 +191,9 @@ namespace gView.Framework.Cartography.LayerRenderers
 
                 selectionRenderer.PrepareQueryFilter(_layer, filter);
 
-                using (IFeatureCursor fCursor = fClass is ISelectionCache ? ((ISelectionCache)fClass).GetSelectedFeatures(_map.Display) : await fClass.GetFeatures(filter))
+                using (IFeatureCursor fCursor = fClass is ISelectionCache 
+                                                    ? ((ISelectionCache)fClass).GetSelectedFeatures(_map.Display) 
+                                                    : await fClass.GetFeatures(filter))
                 {
                     if (fCursor != null)
                     {

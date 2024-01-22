@@ -12,7 +12,6 @@ using gView.Framework.Geometry;
 using gView.Framework.Geometry.GeoProcessing;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -93,7 +92,7 @@ public class MapRendererInstance : Map, IMapRenderer
 
     async public Task<bool> RefreshMap(DrawPhase drawPhase, ICancelTracker cancelTracker)
     {
-        if(this.DrawPhase != DrawPhase.Empty)
+        if (this.DrawPhase != DrawPhase.Empty)
         {
             throw new Exception("RefreshMap can't only called once for any instance of MapRendererInstance2. Create a new Instance to render another Map Impage.");
         }
@@ -450,7 +449,7 @@ public class MapRendererInstance : Map, IMapRenderer
 
                 #region Draw Highlighting
 
-                if(Bit.Has(DrawPhase, DrawPhase.Highlighing))
+                if (Bit.Has(DrawPhase, DrawPhase.Highlighing))
                 {
                     foreach (IDatasetElement layer in MapElements)
                     {
@@ -459,7 +458,7 @@ public class MapRendererInstance : Map, IMapRenderer
                             break;
                         }
 
-                        if(layer is IFeatureHighlighting featureHighlighting
+                        if (layer is IFeatureHighlighting featureHighlighting
                             && featureHighlighting.FeatureHighlightFilter is not null)
                         {
                             if (layer is IFeatureLayer featureLayer)
