@@ -56,6 +56,8 @@
                 }
                 <MudIconButton OnClick="OnSetOrderBy" 
                                Icon="@IconService.FromString("webgis:construct-swap-direction")" />
+                <MudIconButton OnClick="OnFieldsSettings"
+                               Icon="@IconService.FromString("basic:resize-width")" />
             </GvToolBarToolGroup>
             
             @if (HasSelection())
@@ -661,6 +663,27 @@
             _tableProperties.OrderByClause != model.OrderByClause)
         {
             _tableProperties.OrderByClause = model.OrderByClause;
+            await RefreshData();
+        }
+    });
+
+    private Task OnFieldsSettings() => HandleAsync(async () =>
+    {
+        if (_tableProperties is null
+            || ApplicationScope is null)
+        {
+            return;
+        }
+
+        var model = await ApplicationScope.ShowModalDialog(typeof(gView.Razor.Dialogs.LayerFieldsDialog),
+            "Field Settings",
+            new LayerFieldsDialogModel()
+                {
+                    Layer = _currentLayer as IFeatureLayer
+                });
+
+        if (model is not null)
+        {
             await RefreshData();
         }
     });

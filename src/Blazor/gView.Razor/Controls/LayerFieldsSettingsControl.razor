@@ -1,5 +1,8 @@
+@using gView.Framework.Core.Data
+@using gView.Framework.Data
+
 @inherits BaseHandler
-@inject ICartoApplicationScopeService AppScope
+@inject IApplicationScopeFactory AppScope
 
 @if(Layer?.Fields is not null)
 {
