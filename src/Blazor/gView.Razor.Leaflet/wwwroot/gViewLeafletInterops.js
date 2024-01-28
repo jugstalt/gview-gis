@@ -85,7 +85,6 @@ var gViewLeaflet = new function () {
     };
 
     this.connectBBoxEvents = function (map) {
-        let bboxMode = false;
 
         let _enableBBoxToolHandling = function (map) {
 
@@ -104,32 +103,14 @@ var gViewLeaflet = new function () {
         };
 
         let toolBoxLayer;
+        let bboxStartLatLng;
 
-        map.on('mousedown', function (e) {
-            bboxMode = e.originalEvent.ctrlKey;
-
-            if (bboxMode) {
-                _enableBBoxToolHandling(map);
-
-                let bounds = L.latLngBounds(e.latlng, e.latlng);
-                toolBoxLayer = L.rectangle(bounds, { color: '#ff7800', weight: 2 });
-                map.addLayer(toolBoxLayer);
-            }
-        });
-        map.on('mousemove', function (e) {
-            if (bboxMode) {
-                if (toolBoxLayer) {
-                    let bounds = L.latLngBounds(toolBoxLayer.getBounds().getNorthWest(), e.latlng);
-                    toolBoxLayer.setBounds(bounds);
-                }
-            }
-        });
-        map.on('mouseup', function (e) {
-            if (bboxMode) {
+        let finishAndFireBbox = function () {
+            if (bboxStartLatLng) {
                 map.removeLayer(toolBoxLayer);
 
                 _disableBBoxToolHandling(map);
-                bboxMode = false;
+                bboxStartLatLng = null;
 
                 var eventArgs = {
                     northWest: toolBoxLayer.getBounds().getNorthWest(),
@@ -139,6 +120,51 @@ var gViewLeaflet = new function () {
                 //console.log('bbox-args', eventArgs);
 
                 map.fire('bbox', eventArgs);
+            }
+        }
+
+        map.on('mousedown', function (e) {
+            bboxStartLatLng = e.originalEvent.ctrlKey
+                ? e.latlng
+                : null;
+
+            if (bboxStartLatLng) {
+                _enableBBoxToolHandling(map);
+
+                bboxStartLatLng = e.latlng;
+                let bounds = L.latLngBounds(bboxStartLatLng, bboxStartLatLng);
+                toolBoxLayer = L.rectangle(bounds, { color: '#ff7800', weight: 2 });
+                map.addLayer(toolBoxLayer);
+            }
+        });
+        map.on('mousemove', function (e) {
+            if (bboxStartLatLng) {
+                if (toolBoxLayer) {
+                    let minLat = Math.min(bboxStartLatLng.lat, e.latlng.lat);
+                    let maxLat = Math.max(bboxStartLatLng.lat, e.latlng.lat);
+                    let minLng = Math.min(bboxStartLatLng.lng, e.latlng.lng);
+                    let maxLng = Math.max(bboxStartLatLng.lng, e.latlng.lng);
+
+                    toolBoxLayer.setBounds(
+                        L.latLngBounds(
+                            L.latLng(minLat, minLng),
+                            L.latLng(maxLat, maxLng)
+                        )
+                    );
+                }
+            }
+        });
+        map.on('mouseup', function (e) {
+            finishAndFireBbox();
+        });
+        map.on('mouseout', function (e) {
+            finishAndFireBbox();
+        });
+        map.on('keyup', function (e) {
+            if (e.originalEvent.ctrlKey == false && bboxStartLatLng) {
+                bboxStartLatLng = null;
+                map.removeLayer(toolBoxLayer);
+                _disableBBoxToolHandling(map);
             }
         });
     }
