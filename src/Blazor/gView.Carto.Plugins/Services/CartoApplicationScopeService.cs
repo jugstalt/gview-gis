@@ -71,6 +71,11 @@ public class CartoApplicationScopeService : ApplictionBusyHandler, ICartoApplica
                 sRefService.GetSpatialReference($"epsg:{crsService.GetDefaultOrAny().Epsg}").Result;
         }
 
+        foreach (var tool in _toolService.ScopedTools)
+        {
+            tool.InitializeScope(this);
+        }
+
         _eventBus.OnLayerSettingsChangedAsync += HandleLayerSettingsChangedAsync;
         _eventBus.OnCartoDocumentLoadedAsync += HandleCartoDocumentTouchedAsync;
 

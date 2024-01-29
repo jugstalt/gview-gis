@@ -17,5 +17,15 @@ public class CartoInteractiveToolService : ICartoInteractiveToolService
     }
 
     public ICartoInteractiveTool? CurrentTool { get; set; }
+
+    public T? GetCurrentToolContext<T>()
+        where T : class
+        => this.CurrentTool is null 
+            ? null
+            : _scopedTools
+                    .Where(t => t.GetType().Equals(this.CurrentTool.GetType()))
+                    .FirstOrDefault()?.ToolContext as T;
+
     public IEnumerable<ICartoInteractiveTool> ScopedTools => _scopedTools;
+            
 }

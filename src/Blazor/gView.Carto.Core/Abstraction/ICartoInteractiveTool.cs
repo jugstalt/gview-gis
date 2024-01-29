@@ -11,5 +11,9 @@ public interface ICartoInteractiveTool : ICartoInteractiveButton
 
     Type UIComponent { get; }
 
+    object? ToolContext { get; }
+
+    void InitializeScope(ICartoApplicationScopeService scope);
+
     Task<bool> OnEvent(ICartoApplicationScopeService scope, MapEvent mapEvent);
 }

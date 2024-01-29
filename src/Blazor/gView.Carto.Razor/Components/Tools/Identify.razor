@@ -1,13 +1,13 @@
 @inherits BaseHandler
 @implements IDisposable
 
-@inject ICartoApplicationScopeService AppService
+@inject ICartoApplicationScopeService AppScope
 @inject CartoEventBusService EventBus
 
-@if (AppService.SelectedTocTreeNode?.TocElement.IsQueryable() == true)
+@if (AppScope.SelectedTocTreeNode?.TocElement.IsQueryable() == true)
 {
     <div class="info-box" style="width:200px">
-        <strong>Identify @(AppService.SelectedTocTreeNode.TocElement.Name):</strong><br/> Click to map or draw a box with pressed CTRL-Key
+        <strong>Identify @(AppScope.SelectedTocTreeNode.TocElement.Name):</strong><br /> Click to map or draw a box with pressed CTRL-Key
     </div>
 } 
 else

@@ -1,6 +1,8 @@
 ﻿using gView.Carto.Core;
 using gView.Carto.Core.Models.MapEvents;
 using gView.Carto.Core.Services.Abstraction;
+using gView.Carto.Plugins.Extensions;
+using gView.Carto.Razor.Components.Tools.Context;
 using gView.Framework.Carto.Abstraction;
 using gView.Framework.Core.Common;
 
@@ -28,14 +30,34 @@ internal class Network : ICartoTool
 
     }
 
-    public bool IsEnabled(ICartoApplicationScopeService scope) => true;
+    public bool IsEnabled(ICartoApplicationScopeService scope) => scope.HasNetworkClasses();
 
     public Task<bool> OnClick(ICartoApplicationScopeService scope)
-        => Task.FromResult(true);
+    {
+        var networkContext = scope.Tools.GetCurrentToolContext<NetworkContext>();
+
+        if (networkContext is null)
+        {
+            throw new Exception("Can't determine network context");
+        }
+
+        networkContext.NetworkLayers = scope.NetworkLayers();
+        if (networkContext.CurrentNetworkLayer is null
+            || networkContext.NetworkLayers.Contains(networkContext.CurrentNetworkLayer))
+        {
+            networkContext.CurrentNetworkLayer = networkContext.NetworkLayers.FirstOrDefault();
+        }
+
+        return Task.FromResult(true);
+    }
 
     #endregion
 
     #region ICartoTool
+
+    public object? ToolContext { get; private set; } = null;
+
+    public void InitializeScope(ICartoApplicationScopeService scope) { this.ToolContext = new NetworkContext(); }
 
     public Type UIComponent => typeof(gView.Carto.Razor.Components.Tools.Network);
 
@@ -43,6 +65,7 @@ internal class Network : ICartoTool
     {
         return true;
     }
+
 
     #endregion
 }

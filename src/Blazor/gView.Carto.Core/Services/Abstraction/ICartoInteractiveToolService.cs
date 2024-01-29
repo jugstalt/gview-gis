@@ -7,5 +7,7 @@ public interface ICartoInteractiveToolService
 {
     public ICartoInteractiveTool? CurrentTool { get; set; }
 
+    public T? GetCurrentToolContext<T>() where T : class;
+
     public IEnumerable<ICartoInteractiveTool> ScopedTools { get; }
 }

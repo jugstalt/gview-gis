@@ -44,6 +44,10 @@ internal class Identify : ICartoTool
 
     public Type UIComponent => typeof(gView.Carto.Razor.Components.Tools.Identify);
 
+    public object? ToolContext { get; } = null;
+
+    public void InitializeScope(ICartoApplicationScopeService scope) { }
+
     async public Task<bool> OnEvent(ICartoApplicationScopeService scope, MapEvent mapEvent)
     {
         var queryLayer = scope.SelectedTocTreeNode?.TocElement.CollectQueryableLayers() ?? [];

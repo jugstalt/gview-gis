@@ -1,4 +1,4 @@
-@inherits BaseHandler
+﻿@inherits BaseHandler
 @implements IDisposable
 
 @inject PluginManagerService PluginManager
@@ -71,9 +71,10 @@
             <div class="carto-tool-box">
                 <div class="carto-tool-sub-box current-tool">
                     <DynamicComponent Type="AppScope.Tools.CurrentTool.UIComponent" />
-                    <MudButton OnClick="() => AppScope.Tools.CurrentTool = null">
-                        Close
-                    </MudButton>
+                    <div style="position:absolute;right:0px;top:0px;width:16px;height:17px;cursor:pointer"
+                         @onclick="() => AppScope.Tools.CurrentTool = null">
+                        ✕
+                    </div>
                     <div class="title">@($"Tool: {AppScope.Tools.CurrentTool.Name}")</div>
                 </div>
             </div>
@@ -136,6 +137,7 @@
         _cartoAppService = (ICartoApplicationScopeService)AppScope;
 
         EventBus.OnSelectedTocTreeNodeChangedAsync += HandleSelectedTocTreeNodeChangedAsync;
+        EventBus.OnCartoDocumentLoadedAsync += HandleCartoDocumentLoadedAsync;
     });
 
     private Task OnButtonClickAsync(ICartoButton cartoButton) => base.HandleAsync(() => {
@@ -148,19 +150,18 @@
         return cartoButton.OnClick(AppScope);
     });
 
-    async private Task DarkmodeClick()
-    {
-        await ToggleDarkmode.InvokeAsync();
-    }
+    private Task DarkmodeClick() => ToggleDarkmode.InvokeAsync();
+    
 
-    private async Task HandleSelectedTocTreeNodeChangedAsync(TocTreeNode? selectedTreeNode)
-    {
-        await this.InvokeAsync(() =>
-            StateHasChanged());
-    }
+    private Task HandleSelectedTocTreeNodeChangedAsync(TocTreeNode? selectedTreeNode)
+        => base.InvokeAsync(() => StateHasChanged());
+
+    private Task HandleCartoDocumentLoadedAsync(ICartoDocument cartoDocument)
+        => base.InvokeAsync(() => StateHasChanged());
 
     public void Dispose()
     {
         EventBus.OnSelectedTocTreeNodeChangedAsync -= HandleSelectedTocTreeNodeChangedAsync;
+        EventBus.OnCartoDocumentLoadedAsync -= HandleCartoDocumentLoadedAsync;
     }
 }

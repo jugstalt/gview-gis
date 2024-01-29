@@ -1,7 +1,37 @@
-<div>
-    Network Tools
-</div>
+@using gView.Framework.Core.Network
+
+@inherits BaseHandler
+@implements IDisposable
+
+@inject ICartoApplicationScopeService AppScope
+@inject CartoEventBusService EventBus
+
+@if (_networkContext is not null)
+{
+    <MudSelect T="ILayer" Dense="true"
+               Label="Select Network"
+               @bind-Value="_networkContext.CurrentNetworkLayer">
+        @foreach (var networkLayer in _networkContext.NetworkLayers)
+        {
+            <MudSelectItem Value="networkLayer">
+                @networkLayer.Title
+            </MudSelectItem>
+        }
+    </MudSelect>
+}
 
 @code {
+    private NetworkContext? _networkContext;
 
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+
+        _networkContext = AppScope.Tools.GetCurrentToolContext<NetworkContext>();
+    }
+
+    public void Dispose()
+    {
+
+    }
 }
