@@ -1,5 +1,6 @@
 ﻿using gView.Blazor.Core.Extensions;
 using gView.Framework.Core.Data;
+using gView.Framework.Core.Network;
 using gView.Framework.Core.Symbology;
 using gView.Framework.Core.UI;
 using System.Collections.Generic;
@@ -119,6 +120,17 @@ static public class TocElementExtensions
         }
 
         return appendTo;
+    }
+
+    static public IEnumerable<ILayer> CollectionNetworkLayers(this ITocElement tocElement)
+    {
+        foreach (var layer in tocElement?.Layers ?? [])
+        {
+            if (layer?.Class is INetworkFeatureClass)
+            {
+                yield return layer;
+            }
+        }
     }
 
     static public string FullPath(this ITocElement? tocElement,

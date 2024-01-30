@@ -1,10 +1,12 @@
 ﻿using gView.Carto.Core;
+using gView.Carto.Core.Extensions;
 using gView.Carto.Core.Models.MapEvents;
 using gView.Carto.Core.Services.Abstraction;
 using gView.Carto.Plugins.Extensions;
 using gView.Carto.Razor.Components.Tools.Context;
 using gView.Framework.Carto.Abstraction;
 using gView.Framework.Core.Common;
+using gView.Framework.Data.Extensions;
 
 namespace gView.Carto.Plugins.CartoTools;
 
@@ -30,7 +32,8 @@ internal class Network : ICartoTool
 
     }
 
-    public bool IsEnabled(ICartoApplicationScopeService scope) => scope.HasNetworkClasses();
+    public bool IsEnabled(ICartoApplicationScopeService scope)
+        => scope.SelectedTocTreeNode?.TocElement.CollectionNetworkLayers()?.Any() == true;
 
     public Task<bool> OnClick(ICartoApplicationScopeService scope)
     {
@@ -42,11 +45,7 @@ internal class Network : ICartoTool
         }
 
         networkContext.NetworkLayers = scope.NetworkLayers();
-        if (networkContext.CurrentNetworkLayer is null
-            || networkContext.NetworkLayers.Contains(networkContext.CurrentNetworkLayer))
-        {
-            networkContext.CurrentNetworkLayer = networkContext.NetworkLayers.FirstOrDefault();
-        }
+        networkContext.CurrentNetworkLayer = scope.SelectedTocTreeNode?.TocElement.CollectionNetworkLayers().FirstOrDefault();
 
         return Task.FromResult(true);
     }
@@ -55,9 +54,17 @@ internal class Network : ICartoTool
 
     #region ICartoTool
 
-    public object? ToolContext { get; private set; } = null;
+    private NetworkContext? _networkContext = null;
 
-    public void InitializeScope(ICartoApplicationScopeService scope) { this.ToolContext = new NetworkContext(); }
+    public object? ToolContext => _networkContext;
+
+    public string ToolBoxTitle(ICartoApplicationScopeService scope)
+        => $"Network - {_networkContext?.CurrentNetworkLayer?.TocNameOrLayerTitle(scope.Document.Map)}";
+
+    public void InitializeScope(ICartoApplicationScopeService scope) 
+    { 
+        _networkContext = new NetworkContext(); 
+    }
 
     public Type UIComponent => typeof(gView.Carto.Razor.Components.Tools.Network);
 

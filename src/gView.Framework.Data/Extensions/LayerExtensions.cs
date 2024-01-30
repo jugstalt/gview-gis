@@ -1,6 +1,5 @@
 ﻿using gView.Framework.Core.Carto;
 using gView.Framework.Core.Data;
-using System;
 
 namespace gView.Framework.Data.Extensions
 {
@@ -40,5 +39,9 @@ namespace gView.Framework.Data.Extensions
 
             return true;
         }
+
+        static public string TocNameOrLayerTitle(this ILayer layer, IMap map)
+            => map?.TOC?.GetTocElementByLayerId(layer.ID)?.Name
+            ?? layer.Title;
     }
 }

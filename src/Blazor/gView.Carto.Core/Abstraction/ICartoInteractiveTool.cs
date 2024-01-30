@@ -13,6 +13,8 @@ public interface ICartoInteractiveTool : ICartoInteractiveButton
 
     object? ToolContext { get; }
 
+    string ToolBoxTitle(ICartoApplicationScopeService scope);
+
     void InitializeScope(ICartoApplicationScopeService scope);
 
     Task<bool> OnEvent(ICartoApplicationScopeService scope, MapEvent mapEvent);

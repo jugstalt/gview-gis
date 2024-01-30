@@ -5,19 +5,23 @@
 
 @inject ICartoApplicationScopeService AppScope
 @inject CartoEventBusService EventBus
+@inject IconService Icons
 
-@if (_networkContext is not null)
+@if (_networkContext?.CurrentNetworkLayer is not null)
 {
-    <MudSelect T="ILayer" Dense="true"
-               Label="Select Network"
-               @bind-Value="_networkContext.CurrentNetworkLayer">
-        @foreach (var networkLayer in _networkContext.NetworkLayers)
-        {
-            <MudSelectItem Value="networkLayer">
-                @networkLayer.Title
-            </MudSelectItem>
-        }
-    </MudSelect>
+    <div class="@($"carto-tool {(_networkContext.ContextTool == NetowrkContextTool.SetStartNode ? "selected" : "")}")"
+         alt="Start Node"
+         @onclick="() => SetContextTool(NetowrkContextTool.SetStartNode)">
+        <div class=@Icons.FromString("webgis:flag")></div>
+        <div class="title">Start Node</div>
+    </div>
+
+    <div class="@($"carto-tool {(_networkContext.ContextTool == NetowrkContextTool.SetTargetNode ? "selected" : "")}")"
+         alt="Target Node"
+         @onclick="() => SetContextTool(NetowrkContextTool.SetTargetNode)">
+        <div class=@Icons.FromString("webgis:flag")></div>
+        <div class="title">Target Node</div>
+    </div>
 }
 
 @code {
@@ -28,6 +32,23 @@
         base.OnInitialized();
 
         _networkContext = AppScope.Tools.GetCurrentToolContext<NetworkContext>();
+    }
+
+    private void SetContextTool(NetowrkContextTool contextTool)
+    {
+        if (_networkContext is null)
+        {
+            return;
+        }
+
+        if(contextTool == _networkContext.ContextTool)
+        {
+            _networkContext.ContextTool = NetowrkContextTool.None;
+        } 
+        else
+        {
+            _networkContext.ContextTool = contextTool;    
+        }
     }
 
     public void Dispose()

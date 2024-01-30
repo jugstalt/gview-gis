@@ -106,9 +106,17 @@
 
             .carto-main .toolbar .carto-tool-box .carto-tool-sub-box.current-tool {
                 min-width: 250px;
-                padding:5px;
                 border: 2px solid var(--mud-palette-primary) !important;
             }
+
+                .carto-main .toolbar .carto-tool-box .carto-tool-sub-box.current-tool .carto-tool.selected {
+                    background-color: var(--mud-palette-primary-hover) !important;
+                    border: 1px solid var(--mud-palette-primary);
+                }
+
+                    .carto-main .toolbar .carto-tool-box .carto-tool-sub-box.current-tool .carto-tool.selected .title {
+                        color: var(--mud-palette-primary) !important;
+                    }
 
     .carto-main .toc {
         position: absolute;

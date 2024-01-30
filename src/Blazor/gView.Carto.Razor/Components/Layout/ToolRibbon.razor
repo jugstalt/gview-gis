@@ -75,7 +75,7 @@
                          @onclick="() => AppScope.Tools.CurrentTool = null">
                         ✕
                     </div>
-                    <div class="title">@($"Tool: {AppScope.Tools.CurrentTool.Name}")</div>
+                    <div class="title">@($"Tool: {AppScope.Tools.CurrentTool.ToolBoxTitle(AppScope)}")</div>
                 </div>
             </div>
         } 

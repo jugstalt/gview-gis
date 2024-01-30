@@ -48,6 +48,8 @@ internal class Identify : ICartoTool
 
     public void InitializeScope(ICartoApplicationScopeService scope) { }
 
+    public string ToolBoxTitle(ICartoApplicationScopeService scope) => this.Name;
+
     async public Task<bool> OnEvent(ICartoApplicationScopeService scope, MapEvent mapEvent)
     {
         var queryLayer = scope.SelectedTocTreeNode?.TocElement.CollectQueryableLayers() ?? [];

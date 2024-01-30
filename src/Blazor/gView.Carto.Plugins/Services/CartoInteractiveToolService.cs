@@ -8,6 +8,8 @@ namespace gView.Carto.Plugins.Services;
 public class CartoInteractiveToolService : ICartoInteractiveToolService
 {
     private readonly ICartoInteractiveTool[] _scopedTools;
+    private ICartoInteractiveTool? _currentTool;
+
     public CartoInteractiveToolService(PluginManagerService pluginManager)
     {
         _scopedTools = pluginManager.GetPlugins<ICartoButton>(gView.Framework.Common.Plugins.Type.ICartoButton)
@@ -16,16 +18,25 @@ public class CartoInteractiveToolService : ICartoInteractiveToolService
                                     .ToArray();
     }
 
-    public ICartoInteractiveTool? CurrentTool { get; set; }
+    public ICartoInteractiveTool? CurrentTool 
+    {
+        get => _currentTool;
+        set
+        {
+            _currentTool = value switch
+            {
+                null => null,
+                _ => _scopedTools
+                    .Where(t => t.GetType().Equals(value.GetType()))
+                    .FirstOrDefault()
+            };
+        }
+
+    }
 
     public T? GetCurrentToolContext<T>()
         where T : class
-        => this.CurrentTool is null 
-            ? null
-            : _scopedTools
-                    .Where(t => t.GetType().Equals(this.CurrentTool.GetType()))
-                    .FirstOrDefault()?.ToolContext as T;
+        => _currentTool?.ToolContext as T;
 
-    public IEnumerable<ICartoInteractiveTool> ScopedTools => _scopedTools;
-            
+    public IEnumerable<ICartoInteractiveTool> ScopedTools => _scopedTools;  
 }
