@@ -548,6 +548,8 @@ namespace gView.Framework.Core.Data
     {
         string Filename { get; }
         IRasterWorldFile WorldFile { get; }
+
+        bool TestIfValid();
     }
 
     public interface IRasterWorldFile

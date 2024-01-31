@@ -9,4 +9,7 @@ static public class ServicesExtensions
 
     static public IServiceCollection AddDataTables(this IServiceCollection services)
         => services.AddScoped<CartoDataTableService>();
+
+    static public IServiceCollection AddDisplayService(this IServiceCollection services)
+        => services.AddScoped<CartoDisplayService>();
 }

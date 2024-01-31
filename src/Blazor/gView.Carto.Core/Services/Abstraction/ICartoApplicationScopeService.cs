@@ -13,6 +13,8 @@ public interface ICartoApplicationScopeService : IApplicationScope
 
     CartoEventBusService EventBus { get; }
 
+    CartoDisplayService DisplayService { get; }
+
     CartoDataTableService DataTableService { get; }
 
     GeoTransformerService GeoTransformer { get; }

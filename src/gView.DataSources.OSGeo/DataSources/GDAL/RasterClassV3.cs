@@ -186,6 +186,21 @@ namespace gView.DataSources.GDAL
             }
         }
 
+        public bool TestIfValid()
+        {
+            try
+            {
+                using (var gdalDataset = OpenGdalDataset()) { }
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"{Environment.NewLine}{_filename}{Environment.NewLine}Exception: {ex.Message}");
+                return false;
+            }
+        }
+
         public bool IsValid { get { return _valid; } }
         internal RasterType Type
         {

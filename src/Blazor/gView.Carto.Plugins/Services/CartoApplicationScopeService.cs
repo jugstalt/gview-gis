@@ -11,6 +11,7 @@ using gView.DataExplorer.Razor.Components.Dialogs.Models;
 using gView.Framework.Blazor;
 using gView.Framework.Blazor.Models;
 using gView.Framework.Blazor.Services;
+using gView.Framework.Core.Carto;
 using gView.Framework.Core.Data;
 using gView.Framework.Core.Geometry;
 using gView.Framework.IO;
@@ -25,6 +26,7 @@ public class CartoApplicationScopeService : ApplictionBusyHandler, ICartoApplica
     private readonly IDialogService _dialogService;
     private readonly IEnumerable<IKnownDialogService> _knownDialogs;
     private readonly CartoEventBusService _eventBus;
+    private readonly CartoDisplayService _displayService;
     private readonly CartoDataTableService _dataTables;
     private readonly IJSRuntime _jsRuntime;
     private readonly ISnackbar _snackbar;
@@ -39,6 +41,7 @@ public class CartoApplicationScopeService : ApplictionBusyHandler, ICartoApplica
     public CartoApplicationScopeService(IDialogService dialogService,
                                         IEnumerable<IKnownDialogService> knownDialogs,
                                         CartoEventBusService eventBus,
+                                        CartoDisplayService displayService,
                                         CartoDataTableService dataTables,
                                         IJSRuntime jsRuntime,
                                         ISnackbar snackbar,
@@ -54,6 +57,7 @@ public class CartoApplicationScopeService : ApplictionBusyHandler, ICartoApplica
         _dialogService = dialogService;
         _knownDialogs = knownDialogs;
         _eventBus = eventBus;
+        _displayService = displayService;
         _dataTables = dataTables;
         _jsRuntime = jsRuntime;
         _snackbar = snackbar;
@@ -150,6 +154,8 @@ public class CartoApplicationScopeService : ApplictionBusyHandler, ICartoApplica
         => _eventBus.FireSelectedTocTreeNodeChangedAsync(this.SelectedTocTreeNode = selectedTocTreeNode);
 
     public CartoDataTableService DataTableService => _dataTables;
+
+    public CartoDisplayService DisplayService => _displayService;
 
     public SettingsService Settings => _settings;
 

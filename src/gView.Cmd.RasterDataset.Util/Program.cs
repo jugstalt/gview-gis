@@ -17,7 +17,7 @@ namespace gView.Cmd.RasterDataset.Util
 {
     class Program
     {
-        enum Jobs { add, truncate, removeUnexisting, unknown };
+        enum Jobs { add, truncate, removeUnexisting, tryOpenImage, unknown };
         static Jobs job = Jobs.unknown;
         static string connectinString = String.Empty;
         static string dbType = "sql", provider = "none";
@@ -58,6 +58,15 @@ namespace gView.Cmd.RasterDataset.Util
                             return 1;
                         }
                         job = Jobs.truncate;
+                        break;
+                    case "-tryopen":
+                        if (job != Jobs.unknown)
+                        {
+                            Usage();
+                            Console.WriteLine("Can't do more than one job. Run programm twice...");
+                            return 1;
+                        }
+                        job = Jobs.tryOpenImage;
                         break;
                     case "-s":
                         connectinString = args[++i];
@@ -251,6 +260,9 @@ namespace gView.Cmd.RasterDataset.Util
                     await RemoveUnexisting(ds);
                     await CalculateExtent(ds);
                     break;
+                case Jobs.tryOpenImage:
+                    await TryOpenImage(ds, PlugInManager.PlugInID(rds));
+                    break;
                 case Jobs.add:
                     if (fileName != String.Empty)
                     {
@@ -301,6 +313,12 @@ namespace gView.Cmd.RasterDataset.Util
         {
             FDBImageDataset import = new FDBImageDataset(ds.Database as IImageDB, ds.DatasetName);
             return await import.RemoveUnexisting();
+        }
+
+        async static Task<bool> TryOpenImage(IFeatureDataset ds, Guid providerGuid)
+        {
+            FDBImageDataset import = new FDBImageDataset(ds.Database as IImageDB, ds.DatasetName);
+            return await import.TryOpenImage(providerGuid);
         }
 
         static int ProgressCounter = 0;

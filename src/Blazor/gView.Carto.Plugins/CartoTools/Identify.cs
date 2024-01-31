@@ -1,12 +1,11 @@
 ﻿using gView.Carto.Core;
+using gView.Carto.Core.Extensions;
 using gView.Carto.Core.Models.MapEvents;
 using gView.Carto.Core.Services.Abstraction;
 using gView.Framework.Carto.Abstraction;
 using gView.Framework.Core.Common;
-using gView.Carto.Core.Extensions;
-using gView.Framework.Core.Geometry;
 using gView.Framework.Core.Data;
-using gView.Framework.Geometry;
+using gView.Framework.Core.Geometry;
 using gView.Framework.Data.Filters;
 
 namespace gView.Carto.Plugins.CartoTools;
@@ -53,27 +52,23 @@ internal class Identify : ICartoTool
     async public Task<bool> OnEvent(ICartoApplicationScopeService scope, MapEvent mapEvent)
     {
         var queryLayer = scope.SelectedTocTreeNode?.TocElement.CollectQueryableLayers() ?? [];
-        if(!queryLayer.Any())
+        if (!queryLayer.Any())
         {
             return false;
         }
 
-        IGeometry? queryGeometry = mapEvent switch
+        IGeometry? queryGeometry = mapEvent.GetGeometry();
+
+        if (queryGeometry == null)
         {
-            MapClickEvent mapClickEvent => mapClickEvent.Point,
-            MapBBoxEvent mapBBoxEvent => mapBBoxEvent.BBox,
-            _ => null
-        };
-        if(queryGeometry == null) 
-        { 
-            return false; 
+            return false;
         }
 
         foreach (var layer in scope.DataTableService.Layers)
         {
             scope.DataTableService.GetProperties(layer).IdentifyFilter = null;
-            
-            if(layer is IFeatureHighlighting featureHighlighting)
+
+            if (layer is IFeatureHighlighting featureHighlighting)
             {
                 featureHighlighting.FeatureHighlightFilter = null;
             }
@@ -83,7 +78,7 @@ internal class Identify : ICartoTool
         {
             if (layer.Class is IFeatureClass featureClass)
             {
-                if(featureClass.SpatialReference is null)
+                if (featureClass.SpatialReference is null)
                 {
                     continue; //todo: Show the user a warning?
                 }
@@ -95,21 +90,14 @@ internal class Identify : ICartoTool
                 {
                     SubFields = "*",
                     FilterSpatialReference = featureClass.SpatialReference,
-                    Geometry = scope.GeoTransformer.FromWGS84(
-                        queryGeometry switch
-                        {
-                            IPoint point => new Point(point),  // clone the original geometry
-                            IEnvelope env => new Envelope(env),
-                            _ => throw new Exception($"Geometry type {queryGeometry.GetType().Name} is not supported for identify filter")
-                        },
-                        featureClass.SpatialReference)
+                    Geometry = queryGeometry.ToProjectedEnvelope(scope, featureClass.SpatialReference)
                 };
                 tableProperties.DataMode = Blazor.Models.DataTable.Mode.Identify;
             }
         }
 
         await scope.EventBus.FireShowDataTableAsync(queryLayer.First());
-        
+
         return true;
     }
 

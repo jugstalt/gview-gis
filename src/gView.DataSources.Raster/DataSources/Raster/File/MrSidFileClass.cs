@@ -1,9 +1,8 @@
 ﻿using gView.Framework.Core.Carto;
+using gView.Framework.Core.Common;
 using gView.Framework.Core.Data;
 using gView.Framework.Core.Geometry;
 using gView.Framework.Core.MapServer;
-using gView.Framework.Core.Common;
-using gView.Framework.Data;
 using gView.Framework.Geometry;
 using gView.Framework.Geometry.Extesnsions;
 using System;
@@ -135,6 +134,27 @@ namespace gView.DataSources.Raster.File
         private void CleanUp()
         {
             //ReleaseReader();
+        }
+
+        public bool TestIfValid()
+        {
+            try
+            {
+                var reader = InitReader();
+                if (reader == IntPtr.Zero)
+                {
+                    throw new Exception("Can't open rasterfile");
+                }
+
+                ReleaseReader(reader);
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"{Environment.NewLine}{_filename}{Environment.NewLine}Exception: {ex.Message}");
+                return false;
+            }
         }
 
         internal bool isValid
