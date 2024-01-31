@@ -3,7 +3,7 @@ using gView.Blazor.Core.Services;
 using gView.Blazor.Core.Services.Abstraction;
 using gView.Carto.Core;
 using gView.Carto.Core.Abstraction;
-using gView.Carto.Core.Models.MapEvents;
+using gView.Carto.Core.Models.ToolEvents;
 using gView.Carto.Core.Models.Tree;
 using gView.Carto.Core.Services;
 using gView.Carto.Core.Services.Abstraction;
@@ -85,6 +85,7 @@ public class CartoApplicationScopeService : ApplictionBusyHandler, ICartoApplica
 
         _eventBus.OnMapClickAsync += HandleMapClickAsync;
         _eventBus.OnMapBBoxAsync += HandleMapBBoxAsync;
+        _eventBus.OnToolEventAsync += HandleToolEventAsync;
     }
 
     public CartoEventBusService EventBus => _eventBus;
@@ -188,7 +189,7 @@ public class CartoApplicationScopeService : ApplictionBusyHandler, ICartoApplica
         if(Tools.CurrentTool?.ToolType.HasFlag(ToolType.Click) == true)
         {
             return Tools.CurrentTool.OnEvent(this,
-                new MapClickEvent() { Point = point });
+                new MapClickEventArgs() { Point = point });
         }
 
         return Task.CompletedTask;
@@ -199,7 +200,17 @@ public class CartoApplicationScopeService : ApplictionBusyHandler, ICartoApplica
         if (Tools.CurrentTool?.ToolType.HasFlag(ToolType.BBox) == true)
         {
             return Tools.CurrentTool.OnEvent(this,
-                new MapBBoxEvent() { BBox = bbox });
+                new MapBBoxEventArgs() { BBox = bbox });
+        }
+
+        return Task.CompletedTask;
+    }
+
+    private Task HandleToolEventAsync(ToolEventArgs toolEvent)
+    {
+        if (Tools.CurrentTool is not null)
+        {
+            return Tools.CurrentTool.OnEvent(this, toolEvent);
         }
 
         return Task.CompletedTask;
@@ -216,6 +227,7 @@ public class CartoApplicationScopeService : ApplictionBusyHandler, ICartoApplica
 
         _eventBus.OnMapClickAsync -= HandleMapClickAsync;
         _eventBus.OnMapBBoxAsync -= HandleMapBBoxAsync;
+        _eventBus.OnToolEventAsync -= HandleToolEventAsync;
     }
 
     #endregion

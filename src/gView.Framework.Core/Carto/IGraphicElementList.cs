@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace gView.Framework.Core.Carto
 {
@@ -6,6 +7,7 @@ namespace gView.Framework.Core.Carto
     {
         void Add(IGraphicElement element);
         void Remove(IGraphicElement element);
+        void Remove(Type type);
         void Clear();
         void Insert(int i, IGraphicElement element);
         bool Contains(IGraphicElement element);

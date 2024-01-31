@@ -424,6 +424,8 @@ namespace gView.Cmd.RasterDataset.Util
             Console.WriteLine("                    -rd <rootdirectory> -f <filter>");
             Console.WriteLine("                    -provider <first|gdal|raster>");
             Console.WriteLine("            -clean ... Remove Unexisting");
+            Console.WriteLine("            -tryopen ... test if files can be opened");
+            Console.WriteLine("                    -provider <gdal|raster>");
             Console.WriteLine("            -truncate ... remove all files");
         }
     }

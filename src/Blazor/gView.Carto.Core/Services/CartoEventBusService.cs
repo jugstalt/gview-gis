@@ -1,5 +1,6 @@
 ﻿using gView.Carto.Core.Abstraction;
 using gView.Carto.Core.Extensions;
+using gView.Carto.Core.Models.ToolEvents;
 using gView.Carto.Core.Models.Tree;
 using gView.Framework.Core.Carto;
 using gView.Framework.Core.Common;
@@ -79,6 +80,10 @@ public class CartoEventBusService
     public event Func<IEnvelope, Task>? OnMapBBoxAsync;
     public Task FireMapBBoxAsync(IEnvelope bbox)
         => OnMapBBoxAsync?.FireAsync(bbox) ?? Task.CompletedTask;
+
+    public event Func<ToolEventArgs, Task>? OnToolEventAsync;
+    public Task FireToolEventAsync(ToolEventArgs args)
+        => OnToolEventAsync?.FireAsync(args) ?? Task.CompletedTask;
 
     public event Func<ILayer, Task>? OnShowDataTableAsync;
     public Task FireShowDataTableAsync(ILayer layer)

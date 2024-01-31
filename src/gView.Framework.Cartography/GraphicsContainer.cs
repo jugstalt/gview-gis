@@ -4,6 +4,7 @@ using gView.Framework.Core.Common;
 using gView.Framework.Common;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace gView.Framework.Cartography
 {
@@ -122,6 +123,21 @@ namespace gView.Framework.Cartography
             public void Remove(IGraphicElement element)
             {
                 _elements.Remove(element);
+                if (SelectionChanged != null)
+                {
+                    SelectionChanged(this, new EventArgs());
+                }
+            }
+
+            public void Remove(Type type)
+            {
+                var elements = _elements.Where(e => e.GetType() == type).ToArray();
+
+                foreach (var e in elements)
+                {
+                    _elements.Remove(e);
+                }
+
                 if (SelectionChanged != null)
                 {
                     SelectionChanged(this, new EventArgs());

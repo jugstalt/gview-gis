@@ -6,14 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\gView.Cmd.ClipCompactTilecache\gView.Cmd.ClipCompactTilecache.csproj" />
-    <ProjectReference Include="..\..\gView.Cmd.CompactTileBundle\gView.Cmd.CompactTileBundle.csproj" />
     <ProjectReference Include="..\..\gView.Cmd.Fdb.Lib\gView.Cmd.Fdb.Lib.csproj" />
-    <ProjectReference Include="..\..\gView.Cmd.FillElasticSearch\gView.Cmd.FillElasticSearch.csproj" />
-    <ProjectReference Include="..\..\gView.Cmd.FillLuceneServer\gView.Cmd.FillLuceneServer.csproj" />
-    <ProjectReference Include="..\..\gView.Cmd.MxlUtil\gView.Cmd.MxlUtil.csproj" />
-    <ProjectReference Include="..\..\gView.Cmd.RasterDataset.Util\gView.Cmd.RasterDataset.Util.csproj" />
-    <ProjectReference Include="..\..\gView.Cmd.RenderTileCache\gView.Cmd.RenderTileCache.csproj" />
     <ProjectReference Include="..\..\gView.Cmd.TileCache.Lib\gView.Cmd.TileCache.Lib.csproj" />
     <ProjectReference Include="..\..\gView.CopyFeatureclass.Lib\gView.CopyFeatureclass.Lib.csproj" />
     <ProjectReference Include="..\..\gView.DataSources.EventTable\gView.DataSources.EventTable.csproj" />

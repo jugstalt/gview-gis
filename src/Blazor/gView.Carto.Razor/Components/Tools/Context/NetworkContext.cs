@@ -3,11 +3,12 @@ using System.Runtime.InteropServices;
 
 namespace gView.Carto.Razor.Components.Tools.Context;
 
-public enum NetowrkContextTool
+public enum NetworkContextTool
 {
     None,
     SetStartNode,
-    SetTargetNode
+    SetTargetNode,
+    Trace
 }
 
 public class NetworkContext
@@ -16,7 +17,7 @@ public class NetworkContext
 
     public ILayer? CurrentNetworkLayer { get; set; }
 
-    public NetowrkContextTool ContextTool { get; set; }
+    public NetworkContextTool ContextTool { get; set; }
     
     public int StartNode { get; set; }
     public int TargetNode { get; set; } 

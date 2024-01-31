@@ -1,4 +1,5 @@
 @using gView.Framework.Core.Network
+@using gView.Carto.Razor.Components.Tools.ToolEvents;
 
 @inherits BaseHandler
 @implements IDisposable
@@ -6,35 +7,50 @@
 @inject ICartoApplicationScopeService AppScope
 @inject CartoEventBusService EventBus
 @inject IconService Icons
+@inject PluginManagerService PluginManager
 
 @if (_networkContext?.CurrentNetworkLayer is not null)
 {
-    <div class="@($"carto-tool {(_networkContext.ContextTool == NetowrkContextTool.SetStartNode ? "selected" : "")}")"
+    <div class="@($"carto-tool {(_networkContext.ContextTool == NetworkContextTool.SetStartNode ? "selected" : "")}")"
          alt="Start Node"
-         @onclick="() => SetContextTool(NetowrkContextTool.SetStartNode)">
+         @onclick="() => SetContextTool(NetworkContextTool.SetStartNode)">
         <div class=@Icons.FromString("webgis:flag")></div>
         <div class="title">Start Node</div>
     </div>
 
-    <div class="@($"carto-tool {(_networkContext.ContextTool == NetowrkContextTool.SetTargetNode ? "selected" : "")}")"
+    <div class="@($"carto-tool {(_networkContext.ContextTool == NetworkContextTool.SetTargetNode ? "selected" : "")}")"
          alt="Target Node"
-         @onclick="() => SetContextTool(NetowrkContextTool.SetTargetNode)">
+         @onclick="() => SetContextTool(NetworkContextTool.SetTargetNode)">
         <div class=@Icons.FromString("webgis:flag")></div>
         <div class="title">Target Node</div>
     </div>
+
+    @if(_tracers is not null)
+    {
+        <MudMenu Label="Trace" MaxHeight="300">
+            @foreach(var tracer in _tracers)
+            {
+                <MudMenuItem OnClick="() => OnTracerClicked(tracer)">
+                    @tracer.Name
+                </MudMenuItem>
+            }
+        </MudMenu>
+    }
 }
 
 @code {
     private NetworkContext? _networkContext;
+    private IEnumerable<INetworkTracer>? _tracers;
 
     protected override void OnInitialized()
     {
         base.OnInitialized();
 
         _networkContext = AppScope.Tools.GetCurrentToolContext<NetworkContext>();
+        _tracers = PluginManager.GetPlugins<INetworkTracer>(Plugins.Type.INetworkTracer);
     }
 
-    private void SetContextTool(NetowrkContextTool contextTool)
+    private void SetContextTool(NetworkContextTool contextTool)
     {
         if (_networkContext is null)
         {
@@ -43,13 +59,24 @@
 
         if(contextTool == _networkContext.ContextTool)
         {
-            _networkContext.ContextTool = NetowrkContextTool.None;
+            _networkContext.ContextTool = NetworkContextTool.None;
         } 
         else
         {
             _networkContext.ContextTool = contextTool;    
         }
     }
+
+    private Task OnTracerClicked(INetworkTracer tracer) => HandleAsync(async () =>
+    {
+        if (_networkContext is null)
+        {
+            return;
+        }
+        
+        _networkContext.ContextTool = NetworkContextTool.Trace;
+        await EventBus.FireToolEventAsync(new TraceEventArgs(tracer));
+    });
 
     public void Dispose()
     {

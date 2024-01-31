@@ -1,6 +1,6 @@
 ﻿using gView.Carto.Core;
 using gView.Carto.Core.Extensions;
-using gView.Carto.Core.Models.MapEvents;
+using gView.Carto.Core.Models.ToolEvents;
 using gView.Carto.Core.Services.Abstraction;
 using gView.Framework.Carto.Abstraction;
 using gView.Framework.Core.Common;
@@ -49,7 +49,7 @@ internal class Identify : ICartoTool
 
     public string ToolBoxTitle(ICartoApplicationScopeService scope) => this.Name;
 
-    async public Task<bool> OnEvent(ICartoApplicationScopeService scope, MapEvent mapEvent)
+    async public Task<bool> OnEvent(ICartoApplicationScopeService scope, ToolEventArgs mapEvent)
     {
         var queryLayer = scope.SelectedTocTreeNode?.TocElement.CollectQueryableLayers() ?? [];
         if (!queryLayer.Any())
