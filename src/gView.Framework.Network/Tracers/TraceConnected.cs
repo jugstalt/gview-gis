@@ -13,9 +13,11 @@ namespace gView.Framework.Network.Tracers
     {
         #region INetworkTracer Member
 
+        public string GroupName => "Trace Connected";
+
         public string Name
         {
-            get { return "Trace Connected"; }
+            get { return "Trace Connected (Any)"; }
         }
 
         public bool CanTrace(NetworkTracerInputCollection input)

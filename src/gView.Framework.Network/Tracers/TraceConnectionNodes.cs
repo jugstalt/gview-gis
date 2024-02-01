@@ -17,6 +17,8 @@ namespace gView.Framework.Network.Tracers
 
         #region INetworkTracer Members
 
+        public string GroupName => "Trace Connected";
+
         virtual public string Name
         {
             get { return "Trace Connected Nodes"; }

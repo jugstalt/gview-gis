@@ -1,8 +1,7 @@
-﻿using gView.Framework.Core.Network;
-using gView.Framework.Core.Common;
+﻿using gView.Framework.Core.Common;
+using gView.Framework.Core.Network;
 using gView.Framework.Core.UI;
 using gView.Framework.Network.Algorthm;
-using gView.Framework.Common;
 using System.Threading.Tasks;
 
 namespace gView.Framework.Network.Tracers
@@ -11,6 +10,8 @@ namespace gView.Framework.Network.Tracers
     public class TraceShortestPathConnectioned : INetworkTracer, IProgressReporterEvent
     {
         #region INetworkTracer Member
+
+        public string GroupName => "";
 
         public string Name
         {

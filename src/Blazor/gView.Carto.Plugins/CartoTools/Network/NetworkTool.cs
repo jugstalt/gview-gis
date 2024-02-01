@@ -9,6 +9,7 @@ using gView.Carto.Razor.Components.Tools.ToolEvents;
 using gView.Framework.Carto.Abstraction;
 using gView.Framework.Cartography;
 using gView.Framework.Common;
+using gView.Framework.Core.Carto;
 using gView.Framework.Core.Common;
 using gView.Framework.Core.Data;
 using gView.Framework.Core.Data.Cursors;
@@ -16,6 +17,7 @@ using gView.Framework.Core.Geometry;
 using gView.Framework.Core.Network;
 using gView.Framework.Data.Extensions;
 using gView.Framework.Data.Filters;
+using gView.Framework.Geometry;
 
 namespace gView.Carto.Plugins.CartoTools.Network;
 
@@ -82,7 +84,8 @@ internal class NetworkTool : ICartoTool
         {
             NetworkContextTool.SetStartNode => OnStartTargetPointEvent(scope, eventArgs),
             NetworkContextTool.SetTargetNode => OnStartTargetPointEvent(scope, eventArgs),
-            NetworkContextTool.Trace => OnTrance(scope, eventArgs),
+            NetworkContextTool.RemoveElements => OnRemoveElements(scope,eventArgs),
+            NetworkContextTool.Trace => OnTrace(scope, eventArgs),
             _ => Task.FromResult(false)
         };
 
@@ -146,13 +149,13 @@ internal class NetworkTool : ICartoTool
                 scope.Document.Map.Display.GraphicsContainer.Elements.Add(new GraphicTargetPoint(p1));
             }
 
-            await scope.EventBus.FireRefreshMapAsync(Framework.Core.Carto.DrawPhase.Graphics);
+            await scope.EventBus.FireRefreshMapAsync(DrawPhase.Graphics);
         }
 
         return true;
     }
 
-    async private Task<bool> OnTrance(ICartoApplicationScopeService scope, ToolEventArgs eventArgs)
+    async private Task<bool> OnTrace(ICartoApplicationScopeService scope, ToolEventArgs eventArgs)
     {
         if (!(_networkContext?.CurrentNetworkLayer?.Class is INetworkFeatureClass networkFeatureClass))
         {
@@ -192,15 +195,7 @@ internal class NetworkTool : ICartoTool
                             continue;
                         }
 
-                        var transformedPolyline = networkFeatureClass switch
-                        {
-                            IFeatureClass featureClass => scope.GeoTransformer.Transform(
-                                                                polyline,
-                                                                featureClass.SpatialReference,
-                                                                display.SpatialReference
-                                                          ) as IPolyline,
-                            _ => polyline
-                        };
+                        var transformedPolyline = TransformToDisplaySrs(scope, networkFeatureClass, feature.Shape) as IPolyline;
 
                         if (transformedPolyline is not null)
                         {
@@ -210,23 +205,53 @@ internal class NetworkTool : ICartoTool
                 }
                 else if (output is NetworkPolylineOutput polyline)
                 {
-                    display.GraphicsContainer.Elements.Add(new GraphicNetworkPathEdge(polyline.Polyline));
+                    var transformedPolyline = TransformToDisplaySrs(scope, networkFeatureClass, polyline.Polyline) as IPolyline;
+
+                    if (transformedPolyline is not null)
+                    {
+                        display.GraphicsContainer.Elements.Add(new GraphicNetworkPathEdge(transformedPolyline));
+                    }
                 }
                 else if (output is NetworkFlagOutput flag)
                 {
                     string text = flag.UserData?.ToString() ?? "Flag";
+                    var transformedPoint = TransformToDisplaySrs(scope, networkFeatureClass, flag.Location) as IPoint;
 
-                    display.GraphicsContainer.Elements.Add(new GraphicFlagPoint(flag.Location, text));
+                    if (transformedPoint is not null)
+                    {
+                        display.GraphicsContainer.Elements.Add(new GraphicFlagPoint(transformedPoint, text));
+                    }
                 }
             }
         }
 
-        await scope.EventBus.FireRefreshMapAsync(Framework.Core.Carto.DrawPhase.Graphics);
+        await scope.EventBus.FireRefreshMapAsync(DrawPhase.Graphics);
 
         return true;
     }
 
-    async public Task<IFeatureCursor?> NetworkPathEdges(
+    async private Task<bool> OnRemoveElements(ICartoApplicationScopeService scope, ToolEventArgs eventArgs)
+    {
+        //scope.Document.Map.Display.GraphicsContainer.Elements.Remove(typeof(GraphicStartPoint));
+        //scope.Document.Map.Display.GraphicsContainer.Elements.Remove(typeof(GraphicTargetPoint));
+        scope.Document.Map.Display.GraphicsContainer.Elements.Remove(typeof(GraphicNetworkPathEdge));
+        scope.Document.Map.Display.GraphicsContainer.Elements.Remove(typeof(GraphicFlagPoint));
+
+        if(_networkContext is not null)
+        {
+            _networkContext.ContextTool = NetworkContextTool.SetStartNode;
+            _networkContext.StartNode = -1;
+            _networkContext.TargetNode = -1;
+        }
+
+        await scope.EventBus.FireRefreshMapAsync(DrawPhase.Graphics);
+
+        return true;
+    }
+
+    #region Helper
+
+    async private Task<IFeatureCursor?> NetworkPathEdges(
             ICartoApplicationScopeService scope,
             INetworkFeatureClass networkFeatureClass, 
             NetworkEdgeCollectionOutput edgeCollection
@@ -267,10 +292,10 @@ internal class NetworkTool : ICartoTool
             input.Add(new NetworkSinkInput(_networkContext.TargetNode));
         }
 
-        //if (_module.GraphWeight != null)
-        //{
-        //    input.Add(new NetworkWeighInput(_module.GraphWeight, _module.WeightApplying));
-        //}
+        if (_networkContext.GraphWeight is not null)
+        {
+            input.Add(new NetworkWeighInput(_networkContext.GraphWeight, _networkContext.WeightApplying));
+        }
 
         //if (_module.StartEdgeIndex >= 0)
         //{
@@ -279,6 +304,19 @@ internal class NetworkTool : ICartoTool
 
         return input;
     }
+
+    private IGeometry? TransformToDisplaySrs(ICartoApplicationScopeService scope, INetworkFeatureClass networkFeatureClass, IGeometry shape)
+        => networkFeatureClass switch
+        {
+            IFeatureClass featureClass => scope.GeoTransformer.Transform(
+                                                shape,
+                                                featureClass.SpatialReference,
+                                                scope.DisplayService.SpatialReference
+                                          ),
+            _ => shape
+        };
+
+    #endregion
 
     #endregion
 }

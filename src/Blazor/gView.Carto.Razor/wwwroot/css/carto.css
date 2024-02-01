@@ -107,6 +107,7 @@
             .carto-main .toolbar .carto-tool-box .carto-tool-sub-box.current-tool {
                 min-width: 250px;
                 border: 2px solid var(--mud-palette-primary) !important;
+                padding-right: 24px;
             }
 
                 .carto-main .toolbar .carto-tool-box .carto-tool-sub-box.current-tool .carto-tool.selected {

@@ -13,6 +13,8 @@ namespace gView.Framework.Network.Tracers
     {
         #region INetworkTracer Member
 
+        public string GroupName => "";
+
         public string Name
         {
             get { return "Trace Disconnected"; }

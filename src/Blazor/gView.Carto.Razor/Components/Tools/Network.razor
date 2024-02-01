@@ -14,25 +14,107 @@
     <div class="@($"carto-tool {(_networkContext.ContextTool == NetworkContextTool.SetStartNode ? "selected" : "")}")"
          alt="Start Node"
          @onclick="() => SetContextTool(NetworkContextTool.SetStartNode)">
-        <div class=@Icons.FromString("webgis:flag")></div>
+        <div class=@Icons.FromString("basic:pin")></div>
         <div class="title">Start Node</div>
     </div>
 
     <div class="@($"carto-tool {(_networkContext.ContextTool == NetworkContextTool.SetTargetNode ? "selected" : "")}")"
          alt="Target Node"
          @onclick="() => SetContextTool(NetworkContextTool.SetTargetNode)">
-        <div class=@Icons.FromString("webgis:flag")></div>
+        <div class=@Icons.FromString("basic:pin")></div>
         <div class="title">Target Node</div>
     </div>
 
+    <div class="carto-tool"
+         alt="Remove Elements"
+         @onclick="RemoveNetworkElements">
+        <div class=@Icons.FromString("basic:trashcan-x")></div>
+        <div class="title">Remove Elements</div>
+    </div>
+
+    @if (_networkContext.CurrentNetworkLayer.Class is INetworkFeatureClass networkFeatureClass)
+    {
+        <MudMenu Label="Weights">
+            <MudMenuItem>
+                <MudMenu ActivationEvent="MouseEvent.MouseOver" 
+                            AnchorOrigin="Origin.TopRight" 
+                            TransformOrigin="Origin.TopLeft" 
+                            MaxHeight="300">
+                    <ActivatorContent>
+                        <div style="min-width:280px">
+                            Use Weight
+                        </div>
+                    </ActivatorContent>
+                    <ChildContent>
+                        <MudMenuItem>
+                            <MudCheckBox T="bool"
+                                         Value="_networkContext.GraphWeight == null"
+                                         ValueChanged="() => _networkContext.GraphWeight = null"
+                                         Label="none" />
+                        </MudMenuItem>
+                        @foreach (var graphWeight in networkFeatureClass.GraphWeights ?? [])
+                        {
+                            <MudCheckBox T="bool"
+                                         Value="_networkContext.GraphWeight == graphWeight"
+                                         ValueChanged="() => _networkContext.GraphWeight = graphWeight"
+                                         Label="@graphWeight.Name" />
+                        }
+                    </ChildContent>
+                </MudMenu>
+            </MudMenuItem>
+            <MudMenuItem>
+                <MudCheckBox T="bool" 
+                             Value="_networkContext.WeightApplying == WeightApplying.Weight"
+                             ValueChanged="(chk) => _networkContext.WeightApplying = chk ? WeightApplying.Weight : WeightApplying.ActualCosts" 
+                             Label="Use as weight" />
+            </MudMenuItem>
+            <MudMenuItem>
+                <MudCheckBox T="bool"
+                             T="bool"
+                             Value="_networkContext.WeightApplying == WeightApplying.ActualCosts"
+                             ValueChanged="(chk) => _networkContext.WeightApplying = chk ? WeightApplying.ActualCosts : WeightApplying.Weight"
+                             Label="Use as actual cost" />
+            </MudMenuItem>
+    </MudMenu>
+    }
+
     @if(_tracers is not null)
     {
-        <MudMenu Label="Trace" MaxHeight="300">
-            @foreach(var tracer in _tracers)
+        <MudMenu Label="Trace">
+            @foreach(var groupName in _tracers.Select(t=>t.GroupName).Distinct().Order()) 
             {
-                <MudMenuItem OnClick="() => OnTracerClicked(tracer)">
-                    @tracer.Name
-                </MudMenuItem>
+                @if(String.IsNullOrEmpty(groupName))
+                {
+                    @foreach (var tracer in _tracers.Where(t => String.IsNullOrEmpty(t.GroupName)))
+                    {
+                        <MudMenuItem OnClick="() => OnTracerClicked(tracer)">
+                            @tracer.Name
+                        </MudMenuItem>
+                    }
+                }
+                else
+                {
+                    <MudMenuItem>
+                        <MudMenu ActivationEvent="MouseEvent.MouseOver" 
+                                 AnchorOrigin="Origin.TopRight" 
+                                 TransformOrigin="Origin.TopLeft" 
+                                 MaxHeight="300">
+                            <ActivatorContent>
+                                <div style="min-width:280px">
+                                    @($"> {groupName}")
+                                </div>
+                            </ActivatorContent>
+                            <ChildContent>
+                                @foreach (var tracer in _tracers.Where(t => t.GroupName == groupName))
+                                {
+                                    <MudMenuItem OnClick="() => OnTracerClicked(tracer)">
+                                        @tracer.Name
+                                    </MudMenuItem>
+                                }
+                            </ChildContent>
+                        </MudMenu>
+                    </MudMenuItem>
+                }
             }
         </MudMenu>
     }
@@ -67,13 +149,41 @@
         }
     }
 
-    private Task OnTracerClicked(INetworkTracer tracer) => HandleAsync(async () =>
+    private Task RemoveNetworkElements() => HandleAsync(async () =>
     {
         if (_networkContext is null)
         {
             return;
         }
-        
+
+        _networkContext.ContextTool = NetworkContextTool.RemoveElements;
+        await EventBus.FireToolEventAsync(new ());
+    });
+
+    private Task OnTracerClicked(INetworkTracer tracer) => HandleAsync(async () =>
+    {
+        if (!(_networkContext?.CurrentNetworkLayer?.Class is INetworkFeatureClass networkClass))
+        {
+            return;
+        }
+
+        if (tracer is INetworkTracerProperties tracerProperties)
+        {
+            var properties = await tracerProperties.NetworkTracerProperties(networkClass);
+
+            if(properties is not null)
+            {
+                if(await AppScope.ShowKnownDialog(
+                        Framework.Blazor.KnownDialogs.PropertyGridDialog,
+                        tracer.Name, 
+                        new PropertyGridDialogModel() { Instance = properties }
+                    ) == null)
+                {
+                    return;
+                };
+            }
+        }
+
         _networkContext.ContextTool = NetworkContextTool.Trace;
         await EventBus.FireToolEventAsync(new TraceEventArgs(tracer));
     });

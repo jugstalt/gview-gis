@@ -636,6 +636,7 @@ namespace gView.Framework.Core.Network
 
     public interface INetworkTracer
     {
+        string GroupName { get; }
         string Name { get; }
         bool CanTrace(NetworkTracerInputCollection input);
         Task<NetworkTracerOutputCollection> Trace(INetworkFeatureClass network, NetworkTracerInputCollection input, ICancelTracker cancelTraker);
@@ -643,7 +644,7 @@ namespace gView.Framework.Core.Network
 
     public interface INetworkTracerProperties
     {
-        Task<object> NetworkTracerProperties(INetworkFeatureClass network, NetworkTracerInputCollection input);
+        Task<object> NetworkTracerProperties(INetworkFeatureClass network);
     }
 
     public enum NetworkNodeType

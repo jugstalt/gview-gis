@@ -1323,6 +1323,8 @@ namespace gView.Interoperability.ArcXML
         {
             #region INetworkTracer Members
 
+            public string GroupName => "";
+
             public string Name
             {
                 get { return "Network Identify"; }

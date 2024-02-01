@@ -11,17 +11,16 @@ internal static class LayerExtensions
     static public int LayerGeometryTypeOrder(this ILayer layer)
         => layer.Class switch
         {
-            IFeatureClass fClass when (fClass.GeometryType == GeometryType.Point) => 0,
-            IFeatureClass fClass when (fClass.GeometryType == GeometryType.Multipoint) => 1,
-            IFeatureClass fClass when (fClass.GeometryType == GeometryType.Polyline) => 2,
-            IFeatureClass fClass when (fClass.GeometryType == GeometryType.Polygon) => 3,
-            IFeatureClass fClass when (fClass.GeometryType == GeometryType.Envelope) => 4,
-            IFeatureClass fClass when (fClass.GeometryType == GeometryType.Unknown) => 5,
+            IFeatureClass { GeometryType: GeometryType.Point } => 0,
+            IFeatureClass { GeometryType: GeometryType.Multipoint } => 1,
+            IFeatureClass { GeometryType: GeometryType.Polyline } => 2,
+            IFeatureClass { GeometryType: GeometryType.Polygon } => 3,
+            IFeatureClass { GeometryType: GeometryType.Envelope } => 4,
+            IFeatureClass { GeometryType: GeometryType.Unknown } => 5,
             IRasterCatalogClass => 7,
             IRasterClass => 6,
             _ => 99
         };
-
 
     static public ILayer? FirstOrHigherIndexOfGeometryTypeOrder(this IEnumerable<ILayer>? layers, ILayer candidate)
     {

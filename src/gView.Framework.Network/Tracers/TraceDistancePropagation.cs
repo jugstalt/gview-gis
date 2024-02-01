@@ -1,13 +1,12 @@
-﻿using gView.Framework.Core.Data;
+﻿using gView.Framework.Core.Common;
+using gView.Framework.Core.Data;
 using gView.Framework.Core.Data.Cursors;
 using gView.Framework.Core.Geometry;
 using gView.Framework.Core.Network;
-using gView.Framework.Core.Common;
 using gView.Framework.Core.UI;
 using gView.Framework.Data.Filters;
 using gView.Framework.Geometry;
 using gView.Framework.Network.Algorthm;
-using gView.Framework.Common;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -20,6 +19,8 @@ namespace gView.Framework.Network.Tracers
         private Properties _properties = new Properties();
 
         #region INetworkTracer Member
+
+        public string GroupName => "";
 
         public string Name
         {
@@ -173,7 +174,7 @@ namespace gView.Framework.Network.Tracers
 
         #region INetworkTracerProperties Member
 
-        public Task<object> NetworkTracerProperties(INetworkFeatureClass network, NetworkTracerInputCollection input)
+        public Task<object> NetworkTracerProperties(INetworkFeatureClass network)
         {
             return Task.FromResult<object>(_properties);
         }
