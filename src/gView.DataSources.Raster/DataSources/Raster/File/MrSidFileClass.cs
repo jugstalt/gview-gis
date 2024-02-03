@@ -18,7 +18,6 @@ namespace gView.DataSources.Raster.File
         private IRasterDataset _dataset = null;
         private string _filename = "";
         private IPolygon _polygon = null;
-        private MrSidGeoCoord _geoCoord = new MrSidGeoCoord();
         private ISpatialReference _sRef = null;
         private RasterType _type;
         private bool _isValid = false;
@@ -58,7 +57,7 @@ namespace gView.DataSources.Raster.File
 
             if (polygon == null)
             {
-                if (!calcPolygon())
+                if (!CalcPolygon())
                 {
                     return;
                 }
@@ -75,19 +74,19 @@ namespace gView.DataSources.Raster.File
             CleanUp();
         }
 
-
         //private IntPtr memBuffer;
-        private IntPtr InitReader()
+        private IntPtr InitReader(out MrSidGeoCoord geoCoord)
         {
             IntPtr reader = IntPtr.Zero;
+            geoCoord = new MrSidGeoCoord();
 
             switch (_type)
             {
                 case RasterType.sid:
-                    reader = MrSidWrapper.LoadMrSIDReader(_filename, ref _geoCoord);
+                    reader = MrSidWrapper.LoadMrSIDReader(_filename, ref geoCoord);
                     break;
                 case RasterType.jp2:
-                    reader = MrSidWrapper.LoadJP2Reader(_filename, ref _geoCoord);
+                    reader = MrSidWrapper.LoadJP2Reader(_filename, ref geoCoord);
                     //FileInfo finfo = new FileInfo(_filename);
 
                     //unsafe
@@ -105,13 +104,21 @@ namespace gView.DataSources.Raster.File
                     break;
             }
 
+            this.oX = geoCoord.X;
+            this.oY = geoCoord.Y;
+            this.dx1 = geoCoord.xRes;
+            this.dx2 = geoCoord.xRot;
+            this.dy1 = geoCoord.yRot;
+            this.dy2 = geoCoord.yRes;
+
             string wf = _filename.Substring(0, _filename.Length - 4) + ((_type == RasterType.jp2) ? ".j2w" : ".sdw");
             FileInfo fi = new FileInfo(wf);
             if (fi.Exists)
             {
-                //_geoCoord.X -= _geoCoord.xRes / 2.0 + _geoCoord.xRot / 2.0;
-                //_geoCoord.Y -= _geoCoord.yRes / 2.0 + _geoCoord.yRot / 2.0;
+                //geoCoord.X -= geoCoord.xRes / 2.0 + geoCoord.xRot / 2.0;
+                //geoCoord.Y -= geoCoord.yRes / 2.0 + geoCoord.yRot / 2.0;
             }
+
             return reader;
         }
 
@@ -136,35 +143,14 @@ namespace gView.DataSources.Raster.File
             //ReleaseReader();
         }
 
-        public bool TestIfValid()
-        {
-            try
-            {
-                var reader = InitReader();
-                if (reader == IntPtr.Zero)
-                {
-                    throw new Exception("Can't open rasterfile");
-                }
-
-                ReleaseReader(reader);
-
-                return true;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"{Environment.NewLine}{_filename}{Environment.NewLine}Exception: {ex.Message}");
-                return false;
-            }
-        }
-
         internal bool isValid
         {
             get { return _isValid; }
         }
 
-        private bool calcPolygon()
+        private bool CalcPolygon()
         {
-            IntPtr reader = InitReader();
+            IntPtr reader = InitReader(out MrSidGeoCoord geoCoord);
             try
             {
                 if (reader == IntPtr.Zero)
@@ -178,8 +164,8 @@ namespace gView.DataSources.Raster.File
                     return false;
                 }
 
-                int iWidth = _geoCoord.iWidth;
-                int iHeight = _geoCoord.iHeight;
+                int iWidth = geoCoord.iWidth;
+                int iHeight = geoCoord.iHeight;
 
                 _polygon = new Polygon();
                 Ring ring = new Ring();
@@ -208,35 +194,17 @@ namespace gView.DataSources.Raster.File
             get { return _polygon; }
         }
 
-        public double oX
-        {
-            get { return _geoCoord.X; }
-        }
+        public double oX { get; private set; }
 
-        public double oY
-        {
-            get { return _geoCoord.Y; }
-        }
+        public double oY { get; private set; }
 
-        public double dx1
-        {
-            get { return _geoCoord.xRes; }
-        }
+        public double dx1 { get; private set; }
 
-        public double dx2
-        {
-            get { return _geoCoord.xRot; }
-        }
+        public double dx2 { get; private set; }
 
-        public double dy1
-        {
-            get { return _geoCoord.yRot; }
-        }
+        public double dy1 { get; private set; }
 
-        public double dy2
-        {
-            get { return _geoCoord.yRes; }
-        }
+        public double dy2 { get; private set; }
 
         public ISpatialReference SpatialReference
         {
@@ -266,7 +234,7 @@ namespace gView.DataSources.Raster.File
 
             try
             {
-                reader = InitReader();
+                reader = InitReader(out MrSidGeoCoord geoCoord);
                 if (reader == IntPtr.Zero || !(_polygon is ITopologicalOperation))
                 {
                     return null;
@@ -312,8 +280,8 @@ namespace gView.DataSources.Raster.File
                 IEnvelope picEnv = vector2.IntegerEnvelope(vecs);
                 picEnv.MinX = Math.Max(0, picEnv.MinX);
                 picEnv.MinY = Math.Max(0, picEnv.MinY);
-                picEnv.MaxX = Math.Min(picEnv.MaxX, _geoCoord.iWidth);
-                picEnv.MaxY = Math.Min(picEnv.MaxY, _geoCoord.iHeight);
+                picEnv.MaxX = Math.Min(picEnv.MaxX, geoCoord.iWidth);
+                picEnv.MaxY = Math.Min(picEnv.MaxY, geoCoord.iHeight);
 
                 // Ecken zurücktransformieren -> Welt
                 vecs = new vector2[3];
@@ -326,8 +294,8 @@ namespace gView.DataSources.Raster.File
                 var p3 = new gView.Framework.Geometry.Point(vecs[2].x, vecs[2].y);
 
                 double pix = display.MapScale / (display.Dpi / 0.0254);  // [m]
-                double c1 = Math.Sqrt(_geoCoord.xRes * _geoCoord.xRes + _geoCoord.xRot * _geoCoord.xRot);
-                double c2 = Math.Sqrt(_geoCoord.yRes * _geoCoord.yRes + _geoCoord.yRot * _geoCoord.yRot);
+                double c1 = Math.Sqrt(geoCoord.xRes * geoCoord.xRes + geoCoord.xRot * geoCoord.xRot);
+                double c2 = Math.Sqrt(geoCoord.yRes * geoCoord.yRes + geoCoord.yRot * geoCoord.yRot);
                 mag = Math.Round((Math.Min(c1, c2) / pix), 8);
 
                 // Immer in auf float runden! Läuft stabiler!!!
@@ -337,9 +305,9 @@ namespace gView.DataSources.Raster.File
                     mag = 1f;
                 }
 
-                if (mag < _geoCoord.MinMagnification)
+                if (mag < geoCoord.MinMagnification)
                 {
-                    mag = (float)_geoCoord.MinMagnification;
+                    mag = (float)geoCoord.MinMagnification;
                 }
 
                 x = (int)(picEnv.MinX * mag);
@@ -460,12 +428,12 @@ namespace gView.DataSources.Raster.File
             {
 
                 TFWFile tfw = new TFWFile(
-                    _geoCoord.X,
-                    _geoCoord.Y,
-                    _geoCoord.xRes,
-                    _geoCoord.xRot,
-                    _geoCoord.yRot,
-                    _geoCoord.yRes);
+                    this.oX,
+                    this.oY,
+                    this.dx1,
+                    this.dx2,
+                    this.dy1,
+                    this.dy2);
 
                 string wf = _filename.Substring(0, _filename.Length - 4) + ((_type == RasterType.jp2) ? ".j2w" : ".sdw");
                 FileInfo fi = new FileInfo(wf);
@@ -473,8 +441,8 @@ namespace gView.DataSources.Raster.File
                 {
                     tfw.Filename = wf;
                 }
-                else if (_geoCoord.X != 0.0 && _geoCoord.Y != 0.0 &&
-                    Math.Abs(_geoCoord.xRes) != 1.0 && Math.Abs(_geoCoord.yRes) != 1.0)
+                else if (this.oX != 0.0 && this.oY != 0.0 &&
+                    Math.Abs(this.dx1) != 1.0 && Math.Abs(this.dy2) != 1.0)
                 {
                     // valid
                 }
@@ -494,12 +462,12 @@ namespace gView.DataSources.Raster.File
             get
             {
                 return new TFWFile(
-                        _geoCoord.X,
-                        _geoCoord.Y,
-                        _geoCoord.xRes,
-                        _geoCoord.xRot,
-                        _geoCoord.yRot,
-                        _geoCoord.yRes);
+                        this.oX,
+                        this.oY,
+                        this.dx1,
+                        this.dx2,
+                        this.dy1,
+                        this.dy2);
             }
         }
 

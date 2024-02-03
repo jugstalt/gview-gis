@@ -1,13 +1,11 @@
-﻿using gView.Cmd.Fdb.Lib.SpatialIndex;
-using gView.DataSources.Fdb.ImageDataset;
+﻿using gView.DataSources.Fdb.ImageDataset;
+using gView.Framework.Common;
+using gView.Framework.Core.Common;
 using gView.Framework.Core.Data;
 using gView.Framework.Core.FDB;
-using gView.Framework.Core.Common;
-using gView.Framework.Common;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Runtime.InteropServices.ComTypes;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
@@ -37,7 +35,7 @@ internal class Add
         {
             ProgressCounter++;
 
-            if (ProgressCounter % 100 == 0)
+            if (ProgressCounter % 1 == 0)
             {
                 ReportAction?.Invoke(this, $"..{ProgressCounter}");
             }

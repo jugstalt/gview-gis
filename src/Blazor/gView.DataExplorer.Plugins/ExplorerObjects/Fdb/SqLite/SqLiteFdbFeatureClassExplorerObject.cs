@@ -133,7 +133,8 @@ public class SqLiteFdbFeatureClassExplorerObject : ExplorerObjectCls<SqLiteFdbDa
                 contextTools.AddRange(new IExplorerObjectContextTool[]
                 {
                     new AddImage(),
-                    new AddImages()
+                    new AddImages(),
+                    new RemoveImageIfNotExisits()
                 });
             }
             else

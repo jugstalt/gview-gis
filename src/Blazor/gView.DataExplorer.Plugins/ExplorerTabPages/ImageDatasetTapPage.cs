@@ -40,9 +40,9 @@ internal class ImageDatasetTapPage : IExplorerTabPage
         return Task.FromResult(true);
     }
 
-    async public Task<IContentItemResult> RefreshContents()
+    async public Task<IContentItemResult> RefreshContents(bool force = false)
     {
-        if (_currentTable != null)
+        if (!force && _currentTable is not null)
         {
             return _currentTable.ToResult();
         }
@@ -92,7 +92,9 @@ internal class ImageDatasetTapPage : IExplorerTabPage
 
                 string? path = row["PATH"]?.ToString();
 
-                rowItem.AddData("Exists", String.IsNullOrEmpty(path) ? false : File.Exists(path));
+                rowItem.AddData("Exists", String.IsNullOrEmpty(path) 
+                    ? false 
+                    : File.Exists(path));
                 rowItem.AddData("Path", path);
 
                 var providerGuid = row["RF_PROVIDER"]?.ToString();
@@ -113,6 +115,7 @@ internal class ImageDatasetTapPage : IExplorerTabPage
                 }
             }
 
+            table.OrderBy("Exists");
             return (_currentTable = table).ToResult();
         }
 

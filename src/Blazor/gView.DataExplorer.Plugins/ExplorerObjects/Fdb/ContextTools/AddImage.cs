@@ -1,6 +1,5 @@
 ﻿using gView.Cmd.Core.Abstraction;
 using gView.Cmd.Fdb.Lib;
-using gView.DataExplorer.Plugins.Extensions;
 using gView.DataExplorer.Razor.Components.Dialogs.Filters;
 using gView.DataExplorer.Razor.Components.Dialogs.Models;
 using gView.DataSources.Fdb.MSSql;
@@ -9,7 +8,6 @@ using gView.DataSources.Fdb.SQLite;
 using gView.DataSources.GDAL;
 using gView.DataSources.Raster.File;
 using gView.Framework.Blazor;
-using gView.Framework.Blazor.Services.Abstraction;
 using gView.Framework.Core.Data;
 using gView.Framework.DataExplorer.Abstraction;
 using gView.Framework.DataExplorer.Services.Abstraction;
@@ -76,7 +74,7 @@ internal class AddImage : IExplorerObjectContextTool
             });
 
 
-            await scope.ShowKnownDialog(
+            if (await scope.ShowKnownDialog(
                     KnownDialogs.ExecuteCommand,
                     $"Add File",
                     new ExecuteCommandModel()
@@ -89,7 +87,10 @@ internal class AddImage : IExplorerObjectContextTool
                                 Parameters = parameters
                             }
                         }
-                    });
+                    }) != null)
+            {
+                await scope.ForceContentRefresh();
+            }
 
             return true;
         }

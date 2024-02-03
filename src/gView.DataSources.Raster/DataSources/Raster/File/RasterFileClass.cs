@@ -62,8 +62,6 @@ namespace gView.DataSources.Raster.File
             catch { _valid = false; }
         }
 
-        public bool TestIfValid() => true;
-
         public bool isValid { get { return _valid; } }
 
         private void calcPolygon()

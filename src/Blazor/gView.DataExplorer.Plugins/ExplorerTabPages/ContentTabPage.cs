@@ -35,7 +35,7 @@ public class ContentTabPage : IExplorerTabPage
         return Task.FromResult(true);
     }
 
-    async public Task<IContentItemResult> RefreshContents()
+    async public Task<IContentItemResult> RefreshContents(bool force = false)
     {
         var table = new TableItem(new[] { "Name", "Type" })
             .SetExplorerObject(_exObject);

@@ -7,7 +7,6 @@ using gView.Carto.Plugins.Extensions;
 using gView.Carto.Razor.Components.Tools.Context;
 using gView.Carto.Razor.Components.Tools.ToolEvents;
 using gView.Framework.Carto.Abstraction;
-using gView.Framework.Cartography;
 using gView.Framework.Common;
 using gView.Framework.Core.Carto;
 using gView.Framework.Core.Common;
@@ -17,7 +16,6 @@ using gView.Framework.Core.Geometry;
 using gView.Framework.Core.Network;
 using gView.Framework.Data.Extensions;
 using gView.Framework.Data.Filters;
-using gView.Framework.Geometry;
 
 namespace gView.Carto.Plugins.CartoTools.Network;
 
@@ -84,7 +82,7 @@ internal class NetworkTool : ICartoTool
         {
             NetworkContextTool.SetStartNode => OnStartTargetPointEvent(scope, eventArgs),
             NetworkContextTool.SetTargetNode => OnStartTargetPointEvent(scope, eventArgs),
-            NetworkContextTool.RemoveElements => OnRemoveElements(scope,eventArgs),
+            NetworkContextTool.RemoveElements => OnRemoveElements(scope, eventArgs),
             NetworkContextTool.Trace => OnTrace(scope, eventArgs),
             _ => Task.FromResult(false)
         };
@@ -237,7 +235,7 @@ internal class NetworkTool : ICartoTool
         scope.Document.Map.Display.GraphicsContainer.Elements.Remove(typeof(GraphicNetworkPathEdge));
         scope.Document.Map.Display.GraphicsContainer.Elements.Remove(typeof(GraphicFlagPoint));
 
-        if(_networkContext is not null)
+        if (_networkContext is not null)
         {
             _networkContext.ContextTool = NetworkContextTool.SetStartNode;
             _networkContext.StartNode = -1;
@@ -253,7 +251,7 @@ internal class NetworkTool : ICartoTool
 
     async private Task<IFeatureCursor?> NetworkPathEdges(
             ICartoApplicationScopeService scope,
-            INetworkFeatureClass networkFeatureClass, 
+            INetworkFeatureClass networkFeatureClass,
             NetworkEdgeCollectionOutput edgeCollection
         )
     {

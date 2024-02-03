@@ -2,24 +2,33 @@
 @implements IDisposable
 @inject ExplorerEventBusService EventBus
 
-@if (table != null)
+@if (_table != null)
 {
-    <MudTable Items="@table.Rows" Hover="true" Dense="true"
+    <MudTable Items="@_table.Rows" Hover="true" Dense="true"
               T="RowItem">
         <HeaderContent>
-            @foreach (var column in table.Columns)
+            @foreach (var column in _table.Columns)
             {
                 <MudTh Class="table-column-icon">@column</MudTh>
             }
         </HeaderContent>
         <RowTemplate>
             @{
-                foreach (var column in table.Columns)
+                foreach (var column in _table.Columns)
                 {
                     <MudTd>
+                    @if (context[column] is bool)
+                    {
+                        <MudCheckBox T="bool"
+                                     Value="@Convert.ToBoolean(context[column])"
+                                     ReadOnly="true" />
+                    } 
+                    else
+                    {
                         <div style="vertical-align:top;display:inline-flex;width:100%;cursor:pointer">
                             <span>&nbsp;@context[column]</span>
                         </div>
+                    }
                     </MudTd>
                 }
             }
@@ -31,28 +40,45 @@
     [Parameter] public IExplorerTabPage? FrameworkElement { get; set; }
     [Parameter] public IExplorerObject? CurrentExplorerObject { get; set; }
 
-    private TableItem? table;
+    private TableItem? _table;
 
-    async protected override Task OnParametersSetAsync()
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+
+        EventBus.OnRefreshContentAsync += HandleRefreshContentAsync;
+    }
+
+    protected override Task OnParametersSetAsync() => HandleAsync(async () =>
     {
         await base.OnParametersSetAsync();
 
-        await base.HandleAsync(async () =>
+        if (FrameworkElement is null)
         {
-            if (FrameworkElement == null)
-            {
-                return;
-            }
+            return;
+        }
 
-            await FrameworkElement.SetExplorerObjectAsync(CurrentExplorerObject);
-            var result = await FrameworkElement.RefreshContents();
+        await FrameworkElement.SetExplorerObjectAsync(CurrentExplorerObject);
+        var result = await FrameworkElement.RefreshContents();
 
-            table = result.Item as TableItem;
-        });
-    }
+        _table = result.Item as TableItem;
+    });
+
+    private Task HandleRefreshContentAsync() => HandleAsync(async () =>
+    {
+        if (FrameworkElement is null)
+        {
+            return;
+        }
+
+        var result = await FrameworkElement.RefreshContents(force: true);
+        _table = result.Item as TableItem;
+
+        await base.InvokeAsync(() => StateHasChanged());
+    });
 
     public void Dispose()
     {
-        
+        EventBus.OnRefreshContentAsync -= HandleRefreshContentAsync;
     }
 }

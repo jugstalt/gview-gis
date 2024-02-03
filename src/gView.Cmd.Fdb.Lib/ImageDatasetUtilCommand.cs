@@ -11,6 +11,7 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using gView.DataSources.Fdb.MSAccess;
 
 namespace gView.Cmd.Fdb.Lib;
 public class ImageDatasetUtilCommand : ICommand
@@ -74,14 +75,48 @@ public class ImageDatasetUtilCommand : ICommand
                     await new Truncate().Run(dataset, $"{dataset.DatasetName}_IMAGE_POLYGONS");
                     break;
                 case "clean":
-                    await new RemoveIfNotExists(cancelTracker).Run(dataset);
+                    var removeIfNotExists = new RemoveIfNotExists(cancelTracker);
+                    removeIfNotExists.ReportAction += (sender, message) =>
+                    {
+                        if (message.StartsWith("."))
+                        {
+                            logger?.Log(message);
+                        }
+                        else
+                        {
+                            logger?.LogLine("");
+                            logger?.LogLine(message);
+                        }
+                    };
+
+                    await removeIfNotExists.Run(dataset);
                     break;
                 case "add":
                     string? filename = parameters.GetValue<string>("filename");
 
+                    var add = new Add(cancelTracker);
+                    add.ReportAction += (sender, message) =>
+                    {
+                        if (message.StartsWith(".."))
+                        {
+                            logger?.Log(message);
+                        }
+                        else
+                        {
+                            logger?.LogLine("");
+                            logger?.LogLine(message);
+                        }
+                    };
+
                     if (!String.IsNullOrEmpty(filename))
                     {
-                        await new Add(cancelTracker).RunAddFiles(dataset, new[] { filename! }, GetProviders(parameters, logger));
+                        await add.RunAddFiles(
+                                dataset, 
+                                new[] { filename! }, 
+                                GetProviders(parameters, logger)
+                            );
+                        await CalculateExtent(dataset);
+
                         break;
                     }
 
@@ -91,7 +126,14 @@ public class ImageDatasetUtilCommand : ICommand
                     {
                         string filters = parameters.GetRequiredValue<string>("filter");
 
-                        await new Add(cancelTracker).RunImportDirectory(dataset, new System.IO.DirectoryInfo(directory), filters.Split(';'), GetProviders(parameters, logger));
+                        await add.RunImportDirectory(
+                                dataset, 
+                                new System.IO.DirectoryInfo(directory), 
+                                filters.Split(';'), 
+                                GetProviders(parameters, logger)
+                            );
+                        await CalculateExtent(dataset);
+
                         break;
                     }
 
@@ -183,6 +225,21 @@ public class ImageDatasetUtilCommand : ICommand
         }
 
         return providers;
+    }
+
+
+    async static Task<bool> CalculateExtent(IFeatureDataset? ds)
+    {
+        //Console.WriteLine("\nCalculete new Extent");
+        var fdb = ds?.Database as AccessFDB;
+        if (fdb is not null)
+        {
+            IFeatureClass fc = await fdb.GetFeatureclass(ds!.DatasetName, ds.DatasetName + "_IMAGE_POLYGONS");
+            await fdb.CalculateExtent(fc);
+            //fdb.ShrinkSpatialIndex(ds.DatasetName + "_IMAGE_POLYGONS");
+            //fdb.RebuildSpatialIndex(ds.DatasetName + "_IMAGE_POLYGONS");
+        }
+        return true;
     }
 
     #endregion

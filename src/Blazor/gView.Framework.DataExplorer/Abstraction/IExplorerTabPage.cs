@@ -17,5 +17,5 @@ public interface IExplorerTabPage : IOrder
     Task<bool> ShowWith(IExplorerObject? exObject);
     string Title { get; }
 
-    Task<IContentItemResult> RefreshContents();
+    Task<IContentItemResult> RefreshContents(bool force = false);
 }

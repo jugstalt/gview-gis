@@ -179,8 +179,6 @@ namespace gView.DataSources.GDAL
             }
         }
 
-        public bool TestIfValid() => true;
-
         public bool isValid { get { return _valid; } }
         internal RasterType Type
         {

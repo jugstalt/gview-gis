@@ -1,18 +1,17 @@
 using gView.DataSources.Fdb.MSAccess;
+using gView.Framework.Common;
+using gView.Framework.Common.Extensions;
+using gView.Framework.Core.Common;
 using gView.Framework.Core.Data;
 using gView.Framework.Core.Data.Cursors;
 using gView.Framework.Core.FDB;
-using gView.Framework.Core.Common;
 using gView.Framework.Data.Filters;
 using gView.Framework.Db;
-using gView.Framework.Common;
-using gView.GraphicsEngine;
 using System;
 using System.Collections.Generic;
 using System.Data;
 using System.IO;
 using System.Threading.Tasks;
-using gView.Framework.Common.Extensions;
 
 namespace gView.DataSources.Fdb.ImageDataset
 {
@@ -726,7 +725,7 @@ namespace gView.DataSources.Fdb.ImageDataset
                             FileInfo fi = new FileInfo(path);
                             if (!fi.Exists)
                             {
-                                Console.Write("*");
+                                ReportAction(this, $"Remove {fi.Name}");
                                 Oids.Add(feature.OID);
                                 continue;
                             }
@@ -736,16 +735,16 @@ namespace gView.DataSources.Fdb.ImageDataset
                             FileInfo fi = new FileInfo(path2);
                             if (!fi.Exists)
                             {
-                                Console.Write("*");
+                                ReportAction(this, $"Remove {fi.Name}");
                                 Oids.Add(feature.OID);
                                 continue;
                             }
                         }
-                        Console.Write(".");
+                        ReportAction(this, ".");
                     }
                     catch (Exception ex)
                     {
-                        Console.WriteLine(_errMsg = "Exception: " + ex.Message);
+                        ReportAction(this, _errMsg = "Exception: " + ex.Message);
                     }
                 }
 
@@ -753,92 +752,13 @@ namespace gView.DataSources.Fdb.ImageDataset
                 {
                     if (!await ((AccessFDB)_fdb).Delete(rasterFC, oid))
                     {
-                        Console.WriteLine(_errMsg = "Can't delete record OID=" + oid);
+                        ReportAction(this, _errMsg = "Can't delete record OID=" + oid);
                         return false;
                     }
                 }
 
                 return true;
             }
-        }
-
-        #endregion
-
-        #region Try Open Files
-
-        async public Task<bool> TryOpenImage(Guid providerGuid)
-        {
-            var provider = PlugInManager.Create(providerGuid) as IRasterFileDataset;
-            if (provider == null)
-            {
-                Console.WriteLine("ERROR: provider is not an IRasterFileDataset");
-            }
-
-            if (!(_fdb is AccessFDB))
-            {
-                return false;
-            }
-
-            IFeatureClass rasterFC = await ((AccessFDB)_fdb).GetFeatureclass(_dsname, _dsname + "_IMAGE_POLYGONS");
-            if (rasterFC == null)
-            {
-                if (rasterFC == null)
-                {
-                    Console.WriteLine("\n\nERROR: Open Featureclass - Can't init featureclass " + _dsname + "_IMAGE_POLYGONS");
-                    return false;
-                }
-            }
-
-            if (ReportAction != null)
-            {
-                ReportAction(this, "Remove unexisting");
-            }
-
-            if (ReportProgress != null)
-            {
-                ReportProgress(this, 1);
-            }
-
-            QueryFilter filter = new QueryFilter();
-            filter.AddField("FDB_OID");
-            filter.AddField("PATH");
-            filter.AddField("LAST_MODIFIED");
-            filter.AddField("PATH2");
-            filter.AddField("LAST_MODIFIED2");
-
-            using (IFeatureCursor cursor = await rasterFC.GetFeatures(filter))
-            {
-                IFeature feature;
-                while ((feature = await cursor.NextFeature()) != null)
-                {
-                    string path = (string)feature["PATH"];
-                    string path2 = (string)feature["PATH2"];
-                    try
-                    {
-                        if (!String.IsNullOrEmpty(path))
-                        {
-                            if(provider.AddRasterFile(path)?.RasterClass is IRasterFile rasterFile)
-                            {
-                                rasterFile.TestIfValid();
-                            }
-                        }
-                        if (!String.IsNullOrEmpty(path2))
-                        {
-                            if (provider.AddRasterFile(path)?.RasterClass is IRasterFile rasterFile)
-                            {
-                                rasterFile.TestIfValid();
-                            }
-                        }
-                        Console.Write(".");
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine(_errMsg = "Exception: " + ex.Message);
-                    }
-                }
-            }
-
-            return true;
         }
 
         #endregion

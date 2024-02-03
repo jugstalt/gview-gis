@@ -80,7 +80,7 @@ internal class AddImages : IExplorerObjectContextTool
                         })));
             }
 
-            await scope.ShowKnownDialog(
+            if(await scope.ShowKnownDialog(
                     KnownDialogs.ExecuteCommand,
                     $"Add File",
                     new ExecuteCommandModel()
@@ -93,7 +93,10 @@ internal class AddImages : IExplorerObjectContextTool
                                 Parameters = parameters
                             }
                         }
-                    });
+                    }) != null)
+            {
+                await scope.ForceContentRefresh();
+            }
 
             return true;
         }

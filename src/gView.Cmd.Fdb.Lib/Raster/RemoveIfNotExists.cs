@@ -12,7 +12,7 @@ internal class RemoveIfNotExists
 {
     private ICancelTracker _cancelTracker;
     public delegate void ReportActionEvent(RemoveIfNotExists sender, string action);
-    //public event ReportActionEvent? ReportAction;
+    public event ReportActionEvent? ReportAction;
 
     public RemoveIfNotExists(ICancelTracker? cancelTracker)
     {
@@ -29,6 +29,11 @@ internal class RemoveIfNotExists
         }
 
         FDBImageDataset import = new FDBImageDataset(ds.Database as IImageDB, ds.DatasetName);
+        import.ReportAction += (sender, message) =>
+        {
+            ReportAction?.Invoke(this, message);
+        };
+
         var result = await import.RemoveUnexisting();
 
         if (result)

@@ -33,7 +33,7 @@ public class DataViewTabPage : IExplorerTabPage
         return Task.FromResult(true);
     }
 
-    public Task<IContentItemResult> RefreshContents()
+    public Task<IContentItemResult> RefreshContents(bool force = false)
     {
         return Task.FromResult<IContentItemResult>(new ContentItemResult());
     }
