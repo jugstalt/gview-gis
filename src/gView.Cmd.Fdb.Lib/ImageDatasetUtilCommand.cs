@@ -35,6 +35,7 @@ public class ImageDatasetUtilCommand : ICommand
 
                    add:      add file or directory with filter
                    clean:    remove unexisting images
+                   check:    check for not existing images
                    truncate: remove all items from dataset
                 """
         },
@@ -90,6 +91,23 @@ public class ImageDatasetUtilCommand : ICommand
                     };
 
                     await removeIfNotExists.Run(dataset);
+                    break;
+                case "check":
+                    var checkIfExists = new CheckIfExists(cancelTracker);
+                    checkIfExists.ReportAction += (sender, message) =>
+                    {
+                        if (message.StartsWith("."))
+                        {
+                            logger?.Log(message);
+                        }
+                        else
+                        {
+                            logger?.LogLine("");
+                            logger?.LogLine(message);
+                        }
+                    };
+
+                    await checkIfExists.Run(dataset);
                     break;
                 case "add":
                     string? filename = parameters.GetValue<string>("filename");

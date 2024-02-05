@@ -28,7 +28,7 @@ internal class Add
                                         IEnumerable<string> fileNames,
                                         Dictionary<string, Guid>? providers)
     {
-        FDBImageDataset import = new FDBImageDataset(ds.Database as IImageDB, ds.DatasetName);
+        FDBImageDataset import = new FDBImageDataset(ds.Database as IImageDB, ds.DatasetName, _cancelTracker);
         import.handleNonGeorefAsError = true;
 
         import.ReportProgress += (sender, progress) =>

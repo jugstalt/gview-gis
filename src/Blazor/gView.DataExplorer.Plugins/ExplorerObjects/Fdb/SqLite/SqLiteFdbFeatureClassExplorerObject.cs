@@ -134,7 +134,8 @@ public class SqLiteFdbFeatureClassExplorerObject : ExplorerObjectCls<SqLiteFdbDa
                 {
                     new AddImage(),
                     new AddImages(),
-                    new RemoveImageIfNotExisits()
+                    new RemoveImageIfNotExisits(),
+                    new CheckIfImagesExists()
                 });
             }
             else

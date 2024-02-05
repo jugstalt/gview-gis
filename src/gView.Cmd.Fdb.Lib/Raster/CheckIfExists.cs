@@ -1,20 +1,23 @@
 ﻿using gView.DataSources.Fdb.ImageDataset;
 using gView.DataSources.Fdb.MSAccess;
+using gView.Framework.Common;
+using gView.Framework.Core.Common;
 using gView.Framework.Core.Data;
 using gView.Framework.Core.FDB;
-using gView.Framework.Core.Common;
-using gView.Framework.Common;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace gView.Cmd.Fdb.Lib.Raster;
-
-internal class RemoveIfNotExists
+internal class CheckIfExists
 {
     private ICancelTracker _cancelTracker;
-    public delegate void ReportActionEvent(RemoveIfNotExists sender, string action);
+    public delegate void ReportActionEvent(CheckIfExists sender, string action);
     public event ReportActionEvent? ReportAction;
 
-    public RemoveIfNotExists(ICancelTracker? cancelTracker)
+    public CheckIfExists(ICancelTracker? cancelTracker)
     {
         _cancelTracker = cancelTracker ?? new CancelTracker();
     }
@@ -34,14 +37,6 @@ internal class RemoveIfNotExists
             ReportAction?.Invoke(this, message);
         };
 
-        var result = await import.RemoveUnexisting();
-
-        if (result)
-        {
-            IFeatureClass fc = await fdb.GetFeatureclass(ds.DatasetName, $"{ds.DatasetName}_IMAGE_POLYGONS");
-            await fdb.CalculateExtent(fc);
-        }
-
-        return result;
+        return await import.CheckIfExists();
     }
 }

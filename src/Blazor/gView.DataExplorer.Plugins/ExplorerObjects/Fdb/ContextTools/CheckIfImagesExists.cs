@@ -10,14 +10,12 @@ using gView.Framework.DataExplorer.Abstraction;
 using gView.Framework.DataExplorer.Services.Abstraction;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-
 namespace gView.DataExplorer.Plugins.ExplorerObjects.Fdb.ContextTools;
-
-internal class RemoveImageIfNotExisits : IExplorerObjectContextTool
+internal class CheckIfImagesExists : IExplorerObjectContextTool
 {
-    public string Name => "Remove, if not exists";
+    public string Name => "Check, if images exists";
 
-    public string Icon => "basic:round-minus";
+    public string Icon => "basic:check";
 
     public bool IsEnabled(IExplorerApplicationScopeService scope, IExplorerObject exObject) => true;
 
@@ -36,9 +34,9 @@ internal class RemoveImageIfNotExisits : IExplorerObjectContextTool
             _ => throw new System.Exception($"Can't remove images from {instance?.GetType().Name}")
         });
         parameters.Add("connstr", instance.Dataset.ConnectionString);
-        parameters.Add("job", "clean");
+        parameters.Add("job", "check");
 
-        if(await scope.ShowKnownDialog(
+        if (await scope.ShowKnownDialog(
                     KnownDialogs.ExecuteCommand,
                     this.Name,
                     new ExecuteCommandModel()

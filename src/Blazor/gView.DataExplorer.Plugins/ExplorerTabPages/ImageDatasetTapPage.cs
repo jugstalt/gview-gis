@@ -57,12 +57,12 @@ internal class ImageDatasetTapPage : IExplorerTabPage
         {
             var tableClass = (ITableClass)instance;
 
-            var fieldNames = new[] { "Exists", "Path", "Provider" };
+            var fieldNames = new[] { "Nr", "Path", "Provider" };
             var table = new TableItem(fieldNames);
 
             var filter = new QueryFilter()
             {
-                Limit = 1000,
+                //Limit = 1000,
                 SubFields = "PATH,RF_PROVIDER"
             };
 
@@ -83,18 +83,18 @@ internal class ImageDatasetTapPage : IExplorerTabPage
                     _ => null
                 };
 
-                if (row == null || ++count > filter.Limit)
+                if (row == null /*|| ++count > filter.Limit*/)
                 {
                     break;
                 }
 
+                count++;
                 var rowItem = table.AddRow();
 
                 string? path = row["PATH"]?.ToString();
 
-                rowItem.AddData("Exists", String.IsNullOrEmpty(path) 
-                    ? false 
-                    : File.Exists(path));
+                rowItem.AddData("Nr", count);  
+
                 rowItem.AddData("Path", path);
 
                 var providerGuid = row["RF_PROVIDER"]?.ToString();

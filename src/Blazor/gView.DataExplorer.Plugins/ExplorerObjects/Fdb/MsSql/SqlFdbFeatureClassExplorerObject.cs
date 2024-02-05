@@ -118,16 +118,37 @@ public class SqlFdbFeatureClassExplorerObject : ExplorerObjectCls<SqlFdbDatasetE
             }
         }
 
+        #region Add Context Tools
+
+        List<IExplorerObjectContextTool> contextTools = new();
+
         if (!_isNetwork)
         {
-            _contextTools = new IExplorerObjectContextTool[]
+            if (element.Class is IRasterClass)
             {
-                new ShrinkSpatialIndices(),
-                new RepairSpatialIndex(),
-                new SpatialIndexDefinition(),
-                new TruncateFeatureClass()
-            };
+                contextTools.AddRange(new IExplorerObjectContextTool[]
+                {
+                    new AddImage(),
+                    new AddImages(),
+                    new RemoveImageIfNotExisits(),
+                    new CheckIfImagesExists()
+                });
+            }
+            else
+            {
+                contextTools.AddRange(new IExplorerObjectContextTool[]
+                {
+                    new ShrinkSpatialIndices(),
+                    new RepairSpatialIndex(),
+                    new SpatialIndexDefinition(),
+                    new TruncateFeatureClass()
+                });
+            }
         }
+
+        _contextTools = contextTools.ToArray();
+
+        #endregion
     }
 
     internal string ConnectionString

@@ -27,9 +27,9 @@ namespace gView.DataSources.Fdb.ImageDataset
         private gView.Framework.Db.ICommonDbConnection _conn = null;
         private string _errMsg = String.Empty, _dsname = "";
         private IImageDB _fdb = null;
-        private CancelTracker _cancelTracker;
+        private ICancelTracker _cancelTracker;
 
-        public FDBImageDataset(IImageDB fdb, string dsname)
+        public FDBImageDataset(IImageDB fdb, string dsname, ICancelTracker cancelTracker = null)
         {
             _fdb = fdb;
             _dsname = dsname;
@@ -37,7 +37,7 @@ namespace gView.DataSources.Fdb.ImageDataset
             {
                 _conn = ((AccessFDB)_fdb)._conn;
             }
-            _cancelTracker = new CancelTracker();
+            _cancelTracker = cancelTracker ?? new CancelTracker();
         }
 
         public string lastErrorMessage
@@ -676,6 +676,7 @@ namespace gView.DataSources.Fdb.ImageDataset
         #endregion
 
         #region Remove Unexisting
+
         async public Task<bool> RemoveUnexisting()
         {
             if (!(_fdb is AccessFDB))
@@ -758,6 +759,89 @@ namespace gView.DataSources.Fdb.ImageDataset
                 }
 
                 return true;
+            }
+        }
+
+        #endregion
+
+        #region Check if Exists
+
+        async public Task<bool> CheckIfExists()
+        {
+            if (!(_fdb is AccessFDB))
+            {
+                return false;
+            }
+
+            IFeatureClass rasterFC = await ((AccessFDB)_fdb).GetFeatureclass(_dsname, _dsname + "_IMAGE_POLYGONS");
+            if (rasterFC == null)
+            {
+                if (rasterFC == null)
+                {
+                    Console.WriteLine("\n\nERROR: Open Featureclass - Can't init featureclass " + _dsname + "_IMAGE_POLYGONS");
+                    return false;
+                }
+            }
+
+            if (ReportAction != null)
+            {
+                ReportAction(this, "Find not existing files");
+            }
+
+            if (ReportProgress != null)
+            {
+                ReportProgress(this, 1);
+            }
+
+            QueryFilter filter = new QueryFilter();
+            filter.AddField("FDB_OID");
+            filter.AddField("PATH");
+            int count = 0, countNotExisting = 0;
+
+            using (IFeatureCursor cursor = await rasterFC.GetFeatures(filter))
+            {
+                IFeature feature;
+                while ((feature = await cursor.NextFeature()) != null)
+                {
+                    count++;
+
+                    if(!_cancelTracker.Continue)
+                    {
+                        ReportAction(this, $"canceled");
+                        break;
+                    }
+
+                    string path = (string)feature["PATH"];
+                    string path2 = (string)feature["PATH2"];
+                    try
+                    {
+                        if (!String.IsNullOrEmpty(path))
+                        {
+                            FileInfo fi = new FileInfo(path);
+                            if (!fi.Exists)
+                            {
+                                ReportAction(this, $"file not exists: {fi.FullName}");
+                                countNotExisting++;
+                                continue;
+                            }
+                        }
+
+                        ReportAction(this, count % 50 == 0 ? $".{count}{Environment.NewLine}" : ".");
+                    }
+                    catch (Exception ex)
+                    {
+                        ReportAction(this, _errMsg = "Exception: " + ex.Message);
+                    }
+                }
+
+                if (count % 50 != 0)
+                {
+                    ReportAction(this, $".{count}{Environment.NewLine}");
+                }
+
+                ReportAction(this, $"Total not existing files: {countNotExisting}");
+
+                return countNotExisting == 0;
             }
         }
 
