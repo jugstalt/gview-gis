@@ -20,7 +20,7 @@ using System.Threading.Tasks;
 namespace gView.Cmd.Fdb.Lib;
 public class CreateDatasetCommand : ICommand
 {
-    public string Name => "FDB.CreateFeatureClass";
+    public string Name => "FDB.CreateDataset";
 
     public string Description => "Creates a new gView Feature Database FeatureClass";
 

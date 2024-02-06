@@ -26,7 +26,7 @@ public class ImageDatasetUtilCommand : ICommand
     {
         new RequiredCommandParameter<IRasterDataset>("")
         {
-            Description="FDB ImageDadtaset"
+            Description="FDB ImageDataset"
         },
         new RequiredCommandParameter<string>("job")
         {

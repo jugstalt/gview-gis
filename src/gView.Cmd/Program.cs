@@ -2,6 +2,7 @@
 using gView.Cmd.Extensions.DependencyInjection;
 using gView.Cmd.Services;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.SqlServer.Management.SqlParser.SqlCodeDom;
 
 var servicesProvider = new ServiceCollection()
     .AddCommandCollection()
@@ -11,7 +12,14 @@ var servicesProvider = new ServiceCollection()
 
 var worker = servicesProvider.GetService<WorkerService>();
 
-worker!.Run();
+try
+{
+    await worker!.Run();
 
-Console.WriteLine();
-Console.WriteLine("finished");
+    Console.WriteLine();
+    Console.WriteLine("finished");
+}
+catch(Exception ex)
+{
+    Console.WriteLine($"Exception: {ex.Message}");
+}
