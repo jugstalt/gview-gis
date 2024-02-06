@@ -124,7 +124,7 @@
         {
             if (String.IsNullOrEmpty(commandItem.Command.ExecutableName))
             {
-                sb.Append($"./gView.cmd.exe -command {commandItem.Command.Name}");
+                sb.Append($"./gView.cmd.exe --command {commandItem.Command.Name}");
             } 
             else
             {
