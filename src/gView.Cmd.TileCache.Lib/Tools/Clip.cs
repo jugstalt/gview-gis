@@ -58,7 +58,7 @@ internal class Clip
         using (var cursor = await clipperFeatureClass.GetFeatures(
             String.IsNullOrEmpty(clipperDefintionQuery)
             ? null
-            : new QueryFilter() { WhereClause = clipperDefintionQuery }))
+            : new QueryFilter() { SubFields = clipperFeatureClass.ShapeFieldName, WhereClause = clipperDefintionQuery }))
         {
             IFeature feature;
 
@@ -78,6 +78,7 @@ internal class Clip
 
         if(clipperPolygons.Count == 0)
         {
+            logger?.LogLine($"No Polygons found to clip");
             return false;
         }
 
@@ -192,7 +193,7 @@ internal class Clip
                                 continue;
                             }
 
-                            logger?.LogLine("Append tile {level.Level}/{startRow + r}/{startCol + c}");
+                            logger?.LogLine($"Append tile {level.Level}/{startRow + r}/{startCol + c}");
 
                             byte[] data = bundle.ImageData(tilePos, tileLength);
 
