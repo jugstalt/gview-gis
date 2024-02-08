@@ -1,0 +1,40 @@
+@inject IApplicationScopeFactory AppScopeFactory
+
+<GvGrid ColumnCount="6">
+    <GvGridItem Span="5">
+        <MudTextField Label="@Label"
+                      @bind-Value="DefintionQuery"
+                      Variant="Variant.Text"></MudTextField>
+    </GvGridItem>
+    <GvGridItem>
+        <MudFab Color="Color.Primary"
+                OnClick="SelectDefinitionQuery"
+                StartIcon="@Icons.Material.Filled.More" />
+    </GvGridItem>
+</GvGrid>
+
+@code {
+    [Parameter] public string Label { get; set; } = "Definition Query";
+    [Parameter] public ITableClass? TableClass { get; set; }
+    [Parameter] public string DefintionQuery { get; set; } = "";
+    [Parameter] public EventCallback<string> DefintionQueryChanged { get; set; }
+
+    async private Task SelectDefinitionQuery()
+    {
+        var model = await AppScopeFactory.ShowModalDialog(
+            typeof(gView.Razor.Dialogs.QueryBuilderDialog),
+            Label,
+            model: new QueryBuilderModel()
+            {
+                TableClass = TableClass,
+                QueryString = DefintionQuery
+            });
+
+        if (model is not null)
+        {
+            DefintionQuery = model.QueryString;
+
+            await DefintionQueryChanged.InvokeAsync(DefintionQuery);
+        }
+    }
+}

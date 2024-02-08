@@ -1,0 +1,60 @@
+@using gView.Cmd.TileCache.Lib
+@inherits ModalDialogFormBase<ClipTileCacheModel>
+
+<ModalDialogFormBase T="ClipTileCacheModel"
+                     OnDialogClose="base.OnDialogClose"
+                     Model="base.Model">
+    <DialogBody>
+        <MudSelect T="TileCacheClipType"
+                   Label="Clip Type"
+                   @bind-Value="Model.ClipType">
+            @(GvUtilities.EnumToSelectItems<TileCacheClipType>())
+        </MudSelect>
+
+        <GvCard Title="Source Tile Cache">
+            <GvCardContent>
+                <SelectFolderControl @bind-Folder="Model.SourceCache" 
+                                     Label="Source Cache Folder" />
+
+                <MudNumericField T="int" Min="-1"
+                                 Label="Max Level"
+                                 HelperText="Max Level for clipping. Use -1 for all levels"
+                                 @bind-Value="Model.MaxLevel" />
+            </GvCardContent>
+        </GvCard>
+        
+        <GvCard Title="Clipper">
+            <GvCardContent>
+                <SelectFeatureClassControl @bind-FeatureClass="Model.Clipper"
+                                           Label="Clipper Feature class" />
+
+                @if (Model.Clipper is not null)
+                {
+                    <SelectDefinitionQueryControl TableClass="Model.Clipper"
+                                                  Label="Defintion Query"
+                                                  @bind-DefintionQuery="Model.ClipperDefinitionQuery" />
+                }
+            </GvCardContent>
+        </GvCard>
+        
+
+        @if (Model.ClipType == TileCacheClipType.Copy)
+        {
+            <GvCard Title="Source Tile Cache">
+                <GvCardContent>
+                    <SelectFolderControl @bind-Folder="Model.TargetCache" Label="Target Cache Folder" />
+
+                    <MudNumericField T="int" Max="100" Min="-1"
+                                     Label="Jpeg Qualitiy"
+                                     HelperText="Jpeg Qualitiy for target tiles. Use -1 for default quality"
+                                     @bind-Value="Model.MaxLevel" />
+                </GvCardContent>
+            </GvCard>
+        }
+
+    </DialogBody>
+</ModalDialogFormBase>
+
+@code {
+
+}

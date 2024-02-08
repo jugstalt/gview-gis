@@ -15,8 +15,8 @@
             <tr>
                 <td>
                     <MudCheckBox T="bool" 
-                                 Checked="selectable.Selected"
-                                 CheckedChanged="(isChecked) => ItemChecked(selectable, isChecked)" />
+                                 Value="selectable.Selected"
+                                 ValueChanged="(isChecked) => ItemChecked(selectable, isChecked)" />
                 </td>
                 @foreach(string property in ItemProperties)
                 {

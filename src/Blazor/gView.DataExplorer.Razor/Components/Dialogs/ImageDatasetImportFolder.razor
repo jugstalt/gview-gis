@@ -23,8 +23,8 @@
                         {
                             <tr>
                                 <td>
-                                        <MudCheckBox Checked="provider.Selected" T="bool"
-                                                      CheckedChanged="(isChecked) => SelectProvider(provider,isChecked)"
+                                        <MudCheckBox Value="provider.Selected" T="bool"
+                                                     ValueChanged="(isChecked) => SelectProvider(provider,isChecked)"
                                                       Label="@provider.Format" />
                                 </td>
                                 <td>

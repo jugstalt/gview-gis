@@ -23,7 +23,7 @@ public class CopyFeatureClassCommand : ICommand
 
     public string Description => "Copies a featureclass from one datasoure to another";
 
-    public string ExecutableName => "gView.Cmd.CopyFeatureclass.exe";
+    public string ExecutableName => "";
 
     public IEnumerable<ICommandParameterDescription> ParameterDescriptions => new ICommandParameterDescription[]
     {
