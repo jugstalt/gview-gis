@@ -3,7 +3,8 @@
 <GvGrid ColumnCount="6">
     <GvGridItem Span="5">
         <MudTextField Label="@Label"
-                      @bind-Value="DefintionQuery"
+                      Value="DefintionQuery" T="string"
+                      ValueChanged="SetDefintionQuery"
                       Variant="Variant.Text"></MudTextField>
     </GvGridItem>
     <GvGridItem>
@@ -32,9 +33,10 @@
 
         if (model is not null)
         {
-            DefintionQuery = model.QueryString;
-
-            await DefintionQueryChanged.InvokeAsync(DefintionQuery);
+            await SetDefintionQuery(model.QueryString);
         }
     }
+
+    private Task SetDefintionQuery(string definitionQuery)
+        => DefintionQueryChanged.InvokeAsync(DefintionQuery = definitionQuery);
 }

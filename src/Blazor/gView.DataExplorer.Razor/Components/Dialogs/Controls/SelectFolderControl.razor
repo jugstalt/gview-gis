@@ -3,7 +3,8 @@
 <GvGrid ColumnCount="6">
     <GvGridItem Span="5">
         <MudTextField Label="@Label"
-                        @bind-Value="Folder"
+                        Value="Folder" T="string"
+                        ValueChanged="SetFolder"
                         Variant="Variant.Text"></MudTextField>
     </GvGridItem>
     <GvGridItem>
@@ -31,9 +32,10 @@
 
         if (model != null && model.Result.ExplorerObjects.Count() == 1)
         {
-            Folder = model.Result.ExplorerObjects.First().FullName;
-
-            await FolderChanged.InvokeAsync(Folder);
+            await SetFolder(model.Result.ExplorerObjects.First().FullName);
         }
     }
+
+    private Task SetFolder(string folder)
+        => FolderChanged.InvokeAsync(Folder = folder);
 }

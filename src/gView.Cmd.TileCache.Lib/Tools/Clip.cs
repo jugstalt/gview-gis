@@ -56,9 +56,14 @@ internal class Clip
         List<IPolygon> clipperPolygons = new List<IPolygon>();
 
         using (var cursor = await clipperFeatureClass.GetFeatures(
-            String.IsNullOrEmpty(clipperDefintionQuery)
-            ? null
-            : new QueryFilter() { SubFields = clipperFeatureClass.ShapeFieldName, WhereClause = clipperDefintionQuery }))
+                String.IsNullOrEmpty(clipperDefintionQuery)
+                ? null
+                : new QueryFilter() { 
+                        SubFields = clipperFeatureClass.ShapeFieldName, 
+                        WhereClause = clipperDefintionQuery 
+                    }
+                )
+            )
         {
             IFeature feature;
 
