@@ -11,11 +11,11 @@ using System.Threading.Tasks;
 
 namespace gView.Cmd.TileCache.Lib;
 
-public class ClipTileCacheCommand : ICommand
+public class ClipCompactTileCacheCommand : ICommand
 {
-    public string Name => "TileCache.Clip";
+    public string Name => "TileCache.ClipCompact";
 
-    public string Description => "Clips a tile cache by envelope/polygon";
+    public string Description => "Clips a tile compact cache by polygon(s)";
 
     public string ExecutableName => "";
 
@@ -25,7 +25,7 @@ public class ClipTileCacheCommand : ICommand
         {
             Description="[copy,cut,list] 'copy' the cache, 'cut'/'delelte' affected tiles or 'list' affected tiles",
         },
-        new RequiredCommandParameter<string>("source")
+        new RequiredCommandParameter<string>("source-config")
         {
             Description = "Source tilecache path"
         },
@@ -41,7 +41,7 @@ public class ClipTileCacheCommand : ICommand
         {
             Description = "Definition query (Where Clause) for quering clipper polygons"
         },
-        new CommandParameter<string>("target")
+        new CommandParameter<string>("target-folder")
         {
             Description = "or target tilecache path"
         },
@@ -61,7 +61,7 @@ public class ClipTileCacheCommand : ICommand
         {
             var clipperBuilder = new FeatureClassParameterBuilder("clipper");
 
-            string sourceCache = parameters.GetRequiredValue<string>("source");
+            string sourceCache = parameters.GetRequiredValue<string>("source-config");
             IFeatureClass clipper = await clipperBuilder.Build<IFeatureClass>(parameters);
             string? clipperQuery = parameters.GetValueOrDefault<string>("clipper-query", null);
             TileCacheClipType clipType = parameters.GetValueOrDefault<string>("clip-type", "copy")!.ToLower() switch
@@ -72,11 +72,11 @@ public class ClipTileCacheCommand : ICommand
                 "list" => TileCacheClipType.List,
                 _ => throw new ArgumentException("Unknown clip type")
             };
-            string targetCache = parameters.GetValueOrDefault<string>("target", null) ?? "";
+            string targetCache = parameters.GetValueOrDefault<string>("target-folder", null) ?? "";
             int jpegQual = parameters.GetValueOrDefault<int>("jpeg-qual", -1);
             int maxLevel = parameters.GetValueOrDefault<int>("max-level", -1);
 
-            var clip = new Clip(cancelTracker);
+            var clip = new ClipCompact(cancelTracker);
 
             return await clip.Run(
                     sourceCache,

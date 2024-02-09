@@ -8,10 +8,10 @@ public class ClipTileCacheModel : IDialogResultItem
 {
     public TileCacheClipType ClipType { get; set; }
 
-    public string SourceCache { get; set; } = "";
+    public string SourceCacheConfig { get; set; } = "";
     public int MaxLevel { get; set; } = -1;
 
-    public string TargetCache { get; set;  } = "";
+    public string TargetCacheFolder { get; set;  } = "";
     public int JpegQuality { get; set; } = -1;
 
     public IFeatureClass? Clipper { get; set; }

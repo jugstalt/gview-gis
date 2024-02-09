@@ -1,4 +1,7 @@
-﻿using gView.Cmd.TileCache.Lib.CompactCache;
+﻿using gView.Cmd.Core.Abstraction;
+using gView.Cmd.TileCache.Lib.CompactCache;
+using gView.Framework.Common;
+using gView.Framework.Core.Common;
 using gView.Framework.Core.Data;
 using gView.Framework.Core.Geometry;
 using gView.Framework.Data.Filters;
@@ -8,27 +11,24 @@ using gView.Framework.Geometry.GeoProcessing;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 using System.IO;
-using gView.Framework.Core.Common;
-using gView.Framework.Common;
-using gView.Cmd.Core.Abstraction;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace gView.Cmd.TileCache.Lib.Tools;
 
-internal class Clip
+internal class ClipCompact
 {
     private readonly ICancelTracker _cancelTracker;
 
-    public Clip(ICancelTracker? cancelTracker)
+    public ClipCompact(ICancelTracker? cancelTracker)
     {
         _cancelTracker = cancelTracker ?? new CancelTracker();
     }
 
     async public Task<bool> Run(
-            string cacheSource,
-            string cacheTarget,
+            string cacheSourceConfigFile,
+            string cacheTargetFolder,
             IFeatureClass clipperFeatureClass,
             string? clipperDefintionQuery,
             int jpegQuality = -1,
@@ -37,18 +37,41 @@ internal class Clip
             ICommandLogger? logger = null
         )
     {
-        // ToDo: check if it is a compact tilecache
-        
-        var configFile = new FileInfo(System.IO.Path.Combine(cacheSource, "conf.json"));
+        // ToDo: check if it is a compact tilecache?
+
+        var configFile = new FileInfo(cacheSourceConfigFile);
         if (!configFile.Exists)
         {
             throw new ArgumentException($"File {configFile.FullName} not exists");
         }
 
-        if(clipType == TileCacheClipType.Copy 
-            && String.IsNullOrEmpty(cacheTarget))
+        string cacheSourceFolder = configFile.Directory!.FullName;
+        CompactTileConfig cacheConfig = JsonConvert.DeserializeObject<CompactTileConfig>(File.ReadAllText(configFile.FullName))!;
+        var cacheSRef = SpatialReference.FromID($"epsg:{cacheConfig.Epsg}");
+        if(cacheSRef is null || cacheSRef.EpsgCode == 0)
         {
-            throw new ArgumentException("Target directory must be set");
+            throw new Exception($"The config file dont provide an valid or known EPSG Code ({cacheConfig.Epsg})");
+        }
+
+        if (clipType == TileCacheClipType.Copy)
+        {
+            if (String.IsNullOrEmpty(cacheTargetFolder))
+            {
+                throw new ArgumentException("Target directory must be set");
+            }
+            if (Directory.Exists(cacheTargetFolder) && 
+                    (
+                        Directory.GetFiles(cacheTargetFolder).Length > 0 ||
+                        Directory.GetDirectories(cacheTargetFolder).Length > 0
+                    )
+                )
+            {
+                throw new ArgumentException("Target directory is not empty!");
+            }
+            else
+            {
+                Directory.CreateDirectory(cacheTargetFolder);
+            }
         }
 
         #region Determine Clipper Polygons
@@ -56,13 +79,12 @@ internal class Clip
         List<IPolygon> clipperPolygons = new List<IPolygon>();
 
         using (var cursor = await clipperFeatureClass.GetFeatures(
-                String.IsNullOrEmpty(clipperDefintionQuery)
-                ? null
-                : new QueryFilter() { 
-                        SubFields = clipperFeatureClass.ShapeFieldName, 
-                        WhereClause = clipperDefintionQuery 
-                    }
-                )
+                new QueryFilter()
+                {
+                    SubFields = clipperFeatureClass.ShapeFieldName,
+                    FeatureSpatialReference = cacheSRef,
+                    WhereClause = clipperDefintionQuery ?? ""
+                })
             )
         {
             IFeature feature;
@@ -81,9 +103,9 @@ internal class Clip
             logger?.LogLine($"{clipperPolygons.Count} polygons found for clipping...");
         }
 
-        if(clipperPolygons.Count == 0)
+        if (clipperPolygons.Count == 0)
         {
-            logger?.LogLine($"No Polygons found to clip");
+            logger?.LogLine($"No polygons found to clip");
             return false;
         }
 
@@ -106,7 +128,6 @@ internal class Clip
 
         #endregion
 
-        CompactTileConfig cacheConfig = JsonConvert.DeserializeObject<CompactTileConfig>(File.ReadAllText(configFile.FullName))!;
         double dpm = cacheConfig.Dpi / 0.0254;
 
         foreach (var level in cacheConfig.Levels)
@@ -121,11 +142,13 @@ internal class Clip
             double tileWorldHeight = cacheConfig.TileSize[1] * resolution;
 
             var scaleDirectory = new DirectoryInfo(
-                System.IO.Path.Combine(cacheSource, ((int)level.Scale).ToString()));
+                System.IO.Path.Combine(cacheSourceFolder, ((int)level.Scale).ToString()));
             if (!scaleDirectory.Exists)
             {
                 continue;
             }
+
+            Directory.CreateDirectory(System.IO.Path.Combine(cacheTargetFolder, ((int)level.Scale).ToString()));
 
             var scaleBundleFiles = new List<FileInfo>(scaleDirectory.GetFiles("*.tilebundle"));
             scaleBundleFiles.AddRange(scaleDirectory.GetFiles("*.tilebundle.done"));
@@ -133,6 +156,7 @@ internal class Clip
             foreach (var bundleFile in scaleBundleFiles.ToArray())
             {
                 var bundle = new Bundle(bundleFile.FullName);
+
                 if (!bundle.Index.Exists)
                 {
                     continue;
@@ -165,7 +189,7 @@ internal class Clip
                 logger?.LogLine($"Clip bundle: {bundleFile.FullName}");
 
                 var clippedBundleFile = new FileInfo(
-                    System.IO.Path.Combine(cacheTarget, ((int)level.Scale).ToString(), bundleFile.Name));
+                    System.IO.Path.Combine(cacheTargetFolder, ((int)level.Scale).ToString(), bundleFile.Name));
 
                 if (!clippedBundleFile.Directory!.Exists)
                 {
@@ -242,6 +266,23 @@ internal class Clip
             {
                 break;
             }
+        }
+
+        if (clipType == TileCacheClipType.Copy)
+        {
+            #region write conf.json
+
+            if (maxlevel >= 0)
+            {
+                cacheConfig.Levels = cacheConfig.Levels.Take(maxlevel + 1).ToArray();
+            }
+
+            File.WriteAllText(
+                    System.IO.Path.Combine(cacheTargetFolder, "conf.json"), 
+                    JsonConvert.SerializeObject(cacheConfig, Formatting.Indented)
+                );
+
+            #endregion
         }
 
         return true;

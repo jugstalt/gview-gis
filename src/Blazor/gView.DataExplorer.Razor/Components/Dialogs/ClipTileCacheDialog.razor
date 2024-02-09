@@ -13,8 +13,7 @@
 
         <GvCard Title="Source Tile Cache">
             <GvCardContent>
-                <SelectFolderControl @bind-Folder="Model.SourceCache" 
-                                     Label="Source Cache Folder" />
+                <SelectTileCacheControl @bind-ConfFile="Model.SourceCacheConfig" />
 
                 <MudNumericField T="int" Min="-1"
                                  Label="Max Level"
@@ -42,7 +41,7 @@
         {
             <GvCard Title="Source Tile Cache">
                 <GvCardContent>
-                    <SelectFolderControl @bind-Folder="Model.TargetCache" Label="Target Cache Folder" />
+                    <SelectFolderControl @bind-Folder="Model.TargetCacheFolder" Label="Target Cache Folder" />
 
                     <MudNumericField T="int" Max="100" Min="-1"
                                      Label="Jpeg Qualitiy"

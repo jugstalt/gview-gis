@@ -1,0 +1,112 @@
+@inject IApplicationScopeFactory AppScopeFactory
+
+<GvGrid ColumnCount="6">
+    <GvGridItem Span="5">
+        <MudTextField Label="Folder"
+                      Value="_rootFolder" T="string"
+                      ValueChanged="SetRootFolder"
+                      Variant="Variant.Text"></MudTextField>
+    </GvGridItem>
+    <GvGridItem>
+        <MudFab Color="Color.Primary"
+                OnClick="SelectRootFolder"
+                StartIcon="@Icons.Material.Filled.FolderOpen" />
+    </GvGridItem>
+</GvGrid>
+@if(_relativeConfFiles.Count>0)
+{
+    <MudSelect T="string"
+               Label="Select Conf.json"
+               Value="_selectedRelativeConfigFile"
+               ValueChanged="RelativeConfJsonPathChanged">
+        @GvUtilities.StringsToSelectItems(_relativeConfFiles)
+    </MudSelect>
+}
+
+@code {
+    [Parameter] public string ConfFile { get; set; } = "";
+    [Parameter] public EventCallback<string> ConfFileChanged { get; set; }
+
+    private string _rootFolder = "";
+    private List<string> _relativeConfFiles = [];
+    private string? _selectedRelativeConfigFile = null;
+
+    async private Task SelectRootFolder()
+    {
+        var model = await AppScopeFactory.ShowKnownDialog(Framework.Blazor.KnownDialogs.ExplorerDialog,
+                                                        model: new ExplorerDialogModel()
+                                                            {
+                                                                Filters = new List<ExplorerDialogFilter> {
+                                                                                    new OpenFolderFilter()
+                                                                    },
+                                                                Mode = ExploerDialogMode.Open
+                                                            });
+
+        if (model != null && model.Result.ExplorerObjects.Count() == 1)
+        {
+            await SetRootFolder(model.Result.ExplorerObjects.First().FullName);
+        }
+    }
+
+    private Task SetRootFolder(string rootFolder)
+    { 
+        FindConfigJsonFiles(_rootFolder = rootFolder);
+
+        if (_relativeConfFiles.Count > 0)
+        {
+            _selectedRelativeConfigFile = _relativeConfFiles.First();
+        } 
+        else
+        {
+            _selectedRelativeConfigFile = null;    
+        }
+
+        return SetConfFile();
+    }
+
+    private Task RelativeConfJsonPathChanged(string relativePath)
+    {
+        _selectedRelativeConfigFile = relativePath;
+
+        return SetConfFile();
+    }
+
+    private Task SetConfFile()
+    {
+        ConfFile = String.IsNullOrEmpty(_selectedRelativeConfigFile)
+            ? ""
+            : System.IO.Path.Combine(_rootFolder, _selectedRelativeConfigFile);
+
+        return ConfFileChanged.InvokeAsync(ConfFile);
+    }
+
+    #region Search conf.xml files 
+
+    private List<string> FindConfigJsonFiles(string folder)
+    {
+        _relativeConfFiles.Clear();
+        var di = new DirectoryInfo(folder);
+
+        try
+        {
+            foreach (string file in Directory.GetFiles(folder, "conf.json", SearchOption.AllDirectories))
+            {
+                var relativeConfFile = file.Substring(di.FullName.Length);
+                while(relativeConfFile.StartsWith("\\") || relativeConfFile.StartsWith("/"))
+                {
+                    relativeConfFile = relativeConfFile.Substring(1);
+                }
+
+                _relativeConfFiles.Add(relativeConfFile);
+            }
+        }
+        catch 
+        {
+            
+        }
+
+        return _relativeConfFiles;
+    }
+
+    #endregion
+}

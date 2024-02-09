@@ -10,13 +10,15 @@ using System.Collections.Generic;
 using gView.Cmd.Core.Abstraction;
 using gView.Framework.Blazor;
 using gView.Framework.Common;
+using LiteDB.Engine;
+using gView.Blazor.Core.Extensions;
 
 namespace gView.DataExplorer.Plugins.ExplorerToolCommands;
 
 [RegisterPlugIn("0CA2DC1A-A2FB-47FE-BECA-2D265781E8D3")]
-public class ClipTileCache : IExplorerToolCommand
+public class ClipCompactTileCache : IExplorerToolCommand
 {
-    public string Name => "TileCache.Clip";
+    public string Name => "TileCache.ClipCompact";
 
     public string ToolTip => "Clip a compact tile cache folder";
 
@@ -44,19 +46,23 @@ public class ClipTileCache : IExplorerToolCommand
             throw new ArgumentException("Can't determine features class dataset plugin guid"); ;
         }
 
-        ICommand command = new ClipTileCacheCommand();
+        ICommand command = new ClipCompactTileCacheCommand();
         IDictionary<string, object> parameters = new Dictionary<string, object>()
         {
             { "clip-type", model.ClipType.ToString() },
-            { "source", model.SourceCache },
+            { "source-config", model.SourceCacheConfig },
             { "max-level", model.MaxLevel },
             { "clipper_connstr", sourceDataset.ConnectionString },
             { "clipper_guid", sourceDatasetGuid.ToString() },
             { "clipper_fc", model.Clipper.Name },
-            { "clipper-query", model.ClipperDefinitionQuery },
-            { "target", model.TargetCache },
-            { "jpeg-qual", model.JpegQuality }
+            { "clipper-query", model.ClipperDefinitionQuery }
         };
+
+        if(model.ClipType == TileCacheClipType.Copy)
+        {
+            parameters.Add("target-folder", model.TargetCacheFolder);
+            parameters.Add("jpeg-qual", model.JpegQuality);
+        }
 
         await scope.ShowKnownDialog(
                     KnownDialogs.ExecuteCommand,
