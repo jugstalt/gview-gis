@@ -9,6 +9,7 @@ namespace gView.Framework.DataExplorer.Services.Abstraction;
 
 public interface IExplorerApplicationScopeService : IApplicationScope
 {
+    IExplorerObject RootExplorerObject(string? fileFilter = null);
     IExplorerObject? CurrentExplorerObject { get; }
     IEnumerable<IExplorerObject>? ContextExplorerObjects { get; }
 

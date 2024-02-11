@@ -133,20 +133,18 @@
     private Task ContextToolClickAsync(IExplorerObjectContextTool contextTool)
         => base.HandleAsync(() => contextTool.OnEvent(AppScope, contextExplorerObject!));
 
-    private Task CreateClickAsync(IExplorerObjectCreatable creatable)
+    private Task CreateClickAsync(IExplorerObjectCreatable creatable) => base.HandleAsync(async () =>
     {
-        return base.HandleAsync(async () =>
+        if (currentExplorerObject != null)
         {
-            if (currentExplorerObject != null)
+            var newExObject = await creatable.CreateExplorerObjectAsync(AppScope, currentExplorerObject);
+            if (newExObject != null)
             {
-                var newExObject = await creatable.CreateExplorerObjectAsync(AppScope, currentExplorerObject);
-                if (newExObject != null)
-                {
-                    await EventBus.FireSoftRefreshContentAsync();
-                }
+                await EventBus.FireSoftRefreshContentAsync();
             }
-        });
-    }
+        }
+    });
+
 
     async private Task DarkmodeClick()
     {

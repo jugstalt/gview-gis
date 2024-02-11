@@ -73,7 +73,7 @@ public class LoadDocument : ICartoInitialButton
                     model: new ExplorerDialogModel()
                     {
                         Filters = new List<ExplorerDialogFilter> {
-                        new OpenFileFilter("Map", "*.mxl")
+                            new OpenFileFilter("Map", "*.mxl")
                         },
                         Mode = ExploerDialogMode.Open
                     }

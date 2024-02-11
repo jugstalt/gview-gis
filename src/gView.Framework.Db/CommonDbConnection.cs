@@ -1428,6 +1428,7 @@ namespace gView.Framework.Db
                         using (DbConnection dbconnection = dbfactory.CreateConnection())
                         {
                             dbconnection.ConnectionString = this.ConnectionString;
+                            dbconnection.Open();
 
                             foreach (var queryScheme in querySchemes)
                             {

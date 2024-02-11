@@ -15,6 +15,11 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using gView.Framework.DataExplorer.Services.Abstraction;
+using System.Runtime.CompilerServices;
+using gView.DataExplorer.Core.Extensions;
+using gView.Blazor.Core;
+using gView.Framework.Common.Extensions;
+using gView.Framework.OGC.WFS;
 
 namespace gView.DataExplorer.Plugins.ExplorerObjects.FileSystem;
 
@@ -109,6 +114,7 @@ public class DirectoryObject : ExplorerParentObject<IExplorerObject>,
     async public override Task<bool> Refresh()
     {
         await base.Refresh();
+
         List<IExplorerObject> childs = await Refresh(this, FullName);
         if (childs == null)
         {
@@ -122,6 +128,8 @@ public class DirectoryObject : ExplorerParentObject<IExplorerObject>,
 
         return true;
     }
+
+    public override bool RequireRefresh() => true; // always refresh directory if requestest
 
     #endregion
 
@@ -144,22 +152,40 @@ public class DirectoryObject : ExplorerParentObject<IExplorerObject>,
             throw;
         }
 
-        PlugInManager manager = new PlugInManager();
+        PlugInManager pluginManager = new PlugInManager();
+        var rootObject = parent.GetRoot();
 
-        foreach (var exObjectType in manager.GetPlugins(Framework.Common.Plugins.Type.IExplorerFileObject))
+        foreach (var exObjectType in pluginManager.GetPlugins(Framework.Common.Plugins.Type.IExplorerFileObject))
         {
-            var exObj = manager.CreateInstance<IExplorerFileObject>(exObjectType);
+            var exObj = pluginManager.CreateInstance<IExplorerFileObject>(exObjectType);
             if (exObj == null)
             {
                 continue;
             }
 
-            foreach (string filter in ((IExplorerFileObject)exObj).Filter.Split('|'))
+            string fileFilter = exObj.Filter;
+
+            if (fileFilter == KnownFileFilters.Any)
             {
+                if (!String.IsNullOrEmpty(rootObject?.FileFilter))
+                {
+                    fileFilter = rootObject.FileFilter;
+
+                    //  ?DoTo?: Check if this filter is already implemented by on othoer IFileExplorerObject
+                }
+                else
+                {
+                    continue;
+                }
+            }
+
+            foreach (string filter in fileFilter.Split('|'))
+            {
+                
                 foreach (string file in Directory.GetFiles(FullName, filter))
                 {
                     FileInfo fi = new FileInfo(file);
-                    IExplorerFileObject? obj = await ((IExplorerFileObject)exObj).CreateInstance(parent, fi.FullName);
+                    IExplorerFileObject? obj = await exObj.CreateInstance(parent, fi.FullName);
                     if (obj == null)
                     {
                         continue;

@@ -1,6 +1,5 @@
 @inherits BaseHandler
 @implements IDisposable
-@inject IExplorerApplicationService ExplorerApplication
 @inject IExplorerApplicationScopeService AppScope
 @inject PluginManagerService PluginManager
 @inject IconService Icons
@@ -34,7 +33,7 @@
     protected override Task OnInitializedAsync() => HandleAsync(async () =>
     {
         // initialize tree
-        TreeNodes.Add(_selected = new ExplorerTreeNode(ExplorerApplication.RootExplorerObject));
+        TreeNodes.Add(_selected = new ExplorerTreeNode(AppScope.RootExplorerObject()));
         await LoadServerData(_selected);
         _selected.IsExpanded = true;
 
@@ -119,7 +118,7 @@
 
     private Task<bool> RefreshCurrentNodeAsync() => base.HandleFuncAsync(async () =>
     {
-        if (_selected != null && await _selected.ExObject.SecureRefresh() == true)
+        if (_selected != null && await _selected.ExObject.SecureRefreshAsync() == true)
         {
             _selected.Children = null;
             await LoadServerData(_selected);

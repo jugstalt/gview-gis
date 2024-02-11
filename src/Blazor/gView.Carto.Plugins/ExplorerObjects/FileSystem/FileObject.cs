@@ -1,8 +1,9 @@
-﻿using gView.DataExplorer.Plugins.ExplorerObjects.Base;
+﻿using gView.Blazor.Core;
+using gView.DataExplorer.Plugins.ExplorerObjects.Base;
+using gView.Framework.Common;
 using gView.Framework.Core.Common;
 using gView.Framework.DataExplorer.Abstraction;
 using gView.Framework.DataExplorer.Events;
-using gView.Framework.Common;
 
 namespace gView.Carto.Plugins.ExplorerObjects.FileSystem;
 
@@ -12,6 +13,14 @@ public class FileObject : ExplorerObjectCls<IExplorerObject, string>,
                           ISerializableExplorerObject,
                           IExplorerObjectDeletable
 {
+    //static private string[] extensions =
+    //    new PlugInManager()
+    //        .GetPlugins(Framework.Common.Plugins.Type.IExplorerFileObject)
+    //        .Select(t => Activator.CreateInstance(t) as IExplorerFileObject)
+    //        .Where(t => t != null)
+    //        .Select(t => t!.Filter)
+    //        .ToArray();
+    
     private string _filename = "";
 
     public FileObject() : base() { }
@@ -23,10 +32,7 @@ public class FileObject : ExplorerObjectCls<IExplorerObject, string>,
 
     #region IExplorerFileObject
 
-    public string Filter
-    {
-        get { return "*.*"; }
-    }
+    public string Filter => KnownFileFilters.Any;
 
     public Task<IExplorerFileObject?> CreateInstance(IExplorerObject parent, string filename)
     {

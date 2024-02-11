@@ -1,21 +1,18 @@
 ﻿using gView.DataExplorer.Plugins.ExplorerObjects.Base;
-using gView.Framework.DataExplorer.Abstraction;
-using gView.Framework.IO;
 using gView.Framework.Common;
+using gView.Framework.DataExplorer.Abstraction;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace gView.DataExplorer.Plugins.ExplorerObjects;
 internal class StartObject : ExplorerParentObject,
-                              IExplorerObject
+                             IExplorerRootObject
 {
     public StartObject()
-        : base()
-    {
-    }
+        : base() => (FileFilter) = (null);
+
+    public StartObject(string fileFilter)
+        : base() => (FileFilter) = (fileFilter);
 
     #region IExplorerObject Member
 
@@ -37,6 +34,12 @@ internal class StartObject : ExplorerParentObject,
     public string Icon => "basic:home";
 
     public Task<object?> GetInstanceAsync() => Task.FromResult<object?>(null);
+
+    #endregion
+
+    #region IExplorerRootObject
+
+    public string? FileFilter { get; }
 
     #endregion
 

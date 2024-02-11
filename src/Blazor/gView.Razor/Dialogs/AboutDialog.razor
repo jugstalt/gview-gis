@@ -34,6 +34,8 @@
     {
         base.OnInitialized();
 
+        GC.Collect();
+
         try
         {
             licText = gView.Razor.Properties.Resources.License.Replace("{YEAR}", DateTime.Now.Year.ToString());

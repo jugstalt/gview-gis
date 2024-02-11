@@ -9,17 +9,21 @@ namespace gView.DataSources.Raster.File
         //  ToDo: Könnte man das auch mit CSJ2K machen?   https://www.nuget.org/packages/CSJ2K/
         //
 
+        // lizardtech.com is now extensis.com
+        // current sdk:
+        // https://www.extensis.com/support/developers
+
         [DllImport("MrSIDLib.dll", SetLastError = true, ThrowOnUnmappableChar = true)]
         public static extern System.IntPtr LoadMrSIDReader(string filename, ref MrSidGeoCoord geoCoords);
 
-        [DllImport("MrSIDLib.dll", SetLastError = true, ThrowOnUnmappableChar = true)]
-        public static extern System.IntPtr LoadMrSIDMemReader(IntPtr data, int data_size, ref MrSidGeoCoord geoCoords);
+        //[DllImport("MrSIDLib.dll", SetLastError = true, ThrowOnUnmappableChar = true)]
+        //public static extern System.IntPtr LoadMrSIDMemReader(IntPtr data, int data_size, ref MrSidGeoCoord geoCoords);
 
         [DllImport("MrSIDLib.dll", SetLastError = true, ThrowOnUnmappableChar = true, CharSet = CharSet.Ansi)]
         public static extern System.IntPtr LoadJP2Reader(string filename, ref MrSidGeoCoord geoCoords);
 
-        [DllImport("MrSIDLib.dll", SetLastError = true, ThrowOnUnmappableChar = true)]
-        public static extern System.IntPtr LoadJP2MemReader(IntPtr data, int datasize, ref MrSidGeoCoord geoCoords);
+        //[DllImport("MrSIDLib.dll", SetLastError = true, ThrowOnUnmappableChar = true)]
+        //public static extern System.IntPtr LoadJP2MemReader(IntPtr data, int datasize, ref MrSidGeoCoord geoCoords);
 
         [DllImport("MrSIDLib.dll", SetLastError = true, ThrowOnUnmappableChar = true)]
         public static extern void FreeReader(IntPtr reader);

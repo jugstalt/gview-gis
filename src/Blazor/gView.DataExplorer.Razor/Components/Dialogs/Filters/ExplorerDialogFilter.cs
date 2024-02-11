@@ -47,6 +47,11 @@ public class ExplorerDialogFilter
         return Task.FromResult(found);
     }
 
+    public virtual Task<bool> CanOverWrite(IExplorerObject exObject) 
+        => Task.FromResult(false);
+
+    public virtual string FileFilter => "";
+
     public virtual object? FilterObject
     {
         get { return null; }

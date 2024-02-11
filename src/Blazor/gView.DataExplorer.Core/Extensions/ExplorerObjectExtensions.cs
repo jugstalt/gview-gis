@@ -26,36 +26,79 @@ static public class ExplorerObjectExtensions
         return ancestors;
     }
 
-    async static public Task<bool> SecureRefresh(this IExplorerObject exObject)
+    async static public Task<bool> SecureRefreshAsync(this IExplorerObject exObject)
     {
         if (exObject is IExplorerParentObject parentExObject)
         {
-            using (var mutex = await FuzzyMutexAsync.LockAsync(exObject.GetHashCode().ToString()))
-            {
-                if (parentExObject.RequireRefresh() == false)
-                {
-                    return true;
-                }
-
-                if (mutex.WasBlocked == false)
-                {
-                    try
-                    {
-                        await parentExObject.Refresh();
-                    }
-                    catch (Exception ex)
-                    {
-                        if (!parentExObject.HandleRefreshException(ex))
-                        {
-                            throw;
-                        }
-                    }
-                }
-            }
+            await parentExObject.SecureRefreshAsync();
 
             return true;
         }
 
         return false;
+    }
+
+    async static public Task SecureRefreshAsync(this IExplorerParentObject parentExObject)
+    {
+        using (var mutex = await FuzzyMutexAsync.LockAsync(parentExObject.GetHashCode().ToString()))
+        {
+            if (parentExObject.RequireRefresh() == false)
+            {
+                return;
+            }
+
+            if (mutex.WasBlocked == false)
+            {
+                try
+                {
+                    await parentExObject.Refresh();
+                }
+                catch (Exception ex)
+                {
+                    if (!parentExObject.HandleRefreshException(ex))
+                    {
+                        throw;
+                    }
+                }
+            }
+        }
+    }
+
+    async static public Task<IEnumerable<IExplorerObject>> SecureChildObjectsAsync(this IExplorerParentObject parentExObject)
+    {
+        await parentExObject.SecureRefreshAsync();
+        return await parentExObject.ChildObjects();
+    }
+
+    static public IEnumerable<IExplorerObject> GetParents(this IExplorerObject exObject, bool includeSelf)
+    {
+        List<IExplorerObject> parents = new();
+
+        if (exObject is not null)
+        {
+            if (includeSelf)
+            {
+                parents.Add(exObject);
+            }
+
+            var parent = exObject.ParentExplorerObject;
+            while (parent is not null)
+            {
+                parents.Add(parent);
+                parent = parent.ParentExplorerObject;
+            }
+        }
+
+        return parents;
+    }
+
+    static public IExplorerRootObject? GetRoot(this IExplorerObject exObject)
+    {
+        while(exObject?.ParentExplorerObject is not null)
+        {
+            exObject = exObject.ParentExplorerObject;
+        }
+
+        return exObject as IExplorerRootObject;
     }
 }

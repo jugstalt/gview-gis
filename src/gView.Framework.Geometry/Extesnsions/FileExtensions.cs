@@ -30,6 +30,14 @@ namespace gView.Framework.Geometry.Extesnsions
                 return new SpatialReference(File.ReadAllText(fiPrj.FullName));
             }
 
+            // global ".epsg" File
+            fiPrj = new FileInfo(System.IO.Path.Combine(fi.Directory.FullName, ".epsg"));
+            if (fiPrj.Exists)
+            {
+                return new SpatialReference(File.ReadAllText(fiPrj.FullName));
+            }
+
+
             return null;
         }
     }

@@ -1,6 +1,7 @@
 ﻿using gView.Blazor.Core.Exceptions;
 using gView.Blazor.Core.Services.Abstraction;
 using gView.DataExplorer.Core.Services;
+using gView.DataExplorer.Plugins.ExplorerObjects;
 using gView.Framework.Blazor;
 using gView.Framework.Blazor.Models;
 using gView.Framework.Blazor.Services;
@@ -26,6 +27,7 @@ public class ExplorerApplicationScopeService : ApplictionBusyHandler, IExplorerA
     private readonly IJSRuntime _jsRuntime;
     private readonly ISnackbar _snackbar;
     private readonly ExplorerApplicationScopeServiceOptions _options;
+    private readonly IExplorerObject _rootExplorerObject;
 
     public ExplorerApplicationScopeService(IDialogService dialogService,
                                            IEnumerable<IKnownDialogService> knownDialogs,
@@ -44,6 +46,7 @@ public class ExplorerApplicationScopeService : ApplictionBusyHandler, IExplorerA
         _snackbar = snackbar;
 
         _options = options.Value;
+        _rootExplorerObject = new StartObject();
     }
 
 
@@ -71,6 +74,11 @@ public class ExplorerApplicationScopeService : ApplictionBusyHandler, IExplorerA
 
         return Task.CompletedTask;
     }
+
+    public IExplorerObject RootExplorerObject(string? fileFilter = null)
+        => String.IsNullOrEmpty(fileFilter)
+            ? new StartObject()
+            : new StartObject(fileFilter);
 
     public IExplorerObject? CurrentExplorerObject { get; private set; }
     public IEnumerable<IExplorerObject>? ContextExplorerObjects { get; private set; }
