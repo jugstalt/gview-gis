@@ -1,6 +1,5 @@
 ﻿using gView.Blazor.Core;
 using gView.DataExplorer.Plugins.ExplorerObjects.Base;
-using gView.Framework.Common;
 using gView.Framework.Core.Common;
 using gView.Framework.DataExplorer.Abstraction;
 using gView.Framework.DataExplorer.Events;
@@ -20,7 +19,7 @@ public class FileObject : ExplorerObjectCls<IExplorerObject, string>,
     //        .Where(t => t != null)
     //        .Select(t => t!.Filter)
     //        .ToArray();
-    
+
     private string _filename = "";
 
     public FileObject() : base() { }
