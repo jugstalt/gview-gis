@@ -29,7 +29,7 @@ public class GDALRasterFileExplorerObject :
 
     public string Filter
     {
-        get { return "*.jpg|*.tif|*.tiff|*.dem|*.xpm|w001001.adf|*.png|*.ecw|*.img|*.gsb|*.jp2|*.sid"; }
+        get { return "*.jpg|*.tif|*.tiff|*.dem|*.xpm|w001001.adf|*.png|*.ecw|*.img|*.gsb|*.jp2"; }
     }
 
     public string Icon => "webgis:georef-image";

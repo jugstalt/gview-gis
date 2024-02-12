@@ -85,7 +85,7 @@ namespace gView.DataSources.GDAL
 
         public string SupportedFileFilter
         {
-            get { return "*.tif|*.tiff|*.jpg|*.jpeg|*.jp2|*.ecw|w001001.adf|*.gsd|*.sid"; }
+            get { return "*.tif|*.tiff|*.jpg|*.jpeg|*.jp2|*.ecw|w001001.adf|*.gsd"; }
         }
 
         public int SupportsFormat(string extension)
@@ -100,7 +100,6 @@ namespace gView.DataSources.GDAL
                 case ".adf":
                 case ".gsd":
                 case ".jp2":
-                case ".sid":
                     return 200;
             }
             return -1;
