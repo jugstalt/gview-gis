@@ -6,7 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 
 namespace gView.Framework.Blazor.Services;
-public abstract class ApplictionBusyHandler : IApplicationBusyHandling
+public abstract class ApplictionBusyHandlerAndCache : ApplicationCache, IApplicationBusyHandling
 {
     private int _runningBusyTasks = 0;
     private ConcurrentDictionary<Guid, string> _tasks = new ConcurrentDictionary<Guid, string>();
@@ -60,10 +60,10 @@ public abstract class ApplictionBusyHandler : IApplicationBusyHandling
 
     private class BusyTask : IAsyncDisposable
     {
-        private readonly ApplictionBusyHandler _busyHandler;
+        private readonly ApplictionBusyHandlerAndCache _busyHandler;
         private readonly Guid _id;
 
-        public BusyTask(ApplictionBusyHandler busyHandler, Guid id)
+        public BusyTask(ApplictionBusyHandlerAndCache busyHandler, Guid id)
         {
             _busyHandler = busyHandler;
             _id = id;

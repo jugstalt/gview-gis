@@ -68,6 +68,7 @@
     private List<ILayer> _dataTableLayers = new();
     private ILayer? _currentDataTableLayer;
     private ISpatialReference _mapSRef = new SpatialReference("epsg:3857");
+    private ISpatialReference? _dataSpatialReference = null;
 
     private enum MapHeigts
     {
@@ -120,7 +121,34 @@
         //     webServiceClass = (await CurrentExplorerObject.ParentExplorerObject.GetInstanceAsync()) as IWebServiceClass;
         // }
 
-        var layerAdded = dataInstance switch
+        _dataSpatialReference = dataInstance switch
+        {
+            IFeatureClass fClass => fClass.SpatialReference,
+            IRasterClass rClass => rClass.SpatialReference,
+            IWebServiceClass wClass => wClass.SpatialReference,
+            IFeatureDataset fDataset => await fDataset.GetSpatialReference(),
+        };
+
+        if(_dataSpatialReference is null)
+        {
+            var model = await AppScope.ShowKnownDialog(
+                    gView.Framework.Blazor.KnownDialogs.SpatialReferenceDialog,
+                    "Layer SRef is missing: Select a default",
+                     new BaseDialogModel<ISpatialReference>()
+                    {
+                         Value = AppScope.GetCacheItem<ISpatialReference>("TabPageDataView_dataSpatialReference") ?? _mapSRef
+                    }
+                );
+
+            if (model?.Value is not null)
+            {
+                _dataSpatialReference = model.Value;
+                AppScope.SetCacheItem("TabPageDataView_dataSpatialReference", _dataSpatialReference);
+                map.LayerDefaultSpatialReference = _dataSpatialReference;
+            }
+        }
+
+        _ = dataInstance switch
         {
             //IWebFeatureClass => MapRenderer.AddWebFeatureClass((IWebFeatureClass)dataInstance, webServiceClass,
             IFeatureClass => MapRenderer.AddFeatureClass((IFeatureClass)dataInstance),
@@ -261,7 +289,6 @@
     private Task OnMapControlInitialized() => HandleAsync(async () =>
     {
         IEnvelope? dataEnvelope = null;
-        ISpatialReference? dataSRef = null;
 
         var exObject = FrameworkElement?.GetExplorerObject();
         if (exObject != null)
@@ -277,14 +304,6 @@
                 _ => null
             };
 
-            dataSRef = instance switch
-            {
-                IFeatureClass fc => fc.SpatialReference,
-                IRasterClass rc => rc.SpatialReference,
-                IWebServiceClass wc => wc.SpatialReference,
-                IFeatureDataset ds => await ds.GetSpatialReference(),
-                _ => null
-            };
         }
         await _mapControl!.AddLayer(new gView.Razor.Leaflet.Models.Layers.TileLayer()
         {
@@ -294,9 +313,9 @@
         });
 
         IEnvelope? lMapBounds = null;
-        if (dataSRef != null && dataEnvelope != null)
+        if (_dataSpatialReference != null && dataEnvelope != null)
         {
-            lMapBounds = GeoTransformer.ToWGS84(new Envelope(dataEnvelope), dataSRef).Envelope;
+            lMapBounds = GeoTransformer.ToWGS84(new Envelope(dataEnvelope), _dataSpatialReference).Envelope;
         }
 
         if (lMapBounds != null)
@@ -311,7 +330,7 @@
             }
 
             await _mapControl.FitBounds(new LatLng(lMapBounds.LowerLeft.Y, lMapBounds.LowerLeft.X),
-                                       new LatLng(lMapBounds.UpperRight.Y, lMapBounds.UpperRight.X));
+                                        new LatLng(lMapBounds.UpperRight.Y, lMapBounds.UpperRight.X));
         }
     });
 

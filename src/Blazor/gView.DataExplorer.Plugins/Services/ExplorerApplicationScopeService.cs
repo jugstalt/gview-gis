@@ -19,7 +19,7 @@ using System.Threading.Tasks;
 
 namespace gView.DataExplorer.Plugins.Services;
 
-public class ExplorerApplicationScopeService : ApplictionBusyHandler, IExplorerApplicationScopeService
+public class ExplorerApplicationScopeService : ApplictionBusyHandlerAndCache, IExplorerApplicationScopeService
 {
     private readonly IDialogService _dialogService;
     private readonly IEnumerable<IKnownDialogService> _knownDialogs;

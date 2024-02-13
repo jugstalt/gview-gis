@@ -21,7 +21,7 @@ using Microsoft.JSInterop;
 using MudBlazor;
 
 namespace gView.Carto.Plugins.Services;
-public class CartoApplicationScopeService : ApplictionBusyHandler, ICartoApplicationScopeService
+public class CartoApplicationScopeService : ApplictionBusyHandlerAndCache, ICartoApplicationScopeService
 {
     private readonly IDialogService _dialogService;
     private readonly IEnumerable<IKnownDialogService> _knownDialogs;
