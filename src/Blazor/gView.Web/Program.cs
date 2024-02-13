@@ -6,6 +6,7 @@ using gView.Razor.Extensions.DependencyInjection;
 using gView.Razor.Leaflet.Extensions.DependencyInjection;
 using gView.Web.Components;
 using gView.Web.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.Identity;
 using MudBlazor;
 using MudBlazor.Services;
 using System.Reflection;
@@ -20,6 +21,9 @@ builder.Services
     .AddDefaultUserIdentifyService()
     .AddWebScopeContextService();
 
+builder.Services
+    .AddAuthentication()
+    /*.AddBearerToken(IdentityConstants.BearerScheme)*/;
 
 builder.Services.AddMudServices(config =>
 {
