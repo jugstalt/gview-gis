@@ -27,12 +27,12 @@ namespace gView.GraphicsEngine.Skia
 
         public SkiaBitmap(int width, int height, PixelFormat format)
         {
-            _bitmap = new SKBitmap(width, height, colorType: format.ToSKColorType(), alphaType: SKAlphaType.Premul);
+            _bitmap = new SKBitmap(width, height, colorType: format.ToSKColorType(), alphaType: SkiaGraphicsEngine.AplphaType);
         }
 
         public SkiaBitmap(int width, int height, int stride, PixelFormat format, IntPtr scan0)
         {
-            _bitmap = new SKBitmap(width, height, colorType: format.ToSKColorType(), alphaType: SKAlphaType.Premul);
+            _bitmap = new SKBitmap(width, height, colorType: format.ToSKColorType(), alphaType: SkiaGraphicsEngine.AplphaType);
             _bitmap.SetPixels(scan0);
         }
 

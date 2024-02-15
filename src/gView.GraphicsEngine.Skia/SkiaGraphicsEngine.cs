@@ -15,6 +15,11 @@ namespace gView.GraphicsEngine.Skia
             ScreenDpi = screenDpi;
         }
 
+        static public SKAlphaType AplphaType { get; set; } = SKAlphaType.Unpremul;  // Unpremul: default for PNG
+                                                                                    // with jpg, transparency looks better with "Premul"
+                                                                                    // but with "UnPremul" its the same als GDI+
+                                                                                    // Maybe, server sould switch Premul/UnPremul with depend of the output format in future?
+
         #region IGraphicsEngine
 
         public string EngineName => "SkiaSharp";

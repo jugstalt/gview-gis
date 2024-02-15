@@ -36,7 +36,7 @@
   "force-https": false,
 
   "graphics": {
-    "rendering": "skia",
+    "rendering": "gdiplus",
     "encoding": "gdiplus"
   },
 
