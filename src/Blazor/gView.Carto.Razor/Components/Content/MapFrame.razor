@@ -323,7 +323,8 @@
             _mapControl.OnMouseMove += HandleMapMouseMove;
 
             if (_firstRendered) {
-                await _mapControl.Destroy();
+                try { await _mapControl.Destroy(); } 
+                catch {}
             }
 
             _imageLayers.Clear(DrawPhase.All);

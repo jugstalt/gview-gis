@@ -81,6 +81,20 @@
                             OnClick="()=>NavigateTo(ExplorerUri, true)" />
                 </MudPaper>
             </GvGridItem>
+            <GvGridItem>
+                <MudPaper style="min-height:250px;padding:20px;position:relative"
+                          Elevation="25">
+                    <MudText Typo="Typo.h5">Used Memory</MudText>
+
+                    <MudText Typo="Typo.body1">
+                         @((int)(GC.GetTotalMemory(false) / 1024.0 / 1024.0)) MB
+                    </MudText>
+
+                    <MudFab Color="Color.Primary" Style="position:absolute;right:20px;bottom:20px"
+                            StartIcon="@Icons.Material.Filled.Memory"
+                            OnClick="CollectMemory" />
+                </MudPaper>
+            </GvGridItem>
         }
     </GvGrid>
 </div>
@@ -117,5 +131,12 @@
         {
             Nav.NavigateTo(uri, true);
         }
+    }
+
+    private void CollectMemory()
+    {
+        GC.Collect();
+        GC.WaitForPendingFinalizers();
+        GC.Collect();
     }
 }
