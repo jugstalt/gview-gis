@@ -46,7 +46,7 @@ public class ExplorerApplicationScopeService : ApplictionBusyHandlerAndCache, IE
         _snackbar = snackbar;
 
         _options = options.Value;
-        _rootExplorerObject = new StartObject();
+        _rootExplorerObject = new StartObject(this);
     }
 
 
@@ -77,8 +77,8 @@ public class ExplorerApplicationScopeService : ApplictionBusyHandlerAndCache, IE
 
     public IExplorerObject RootExplorerObject(string? fileFilter = null)
         => String.IsNullOrEmpty(fileFilter)
-            ? new StartObject()
-            : new StartObject(fileFilter);
+            ? new StartObject(this)
+            : new StartObject(this, fileFilter);
 
     public IExplorerObject? CurrentExplorerObject { get; private set; }
     public IEnumerable<IExplorerObject>? ContextExplorerObjects { get; private set; }

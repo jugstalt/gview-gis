@@ -1,6 +1,7 @@
 ﻿using gView.DataExplorer.Plugins.ExplorerObjects.Base;
 using gView.Framework.Common;
 using gView.Framework.DataExplorer.Abstraction;
+using gView.Framework.DataExplorer.Services.Abstraction;
 using System;
 using System.Threading.Tasks;
 
@@ -8,11 +9,11 @@ namespace gView.DataExplorer.Plugins.ExplorerObjects;
 internal class StartObject : ExplorerParentObject,
                              IExplorerRootObject
 {
-    public StartObject()
-        : base() => (FileFilter) = (null);
+    public StartObject(IExplorerApplicationScopeService scope)
+        : base() => (Scope, FileFilter) = (scope, null);
 
-    public StartObject(string fileFilter)
-        : base() => (FileFilter) = (fileFilter);
+    public StartObject(IExplorerApplicationScopeService scope, string fileFilter)
+        : base() => (Scope, FileFilter) = (scope, fileFilter);
 
     #region IExplorerObject Member
 
@@ -39,8 +40,9 @@ internal class StartObject : ExplorerParentObject,
 
     #region IExplorerRootObject
 
+    public IExplorerApplicationScopeService Scope { get; }
     public string? FileFilter { get; }
-
+    
     #endregion
 
     #region ISerializableExplorerObject Member
@@ -49,7 +51,7 @@ internal class StartObject : ExplorerParentObject,
     {
         if (FullName == String.Empty)
         {
-            return Task.FromResult<IExplorerObject?>(new StartObject());
+            return Task.FromResult<IExplorerObject?>(new StartObject(Scope));
         }
 
         return Task.FromResult<IExplorerObject?>(null);
