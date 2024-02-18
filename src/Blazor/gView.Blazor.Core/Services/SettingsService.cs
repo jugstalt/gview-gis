@@ -1,4 +1,5 @@
-﻿using gView.Blazor.Core.Services.Abstraction;
+﻿using gView.Blazor.Core.Extensions;
+using gView.Blazor.Core.Services.Abstraction;
 using gView.Blazor.Models.Settings;
 using System;
 using System.Collections.Generic;
@@ -9,12 +10,12 @@ namespace gView.Blazor.Core.Services;
 public class SettingsService
 {
     private readonly PersistentSettingsService _persistentSettings;
-    private readonly IUserIdentityService _userIdentity;
+    private readonly IAppIdentityProvider _identityProvider;
 
-    public SettingsService(IUserIdentityService userIdentity,
+    public SettingsService(IAppIdentityProvider identityProvider,
                            PersistentSettingsService persistentSettings)
     {
-        _userIdentity = userIdentity;
+        _identityProvider = identityProvider;
         _persistentSettings = persistentSettings;
     }
 
@@ -72,7 +73,7 @@ public class SettingsService
 
     #region Helper
 
-    private string UserCollection(string collectionName) => $"{collectionName}_{_userIdentity.UserName}";
+    private string UserCollection(string collectionName) => $"{collectionName}_{_identityProvider.Identity.UsernameWithoutSpatialSigns('_')}";
 
     #endregion
 }

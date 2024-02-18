@@ -1,6 +1,6 @@
 ﻿@page "/explorer"
 @rendermode InteractiveServer
-@attribute [Authorize]
+@attribute [Authorize(Policy = "gview-admin")]
 
 <MudDialogProvider @rendermode="InteractiveServer" />
 <MudSnackbarProvider @rendermode="InteractiveServer" />

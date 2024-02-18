@@ -1,4 +1,8 @@
+@using gView.Blazor.Core.Models
+@using gView.Blazor.Core.Services.Abstraction
 @inherits ModalDialogFormBase<AboutDialogModel>
+
+@inject IAppIdentityProvider IdentityProvider
 
 <ModalDialogFormBase T="AboutDialogModel"
                      OnDialogClose="base.OnDialogClose"
@@ -9,6 +13,7 @@
             <div class="gview-splashscreen-content">
                 <div class="title">@Model.Title</div>
                 <div class="version">@Model.Version</div>
+                <div>User: @IdentityProvider.Identity.UserNameAndRole()</div>
                 <pre class="license">
                     @licText
                 </pre>
@@ -30,9 +35,9 @@
     private string licText = "";
     private System.Text.StringBuilder creditsText = new();
 
-    protected override void OnInitialized()
+    async protected override Task OnInitializedAsync()
     {
-        base.OnInitialized();
+        await base.OnInitializedAsync();
 
         GC.Collect();
 

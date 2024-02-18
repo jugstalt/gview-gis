@@ -32,7 +32,7 @@ public class CartoApplicationScopeService : ApplictionBusyHandlerAndCache, ICart
     private readonly ISnackbar _snackbar;
     private readonly CartoApplicationScopeServiceOptions _options;
     private readonly GeoTransformerService _geoTransformer;
-    private readonly IUserIdentityService _userIdentity;
+    private readonly IAppIdentityProvider _identityProvider;
     private readonly ICartoInteractiveToolService _toolService;
     private readonly SettingsService _settings;
 
@@ -48,7 +48,7 @@ public class CartoApplicationScopeService : ApplictionBusyHandlerAndCache, ICart
                                         GeoTransformerService geoTransformer,
                                         MapControlCrsService crsService,
                                         SpatialReferenceService sRefService,
-                                        IUserIdentityService userIdentity,
+                                        IAppIdentityProvider identityProvider,
                                         SettingsService settings,
                                         ICartoInteractiveToolService toolService,
                                         IOptions<CartoApplicationScopeServiceOptions> options,
@@ -62,7 +62,7 @@ public class CartoApplicationScopeService : ApplictionBusyHandlerAndCache, ICart
         _jsRuntime = jsRuntime;
         _snackbar = snackbar;
         _geoTransformer = geoTransformer;
-        _userIdentity = userIdentity;
+        _identityProvider = identityProvider;
         _settings = settings;
         _toolService = toolService;
         _options = options.Value;

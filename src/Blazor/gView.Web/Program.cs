@@ -1,4 +1,5 @@
 using gView.Blazor.Core.Extensions.DependencyInjection;
+using gView.Blazor.Core.Services.Abstraction;
 using gView.Carto.Plugins.Extensions.DependencyInjection;
 using gView.Carto.Razor.Extensions.DependencyInjection;
 using gView.DataExplorer.Plugins.Extensions.DependencyInjection;
@@ -6,24 +7,23 @@ using gView.Razor.Extensions.DependencyInjection;
 using gView.Razor.Leaflet.Extensions.DependencyInjection;
 using gView.Web.Components;
 using gView.Web.Extensions.DependencyInjection;
-using Microsoft.AspNetCore.Identity;
+using gView.Web.Services;
+using Microsoft.AspNetCore.Authentication;
 using MudBlazor;
 using MudBlazor.Services;
 using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Configuration.AddJsonFile("_config/gview-web.config", true);
+
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
 builder.Services
-    .AddDefaultUserIdentifyService()
-    .AddWebScopeContextService();
-
-builder.Services
-    .AddAuthentication()
-    /*.AddBearerToken(IdentityConstants.BearerScheme)*/;
+    .AddWebScopeContextService()
+    .AddAuth(builder.Configuration);
 
 builder.Services.AddMudServices(config =>
 {
@@ -85,6 +85,8 @@ app.UseHttpsRedirection();
 
 app.UseStaticFiles();
 app.UseAntiforgery();
+
+app.AddAuth(builder.Configuration);
 
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();

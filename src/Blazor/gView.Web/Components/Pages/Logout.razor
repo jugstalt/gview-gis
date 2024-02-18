@@ -1,0 +1,45 @@
+﻿@page "/logout"
+
+
+@using Microsoft.AspNetCore.Authentication
+@using Microsoft.AspNetCore.Authentication.Cookies
+@using Microsoft.AspNetCore.Authentication.OpenIdConnect
+
+@inject NavigationManager Nav
+@inject IHttpContextAccessor HttpContextAccessor
+
+<MudThemeProvider @bind-IsDarkMode="@_isDarkMode" Theme="_theme" />
+
+<div style="max-width:600px;margin:40px auto;text-align:center">
+    <GvGrid ColumnCount="2">
+        <GvGridItem Span="2">
+            <MudText Typo="Typo.body1">
+                You are logged out!
+            </MudText>
+            <button class="mud-button-root mud-button mud-button-filled mud-button-filled-primary mud-button-filled-size-medium mud-ripple"
+                    onclick="document.location='@(Nav.BaseUri)'">
+                Ok
+            </button>
+        </GvGridItem>
+    </GvGrid>
+</div>
+
+@code {
+    private MudTheme _theme = new();
+    private bool _isDarkMode = true;
+
+    async protected override Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+
+        var httpContext = HttpContextAccessor.HttpContext!;
+
+        await httpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+        // await httpContext.SignOutAsync(OpenIdConnectDefaults.AuthenticationScheme,
+        //         new AuthenticationProperties
+        //         {
+        //             RedirectUri = Nav.BaseUri,
+        //         }
+        //     );
+    }
+}

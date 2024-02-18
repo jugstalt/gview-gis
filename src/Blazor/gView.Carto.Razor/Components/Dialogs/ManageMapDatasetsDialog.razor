@@ -1,0 +1,197 @@
+@inherits ModalDialogFormBase<ManageMapDatasetsModel>
+@inject IconService IconService
+
+@if (Model.Map is not null)
+{
+    <ModalDialogFormBase T="ManageMapDatasetsModel"
+                         OnDialogClose="base.OnDialogClose"
+                         Model="base.Model">
+        <DialogBody>
+            <GvGrid ColumnCount="12">
+                <GvGridItem Span="4">
+                    <GvScrollable MaxHeight="400">
+                        <MudTreeView T="string">
+                            @foreach(var datasetItem in _datasetItems)
+                            {
+                                <MudTreeViewItem Value="@datasetItem.ToString()"
+                                                 Icon="@IconService.FromString("basic:database")"
+                                                 Style="@(_selectedDatasetItem == datasetItem ? "background-color:var(--mud-palette-primary-hover)" : "")"
+                                                 OnClick="() => OnDatasetItemSelected(datasetItem)">
+                                    @foreach (var datasetElement in Model.Map.MapElements?.Where(e => e?.DatasetID == datasetItem.Index) ?? [])
+                                    {
+                                        <MudTreeViewItem Value="@($"{datasetElement?.Class?.Name ?? "???"}")" />
+                                    }
+                                </MudTreeViewItem>
+                            }
+                        </MudTreeView>
+                    </GvScrollable>
+                </GvGridItem>
+                
+                <GvGridItem Span="8">
+                    @if(_selectedDatasetItem is not null)
+                    {
+                        <GvCard Title="Dataset Info">
+                            <GvCardContent>
+                                <MudTextField Label="Name"
+                                              ReadOnly="true"
+                                              Value="_selectedDatasetItem.Dataset.DatasetName" />
+                                <MudTextField Label="Group Name"
+                                              ReadOnly="true"
+                                              Value="_selectedDatasetItem.Dataset.DatasetGroupName" />
+                                <MudTextField Label="Provider Name"
+                                              ReadOnly="true"
+                                              Value="_selectedDatasetItem.Dataset.ProviderName" />
+                            </GvCardContent>
+                        </GvCard>
+                        <GvCard Title="Connection String">
+                            <GvCardContent>
+                                <DatasetConnectionStringControl 
+                                    Editable="true"
+                                    ConnectionString="@_selectedDatasetItem.Dataset.ConnectionString"
+                                    ConnectionStringChanged="OnConnectionStringChanged" />
+                            </GvCardContent>
+                        </GvCard>
+                    }
+
+                    <GvPaper>
+                        @if (_selectedDatasetItem?.Dataset is not null)
+                        {
+                            <MudButton Color="Color.Secondary"
+                                       Variant="Variant.Filled"
+                                       StartIcon="@Icons.Material.Filled.Delete"
+                                       OnClick="OnRemoveDataset">
+                                Remove Dataset!
+                            </MudButton>
+                        }
+                        else if(_datasetItems.Any(e=>e.LayerCount == 0))
+                        {
+                            <MudButton Color="Color.Primary"
+                                       Variant="Variant.Filled"
+                                       StartIcon="@Icons.Material.Filled.Delete"
+                                       OnClick="OnRemoveUnusedDatasets">
+                                Remove Unused Datasets
+                            </MudButton>
+                        }
+                        <MudButton Color="Color.Success"
+                                   Variant="Variant.Filled"
+                                   StartIcon="@Icons.Material.Filled.Delete"
+                                   OnClick="OnMapCompress">
+                            Compress/Clean
+                        </MudButton>
+                    </GvPaper>
+                </GvGridItem>
+            </GvGrid>
+        </DialogBody>
+        <DialogButtons>
+            <MudButton OnClick="base.Close">
+                Close
+            </MudButton>
+        </DialogButtons>
+    </ModalDialogFormBase>
+}
+@code {
+    private List<DatasetListItem> _datasetItems = new();
+    private DatasetListItem? _selectedDatasetItem;
+    private List<IDatasetElement> _selectedDatasetMapElements = new();
+
+    protected override Task OnInitializedAsync() => HandleAsync(async () =>
+    {
+        await base.OnInitializedAsync();
+
+        BuildTree();
+    });
+
+    private void BuildTree()
+    {
+        _datasetItems.Clear();
+        _selectedDatasetItem = null;
+
+        if (Model.Map is not null)
+        {
+            int i = 0;
+            IDataset? dataset = null;
+            while ((dataset = Model.Map[i++]) != null)
+            {
+                int count = Model.Map.MapElements.Where(l => l.DatasetID == (i - 1)).Count();
+
+                _datasetItems.Add(new DatasetListItem(i - 1, dataset, count));
+            }
+        }
+    }
+
+    private void OnDatasetItemSelected(DatasetListItem item) => Handle(() =>
+    {
+        if (Model.Map is null) return;
+
+        _selectedDatasetItem = item;
+        _selectedDatasetMapElements.Clear();
+        _selectedDatasetMapElements.AddRange(Model.Map.MapElements.Where(e => e.DatasetID == _selectedDatasetItem.Index));
+    });
+
+    async private Task OnConnectionStringChanged(string newConnectionString)
+    {
+        if (_selectedDatasetItem?.Dataset is not null)
+        {
+            await _selectedDatasetItem.Dataset.SetConnectionString(newConnectionString);
+        }
+    }
+
+    private void OnRemoveDataset()
+    {
+        if (Model.Map is not null 
+            && _selectedDatasetItem?.Dataset is not null)
+        {
+            Model.Map.RemoveDataset(_selectedDatasetItem.Dataset);
+
+            BuildTree();
+        }
+    }
+
+    private void OnRemoveUnusedDatasets()
+    {
+        if (Model.Map is not null)
+        {
+            foreach (var datasetItem in _datasetItems.Where(e => e.LayerCount == 0))
+            {
+                Model.Map.RemoveDataset(datasetItem.Dataset);
+            }
+
+            BuildTree();
+        }
+    }
+
+    private void OnMapCompress()
+    {
+        if(Model.Map is not null)
+        {
+            Model.Map.Compress();
+
+            BuildTree();
+        }
+    }
+
+    #region Item Classes
+
+    private class DatasetListItem
+    {
+        public DatasetListItem(int index, IDataset dataset, int count)
+        {
+            this.Index = index;
+            this.Dataset = dataset;
+            this.LayerCount = count;
+        }
+
+        public int Index {get; }
+
+        public IDataset Dataset { get; }
+
+        public int LayerCount { get; set; }
+
+        public override string ToString()
+        {
+            return Dataset != null ? $"{Dataset.DatasetName} [{LayerCount}]" : "???";
+        }
+    }
+
+    #endregion
+}

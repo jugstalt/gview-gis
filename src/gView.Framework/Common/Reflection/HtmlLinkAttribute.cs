@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace gView.Framework.Common
+namespace gView.Framework.Common.Reflection
 {
     public class HtmlLinkAttribute : Attribute
     {

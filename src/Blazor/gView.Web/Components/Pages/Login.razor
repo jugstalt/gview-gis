@@ -1,0 +1,14 @@
+﻿@page "/login"
+@attribute [Authorize(Policy = "gview-user")]
+
+@inject NavigationManager Nav
+
+@code {
+    async protected override Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+
+        Nav.NavigateTo("/");
+    }
+}
+

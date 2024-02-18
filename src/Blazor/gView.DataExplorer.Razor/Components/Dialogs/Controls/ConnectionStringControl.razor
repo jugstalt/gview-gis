@@ -5,7 +5,7 @@
     <GvCard>
         <GvCardContent>
             <MudSelect Label="Provider" T="string" Style='min-width:280px;'
-            @bind-Value="_currentProvider"
+                       @bind-Value="_currentProvider"
                        Variant="Variant.Outlined"
                        Dense="true">
                 @foreach (var provider in _commonDbConnections.Providers)
