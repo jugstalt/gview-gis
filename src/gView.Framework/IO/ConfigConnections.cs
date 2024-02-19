@@ -3,7 +3,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
-using System.Xml.Linq;
 
 namespace gView.Framework.IO
 {
@@ -13,22 +12,22 @@ namespace gView.Framework.IO
         private string _encKey = String.Empty;
         private Encoding _encoding = Encoding.Default;
 
-        public ConfigConnections(string name)
+        public ConfigConnections(string schema)
         {
-            if (name == null)
+            if (schema == null)
             {
                 return;
             }
 
-            _root = SystemVariables.MyApplicationConfigPath + @"/connections/" + name;
+            _root = SystemVariables.MyApplicationConfigPath + @"/connections/" + schema;
             DirectoryInfo di = new DirectoryInfo(_root);
             if (!di.Exists)
             {
                 di.Create();
             }
         }
-        public ConfigConnections(string name, string encKey)
-            : this(name)
+        public ConfigConnections(string schema, string encKey)
+            : this(schema)
         {
             _encKey = encKey;
         }
