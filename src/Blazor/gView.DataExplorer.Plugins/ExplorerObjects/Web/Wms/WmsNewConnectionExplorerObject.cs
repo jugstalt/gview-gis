@@ -11,6 +11,7 @@ using System;
 using System.Threading.Tasks;
 using gView.Framework.Common.Extensions;
 using gView.Framework.DataExplorer.Services.Abstraction;
+using gView.DataExplorer.Core.Extensions;
 
 namespace gView.DataExplorer.Plugins.ExplorerObjects.Web.Wms;
 
@@ -64,7 +65,11 @@ public class WmsNewConnectionExplorerObject : ExplorerObjectCls<WmsExplorerObjec
         if (model != null)
         {
             var connectionString = model.ToConnectionString();
-            ConfigConnections connStream = new ConfigConnections("ogc_web_connection", "546B0513-D71D-4490-9E27-94CD5D72C64A");
+            ConfigConnections connStream = ConfigConnections.Create(
+                    this.ConfigStorage(),
+                    "ogc_web_connection", 
+                    "546B0513-D71D-4490-9E27-94CD5D72C64A"
+                );
 
             string id = String.Empty;
             switch (ConfigTextStream.ExtractValue(connectionString, "service").ToUpper())

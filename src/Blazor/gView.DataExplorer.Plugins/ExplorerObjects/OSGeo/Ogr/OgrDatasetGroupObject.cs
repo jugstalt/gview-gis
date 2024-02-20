@@ -7,6 +7,7 @@ using gView.Framework.IO;
 using gView.Framework.Common;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using gView.DataExplorer.Core.Extensions;
 
 namespace gView.DataExplorer.Plugins.ExplorerObjects.OSGeo.Ogr;
 
@@ -73,7 +74,11 @@ public class OgrDatasetGroupObject : ExplorerParentObject,
         base.AddChildObject(new OgrNewConnectionObject(this));
 
 
-        ConfigConnections conStream = new ConfigConnections("OGR", "ca7011b3-0812-47b6-a999-98a900c4087d");
+        ConfigConnections conStream = ConfigConnections.Create(
+                this.ConfigStorage(),
+                "OGR", 
+                "ca7011b3-0812-47b6-a999-98a900c4087d"
+            );
         Dictionary<string, string> connStrings = conStream.Connections;
         foreach (string connString in connStrings.Keys)
         {

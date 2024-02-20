@@ -10,6 +10,7 @@ using gView.Framework.IO;
 using System.Threading.Tasks;
 using gView.Framework.Common.Extensions;
 using gView.Framework.DataExplorer.Services.Abstraction;
+using gView.DataExplorer.Core.Extensions;
 
 namespace gView.DataExplorer.Plugins.ExplorerObjects.GeoJson
 {
@@ -67,7 +68,11 @@ namespace gView.DataExplorer.Plugins.ExplorerObjects.GeoJson
 
                 string name = connectionString.ExtractConnectionStringParameter("target");
 
-                ConfigConnections config = new ConfigConnections(GeoJsonServiceGroupObject.ConfigName, GeoJsonServiceGroupObject.EncKey);
+                ConfigConnections config = ConfigConnections.Create(
+                        this.ConfigStorage(),
+                        GeoJsonServiceGroupObject.ConfigName, 
+                        GeoJsonServiceGroupObject.EncKey
+                    );
                 config.Add(name, connectionString);
                 e.NewExplorerObject = new GeoJsonServiceExplorerObject(this.TypedParent, name, connectionString);
             }

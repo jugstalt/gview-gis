@@ -1,4 +1,5 @@
-﻿using gView.DataExplorer.Plugins.ExplorerObjects.Base;
+﻿using gView.DataExplorer.Core.Extensions;
+using gView.DataExplorer.Plugins.ExplorerObjects.Base;
 using gView.DataExplorer.Plugins.ExplorerObjects.GeoJson.ContextTools;
 using gView.DataSources.GeoJson;
 using gView.Framework.Core.Data;
@@ -45,7 +46,11 @@ namespace gView.DataExplorer.Plugins.ExplorerObjects.GeoJson
 
         internal Task<bool> UpdateConnectionString(string connectionString)
         {
-            ConfigConnections connStream = new ConfigConnections(GeoJsonServiceGroupObject.ConfigName, GeoJsonServiceGroupObject.EncKey);
+            ConfigConnections connStream = ConfigConnections.Create(
+                    this.ConfigStorage(),
+                    GeoJsonServiceGroupObject.ConfigName, 
+                    GeoJsonServiceGroupObject.EncKey
+                );
             connStream.Add(_name, connectionString);
 
             _connectionString = connectionString;
@@ -168,7 +173,11 @@ namespace gView.DataExplorer.Plugins.ExplorerObjects.GeoJson
             bool ret = false;
             if (_connectionString != null)
             {
-                ConfigConnections stream = new ConfigConnections(GeoJsonServiceGroupObject.ConfigName, GeoJsonServiceGroupObject.EncKey);
+                ConfigConnections stream = ConfigConnections.Create(
+                        this.ConfigStorage(),
+                        GeoJsonServiceGroupObject.ConfigName, 
+                        GeoJsonServiceGroupObject.EncKey
+                    );
                 ret = stream.Remove(_name);
             }
 
@@ -191,7 +200,11 @@ namespace gView.DataExplorer.Plugins.ExplorerObjects.GeoJson
             bool ret = false;
             if (_connectionString != null)
             {
-                ConfigConnections stream = new ConfigConnections(GeoJsonServiceGroupObject.ConfigName, GeoJsonServiceGroupObject.EncKey);
+                ConfigConnections stream = ConfigConnections.Create(
+                        this.ConfigStorage(), 
+                        GeoJsonServiceGroupObject.ConfigName, 
+                        GeoJsonServiceGroupObject.EncKey
+                    );
                 ret = stream.Rename(_name, newName);
             }
             if (ret == true)

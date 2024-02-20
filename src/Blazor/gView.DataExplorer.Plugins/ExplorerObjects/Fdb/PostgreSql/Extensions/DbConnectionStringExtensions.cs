@@ -1,8 +1,10 @@
-﻿using gView.Framework.Db;
+﻿using gView.DataExplorer.Core.Extensions;
+using gView.Framework.Db;
 using gView.Framework.IO;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -13,7 +15,11 @@ static class DbConnectionStringExtensions
     static public PostgreSqlExplorerObject ToPostgreSqlExplorerObject(this DbConnectionString dbConnectionString,
                                                                    PostgreSqlExplorerGroupObject parent)
     {
-        ConfigConnections connStream = new ConfigConnections("postgrefdb", "546B0513-D71D-4490-9E27-94CD5D72C64A");
+        ConfigConnections connStream = ConfigConnections.Create(
+                parent.ConfigStorage(),
+                "postgrefdb", 
+                "546B0513-D71D-4490-9E27-94CD5D72C64A"
+            );
 
         string connectionString = dbConnectionString.ConnectionString;
         string id = $"{ConfigTextStream.ExtractValue(connectionString, "database")}@{ConfigTextStream.ExtractValue(connectionString, "server")}";

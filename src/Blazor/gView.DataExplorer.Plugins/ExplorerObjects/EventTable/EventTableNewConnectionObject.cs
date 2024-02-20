@@ -1,4 +1,5 @@
-﻿using gView.DataExplorer.Plugins.ExplorerObjects.Base;
+﻿using gView.DataExplorer.Core.Extensions;
+using gView.DataExplorer.Plugins.ExplorerObjects.Base;
 using gView.DataExplorer.Razor.Components.Dialogs.Models;
 using gView.DataSources.EventTable;
 using gView.Framework.Blazor.Services.Abstraction;
@@ -61,7 +62,11 @@ public class EventTableNewConnectionObject :
 
         if (!string.IsNullOrWhiteSpace(model?.TableName))
         {
-            ConfigConnections connStream = new ConfigConnections("eventtable", "546B0513-D71D-4490-9E27-94CD5D72C64A");
+            ConfigConnections connStream = ConfigConnections.Create(
+                    this.ConfigStorage(),
+                    "eventtable", 
+                    "546B0513-D71D-4490-9E27-94CD5D72C64A"
+                );
 
             EventTableConnection etconn = new EventTableConnection(
                 model.ConnectionString,

@@ -9,6 +9,7 @@ using gView.Framework.IO;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using gView.DataExplorer.Core.Extensions;
 
 namespace gView.DataExplorer.Plugins.ExplorerObjects.Tiles.Vector
 {
@@ -41,7 +42,11 @@ namespace gView.DataExplorer.Plugins.ExplorerObjects.Tiles.Vector
         internal string GetConnectionString() => _connectionString;
         internal Task<bool> UpdateConnectionString(string connectionString)
         {
-            ConfigConnections connStream = new ConfigConnections("VectorTileCache", "b9d6ae5b-9ca1-4a52-890f-caa4009784d4");
+            ConfigConnections connStream = ConfigConnections.Create(
+                    this.ConfigStorage(),
+                    "VectorTileCache", 
+                    "b9d6ae5b-9ca1-4a52-890f-caa4009784d4"
+                );
             connStream.Add(_name, _connectionString = connectionString);
 
             return Task.FromResult(true);
@@ -161,7 +166,11 @@ namespace gView.DataExplorer.Plugins.ExplorerObjects.Tiles.Vector
 
         public Task<bool> DeleteExplorerObject(ExplorerObjectEventArgs e)
         {
-            ConfigConnections stream = new ConfigConnections("VectorTileCache", "b9d6ae5b-9ca1-4a52-890f-caa4009784d4");
+            ConfigConnections stream = ConfigConnections.Create(
+                    this.ConfigStorage(),
+                    "VectorTileCache", 
+                    "b9d6ae5b-9ca1-4a52-890f-caa4009784d4"
+                );
             stream.Remove(_name);
 
             if (ExplorerObjectDeleted != null)
@@ -181,7 +190,11 @@ namespace gView.DataExplorer.Plugins.ExplorerObjects.Tiles.Vector
         public Task<bool> RenameExplorerObject(string newName)
         {
             bool ret = false;
-            ConfigConnections stream = new ConfigConnections("VectorTileCache", "b9d6ae5b-9ca1-4a52-890f-caa4009784d4");
+            ConfigConnections stream = ConfigConnections.Create(
+                    this.ConfigStorage(),
+                    "VectorTileCache", 
+                    "b9d6ae5b-9ca1-4a52-890f-caa4009784d4"
+                );
             ret = stream.Rename(_name, newName);
 
             if (ret == true)

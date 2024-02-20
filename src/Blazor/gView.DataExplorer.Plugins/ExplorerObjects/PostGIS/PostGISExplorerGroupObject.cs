@@ -8,6 +8,7 @@ using gView.Framework.IO;
 using gView.Framework.Common;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using gView.DataExplorer.Core.Extensions;
 
 namespace gView.DataExplorer.Plugins.ExplorerObjects.PostGIS;
 
@@ -46,7 +47,11 @@ public class PostGISExplorerGroupObject :
         await base.Refresh();
         base.AddChildObject(new PostGISNewConnectionObject(this));
 
-        ConfigConnections conStream = new ConfigConnections("postgis", "546B0513-D71D-4490-9E27-94CD5D72C64A");
+        ConfigConnections conStream = ConfigConnections.Create(
+                this.ConfigStorage(),
+                "postgis", 
+                "546B0513-D71D-4490-9E27-94CD5D72C64A"
+            );
         Dictionary<string, string> DbConnectionStrings = conStream.Connections;
 
         foreach (string DbConnName in DbConnectionStrings.Keys)

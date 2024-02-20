@@ -1,4 +1,5 @@
-﻿using gView.DataExplorer.Plugins.ExplorerObjects.Base;
+﻿using gView.DataExplorer.Core.Extensions;
+using gView.DataExplorer.Plugins.ExplorerObjects.Base;
 using gView.DataExplorer.Plugins.ExplorerObjects.WebServices;
 using gView.Framework.Core.Common;
 using gView.Framework.DataExplorer.Abstraction;
@@ -36,7 +37,11 @@ public class GeoServicesExplorerObjects : ExplorerParentObject,
         await base.Refresh();
         base.AddChildObject(new GeoServicesNewConnectionExplorerObject(this));
 
-        ConfigConnections configConnections = new ConfigConnections("geoservices_connection", "546B0513-D71D-4490-9E27-94CD5D72C64A");
+        ConfigConnections configConnections = ConfigConnections.Create(
+                this.ConfigStorage(),
+                "geoservices_connection", 
+                "546B0513-D71D-4490-9E27-94CD5D72C64A"
+            );
 
         Dictionary<string, string> connections = configConnections.Connections;
         foreach (string name in connections.Keys)

@@ -17,6 +17,8 @@
             currentListExplorerObjects.AddRange(
                     selectedRoot is IExplorerParentObject parentObject
                         ? parentObject.SecureChildObjectsAsync().Result
+                            .Where(e=>e is not IExplorerObjectDoubleClick)
+                            .ToArray()
                         : Array.Empty<IExplorerObject>()
                 );
 

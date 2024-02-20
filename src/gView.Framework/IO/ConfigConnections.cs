@@ -1,191 +1,65 @@
 ﻿using gView.Framework.Common;
+using gView.Framework.Core.IO;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Text;
 
 namespace gView.Framework.IO
 {
     public class ConfigConnections
     {
-        private string _root = String.Empty;
-        private string _encKey = String.Empty;
-        private Encoding _encoding = Encoding.Default;
+        private readonly IConfigConnectionStorage _storage;
+        private readonly string _schema = String.Empty;
+        private readonly string _encKey = String.Empty;
 
-        public ConfigConnections(string schema)
+        public ConfigConnections(IConfigConnectionStorage storage, string schema, string encKey)
         {
-            if (schema == null)
-            {
-                return;
-            }
-
-            _root = SystemVariables.MyApplicationConfigPath + @"/connections/" + schema;
-            DirectoryInfo di = new DirectoryInfo(_root);
-            if (!di.Exists)
-            {
-                di.Create();
-            }
-        }
-        public ConfigConnections(string schema, string encKey)
-            : this(schema)
-        {
+            _storage = storage;
+            _schema = schema;
             _encKey = encKey;
         }
 
-        public Encoding Encoding
-        {
-            get { return _encoding; }
-            set { _encoding = value; }
-        }
+        public static ConfigConnections Create(IConfigConnectionStorage storage, string schame, string encKey = "")
+            => new(storage, schame, encKey);
 
         public Dictionary<string, string> Connections
         {
             get
             {
-                Dictionary<string, string> connections = new Dictionary<string, string>();
+                var connections = _storage.GetAll(_schema);
 
-                if (String.IsNullOrEmpty(_root))
+                if (!String.IsNullOrEmpty(_encKey))
                 {
-                    return connections;
-                }
-
-                DirectoryInfo di = new DirectoryInfo(_root);
-                if (!di.Exists)
-                {
-                    return connections;
-                }
-
-                foreach (FileInfo fi in di.GetFiles("*.con"))
-                {
-                    StreamReader sr = new StreamReader(fi.FullName, _encoding);
-                    string conn = sr.ReadToEnd();
-                    sr.Close();
-
-                    string name = InvReplaceSlash(fi.Name.Substring(0, fi.Name.Length - 4));
-                    if (String.IsNullOrEmpty(_encKey))
+                    foreach (var key in connections.Keys)
                     {
-                        connections.Add(name, conn);
-                    }
-                    else
-                    {
-                        byte[] bytes = Convert.FromBase64String(conn);
+                        string connectionString = connections[key];
+
+                        byte[] bytes = Convert.FromBase64String(connectionString);
                         bytes = Crypto.Decrypt(bytes, _encKey);
-                        connections.Add(name, _encoding.GetString(bytes));
+                        connections[key] = Encoding.UTF8.GetString(bytes);
                     }
                 }
+
                 return connections;
             }
         }
 
         public bool Add(string name, string connectionstring)
         {
-            if (String.IsNullOrEmpty(_root))
-            {
-                return false;
-            }
-
-            DirectoryInfo di = new DirectoryInfo(_root);
-            if (!di.Exists)
-            {
-                di.Create();
-            }
-
             if (!String.IsNullOrEmpty(_encKey))
             {
-                byte[] bytes = Crypto.Encrypt(_encoding.GetBytes(connectionstring), _encKey);
+                byte[] bytes = Crypto.Encrypt(Encoding.UTF8.GetBytes(connectionstring), _encKey);
                 connectionstring = Convert.ToBase64String(bytes);
             }
 
-            StreamWriter sw = new StreamWriter(
-                Path.Combine(di.FullName, $"{ReplaceSlash(name)}.con"), false, _encoding);
-
-            sw.Write(connectionstring);
-            sw.Close();
-
-            return true;
+            return _storage.Store(_schema, name, connectionstring);
         }
 
-        public bool Remove(string name)
-        {
-            if (String.IsNullOrEmpty(_root))
-            {
-                return false;
-            }
+        public bool Remove(string name) => _storage.Delete(_schema, name);
 
-            DirectoryInfo di = new DirectoryInfo(_root);
-            if (!di.Exists)
-            {
-                di.Create();
-            }
+        public bool Rename(string oldName, string newName) => _storage.Rename(_schema, oldName, newName);
 
-            try
-            {
-                FileInfo fi = new FileInfo(Path.Combine(di.FullName, $"{ReplaceSlash(name)}.con"));
-                if (fi.Exists)
-                {
-                    fi.Delete();
-                }
-
-                return true;
-            }
-            catch
-            {
-                return false;
-            }
-        }
-
-        public bool Rename(string oldName, string newName)
-        {
-            if (String.IsNullOrEmpty(_root))
-            {
-                return false;
-            }
-
-            DirectoryInfo di = new DirectoryInfo(_root);
-            if (!di.Exists)
-            {
-                di.Create();
-            }
-
-            try
-            {
-                FileInfo fi = new FileInfo(Path.Combine(di.FullName, $"{ReplaceSlash(oldName)}.con"));
-                if (fi.Exists)
-                {
-                    fi.MoveTo(Path.Combine(di.FullName, $"{ReplaceSlash(newName)}.con"));
-                }
-
-                return true;
-            }
-            catch
-            {
-                return false;
-            }
-        }
-
-        public string GetName(string name)
-        {
-            if (String.IsNullOrEmpty(_root))
-            {
-                return String.Empty;
-            }
-
-            DirectoryInfo di = new DirectoryInfo(_root);
-            if (!di.Exists)
-            {
-                di.Create();
-            }
-
-            string ret = name;
-
-            int i = 2;
-            while (di.GetFiles(ReplaceSlash(ret) + ".con").Length != 0)
-            {
-                ret = name + "(" + i++ + ")";
-            }
-
-            return ret;
-        }
+        public string GetName(string name) => _storage.GetNewName(_schema, name);
 
         private string ReplaceSlash(string name)
         {

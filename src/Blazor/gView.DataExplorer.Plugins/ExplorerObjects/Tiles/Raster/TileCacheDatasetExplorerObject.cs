@@ -9,6 +9,7 @@ using gView.Framework.IO;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using gView.DataExplorer.Core.Extensions;
 
 namespace gView.DataExplorer.Plugins.ExplorerObjects.Tiles.Raster;
 
@@ -41,7 +42,11 @@ public class TileCacheDatasetExplorerObject : ExplorerParentObject<TileCacheGrou
     internal string GetConnectionString() => _connectionString;
     internal Task<bool> UpdateConnectionString(string connectionString)
     {
-        ConfigConnections connStream = new ConfigConnections("TileCache", "b9d6ae5b-9ca1-4a52-890f-caa4009784d4");
+        ConfigConnections connStream = ConfigConnections.Create(
+                this.ConfigStorage(),
+                "TileCache", 
+                "b9d6ae5b-9ca1-4a52-890f-caa4009784d4"
+            );
         connStream.Add(_name, _connectionString = connectionString);
 
         return Task.FromResult(true);
@@ -162,7 +167,11 @@ public class TileCacheDatasetExplorerObject : ExplorerParentObject<TileCacheGrou
 
     public Task<bool> DeleteExplorerObject(ExplorerObjectEventArgs e)
     {
-        ConfigConnections stream = new ConfigConnections("TileCache", "b9d6ae5b-9ca1-4a52-890f-caa4009784d4");
+        ConfigConnections stream = ConfigConnections.Create(
+                this.ConfigStorage(),
+                "TileCache", 
+                "b9d6ae5b-9ca1-4a52-890f-caa4009784d4"
+            );
         stream.Remove(_name);
 
         if (ExplorerObjectDeleted != null)
@@ -182,7 +191,11 @@ public class TileCacheDatasetExplorerObject : ExplorerParentObject<TileCacheGrou
     public Task<bool> RenameExplorerObject(string newName)
     {
         bool ret = false;
-        ConfigConnections stream = new ConfigConnections("TileCache", "b9d6ae5b-9ca1-4a52-890f-caa4009784d4");
+        ConfigConnections stream = ConfigConnections.Create(
+                this.ConfigStorage(),
+                "TileCache", 
+                "b9d6ae5b-9ca1-4a52-890f-caa4009784d4"
+            );
         ret = stream.Rename(_name, newName);
 
         if (ret == true)

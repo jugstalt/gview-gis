@@ -1,4 +1,5 @@
-﻿using gView.DataExplorer.Plugins.ExplorerObjects.Base;
+﻿using gView.DataExplorer.Core.Extensions;
+using gView.DataExplorer.Plugins.ExplorerObjects.Base;
 using gView.DataExplorer.Plugins.ExplorerObjects.WebServices;
 using gView.Framework.Core.Common;
 using gView.Framework.DataExplorer.Abstraction;
@@ -39,7 +40,11 @@ public class WmsExplorerObject : ExplorerParentObject,
         await base.Refresh();
         base.AddChildObject(new WmsNewConnectionExplorerObject(this));
 
-        ConfigConnections configStream = new ConfigConnections("ogc_web_connection", "546B0513-D71D-4490-9E27-94CD5D72C64A");
+        ConfigConnections configStream = ConfigConnections.Create(
+                this.ConfigStorage(),
+                "ogc_web_connection",
+                "546B0513-D71D-4490-9E27-94CD5D72C64A"
+            );
 
         Dictionary<string, string> connections = configStream.Connections;
         foreach (string name in connections.Keys)

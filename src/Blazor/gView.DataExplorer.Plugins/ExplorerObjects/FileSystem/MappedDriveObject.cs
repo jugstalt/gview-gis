@@ -1,4 +1,5 @@
-﻿using gView.Framework.DataExplorer.Abstraction;
+﻿using gView.DataExplorer.Core.Extensions;
+using gView.Framework.DataExplorer.Abstraction;
 using gView.Framework.DataExplorer.Events;
 using gView.Framework.IO;
 using System.Threading.Tasks;
@@ -19,7 +20,7 @@ internal class MappedDriveObject : DriveObject,
 
     public Task<bool> DeleteExplorerObject(ExplorerObjectEventArgs e)
     {
-        ConfigConnections configStream = new ConfigConnections("directories");
+        ConfigConnections configStream = ConfigConnections.Create(this.ConfigStorage(), "directories");
         configStream.Remove(Name);
 
         if (ExplorerObjectDeleted != null)

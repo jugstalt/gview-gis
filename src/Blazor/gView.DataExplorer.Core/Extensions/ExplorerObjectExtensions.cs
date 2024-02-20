@@ -3,6 +3,7 @@ using gView.Framework.Common;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using gView.Framework.Core.IO;
 
 namespace gView.DataExplorer.Core.Extensions;
 
@@ -101,4 +102,8 @@ static public class ExplorerObjectExtensions
 
         return exObject as IExplorerRootObject;
     }
+
+    static public IConfigConnectionStorage ConfigStorage(this IExplorerObject exObject)
+        => exObject.GetRoot()?.Scope.ConfigConnectionStorage
+        ?? throw new Exception("no connection string storage available");
 }

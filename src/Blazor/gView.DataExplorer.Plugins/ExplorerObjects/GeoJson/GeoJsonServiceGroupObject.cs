@@ -1,4 +1,5 @@
-﻿using gView.DataExplorer.Plugins.ExplorerObjects.Base;
+﻿using gView.DataExplorer.Core.Extensions;
+using gView.DataExplorer.Plugins.ExplorerObjects.Base;
 using gView.DataExplorer.Plugins.ExplorerObjects.VectorData;
 using gView.Framework.Core.Common;
 using gView.Framework.DataExplorer.Abstraction;
@@ -63,7 +64,11 @@ namespace gView.DataExplorer.Plugins.ExplorerObjects.GeoJson
 
             base.AddChildObject(new GeoJsonServiceNewConnectionObject(this));
 
-            ConfigConnections conStream = new ConfigConnections(ConfigName, EncKey);
+            ConfigConnections conStream = ConfigConnections.Create(
+                        this.ConfigStorage(),
+                        ConfigName, 
+                        EncKey
+                    );
             Dictionary<string, string> DbConnectionStrings = conStream.Connections;
             foreach (string name in DbConnectionStrings.Keys)
             {

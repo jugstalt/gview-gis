@@ -1,4 +1,5 @@
 ﻿using gView.Blazor.Core.Exceptions;
+using gView.DataExplorer.Core.Extensions;
 using gView.DataExplorer.Plugins.ExplorerObjects.Base;
 using gView.DataSources.Fdb.PostgreSql;
 using gView.Framework.DataExplorer.Abstraction;
@@ -214,7 +215,11 @@ public class PostgreSqlExplorerObject : ExplorerParentObject<PostgreSqlExplorerG
     {
         if (_dbConnectionString != null)
         {
-            ConfigConnections stream = new ConfigConnections("postgrefdb", "546B0513-D71D-4490-9E27-94CD5D72C64A");
+            ConfigConnections stream = ConfigConnections.Create(
+                    this.ConfigStorage(),
+                    "postgrefdb", 
+                    "546B0513-D71D-4490-9E27-94CD5D72C64A"
+                );
             stream.Remove(_server);
         }
         else
@@ -242,7 +247,11 @@ public class PostgreSqlExplorerObject : ExplorerParentObject<PostgreSqlExplorerG
         bool ret = false;
         if (_dbConnectionString != null)
         {
-            ConfigConnections stream = new ConfigConnections("postgrefdb", "546B0513-D71D-4490-9E27-94CD5D72C64A");
+            ConfigConnections stream = ConfigConnections.Create(
+                    this.ConfigStorage(),
+                    "postgrefdb", 
+                    "546B0513-D71D-4490-9E27-94CD5D72C64A"
+                );
             ret = stream.Rename(_server, newName);
         }
         else

@@ -12,6 +12,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using gView.Framework.Web.Extensions;
 using gView.Framework.Common.Extensions;
+using gView.DataExplorer.Core.Extensions;
 
 namespace gView.DataExplorer.Plugins.ExplorerObjects.Web.GeoServices;
 
@@ -42,7 +43,11 @@ public class GeoServicesConnectionExplorerObject : ExplorerParentObject<IExplore
 
     public Task<bool> UpdateConnectionString(string connectionString)
     {
-        ConfigConnections configConnections = new ConfigConnections("geoservices_connection", "546B0513-D71D-4490-9E27-94CD5D72C64A");
+        ConfigConnections configConnections = ConfigConnections.Create(
+                this.ConfigStorage(),
+                "geoservices_connection",
+                "546B0513-D71D-4490-9E27-94CD5D72C64A"
+            );
         configConnections.Add(_name, connectionString);
 
         _connectionString = connectionString;
@@ -165,7 +170,11 @@ public class GeoServicesConnectionExplorerObject : ExplorerParentObject<IExplore
 
     public Task<bool> DeleteExplorerObject(ExplorerObjectEventArgs e)
     {
-        ConfigConnections configConnections = new ConfigConnections("geoservices_connection", "546B0513-D71D-4490-9E27-94CD5D72C64A");
+        ConfigConnections configConnections = ConfigConnections.Create(
+                this.ConfigStorage(),
+                "geoservices_connection", 
+                "546B0513-D71D-4490-9E27-94CD5D72C64A"
+            );
         configConnections.Remove(this.Name);
 
         if (ExplorerObjectDeleted != null)
@@ -184,7 +193,11 @@ public class GeoServicesConnectionExplorerObject : ExplorerParentObject<IExplore
 
     public Task<bool> RenameExplorerObject(string newName)
     {
-        ConfigConnections configConnections = new ConfigConnections("geoservices_connection", "546B0513-D71D-4490-9E27-94CD5D72C64A");
+        ConfigConnections configConnections = ConfigConnections.Create(
+                this.ConfigStorage(), 
+                "geoservices_connection", 
+                "546B0513-D71D-4490-9E27-94CD5D72C64A"
+            );
         bool result = configConnections.Rename(this.Name, newName);
 
         if (result == true)

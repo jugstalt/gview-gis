@@ -1,4 +1,5 @@
-﻿using gView.DataExplorer.Plugins.ExplorerObjects.Base;
+﻿using gView.DataExplorer.Core.Extensions;
+using gView.DataExplorer.Plugins.ExplorerObjects.Base;
 using gView.DataExplorer.Plugins.Extensions;
 using gView.DataExplorer.Razor.Components.Dialogs.Models;
 using gView.DataExplorer.Razor.Components.Dialogs.Models.Extensions;
@@ -56,7 +57,11 @@ public class TileCacheNewConnectionObject : ExplorerObjectCls<TileCacheGroupExpl
 
         if (model != null)
         {
-            ConfigConnections connStream = new ConfigConnections("TileCache", "b9d6ae5b-9ca1-4a52-890f-caa4009784d4");
+            ConfigConnections connStream = ConfigConnections.Create(
+                    this.ConfigStorage(),
+                    "TileCache", 
+                    "b9d6ae5b-9ca1-4a52-890f-caa4009784d4"
+                );
 
             string connectionString = model.ToConnectionString();
             string id = model.Name;

@@ -9,4 +9,5 @@ public interface IConfigConnectionStorage
     bool Rename(string schema, string oldName, string newName);
 
     Dictionary<string, string> GetAll(string schema);
+    string GetNewName(string schema, string name);
 }

@@ -9,6 +9,7 @@ using System.Linq;
 using System;
 using System.Threading.Tasks;
 using gView.DataExplorer.Plugins.ExplorerObjects.Extensions;
+using gView.DataExplorer.Core.Extensions;
 
 namespace gView.DataExplorer.Plugins.ExplorerObjects.Web.Wms;
 
@@ -59,7 +60,11 @@ public class WmsServiceExplorerObject : ExplorerObjectCls<WmsExplorerObject, WMS
 
     internal Task<bool> UpdateConnectionString(string connectionString)
     {
-        ConfigConnections configConnections = new ConfigConnections("ogc_web_connection", "546B0513-D71D-4490-9E27-94CD5D72C64A");
+        ConfigConnections configConnections = ConfigConnections.Create(
+                this.ConfigStorage(),
+                "ogc_web_connection", 
+                "546B0513-D71D-4490-9E27-94CD5D72C64A"
+            );
         configConnections.Add(_name, connectionString);
 
         _connectionString = connectionString;
@@ -172,7 +177,11 @@ public class WmsServiceExplorerObject : ExplorerObjectCls<WmsExplorerObject, WMS
 
     public Task<bool> DeleteExplorerObject(ExplorerObjectEventArgs e)
     {
-        ConfigConnections configConnections = new ConfigConnections("ogc_web_connection", "546B0513-D71D-4490-9E27-94CD5D72C64A");
+        ConfigConnections configConnections = ConfigConnections.Create(
+                this.ConfigStorage(),
+                "ogc_web_connection", 
+                "546B0513-D71D-4490-9E27-94CD5D72C64A"
+            );
         bool ret = configConnections.Remove(_name);
         
         if (ExplorerObjectDeleted != null)
@@ -191,7 +200,11 @@ public class WmsServiceExplorerObject : ExplorerObjectCls<WmsExplorerObject, WMS
 
     public Task<bool> RenameExplorerObject(string newName)
     {
-        ConfigConnections configConnections = new ConfigConnections("ogc_web_connection", "546B0513-D71D-4490-9E27-94CD5D72C64A");
+        ConfigConnections configConnections = ConfigConnections.Create(
+                this.ConfigStorage(),
+                "ogc_web_connection", 
+                "546B0513-D71D-4490-9E27-94CD5D72C64A"
+            );
         bool result = configConnections.Rename(_name, newName);
 
         if (result == true)

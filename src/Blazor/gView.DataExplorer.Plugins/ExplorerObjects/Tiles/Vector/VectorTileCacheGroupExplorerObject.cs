@@ -1,4 +1,5 @@
-﻿using gView.DataExplorer.Plugins.ExplorerObjects.Base;
+﻿using gView.DataExplorer.Core.Extensions;
+using gView.DataExplorer.Plugins.ExplorerObjects.Base;
 using gView.Framework.Core.Common;
 using gView.Framework.DataExplorer.Abstraction;
 using gView.Framework.IO;
@@ -60,7 +61,11 @@ namespace gView.DataExplorer.Plugins.ExplorerObjects.Tiles.Vector
 
             base.AddChildObject(new VectorTileCacheNewConnectionObject(this));
 
-            ConfigConnections conStream = new ConfigConnections("VectorTileCache", "b9d6ae5b-9ca1-4a52-890f-caa4009784d4");
+            ConfigConnections conStream = ConfigConnections.Create(
+                    this.ConfigStorage(),
+                    "VectorTileCache", 
+                    "b9d6ae5b-9ca1-4a52-890f-caa4009784d4"
+                );
             Dictionary<string, string> connStrings = conStream.Connections;
             foreach (string connString in connStrings.Keys)
             {

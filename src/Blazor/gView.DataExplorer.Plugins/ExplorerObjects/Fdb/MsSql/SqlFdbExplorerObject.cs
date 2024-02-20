@@ -1,4 +1,5 @@
 ﻿using gView.Blazor.Core.Exceptions;
+using gView.DataExplorer.Core.Extensions;
 using gView.DataExplorer.Plugins.ExplorerObjects.Base;
 using gView.DataSources.Fdb.MSSql;
 using gView.Framework.DataExplorer.Abstraction;
@@ -327,7 +328,11 @@ public class SqlFdbExplorerObject : ExplorerParentObject<SqlFdbExplorerGroupObje
     {
         if (_dbConnectionString != null)
         {
-            ConfigConnections stream = new ConfigConnections("sqlfdb", "546B0513-D71D-4490-9E27-94CD5D72C64A");
+            ConfigConnections stream = ConfigConnections.Create(
+                    this.ConfigStorage(),
+                    "sqlfdb", 
+                    "546B0513-D71D-4490-9E27-94CD5D72C64A"
+                 );
             stream.Remove(_server);
         }
         else
@@ -355,7 +360,11 @@ public class SqlFdbExplorerObject : ExplorerParentObject<SqlFdbExplorerGroupObje
         bool ret = false;
         if (_dbConnectionString != null)
         {
-            ConfigConnections stream = new ConfigConnections("sqlfdb", "546B0513-D71D-4490-9E27-94CD5D72C64A");
+            ConfigConnections stream = ConfigConnections.Create(
+                        this.ConfigStorage(),
+                        "sqlfdb", 
+                        "546B0513-D71D-4490-9E27-94CD5D72C64A"
+                     );
             ret = stream.Rename(_server, newName);
         }
         else

@@ -9,6 +9,7 @@ using gView.Framework.IO;
 using gView.Framework.Common;
 using System.Threading.Tasks;
 using gView.Framework.DataExplorer.Services.Abstraction;
+using gView.DataExplorer.Core.Extensions;
 
 namespace gView.DataExplorer.Plugins.ExplorerObjects.OSGeo.Ogr;
 
@@ -57,7 +58,11 @@ public class OgrNewConnectionObject : ExplorerObjectCls<OgrDatasetGroupObject>,
 
         if (model != null)
         {
-            ConfigConnections connStream = new ConfigConnections("OGR", "ca7011b3-0812-47b6-a999-98a900c4087d");
+            ConfigConnections connStream = ConfigConnections.Create(
+                    this.ConfigStorage(),
+                    "OGR", 
+                    "ca7011b3-0812-47b6-a999-98a900c4087d"
+                );
 
             string connectionString = model.ConnectionString;
             string id = "OGR Connection";

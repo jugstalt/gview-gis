@@ -1,4 +1,5 @@
-﻿using gView.DataExplorer.Plugins.ExplorerObjects.Base;
+﻿using gView.DataExplorer.Core.Extensions;
+using gView.DataExplorer.Plugins.ExplorerObjects.Base;
 using gView.Framework.Core.Common;
 using gView.Framework.DataExplorer.Abstraction;
 using gView.Framework.IO;
@@ -69,7 +70,7 @@ public class ComputerObject : ExplorerParentObject,
             AddChildObject(exObject);
         }
 
-        ConfigConnections configStream = new ConfigConnections("directories");
+        ConfigConnections configStream = ConfigConnections.Create(this.ConfigStorage(), "directories");
         Dictionary<string, string> networkDirectories = configStream.Connections;
         if (networkDirectories != null)
         {

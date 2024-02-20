@@ -5,6 +5,7 @@ using gView.DataExplorer.Plugins.ExplorerObjects;
 using gView.Framework.Blazor;
 using gView.Framework.Blazor.Models;
 using gView.Framework.Blazor.Services;
+using gView.Framework.Core.IO;
 using gView.Framework.DataExplorer.Abstraction;
 using gView.Framework.DataExplorer.Services.Abstraction;
 using Microsoft.AspNetCore.Components;
@@ -27,6 +28,7 @@ public class ExplorerApplicationScopeService : ApplictionBusyHandlerAndCache, IE
     private readonly IJSRuntime _jsRuntime;
     private readonly ISnackbar _snackbar;
     private readonly ExplorerApplicationScopeServiceOptions _options;
+    private readonly IConfigConnectionStorageService _configConnectionStorageService;
     private readonly IExplorerObject _rootExplorerObject;
 
     public ExplorerApplicationScopeService(IDialogService dialogService,
@@ -34,6 +36,7 @@ public class ExplorerApplicationScopeService : ApplictionBusyHandlerAndCache, IE
                                            ExplorerEventBusService eventBus,
                                            IJSRuntime jsRuntime,
                                            ISnackbar snackbar,
+                                           IConfigConnectionStorageService configConnectionStorageService,
                                            IOptions<ExplorerApplicationScopeServiceOptions> options)
     {
         _dialogService = dialogService;
@@ -44,6 +47,8 @@ public class ExplorerApplicationScopeService : ApplictionBusyHandlerAndCache, IE
         _eventBus.OnCurrentExplorerObjectChanged += EventBus_OnTreeItemClickAsync;
         _eventBus.OnContextExplorerObjectsChanged += EventBus_OnContextExplorerObjectsChanged;
         _snackbar = snackbar;
+
+        _configConnectionStorageService = configConnectionStorageService;
 
         _options = options.Value;
         _rootExplorerObject = new StartObject(this);
@@ -84,6 +89,8 @@ public class ExplorerApplicationScopeService : ApplictionBusyHandlerAndCache, IE
     public IEnumerable<IExplorerObject>? ContextExplorerObjects { get; private set; }
 
     public ExplorerEventBusService EventBus => _eventBus;
+
+    public IConfigConnectionStorage ConfigConnectionStorage => _configConnectionStorageService;
 
     async public Task<T?> ShowModalDialog<T>(Type razorComponent,
                                              string title,

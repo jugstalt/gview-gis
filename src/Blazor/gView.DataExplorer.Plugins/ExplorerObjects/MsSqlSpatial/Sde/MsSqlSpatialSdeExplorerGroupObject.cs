@@ -1,4 +1,5 @@
-﻿using gView.DataExplorer.Plugins.ExplorerObjects.Base;
+﻿using gView.DataExplorer.Core.Extensions;
+using gView.DataExplorer.Plugins.ExplorerObjects.Base;
 using gView.DataExplorer.Plugins.ExplorerObjects.Databases;
 using gView.Framework.Core.Common;
 using gView.Framework.DataExplorer.Abstraction;
@@ -41,7 +42,11 @@ public class MsSqlSpatialSdeExplorerGroupObject :
         await base.Refresh();
         base.AddChildObject(new MsSqlSpatialSdeNewConnectionObject(this));
 
-        ConfigConnections conStream = new ConfigConnections("mssql-sde", "546B0513-D71D-4490-9E27-94CD5D72C64A");
+        ConfigConnections conStream = ConfigConnections.Create(
+                this.ConfigStorage(),
+                "mssql-sde", 
+                "546B0513-D71D-4490-9E27-94CD5D72C64A"
+            );
         Dictionary<string, string> DbConnectionStrings = conStream.Connections;
 
         foreach (string DbConnName in DbConnectionStrings.Keys)

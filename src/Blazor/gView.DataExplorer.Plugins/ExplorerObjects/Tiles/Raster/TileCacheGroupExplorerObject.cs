@@ -1,4 +1,5 @@
-﻿using gView.DataExplorer.Plugins.ExplorerObjects.Base;
+﻿using gView.DataExplorer.Core.Extensions;
+using gView.DataExplorer.Plugins.ExplorerObjects.Base;
 using gView.Framework.DataExplorer.Abstraction;
 using gView.Framework.IO;
 using System.Collections.Generic;
@@ -60,7 +61,11 @@ public class TileCacheGroupExplorerObject : ExplorerParentObject,
         base.AddChildObject(new TileCacheNewConnectionObject(this));
         base.AddChildObject(new TileCacheLocalCacheProperties(this));
 
-        ConfigConnections conStream = new ConfigConnections("TileCache", "b9d6ae5b-9ca1-4a52-890f-caa4009784d4");
+        ConfigConnections conStream = ConfigConnections.Create(
+                this.ConfigStorage(),
+                "TileCache", 
+                "b9d6ae5b-9ca1-4a52-890f-caa4009784d4"
+            );
         Dictionary<string, string> connStrings = conStream.Connections;
         foreach (string connString in connStrings.Keys)
         {

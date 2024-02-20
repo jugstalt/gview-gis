@@ -13,13 +13,65 @@ public class AppDataConfigConnectionStorageService : IConfigConnectionStorageSer
 
     public Dictionary<string, string> GetAll(string schema)
     {
-        throw new NotImplementedException();
+        Dictionary<string, string> connections = new Dictionary<string, string>();
+        string root=GetRoot(schema);
+
+        if (String.IsNullOrEmpty(root))
+        {
+            return connections;
+        }
+
+        DirectoryInfo di = new DirectoryInfo(root);
+        if (!di.Exists)
+        {
+            return connections;
+        }
+
+        foreach (FileInfo fi in di.GetFiles("*.con"))
+        {
+            StreamReader sr = new StreamReader(fi.FullName, _encoding);
+            string conn = sr.ReadToEnd();
+            sr.Close();
+
+            string name = InvReplaceSlash(fi.Name.Substring(0, fi.Name.Length - 4));
+            connections.Add(name, conn);
+        }
+
+        return connections;
+    }
+
+    public string GetNewName(string schema, string name)
+    {
+        string root = GetRoot(schema);
+
+        if (String.IsNullOrEmpty(root))
+        {
+            return String.Empty;
+        }
+
+        DirectoryInfo di = new DirectoryInfo(root);
+        string ret = name;
+
+        int i = 1;
+        while (di.GetFiles($"{ReplaceSlash(ret)}.con").Length != 0)
+        {
+            ret = $"{name} ({++i})";
+        }
+
+        return ret;
     }
 
     public bool Store(string schema, string name, string data)
     {
+        string root = GetRoot(schema);
+
+        if (String.IsNullOrEmpty(root))
+        {
+            return false;
+        }
+
         using StreamWriter sw = new StreamWriter(
-                Path.Combine(GetRoot(schema), $"{ReplaceSlash(name)}.con"), false, _encoding);
+                Path.Combine(root, $"{ReplaceSlash(name)}.con"), false, _encoding);
 
         sw.Write(data);
         sw.Close();
@@ -29,12 +81,52 @@ public class AppDataConfigConnectionStorageService : IConfigConnectionStorageSer
 
     public bool Delete(string schema, string name)
     {
-        throw new NotImplementedException();
+        string root = GetRoot(schema);
+
+        if (String.IsNullOrEmpty(root))
+        {
+            return false;
+        }
+
+        try
+        {
+            FileInfo fi = new FileInfo(Path.Combine(root, $"{ReplaceSlash(name)}.con"));
+            if (fi.Exists)
+            {
+                fi.Delete();
+            }
+
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
     }
 
     public bool Rename(string schema, string oldName, string newName)
     {
-        throw new NotImplementedException();
+        string root = GetRoot(schema);
+
+        if (String.IsNullOrEmpty(root))
+        {
+            return false;
+        }
+
+        try
+        {
+            FileInfo fi = new FileInfo(Path.Combine(root, $"{ReplaceSlash(oldName)}.con"));
+            if (fi.Exists)
+            {
+                fi.MoveTo(Path.Combine(root, $"{ReplaceSlash(newName)}.con"));
+            }
+
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
     }
 
     #region Helper

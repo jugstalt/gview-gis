@@ -16,6 +16,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using gView.Framework.DataExplorer.Services.Abstraction;
+using gView.DataExplorer.Core.Extensions;
 
 namespace gView.DataExplorer.Plugins.ExplorerObjects.Tiles.Raster;
 
@@ -120,7 +121,11 @@ public class TileCacheFromTemplate : ExplorerObjectCls<TileCacheGroupExplorerObj
             connectionModel.TileUrl = (string)stream.Load("tile_url", String.Empty);
             connectionModel.CopyrightInformation = (string)stream.Load("copyright", String.Empty);
 
-            ConfigConnections connStream = new ConfigConnections("TileCache", "b9d6ae5b-9ca1-4a52-890f-caa4009784d4");
+            ConfigConnections connStream = ConfigConnections.Create(
+                    this.ConfigStorage(),
+                    "TileCache", 
+                    "b9d6ae5b-9ca1-4a52-890f-caa4009784d4"
+                );
 
             #endregion
 

@@ -1,4 +1,5 @@
-﻿using gView.DataExplorer.Plugins.ExplorerObjects.Base;
+﻿using gView.DataExplorer.Core.Extensions;
+using gView.DataExplorer.Plugins.ExplorerObjects.Base;
 using gView.DataExplorer.Plugins.ExplorerObjects.Web.ArcIms.ContextTools;
 using gView.Framework.DataExplorer.Abstraction;
 using gView.Framework.DataExplorer.Events;
@@ -37,7 +38,11 @@ public class ArcImsConnectionExplorerObject : ExplorerParentObject<IExplorerObje
 
     internal Task<bool> UpdateConnectionString(string connectionString)
     {
-        ConfigConnections configConnections = new ConfigConnections("arcims_connections", "546B0513-D71D-4490-9E27-94CD5D72C64A");
+        ConfigConnections configConnections = ConfigConnections.Create(
+                this.ConfigStorage(),
+                "arcims_connections", 
+                "546B0513-D71D-4490-9E27-94CD5D72C64A"
+            );
         configConnections.Add(_name, connectionString);
 
         _connectionString = connectionString;
@@ -166,7 +171,11 @@ public class ArcImsConnectionExplorerObject : ExplorerParentObject<IExplorerObje
 
     public Task<bool> DeleteExplorerObject(ExplorerObjectEventArgs e)
     {
-        ConfigConnections configConnections = new ConfigConnections("arcims_connections", "546B0513-D71D-4490-9E27-94CD5D72C64A");
+        ConfigConnections configConnections = ConfigConnections.Create(
+                this.ConfigStorage(),
+                "arcims_connections", 
+                "546B0513-D71D-4490-9E27-94CD5D72C64A"
+            );
         configConnections.Remove(this.Name);
 
         if (ExplorerObjectDeleted != null)
@@ -185,7 +194,11 @@ public class ArcImsConnectionExplorerObject : ExplorerParentObject<IExplorerObje
 
     public Task<bool> RenameExplorerObject(string newName)
     {
-        ConfigConnections configConnections = new ConfigConnections("arcims_connections", "546B0513-D71D-4490-9E27-94CD5D72C64A");
+        ConfigConnections configConnections = ConfigConnections.Create(
+                this.ConfigStorage(), 
+                "arcims_connections", 
+                "546B0513-D71D-4490-9E27-94CD5D72C64A"
+            );
         bool result = configConnections.Rename(this.Name, newName);
 
         if (result == true)

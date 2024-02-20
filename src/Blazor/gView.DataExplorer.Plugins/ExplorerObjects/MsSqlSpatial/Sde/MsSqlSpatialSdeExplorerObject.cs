@@ -1,4 +1,5 @@
 ﻿using gView.Blazor.Core.Exceptions;
+using gView.DataExplorer.Core.Extensions;
 using gView.DataExplorer.Plugins.ExplorerObjects.Base;
 using gView.DataExplorer.Plugins.ExplorerObjects.Base.ContextTools;
 using gView.DataSources.MSSqlSpatial;
@@ -55,7 +56,11 @@ public class MsSqlSpatialSdeExplorerObject : ExplorerParentObject<IExplorerObjec
     }
     public Task<bool> UpdateDbConnectionString(DbConnectionString dbConnnectionString)
     {
-        ConfigConnections connStream = new ConfigConnections("mssql-sde", "546B0513-D71D-4490-9E27-94CD5D72C64A");
+        ConfigConnections connStream = ConfigConnections.Create(
+                this.ConfigStorage(),
+                "mssql-sde", 
+                "546B0513-D71D-4490-9E27-94CD5D72C64A"
+            );
         connStream.Add(_server, dbConnnectionString.ToString());
 
         _connectionString = dbConnnectionString;
@@ -177,7 +182,11 @@ public class MsSqlSpatialSdeExplorerObject : ExplorerParentObject<IExplorerObjec
         bool ret = false;
         if (_connectionString != null)
         {
-            ConfigConnections stream = new ConfigConnections("mssql-sde", "546B0513-D71D-4490-9E27-94CD5D72C64A");
+            ConfigConnections stream = ConfigConnections.Create(
+                    this.ConfigStorage(),
+                    "mssql-sde", 
+                    "546B0513-D71D-4490-9E27-94CD5D72C64A"
+                );
             ret = stream.Remove(_server);
         }
 
@@ -200,7 +209,11 @@ public class MsSqlSpatialSdeExplorerObject : ExplorerParentObject<IExplorerObjec
         bool ret = false;
         if (_connectionString != null)
         {
-            ConfigConnections stream = new ConfigConnections("mssql-sde", "546B0513-D71D-4490-9E27-94CD5D72C64A");
+            ConfigConnections stream = ConfigConnections.Create(
+                    this.ConfigStorage(), 
+                    "mssql-sde", 
+                    "546B0513-D71D-4490-9E27-94CD5D72C64A"
+                );
             ret = stream.Rename(_server, newName);
         }
         if (ret == true)

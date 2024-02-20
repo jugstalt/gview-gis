@@ -1,4 +1,5 @@
-﻿using gView.DataExplorer.Plugins.ExplorerObjects.Base;
+﻿using gView.DataExplorer.Core.Extensions;
+using gView.DataExplorer.Plugins.ExplorerObjects.Base;
 using gView.DataExplorer.Plugins.ExplorerObjects.VectorData;
 using gView.DataSources.EventTable;
 using gView.Framework.Core.Common;
@@ -62,7 +63,11 @@ public class EventTableGroupObject :
 
         base.AddChildObject(new EventTableNewConnectionObject(this));
 
-        ConfigConnections configStream = new ConfigConnections("eventtable", "546B0513-D71D-4490-9E27-94CD5D72C64A");
+        ConfigConnections configStream = ConfigConnections.Create(
+                    this.ConfigStorage(),
+                    "eventtable",
+                    "546B0513-D71D-4490-9E27-94CD5D72C64A"
+                );
         Dictionary<string, string> DbConnectionStrings = configStream.Connections;
         foreach (string DbConnName in DbConnectionStrings.Keys)
         {

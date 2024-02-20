@@ -46,7 +46,7 @@ internal class AddNetworkDirectory : IExplorerTool
         if (!string.IsNullOrWhiteSpace(model?.FolderPath) &&
             Directory.Exists(model.FolderPath))
         {
-            ConfigConnections connStream = new ConfigConnections("directories");
+            ConfigConnections connStream = ConfigConnections.Create(scope.ConfigConnectionStorage, "directories");
             connStream.Add(model.FolderPath.Trim(), model.FolderPath.Trim());
 
             await scope.ForceContentRefresh();

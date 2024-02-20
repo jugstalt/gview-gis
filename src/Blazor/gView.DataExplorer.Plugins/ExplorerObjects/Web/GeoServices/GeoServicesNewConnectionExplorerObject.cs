@@ -10,6 +10,7 @@ using gView.Framework.IO;
 using System.Threading.Tasks;
 using gView.Framework.Common.Extensions;
 using gView.Framework.DataExplorer.Services.Abstraction;
+using gView.DataExplorer.Core.Extensions;
 
 namespace gView.DataExplorer.Plugins.ExplorerObjects.Web.GeoServices;
 
@@ -60,7 +61,11 @@ public class GeoServicesNewConnectionExplorerObject : ExplorerObjectCls<IExplore
         if (model != null)
         {
             var connectionString = model.ToConnectionString();
-            ConfigConnections connStream = new ConfigConnections("geoservices_connection", "546B0513-D71D-4490-9E27-94CD5D72C64A");
+            ConfigConnections connStream = ConfigConnections.Create(
+                    this.ConfigStorage(),
+                    "geoservices_connection",
+                    "546B0513-D71D-4490-9E27-94CD5D72C64A"
+                );
 
             string id = connStream.GetName(ConfigTextStream.ExtractValue(connectionString, "server").UrlToConfigId());
             connStream.Add(id, connectionString);

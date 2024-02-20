@@ -1,4 +1,5 @@
-﻿using gView.Blazor.Core.Services.Abstraction;
+﻿using gView.Blazor.Core.Services;
+using gView.Blazor.Core.Services.Abstraction;
 using gView.DataExplorer.Core.Extensions.DependencyInjeftion;
 using gView.DataExplorer.Core.Services.Abstraction;
 using gView.DataExplorer.Plugins.Services;
@@ -24,6 +25,7 @@ static public class ServicesExtensions
         return services
             .Configure(configureOptions)
             .AddEventBus()
+            .AddTransient<IConfigConnectionStorageService, AppDataConfigConnectionStorageService>()
             .AddScoped<IExplorerApplicationScopeService, ExplorerApplicationScopeService>();
     }
 

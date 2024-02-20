@@ -1,5 +1,6 @@
 ﻿using gView.Framework.Blazor.Models;
 using gView.Framework.Blazor.Services.Abstraction;
+using gView.Framework.Core.IO;
 using gView.Framework.DataExplorer.Abstraction;
 using System;
 using System.Collections.Generic;
@@ -12,6 +13,8 @@ public interface IExplorerApplicationScopeService : IApplicationScope
     IExplorerObject RootExplorerObject(string? fileFilter = null);
     IExplorerObject? CurrentExplorerObject { get; }
     IEnumerable<IExplorerObject>? ContextExplorerObjects { get; }
+    
+    IConfigConnectionStorage ConfigConnectionStorage { get; }
 
     Task ForceContentRefresh();
 

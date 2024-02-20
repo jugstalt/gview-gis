@@ -1,4 +1,5 @@
-﻿using gView.DataExplorer.Plugins.ExplorerObjects.Base;
+﻿using gView.DataExplorer.Core.Extensions;
+using gView.DataExplorer.Plugins.ExplorerObjects.Base;
 using gView.DataExplorer.Plugins.Extensions;
 using gView.DataExplorer.Razor.Components.Dialogs.Models;
 using gView.Framework.Blazor;
@@ -66,7 +67,11 @@ public class PostGISNewConnectionObject :
         if (model != null)
         {
             DbConnectionString dbConnStr = model.DbConnectionString;
-            ConfigConnections connStream = new ConfigConnections("postgis", "546B0513-D71D-4490-9E27-94CD5D72C64A");
+            ConfigConnections connStream = ConfigConnections.Create(
+                    this.ConfigStorage(),
+                    "postgis", 
+                    "546B0513-D71D-4490-9E27-94CD5D72C64A"
+                );
 
             string connectionString = dbConnStr.ConnectionString;
             string id = ConfigTextStream.ExtractValue(connectionString, "database");
