@@ -44,4 +44,12 @@
     <ProjectReference Include="..\gView.Razor\gView.Razor.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Update="_config\gview-web.config">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+  </ItemGroup>
+
 </Project>
