@@ -9,7 +9,13 @@ namespace gView.Blazor.Core.Services;
 
 public class AppDataConfigConnectionStorageService : IConfigConnectionStorageService
 {
-    private readonly Encoding _encoding = Encoding.Default;
+    private const string AnyUserFolderName = "_";
+    private readonly IAppIdentityProvider _identityProvider;
+
+    public AppDataConfigConnectionStorageService(IAppIdentityProvider identityProvider)
+    {
+        _identityProvider = identityProvider;
+    }
 
     public Dictionary<string, string> GetAll(string schema)
     {
@@ -29,7 +35,7 @@ public class AppDataConfigConnectionStorageService : IConfigConnectionStorageSer
 
         foreach (FileInfo fi in di.GetFiles("*.con"))
         {
-            StreamReader sr = new StreamReader(fi.FullName, _encoding);
+            StreamReader sr = new StreamReader(fi.FullName, Encoding.UTF8);
             string conn = sr.ReadToEnd();
             sr.Close();
 
@@ -71,7 +77,7 @@ public class AppDataConfigConnectionStorageService : IConfigConnectionStorageSer
         }
 
         using StreamWriter sw = new StreamWriter(
-                Path.Combine(root, $"{ReplaceSlash(name)}.con"), false, _encoding);
+                Path.Combine(root, $"{ReplaceSlash(name)}.con"), false, Encoding.UTF8);
 
         sw.Write(data);
         sw.Close();
@@ -131,9 +137,16 @@ public class AppDataConfigConnectionStorageService : IConfigConnectionStorageSer
 
     #region Helper
 
-    private string GetRoot(string schema)
+    private string GetRoot(string schema, bool anyUser = false)
     {
-        string root = System.IO.Path.Combine(SystemVariables.MyApplicationConfigPath, "connections", schema);
+        string root = System.IO.Path.Combine(
+                SystemVariables.MyApplicationConfigPath,
+                "connections",
+                schema,
+                anyUser || String.IsNullOrWhiteSpace(_identityProvider.Identity.Username) 
+                    ? "_" 
+                    : UserNameToFolder(_identityProvider.Identity.Username)
+            );
         DirectoryInfo di = new DirectoryInfo(root);
 
         if (!di.Exists)
@@ -151,6 +164,22 @@ public class AppDataConfigConnectionStorageService : IConfigConnectionStorageSer
     private string InvReplaceSlash(string name)
     {
         return name.Replace("&slsh;", "/").Replace("&bkslsh;", "\\").Replace("&colon;", ":");
+    }
+
+    private string UserNameToFolder(string username)
+    {
+        char[] invalidChars = Path.GetInvalidFileNameChars();
+        string validName = string.Join("_", username.Split(invalidChars, StringSplitOptions.RemoveEmptyEntries));
+
+        validName = validName.Trim();
+        validName = validName.Replace(" ", "_");
+
+        if (string.IsNullOrWhiteSpace(validName))
+        {
+            throw new ArgumentException("the resulting foldername is empty");
+        }
+
+        return validName.ToLower();
     }
 
     #endregion

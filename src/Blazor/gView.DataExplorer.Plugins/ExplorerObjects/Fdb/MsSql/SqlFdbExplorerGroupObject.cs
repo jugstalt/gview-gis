@@ -41,14 +41,6 @@ public class SqlFdbExplorerGroupObject : ExplorerParentObject,
         await base.Refresh();
         base.AddChildObject(new SqlFdbNewConnectionObject(this));
 
-        ConfigTextStream stream = new ConfigTextStream("sqlfdb_connections");
-        string connStr, id;
-        while ((connStr = stream.Read(out id)) != null)
-        {
-            base.AddChildObject(new SqlFdbExplorerObject(this, id, connStr));
-        }
-        stream.Close();
-
         ConfigConnections conStream = ConfigConnections.Create(
                 this.ConfigStorage(),
                 "sqlfdb", 

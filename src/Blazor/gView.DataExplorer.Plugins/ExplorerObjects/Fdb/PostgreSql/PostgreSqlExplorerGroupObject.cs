@@ -41,14 +41,6 @@ public class PostgreSqlExplorerGroupObject : ExplorerParentObject,
         await base.Refresh();
         base.AddChildObject(new PostgreSqlNewConnectionObject(this));
 
-        ConfigTextStream stream = new ConfigTextStream("postgrefdb_connections");
-        string connStr, id;
-        while ((connStr = stream.Read(out id)) != null)
-        {
-            base.AddChildObject(new PostgreSqlExplorerObject(this, id, connStr));
-        }
-        stream.Close();
-
         ConfigConnections conStream = ConfigConnections.Create(
                 this.ConfigStorage(),
                 "postgrefdb", 

@@ -26,11 +26,7 @@ namespace gView.Framework.Common
         {
             get
             {
-                //System.Environment.CurrentDirectory;
-                //DirectoryInfo di = new DirectoryInfo(System.Windows.Forms.Application.StartupPath);
-                //return di.FullName;
-
-                return PortableRootDirectory;
+                return Path.GetDirectoryName(Assembly.GetAssembly(typeof(SystemVariables)).Location);
             }
         }
 
@@ -40,41 +36,12 @@ namespace gView.Framework.Common
         }
 
         static public string CustomMyApplicationData = string.Empty;
-        static public string MyApplicationData
-        {
-            get
-            {
-                if (IsPortable)
-                {
-                    return PortableRootDirectory + @"\AppData";
-                }
-
-                if (!string.IsNullOrEmpty(CustomMyApplicationData))
-                {
-                    return CustomMyApplicationData;
-                }
-
-                string path = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"/gView";
-                DirectoryInfo di = new DirectoryInfo(path);
-                if (!di.Exists)
-                {
-                    di.Create();
-                }
-
-                return di.FullName;
-            }
-        }
 
         static public string CustomMyCommonApplicationData = string.Empty;
         static public string MyCommonApplicationData
         {
             get
             {
-                if (IsPortable)
-                {
-                    return PortableRootDirectory + @"/AppData";
-                }
-
                 if (!string.IsNullOrEmpty(CustomMyCommonApplicationData))
                 {
                     return CustomMyCommonApplicationData;
@@ -95,12 +62,7 @@ namespace gView.Framework.Common
         static public string CommonApplicationData
         {
             get
-            {
-                if (IsPortable)
-                {
-                    return PortableRootDirectory + @"/AppData";
-                }
-
+            { 
                 if (!string.IsNullOrEmpty(CustomCommonApplicationData))
                 {
                     return CustomCommonApplicationData;
@@ -116,11 +78,19 @@ namespace gView.Framework.Common
                 return di.FullName;
             }
         }
+
+        private static string _gViewWebRepositoryPath = Path.Combine(new DirectoryInfo(ApplicationDirectory).Parent.FullName, "gview-web-repository");
+        static public string gViewWebRepositoryPath {
+            get => _gViewWebRepositoryPath; 
+            set { _gViewWebRepositoryPath = String.IsNullOrEmpty(value) ? _gViewWebRepositoryPath : value; }
+        }
+        
+
         static public string MyApplicationConfigPath
         {
             get
             {
-                string path = MyApplicationData + @"/config";
+                string path = Path.Combine(gViewWebRepositoryPath, "_user_config");
                 DirectoryInfo di = new DirectoryInfo(path);
                 if (!di.Exists)
                 {
@@ -128,27 +98,6 @@ namespace gView.Framework.Common
                 }
 
                 return di.FullName;
-            }
-        }
-
-        static public bool IsPortable
-        {
-            get
-            {
-                try
-                {
-                    string path = PortableRootDirectory;
-                    return File.Exists(path + @"/gview_portable.config");
-                }
-                catch { return false; }
-            }
-        }
-
-        static public string PortableRootDirectory
-        {
-            get
-            {
-                return Path.GetDirectoryName(Assembly.GetAssembly(typeof(SystemVariables)).Location);
             }
         }
 

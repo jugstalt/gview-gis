@@ -1,6 +1,7 @@
 ﻿using gView.Blazor.Core.Exceptions;
 using gView.DataExplorer.Core.Extensions;
 using gView.DataExplorer.Plugins.ExplorerObjects.Base;
+using gView.DataExplorer.Plugins.ExplorerObjects.Base.ContextTools;
 using gView.DataSources.Fdb.PostgreSql;
 using gView.Framework.DataExplorer.Abstraction;
 using gView.Framework.DataExplorer.Events;
@@ -12,72 +13,75 @@ using System.Threading.Tasks;
 
 namespace gView.DataExplorer.Plugins.ExplorerObjects.Fdb.PostgreSql;
 
-public class PostgreSqlExplorerObject : ExplorerParentObject<PostgreSqlExplorerGroupObject>, 
-                                    IExplorerSimpleObject, 
-                                    IExplorerObjectDeletable, 
-                                    IExplorerObjectRenamable, 
-                                    IExplorerObjectCommandParameters, 
+public class PostgreSqlExplorerObject : ExplorerParentObject<PostgreSqlExplorerGroupObject>,
+                                    IExplorerSimpleObject,
+                                    IExplorerObjectDeletable,
+                                    IExplorerObjectRenamable,
+                                    IExplorerObjectCommandParameters,
                                     ISerializableExplorerObject
 {
-    private string _server = String.Empty, _connectionString = String.Empty, _errMsg = String.Empty;
+    private string _server = String.Empty, _errMsg = String.Empty;
     private DbConnectionString? _dbConnectionString = null;
+    private IEnumerable<IExplorerObjectContextTool>? _contextTools = null;
 
     public PostgreSqlExplorerObject(int priority) : base() { }
-    public PostgreSqlExplorerObject(PostgreSqlExplorerGroupObject parent, string server, string connectionString)
-        : base(parent, parent != null ? parent.Priority : 1)
+
+    public PostgreSqlExplorerObject(PostgreSqlExplorerGroupObject parent, string server, DbConnectionString dbConnectionString)
+         : base(parent, 1)
     {
         _server = server;
-        _connectionString = connectionString;
-    }
-    public PostgreSqlExplorerObject(PostgreSqlExplorerGroupObject parent, string server, DbConnectionString dbConnectionString)
-        : this(parent, server, (dbConnectionString != null) ? dbConnectionString.ConnectionString : String.Empty)
-    {
         _dbConnectionString = dbConnectionString;
+
+        _contextTools = [new UpdateConnectionString()];
     }
 
-    //void ConnectionProperties_Click(object sender, EventArgs e)
-    //{
-    //    if (_dbConnectionString == null)
-    //    {
-    //        return;
-    //    }
+    internal string ConnectionString => _dbConnectionString?.ConnectionString ?? String.Empty;
 
-    //    FormConnectionString dlg = new FormConnectionString(_dbConnectionString);
-    //    dlg.ProviderID = "postgre";
-    //    dlg.UseProviderInConnectionString = false;
+    #region IUpdateConnectionString
 
-    //    if (dlg.ShowDialog() == DialogResult.OK)
-    //    {
-    //        DbConnectionString dbConnStr = dlg.DbConnectionString;
-
-    //        ConfigConnections connStream = new ConfigConnections("postgrefdb", "546B0513-D71D-4490-9E27-94CD5D72C64A");
-    //        connStream.Add(_server, dbConnStr.ToString());
-
-    //        _dbConnectionString = dbConnStr;
-    //        _connectionString = dbConnStr.ConnectionString;
-    //    }
-    //}
-
-    internal string ConnectionString
+    public DbConnectionString GetDbConnectionString()
     {
-        get
+        if (_dbConnectionString == null)
         {
-            return _connectionString;
+            throw new GeneralException("Error: connection string not set already for this item");
         }
+
+        return _dbConnectionString.Clone();
     }
+    public Task<bool> UpdateDbConnectionString(DbConnectionString dbConnnectionString)
+    {
+        ConfigConnections connStream = ConfigConnections.Create(
+                this.ConfigStorage(),
+                "postgrefdb",
+                "546B0513-D71D-4490-9E27-94CD5D72C64A"
+            );
+        connStream.Add(_server, dbConnnectionString.ToString());
+
+        _dbConnectionString = dbConnnectionString;
+
+        return Task.FromResult(true);
+    }
+
+    #endregion
+
+    #region IExplorerObjectContextTools
+
+    public IEnumerable<IExplorerObjectContextTool> ContextTools => _contextTools ?? Array.Empty<IExplorerObjectContextTool>();
+
+    #endregion
 
     #region IExplorerObject Members
 
-    public string Name=>_server;
+    public string Name => _server;
 
     public string FullName => @$"Databases\PostgreFDBConnections\{_server}";
 
-    public string Type=>"Postgre Feature Database";
+    public string Type => "Postgre Feature Database";
 
     public string Icon => "basic:database";
 
-    public Task<object?> GetInstanceAsync()=> Task.FromResult<object?>(null);
-    
+    public Task<object?> GetInstanceAsync() => Task.FromResult<object?>(null);
+
 
     #endregion
 
@@ -87,7 +91,7 @@ public class PostgreSqlExplorerObject : ExplorerParentObject<PostgreSqlExplorerG
         try
         {
             pgFDB fdb = new pgFDB();
-            if (!await fdb.Open(_connectionString))
+            if (!await fdb.Open(this.ConnectionString))
             {
                 _errMsg = fdb.LastErrorMessage;
                 throw new GeneralException(_errMsg);
@@ -166,7 +170,7 @@ public class PostgreSqlExplorerObject : ExplorerParentObject<PostgreSqlExplorerG
         get
         {
             Dictionary<string, string> parameters = new Dictionary<string, string>();
-            parameters.Add("Connection String", _connectionString);
+            parameters.Add("Connection String", this.ConnectionString);
             return parameters;
         }
     }
@@ -213,21 +217,14 @@ public class PostgreSqlExplorerObject : ExplorerParentObject<PostgreSqlExplorerG
 
     public Task<bool> DeleteExplorerObject(ExplorerObjectEventArgs e)
     {
-        if (_dbConnectionString != null)
-        {
-            ConfigConnections stream = ConfigConnections.Create(
+        ConfigConnections stream = ConfigConnections.Create(
                     this.ConfigStorage(),
-                    "postgrefdb", 
+                    "postgrefdb",
                     "546B0513-D71D-4490-9E27-94CD5D72C64A"
                 );
-            stream.Remove(_server);
-        }
-        else
-        {
-            ConfigTextStream stream = new ConfigTextStream("postgrefdb_connections", true, true);
-            stream.Remove(this.Name, _connectionString);
-            stream.Close();
-        }
+        stream.Remove(_server);
+
+
         if (ExplorerObjectDeleted != null)
         {
             ExplorerObjectDeleted(this);
@@ -244,22 +241,14 @@ public class PostgreSqlExplorerObject : ExplorerParentObject<PostgreSqlExplorerG
 
     public Task<bool> RenameExplorerObject(string newName)
     {
-        bool ret = false;
-        if (_dbConnectionString != null)
-        {
-            ConfigConnections stream = ConfigConnections.Create(
-                    this.ConfigStorage(),
-                    "postgrefdb", 
-                    "546B0513-D71D-4490-9E27-94CD5D72C64A"
-                );
-            ret = stream.Rename(_server, newName);
-        }
-        else
-        {
-            ConfigTextStream stream = new ConfigTextStream("postgrefdb_connections", true, true);
-            ret = stream.ReplaceHoleLine(ConfigTextStream.BuildLine(_server, _connectionString), ConfigTextStream.BuildLine(newName, _connectionString));
-            stream.Close();
-        }
+        ConfigConnections stream = ConfigConnections.Create(
+                this.ConfigStorage(),
+                "postgrefdb",
+                "546B0513-D71D-4490-9E27-94CD5D72C64A"
+            );
+
+        bool ret = stream.Rename(_server, newName);
+
         if (ret == true)
         {
             _server = newName;

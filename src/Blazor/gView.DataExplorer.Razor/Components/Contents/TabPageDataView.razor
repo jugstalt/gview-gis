@@ -127,13 +127,20 @@
             IRasterClass rClass => rClass.SpatialReference,
             IWebServiceClass wClass => wClass.SpatialReference,
             IFeatureDataset fDataset => await fDataset.GetSpatialReference(),
+            _ => null
         };
 
         if(_dataSpatialReference is null)
         {
+            string dataInstanceName = dataInstance switch
+            {
+                IClass cls => $"Layer {cls.Name}",
+                IDataset dataset => $"Dataset {dataset.DatasetName}",
+                _ => ""
+            };
             var model = await AppScope.ShowKnownDialog(
                     gView.Framework.Blazor.KnownDialogs.SpatialReferenceDialog,
-                    "Layer SRef is missing: Select a default",
+                    $"{dataInstanceName} SRef is missing: Select a default",
                      new BaseDialogModel<ISpatialReference>()
                     {
                          Value = AppScope.GetCacheItem<ISpatialReference>("TabPageDataView_dataSpatialReference") ?? _mapSRef

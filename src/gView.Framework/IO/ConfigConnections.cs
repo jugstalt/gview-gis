@@ -12,7 +12,7 @@ namespace gView.Framework.IO
         private readonly string _schema = String.Empty;
         private readonly string _encKey = String.Empty;
 
-        public ConfigConnections(IConfigConnectionStorage storage, string schema, string encKey)
+        private ConfigConnections(IConfigConnectionStorage storage, string schema, string encKey)
         {
             _storage = storage;
             _schema = schema;

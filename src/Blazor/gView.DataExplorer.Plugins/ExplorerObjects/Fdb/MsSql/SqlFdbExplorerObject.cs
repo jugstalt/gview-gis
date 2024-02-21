@@ -1,71 +1,40 @@
 ﻿using gView.Blazor.Core.Exceptions;
 using gView.DataExplorer.Core.Extensions;
 using gView.DataExplorer.Plugins.ExplorerObjects.Base;
+using gView.DataExplorer.Plugins.ExplorerObjects.Base.ContextTools;
 using gView.DataSources.Fdb.MSSql;
 using gView.Framework.DataExplorer.Abstraction;
 using gView.Framework.DataExplorer.Events;
 using gView.Framework.Db;
 using gView.Framework.IO;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace gView.DataExplorer.Plugins.ExplorerObjects.Fdb.MsSql;
 
-public class SqlFdbExplorerObject : ExplorerParentObject<SqlFdbExplorerGroupObject>, 
-                                    IExplorerSimpleObject, 
-                                    IExplorerObjectDeletable, 
-                                    IExplorerObjectRenamable, 
-                                    ISerializableExplorerObject
-                                    //, IExplorerObjectContextMenu
+public class SqlFdbExplorerObject : ExplorerParentObject<SqlFdbExplorerGroupObject>,
+                                    IExplorerSimpleObject,
+                                    IExplorerObjectDeletable,
+                                    IExplorerObjectRenamable,
+                                    ISerializableExplorerObject,
+                                    IExplorerObjectContextTools,
+                                    IUpdateConnectionString
 {
-    private string _server = "", _connectionString = "", _errMsg = "";
+    private string _server = "", _errMsg = "";
     private DbConnectionString? _dbConnectionString = null;
+    private IEnumerable<IExplorerObjectContextTool>? _contextTools = null;
 
     public SqlFdbExplorerObject()
         : base() { }
-    public SqlFdbExplorerObject(SqlFdbExplorerGroupObject parent, string server, string connectionString)
+
+    public SqlFdbExplorerObject(SqlFdbExplorerGroupObject parent, string server, DbConnectionString dbConnectionString)
         : base(parent, 1)
     {
         _server = server;
-        _connectionString = connectionString;
-
-        //_contextItems = new ToolStripItem[1];
-        //_contextItems[0] = new ToolStripMenuItem("Tasks");
-
-        //ToolStripMenuItem item = new ToolStripMenuItem("Shrink database");
-        //item.Click += new EventHandler(ShrinkDatabase_Click);
-        //((ToolStripMenuItem)_contextItems[0]).DropDownItems.Add(item);
-        //((ToolStripMenuItem)_contextItems[0]).DropDownItems.Add(new ToolStripSeparator());
-
-        //item = new ToolStripMenuItem("Check SpatialEngine Version");
-        //item.Click += new EventHandler(CheckSpatialEngineVersion_Click);
-        //((ToolStripMenuItem)_contextItems[0]).DropDownItems.Add(item);
-        //item = new ToolStripMenuItem("Create Spatial Engine");
-        //item.Click += new EventHandler(CreateSpatialEngine_Click);
-        //((ToolStripMenuItem)_contextItems[0]).DropDownItems.Add(item);
-        //item = new ToolStripMenuItem("Drop Spatial Engine");
-        //item.Click += new EventHandler(DropSpatialEngine_Click);
-        //((ToolStripMenuItem)_contextItems[0]).DropDownItems.Add(item);
-    }
-    public SqlFdbExplorerObject(SqlFdbExplorerGroupObject parent, string server, DbConnectionString dbConnectionString)
-        : this(parent, server, (dbConnectionString != null) ? dbConnectionString.ConnectionString : String.Empty)
-    {
         _dbConnectionString = dbConnectionString;
 
-        //List<ToolStripMenuItem> items = new List<ToolStripMenuItem>();
-        //if (_contextItems != null)
-        //{
-        //    foreach (ToolStripMenuItem i in _contextItems)
-        //    {
-        //        items.Add(i);
-        //    }
-        //}
-
-        //ToolStripMenuItem item = new ToolStripMenuItem(LocalizedResources.GetResString("Menu.ConnectionProperties", "Connection Properties..."));
-        //item.Click += new EventHandler(ConnectionProperties_Click);
-        //items.Add(item);
-
-        //_contextItems = items.ToArray();
+        _contextTools = [new UpdateConnectionString()];
     }
 
     //void CheckSpatialEngineVersion_Click(object sender, EventArgs e)
@@ -187,15 +156,48 @@ public class SqlFdbExplorerObject : ExplorerParentObject<SqlFdbExplorerGroupObje
     //    }
     //}
 
-    internal string ConnectionString=>_connectionString;
+    internal string ConnectionString => _dbConnectionString?.ConnectionString ?? String.Empty;
+
+    #region IUpdateConnectionString
+
+    public DbConnectionString GetDbConnectionString()
+    {
+        if (_dbConnectionString == null)
+        {
+            throw new GeneralException("Error: connection string not set already for this item");
+        }
+
+        return _dbConnectionString.Clone();
+    }
+    public Task<bool> UpdateDbConnectionString(DbConnectionString dbConnnectionString)
+    {
+        ConfigConnections connStream = ConfigConnections.Create(
+                this.ConfigStorage(),
+                "sqlfdb",
+                "546B0513-D71D-4490-9E27-94CD5D72C64A"
+            );
+        connStream.Add(_server, dbConnnectionString.ToString());
+
+        _dbConnectionString = dbConnnectionString;
+
+        return Task.FromResult(true);
+    }
+
+    #endregion
+
+    #region IExplorerObjectContextTools
+
+    public IEnumerable<IExplorerObjectContextTool> ContextTools => _contextTools ?? Array.Empty<IExplorerObjectContextTool>();
+
+    #endregion
 
     #region IExplorerObject Members
 
-    public string Name=> _server;
+    public string Name => _server;
 
-    public string FullName=> @$"Databases\SqlFDBConnections\{_server}";
+    public string FullName => @$"Databases\SqlFDBConnections\{_server}";
 
-    public string Type=> "Sql Feature Database";
+    public string Type => "Sql Feature Database";
 
     public string Icon => "basic:database";
 
@@ -209,7 +211,7 @@ public class SqlFdbExplorerObject : ExplorerParentObject<SqlFdbExplorerGroupObje
         try
         {
             SqlFDB fdb = new SqlFDB();
-            if (!await fdb.Open(_connectionString))
+            if (!await fdb.Open(this.ConnectionString))
             {
                 _errMsg = fdb.LastErrorMessage;
                 return null;
@@ -326,21 +328,13 @@ public class SqlFdbExplorerObject : ExplorerParentObject<SqlFdbExplorerGroupObje
 
     public Task<bool> DeleteExplorerObject(ExplorerObjectEventArgs e)
     {
-        if (_dbConnectionString != null)
-        {
-            ConfigConnections stream = ConfigConnections.Create(
-                    this.ConfigStorage(),
-                    "sqlfdb", 
-                    "546B0513-D71D-4490-9E27-94CD5D72C64A"
-                 );
-            stream.Remove(_server);
-        }
-        else
-        {
-            ConfigTextStream stream = new ConfigTextStream("sqlfdb_connections", true, true);
-            stream.Remove(this.Name, _connectionString);
-            stream.Close();
-        }
+        ConfigConnections stream = ConfigConnections.Create(
+                this.ConfigStorage(),
+                "sqlfdb",
+                "546B0513-D71D-4490-9E27-94CD5D72C64A"
+             );
+        stream.Remove(_server);
+
         if (ExplorerObjectDeleted != null)
         {
             ExplorerObjectDeleted(this);
@@ -357,22 +351,13 @@ public class SqlFdbExplorerObject : ExplorerParentObject<SqlFdbExplorerGroupObje
 
     public Task<bool> RenameExplorerObject(string newName)
     {
-        bool ret = false;
-        if (_dbConnectionString != null)
-        {
-            ConfigConnections stream = ConfigConnections.Create(
-                        this.ConfigStorage(),
-                        "sqlfdb", 
-                        "546B0513-D71D-4490-9E27-94CD5D72C64A"
-                     );
-            ret = stream.Rename(_server, newName);
-        }
-        else
-        {
-            ConfigTextStream stream = new ConfigTextStream("sqlfdb_connections", true, true);
-            ret = stream.ReplaceHoleLine(ConfigTextStream.BuildLine(_server, _connectionString), ConfigTextStream.BuildLine(newName, _connectionString));
-            stream.Close();
-        }
+        ConfigConnections stream = ConfigConnections.Create(
+                    this.ConfigStorage(),
+                    "sqlfdb",
+                    "546B0513-D71D-4490-9E27-94CD5D72C64A"
+                 );
+        bool ret = stream.Rename(_server, newName);
+
         if (ret == true)
         {
             _server = newName;

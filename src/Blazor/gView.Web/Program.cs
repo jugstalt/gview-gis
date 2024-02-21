@@ -101,4 +101,6 @@ gView.GraphicsEngine.Current.Encoder = new gView.GraphicsEngine.GdiPlus.GdiBitma
 gView.GraphicsEngine.Current.Engine = new gView.GraphicsEngine.Skia.SkiaGraphicsEngine(96.0f);
 //gView.GraphicsEngine.Current.Encoder = new gView.GraphicsEngine.Skia.SkiaBitmapEncoding();
 
+gView.Framework.Common.SystemVariables.gViewWebRepositoryPath = app.Configuration["RepositoryPath"];
+
 app.Run();
