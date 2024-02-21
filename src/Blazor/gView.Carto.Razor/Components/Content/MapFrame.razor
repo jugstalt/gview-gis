@@ -182,6 +182,12 @@
         }
     }
 
+    private Task HandleMapViewResetStarted(object sender, Event e)
+    {
+        MapRenderer.CancelRender();
+        return Task.CompletedTask;
+    }
+
     private Task HandleMapClick(LMap sender, BlazorLeaflet.Models.Events.MouseEvent e)
         => e.LatLng is not null
         ? EventBus.FireMapClickAsync(new Point(e.LatLng.Lng, e.LatLng.Lat) { Srs = 4326 })
@@ -275,9 +281,13 @@
             _mapControl.OnZoomEnd += HandleMapViewReset;
             _mapControl.OnMoveEnd += HandleMapViewReset;
 
+            _mapControl.OnZoomStart += HandleMapViewResetStarted;
+            _mapControl.OnMoveStart += HandleMapViewResetStarted;
+
             _mapControl.OnClick += HandleMapClick;
             _mapControl.OnBBox += HandleBBox;
             _mapControl.OnMouseMove += HandleMapMouseMove;
+
 
             reused = false;
         }
@@ -317,6 +327,9 @@
             //LeafletMap.OnViewReset -= OnMapViewRest;
             _mapControl.OnZoomEnd -= HandleMapViewReset;
             _mapControl.OnMoveEnd -= HandleMapViewReset;
+
+            _mapControl.OnZoomStart -= HandleMapViewResetStarted;
+            _mapControl.OnMoveStart -= HandleMapViewResetStarted;
 
             _mapControl.OnClick -= HandleMapClick;
             _mapControl.OnBBox -= HandleBBox;

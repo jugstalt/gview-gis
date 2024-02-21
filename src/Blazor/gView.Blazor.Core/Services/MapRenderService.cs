@@ -229,15 +229,17 @@ public class MapRenderService : IDisposable
             CancelRender();
             BeginRender(drawPhase);
         }
-
-        using (var mutex = await FuzzyMutexAsync.LockAsync(_scopeId))
+        else
         {
-            if (mutex.WasBlocked == false)
+            using (var mutex = await FuzzyMutexAsync.LockAsync(_scopeId))
             {
-                await Task.Delay(delay);
+                if (mutex.WasBlocked == false)
+                {
+                    await Task.Delay(delay);
 
-                CancelRender();
-                BeginRender(drawPhase);
+                    CancelRender();
+                    BeginRender(drawPhase);
+                }
             }
         }
     }
