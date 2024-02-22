@@ -142,10 +142,10 @@ public class AppDataConfigConnectionStorageService : IConfigConnectionStorageSer
         string root = System.IO.Path.Combine(
                 SystemVariables.MyApplicationConfigPath,
                 "connections",
-                schema,
                 anyUser || String.IsNullOrWhiteSpace(_identityProvider.Identity.Username) 
                     ? "_" 
-                    : UserNameToFolder(_identityProvider.Identity.Username)
+                    : UserNameToFolder(_identityProvider.Identity.Username),
+                schema
             );
         DirectoryInfo di = new DirectoryInfo(root);
 

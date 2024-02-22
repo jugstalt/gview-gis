@@ -31,7 +31,7 @@
                     <MudTextField Label="Name"
                                    @bind-Value="Model.Result.Name" />
                     <MudCheckBox Label="Delete network featureclass, if already exists"
-                                 @bind-Checked="Model.Result.DeleteExisting" />
+                                 @bind-Value="Model.Result.DeleteExisting" />
                     <br />
                     <MudButton Variant="Variant.Outlined"
                                OnClick="() => { showLoadExistingCombo=true; }">
@@ -44,9 +44,12 @@
                 <strong>Edge Feature Classes</strong>
                 @if (polylineFeatureClasses != null)
                 {
-                    <SelectableItemsControl ItemProperties="@(new[]{"Name"})" 
-                                              SelectableItems="polylineFeatureClasses" 
-                                              SelectionChanged="PolylineSelectionChanged" />
+                    <GvScrollable>
+                        <SelectableItemsControl ItemProperties="@(new[]{"Name"})"
+                                                SelectableItems="polylineFeatureClasses"
+                                                SelectionChanged="PolylineSelectionChanged" />
+                    </GvScrollable>
+                    
                 }
             }
             @if (pageIndex == Page.Nodes)
@@ -54,16 +57,19 @@
                 <strong>Node Feature Classes</strong>
                 @if (pointFeatureClasses != null)
                 {
-                    <SelectableItemsControl ItemProperties="@(new[]{"Name"})"
-                                              SelectableItems="pointFeatureClasses"
-                                              SelectionChanged="PointSelectionChanged" />
+                    <GvScrollable>
+                        <SelectableItemsControl ItemProperties="@(new[]{"Name"})"
+                                                SelectableItems="pointFeatureClasses"
+                                                SelectionChanged="PointSelectionChanged" />
+                    </GvScrollable>
+                    
                 }
             }
             @if (pageIndex == Page.Snapping)
             {
                 <strong>Snapping</strong>
                 <MudCheckBox Label="Use Snap Tolerance"
-                              @bind-Checked="Model.Result.UseSnapTolerance" />
+                              @bind-Value="Model.Result.UseSnapTolerance" />
 
                 @if (Model.Result.UseSnapTolerance == true)
                 {
@@ -78,7 +84,7 @@
             {
                 <strong>Complex Edges</strong>
                 <MudCheckBox Label="Use Complex Edges"
-                              @bind-Checked="Model.Result.UseComplexEdges" />
+                              @bind-Value="Model.Result.UseComplexEdges" />
 
                 @if (Model.Result.UseComplexEdges && complexEdgesClasses != null)
                 {
@@ -101,7 +107,7 @@
                     {
                         <tr>
                             <td>
-                                <MudCheckBox @bind-Checked="node.IsSwitch" />
+                                <MudCheckBox @bind-Value="node.IsSwitch" />
                             </td>
                             <td>
                                 @node.FeatureClass.Name

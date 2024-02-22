@@ -9,7 +9,7 @@ public class AppLocalIdentityProvider : IAppIdentityProvider
 
     public AppLocalIdentityProvider()
     {
-        _identity=new AppIdentity(Environment.UserName, true, true);
+        _identity=new AppIdentity(Environment.UserName, true, true, false);
     }
 
     public AppIdentity Identity => _identity;

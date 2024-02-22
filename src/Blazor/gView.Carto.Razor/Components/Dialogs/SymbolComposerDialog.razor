@@ -10,7 +10,8 @@
         <MudExpansionPanels>
             <MudExpansionPanel Text="Gallery">            
                 <SymbolGalleryControl SymbolProtoType="Model.Symbol"
-                                      OnSymbolSelected="GallerySymbolSelected"/>
+                                      OnSymbolSelected="(symbol) => GallerySymbolSelected(symbol, false)"
+                                      OnSymbolSelectedForAppend="(symbol) => GallerySymbolSelected(symbol, true)" />
             </MudExpansionPanel>
         
             <MudExpansionPanel Text="Symbol" Style="padding:6px" @bind-IsExpanded="_symbol_isExpanded">
@@ -186,9 +187,9 @@
 
     #region Symbol Stack
 
-    private void CreateSymbolStack(ISymbol? symbol)
+    private void CreateSymbolStack(ISymbol? symbol, bool append = false)
     {
-        if (_symbolStack == null)
+        if (_symbolStack == null || !append)
         {
             _symbolStack = new SymbolCollection();
         }
@@ -276,11 +277,11 @@
 
     #endregion
 
-    private void GallerySymbolSelected(ISymbol symbol) => Handle(() =>
+    private void GallerySymbolSelected(ISymbol symbol, bool append) => Handle(() =>
     { 
         _symbol_isExpanded = true;
 
-        CreateSymbolStack(symbol);
+        CreateSymbolStack(symbol, append);
     });
 
     private void DrawPreviewImage()

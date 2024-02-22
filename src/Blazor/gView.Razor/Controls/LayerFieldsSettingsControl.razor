@@ -4,6 +4,7 @@
 @inherits BaseHandler
 @inject IApplicationScopeFactory AppScope
 
+<GvScrollable>
 @if(Layer?.Fields is not null)
 {
     <GvPaper>
@@ -22,12 +23,12 @@
 {
     <GvPaper>
         <MudDropContainer T="FieldItem"
-                          Items="_items"
-                          ItemDropped="OnReorderItems"
-                          ItemsSelector="@((item,zone) => true)">
+                            Items="_items"
+                            ItemDropped="OnReorderItems"
+                            ItemsSelector="@((item,zone) => true)">
             <ChildContent>
                 <MudDropZone T="FieldItem"
-                             AllowReorder="true">
+                                AllowReorder="true">
                     <GvGrid ColumnCount="12">
                         <GvGridItem>
                             <MudText Typo="Typo.body2">Visible</MudText>
@@ -48,8 +49,8 @@
                 <div style="border-top:1px solid #777">
                     <GvGrid ColumnCount="12">
                         <GvGridItem>
-                            <MudCheckBox Dense="true" 
-                                         @bind-Checked="context.Field.visible" />
+                            <MudCheckBox Dense="true"
+                                            @bind-Checked="context.Field.visible" />
                         </GvGridItem>
                         <GvGridItem Span="4">
                             <div style="padding:5px 0px">
@@ -62,11 +63,11 @@
                             </div>
                         </GvGridItem>
                         <GvGridItem Span="4">
-                           <div style="padding:5px 0px;cursor:pointer"
-                                @ondblclick="() => OnSetAliasname(context)">
+                            <div style="padding:5px 0px;cursor:pointer"
+                                    @ondblclick="() => OnSetAliasname(context)">
                                 @context.Field.aliasname
-                           </div>
-                        
+                            </div>
+
                         </GvGridItem>
                     </GvGrid>
                 </div>
@@ -74,6 +75,7 @@
         </MudDropContainer>
     </GvPaper>
 }
+</GvScrollable>
 
 @code {
     [Parameter] public IFeatureLayer? Layer { get; set; }

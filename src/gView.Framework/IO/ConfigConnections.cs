@@ -60,14 +60,5 @@ namespace gView.Framework.IO
         public bool Rename(string oldName, string newName) => _storage.Rename(_schema, oldName, newName);
 
         public string GetName(string name) => _storage.GetNewName(_schema, name);
-
-        private string ReplaceSlash(string name)
-        {
-            return name.Replace("/", "&slsh;").Replace("\\", "&bkslsh;").Replace(":", "&colon;");
-        }
-        private string InvReplaceSlash(string name)
-        {
-            return name.Replace("&slsh;", "/").Replace("&bkslsh;", "\\").Replace("&colon;", ":");
-        }
     }
 }

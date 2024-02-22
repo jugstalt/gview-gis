@@ -18,7 +18,7 @@
     <GvGrid ColumnCount="2">
         <GvGridItem Span="2">
             <div style="text-align:right">
-                @if(_identity?.IsAuthenticated == true)
+                @if(_identity?.IsAuthenticated == true && _identity.CanLogout)
                 {
                     <MudButton Variant="Variant.Filled"
                                Color="Color.Secondary"

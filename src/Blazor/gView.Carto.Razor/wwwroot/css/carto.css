@@ -301,7 +301,8 @@
 }
 
 .carto-symbol-gallery-tile {
-    cursor:pointer;
+    cursor: pointer;
+    position: relative;
     display: inline-block;
     width: 150px;
     height: 140px;
@@ -310,6 +311,13 @@
 }
     .carto-symbol-gallery-tile:hover {
         background-color: var(--mud-palette-primary-hover);
+    }
+
+.carto-symbol-gallery-tile .carto-symbol-gallery-tile-append {
+    display:none;
+}
+    .carto-symbol-gallery-tile:hover .carto-symbol-gallery-tile-append {
+        display: block;
     }
 
 .carto-symbol-composer-stack-item {

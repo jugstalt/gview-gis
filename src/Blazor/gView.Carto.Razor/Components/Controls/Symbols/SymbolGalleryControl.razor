@@ -19,7 +19,11 @@
             <div @onclick="()=>SymbolSelected(symbol)"
                  class="carto-symbol-gallery-tile"
                  style="background-image:url('@symbol.ToBase64ImageSource(CartoDocument.CurrentMap, 140, 130)')">
-                
+                 
+                 <MudFab Color="Color.Primary" Style="position:absolute;right:2px;bottom:2px"
+                         Size="MudBlazor.Size.Small" Class="carto-symbol-gallery-tile-append"
+                         StartIcon="@Icons.Material.Filled.PlaylistAdd"
+                         OnClick="()=>SymbolSelected(symbol, true)" />
             </div>
         }
     </div>
@@ -28,6 +32,7 @@
 @code {
     [Parameter] public ISymbol? SymbolProtoType { get; set; }
     [Parameter] public EventCallback<ISymbol> OnSymbolSelected{ get; set; }
+    [Parameter] public EventCallback<ISymbol> OnSymbolSelectedForAppend { get; set; }
 
     protected override void OnParametersSet()
     {
@@ -39,8 +44,11 @@
         }
     }
 
-    private Task SymbolSelected(ISymbol symbol) => HandleAsync(() =>
-        OnSymbolSelected.InvokeAsync((ISymbol)symbol.Clone()));
+    private Task SymbolSelected(ISymbol symbol, bool append = false) => HandleAsync(() =>
+        append 
+        ? OnSymbolSelectedForAppend.InvokeAsync((ISymbol)symbol.Clone())
+        : OnSymbolSelected.InvokeAsync((ISymbol)symbol.Clone())
+    );
 
     #region Predefined Symbols
 
