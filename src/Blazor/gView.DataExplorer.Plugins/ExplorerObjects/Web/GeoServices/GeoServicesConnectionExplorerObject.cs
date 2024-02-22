@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 using gView.Framework.Web.Extensions;
 using gView.Framework.Common.Extensions;
 using gView.DataExplorer.Core.Extensions;
+using gView.Framework.Core.IO;
 
 namespace gView.DataExplorer.Plugins.ExplorerObjects.Web.GeoServices;
 
@@ -20,7 +21,8 @@ public class GeoServicesConnectionExplorerObject : ExplorerParentObject<IExplore
                                                    IExplorerSimpleObject,
                                                    IExplorerObjectDeletable,
                                                    IExplorerObjectRenamable,
-                                                   IExplorerObjectContextTools
+                                                   IExplorerObjectContextTools,
+                                                   IExplorerObjectAccessability
 {
     private string _name = "";
     internal string _connectionString = "";
@@ -43,11 +45,7 @@ public class GeoServicesConnectionExplorerObject : ExplorerParentObject<IExplore
 
     public Task<bool> UpdateConnectionString(string connectionString)
     {
-        ConfigConnections configConnections = ConfigConnections.Create(
-                this.ConfigStorage(),
-                "geoservices_connection",
-                "546B0513-D71D-4490-9E27-94CD5D72C64A"
-            );
+        var configConnections = GetConfigConnections();
         configConnections.Add(_name, connectionString);
 
         _connectionString = connectionString;
@@ -170,11 +168,7 @@ public class GeoServicesConnectionExplorerObject : ExplorerParentObject<IExplore
 
     public Task<bool> DeleteExplorerObject(ExplorerObjectEventArgs e)
     {
-        ConfigConnections configConnections = ConfigConnections.Create(
-                this.ConfigStorage(),
-                "geoservices_connection", 
-                "546B0513-D71D-4490-9E27-94CD5D72C64A"
-            );
+        var configConnections = GetConfigConnections();
         configConnections.Remove(this.Name);
 
         if (ExplorerObjectDeleted != null)
@@ -193,11 +187,7 @@ public class GeoServicesConnectionExplorerObject : ExplorerParentObject<IExplore
 
     public Task<bool> RenameExplorerObject(string newName)
     {
-        ConfigConnections configConnections = ConfigConnections.Create(
-                this.ConfigStorage(), 
-                "geoservices_connection", 
-                "546B0513-D71D-4490-9E27-94CD5D72C64A"
-            );
+        var configConnections = GetConfigConnections();
         bool result = configConnections.Rename(this.Name, newName);
 
         if (result == true)
@@ -210,6 +200,27 @@ public class GeoServicesConnectionExplorerObject : ExplorerParentObject<IExplore
         }
         return Task.FromResult(result);
     }
+
+    #endregion
+
+    #region IExplorerObjectAccessability
+
+    public ConfigAccessability Accessability
+    {
+        get => GetConfigConnections().GetAccessability(_name);
+        set => GetConfigConnections().SetAccessability(_name, value);
+    }
+
+    #endregion
+
+    #region Helper
+
+    private ConfigConnections GetConfigConnections()
+        => ConfigConnections.Create(
+                this.ConfigStorage(),
+                "geoservices_connection",
+                "546B0513-D71D-4490-9E27-94CD5D72C64A"
+            );
 
     #endregion
 }

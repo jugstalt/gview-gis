@@ -10,4 +10,7 @@ public interface IConfigConnectionStorage
 
     Dictionary<string, string> GetAll(string schema);
     string GetNewName(string schema, string name);
+
+    ConfigAccessability GetAccessability(string schema, string name);
+    bool SetAccessability(string schema, string name, ConfigAccessability accessability);
 }

@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using gView.Framework.Core.Data;
 using gView.Framework.Common.Extensions;
 using gView.DataExplorer.Core.Extensions;
+using gView.Framework.Core.IO;
 
 namespace gView.DataExplorer.Plugins.ExplorerObjects.MsSqlSpatial.Geometry;
 
@@ -21,7 +22,8 @@ public class MsSqlSpatialExplorerObject : ExplorerParentObject<IExplorerObject, 
                                           IExplorerObjectRenamable,
                                           ISerializableExplorerObject,
                                           IExplorerObjectContextTools,
-                                          IUpdateConnectionString
+                                          IUpdateConnectionString,
+                                          IExplorerObjectAccessability
 {
     private string _server = "";
     private DbConnectionString? _connectionString;
@@ -56,11 +58,7 @@ public class MsSqlSpatialExplorerObject : ExplorerParentObject<IExplorerObject, 
     }
     public Task<bool> UpdateDbConnectionString(DbConnectionString dbConnnectionString)
     {
-        ConfigConnections connStream = ConfigConnections.Create(
-                this.ConfigStorage(),
-                "mssql-geometry", 
-                "546B0513-D71D-4490-9E27-94CD5D72C64A"
-            );
+        var connStream = GetConfigConnections();
         connStream.Add(_server, dbConnnectionString.ToString());
 
         _connectionString = dbConnnectionString;
@@ -181,11 +179,7 @@ public class MsSqlSpatialExplorerObject : ExplorerParentObject<IExplorerObject, 
         bool ret = false;
         if (_connectionString != null)
         {
-            ConfigConnections stream = ConfigConnections.Create(
-                    this.ConfigStorage(),
-                    "mssql-geometry", 
-                    "546B0513-D71D-4490-9E27-94CD5D72C64A"
-                );
+            var stream = GetConfigConnections();
             ret = stream.Remove(_server);
         }
 
@@ -208,11 +202,7 @@ public class MsSqlSpatialExplorerObject : ExplorerParentObject<IExplorerObject, 
         bool ret = false;
         if (_connectionString != null)
         {
-            ConfigConnections stream = ConfigConnections.Create(
-                    this.ConfigStorage(), 
-                    "mssql-geometry", 
-                    "546B0513-D71D-4490-9E27-94CD5D72C64A"
-                );
+            var stream = GetConfigConnections();
             ret = stream.Rename(_server, newName);
         }
         if (ret == true)
@@ -225,6 +215,27 @@ public class MsSqlSpatialExplorerObject : ExplorerParentObject<IExplorerObject, 
         }
         return Task.FromResult(ret);
     }
+
+    #endregion
+
+    #region IExplorerObjectAccessability
+
+    public ConfigAccessability Accessability
+    {
+        get => GetConfigConnections().GetAccessability(_server);
+        set => GetConfigConnections().SetAccessability(_server, value);
+    }
+
+    #endregion
+
+    #region Helper
+
+    private ConfigConnections GetConfigConnections()
+        => ConfigConnections.Create(
+                    this.ConfigStorage(),
+                    "mssql-geometry",
+                    "546B0513-D71D-4490-9E27-94CD5D72C64A"
+                );
 
     #endregion
 }

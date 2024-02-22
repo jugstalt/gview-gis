@@ -3,6 +3,7 @@ using gView.DataExplorer.Core.Extensions;
 using gView.DataExplorer.Plugins.ExplorerObjects.Base;
 using gView.DataExplorer.Plugins.ExplorerObjects.Base.ContextTools;
 using gView.DataSources.Fdb.PostgreSql;
+using gView.Framework.Core.IO;
 using gView.Framework.DataExplorer.Abstraction;
 using gView.Framework.DataExplorer.Events;
 using gView.Framework.Db;
@@ -18,7 +19,8 @@ public class PostgreSqlExplorerObject : ExplorerParentObject<PostgreSqlExplorerG
                                     IExplorerObjectDeletable,
                                     IExplorerObjectRenamable,
                                     IExplorerObjectCommandParameters,
-                                    ISerializableExplorerObject
+                                    ISerializableExplorerObject,
+                                    IExplorerObjectAccessability
 {
     private string _server = String.Empty, _errMsg = String.Empty;
     private DbConnectionString? _dbConnectionString = null;
@@ -50,11 +52,7 @@ public class PostgreSqlExplorerObject : ExplorerParentObject<PostgreSqlExplorerG
     }
     public Task<bool> UpdateDbConnectionString(DbConnectionString dbConnnectionString)
     {
-        ConfigConnections connStream = ConfigConnections.Create(
-                this.ConfigStorage(),
-                "postgrefdb",
-                "546B0513-D71D-4490-9E27-94CD5D72C64A"
-            );
+        var connStream = GetConfigConnections();
         connStream.Add(_server, dbConnnectionString.ToString());
 
         _dbConnectionString = dbConnnectionString;
@@ -217,11 +215,7 @@ public class PostgreSqlExplorerObject : ExplorerParentObject<PostgreSqlExplorerG
 
     public Task<bool> DeleteExplorerObject(ExplorerObjectEventArgs e)
     {
-        ConfigConnections stream = ConfigConnections.Create(
-                    this.ConfigStorage(),
-                    "postgrefdb",
-                    "546B0513-D71D-4490-9E27-94CD5D72C64A"
-                );
+        var stream = GetConfigConnections();
         stream.Remove(_server);
 
 
@@ -241,11 +235,7 @@ public class PostgreSqlExplorerObject : ExplorerParentObject<PostgreSqlExplorerG
 
     public Task<bool> RenameExplorerObject(string newName)
     {
-        ConfigConnections stream = ConfigConnections.Create(
-                this.ConfigStorage(),
-                "postgrefdb",
-                "546B0513-D71D-4490-9E27-94CD5D72C64A"
-            );
+        var stream = GetConfigConnections(); ;
 
         bool ret = stream.Rename(_server, newName);
 
@@ -259,6 +249,27 @@ public class PostgreSqlExplorerObject : ExplorerParentObject<PostgreSqlExplorerG
         }
         return Task.FromResult(ret);
     }
+
+    #endregion
+
+    #region IExplorerObjectAccessability
+
+    public ConfigAccessability Accessability
+    {
+        get => GetConfigConnections().GetAccessability(_server);
+        set => GetConfigConnections().SetAccessability(_server, value);
+    }
+
+    #endregion
+
+    #region Helper
+
+    private ConfigConnections GetConfigConnections()
+        => ConfigConnections.Create(
+                    this.ConfigStorage(),
+                    "postgrefdb",
+                    "546B0513-D71D-4490-9E27-94CD5D72C64A"
+                );
 
     #endregion
 }

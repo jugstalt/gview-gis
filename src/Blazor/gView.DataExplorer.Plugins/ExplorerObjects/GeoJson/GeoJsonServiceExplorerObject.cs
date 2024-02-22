@@ -3,6 +3,7 @@ using gView.DataExplorer.Plugins.ExplorerObjects.Base;
 using gView.DataExplorer.Plugins.ExplorerObjects.GeoJson.ContextTools;
 using gView.DataSources.GeoJson;
 using gView.Framework.Core.Data;
+using gView.Framework.Core.IO;
 using gView.Framework.DataExplorer.Abstraction;
 using gView.Framework.DataExplorer.Events;
 using gView.Framework.IO;
@@ -17,7 +18,8 @@ namespace gView.DataExplorer.Plugins.ExplorerObjects.GeoJson
                                                 IExplorerObjectDeletable,
                                                 IExplorerObjectRenamable,
                                                 ISerializableExplorerObject,
-                                                IExplorerObjectContextTools
+                                                IExplorerObjectContextTools,
+                                                IExplorerObjectAccessability
     {
         private string _connectionString = "";
         private string _name = "";
@@ -46,11 +48,7 @@ namespace gView.DataExplorer.Plugins.ExplorerObjects.GeoJson
 
         internal Task<bool> UpdateConnectionString(string connectionString)
         {
-            ConfigConnections connStream = ConfigConnections.Create(
-                    this.ConfigStorage(),
-                    GeoJsonServiceGroupObject.ConfigName, 
-                    GeoJsonServiceGroupObject.EncKey
-                );
+            var connStream = GetConfigConnections();
             connStream.Add(_name, connectionString);
 
             _connectionString = connectionString;
@@ -173,11 +171,7 @@ namespace gView.DataExplorer.Plugins.ExplorerObjects.GeoJson
             bool ret = false;
             if (_connectionString != null)
             {
-                ConfigConnections stream = ConfigConnections.Create(
-                        this.ConfigStorage(),
-                        GeoJsonServiceGroupObject.ConfigName, 
-                        GeoJsonServiceGroupObject.EncKey
-                    );
+                var stream = GetConfigConnections();
                 ret = stream.Remove(_name);
             }
 
@@ -200,11 +194,7 @@ namespace gView.DataExplorer.Plugins.ExplorerObjects.GeoJson
             bool ret = false;
             if (_connectionString != null)
             {
-                ConfigConnections stream = ConfigConnections.Create(
-                        this.ConfigStorage(), 
-                        GeoJsonServiceGroupObject.ConfigName, 
-                        GeoJsonServiceGroupObject.EncKey
-                    );
+                var stream = GetConfigConnections();
                 ret = stream.Rename(_name, newName);
             }
             if (ret == true)
@@ -217,6 +207,27 @@ namespace gView.DataExplorer.Plugins.ExplorerObjects.GeoJson
             }
             return Task.FromResult(ret);
         }
+
+        #endregion
+
+        #region IExplorerObjectAccessability
+
+        public ConfigAccessability Accessability
+        {
+            get => GetConfigConnections().GetAccessability(_name);
+            set => GetConfigConnections().SetAccessability(_name, value);
+        }
+
+        #endregion
+
+        #region Helper
+
+        private ConfigConnections GetConfigConnections()
+            => ConfigConnections.Create(
+                        this.ConfigStorage(),
+                        GeoJsonServiceGroupObject.ConfigName,
+                        GeoJsonServiceGroupObject.EncKey
+                    );
 
         #endregion
     }

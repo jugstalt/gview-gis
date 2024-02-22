@@ -98,7 +98,13 @@ static public class ServicesExtensions
                     policy.RequireAssertion(contextpolicy => true));
             });
 
-            services.AddScoped<IAppIdentityProvider, AppLocalIdentityProvider>();
+            services
+                .Configure<AppIdentityProviderOptions>((config) =>
+                {
+                    config.AdminRoleName = authConfig.RequiredAdminRole;
+                    config.UserRoleName = authConfig.RequiredUserRole;
+                })
+                .AddScoped<IAppIdentityProvider, AppLocalIdentityProvider>();
         }
 
         return services.AddHttpContextAccessor();

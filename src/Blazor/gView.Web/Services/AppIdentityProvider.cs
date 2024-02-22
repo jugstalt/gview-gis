@@ -21,6 +21,9 @@ public class AppIdentityProvider : IAppIdentityProvider
         _httpContext = httpContextAccessor.HttpContext;
         _options = options.Value;
 
+        AdministratorsRoleName = options.Value.AdminRoleName;
+        UsersRoleName = options.Value.UserRoleName;
+
         _identity = _httpContext is null
             ? new AppIdentity("", false, false)
             : new AppIdentity(
@@ -31,6 +34,10 @@ public class AppIdentityProvider : IAppIdentityProvider
     }
 
     public AppIdentity Identity => _identity;
+
+    public string AdministratorsRoleName { get; }
+
+    public string UsersRoleName { get; }
 
     public async Task Logout()
     {

@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using gView.DataExplorer.Core.Extensions;
+using gView.Framework.Core.IO;
 
 namespace gView.DataExplorer.Plugins.ExplorerObjects.EventTable;
 
@@ -18,7 +19,8 @@ public class EventTableObject : ExplorerObjectCls<IExplorerObject, IFeatureClass
                                 IExplorerSimpleObject,
                                 IExplorerObjectDeletable,
                                 IExplorerObjectRenamable,
-                                IExplorerObjectContextTools
+                                IExplorerObjectContextTools,
+                                IExplorerObjectAccessability
 {
     private EventTableConnection? _etconn = null;
     private string _name = String.Empty;
@@ -43,11 +45,7 @@ public class EventTableObject : ExplorerObjectCls<IExplorerObject, IFeatureClass
     {
         _etconn = etconn;
 
-        ConfigConnections connStream = ConfigConnections.Create(
-                this.ConfigStorage(),
-                "eventtable",
-                "546B0513-D71D-4490-9E27-94CD5D72C64A"
-            );
+        var connStream = GetConfigConnections();
         connStream.Add(_name, etconn.ToXmlString());
 
         return Task.FromResult(true);
@@ -168,11 +166,7 @@ public class EventTableObject : ExplorerObjectCls<IExplorerObject, IFeatureClass
 
     public Task<bool> DeleteExplorerObject(ExplorerObjectEventArgs e)
     {
-        ConfigConnections stream = ConfigConnections.Create(
-                this.ConfigStorage(),
-                "eventtable", 
-                "546B0513-D71D-4490-9E27-94CD5D72C64A"
-             );
+        var stream = GetConfigConnections();
         bool ret = stream.Remove(_name);
 
         if (ret)
@@ -193,11 +187,7 @@ public class EventTableObject : ExplorerObjectCls<IExplorerObject, IFeatureClass
 
     public Task<bool> RenameExplorerObject(string newName)
     {
-        ConfigConnections stream = ConfigConnections.Create(
-                this.ConfigStorage(),
-                "eventtable", 
-                "546B0513-D71D-4490-9E27-94CD5D72C64A"
-             );
+        var stream = GetConfigConnections();
         bool ret = stream.Rename(_name, newName);
 
         if (ret == true)
@@ -210,6 +200,27 @@ public class EventTableObject : ExplorerObjectCls<IExplorerObject, IFeatureClass
         }
         return Task.FromResult(ret);
     }
+
+    #endregion
+
+    #region IExplorerObjectAccessability
+
+    public ConfigAccessability Accessability
+    {
+        get => GetConfigConnections().GetAccessability(_name);
+        set => GetConfigConnections().SetAccessability(_name, value);
+    }
+
+    #endregion
+
+    #region Helper
+
+    private ConfigConnections GetConfigConnections()
+        => ConfigConnections.Create(
+                this.ConfigStorage(),
+                "eventtable",
+                "546B0513-D71D-4490-9E27-94CD5D72C64A"
+             );
 
     #endregion
 }

@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using gView.DataExplorer.Core.Extensions;
+using gView.Framework.Core.IO;
 
 namespace gView.DataExplorer.Plugins.ExplorerObjects.Tiles.Raster;
 
@@ -19,7 +20,8 @@ public class TileCacheDatasetExplorerObject : ExplorerParentObject<TileCacheGrou
                                               IExplorerObjectDeletable,
                                               IExplorerObjectRenamable,
                                               ISerializableExplorerObject,
-                                              IExplorerObjectContextTools
+                                              IExplorerObjectContextTools,
+                                              IExplorerObjectAccessability
 {
     private string _name = String.Empty, _connectionString = String.Empty;
     private Dataset? _dataset = null;
@@ -42,11 +44,7 @@ public class TileCacheDatasetExplorerObject : ExplorerParentObject<TileCacheGrou
     internal string GetConnectionString() => _connectionString;
     internal Task<bool> UpdateConnectionString(string connectionString)
     {
-        ConfigConnections connStream = ConfigConnections.Create(
-                this.ConfigStorage(),
-                "TileCache", 
-                "b9d6ae5b-9ca1-4a52-890f-caa4009784d4"
-            );
+        var connStream = GetConfigConnections();
         connStream.Add(_name, _connectionString = connectionString);
 
         return Task.FromResult(true);
@@ -167,11 +165,7 @@ public class TileCacheDatasetExplorerObject : ExplorerParentObject<TileCacheGrou
 
     public Task<bool> DeleteExplorerObject(ExplorerObjectEventArgs e)
     {
-        ConfigConnections stream = ConfigConnections.Create(
-                this.ConfigStorage(),
-                "TileCache", 
-                "b9d6ae5b-9ca1-4a52-890f-caa4009784d4"
-            );
+        var stream = GetConfigConnections();
         stream.Remove(_name);
 
         if (ExplorerObjectDeleted != null)
@@ -191,11 +185,7 @@ public class TileCacheDatasetExplorerObject : ExplorerParentObject<TileCacheGrou
     public Task<bool> RenameExplorerObject(string newName)
     {
         bool ret = false;
-        ConfigConnections stream = ConfigConnections.Create(
-                this.ConfigStorage(),
-                "TileCache", 
-                "b9d6ae5b-9ca1-4a52-890f-caa4009784d4"
-            );
+        var stream = GetConfigConnections();
         ret = stream.Rename(_name, newName);
 
         if (ret == true)
@@ -209,6 +199,27 @@ public class TileCacheDatasetExplorerObject : ExplorerParentObject<TileCacheGrou
 
         return Task.FromResult(ret);
     }
+
+    #endregion
+
+    #region IExplorerObjectAccessability
+
+    public ConfigAccessability Accessability
+    {
+        get => GetConfigConnections().GetAccessability(_name);
+        set => GetConfigConnections().SetAccessability(_name, value);
+    }
+
+    #endregion
+
+    #region Helper
+
+    private ConfigConnections GetConfigConnections()
+        => ConfigConnections.Create(
+                this.ConfigStorage(),
+                "TileCache",
+                "b9d6ae5b-9ca1-4a52-890f-caa4009784d4"
+            );
 
     #endregion
 }

@@ -10,6 +10,7 @@ using System;
 using System.Threading.Tasks;
 using gView.DataExplorer.Plugins.ExplorerObjects.Extensions;
 using gView.DataExplorer.Core.Extensions;
+using gView.Framework.Core.IO;
 
 namespace gView.DataExplorer.Plugins.ExplorerObjects.Web.Wms;
 
@@ -17,7 +18,8 @@ public class WmsServiceExplorerObject : ExplorerObjectCls<WmsExplorerObject, WMS
                                         IExplorerSimpleObject, 
                                         IExplorerObjectDeletable, 
                                         IExplorerObjectRenamable,
-                                        IExplorerObjectContextTools
+                                        IExplorerObjectContextTools,
+                                        IExplorerObjectAccessability
 {
     private string _icon = "webgis:globe";
     private string _name = "", _connectionString = "";
@@ -60,11 +62,7 @@ public class WmsServiceExplorerObject : ExplorerObjectCls<WmsExplorerObject, WMS
 
     internal Task<bool> UpdateConnectionString(string connectionString)
     {
-        ConfigConnections configConnections = ConfigConnections.Create(
-                this.ConfigStorage(),
-                "ogc_web_connection", 
-                "546B0513-D71D-4490-9E27-94CD5D72C64A"
-            );
+        var configConnections = GetConfigConnections();
         configConnections.Add(_name, connectionString);
 
         _connectionString = connectionString;
@@ -177,11 +175,7 @@ public class WmsServiceExplorerObject : ExplorerObjectCls<WmsExplorerObject, WMS
 
     public Task<bool> DeleteExplorerObject(ExplorerObjectEventArgs e)
     {
-        ConfigConnections configConnections = ConfigConnections.Create(
-                this.ConfigStorage(),
-                "ogc_web_connection", 
-                "546B0513-D71D-4490-9E27-94CD5D72C64A"
-            );
+        var configConnections = GetConfigConnections();
         bool ret = configConnections.Remove(_name);
         
         if (ExplorerObjectDeleted != null)
@@ -200,11 +194,7 @@ public class WmsServiceExplorerObject : ExplorerObjectCls<WmsExplorerObject, WMS
 
     public Task<bool> RenameExplorerObject(string newName)
     {
-        ConfigConnections configConnections = ConfigConnections.Create(
-                this.ConfigStorage(),
-                "ogc_web_connection", 
-                "546B0513-D71D-4490-9E27-94CD5D72C64A"
-            );
+        var configConnections = GetConfigConnections();
         bool result = configConnections.Rename(_name, newName);
 
         if (result == true)
@@ -217,6 +207,27 @@ public class WmsServiceExplorerObject : ExplorerObjectCls<WmsExplorerObject, WMS
         }
         return Task.FromResult(result);
     }
+
+    #endregion
+
+    #region IExplorerObjectAccessability
+
+    public ConfigAccessability Accessability
+    {
+        get => GetConfigConnections().GetAccessability(_name);
+        set => GetConfigConnections().SetAccessability(_name, value);
+    }
+
+    #endregion
+
+    #region Helper
+
+    private ConfigConnections GetConfigConnections()
+        => ConfigConnections.Create(
+                this.ConfigStorage(),
+                "ogc_web_connection",
+                "546B0513-D71D-4490-9E27-94CD5D72C64A"
+            );
 
     #endregion
 }

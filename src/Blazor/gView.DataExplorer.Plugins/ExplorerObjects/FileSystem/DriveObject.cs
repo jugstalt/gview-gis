@@ -3,6 +3,7 @@ using gView.DataExplorer.Plugins.ExplorerObjects.Base;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Linq;
+using gView.Framework.Common;
 
 namespace gView.DataExplorer.Plugins.ExplorerObjects.FileSystem;
 
@@ -62,7 +63,7 @@ public class DriveObject : ExplorerParentObject<IExplorerObject>,
 
     public string FullName
     {
-        get { return _drive + @"\"; }
+        get { return $"{_drive}{(Platform.IsWindows ? "\\" : "/")}"; }
     }
 
     public string? Type

@@ -3,6 +3,7 @@ using gView.DataExplorer.Core.Extensions;
 using gView.DataExplorer.Plugins.ExplorerObjects.Base;
 using gView.DataExplorer.Plugins.ExplorerObjects.Base.ContextTools;
 using gView.DataSources.Fdb.MSSql;
+using gView.Framework.Core.IO;
 using gView.Framework.DataExplorer.Abstraction;
 using gView.Framework.DataExplorer.Events;
 using gView.Framework.Db;
@@ -19,7 +20,8 @@ public class SqlFdbExplorerObject : ExplorerParentObject<SqlFdbExplorerGroupObje
                                     IExplorerObjectRenamable,
                                     ISerializableExplorerObject,
                                     IExplorerObjectContextTools,
-                                    IUpdateConnectionString
+                                    IUpdateConnectionString,
+                                    IExplorerObjectAccessability
 {
     private string _server = "", _errMsg = "";
     private DbConnectionString? _dbConnectionString = null;
@@ -171,11 +173,7 @@ public class SqlFdbExplorerObject : ExplorerParentObject<SqlFdbExplorerGroupObje
     }
     public Task<bool> UpdateDbConnectionString(DbConnectionString dbConnnectionString)
     {
-        ConfigConnections connStream = ConfigConnections.Create(
-                this.ConfigStorage(),
-                "sqlfdb",
-                "546B0513-D71D-4490-9E27-94CD5D72C64A"
-            );
+        var connStream = GetConfigConnections();
         connStream.Add(_server, dbConnnectionString.ToString());
 
         _dbConnectionString = dbConnnectionString;
@@ -328,11 +326,7 @@ public class SqlFdbExplorerObject : ExplorerParentObject<SqlFdbExplorerGroupObje
 
     public Task<bool> DeleteExplorerObject(ExplorerObjectEventArgs e)
     {
-        ConfigConnections stream = ConfigConnections.Create(
-                this.ConfigStorage(),
-                "sqlfdb",
-                "546B0513-D71D-4490-9E27-94CD5D72C64A"
-             );
+        var stream = GetConfigConnections();
         stream.Remove(_server);
 
         if (ExplorerObjectDeleted != null)
@@ -351,11 +345,7 @@ public class SqlFdbExplorerObject : ExplorerParentObject<SqlFdbExplorerGroupObje
 
     public Task<bool> RenameExplorerObject(string newName)
     {
-        ConfigConnections stream = ConfigConnections.Create(
-                    this.ConfigStorage(),
-                    "sqlfdb",
-                    "546B0513-D71D-4490-9E27-94CD5D72C64A"
-                 );
+        var stream = GetConfigConnections();
         bool ret = stream.Rename(_server, newName);
 
         if (ret == true)
@@ -368,6 +358,27 @@ public class SqlFdbExplorerObject : ExplorerParentObject<SqlFdbExplorerGroupObje
         }
         return Task.FromResult(ret);
     }
+
+    #endregion
+
+    #region IExplorerObjectAccessability
+
+    public ConfigAccessability Accessability
+    {
+        get => GetConfigConnections().GetAccessability(_server);
+        set => GetConfigConnections().SetAccessability(_server, value);
+    }
+
+    #endregion
+
+    #region Helper
+
+    private ConfigConnections GetConfigConnections()
+        => ConfigConnections.Create(
+                this.ConfigStorage(),
+                "sqlfdb",
+                "546B0513-D71D-4490-9E27-94CD5D72C64A"
+             );
 
     #endregion
 }

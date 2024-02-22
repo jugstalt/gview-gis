@@ -1,25 +1,20 @@
-﻿using gView.Blazor.Core.Exceptions;
+﻿using gView.Blazor.Core;
+using gView.Blazor.Core.Exceptions;
+using gView.DataExplorer.Core.Extensions;
 using gView.DataExplorer.Core.Services;
 using gView.DataExplorer.Plugins.ExplorerObjects.Base;
-using gView.DataExplorer.Plugins.Extensions;
 using gView.DataExplorer.Razor.Components.Dialogs.Models;
-using gView.Framework.Blazor.Services.Abstraction;
-using gView.Framework.Core.Data;
+using gView.Framework.Common;
 using gView.Framework.Core.Common;
+using gView.Framework.Core.Data;
 using gView.Framework.Core.UI;
 using gView.Framework.DataExplorer.Abstraction;
 using gView.Framework.DataExplorer.Events;
-using gView.Framework.Common;
+using gView.Framework.DataExplorer.Services.Abstraction;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
-using gView.Framework.DataExplorer.Services.Abstraction;
-using System.Runtime.CompilerServices;
-using gView.DataExplorer.Core.Extensions;
-using gView.Blazor.Core;
-using gView.Framework.Common.Extensions;
-using gView.Framework.OGC.WFS;
 
 namespace gView.DataExplorer.Plugins.ExplorerObjects.FileSystem;
 
@@ -101,7 +96,7 @@ public class DirectoryObject : ExplorerParentObject<IExplorerObject>,
         get
         {
             Dictionary<string, string> parameters = new Dictionary<string, string>();
-            parameters.Add("Path", _path + @"\");
+            parameters.Add("Path", _path + @"/");
 
             return parameters;
         }
@@ -181,7 +176,7 @@ public class DirectoryObject : ExplorerParentObject<IExplorerObject>,
 
             foreach (string filter in fileFilter.Split('|'))
             {
-                
+
                 foreach (string file in Directory.GetFiles(FullName, filter))
                 {
                     FileInfo fi = new FileInfo(file);
@@ -264,7 +259,7 @@ public class DirectoryObject : ExplorerParentObject<IExplorerObject>,
         try
         {
             DirectoryInfo di = new DirectoryInfo(_path);
-            string newPath = di.Parent?.FullName + @"\" + newName;
+            string newPath = Path.Combine(di.Parent?.FullName ?? "", newName);
 
             Directory.Move(_path, newPath);
 

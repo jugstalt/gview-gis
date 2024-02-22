@@ -60,5 +60,11 @@ namespace gView.Framework.IO
         public bool Rename(string oldName, string newName) => _storage.Rename(_schema, oldName, newName);
 
         public string GetName(string name) => _storage.GetNewName(_schema, name);
+
+        public ConfigAccessability GetAccessability( string name)
+            => _storage.GetAccessability(_schema, name);
+
+        public bool SetAccessability(string name, ConfigAccessability accessability)
+            => _storage.SetAccessability(_schema, name, accessability);
     }
 }

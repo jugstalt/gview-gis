@@ -11,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using gView.DataExplorer.Core.Extensions;
+using gView.Framework.Core.IO;
 
 namespace gView.DataExplorer.Plugins.ExplorerObjects.OSGeo.Ogr;
 
@@ -20,7 +21,8 @@ public class OgrDatasetExplorerObject : ExplorerParentObject<OgrDatasetGroupObje
                                         IExplorerObjectDeletable,
                                         IExplorerObjectRenamable,
                                         ISerializableExplorerObject,
-                                        IExplorerObjectContextTools
+                                        IExplorerObjectContextTools,
+                                        IExplorerObjectAccessability
 {
     private string _name = String.Empty, _connectionString = String.Empty;
     private Dataset? _dataset;
@@ -42,11 +44,7 @@ public class OgrDatasetExplorerObject : ExplorerParentObject<OgrDatasetGroupObje
 
     internal bool UpdateConnectionString(string connectionString)
     {
-        ConfigConnections connStream = ConfigConnections.Create(
-                this.ConfigStorage(),
-                "OGR", 
-                "ca7011b3-0812-47b6-a999-98a900c4087d"
-            );
+        var connStream = GetConfigConnections();
         connStream.Add(_name, this.ConnectionString = connectionString);
 
         return true;
@@ -214,11 +212,7 @@ public class OgrDatasetExplorerObject : ExplorerParentObject<OgrDatasetGroupObje
 
     public Task<bool> DeleteExplorerObject(ExplorerObjectEventArgs e)
     {
-        ConfigConnections stream = ConfigConnections.Create(
-                this.ConfigStorage(),
-                "OGR",
-                "ca7011b3-0812-47b6-a999-98a900c4087d"
-            );
+        var stream = GetConfigConnections();
         stream.Remove(_name);
 
         if (ExplorerObjectDeleted != null)
@@ -238,11 +232,7 @@ public class OgrDatasetExplorerObject : ExplorerParentObject<OgrDatasetGroupObje
     public Task<bool> RenameExplorerObject(string newName)
     {
         bool ret = false;
-        ConfigConnections stream = ConfigConnections.Create(
-                this.ConfigStorage(),
-                "OGR", 
-                "ca7011b3-0812-47b6-a999-98a900c4087d"
-            );
+        var stream = GetConfigConnections();
         ret = stream.Rename(_name, newName);
 
         if (ret == true)
@@ -255,6 +245,27 @@ public class OgrDatasetExplorerObject : ExplorerParentObject<OgrDatasetGroupObje
         }
         return Task.FromResult(ret);
     }
+
+    #endregion
+
+    #region IExplorerObjectAccessability
+
+    public ConfigAccessability Accessability
+    {
+        get => GetConfigConnections().GetAccessability(_name);
+        set => GetConfigConnections().SetAccessability(_name, value);
+    }
+
+    #endregion
+
+    #region Helper
+
+    private ConfigConnections GetConfigConnections()
+        => ConfigConnections.Create(
+                this.ConfigStorage(),
+                "OGR",
+                "ca7011b3-0812-47b6-a999-98a900c4087d"
+            );
 
     #endregion
 }

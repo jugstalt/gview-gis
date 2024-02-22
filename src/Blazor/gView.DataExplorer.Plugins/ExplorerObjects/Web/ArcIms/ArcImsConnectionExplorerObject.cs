@@ -1,6 +1,7 @@
 ﻿using gView.DataExplorer.Core.Extensions;
 using gView.DataExplorer.Plugins.ExplorerObjects.Base;
 using gView.DataExplorer.Plugins.ExplorerObjects.Web.ArcIms.ContextTools;
+using gView.Framework.Core.IO;
 using gView.Framework.DataExplorer.Abstraction;
 using gView.Framework.DataExplorer.Events;
 using gView.Framework.IO;
@@ -16,7 +17,8 @@ public class ArcImsConnectionExplorerObject : ExplorerParentObject<IExplorerObje
                                               IExplorerSimpleObject,
                                               IExplorerObjectDeletable,
                                               IExplorerObjectRenamable,
-                                              IExplorerObjectContextTools
+                                              IExplorerObjectContextTools,
+                                              IExplorerObjectAccessability
 {
     private string _name = "", _connectionString = "";
     private IEnumerable<IExplorerObjectContextTool>? _contextTools = null;
@@ -38,11 +40,7 @@ public class ArcImsConnectionExplorerObject : ExplorerParentObject<IExplorerObje
 
     internal Task<bool> UpdateConnectionString(string connectionString)
     {
-        ConfigConnections configConnections = ConfigConnections.Create(
-                this.ConfigStorage(),
-                "arcims_connections", 
-                "546B0513-D71D-4490-9E27-94CD5D72C64A"
-            );
+        var configConnections = GetConfigConnections();
         configConnections.Add(_name, connectionString);
 
         _connectionString = connectionString;
@@ -171,11 +169,7 @@ public class ArcImsConnectionExplorerObject : ExplorerParentObject<IExplorerObje
 
     public Task<bool> DeleteExplorerObject(ExplorerObjectEventArgs e)
     {
-        ConfigConnections configConnections = ConfigConnections.Create(
-                this.ConfigStorage(),
-                "arcims_connections", 
-                "546B0513-D71D-4490-9E27-94CD5D72C64A"
-            );
+        var configConnections = GetConfigConnections();
         configConnections.Remove(this.Name);
 
         if (ExplorerObjectDeleted != null)
@@ -194,11 +188,7 @@ public class ArcImsConnectionExplorerObject : ExplorerParentObject<IExplorerObje
 
     public Task<bool> RenameExplorerObject(string newName)
     {
-        ConfigConnections configConnections = ConfigConnections.Create(
-                this.ConfigStorage(), 
-                "arcims_connections", 
-                "546B0513-D71D-4490-9E27-94CD5D72C64A"
-            );
+        var configConnections = GetConfigConnections();
         bool result = configConnections.Rename(this.Name, newName);
 
         if (result == true)
@@ -211,6 +201,27 @@ public class ArcImsConnectionExplorerObject : ExplorerParentObject<IExplorerObje
         }
         return Task.FromResult(result);
     }
+
+    #endregion
+
+    #region IExplorerObjectAccessability
+
+    public ConfigAccessability Accessability
+    {
+        get => GetConfigConnections().GetAccessability(_name);
+        set => GetConfigConnections().SetAccessability(_name, value);
+    }
+
+    #endregion
+
+    #region Helper
+
+    private ConfigConnections GetConfigConnections()
+        => ConfigConnections.Create(
+                this.ConfigStorage(),
+                "arcims_connections",
+                "546B0513-D71D-4490-9E27-94CD5D72C64A"
+            );
 
     #endregion
 }
