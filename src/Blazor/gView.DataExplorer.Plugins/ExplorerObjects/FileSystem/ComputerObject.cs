@@ -1,9 +1,11 @@
 ﻿using gView.DataExplorer.Core.Extensions;
 using gView.DataExplorer.Plugins.ExplorerObjects.Base;
+using gView.Framework.Blazor.Models;
 using gView.Framework.Core.Common;
 using gView.Framework.DataExplorer.Abstraction;
 using gView.Framework.IO;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace gView.DataExplorer.Plugins.ExplorerObjects.FileSystem;
@@ -60,15 +62,38 @@ public class ComputerObject : ExplorerParentObject,
     {
         await base.Refresh();
 
-        string[] drives = System.IO.Directory.GetLogicalDrives();
-
-        foreach (string drive in drives)
+        var scope = this.GetRoot()?.Scope;
+        if (scope is null)
         {
-            System.IO.DriveInfo info = new System.IO.DriveInfo(drive);
-
-            DriveObject exObject = new DriveObject(this, info.Name.Replace("\\", ""), (uint)info.DriveType);
-            AddChildObject(exObject);
+            return false;
         }
+
+        foreach(var virtualDrive in scope.VirtualDrives)
+        {
+            var exObject = virtualDrive.DriveType switch
+            {
+                VirtualDriveType.EnvironmentVariable =>
+                    new EnvironmentVariableDrive(this, virtualDrive.Name, virtualDrive.PhysicalPath),
+                VirtualDriveType.Drive =>
+                    new DriveObject(this, virtualDrive.Name, virtualDrive.PhysicalPath, (uint)virtualDrive.SystemDriveType),
+                _ => null
+            };
+
+            if(exObject is not null)
+            {
+                AddChildObject(exObject);
+            }
+        }
+
+        //string[] drives = System.IO.Directory.GetLogicalDrives();
+
+        //foreach (string drive in drives)
+        //{
+        //    System.IO.DriveInfo info = new System.IO.DriveInfo(drive);
+
+        //    DriveObject exObject = new DriveObject(this, info.Name.Replace("\\", ""), (uint)info.DriveType);
+        //    AddChildObject(exObject);
+        //}
 
         ConfigConnections configStream = ConfigConnections.Create(this.ConfigStorage(), "directories");
         Dictionary<string, string> networkDirectories = configStream.Connections;
@@ -76,7 +101,10 @@ public class ComputerObject : ExplorerParentObject,
         {
             foreach (string dir in networkDirectories.Keys)
             {
-                MappedDriveObject exObject = new MappedDriveObject(this, networkDirectories[dir]);
+                MappedDriveObject exObject = new MappedDriveObject(
+                        this, 
+                        dir.Replace(@"\","/").Split('/').Last(), 
+                        networkDirectories[dir]);
                 AddChildObject(exObject);
             }
         }

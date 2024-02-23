@@ -128,13 +128,13 @@ public class DirectoryObject : ExplorerParentObject<IExplorerObject>,
 
     #endregion
 
-    async internal static Task<List<IExplorerObject>> Refresh(IExplorerObject parent, string FullName)
+    async internal static Task<List<IExplorerObject>> Refresh(IExplorerObject parent, string fullName)
     {
         List<IExplorerObject> childs = new List<IExplorerObject>();
 
         try
         {
-            foreach (string subdir in Directory.GetDirectories(FullName))
+            foreach (string subdir in Directory.GetDirectories(fullName))
             {
                 DirectoryInfo di = new DirectoryInfo(subdir);
                 childs.Add(new DirectoryObject(parent, di.FullName));
@@ -177,7 +177,7 @@ public class DirectoryObject : ExplorerParentObject<IExplorerObject>,
             foreach (string filter in fileFilter.Split('|'))
             {
 
-                foreach (string file in Directory.GetFiles(FullName, filter))
+                foreach (string file in Directory.GetFiles(fullName, filter))
                 {
                     FileInfo fi = new FileInfo(file);
                     IExplorerFileObject? obj = await exObj.CreateInstance(parent, fi.FullName);

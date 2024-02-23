@@ -55,6 +55,7 @@ public class SaveFileFilter : ExplorerDialogFilter
                         "DriveObject" => true,
                         "MappedDriveObject" => true,
                         "DirectoryObject" => true,
+                        "EnvironmentVariableDrive" => true,
                         "FileObject" => _regex.IsMatch(e.Name),
                         _ => false
                     });

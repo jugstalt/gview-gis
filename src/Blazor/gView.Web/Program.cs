@@ -23,7 +23,8 @@ builder.Services.AddRazorComponents()
 
 builder.Services
     .AddWebScopeContextService()
-    .AddAuth(builder.Configuration);
+    .AddAuth(builder.Configuration)
+    .AddDrives(builder.Configuration);
 
 builder.Services.AddMudServices(config =>
 {

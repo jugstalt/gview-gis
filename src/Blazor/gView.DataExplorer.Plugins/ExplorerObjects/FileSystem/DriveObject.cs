@@ -10,38 +10,43 @@ namespace gView.DataExplorer.Plugins.ExplorerObjects.FileSystem;
 public class DriveObject : ExplorerParentObject<IExplorerObject>,
                            IExplorerObject
 {
-    private readonly string _drive = "";
+    private readonly string _path = "";
     private readonly string _icon;
     private readonly string _type = "";
     private readonly string _name = "";
 
-    public DriveObject(IExplorerObject parent, string drive, uint type)
+    public DriveObject(IExplorerObject parent, string name, string path, uint type)
         : base(parent, -1)
     {
-        _drive = drive;
+        _path = path;
         switch (type)
         {
             case 2:
                 _icon = "basic:folder";
-                _name = _type = $"Floppy Disk ({drive})";
+                _name = _type = $"Floppy Disk ({name})";
                 break;
             case 5:
                 _icon = "basic:circle-pie-25";
-                _name = _type = $"CD-ROM Drive ({_drive})";
+                _name = _type = $"CD-ROM Drive ({name})";
                 break;
             case 4:
                 _icon = "basic:open-in-window";
-                _name = _drive.Replace(@"\", "/").Split('/').Last();
-                _type = $"Mapped Drive: {_drive}";
+                _name = _path.Replace(@"\", "/").Split('/').Last();
+                _type = $"Mapped Drive: {_path}";
+                break;
+            case 998:
+                _icon = "basic:open-in-window";
+                _name = name;
+                _type = $"Environment Variable: {_name}";
                 break;
             case 999:
                 _icon = "basic:open-in-window";
-                _name = _drive.Replace(@"\", "/").Split('/').Last();
-                _type = $"Mapped Folder: {_drive}";
+                _name = name;
+                _type = $"Mapped Folder: {_path}";
                 break;
             default:
                 _icon = "basic:folder";
-                _name = _type = $"Local Drive ({_drive})";
+                _name = _type = $"Local Drive ({name})";
                 break;
         }
     }
@@ -63,7 +68,7 @@ public class DriveObject : ExplorerParentObject<IExplorerObject>,
 
     public string FullName
     {
-        get { return $"{_drive}{(Platform.IsWindows ? "\\" : "/")}"; }
+        get { return _path; }
     }
 
     public string? Type

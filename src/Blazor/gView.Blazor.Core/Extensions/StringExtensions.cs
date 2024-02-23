@@ -34,4 +34,7 @@ static public class StringExtensions
 
         return maxLength > 0 ? result.TruncateWithEllipsis(maxLength) : result;
     }
+
+    public static string ToEnvironmentVairableName(this string variable)
+        => $"%{variable}%";
 }

@@ -27,6 +27,7 @@ public class OpenFileFilter : ExplorerDialogFilter
                     {
                         "ComputerObject" => true,
                         "DriveObject" => true,
+                        "EnvironmentVariableDrive" => true,
                         "MappedDriveObject" => true,
                         "DirectoryObject" => true,
                         "FileObject" => _regex.IsMatch(e.Name),

@@ -1,4 +1,5 @@
 ﻿using gView.Blazor.Core.Exceptions;
+using gView.Blazor.Core.Services;
 using gView.Blazor.Core.Services.Abstraction;
 using gView.DataExplorer.Core.Services;
 using gView.DataExplorer.Plugins.ExplorerObjects;
@@ -29,7 +30,7 @@ public class ExplorerApplicationScopeService : ApplictionBusyHandlerAndCache, IE
     private readonly ISnackbar _snackbar;
     private readonly ExplorerApplicationScopeServiceOptions _options;
     private readonly IConfigConnectionStorageService _configConnectionStorageService;
-    private readonly IExplorerObject _rootExplorerObject;
+    private readonly DrivesService _drives;
 
     public ExplorerApplicationScopeService(IDialogService dialogService,
                                            IEnumerable<IKnownDialogService> knownDialogs,
@@ -37,6 +38,7 @@ public class ExplorerApplicationScopeService : ApplictionBusyHandlerAndCache, IE
                                            IJSRuntime jsRuntime,
                                            ISnackbar snackbar,
                                            IConfigConnectionStorageService configConnectionStorageService,
+                                           DrivesService drives,
                                            IOptions<ExplorerApplicationScopeServiceOptions> options)
     {
         _dialogService = dialogService;
@@ -49,9 +51,9 @@ public class ExplorerApplicationScopeService : ApplictionBusyHandlerAndCache, IE
         _snackbar = snackbar;
 
         _configConnectionStorageService = configConnectionStorageService;
+        _drives = drives;
 
         _options = options.Value;
-        _rootExplorerObject = new StartObject(this);
     }
 
 
@@ -89,6 +91,8 @@ public class ExplorerApplicationScopeService : ApplictionBusyHandlerAndCache, IE
     public IEnumerable<IExplorerObject>? ContextExplorerObjects { get; private set; }
 
     public ExplorerEventBusService EventBus => _eventBus;
+
+    public IEnumerable<VirtualDrive> VirtualDrives => _drives.VirtualDrives();
 
     public IConfigConnectionStorage ConfigConnectionStorage => _configConnectionStorageService;
 

@@ -11,12 +11,12 @@ internal class MappedDriveObject : DriveObject,
                                    IExplorerObjectAccessability,
                                    IExplorerObjectDeletable
 {
-    private string _drive;
+    private string _path;
 
-    public MappedDriveObject(IExplorerObject parent, string drive)
-        : base(parent, drive, 999)
+    public MappedDriveObject(IExplorerObject parent, string name, string path)
+        : base(parent, name, path, 999)
     {
-        _drive = drive;
+        _path = path;
     }
 
     #region IExplorerObjectDeletable
@@ -26,7 +26,7 @@ internal class MappedDriveObject : DriveObject,
     public Task<bool> DeleteExplorerObject(ExplorerObjectEventArgs e)
     {
         var configStream = GetConfigConnections();
-        configStream.Remove(_drive);
+        configStream.Remove(_path);
 
         if (ExplorerObjectDeleted != null)
         {
@@ -42,8 +42,8 @@ internal class MappedDriveObject : DriveObject,
 
     public ConfigAccessability Accessability
     {
-        get => GetConfigConnections().GetAccessability(_drive);
-        set => GetConfigConnections().SetAccessability(_drive, value);
+        get => GetConfigConnections().GetAccessability(_path);
+        set => GetConfigConnections().SetAccessability(_path, value);
     }
 
     #endregion

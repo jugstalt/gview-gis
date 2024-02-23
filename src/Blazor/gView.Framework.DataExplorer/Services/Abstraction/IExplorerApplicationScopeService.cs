@@ -13,8 +13,10 @@ public interface IExplorerApplicationScopeService : IApplicationScope
     IExplorerObject RootExplorerObject(string? fileFilter = null);
     IExplorerObject? CurrentExplorerObject { get; }
     IEnumerable<IExplorerObject>? ContextExplorerObjects { get; }
-    
+
     IConfigConnectionStorage ConfigConnectionStorage { get; }
+
+    IEnumerable<VirtualDrive> VirtualDrives { get; }
 
     Task ForceContentRefresh();
 

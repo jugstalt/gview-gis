@@ -1,12 +1,10 @@
 ﻿using gView.Blazor.Core.Services.Abstraction;
 using gView.Framework.Common;
 using gView.Framework.Core.IO;
-using gView.Framework.Core.Network;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Net.Http.Headers;
 using System.Text;
 
 namespace gView.Blazor.Core.Services;
@@ -90,7 +88,7 @@ public class AppDataConfigConnectionStorageService : IConfigConnectionStorageSer
             sw.Write(data);
             sw.Close();
 
-            var acl=Acl.Create(_identityProvider, GetAclFilePath(schema, name));
+            var acl = Acl.Create(_identityProvider, GetAclFilePath(schema, name));
             acl.Write();
 
             return true;
@@ -120,7 +118,7 @@ public class AppDataConfigConnectionStorageService : IConfigConnectionStorageSer
             RenameFile(schema, oldName, newName, AclFileExtension);
             return RenameFile(schema, oldName, newName, ConFileExtension);
         }
-        return false;   
+        return false;
     }
 
     public ConfigAccessability GetAccessability(string schema, string name)
@@ -139,7 +137,7 @@ public class AppDataConfigConnectionStorageService : IConfigConnectionStorageSer
         var acl = Acl.Open(_identityProvider, GetAclFilePath(schema, name));
         if (acl.IsCreator())
         {
-            switch(accessability)
+            switch (accessability)
             {
                 case ConfigAccessability.Creator:
                     acl.AllowUsers = acl.AllowAdministrors = false;
@@ -233,22 +231,6 @@ public class AppDataConfigConnectionStorageService : IConfigConnectionStorageSer
         return name.Replace("&slsh;", "/").Replace("&bkslsh;", "\\").Replace("&colon;", ":");
     }
 
-    private string UserNameToFolder(string username)
-    {
-        char[] invalidChars = Path.GetInvalidFileNameChars();
-        string validName = string.Join("_", username.Split(invalidChars, StringSplitOptions.RemoveEmptyEntries));
-
-        validName = validName.Trim();
-        validName = validName.Replace(" ", "_");
-
-        if (string.IsNullOrWhiteSpace(validName))
-        {
-            throw new ArgumentException("the resulting foldername is empty");
-        }
-
-        return validName.ToLower();
-    }
-
     #endregion
 
     #region Classes
@@ -292,7 +274,7 @@ public class AppDataConfigConnectionStorageService : IConfigConnectionStorageSer
         {
             return new Acl(identityProvider, filename);
         }
- 
+
         public string Creator { get; private set; } = "";
         public bool AllowAdministrors { get; set; }
         public bool AllowUsers { get; set; }

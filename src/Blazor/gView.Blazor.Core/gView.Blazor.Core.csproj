@@ -16,6 +16,7 @@
     <ProjectReference Include="..\..\gView.Framework.Geometry\gView.Framework.Geometry.csproj" />
     <ProjectReference Include="..\..\gView.Framework\gView.Framework.csproj" />
     <ProjectReference Include="..\gView.Blazor.Models\gView.Blazor.Models.csproj" />
+    <ProjectReference Include="..\gView.Framework.Blazor\gView.Framework.Blazor.csproj" />
   </ItemGroup>
 
 </Project>

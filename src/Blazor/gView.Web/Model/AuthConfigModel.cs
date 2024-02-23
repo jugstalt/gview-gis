@@ -21,3 +21,8 @@ public class AuthConfigModel
 
     #endregion
 }
+
+public class DrivesModel
+{
+    public Dictionary<string, string>? Drives { get; set; }
+}

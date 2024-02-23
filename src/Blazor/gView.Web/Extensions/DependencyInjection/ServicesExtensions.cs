@@ -1,11 +1,10 @@
-﻿using Amazon.Auth.AccessControlPolicy;
+﻿using gView.Blazor.Core.Services;
 using gView.Blazor.Core.Services.Abstraction;
 using gView.Web.Model;
 using gView.Web.Services;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
-using Microsoft.Extensions.Options;
 
 namespace gView.Web.Extensions.DependencyInjection;
 
@@ -28,7 +27,8 @@ static public class ServicesExtensions
             && authConfig.Oidc is not null)
         {
             services
-                .AddAuthentication(options => {
+                .AddAuthentication(options =>
+                {
                     options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
                     options.DefaultChallengeScheme = OpenIdConnectDefaults.AuthenticationScheme;
                 })
@@ -49,7 +49,7 @@ static public class ServicesExtensions
                     //options.SignedOutCallbackPath = "/signout-callback-oidc";
                     //options.SignedOutRedirectUri = "/signin-oidc";
                     //options.CallbackPath = "/signin-oidc";
-                    
+
                     options.GetClaimsFromUserInfoEndpoint = true;
 
                     options.SaveTokens = true;
@@ -76,7 +76,7 @@ static public class ServicesExtensions
 
                 config.AddPolicy("gview-user", policy =>
                         policy.RequireAssertion(context =>
-                            context.User.IsInRole(authConfig.RequiredUserRole) 
+                            context.User.IsInRole(authConfig.RequiredUserRole)
                             || context.User.IsInRole(authConfig.RequiredAdminRole))
                     );
             });
@@ -94,7 +94,7 @@ static public class ServicesExtensions
                 config.AddPolicy("gview-user", policy =>
                     policy.RequireAssertion(contextpolicy => true));
 
-                config.AddPolicy("gview-admin", policy  =>
+                config.AddPolicy("gview-admin", policy =>
                     policy.RequireAssertion(contextpolicy => true));
             });
 
@@ -108,5 +108,30 @@ static public class ServicesExtensions
         }
 
         return services.AddHttpContextAccessor();
+    }
+
+    static public IServiceCollection AddDrives(this IServiceCollection services, IConfiguration configuration)
+    {
+        var drivesModel = new DrivesModel();
+        configuration.Bind(drivesModel);
+
+        #region SetEnvironment Variables
+
+        if (drivesModel.Drives is not null)
+        {
+            foreach (var key in drivesModel.Drives.Keys)
+            {
+                Environment.SetEnvironmentVariable(key, drivesModel.Drives[key]);
+            }
+        }
+
+        #endregion
+
+        return services
+            .Configure<DrivesServiceOptions>(config =>
+            {
+                config.Drives = drivesModel.Drives;
+            })
+            .AddScoped<DrivesService>();
     }
 }

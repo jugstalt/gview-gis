@@ -11,7 +11,9 @@ internal class OpenFolderFilter : ExplorerDialogFilter
 
     public override Task<bool> Match(IExplorerObject exObject)
     {
-        return Task.FromResult(exObject.Type == "Directory");
+        return Task.FromResult(
+            exObject.Type == "Directory" 
+            || exObject.Type?.StartsWith("Environment Variable: ") == true);
     }
 
     public override IEnumerable<IExplorerObject> FilterExplorerObjects(IEnumerable<IExplorerObject> explorerObjects)
@@ -22,6 +24,7 @@ internal class OpenFolderFilter : ExplorerDialogFilter
                             "ComputerObject" => true,
                             "DriveObject" => true,
                             "MappedDriveObject" => true,
+                            "EnvironmentVariableDrive" => true,
                             "DirectoryObject" => true,
                             _ => false
                         });
