@@ -1,0 +1,79 @@
+@using gView.Plugins.Modules
+@using Framework.Editor.Core
+
+@if(_featureLayers is not null && _editorModule is not null)
+{
+    <GvScrollable>
+        <table style="width:100%;text-align:left">
+            <tr>
+                <th>Layer</th>
+                <th>INSERT</th>
+                <th>UPDATE</th>
+                <th>DELETE</th>
+            </tr>
+    
+            @foreach(var featureLayer in _featureLayers)
+            {
+                var editLayer = _editorModule.GetEditLayer(featureLayer.ID);
+                var statements = editLayer?.Statements ?? EditStatements.NONE;
+            
+                <tr>
+                    <td>@featureLayer.Title</td>
+                    <td>
+                        <MudCheckBox Value="statements.HasFlag(EditStatements.INSERT)" T="bool"
+                                     ValueChanged="(chk) => OnChangeStatement(featureLayer, EditStatements.INSERT, chk)" />
+                    </td>
+                    <td>
+                        <MudCheckBox Value="statements.HasFlag(EditStatements.UPDATE)" T="bool"
+                                     ValueChanged="(chk) => OnChangeStatement(featureLayer, EditStatements.UPDATE, chk)" />
+                    </td>
+                    <td>
+                        <MudCheckBox Value="statements.HasFlag(EditStatements.DELETE)" T="bool"
+                                     ValueChanged="(chk) => OnChangeStatement(featureLayer, EditStatements.DELETE, chk)" />
+                    </td>
+                </tr>
+            }
+        </table>
+    </GvScrollable>
+}
+
+@code {
+    [Parameter] public IMapApplicationModule? Instance { get; set; }
+
+    private EditorModule? _editorModule;
+    private IFeatureLayer[]? _featureLayers;
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+
+        _editorModule = Instance as EditorModule;
+
+        _featureLayers = _editorModule?.Map?.MapElements
+                .Where(e => e is IFeatureLayer featureLayer && featureLayer.Class is IFeatureClass)
+                .Select(e => (IFeatureLayer)e)
+                .ToArray();
+    }
+
+    private void OnChangeStatement(IFeatureLayer featureLayer, EditStatements statement, bool add)
+    {
+        if(_editorModule is null)
+        {
+            return;
+        }
+
+        var editLayer = _editorModule.GetEditLayer(featureLayer.ID);
+
+        EditStatements statements = editLayer?.Statements ?? EditStatements.NONE;
+        if(add)
+        {
+            statements |= statement;
+        }
+        else if (statements.HasFlag(statement))
+        {
+            statements -= statement;
+        }
+
+        _editorModule.SetEditLayerStatement(featureLayer.ID, featureLayer.Class.Name, statements);
+    }
+}

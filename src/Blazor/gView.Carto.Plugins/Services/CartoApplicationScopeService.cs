@@ -11,7 +11,7 @@ using gView.DataExplorer.Razor.Components.Dialogs.Models;
 using gView.Framework.Blazor;
 using gView.Framework.Blazor.Models;
 using gView.Framework.Blazor.Services;
-using gView.Framework.Core.Carto;
+using gView.Framework.Core.Common;
 using gView.Framework.Core.Data;
 using gView.Framework.Core.Geometry;
 using gView.Framework.IO;
@@ -35,6 +35,7 @@ public class CartoApplicationScopeService : ApplictionBusyHandlerAndCache, ICart
     private readonly IAppIdentityProvider _identityProvider;
     private readonly ICartoInteractiveToolService _toolService;
     private readonly SettingsService _settings;
+    private readonly PluginManagerService _pluginManager;
 
     private ICartoDocument _cartoDocument;
 
@@ -51,6 +52,7 @@ public class CartoApplicationScopeService : ApplictionBusyHandlerAndCache, ICart
                                         IAppIdentityProvider identityProvider,
                                         SettingsService settings,
                                         ICartoInteractiveToolService toolService,
+                                        PluginManagerService pluginManager,
                                         IOptions<CartoApplicationScopeServiceOptions> options,
                                         IScopeContextService? scopeContext = null)
     {
@@ -66,8 +68,9 @@ public class CartoApplicationScopeService : ApplictionBusyHandlerAndCache, ICart
         _settings = settings;
         _toolService = toolService;
         _options = options.Value;
+        _pluginManager = pluginManager;
 
-        _cartoDocument = this.Document = new CartoDocument();
+        _cartoDocument = this.Document = new CartoDocument(this);
 
         if (_cartoDocument.Map.Display.SpatialReference is null)
         {
@@ -109,7 +112,7 @@ public class CartoApplicationScopeService : ApplictionBusyHandlerAndCache, ICart
         XmlStream stream = new XmlStream("");
         stream.ReadStream(mxlFilePath);
 
-        var cartoDocument = new CartoDocument()
+        var cartoDocument = new CartoDocument(this)
         {
             FilePath = mxlFilePath
         };
@@ -162,7 +165,11 @@ public class CartoApplicationScopeService : ApplictionBusyHandlerAndCache, ICart
 
     public GeoTransformerService GeoTransformer => _geoTransformer;
 
+    public PluginManagerService PluginManager => _pluginManager;
+
     public ICartoInteractiveToolService Tools => _toolService;
+
+    public IEnumerable<IMapApplicationModule> Modules => Document.Modules;
 
     #region Event Handlers
 
@@ -186,7 +193,7 @@ public class CartoApplicationScopeService : ApplictionBusyHandlerAndCache, ICart
 
     private Task HandleMapClickAsync(IPoint point)
     {
-        if(Tools.CurrentTool?.ToolType.HasFlag(ToolType.Click) == true)
+        if (Tools.CurrentTool?.ToolType.HasFlag(ToolType.Click) == true)
         {
             return Tools.CurrentTool.OnEvent(this,
                 new MapClickEventArgs() { Point = point });

@@ -40,12 +40,14 @@ internal class MapSettings : ICartoButton
         clone.Display.ImageWidth = original.Display.ImageWidth;
         clone.Display.ImageHeight = original.Display.ImageHeight;
 
-        var model = await scope.ShowModalDialog(typeof(gView.Carto.Razor.Components.Dialogs.MapSettingsDialog),
-                                                    "Map Settings",
-                                                    new Razor.Components.Dialogs.Models.MapSettingsModel()
-                                                    {
-                                                        Map = clone
-                                                    });
+        var model = await scope.ShowModalDialog(
+                typeof(gView.Carto.Razor.Components.Dialogs.MapSettingsDialog),
+                "Map Settings",
+                new Razor.Components.Dialogs.Models.MapSettingsModel()
+                {
+                    Map = clone
+                }
+           );
 
         if (model?.Map != null)
         {

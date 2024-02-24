@@ -2,6 +2,8 @@
 using gView.Carto.Core.Abstraction;
 using gView.Carto.Core.Models.Tree;
 using gView.Framework.Blazor.Services.Abstraction;
+using gView.Framework.Core.Common;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace gView.Carto.Core.Services.Abstraction;
@@ -19,7 +21,11 @@ public interface ICartoApplicationScopeService : IApplicationScope
 
     GeoTransformerService GeoTransformer { get; }
 
+    PluginManagerService PluginManager { get; }
+
     SettingsService Settings { get; }
+
+    IEnumerable<IMapApplicationModule> Modules { get; }
 
     TocTreeNode? SelectedTocTreeNode { get; }
     Task SetSelectedTocTreeNode(TocTreeNode? selectedTocTreeNode);

@@ -14,7 +14,7 @@
                        @bind-Open="@_drawerIsOpen"  
                        OpenMiniOnHover="true" 
                        Fixed="false">
-                    <MudList Clickable="true" @bind-SelectedValue="@_currentTab">
+                <MudList Clickable="true" @bind-SelectedValue="@_currentTab">
                     <MudListItem Icon="@IconService.FromString("basic:settings")" Style="white-space:nowrap"
                                  Value="Page.General" Text="Map / Display" 
                                  OnClick="() => _drawerIsOpen = false" />

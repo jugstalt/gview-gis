@@ -12,21 +12,37 @@ namespace gView.Plugins.Modules
     [RegisterPlugIn("45713F48-0D81-4a54-A422-D0E6F397BC95", PluginUsage.Server)]
     public class EditorModule : IMapApplicationModule, IPersistable
     {
-        private List<EditLayer> _editLayers = new List<EditLayer>();
+        private List<IEditLayer> _editLayers = new List<IEditLayer>();
 
-        internal void AddEditLayer(EditLayer editLayer)
+        internal void AddEditLayer(IEditLayer editLayer)
         {
             _editLayers.Add(editLayer);
         }
 
-        internal IEnumerable<EditLayer> EditLayers => _editLayers;
+        internal IEnumerable<IEditLayer> EditLayers => _editLayers;
 
-        public IEditLayer GetEditLayer(int id)
+        public IEditLayer GetEditLayer(int layerId)
         {
             return _editLayers
-                .Where(l => l.LayerId == id)
+                .Where(l => l.LayerId == layerId)
                 .Select(l => new EditLayer(l))
                 .FirstOrDefault();
+        }
+
+        public void SetEditLayerStatement(int layerId, string className, EditStatements statements)
+        {
+            var editLayer = _editLayers
+                .Where(l => l.LayerId == layerId)
+                .FirstOrDefault();
+
+            if(editLayer is not null)
+            {
+                editLayer.Statements = statements;
+            } 
+            else
+            {
+                _editLayers.Add(new EditLayer(layerId, className, statements)); 
+            }
         }
 
         public IMap Map { get; private set; }
@@ -121,45 +137,52 @@ namespace gView.Plugins.Modules
             #endregion
         }
 
-        internal class EditLayer : IPersistable, IEditLayer
-        {
-            public EditLayer()
-            {
-                this.Statements = EditStatements.NONE;
-            }
-
-            public EditLayer(EditLayer editLayer)
-            {
-                this.LayerId = editLayer.LayerId;
-                this.ClassName = editLayer.ClassName;
-                this.Statements = editLayer.Statements;
-            }
-
-            public int LayerId { get; private set; }
-            public string ClassName { get; private set; }
-            public EditStatements Statements { get; private set; }
-
-            public IFeatureLayer FeatureLayer { get { return null; } }
-
-            #region IPersistable
-
-            public void Load(IPersistStream stream)
-            {
-                LayerId = (int)stream.Load("id", -1);
-                ClassName = (string)stream.Load("class", String.Empty);
-                Statements = (EditStatements)stream.Load("statement", (int)EditStatements.NONE);
-            }
-
-            public void Save(IPersistStream stream)
-            {
-                stream.Save("id", LayerId);
-                stream.Save("class", ClassName);
-                stream.Save("statement", (int)Statements);
-            }
-
-            #endregion
-        }
+        
 
         #endregion  
+    }
+
+    public class EditLayer : IPersistable, IEditLayer
+    {
+        public EditLayer()
+        {
+            this.Statements = EditStatements.NONE;
+        }
+
+        public EditLayer(IEditLayer editLayer)
+        {
+            this.LayerId = editLayer.LayerId;
+            this.ClassName = editLayer.ClassName;
+            this.Statements = editLayer.Statements;
+        }
+
+        public EditLayer(int layerId, string className, EditStatements statements)
+        {
+            this.LayerId = layerId;
+            this.ClassName = className;
+            this.Statements = statements;
+        }
+
+        public int LayerId { get; private set; }
+        public string ClassName { get; private set; }
+        public EditStatements Statements { get; set; }
+
+        #region IPersistable
+
+        public void Load(IPersistStream stream)
+        {
+            LayerId = (int)stream.Load("id", -1);
+            ClassName = (string)stream.Load("class", String.Empty);
+            Statements = (EditStatements)stream.Load("statement", (int)EditStatements.NONE);
+        }
+
+        public void Save(IPersistStream stream)
+        {
+            stream.Save("id", LayerId);
+            stream.Save("class", ClassName);
+            stream.Save("statement", (int)Statements);
+        }
+
+        #endregion
     }
 }

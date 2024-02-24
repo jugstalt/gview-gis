@@ -41,7 +41,7 @@ public class NewDocument : ICartoInitialButton
 
         if (model != null)
         {
-            ((CartoApplicationScopeService)scope).Document = new CartoDocument(model.Name.Trim());
+            ((CartoApplicationScopeService)scope).Document = new CartoDocument(scope, model.Name.Trim());
         }
 
         return true;

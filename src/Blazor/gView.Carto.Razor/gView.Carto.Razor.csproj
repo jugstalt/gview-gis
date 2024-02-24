@@ -35,6 +35,7 @@
     <ProjectReference Include="..\..\gView.Framework.Cartography\gView.Framework.Cartography.csproj" />
     <ProjectReference Include="..\..\gView.Interoperability.OGC\gView.Interoperability.OGC.csproj" />
     <ProjectReference Include="..\..\gView.Framework\gView.Framework.csproj" />
+    <ProjectReference Include="..\..\gView.Plugins.Modules\gView.Plugins.Modules.csproj" />
     <ProjectReference Include="..\gView.Blazor.Core\gView.Blazor.Core.csproj" />
     <ProjectReference Include="..\gView.Blazor.Models\gView.Blazor.Models.csproj" />
     <ProjectReference Include="..\gView.Carto.Core\gView.Carto.Core.csproj" />

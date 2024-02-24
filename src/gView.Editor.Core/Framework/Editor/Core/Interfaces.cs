@@ -72,9 +72,7 @@ namespace gView.Framework.Editor.Core
     {
         int LayerId { get; }
         string ClassName { get; }
-        EditStatements Statements { get; }
-
-        IFeatureLayer FeatureLayer { get; }
+        EditStatements Statements { get; set; }
     }
 
     public interface IEditableDatabase

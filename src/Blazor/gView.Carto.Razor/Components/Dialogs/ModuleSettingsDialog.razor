@@ -1,0 +1,89 @@
+@inherits ModalDialogFormBase<ModuleSettingsModel>
+@inject IconService IconService
+@inject PluginManagerService PluginManager
+
+@if (_propertyPageDefinitions is not null)
+{
+    <ModalDialogFormBase T="ModuleSettingsModel"
+                         OnDialogClose="base.OnDialogClose"
+                         Model="base.Model">
+        <DialogBody>
+            <MudDrawerContainer Class="mud-height-full">
+                <MudDrawer Variant="@DrawerVariant.Mini" Anchor="Anchor.Left"
+                           Elevation="1" 
+                           @bind-Open="@_drawerIsOpen"  
+                           OpenMiniOnHover="true" 
+                           Fixed="false">
+                    <MudList Clickable="true" 
+                             SelectedValue="_currentTab"
+                             SelectedValueChanged="OnCurrentTabChanged">
+                    @foreach(var propertyPageDefintion in _propertyPageDefinitions)
+                    {
+                            <MudListItem Icon="@IconService.FromString("basic:settings")"
+                                         Style="white-space:nowrap"
+                                         Value="propertyPageDefintion"
+                                         Text="@propertyPageDefintion.InstanceType.Name.SplitCamelCase()"
+                                         OnClick="() => _drawerIsOpen = false" />
+                    }
+                    </MudList>
+                </MudDrawer>
+            </MudDrawerContainer>
+
+            <MudContainer Style="padding-left:50px;padding-right:10px">
+                @if (_propertyPageRenderFragment is not null)
+                {
+                    @(_propertyPageRenderFragment)
+                }
+            </MudContainer>
+        </DialogBody>
+    </ModalDialogFormBase>
+}
+
+@code {
+    private bool _drawerIsOpen = false;
+    private IPropertyPageDefinition[]? _propertyPageDefinitions;
+    private object? _currentTab;
+    private RenderFragment? _propertyPageRenderFragment;
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+
+        _propertyPageDefinitions = PluginManager
+            .GetPlugins<IPropertyPageDefinition>(Plugins.Type.IPropertyPageDefinition)
+            .Where(p => p.InterfaceType == typeof(IMapApplicationModule))
+            .ToArray();
+
+        SetCurrentTab(_propertyPageDefinitions.FirstOrDefault());
+    }
+
+    private void OnCurrentTabChanged(object currentTab)
+        => SetCurrentTab(currentTab as IPropertyPageDefinition);
+
+    private void SetCurrentTab(IPropertyPageDefinition? propertyPageDefinition)
+    {
+        _currentTab = propertyPageDefinition;
+
+        if (propertyPageDefinition is null || Model.Modules is null)
+        {
+            _propertyPageRenderFragment = null;
+            return;
+        }
+
+        var module = Model.Modules
+                          .Where(m => propertyPageDefinition.InstanceType.Equals(m?.GetType()))
+                          .FirstOrDefault();
+        if(module == null)
+        {
+            return;
+        }
+
+        _propertyPageRenderFragment = new RenderFragment(builder =>
+        {
+            var sequence = 0;
+            builder.OpenComponent(sequence, propertyPageDefinition.PropertyPageType);
+            builder.AddAttribute(++sequence, "Instance", module);
+            builder.CloseComponent();
+        });
+    }
+}

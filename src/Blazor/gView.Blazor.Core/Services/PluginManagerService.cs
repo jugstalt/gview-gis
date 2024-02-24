@@ -1,8 +1,10 @@
 ﻿using gView.Blazor.Core.Extensions;
 using gView.Blazor.Core.Services.Abstraction;
 using gView.Framework.Common;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices.ObjectiveC;
 
 namespace gView.Blazor.Core.Services;
 
@@ -16,6 +18,9 @@ public class PluginManagerService
         _plugInManager = new PlugInManager();
         _identityProvider = identityProvider;
     }
+
+    public Guid PluginGuid(object plugin)
+        => PlugInManager.PlugInID(plugin);
 
     public IEnumerable<T> GetPlugins<T>(Plugins.Type pluginType)
         => _plugInManager
