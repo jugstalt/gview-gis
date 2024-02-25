@@ -5,6 +5,7 @@ using gView.DataExplorer.Plugins.Extensions.DependencyInjection;
 using gView.Razor.Extensions.DependencyInjection;
 using gView.Razor.Leaflet.Extensions.DependencyInjection;
 using gView.Web.Components;
+using gView.Web.Extensions;
 using gView.Web.Extensions.DependencyInjection;
 using MudBlazor;
 using MudBlazor.Services;
@@ -14,17 +15,19 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Configuration.AddJsonFile("_config/gview-web.config", true);
 
-// Legacy code still need this global variables!
-gView.Framework.Common.SystemVariables.gViewWebRepositoryPath = builder.Configuration["RepositoryPath"];
-
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
 builder.Services
+    .AddEnvironmentService(config =>
+    {
+        config.RepositoryPath = builder.Configuration.RepositoryPath();
+    })
     .AddWebScopeContextService()
     .AddAuth(builder.Configuration)
-    .AddDrives(builder.Configuration);
+    .AddDrives(builder.Configuration)
+    .AddCustomTiles(builder.Configuration.Bind);
 
 builder.Services.AddMudServices(config =>
 {
@@ -46,13 +49,13 @@ builder.Services.AddCartoInteropServices();
 builder.Services.AddKnownCartoDialogsServices();
 builder.Services.AddCartoApplicationScopeService(config =>
 {
-    config.ConfigRootPath = Path.Combine(gView.Framework.Common.SystemVariables.gViewWebRepositoryPath!, "gview-carto");
+    config.ConfigRootPath = Path.Combine(builder.Configuration.RepositoryPath(), "gview-carto");
 });
 
 builder.Services.AddExplorerDesktopApplicationService();
 builder.Services.AddExplorerApplicationScopeService(config =>
 {
-    config.ConfigRootPath = Path.Combine(gView.Framework.Common.SystemVariables.gViewWebRepositoryPath!, "gview-explorer");
+    config.ConfigRootPath = Path.Combine(builder.Configuration.RepositoryPath(), "gview-explorer");
 });
 
 builder.Services.AddKnownExplorerDialogsServices();
@@ -60,7 +63,7 @@ builder.Services.AddFrameworkServices();
 builder.Services.AddIconService();
 builder.Services.AddSettingsService(config =>
 {
-    config.Path = Path.Combine(gView.Framework.Common.SystemVariables.gViewWebRepositoryPath!, "gview-web-settings.db");
+    config.Path = Path.Combine(builder.Configuration.RepositoryPath(), "gview-web-settings.db");
 });
 builder.Services.AddMapControlBackgroundTilesService(config =>
 {

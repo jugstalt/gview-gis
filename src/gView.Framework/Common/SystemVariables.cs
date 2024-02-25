@@ -35,7 +35,7 @@ namespace gView.Framework.Common
             get { return ApplicationDirectory; }
         }
 
-        static public string CustomMyApplicationData = string.Empty;
+        //static public string CustomMyApplicationData = string.Empty;
 
         static public string CustomMyCommonApplicationData = string.Empty;
         static public string MyCommonApplicationData
@@ -69,28 +69,6 @@ namespace gView.Framework.Common
                 }
 
                 string path = Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData) + @"/gView";
-                DirectoryInfo di = new DirectoryInfo(path);
-                if (!di.Exists)
-                {
-                    di.Create();
-                }
-
-                return di.FullName;
-            }
-        }
-
-        private static string _gViewWebRepositoryPath = Path.Combine(new DirectoryInfo(ApplicationDirectory).Parent.FullName, "gview-web-repository");
-        static public string gViewWebRepositoryPath {
-            get => _gViewWebRepositoryPath; 
-            set { _gViewWebRepositoryPath = String.IsNullOrEmpty(value) ? _gViewWebRepositoryPath : value; }
-        }
-        
-
-        static public string MyApplicationConfigPath
-        {
-            get
-            {
-                string path = Path.Combine(gViewWebRepositoryPath, "_user_config");
                 DirectoryInfo di = new DirectoryInfo(path);
                 if (!di.Exists)
                 {

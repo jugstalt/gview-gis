@@ -37,9 +37,16 @@ namespace gView.Plugins.Modules
 
             if(editLayer is not null)
             {
-                editLayer.Statements = statements;
+                if (statements == EditStatements.NONE)
+                {
+                    _editLayers.Remove(editLayer);
+                }
+                else
+                {
+                    editLayer.Statements = statements;
+                }
             } 
-            else
+            else if(statements != EditStatements.NONE)
             {
                 _editLayers.Add(new EditLayer(layerId, className, statements)); 
             }

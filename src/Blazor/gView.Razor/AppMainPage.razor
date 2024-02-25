@@ -2,10 +2,12 @@
 @using gView.Blazor.Core.Models
 @using gView.Blazor.Core.Services.Abstraction
 @using gView.Framework.Common
+@using gView.Razor.Services
 
 @inject NavigationManager Nav
 @inject IJSRuntime JSRuntime
 @inject IAppIdentityProvider IdentityProvider
+@inject CustomTilesService CustomTiles
 
 <MudThemeProvider @bind-IsDarkMode="@_isDarkMode" Theme="_theme" />
 
@@ -64,7 +66,7 @@
                 </MudPaper>
             </GvGridItem>
         }
-        @if (_identity?.IsAdministrator == true) 
+        @if (_identity?.IsAdministrator == true)
         {
             <GvGridItem>
                 <MudPaper @onclick="()=>NavigateTo(ExplorerUri)"
@@ -81,6 +83,27 @@
                             OnClick="()=>NavigateTo(ExplorerUri, true)" />
                 </MudPaper>
             </GvGridItem>
+        }
+        @foreach(var customTile in CustomTiles.Tiles)
+        {
+            <GvGridItem>
+                <MudPaper @onclick="()=>NavigateTo(customTile.TargetUrl)"
+                          style="min-height:250px;cursor:pointer;padding:20px;position:relative"
+                          Elevation="25">
+                    <MudText Typo="Typo.h5">@customTile.Title</MudText>
+
+                    <MudText Typo="Typo.body1">
+                        @customTile.Description
+                    </MudText>
+
+                    <MudFab Color="Color.Primary" Style="position:absolute;right:20px;bottom:20px"
+                            StartIcon="@Icons.Material.Filled.OpenInNew"
+                            OnClick="()=>NavigateTo(customTile.TargetUrl, true)" />
+                </MudPaper>
+            </GvGridItem>
+        }
+        @if (_identity?.IsAdministrator == true)
+        {
             <GvGridItem>
                 <MudPaper style="min-height:250px;padding:20px;position:relative"
                           Elevation="25">

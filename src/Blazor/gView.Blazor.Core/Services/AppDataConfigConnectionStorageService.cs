@@ -14,10 +14,14 @@ public class AppDataConfigConnectionStorageService : IConfigConnectionStorageSer
     private const string ConFileExtension = ".con";
     private const string AclFileExtension = ".acl";
     private readonly IAppIdentityProvider _identityProvider;
+    private readonly EnvironmentService _environment;
 
-    public AppDataConfigConnectionStorageService(IAppIdentityProvider identityProvider)
+    public AppDataConfigConnectionStorageService(
+            IAppIdentityProvider identityProvider,
+            EnvironmentService environment)
     {
         _identityProvider = identityProvider;
+        _environment = environment;
     }
 
     public Dictionary<string, string> GetAll(string schema)
@@ -200,7 +204,7 @@ public class AppDataConfigConnectionStorageService : IConfigConnectionStorageSer
     private string GetRoot(string schema)
     {
         string root = Path.Combine(
-                SystemVariables.MyApplicationConfigPath,
+                _environment.MyApplicationConfigPath,
                 "connections",
                 schema
             );

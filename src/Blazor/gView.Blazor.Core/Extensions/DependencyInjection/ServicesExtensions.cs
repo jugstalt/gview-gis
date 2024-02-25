@@ -39,4 +39,11 @@ public static class ServicesExtensions
         => services
                 .Configure(setupAction)
                 .AddSingleton<MapControlBackgroundTilesService>();
+
+    static public IServiceCollection AddEnvironmentService(
+        this IServiceCollection services,
+        Action<EnvironmentServiceOptions> setupAction)
+        => services
+            .Configure(setupAction)
+            .AddSingleton<EnvironmentService>();
 }

@@ -1,8 +1,10 @@
 ﻿using gView.Blazor.Core.Extensions;
+using gView.Carto.Core.Models.Tree;
 using gView.Framework.Core.Data;
 using gView.Framework.Core.Network;
 using gView.Framework.Core.Symbology;
 using gView.Framework.Core.UI;
+using Microsoft.SqlServer.Management.SqlParser.SqlCodeDom;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -135,8 +137,11 @@ static public class TocElementExtensions
 
     static public string FullPath(this ITocElement? tocElement,
                                   string rootName = "",
-                                  char separator = '/')
+                                  char separator = '/')   // => /parent1/parent2/layer....
         =>  tocElement is null 
             ? rootName
             : $"{tocElement.ParentGroup.FullPath(rootName, separator)}{separator}{tocElement.Name}";
+
+    static public string FullName(this ITocElement? tocElement)
+        => tocElement.FullPath().Substring(1); // remove beginning /
 }

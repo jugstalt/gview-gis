@@ -1,0 +1,90 @@
+@inherits ModalDialogFormBase<MatchGeoServiceLayerIdsModel>
+
+<ModalDialogFormBase T="MatchGeoServiceLayerIdsModel"
+                         OnDialogClose="base.OnDialogClose"
+                         Model="base.Model">
+    <DialogBody>
+        <GvGrid ColumnCount="12">
+            <GvGridItem Span="10">
+                <MudTextField Label="Service Url: (https://.../MapServer)"
+                              @bind-Value="_serviceUrl" />
+            </GvGridItem>
+            <GvGridItem Span="2">
+                <MudButton Variant="Variant.Filled">
+                    Match
+                </MudButton>
+            </GvGridItem>
+        </GvGrid>
+       
+        <GvScrollable>
+            <MudTable Items="_rows">
+                <HeaderContent>
+                    <MudTh>Layer</MudTh>
+                    <MudTh>Layer Id</MudTh>
+                    <MudTh>Service Layer Id</MudTh>
+                    <MudTh>Service Layer</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd>@context.TocElement.FullName()</MudTd>
+                    <MudTd>@context.LayerId</MudTd>
+                    <MudTd>@context.GeoServiceLayerId</MudTd>
+                    <MudTd>@context.GeoServieLayer</MudTd>
+                </RowTemplate>
+            </MudTable>
+        </GvScrollable>
+    </DialogBody>
+</ModalDialogFormBase>
+
+@code {
+    private string _serviceUrl = "";
+    private List<TocElementTableRow> _rows = new();
+
+    protected override void OnInitialized() => Handle(() =>
+    {
+        base.OnInitialized();
+
+        var toc = Model.Map?.TOC;
+        if (toc == null || toc.Elements == null)
+        {
+            return;
+        }
+
+        foreach (var tocElement in toc.Elements)
+        {
+            var layer = tocElement.Layers?.FirstOrDefault();
+            if (layer == null)
+            {
+                continue;
+            }
+
+            if (tocElement.Layers!.Count > 1)
+            {
+                throw new Exception($"More than one layer assigned to TOC Element {tocElement.Name}. This is not allowed with this Method.");
+            }
+
+            var row = new TocElementTableRow(tocElement, layer.ID);
+            _rows.Add(row);
+        }
+    });
+
+
+    #region Models
+
+    public class TocElementTableRow
+    {
+        public TocElementTableRow(
+                ITocElement tocElement,
+                int layerId,
+                int geoServiceLayerId = -1,
+                string geoServiceLayer = ""
+        ) => (TocElement, LayerId, GeoServiceLayerId, GeoServieLayer)
+           = (tocElement, layerId, geoServiceLayerId, geoServiceLayer);
+
+        public ITocElement TocElement { get; set; }
+        public int LayerId{ get; set; }
+        public int GeoServiceLayerId { get; set; }
+        public string GeoServieLayer { get; set; }
+    }
+
+    #endregion
+}
