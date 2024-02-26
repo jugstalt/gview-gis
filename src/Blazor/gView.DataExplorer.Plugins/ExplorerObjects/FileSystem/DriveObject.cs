@@ -31,8 +31,7 @@ public class DriveObject : ExplorerParentObject<IExplorerObject>,
                 break;
             case 4:
                 _icon = "basic:open-in-window";
-                _name = _path.Replace(@"\", "/").Split('/').Last();
-                _type = $"Mapped Drive: {_path}";
+                _name = _type = $"Mapped Folder: ({name})";
                 break;
             case 998:
                 _icon = "basic:open-in-window";
@@ -41,8 +40,8 @@ public class DriveObject : ExplorerParentObject<IExplorerObject>,
                 break;
             case 999:
                 _icon = "basic:open-in-window";
-                _name = name;
-                _type = $"Mapped Folder: {_path}";
+                _name = _path.Replace(@"\", "/").Split('/').Last();
+                _type = $"Mapped Drive: {_path}";
                 break;
             default:
                 _icon = "basic:folder";

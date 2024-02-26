@@ -1,3 +1,8 @@
+@using Newtonsoft.Json
+@using gView.Framework.Web.Services
+@using gView.Interoperability.GeoServices.Rest.Json
+@using gView.Interoperability.GeoServices.Extensions
+
 @inherits ModalDialogFormBase<MatchGeoServiceLayerIdsModel>
 
 <ModalDialogFormBase T="MatchGeoServiceLayerIdsModel"
@@ -10,24 +15,27 @@
                               @bind-Value="_serviceUrl" />
             </GvGridItem>
             <GvGridItem Span="2">
-                <MudButton Variant="Variant.Filled">
+                <MudButton Variant="Variant.Filled"
+                            OnClick="OnMatchClick">
                     Match
                 </MudButton>
             </GvGridItem>
         </GvGrid>
        
         <GvScrollable>
-            <MudTable Items="_rows">
+            <MudTable Items="_rows" Dense="true">
                 <HeaderContent>
+                    <MudTh>Status</MudTh>
                     <MudTh>Layer</MudTh>
                     <MudTh>Layer Id</MudTh>
                     <MudTh>Service Layer Id</MudTh>
                     <MudTh>Service Layer</MudTh>
                 </HeaderContent>
                 <RowTemplate>
-                    <MudTd>@context.TocElement.FullName()</MudTd>
-                    <MudTd>@context.LayerId</MudTd>
-                    <MudTd>@context.GeoServiceLayerId</MudTd>
+                    <MudTd>@(context.Status != RowStatus.Unknown ? context.Status.ToString() : "")</MudTd>
+                    <MudTd>@context.TocElement?.FullName()</MudTd>
+                    <MudTd>@(context.LayerId >= 0 ? context.LayerId : "")</MudTd>
+                    <MudTd>@(context.GeoServiceLayerId >= 0 ? context.GeoServiceLayerId : "")</MudTd>
                     <MudTd>@context.GeoServieLayer</MudTd>
                 </RowTemplate>
             </MudTable>
@@ -42,6 +50,13 @@
     protected override void OnInitialized() => Handle(() =>
     {
         base.OnInitialized();
+
+        InitTable();
+    });
+
+    private void InitTable()
+    {
+        _rows.Clear();
 
         var toc = Model.Map?.TOC;
         if (toc == null || toc.Elements == null)
@@ -65,23 +80,62 @@
             var row = new TocElementTableRow(tocElement, layer.ID);
             _rows.Add(row);
         }
-    });
+    }
 
+    private Task OnMatchClick() => HandleAsync(async () =>
+    {
+        InitTable();
+
+        var url = $"{_serviceUrl}/layers?f=pjson";
+        var http = HttpService.CreateInstance();
+
+        var layersJson = await http.GetStringAsync(url);
+        var serviceLayers = JsonConvert.DeserializeObject<JsonLayers>(layersJson);
+
+        if (serviceLayers is null)
+        {
+            throw new Exception("Can't load map services layers");
+        }
+
+        foreach(var serviceLayer in serviceLayers.Layers)
+        {
+            string layerFullname = serviceLayers.LayerFullname(serviceLayer);
+            var row = _rows.FirstOrDefault(r => r.TocElement is not null && r.TocElement.FullName() == layerFullname);
+            if(row is not null)
+            {
+                row.GeoServiceLayerId = serviceLayer.Id;
+                row.Status = RowStatus.Ok;
+            }
+            else
+            {
+                _rows.Add(new TocElementTableRow(null, -1, serviceLayer.Id, serviceLayer.Name) { Status = RowStatus.Missing });
+            }
+        }
+    });
 
     #region Models
 
-    public class TocElementTableRow
+    private enum RowStatus
+    {
+        Unknown,
+        Ok,
+        Missing,
+        NotFound
+    }
+
+    private class TocElementTableRow
     {
         public TocElementTableRow(
-                ITocElement tocElement,
+                ITocElement? tocElement,
                 int layerId,
                 int geoServiceLayerId = -1,
                 string geoServiceLayer = ""
         ) => (TocElement, LayerId, GeoServiceLayerId, GeoServieLayer)
            = (tocElement, layerId, geoServiceLayerId, geoServiceLayer);
 
-        public ITocElement TocElement { get; set; }
-        public int LayerId{ get; set; }
+        public RowStatus Status { get; set; }
+        public ITocElement? TocElement { get; set; }
+        public int LayerId { get; set; }
         public int GeoServiceLayerId { get; set; }
         public string GeoServieLayer { get; set; }
     }
