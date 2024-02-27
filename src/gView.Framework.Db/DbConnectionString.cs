@@ -40,7 +40,7 @@ namespace gView.Framework.Db
             {
                 try
                 {
-                    string configPath = Path.Combine(SystemVariables.ApplicationDirectory, "gView.DB.UI.json");
+                    string configPath = Path.Combine(SystemVariables.ApplicationDirectory, "gview.db.ui.json");
 
                     var commondDbConnections = JsonSerializer.Deserialize<CommonDbConnectionsModelModel>(File.ReadAllText(configPath),
                         new JsonSerializerOptions
@@ -200,7 +200,7 @@ namespace gView.Framework.Db
         {
             try
             {
-                string configPath = Path.Combine(SystemVariables.ApplicationDirectory, "gView.DB.UI.json");
+                string configPath = Path.Combine(SystemVariables.ApplicationDirectory, "gview.db.ui.json");
 
                 var commondDbConnections = JsonSerializer.Deserialize<CommonDbConnectionsModelModel>(File.ReadAllText(configPath),
                     new JsonSerializerOptions
