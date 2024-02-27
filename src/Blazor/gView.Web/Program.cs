@@ -106,3 +106,4 @@ gView.GraphicsEngine.Current.Engine = new gView.GraphicsEngine.Skia.SkiaGraphics
 gView.GraphicsEngine.Current.Encoder = new gView.GraphicsEngine.Skia.SkiaBitmapEncoding();
 
 app.Run();
+ 
