@@ -13,7 +13,7 @@ public partial class ConnectionStringControl
     {
         try
         {
-            string configPath = Path.Combine(SystemVariables.ApplicationDirectory, "gView.DB.UI.json");
+            string configPath = Path.Combine(SystemVariables.ApplicationDirectory, "gview.db.ui.json");
 
             _commonDbConnections = JsonSerializer.Deserialize<CommonDbConnectionsModelModel>(await File.ReadAllTextAsync(configPath),
                 new JsonSerializerOptions

@@ -13,6 +13,7 @@ using gView.Framework.DataExplorer.Services.Abstraction;
 namespace gView.DataExplorer.Plugins.ExplorerTools;
 
 [RegisterPlugIn("6B0B060E-45BC-4686-BEDE-23E61C849814")]
+[AuthorizedPlugin(RequireAdminRole = true)]
 internal class ObjectInfo : IExplorerTool
 {
     #region IExplorerTool

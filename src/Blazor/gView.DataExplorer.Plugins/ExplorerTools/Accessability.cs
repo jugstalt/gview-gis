@@ -19,7 +19,7 @@ public class Accessability : IExplorerTool
 
     public string ToolTip => "Set object accessability";
 
-    public string Icon => "basic:admin";
+    public string Icon => "basic:key";
 
     public ExplorerToolTarget Target => ExplorerToolTarget.SelectedContextExplorerObjects;
 
