@@ -1,5 +1,4 @@
-﻿using gView.Framework.Common;
-using gView.GraphicsEngine.Abstraction;
+﻿using gView.GraphicsEngine.Abstraction;
 using gView.GraphicsEngine.GdiPlus;
 using gView.GraphicsEngine.Skia;
 using System;
@@ -55,7 +54,7 @@ namespace gView.GraphicsEngine.Default
             {
                 case ImageFormat.Jpeg:
                 case ImageFormat.Png:
-                    if (Platform.IsWindows && _gdiEncoding.CanEncode(bitmap))
+                    if (GraphicsPlatform.IsWindows && _gdiEncoding.CanEncode(bitmap))
                     {
                         // Gdi+ encoding: faster & smaller images!
                         encoder = _gdiEncoding;
