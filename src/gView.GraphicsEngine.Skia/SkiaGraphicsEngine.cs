@@ -78,7 +78,7 @@ namespace gView.GraphicsEngine.Skia
             {
                 using (var fontManager = SKFontManager.Default)
                 {
-                    _installedFontNames = fontManager.FontFamilies?.ToArray() ?? [];
+                    _installedFontNames = fontManager.FontFamilies?.ToArray() ?? Array.Empty<string>();
                 }
             }
 
