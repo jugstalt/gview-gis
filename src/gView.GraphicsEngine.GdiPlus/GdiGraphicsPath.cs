@@ -1,4 +1,5 @@
 ﻿using gView.GraphicsEngine.Abstraction;
+using gView.GraphicsEngine.GdiPlus.Extensions;
 using System;
 
 namespace gView.GraphicsEngine.GdiPlus
@@ -37,6 +38,11 @@ namespace gView.GraphicsEngine.GdiPlus
             _path.AddLine(p1.X, p1.Y, p2.X, p2.Y);
         }
 
+        public void AddEllipse(CanvasRectangleF rect)
+        {
+            _path.AddEllipse(rect.ToGdiRectangleF());
+        }
+
         public CanvasRectangleF GetBounds()
         {
             var rectangleF = _path.GetBounds();
@@ -46,6 +52,18 @@ namespace gView.GraphicsEngine.GdiPlus
         public object EngineElement => _path;
 
         public GraphicsPathBuildPerferences PathBuildPerferences => GraphicsPathBuildPerferences.AddLinesPreferred;
+
+        public void AddPoint(float x, float y)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void AddPoint(CanvasPoint p)
+        {
+            throw new NotImplementedException();
+        }
+
+
 
         #endregion
 
@@ -58,16 +76,6 @@ namespace gView.GraphicsEngine.GdiPlus
                 _path.Dispose();
                 _path = null;
             }
-        }
-
-        public void AddPoint(float x, float y)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void AddPoint(CanvasPoint p)
-        {
-            throw new NotImplementedException();
         }
 
         #endregion

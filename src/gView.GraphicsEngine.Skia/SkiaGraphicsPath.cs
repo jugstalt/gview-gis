@@ -1,6 +1,7 @@
 ﻿using gView.GraphicsEngine.Abstraction;
 using gView.GraphicsEngine.Skia.Extensions;
 using SkiaSharp;
+using System;
 
 namespace gView.GraphicsEngine.Skia
 {
@@ -75,6 +76,11 @@ namespace gView.GraphicsEngine.Skia
             {
                 _path.LineTo(p.ToSKPoint());
             }
+        }
+
+        public void AddEllipse(CanvasRectangleF rect)
+        {
+            _path.AddArc(rect.ToSKRect(), 0f, 360f);
         }
 
         public void CloseFigure()

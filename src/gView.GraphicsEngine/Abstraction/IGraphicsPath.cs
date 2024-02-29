@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Security.Cryptography;
 
 namespace gView.GraphicsEngine.Abstraction
 {
@@ -13,6 +14,8 @@ namespace gView.GraphicsEngine.Abstraction
 
         void AddPoint(float x1, float y1);
         void AddPoint(CanvasPoint p1);
+
+        void AddEllipse(CanvasRectangleF rect);
 
         CanvasRectangleF GetBounds();
 

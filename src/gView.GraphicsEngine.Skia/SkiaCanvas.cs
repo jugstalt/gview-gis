@@ -118,6 +118,13 @@ namespace gView.GraphicsEngine.Skia
             _canvas?.DrawOval(new SKRect(x1, y1, x1 + width, y1 + height), GetSKPaint(brush));
         }
 
+        public void DrawPie(IPen pen, CanvasRectangle rect, float startAngle, float sweepAngle)
+            => _canvas?.DrawArc(rect.ToSKRect(), startAngle, sweepAngle, true, GetSKPaint(pen));
+
+        public void FillPie(IBrush brush, CanvasRectangle rect, float startAngle, float sweepAngle)
+             => _canvas?.DrawArc(rect.ToSKRect(), startAngle, sweepAngle, true, GetSKPaint(brush));
+
+
         public void DrawRectangle(IPen pen, CanvasRectangle rectangle)
         {
             _canvas?.DrawRect(rectangle.ToSKRect(), GetSKPaint(pen));
@@ -206,7 +213,16 @@ namespace gView.GraphicsEngine.Skia
 
         public void DrawText(string text, IFont font, IBrush brush, CanvasRectangleF rectangleF)
         {
-            DrawMultilineText(text.RemoveReturns(), rectangleF.Center.ToSKPoint(), GetSKPaint(font, (SKPaint)brush.EngineElement), font);
+            var skPaint = GetSKPaint(font, (SKPaint)brush.EngineElement);
+            var center = rectangleF.Center;
+            var size = this.MeasureText(text, font);
+
+            DrawMultilineText(
+                    text.RemoveReturns(),
+                    new CanvasPointF(center.X - size.Width / 2f, center.Y - size.Height / 2f).ToSKPoint(),
+                    skPaint,
+                    font
+                 );
         }
 
         public void DrawText(string text, IFont font, IBrush brush, CanvasPoint point, IDrawTextFormat format)

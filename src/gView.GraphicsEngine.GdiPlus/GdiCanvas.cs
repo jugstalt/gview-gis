@@ -365,6 +365,20 @@ namespace gView.GraphicsEngine.GdiPlus
             _graphics.FillEllipse((Brush)brush.EngineElement, x1, y1, x2, y2);
         }
 
+        public void DrawPie(IPen pen, CanvasRectangle rect, float startAngle, float sweepAngle)
+        {
+            CheckUsability();
+
+            _graphics.DrawPie((Pen)pen.EngineElement, rect.ToGdiRectangle(), startAngle, sweepAngle);
+        }
+
+        public void FillPie(IBrush brush, CanvasRectangle rect, float startAngle, float sweepAngle)
+        {
+            CheckUsability();
+
+            _graphics.FillPie((Brush)brush.EngineElement, rect.ToGdiRectangle(), startAngle, sweepAngle);
+        }
+
         public void DrawPath(IPen pen, IGraphicsPath path)
         {
             CheckUsability();

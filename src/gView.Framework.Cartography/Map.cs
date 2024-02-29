@@ -1750,7 +1750,8 @@ namespace gView.Framework.Cartography
                     int mx = Display.ImageWidth / 2 - (int)sizeF.Width / 2, my = Display.ImageHeight / 2 - (int)sizeF.Height / 2;
                     Display.Canvas.FillRectangle(backgroundBrush, new GraphicsEngine.CanvasRectangle(mx - 30, my - 30, (int)sizeF.Width + 60, (int)sizeF.Height + 60));
                     Display.Canvas.DrawRectangle(borderPen, new GraphicsEngine.CanvasRectangle(mx - 30, my - 30, (int)sizeF.Width + 60, (int)sizeF.Height + 60));
-                    Display.Canvas.DrawText(sb.ToString(), font, textBrush, new GraphicsEngine.CanvasPoint(mx, my));
+                    //Display.Canvas.DrawText(sb.ToString(), font, textBrush, new GraphicsEngine.CanvasPoint(mx, my));
+                    Display.Canvas.DrawText(sb.ToString(), font, textBrush, new GraphicsEngine.CanvasRectangleF(mx - 30, my - 30, (int)sizeF.Width + 60, (int)sizeF.Height + 60));
                 }
             }
         }
