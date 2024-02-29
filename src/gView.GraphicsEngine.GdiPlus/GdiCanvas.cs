@@ -114,6 +114,18 @@ namespace gView.GraphicsEngine.GdiPlus
             _graphics.ResetTransform();
         }
 
+        public void SetClip(CanvasRectangle rectangle)
+        {
+            _graphics?.SetClip(rectangle.ToGdiRectangle());
+        }
+
+        public void SetClip(CanvasRectangleF rectangle)
+        {
+            _graphics?.SetClip(rectangle.ToGdiRectangleF());
+        }
+
+        //public void ResetClip() => _graphics?.ResetClip();
+
         public void FillRectangle(IBrush brush, int left, int right, int width, int height)
         {
             CheckUsability();

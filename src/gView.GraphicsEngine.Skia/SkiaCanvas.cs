@@ -288,6 +288,16 @@ namespace gView.GraphicsEngine.Skia
             _canvas?.Translate(point.ToSKPoint());
         }
 
+        public void SetClip(CanvasRectangle rectangle)
+        {
+            _canvas?.ClipRect(rectangle.ToSKRect());
+        }
+
+        public void SetClip(CanvasRectangleF rectangle)
+        {
+            _canvas?.ClipRect(rectangle.ToSKRect());
+        }
+
         #region Helper
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

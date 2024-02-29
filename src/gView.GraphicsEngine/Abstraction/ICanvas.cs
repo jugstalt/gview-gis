@@ -17,6 +17,10 @@ namespace gView.GraphicsEngine.Abstraction
         void RotateTransform(float angle);
         void ResetTransform();
 
+        void SetClip(CanvasRectangle rectangle);
+
+        void SetClip(CanvasRectangleF rectangle);
+
         void Flush();
 
         void Clear(ArgbColor? argbColor = null);
@@ -50,8 +54,8 @@ namespace gView.GraphicsEngine.Abstraction
         void DrawLine(IPen pen, int x1, int y1, int x2, int y2);
         void DrawLine(IPen pen, float x1, float y1, float x2, float y2);
 
-        void DrawEllipse(IPen pen, float x1, float y1, float x2, float y2);
-        void FillEllipse(IBrush brush, float x1, float y1, float x2, float y2);
+        void DrawEllipse(IPen pen, float x1, float y1, float width, float height);
+        void FillEllipse(IBrush brush, float x1, float y1, float width, float height);
 
         CanvasSizeF MeasureText(string text, IFont font);
 

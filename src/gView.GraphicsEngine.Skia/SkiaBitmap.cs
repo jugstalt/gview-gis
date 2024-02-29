@@ -134,6 +134,11 @@ namespace gView.GraphicsEngine.Skia
             return _bitmap?.GetPixel(x, y).ToArgbColor() ?? ArgbColor.Empty;
         }
 
+        public void SetPixel(int x, int y, ArgbColor color)
+        {
+            _bitmap?.SetPixel(x, y, color.ToSKColor());
+        }
+
         public BitmapPixelData LockBitmapPixelData(BitmapLockMode lockMode, PixelFormat pixelFormat)
         {
             if (_bitmap != null)

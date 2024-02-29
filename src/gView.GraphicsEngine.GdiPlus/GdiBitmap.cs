@@ -156,6 +156,11 @@ namespace gView.GraphicsEngine.GdiPlus
             return _bitmap.GetPixel(x, y).ToArgbColor();
         }
 
+        public void SetPixel(int x, int y, ArgbColor color)
+        {
+            _bitmap?.SetPixel(x, y, color.ToGdiColor());
+        }
+
         #endregion IBitmap
 
         #region IDisposable

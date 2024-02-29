@@ -29,6 +29,7 @@ namespace gView.GraphicsEngine.Abstraction
         void UnlockBitmapPixelData(BitmapPixelData bitmapPixelData);
 
         ArgbColor GetPixel(int x, int y);
+        void SetPixel(int x, int y, ArgbColor color);
 
         object EngineElement { get; }
     }
