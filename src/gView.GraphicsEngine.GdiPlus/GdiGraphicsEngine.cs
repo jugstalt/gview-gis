@@ -65,7 +65,7 @@ namespace gView.GraphicsEngine.GdiPlus
                 _installedFontNames = System.Drawing.FontFamily.Families.Select(f => f.Name).ToArray();
             }
 
-            return _installedFontNames ?? [];
+            return _installedFontNames ?? Array.Empty<string>();
         }
 
         private static string _defaultFontName = null;
