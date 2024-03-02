@@ -15,6 +15,7 @@ namespace gView.GraphicsEngine.Abstraction
 
         void TranslateTransform(CanvasPointF point);
         void RotateTransform(float angle);
+        void ScaleTransform(float sx, float sy);
         void ResetTransform();
 
         void SetClip(CanvasRectangle rectangle);

@@ -304,6 +304,11 @@ namespace gView.GraphicsEngine.Skia
             _canvas?.Translate(point.ToSKPoint());
         }
 
+        public void ScaleTransform(float sx, float sy)
+        {
+            _canvas?.Scale(sx, sy);
+        }
+
         public void SetClip(CanvasRectangle rectangle)
         {
             _canvas?.ClipRect(rectangle.ToSKRect());

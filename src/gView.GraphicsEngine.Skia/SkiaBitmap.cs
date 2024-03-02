@@ -245,11 +245,5 @@ namespace gView.GraphicsEngine.Skia
             _dpiX = dpiX;
             _dpyY = dpiY;
         }
-
-        #region Helper
-
-
-
-        #endregion
     }
 }

@@ -107,6 +107,11 @@ namespace gView.GraphicsEngine.GdiPlus
             _graphics.RotateTransform(angle);
         }
 
+        public void ScaleTransform(float sx, float sy)
+        {
+            _graphics.ScaleTransform(sx, sy);
+        }
+
         public void ResetTransform()
         {
             CheckUsability();
