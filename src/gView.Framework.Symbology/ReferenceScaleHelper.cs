@@ -12,9 +12,9 @@ namespace gView.Framework.Symbology
 
         static public float PenWidth(float penWidth, IPenWidth symbol, IDisplay display)
         {
-            float dpiFactor = display == null || display.Dpi == 96.0f ?
-                1f :
-                (float)(display.Dpi / 96.0);
+            float dpiFactor = display == null || display.Dpi == 96.0f 
+                ? 1f 
+                : (float)(display.Dpi / 96.0);
 
             var result = penWidth;
 
@@ -27,7 +27,7 @@ namespace gView.Framework.Symbology
                 result = symbol.MaxPenWidth * dpiFactor;
             }
 
-            return Math.Min(MinimumPenWidth, result);
+            return Math.Max(MinimumPenWidth, result);
         }
 
         static public float CalcPixelUnitFactor(CloneOptions options)
