@@ -97,6 +97,16 @@
             throw new Exception("Can't load map services layers");
         }
 
+        int maxLayerId = serviceLayers.Layers.Select(l => l.Id).Max();
+
+        // Hidden Layer: Layers inside a "checkbox" group
+        // => not directly visible in the service toc
+        foreach (var hiddenRow in _rows.Where(r => r.IsHidden)) 
+        {
+            hiddenRow.Status = RowStatus.Hidden;
+            hiddenRow.GeoServiceLayerId = ++maxLayerId;
+        }
+
         foreach(var serviceLayer in serviceLayers.Layers)
         {
             string layerFullname = serviceLayers.LayerFullname(serviceLayer);
@@ -111,6 +121,11 @@
                 _rows.Add(new TocElementTableRow(null, -1, serviceLayer.Id, serviceLayer.Name) { Status = RowStatus.Missing });
             }
         }
+
+        foreach (var hiddenRow in _rows.Where(r => r.Status == RowStatus.Unknown))
+        {
+            hiddenRow.Status = RowStatus.Missing;
+        }
     });
 
     #region Models
@@ -120,7 +135,8 @@
         Unknown,
         Ok,
         Missing,
-        NotFound
+        NotFound,
+        Hidden
     }
 
     private class TocElementTableRow
@@ -138,6 +154,26 @@
         public int LayerId { get; set; }
         public int GeoServiceLayerId { get; set; }
         public string GeoServieLayer { get; set; }
+
+        public bool IsHidden
+        {
+            get
+            {
+                var parent = this.TocElement?.ParentGroup;
+
+                while (parent != null)
+                {
+                    IGroupLayer? groupLayer = parent.Layers?.FirstOrDefault() as IGroupLayer;
+                    if (groupLayer != null && groupLayer.MapServerStyle == MapServerGrouplayerStyle.Checkbox)
+                    {
+                        return true;
+                    }
+                    parent = parent.ParentGroup;
+                }
+
+                return false;
+            }
+        }
     }
 
     #endregion
