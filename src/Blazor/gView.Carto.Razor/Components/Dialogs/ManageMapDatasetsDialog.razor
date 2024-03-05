@@ -25,6 +25,23 @@
                             }
                         </MudTreeView>
                     </GvScrollable>
+                    <GvPaper>
+                        @if(_datasetItems.Any(e=>e.LayerCount == 0))
+                        {
+                            <MudButton Color="Color.Primary"
+                                       Variant="Variant.Filled"
+                                       StartIcon="@Icons.Material.Filled.Delete"
+                                       OnClick="OnRemoveUnusedDatasets">
+                                Remove Unused
+                            </MudButton>
+                        }
+                        <MudButton Color="Color.Success"
+                                   Variant="Variant.Filled"
+                                   StartIcon="@Icons.Material.Filled.Delete"
+                                   OnClick="OnMapCompress">
+                            Compress/Clean
+                        </MudButton>
+                    </GvPaper>
                 </GvGridItem>
                 
                 <GvGridItem Span="8">
@@ -63,21 +80,7 @@
                                 Remove Dataset!
                             </MudButton>
                         }
-                        else if(_datasetItems.Any(e=>e.LayerCount == 0))
-                        {
-                            <MudButton Color="Color.Primary"
-                                       Variant="Variant.Filled"
-                                       StartIcon="@Icons.Material.Filled.Delete"
-                                       OnClick="OnRemoveUnusedDatasets">
-                                Remove Unused Datasets
-                            </MudButton>
-                        }
-                        <MudButton Color="Color.Success"
-                                   Variant="Variant.Filled"
-                                   StartIcon="@Icons.Material.Filled.Delete"
-                                   OnClick="OnMapCompress">
-                            Compress/Clean
-                        </MudButton>
+                        
                     </GvPaper>
                 </GvGridItem>
             </GvGrid>
@@ -104,7 +107,7 @@
     private void BuildTree()
     {
         _datasetItems.Clear();
-        _selectedDatasetItem = null;
+        //_selectedDatasetItem = null;
 
         if (Model.Map is not null)
         {
@@ -117,6 +120,8 @@
                 _datasetItems.Add(new DatasetListItem(i - 1, dataset, count));
             }
         }
+
+        _selectedDatasetItem = _datasetItems.FirstOrDefault();
     }
 
     private void OnDatasetItemSelected(DatasetListItem item) => Handle(() =>
@@ -164,7 +169,7 @@
     {
         if(Model.Map is not null)
         {
-            Model.Map.Compress();
+            Model.Map.Compress(); 
 
             BuildTree();
         }

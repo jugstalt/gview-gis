@@ -483,6 +483,11 @@ namespace gView.Framework.Cartography
 
             var datasetIds = _layers.Where(l => l.Class != null).Select(l => l.DatasetID).Distinct().OrderBy(id => id).ToArray();
 
+            if(datasetIds.Length==0)
+            {
+                return;
+            }
+
             for (var datasetId = 0; datasetId < datasetIds.Max(); datasetId++)
             {
                 if (!datasetIds.Contains(datasetId))

@@ -44,24 +44,35 @@ else
             <ItemTemplate>
                 <div style="white-space:nowrap; overflow-x:hidden;"
                      class="treenode">
-                @if (context is TocLayerNode)
+                @if (context is TocLayerNode layerNode)
                 {
-                
-                    <MudTreeViewItem Value="@context"
-                                     Class="@(context.IsSelected ? "toctreenode-selected" :"")"
-                                     Items="@context.Children"
-                                     CanExpand="@context.HasChildren"
-                                     Expanded="@context.IsExpanded"
-                                     ExpandedChanged="@((expanded) => OnNodeExpandedChanged(context, expanded))"
-                        @onclick="@((e) => OnNodeClickAsync(context,e))">
+                    @if(context.TocElement.Layers.Count() == 0 || context.TocElement.Layers.FirstOrDefault(l=>l is NullLayer) != null)
+                    {
+                        <MudTreeViewItem Value="@context">
+                            <Content>
+                                <MudText Color="Color.Error">
+                                    @context.Text
+                                </MudText>
+                            </Content>
+                        </MudTreeViewItem>
+                    } 
+                    else
+                    {
+                        <MudTreeViewItem Value="@context"
+                                         Class="@(context.IsSelected ? "toctreenode-selected" :"")"
+                                         Items="@context.Children"
+                                         CanExpand="@context.HasChildren"
+                                         Expanded="@context.IsExpanded"
+                                         ExpandedChanged="@((expanded) => OnNodeExpandedChanged(context, expanded))"
+                                         @onclick="@((e) => OnNodeClickAsync(context,e))">
                             <Content>
                                 <MudTreeViewItemToggleButton @bind-Expanded="@context.IsExpanded" 
                                                              Visible="@context.HasChildren" 
                                                              ExpandedIcon="@Icons.Material.Rounded.ArrowRight" />
                                 <MudCheckBox T="bool" 
-                                             Checked="@context.IsChecked"
+                                             Value="@context.IsChecked"
                                              Color="Color.Surface"
-                                             CheckedChanged="@((e) => OnCheckboxClickedAsync(context,e))" />
+                                             ValueChanged="@((e) => OnCheckboxClickedAsync(context,e))" />
                                 @if(_editNameTocNode == context)
                                 {
                                     <InlineInput @bind-Value="_editedName"
@@ -76,6 +87,7 @@ else
                         
                             </Content>
                         </MudTreeViewItem>
+                    }
                 }
                 else if (context is TocLegendNode)
                 {
