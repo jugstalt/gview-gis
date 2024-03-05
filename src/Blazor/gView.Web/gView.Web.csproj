@@ -30,6 +30,8 @@
     <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="8.0.2" />
   </ItemGroup>
 
+	<!-- gView.Cmd.Exe Dependencies -->	
+	
   <ItemGroup>
     <ProjectReference Include="..\..\gView.Cmd\gView.Cmd.csproj" />
     <ProjectReference Include="..\..\gView.GraphicsEngine.GdiPlus\gView.GraphicsEngine.GdiPlus.csproj" />

@@ -83,27 +83,26 @@
                             OnClick="()=>NavigateTo(ExplorerUri, true)" />
                 </MudPaper>
             </GvGridItem>
-        }
-        @foreach(var customTile in CustomTiles.Tiles)
-        {
-            <GvGridItem>
-                <MudPaper @onclick="()=>NavigateTo(customTile.TargetUrl)"
-                          style="min-height:250px;cursor:pointer;padding:20px;position:relative"
-                          Elevation="25">
-                    <MudText Typo="Typo.h5">@customTile.Title</MudText>
+        
+            @foreach(var customTile in CustomTiles.Tiles)
+            {
+                <GvGridItem>
+                    <MudPaper @onclick="()=>NavigateTo(customTile.TargetUrl)"
+                              style="min-height:250px;cursor:pointer;padding:20px;position:relative"
+                              Elevation="25">
+                        <MudText Typo="Typo.h5">@customTile.Title</MudText>
 
-                    <MudText Typo="Typo.body1">
-                        @customTile.Description
-                    </MudText>
+                        <MudText Typo="Typo.body1">
+                            @customTile.Description
+                        </MudText>
 
-                    <MudFab Color="Color.Primary" Style="position:absolute;right:20px;bottom:20px"
-                            StartIcon="@Icons.Material.Filled.OpenInNew"
-                            OnClick="()=>NavigateTo(customTile.TargetUrl, true)" />
-                </MudPaper>
-            </GvGridItem>
-        }
-        @if (_identity?.IsAdministrator == true)
-        {
+                        <MudFab Color="Color.Primary" Style="position:absolute;right:20px;bottom:20px"
+                                StartIcon="@Icons.Material.Filled.OpenInNew"
+                                OnClick="()=>NavigateTo(customTile.TargetUrl, true)" />
+                    </MudPaper>
+                </GvGridItem>
+            }
+
             <GvGridItem>
                 <MudPaper style="min-height:250px;padding:20px;position:relative"
                           Elevation="25">

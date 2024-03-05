@@ -6,8 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
     <title>gView GIS Web</title>
-
-    <base href="/" />
+    <base href="@BaseUrl" />
     <link rel="stylesheet" href="app.css" />
     <link rel="stylesheet" href="gView.Web.styles.css" />
 
@@ -41,3 +40,9 @@
 </body>
 
 </html>
+
+@code {
+    // https://www.reddit.com/r/Blazor/comments/19dqltq/how_to_utilize_in_blazor_net_80/
+    [CascadingParameter] private HttpContext? HttpContext { get; set; }
+    private string BaseUrl => $"{HttpContext!.Request.PathBase}/";
+}
