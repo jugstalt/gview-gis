@@ -48,9 +48,11 @@ else
                 {
                     @if(context.TocElement.Layers.Count() == 0 || context.TocElement.Layers.FirstOrDefault(l=>l is NullLayer) != null)
                     {
-                        <MudTreeViewItem Value="@context">
+                        <MudTreeViewItem Value="@context"
+                                         Class="@(context.IsSelected ? "toctreenode-selected" :"")"
+                                         @onclick="@((e) => OnNodeClickAsync(context,e))" >
                             <Content>
-                                <MudText Color="Color.Error">
+                                <MudText Color="Color.Error" Style="padding-left:30px">
                                     @context.Text
                                 </MudText>
                             </Content>

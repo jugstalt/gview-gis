@@ -2356,7 +2356,7 @@ namespace gView.Framework.Data
         #endregion
     }
 
-    public class NullLayer : Layer
+    public class NullLayer : Layer, IErrorMessage
     {
         private int _id_ = -1, _datasetID_ = -1;
         private bool _IsWebTheme = false;
@@ -2392,6 +2392,8 @@ namespace gView.Framework.Data
             get { return _className; }
             set { _className = value; }
         }
+
+        public string LastErrorMessage { get; set; } = "";
     }
 
     public class LayerFactory
