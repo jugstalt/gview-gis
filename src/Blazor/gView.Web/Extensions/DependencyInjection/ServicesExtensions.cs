@@ -72,12 +72,14 @@ static public class ServicesExtensions
             services.AddAuthorization(config =>
             {
                 config.AddPolicy("gview-admin", policy =>
-                    policy.RequireRole(authConfig.RequiredAdminRole));
+                    policy.RequireAssertion(context =>
+                            context.User.IsInRoleOrHasRoleClaim(authConfig.RequiredAdminRole))
+                    );
 
                 config.AddPolicy("gview-user", policy =>
                         policy.RequireAssertion(context =>
-                            context.User.IsInRole(authConfig.RequiredUserRole)
-                            || context.User.IsInRole(authConfig.RequiredAdminRole))
+                            context.User.IsInRoleOrHasRoleClaim(authConfig.RequiredUserRole)
+                            || context.User.IsInRoleOrHasRoleClaim(authConfig.RequiredAdminRole))
                     );
             });
 

@@ -527,4 +527,23 @@
 }
 
 
+.match-geoservice-table .row-notfound {
+    background: #ff000070;
+}
 
+.match-geoservice-table .row-missing {
+    background: #ff940bb8;
+}
+
+.match-geoservice-table .row-hidden {
+    background: #0b76ffa3;
+}
+
+
+.match-geoservice-table .row-ok {
+    background: #00ff216e;
+}
+
+.match-geoservice-table .cell-different {
+    background: #ff000070;
+}

@@ -4,11 +4,14 @@
 @inject NavigationManager Nav
 
 @code {
+    [CascadingParameter] private HttpContext? HttpContext { get; set; }
+    private string BaseUrl => $"{HttpContext!.Request.PathBase}/";
+
     async protected override Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
 
-        Nav.NavigateTo("/");
+        Nav.NavigateTo(BaseUrl);
     }
 }
 

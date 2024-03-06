@@ -33,7 +33,6 @@
 	<!-- gView.Cmd.Exe Dependencies -->	
 	
   <ItemGroup>
-    <ProjectReference Include="..\..\gView.Cmd\gView.Cmd.csproj" />
     <ProjectReference Include="..\..\gView.GraphicsEngine.GdiPlus\gView.GraphicsEngine.GdiPlus.csproj" />
     <ProjectReference Include="..\..\gView.GraphicsEngine.Skia\gView.GraphicsEngine.Skia.csproj" />
     <ProjectReference Include="..\..\gView.GraphicsEngine\gView.GraphicsEngine.csproj" />

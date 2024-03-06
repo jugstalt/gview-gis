@@ -1,9 +1,7 @@
 ﻿using gView.Blazor.Core.Models;
-using gView.Framework.Common.Reflection;
 using gView.Framework.Core.Common;
 using System;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 
 namespace gView.Blazor.Core.Extensions;
 
@@ -27,12 +25,12 @@ static public class AppIdentityExtensions
         };
 
     static public string UsernameWithoutSpatialSigns(
-        this AppIdentity? appIdentity, char replaceWith='_')
+        this AppIdentity? appIdentity, char replaceWith = '_')
     {
         if (appIdentity == null) return "";
 
-        var username= appIdentity.Username;
-        foreach(char sign in new char[] { '@', '/', '\\' })
+        var username = appIdentity.Username;
+        foreach (char sign in new char[] { '@', '/', '\\', '.', '-', '$', '(', ')', '&', '%', '§', '"', '!' })
         {
             username = username.Replace(sign, replaceWith);
         }

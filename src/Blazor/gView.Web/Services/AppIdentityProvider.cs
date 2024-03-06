@@ -1,5 +1,6 @@
 ﻿using gView.Blazor.Core.Models;
 using gView.Blazor.Core.Services.Abstraction;
+using gView.Web.Extensions;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.Extensions.Options;
@@ -28,8 +29,8 @@ public class AppIdentityProvider : IAppIdentityProvider
             ? new AppIdentity("", false, false)
             : new AppIdentity(
                 _httpContext.User.Identity?.Name ?? "",
-                _httpContext.User.IsInRole(_options.AdminRoleName),
-                _httpContext.User.IsInRole(_options.AdminRoleName) || _httpContext.User.IsInRole(_options.UserRoleName)
+                _httpContext.User.IsInRoleOrHasRoleClaim(_options.AdminRoleName),
+                _httpContext.User.IsInRoleOrHasRoleClaim(_options.AdminRoleName) || _httpContext.User.IsInRoleOrHasRoleClaim(_options.UserRoleName)
             );
     }
 

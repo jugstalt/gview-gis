@@ -6,7 +6,8 @@
 @inherits ModalDialogFormBase<MatchGeoServiceLayerIdsModel>
 
 <ModalDialogFormBase T="MatchGeoServiceLayerIdsModel"
-                         OnDialogClose="base.OnDialogClose"
+                         OnDialogClose="base.OnDialogClose" 
+                         ContentStyle="DialogContentStyle.Full"
                          Model="base.Model">
     <DialogBody>
         <GvGrid ColumnCount="12">
@@ -15,15 +16,19 @@
                               @bind-Value="_serviceUrl" />
             </GvGridItem>
             <GvGridItem Span="2">
-                <MudButton Variant="Variant.Filled"
-                            OnClick="OnMatchClick">
-                    Match
+                <MudButton Variant="Variant.Filled" 
+                            Color="Color.Primary"
+                            OnClick="OnCompareClick">
+                    Compare
                 </MudButton>
             </GvGridItem>
         </GvGrid>
        
         <GvScrollable>
-            <MudTable Items="_rows" Dense="true">
+            <MudTable Items="_rows" 
+                       Dense="true" 
+                       Class="match-geoservice-table"
+                       RowClassFunc="@((context,i) => $"row-{context.Status.ToString().ToLower()}")">
                 <HeaderContent>
                     <MudTh>Status</MudTh>
                     <MudTh>Layer</MudTh>
@@ -35,12 +40,25 @@
                     <MudTd>@(context.Status != RowStatus.Unknown ? context.Status.ToString() : "")</MudTd>
                     <MudTd>@context.TocElement?.FullName()</MudTd>
                     <MudTd>@(context.LayerId >= 0 ? context.LayerId : "")</MudTd>
-                    <MudTd>@(context.GeoServiceLayerId >= 0 ? context.GeoServiceLayerId : "")</MudTd>
+                    <MudTd Class="@(context.GeoServiceLayerId >= 0 && context.GeoServiceLayerId != context.LayerId ? "cell-different" : "")"> 
+                        @(context.GeoServiceLayerId >= 0 ? context.GeoServiceLayerId : "")
+                    </MudTd>
                     <MudTd>@context.GeoServieLayer</MudTd>
                 </RowTemplate>
             </MudTable>
         </GvScrollable>
     </DialogBody>
+
+    <DialogButtons>
+        @if(_rows.Count(r=>r.GeoServiceLayerId>=0) > 0 && _rows.Count(r=>r.Status == RowStatus.NotFound) == 0)
+        {
+            <MudButton Variant="Variant.Filled"
+                        Color="Color.Success"
+                        OnClick="OnMatchIdsClick">
+                Match Ids
+            </MudButton>
+        }
+    </DialogButtons>
 </ModalDialogFormBase>
 
 @code {
@@ -82,7 +100,7 @@
         }
     }
 
-    private Task OnMatchClick() => HandleAsync(async () =>
+    private Task OnCompareClick() => HandleAsync(async () =>
     {
         InitTable();
 
@@ -124,8 +142,21 @@
 
         foreach (var hiddenRow in _rows.Where(r => r.Status == RowStatus.Unknown))
         {
-            hiddenRow.Status = RowStatus.Missing;
+            hiddenRow.Status = RowStatus.NotFound;
         }
+    });
+
+    private Task OnMatchIdsClick() => HandleAsync(() =>
+    {
+        foreach (var row in _rows.Where(r => r.TocElement != null))
+        {
+            if (row.GeoServiceLayerId >= 0)
+            {
+                row.TocElement!.Layers.First().ID = row.GeoServiceLayerId;
+            }
+        }
+
+        return OnCompareClick();
     });
 
     #region Models

@@ -2,6 +2,7 @@
 using gView.Carto.Core.Services.Abstraction;
 using gView.Carto.Razor.Components.Dialogs;
 using gView.Carto.Razor.Components.Dialogs.Models;
+using gView.Framework.Blazor.Models;
 using gView.Framework.Carto.Abstraction;
 using gView.Framework.Core.Common;
 
@@ -35,7 +36,8 @@ internal class MatchGeoServiceLayerIds : ICartoButton
                 new MatchGeoServiceLayerIdsModel()
                 {
                     Map = scope.Document.Map
-                }
+                },
+                new ModalDialogOptions() {  }
             );
 
         return true;
