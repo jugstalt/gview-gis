@@ -43,7 +43,7 @@ namespace gView.Framework.Cartography.LayerRenderers
         // Thread
         async public Task Render()
         {
-            GraphicsEngine.Abstraction.IBitmap _filteredBitmap = null;
+            GraphicsEngine.Abstraction.IBitmap _filteredBitmap = null, _nodataFilteredBitmap = null;
 
             try
             {
@@ -76,8 +76,14 @@ namespace gView.Framework.Cartography.LayerRenderers
                     {
                         _filteredBitmap = BaseFilter.ApplyFilter(paintContext.Bitmap, _filter);
                     }
-
-                    if (paintContext?.Bitmap == null && _filteredBitmap == null)
+                    if (_transColor.ToArgb() != System.Drawing.Color.Transparent.ToArgb())
+                    {
+                        _nodataFilteredBitmap = BaseFilter.ApplyEraseColorFilter(
+                            _filteredBitmap ?? paintContext.Bitmap, _transColor);
+                    }
+                    
+                    if (paintContext?.Bitmap == null 
+                        && _filteredBitmap == null)
                     {
                         return;
                     }
@@ -181,38 +187,39 @@ namespace gView.Framework.Cartography.LayerRenderers
                         points[2] = new GraphicsEngine.CanvasPointF(ToPixelFloat(X), ToPixelFloat(Y));
                     }
 
-                    if (_transColor.ToArgb() != System.Drawing.Color.Transparent.ToArgb())
-                    {
-                        try
-                        {
-                            // kann OutOfMemoryException auslösen...
-                            paintContext.Bitmap.MakeTransparent(_transColor);
-                        }
-                        catch (Exception ex)
-                        {
-                            if (_map is IServiceMap && ((IServiceMap)_map).MapServer != null)
-                            {
-                                await ((IServiceMap)_map).MapServer.LogAsync(
-                                    ((IServiceMap)_map).Name,
-                                    "RenderRasterLayerThread: " + (_layer != null ? _layer.Title : string.Empty),
-                                    loggingMethod.error,
-                                    ex.Message + "\n" + ex.Source + "\n" + ex.StackTrace);
-                            }
-                            if (_map != null)
-                            {
-                                if (_map != null)
-                                {
-                                    _map.AddRequestException(new Exception("RenderRasterLayerThread: " + (_layer != null ? _layer.Title : string.Empty) + "\n" + ex.Message, ex));
-                                }
-                            }
-                        }
-                    }
+                    //if (_transColor.ToArgb() != System.Drawing.Color.Transparent.ToArgb())
+                    //{
+                    //    try
+                    //    {
+                    //        // kann OutOfMemoryException auslösen...
+                    //        paintContext.Bitmap.MakeTransparent(_transColor);
+                    //    }
+                    //    catch (Exception ex)
+                    //    {
+                    //        if (_map is IServiceMap && ((IServiceMap)_map).MapServer != null)
+                    //        {
+                    //            await ((IServiceMap)_map).MapServer.LogAsync(
+                    //                ((IServiceMap)_map).Name,
+                    //                "RenderRasterLayerThread: " + (_layer != null ? _layer.Title : string.Empty),
+                    //                loggingMethod.error,
+                    //                ex.Message + "\n" + ex.Source + "\n" + ex.StackTrace);
+                    //        }
+                    //        if (_map != null)
+                    //        {
+                    //            if (_map != null)
+                    //            {
+                    //                _map.AddRequestException(new Exception("RenderRasterLayerThread: " + (_layer != null ? _layer.Title : string.Empty) + "\n" + ex.Message, ex));
+                    //            }
+                    //        }
+                    //    }
+                    //}
 
                     //var comQual = gr.CompositingQuality;
                     //gr.CompositingQuality = System.Drawing.Drawing2D.CompositingQuality.HighQuality;
                     float opaque = 1.0f - _transparency;
 
-                    canvas.DrawBitmap(_filteredBitmap ?? paintContext.Bitmap,
+                    canvas.DrawBitmap(
+                                  _nodataFilteredBitmap ?? _filteredBitmap ?? paintContext.Bitmap,
                                   points,
                                   rect,
                                   opacity: opaque);
@@ -239,6 +246,10 @@ namespace gView.Framework.Cartography.LayerRenderers
             }
             finally
             {
+                if(_nodataFilteredBitmap != null)
+                {
+                    _nodataFilteredBitmap.Dispose();
+                }
                 if (_filteredBitmap != null)
                 {
                     _filteredBitmap.Dispose();

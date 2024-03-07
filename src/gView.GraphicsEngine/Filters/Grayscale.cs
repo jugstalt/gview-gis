@@ -27,6 +27,8 @@ namespace gView.GraphicsEngine.Filters
             //_formatTranslations[PixelFormat.Format64bppArgb] = PixelFormat.Format16bppGrayScale;
         }
 
+        public override bool ShouldApplied => true;
+
         public override Dictionary<PixelFormat, PixelFormat> FormatTranslations
         {
             get { return _formatTranslations; }

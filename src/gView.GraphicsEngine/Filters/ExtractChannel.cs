@@ -48,6 +48,8 @@ namespace gView.GraphicsEngine.Filters
             this.Channel = channel;
         }
 
+        public override bool ShouldApplied => true;
+
         protected override unsafe void ProcessFilter(BitmapPixelData sourceData, BitmapPixelData destinationData)
         {
             // get width and height

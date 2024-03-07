@@ -8,6 +8,11 @@ namespace gView.GraphicsEngine.Filters
     {
         public IBitmap Apply(IBitmap bitmap)
         {
+            if(!ShouldApplied)
+            {
+                return bitmap;
+            }
+
             var bmData = bitmap.LockBitmapPixelData(
                 BitmapLockMode.ReadWrite, bitmap.PixelFormat);
 
@@ -57,6 +62,8 @@ namespace gView.GraphicsEngine.Filters
 
             return dstImage;
         }
+
+        public abstract bool ShouldApplied { get; }
 
         public abstract Dictionary<PixelFormat, PixelFormat> FormatTranslations { get; }
 
@@ -127,6 +134,18 @@ namespace gView.GraphicsEngine.Filters
                     return ms.ToArray();
                 }
             }
+        }
+
+        static public IBitmap ApplyEraseColorFilter(IBitmap iBitmap, ArgbColor eraseColor, ArgbColor? transparentColor = null)
+        {
+            var filter = new EraseColorFilter(eraseColor, transparentColor);
+             
+            if(!filter.ShouldApplied)
+            {
+                return null;
+            }
+
+            return filter.Apply(iBitmap);
         }
 
         #endregion
