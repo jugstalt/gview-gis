@@ -218,6 +218,10 @@ namespace gView.GraphicsEngine.Skia
 
         public void MakeTransparent(ArgbColor color)
         {
+            using (var canvas = new SKCanvas(_bitmap))
+            {
+                //canvas.Clear(color.ToSKColor());
+            }
         }
 
         public void Save(string filename, ImageFormat format, int quality = 0)
