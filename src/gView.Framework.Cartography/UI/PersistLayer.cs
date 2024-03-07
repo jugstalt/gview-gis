@@ -44,6 +44,7 @@ internal class PersistLayer : IPersistableLoadAsync
 
         string webThemeId = string.Empty;
         string webClassName = string.Empty;
+
         if (isWebTheme && dataset != null)
         {
             webThemeId = (string)stream.Load("ID", "");
@@ -111,14 +112,15 @@ internal class PersistLayer : IPersistableLoadAsync
         }
 
         // für ein späters speichern des projektes die werte merken
-        if (_element is NullLayer)
+        if (_element is NullLayer nullLayer)
         {
-            ((NullLayer)_element).PersistLayerID = _id_;
-            ((NullLayer)_element).PersistDatasetID = datasetIndex;
-            ((NullLayer)_element).PersistIsWebTheme = isWebTheme;
-            ((NullLayer)_element).PersistWebThemeID = webThemeId;
-            ((NullLayer)_element).PersistClassName = webClassName;
-            ((NullLayer)_element).Title = name;
+            nullLayer.PersistLayerID = _id_;
+            nullLayer.PersistDatasetID = datasetIndex;
+            nullLayer.PersistIsWebTheme = isWebTheme;
+            nullLayer.PersistWebThemeID = webThemeId;
+            nullLayer.PersistClassName = webClassName;
+            nullLayer.Title = name;
+            nullLayer.LastErrorMessage = dataset.LastErrorMessage;
         }
 
         return true;
@@ -131,22 +133,20 @@ internal class PersistLayer : IPersistableLoadAsync
             return;
         }
 
-        if (_element is NullLayer)
+        if (_element is NullLayer nullLayer)
         {
-            NullLayer nLayer = (NullLayer)_element;
+            stream.Save("DatasetIndex", nullLayer.PersistDatasetID);
 
-            stream.Save("DatasetIndex", nLayer.PersistDatasetID);
-
-            if (nLayer.PersistIsWebTheme)
+            if (nullLayer.PersistIsWebTheme)
             {
-                stream.Save("ID", nLayer.PersistWebThemeID);
+                stream.Save("ID", nullLayer.PersistWebThemeID);
                 stream.Save("IsWebTheme", true);
-                stream.Save("ClassName", nLayer.PersistClassName);
+                stream.Save("ClassName", nullLayer.PersistClassName);
             }
             else
             {
-                stream.Save("_ID_", nLayer.PersistLayerID);
-                stream.Save("Name", nLayer.Title);
+                stream.Save("_ID_", nullLayer.PersistLayerID);
+                stream.Save("Name", nullLayer.Title);
             }
         }
         else

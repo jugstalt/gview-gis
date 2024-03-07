@@ -1,4 +1,5 @@
-﻿using gView.Framework.Core.Data;
+﻿using gView.Framework.Core.Common;
+using gView.Framework.Core.Data;
 using gView.Framework.Core.Geometry;
 using System.Linq;
 
@@ -30,6 +31,12 @@ static public class LayerExtensions
     static public bool IsFeatureLyer(this ILayer layer) => layer is IFeatureLayer;
 
     static public bool HasDataSource(this ILayer layer) => layer.DatasetID >= 0;
+
+    static public bool HasErrors(this ILayer layer)
+        => layer is IErrorMessage errorMessage && !string.IsNullOrEmpty(errorMessage.LastErrorMessage);
+
+    static public string ErrorMessage(this ILayer layer)
+        => (layer as IErrorMessage)?.LastErrorMessage ?? "";
 
     static public bool CanFeatureRender(this ILayer layer) => layer is IFeatureLayer;
     static public bool CanLabelRenderer(this ILayer layer) => layer is IFeatureLayer;
@@ -94,6 +101,12 @@ static public class LayerExtensions
             }
 
             #endregion
+        }
+
+        if(layer is IErrorMessage errorMessage
+           && clone is IErrorMessage clonedErrorMessage) 
+        {
+            clonedErrorMessage.LastErrorMessage = errorMessage.LastErrorMessage;
         }
 
         return clone;

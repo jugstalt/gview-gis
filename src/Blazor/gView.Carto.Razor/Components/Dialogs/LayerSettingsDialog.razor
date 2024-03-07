@@ -15,10 +15,17 @@
                            OpenMiniOnHover="true"
                            Fixed="false">
                     <MudList Clickable="true" @bind-SelectedValue="@_currentTab">
+
+                        @if (Model.Layer.HasErrors())
+                        {
+                            <MudListItem Icon="@IconService.FromString("basic:warning_red")" Style="white-space:nowrap"
+                                         Value="Page.Errors" Text="Errors"
+                                         OnClick="() => _drawerIsOpen = false" />
+                        }
+
                         <MudListItem Icon="@IconService.FromString("basic:settings")" Style="white-space:nowrap"
                                      Value="Page.General" Text="Map / Display"
                                      OnClick="() => _drawerIsOpen = false" />
-
 
                         @if(Model.Layer.CanFeatureRender())
                         {
@@ -172,6 +179,13 @@
                 else if(Page.WMS.Equals(_currentTab))
                 {
                     <WmsClassSettingsControl Class="Model.Layer.Class as gView.Interoperability.OGC.Dataset.WMS.WMSClass" />
+                } 
+                else if(Page.Errors.Equals(_currentTab))
+                {
+                    <MudText Typo="Typo.body1">Error Message:</MudText>
+                    <MudAlert Severity="Severity.Error">
+                        @Model.Layer.ErrorMessage()
+                    </MudAlert>
                 }
             </MudContainer>
         </DialogBody>
@@ -205,7 +219,8 @@
         CompositionMode,
         Raster,
         WebService,
-        WMS
+        WMS,
+        Errors
     }
     private bool _drawerIsOpen = false;
     private object _currentTab = Page.General;
@@ -215,6 +230,11 @@
     protected override void OnInitialized()
     {
         base.OnInitialized();
+
+        if(Model.Layer?.HasErrors() == true)
+        {
+            _currentTab = Page.Errors;
+        }
 
         _sRef = Model.Layer?.GetSpatialReference();
     }
