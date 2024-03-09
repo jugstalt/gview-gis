@@ -1,4 +1,5 @@
 @using gView.Framework.Db;
+@inherits BaseHandler
 
 @if (_commonDbConnections?.Providers != null)
 {
@@ -75,28 +76,35 @@
     }
 
     <br/>
-    <div class="mud-dialog-actions">
-            @if (_isBusy)
-            {
-                <MudProgressCircular Indeterminate="true" Size="MudBlazor.Size.Small" />
-            }
-            @if (!String.IsNullOrEmpty(_connectionSuccessMessage))
-            {
-                <MudAlert Severity="Severity.Success">@_connectionSuccessMessage</MudAlert>
-            }
-            @if (!String.IsNullOrEmpty(_connectionErrorMessage))
-            {
-                <MudAlert Severity="Severity.Error">@_connectionErrorMessage</MudAlert>
-            }
-            <MudButton Variant="Variant.Filled"
-                       Color="Color.Default"
-                       OnClick="TestConnection">
-                Test Connection
-            </MudButton>
-            <MudButton Variant="Variant.Filled"
-                       Color="Color.Primary"
-                       OnClick="SetConnection">Confirm</MudButton>
+    <div>
+        @if (!String.IsNullOrEmpty(_connectionSuccessMessage))
+        {
+            <MudAlert Severity="Severity.Success">@_connectionSuccessMessage</MudAlert>
+        }
+        @if (!String.IsNullOrEmpty(_connectionErrorMessage))
+        {
+            <MudAlert Severity="Severity.Error">@_connectionErrorMessage</MudAlert>
 
+        }
+    </div>
+    <br/>
+    <div class="mud-dialog-actions">
+        @if (_isBusy)
+        {
+            <MudProgressCircular Indeterminate="true" Size="MudBlazor.Size.Small" />
+        }
+            
+        <MudButton Variant="Variant.Filled"
+                    Color="Color.Default"
+                    OnClick="OnTestConnectionClick">
+            Test Connection
+        </MudButton>
+            
+        <MudButton Variant="Variant.Filled"
+                    Color="Color.Primary"
+                    OnClick="OnCreateConnectionClick">
+            Create Connection
+        </MudButton>
     </div>
 }
 
@@ -137,44 +145,19 @@
     }
 
     private bool _isBusy = false;
-    async private Task TestConnection()
+    private Task OnTestConnectionClick() => HandleAsync(async () => 
     {
-        _isBusy = true;
+        await TestConnection();
+    });
 
-        _connectionErrorMessage = _connectionSuccessMessage = string.Empty;
-        DataProvider dataProvider = new();
-        try
-        {
-            await Task.Delay(300);
-
-            if (dataProvider.Open(BuildDbConnectionString(useProvider: true).ConnectionString, true))
-            {
-                _connectionSuccessMessage = "Connection succeeded...";
-                dataProvider.Close();
-            }
-            else
-            {
-                _connectionErrorMessage = $"Error: {dataProvider.lastErrorMessage}";
-            }
-        }
-        catch (Exception ex)
-        {
-            _connectionErrorMessage = $"Exception: {ex.Message}";
-        }
-        finally
-        {
-            _isBusy = false;
-        }
-    }
-
-    async protected Task SetConnection()
+    protected Task OnCreateConnectionClick() => HandleAsync(async () =>
     {
-        BuildDbConnectionString(DbConnectionString);
-
-        //return base.Submit();
-         await OnSubmit.InvokeAsync();
-        
-    }
+        if (await TestConnection())
+        {
+            BuildDbConnectionString(DbConnectionString);
+            await OnSubmit.InvokeAsync();
+        }
+    });
 
     #region Helper
 
@@ -212,6 +195,37 @@
                 _ => InputType.Text
             };
 
+    async private Task<bool> TestConnection()
+    {
+        _isBusy = true;
+
+        _connectionErrorMessage = _connectionSuccessMessage = string.Empty;
+        DataProvider dataProvider = new();
+        try
+        {
+            await Task.Delay(300);
+
+            if (dataProvider.Open(BuildDbConnectionString(useProvider: true).ConnectionString, true))
+            {
+                _connectionSuccessMessage = "Connection succeeded...";
+                dataProvider.Close();
+            }
+            else
+            {
+                _connectionErrorMessage = $"Error: {dataProvider.lastErrorMessage}";
+            }
+        }
+        catch (Exception ex)
+        {
+            _connectionErrorMessage = $"Exception: {ex.Message}";
+        }
+        finally
+        {
+            _isBusy = false;
+        }
+
+        return String.IsNullOrEmpty(_connectionErrorMessage);
+    }
 
     #endregion
 }
