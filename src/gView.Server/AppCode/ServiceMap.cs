@@ -388,6 +388,7 @@ namespace gView.Server.AppCode
                     // Thread für MapServer Datasets starten...
 
                     #region WebServiceLayer
+
                     List<IWebServiceLayer> webServices;
                     if (this.TOC != null)
                     {
@@ -410,6 +411,7 @@ namespace gView.Server.AppCode
                         }
                     }
                     int webServiceOrder = 0, webServiceOrder2 = 1;
+
                     foreach (IWebServiceLayer element in webServices)
                     {
                         if (!element.Visible)
@@ -451,14 +453,12 @@ namespace gView.Server.AppCode
                             }
                         }
 
-
                         var srt = new RenderServiceRequest(this, wsLayer, webServiceOrder++);
                         srt.finish += new RenderServiceRequest.RequestThreadFinished(RenderWebServiceRequestFinished);
                         //Thread thread = new Thread(new ThreadStart(srt.ImageRequest));
                         m_imageMerger.max++;
                         //thread.Start();
                         var task = srt.ImageRequest(); // start Task and continue...
-
 
                         foreach (IWebServiceClass additionalWebService in additionalWebServices)
                         {
@@ -478,6 +478,7 @@ namespace gView.Server.AppCode
                             var additionalTask = srt.ImageRequest(); // start task and continue...
                         }
                     }
+
                     #endregion
 
                     List<ILayer> layers = new List<ILayer>();
@@ -488,6 +489,7 @@ namespace gView.Server.AppCode
                     else
                     {
                         layers = new List<ILayer>();
+
                         foreach (IDatasetElement layer in this.MapElements)
                         {
                             if (!(layer is ILayer))
@@ -511,6 +513,7 @@ namespace gView.Server.AppCode
                         // Eine zuweisung eines neuen Renderers ist jedoch legitim.
                         //
                         List<ILayer> modLayers = new List<ILayer>();
+
                         foreach (IDatasetElement element in layers)
                         {
                             if (!(element is ILayer) || element is IWebServiceTheme)

@@ -444,6 +444,7 @@ namespace gView.Framework.Metadata
         {
             if (propertyObject is PropertyObject)
             {
+                _doubleScales = null;
                 _properties = (PropertyObject)propertyObject;
             }
         }

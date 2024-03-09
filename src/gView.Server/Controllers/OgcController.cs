@@ -132,11 +132,11 @@ namespace gView.Server.Controllers
 
             #region Request
 
-            string requestString = cachetype + "/" + origin + "/" + epsg + "/" + style + "/~" + level + "/" + row + "/" + col;
+            string requestString = $"{cachetype}/{origin}/{epsg}/{style}/~{level}/{row}/{col}";
 
             ServiceRequest serviceRequest = new ServiceRequest(name, folder, requestString)
             {
-                OnlineResource = _mapServiceMananger.Options.OnlineResource + "/ogc/" + name,
+                OnlineResource = $"{_mapServiceMananger.Options.OnlineResource}/ogc/{name}",
                 OutputUrl = _mapServiceMananger.Options.OutputUrl,
                 Identity = identity
             };

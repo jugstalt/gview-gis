@@ -1,14 +1,14 @@
 ﻿using gView.Framework.Cartography;
+using gView.Framework.Common;
 using gView.Framework.Core.Carto;
+using gView.Framework.Core.Common;
 using gView.Framework.Core.Geometry;
 using gView.Framework.Core.MapServer;
-using gView.Framework.Core.Common;
 using gView.Framework.Data.TileCache;
 using gView.Framework.Geometry;
 using gView.Framework.Geometry.Tiling;
 using gView.Framework.IO;
 using gView.Framework.Metadata;
-using gView.Framework.Common;
 using gView.GraphicsEngine;
 using gView.GraphicsEngine.Abstraction;
 using gView.Interoperability.Server.TileService.Extensions;
@@ -527,17 +527,8 @@ namespace gView.Interoperability.Server.TileService
                             {
                                 canvas.InterpolationMode = InterpolationMode.NearestNeighbor;
                                 canvas.DrawBitmap(serviceMap.MapImage,
-                                    new CanvasRectangleF(0f, 0f, (float)bitmap.Width, (float)bitmap.Height),
-                                    new CanvasRectangleF(-0.5f + (float)(i * metadata.TileWidth), -0.5f + (float)(j * metadata.TileHeight), (float)metadata.TileWidth, (float)metadata.TileHeight));
-
-                                //for (int py = 0, to_py = bm.Height; py < to_py; py++)
-                                //{
-                                //    for (int px = 0, to_px = bm.Width; px < to_px; px++)
-                                //    {
-                                //        var pCol = map.MapImage.GetPixel(px + i * metadata.TileHeight, py + j * metadata.TileHeight);
-                                //        bm.SetPixel(px, py, pCol);
-                                //    }
-                                //}
+                                    new CanvasRectangleF(0f, 0f, bitmap.Width, bitmap.Height),
+                                    new CanvasRectangleF(-0.5f + i * metadata.TileWidth, -0.5f + j * metadata.TileHeight, metadata.TileWidth, metadata.TileHeight));
 
                                 if (IsEmptyBitmap(bitmap, serviceMap.Display.BackgroundColor))
                                 {
@@ -546,13 +537,6 @@ namespace gView.Interoperability.Server.TileService
 
                                 // Temp
                                 //bm.Save(pathTemp + @"\tile_" + tileRow + "_" + tileCol + ".png", ImageFormat.Png);
-
-                                //try
-                                //{
-                                //    if (format != ".jpg" && map.Display.BackgroundColor.A > 0)   // Make PNG Transparent
-                                //        bm.MakeTransparent(map.Display.BackgroundColor);
-                                //}
-                                //catch { }
 
                                 canvas.Flush();
                                 MemoryStream ms = new MemoryStream();
@@ -647,7 +631,7 @@ namespace gView.Interoperability.Server.TileService
                 using (var font = Current.Engine.CreateFont("Arial", 9f))
                 using (var redBrush = Current.Engine.CreateSolidBrush(ArgbColor.Red))
                 {
-                    canvas.DrawText(ex.Message, font, redBrush, new CanvasRectangleF(0f, 0f, (float)bitmap.Width, (float)bitmap.Height));
+                    canvas.DrawText(ex.Message, font, redBrush, new CanvasRectangleF(0f, 0f, bitmap.Width, bitmap.Height));
                     canvas.Flush();
 
                     MemoryStream ms = new MemoryStream();
@@ -845,6 +829,78 @@ namespace gView.Interoperability.Server.TileService
             return stdDev;
         }
 
+        public bool IsEmptyBitmap_old(IBitmap bitmap, ArgbColor backgroundColor)
+        {
+            BitmapPixelData bmData = null;
+            try
+            {
+                bmData = bitmap.LockBitmapPixelData(BitmapLockMode.ReadOnly, PixelFormat.Rgba32);
+
+                int stride = bmData.Stride;
+                IntPtr Scan0 = bmData.Scan0;
+
+                //int backgroundColorValue = ArgbColor.FromArgb(
+                //    backgroundColor.A,
+                //    backgroundColor.R,
+                //    backgroundColor.G,
+                //    backgroundColor.B).ToArgb();
+
+                byte bgA = backgroundColor.A;
+                byte bgR = backgroundColor.R;
+                byte bgG = backgroundColor.G;
+                byte bgB = backgroundColor.B;
+
+                unsafe
+                {
+                    byte* p = (byte*)(void*)Scan0;
+                    int nOffset = stride - bitmap.Width * 4;
+
+                    (int width, int height) = (bitmap.Width, bitmap.Height);
+
+                    for (int y = 0; y < height; ++y)
+                    {
+                        for (int x = 0; x < width; ++x)
+                        {
+                            byte blue = p[0];
+                            byte green = p[1];
+                            byte red = p[2];
+                            byte alpha = p[3];
+
+                            if (alpha != 0)  // Not transparent
+                            {
+                                if (alpha != bgA ||
+                                   red != bgR ||
+                                   green != bgG ||
+                                   blue != bgB)
+                                {
+                                    return false;
+                                }
+                                //int pixelValue = ArgbColor.FromArgb(alpha, red, green, blue).ToArgb();
+
+                                //if (!pixelValue.Equals(backgroundColorValue))
+                                //{
+                                //    return false;
+                                //}
+                            }
+                            p += 4;
+                        }
+
+                        p += nOffset;
+
+                    }
+
+                }
+            }
+            finally
+            {
+                if (bitmap != null && bmData != null)
+                {
+                    bitmap.UnlockBitmapPixelData(bmData);
+                }
+            }
+            return true;
+        }
+
         public bool IsEmptyBitmap(IBitmap bitmap, ArgbColor backgroundColor)
         {
             BitmapPixelData bmData = null;
@@ -855,46 +911,40 @@ namespace gView.Interoperability.Server.TileService
                 int stride = bmData.Stride;
                 IntPtr Scan0 = bmData.Scan0;
 
-                int backgroundColorValue = ArgbColor.FromArgb(
-                    backgroundColor.A,
-                    backgroundColor.R,
-                    backgroundColor.G,
-                    backgroundColor.B).ToArgb();
+                uint bgCol = (uint)(backgroundColor.B << 0)
+                    | (uint)(backgroundColor.G << 8)
+                    | (uint)(backgroundColor.R << 16)
+                    | (uint)(backgroundColor.A << 24);
 
                 unsafe
                 {
-                    byte* p = (byte*)(void*)Scan0;
+                    uint* p = (uint*)(void*)Scan0;
                     int nOffset = stride - bitmap.Width * 4;
 
-                    for (int y = 0; y < bitmap.Height; ++y)
+                    (int width, int height) = (bitmap.Width, bitmap.Height);
+
+                    for (int y = 0; y < height; ++y)
                     {
-
-                        for (int x = 0; x < bitmap.Width; ++x)
+                        for (int x = 0; x < width; ++x)
                         {
-                            byte blue = p[0];
-                            byte green = p[1];
-                            byte red = p[2];
-                            byte alpha = p[3];
+                            //byte blue = p[0];
+                            //byte green = p[1];
+                            //byte red = p[2];
+                            //byte alpha = p[3];
 
-                            if (alpha != 0)  // Not transparent
+                            uint col = *p;
+
+                            if ((col & 0xff000000) >> 24 != 0 // Not transparent
+                                && col != bgCol)
                             {
-                                int pixelValue = ArgbColor.FromArgb(alpha, red, green, blue).ToArgb();
-
-                                if (!pixelValue.Equals(backgroundColorValue))
-                                {
-                                    return false;
-                                }
+                                return false;
                             }
-                            p += 4;
+                            p += 1;
                         }
 
                         p += nOffset;
-
                     }
-
                 }
-
-
             }
             finally
             {
