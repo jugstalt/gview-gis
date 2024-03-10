@@ -85,15 +85,15 @@
                     <MudList Clickable="true"
                              Style="width:900px;max-width:100%;height:420px;overflow:auto" 
                              Dense="true">
-                        @if (_selectedRoot?.ParentExplorerObject is not null)
-                        {
-                            <MudListItem @ondblclick="MoveUp">
-                                <div style="display: flex; align-items: center;">
-                                    <MudIcon Icon="@Icons.FromString("basic:triangle-left-up")" Style="margin-right: 6px;" />
-                                    <MudText>..</MudText>
-                                </div>
-                            </MudListItem>
-                        }
+                    @if (_selectedRoot?.ParentExplorerObject is not null)
+                    {
+                        <MudListItem @ondblclick="MoveUp">
+                            <div style="display: flex; align-items: center;">
+                                <MudIcon Icon="@Icons.FromString("basic:triangle-left-up")" Style="margin-right: 6px;" />
+                                <MudText>..</MudText>
+                            </div>
+                        </MudListItem>
+                    }
                     @foreach (var exObject in FilteredCurrentExplorerObjects())
                         {
                             <MudListItem Class="@($"explorer-dialog-item {(Model.Result.ExplorerObjects.Contains(exObject) ? "selected" : "")}")"
@@ -202,6 +202,8 @@
 
     private Task OnListItemDoubleClick(IExplorerObject exObject) => HandleAsync (async () =>
     {
+        _filterString = "";
+
         if (exObject is IExplorerParentObject)
         {
             await SetRootElementAsync(exObject);
@@ -277,6 +279,8 @@
 
     private Task MoveUp() => HandleAsync(async () =>
     {
+        _filterString = "";
+
         if (_selectedRoot?.ParentExplorerObject is not null)
         {
             await SetRootElementAsync(_selectedRoot.ParentExplorerObject);
@@ -363,6 +367,7 @@
 
     private Task SetRootElementAsync(IExplorerObject rootElement)
     {
+        _filterString = "";
         _selectedRoot = rootElement;
         return CollectExplorerObjectsAsync();
     }
