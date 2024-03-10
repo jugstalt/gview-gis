@@ -1,11 +1,12 @@
-﻿using gView.Framework.Core.Geometry;
+﻿using gView.Framework.Common.Json.Converters;
+using gView.Framework.Core.Geometry;
 using gView.Framework.Geometry;
-using gView.Framework.Geometry.GeoProcessing.Clipper;
 using gView.Interoperability.GeoServices.Request.Extensions;
 using gView.Interoperability.GeoServices.Rest.Json.Features.Geometry;
+using JsonPlayground.Extensions;
+using JsonPlayground.Models;
 using Newtonsoft.Json;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 
 namespace JsonPlayground;
 
@@ -45,7 +46,7 @@ internal class JsonGeometryPlayground
         var mPointJsonString = Serialize(mPoint);
         var polylineJsonString = Serialize(polyline);
         var mPolylineJsonString = Serialize(mPolyline);
-        var polygonJsonString = Serialize(polygon); 
+        var polygonJsonString = Serialize(polygon);
         var mPolygonJsonString = Serialize(mPolygon);
 
         Deserialize(pointJsonString);
@@ -56,17 +57,18 @@ internal class JsonGeometryPlayground
         Deserialize(mPolygonJsonString);
     }
 
-    static private string Serialize(IGeometry geometry) 
-        => Serialize(geometry.ToJsonGeometry());
+    static private string Serialize(IGeometry geometry)
+        => Serialize(geometry.ToNJsonGeometry()!, geometry.ToJsonGeometry());
 
-    static private string Serialize(JsonGeometry jsonGeometry)
+
+    static private string Serialize(NJsonGeometry nJsonGeometry, JsonGeometry jsonGeometry)
     {
         string jsonString1 = "", jsonString2 = "";
         try
         {
-            jsonString1 = JsonConvert.SerializeObject(jsonGeometry);
+            jsonString1 = JsonConvert.SerializeObject(nJsonGeometry);
         }
-        catch(Exception ex) { jsonString1 = ex.Message; }
+        catch (Exception ex) { jsonString1 = ex.Message; }
 
         try
         {

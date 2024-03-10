@@ -1,12 +1,13 @@
 ﻿using gView.Framework.Cartography;
+using gView.Framework.Common;
+using gView.Framework.Common.Reflection;
 using gView.Framework.Core.Carto;
+using gView.Framework.Core.Common;
 using gView.Framework.Core.Data;
 using gView.Framework.Core.Exceptions;
 using gView.Framework.Core.Geometry;
 using gView.Framework.Core.MapServer;
-using gView.Framework.Core.Common;
 using gView.Framework.Data;
-using gView.Framework.Common;
 using gView.Interoperability.GeoServices.Request;
 using gView.Interoperability.GeoServices.Rest.Json;
 using gView.Interoperability.GeoServices.Rest.Json.Features;
@@ -30,9 +31,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using static gView.Interoperability.GeoServices.Rest.Json.JsonServices;
-using gView.Framework.Common.Reflection;
 
 namespace gView.Server.Controllers
 {
@@ -290,7 +292,7 @@ namespace gView.Server.Controllers
             JsonExportMap exportMap = Deserialize<JsonExportMap>(
                 Request.HasFormContentType ?
                 Request.Form :
-                (IEnumerable<KeyValuePair<string, StringValues>>)Request.Query);
+                Request.Query);
 
             ServiceRequest serviceRequest = new ServiceRequest(id, folder, JsonConvert.SerializeObject(exportMap))
             {
@@ -352,7 +354,7 @@ namespace gView.Server.Controllers
                 JsonQueryLayer queryLayer = Deserialize<JsonQueryLayer>(
                     Request.HasFormContentType ?
                     Request.Form :
-                    (IEnumerable<KeyValuePair<string, StringValues>>)Request.Query);
+                    Request.Query);
                 queryLayer.LayerId = layerId;
 
                 ServiceRequest serviceRequest = new ServiceRequest(id, folder, JsonConvert.SerializeObject(queryLayer))
@@ -437,7 +439,7 @@ namespace gView.Server.Controllers
                 JsonIdentify identify = Deserialize<JsonIdentify>(
                     Request.HasFormContentType ?
                     Request.Form :
-                    (IEnumerable<KeyValuePair<string, StringValues>>)Request.Query);
+                    Request.Query);
 
                 ServiceRequest serviceRequest = new ServiceRequest(id, folder, JsonConvert.SerializeObject(identify))
                 {
@@ -486,7 +488,7 @@ namespace gView.Server.Controllers
 
         #region WmsServer 
 
-        public Task<IActionResult> WmsServer(string id, string folder = "") 
+        public Task<IActionResult> WmsServer(string id, string folder = "")
             => SecureMethodHandler(async (identity) =>
         {
             try
@@ -676,7 +678,7 @@ namespace gView.Server.Controllers
                 JsonQueryLayer queryLayer = Deserialize<JsonQueryLayer>(
                     Request.HasFormContentType ?
                     Request.Form :
-                    (IEnumerable<KeyValuePair<string, StringValues>>)Request.Query);
+                    Request.Query);
                 queryLayer.LayerId = layerId;
 
                 ServiceRequest serviceRequest = new ServiceRequest(id, folder, JsonConvert.SerializeObject(queryLayer))
@@ -728,7 +730,7 @@ namespace gView.Server.Controllers
                 JsonFeatureServerUpdateRequest editRequest = Deserialize<JsonFeatureServerUpdateRequest>(
                     Request.HasFormContentType ?
                     Request.Form :
-                    (IEnumerable<KeyValuePair<string, StringValues>>)Request.Query);
+                    Request.Query);
                 editRequest.LayerId = layerId;
 
                 ServiceRequest serviceRequest = new ServiceRequest(id, folder, JsonConvert.SerializeObject(editRequest))
@@ -791,7 +793,7 @@ namespace gView.Server.Controllers
                 JsonFeatureServerUpdateRequest editRequest = Deserialize<JsonFeatureServerUpdateRequest>(
                     Request.HasFormContentType ?
                     Request.Form :
-                    (IEnumerable<KeyValuePair<string, StringValues>>)Request.Query);
+                    Request.Query);
                 editRequest.LayerId = layerId;
 
                 ServiceRequest serviceRequest = new ServiceRequest(id, folder, JsonConvert.SerializeObject(editRequest))
@@ -854,7 +856,7 @@ namespace gView.Server.Controllers
                 JsonFeatureServerDeleteRequest editRequest = Deserialize<JsonFeatureServerDeleteRequest>(
                     Request.HasFormContentType ?
                     Request.Form :
-                    (IEnumerable<KeyValuePair<string, StringValues>>)Request.Query);
+                    Request.Query);
                 editRequest.LayerId = layerId;
 
                 ServiceRequest serviceRequest = new ServiceRequest(id, folder, JsonConvert.SerializeObject(editRequest))
@@ -1015,9 +1017,9 @@ namespace gView.Server.Controllers
                 var groupLayer = (GroupLayer)datasetElement;
                 string type = "Group Layer";
                 var childLayers = groupLayer.ChildLayer != null ?
-                        groupLayer.ChildLayer.Where(l => map.TOC.GetTOCElement(l as ILayer) != null).Select(l =>
+                        groupLayer.ChildLayer.Where(l => map.TOC.GetTOCElement(l) != null).Select(l =>
                         {
-                            var childTocElement = map.TOC.GetTOCElement(l as ILayer);
+                            var childTocElement = map.TOC.GetTOCElement(l);
 
                             return new JsonLayerLink()
                             {
@@ -1098,7 +1100,7 @@ namespace gView.Server.Controllers
                 if (datasetElement.Class is ITableClass)
                 {
                     fields = ((ITableClass)datasetElement.Class).Fields.ToEnumerable()
-                        .Where(f=> isJsonFeatureServiceLayer && f.name.EndsWith("()") ? false : true)  // FeatureServer => don't show functions line STArea, STLength, ... only supported with MapServer
+                        .Where(f => isJsonFeatureServiceLayer && f.name.EndsWith("()") ? false : true)  // FeatureServer => don't show functions line STArea, STLength, ... only supported with MapServer
                         .Select(f =>
                         {
                             if (isJsonFeatureServiceLayer)
@@ -1245,10 +1247,14 @@ namespace gView.Server.Controllers
             }
             else if (format == "pjson")
             {
-                return Json(obj, new Newtonsoft.Json.JsonSerializerSettings()
+                return Json(obj, new JsonSerializerOptions(JsonSerializerDefaults.Web)
                 {
-                    Formatting = Formatting.Indented
-                });
+                    WriteIndented = true
+                }.AddServerDefaults());
+                //return Json(obj, new Newtonsoft.Json.JsonSerializerSettings()
+                //{
+                //    Formatting = Formatting.Indented
+                //});
             }
             else if (IsRawResultFormat(format))
             {
@@ -1482,7 +1488,7 @@ namespace gView.Server.Controllers
                     continue;
                 }
 
-                var jsonPropertyAttribute = propertyInfo.GetCustomAttribute<JsonPropertyAttribute>();
+                var jsonPropertyAttribute = propertyInfo.GetCustomAttribute<JsonPropertyNameAttribute>();
                 if (jsonPropertyAttribute == null)
                 {
                     continue;
@@ -1703,7 +1709,7 @@ namespace gView.Server.Controllers
 
             foreach (var propertyInfo in obj.GetType().GetProperties())
             {
-                var jsonPropertyAttribute = propertyInfo.GetCustomAttribute<JsonPropertyAttribute>();
+                var jsonPropertyAttribute = propertyInfo.GetCustomAttribute<JsonPropertyNameAttribute>();
                 if (jsonPropertyAttribute == null)
                 {
                     continue;
@@ -1723,7 +1729,7 @@ namespace gView.Server.Controllers
                     sb.Append("<tr>");
                     sb.Append("<td>");
 
-                    if (jsonPropertyAttribute.PropertyName == "f")
+                    if (jsonPropertyAttribute.Name == "f")
                     {
                         hasFormatAttribute = true;
                     }
@@ -1736,28 +1742,28 @@ namespace gView.Server.Controllers
 
                     if (propertyInfo.PropertyType.Equals(typeof(bool)))
                     {
-                        sb.Append("<select name='" + jsonPropertyAttribute.PropertyName + "' style='min-width:auto;'><option value='false'>False</option><option value='true'>True</option></select>");
+                        sb.Append("<select name='" + jsonPropertyAttribute.Name + "' style='min-width:auto;'><option value='false'>False</option><option value='true'>True</option></select>");
                     }
                     else
                     {
                         switch (inputType)
                         {
                             case FormInputAttribute.InputTypes.TextBox:
-                                sb.Append("<textarea rows='3' name='" + jsonPropertyAttribute.PropertyName + "'>" + (propertyInfo.GetValue(obj)?.ToString() ?? String.Empty) + "</textarea>");
+                                sb.Append("<textarea rows='3' name='" + jsonPropertyAttribute.Name + "'>" + (propertyInfo.GetValue(obj)?.ToString() ?? String.Empty) + "</textarea>");
                                 break;
                             case FormInputAttribute.InputTypes.TextBox10:
-                                sb.Append("<textarea rows='10' name='" + jsonPropertyAttribute.PropertyName + "'>" + (propertyInfo.GetValue(obj)?.ToString() ?? String.Empty) + "</textarea>");
+                                sb.Append("<textarea rows='10' name='" + jsonPropertyAttribute.Name + "'>" + (propertyInfo.GetValue(obj)?.ToString() ?? String.Empty) + "</textarea>");
                                 break;
                             case FormInputAttribute.InputTypes.Hidden:
-                                sb.Append("<input type='hidden' name='" + jsonPropertyAttribute.PropertyName + "' value='" + (propertyInfo.GetValue(obj)?.ToString() ?? String.Empty) + "'>");
+                                sb.Append("<input type='hidden' name='" + jsonPropertyAttribute.Name + "' value='" + (propertyInfo.GetValue(obj)?.ToString() ?? String.Empty) + "'>");
                                 break;
                             case FormInputAttribute.InputTypes.Password:
-                                sb.Append("<input name='" + jsonPropertyAttribute.PropertyName + "' type='password' value='" + (propertyInfo.GetValue(obj)?.ToString() ?? String.Empty) + "'>");
+                                sb.Append("<input name='" + jsonPropertyAttribute.Name + "' type='password' value='" + (propertyInfo.GetValue(obj)?.ToString() ?? String.Empty) + "'>");
                                 break;
                             default:
                                 if (inputAttribute?.Values != null && inputAttribute.Values.Count() > 0)
                                 {
-                                    sb.Append("<select name='" + jsonPropertyAttribute.PropertyName + "' style='min-width:auto;'>");
+                                    sb.Append("<select name='" + jsonPropertyAttribute.Name + "' style='min-width:auto;'>");
                                     foreach (var val in inputAttribute.Values)
                                     {
                                         sb.Append("<option value='" + val + "'>" + val + "</option>");
@@ -1766,7 +1772,7 @@ namespace gView.Server.Controllers
                                 }
                                 else
                                 {
-                                    sb.Append("<input name='" + jsonPropertyAttribute.PropertyName + "' value='" + (propertyInfo.GetValue(obj)?.ToString() ?? String.Empty) + "'>");
+                                    sb.Append("<input name='" + jsonPropertyAttribute.Name + "' value='" + (propertyInfo.GetValue(obj)?.ToString() ?? String.Empty) + "'>");
                                 }
                                 break;
                         }
@@ -1818,13 +1824,13 @@ namespace gView.Server.Controllers
                     continue;
                 }
 
-                var jsonPropertyAttribute = propertyInfo.GetCustomAttribute<JsonPropertyAttribute>();
+                var jsonPropertyAttribute = propertyInfo.GetCustomAttribute<JsonPropertyNameAttribute>();
                 if (jsonPropertyAttribute == null)
                 {
                     continue;
                 }
 
-                string key = jsonPropertyAttribute.PropertyName ?? propertyInfo.Name;
+                string key = jsonPropertyAttribute.Name ?? propertyInfo.Name;
                 var keyValuePair = nv.Where(k => key.Equals(k.Key, StringComparison.InvariantCultureIgnoreCase)).FirstOrDefault();
                 if (keyValuePair.Key == null)
                 {
@@ -1871,9 +1877,9 @@ namespace gView.Server.Controllers
                             propertyInfo.SetValue(instance, Convert.ToInt64(val));
                         }
                     }
-                    else if(propertyInfo.PropertyType == typeof(bool))
+                    else if (propertyInfo.PropertyType == typeof(bool))
                     {
-                        if(!String.IsNullOrWhiteSpace(val)) 
+                        if (!String.IsNullOrWhiteSpace(val))
                         {
                             propertyInfo.SetValue(instance, Convert.ToBoolean(val));
                         }

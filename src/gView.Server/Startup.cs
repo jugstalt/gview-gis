@@ -1,5 +1,6 @@
-﻿using gView.Framework.Core.Common;
-using gView.Framework.Common;
+﻿using gView.Framework.Common;
+using gView.Framework.Core.Common;
+using gView.Framework.IO;
 using gView.Server.AppCode;
 using gView.Server.AppCode.Configuration;
 using gView.Server.Extensions;
@@ -13,9 +14,7 @@ using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Newtonsoft.Json;
 using System;
-using gView.Framework.IO;
 
 namespace gView.Server
 {
@@ -27,8 +26,8 @@ namespace gView.Server
             Environment = environment;
 
             SystemInfo.RegisterGdal1_10_PluginEnvironment();
-            SystemVariables.UseDiagnostic = 
-            ContextVariables.UseMetrics =    
+            SystemVariables.UseDiagnostic =
+            ContextVariables.UseMetrics =
                 "true".Equals(Configuration["diagnostics"], StringComparison.OrdinalIgnoreCase);
 
             #region Graphics Engine
@@ -111,7 +110,13 @@ namespace gView.Server
                 {
                     o.EnableEndpointRouting = false;
                 })
-                .AddNewtonsoftJson(opt => opt.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore);
+                // System.Text.Json
+                .AddJsonOptions(options =>
+                {
+                    options.JsonSerializerOptions.AddServerDefaults();
+                });
+                // Newtonsoft Json
+                //.AddNewtonsoftJson(options => options.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore);
 
             services.AddMapServerService(
                 config =>
