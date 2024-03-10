@@ -5,17 +5,29 @@ using System.Linq;
 namespace gView.Blazor.Models.Table;
 public class TableItem : ContentItem
 {
-    private readonly string[] _columns;
+    private readonly List<string> _columns;
     private List<RowItem> _rows;
 
     public TableItem(IEnumerable<string> columns)
     {
-        _columns = columns.ToArray();
+        _columns = new List<string>(columns);
         _rows = new List<RowItem>();
     }
 
-    public string[] Columns => _columns;
+    public string[] Columns => _columns.ToArray();
     public IEnumerable<RowItem> Rows => _rows;
+
+    public bool TryAddColumn(string column)
+    {
+        if(!_columns.Contains(column))
+        {
+            _columns.Add(column);
+            
+            return true;
+        }
+
+        return false;
+    }
 
     public RowItem AddRow()
     {

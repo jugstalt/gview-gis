@@ -246,6 +246,9 @@
     }
 }
 
+.gview-explorer-content-filter .mud-input {
+    margin-top: 0px !important;
+}
 
 /* Icons */
 .sketchpen-icon-basic-bg-light-24 {

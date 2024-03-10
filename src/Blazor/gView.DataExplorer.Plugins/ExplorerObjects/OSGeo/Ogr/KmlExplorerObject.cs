@@ -1,10 +1,10 @@
 ﻿using gView.DataExplorer.Plugins.ExplorerObjects.Base;
+using gView.DataExplorer.Plugins.ExplorerObjects.Extensions;
 using gView.DataSources.OGR;
-using gView.Framework.Core.Data;
 using gView.Framework.Core.Common;
+using gView.Framework.Core.Data;
 using gView.Framework.DataExplorer.Abstraction;
 using gView.Framework.DataExplorer.Events;
-using gView.Framework.Common;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
@@ -14,6 +14,7 @@ namespace gView.DataExplorer.Plugins.ExplorerObjects.OSGeo.Ogr;
 [RegisterPlugIn("6D0126BD-144B-42CA-96BE-ED0C4BCD18D8")]
 public class KmlExplorerObject : ExplorerParentObject<IExplorerObject>,
                                  IExplorerFileObject,
+                                 IExplorerObjectCustomContentValues,
                                  ISerializableExplorerObject,
                                  IExplorerObjectDeletable,
                                  IPlugInDependencies
@@ -149,6 +150,13 @@ public class KmlExplorerObject : ExplorerParentObject<IExplorerObject>,
             throw;
         }
     }
+
+    #endregion
+
+    #region IExplorerObjectCustomContentValues
+
+    public IDictionary<string, object?> GetCustomContentValues()
+        => _filename.GetFileProperties();
 
     #endregion
 

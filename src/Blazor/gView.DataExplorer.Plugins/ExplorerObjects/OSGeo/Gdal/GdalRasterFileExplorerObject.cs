@@ -1,18 +1,20 @@
 ﻿using gView.DataExplorer.Plugins.ExplorerObjects.Base;
+using gView.DataExplorer.Plugins.ExplorerObjects.Extensions;
 using gView.DataSources.GDAL;
-using gView.Framework.Core.Data;
 using gView.Framework.Core.Common;
+using gView.Framework.Core.Data;
 using gView.Framework.DataExplorer.Abstraction;
-using gView.Framework.Common;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 
 namespace gView.DataExplorer.Plugins.ExplorerObjects.OSGeo.Gdal;
 
 [RegisterPlugIn("BCBE95C6-95C5-432c-8045-918A8B17D270")]
-public class GDALRasterFileExplorerObject : 
-            ExplorerObjectCls<IExplorerObject, RasterClassV1>, 
-            IExplorerFileObject, 
+public class GDALRasterFileExplorerObject :
+            ExplorerObjectCls<IExplorerObject, RasterClassV1>,
+            IExplorerFileObject,
+            IExplorerObjectCustomContentValues,
             IPlugInDependencies
 {
     private string _filename = "";
@@ -33,6 +35,13 @@ public class GDALRasterFileExplorerObject :
     }
 
     public string Icon => "webgis:georef-image";
+
+    #endregion
+
+    #region IExplorerObjectCustomContentValues
+
+    public IDictionary<string, object?> GetCustomContentValues()
+        => _filename.GetFileProperties();
 
     #endregion
 
@@ -72,7 +81,7 @@ public class GDALRasterFileExplorerObject :
             try
             {
                 Dataset dataset = new Dataset();
-                IRasterLayer layer = (IRasterLayer)dataset.AddRasterFile(_filename);
+                IRasterLayer layer = dataset.AddRasterFile(_filename);
 
                 if (layer != null && layer.Class is IRasterClass)
                 {

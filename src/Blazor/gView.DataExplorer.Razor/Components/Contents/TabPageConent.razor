@@ -6,8 +6,26 @@
 
 @if (table != null)
 {
-    <MudTable Items="@table.Rows" Hover="true" Dense="true"
+    <MudTable Items="@table.Rows" 
+              Hover="true" 
+              Dense="true" 
+              Filter="FilterFunc"
               T="RowItem">
+        <ToolBarContent>
+            <MudText Typo="Typo.h6">@CurrentExplorerObject?.Name</MudText>
+            <MudSpacer />
+            <MudTextField @bind-Value="_filterString"
+                          Placeholder="Filter..."
+                          Adornment="Adornment.Start"
+                          AdornmentIcon="@MudBlazor.Icons.Material.Filled.Search"
+                          IconSize="MudBlazor.Size.Medium" Class="mt-0 gview-explorer-content-filter">
+            </MudTextField>
+            @if (!String.IsNullOrEmpty(_filterString))
+            {
+                <MudIconButton Icon="@MudBlazor.Icons.Material.Outlined.Close"
+                               OnClick="() => _filterString=string.Empty" />
+            }
+        </ToolBarContent>
         <HeaderContent>
             @foreach(var column in table.Columns) 
             {
@@ -43,6 +61,8 @@
 
     private IEnumerable<IExplorerObject>? selectedExplorerObjects = null;
     private TableItem? table;
+
+    private string _filterString = "";
 
     protected override void OnInitialized()
     {
@@ -134,6 +154,44 @@
             }
         }
     });
+
+    private bool FilterFunc(RowItem row)
+    {
+        if (table is null || string.IsNullOrWhiteSpace(_filterString))
+        {
+            return true;
+        }
+
+        var searchStringWords = _filterString
+                                    .Split(' ')
+                                    .Where(s => !string.IsNullOrWhiteSpace(s))
+                                    .ToArray();
+
+        foreach (var searchStringWord in searchStringWords)
+        {
+            bool found = false;
+
+            foreach (var column in table.Columns)
+            {
+                var val = row[column];
+
+                found = val switch
+                {
+                    string str => str.Contains(searchStringWord, StringComparison.OrdinalIgnoreCase),
+                    _ => val?.ToString() == searchStringWord
+                };
+
+                if (found) { break; }
+            }
+
+            if (!found)
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
 
     public void Dispose()
     {

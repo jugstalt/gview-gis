@@ -1,5 +1,6 @@
 ﻿using gView.Blazor.Core.Exceptions;
 using gView.DataExplorer.Plugins.ExplorerObjects.Base;
+using gView.DataExplorer.Plugins.ExplorerObjects.Extensions;
 using gView.DataExplorer.Plugins.ExplorerObjects.FileSystem;
 using gView.DataExplorer.Razor.Components.Dialogs.Models;
 using gView.DataSources.Fdb.SQLite;
@@ -17,6 +18,7 @@ namespace gView.DataExplorer.Plugins.ExplorerObjects.Fdb.SqLite;
 [RegisterPlugIn("A4F900EC-C5E4-4518-BAB9-213AF660E8F1")]
 internal class SqLiteFdbExplorerObject : ExplorerParentObject<IExplorerObject>,
                                          IExplorerFileObject,
+                                         IExplorerObjectCustomContentValues,
                                          IExplorerObjectCommandParameters,
                                          ISerializableExplorerObject,
                                          IExplorerObjectDeletable,
@@ -98,6 +100,13 @@ internal class SqLiteFdbExplorerObject : ExplorerParentObject<IExplorerObject>,
 
         return new SqLiteFdbExplorerObject(parent, filename);
     }
+    #endregion
+
+    #region IExplorerObjectCustomContentValues
+
+    public IDictionary<string, object?> GetCustomContentValues()
+        => _filename.GetFileProperties();
+
     #endregion
 
     async private Task<string[]> DatasetNames()

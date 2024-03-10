@@ -1,10 +1,12 @@
 ﻿using gView.Blazor.Core.Exceptions;
 using gView.DataExplorer.Plugins.ExplorerObjects.Base;
+using gView.DataExplorer.Plugins.ExplorerObjects.Extensions;
 using gView.DataSources.OGR;
 using gView.Framework.Core.Data;
 using gView.Framework.Core.Geometry;
 using gView.Framework.DataExplorer.Abstraction;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 
@@ -12,6 +14,7 @@ namespace gView.DataExplorer.Plugins.ExplorerObjects.OSGeo.Ogr;
 
 public class OGRFeatureClassExplorerObject : ExplorerObjectCls<IExplorerObject, IFeatureClass>,
                                              IExplorerFileObject,
+                                             IExplorerObjectCustomContentValues,
                                              ISerializableExplorerObject
 {
     private string _filename = "", _type = "", _icon = "";
@@ -87,6 +90,13 @@ public class OGRFeatureClassExplorerObject : ExplorerObjectCls<IExplorerObject, 
     {
         return Task.FromResult<IExplorerFileObject?>(new OGRFeatureClassExplorerObject(parent, filename));
     }
+
+    #endregion
+
+    #region IExplorerObjectCustomContentValues
+
+    public IDictionary<string, object?> GetCustomContentValues()
+        => _filename.GetFileProperties();
 
     #endregion
 

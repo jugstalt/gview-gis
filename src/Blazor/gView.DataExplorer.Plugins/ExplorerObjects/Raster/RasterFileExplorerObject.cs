@@ -5,13 +5,16 @@ using gView.Framework.Core.Common;
 using gView.Framework.DataExplorer.Abstraction;
 using System.IO;
 using System.Threading.Tasks;
+using System.Collections.Generic;
+using gView.DataExplorer.Plugins.ExplorerObjects.Extensions;
 
 namespace gView.DataExplorer.Plugins.ExplorerObjects.Raster;
 
 [RegisterPlugIn("6F0051F0-F3C7-4eee-BE4B-45340F684FAA")]
 public class RasterFileExplorerObject :
                     ExplorerObjectCls<IExplorerObject, IRasterClass>,
-                    IExplorerFileObject
+                    IExplorerFileObject,
+                    IExplorerObjectCustomContentValues
 {
     private string _filename = "";
     private IRasterClass? _class = null;
@@ -117,6 +120,13 @@ public class RasterFileExplorerObject :
 
         return Task.FromResult<IExplorerFileObject?>(new RasterFileExplorerObject(parent, filename));
     }
+    #endregion
+
+    #region IExplorerObjectCustomContentValues
+
+    public IDictionary<string, object?> GetCustomContentValues()
+        => _filename.GetFileProperties();
+
     #endregion
 
     #region ISerializableExplorerObject Member

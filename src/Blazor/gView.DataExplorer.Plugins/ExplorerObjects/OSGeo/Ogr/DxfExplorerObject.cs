@@ -1,4 +1,5 @@
 ﻿using gView.DataExplorer.Plugins.ExplorerObjects.Base;
+using gView.DataExplorer.Plugins.ExplorerObjects.Extensions;
 using gView.DataSources.OGR;
 using gView.Framework.Core.Common;
 using gView.Framework.Core.Data;
@@ -13,6 +14,7 @@ namespace gView.DataExplorer.Plugins.ExplorerObjects.OSGeo.Ogr;
 [RegisterPlugIn("B15E022B-3ECC-45F9-8E36-E02946B12945")]
 public class DxfExplorerObject : ExplorerObjectCls<IExplorerObject, IFeatureClass>,
                                  IExplorerFileObject,
+                                 IExplorerObjectCustomContentValues,
                                  ISerializableExplorerObject,
                                  IExplorerObjectDeletable,
                                  IPlugInDependencies
@@ -80,6 +82,13 @@ public class DxfExplorerObject : ExplorerObjectCls<IExplorerObject, IFeatureClas
 
         return null;
     }
+
+    #endregion
+
+    #region IExplorerObjectCustomContentValues
+
+    public IDictionary<string, object?> GetCustomContentValues()
+        => _filename.GetFileProperties();
 
     #endregion
 

@@ -4,6 +4,7 @@ using gView.Blazor.Models.Table;
 using gView.Framework.Core.Common;
 using gView.Framework.DataExplorer.Abstraction;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -48,11 +49,21 @@ public class ContentTabPage : IExplorerTabPage
             {
                 foreach (var child in childs.OrderBy(c => c.Priority))
                 {
-                    table.AddRow()
+                    var row = table.AddRow()
                         .SetExplorerObject(child)
                         .AddData("Name", child.Name)
                         .AddData("Type", child.Type)
                         .SetIcon(child.Icon);
+
+                    if(child is IExplorerObjectCustomContentValues customValues)
+                    {
+                        var values = customValues.GetCustomContentValues();
+                        foreach(var value in values)
+                        {
+                            table.TryAddColumn(value.Key);
+                            row.AddData(value.Key, value.Value);
+                        }
+                    }
                 }
             }
         }
