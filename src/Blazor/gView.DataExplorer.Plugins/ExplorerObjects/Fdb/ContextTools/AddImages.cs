@@ -1,22 +1,17 @@
 ﻿using gView.Cmd.Core.Abstraction;
 using gView.Cmd.Fdb.Lib;
 using gView.Cmd.Fdb.Lib.Model;
-using gView.DataExplorer.Plugins.Extensions;
 using gView.DataExplorer.Razor.Components.Dialogs.Models;
 using gView.DataSources.Fdb.MSSql;
 using gView.DataSources.Fdb.PostgreSql;
 using gView.DataSources.Fdb.SQLite;
-using gView.DataSources.GDAL;
-using gView.DataSources.Raster.File;
 using gView.Framework.Blazor;
-using gView.Framework.Blazor.Services.Abstraction;
 using gView.Framework.Core.Data;
 using gView.Framework.DataExplorer.Abstraction;
 using gView.Framework.DataExplorer.Services.Abstraction;
-using System.Text.Json;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace gView.DataExplorer.Plugins.ExplorerObjects.Fdb.ContextTools;
@@ -69,18 +64,19 @@ internal class AddImages : IExplorerObjectContextTool
                         .Select(p => p.Format)));
                 }
 
-                parameters.Add("provider", JsonConvert.SerializeObject(
-                    model.Providers
-                        .Where(p => p.Selected)
-                        .OrderByDescending(p => p.Priority)
-                        .Select(p => new RasterProviderModel()
-                        {
-                            PluginGuid = p.PluginGuid,
-                            Format = p.Format
-                        })));
+                parameters.Add("provider", JsonSerializer.Serialize(
+                        model.Providers
+                            .Where(p => p.Selected)
+                            .OrderByDescending(p => p.Priority)
+                            .Select(p => new RasterProviderModel()
+                            {
+                                PluginGuid = p.PluginGuid,
+                                Format = p.Format
+                            })
+                    ));
             }
 
-            if(await scope.ShowKnownDialog(
+            if (await scope.ShowKnownDialog(
                     KnownDialogs.ExecuteCommand,
                     $"Add File",
                     new ExecuteCommandModel()

@@ -122,7 +122,7 @@ namespace gView.Cmd.FillLuceneServer
                 {
                     #region Fill Index (with Json File)
 
-                    var importConfig = JsonConvert.DeserializeObject<ImportConfig>(File.ReadAllText(jsonFile));
+                    var importConfig = JsonSerializer.Deserialize<ImportConfig>(File.ReadAllText(jsonFile));
 
                     if (importConfig?.Connection == null)
                     {
@@ -210,7 +210,7 @@ namespace gView.Cmd.FillLuceneServer
                                         Service = featureClassConfig?.Meta.Service,
                                         Query = featureClassConfig?.Meta.Query
                                     };
-                                    if (!await luceneServerClient.AddCustomMetadataAsync(metaId, JsonConvert.SerializeObject(meta)))
+                                    if (!await luceneServerClient.AddCustomMetadataAsync(metaId, JsonSerializer.Serialize(meta)))
                                     {
                                         throw new Exception($"Can't index meta item in elasticsearch index {importConfig.Connection.MetaIndex}");
                                     }

@@ -4,5 +4,6 @@ gView.GraphicsEngine.Current.Engine = new gView.GraphicsEngine.Skia.SkiaGraphics
 gView.GraphicsEngine.Current.Encoder = new gView.GraphicsEngine.Skia.SkiaBitmapEncoding();
 
 JsonGeometryPlayground.Do();
-JsonGeometryPlayground.DoRenderer();
-JsonGeometryPlayground.DoMapServerSettings();
+JsonRendererPolyground.Do();
+MapServerSettingsPlayground.Do();
+GeoJsonPolyground.Do();

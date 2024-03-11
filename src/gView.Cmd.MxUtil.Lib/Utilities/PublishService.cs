@@ -111,15 +111,15 @@ Optional arguments:
 
                             if (tokenResponseString.Contains("\"error\":"))
                             {
-                                JsonError error = JsonConvert.DeserializeObject<JsonError>(tokenResponseString)!;
+                                JsonError error = JsonSerializer.Deserialize<JsonError>(tokenResponseString)!;
                                 throw new Exception($"GetToken-Error: {error.Error?.Code}\n{error.Error?.Message}\n{error.Error?.Details}");
                             }
                             else
                             {
-                                JsonSecurityToken? jsonToken = JsonConvert.DeserializeObject<JsonSecurityToken>(tokenResponseString);
-                                if (jsonToken?.token != null)
+                                JsonSecurityToken? jsonToken = JsonSerializer.Deserialize<JsonSecurityToken>(tokenResponseString);
+                                if (jsonToken?.Token != null)
                                 {
-                                    accessToken = jsonToken.token;
+                                    accessToken = jsonToken.Token;
                                     logger?.LogLine($"Successfull requested access token ({client}): {accessToken.Substring(0, 5)}........");
                                 }
                             }
@@ -144,7 +144,7 @@ Optional arguments:
 
                     var response = await httpClient.PostAsync(url, requestContent);
 
-                    var mapServerResponse = JsonConvert.DeserializeObject<AdminMapServerResponse>(await response.Content.ReadAsStringAsync())!;
+                    var mapServerResponse = JsonSerializer.Deserialize<AdminMapServerResponse>(await response.Content.ReadAsStringAsync())!;
                     if (mapServerResponse.Success == false)
                     {
                         throw new Exception($"Error on publishing service:{Environment.NewLine}{mapServerResponse.Message}");

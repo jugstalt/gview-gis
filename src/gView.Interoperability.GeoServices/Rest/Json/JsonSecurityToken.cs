@@ -1,9 +1,16 @@
-﻿namespace gView.Interoperability.GeoServices.Rest.Json
+﻿using System.Text.Json.Serialization;
+
+namespace gView.Interoperability.GeoServices.Rest.Json
 {
     public class JsonSecurityToken : JsonStopWatch
     {
-        public string token { get; set; }
-        public long expires { get; set; }
-        public bool ssl => true;
+        [JsonPropertyName("token")]
+        public string Token { get; set; }
+
+        [JsonPropertyName("expires")]
+        public long Expires { get; set; }
+
+        [JsonPropertyName("ssl")]
+        public bool Ssl => true;
     }
 }

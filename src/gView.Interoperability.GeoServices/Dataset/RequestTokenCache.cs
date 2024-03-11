@@ -61,10 +61,10 @@ namespace gView.Interoperability.GeoServices.Dataset
                     else
                     {
                         JsonSecurityToken jsonToken = JsonSerializer.Deserialize<JsonSecurityToken>(tokenResponse);
-                        if (jsonToken.token != null)
+                        if (jsonToken.Token != null)
                         {
-                            _tokenParams.TryAdd(dictKey, jsonToken.token);
-                            return Task.FromResult(jsonToken.token);
+                            _tokenParams.TryAdd(dictKey, jsonToken.Token);
+                            return Task.FromResult(jsonToken.Token);
                         }
                     }
                 }

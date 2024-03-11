@@ -126,7 +126,7 @@ namespace gView.Cmd.FillElasticSearch
                 {
                     #region Fill Index (with Json File)
 
-                    var importConfig = JsonConvert.DeserializeObject<ImportConfig>(File.ReadAllText(jsonFile));
+                    var importConfig = JsonSerializer.Deserialize<ImportConfig>(File.ReadAllText(jsonFile));
 
                     var searchContext = new ElasticSearchContext(importConfig.Connection.Url,
                                                                  importConfig.Connection.DefaultIndex,

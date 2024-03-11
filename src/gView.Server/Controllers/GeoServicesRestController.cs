@@ -966,8 +966,8 @@ namespace gView.Server.Controllers
 
                     return Task.FromResult(Result(new JsonSecurityToken()
                     {
-                        token = _encryptionCertificate.ToToken(authToken),
-                        expires = Convert.ToInt64((new DateTime(authToken.Expire, DateTimeKind.Utc) - new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc)).TotalMilliseconds)
+                        Token = _encryptionCertificate.ToToken(authToken),
+                        Expires = Convert.ToInt64((new DateTime(authToken.Expire, DateTimeKind.Utc) - new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc)).TotalMilliseconds)
                     }));
                 }
                 else
