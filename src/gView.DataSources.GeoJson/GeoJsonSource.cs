@@ -4,11 +4,11 @@ using gView.Framework.Geometry;
 using gView.Framework.OGC.GeoJson;
 using gView.Framework.Web;
 using gView.Framework.Web.Authorization;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace gView.DataSources.GeoJson
@@ -66,7 +66,7 @@ namespace gView.DataSources.GeoJson
                     geoJsonString = System.IO.File.ReadAllText(_target);
                 }
 
-                var geoJson = JsonConvert.DeserializeObject<GeoJsonFeatures>(geoJsonString);
+                var geoJson = JsonSerializer.Deserialize<GeoJsonFeatures>(geoJsonString);
                 List<IFeature> features = new List<IFeature>();
 
                 foreach (var geoJsonFeature in geoJson.Features)

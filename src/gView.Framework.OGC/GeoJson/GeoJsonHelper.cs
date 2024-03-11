@@ -1,7 +1,7 @@
 ﻿using gView.Framework.Core.Data;
 using gView.Framework.Core.Data.Cursors;
 using gView.Framework.Core.Geometry;
-using Newtonsoft.Json;
+using System.Text.Json;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -100,7 +100,7 @@ namespace gView.Framework.OGC.GeoJson
 
                 FieldValue fv = feature.Fields[i];
                 //sb.Append($"\"" + fv.Name + "\":\"" + fv.Value.ToString() + "\"");
-                sb.Append($"\"{fv.Name}\":{JsonConvert.SerializeObject(fv.Value)}");
+                sb.Append($"\"{fv.Name}\":{JsonSerializer.Serialize(fv.Value)}");
             }
             sb.Append("}");
 

@@ -2,33 +2,41 @@
 using gView.Framework.Core.Carto;
 using gView.Framework.Core.Geometry;
 using gView.Framework.Core.Symbology;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System;
+using System.Text.Json;
+using System.Text.Json.Nodes;
+using System.Text.Json.Serialization;
 
 namespace gView.Interoperability.GeoServices.Rest.Json.DynamicLayers
 {
     public class LabelingInfo
     {
-        [JsonProperty("labelPlacement", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("labelPlacement")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public string LabelPlacement { get; set; }
 
-        [JsonProperty("labelExpression", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("labelExpression")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public string LabelExpression { get; set; }
 
-        [JsonProperty("useCodedValues", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("useCodedValues")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public bool? UseCodedValues { get; set; }
 
-        [JsonProperty("symbol", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("symbol")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public object Symbol { get; set; }
 
-        [JsonProperty("minScale", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("minScale")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public double? MinScale { get; set; }
 
-        [JsonProperty("maxScale", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("maxScale")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public double? MaxScale { get; set; }
 
-        [JsonProperty("where", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("where")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public string Where { get; set; }
 
         public static string DefaultLabelPlacement(GeometryType type)
@@ -57,7 +65,11 @@ namespace gView.Interoperability.GeoServices.Rest.Json.DynamicLayers
                 labelRenderer.UseExpression = true;
                 labelRenderer.LabelExpression = LabelExpression;
             }
-            labelRenderer.TextSymbol = Renderers.SimpleRenderers.JsonRenderer.FromSymbolJObject(Symbol as JObject) as ITextSymbol;
+            labelRenderer.TextSymbol = this.Symbol switch
+            {
+                JsonElement jsonElement => Renderers.SimpleRenderers.JsonRenderer.FromSymbolJObject(jsonElement) as ITextSymbol,
+                _ => null
+            };
 
             return labelRenderer;
         }

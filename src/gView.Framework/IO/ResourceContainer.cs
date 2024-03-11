@@ -1,9 +1,10 @@
 ﻿using gView.Framework.Core.IO;
-using Newtonsoft.Json;
+using System.Text.Json;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json.Serialization;
 
 namespace gView.Framework.IO
 {
@@ -56,7 +57,7 @@ namespace gView.Framework.IO
 
                 if (!String.IsNullOrEmpty(json))
                 {
-                    Dictionary<string, Resource> dict = JsonConvert.DeserializeObject<Dictionary<string, Resource>>(json);
+                    Dictionary<string, Resource> dict = JsonSerializer.Deserialize<Dictionary<string, Resource>>(json);
 
                     foreach (string key in dict.Keys)
                     {
@@ -71,7 +72,7 @@ namespace gView.Framework.IO
         {
             if (_resources.Count > 0)
             {
-                string json = JsonConvert.SerializeObject(_resources);
+                string json = JsonSerializer.Serialize(_resources);
 
                 stream.SaveEncrypted("data", json);
             }
@@ -93,10 +94,10 @@ namespace gView.Framework.IO
             this.Data = resource.Data;
         }
 
-        [JsonProperty("name")]
+        [JsonPropertyName("name")]
         public string Name { get; set; }
 
-        [JsonProperty("data")]
+        [JsonPropertyName("data")]
         public byte[] Data { get; set; }
     }
 }

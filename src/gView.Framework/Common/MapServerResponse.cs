@@ -1,26 +1,27 @@
-﻿using Newtonsoft.Json;
-using System;
+﻿using System;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace gView.Framework.Common
 {
     public class MapServerResponse
     {
-        [JsonProperty(PropertyName = "data")]
+        [JsonPropertyName("data")]
         public byte[] Data { get; set; }
 
-        [JsonProperty(PropertyName = "content-type")]
+        [JsonPropertyName("content-type")]
         public string ContentType { get; set; }
 
         public DateTime? Expires { get; set; }
 
         public override string ToString()
         {
-            return JsonConvert.SerializeObject(this);
+            return JsonSerializer.Serialize(this);
         }
 
         static public MapServerResponse FromString(string json)
         {
-            return JsonConvert.DeserializeObject<MapServerResponse>(json);
+            return JsonSerializer.Deserialize<MapServerResponse>(json);
         }
     }
 }

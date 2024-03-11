@@ -13,7 +13,7 @@ using gView.Framework.Blazor.Services.Abstraction;
 using gView.Framework.Core.Data;
 using gView.Framework.DataExplorer.Abstraction;
 using gView.Framework.DataExplorer.Services.Abstraction;
-using Newtonsoft.Json;
+using System.Text.Json;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;

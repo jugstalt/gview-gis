@@ -1,22 +1,22 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 
 namespace gView.Interoperability.GeoServices.Rest.Json.Renderers
 {
     public class Font
     {
-        [JsonProperty("family")]
+        [JsonPropertyName("family")]
         public string Family { get; set; }
 
-        [JsonProperty("size")]
+        [JsonPropertyName("size")]
         public float Size { get; set; }
 
-        [JsonProperty("style")]
+        [JsonPropertyName("style")]
         public string Style { get; set; }
 
-        [JsonProperty("weight")]
+        [JsonPropertyName("weight")]
         public string Weight { get; set; }
 
-        [JsonProperty("decoration")]
+        [JsonPropertyName("decoration")]
         public string Decoration { get; set; }
 
         //public static string FontStyle(SimpleLabelRenderer.LabelStyleEnum style)

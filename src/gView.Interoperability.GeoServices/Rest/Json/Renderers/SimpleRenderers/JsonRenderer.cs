@@ -3,9 +3,10 @@ using gView.Framework.Core.Carto;
 using gView.Framework.Core.Symbology;
 using gView.GraphicsEngine;
 using gView.Interoperability.GeoServices.Rest.Json.Renderers.OtherRenderers;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System.Linq;
+using System.Text.Json;
+using System.Text.Json.Nodes;
+using System.Text.Json.Serialization;
 
 namespace gView.Interoperability.GeoServices.Rest.Json.Renderers.SimpleRenderers
 {
@@ -15,48 +16,59 @@ namespace gView.Interoperability.GeoServices.Rest.Json.Renderers.SimpleRenderers
         {
         }
 
-        [JsonProperty("type", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("type")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public string Type { get; set; }
 
-        [JsonProperty("symbol", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("symbol")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public object Symbol { get; set; }
 
-        [JsonProperty("label", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("label")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public string Label { get; set; }
 
-        [JsonProperty("description", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("description")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public string Description { get; set; }
 
         #region UniqueValue Renderer
 
-        [JsonProperty(PropertyName = "field1", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("field1")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public string Field1 { get; set; }
-        [JsonProperty(PropertyName = "field2", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("field2")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public string Field2 { get; set; }
-        [JsonProperty(PropertyName = "field3", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("field3")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public string Field3 { get; set; }
 
-        [JsonProperty(PropertyName = "fieldDelimiter", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("fieldDelimiter")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public string FieldDelimiter { get; set; }
 
-        [JsonProperty(PropertyName = "defaultSymbol", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("defaultSymbol")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public object DefaultSymbol { get; set; }
 
-        [JsonProperty(PropertyName = "uniqueValueInfos", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("uniqueValueInfos")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public object[] UniqueValueInfos { get; set; }
 
         public class UniqueValueInfo
         {
-            [JsonProperty(PropertyName = "symbol", NullValueHandling = NullValueHandling.Ignore)]
+            [JsonPropertyName("symbol")]
+            [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
             public object Symbol { get; set; }
 
-            [JsonProperty("value")]
+            [JsonPropertyName("value")]
             public string Value { get; set; }
 
-            [JsonProperty("label")]
+            [JsonPropertyName("label")]
             public string Label { get; set; }
 
-            [JsonProperty("description")]
+            [JsonPropertyName("description")]
             public string Description { get; set; }
         }
 
@@ -230,7 +242,12 @@ namespace gView.Interoperability.GeoServices.Rest.Json.Renderers.SimpleRenderers
             if (jsonRenderer.Type?.ToLower() == "simple")
             {
                 var featureRenderer = new SimpleRenderer();
-                featureRenderer.Symbol = FromSymbolJObject(jsonRenderer.Symbol as JObject);
+
+                featureRenderer.Symbol = jsonRenderer.Symbol switch
+                {
+                    JsonElement jsonElement => FromSymbolJObject(jsonElement),
+                    _ => null
+                };
 
                 return featureRenderer;
             }
@@ -238,153 +255,156 @@ namespace gView.Interoperability.GeoServices.Rest.Json.Renderers.SimpleRenderers
             return null;
         }
 
-        static public ISymbol FromSymbolJObject(JObject jObject)
+        static public ISymbol FromSymbolJObject(JsonElement jElement)
         {
-            if (jObject == null)
+            if(!jElement.TryGetProperty("type", out var typeElement))
             {
                 return null;
             }
 
-            var type = jObject.GetValue("type").Value<string>();
-
-            if (type == "esriSMS")
+            try
             {
-                var sms = JsonConvert.DeserializeObject<SimpleMarkerSymbol>(jObject.ToString());
+                var type = typeElement.GetString();
 
-                var symbol = new Framework.Symbology.SimplePointSymbol();
-                symbol.Marker = sms.Style.ToMarkerType();
-                symbol.Color = sms.Color.ToColor();
-                symbol.Size = sms.Size;
-                symbol.Angle = sms.Angle;
-                symbol.HorizontalOffset = sms.Xoffset;
-                symbol.VerticalOffset = sms.Yoffset;
-
-                if (sms.Outline != null)
+                if (type == "esriSMS")
                 {
-                    symbol.OutlineColor = sms.Outline.Color.ToColor();
-                    symbol.OutlineWidth = sms.Outline.Width;
-                    symbol.SymbolSmoothingMode = SymbolSmoothing.AntiAlias;
-                }
+                    var sms = JsonSerializer.Deserialize<SimpleMarkerSymbol>(jElement.ToString());
 
-                return symbol;
-            }
+                    var symbol = new Framework.Symbology.SimplePointSymbol();
+                    symbol.Marker = sms.Style.ToMarkerType();
+                    symbol.Color = sms.Color.ToColor();
+                    symbol.Size = sms.Size;
+                    symbol.Angle = sms.Angle;
+                    symbol.HorizontalOffset = sms.Xoffset;
+                    symbol.VerticalOffset = sms.Yoffset;
 
-            if (type == "esriSLS")
-            {
-                var sls = JsonConvert.DeserializeObject<SimpleLineSymbol>(jObject.ToString());
-
-                var symbol = new Framework.Symbology.SimpleLineSymbol();
-                symbol.Color = sls.Color.ToColor();
-                symbol.DashStyle = sls.Style.ToDashStyle();
-                symbol.Width = sls.Width;
-                symbol.SymbolSmoothingMode = SymbolSmoothing.AntiAlias;
-                symbol.LineEndCap = symbol.LineStartCap = LineCap.Round;
-
-                return symbol;
-            }
-
-            if (type == "esriSFS")
-            {
-                var sfs = JsonConvert.DeserializeObject<SimpleFillSymbol>(jObject.ToString());
-
-                var symbol = new Framework.Symbology.SimpleFillSymbol();
-                symbol.FillColor = sfs.Color.ToColor();
-                if (sfs.Outline != null)
-                {
-                    symbol.OutlineSymbol = new Framework.Symbology.SimpleLineSymbol()
+                    if (sms.Outline != null)
                     {
-                        Color = sfs.Outline.Color.ToColor(),
-                        Width = sfs.Outline.Width,
-                        DashStyle = sfs.Outline.Style.ToDashStyle(),
-                        SymbolSmoothingMode = SymbolSmoothing.AntiAlias,
-                        LineStartCap = LineCap.Round,
-                        LineEndCap = LineCap.Round
-                    };
-                }
-
-                return symbol;
-            }
-
-            if (type == "esriTS")
-            {
-                var ts = JsonConvert.DeserializeObject<TextSymbol>(jObject.ToString());
-
-                if (ts.Font != null)
-                {
-                    Framework.Symbology.SimpleTextSymbol symbol = null;
-                    if (ts.HaloSize.HasValue && ts.HaloSize.Value > 0)
-                    {
-                        symbol = new Framework.Symbology.GlowingTextSymbol();
-                        ((Framework.Symbology.GlowingTextSymbol)symbol).GlowingColor = ts.HaloColor.ToColor();
+                        symbol.OutlineColor = sms.Outline.Color.ToColor();
+                        symbol.OutlineWidth = sms.Outline.Width;
+                        symbol.SymbolSmoothingMode = SymbolSmoothing.AntiAlias;
                     }
-                    else
-                    {
-                        symbol = new Framework.Symbology.SimpleTextSymbol();
-                    }
-
-                    symbol.FontColor = ts.Color.ToColor();
-                    symbol.Angle = ts.Angle;
-                    symbol.VerticalOffset = ts.Yoffset;
-                    symbol.HorizontalOffset = ts.Xoffset;
-                    switch (ts.VerticalAlignment + " " + ts.HorizontalAlignment)
-                    {
-                        case "top left":
-                            symbol.TextSymbolAlignment = TextSymbolAlignment.leftAlignOver;
-                            break;
-                        case "middle left":
-                            symbol.TextSymbolAlignment = TextSymbolAlignment.leftAlignCenter;
-                            break;
-                        case "bottom left":
-                            symbol.TextSymbolAlignment = TextSymbolAlignment.leftAlignUnder;
-                            break;
-                        case "top center":
-                            symbol.TextSymbolAlignment = TextSymbolAlignment.Over;
-                            break;
-                        case "middle center":
-                            symbol.TextSymbolAlignment = TextSymbolAlignment.Center;
-                            break;
-                        case "bottom center":
-                            symbol.TextSymbolAlignment = TextSymbolAlignment.Under;
-                            break;
-                        case "top right":
-                            symbol.TextSymbolAlignment = TextSymbolAlignment.rightAlignOver;
-                            break;
-                        case "middle right":
-                            symbol.TextSymbolAlignment = TextSymbolAlignment.rightAlignCenter;
-                            break;
-                        case "bottom right":
-                            symbol.TextSymbolAlignment = TextSymbolAlignment.rightAlignUnder;
-                            break;
-                        default:
-                            symbol.TextSymbolAlignment = TextSymbolAlignment.Center;
-                            break;
-                    }
-                    symbol.SymbolSmoothingMode = SymbolSmoothing.AntiAlias;
-
-                    var fontStyle = FontStyle.Regular;
-                    if (ts.Font.Weight == "bold" || ts.Font.Weight == "bolder")
-                    {
-                        fontStyle |= FontStyle.Bold;
-                    }
-
-                    if (ts.Font.Style == "italic")
-                    {
-                        fontStyle |= FontStyle.Italic;
-                    }
-
-                    if (ts.Font.Decoration == "underline")
-                    {
-                        fontStyle |= FontStyle.Underline;
-                    }
-
-                    symbol.Font = Current.Engine.CreateFont(ts.Font.Family, ts.Font.Size, fontStyle);
-                    //symbol.Font.Style = ts.Font.Style;
-                    //if(ts.Font.Weight)
 
                     return symbol;
                 }
-            }
 
+                if (type == "esriSLS")
+                {
+                    var sls = JsonSerializer.Deserialize<SimpleLineSymbol>(jElement.ToString());
+
+                    var symbol = new Framework.Symbology.SimpleLineSymbol();
+                    symbol.Color = sls.Color.ToColor();
+                    symbol.DashStyle = sls.Style.ToDashStyle();
+                    symbol.Width = sls.Width;
+                    symbol.SymbolSmoothingMode = SymbolSmoothing.AntiAlias;
+                    symbol.LineEndCap = symbol.LineStartCap = LineCap.Round;
+
+                    return symbol;
+                }
+
+                if (type == "esriSFS")
+                {
+                    var sfs = JsonSerializer.Deserialize<SimpleFillSymbol>(jElement.ToString());
+
+                    var symbol = new Framework.Symbology.SimpleFillSymbol();
+                    symbol.FillColor = sfs.Color.ToColor();
+                    if (sfs.Outline != null)
+                    {
+                        symbol.OutlineSymbol = new Framework.Symbology.SimpleLineSymbol()
+                        {
+                            Color = sfs.Outline.Color.ToColor(),
+                            Width = sfs.Outline.Width,
+                            DashStyle = sfs.Outline.Style.ToDashStyle(),
+                            SymbolSmoothingMode = SymbolSmoothing.AntiAlias,
+                            LineStartCap = LineCap.Round,
+                            LineEndCap = LineCap.Round
+                        };
+                    }
+
+                    return symbol;
+                }
+
+                if (type == "esriTS")
+                {
+                    var ts = JsonSerializer.Deserialize<TextSymbol>(jElement.ToString());
+
+                    if (ts.Font != null)
+                    {
+                        Framework.Symbology.SimpleTextSymbol symbol = null;
+                        if (ts.HaloSize.HasValue && ts.HaloSize.Value > 0)
+                        {
+                            symbol = new Framework.Symbology.GlowingTextSymbol();
+                            ((Framework.Symbology.GlowingTextSymbol)symbol).GlowingColor = ts.HaloColor.ToColor();
+                        }
+                        else
+                        {
+                            symbol = new Framework.Symbology.SimpleTextSymbol();
+                        }
+
+                        symbol.FontColor = ts.Color.ToColor();
+                        symbol.Angle = ts.Angle;
+                        symbol.VerticalOffset = ts.Yoffset;
+                        symbol.HorizontalOffset = ts.Xoffset;
+                        switch (ts.VerticalAlignment + " " + ts.HorizontalAlignment)
+                        {
+                            case "top left":
+                                symbol.TextSymbolAlignment = TextSymbolAlignment.leftAlignOver;
+                                break;
+                            case "middle left":
+                                symbol.TextSymbolAlignment = TextSymbolAlignment.leftAlignCenter;
+                                break;
+                            case "bottom left":
+                                symbol.TextSymbolAlignment = TextSymbolAlignment.leftAlignUnder;
+                                break;
+                            case "top center":
+                                symbol.TextSymbolAlignment = TextSymbolAlignment.Over;
+                                break;
+                            case "middle center":
+                                symbol.TextSymbolAlignment = TextSymbolAlignment.Center;
+                                break;
+                            case "bottom center":
+                                symbol.TextSymbolAlignment = TextSymbolAlignment.Under;
+                                break;
+                            case "top right":
+                                symbol.TextSymbolAlignment = TextSymbolAlignment.rightAlignOver;
+                                break;
+                            case "middle right":
+                                symbol.TextSymbolAlignment = TextSymbolAlignment.rightAlignCenter;
+                                break;
+                            case "bottom right":
+                                symbol.TextSymbolAlignment = TextSymbolAlignment.rightAlignUnder;
+                                break;
+                            default:
+                                symbol.TextSymbolAlignment = TextSymbolAlignment.Center;
+                                break;
+                        }
+                        symbol.SymbolSmoothingMode = SymbolSmoothing.AntiAlias;
+
+                        var fontStyle = FontStyle.Regular;
+                        if (ts.Font.Weight == "bold" || ts.Font.Weight == "bolder")
+                        {
+                            fontStyle |= FontStyle.Bold;
+                        }
+
+                        if (ts.Font.Style == "italic")
+                        {
+                            fontStyle |= FontStyle.Italic;
+                        }
+
+                        if (ts.Font.Decoration == "underline")
+                        {
+                            fontStyle |= FontStyle.Underline;
+                        }
+
+                        symbol.Font = Current.Engine.CreateFont(ts.Font.Family, ts.Font.Size, fontStyle);
+                        //symbol.Font.Style = ts.Font.Style;
+                        //if(ts.Font.Weight)
+
+                        return symbol;
+                    }
+                }
+            } 
+            catch { }
             return null;
         }
 

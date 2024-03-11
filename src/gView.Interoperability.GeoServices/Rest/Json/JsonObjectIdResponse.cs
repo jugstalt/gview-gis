@@ -1,14 +1,14 @@
-﻿using Newtonsoft.Json;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace gView.Interoperability.GeoServices.Rest.Json
 {
     public class JsonObjectIdResponse
     {
-        [JsonProperty("objectIdFieldName")]
+        [JsonPropertyName("objectIdFieldName")]
         public string ObjectIdFieldName { get; set; }
 
-        [JsonProperty("objectIds")]
+        [JsonPropertyName("objectIds")]
         public IEnumerable<int> ObjectIds { get; set; }
     }
 }

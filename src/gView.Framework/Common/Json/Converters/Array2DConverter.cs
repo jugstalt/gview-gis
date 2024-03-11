@@ -54,5 +54,5 @@ public class Array2DConverter : JsonConverterFactory
 
         public override T[,]? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) =>
             JsonSerializer.Deserialize<List<List<T>>>(ref reader, options)?.To2D();
-    }
+    } 
 }

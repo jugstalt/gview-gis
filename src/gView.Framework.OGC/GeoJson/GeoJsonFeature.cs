@@ -1,24 +1,26 @@
 ﻿using gView.Framework.Core.Geometry;
 using gView.Framework.Geometry;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace gView.Framework.OGC.GeoJson
 {
     public class GeoJsonFeature
     {
-        [JsonProperty("oid", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("oid")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public string Oid { get; set; }
 
-        [JsonProperty("type")]
+        [JsonPropertyName("type")]
         public string Type { get { return "Feature"; } set { } }
 
-        [JsonProperty("geometry")]
+        [JsonPropertyName("geometry")]
         public JsonGeometry Geometry { get; set; }
 
-        [JsonProperty("properties")]
+        [JsonPropertyName("properties")]
         public object Properties { get; set; }
 
         public IGeometry ToGeometry()
@@ -31,10 +33,10 @@ namespace gView.Framework.OGC.GeoJson
             switch (this.Geometry.type.ToString().ToLower())
             {
                 case "point":
-                    double[] coordinates = JsonConvert.DeserializeObject<double[]>(this.Geometry.coordinates.ToString());
+                    double[] coordinates = JsonSerializer.Deserialize<double[]>(this.Geometry.coordinates.ToString());
                     return new Point(coordinates[0], coordinates[1]);
                 case "linestring":
-                    double[][] lineString = JsonConvert.DeserializeObject<double[][]>(this.Geometry.coordinates.ToString());
+                    double[][] lineString = JsonSerializer.Deserialize<double[][]>(this.Geometry.coordinates.ToString());
                     Polyline line = new Polyline();
                     Path path = new Path();
                     line.AddPath(path);
@@ -49,11 +51,11 @@ namespace gView.Framework.OGC.GeoJson
                     object polygonString = null;
                     try
                     {
-                        polygonString = JsonConvert.DeserializeObject<double[][]>(this.Geometry.coordinates.ToString());
+                        polygonString = JsonSerializer.Deserialize<double[][]>(this.Geometry.coordinates.ToString());
                     }
                     catch
                     {
-                        polygonString = JsonConvert.DeserializeObject<double[][][]>(this.Geometry.coordinates.ToString());
+                        polygonString = JsonSerializer.Deserialize<double[][][]>(this.Geometry.coordinates.ToString());
                     }
                     Polygon polygon = new Polygon();
 
@@ -219,7 +221,7 @@ namespace gView.Framework.OGC.GeoJson
         {
             if (this.Properties is Newtonsoft.Json.Linq.JObject)
             {
-                this.Properties = JsonConvert.DeserializeObject<Dictionary<string, object>>(this.Properties.ToString());
+                this.Properties = JsonSerializer.Deserialize<Dictionary<string, object>>(this.Properties.ToString());
             }
             else if (this.Properties == null)
             {
@@ -273,7 +275,8 @@ namespace gView.Framework.OGC.GeoJson
         {
             virtual public string type { get; set; }
 
-            [JsonProperty("coordinates", NullValueHandling = NullValueHandling.Ignore)]
+            [JsonPropertyName("coordinates")]
+            [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
             virtual public object coordinates { get; set; }
         }
 

@@ -1,6 +1,5 @@
 ﻿using gView.Blazor.Models.Dialogs;
 using gView.Framework.Db;
-using Newtonsoft.Json.Converters;
 
 namespace gView.DataExplorer.Razor.Components.Dialogs.Models;
 
@@ -8,7 +7,7 @@ public class ConnectionStringModel : IDialogResultItem
 {
     private readonly DbConnectionString _dbConnectionString;
 
-    public ConnectionStringModel() 
+    public ConnectionStringModel()
         : this("", true)
     {
     }

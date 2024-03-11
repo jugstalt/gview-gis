@@ -1,43 +1,43 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 
 namespace gView.DataSources.VectorTileCache.Json
 {
     class VectorTilesCapabilities
     {
-        [JsonProperty("sub_domains")]
+        [JsonPropertyName("sub_domains")]
         public object SubDomains { get; set; }  // String Array???
 
-        [JsonProperty("name")]
+        [JsonPropertyName("name")]
         public string Name { get; set; }
 
-        [JsonProperty("description")]
+        [JsonPropertyName("description")]
         public string Description { get; set; }
 
-        [JsonProperty("version")]
+        [JsonPropertyName("version")]
         public string Version { get; set; }
 
-        [JsonProperty("attribution")]
+        [JsonPropertyName("attribution")]
         public string Attribution { get; set; }
 
-        [JsonProperty("scheme")]
+        [JsonPropertyName("scheme")]
         public string Scheme { get; set; }
 
-        [JsonProperty("tiles")]
+        [JsonPropertyName("tiles")]
         public string[] Tiles { get; set; }
 
-        [JsonProperty("minzoom")]
+        [JsonPropertyName("minzoom")]
         public int MinZoom { get; set; }
 
-        [JsonProperty("maxzoom")]
+        [JsonPropertyName("maxzoom")]
         public int MaxZoom { get; set; }
 
-        [JsonProperty("bounds")]
+        [JsonPropertyName("bounds")]
         public double[] Bounds { get; set; }
 
-        [JsonProperty("center")]
+        [JsonPropertyName("center")]
         public double[] Center { get; set; }
 
-        [JsonProperty("vector_layers")]
+        [JsonPropertyName("vector_layers")]
         public VectorLayer[] VectorLayers { get; set; }
     }
 }

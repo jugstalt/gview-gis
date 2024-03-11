@@ -9,7 +9,7 @@ using gView.GraphicsEngine;
 using gView.GraphicsEngine.Abstraction;
 using gView.Interoperability.GeoServices.Rest.Json.Request;
 using gView.Interoperability.GeoServices.Rest.Json.Response;
-using Newtonsoft.Json;
+using System.Text.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -20,6 +20,7 @@ using System.Threading.Tasks;
 using System.Web;
 using System.Xml;
 using gView.Framework.Common.Extensions;
+using System.Text.Json.Serialization;
 
 namespace gView.Interoperability.GeoServices.Dataset
 {
@@ -275,7 +276,7 @@ namespace gView.Interoperability.GeoServices.Dataset
             {
                 foreach (var propertyInfo in obj.GetType().GetProperties())
                 {
-                    var jsonPropertyAttribute = propertyInfo.GetCustomAttribute<JsonPropertyAttribute>();
+                    var jsonPropertyAttribute = propertyInfo.GetCustomAttribute<JsonPropertyNameAttribute>();
                     if (jsonPropertyAttribute == null)
                     {
                         continue;
@@ -294,7 +295,7 @@ namespace gView.Interoperability.GeoServices.Dataset
                             sb.Append("&");
                         }
 
-                        sb.Append($"{jsonPropertyAttribute.PropertyName}={HttpUtility.UrlEncode(val)}");
+                        sb.Append($"{jsonPropertyAttribute.Name}={HttpUtility.UrlEncode(val)}");
                     }
                 }
             }

@@ -1,6 +1,6 @@
 ﻿using gView.Interoperability.GeoServices.Rest.Reflection;
-using Newtonsoft.Json;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace gView.Interoperability.GeoServices.Rest.Json
 {
@@ -24,67 +24,68 @@ namespace gView.Interoperability.GeoServices.Rest.Json
             StandardMaxRecordCount = 32000;
         }
 
-        [JsonProperty("gv_is_editable")]
+        [JsonPropertyName("gv_is_editable")]
         public bool IsEditable { get; set; }
 
-        [JsonProperty("gv_edit_operations", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("gv_edit_operations")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public string[] EditOperations { get; set; }
 
-        [JsonProperty("parentLayer")]
+        [JsonPropertyName("parentLayer")]
         new public JsonLayerLink ParentLayer { get; set; }
 
         [JsonIgnore]
         public int ParentLayerId => ParentLayer == null ? -1 : ParentLayer.Id;
 
-        [JsonProperty("editFieldsInfo")]
+        [JsonPropertyName("editFieldsInfo")]
         public object EidtFiedsInfo { get; set; }
 
-        [JsonProperty("ownershipBasedAccessControlForFeatures")]
+        [JsonPropertyName("ownershipBasedAccessControlForFeatures")]
         public object OwnershipBasedAccessControlForFeatures { get; set; }
 
-        [JsonProperty("syncCanReturnChanges")]
+        [JsonPropertyName("syncCanReturnChanges")]
         public bool SyncCanReturnChanges { get; set; }
 
-        [JsonProperty("relationships")]
+        [JsonPropertyName("relationships")]
         public IEnumerable<object> Relationships { get; set; }
 
-        [JsonProperty("supportsRollbackOnFailureParameter")]
+        [JsonPropertyName("supportsRollbackOnFailureParameter")]
         public bool SupportsRollbackOnFailureParameter { get; set; }
 
-        [JsonProperty("archivingInfo")]
+        [JsonPropertyName("archivingInfo")]
         public ArchivingInfoClass ArchivingInfo { get; set; }
 
-        [JsonProperty("supportsStatistics")]
+        [JsonPropertyName("supportsStatistics")]
         public bool SupportsStatistics { get; set; }
 
-        [JsonProperty("supportsAdvancedQueries")]
+        [JsonPropertyName("supportsAdvancedQueries")]
         public bool SupportsAdvancedQueries { get; set; }
 
-        [JsonProperty("supportsValidateSQL")]
+        [JsonPropertyName("supportsValidateSQL")]
         public bool SupportsValidateSQL { get; set; }
 
-        [JsonProperty("supportsCoordinatesQuantization")]
+        [JsonPropertyName("supportsCoordinatesQuantization")]
         public bool SupportsCoordinatesQuantization { get; set; }
 
-        [JsonProperty("supportsCalculate")]
+        [JsonPropertyName("supportsCalculate")]
         public bool SupportsCalculate { get; set; }
 
-        [JsonProperty("advancedQueryCapabilities")]
+        [JsonPropertyName("advancedQueryCapabilities")]
         public AdvancedQueryCapabilitiesClass AdvancedQueryCapabilities { get; set; }
 
-        [JsonProperty(PropertyName = "maxRecordCount")]
+        [JsonPropertyName("maxRecordCount")]
         public int MaxRecordCount { get; set; }
 
-        [JsonProperty("standardMaxRecordCount")]
+        [JsonPropertyName("standardMaxRecordCount")]
         public int StandardMaxRecordCount { get; set; }
 
-        [JsonProperty("maxRecordCountFactor")]
+        [JsonPropertyName("maxRecordCountFactor")]
         public int MaxRecordCountFactor { get; set; }
 
-        [JsonProperty(PropertyName = "supportedQueryFormats")]
+        [JsonPropertyName("supportedQueryFormats")]
         public string SupportedQueryFormats => "JSON, geoJSON";
 
-        [JsonProperty("useStandardizedQueries")]
+        [JsonPropertyName("useStandardizedQueries")]
         public bool UseStandardizedQueries => true;
 
         #region Classes
@@ -98,10 +99,10 @@ namespace gView.Interoperability.GeoServices.Rest.Json
                 this.StartArchivingMoment = -1;
             }
 
-            [JsonProperty("supportsQueryWithHistoricMoment")]
+            [JsonPropertyName("supportsQueryWithHistoricMoment")]
             public bool SupportsQueryWithHistoricMoment { get; set; }
 
-            [JsonProperty("startArchivingMoment")]
+            [JsonPropertyName("startArchivingMoment")]
             public int StartArchivingMoment { get; set; }
         }
 
@@ -118,40 +119,40 @@ namespace gView.Interoperability.GeoServices.Rest.Json
                 this.SupportsSqlExpression = true;
             }
 
-            [JsonProperty("supportsPagination")]
+            [JsonPropertyName("supportsPagination")]
             public bool SupportsPagination { get; set; }
 
-            [JsonProperty("supportsTrueCurve")]
+            [JsonPropertyName("supportsTrueCurve")]
             public bool SupportsTrueCurve { get; set; }
 
-            [JsonProperty("supportsQueryWithDistance")]
+            [JsonPropertyName("supportsQueryWithDistance")]
             public bool SupportsQueryWithDistance { get; set; }
 
-            [JsonProperty("supportsReturningQueryExtent")]
+            [JsonPropertyName("supportsReturningQueryExtent")]
             public bool SupportsReturningQueryExtent { get; set; }
 
-            [JsonProperty("supportsStatistics")]
+            [JsonPropertyName("supportsStatistics")]
             public bool SupportsStatistics { get; set; }
 
-            [JsonProperty("supportsHavingClause")]
+            [JsonPropertyName("supportsHavingClause")]
             public bool SupportsHavingClause { get; set; }
 
-            [JsonProperty("supportsCountDistinct")]
+            [JsonPropertyName("supportsCountDistinct")]
             public bool SupportsCountDistinct { get; set; }
 
-            [JsonProperty("supportsOrderBy")]
+            [JsonPropertyName("supportsOrderBy")]
             public bool SupportsOrderBy { get; set; }
 
-            [JsonProperty("supportsDistinct")]
+            [JsonPropertyName("supportsDistinct")]
             public bool SupportsDistinct { get; set; }
 
-            [JsonProperty("supportsQueryWithResultType")]
+            [JsonPropertyName("supportsQueryWithResultType")]
             public bool SupportsQueryWithResultType { get; set; }
 
-            [JsonProperty("supportsReturningGeometryCentroid")]
+            [JsonPropertyName("supportsReturningGeometryCentroid")]
             public bool SupportsReturningGeometryCentroid { get; set; }
 
-            [JsonProperty("supportsSqlExpression")]
+            [JsonPropertyName("supportsSqlExpression")]
             public bool SupportsSqlExpression { get; set; }
         }
 

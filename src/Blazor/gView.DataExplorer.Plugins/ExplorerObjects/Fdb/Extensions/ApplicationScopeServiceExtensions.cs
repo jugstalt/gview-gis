@@ -16,7 +16,7 @@ using gView.Framework.Core.Data;
 using gView.Framework.DataExplorer.Abstraction;
 using gView.Framework.IO;
 using gView.Framework.Common;
-using Newtonsoft.Json;
+using System.Text.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -89,7 +89,7 @@ static internal class ApplicationScopeServiceExtensions
             parameters.Add("si_max_levels", model.SpatialIndex.MaxLevel);
 
             parameters.Add("autofields",
-                JsonConvert.SerializeObject(model.AutoFields.Keys
+                JsonSerializer.Serialize(model.AutoFields.Keys
                     .Select(k => model.AutoFields[k] == true ? k : null)
                     .Where(a => a != null)
                     .Select(a => new AutoFieldModel() { Name = a!.name ?? a.AutoFieldPrimayName, PluginGuid = PlugInManager.PlugInID(a) })
@@ -148,7 +148,7 @@ static internal class ApplicationScopeServiceExtensions
                 { "bounds_maxy", model.SpatialIndex.Bounds.MaxY },
                 { "max_levels", model.SpatialIndex.MaxLevel },
                 // Fields
-                { "fields", JsonConvert.SerializeObject(
+                { "fields", JsonSerializer.Serialize(
                     model.Fields.Values.Select(f => new FieldModel()
                     {
                         Name = f.name,

@@ -1,10 +1,11 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace gView.Interoperability.GeoServices.Rest.Json
 {
     public class JsonFeatureCountResponse : JsonStopWatch
     {
-        [JsonProperty("count")]
+        [JsonPropertyName("count")]
         public int Count { get; set; }
     }
 }

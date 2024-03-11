@@ -1,10 +1,10 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 
 namespace gView.Interoperability.GeoServices.Rest.Json.Legend
 {
     public class LegendResponse : JsonStopWatch
     {
-        [JsonProperty("layers")]
+        [JsonPropertyName("layers")]
         public Layer[] Layers { get; set; }
     }
 }

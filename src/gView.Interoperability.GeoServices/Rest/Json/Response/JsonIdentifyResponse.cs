@@ -1,31 +1,32 @@
 ﻿using gView.Interoperability.GeoServices.Rest.Json.Features.Geometry;
-using Newtonsoft.Json;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace gView.Interoperability.GeoServices.Rest.Json.Response
 {
     public class JsonIdentifyResponse : JsonStopWatch
     {
-        [JsonProperty("results")]
+        [JsonPropertyName("results")]
         public Result[] Results { get; set; }
 
         #region Classes
 
         public class Result
         {
-            [JsonProperty("layerId")]
+            [JsonPropertyName("layerId")]
             public int LayerId { get; set; }
 
-            [JsonProperty("layerName")]
+            [JsonPropertyName("layerName")]
             public string LayerName { get; set; }
 
-            [JsonProperty("displayFieldName")]
+            [JsonPropertyName("displayFieldName")]
             public string DisplayFieldName { get; set; }
 
-            [JsonProperty("attributes")]
+            [JsonPropertyName("attributes")]
             public Dictionary<string, object> ResultAttributes { get; set; }
 
-            [JsonProperty("geometry", NullValueHandling = NullValueHandling.Ignore)]
+            [JsonPropertyName("geometry")]
+            [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
             public JsonGeometry Geometry { get; set; }
         }
 

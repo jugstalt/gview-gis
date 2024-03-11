@@ -1,21 +1,21 @@
 ﻿using gView.Interoperability.GeoServices.Rest.Json.DynamicLayers;
 using gView.Interoperability.GeoServices.Rest.Json.Renderers.SimpleRenderers;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace gView.Interoperability.GeoServices.Rest.Json
 {
     public class JsonDrawingInfo
     {
-        [JsonProperty("renderer")]
+        [JsonPropertyName("renderer")]
         public JsonRenderer Renderer
         {
             get; set;
         }
 
-        [JsonProperty("transparency")]
+        [JsonPropertyName("transparency")]
         public double Transparency { get; set; }
 
-        [JsonProperty("labelingInfo")]
+        [JsonPropertyName("labelingInfo")]
         public LabelingInfo[] LabelingInfo { get; set; }
     }
 }

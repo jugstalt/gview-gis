@@ -8,7 +8,7 @@ using gView.Framework.Data.Abstraction;
 using gView.Framework.Data.Metadata;
 using gView.Framework.Geometry;
 using gView.Framework.IO;
-using Newtonsoft.Json;
+using System.Text.Json;
 using System;
 using System.Collections.Generic;
 using System.Net;
@@ -110,7 +110,7 @@ namespace gView.DataSources.VectorTileCache
             {
                 var jsonString = await responseMesssage.Content.ReadAsStringAsync();
 
-                _capabilities = JsonConvert.DeserializeObject<Json.VectorTilesCapabilities>(jsonString);
+                _capabilities = JsonSerializer.Deserialize<Json.VectorTilesCapabilities>(jsonString);
 
                 if (String.IsNullOrEmpty(_dsName))
                 {

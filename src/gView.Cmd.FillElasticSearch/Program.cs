@@ -5,7 +5,7 @@ using gView.Framework.Data.Filters;
 using gView.Framework.Geometry;
 using gView.Framework.Geometry.GeoProcessing;
 using gView.Framework.Common;
-using Newtonsoft.Json;
+using System.Text.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;

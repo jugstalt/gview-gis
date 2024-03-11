@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace gView.Interoperability.GeoServices.Rest.Json.Renderers.OtherRenderers
 {
@@ -25,49 +26,56 @@ namespace gView.Interoperability.GeoServices.Rest.Json.Renderers.OtherRenderers
         //                                    Decoration = Renderers.Font.FontDecoration(labelRenderer.LabelStyle)
         //                                };
         //}
-        [JsonProperty("type")]
+        [JsonPropertyName("type")]
         public string Type { get; set; }
 
-        [JsonProperty("color", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("color")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public int[] Color { get; set; }
 
-        [JsonProperty("backgroundColor", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("backgroundColor")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public int[] BackgroundColor { get; set; }
 
-        [JsonProperty("borderLineSize", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("borderLineSize")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public int? BorderLineSize { get; set; }
 
-        [JsonProperty("borderLineColor", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("borderLineColor")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public int[] BorderLineColor { get; set; }
 
-        [JsonProperty("haloSize", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("haloSize")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public int? HaloSize { get; set; }
 
-        [JsonProperty("haloColor", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("haloColor")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public int[] HaloColor { get; set; }
 
-        [JsonProperty("verticalAlignment")]
+        [JsonPropertyName("verticalAlignment")]
         public string VerticalAlignment { get; set; }
 
-        [JsonProperty("horizontalAlignment")]
+        [JsonPropertyName("horizontalAlignment")]
         public string HorizontalAlignment { get; set; }
 
-        [JsonProperty("rightToLeft")]
+        [JsonPropertyName("rightToLeft")]
         public bool RightToLeft { get; set; }
 
-        [JsonProperty("angle")]
+        [JsonPropertyName("angle")]
         public float Angle { get; set; }
 
-        [JsonProperty("xoffset")]
+        [JsonPropertyName("xoffset")]
         public float Xoffset { get; set; }
 
-        [JsonProperty("yoffset")]
+        [JsonPropertyName("yoffset")]
         public float Yoffset { get; set; }
 
-        [JsonProperty("kerning")]
+        [JsonPropertyName("kerning")]
         public bool Kerning { get; set; }
 
-        [JsonProperty("font", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("font")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public Font Font { get; set; }
 
         //public void SetHalo(LabelRenderer renderer)

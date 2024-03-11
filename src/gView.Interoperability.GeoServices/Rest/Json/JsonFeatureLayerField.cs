@@ -1,16 +1,17 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace gView.Interoperability.GeoServices.Rest.Json
 {
     public class JsonFeatureLayerField : JsonField
     {
-        [JsonProperty("editable")]
+        [JsonPropertyName("editable")]
         public bool Editable { get; set; }
 
-        [JsonProperty("nullable")]
+        [JsonPropertyName("nullable")]
         public bool Nullable { get; set; }
 
-        [JsonProperty("length")]
+        [JsonPropertyName("length")]
         public int Length { get; set; }
     }
 }

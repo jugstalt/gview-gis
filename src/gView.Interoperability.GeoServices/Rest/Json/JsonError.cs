@@ -1,19 +1,21 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace gView.Interoperability.GeoServices.Rest.Json
 {
     public class JsonError
     {
-        [JsonProperty("error", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("error")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public ErrorDef Error { get; set; }
 
         public class ErrorDef
         {
-            [JsonProperty("code")]
+            [JsonPropertyName("code")]
             public int Code { get; set; }
-            [JsonProperty("message")]
+            [JsonPropertyName("message")]
             public string Message { get; set; }
-            [JsonProperty("details")]
+            [JsonPropertyName("details")]
             public object Details { get; set; }
         }
     }

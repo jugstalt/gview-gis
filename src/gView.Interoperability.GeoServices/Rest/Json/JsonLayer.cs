@@ -1,6 +1,7 @@
 ﻿using gView.Framework.Core.Geometry;
 using gView.Interoperability.GeoServices.Rest.Reflection;
-using Newtonsoft.Json;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace gView.Interoperability.GeoServices.Rest.Json
 {
@@ -13,52 +14,52 @@ namespace gView.Interoperability.GeoServices.Rest.Json
             this.Capabilities = "Map,Query";
         }
 
-        [JsonProperty("currentVersion")]
+        [JsonPropertyName("currentVersion")]
         public double CurrentVersion { get; set; }
 
-        [JsonProperty("id")]
+        [JsonPropertyName("id")]
         public int Id { get; set; }
 
-        [JsonProperty("name")]
+        [JsonPropertyName("name")]
         public string Name { get; set; }
 
-        [JsonProperty("type")]
+        [JsonPropertyName("type")]
         public string Type { get; set; }
 
-        [JsonProperty("geometryType")]
+        [JsonPropertyName("geometryType")]
         public string GeometryType { get; set; }
 
-        [JsonProperty("subLayers")]
+        [JsonPropertyName("subLayers")]
         public JsonLayerLink[] SubLayers { get; set; }
 
-        [JsonProperty("parentLayer")]
+        [JsonPropertyName("parentLayer")]
         public JsonLayerLink ParentLayer { get; set; }
 
-        [JsonProperty("minScale")]
+        [JsonPropertyName("minScale")]
         public double MinScale { get; set; }
 
-        [JsonProperty("maxScale")]
+        [JsonPropertyName("maxScale")]
         public double MaxScale { get; set; }
 
-        [JsonProperty("defaultVisibility")]
+        [JsonPropertyName("defaultVisibility")]
         public bool DefaultVisibility { get; set; }
 
-        [JsonProperty("fields")]
+        [JsonPropertyName("fields")]
         public JsonField[] Fields { get; set; }
 
-        [JsonProperty("extent")]
+        [JsonPropertyName("extent")]
         public JsonExtent Extent { get; set; }
 
-        [JsonProperty("drawingInfo")]
+        [JsonPropertyName("drawingInfo")]
         public JsonDrawingInfo DrawingInfo { get; set; }
 
-        [JsonProperty("capabilities")]
+        [JsonPropertyName("capabilities")]
         public string Capabilities { get; set; }
 
-        [JsonProperty("description")]
+        [JsonPropertyName("description")]
         public string Description { get; set; }
 
-        [JsonProperty("copyrightText")]
+        [JsonPropertyName("copyrightText")]
         public string CopyrightText { get; set; }
 
         //[JsonIgnore]
@@ -142,10 +143,10 @@ namespace gView.Interoperability.GeoServices.Rest.Json
 
     public class JsonLayerLink
     {
-        [JsonProperty("id")]
+        [JsonPropertyName("id")]
         public int Id { get; set; }
 
-        [JsonProperty("name")]
+        [JsonPropertyName("name")]
         public string Name { get; set; }
     }
 }

@@ -1,6 +1,5 @@
 ﻿using gView.Interoperability.GeoServices.Rest.Json.Features;
 using Newtonsoft.Json;
-using System.Text.Json.Serialization;
 
 namespace JsonPlayground.Models
 {
@@ -34,18 +33,14 @@ namespace JsonPlayground.Models
         [JsonProperty("ymax", NullValueHandling = NullValueHandling.Ignore)]
         public double? YMax { get; set; }
 
-        [JsonProperty(PropertyName = "hasZ", NullValueHandling = NullValueHandling.Ignore)]
-        [System.Text.Json.Serialization.JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        [JsonPropertyName("hasZ")]
+        [JsonProperty("hasZ", NullValueHandling = NullValueHandling.Ignore)]
         public bool? HasZ { get; set; }
-        [JsonProperty(PropertyName = "hasM", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonProperty("hasM", NullValueHandling = NullValueHandling.Ignore)]
         public bool? HasM { get; set; }
 
-        [JsonProperty(PropertyName = "z", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonProperty("z", NullValueHandling = NullValueHandling.Ignore)]
         public double? Z { get; set; }
-        [JsonProperty(PropertyName = "m", NullValueHandling = NullValueHandling.Ignore)]
-        [System.Text.Json.Serialization.JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        [JsonPropertyName("m")]
+        [JsonProperty("m", NullValueHandling = NullValueHandling.Ignore)]
         public double? M { get; set; }
 
         [JsonProperty("spatialReference", NullValueHandling = NullValueHandling.Ignore)]

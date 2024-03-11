@@ -1,10 +1,11 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace gView.Interoperability.GeoServices.Rest.Json
 {
     internal class JsonExtentResponse
     {
-        [JsonProperty("extent")]
+        [JsonPropertyName("extent")]
         public JsonExtent Extend { get; set; }
     }
 }

@@ -1,22 +1,22 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json;
 
 namespace gView.Cmd.FillLuceneServer
 {
     public class Item
     {
-        [JsonProperty(PropertyName = "id")]
+        [JsonPropertyName("id")]
         public string Id { get; set; }
 
-        [JsonProperty(PropertyName = "suggested_text")]
+        [JsonPropertyName("suggested_text")]
         public string SuggestedText { get; set; }
 
-        [JsonProperty(PropertyName = "subtext")]
+        [JsonPropertyName("subtext")]
         public string SubText { get; set; }
 
-        [JsonProperty(PropertyName = "category")]
+        [JsonPropertyName("category")]
         public string Category { get; set; }
 
-        [JsonProperty(PropertyName = "thumbnail_url")]
+        [JsonPropertyName("thumbnail_url")]
         public string ThumbnailUrl { get; set; }
     }
 }

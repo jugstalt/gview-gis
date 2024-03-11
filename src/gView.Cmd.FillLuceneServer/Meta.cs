@@ -1,25 +1,25 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json;
 
 namespace gView.Cmd.FillLuceneServer
 {
     public class Meta
     {
-        [JsonProperty(PropertyName = "id")]
+        [JsonPropertyName("id")]
         public string Id { get; set; }
 
-        [JsonProperty(PropertyName = "category")]
+        [JsonPropertyName("category")]
         public string Category { get; set; }
 
-        [JsonProperty(PropertyName = "sample")]
+        [JsonPropertyName("sample")]
         public string Sample { get; set; }
 
-        [JsonProperty(PropertyName = "description")]
+        [JsonPropertyName("description")]
         public string Descrption { get; set; }
 
-        [JsonProperty(PropertyName = "service")]
+        [JsonPropertyName("service")]
         public string Service { get; set; }
 
-        [JsonProperty(PropertyName = "query")]
+        [JsonPropertyName("query")]
         public string Query { get; set; }
     }
 }

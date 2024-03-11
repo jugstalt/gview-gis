@@ -1,7 +1,8 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json;
 using System;
 using System.Collections.Generic;
 using static gView.Interoperability.GeoServices.Rest.Json.JsonMapService;
+using System.Text.Json.Serialization;
 
 namespace gView.Interoperability.GeoServices.Rest.Json
 {
@@ -32,82 +33,82 @@ namespace gView.Interoperability.GeoServices.Rest.Json
             Tables = new object[0];
         }
 
-        [JsonProperty(PropertyName = "currentVersion")]
+        [JsonPropertyName("currentVersion")]
         public double CurrentVersion { get; set; }
 
-        [JsonProperty(PropertyName = "serviceDescription")]
+        [JsonPropertyName("serviceDescription")]
         public string ServiceDescription { get; set; }
 
-        [JsonProperty(PropertyName = "copyrightText")]
+        [JsonPropertyName("copyrightText")]
         public string CopyrightText { get; set; }
 
-        [JsonProperty(PropertyName = "supportedQueryFormats")]
+        [JsonPropertyName("supportedQueryFormats")]
         public string SupportedQueryFormats => "JSON";
 
-        [JsonProperty(PropertyName = "layers")]
+        [JsonPropertyName("layers")]
         public JsonIdName[] Layers { get; set; }
 
-        [JsonProperty(PropertyName = "fullExtent")]
+        [JsonPropertyName("fullExtent")]
         public JsonMapService.Extent FullExtent { get; set; }
 
-        [JsonProperty(PropertyName = "initialExtent")]
+        [JsonPropertyName("initialExtent")]
         public JsonMapService.Extent InitialExtend { get; set; }
 
-        [JsonProperty(PropertyName = "spatialReference")]
+        [JsonPropertyName("spatialReference")]
         public SpatialReference SpatialReferenceInstance { get; set; }
 
-        [JsonProperty(PropertyName = "units")]
+        [JsonPropertyName("units")]
         public string Units { get; set; }
 
-        [JsonProperty(PropertyName = "documentInfo")]
+        [JsonPropertyName("documentInfo")]
         public JsonMapService.DocumentInfoClass DocumentInfo { get; set; }
 
-        [JsonProperty(PropertyName = "capabilities")]
+        [JsonPropertyName("capabilities")]
         public string Capabilities { get; set; }
 
-        [JsonProperty(PropertyName = "datumTransformations")]
+        [JsonPropertyName("datumTransformations")]
         public JsonMapService.DatumTransformationsClass[] DatumTransformations { get; set; }
 
-        [JsonProperty(PropertyName = "supportsDatumTransformation")]
+        [JsonPropertyName("supportsDatumTransformation")]
         public bool SupportsDatumTransformation { get; set; }
 
-        [JsonProperty(PropertyName = "maxRecordCount")]
+        [JsonPropertyName("maxRecordCount")]
         public int MaxRecordCount { get; set; }
 
-        [JsonProperty("maxRecordCountFactor")]
+        [JsonPropertyName("maxRecordCountFactor")]
         public int MaxRecordCountFactor { get; set; }
 
-        [JsonProperty("hasVersionedData")]
+        [JsonPropertyName("hasVersionedData")]
         public bool HasVersionedData { get; set; }
 
-        [JsonProperty("supportsDisconnectedEditing")]
+        [JsonPropertyName("supportsDisconnectedEditing")]
         public bool SupportsDisconnectedEditing { get; set; }
 
-        [JsonProperty("syncEnabled")]
+        [JsonPropertyName("syncEnabled")]
         public bool SyncEnabled { get; set; }
 
-        [JsonProperty("allowGeometryUpdates")]
+        [JsonPropertyName("allowGeometryUpdates")]
         public bool AllowGeometryUpdates { get; set; }
 
-        [JsonProperty("allowTrueCurvesUpdates")]
+        [JsonPropertyName("allowTrueCurvesUpdates")]
         public bool AllowTrueCurvesUpdates { get; set; }
 
-        [JsonProperty("onlyAllowTrueCurveUpdatesByTrueCurveClients")]
+        [JsonPropertyName("onlyAllowTrueCurveUpdatesByTrueCurveClients")]
         public bool OnlyAllowTrueCurveUpdatesByTrueCurveClients { get; set; }
 
-        [JsonProperty("supportsApplyEditsWithGlobalIds")]
+        [JsonPropertyName("supportsApplyEditsWithGlobalIds")]
         public bool SupportsApplyEditsWithGlobalIds { get; set; }
 
-        [JsonProperty("supportsTrueCurve")]
+        [JsonPropertyName("supportsTrueCurve")]
         public bool supportsTrueCurve { get; set; }
 
-        [JsonProperty("tables")]
+        [JsonPropertyName("tables")]
         public IEnumerable<object> Tables { get; set; }
 
-        [JsonProperty("enableZDefaults")]
+        [JsonPropertyName("enableZDefaults")]
         public bool EnableZDefaults { get; set; }
 
-        [JsonProperty("allowUpdateWithoutMValues")]
+        [JsonPropertyName("allowUpdateWithoutMValues")]
         public bool AllowUpdateWithoutMValues { get; set; }
 
         #region Classes

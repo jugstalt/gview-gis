@@ -1,23 +1,23 @@
-﻿using Newtonsoft.Json;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace gView.DataSources.VectorTileCache.Json
 {
     class VectorLayer
     {
-        [JsonProperty("id")]
+        [JsonPropertyName("id")]
         public string Id { get; set; }
 
-        [JsonProperty("description")]
+        [JsonPropertyName("description")]
         public string Description { get; set; }
 
-        [JsonProperty("minzoom")]
+        [JsonPropertyName("minzoom")]
         public int MinZoom { get; set; }
 
-        [JsonProperty("maxzoom")]
+        [JsonPropertyName("maxzoom")]
         public int MaxZoom { get; set; }
 
-        [JsonProperty("fields")]
+        [JsonPropertyName("fields")]
         public Dictionary<string, string> Fields { get; set; }
     }
 }

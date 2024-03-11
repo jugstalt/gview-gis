@@ -1,109 +1,109 @@
 ﻿using gView.Interoperability.GeoServices.Rest.Reflection;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace gView.Interoperability.GeoServices.Rest.Json.Request
 {
     public class JsonQueryLayer
     {
-        //[JsonProperty(PropertyName = "text")]
+        //[JsonPropertyName("text")]
         //public string Text { get; set; }
-        [JsonProperty(PropertyName = "where")]
+        [JsonPropertyName("where")]
         public string Where { get; set; }
 
-        [JsonProperty(PropertyName = "geometry")]
+        [JsonPropertyName("geometry")]
         public string Geometry { get; set; }
 
-        [JsonProperty(PropertyName = "geometryType")]
+        [JsonPropertyName("geometryType")]
         public string geometryType { get; set; }
 
-        [JsonProperty(PropertyName = "inSR")]
+        [JsonPropertyName("inSR")]
         public string InSRef { get; set; }
 
-        [JsonProperty(PropertyName = "relationParam")]
+        [JsonPropertyName("relationParam")]
         public string relationParam { get; set; }
 
-        [JsonProperty(PropertyName = "objectIds")]
+        [JsonPropertyName("objectIds")]
         public string ObjectIds { get; set; }
 
-        [JsonProperty(PropertyName = "time")]
+        [JsonPropertyName("time")]
         public long Time { get; set; }
 
-        [JsonProperty(PropertyName = "distance")]
+        [JsonPropertyName("distance")]
         public double Distance { get; set; }
 
-        [JsonProperty(PropertyName = "units")]
+        [JsonPropertyName("units")]
         public string units { get; set; }
 
-        [JsonProperty(PropertyName = "outFields")]
+        [JsonPropertyName("outFields")]
         public string OutFields { get; set; }
 
-        [JsonProperty(PropertyName = "returnGeometry")]
+        [JsonPropertyName("returnGeometry")]
         public bool ReturnGeometry { get; set; }
 
-        [JsonProperty(PropertyName = "maxAllowableOffset")]
+        [JsonPropertyName("maxAllowableOffset")]
         public int MaxAllowableOffset { get; set; }
 
-        [JsonProperty(PropertyName = "geometryPrecision")]
+        [JsonPropertyName("geometryPrecision")]
         public int GeometryPrecision { get; set; }
 
-        [JsonProperty(PropertyName = "outSR")]
+        [JsonPropertyName("outSR")]
         public string OutSRef { get; set; }
 
-        [JsonProperty(PropertyName = "returnIdsOnly")]
+        [JsonPropertyName("returnIdsOnly")]
         public bool ReturnIdsOnly { get; set; }
 
-        [JsonProperty(PropertyName = "returnCountOnly")]
+        [JsonPropertyName("returnCountOnly")]
         public bool ReturnCountOnly { get; set; }
 
-        [JsonProperty(PropertyName = "returnExtentOnly")]
+        [JsonPropertyName("returnExtentOnly")]
         public bool ReturnExtentOnly { get; set; }
 
-        [JsonProperty(PropertyName = "orderByFields")]
+        [JsonPropertyName("orderByFields")]
         public string OrderByFields { get; set; }
 
-        [JsonProperty(PropertyName = "outStatistics")]
+        [JsonPropertyName("outStatistics")]
         public string OutStatistics { get; set; }
 
-        [JsonProperty(PropertyName = "groupByFieldsForStatistics")]
+        [JsonPropertyName("groupByFieldsForStatistics")]
         public string GroupByFieldsForStatistics { get; set; }
 
-        [JsonProperty(PropertyName = "returnZ")]
+        [JsonPropertyName("returnZ")]
         public bool ReturnZ { get; set; }
 
-        [JsonProperty(PropertyName = "returnM")]
+        [JsonPropertyName("returnM")]
         public bool ReturnM { get; set; }
 
-        [JsonProperty(PropertyName = "returnDistinctValues")]
+        [JsonPropertyName("returnDistinctValues")]
         public bool ReturnDistinctValues { get; set; }
 
-        [JsonProperty(PropertyName = "returnTrueCurves")]
+        [JsonPropertyName("returnTrueCurves")]
         public bool ReturnTrueCurves { get; set; }
 
-        [JsonProperty(PropertyName = "resultOffset")]
+        [JsonPropertyName("resultOffset")]
         public int ResultOffset { get; set; }
 
-        [JsonProperty(PropertyName = "resultRecordCount")]
+        [JsonPropertyName("resultRecordCount")]
         public int ResultRecordCount { get; set; }
 
-        [JsonProperty(PropertyName = "datumTransformation")]
+        [JsonPropertyName("datumTransformation")]
         public string DatumTransformation { get; set; }
 
-        [JsonProperty(PropertyName = "rangeValues")]
+        [JsonPropertyName("rangeValues")]
         public string RangeValues { get; set; }
 
-        [JsonProperty(PropertyName = "quantizationParameters")]
+        [JsonPropertyName("quantizationParameters")]
         public string QuantizationParameters { get; set; }
 
-        [JsonProperty(PropertyName = "parameterValues")]
+        [JsonPropertyName("parameterValues")]
         public string ParameterValues { get; set; }
 
-        [JsonProperty(PropertyName = "historicMoment")]
+        [JsonPropertyName("historicMoment")]
         public long HistoricMoment { get; set; }
 
-        [JsonProperty(PropertyName = "layerId")]
+        [JsonPropertyName("layerId")]
         public int LayerId { get; set; }
 
-        [JsonProperty(PropertyName = "f")]
+        [JsonPropertyName("f")]
         [FormInput(Values = new string[] { "json", "pjson", "geojson" })]
         public string OutputFormat { get; set; }
     }

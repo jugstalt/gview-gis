@@ -1,9 +1,9 @@
-﻿using gView.Framework.Core.Carto;
+﻿using gView.Framework.Common;
+using gView.Framework.Core.Carto;
 using gView.Framework.Core.Data;
 using gView.Framework.Core.Geometry;
-using gView.Framework.Common;
 using gView.Interoperability.GeoServices.Rest.Reflection;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace gView.Interoperability.GeoServices.Rest.Json.Request
 {
@@ -69,40 +69,40 @@ namespace gView.Interoperability.GeoServices.Rest.Json.Request
             }
         }
 
-        [JsonProperty(PropertyName = "geometry")]
+        [JsonPropertyName("geometry")]
         public string Geometry { get; set; }
 
-        [JsonProperty(PropertyName = "geometryType")]
+        [JsonPropertyName("geometryType")]
         public string geometryType { get; set; }
 
-        [JsonProperty(PropertyName = "sr")]
+        [JsonPropertyName("sr")]
         public string SRef { get; set; }
 
-        [JsonProperty(PropertyName = "layerDefs")]
+        [JsonPropertyName("layerDefs")]
         public string LayerDefs { get; set; }
 
-        [JsonProperty(PropertyName = "layers")]
+        [JsonPropertyName("layers")]
         public string Layers { get; set; }
 
-        [JsonProperty(PropertyName = "tolerance")]
+        [JsonPropertyName("tolerance")]
         public int PixelTolerance { get; set; }
 
-        [JsonProperty(PropertyName = "mapExtent")]
+        [JsonPropertyName("mapExtent")]
         public string MapExtent { get; set; }  // <xmin>, <ymin>, <xmax>, <ymax>
 
-        [JsonProperty(PropertyName = "imageDisplay")]
+        [JsonPropertyName("imageDisplay")]
         public string ImageDisplay { get; set; }  // <width>, <height>, <dpi>
 
-        [JsonProperty(PropertyName = "returnGeometry")]
+        [JsonPropertyName("returnGeometry")]
         public bool ReturnGeometry { get; set; }
 
-        [JsonProperty(PropertyName = "returnZ")]
+        [JsonPropertyName("returnZ")]
         public bool ReturnZ { get; set; }
 
-        [JsonProperty(PropertyName = "returnM")]
+        [JsonPropertyName("returnM")]
         public bool ReturnM { get; set; }
 
-        [JsonProperty(PropertyName = "f")]
+        [JsonPropertyName("f")]
         [FormInput(Values = new string[] { "json", "pjson" })]
         public string OutputFormat { get; set; }
     }

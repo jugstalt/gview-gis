@@ -25,7 +25,6 @@ using gView.Server.Services.MapServer;
 using gView.Server.Services.Security;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Primitives;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -294,7 +293,7 @@ namespace gView.Server.Controllers
                 Request.Form :
                 Request.Query);
 
-            ServiceRequest serviceRequest = new ServiceRequest(id, folder, JsonConvert.SerializeObject(exportMap))
+            ServiceRequest serviceRequest = new ServiceRequest(id, folder, JsonSerializer.Serialize(exportMap))
             {
                 OnlineResource = _mapServerService.Options.OnlineResource,
                 OutputUrl = _mapServerService.Options.OutputUrl,
@@ -357,7 +356,7 @@ namespace gView.Server.Controllers
                     Request.Query);
                 queryLayer.LayerId = layerId;
 
-                ServiceRequest serviceRequest = new ServiceRequest(id, folder, JsonConvert.SerializeObject(queryLayer))
+                ServiceRequest serviceRequest = new ServiceRequest(id, folder, JsonSerializer.Serialize(queryLayer))
                 {
                     OnlineResource = _mapServerService.Options.OnlineResource,
                     OutputUrl = _mapServerService.Options.OutputUrl,
@@ -441,7 +440,7 @@ namespace gView.Server.Controllers
                     Request.Form :
                     Request.Query);
 
-                ServiceRequest serviceRequest = new ServiceRequest(id, folder, JsonConvert.SerializeObject(identify))
+                ServiceRequest serviceRequest = new ServiceRequest(id, folder, JsonSerializer.Serialize(identify))
                 {
                     OnlineResource = _mapServerService.Options.OnlineResource,
                     OutputUrl = _mapServerService.Options.OutputUrl,
@@ -681,7 +680,7 @@ namespace gView.Server.Controllers
                     Request.Query);
                 queryLayer.LayerId = layerId;
 
-                ServiceRequest serviceRequest = new ServiceRequest(id, folder, JsonConvert.SerializeObject(queryLayer))
+                ServiceRequest serviceRequest = new ServiceRequest(id, folder, JsonSerializer.Serialize(queryLayer))
                 {
                     OnlineResource = _mapServerService.Options.OnlineResource,
                     OutputUrl = _mapServerService.Options.OutputUrl,
@@ -733,7 +732,7 @@ namespace gView.Server.Controllers
                     Request.Query);
                 editRequest.LayerId = layerId;
 
-                ServiceRequest serviceRequest = new ServiceRequest(id, folder, JsonConvert.SerializeObject(editRequest))
+                ServiceRequest serviceRequest = new ServiceRequest(id, folder, JsonSerializer.Serialize(editRequest))
                 {
                     OnlineResource = _mapServerService.Options.OnlineResource,
                     OutputUrl = _mapServerService.Options.OutputUrl,
@@ -760,7 +759,7 @@ namespace gView.Server.Controllers
 
                 #endregion
 
-                return Result(JsonConvert.DeserializeObject<JsonFeatureServerResponse>(serviceRequest.ResponseAsString));
+                return Result(JsonSerializer.Deserialize<JsonFeatureServerResponse>(serviceRequest.ResponseAsString));
             },
             onException: (ex) =>
             {
@@ -796,7 +795,7 @@ namespace gView.Server.Controllers
                     Request.Query);
                 editRequest.LayerId = layerId;
 
-                ServiceRequest serviceRequest = new ServiceRequest(id, folder, JsonConvert.SerializeObject(editRequest))
+                ServiceRequest serviceRequest = new ServiceRequest(id, folder, JsonSerializer.Serialize(editRequest))
                 {
                     OnlineResource = _mapServerService.Options.OnlineResource,
                     OutputUrl = _mapServerService.Options.OutputUrl,
@@ -823,7 +822,7 @@ namespace gView.Server.Controllers
 
                 #endregion
 
-                return Result(JsonConvert.DeserializeObject<JsonFeatureServerResponse>(serviceRequest.ResponseAsString));
+                return Result(JsonSerializer.Deserialize<JsonFeatureServerResponse>(serviceRequest.ResponseAsString));
             },
             onException: (ex) =>
             {
@@ -859,7 +858,7 @@ namespace gView.Server.Controllers
                     Request.Query);
                 editRequest.LayerId = layerId;
 
-                ServiceRequest serviceRequest = new ServiceRequest(id, folder, JsonConvert.SerializeObject(editRequest))
+                ServiceRequest serviceRequest = new ServiceRequest(id, folder, JsonSerializer.Serialize(editRequest))
                 {
                     OnlineResource = _mapServerService.Options.OnlineResource,
                     OutputUrl = _mapServerService.Options.OutputUrl,
@@ -886,7 +885,7 @@ namespace gView.Server.Controllers
 
                 #endregion
 
-                return Result(JsonConvert.DeserializeObject<JsonFeatureServerResponse>(serviceRequest.ResponseAsString));
+                return Result(JsonSerializer.Deserialize<JsonFeatureServerResponse>(serviceRequest.ResponseAsString));
             },
             onException: (ex) =>
             {
@@ -1893,7 +1892,7 @@ namespace gView.Server.Controllers
                         if ((val.Trim().StartsWith("{") && val.Trim().EndsWith("}")) ||
                             (val.Trim().StartsWith("[") && val.Trim().EndsWith("]")))
                         {
-                            propertyInfo.SetValue(instance, JsonConvert.DeserializeObject(val, propertyInfo.PropertyType));
+                            propertyInfo.SetValue(instance, JsonSerializer.Deserialize(val, propertyInfo.PropertyType));
                         }
                         else
                         {

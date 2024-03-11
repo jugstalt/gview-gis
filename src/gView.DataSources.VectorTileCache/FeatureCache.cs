@@ -4,11 +4,11 @@ using gView.Framework.Core.Geometry;
 using gView.Framework.Data.Abstraction;
 using gView.Framework.Geometry;
 using Mapbox.Vector.Tile;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace gView.DataSources.VectorTileCache
@@ -126,7 +126,7 @@ namespace gView.DataSources.VectorTileCache
 
         public string ToGeoJson(string layername)
         {
-            return JsonConvert.SerializeObject(
+            return JsonSerializer.Serialize(
                 new { type = "FeatureCollection", features = _features[layername] }
                 );
         }

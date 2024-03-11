@@ -1,38 +1,44 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace gView.Interoperability.GeoServices.Rest.Json.FeatureServer
 {
     public class JsonFeatureServerResponse
     {
-        [JsonProperty(PropertyName = "addResults", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("addResults")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public JsonResponse[] AddResults { get; set; }
 
-        [JsonProperty(PropertyName = "updateResults", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("updateResults")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public JsonResponse[] UpdateResults { get; set; }
 
-        [JsonProperty(PropertyName = "deleteResults", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("deleteResults")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public JsonResponse[] DeleteResults { get; set; }
 
         #region Classses
 
         public class JsonResponse
         {
-            [JsonProperty(PropertyName = "success")]
+            [JsonPropertyName("success")]
             public bool Success { get; set; }
 
-            [JsonProperty(PropertyName = "objectId", NullValueHandling = NullValueHandling.Ignore)]
+            [JsonPropertyName("objectId")]
+            [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
             public int? ObjectId { get; set; }
 
-            [JsonProperty(PropertyName = "error", NullValueHandling = NullValueHandling.Ignore)]
+            [JsonPropertyName("error")]
+            [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
             public JsonError Error { get; set; }
         }
 
         public class JsonError
         {
-            [JsonProperty(PropertyName = "code")]
+            [JsonPropertyName("code")]
             public int Code { get; set; }
 
-            [JsonProperty(PropertyName = "description")]
+            [JsonPropertyName("description")]
             public string Description { get; set; }
         }
 

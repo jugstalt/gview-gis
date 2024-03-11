@@ -3,7 +3,7 @@ using gView.Framework.Common;
 using gView.Framework.Web.Abstraction;
 using gView.GraphicsEngine;
 using gView.GraphicsEngine.Abstraction;
-using Newtonsoft.Json;
+using System.Text.Json;
 using System;
 using System.IO;
 using System.Net;

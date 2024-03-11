@@ -1,13 +1,13 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 
 namespace gView.Framework.OGC.GeoJson
 {
     public class GeoJsonFeatures
     {
-        [JsonProperty("type")]
+        [JsonPropertyName("type")]
         public string Type => "FeatureCollection";
 
-        [JsonProperty("features")]
+        [JsonPropertyName("features")]
         public GeoJsonFeature[] Features { get; set; }
     }
 }

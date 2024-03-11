@@ -1,15 +1,15 @@
 ﻿using gView.Framework.Common.Reflection;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace gView.Interoperability.GeoServices.Rest.Json
 {
     public class JsonIdName
     {
-        [JsonProperty(PropertyName = "id")]
-        [HtmlLinkAttribute("{url}/{0}")]
+        [JsonPropertyName("id")]
+        [HtmlLink("{url}/{0}")]
         public int Id { get; set; }
 
-        [JsonProperty(PropertyName = "name")]
+        [JsonPropertyName("name")]
         public string Name { get; set; }
     }
 }

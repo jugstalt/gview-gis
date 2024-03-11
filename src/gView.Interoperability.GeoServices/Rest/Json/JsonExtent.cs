@@ -1,23 +1,23 @@
 ﻿using gView.Interoperability.GeoServices.Rest.Json.Features;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace gView.Interoperability.GeoServices.Rest.Json
 {
     public class JsonExtent
     {
-        [JsonProperty("xmin")]
+        [JsonPropertyName("xmin")]
         public double Xmin { get; set; }
 
-        [JsonProperty("ymin")]
+        [JsonPropertyName("ymin")]
         public double Ymin { get; set; }
 
-        [JsonProperty("xmax")]
+        [JsonPropertyName("xmax")]
         public double Xmax { get; set; }
 
-        [JsonProperty("ymax")]
+        [JsonPropertyName("ymax")]
         public double Ymax { get; set; }
 
-        [JsonProperty("spatialReference")]
+        [JsonPropertyName("spatialReference")]
         public JsonSpatialReference SpatialReference { get; set; }
 
         public bool IsInitialized()

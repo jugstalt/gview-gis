@@ -1,21 +1,22 @@
 ﻿using gView.Framework.Core.Data;
-using Newtonsoft.Json;
+using System.Text.Json;
 using System;
+using System.Text.Json.Serialization;
 
 namespace gView.Interoperability.GeoServices.Rest.Json
 {
     public class JsonField
     {
-        [JsonProperty("name")]
+        [JsonPropertyName("name")]
         public string Name { get; set; }
 
-        [JsonProperty("type")]
+        [JsonPropertyName("type")]
         public string Type { get; set; }
 
-        [JsonProperty("alias")]
+        [JsonPropertyName("alias")]
         public string Alias { get; set; }
 
-        [JsonProperty("domain")]
+        [JsonPropertyName("domain")]
         public JsonDomain Domain { get; set; }
 
         public FieldType GetFieldType()

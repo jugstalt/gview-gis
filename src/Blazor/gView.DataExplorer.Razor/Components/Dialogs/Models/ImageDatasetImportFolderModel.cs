@@ -1,6 +1,7 @@
 ﻿using gView.Blazor.Models.Dialogs;
 
 namespace gView.DataExplorer.Razor.Components.Dialogs.Models;
+
 public class ImageDatasetImportFolderModel : IDialogResultItem
 {
     public string Folder { get; set; } = string.Empty;

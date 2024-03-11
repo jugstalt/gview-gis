@@ -1,23 +1,28 @@
 ﻿using gView.Interoperability.GeoServices.Rest.Json.Renderers.SimpleRenderers;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace gView.Interoperability.GeoServices.Rest.Json.DynamicLayers
 {
     public class DynamicLayerDrawingInfo
     {
-        [JsonProperty("renderer", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("renderer")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public JsonRenderer Renderer { get; set; }
 
-        [JsonProperty("transparency", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("transparency")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public int? Transparency { get; set; }
 
-        [JsonProperty("scaleSymbols", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("scaleSymbols")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public bool? ScaleSymbols { get; set; }
 
-        [JsonProperty("showLabels", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("showLabels")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public bool? ShowLabels { get; set; }
 
-        [JsonProperty("labelingInfo", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("labelingInfo")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public LabelingInfo[] LabelingInfo { get; set; }
     }
 }

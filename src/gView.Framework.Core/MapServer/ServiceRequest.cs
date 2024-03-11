@@ -1,5 +1,5 @@
 ﻿using gView.Framework.Core.Common;
-using Newtonsoft.Json;
+using System.Text.Json;
 using System;
 
 namespace gView.Framework.Core.MapServer
@@ -45,7 +45,7 @@ namespace gView.Framework.Core.MapServer
                 }
                 else
                 {
-                    return JsonConvert.SerializeObject(_response);
+                    return JsonSerializer.Serialize(_response);
                 }
             }
         }

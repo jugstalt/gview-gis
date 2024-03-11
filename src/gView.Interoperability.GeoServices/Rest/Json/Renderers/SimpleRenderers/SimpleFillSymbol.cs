@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 
 namespace gView.Interoperability.GeoServices.Rest.Json.Renderers.SimpleRenderers
 {
@@ -9,16 +9,16 @@ namespace gView.Interoperability.GeoServices.Rest.Json.Renderers.SimpleRenderers
             this.Type = "esriSFS";
         }
 
-        [JsonProperty("type")]
+        [JsonPropertyName("type")]
         public string Type { get; set; }
 
-        [JsonProperty("style")]
+        [JsonPropertyName("style")]
         public string Style { get; set; }
 
-        [JsonProperty("color")]
+        [JsonPropertyName("color")]
         public int[] Color { get; set; }
 
-        [JsonProperty("outline")]
+        [JsonPropertyName("outline")]
         public SimpleLineSymbol Outline { get; set; }
     }
 

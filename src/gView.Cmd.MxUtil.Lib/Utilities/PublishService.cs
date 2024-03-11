@@ -3,7 +3,7 @@ using gView.Cmd.MxlUtil.Lib.Abstraction;
 using gView.Cmd.MxlUtil.Lib.Exceptions;
 using gView.Interoperability.GeoServices.Rest.Json;
 using gView.Server.Models;
-using Newtonsoft.Json;
+using System.Text.Json;
 using System.Net.Http.Headers;
 using System.Text;
 

@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json;
 using System;
 using System.Collections.Generic;
 
@@ -6,16 +6,16 @@ namespace gView.Cmd.FillElasticSearch
 {
     public class ImportConfig
     {
-        [JsonProperty(PropertyName = "elastic_search_connection")]
+        [JsonPropertyName("elastic_search_connection")]
         public ElasticSearchConnection Connection
         {
             get; set;
         }
 
-        [JsonProperty(PropertyName = "index_schema")]
+        [JsonPropertyName("index_schema")]
         public IndexSchema Schema { get; set; }
 
-        [JsonProperty(PropertyName = "datasets")]
+        [JsonPropertyName("datasets")]
         public DatasetConnection[] Datasets
         {
             get; set;
@@ -25,13 +25,13 @@ namespace gView.Cmd.FillElasticSearch
 
         public class ElasticSearchConnection
         {
-            [JsonProperty(PropertyName = "url")]
+            [JsonPropertyName("url")]
             public string Url { get; set; }
 
-            [JsonProperty(PropertyName = "default_index")]
+            [JsonPropertyName("default_index")]
             public string DefaultIndex { get; set; }
 
-            [JsonProperty(PropertyName = "delete_index")]
+            [JsonPropertyName("delete_index")]
             public bool DeleteIndex { get; set; }
 
             public string MetaIndex => $"{this.DefaultIndex}.meta";
@@ -39,69 +39,69 @@ namespace gView.Cmd.FillElasticSearch
 
         public class DatasetConnection
         {
-            [JsonProperty(PropertyName = "dataset_guid")]
+            [JsonPropertyName("dataset_guid")]
             public Guid DatasetGuid { get; set; }
 
-            [JsonProperty(PropertyName = "connection_string")]
+            [JsonPropertyName("connection_string")]
             public string ConnectionString { get; set; }
 
-            [JsonProperty(PropertyName = "feature_classes")]
+            [JsonPropertyName("feature_classes")]
             public IEnumerable<FeatureClassDefinition> FeatureClasses { get; set; }
         }
 
         public class FeatureClassDefinition
         {
-            [JsonProperty(PropertyName = "name")]
+            [JsonPropertyName("name")]
             public string Name { get; set; }
 
-            [JsonProperty(PropertyName = "srs")]
+            [JsonPropertyName("srs")]
             public int SRefId { get; set; }
 
-            [JsonProperty(PropertyName = "objectid_fieldname")]
+            [JsonPropertyName("objectid_fieldname")]
             public string ObjectOidField { get; set; }
 
-            [JsonProperty(PropertyName = "geometry")]
+            [JsonPropertyName("geometry")]
             public bool UserGeometry { get; set; }
 
-            [JsonProperty(PropertyName = "category")]
+            [JsonPropertyName("category")]
             public string Category { get; set; }
 
-            [JsonProperty(PropertyName = "index_proto")]
+            [JsonPropertyName("index_proto")]
             public Item IndexItemProto { get; set; }
 
-            [JsonProperty(PropertyName = "metadata")]
+            [JsonPropertyName("metadata")]
             public Meta Meta { get; set; }
 
-            [JsonProperty(PropertyName = "replace")]
+            [JsonPropertyName("replace")]
             public IEnumerable<Replacements> Replacements { get; set; }
 
-            [JsonProperty(PropertyName = "filter")]
+            [JsonPropertyName("filter")]
             public string Filter { get; set; }
         }
 
         public class IndexSchema
         {
-            [JsonProperty(PropertyName = "fields")]
+            [JsonPropertyName("fields")]
             public IEnumerable<IndexSchemaField> Fields { get; set; }
         }
         public class IndexSchemaField
         {
-            [JsonProperty(PropertyName = "name")]
+            [JsonPropertyName("name")]
             public string Name { get; set; }
 
-            [JsonProperty(PropertyName = "type")]
+            [JsonPropertyName("type")]
             public string Type { get; set; }
 
-            [JsonProperty(PropertyName = "indexed")]
+            [JsonPropertyName("indexed")]
             public bool Indexed { get; set; }
         }
 
         public class Replacements
         {
-            [JsonProperty(PropertyName = "from")]
+            [JsonPropertyName("from")]
             public string From { get; set; }
 
-            [JsonProperty(PropertyName = "to")]
+            [JsonPropertyName("to")]
             public string To { get; set; }
         }
 

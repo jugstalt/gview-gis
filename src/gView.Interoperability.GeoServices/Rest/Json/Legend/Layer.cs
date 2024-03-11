@@ -1,25 +1,25 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 
 namespace gView.Interoperability.GeoServices.Rest.Json.Legend
 {
     public class Layer
     {
-        [JsonProperty("layerId")]
+        [JsonPropertyName("layerId")]
         public int LayerId { get; set; }
 
-        [JsonProperty("layerName")]
+        [JsonPropertyName("layerName")]
         public string LayerName { get; set; }
 
-        [JsonProperty("layerType")]
+        [JsonPropertyName("layerType")]
         public string LayerType { get; set; }
 
-        [JsonProperty("minScale")]
+        [JsonPropertyName("minScale")]
         public int MinScale { get; set; }
 
-        [JsonProperty("maxScale")]
+        [JsonPropertyName("maxScale")]
         public int MaxScale { get; set; }
 
-        [JsonProperty("legend")]
+        [JsonPropertyName("legend")]
         public Legend[] Legend { get; set; }
     }
 }

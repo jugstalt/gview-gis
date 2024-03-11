@@ -1,28 +1,30 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 
 namespace gView.Interoperability.GeoServices.Rest.Json.Response
 {
     public class JsonExportResponse : JsonStopWatch
     {
-        [JsonProperty("href", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("href")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public string Href { get; set; }
 
-        [JsonProperty("imageData", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("imageData")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public string ImageData { get; set; }
 
-        [JsonProperty("contentType")]
+        [JsonPropertyName("contentType")]
         public string ContentType { get; set; }
 
-        [JsonProperty("width")]
+        [JsonPropertyName("width")]
         public int Width { get; set; }
 
-        [JsonProperty("height")]
+        [JsonPropertyName("height")]
         public int Height { get; set; }
 
-        [JsonProperty("extent")]
+        [JsonPropertyName("extent")]
         public JsonExtent Extent { get; set; }
 
-        [JsonProperty("scale")]
+        [JsonPropertyName("scale")]
         public double Scale { get; set; }
     }
 }

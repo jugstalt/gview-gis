@@ -8,7 +8,7 @@ using gView.Framework.Data.Filters;
 using gView.Framework.Data.TileCache;
 using gView.Framework.Geometry;
 using gView.Framework.Geometry.GeoProcessing;
-using Newtonsoft.Json;
+using System.Text.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -46,7 +46,7 @@ internal class ClipCompact
         }
 
         string cacheSourceFolder = configFile.Directory!.FullName;
-        CompactTileConfig cacheConfig = JsonConvert.DeserializeObject<CompactTileConfig>(File.ReadAllText(configFile.FullName))!;
+        CompactTileConfig cacheConfig = JsonSerializer.Deserialize<CompactTileConfig>(File.ReadAllText(configFile.FullName))!;
         var cacheSRef = SpatialReference.FromID($"epsg:{cacheConfig.Epsg}");
         if(cacheSRef is null || cacheSRef.EpsgCode == 0)
         {
@@ -279,7 +279,7 @@ internal class ClipCompact
 
             File.WriteAllText(
                     System.IO.Path.Combine(cacheTargetFolder, "conf.json"), 
-                    JsonConvert.SerializeObject(cacheConfig, Formatting.Indented)
+                    JsonSerializer.Serialize(cacheConfig, new JsonSerializerOptions() { WriteIndented = true })
                 );
 
             #endregion

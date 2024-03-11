@@ -4,7 +4,7 @@ using gView.Framework.Core.Common;
 using gView.Framework.Common;
 using gView.Server.AppCode.Extensions;
 using gView.Server.Services.MapServer;
-using Newtonsoft.Json;
+using System.Text.Json;
 using System;
 using System.IO;
 using System.Linq;
@@ -84,7 +84,7 @@ namespace gView.Server.AppCode
             }
             else
             {
-                await File.WriteAllTextAsync(fi.FullName, JsonConvert.SerializeObject(_settings));
+                await File.WriteAllTextAsync(fi.FullName, JsonSerializer.Serialize(_settings));
             }
         }
 
@@ -154,7 +154,7 @@ namespace gView.Server.AppCode
 
                 if (fi.Exists)
                 {
-                    _settings = JsonConvert.DeserializeObject<MapServiceSettings>(
+                    _settings = JsonSerializer.Deserialize<MapServiceSettings>(
                         await File.ReadAllTextAsync(fi.FullName));
                     _settingsLastWriteTime = fi.LastWriteTimeUtc;
                 }
@@ -481,134 +481,5 @@ namespace gView.Server.AppCode
 
             return false;
         }
-    }
-
-    public class MapServiceSettings : IMapServiceSettings
-    {
-        public MapServiceSettings()
-        {
-            this.Status = MapServiceStatus.Idle;
-            this.RefreshServiceTicks = 0;
-        }
-
-        [JsonProperty("status")]
-        public MapServiceStatus Status { get; set; }
-
-        [JsonProperty("accessrules")]
-        [JsonConverter(typeof(ConcreteTypeConverter<MapServiceAccess[]>))]
-        public IMapServiceAccess[] AccessRules { get; set; }
-
-        [JsonIgnore]
-        public DateTime RefreshService { get; set; }
-
-        [JsonProperty("refreshticks")]
-        public long RefreshServiceTicks
-        {
-            get { return RefreshService.Ticks; }
-            set { RefreshService = new DateTime(value, DateTimeKind.Utc); }
-        }
-
-        [JsonProperty("onlineresource", NullValueHandling = NullValueHandling.Ignore)]
-        public string OnlineResource { get; set; }
-        [JsonProperty("outputurl", NullValueHandling = NullValueHandling.Ignore)]
-        public string OutputUrl { get; set; }
-
-        #region Classes
-
-        public class MapServiceAccess : IMapServiceAccess
-        {
-            [JsonProperty("username")]
-            public string Username { get; set; }
-
-            private string[] _serviceTypes = null;
-
-            [JsonProperty("servicetypes")]
-            public string[] ServiceTypes
-            {
-                get { return _serviceTypes; }
-                internal set { _serviceTypes = value; }
-            }
-
-            public void AddServiceType(string serviceType)
-            {
-                if (String.IsNullOrWhiteSpace(serviceType))
-                {
-                    return;
-                }
-
-                serviceType = serviceType.ToLower();
-
-                if (_serviceTypes == null)
-                {
-                    _serviceTypes = new string[] { serviceType.ToLower() };
-                }
-                else
-                {
-                    if (this.ServiceTypes?.Where(t => t.ToLower() == serviceType.ToLower()).Count() > 0)
-                    {
-                        return;
-                    }
-
-                    Array.Resize(ref _serviceTypes, _serviceTypes.Length + 1);
-                    _serviceTypes[_serviceTypes.Length - 1] = serviceType;
-                }
-            }
-
-            public void RemoveServiceType(string serviceType)
-            {
-                if (_serviceTypes == null || this.ServiceTypes?.Where(t => t.ToLower() == serviceType.ToLower()).Count() == 0)
-                {
-                    return;
-                }
-
-                _serviceTypes = _serviceTypes.Where(s => s.ToLower() != serviceType.ToLower()).ToArray();
-            }
-
-            public bool IsAllowed(string serviceType)
-            {
-                if (_serviceTypes == null || _serviceTypes.Length == 0)
-                {
-                    return false;
-                }
-
-                serviceType = serviceType.ToLower();
-
-                if (_serviceTypes.Contains(serviceType))
-                {
-                    return true;
-                }
-
-                if (serviceType.StartsWith("_") && _serviceTypes.Contains("_all"))
-                {
-                    return true;
-                }
-
-                return false;
-            }
-        }
-
-        #endregion
-
-        #region Json Converter
-
-        public class ConcreteTypeConverter<T> : JsonConverter
-        {
-            public override bool CanConvert(Type objectType)
-            {
-                return true;
-            }
-
-            public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
-            {
-                return serializer.Deserialize<T>(reader);
-            }
-
-            public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
-            {
-                serializer.Serialize(writer, value);
-            }
-        }
-
-        #endregion
     }
 }
