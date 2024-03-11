@@ -1,7 +1,9 @@
 ﻿using gView.DataExplorer.Core.Models.Content;
 using gView.DataExplorer.Plugins.ExplorerObjects.Base;
+using gView.DataExplorer.Plugins.ExplorerObjects.Extensions;
 using gView.Framework.Core.Common;
 using gView.Framework.DataExplorer.Abstraction;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 
@@ -9,7 +11,8 @@ namespace gView.DataExplorer.Plugins.ExplorerObjects.Tiles;
 
 [RegisterPlugIn("15A4512C-78CC-43EC-9DBA-DCCEE1D1406E")]
 public class TileBundleFileObject : ExplorerObjectCls<IExplorerObject, TileBundleContent>,
-                                   IExplorerFileObject
+                                    IExplorerFileObject,
+                                    IExplorerObjectCustomContentValues
 {
     private string _filePath = "";
 
@@ -74,6 +77,13 @@ public class TileBundleFileObject : ExplorerObjectCls<IExplorerObject, TileBundl
     {
 
     }
+
+    #region IExplorerObjectCustomContentValues
+
+    public IDictionary<string, object?> GetCustomContentValues()
+        => _filePath.GetFileProperties();
+
+    #endregion
 
     public Task<object?> GetInstanceAsync()
     {

@@ -18,6 +18,9 @@
                     <MudListItem Icon="@IconService.FromString("basic:settings")" Style="white-space:nowrap"
                                  Value="Page.General" Text="Map / Display" 
                                  OnClick="() => _drawerIsOpen = false" />
+                    <MudListItem Icon="@IconService.FromString("webgis:polygon-highlighted")" Style="white-space:nowrap"
+                                Value="Page.Appearence" Text="Appearence"
+                                OnClick="() => _drawerIsOpen = false" />
                     <MudListItem Icon="@IconService.FromString("basic:globe-table")" Style="white-space:nowrap"
                                  Value="Page.SpatialReference" Text="Spatial Reference" 
                                  OnClick="() => _drawerIsOpen = false" />
@@ -74,7 +77,58 @@
                         <MudTextField Label="Image Size" ReadOnly="true"
                                       Value="@($"{Model.Map.Display.ImageWidth},{Model.Map.Display.ImageHeight}")" />
                     </GvCardContent>
-                </GvCard>               
+                    </GvCard>
+                }
+            else if(Page.Appearence.Equals(_currentTab))
+            {
+                <GvGrid ColumnCount="2">
+                    <GvGridItem Span="1">
+                        <GvCard Title="Labelling">
+                            <GvCardContent>
+                                <MudText Typo="Typo.body1">
+                                   Set smoothing mode for all labels in the map. 
+                                   Attention: there is no 'undo' for this method. 
+                                   Please save projekt before press button.
+                                </MudText>
+                            </GvCardContent>
+                            <GvCardActions>
+                                <MudButton Variant="Variant.Filled"
+                                           Color="Color.Secondary"
+                                           OnClick="() => OnSetLabelSmoothing(SymbolSmoothing.None)" >
+                                    No Smooting
+                                </MudButton>
+                                <MudButton Variant="Variant.Filled"
+                                            Color="Color.Primary"
+                                            OnClick="() => OnSetLabelSmoothing(SymbolSmoothing.AntiAlias)">
+                                    Antialias
+                                </MudButton>
+                            </GvCardActions>
+                        </GvCard>
+                    </GvGridItem>
+                    <GvGridItem Span="1">
+                        <GvCard Title="Feature Rendering">
+                            <GvCardContent>
+                                <MudText Typo="Typo.body1">
+                                    Set smoothing mode for all features in the map. 
+                                    Attention: there is no 'undo' for this method. 
+                                    Please save projekt before press button.
+                                </MudText>
+                            </GvCardContent>
+                            <GvCardActions>
+                                <MudButton Variant="Variant.Filled"
+                                           Color="Color.Secondary"
+                                           OnClick="() => OnSetFeatureSmoothing(SymbolSmoothing.None)">
+                                    No Smooting
+                                </MudButton>
+                                <MudButton Variant="Variant.Filled"
+                                            Color="Color.Primary"
+                                            OnClick="() => OnSetFeatureSmoothing(SymbolSmoothing.AntiAlias)">
+                                    Antialias
+                                </MudButton>
+                            </GvCardActions>
+                        </GvCard>
+                    </GvGridItem>
+                </GvGrid>
             }
             else if (Page.SpatialReference.Equals(_currentTab))
             {
@@ -181,11 +235,12 @@
     private enum Page
     {
         General = 0,
-        SpatialReference = 1,
-        DefaultLayerSpatialReference = 2,
-        Description = 3,
-        Resources = 4,
-        MapService = 5
+        Appearence = 1,
+        SpatialReference = 2,
+        DefaultLayerSpatialReference = 3,
+        Description = 4,
+        Resources = 5,
+        MapService = 6
     }
     private bool _drawerIsOpen = false;
     private object _currentTab = Page.General;
@@ -196,6 +251,62 @@
     {
         base.OnInitialized();
     }
+
+    private void OnSetLabelSmoothing(SymbolSmoothing smooting) => Handle(() => 
+    {
+        if (Model.Map?.MapElements is null)
+        {
+            return;
+        }
+
+        foreach (IDatasetElement dsElement in Model.Map.MapElements)
+        {
+            IFeatureLayer? fLayer = dsElement as IFeatureLayer;
+            if (fLayer?.LabelRenderer == null)
+            {
+                continue;
+            }
+
+            ILabelRenderer lRenderer = fLayer.LabelRenderer;
+            foreach (ISymbol symbol in lRenderer.Symbols)
+            {
+                if (symbol == null)
+                {
+                    continue;
+                }
+
+                symbol.SymbolSmoothingMode = smooting;
+            }
+        }
+    });
+
+    private void OnSetFeatureSmoothing(SymbolSmoothing smooting) => Handle(() =>
+    {
+        if (Model.Map?.MapElements is null)
+        {
+            return;
+        }
+
+        foreach (IDatasetElement dsElement in Model.Map.MapElements)
+        {
+            IFeatureLayer? fLayer = dsElement as IFeatureLayer;
+            if (fLayer?.FeatureRenderer == null)
+            {
+                continue;
+            }
+
+            IFeatureRenderer fRenderer = fLayer.FeatureRenderer;
+            foreach (ISymbol symbol in fRenderer.Symbols)
+            {
+                if (symbol == null)
+                {
+                    continue;
+                }
+
+                symbol.SymbolSmoothingMode = smooting;
+            }
+        }
+    });
 
     protected Task Apply()
     {

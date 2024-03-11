@@ -68,26 +68,46 @@
                 
             </MudToolBar>
 
+            <MudToolBar>
+                <MudTextField @bind-Value="_filterString"
+                              Placeholder="Filter..."
+                              Adornment="Adornment.Start"
+                              AdornmentIcon="@MudBlazor.Icons.Material.Filled.Search"
+                              IconSize="MudBlazor.Size.Medium" Class="mt-0 gview-explorer-content-filter">
+                </MudTextField>
+                @if (!String.IsNullOrEmpty(_filterString))
+                {
+                    <MudIconButton Icon="@MudBlazor.Icons.Material.Outlined.Close"
+                                   OnClick="() => _filterString=string.Empty" />
+                }
+            </MudToolBar>
             <MudPaper Elevation="2">
-                    <MudList Clickable="true" Style="width:900px;max-width:100%;height:420px;overflow:auto" Dense="true">
-                        @if (_selectedRoot?.ParentExplorerObject is not null)
-                        {
-                            <MudListItem @ondblclick="MoveUp">
-                                <div style="display: flex; align-items: center;">
-                                    <MudIcon Icon="@Icons.FromString("basic:triangle-left-up")" Style="margin-right: 6px;" />
-                                    <MudText>..</MudText>
-                                </div>
-                            </MudListItem>
-                        }
-                        @foreach (var exObject in _currentListExplorerObjects)
+                    <MudList Clickable="true"
+                             Style="width:900px;max-width:100%;height:420px;overflow:auto" 
+                             Dense="true">
+                    @if (_selectedRoot?.ParentExplorerObject is not null)
+                    {
+                        <MudListItem @ondblclick="MoveUp">
+                            <div style="display: flex; align-items: center;">
+                                <MudIcon Icon="@Icons.FromString("basic:triangle-left-up")" Style="margin-right: 6px;" />
+                                <MudText>..</MudText>
+                            </div>
+                        </MudListItem>
+                    }
+                    @foreach (var exObject in FilteredCurrentExplorerObjects())
                         {
                             <MudListItem Class="@($"explorer-dialog-item {(Model.Result.ExplorerObjects.Contains(exObject) ? "selected" : "")}")"
                                           OnClick="async (mEvent) => await OnListItemClick(mEvent, exObject)" 
                                           @ondblclick="() => OnListItemDoubleClick(exObject)" >
-                                <div style="display: flex; align-items: center;" >
+                                <div style="display: flex; align-items: center;white-space:nowrap">
                                     <MudIcon Icon="@Icons.FromString(exObject.Icon)" Style="margin-right: 6px;" />
                                     <MudText>@exObject.Name</MudText>
+                                    <MudText Typo="Typo.subtitle2" Color="Color.Tertiary" 
+                                             Style="width:100%;text-align:right">
+                                        @exObject.Type
+                                    </MudText>
                                 </div>
+                                
                             </MudListItem>
                         }
                     </MudList>
@@ -154,6 +174,7 @@
 
     private bool placeToSave = false;
     private bool _isSubmitting = true;
+    private string _filterString = "";
 
     protected override Task OnInitializedAsync() => HandleAsync(() =>
     {
@@ -181,6 +202,8 @@
 
     private Task OnListItemDoubleClick(IExplorerObject exObject) => HandleAsync (async () =>
     {
+        _filterString = "";
+
         if (exObject is IExplorerParentObject)
         {
             await SetRootElementAsync(exObject);
@@ -256,6 +279,8 @@
 
     private Task MoveUp() => HandleAsync(async () =>
     {
+        _filterString = "";
+
         if (_selectedRoot?.ParentExplorerObject is not null)
         {
             await SetRootElementAsync(_selectedRoot.ParentExplorerObject);
@@ -298,10 +323,51 @@
         await base.Submit();
     }
 
+    private IEnumerable<IExplorerObject> FilteredCurrentExplorerObjects()
+    {
+        if (String.IsNullOrWhiteSpace(_filterString))
+        {
+            return _currentListExplorerObjects;
+        }
+
+        var searchStringWords = _filterString
+                                    .Split(' ')
+                                    .Where(s => !string.IsNullOrWhiteSpace(s))
+                                    .ToArray();
+
+
+        return _currentListExplorerObjects.Where(exObject =>
+        {
+            foreach (var searchStringWord in searchStringWords)
+            {
+                bool found = false;
+
+                foreach (var val in new string[] { exObject.Name, exObject.Type ?? "" })
+                {
+                    found = val switch
+                    {
+                        string str => str.Contains(searchStringWord, StringComparison.OrdinalIgnoreCase),
+                        _ => val?.ToString() == searchStringWord
+                    };
+
+                    if (found) { break; }
+                }
+
+                if (!found)
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        });
+    }
+
     #region Helper
 
     private Task SetRootElementAsync(IExplorerObject rootElement)
     {
+        _filterString = "";
         _selectedRoot = rootElement;
         return CollectExplorerObjectsAsync();
     }

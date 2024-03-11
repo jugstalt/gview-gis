@@ -1,4 +1,5 @@
 ﻿using gView.DataExplorer.Plugins.ExplorerObjects.Base;
+using gView.DataExplorer.Plugins.ExplorerObjects.Extensions;
 using gView.DataSources.OGR;
 using gView.Framework.Core.Common;
 using gView.Framework.Core.Data;
@@ -13,6 +14,7 @@ namespace gView.DataExplorer.Plugins.ExplorerObjects.OSGeo.Ogr;
 [RegisterPlugIn("095A5627-DCC3-4A58-AD81-336873CDC73B")]
 public class PersonalGDBExplorerObject : ExplorerParentObject<IExplorerObject>,
                                          IExplorerFileObject,
+                                         IExplorerObjectCustomContentValues,
                                          ISerializableExplorerObject,
                                          IExplorerObjectDeletable,
                                          IPlugInDependencies
@@ -108,6 +110,13 @@ public class PersonalGDBExplorerObject : ExplorerParentObject<IExplorerObject>,
             throw;
         }
     }
+
+    #region IExplorerObjectCustomContentValues
+
+    public IDictionary<string, object?> GetCustomContentValues()
+        => _filename.GetFileProperties();
+
+    #endregion
 
     #region IExplorerParentObject Members
 
