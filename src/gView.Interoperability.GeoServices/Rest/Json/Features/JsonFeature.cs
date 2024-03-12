@@ -15,6 +15,7 @@ namespace gView.Interoperability.GeoServices.Rest.Json.Features
         [JsonPropertyName("attributes")]
         public ExpandoObject Attributes { get; set; }
         //JsonAttributes attributes { get; set; }
+
         [JsonPropertyName("geometry")]
         public JsonGeometry Geometry { get; set; }
     }

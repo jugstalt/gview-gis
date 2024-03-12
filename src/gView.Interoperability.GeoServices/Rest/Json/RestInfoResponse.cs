@@ -20,6 +20,7 @@ namespace gView.Interoperability.GeoServices.Rest.Json
         [JsonPropertyName("secureSoapUrl")]
         public string SecureSoapUrl { get; set; }
 
+        [JsonPropertyName("authInfoInstance")]
         public AuthInfo AuthInfoInstance { get; set; }
 
         #region Classes
