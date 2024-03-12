@@ -1,4 +1,5 @@
-﻿using gView.Framework.Core.Geometry;
+﻿using gView.Framework.Common.Json;
+using gView.Framework.Core.Geometry;
 using gView.Framework.Geometry;
 using System;
 using System.Collections.Generic;
@@ -34,10 +35,10 @@ namespace gView.Framework.OGC.GeoJson
             switch (this.Geometry.Type.ToString().ToLower())
             {
                 case "point":
-                    double[] coordinates = JsonSerializer.Deserialize<double[]>(this.Geometry.Coordinates.ToString());
+                    double[] coordinates = JSerializer.Deserialize<double[]>(this.Geometry.Coordinates.ToString());
                     return new Point(coordinates[0], coordinates[1]);
                 case "linestring":
-                    double[][] lineString = JsonSerializer.Deserialize<double[][]>(this.Geometry.Coordinates.ToString());
+                    double[][] lineString = JSerializer.Deserialize<double[][]>(this.Geometry.Coordinates.ToString());
                     Polyline line = new Polyline();
                     Path path = new Path();
                     line.AddPath(path);
@@ -51,7 +52,7 @@ namespace gView.Framework.OGC.GeoJson
                 case "multilinestring":
                     double[][][] paths = this.Geometry.Coordinates is double[][][]?
                         (double[][][])this.Geometry.Coordinates :
-                        JsonSerializer.Deserialize<double[][][]>(this.Geometry.Coordinates.ToString());
+                        JSerializer.Deserialize<double[][][]>(this.Geometry.Coordinates.ToString());
 
                     Polyline multiLine = new Polyline();
                     for (int p = 0, to = paths.GetLength(0); p < to; p++)
@@ -73,17 +74,17 @@ namespace gView.Framework.OGC.GeoJson
                     {
                         try
                         {
-                            polygonString = JsonSerializer.Deserialize<double[][]>(this.Geometry.Coordinates.ToString());
+                            polygonString = JSerializer.Deserialize<double[][]>(this.Geometry.Coordinates.ToString());
                         }
                         catch
                         {
                             try
                             {
-                                polygonString = JsonSerializer.Deserialize<double[][][]>(this.Geometry.Coordinates.ToString());
+                                polygonString = JSerializer.Deserialize<double[][][]>(this.Geometry.Coordinates.ToString());
                             }
                             catch
                             {
-                                polygonString = JsonSerializer.Deserialize<double[][][][]>(this.Geometry.Coordinates.ToString());
+                                polygonString = JSerializer.Deserialize<double[][][][]>(this.Geometry.Coordinates.ToString());
                             }
                         }
                     }
@@ -273,7 +274,7 @@ namespace gView.Framework.OGC.GeoJson
         {
             if (this.Properties is JsonElement)
             {
-                this.Properties = JsonSerializer.Deserialize<Dictionary<string, object>>(this.Properties.ToString());
+                this.Properties = JSerializer.Deserialize<Dictionary<string, object>>(this.Properties.ToString());
             }
             else if (this.Properties == null)
             {

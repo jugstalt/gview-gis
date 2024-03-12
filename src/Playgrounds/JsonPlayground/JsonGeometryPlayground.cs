@@ -3,7 +3,6 @@ using gView.Framework.Core.Geometry;
 using gView.Framework.Geometry;
 using gView.Interoperability.GeoServices.Request.Extensions;
 using gView.Interoperability.GeoServices.Rest.Json.Features.Geometry;
-using gView.Interoperability.GeoServices.Rest.Json.Renderers.SimpleRenderers;
 using JsonPlayground.Extensions;
 using JsonPlayground.Models;
 using System.Text.Json;

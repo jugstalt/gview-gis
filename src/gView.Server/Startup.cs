@@ -1,4 +1,5 @@
 ﻿using gView.Framework.Common;
+using gView.Framework.Common.Extensions;
 using gView.Framework.Core.Common;
 using gView.Framework.IO;
 using gView.Server.AppCode;
@@ -115,8 +116,8 @@ namespace gView.Server
                 {
                     options.JsonSerializerOptions.AddServerDefaults();
                 });
-                // Newtonsoft Json
-                //.AddNewtonsoftJson(options => options.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore);
+            // Newtonsoft Json
+            //.AddNewtonsoftJson(options => options.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore);
 
             services.AddMapServerService(
                 config =>
