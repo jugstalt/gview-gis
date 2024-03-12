@@ -1,0 +1,21 @@
+﻿using System.Text.Json.Serialization;
+
+namespace gView.DataSources.VectorTileCache.Json.Styles;
+
+public class StyleSource
+{
+    [JsonPropertyName("type")]
+    public string Type { get; set; }
+
+    [JsonPropertyName("tileSize")]
+    public int? TileSize { get; set; }
+
+    [JsonPropertyName("buffer")]
+    public int? Buffer { get; set; }
+
+    [JsonPropertyName("minzoom")]
+    public int? MinZoom { get; set; }
+
+    [JsonPropertyName("maxzoom")]
+    public int? MaxZoom { get; set; }
+}
