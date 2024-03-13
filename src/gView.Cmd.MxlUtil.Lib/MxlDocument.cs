@@ -7,7 +7,7 @@ using gView.Framework.Data.Relations;
 using gView.Framework.IO;
 using gView.GraphicsEngine;
 
-namespace gView.Cmd.MxUtil.Lib
+namespace gView.Cmd.MxlUtil.Lib
 {
     public class MxlDocument : IPersistableLoadAsync
     {

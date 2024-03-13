@@ -17,10 +17,10 @@ public class StyleLayer
     public string SourceLayerId { get; set; }
 
     [JsonPropertyName("minzoom")]
-    public int? MinZoom { get; set; }
+    public float? MinZoom { get; set; }
 
     [JsonPropertyName("maxzoom")]
-    public int? MaxZoom { get; set; }
+    public float? MaxZoom { get; set; }
 
     [JsonPropertyName("layout")]
     public StyleLayerLayout Layout { get; set;}

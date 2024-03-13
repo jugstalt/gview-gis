@@ -2,7 +2,6 @@
 using gView.Cmd.Extensions.DependencyInjection;
 using gView.Cmd.Services;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.SqlServer.Management.SqlParser.SqlCodeDom;
 
 var servicesProvider = new ServiceCollection()
     .AddCommandCollection()
@@ -12,6 +11,10 @@ var servicesProvider = new ServiceCollection()
 
 var worker = servicesProvider.GetService<WorkerService>();
 
+// Initialize Skia
+gView.GraphicsEngine.Current.Engine = new gView.GraphicsEngine.Skia.SkiaGraphicsEngine(96.0f);
+gView.GraphicsEngine.Current.Encoder = new gView.GraphicsEngine.Skia.SkiaBitmapEncoding();
+
 try
 {
     await worker!.Run();
@@ -19,7 +22,7 @@ try
     Console.WriteLine();
     Console.WriteLine("finished");
 }
-catch(Exception ex)
+catch (Exception ex)
 {
     Console.WriteLine($"Exception: {ex.Message}");
 }

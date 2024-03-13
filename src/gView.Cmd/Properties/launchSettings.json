@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "gView.Cmd": {
+      "commandName": "Project",
+      "commandLineArgs": "--command MxlUtil.FromStylesJson -uri https://gis.ktn.gv.at/osgdi/styles/basemap_ktn_vektor.json"
+    }
+  }
+}

@@ -163,7 +163,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Web", "src\Blazor\gVi
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Cmd", "src\gView.Cmd\gView.Cmd.csproj", "{AD1B389D-6545-4F0B-8A5E-CFDC678C9D75}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Cmd.MxUtil.Lib", "src\gView.Cmd.MxUtil.Lib\gView.Cmd.MxUtil.Lib.csproj", "{5367A4CB-4242-4728-AB47-0434F6A992DD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Cmd.MxlUtil.Lib", "src\gView.Cmd.MxlUtil.Lib\gView.Cmd.MxlUtil.Lib.csproj", "{5367A4CB-4242-4728-AB47-0434F6A992DD}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "playgrounds", "playgrounds", "{35061524-C22F-4536-8EA1-8F828D2E1CC1}"
 EndProject

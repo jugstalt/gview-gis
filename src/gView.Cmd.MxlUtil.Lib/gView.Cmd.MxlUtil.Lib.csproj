@@ -10,6 +10,7 @@
     <ProjectReference Include="..\gView.Cmd.Core\gView.Cmd.Core.csproj" />
     <ProjectReference Include="..\gView.DataSources.Fdb.SqlServer\gView.DataSources.Fdb.SqlServer.csproj" />
     <ProjectReference Include="..\gView.DataSources.Fdb\gView.DataSources.Fdb.csproj" />
+    <ProjectReference Include="..\gView.DataSources.VectorTileCache\gView.DataSources.VectorTileCache.csproj" />
     <ProjectReference Include="..\gView.Framework.Cartography\gView.Framework.Cartography.csproj" />
     <ProjectReference Include="..\gView.Framework.Core\gView.Framework.Core.csproj" />
     <ProjectReference Include="..\gView.Framework.Data\gView.Framework.Data.csproj" />

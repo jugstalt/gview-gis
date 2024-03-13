@@ -19,37 +19,38 @@ public class ClipCompactTileCacheCommand : ICommand
 
     public string ExecutableName => "";
 
-    public IEnumerable<ICommandParameterDescription> ParameterDescriptions => new ICommandParameterDescription[]
-    {
-        new RequiredCommandParameter<string>("clip-type")
+    public IEnumerable<ICommandParameterDescription> ParameterDescriptions 
+        => new ICommandParameterDescription[]
         {
-            Description="[copy,cut,list] 'copy' the cache, 'cut'/'delelte' affected tiles or 'list' affected tiles",
-        },
-        new RequiredCommandParameter<string>("source-config")
-        {
-            Description = "Source tilecache path"
-        },
-        new CommandParameter<int>("max-level")
-        {
-            Description="optional: Max tilecacle level"
-        },
-        new RequiredCommandParameter<IFeatureClass>("clipper")
-        {
-            Description = "Featureclass with clipper polygons"
-        },
-        new CommandParameter<string>("clipper-query")
-        {
-            Description = "Definition query (Where Clause) for quering clipper polygons"
-        },
-        new CommandParameter<string>("target-folder")
-        {
-            Description = "or target tilecache path"
-        },
-        new CommandParameter<int>("jpeg-qual")
-        {
-            Description="optional: jpeg quality of output tiles"
-        }
-    };
+            new RequiredCommandParameter<string>("clip-type")
+            {
+                Description="[copy,cut,list] 'copy' the cache, 'cut'/'delelte' affected tiles or 'list' affected tiles",
+            },
+            new RequiredCommandParameter<string>("source-config")
+            {
+                Description = "Source tilecache path"
+            },
+            new CommandParameter<int>("max-level")
+            {
+                Description="optional: Max tilecacle level"
+            },
+            new RequiredCommandParameter<IFeatureClass>("clipper")
+            {
+                Description = "Featureclass with clipper polygons"
+            },
+            new CommandParameter<string>("clipper-query")
+            {
+                Description = "Definition query (Where Clause) for quering clipper polygons"
+            },
+            new CommandParameter<string>("target-folder")
+            {
+                Description = "or target tilecache path"
+            },
+            new CommandParameter<int>("jpeg-qual")
+            {
+                Description="optional: jpeg quality of output tiles"
+            }
+        };
 
     async public Task<bool> Run(
             IDictionary<string, object> parameters,

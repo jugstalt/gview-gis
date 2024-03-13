@@ -13,6 +13,12 @@ public class StyleSource
     [JsonPropertyName("buffer")]
     public int? Buffer { get; set; }
 
+    [JsonPropertyName("tiles")]
+    public string[] Tiles { get; set; }
+
+    [JsonPropertyName("url")]
+    public string Url { get; set; }
+
     [JsonPropertyName("minzoom")]
     public int? MinZoom { get; set; }
 

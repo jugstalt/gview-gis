@@ -1,7 +1,7 @@
 ﻿using gView.Framework.Cartography;
 using gView.Framework.Core.Data;
 
-namespace gView.Cmd.MxUtil.Lib
+namespace gView.Cmd.MxlUtil.Lib
 {
     public class MapPersist : Map
     {

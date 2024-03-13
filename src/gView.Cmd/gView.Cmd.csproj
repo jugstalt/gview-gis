@@ -15,6 +15,7 @@
   <ItemGroup>
     <ProjectReference Include="..\gView.Cmd.Core\gView.Cmd.Core.csproj" />
     <ProjectReference Include="..\gView.Cmd.Fdb.Lib\gView.Cmd.Fdb.Lib.csproj" />
+    <ProjectReference Include="..\gView.Cmd.MxlUtil.Lib\gView.Cmd.MxlUtil.Lib.csproj" />
     <ProjectReference Include="..\gView.Cmd.TileCache.Lib\gView.Cmd.TileCache.Lib.csproj" />
     <ProjectReference Include="..\gView.CopyFeatureclass.Lib\gView.CopyFeatureclass.Lib.csproj" />
   </ItemGroup>
