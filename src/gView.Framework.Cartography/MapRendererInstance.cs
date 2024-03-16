@@ -56,6 +56,7 @@ public class MapRendererInstance : Map, IMapRenderer
         mapRenderInstance._layerCopyrightTexts = original.LayerCopyrightTexts;
 
         mapRenderInstance.SetResourceContainer(original.ResourceContainer);
+        mapRenderInstance.SetMapEventHooks(original.MapEventHooks);
 
         mapRenderInstance.Display.ImageWidth = original.Display.ImageWidth;
         mapRenderInstance.Display.ImageHeight = original.Display.ImageHeight;
