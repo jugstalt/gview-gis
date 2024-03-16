@@ -3,10 +3,15 @@ using gView.Framework.Core.Symbology;
 using gView.Framework.Symbology;
 using gView.Framework.Symbology.Vtc;
 using gView.GraphicsEngine;
+using System;
+using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
+using System.Text;
 using System.Text.Json;
+using System.Threading.Tasks;
 
-namespace gView.Cmd.MxlUtil.Lib.Extensions;
+namespace gView.Framework.Vtc.Extensions;
 
 static internal class StyleLayerExtensions
 {

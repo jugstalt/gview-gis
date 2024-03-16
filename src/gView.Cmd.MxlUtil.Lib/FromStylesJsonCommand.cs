@@ -1,16 +1,12 @@
 ﻿using gView.Cmd.Core;
 using gView.Cmd.Core.Abstraction;
 using gView.Cmd.Core.Extensions;
-using gView.Cmd.MxlUtil.Lib.Extensions;
 using gView.DataSources.VectorTileCache.Json.Styles;
 using gView.Framework.Cartography;
-using gView.Framework.Cartography.Rendering;
 using gView.Framework.Core.Common;
-using gView.Framework.Core.Data;
-using gView.Framework.Data;
 using gView.Framework.Geometry;
 using gView.Framework.IO;
-using System.Text;
+using gView.Framework.Vtc;
 using System.Text.Json;
 
 namespace gView.Cmd.MxlUtil.Lib;
@@ -93,79 +89,10 @@ public class FromStylesJsonCommand : ICommand
 
             #endregion
 
-            var datasetIndex = 0;
-            var datasets = new Dictionary<string, IDataset>();
+            var hook = new OnMapLoadedEventHook();
 
-            #region Add Map Datasets
-
-            foreach (var source in stylesCapabilities.Sources)
-            {
-                if ("vector".Equals(source.Value.Type, StringComparison.OrdinalIgnoreCase))
-                {
-                    var vtcDataset = new gView.DataSources.VectorTileCache.Dataset();
-                    await vtcDataset.SetConnectionString($"source={source.Value.Url};name={source.Key}");
-
-                    await vtcDataset.Open();
-                    map.AddDataset(vtcDataset, datasetIndex++);
-
-                    datasets.Add(source.Key, vtcDataset);
-
-                    Console.WriteLine($"Added VTC: {source.Value.Url}");
-                }
-                else if ("raster".Equals(source.Value.Type, StringComparison.OrdinalIgnoreCase))
-                {
-
-                }
-                else
-                {
-                    logger?.LogLine($"Warning: not supported source type: {source.Value.Type}");
-                }
-            }
-
-            #endregion
-
-            #region Try Parse all layers
-
-            foreach (var layer in stylesCapabilities.Layers)
-            {
-                var dataset = datasets.ContainsKey(layer.Source)
-                    ? datasets[layer.Source]
-                    : null;
-
-                if (dataset == null)
-                {
-                    logger?.LogLine($"Warning: unkown layer dataset: {layer.Source}");
-                    continue;
-                }
-
-                var @class = (await dataset.Element(layer.SourceLayerId)).Class;
-                if (@class == null)
-                {
-                    logger?.LogLine($"Warning: unknown layer class: {layer.Source}.{layer.SourceLayerId}");
-                    continue;
-                }
-
-                if (@class is IFeatureClass featureClass)
-                {
-                    logger?.LogLine($"adding layer: {layer.Id}");
-
-                    var featureLayer = new FeatureLayer(featureClass);
-                    //featureLayer.Title = layer.Id;
-
-                    var symbol = layer.ToPaintSymbol();
-                    featureLayer.FeatureRenderer = new UniversalGeometryRenderer();
-
-                    //map.AddLayer(featureLayer);
-                }
-            }
-
-            #endregion
-
-            #region Add Json as Resoure
-
-            map.ResourceContainer["StylesJson"] = Encoding.UTF8.GetBytes(jsonString);
-
-            #endregion
+            await hook.AddLayers(new Map(), stylesCapabilities); // test on dummy map
+            hook.AddToMap(map, stylesCapabilities);
 
             #region Save Map
 

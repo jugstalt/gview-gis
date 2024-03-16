@@ -169,7 +169,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "playgrounds", "playgrounds"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JsonPlayground", "src\Playgrounds\JsonPlayground\JsonPlayground.csproj", "{44725C5F-742F-4461-8B93-FAD0406A63BB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gView.Framework.Symbology.Vtc", "src\gView.Framework.Symbology.Vtc\gView.Framework.Symbology.Vtc.csproj", "{A57C7046-01A5-4E0B-8BF0-C04310DBB206}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Framework.Symbology.Vtc", "src\gView.Framework.Symbology.Vtc\gView.Framework.Symbology.Vtc.csproj", "{A57C7046-01A5-4E0B-8BF0-C04310DBB206}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gView.Framework.Vtc", "src\gView.Framework.Vtc\gView.Framework.Vtc.csproj", "{E821716D-F351-4710-9243-D0DC6B70FAAC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gView.Framework.Cartography.Rendering.Vtc", "src\gView.Framework.Cartography.Rendering.Vtc\gView.Framework.Cartography.Rendering.Vtc.csproj", "{7A05F013-F195-42CF-854C-53B0F042EE9A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -771,6 +775,22 @@ Global
 		{A57C7046-01A5-4E0B-8BF0-C04310DBB206}.Release|Any CPU.Build.0 = Release|Any CPU
 		{A57C7046-01A5-4E0B-8BF0-C04310DBB206}.Release|x64.ActiveCfg = Release|Any CPU
 		{A57C7046-01A5-4E0B-8BF0-C04310DBB206}.Release|x64.Build.0 = Release|Any CPU
+		{E821716D-F351-4710-9243-D0DC6B70FAAC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E821716D-F351-4710-9243-D0DC6B70FAAC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E821716D-F351-4710-9243-D0DC6B70FAAC}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{E821716D-F351-4710-9243-D0DC6B70FAAC}.Debug|x64.Build.0 = Debug|Any CPU
+		{E821716D-F351-4710-9243-D0DC6B70FAAC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E821716D-F351-4710-9243-D0DC6B70FAAC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E821716D-F351-4710-9243-D0DC6B70FAAC}.Release|x64.ActiveCfg = Release|Any CPU
+		{E821716D-F351-4710-9243-D0DC6B70FAAC}.Release|x64.Build.0 = Release|Any CPU
+		{7A05F013-F195-42CF-854C-53B0F042EE9A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7A05F013-F195-42CF-854C-53B0F042EE9A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7A05F013-F195-42CF-854C-53B0F042EE9A}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{7A05F013-F195-42CF-854C-53B0F042EE9A}.Debug|x64.Build.0 = Debug|Any CPU
+		{7A05F013-F195-42CF-854C-53B0F042EE9A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7A05F013-F195-42CF-854C-53B0F042EE9A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7A05F013-F195-42CF-854C-53B0F042EE9A}.Release|x64.ActiveCfg = Release|Any CPU
+		{7A05F013-F195-42CF-854C-53B0F042EE9A}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -859,6 +879,8 @@ Global
 		{35061524-C22F-4536-8EA1-8F828D2E1CC1} = {F92CCD65-1D06-475F-8FFB-3F912C7BBE7E}
 		{44725C5F-742F-4461-8B93-FAD0406A63BB} = {35061524-C22F-4536-8EA1-8F828D2E1CC1}
 		{A57C7046-01A5-4E0B-8BF0-C04310DBB206} = {DE176D4E-059E-4483-9C23-16055A573204}
+		{E821716D-F351-4710-9243-D0DC6B70FAAC} = {DE176D4E-059E-4483-9C23-16055A573204}
+		{7A05F013-F195-42CF-854C-53B0F042EE9A} = {DE176D4E-059E-4483-9C23-16055A573204}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {11C25FC0-EB32-4DE1-9CBB-CF2D68D1AA9B}
