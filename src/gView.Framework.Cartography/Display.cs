@@ -493,6 +493,8 @@ namespace gView.Framework.Cartography
             }
         }
 
+        public float WebMercatorScaleLevel { get; } = 0f; // ToDo:
+
         public void ZoomTo(double minx, double miny, double maxx, double maxy)
         {
             #region AutoResize

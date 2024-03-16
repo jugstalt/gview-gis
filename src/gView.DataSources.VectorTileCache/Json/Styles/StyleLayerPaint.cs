@@ -8,49 +8,49 @@ public class StyleLayerPaint
     #region Line 
 
     [JsonPropertyName("line-color")]
-    public JsonElement LineColor { get; set; }
+    public JsonElement? LineColor { get; set; }
 
     [JsonPropertyName("line-width")]
-    public JsonElement LineWidth { get; set; }
+    public JsonElement? LineWidth { get; set; }
 
     [JsonPropertyName("line-opacity")]
-    public JsonElement LineOpacity { get; set; }
+    public JsonElement? LineOpacity { get; set; }
 
     #endregion
 
     #region Fill
 
     [JsonPropertyName("fill-antialias")]
-    public JsonElement FillAntiAliasing { get; set; }
+    public JsonElement? FillAntiAliasing { get; set; }
 
     [JsonPropertyName("fill-color")]
-    public JsonElement FillColor { get; set; }
+    public JsonElement? FillColor { get; set; }
 
     [JsonPropertyName("fill-opacity")]
-    public JsonElement FillOpacity { get; set; }
+    public JsonElement? FillOpacity { get; set; }
 
     [JsonPropertyName("fill-outline-color")]
-    public JsonElement FillOutlineColor { get; set; }
+    public JsonElement? FillOutlineColor { get; set; }
 
     #endregion
 
     #region Text
 
     [JsonPropertyName("text-halo-width")]
-    public JsonElement TextHaloWidth { get; set; }
+    public JsonElement? TextHaloWidth { get; set; }
 
     [JsonPropertyName("text-halo-color")]
-    public JsonElement TextHaloColor { get; set; }
+    public JsonElement? TextHaloColor { get; set; }
 
     [JsonPropertyName("text-color")]
-    public JsonElement TextColor { get; set; }
+    public JsonElement? TextColor { get; set; }
 
     #endregion
 
     #region Raster
 
     [JsonPropertyName("raster-brightness-min")]
-    public JsonElement RasterBrightnessMin { get; set; }
+    public JsonElement? RasterBrightnessMin { get; set; }
 
     #endregion
 }

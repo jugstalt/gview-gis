@@ -22,6 +22,8 @@ namespace gView.Framework.Core.Carto
         double ReferenceScale { get; set; }
         double MapScale { get; set; }
 
+        float WebMercatorScaleLevel { get; }
+
         int ImageWidth { get; set; }
         int ImageHeight { get; set; }
 

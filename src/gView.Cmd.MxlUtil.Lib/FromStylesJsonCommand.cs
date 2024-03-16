@@ -1,6 +1,7 @@
 ﻿using gView.Cmd.Core;
 using gView.Cmd.Core.Abstraction;
 using gView.Cmd.Core.Extensions;
+using gView.Cmd.MxlUtil.Lib.Extensions;
 using gView.DataSources.VectorTileCache.Json.Styles;
 using gView.Framework.Cartography;
 using gView.Framework.Cartography.Rendering;
@@ -9,12 +10,8 @@ using gView.Framework.Core.Data;
 using gView.Framework.Data;
 using gView.Framework.Geometry;
 using gView.Framework.IO;
-using Microsoft.SqlServer.Management.SqlParser.SqlCodeDom;
-using SkiaSharp;
-using System.IO;
-using System.Security.Policy;
+using System.Text;
 using System.Text.Json;
-using System.Threading;
 
 namespace gView.Cmd.MxlUtil.Lib;
 
@@ -26,7 +23,7 @@ public class FromStylesJsonCommand : ICommand
 
     public string ExecutableName => "";
 
-    public IEnumerable<ICommandParameterDescription> ParameterDescriptions => 
+    public IEnumerable<ICommandParameterDescription> ParameterDescriptions =>
         [
             new RequiredCommandParameter<string>("uri")
             {
@@ -35,8 +32,8 @@ public class FromStylesJsonCommand : ICommand
         ];
 
     async public Task<bool> Run(
-            IDictionary<string, object> parameters, 
-            ICancelTracker? cancelTracker = null, 
+            IDictionary<string, object> parameters,
+            ICancelTracker? cancelTracker = null,
             ICommandLogger? logger = null
         )
     {
@@ -64,7 +61,7 @@ public class FromStylesJsonCommand : ICommand
             }
 
             var stylesCapabilities = JsonSerializer.Deserialize<StylesCapabilities>(jsonString);
-            if(stylesCapabilities == null)
+            if (stylesCapabilities == null)
             {
                 throw new Exception("Can't deserialize styles json");
             }
@@ -82,7 +79,7 @@ public class FromStylesJsonCommand : ICommand
             var sRef = SpatialReference.FromID("epsg:3857");
             map.SpatialReference = sRef;
 
-            if(stylesCapabilities.Center!=null && stylesCapabilities.Center.Length == 2)
+            if (stylesCapabilities.Center != null && stylesCapabilities.Center.Length == 2)
             {
                 var centerPoint = new Point(stylesCapabilities.Center[0], stylesCapabilities.Center[1]);
                 centerPoint = GeometricTransformerFactory.Transform2D(centerPoint, sRef4326, sRef) as Point;
@@ -103,7 +100,7 @@ public class FromStylesJsonCommand : ICommand
 
             foreach (var source in stylesCapabilities.Sources)
             {
-                if("vector".Equals(source.Value.Type, StringComparison.OrdinalIgnoreCase))
+                if ("vector".Equals(source.Value.Type, StringComparison.OrdinalIgnoreCase))
                 {
                     var vtcDataset = new gView.DataSources.VectorTileCache.Dataset();
                     await vtcDataset.SetConnectionString($"source={source.Value.Url};name={source.Key}");
@@ -127,22 +124,22 @@ public class FromStylesJsonCommand : ICommand
 
             #endregion
 
-            #region Add Map Layers
+            #region Try Parse all layers
 
             foreach (var layer in stylesCapabilities.Layers)
             {
                 var dataset = datasets.ContainsKey(layer.Source)
-                    ? datasets[layer.Source] 
+                    ? datasets[layer.Source]
                     : null;
 
-                if(dataset == null)
+                if (dataset == null)
                 {
                     logger?.LogLine($"Warning: unkown layer dataset: {layer.Source}");
                     continue;
                 }
 
                 var @class = (await dataset.Element(layer.SourceLayerId)).Class;
-                if(@class == null)
+                if (@class == null)
                 {
                     logger?.LogLine($"Warning: unknown layer class: {layer.Source}.{layer.SourceLayerId}");
                     continue;
@@ -150,16 +147,23 @@ public class FromStylesJsonCommand : ICommand
 
                 if (@class is IFeatureClass featureClass)
                 {
+                    logger?.LogLine($"adding layer: {layer.Id}");
+
                     var featureLayer = new FeatureLayer(featureClass);
                     //featureLayer.Title = layer.Id;
 
+                    var symbol = layer.ToPaintSymbol();
                     featureLayer.FeatureRenderer = new UniversalGeometryRenderer();
 
-                    map.AddLayer(featureLayer);
-
-                    logger?.LogLine($"Layer added: {layer.Id}");
+                    //map.AddLayer(featureLayer);
                 }
             }
+
+            #endregion
+
+            #region Add Json as Resoure
+
+            map.ResourceContainer["StylesJson"] = Encoding.UTF8.GetBytes(jsonString);
 
             #endregion
 

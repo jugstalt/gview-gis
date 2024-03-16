@@ -14,6 +14,7 @@
     <ProjectReference Include="..\gView.Framework.Cartography\gView.Framework.Cartography.csproj" />
     <ProjectReference Include="..\gView.Framework.Core\gView.Framework.Core.csproj" />
     <ProjectReference Include="..\gView.Framework.Data\gView.Framework.Data.csproj" />
+    <ProjectReference Include="..\gView.Framework.Symbology.Vtc\gView.Framework.Symbology.Vtc.csproj" />
     <ProjectReference Include="..\gView.Interoperability.GeoServices\gView.Interoperability.GeoServices.csproj" />
     <ProjectReference Include="..\gView.Server.Models\gView.Server.Models.csproj" />
   </ItemGroup>
