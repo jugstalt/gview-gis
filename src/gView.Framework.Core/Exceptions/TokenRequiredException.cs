@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace gView.Framework.Core.Exceptions
+﻿namespace gView.Framework.Core.Exceptions
 {
     public class TokenRequiredException : MapServerException
     {

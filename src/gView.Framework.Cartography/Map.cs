@@ -4,6 +4,7 @@ using gView.Framework.Common;
 using gView.Framework.Core.Carto;
 using gView.Framework.Core.Common;
 using gView.Framework.Core.Data;
+using gView.Framework.Core.Exceptions;
 using gView.Framework.Core.Geometry;
 using gView.Framework.Core.IO;
 using gView.Framework.Core.UI;
@@ -1382,6 +1383,22 @@ namespace gView.Framework.Cartography
 
             #endregion
 
+            foreach (var eventHook in _eventHooks.EventHooks?.Where(h => h.Type == HookEventType.OnLoaded) ?? [])
+            {
+                try
+                {
+                    await eventHook.InvokeAsync(this);
+                }
+                catch(MapEventHookWarningException wex)
+                {
+                    _errorMessages.Add($"WARNING: Hook {eventHook.GetType()}: {wex.Message}");
+                }
+                catch (Exception ex)
+                {
+                    _errorMessages.Add($"ERROR: Hook {eventHook.GetType()}: {ex.Message}");
+                }
+            }
+
             if (stream.Warnings != null)
             {
                 foreach (var warning in stream.Warnings)
@@ -1399,11 +1416,6 @@ namespace gView.Framework.Cartography
             }
 
             stream.ClearErrorsAndWarnings();
-
-            foreach (var eventHook in _eventHooks.EventHooks?.Where(h => h.Type == HookEventType.OnLoaded) ?? [])
-            {
-                await eventHook.InvokeAsync(this);
-            }
 
             return true;
         }
