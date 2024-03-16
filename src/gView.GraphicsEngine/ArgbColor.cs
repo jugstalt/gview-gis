@@ -156,7 +156,7 @@ namespace gView.GraphicsEngine
 
                 var rgbaMatch = Regex.Match(colorString, @"rgba\((\d+),(\d+),(\d+),(\d*\.?\d+)\)");
                 var rgbMatch = Regex.Match(colorString, @"rgb\((\d+),(\d+), (\d+)\)");
-                var hslaMatch = Regex.Match(colorString, @"hsla\((\d+),(\d*\.?\d+)%,(\d*\.?\d+)%,(\d*\.?\d+)\)");
+                var hslaMatch = Regex.Match(colorString, @"hsla_\((\d+),(\d*\.?\d+)%,(\d*\.?\d+)%,(\d*\.?\d+)\)");
                 var hslMatch = Regex.Match(colorString, @"hsl\((\d+),(\d*\.?\d+)%,(\d*\.?\d+)%\)");
 
                 if (rgbaMatch.Success)
