@@ -57,7 +57,7 @@
         @* Scale *@
         <MudPaper Elevation="12" Style="@PaperStyle">
             <MudText Typo="Typo.body2">
-                @(_scaleDominator > 0 ? $"1:{_scaleDominator.ToString("n0")}" : string.Empty)
+                @(_scaleDominator > 0 ? $"1:{_scaleDominator.ToString("n0")} ({_level})" : string.Empty)
             </MudText>
         </MudPaper>
     </GvGridItem>
@@ -70,6 +70,7 @@
 
     private string _currentRenderLayer = "";
     private int _scaleDominator;
+    private float _level;
     private ConcurrentDictionary<DrawPhase, bool> _currentDrawPhases = new();
 
     private IPoint? _cursorPoint;
@@ -95,6 +96,7 @@
         if(mapRenderer.DrawPhase == DrawPhase.Geography &&
            mapRenderer is IDisplay display) {
             _scaleDominator = (int)display.MapScale;
+            _level = (float)Math.Round(display.WebMercatorScaleLevel, 1);
         }
 
         _currentDrawPhases.Clear();

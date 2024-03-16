@@ -1,15 +1,11 @@
 ﻿using gView.DataSources.VectorTileCache.Json.Styles;
-using gView.Framework.Core.Symbology;
 using gView.Framework.Symbology;
 using gView.Framework.Symbology.Vtc;
 using gView.GraphicsEngine;
-using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
-using System.Text;
+using System.Reflection;
 using System.Text.Json;
-using System.Threading.Tasks;
+using System.Text.Json.Serialization;
 
 namespace gView.Framework.Vtc.Extensions;
 
@@ -21,23 +17,38 @@ static internal class StyleLayerExtensions
         {
             return new PaintSymbol();
         }
-        ILineSymbol? lineSymbol = null;
 
-        if (styleLayer.Paint.FillColor != null
-           || styleLayer.Paint.FillOutlineColor != null)
-        {
-            lineSymbol = new SimpleLineSymbol();
-        }
+        var paintSymbol = new PaintSymbol(
+                styleLayer.Type?.ToLower() switch
+                {
+                    _ => null
+                },
+                styleLayer.Type?.ToLower() switch
+                {
+                    "line" => new SimpleLineSymbol(),
+                    _ => null,
+                },
+                styleLayer.Type?.ToLower() switch
+                {
+                    "fill" => new SimpleFillSymbol(),
+                    _ => null
+                }
+            );
 
         if (styleLayer.Layout is not null)
         {
             foreach (var layoutPropertyInfo in styleLayer.Layout.GetType().GetProperties())
             {
-                if (layoutPropertyInfo.PropertyType == typeof(JsonElement?))
+                var jsonName = layoutPropertyInfo.GetCustomAttribute<JsonPropertyNameAttribute>();
+                if (jsonName != null && layoutPropertyInfo.PropertyType == typeof(JsonElement?))
                 {
                     var value = (JsonElement?)layoutPropertyInfo.GetValue(styleLayer.Layout, null);
 
                     var func = value.ToValueFunc();
+                    if (func != null)
+                    {
+                        paintSymbol.AddValueFunc(jsonName.Name, func);
+                    }
                 }
             }
         }
@@ -46,16 +57,21 @@ static internal class StyleLayerExtensions
         {
             foreach (var paintPropertyInfo in styleLayer.Paint.GetType().GetProperties())
             {
-                if (paintPropertyInfo.PropertyType == typeof(JsonElement?))
+                var jsonName = paintPropertyInfo.GetCustomAttribute<JsonPropertyNameAttribute>();
+                if (jsonName != null && paintPropertyInfo.PropertyType == typeof(JsonElement?))
                 {
                     var value = (JsonElement?)paintPropertyInfo.GetValue(styleLayer.Paint, null);
 
                     var func = value.ToValueFunc();
+                    if (func != null)
+                    {
+                        paintSymbol.AddValueFunc(jsonName.Name, func);
+                    }
                 }
             }
         }
 
-        return new PaintSymbol();
+        return paintSymbol;
     }
 }
 
@@ -77,7 +93,7 @@ static internal class ValueFuncCreatorExtensions
                 var value = jsonElement.Value.GetString().ToFuncValue();
                 valueFuncs.Add(value switch
                 {
-                    ArgbColor color => new IntegerValueFunc(color.ToArgb()),
+                    ArgbColor color => new ColorValueFunc(color),
                     float number => new FloatValueFunc(number),
                     bool boolean => new BooleanValueFunc(boolean),
                     _ => throw new ArgumentException($"Can't convert string {value} to a value")
@@ -100,6 +116,7 @@ static internal class ValueFuncCreatorExtensions
                 valueFuncs.Add(jsonElement.Value.EnumerateArray().FirstOrDefault().GetString()?.ToLower() switch
                 {
                     "case" => jsonElement.Value.EnumerateArray().Skip(1).ToArray().ToCaseValueFunc(),
+                    "get" => new FloatValueFunc(1), // todo
                     _ => throw new ArgumentException($"Unknown array type")
                 });
             }

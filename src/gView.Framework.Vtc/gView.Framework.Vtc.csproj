@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\gView.DataSources.VectorTileCache\gView.DataSources.VectorTileCache.csproj" />
+    <ProjectReference Include="..\gView.Framework.Cartography.Rendering.Vtc\gView.Framework.Cartography.Rendering.Vtc.csproj" />
     <ProjectReference Include="..\gView.Framework.Cartography.Rendering\gView.Framework.Cartography.Rendering.csproj" />
     <ProjectReference Include="..\gView.Framework.Core\gView.Framework.Core.csproj" />
     <ProjectReference Include="..\gView.Framework.Symbology.Vtc\gView.Framework.Symbology.Vtc.csproj" />

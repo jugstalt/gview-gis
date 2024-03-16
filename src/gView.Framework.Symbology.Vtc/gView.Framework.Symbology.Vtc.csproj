@@ -7,6 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\gView.DataSources.VectorTileCache\gView.DataSources.VectorTileCache.csproj" />
     <ProjectReference Include="..\gView.Framework.Symbology\gView.Framework.Symbology.csproj" />
   </ItemGroup>
 

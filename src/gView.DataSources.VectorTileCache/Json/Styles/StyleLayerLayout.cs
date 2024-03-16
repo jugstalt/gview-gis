@@ -32,6 +32,7 @@ public class StyleLayerLayout
     public bool TextOptional { get; set; }
 
     [JsonPropertyName("text-size")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public JsonElement? TextSize { get; set; }
 
     #endregion

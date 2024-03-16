@@ -6,4 +6,9 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\gView.Framework.Core\gView.Framework.Core.csproj" />
+    <ProjectReference Include="..\gView.Framework.Symbology.Vtc\gView.Framework.Symbology.Vtc.csproj" />
+  </ItemGroup>
+
 </Project>

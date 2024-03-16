@@ -1,4 +1,5 @@
-﻿using System.Text.Json.Serialization;
+﻿using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace gView.DataSources.VectorTileCache.Json.Styles;
 
@@ -21,6 +22,10 @@ public class StyleLayer
 
     [JsonPropertyName("maxzoom")]
     public float? MaxZoom { get; set; }
+
+    [JsonPropertyName("filter")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public JsonElement? Filter { get; set; }
 
     [JsonPropertyName("layout")]
     public StyleLayerLayout Layout { get; set;}

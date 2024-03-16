@@ -1,4 +1,5 @@
-﻿using gView.Framework.Core.Carto;
+﻿using gView.DataSources.VectorTileCache.Json.Styles;
+using gView.Framework.Core.Carto;
 using gView.Framework.Core.Common;
 using gView.Framework.Core.Data;
 using gView.Framework.Core.Geometry;
@@ -13,6 +14,8 @@ public class PaintSymbol : ISymbol
     private ILineSymbol? _lineSymbol;
     private IFillSymbol? _fillSymbol;
     private IPointSymbol? _pointSymbol;
+
+    private Dictionary<string, IValueFunc> _valueFunc = new();
 
     public PaintSymbol()
     {
@@ -29,6 +32,8 @@ public class PaintSymbol : ISymbol
         _fillSymbol = fillSymbol;
     }
 
+    #region ISymbol
+
     public string Name => "Vtc Paint Symbol";
     public SymbolSmoothing SymbolSmoothingMode { get; set; }
     public string LegendLabel { get; set; } = "";
@@ -38,40 +43,77 @@ public class PaintSymbol : ISymbol
 
     public object Clone()
     {
-        return new PaintSymbol(
+        var clone = new PaintSymbol(
             _pointSymbol?.Clone() as IPointSymbol,
             _lineSymbol?.Clone() as ILineSymbol,
             _fillSymbol?.Clone() as IFillSymbol);
+
+        clone._valueFunc = _valueFunc;
+
+        return clone;
     }
 
     public object Clone(CloneOptions options) => Clone();
 
     public void Draw(IDisplay display, IGeometry geometry)
     {
-        if (geometry is IPoint && _pointSymbol != null)
+
+    }
+
+    public void Draw(IDisplay display, IFeature feature)
+    {
+        var geometry = feature?.Shape;
+
+        //if (geometry is IPoint && _pointSymbol != null)
+        //{
+        //    display.Draw(_pointSymbol, geometry);
+        //}
+        //else 
+        if (geometry is IPolyline && _lineSymbol != null)
         {
-            display.Draw(_pointSymbol, geometry);
-        }
-        else if (geometry is IPolyline && _lineSymbol != null)
-        {
+            _lineSymbol.SymbolSmoothingMode = SymbolSmoothing.AntiAlias;
+
+            float opacity = GetValueOrDeafult(StyleProperties.LineOpacity, 1f, display, feature);
+
             if (_lineSymbol is IPenWidth penWidth)
             {
-                //penWidth.PenWidth = 1;
+                penWidth.PenWidth = GetValueOrDeafult(StyleProperties.LineWidth, penWidth.PenWidth, display, null);
             }
 
             if (_lineSymbol is IPenColor penColor)
             {
-                //penColor.PenColor = 
+                penColor.PenColor = GetValueOrDeafult(StyleProperties.LineColor, penColor.PenColor, display, null);
+
+                if (opacity != 1f)
+                {
+                    penColor.PenColor = ArgbColor.FromArgb((int)(255 * opacity), penColor.PenColor);
+                }
             }
 
             display.Draw(_lineSymbol, geometry);
         }
         else if (geometry is IPolygon && _fillSymbol != null)
         {
+            _fillSymbol.SymbolSmoothingMode =
+                GetValueOrDeafult(StyleProperties.FillOpacity, true, display, feature)
+                ? SymbolSmoothing.AntiAlias
+                : SymbolSmoothing.None;
+
+            float opacity = GetValueOrDeafult(StyleProperties.FillOpacity, 1f, display, feature);
+
             if (_fillSymbol is IBrushColor brushColor)
             {
-                //brushColor.FillColor = GraphicsEngine.ArgbColor.Blue;
+                brushColor.FillColor
+                    = GetValueOrDeafult([StyleProperties.FillColor, StyleProperties.FillExtrusionColor],
+                            brushColor.FillColor,
+                            display, feature);
+
+                if (opacity != 1f)
+                {
+                    brushColor.FillColor = ArgbColor.FromArgb((int)(255 * opacity), brushColor.FillColor);
+                }
             }
+
             display.Draw(_fillSymbol, geometry);
         }
         else
@@ -122,6 +164,33 @@ public class PaintSymbol : ISymbol
         || _fillSymbol?.RequireClone() == true;
 
     public bool SupportsGeometryType(GeometryType type) => true;
+
+    #endregion
+
+    public void AddValueFunc(string key, IValueFunc valueFunc)
+    {
+        _valueFunc[key] = valueFunc;
+    }
+
+    private T GetValueOrDeafult<T>(string name, T defaultValue, IDisplay display, IFeature? feature)
+    {
+        if (!_valueFunc.ContainsKey(name)) return defaultValue;
+
+        return _valueFunc[name].Value<T>(display, feature) ?? defaultValue;
+    }
+
+    private T GetValueOrDeafult<T>(string[] names, T defaultValue, IDisplay display, IFeature? feature)
+    {
+        foreach (var name in names)
+        {
+            if (_valueFunc.ContainsKey(name))
+            {
+                return _valueFunc[name].Value<T>(display, feature) ?? defaultValue;
+            }
+        }
+
+        return defaultValue;
+    }
 }
 
 public interface IValueFunc
@@ -164,11 +233,11 @@ public class StopsValueFunc : IValueFunc
 public class CaseValueFunc : IValueFunc
 {
     private object? _defaultValue;
-    private List<(string field, string comparisionOperator, object comparisionValue, object resultValue)> _values = new ();
+    private List<(string field, string comparisionOperator, string? comparisionValue, object resultValue)> _values = new();
 
     public void AddCase(string field, string comparisionOperator, object comparisionValue, object resultValue)
     {
-        _values.Add((field, comparisionOperator, comparisionValue, resultValue));
+        _values.Add((field, comparisionOperator, comparisionValue?.ToString(), resultValue));
     }
 
     public void SetDefaultValue(object defaultValue)
@@ -178,10 +247,30 @@ public class CaseValueFunc : IValueFunc
 
     public T? Value<T>(IDisplay display, IFeature? feature = null)
     {
-        throw new NotImplementedException();
+        if (feature != null)
+        {
+            foreach (var caseValue in _values)
+            {
+                var featureValue = feature[caseValue.field]?.ToString();
+                if (featureValue == null) continue;
+
+                var fitCondition = caseValue.comparisionOperator switch
+                {
+                    "==" => featureValue == caseValue.comparisionValue,
+                    "!=" => featureValue != caseValue.comparisionValue,
+                    _ => throw new ArgumentException($"Unknown case operator '{caseValue.comparisionOperator}'")
+                };
+
+                if (fitCondition)
+                {
+                    return (T?)caseValue.resultValue;
+                }
+            }
+        }
+
+        return (T?)_defaultValue;
     }
 }
-
 
 public class FloatValueFunc : IValueFunc
 {
@@ -199,19 +288,24 @@ public class FloatValueFunc : IValueFunc
     }
 }
 
-public class IntegerValueFunc : IValueFunc
+public class ColorValueFunc : IValueFunc
 {
-    private int _value;
+    private ArgbColor _value;
 
-    public IntegerValueFunc()
+    public ColorValueFunc()
     {
     }
 
-    public IntegerValueFunc(int value) => _value = value;
+    public ColorValueFunc(ArgbColor value) => _value = value;
 
     public T? Value<T>(IDisplay display, IFeature? feature = null)
     {
-        return (T)Convert.ChangeType(_value, typeof(T));
+        if (typeof(T) == typeof(ArgbColor))
+        {
+            return (T)(object)(_value);
+        }
+
+        return default;
     }
 }
 

@@ -1,5 +1,8 @@
-﻿using gView.DataSources.VectorTileCache.Json.Styles;
+﻿using gView.DataSources.VectorTileCache.Json;
+using gView.DataSources.VectorTileCache.Json.Styles;
+using gView.Framework.Calc;
 using gView.Framework.Cartography.Rendering;
+using gView.Framework.Cartography.Rendering.Vtc;
 using gView.Framework.Core.Carto;
 using gView.Framework.Core.Common;
 using gView.Framework.Core.Data;
@@ -25,7 +28,7 @@ public class OnMapLoadedEventHook : IMapEventHook
         var jsonString = map.ResourceContainer[ResourceName];
 
         var stylesCapabilities = JsonSerializer.Deserialize<StylesCapabilities>(jsonString);
-        if(stylesCapabilities == null)
+        if (stylesCapabilities == null)
         {
             throw new Exception("can't read styles capabilites");
         }
@@ -84,7 +87,7 @@ public class OnMapLoadedEventHook : IMapEventHook
 
         #region Try Parse all layers
 
-        foreach (var layer in stylesCapabilities.Layers)
+        foreach (var layer in stylesCapabilities.Layers.Reverse())
         {
             var dataset = datasets.ContainsKey(layer.Source)
                 ? datasets[layer.Source]
@@ -107,12 +110,32 @@ public class OnMapLoadedEventHook : IMapEventHook
                 //logger?.LogLine($"adding layer: {layer.Id}");
 
                 var featureLayer = new FeatureLayer(featureClass);
-                //featureLayer.Title = layer.Id;
+
+                if (layer.MinZoom.HasValue)
+                {
+                    featureLayer.MaximumScale
+                        = featureLayer.MaximumLabelScale
+                        = WebMercatorCalc.MapScale(layer.MinZoom.Value);
+                }
+                if (layer.MaxZoom.HasValue)
+                {
+                    featureLayer.MinimumScale
+                        = featureLayer.MinimumLabelScale
+                        = WebMercatorCalc.MapScale(layer.MaxZoom.Value);
+                }
+                featureLayer.ApplyRefScale = featureLayer.ApplyLabelRefScale = false;
+                featureLayer.FilterQuery = VtcStyleFilter.FromJsonElement(layer.Filter);
 
                 var symbol = layer.ToPaintSymbol();
-                featureLayer.FeatureRenderer = new UniversalGeometryRenderer();
+                featureLayer.FeatureRenderer = new VtcFeatureRenderer(symbol);
 
                 map.AddLayer(featureLayer);
+
+                var tocElement = map.TOC.GetTocElementByLayerId(featureLayer.ID);
+                if (tocElement != null)
+                {
+                    tocElement.Name = layer.Id;
+                }
             }
         }
 

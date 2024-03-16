@@ -7,49 +7,68 @@ public class StyleLayerPaint
 {
     #region Line 
 
-    [JsonPropertyName("line-color")]
+    [JsonPropertyName(StyleProperties.LineColor)]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public JsonElement? LineColor { get; set; }
 
-    [JsonPropertyName("line-width")]
+    [JsonPropertyName(StyleProperties.LineWidth)]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public JsonElement? LineWidth { get; set; }
 
-    [JsonPropertyName("line-opacity")]
+    [JsonPropertyName(StyleProperties.LineOpacity)]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public JsonElement? LineOpacity { get; set; }
 
     #endregion
 
     #region Fill
 
-    [JsonPropertyName("fill-antialias")]
+    [JsonPropertyName(StyleProperties.FillAntiAliasing)]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public JsonElement? FillAntiAliasing { get; set; }
 
-    [JsonPropertyName("fill-color")]
+    [JsonPropertyName(StyleProperties.FillColor)]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public JsonElement? FillColor { get; set; }
 
-    [JsonPropertyName("fill-opacity")]
+    [JsonPropertyName(StyleProperties.FillOpacity)]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public JsonElement? FillOpacity { get; set; }
 
-    [JsonPropertyName("fill-outline-color")]
+    [JsonPropertyName(StyleProperties.FillOutlineColor)]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public JsonElement? FillOutlineColor { get; set; }
+
+    [JsonPropertyName(StyleProperties.FillExtrusionHeight)]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public JsonElement? FillExtrusionHeight { get; set; }
+
+    [JsonPropertyName(StyleProperties.FillExtrusionColor)]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public JsonElement? FillExtrusionColor { get; set; }
 
     #endregion
 
     #region Text
 
-    [JsonPropertyName("text-halo-width")]
+    [JsonPropertyName(StyleProperties.TextHaloWidth)]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public JsonElement? TextHaloWidth { get; set; }
 
-    [JsonPropertyName("text-halo-color")]
+    [JsonPropertyName(StyleProperties.TextHaloColor)]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public JsonElement? TextHaloColor { get; set; }
 
-    [JsonPropertyName("text-color")]
+    [JsonPropertyName(StyleProperties.TextColor)]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public JsonElement? TextColor { get; set; }
 
     #endregion
 
     #region Raster
 
-    [JsonPropertyName("raster-brightness-min")]
+    [JsonPropertyName(StyleProperties.RasterBrightnessMin)]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public JsonElement? RasterBrightnessMin { get; set; }
 
     #endregion

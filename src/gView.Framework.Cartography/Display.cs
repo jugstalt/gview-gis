@@ -1,4 +1,5 @@
-﻿using gView.Framework.Common;
+﻿using gView.Framework.Calc;
+using gView.Framework.Common;
 using gView.Framework.Core.Carto;
 using gView.Framework.Core.Geometry;
 using gView.Framework.Core.Symbology;
@@ -481,6 +482,7 @@ namespace gView.Framework.Cartography
         {
             double cx = m_actMaxX * 0.5 + m_actMinX * 0.5;
             double cy = m_actMaxY * 0.5 + m_actMinY * 0.5;
+
             SetScale(scale, cx, cy);
         }
 
@@ -493,7 +495,7 @@ namespace gView.Framework.Cartography
             }
         }
 
-        public float WebMercatorScaleLevel { get; } = 0f; // ToDo:
+        public float WebMercatorScaleLevel => (float)WebMercatorCalc.Zoom(m_scale);
 
         public void ZoomTo(double minx, double miny, double maxx, double maxy)
         {
@@ -583,6 +585,7 @@ namespace gView.Framework.Cartography
              * */
             #endregion
         }
+        
         #endregion
 
         #region Pan
