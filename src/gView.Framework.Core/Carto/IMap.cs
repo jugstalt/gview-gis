@@ -84,5 +84,6 @@ namespace gView.Framework.Core.Carto
         void SetLayerCopyrightText(int layerId, string copyrightText);
 
         IResourceContainer ResourceContainer { get; }
+        IMapEventHooks MapEventHooks { get; }
     }
 }

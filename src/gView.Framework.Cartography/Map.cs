@@ -1,4 +1,4 @@
-using gView.Framework.Cartography.LayerRenderers;
+using gView.Framework.Cartography.Hooks;
 using gView.Framework.Cartography.UI;
 using gView.Framework.Common;
 using gView.Framework.Core.Carto;
@@ -53,6 +53,7 @@ namespace gView.Framework.Cartography
 
         private IntegerSequence _layerIDSequece = new IntegerSequence();
         private IResourceContainer _resourceContainer = new ResourceContainer();
+        private IMapEventHooks _eventHooks = new MapEventHooks();
 
         public Map()
             : base(null)
@@ -91,6 +92,7 @@ namespace gView.Framework.Cartography
             _layerCopyrightTexts = original._layerCopyrightTexts;
 
             SetResourceContainer(original.ResourceContainer);
+            SetMapEventHooks(original.MapEventHooks);
 
             //if (modifyLayerTitles)
             {
@@ -282,7 +284,7 @@ namespace gView.Framework.Cartography
         }
         */
 
-        
+
 
         #region getLayer
 
@@ -483,7 +485,7 @@ namespace gView.Framework.Cartography
 
             var datasetIds = _layers.Where(l => l.Class != null).Select(l => l.DatasetID).Distinct().OrderBy(id => id).ToArray();
 
-            if(datasetIds.Length==0)
+            if (datasetIds.Length == 0)
             {
                 return;
             }
@@ -788,7 +790,7 @@ namespace gView.Framework.Cartography
                              .ToList()
                              .ForEach(t =>
                              {
-                                 foreach (ILayer layer in t.Layers?.Where(l=>l is Layer && l.GroupLayer == oldLayer) ?? [])
+                                 foreach (ILayer layer in t.Layers?.Where(l => l is Layer && l.GroupLayer == oldLayer) ?? [])
                                  {
                                      ((Layer)layer).GroupLayer = newGroupLayer;
                                  }
@@ -1114,6 +1116,18 @@ namespace gView.Framework.Cartography
 
             _layerIDSequece = (IntegerSequence)stream.Load("layerIDSequence", new IntegerSequence(), new IntegerSequence());
 
+            var resources = (IResourceContainer)stream.Load("MapResources", null, new ResourceContainer());
+            if (resources != null)
+            {
+                _resourceContainer = resources;
+            }
+
+            var eventHooks = (IMapEventHooks)stream.Load("MapEventHooks", null, new MapEventHooks());
+            if (eventHooks != null)
+            {
+                _eventHooks = eventHooks;
+            }
+
             IDataset dataset;
             while ((dataset = await stream.LoadPluginAsync<IDataset>("IDataset", new UnknownDataset())) != null)
             {
@@ -1185,13 +1199,7 @@ namespace gView.Framework.Cartography
                 if (LayerAdded != null)
                 {
                     LayerAdded(this, fLayer);
-                }
-
-                var resources = (IResourceContainer)stream.Load("MapResources", null, new ResourceContainer());
-                if (resources != null)
-                {
-                    _resourceContainer = resources;
-                }
+                }   
             }
 
             RasterCatalogLayer rcLayer;
@@ -1392,6 +1400,11 @@ namespace gView.Framework.Cartography
 
             stream.ClearErrorsAndWarnings();
 
+            foreach (var eventHook in _eventHooks.EventHooks?.Where(h => h.Type == HookEventType.OnLoaded) ?? [])
+            {
+                await eventHook.InvokeAsync(this);
+            }
+
             return true;
         }
 
@@ -1496,6 +1509,11 @@ namespace gView.Framework.Cartography
             if (_resourceContainer.HasResources)
             {
                 stream.Save("MapResources", _resourceContainer);
+            }
+
+            if (_eventHooks?.EventHooks?.Any() == true)
+            {
+                stream.Save("MapEventHooks", _eventHooks);
             }
 
             #region Metadata
@@ -1788,18 +1806,22 @@ namespace gView.Framework.Cartography
 
         #endregion
 
-
         internal void FireOnUserInterface(bool lockUI)
         {
             OnUserInterface?.Invoke(this, lockUI);
 
         }
-
         protected void SetResourceContainer(IResourceContainer resourceContainer)
         {
             _resourceContainer = resourceContainer ?? _resourceContainer;
         }
         public IResourceContainer ResourceContainer => _resourceContainer;
+
+        protected void SetMapEventHooks(IMapEventHooks eventHooks)
+        {
+            _eventHooks = eventHooks;
+        }
+        public IMapEventHooks MapEventHooks => _eventHooks;
 
         #region Map / Layer Description
 

@@ -76,6 +76,7 @@ namespace gView.Server.AppCode
             serviceMap._requestContext = requestContext;
 
             serviceMap.SetResourceContainer(original.ResourceContainer);
+            serviceMap.SetMapEventHooks(original.MapEventHooks);
 
             return serviceMap;
         }
