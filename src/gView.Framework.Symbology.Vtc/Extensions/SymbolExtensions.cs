@@ -93,14 +93,14 @@ static internal class SymbolExtensions
         #endregion
     }
 
-    static private T GetValueOrDeafult<T>(this Dictionary<string, IValueFunc> valueFuncs, string name, T defaultValue, IDisplay display, IFeature? feature)
+    static internal T GetValueOrDeafult<T>(this Dictionary<string, IValueFunc> valueFuncs, string name, T defaultValue, IDisplay display, IFeature? feature)
     {
         if (!valueFuncs.ContainsKey(name)) return defaultValue;
 
         return valueFuncs[name].Value<T>(display, feature) ?? defaultValue;
     }
 
-    static private T GetValueOrDeafult<T>(this Dictionary<string, IValueFunc> valueFuncs, string[] names, T defaultValue, IDisplay display, IFeature? feature)
+    static internal T GetValueOrDeafult<T>(this Dictionary<string, IValueFunc> valueFuncs, string[] names, T defaultValue, IDisplay display, IFeature? feature)
     {
         foreach (var name in names)
         {

@@ -1,4 +1,5 @@
-﻿using gView.DataSources.VectorTileCache.Json;
+﻿using gView.DataSources.VectorTileCache;
+using gView.DataSources.VectorTileCache.Json;
 using gView.DataSources.VectorTileCache.Json.Styles;
 using gView.Framework.Calc;
 using gView.Framework.Cartography.Rendering;
@@ -8,7 +9,10 @@ using gView.Framework.Core.Common;
 using gView.Framework.Core.Data;
 using gView.Framework.Core.IO;
 using gView.Framework.Data;
+using gView.Framework.Geometry;
+using gView.Framework.Geometry.Tiling;
 using gView.Framework.Vtc.Extensions;
+using System.Globalization;
 using System.Text;
 using System.Text.Json;
 
@@ -75,7 +79,34 @@ public class OnMapLoadedEventHook : IMapEventHook
             }
             else if ("raster".Equals(source.Value.Type, StringComparison.OrdinalIgnoreCase))
             {
+                var rasterDataset = new gView.DataSources.TileCache.Dataset();
+                int maxZoom = source.Value.MaxZoom ?? 21;
+                var grid = new WebMercatorGrid(0, maxZoom);
+                var sRef = new SpatialReference("epsg:3857");  // todo
 
+                StringBuilder sb = new StringBuilder();
+                sb.Append($"name={source.Key};");
+                sb.Append($"extent={grid.Extent.ToBBoxString()};");
+                sb.Append($"origin={(int)GridOrientation.UpperLeft};");
+                //sb.Append($"origin_x={grid.Extent.MinX.ToString(CultureInfo.InvariantCulture)};");
+                //sb.Append($"origin_y={grid.Extent.MinY.ToString(CultureInfo.InvariantCulture)};");
+                sb.Append($"sref64={sRef.ToBase64String()};");
+                sb.Append($"tilewidth={source.Value.TileSize};");
+                sb.Append($"tileheight={source.Value.TileSize};");
+                sb.Append($"tileurl={source.Value.Tiles.FirstOrDefault()?.Replace("{x}", "{0}").Replace("{y}", "{1}").Replace("{z}", "{2}")};");
+
+                sb.Append("scales=591658710.909132");  // intial scale 591658710.909132
+                for (int i = 1; i < maxZoom; i++)
+                    sb.Append($",{(591658710.909132 / Math.Pow(2, i)).ToString(CultureInfo.InvariantCulture)}");
+                sb.Append(";");
+
+                await rasterDataset.SetConnectionString(sb.ToString());
+                await rasterDataset.Open();
+                map.AddDataset(rasterDataset, datasetIndex++);
+
+                datasets.Add(source.Key, rasterDataset);
+
+                Console.WriteLine($"Added Raster Tile Cache: {source.Value.Tiles.FirstOrDefault()}");
             }
             else
             {
@@ -89,6 +120,11 @@ public class OnMapLoadedEventHook : IMapEventHook
 
         foreach (var layer in stylesCapabilities.Layers.Reverse())
         {
+            if(String.IsNullOrEmpty(layer.Source))
+            {
+                Console.WriteLine($"Warning: layer has no sourece: {layer.SourceLayerId}");
+                continue;
+            }
             var dataset = datasets.ContainsKey(layer.Source)
                 ? datasets[layer.Source]
                 : null;
@@ -99,10 +135,22 @@ public class OnMapLoadedEventHook : IMapEventHook
                 continue;
             }
 
-            var @class = (await dataset.Element(layer.SourceLayerId)).Class;
+            var @class = (await dataset.Element(layer.SourceLayerId))?.Class;
             if (@class == null)
             {
-                throw new Exception($"Warning: unknown layer class: {layer.Source}.{layer.SourceLayerId}");
+                //if (dataset is gView.DataSources.VectorTileCache.Dataset vtcDataset)
+                //{
+                //    if(!vtcDataset.TryAddFeatureClass(layer.Id))
+                //    {
+                //        throw new Exception($"Warning: layer cant added to VTC: {layer.Source}.{layer.SourceLayerId}");
+                //    }
+                //}
+                //else
+                {
+                    Console.WriteLine($"Warning: unknown layer class: {layer.Source}.{layer.SourceLayerId}");
+                    continue;
+                    //throw new Exception($"Warning: unknown layer class: {layer.Source}.{layer.SourceLayerId}");
+                }
             }
 
             if (@class is IFeatureClass featureClass)
@@ -134,16 +182,23 @@ public class OnMapLoadedEventHook : IMapEventHook
 
                 if (symbol.IsLabelSymbol())
                 {
-                    featureLayer.LabelRenderer = new VtcLabelRenderer()
+                    featureLayer.LabelRenderer = new VtcLabelRenderer(symbol)
                     {
-                        TextSymbol = symbol.TextSymbol,
                         UseExpression = true,
                         LabelExpression = layer.Layout?.TextFieldExpression?
                                 .Replace("{", "[")
                                 .Replace("}", "]") ?? "",
                         LabelPriority = SimpleLabelRenderer.RenderLabelPriority.Normal,
-                        CartoLineLabelling = SimpleLabelRenderer.CartographicLineLabeling.CurvedText
+                        HowManyLabels =
+                            layer.Layout?.SymbolSpacing > 0
+                                ? SimpleLabelRenderer.RenderHowManyLabels.OnPerName
+                                : SimpleLabelRenderer.RenderHowManyLabels.OnPerFeature,
+                        CartoLineLabelling =
+                            layer.Layout?.SymbolPlacement == "line"
+                                ? SimpleLabelRenderer.CartographicLineLabeling.CurvedText
+                                : SimpleLabelRenderer.CartographicLineLabeling.Horizontal
                     };
+
                     featureLayer.FeatureRenderer = new VtcFeatureRenderer(symbol);
                 }
                 else
@@ -154,6 +209,18 @@ public class OnMapLoadedEventHook : IMapEventHook
                 map.AddLayer(featureLayer);
 
                 var tocElement = map.TOC.GetTocElementByLayerId(featureLayer.ID);
+                if (tocElement != null)
+                {
+                    tocElement.Name = layer.Id;
+                }
+            }
+            else if (@class is IRasterClass rasterClass)
+            {
+                var rasterLayer = new RasterLayer(rasterClass);
+
+                map.AddLayer(rasterLayer);
+
+                var tocElement = map.TOC.GetTocElementByLayerId(rasterLayer.ID);
                 if (tocElement != null)
                 {
                     tocElement.Name = layer.Id;

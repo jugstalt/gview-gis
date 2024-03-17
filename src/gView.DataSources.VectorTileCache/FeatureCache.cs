@@ -148,6 +148,10 @@ namespace gView.DataSources.VectorTileCache
 
         public void Dispose()
         {
+            foreach(var bags in _features.Values)
+            {
+                bags.Clear();
+            }
             _features.Clear();
         }
 

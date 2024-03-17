@@ -17,7 +17,7 @@ public class PaintSymbol : ISymbol
     private IPointSymbol? _pointSymbol;
     private ITextSymbol? _textSymbol;
 
-    private Dictionary<string, IValueFunc> _valueFunc = new();
+    private Dictionary<string, IValueFunc> _valueFuncs = new();
 
     public PaintSymbol()
     {
@@ -36,6 +36,8 @@ public class PaintSymbol : ISymbol
         _textSymbol = textSymbol;
     }
 
+    internal Dictionary<string, IValueFunc> ValueFuncs => _valueFuncs;
+
     #region ISymbol
 
     public string Name => "Vtc Paint Symbol";
@@ -53,7 +55,7 @@ public class PaintSymbol : ISymbol
             _fillSymbol?.Clone() as IFillSymbol,
             _textSymbol?.Clone() as ITextSymbol);
 
-        clone._valueFunc = _valueFunc;
+        clone._valueFuncs = _valueFuncs;
 
         return clone;
     }
@@ -76,13 +78,13 @@ public class PaintSymbol : ISymbol
         //else 
         if (geometry is IPolyline && _lineSymbol != null)
         {
-            _lineSymbol.ModifyStyles(_valueFunc, display, feature);
+            _lineSymbol.ModifyStyles(_valueFuncs, display, feature);
 
             display.Draw(_lineSymbol, geometry);
         }
         else if (geometry is IPolygon && _fillSymbol != null)
         {
-            _fillSymbol.ModifyStyles(_valueFunc, display, feature);
+            _fillSymbol.ModifyStyles(_valueFuncs, display, feature);
 
             display.Draw(_fillSymbol, geometry);
         }
@@ -149,7 +151,7 @@ public class PaintSymbol : ISymbol
 
     public void AddValueFunc(string key, IValueFunc valueFunc)
     {
-        _valueFunc[key] = valueFunc;
+        _valueFuncs[key] = valueFunc;
     }
 }
 

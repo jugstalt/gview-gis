@@ -180,7 +180,7 @@ namespace gView.GraphicsEngine
                         int.Parse(rgbMatch.Groups[3].Value, CultureInfo.InvariantCulture)
                     );
                 }
-                else if (hslaMatch.Success || hslMatch.Success)
+                else if (hslaMatch.Success)
                 {
                     float h = float.Parse(hslaMatch.Groups[1].Value, CultureInfo.InvariantCulture);
                     float s = float.Parse(hslaMatch.Groups[2].Value, CultureInfo.InvariantCulture) / 100f;
@@ -193,6 +193,21 @@ namespace gView.GraphicsEngine
 
                     return ArgbColor.FromArgb(
                         Convert.ToInt32(a * 255),
+                        rgb.R,
+                        rgb.G,
+                        rgb.B
+                    );
+                }
+                else if(hslMatch.Success)
+                {
+                    float h = float.Parse(hslMatch.Groups[1].Value, CultureInfo.InvariantCulture);
+                    float s = float.Parse(hslMatch.Groups[2].Value, CultureInfo.InvariantCulture) / 100f;
+                    float l = float.Parse(hslMatch.Groups[3].Value, CultureInfo.InvariantCulture) / 100f;
+
+                    var rgb = HslToRgb(h, s, l);
+
+                    return ArgbColor.FromArgb(
+                        255,
                         rgb.R,
                         rgb.G,
                         rgb.B

@@ -2,6 +2,7 @@
 using gView.Cmd.Core.Abstraction;
 using gView.Cmd.Core.Extensions;
 using gView.DataSources.VectorTileCache.Json.Styles;
+using gView.Framework.Calc;
 using gView.Framework.Cartography;
 using gView.Framework.Core.Common;
 using gView.Framework.Geometry;
@@ -83,8 +84,16 @@ public class FromStylesJsonCommand : ICommand
                 if (centerPoint != null)
                 {
                     map.ZoomTo(new Envelope(centerPoint.X - 1, centerPoint.Y - 1, centerPoint.X + 1, centerPoint.Y + 1));
-                    map.MapScale = 10000;
+                    map.MapScale = WebMercatorCalc.MapScale(
+                            stylesCapabilities.Zoom,
+                            stylesCapabilities.Center[1]
+                        );
                 }
+            } 
+            else
+            {
+                map.ZoomTo(new Envelope(-1, -1, 1, 1));
+                map.MapScale = WebMercatorCalc.MapScale(7);
             }
 
             #endregion

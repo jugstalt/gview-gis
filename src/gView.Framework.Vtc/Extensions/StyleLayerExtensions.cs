@@ -1,6 +1,7 @@
 ﻿using gView.DataSources.VectorTileCache.Json.Styles;
 using gView.Framework.Symbology;
 using gView.Framework.Symbology.Vtc;
+using gView.GraphicsEngine;
 using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -38,7 +39,14 @@ static internal class StyleLayerExtensions
                 },
                 styleLayer.Type?.ToLower() switch
                 {
-                    "symbol" => new SimpleTextSymbol(),
+                    "symbol" => styleLayer.Paint?.TextHaloColor switch
+                    {
+                        null => new SimpleTextSymbol(),
+                        _ => new GlowingTextSymbol()
+                        {
+                            GlowingColor = styleLayer.Paint.TextHaloColor.Value.ToFuncValueOfType<ArgbColor>()
+                        }
+                    },
                     _ => null,
                 }
             );

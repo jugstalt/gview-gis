@@ -65,6 +65,7 @@ static internal class ValueFuncCreatorExtensions
                         valueFuncs.Add(key.ToLower() switch
                         {
                             "stops" => (dict["stops"].Deserialize<JsonElement[]>() ?? []).ToStopValueFunc(),
+                            "base" => null, // toTo;
                             _ => throw new ArgumentException($"Unknown function: {key}")
                         });
                     }
@@ -75,10 +76,10 @@ static internal class ValueFuncCreatorExtensions
         {
             throw new Exception($"Paring Error:\n{jsonElement.Value}\n{ex.Message}");
         }
-        return valueFuncs.FirstOrDefault();  // todo: ValueFuncCollection
+        return valueFuncs.Where(f => f != null).FirstOrDefault();  // todo: ValueFuncCollection
     }
 
-    static private StopsValueFunc ToStopValueFunc(this JsonElement[] jsonElements)
+    static internal StopsValueFunc ToStopValueFunc(this JsonElement[] jsonElements)
     {
         var stopsFunc = new StopsValueFunc();
 
@@ -105,7 +106,7 @@ static internal class ValueFuncCreatorExtensions
         return stopsFunc;
     }
 
-    static private CaseValueFunc ToCaseValueFunc(this JsonElement[] jsonElements)
+    static internal CaseValueFunc ToCaseValueFunc(this JsonElement[] jsonElements)
     {
         var caseValueFunc = new CaseValueFunc();
 
@@ -181,7 +182,7 @@ static internal class ValueFuncCreatorExtensions
         return caseValueFunc;
     }
 
-    static private object ToFuncValue(this JsonElement jsonElement)
+    static internal object ToFuncValue(this JsonElement jsonElement)
         => jsonElement.ValueKind switch
         {
             JsonValueKind.Number => (float)jsonElement.GetDouble(),
@@ -196,7 +197,7 @@ static internal class ValueFuncCreatorExtensions
             _ => throw new Exception($"Unexpected function value kind: {jsonElement.ValueKind}")
         };
 
-    static private object ToFuncValue(this string? value)
+    static internal object ToFuncValue(this string? value)
     {
         if (String.IsNullOrEmpty(value))
         {
@@ -214,6 +215,21 @@ static internal class ValueFuncCreatorExtensions
         }
 
         throw new ArgumentException($"Can't convert string to a function value: {value}");
+    }
+
+    static internal T? ToFuncValueOfType<T>(this JsonElement jsonElement)
+    {
+        try
+        {
+            var value = jsonElement.ToFuncValue();
+            if (value?.GetType() == typeof(T))
+            {
+                return (T)value;
+            }
+        }
+        catch { }
+
+        return default;
     }
 }
 

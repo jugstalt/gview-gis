@@ -4,7 +4,7 @@ using gView.Framework.Geometry.Tiling;
 
 namespace gView.DataSources.VectorTileCache
 {
-    class WebMercatorGrid : Grid
+    public class WebMercatorGrid : Grid
     {
         const double WmDpi = 25.4D / 0.28D;  // wmts 0.28mm -> 1 Pixel in WebMercator
 

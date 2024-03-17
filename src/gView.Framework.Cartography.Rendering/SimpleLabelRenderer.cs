@@ -184,7 +184,8 @@ namespace gView.Framework.Cartography.Rendering
         }
         private IEnvelope _clipEnvelope = null;
 
-        virtual protected bool RenderFeature(IFeature feature) => true;
+        virtual protected bool BeforeRenderFeature(IDisplay display, IFeature feature) => true;
+        virtual protected string ModifyEvaluatedLabel(IFeature feature, string label) => label;
 
         #region ILabelRenderer Members
 
@@ -265,9 +266,9 @@ namespace gView.Framework.Cartography.Rendering
             }
         }
 
-        public void Draw(IDisplay disp, IFeature feature)
+        public void Draw(IDisplay display, IFeature feature)
         {
-            if (!RenderFeature(feature) || !(_symbol is ISymbol))
+            if (!BeforeRenderFeature(display, feature) || !(_symbol is ISymbol))
             {
                 return;
             }
@@ -289,7 +290,7 @@ namespace gView.Framework.Cartography.Rendering
                 }
                 if (_useExpression)
                 {
-                    expr = expr.Replace("[" + fv.Name + "]", fv.Value.ToString());
+                    expr = expr.Replace($"[{fv.Name}]", fv.Value.ToString());
                 }
             }
             if (_useExpression)
@@ -298,7 +299,8 @@ namespace gView.Framework.Cartography.Rendering
                 {
                     expr = new SimpleScriptInterpreter(expr).Interpret();
                 }
-                _symbol.Text = expr;
+
+                _symbol.Text = ModifyEvaluatedLabel(feature, expr);
             }
 
             if (string.IsNullOrWhiteSpace(_symbol.Text))
@@ -316,7 +318,7 @@ namespace gView.Framework.Cartography.Rendering
 
             if (feature.Shape is IPoint)
             {
-                if (disp.LabelEngine.TryAppend(disp, _symbol, feature.Shape, _labelPriority != RenderLabelPriority.Always) == LabelAppendResult.Succeeded)
+                if (display.LabelEngine.TryAppend(display, _symbol, feature.Shape, _labelPriority != RenderLabelPriority.Always) == LabelAppendResult.Succeeded)
                 {
                     if (_howManyLabels == RenderHowManyLabels.OnPerName)
                     {
@@ -334,7 +336,7 @@ namespace gView.Framework.Cartography.Rendering
                         continue;
                     }
 
-                    if (disp.LabelEngine.TryAppend(disp, _symbol, multiPoint[i], _labelPriority != RenderLabelPriority.Always) == LabelAppendResult.Succeeded)
+                    if (display.LabelEngine.TryAppend(display, _symbol, multiPoint[i], _labelPriority != RenderLabelPriority.Always) == LabelAppendResult.Succeeded)
                     {
                         if (_howManyLabels == RenderHowManyLabels.OnPerName)
                         {
@@ -370,7 +372,7 @@ namespace gView.Framework.Cartography.Rendering
                 {
                     #region Text On Path
 
-                    IDisplayCharacterRanges ranges = _symbol.MeasureCharacterWidth(disp);
+                    IDisplayCharacterRanges ranges = _symbol.MeasureCharacterWidth(display);
                     if (ranges == null)
                     {
                         return;
@@ -387,16 +389,16 @@ namespace gView.Framework.Cartography.Rendering
                         }
 
                         IPointCollection pathPoints = path;
-                        if (disp.GeometricTransformer != null)
+                        if (display.GeometricTransformer != null)
                         {
-                            pathPoints = (IPointCollection)disp.GeometricTransformer.Transform2D(pathPoints);
+                            pathPoints = (IPointCollection)display.GeometricTransformer.Transform2D(pathPoints);
                         }
 
                         DisplayPath displayPath = new DisplayPath();
                         for (int iPoint = 0; iPoint < pathPoints.PointCount; iPoint++)
                         {
                             double x = pathPoints[iPoint].X, y = pathPoints[iPoint].Y;
-                            disp.World2Image(ref x, ref y);
+                            display.World2Image(ref x, ref y);
                             displayPath.AddPoint(new GraphicsEngine.CanvasPointF((float)x, (float)y));
                         }
                         float pathLenght = displayPath.Length;
@@ -410,7 +412,7 @@ namespace gView.Framework.Cartography.Rendering
                         bool found = false;
                         while (!found)
                         {
-                            if (disp.LabelEngine.TryAppend(disp, _symbol, displayPath, _labelPriority != RenderLabelPriority.Always) == LabelAppendResult.Succeeded)
+                            if (display.LabelEngine.TryAppend(display, _symbol, displayPath, _labelPriority != RenderLabelPriority.Always) == LabelAppendResult.Succeeded)
                             {
                                 found = true;
                                 if (_howManyLabels == RenderHowManyLabels.OnPerName)
@@ -512,7 +514,7 @@ namespace gView.Framework.Cartography.Rendering
 
                             _symbol.Angle = (float)angle;
                         }
-                        if (disp.LabelEngine.TryAppend(disp, _symbol, p, _labelPriority != RenderLabelPriority.Always) == LabelAppendResult.Succeeded)
+                        if (display.LabelEngine.TryAppend(display, _symbol, p, _labelPriority != RenderLabelPriority.Always) == LabelAppendResult.Succeeded)
                         {
                             if (_howManyLabels == RenderHowManyLabels.OnPerName)
                             {
@@ -587,7 +589,7 @@ namespace gView.Framework.Cartography.Rendering
                         pLine[0].AddPoint(point1);
                         pLine[0].AddPoint(point2);
 
-                        if (disp.LabelEngine.TryAppend(disp, _symbol, pLine, _labelPriority != RenderLabelPriority.Always) == LabelAppendResult.Succeeded)
+                        if (display.LabelEngine.TryAppend(display, _symbol, pLine, _labelPriority != RenderLabelPriority.Always) == LabelAppendResult.Succeeded)
                         {
                             if (_howManyLabels == RenderHowManyLabels.OnPerName)
                             {
@@ -601,7 +603,7 @@ namespace gView.Framework.Cartography.Rendering
             }
             else if (feature.Shape is IPolygon)
             {
-                LabelPolygon(disp, (IPolygon)feature.Shape);
+                LabelPolygon(display, (IPolygon)feature.Shape);
             }
         }
 

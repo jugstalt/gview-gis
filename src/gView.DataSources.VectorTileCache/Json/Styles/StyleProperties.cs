@@ -27,6 +27,6 @@ static public class StyleProperties
     public const string TextHaloWidth = "text-halo-width";
     public const string TextHaloColor = "text-halo-color";
     public const string TextColor = "text-color";
-
+    public const string TextSize = "text-size";
     public const string RasterBrightnessMin = "raster-brightness-min";
 }
