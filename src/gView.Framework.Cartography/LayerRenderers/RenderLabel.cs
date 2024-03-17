@@ -17,12 +17,18 @@ namespace gView.Framework.Cartography.LayerRenderers
     {
         private Map _map;
         private IFeatureLayer _layer;
+        private IDatasetCachingContext _datasetCachingContext;
         private ICancelTracker _cancelTracker;
         private FeatureCounter _counter;
 
-        public RenderLabel(Map map, IFeatureLayer layer, ICancelTracker cancelTracker, FeatureCounter counter)
+        public RenderLabel(Map map,
+                           IDatasetCachingContext datasetCachingContext,
+                           IFeatureLayer layer, 
+                           ICancelTracker cancelTracker, 
+                           FeatureCounter counter)
         {
             _map = map;
+            _datasetCachingContext = datasetCachingContext;
             _layer = layer;
             _cancelTracker = cancelTracker == null ? new CancelTracker() : cancelTracker;
 
@@ -56,6 +62,7 @@ namespace gView.Framework.Cartography.LayerRenderers
                 }
 
                 SpatialFilter filter = new SpatialFilter();
+                filter.DatasetCachingContext = _datasetCachingContext;
                 filter.Geometry = filterGeom;
                 filter.AddField(fClass.ShapeFieldName);
                 filter.SpatialRelation = spatialRelation.SpatialRelationMapEnvelopeIntersects;

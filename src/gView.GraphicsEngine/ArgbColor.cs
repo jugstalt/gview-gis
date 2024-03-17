@@ -1,4 +1,6 @@
-﻿using System;
+﻿using gView.GraphicsEngine.Filters;
+using System;
+using System.Drawing;
 using System.Globalization;
 using System.Text.RegularExpressions;
 
@@ -231,6 +233,8 @@ namespace gView.GraphicsEngine
             }
             else
             {
+                h = h / 360f;
+
                 var q = l < 0.5 ? l * (1 + s) : l + s - l * s;
                 var p = 2 * l - q;
                 r = HueToRgb(p, q, h + 1f / 3f);

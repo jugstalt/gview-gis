@@ -10,7 +10,6 @@ namespace gView.DataSources.VectorTileCache
     class FeatureCursor : gView.Framework.Data.FeatureCursor
     {
         private readonly FeatureClass _fc;
-        private readonly VtcStyleFilter _filter;
         private readonly FeatureCache _cache;
         private readonly GeoJSON.Net.Feature.Feature[] _geoJsonFeatures;
         private int _pos = 0;
@@ -20,7 +19,6 @@ namespace gView.DataSources.VectorTileCache
         {
             _fc = fc;
             _cache = filter?.DatasetCachingContext?.GetCache<FeatureCache>();
-            _filter = filter as VtcStyleFilter;
             
             _geoJsonFeatures = _cache?[_fc.Name]?.ToArray();
         }
@@ -56,13 +54,8 @@ namespace gView.DataSources.VectorTileCache
                 feature.Shape = geoJsonFeature.Geometry.ToGeometry();
             }
 
-            if (_filter != null)
-            {
-                if (_filter != null && _filter.Filter(feature) == false)
-                {
-                    return NextFeature();
-                }
-            }
+            // Filtering?
+            // is managed in VtcFeatureRenderer...
 
             Transform(feature);
             return Task.FromResult<IFeature>(feature);

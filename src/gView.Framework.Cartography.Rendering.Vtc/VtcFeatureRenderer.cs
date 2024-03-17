@@ -1,4 +1,5 @@
-﻿using gView.Framework.Core.Carto;
+﻿using gView.DataSources.VectorTileCache.Json;
+using gView.Framework.Core.Carto;
 using gView.Framework.Core.Common;
 using gView.Framework.Core.Data;
 using gView.Framework.Core.Data.Filters;
@@ -11,6 +12,7 @@ namespace gView.Framework.Cartography.Rendering.Vtc;
 public class VtcFeatureRenderer : IFeatureRenderer
 {
     private readonly PaintSymbol _paintSymbol;
+    private VtcStyleFilter? _filter = null;
 
     public VtcFeatureRenderer(PaintSymbol paintSymbol)
     {
@@ -42,7 +44,10 @@ public class VtcFeatureRenderer : IFeatureRenderer
 
     public void Draw(IDisplay disp, IFeature feature)
     {
-        _paintSymbol.Draw(disp, feature);
+        if (_filter == null || _filter.Filter(feature))
+        {
+            _paintSymbol.Draw(disp, feature); ;
+        }
     }
 
     public void FinishDrawing(IDisplay disp, ICancelTracker cancelTracker)
@@ -64,7 +69,7 @@ public class VtcFeatureRenderer : IFeatureRenderer
 
     public void PrepareQueryFilter(IFeatureLayer layer, IQueryFilter filter)
     {
-        
+        _filter = layer.FilterQuery as VtcStyleFilter;
     }
 
     public void Release()

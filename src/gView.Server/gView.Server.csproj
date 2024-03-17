@@ -52,6 +52,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\gView.Azure\gView.Azure.csproj" />
+    <ProjectReference Include="..\gView.Framework.Cartography.Rendering.Vtc\gView.Framework.Cartography.Rendering.Vtc.csproj" />
     <ProjectReference Include="..\gView.Framework.Cartography.Rendering\gView.Framework.Cartography.Rendering.csproj" />
     <ProjectReference Include="..\gView.Framework.Cartography\gView.Framework.Cartography.csproj" />
     <ProjectReference Include="..\gView.Framework.Core\gView.Framework.Core.csproj" />
@@ -75,6 +76,8 @@
     <ProjectReference Include="..\gView.Framework.Db\gView.Framework.Db.csproj" />
     <ProjectReference Include="..\gView.Editor.Core\gView.Editor.Core.csproj" />
     <ProjectReference Include="..\gView.Framework.Geometry\gView.Framework.Geometry.csproj" />
+    <ProjectReference Include="..\gView.Framework.Symbology.Vtc\gView.Framework.Symbology.Vtc.csproj" />
+    <ProjectReference Include="..\gView.Framework.Vtc\gView.Framework.Vtc.csproj" />
     <ProjectReference Include="..\gView.GraphicsEngine.Default\gView.GraphicsEngine.Default.csproj" />
     <ProjectReference Include="..\gView.GraphicsEngine.GdiPlus\gView.GraphicsEngine.GdiPlus.csproj" />
     <ProjectReference Include="..\gView.GraphicsEngine.Skia\gView.GraphicsEngine.Skia.csproj" />

@@ -125,9 +125,31 @@ public class OnMapLoadedEventHook : IMapEventHook
                 }
                 featureLayer.ApplyRefScale = featureLayer.ApplyLabelRefScale = false;
                 featureLayer.FilterQuery = VtcStyleFilter.FromJsonElement(layer.Filter);
-
+                featureLayer.Visible = layer.Layout?.Visibility?.ToLower() switch
+                {
+                    "none" => false,
+                    _ => true
+                };
                 var symbol = layer.ToPaintSymbol();
-                featureLayer.FeatureRenderer = new VtcFeatureRenderer(symbol);
+
+                if (symbol.IsLabelSymbol())
+                {
+                    featureLayer.LabelRenderer = new VtcLabelRenderer()
+                    {
+                        TextSymbol = symbol.TextSymbol,
+                        UseExpression = true,
+                        LabelExpression = layer.Layout?.TextFieldExpression?
+                                .Replace("{", "[")
+                                .Replace("}", "]") ?? "",
+                        LabelPriority = SimpleLabelRenderer.RenderLabelPriority.Normal,
+                        CartoLineLabelling = SimpleLabelRenderer.CartographicLineLabeling.CurvedText
+                    };
+                    featureLayer.FeatureRenderer = new VtcFeatureRenderer(symbol);
+                }
+                else
+                {
+                    featureLayer.FeatureRenderer = new VtcFeatureRenderer(symbol);
+                }
 
                 map.AddLayer(featureLayer);
 

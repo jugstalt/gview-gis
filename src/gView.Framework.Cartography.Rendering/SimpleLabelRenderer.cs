@@ -70,7 +70,7 @@ namespace gView.Framework.Cartography.Rendering
             _symbolRotation = new SymbolRotation();
         }
 
-        private SimpleLabelRenderer(ITextSymbol symbol, string fieldname)
+        protected SimpleLabelRenderer(ITextSymbol symbol, string fieldname)
         {
             _symbol = symbol;
             _fieldname = fieldname;
@@ -184,9 +184,11 @@ namespace gView.Framework.Cartography.Rendering
         }
         private IEnvelope _clipEnvelope = null;
 
+        virtual protected bool RenderFeature(IFeature feature) => true;
+
         #region ILabelRenderer Members
 
-        public void PrepareQueryFilter(IDisplay display, IFeatureLayer layer, IQueryFilter filter)
+        virtual public void PrepareQueryFilter(IDisplay display, IFeatureLayer layer, IQueryFilter filter)
         {
             if (layer.FeatureClass == null)
             {
@@ -265,7 +267,7 @@ namespace gView.Framework.Cartography.Rendering
 
         public void Draw(IDisplay disp, IFeature feature)
         {
-            if (!(_symbol is ISymbol))
+            if (!RenderFeature(feature) || !(_symbol is ISymbol))
             {
                 return;
             }
@@ -760,11 +762,14 @@ namespace gView.Framework.Cartography.Rendering
 
         #region IClone2 Members
 
-        public object Clone(CloneOptions options)
-        {
-            SimpleLabelRenderer renderer = new SimpleLabelRenderer(
+        virtual protected SimpleLabelRenderer CreateCloneInstance(CloneOptions options)
+            => new SimpleLabelRenderer(
                 (ITextSymbol)(_symbol is IClone2 ? _symbol.Clone(options) : null),
                 _fieldname);
+
+        public object Clone(CloneOptions options)
+        {
+            SimpleLabelRenderer renderer = CreateCloneInstance(options);
 
             renderer._howManyLabels = _howManyLabels;
             renderer._labelPriority = _labelPriority;
@@ -775,6 +780,7 @@ namespace gView.Framework.Cartography.Rendering
             renderer._symbolRotation = (SymbolRotation)_symbolRotation.Clone();
             renderer._clipEnvelope = _clipEnvelope != null ? new Envelope(_clipEnvelope) : null;
             renderer._lineLabelling = _lineLabelling;
+
             return renderer;
         }
 

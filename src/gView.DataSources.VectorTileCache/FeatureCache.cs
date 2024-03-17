@@ -23,7 +23,10 @@ namespace gView.DataSources.VectorTileCache
         public FeatureCache(Dataset dataset)
         {
             _dataset = dataset;
-            _grid = new WebMercatorGrid();
+            _grid = new WebMercatorGrid(
+                    _dataset.Capabilities.MinZoom,
+                    _dataset.Capabilities.MaxZoom
+                );
         }
 
         internal Dataset Dataset => _dataset;

@@ -1,4 +1,6 @@
-﻿using System.Text.Json;
+﻿#nullable enable
+
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace gView.DataSources.VectorTileCache.Json.Styles;
@@ -19,6 +21,10 @@ public class StyleLayerPaint
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public JsonElement? LineOpacity { get; set; }
 
+    [JsonPropertyName(StyleProperties.LineDashArray)]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public JsonElement? LineDashArray { get; set; }
+
     #endregion
 
     #region Fill
@@ -38,6 +44,18 @@ public class StyleLayerPaint
     [JsonPropertyName(StyleProperties.FillOutlineColor)]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public JsonElement? FillOutlineColor { get; set; }
+
+    [JsonPropertyName(StyleProperties.FillOutlineWidth)]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public JsonElement? FillOutlineWidth { get; set; }
+
+    [JsonPropertyName(StyleProperties.FillOutlineDashArray)]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public JsonElement? FillOutlineDashArray { get; set; }
+
+    [JsonPropertyName(StyleProperties.FillOutlineOpacity)]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public JsonElement? FillOutlineOpacity { get; set; }
 
     [JsonPropertyName(StyleProperties.FillExtrusionHeight)]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]

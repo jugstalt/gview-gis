@@ -11,11 +11,15 @@ static public class StyleProperties
     public const string LineColor = "line-color";
     public const string LineWidth = "line-width";
     public const string LineOpacity = "line-opacity";
+    public const string LineDashArray = "line-dasharray";
 
     public const string FillAntiAliasing = "fill-antialias";
     public const string FillColor = "fill-color";
     public const string FillOpacity = "fill-opacity";
     public const string FillOutlineColor = "fill-outline-color";
+    public const string FillOutlineWidth = "fill-outline-width";
+    public const string FillOutlineDashArray = "fill-outline-dasharray";
+    public const string FillOutlineOpacity = "fill-outline-opacity";
 
     public const string FillExtrusionColor = "fill-extrusion-color";
     public const string FillExtrusionHeight = "fill-extrusion-height";

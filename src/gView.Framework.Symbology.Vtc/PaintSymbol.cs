@@ -5,6 +5,7 @@ using gView.Framework.Core.Data;
 using gView.Framework.Core.Geometry;
 using gView.Framework.Core.IO;
 using gView.Framework.Core.Symbology;
+using gView.Framework.Symbology.Vtc.Extensions;
 using gView.GraphicsEngine;
 
 namespace gView.Framework.Symbology.Vtc;
@@ -14,6 +15,7 @@ public class PaintSymbol : ISymbol
     private ILineSymbol? _lineSymbol;
     private IFillSymbol? _fillSymbol;
     private IPointSymbol? _pointSymbol;
+    private ITextSymbol? _textSymbol;
 
     private Dictionary<string, IValueFunc> _valueFunc = new();
 
@@ -24,12 +26,14 @@ public class PaintSymbol : ISymbol
     public PaintSymbol(
             IPointSymbol? pointSymbol,
             ILineSymbol? lineSymbol,
-            IFillSymbol? fillSymbol
+            IFillSymbol? fillSymbol,
+            ITextSymbol? textSymbol
          )
     {
         _pointSymbol = pointSymbol;
         _lineSymbol = lineSymbol;
         _fillSymbol = fillSymbol;
+        _textSymbol = textSymbol;
     }
 
     #region ISymbol
@@ -46,7 +50,8 @@ public class PaintSymbol : ISymbol
         var clone = new PaintSymbol(
             _pointSymbol?.Clone() as IPointSymbol,
             _lineSymbol?.Clone() as ILineSymbol,
-            _fillSymbol?.Clone() as IFillSymbol);
+            _fillSymbol?.Clone() as IFillSymbol,
+            _textSymbol?.Clone() as ITextSymbol);
 
         clone._valueFunc = _valueFunc;
 
@@ -71,50 +76,19 @@ public class PaintSymbol : ISymbol
         //else 
         if (geometry is IPolyline && _lineSymbol != null)
         {
-            _lineSymbol.SymbolSmoothingMode = SymbolSmoothing.AntiAlias;
-
-            float opacity = GetValueOrDeafult(StyleProperties.LineOpacity, 1f, display, feature);
-
-            if (_lineSymbol is IPenWidth penWidth)
-            {
-                penWidth.PenWidth = GetValueOrDeafult(StyleProperties.LineWidth, penWidth.PenWidth, display, null);
-            }
-
-            if (_lineSymbol is IPenColor penColor)
-            {
-                penColor.PenColor = GetValueOrDeafult(StyleProperties.LineColor, penColor.PenColor, display, null);
-
-                if (opacity != 1f)
-                {
-                    penColor.PenColor = ArgbColor.FromArgb((int)(255 * opacity), penColor.PenColor);
-                }
-            }
+            _lineSymbol.ModifyStyles(_valueFunc, display, feature);
 
             display.Draw(_lineSymbol, geometry);
         }
         else if (geometry is IPolygon && _fillSymbol != null)
         {
-            _fillSymbol.SymbolSmoothingMode =
-                GetValueOrDeafult(StyleProperties.FillOpacity, true, display, feature)
-                ? SymbolSmoothing.AntiAlias
-                : SymbolSmoothing.None;
-
-            float opacity = GetValueOrDeafult(StyleProperties.FillOpacity, 1f, display, feature);
-
-            if (_fillSymbol is IBrushColor brushColor)
-            {
-                brushColor.FillColor
-                    = GetValueOrDeafult([StyleProperties.FillColor, StyleProperties.FillExtrusionColor],
-                            brushColor.FillColor,
-                            display, feature);
-
-                if (opacity != 1f)
-                {
-                    brushColor.FillColor = ArgbColor.FromArgb((int)(255 * opacity), brushColor.FillColor);
-                }
-            }
+            _fillSymbol.ModifyStyles(_valueFunc, display, feature);
 
             display.Draw(_fillSymbol, geometry);
+        }
+        else if(_textSymbol != null)
+        {
+           
         }
         else
         {
@@ -152,10 +126,12 @@ public class PaintSymbol : ISymbol
         _pointSymbol?.Release();
         _lineSymbol?.Release();
         _fillSymbol?.Release();
+        _textSymbol?.Release();
 
         _pointSymbol = null;
         _lineSymbol = null;
         _fillSymbol = null;
+        _textSymbol = null;
     }
 
     public bool RequireClone() =>
@@ -167,29 +143,13 @@ public class PaintSymbol : ISymbol
 
     #endregion
 
+    public bool IsLabelSymbol() => _textSymbol != null;
+
+    public ITextSymbol? TextSymbol => _textSymbol;
+
     public void AddValueFunc(string key, IValueFunc valueFunc)
     {
         _valueFunc[key] = valueFunc;
-    }
-
-    private T GetValueOrDeafult<T>(string name, T defaultValue, IDisplay display, IFeature? feature)
-    {
-        if (!_valueFunc.ContainsKey(name)) return defaultValue;
-
-        return _valueFunc[name].Value<T>(display, feature) ?? defaultValue;
-    }
-
-    private T GetValueOrDeafult<T>(string[] names, T defaultValue, IDisplay display, IFeature? feature)
-    {
-        foreach (var name in names)
-        {
-            if (_valueFunc.ContainsKey(name))
-            {
-                return _valueFunc[name].Value<T>(display, feature) ?? defaultValue;
-            }
-        }
-
-        return defaultValue;
     }
 }
 
@@ -272,55 +232,47 @@ public class CaseValueFunc : IValueFunc
     }
 }
 
-public class FloatValueFunc : IValueFunc
+public class ValueFunc<TValue> : IValueFunc
 {
-    private float _value;
+    protected TValue? _value;
 
-    public FloatValueFunc()
+    public ValueFunc()
     {
+        _value = default;
     }
 
-    public FloatValueFunc(float value) => _value = value;
+    public ValueFunc(TValue value) => _value = value;
 
-    public T? Value<T>(IDisplay display, IFeature? feature = null)
+    virtual public T? Value<T>(IDisplay display, IFeature? feature = null)
     {
-        return (T)Convert.ChangeType(_value, typeof(T));
+        if(typeof(T) == typeof(TValue))
+        {
+            return (T?)(object?)_value;
+        }
+        return (T?)Convert.ChangeType(_value, typeof(T));
     }
 }
 
-public class ColorValueFunc : IValueFunc
+public class FloatValueFunc : ValueFunc<float>
 {
-    private ArgbColor _value;
+    public FloatValueFunc(float value) : base(value) { }
+}
+public class BooleanValueFunc : ValueFunc<bool> 
+{
+    public BooleanValueFunc(bool value) : base(value) { }
+}
+public class ColorValueFunc : ValueFunc<ArgbColor>
+{
+    public ColorValueFunc(ArgbColor value) : base(value) { }
 
-    public ColorValueFunc()
-    {
-    }
-
-    public ColorValueFunc(ArgbColor value) => _value = value;
-
-    public T? Value<T>(IDisplay display, IFeature? feature = null)
+    public override T? Value<T>(IDisplay display, IFeature? feature = null) where T : default
     {
         if (typeof(T) == typeof(ArgbColor))
         {
-            return (T)(object)(_value);
+            return (T?)(object)_value;
         }
 
         return default;
     }
 }
 
-public class BooleanValueFunc : IValueFunc
-{
-    private bool _value;
-
-    public BooleanValueFunc()
-    {
-    }
-
-    public BooleanValueFunc(bool value) => _value = value;
-
-    public T? Value<T>(IDisplay display, IFeature? feature = null)
-    {
-        return (T)Convert.ChangeType(_value, typeof(T));
-    }
-}

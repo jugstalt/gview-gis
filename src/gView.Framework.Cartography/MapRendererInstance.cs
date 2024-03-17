@@ -333,7 +333,7 @@ public class MapRendererInstance : Map, IMapRenderer
                             FeatureCounter fCounter = new FeatureCounter();
                             DateTime startTime = DateTime.Now;
 
-                            RenderLabel rlt = new RenderLabel(this, fLayer, cancelTracker, fCounter);
+                            RenderLabel rlt = new RenderLabel(this, datasetCachingContext, fLayer, cancelTracker, fCounter);
 
                             if (cancelTracker.Continue)
                             {
