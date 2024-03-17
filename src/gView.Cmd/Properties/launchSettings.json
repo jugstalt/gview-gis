@@ -2,7 +2,7 @@
   "profiles": {
     "gView.Cmd": {
       "commandName": "Project",
-      "commandLineArgs": "--command MxlUtil.FromStylesJson -uri http://localhost:8080/styles/klokantech-basic/style.json"
+      "commandLineArgs": "--command MxlUtil.FromStylesJson -uri http://localhost:8080/styles/dark-matter/style.json"
     }
   }
 }
