@@ -12,22 +12,21 @@ using System.ComponentModel;
 namespace gView.Framework.Symbology;
 
 [RegisterPlugIn("C35A7287-AA51-41EC-8DC5-A0C41E98C18B")]
-public class ExtrusionFillSymbol : LegendItem, IFillSymbol
+public class ExtrusionFillSymbol : LegendItem, 
+                                   IFillSymbol, 
+                                   IBrushColor
 {
     private IBrush _brush, _groundBrush;
-    private ArgbColor _color;
 
     public ExtrusionFillSymbol()
     {
-        _color = ArgbColor.White;
-        _brush = Current.Engine.CreateSolidBrush(_color);
+        _brush = Current.Engine.CreateSolidBrush(ArgbColor.White);
         _groundBrush = Current.Engine.CreateSolidBrush(ArgbColor.Gray);
     }
 
     private ExtrusionFillSymbol(ArgbColor color)
     {
-        _color = color;
-        _brush = Current.Engine.CreateSolidBrush(_color);
+        _brush = Current.Engine.CreateSolidBrush(color);
         _groundBrush = Current.Engine.CreateSolidBrush(ArgbColor.Gray);
     }
 
@@ -43,34 +42,49 @@ public class ExtrusionFillSymbol : LegendItem, IFillSymbol
     {
         get
         {
-            return _color;
+            return _brush.Color;
         }
         set
         {
             _brush.Color = value;
-            _color = value;
         }
     }
+
+    #region IBrushColor
+
+    public ArgbColor FillColor
+    {
+        get => this.Color;
+        set => this.Color = value;
+    }
+
+    #endregion
 
     [Browsable(true)]
     public double Elevation { get; set; }
 
     public string Name => "Extrusion Fill Symbol";
 
-    public SymbolSmoothing SymbolSmoothingMode { get; set; }
+    public SymbolSmoothing SymbolSmoothingMode { get; set; } = SymbolSmoothing.AntiAlias;
 
     public object Clone(CloneOptions options)
     {
-        var symbol = new ExtrusionFillSymbol(_brush.Color);
+        var clone = new ExtrusionFillSymbol(_brush.Color);
         
-        symbol.LegendLabel = _legendLabel;
-        symbol.Elevation = Elevation;
+        clone.LegendLabel = _legendLabel;
+        clone.Elevation = Elevation;
 
-        return symbol;
+        return clone;
     }
 
     public void Draw(IDisplay display, IGeometry geometry)
     {
+        display.Canvas.SmoothingMode = SymbolSmoothingMode switch
+        {
+            SymbolSmoothing.AntiAlias => SmoothingMode.AntiAlias,
+            _ => SmoothingMode.Default,
+        };
+
         var gp = DisplayOperations.Geometry2GraphicsPath(display, geometry);
         if (gp != null)
         {
@@ -88,11 +102,13 @@ public class ExtrusionFillSymbol : LegendItem, IFillSymbol
 
             gpElevated.Dispose(); gpElevated = null;
         }
+
+        display.Canvas.SmoothingMode = SmoothingMode.None;
     }
 
     public void FillPath(IDisplay display, IGraphicsPath path)
     {
-        if (!_color.IsTransparent)
+        if (!_brush.Color.IsTransparent)
         {
             display.Canvas.FillPath(_brush, path);
         }
