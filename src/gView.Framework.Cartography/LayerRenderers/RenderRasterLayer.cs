@@ -72,6 +72,11 @@ namespace gView.Framework.Cartography.LayerRenderers
 
                 using (var paintContext = await _layer.RasterClass.BeginPaint(_map.Display, _cancelTracker))
                 {
+                    if(paintContext?.Bitmap == null)
+                    {
+                        return;  // No Data...eg. Tile not exists... 
+                    }
+
                     if (_filter != FilterImplementations.Default && paintContext != null)
                     {
                         _filteredBitmap = BaseFilter.ApplyFilter(paintContext.Bitmap, _filter);
