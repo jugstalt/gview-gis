@@ -3,11 +3,6 @@ using gView.Framework.Core.Carto;
 using gView.Framework.Core.Data;
 using gView.Framework.Core.Symbology;
 using gView.GraphicsEngine;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace gView.Framework.Symbology.Vtc.Extensions;
 
@@ -15,7 +10,7 @@ static internal class SymbolExtensions
 {
     static public void ModifyStyles(this ILineSymbol lineSymbol, Dictionary<string, IValueFunc> valueFuncs, IDisplay display, IFeature? feature)
     {
-        lineSymbol.SymbolSmoothingMode = 
+        lineSymbol.SymbolSmoothingMode =
                 valueFuncs.GetValueOrDeafult(StyleProperties.LineOpacity, true, display, feature)
                 ? SymbolSmoothing.AntiAlias
                 : SymbolSmoothing.None;

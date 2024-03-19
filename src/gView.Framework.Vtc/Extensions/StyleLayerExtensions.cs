@@ -34,7 +34,7 @@ static internal class StyleLayerExtensions
                         && styleLayer.Paint.FillOutlineWidth != null
                                 ? new SimpleFillSymbol() { OutlineSymbol = new SimpleLineSymbol() }
                                 : new SimpleFillSymbol() { OutlineSymbol = null },
-                    "fill-extrusion" => new ExtrusionFillSymbol() { Elevation = 50 },
+                    "fill-extrusion" => new SimpleFillSymbol() { OutlineSymbol = null },
                     _ => null
                 },
                 styleLayer.Type?.ToLower() switch

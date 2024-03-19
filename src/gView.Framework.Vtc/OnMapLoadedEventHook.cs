@@ -203,7 +203,11 @@ public class OnMapLoadedEventHook : IMapEventHook
                 }
                 else
                 {
-                    featureLayer.FeatureRenderer = new VtcFeatureRenderer(symbol);
+                    featureLayer.FeatureRenderer = layer.Type switch
+                    {
+                        "fill-extrusion" => new VtcExtrusionRenderer() { Symbol = symbol },
+                        _ => new VtcFeatureRenderer(symbol)
+                    };
                 }
 
                 map.AddLayer(featureLayer);

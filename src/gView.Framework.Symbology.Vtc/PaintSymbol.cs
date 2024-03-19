@@ -10,7 +10,7 @@ using gView.GraphicsEngine;
 
 namespace gView.Framework.Symbology.Vtc;
 
-public class PaintSymbol : ISymbol
+public class PaintSymbol : ISymbol, IBrushColor
 {
     private ILineSymbol? _lineSymbol;
     private IFillSymbol? _fillSymbol;
@@ -67,7 +67,7 @@ public class PaintSymbol : ISymbol
 
     }
 
-    public void Draw(IDisplay display, IFeature feature)
+    public void Draw(IDisplay display, IFeature feature, bool modify = true)
     {
         var geometry = feature?.Shape;
 
@@ -78,13 +78,19 @@ public class PaintSymbol : ISymbol
         //else 
         if (geometry is IPolyline && _lineSymbol != null)
         {
-            _lineSymbol.ModifyStyles(_valueFuncs, display, feature);
+            if (modify)
+            {
+                _lineSymbol.ModifyStyles(_valueFuncs, display, feature);
+            }
 
             display.Draw(_lineSymbol, geometry);
         }
         else if (geometry is IPolygon && _fillSymbol != null)
         {
-            _fillSymbol.ModifyStyles(_valueFuncs, display, feature);
+            if (modify)
+            {
+                _fillSymbol.ModifyStyles(_valueFuncs, display, feature);
+            }
 
             display.Draw(_fillSymbol, geometry);
         }
@@ -148,6 +154,30 @@ public class PaintSymbol : ISymbol
     public bool IsLabelSymbol() => _textSymbol != null;
 
     public ITextSymbol? TextSymbol => _textSymbol;
+
+    #region IBrushColor
+
+    public ArgbColor FillColor
+    {
+        get
+        {
+            if (_fillSymbol is IBrushColor brushColor)
+            {
+                return brushColor.FillColor;
+            }
+
+            return ArgbColor.Empty;
+        }
+        set
+        {
+            if (_fillSymbol is IBrushColor brushColor)
+            {
+                brushColor.FillColor = value;
+            }
+        }
+    }
+
+    #endregion
 
     public void AddValueFunc(string key, IValueFunc valueFunc)
     {

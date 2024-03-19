@@ -46,7 +46,7 @@ public class VtcFeatureRenderer : IFeatureRenderer
     {
         if (_filter == null || _filter.Filter(feature))
         {
-            _paintSymbol.Draw(disp, feature); ;
+            _paintSymbol.Draw(disp, feature);
         }
     }
 
