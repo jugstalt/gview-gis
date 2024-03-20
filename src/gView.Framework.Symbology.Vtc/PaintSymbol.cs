@@ -60,7 +60,18 @@ public class PaintSymbol : ISymbol, IBrushColor
         return clone;
     }
 
-    public object Clone(CloneOptions options) => Clone();
+    public object Clone(CloneOptions options)
+    {
+        var clone = new PaintSymbol(
+            _pointSymbol?.Clone(options) as IPointSymbol,
+            _lineSymbol?.Clone(options) as ILineSymbol,
+            _fillSymbol?.Clone(options) as IFillSymbol,
+            _textSymbol?.Clone(options) as ITextSymbol);
+
+        clone._valueFuncs = _valueFuncs;
+
+        return clone;
+    }
 
     public void Draw(IDisplay display, IGeometry geometry)
     {

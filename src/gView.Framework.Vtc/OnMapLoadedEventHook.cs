@@ -178,7 +178,7 @@ public class OnMapLoadedEventHook : IMapEventHook
                     "none" => false,
                     _ => true
                 };
-                var symbol = layer.ToPaintSymbol();
+                var symbol = layer.ToPaintSymbol(map);
 
                 if (symbol.IsLabelSymbol())
                 {

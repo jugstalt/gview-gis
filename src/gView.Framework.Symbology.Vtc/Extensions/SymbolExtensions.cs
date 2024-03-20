@@ -15,15 +15,17 @@ static internal class SymbolExtensions
                ? SymbolSmoothing.AntiAlias
                : SymbolSmoothing.None;
 
-        if(pointSymbol is IIconSymbol icon)
+        if (pointSymbol is IIconSymbol icon)
         {
             var iconName = valueFuncs.GetValueOrDeafult<string>(GLStyleProperties.IconImage, "", display, feature);
-            if(iconName!=null)
+            if (iconName != null)
             {
                 icon.Filename = $"resource:{iconName}@2x";
-                icon.SizeX = 32;
-                icon.SizeY = 32;
+                icon.ReloadIfEmpty(display, true);
             }
+            var iconSize = valueFuncs.GetValueOrDeafult(GLStyleProperties.IconSize, 1f, display, feature);
+            icon.SizeX *= iconSize;
+            icon.SizeY *= iconSize;
         }
     }
 

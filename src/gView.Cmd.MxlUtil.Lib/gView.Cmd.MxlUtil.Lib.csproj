@@ -20,8 +20,4 @@
     <ProjectReference Include="..\gView.Server.Models\gView.Server.Models.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Extensions\" />
-  </ItemGroup>
-
 </Project>

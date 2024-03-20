@@ -1,6 +1,7 @@
 ﻿using gView.Cmd.Core;
 using gView.Cmd.Core.Abstraction;
 using gView.Cmd.Core.Extensions;
+using gView.Cmd.MxlUtil.Lib.Extensions;
 using gView.Cmd.MxlUtil.Lib.Models.Json;
 using gView.DataSources.VectorTileCache.Json.GLStyles;
 using gView.Framework.Calc;
@@ -11,6 +12,7 @@ using gView.Framework.IO;
 using gView.Framework.Vtc;
 using gView.GraphicsEngine;
 using gView.GraphicsEngine.Abstraction;
+using gView.Interoperability.GeoServices.Extensions;
 using System.Text.Json;
 
 namespace gView.Cmd.MxlUtil.Lib;
@@ -139,7 +141,13 @@ public class FromGLStylesJsonCommand : ICommand
                     {
                         foreach (var glSprite in glSprites)
                         {
-                            // ToDo: is Sprite in GLStyles?
+                            if(!stylesCapabilities.Layers.RequireSpriteIcon(glSprite.Key))
+                            {
+                                continue;
+                            }
+
+                            logger?.LogLine($"Add Sprite Icon {glSprite.Key}");
+
                             using (var bitmap = Current.Engine.CreateBitmap(glSprite.Value.Width, glSprite.Value.Height, PixelFormat.Rgba32))
                             using (var canvas = bitmap.CreateCanvas())
                             {

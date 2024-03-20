@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.SqlServer.Management.SqlParser.SqlCodeDom;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -28,6 +29,8 @@ static public class GLStyleProperties
     public const string TextHaloColor = "text-halo-color";
     public const string TextColor = "text-color";
     public const string TextSize = "text-size";
+    public const string TextOffset = "text-offset";
+    public const string TextAnchor = "text-anchor";
     public const string RasterBrightnessMin = "raster-brightness-min";
 
     public const string IconImage = "icon-image";

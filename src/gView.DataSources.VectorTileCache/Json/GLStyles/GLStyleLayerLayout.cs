@@ -31,6 +31,14 @@ public class GLStyleLayerLayout
     [JsonPropertyName("text-optional")]
     public bool TextOptional { get; set; }
 
+    [JsonPropertyName(GLStyleProperties.TextOffset)]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public JsonElement? TextOffset { get; set; }
+
+    [JsonPropertyName(GLStyleProperties.TextAnchor)]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public JsonElement? TextAnchor { get; set; }
+
     [JsonPropertyName(GLStyleProperties.TextSize)]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public JsonElement? TextSize { get; set; }

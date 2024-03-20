@@ -45,6 +45,24 @@ public class VtcLabelRenderer : SimpleLabelRenderer
 
         var textSymbol = base.TextSymbol;
 
+        if (textSymbol != null)
+        {
+            var offset = _paintSymbol.GetValueOrDeafult<float[]?>(GLStyleProperties.TextOffset, null, display, feature);
+            if (offset != null && offset.Length == 2)
+            {
+                textSymbol.VerticalOffset = offset[0];
+                textSymbol.HorizontalOffset = offset[1];
+            }
+
+            textSymbol.TextSymbolAlignment =
+                _paintSymbol.GetValueOrDeafult(GLStyleProperties.TextAnchor, "", display, feature) switch
+                {
+                    "top" => TextSymbolAlignment.Under,
+                    "bottom" => TextSymbolAlignment.Over,
+                    _ => TextSymbolAlignment.Center
+                };
+        }
+
         if(textSymbol is IFontColor fontColor)
         {
             fontColor.FontColor =
@@ -53,8 +71,7 @@ public class VtcLabelRenderer : SimpleLabelRenderer
         if (textSymbol is IFontSymbol fontSymbol)
         {
             var fontSize =
-                _paintSymbol.GetValueOrDeafult(GLStyleProperties.TextSize, fontSymbol.Font.Size, display, feature)
-                * 0.8f;
+                _paintSymbol.GetValueOrDeafult(GLStyleProperties.TextSize, fontSymbol.Font.Size, display, feature);
             
             if (fontSize != fontSymbol.Font.Size)
             {

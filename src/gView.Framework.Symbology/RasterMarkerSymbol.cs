@@ -1,17 +1,15 @@
 ﻿using gView.Framework.Core.Carto;
+using gView.Framework.Core.Common;
 using gView.Framework.Core.Geometry;
 using gView.Framework.Core.IO;
+using gView.Framework.Core.Reflection;
 using gView.Framework.Core.Symbology;
-using gView.Framework.Core.Common;
 using gView.Framework.Symbology.Extensions;
 using gView.GraphicsEngine;
 using gView.GraphicsEngine.Abstraction;
 using System;
 using System.ComponentModel;
 using System.IO;
-using gView.Framework.IO;
-using gView.Framework.Core.Reflection;
-using System.Diagnostics;
 
 namespace gView.Framework.Symbology
 {
@@ -33,7 +31,15 @@ namespace gView.Framework.Symbology
             }
             set
             {
-                _filename = value;
+                if (value != _filename)
+                {
+                    if(_image!=null)
+                    {
+                        _image.Dispose();
+                        _image = null;
+                    }
+                    _filename = value;
+                }
             }
         }
 
@@ -88,14 +94,7 @@ namespace gView.Framework.Symbology
                     {
                         if (_image == null)
                         {
-                            if (_filename.StartsWith("resource:"))
-                            {
-                                _image = Current.Engine.CreateBitmap(new MemoryStream(display.Map.ResourceContainer[_filename.Substring(9)]));
-                            }
-                            else
-                            {
-                                _image = Current.Engine.CreateBitmap(_filename);
-                            }
+                            ReloadIfEmpty(display, false);
                         }
 
                         if (_image != null)
@@ -181,6 +180,9 @@ namespace gView.Framework.Symbology
             marker.SizeY = _sizeY * fac;
             marker.Filename = _filename;
             marker.LegendLabel = _legendLabel;
+
+            
+            
 
             return marker;
         }
@@ -284,5 +286,26 @@ namespace gView.Framework.Symbology
         }
 
         #endregion ISymbol Member
+
+        public void ReloadIfEmpty(IDisplay display, bool setSize)
+        {
+            if (_image == null)
+            {
+                if (_filename.StartsWith("resource:"))
+                {
+                    _image = Current.Engine.CreateBitmap(new MemoryStream(display.Map.ResourceContainer[_filename.Substring(9)]));
+                }
+                else
+                {
+                    _image = Current.Engine.CreateBitmap(_filename);
+                }
+            }
+
+            if (setSize && _image != null)
+            {
+                SizeX = _image.Width;
+                SizeY = _image.Height;
+            }
+        }
     }
 }

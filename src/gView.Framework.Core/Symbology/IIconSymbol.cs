@@ -1,4 +1,7 @@
-﻿namespace gView.Framework.Core.Symbology
+﻿using gView.Framework.Core.Carto;
+using System;
+
+namespace gView.Framework.Core.Symbology
 {
     public interface IIconSymbol
     {
@@ -7,5 +10,7 @@
         float SizeX { get; set; }
 
         float SizeY { get; set; }
+
+        void ReloadIfEmpty(IDisplay display, bool setSize);
     }
 }

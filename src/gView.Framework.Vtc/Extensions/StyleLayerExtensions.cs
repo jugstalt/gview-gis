@@ -1,4 +1,5 @@
 ﻿using gView.DataSources.VectorTileCache.Json.GLStyles;
+using gView.Framework.Core.Carto;
 using gView.Framework.Symbology;
 using gView.Framework.Symbology.Vtc;
 using gView.GraphicsEngine;
@@ -10,9 +11,10 @@ namespace gView.Framework.Vtc.Extensions;
 
 static internal class StyleLayerExtensions
 {
-    static public PaintSymbol ToPaintSymbol(this GLStyleLayer styleLayer)
+    static public PaintSymbol ToPaintSymbol(this GLStyleLayer styleLayer, IMap map)
     {
-        if (styleLayer?.Paint == null)
+        if (styleLayer?.Paint is null
+            && styleLayer?.Layout is null)
         {
             return new PaintSymbol();
         }
@@ -20,7 +22,7 @@ static internal class StyleLayerExtensions
         var paintSymbol = new PaintSymbol(
                 styleLayer.Type?.ToLower() switch
                 {
-                    "symbol" when styleLayer.Layout?.IconImage != null => 
+                    "symbol" when styleLayer.Layout?.IconImage != null =>
                         new RasterMarkerSymbol(),
                     _ => null
                 },
@@ -31,8 +33,8 @@ static internal class StyleLayerExtensions
                 },
                 styleLayer.Type?.ToLower() switch
                 {
-                    "fill" => 
-                        styleLayer.Paint.FillOutlineColor != null 
+                    "fill" =>
+                        styleLayer.Paint.FillOutlineColor != null
                         && styleLayer.Paint.FillOutlineWidth != null
                                 ? new SimpleFillSymbol() { OutlineSymbol = new SimpleLineSymbol() }
                                 : new SimpleFillSymbol() { OutlineSymbol = null },
@@ -91,4 +93,28 @@ static internal class StyleLayerExtensions
 
         return paintSymbol;
     }
+
+    #region Helper
+
+    static private CanvasSizeF GetResourceSize(this IMap map, string resouceName)
+    {
+        try
+        {
+            var iconData = map.ResourceContainer[resouceName];
+            if(iconData is not null)
+            {
+                using var bm = Current.Engine.CreateBitmap(new MemoryStream(iconData));
+
+                return new CanvasSizeF(bm.Width, bm.Height);
+            }
+        }
+        catch
+        {
+
+        }
+
+        return new(0, 0);
+    }
+
+    #endregion
 }
