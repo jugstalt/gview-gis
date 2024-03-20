@@ -16,7 +16,7 @@ using System.Diagnostics;
 namespace gView.Framework.Symbology
 {
     [RegisterPlugIn("230881F2-F9E4-4593-BD25-5B614B9CB503")]
-    public sealed class RasterMarkerSymbol : LegendItem, IPointSymbol, ISymbolRotation
+    public sealed class RasterMarkerSymbol : LegendItem, IPointSymbol, ISymbolRotation, IIconSymbol
     {
         private float _xOffset = 0, _yOffset = 0, _angle = 0, _rotation = 0, _hOffset = 0, _vOffset = 0;
         private float _sizeX = 10f, _sizeY = 10f;

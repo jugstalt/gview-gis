@@ -1,4 +1,4 @@
-﻿using gView.DataSources.VectorTileCache.Json.Styles;
+﻿using gView.DataSources.VectorTileCache.Json.GLStyles;
 using gView.Framework.Core.Carto;
 using gView.Framework.Core.Common;
 using gView.Framework.Core.Data;
@@ -71,11 +71,15 @@ public class PaintSymbol : ISymbol, IBrushColor
     {
         var geometry = feature?.Shape;
 
-        //if (geometry is IPoint && _pointSymbol != null)
-        //{
-        //    display.Draw(_pointSymbol, geometry);
-        //}
-        //else 
+        if (geometry is IPoint && _pointSymbol != null)
+        {
+            if(modify)
+            {
+                _pointSymbol.ModifyStyles(ValueFuncs, display, feature);
+            }
+            display.Draw(_pointSymbol, geometry);
+        }
+        else
         if (geometry is IPolyline && _lineSymbol != null)
         {
             if (modify)
@@ -293,6 +297,12 @@ public class BooleanValueFunc : ValueFunc<bool>
 {
     public BooleanValueFunc(bool value) : base(value) { }
 }
+
+public class LiberalValueFunc : ValueFunc<string>
+{
+    public LiberalValueFunc(string value) : base(value) { }
+}
+
 public class ColorValueFunc : ValueFunc<ArgbColor>
 {
     public ColorValueFunc(ArgbColor value) : base(value) { }

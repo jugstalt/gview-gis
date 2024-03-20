@@ -1,9 +1,9 @@
 ﻿using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace gView.DataSources.VectorTileCache.Json.Styles;
+namespace gView.DataSources.VectorTileCache.Json.GLStyles;
 
-public class StyleLayerLayout
+public class GLStyleLayerLayout
 {
     [JsonPropertyName("visibility")]
     public string Visibility { get; set; } = "visible";
@@ -31,7 +31,7 @@ public class StyleLayerLayout
     [JsonPropertyName("text-optional")]
     public bool TextOptional { get; set; }
 
-    [JsonPropertyName(StyleProperties.TextSize)]
+    [JsonPropertyName(GLStyleProperties.TextSize)]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public JsonElement? TextSize { get; set; }
 
@@ -50,7 +50,24 @@ public class StyleLayerLayout
     #region Icon
 
     [JsonPropertyName("icon-pitch-alignment")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string IconPitchAlignment { get; set; }
+
+    [JsonPropertyName(GLStyleProperties.IconImage)]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public JsonElement? IconImage { get; set; }
+
+    [JsonPropertyName(GLStyleProperties.IconSize)]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public JsonElement? IconSize { get; set; }
+
+    [JsonPropertyName(GLStyleProperties.IconIgnorePlacement)]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public JsonElement? IconIgnorePlacement { get; set; }
+
+    [JsonPropertyName(GLStyleProperties.IconAllowOverlap)]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public JsonElement? IconAllowOverlap { get; set; }
 
     #endregion
 }

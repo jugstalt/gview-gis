@@ -1,9 +1,9 @@
 ﻿using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace gView.DataSources.VectorTileCache.Json.Styles;
+namespace gView.DataSources.VectorTileCache.Json.GLStyles;
 
-public class StyleLayer
+public class GLStyleLayer
 {
     [JsonPropertyName("id")]
     public string Id { get; set; }
@@ -28,8 +28,8 @@ public class StyleLayer
     public JsonElement? Filter { get; set; }
 
     [JsonPropertyName("layout")]
-    public StyleLayerLayout Layout { get; set;}
+    public GLStyleLayerLayout Layout { get; set;}
 
     [JsonPropertyName("paint")]
-    public StyleLayerPaint Paint { get; set; }
+    public GLStyleLayerPaint Paint { get; set; }
 }

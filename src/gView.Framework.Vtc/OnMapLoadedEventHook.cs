@@ -1,6 +1,6 @@
 ﻿using gView.DataSources.VectorTileCache;
 using gView.DataSources.VectorTileCache.Json;
-using gView.DataSources.VectorTileCache.Json.Styles;
+using gView.DataSources.VectorTileCache.Json.GLStyles;
 using gView.Framework.Calc;
 using gView.Framework.Cartography.Rendering;
 using gView.Framework.Cartography.Rendering.Vtc;

@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace gView.DataSources.VectorTileCache.Json.Styles;
+namespace gView.DataSources.VectorTileCache.Json.GLStyles;
 
-static public class StyleProperties
+static public class GLStyleProperties
 {
     public const string LineColor = "line-color";
     public const string LineWidth = "line-width";
@@ -29,4 +29,9 @@ static public class StyleProperties
     public const string TextColor = "text-color";
     public const string TextSize = "text-size";
     public const string RasterBrightnessMin = "raster-brightness-min";
+
+    public const string IconImage = "icon-image";
+    public const string IconSize = "icon-size";
+    public const string IconAllowOverlap = "icon-allow-overlap";
+    public const string IconIgnorePlacement = "icon-ignore-placement";
 }

@@ -1,8 +1,8 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace gView.DataSources.VectorTileCache.Json.Styles;
+namespace gView.DataSources.VectorTileCache.Json.GLStyles;
 
-public class StyleSource
+public class GLStyleSource
 {
     [JsonPropertyName("type")]
     public string Type { get; set; }

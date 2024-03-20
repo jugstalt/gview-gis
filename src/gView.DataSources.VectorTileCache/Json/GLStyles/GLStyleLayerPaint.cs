@@ -3,25 +3,25 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace gView.DataSources.VectorTileCache.Json.Styles;
+namespace gView.DataSources.VectorTileCache.Json.GLStyles;
 
-public class StyleLayerPaint
+public class GLStyleLayerPaint
 {
     #region Line 
 
-    [JsonPropertyName(StyleProperties.LineColor)]
+    [JsonPropertyName(GLStyleProperties.LineColor)]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public JsonElement? LineColor { get; set; }
 
-    [JsonPropertyName(StyleProperties.LineWidth)]
+    [JsonPropertyName(GLStyleProperties.LineWidth)]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public JsonElement? LineWidth { get; set; }
 
-    [JsonPropertyName(StyleProperties.LineOpacity)]
+    [JsonPropertyName(GLStyleProperties.LineOpacity)]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public JsonElement? LineOpacity { get; set; }
 
-    [JsonPropertyName(StyleProperties.LineDashArray)]
+    [JsonPropertyName(GLStyleProperties.LineDashArray)]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public JsonElement? LineDashArray { get; set; }
 
@@ -29,39 +29,39 @@ public class StyleLayerPaint
 
     #region Fill
 
-    [JsonPropertyName(StyleProperties.FillAntiAliasing)]
+    [JsonPropertyName(GLStyleProperties.FillAntiAliasing)]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public JsonElement? FillAntiAliasing { get; set; }
 
-    [JsonPropertyName(StyleProperties.FillColor)]
+    [JsonPropertyName(GLStyleProperties.FillColor)]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public JsonElement? FillColor { get; set; }
 
-    [JsonPropertyName(StyleProperties.FillOpacity)]
+    [JsonPropertyName(GLStyleProperties.FillOpacity)]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public JsonElement? FillOpacity { get; set; }
 
-    [JsonPropertyName(StyleProperties.FillOutlineColor)]
+    [JsonPropertyName(GLStyleProperties.FillOutlineColor)]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public JsonElement? FillOutlineColor { get; set; }
 
-    [JsonPropertyName(StyleProperties.FillOutlineWidth)]
+    [JsonPropertyName(GLStyleProperties.FillOutlineWidth)]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public JsonElement? FillOutlineWidth { get; set; }
 
-    [JsonPropertyName(StyleProperties.FillOutlineDashArray)]
+    [JsonPropertyName(GLStyleProperties.FillOutlineDashArray)]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public JsonElement? FillOutlineDashArray { get; set; }
 
-    [JsonPropertyName(StyleProperties.FillOutlineOpacity)]
+    [JsonPropertyName(GLStyleProperties.FillOutlineOpacity)]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public JsonElement? FillOutlineOpacity { get; set; }
 
-    [JsonPropertyName(StyleProperties.FillExtrusionHeight)]
+    [JsonPropertyName(GLStyleProperties.FillExtrusionHeight)]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public JsonElement? FillExtrusionHeight { get; set; }
 
-    [JsonPropertyName(StyleProperties.FillExtrusionColor)]
+    [JsonPropertyName(GLStyleProperties.FillExtrusionColor)]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public JsonElement? FillExtrusionColor { get; set; }
 
@@ -69,15 +69,15 @@ public class StyleLayerPaint
 
     #region Text
 
-    [JsonPropertyName(StyleProperties.TextHaloWidth)]
+    [JsonPropertyName(GLStyleProperties.TextHaloWidth)]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public JsonElement? TextHaloWidth { get; set; }
 
-    [JsonPropertyName(StyleProperties.TextHaloColor)]
+    [JsonPropertyName(GLStyleProperties.TextHaloColor)]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public JsonElement? TextHaloColor { get; set; }
 
-    [JsonPropertyName(StyleProperties.TextColor)]
+    [JsonPropertyName(GLStyleProperties.TextColor)]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public JsonElement? TextColor { get; set; }
 
@@ -85,7 +85,7 @@ public class StyleLayerPaint
 
     #region Raster
 
-    [JsonPropertyName(StyleProperties.RasterBrightnessMin)]
+    [JsonPropertyName(GLStyleProperties.RasterBrightnessMin)]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public JsonElement? RasterBrightnessMin { get; set; }
 

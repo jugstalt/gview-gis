@@ -26,6 +26,7 @@ static internal class ValueFuncCreatorExtensions
                     ArgbColor color => new ColorValueFunc(color),
                     float number => new FloatValueFunc(number),
                     bool boolean => new BooleanValueFunc(boolean),
+                    string literal => new LiberalValueFunc(literal),
                     _ => throw new ArgumentException($"Can't convert string {value} to a value")
                 });
             }
@@ -214,7 +215,8 @@ static internal class ValueFuncCreatorExtensions
             return number;
         }
 
-        throw new ArgumentException($"Can't convert string to a function value: {value}");
+        return value.ToString();
+        //throw new ArgumentException($"Can't convert string to a function value: {value}");
     }
 
     static internal T? ToFuncValueOfType<T>(this JsonElement jsonElement)

@@ -1,20 +1,23 @@
 ﻿using gView.Cmd.Core;
 using gView.Cmd.Core.Abstraction;
 using gView.Cmd.Core.Extensions;
-using gView.DataSources.VectorTileCache.Json.Styles;
+using gView.Cmd.MxlUtil.Lib.Models.Json;
+using gView.DataSources.VectorTileCache.Json.GLStyles;
 using gView.Framework.Calc;
 using gView.Framework.Cartography;
 using gView.Framework.Core.Common;
 using gView.Framework.Geometry;
 using gView.Framework.IO;
 using gView.Framework.Vtc;
+using gView.GraphicsEngine;
+using gView.GraphicsEngine.Abstraction;
 using System.Text.Json;
 
 namespace gView.Cmd.MxlUtil.Lib;
 
-public class FromStylesJsonCommand : ICommand
+public class FromGLStylesJsonCommand : ICommand
 {
-    public string Name => "MxlUtil.FromStylesJson";
+    public string Name => "MxlUtil.FromGLStylesJson";
 
     public string Description => "Creates a MXL file from a (TileCache) styles json definition";
 
@@ -36,6 +39,8 @@ public class FromStylesJsonCommand : ICommand
     {
         try
         {
+            HttpClient client = new HttpClient();
+
             var uri = new Uri(parameters.GetRequiredValue<string>("uri"));
 
             #region Load Styles Json
@@ -48,7 +53,6 @@ public class FromStylesJsonCommand : ICommand
             }
             else
             {
-                HttpClient client = new HttpClient();
                 jsonString = await client.GetStringAsync(uri.ToString());
             }
 
@@ -89,7 +93,7 @@ public class FromStylesJsonCommand : ICommand
                             stylesCapabilities.Center[1]
                         );
                 }
-            } 
+            }
             else
             {
                 map.ZoomTo(new Envelope(-1, -1, 1, 1));
@@ -102,6 +106,74 @@ public class FromStylesJsonCommand : ICommand
 
             await hook.AddLayers(new Map(), stylesCapabilities); // test on dummy map
             hook.AddToMap(map, stylesCapabilities);
+
+            #region Add Sprite as resources
+
+            if (!String.IsNullOrEmpty(stylesCapabilities.Sprite))
+            {
+                IBitmap? glSpriteBitmap = null;
+
+                try
+                {
+                    var spriteUri = new Uri(stylesCapabilities.Sprite);
+                    string glSpriteJson;
+
+
+                    if (spriteUri.IsUnc || spriteUri.IsFile)
+                    {
+                        glSpriteBitmap = Current.Engine.CreateBitmap($"{spriteUri}@2x.png");
+                        glSpriteJson = await File.ReadAllTextAsync($"{spriteUri}@2x.json");
+                    }
+                    else
+                    {
+                        glSpriteBitmap = Current.Engine.CreateBitmap(
+                            new MemoryStream(await client.GetByteArrayAsync($"{spriteUri}@2x.png")));
+                        glSpriteJson = await client.GetStringAsync($"{spriteUri}@2x.json");
+                    }
+
+                    var glSprites = JsonSerializer.Deserialize<Dictionary<string, GLSprite>>(
+                            glSpriteJson,
+                            new JsonSerializerOptions(JsonSerializerDefaults.Web)
+                        );
+                    if (glSprites != null)
+                    {
+                        foreach (var glSprite in glSprites)
+                        {
+                            // ToDo: is Sprite in GLStyles?
+                            using (var bitmap = Current.Engine.CreateBitmap(glSprite.Value.Width, glSprite.Value.Height, PixelFormat.Rgba32))
+                            using (var canvas = bitmap.CreateCanvas())
+                            {
+                                canvas.DrawBitmap(glSpriteBitmap,
+                                    new CanvasRectangle(0, 0, bitmap.Width, bitmap.Height),
+                                    new CanvasRectangle(
+                                            glSprite.Value.X, glSprite.Value.Y,
+                                            glSprite.Value.Width, glSprite.Value.Height
+                                        )
+                                    );
+
+                                using (var ms = new MemoryStream())
+                                {
+                                    bitmap.Save(ms, ImageFormat.Png);
+                                    map.ResourceContainer[$"{glSprite.Key}@2x"] = ms.ToArray();
+                                }
+                            }
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    logger?.LogLine($"Warning: error reading sprites\n{ex.Message}");
+                }
+                finally
+                {
+                    if (glSpriteBitmap != null)
+                    {
+                        glSpriteBitmap.Dispose();
+                    }
+                }
+            }
+
+            #endregion
 
             #region Save Map
 

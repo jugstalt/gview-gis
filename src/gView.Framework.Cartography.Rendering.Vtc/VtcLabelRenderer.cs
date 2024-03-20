@@ -1,5 +1,5 @@
 ﻿using gView.DataSources.VectorTileCache.Json;
-using gView.DataSources.VectorTileCache.Json.Styles;
+using gView.DataSources.VectorTileCache.Json.GLStyles;
 using gView.Framework.Core.Carto;
 using gView.Framework.Core.Common;
 using gView.Framework.Core.Data;
@@ -48,12 +48,12 @@ public class VtcLabelRenderer : SimpleLabelRenderer
         if(textSymbol is IFontColor fontColor)
         {
             fontColor.FontColor =
-                _paintSymbol.GetValueOrDeafult(StyleProperties.TextColor, fontColor.FontColor, display, feature);
+                _paintSymbol.GetValueOrDeafult(GLStyleProperties.TextColor, fontColor.FontColor, display, feature);
         }
         if (textSymbol is IFontSymbol fontSymbol)
         {
             var fontSize =
-                _paintSymbol.GetValueOrDeafult(StyleProperties.TextSize, fontSymbol.Font.Size, display, feature)
+                _paintSymbol.GetValueOrDeafult(GLStyleProperties.TextSize, fontSymbol.Font.Size, display, feature)
                 * 0.8f;
             
             if (fontSize != fontSymbol.Font.Size)

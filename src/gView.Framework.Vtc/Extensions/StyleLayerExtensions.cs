@@ -1,4 +1,4 @@
-﻿using gView.DataSources.VectorTileCache.Json.Styles;
+﻿using gView.DataSources.VectorTileCache.Json.GLStyles;
 using gView.Framework.Symbology;
 using gView.Framework.Symbology.Vtc;
 using gView.GraphicsEngine;
@@ -10,7 +10,7 @@ namespace gView.Framework.Vtc.Extensions;
 
 static internal class StyleLayerExtensions
 {
-    static public PaintSymbol ToPaintSymbol(this StyleLayer styleLayer)
+    static public PaintSymbol ToPaintSymbol(this GLStyleLayer styleLayer)
     {
         if (styleLayer?.Paint == null)
         {
@@ -20,6 +20,8 @@ static internal class StyleLayerExtensions
         var paintSymbol = new PaintSymbol(
                 styleLayer.Type?.ToLower() switch
                 {
+                    "symbol" when styleLayer.Layout?.IconImage != null => 
+                        new RasterMarkerSymbol(),
                     _ => null
                 },
                 styleLayer.Type?.ToLower() switch

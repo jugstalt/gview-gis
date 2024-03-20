@@ -1,4 +1,4 @@
-﻿using gView.DataSources.VectorTileCache.Json.Styles;
+﻿using gView.DataSources.VectorTileCache.Json.GLStyles;
 using gView.Framework.Core.Carto;
 using gView.Framework.Core.Data;
 using gView.Framework.Core.Symbology;
@@ -8,24 +8,43 @@ namespace gView.Framework.Symbology.Vtc.Extensions;
 
 static internal class SymbolExtensions
 {
+    static public void ModifyStyles(this IPointSymbol pointSymbol, Dictionary<string, IValueFunc> valueFuncs, IDisplay display, IFeature? feature)
+    {
+        pointSymbol.SymbolSmoothingMode =
+               valueFuncs.GetValueOrDeafult(GLStyleProperties.LineOpacity, true, display, feature)
+               ? SymbolSmoothing.AntiAlias
+               : SymbolSmoothing.None;
+
+        if(pointSymbol is IIconSymbol icon)
+        {
+            var iconName = valueFuncs.GetValueOrDeafult<string>(GLStyleProperties.IconImage, "", display, feature);
+            if(iconName!=null)
+            {
+                icon.Filename = $"resource:{iconName}@2x";
+                icon.SizeX = 32;
+                icon.SizeY = 32;
+            }
+        }
+    }
+
     static public void ModifyStyles(this ILineSymbol lineSymbol, Dictionary<string, IValueFunc> valueFuncs, IDisplay display, IFeature? feature)
     {
         lineSymbol.SymbolSmoothingMode =
-                valueFuncs.GetValueOrDeafult(StyleProperties.LineOpacity, true, display, feature)
+                valueFuncs.GetValueOrDeafult(GLStyleProperties.LineOpacity, true, display, feature)
                 ? SymbolSmoothing.AntiAlias
                 : SymbolSmoothing.None;
 
-        float opacity = valueFuncs.GetValueOrDeafult(StyleProperties.LineOpacity, 1f, display, feature);
-        float[]? dashArray = valueFuncs.GetValueOrDeafult<float[]?>(StyleProperties.LineDashArray, null, display, feature);
+        float opacity = valueFuncs.GetValueOrDeafult(GLStyleProperties.LineOpacity, 1f, display, feature);
+        float[]? dashArray = valueFuncs.GetValueOrDeafult<float[]?>(GLStyleProperties.LineDashArray, null, display, feature);
 
         if (lineSymbol is IPenWidth penWidth)
         {
-            penWidth.PenWidth = valueFuncs.GetValueOrDeafult(StyleProperties.LineWidth, penWidth.PenWidth, display, null);
+            penWidth.PenWidth = valueFuncs.GetValueOrDeafult(GLStyleProperties.LineWidth, penWidth.PenWidth, display, null);
         }
 
         if (lineSymbol is IPenColor penColor)
         {
-            penColor.PenColor = valueFuncs.GetValueOrDeafult(StyleProperties.LineColor, penColor.PenColor, display, null);
+            penColor.PenColor = valueFuncs.GetValueOrDeafult(GLStyleProperties.LineColor, penColor.PenColor, display, null);
 
             if (opacity != 1f)
             {
@@ -42,16 +61,16 @@ static internal class SymbolExtensions
     static public void ModifyStyles(this IFillSymbol fillSymbol, Dictionary<string, IValueFunc> valueFuncs, IDisplay display, IFeature? feature)
     {
         fillSymbol.SymbolSmoothingMode =
-                valueFuncs.GetValueOrDeafult(StyleProperties.FillOpacity, true, display, feature)
+                valueFuncs.GetValueOrDeafult(GLStyleProperties.FillOpacity, true, display, feature)
                 ? SymbolSmoothing.AntiAlias
                 : SymbolSmoothing.None;
 
-        float opacity = valueFuncs.GetValueOrDeafult(StyleProperties.FillOpacity, 1f, display, feature);
+        float opacity = valueFuncs.GetValueOrDeafult(GLStyleProperties.FillOpacity, 1f, display, feature);
 
         if (fillSymbol is IBrushColor brushColor)
         {
             brushColor.FillColor
-                = valueFuncs.GetValueOrDeafult([StyleProperties.FillColor, StyleProperties.FillExtrusionColor],
+                = valueFuncs.GetValueOrDeafult([GLStyleProperties.FillColor, GLStyleProperties.FillExtrusionColor],
                         brushColor.FillColor,
                         display, feature);
 
@@ -65,14 +84,14 @@ static internal class SymbolExtensions
 
         if (fillSymbol is IPenWidth penWidth)
         {
-            penWidth.PenWidth = valueFuncs.GetValueOrDeafult(StyleProperties.FillOutlineWidth, penWidth.PenWidth, display, null);
+            penWidth.PenWidth = valueFuncs.GetValueOrDeafult(GLStyleProperties.FillOutlineWidth, penWidth.PenWidth, display, null);
         }
 
         if (fillSymbol is IPenColor penColor)
         {
-            penColor.PenColor = valueFuncs.GetValueOrDeafult(StyleProperties.FillOutlineColor, penColor.PenColor, display, null);
+            penColor.PenColor = valueFuncs.GetValueOrDeafult(GLStyleProperties.FillOutlineColor, penColor.PenColor, display, null);
 
-            float outlineOpacity = valueFuncs.GetValueOrDeafult(StyleProperties.FillOutlineOpacity, 1f, display, feature);
+            float outlineOpacity = valueFuncs.GetValueOrDeafult(GLStyleProperties.FillOutlineOpacity, 1f, display, feature);
             if (outlineOpacity != 1f)
             {
                 penColor.PenColor = ArgbColor.FromArgb((int)(255 * outlineOpacity), penColor.PenColor);
@@ -81,7 +100,7 @@ static internal class SymbolExtensions
 
         if (fillSymbol is IPenDashStyle dashStyle)
         {
-            float[]? dashArray = valueFuncs.GetValueOrDeafult<float[]?>(StyleProperties.FillOutlineDashArray, null, display, feature);
+            float[]? dashArray = valueFuncs.GetValueOrDeafult<float[]?>(GLStyleProperties.FillOutlineDashArray, null, display, feature);
             dashStyle.PenDashStyle = dashArray.ToDashStale();
         }
 

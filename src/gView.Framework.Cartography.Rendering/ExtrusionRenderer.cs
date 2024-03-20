@@ -10,9 +10,7 @@ using gView.Framework.Core.Geometry;
 using gView.Framework.Core.IO;
 using gView.Framework.Core.Symbology;
 using gView.GraphicsEngine;
-using System;
 using System.Collections.Generic;
-using System.Drawing;
 
 namespace gView.Framework.Cartography.Rendering;
 
@@ -26,7 +24,7 @@ public class ExtrusionRenderer : Cloner, IFeatureRenderer2
 
     #region IFeatureRenderer2
 
-    public ISymbol? Symbol 
+    public ISymbol? Symbol
     {
         get { return _symbol; }
         set
@@ -34,12 +32,12 @@ public class ExtrusionRenderer : Cloner, IFeatureRenderer2
             _symbol = value;
             _groundSymbol = value?.Clone() as ISymbol;
 
-            if(_groundSymbol is IBrushColor brushColor)
+            if (_groundSymbol is IBrushColor brushColor)
             {
                 brushColor.FillColor = _groundColor;
             }
 
-            if(_groundSymbol is IPenColor penColor)
+            if (_groundSymbol is IPenColor penColor)
             {
                 penColor.PenColor = _groundColor;
             }

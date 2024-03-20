@@ -2,7 +2,7 @@
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 
-namespace gView.DataSources.VectorTileCache.Json.Styles;
+namespace gView.DataSources.VectorTileCache.Json.GLStyles;
 
 public class StylesCapabilities
 {
@@ -28,8 +28,8 @@ public class StylesCapabilities
     public JsonArray Filter { get; set; }
 
     [JsonPropertyName("sources")]
-    public Dictionary<string, StyleSource> Sources { get; set; }
+    public Dictionary<string, GLStyleSource> Sources { get; set; }
 
     [JsonPropertyName("layers")]
-    public StyleLayer[] Layers { get; set; }
+    public GLStyleLayer[] Layers { get; set; }
 }
