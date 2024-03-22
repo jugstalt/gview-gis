@@ -12,7 +12,6 @@ using gView.Framework.IO;
 using gView.Framework.Vtc;
 using gView.GraphicsEngine;
 using gView.GraphicsEngine.Abstraction;
-using gView.Interoperability.GeoServices.Extensions;
 using System.Text.Json;
 
 namespace gView.Cmd.MxlUtil.Lib;
@@ -30,7 +29,16 @@ public class FromGLStylesJsonCommand : ICommand
             new RequiredCommandParameter<string>("uri")
             {
                 Description="Url or path to style json",
+            },
+            new RequiredCommandParameter<string>("target-path")
+            {
+                Description="Target path, where XML file will be stored",
+            },
+            new RequiredCommandParameter<string>("map-name")
+            {
+                Description="Map name and name of the MXL file",
             }
+
         ];
 
     async public Task<bool> Run(
@@ -44,6 +52,12 @@ public class FromGLStylesJsonCommand : ICommand
             HttpClient client = new HttpClient();
 
             var uri = new Uri(parameters.GetRequiredValue<string>("uri"));
+            var targetpath = parameters.GetRequiredValue<string>("target-path");
+            var mapName = parameters.GetRequiredValue<string>("map-name")
+                                .ToLower()
+                                .Replace(" ", "-")
+                                .Replace("/", "-")
+                                .Replace("\\", "-");
 
             #region Load Styles Json
 
@@ -71,7 +85,10 @@ public class FromGLStylesJsonCommand : ICommand
 
             #endregion
 
-            var map = new Map();
+            var map = new Map()
+            {
+                Name = mapName,
+            };
 
             #region Map Properties
 
@@ -120,7 +137,6 @@ public class FromGLStylesJsonCommand : ICommand
                     var spriteUri = new Uri(stylesCapabilities.Sprite);
                     string glSpriteJson;
 
-
                     if (spriteUri.IsUnc || spriteUri.IsFile)
                     {
                         glSpriteBitmap = Current.Engine.CreateBitmap($"{spriteUri}@2x.png");
@@ -141,7 +157,7 @@ public class FromGLStylesJsonCommand : ICommand
                     {
                         foreach (var glSprite in glSprites)
                         {
-                            if(!stylesCapabilities.Layers.RequireSpriteIcon(glSprite.Key))
+                            if (!stylesCapabilities.Layers.RequireSpriteIcon(glSprite.Key))
                             {
                                 continue;
                             }
@@ -185,7 +201,7 @@ public class FromGLStylesJsonCommand : ICommand
 
             #region Save Map
 
-            string outFile = @"c:\temp\geodaten\test1.mxl";
+            string outFile = System.IO.Path.Combine(targetpath, $"{mapName}.mxl");
 
             MxlDocument doc = new MxlDocument();
             doc.AddMap(map);

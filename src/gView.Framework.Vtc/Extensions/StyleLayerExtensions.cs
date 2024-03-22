@@ -36,9 +36,9 @@ static internal class StyleLayerExtensions
                     "fill" =>
                         styleLayer.Paint.FillOutlineColor != null
                         && styleLayer.Paint.FillOutlineWidth != null
-                                ? new SimpleFillSymbol() { OutlineSymbol = new SimpleLineSymbol() }
-                                : new SimpleFillSymbol() { OutlineSymbol = null },
-                    "fill-extrusion" => new SimpleFillSymbol() { OutlineSymbol = null },
+                                ? new SimpleFillSymbol() { FillColor = ArgbColor.Transparent, OutlineSymbol = new SimpleLineSymbol() }
+                                : new SimpleFillSymbol() { FillColor = ArgbColor.Transparent, OutlineSymbol = null },
+                    "fill-extrusion" => new SimpleFillSymbol() { FillColor = ArgbColor.Transparent, OutlineSymbol = null },
                     _ => null
                 },
                 styleLayer.Type?.ToLower() switch

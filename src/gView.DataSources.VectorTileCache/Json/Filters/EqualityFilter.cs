@@ -38,14 +38,24 @@ class EqualityFilter : IFilter
             // ToDo: Type comparision more save...
             "==" => featureValue == _value,
             "!=" => featureValue != _value,
-            ">=" => float.Parse(featureValue, CultureInfo.InvariantCulture) >= float.Parse(_value, CultureInfo.InvariantCulture),
-            "<=" => float.Parse(featureValue, CultureInfo.InvariantCulture) <= float.Parse(_value, CultureInfo.InvariantCulture),
-            "<" => float.Parse(featureValue, CultureInfo.InvariantCulture) < float.Parse(_value, CultureInfo.InvariantCulture),
-            ">" => float.Parse(featureValue, CultureInfo.InvariantCulture) > float.Parse(_value, CultureInfo.InvariantCulture),
-
+            ">=" => CompareFloat(featureValue, _value, (n1, n2) => n1 >= n2),
+            "<=" => CompareFloat(featureValue, _value, (n1, n2) => n1 <= n2),
+            "<" => CompareFloat(featureValue, _value, (n1, n2) => n1 > n2),
+            ">" => CompareFloat(featureValue, _value, (n1, n2) => n1 < n2),
             _ => throw new Exception($"unsupported filter operator {_eqOperator}")
         };
 
         return fits;
+    }
+
+    private bool CompareFloat(string val1, string val2, Func<float, float, bool> func)
+    {
+        if (float.TryParse(val1, CultureInfo.InvariantCulture, out float number1)
+            && float.TryParse(val2, CultureInfo.InvariantCulture, out float number2))
+        {
+            return func(number1, number2);
+        }
+
+        return false;
     }
 }

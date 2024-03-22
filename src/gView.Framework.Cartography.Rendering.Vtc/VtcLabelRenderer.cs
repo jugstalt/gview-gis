@@ -43,6 +43,15 @@ public class VtcLabelRenderer : SimpleLabelRenderer
             return false;
         }
 
+        HowManyLabels =
+            _paintSymbol.GetValueOrDeafult(GLStyleProperties.SymbolSpacing, 1f, display, feature) > 0
+                                ? RenderHowManyLabels.OnPerName
+                                : RenderHowManyLabels.OnPerFeature;
+        CartoLineLabelling =
+           _paintSymbol.GetValueOrDeafult(GLStyleProperties.SymbolPlacement, "", display, feature) == "line"
+                            ? CartographicLineLabeling.CurvedText
+                            : CartographicLineLabeling.Horizontal;
+
         var textSymbol = base.TextSymbol;
 
         if (textSymbol != null)

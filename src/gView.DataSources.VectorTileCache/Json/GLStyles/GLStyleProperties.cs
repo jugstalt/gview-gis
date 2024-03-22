@@ -37,4 +37,7 @@ static public class GLStyleProperties
     public const string IconSize = "icon-size";
     public const string IconAllowOverlap = "icon-allow-overlap";
     public const string IconIgnorePlacement = "icon-ignore-placement";
+
+    public const string SymbolPlacement = "symbol-placement";
+    public const string SymbolSpacing = "symbol-spacing";
 }

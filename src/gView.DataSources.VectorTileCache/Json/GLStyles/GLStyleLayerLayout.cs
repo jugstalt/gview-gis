@@ -47,11 +47,11 @@ public class GLStyleLayerLayout
 
     #region Symbol
 
-    [JsonPropertyName("symbol-placement")]
-    public string SymbolPlacement { get; set; }
+    [JsonPropertyName(GLStyleProperties.SymbolPlacement)]
+    public JsonElement? SymbolPlacement { get; set; }
 
-    [JsonPropertyName("symbol-spacing")]
-    public float SymbolSpacing { get; set; }
+    [JsonPropertyName(GLStyleProperties.SymbolSpacing)]
+    public JsonElement? SymbolSpacing { get; set; }
 
     #endregion
 

@@ -1,5 +1,4 @@
-﻿using gView.DataSources.VectorTileCache.Json.GLStyles;
-using gView.Framework.Core.Carto;
+﻿using gView.Framework.Core.Carto;
 using gView.Framework.Core.Common;
 using gView.Framework.Core.Data;
 using gView.Framework.Core.Geometry;
@@ -84,7 +83,7 @@ public class PaintSymbol : ISymbol, IBrushColor
 
         if (geometry is IPoint && _pointSymbol != null)
         {
-            if(modify)
+            if (modify)
             {
                 _pointSymbol.ModifyStyles(ValueFuncs, display, feature);
             }
@@ -109,9 +108,9 @@ public class PaintSymbol : ISymbol, IBrushColor
 
             display.Draw(_fillSymbol, geometry);
         }
-        else if(_textSymbol != null)
+        else if (_textSymbol != null)
         {
-           
+
         }
         else
         {
@@ -219,12 +218,36 @@ public class StopsValueFunc : IValueFunc
         _stops = list.OrderBy(x => x.Key).ToArray();
     }
 
+    public IValueFunc? BaseValueFunc { get; set; } = null;
+
     public T? Value<T>(IDisplay display, IFeature? feature = null)
     {
         if (_stops.Length == 0)
         {
             return default(T);
         }
+
+        return (this.BaseValueFunc, typeof(T)) switch
+        {
+            (IValueFunc, Type t) when t == typeof(float) =>
+                (T)Convert.ChangeType(
+                    CalcProgressiveStopsValue(
+                                display,
+                                feature,
+                                this.BaseValueFunc.Value<float>(display, feature)
+                            ),
+                typeof(T)),
+            (_, _) => CalcStopsValue<T>(display, feature)
+        };
+    }
+
+    private T CalcStopsValue<T>(IDisplay display, IFeature? feature = null)
+    {
+        if (typeof(T) == typeof(float))
+        {
+            return (T)(object)CalcProgressiveStopsValue(display, feature, 1f);
+        }
+
         for (int i = 1; i < _stops.Length; i++)
         {
             if (_stops[i].Key > display.WebMercatorScaleLevel)
@@ -234,6 +257,43 @@ public class StopsValueFunc : IValueFunc
         }
 
         return (T)Convert.ChangeType(_stops.Last().Value, typeof(T));
+    }
+
+    private float CalcProgressiveStopsValue(IDisplay display, IFeature? feature, float @base)
+    {
+        float? val = null;
+
+        if (@base > 1f) @base *= 4.5f;  // empric !?
+
+        if (display.WebMercatorScaleLevel <= _stops[0].Key)
+        {
+            val = (float)Convert.ChangeType(_stops[0].Value, typeof(float));
+        }
+        else if (display.WebMercatorScaleLevel >= _stops.Last().Key)
+        {
+            val = (float)Convert.ChangeType(_stops.Last().Value, typeof(float));
+        }
+        else
+        {
+            for (int i = 1; i < _stops.Length; i++)
+            {
+                if (_stops[i].Key > display.WebMercatorScaleLevel)
+                {
+                    float val1 = (float)Convert.ChangeType(_stops[i - 1].Value, typeof(float));
+                    float val2 = (float)Convert.ChangeType(_stops[i].Value, typeof(float));
+
+                    float key1 = _stops[i - 1].Key;
+                    float key2 = _stops[i].Key;
+
+                    val = val1 + (val2 - val1)
+                        * (float)Math.Pow((display.WebMercatorScaleLevel - key1) / (key2 - key1), @base);
+
+                    break;
+                }
+            }
+        }
+
+        return val!.Value;
     }
 }
 
@@ -292,7 +352,7 @@ public class ValueFunc<TValue> : IValueFunc
 
     virtual public T? Value<T>(IDisplay display, IFeature? feature = null)
     {
-        if(typeof(T) == typeof(TValue))
+        if (typeof(T) == typeof(TValue))
         {
             return (T?)(object?)_value;
         }
@@ -304,7 +364,7 @@ public class FloatValueFunc : ValueFunc<float>
 {
     public FloatValueFunc(float value) : base(value) { }
 }
-public class BooleanValueFunc : ValueFunc<bool> 
+public class BooleanValueFunc : ValueFunc<bool>
 {
     public BooleanValueFunc(bool value) : base(value) { }
 }

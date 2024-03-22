@@ -1,0 +1,27 @@
+@inherits ModalDialogFormBase<ImportVectorTileGLStylesModel>
+
+<ModalDialogFormBase T="ImportVectorTileGLStylesModel"
+                     OnDialogClose="base.OnDialogClose"
+                     Model="base.Model">
+    <FormContent>
+        <GvCard Title="Source">
+            <GvCardContent>
+                <MudTextField @bind-Value="Model.GLStylesJsonUrl"
+                              Label="GL Styles Json url"
+                              HelperText="Please enter url, eg. https://my-server/....json"
+                              Required="true" />
+            </GvCardContent>
+        </GvCard>
+
+        <GvCard Title="Target">
+            <GvCardContent>
+                <SelectFolderControl @bind-Folder="Model.TargetFolder"
+                                     Label="Target Folder (where MXL file will be saved)" />
+                <MudTextField @bind-Value="Model.MapName"
+                              Label="Map name"
+                              HelperText="Name for the map (and MXL file)"
+                              Required="true" />
+            </GvCardContent>
+        </GvCard>
+    </FormContent>
+</ModalDialogFormBase>

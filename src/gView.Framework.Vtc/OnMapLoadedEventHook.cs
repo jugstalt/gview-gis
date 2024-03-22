@@ -189,14 +189,6 @@ public class OnMapLoadedEventHook : IMapEventHook
                                 .Replace("{", "[")
                                 .Replace("}", "]") ?? "",
                         LabelPriority = SimpleLabelRenderer.RenderLabelPriority.Normal,
-                        HowManyLabels =
-                            layer.Layout?.SymbolSpacing > 0
-                                ? SimpleLabelRenderer.RenderHowManyLabels.OnPerName
-                                : SimpleLabelRenderer.RenderHowManyLabels.OnPerFeature,
-                        CartoLineLabelling =
-                            layer.Layout?.SymbolPlacement == "line"
-                                ? SimpleLabelRenderer.CartographicLineLabeling.CurvedText
-                                : SimpleLabelRenderer.CartographicLineLabeling.Horizontal
                     };
 
                     featureLayer.FeatureRenderer = new VtcFeatureRenderer(symbol);

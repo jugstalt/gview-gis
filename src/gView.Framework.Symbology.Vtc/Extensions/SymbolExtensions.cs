@@ -10,14 +10,17 @@ static internal class SymbolExtensions
 {
     static public void ModifyStyles(this IPointSymbol pointSymbol, Dictionary<string, IValueFunc> valueFuncs, IDisplay display, IFeature? feature)
     {
-        pointSymbol.SymbolSmoothingMode =
-               valueFuncs.GetValueOrDeafult(GLStyleProperties.LineOpacity, true, display, feature)
-               ? SymbolSmoothing.AntiAlias
-               : SymbolSmoothing.None;
+        //pointSymbol.SymbolSmoothingMode =
+        //       valueFuncs.GetValueOrDeafult(GLStyleProperties.FillAntiAliasing, true, display, feature)
+        //       ? SymbolSmoothing.AntiAlias
+        //       : SymbolSmoothing.None;
+
+        pointSymbol.SymbolSmoothingMode = SymbolSmoothing.AntiAlias;
 
         if (pointSymbol is IIconSymbol icon)
         {
-            var iconName = valueFuncs.GetValueOrDeafult<string>(GLStyleProperties.IconImage, "", display, feature);
+            var iconName = valueFuncs.GetValueOrDeafult<string>(GLStyleProperties.IconImage, "", display, feature)
+                                     .ReplacePlaceholders(feature);
             if (iconName != null)
             {
                 icon.Filename = $"resource:{iconName}@2x";
@@ -31,11 +34,14 @@ static internal class SymbolExtensions
 
     static public void ModifyStyles(this ILineSymbol lineSymbol, Dictionary<string, IValueFunc> valueFuncs, IDisplay display, IFeature? feature)
     {
-        lineSymbol.SymbolSmoothingMode =
-                valueFuncs.GetValueOrDeafult(GLStyleProperties.LineOpacity, true, display, feature)
-                ? SymbolSmoothing.AntiAlias
-                : SymbolSmoothing.None;
+        //lineSymbol.SymbolSmoothingMode =
+        //        valueFuncs.GetValueOrDeafult(GLStyleProperties.FillAntiAliasing, true, display, feature)
+        //        ? SymbolSmoothing.AntiAlias
+        //        : SymbolSmoothing.None;
 
+
+        lineSymbol.SymbolSmoothingMode = SymbolSmoothing.AntiAlias;
+               
         float opacity = valueFuncs.GetValueOrDeafult(GLStyleProperties.LineOpacity, 1f, display, feature);
         float[]? dashArray = valueFuncs.GetValueOrDeafult<float[]?>(GLStyleProperties.LineDashArray, null, display, feature);
 
@@ -63,7 +69,7 @@ static internal class SymbolExtensions
     static public void ModifyStyles(this IFillSymbol fillSymbol, Dictionary<string, IValueFunc> valueFuncs, IDisplay display, IFeature? feature)
     {
         fillSymbol.SymbolSmoothingMode =
-                valueFuncs.GetValueOrDeafult(GLStyleProperties.FillOpacity, true, display, feature)
+                valueFuncs.GetValueOrDeafult(GLStyleProperties.FillAntiAliasing, true, display, feature)
                 ? SymbolSmoothing.AntiAlias
                 : SymbolSmoothing.None;
 

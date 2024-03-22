@@ -1781,7 +1781,8 @@ namespace gView.Framework.Cartography
                 using (var textBrush = GraphicsEngine.Current.Engine.CreateSolidBrush(GraphicsEngine.ArgbColor.Red))
                 {
                     var sizeF = Display.Canvas.MeasureText(sb.ToString().ToString(), font);
-                    int mx = Display.ImageWidth / 2 - (int)sizeF.Width / 2, my = Display.ImageHeight / 2 - (int)sizeF.Height / 2;
+                    int mx = 30, //Display.ImageWidth / 2 - (int)sizeF.Width / 2, 
+                        my = 30; //Display.ImageHeight / 2 - (int)sizeF.Height / 2;
                     Display.Canvas.FillRectangle(backgroundBrush, new GraphicsEngine.CanvasRectangle(mx - 30, my - 30, (int)sizeF.Width + 60, (int)sizeF.Height + 60));
                     Display.Canvas.DrawRectangle(borderPen, new GraphicsEngine.CanvasRectangle(mx - 30, my - 30, (int)sizeF.Width + 60, (int)sizeF.Height + 60));
                     //Display.Canvas.DrawText(sb.ToString(), font, textBrush, new GraphicsEngine.CanvasPoint(mx, my));

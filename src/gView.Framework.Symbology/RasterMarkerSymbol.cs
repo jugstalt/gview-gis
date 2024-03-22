@@ -293,7 +293,12 @@ namespace gView.Framework.Symbology
             {
                 if (_filename.StartsWith("resource:"))
                 {
-                    _image = Current.Engine.CreateBitmap(new MemoryStream(display.Map.ResourceContainer[_filename.Substring(9)]));
+                    var resourceData = display.Map.ResourceContainer[_filename.Substring(9)];
+                    if(resourceData == null)
+                    {
+                        throw new Exception($"Can't find map resource {_filename.Substring(9)}");
+                    }
+                    _image = Current.Engine.CreateBitmap(new MemoryStream(resourceData));
                 }
                 else
                 {

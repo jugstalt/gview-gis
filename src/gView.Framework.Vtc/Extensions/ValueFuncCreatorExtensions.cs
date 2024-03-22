@@ -14,7 +14,7 @@ static internal class ValueFuncCreatorExtensions
             return null;
         }
 
-        List<IValueFunc> valueFuncs = new();
+        List<IValueFunc?> valueFuncs = new();
 
         try
         {
@@ -65,8 +65,11 @@ static internal class ValueFuncCreatorExtensions
                     {
                         valueFuncs.Add(key.ToLower() switch
                         {
-                            "stops" => (dict["stops"].Deserialize<JsonElement[]>() ?? []).ToStopValueFunc(),
-                            "base" => null, // toTo;
+                            "stops" => (dict[key].Deserialize<JsonElement[]>() ?? [])
+                                            .ToStopValueFunc(dict.ContainsKey("base") 
+                                                    ? dict["base"]
+                                                    : null),
+                            "base" => null,  // ignore
                             _ => throw new ArgumentException($"Unknown function: {key}")
                         });
                     }
@@ -80,7 +83,10 @@ static internal class ValueFuncCreatorExtensions
         return valueFuncs.Where(f => f != null).FirstOrDefault();  // todo: ValueFuncCollection
     }
 
-    static internal StopsValueFunc ToStopValueFunc(this JsonElement[] jsonElements)
+    static internal StopsValueFunc ToStopValueFunc(
+            this JsonElement[] jsonElements,
+            JsonElement? baseJsonElement = null
+        )
     {
         var stopsFunc = new StopsValueFunc();
 
@@ -102,6 +108,11 @@ static internal class ValueFuncCreatorExtensions
             }
 
             stopsFunc.AddStop(scale, value);
+        }
+
+        if(baseJsonElement.HasValue)
+        {
+            stopsFunc.BaseValueFunc = baseJsonElement.ToValueFunc();
         }
 
         return stopsFunc;
@@ -202,7 +213,8 @@ static internal class ValueFuncCreatorExtensions
     {
         if (String.IsNullOrEmpty(value))
         {
-            throw new ArgumentException("can't convert emtpy string to a function value");
+            return "";
+            //throw new ArgumentException("can't convert emtpy string to a function value");
         }
 
         if (ArgbColor.TryFromString(value, out ArgbColor color))
