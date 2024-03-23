@@ -1,10 +1,12 @@
 ﻿using gView.DataSources.VectorTileCache.Json;
+using gView.DataSources.VectorTileCache.Json.GLStyles;
 using gView.Framework.Core.Carto;
 using gView.Framework.Core.Data;
 using gView.Framework.Core.Data.Filters;
 using gView.Framework.Core.Geometry;
 using gView.Framework.Core.Symbology;
 using gView.Framework.Symbology.Vtc;
+using gView.Framework.Symbology.Vtc.Extensions;
 
 namespace gView.Framework.Cartography.Rendering.Vtc;
 
@@ -24,6 +26,16 @@ public class VtcExtrusionRenderer : ExtrusionRenderer
         {
             base.Draw(disp, feature);
         }
+    }
+
+    public override float GetElevation(IDisplay display, IFeature feature)
+    {
+        if(this.Symbol is PaintSymbol paintSymbol)
+        {
+            return paintSymbol.GetValueOrDeafult(GLStyleProperties.FillExtrusionHeight, 0f, display, feature);
+        }
+
+        return 0f;
     }
 
     protected override void DrawGround(IDisplay disp, IFeature feature, ISymbol groundSymbol)

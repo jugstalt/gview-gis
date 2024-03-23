@@ -83,9 +83,14 @@ public class ExtrusionRenderer : Cloner, IFeatureRenderer2
         }
     }
 
+    virtual public float GetElevation(IDisplay display, IFeature feature)
+        => 50f;
+
     virtual protected void DrawGround(IDisplay disp, IFeature feature, ISymbol groundSymbol)
     {
+        disp.Canvas.SmoothingMode = SmoothingMode.AntiAlias;
         disp.Draw(_groundSymbol, feature.Shape);
+        disp.Canvas.SmoothingMode = SmoothingMode.None;
     }
 
     virtual protected void DrawElevated(IDisplay disp, IFeature feature, ISymbol symbol, IGeometry elevatedGeometry)
@@ -114,7 +119,9 @@ public class ExtrusionRenderer : Cloner, IFeatureRenderer2
             foreach (var feature in _features)
             {
                 var geometry = disp.GeometricTransformer.Transform2D(feature.Shape) as IGeometry;
-                geometry = disp.GeometricTransformer.InvTransform2D(geometry.Elevate(disp, 50)) as IGeometry;
+                geometry = disp.GeometricTransformer.InvTransform2D(
+                                        geometry.Elevate(disp, GetElevation(disp, feature))
+                                    ) as IGeometry;
                 if (geometry is not null)
                 {
                     DrawElevated(disp, feature, _symbol, geometry);

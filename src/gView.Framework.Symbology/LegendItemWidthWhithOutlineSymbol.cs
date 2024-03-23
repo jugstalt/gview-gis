@@ -9,6 +9,8 @@ namespace gView.Framework.Symbology
     public class LegendItemWidthWhithOutlineSymbol
         : LegendItem, IOutlineSymbol
     {
+        private SymbolSmoothing _symbolSmoothing = SymbolSmoothing.None;
+
         [Browsable(true)]
         [DisplayName("Symbol")]
         [Category("Outline Symbol")]
@@ -26,7 +28,7 @@ namespace gView.Framework.Symbology
             {
                 Symbol symbol => symbol.Smoothingmode,
                 SymbolCollection symbolCollection => symbolCollection.SymbolSmoothingMode,
-                _ => SymbolSmoothing.None,
+                _ => _symbolSmoothing,
             };
 
             set
@@ -38,6 +40,10 @@ namespace gView.Framework.Symbology
                 else if (OutlineSymbol is SymbolCollection)
                 {
                     ((SymbolCollection)OutlineSymbol).SymbolSmoothingMode = value;
+                }
+                else
+                {
+                    _symbolSmoothing = value;
                 }
             }
         }

@@ -364,9 +364,26 @@ public class FloatValueFunc : ValueFunc<float>
 {
     public FloatValueFunc(float value) : base(value) { }
 }
+
 public class BooleanValueFunc : ValueFunc<bool>
 {
     public BooleanValueFunc(bool value) : base(value) { }
+}
+
+public class GetValueFunc : IValueFunc
+{
+    public string? _fieldName;
+
+    public GetValueFunc(string? fieldName)
+        => (_fieldName) = fieldName;
+
+    public T? Value<T>(IDisplay display, IFeature? feature = null)
+    {
+        if (_fieldName == null || feature == null || feature[_fieldName] == null)
+            return default;
+
+        return (T)Convert.ChangeType(feature[_fieldName], typeof(T));
+    }
 }
 
 public class LiberalValueFunc : ValueFunc<string>

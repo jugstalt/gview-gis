@@ -47,10 +47,10 @@ static internal class ValueFuncCreatorExtensions
                 valueFuncs.Add(jsonElement.Value.EnumerateArray().FirstOrDefault().ToString()?.ToLower() switch
                 {
                     "case" => jsonElement.Value.EnumerateArray().Skip(1).ToArray().ToCaseValueFunc(),
-                    "get" => new FloatValueFunc(1), // todo
+                    "get" => new GetValueFunc(jsonElement.Value.EnumerateArray().Skip(1).FirstOrDefault().GetString()),
                     _ => jsonElement.Value.IsNumberArray()
                             ? new ValueFunc<float[]>(jsonElement.Value.ToFloatArray())
-                            : jsonElement.Value.IsStringArray() 
+                            : jsonElement.Value.IsStringArray()
                                 ? new ValueFunc<string[]>(jsonElement.Value.ToStringArray())
                                 : throw new ArgumentException($"Unknown array type {jsonElement.ToString()}")
                 });
