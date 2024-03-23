@@ -1,9 +1,9 @@
 ﻿using gView.Framework.Core.Carto;
 using gView.Framework.Core.Data;
 
-namespace gView.Framework.Cartography
+namespace gView.Framework.Cartography.Extensions
 {
-    static public class Extensions
+    static public class FeatureLayerExtensions
     {
         static public bool RequiresFeatureRendererClone(this IFeatureLayer layer, IDisplay display)
         {

@@ -266,7 +266,7 @@ namespace gView.Framework.Cartography.Rendering
             }
         }
 
-        public void Draw(IDisplay display, IFeature feature)
+        public void Draw(IDisplay display, IFeatureLayer layer, IFeature feature)
         {
             if (!BeforeRenderFeature(display, feature) || !(_symbol is ISymbol))
             {
@@ -318,7 +318,7 @@ namespace gView.Framework.Cartography.Rendering
 
             if (feature.Shape is IPoint)
             {
-                if (display.LabelEngine.TryAppend(display, _symbol, feature.Shape, _labelPriority != RenderLabelPriority.Always) == LabelAppendResult.Succeeded)
+                if (display.LabelEngine.TryAppend(display, layer, _symbol, feature.Shape, _labelPriority != RenderLabelPriority.Always) == LabelAppendResult.Succeeded)
                 {
                     if (_howManyLabels == RenderHowManyLabels.OnPerName)
                     {
@@ -336,7 +336,7 @@ namespace gView.Framework.Cartography.Rendering
                         continue;
                     }
 
-                    if (display.LabelEngine.TryAppend(display, _symbol, multiPoint[i], _labelPriority != RenderLabelPriority.Always) == LabelAppendResult.Succeeded)
+                    if (display.LabelEngine.TryAppend(display, layer, _symbol, multiPoint[i], _labelPriority != RenderLabelPriority.Always) == LabelAppendResult.Succeeded)
                     {
                         if (_howManyLabels == RenderHowManyLabels.OnPerName)
                         {
@@ -368,7 +368,14 @@ namespace gView.Framework.Cartography.Rendering
                     return;
                 }
 
-                if (_lineLabelling == CartographicLineLabeling.CurvedText)
+                var lineLabelling = (_lineLabelling, _symbol.Text.Length) switch
+                {
+                    // dont curve short names
+                    (CartographicLineLabeling.CurvedText, <= 5) => CartographicLineLabeling.Parallel,
+                    _ => _lineLabelling
+                };
+
+                if (lineLabelling == CartographicLineLabeling.CurvedText)
                 {
                     #region Text On Path
 
@@ -412,7 +419,7 @@ namespace gView.Framework.Cartography.Rendering
                         bool found = false;
                         while (!found)
                         {
-                            if (display.LabelEngine.TryAppend(display, _symbol, displayPath, _labelPriority != RenderLabelPriority.Always) == LabelAppendResult.Succeeded)
+                            if (display.LabelEngine.TryAppend(display, layer, _symbol, displayPath, _labelPriority != RenderLabelPriority.Always) == LabelAppendResult.Succeeded)
                             {
                                 found = true;
                                 if (_howManyLabels == RenderHowManyLabels.OnPerName)
@@ -438,12 +445,13 @@ namespace gView.Framework.Cartography.Rendering
                     }
                     #endregion
                 }
-                else if (_lineLabelling == CartographicLineLabeling.Horizontal ||
-                         _lineLabelling == CartographicLineLabeling.Perpendicular)
+                else if (lineLabelling == CartographicLineLabeling.Horizontal ||
+                         lineLabelling == CartographicLineLabeling.Perpendicular)
                 {
                     #region Horizontal
 
                     bool found = false;
+
                     for (int iPath = 0; iPath < pLine.PathCount; iPath++)
                     {
                         IPath path = pLine[iPath];
@@ -499,7 +507,7 @@ namespace gView.Framework.Cartography.Rendering
                         Point p = new Point(point1.X * 0.5 + point2.X * 0.5,
                                             point1.Y * 0.5 + point2.Y * 0.5);
 
-                        if (_lineLabelling == CartographicLineLabeling.Perpendicular)
+                        if (lineLabelling == CartographicLineLabeling.Perpendicular)
                         {
                             double angle = Math.Atan2(point2.X - point1.X, point2.Y - point1.Y) * 180.0 / Math.PI;
                             if (angle < 0)
@@ -514,7 +522,7 @@ namespace gView.Framework.Cartography.Rendering
 
                             _symbol.Angle = (float)angle;
                         }
-                        if (display.LabelEngine.TryAppend(display, _symbol, p, _labelPriority != RenderLabelPriority.Always) == LabelAppendResult.Succeeded)
+                        if (display.LabelEngine.TryAppend(display, layer, _symbol, p, _labelPriority != RenderLabelPriority.Always) == LabelAppendResult.Succeeded)
                         {
                             if (_howManyLabels == RenderHowManyLabels.OnPerName)
                             {
@@ -589,7 +597,7 @@ namespace gView.Framework.Cartography.Rendering
                         pLine[0].AddPoint(point1);
                         pLine[0].AddPoint(point2);
 
-                        if (display.LabelEngine.TryAppend(display, _symbol, pLine, _labelPriority != RenderLabelPriority.Always) == LabelAppendResult.Succeeded)
+                        if (display.LabelEngine.TryAppend(display, layer, _symbol, pLine, _labelPriority != RenderLabelPriority.Always) == LabelAppendResult.Succeeded)
                         {
                             if (_howManyLabels == RenderHowManyLabels.OnPerName)
                             {
@@ -603,14 +611,14 @@ namespace gView.Framework.Cartography.Rendering
             }
             else if (feature.Shape is IPolygon)
             {
-                LabelPolygon(display, (IPolygon)feature.Shape);
+                LabelPolygon(display, layer, (IPolygon)feature.Shape);
             }
         }
 
         #endregion
 
         internal const int MaxPolygonTotalPointCount = 10000;  // Labelling is too expensive for complex polygons
-        private bool LabelPolygon(IDisplay disp, IPolygon polygon)
+        private bool LabelPolygon(IDisplay disp, IFeatureLayer layer, IPolygon polygon)
         {
             //var center = new MultiPoint();
             //center.AddPoint(polygon.Envelope.Center);
@@ -665,7 +673,7 @@ namespace gView.Framework.Cartography.Rendering
             if (polygon.TotalPointCount < MaxPolygonTotalPointCount)
             {
                 IMultiPoint pColl = Algorithm.PolygonLabelPoints(polygon);
-                return LabelPointCollection(disp, polygon, pColl);
+                return LabelPointCollection(disp, layer, polygon, pColl);
             }
             else
             {
@@ -673,7 +681,7 @@ namespace gView.Framework.Cartography.Rendering
             }
         }
 
-        private bool LabelPointCollection(IDisplay disp, IPolygon polygon, IMultiPoint pColl)
+        private bool LabelPointCollection(IDisplay disp, IFeatureLayer layer, IPolygon polygon, IMultiPoint pColl)
         {
             if (pColl == null)
             {
@@ -686,7 +694,7 @@ namespace gView.Framework.Cartography.Rendering
                 case RenderHowManyLabels.OnPerName:
                     for (int i = 0; i < pColl.PointCount; i++)
                     {
-                        if (disp.LabelEngine.TryAppend(disp, _symbol, pColl[i], _labelPriority != RenderLabelPriority.Always) == LabelAppendResult.Succeeded)
+                        if (disp.LabelEngine.TryAppend(disp, layer, _symbol, pColl[i], _labelPriority != RenderLabelPriority.Always) == LabelAppendResult.Succeeded)
                         {
                             if (_howManyLabels == RenderHowManyLabels.OnPerName)
                             {
@@ -701,12 +709,12 @@ namespace gView.Framework.Cartography.Rendering
                         ISmartLabelPoint slp = pColl[i] as ISmartLabelPoint;
                         if (slp != null)
                         {
-                            LabelPointCollection(disp, polygon, slp.AlernativeLabelPoints(disp));
+                            LabelPointCollection(disp, layer, polygon, slp.AlernativeLabelPoints(disp));
                         }
                     }
                     break;
                 case RenderHowManyLabels.OnPerPart:
-                    if (disp.LabelEngine.TryAppend(disp, _symbol, pColl, _labelPriority != RenderLabelPriority.Always) == LabelAppendResult.Succeeded)
+                    if (disp.LabelEngine.TryAppend(disp, layer, _symbol, pColl, _labelPriority != RenderLabelPriority.Always) == LabelAppendResult.Succeeded)
                     {
                         if (_howManyLabels == RenderHowManyLabels.OnPerName)
                         {

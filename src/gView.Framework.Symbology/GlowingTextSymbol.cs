@@ -100,6 +100,9 @@ namespace gView.Framework.Symbology
             tSym.GlowingWidth = this.GlowingWidth;
             tSym.MinFontSize = this.MinFontSize;
             tSym.MaxFontSize = this.MaxFontSize;
+            tSym.SymbolSpacingType = this.SymbolSpacingType;
+            tSym.SymbolSpacingX = this.SymbolSpacingX;
+            tSym.SymbolSpacingY = this.SymbolSpacingY;
             tSym.IncludesSuperScript = this.IncludesSuperScript;
             tSym.SecondaryTextSymbolAlignments = this.SecondaryTextSymbolAlignments;
 
@@ -138,6 +141,9 @@ namespace gView.Framework.Symbology
             tSym.GlowingWidth = this.GlowingWidth;
             tSym.MinFontSize = this.MinFontSize;
             tSym.MaxFontSize = this.MaxFontSize;
+            tSym.SymbolSpacingType = this.SymbolSpacingType;
+            tSym.SymbolSpacingX = this.SymbolSpacingX;
+            tSym.SymbolSpacingY = this.SymbolSpacingY;
             tSym.IncludesSuperScript = this.IncludesSuperScript;
             tSym.SecondaryTextSymbolAlignments = this.SecondaryTextSymbolAlignments;
 

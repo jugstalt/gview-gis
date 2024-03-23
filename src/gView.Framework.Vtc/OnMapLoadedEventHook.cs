@@ -120,7 +120,7 @@ public class OnMapLoadedEventHook : IMapEventHook
 
         foreach (var layer in stylesCapabilities.Layers.Reverse())
         {
-            if(String.IsNullOrEmpty(layer.Source))
+            if (String.IsNullOrEmpty(layer.Source))
             {
                 Console.WriteLine($"Warning: layer has no sourece: {layer.SourceLayerId}");
                 continue;
@@ -134,6 +134,12 @@ public class OnMapLoadedEventHook : IMapEventHook
                 //throw new Exception($"Unkown layer dataset: {layer.Source}");
                 continue;
             }
+
+            // for debugging
+            //if(!layer.Id.Contains("iso", StringComparison.OrdinalIgnoreCase))
+            //{
+            //    continue;
+            //}
 
             var @class = (await dataset.Element(layer.SourceLayerId))?.Class;
             if (@class == null)

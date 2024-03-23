@@ -74,7 +74,7 @@ namespace gView.Framework.Cartography.Rendering
             get { return 0; }
         }
 
-        public void Draw(IDisplay disp, IFeature feature)
+        public void Draw(IDisplay disp, IFeatureLayer layer, IFeature feature)
         {
             foreach (ILabelRenderer renderer in _renderers)
             {
@@ -83,7 +83,7 @@ namespace gView.Framework.Cartography.Rendering
                     continue;
                 }
 
-                renderer.Draw(disp, feature);
+                renderer.Draw(disp, layer, feature);
             }
         }
 
@@ -423,7 +423,7 @@ namespace gView.Framework.Cartography.Rendering
                 }
             }
 
-            public void Draw(IDisplay disp, IFeature feature)
+            public void Draw(IDisplay disp, IFeatureLayer layer, IFeature feature)
             {
                 if (_renderer == null)
                 {
@@ -440,7 +440,7 @@ namespace gView.Framework.Cartography.Rendering
                     return;
                 }
 
-                _renderer.Draw(disp, feature);
+                _renderer.Draw(disp, layer, feature);
             }
 
             #endregion

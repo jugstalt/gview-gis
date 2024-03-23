@@ -1,4 +1,5 @@
-﻿using System;
+﻿using gView.Framework.Core.Geometry;
+using System;
 
 namespace gView.Framework.Core.Symbology
 {

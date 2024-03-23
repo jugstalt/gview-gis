@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Drawing;
+using System.IO.Pipes;
 
 namespace gView.Framework.Core.Symbology
 {
@@ -131,6 +133,37 @@ namespace gView.Framework.Core.Symbology
             }
             return false;
 
+        }
+
+        public IAnnotationPolygonCollision WithSpacing(SymbolSpacingType type, float spacingX, float spacingY)
+        {
+            if (type == SymbolSpacingType.None) return this;
+
+            var envelope = this.Envelope;
+            float centerX = (envelope.MinX + envelope.MaxX) * 0.5f;
+            float centerY = (envelope.MinY + envelope.MaxY) * 0.5f;
+
+            float x1, y1, width = _width, height = _height;
+
+            var (minWidth, minHeight) = type switch
+            {
+                SymbolSpacingType.BoundingBox => (spacingX, spacingY),
+                SymbolSpacingType.Margin => (width + 2f * spacingX, height + 2f * spacingY),
+                _ => (0, 0)
+            };
+
+            if (width < minWidth || height < minHeight)
+            {
+                width = Math.Max(minWidth, width);
+                height = Math.Max(minHeight, height);
+
+                x1 = centerX - width / 2f;
+                y1 = centerY - height / 2f;
+
+                return new AnnotationPolygon(x1, y1, width, height);
+            }
+
+            return this;           
         }
 
         private static bool HasSeperateLine(AnnotationPolygon tester, AnnotationPolygon cand)

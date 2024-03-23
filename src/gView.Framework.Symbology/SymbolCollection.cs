@@ -450,10 +450,6 @@ namespace gView.Framework.Symbology
         [Category("Reference Scaling")]
         public float MinFontSize { get; set; }
 
-        [Browsable(false)]
-        [Category("Symbol Spacing")]
-        public float SymbolSpacing { get; set; }
-
         #endregion
 
         #region ISymbolTransformation Member

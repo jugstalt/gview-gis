@@ -8,6 +8,7 @@ using gView.Framework.Core.Symbology;
 using gView.Framework.Symbology.Vtc;
 using gView.Framework.Symbology.Vtc.Extensions;
 using gView.GraphicsEngine;
+using System.Security.Cryptography;
 
 namespace gView.Framework.Cartography.Rendering.Vtc;
 
@@ -45,16 +46,16 @@ public class VtcLabelRenderer : SimpleLabelRenderer
 
         CartoLineLabelling =
            _paintSymbol.GetValueOrDeafult(GLStyleProperties.SymbolPlacement, "", display, feature) == "line"
-                            ? CartographicLineLabeling.Horizontal//CartographicLineLabeling.CurvedText
+                            ? CartographicLineLabeling.CurvedText
                             : CartographicLineLabeling.Horizontal;
 
-        if(CartoLineLabelling == CartographicLineLabeling.CurvedText)
-        {
-            HowManyLabels =
-                _paintSymbol.GetValueOrDeafult(GLStyleProperties.SymbolSpacing, 0f, display, feature) > 0
-                                    ? RenderHowManyLabels.OnPerName
-                                   : RenderHowManyLabels.OnPerFeature;
-        }
+        //if(CartoLineLabelling == CartographicLineLabeling.CurvedText)
+        //{
+        //    HowManyLabels =
+        //        _paintSymbol.GetValueOrDeafult(GLStyleProperties.SymbolSpacing, 0f, display, feature) > 0
+        //                            ? RenderHowManyLabels.OnPerName
+        //                           : RenderHowManyLabels.OnPerFeature;
+        //}
 
         var textSymbol = base.TextSymbol;
 
@@ -74,12 +75,25 @@ public class VtcLabelRenderer : SimpleLabelRenderer
                     "bottom" => TextSymbolAlignment.Over,
                     _ => TextSymbolAlignment.Center
                 };
+        }
 
-            textSymbol.SymbolSpacing = _paintSymbol.GetValueOrDeafult(
-                    GLStyleProperties.SymbolSpacing, 
+        if (textSymbol is ISymbolSpacing spacing)
+        {
+            var spacingSize = _paintSymbol.GetValueOrDeafult(
+                    GLStyleProperties.SymbolSpacing,
                     0f,  // todo: 0f if text-allow-overlap = true
-                    display, 
+                    display,
                     feature);
+
+            if(spacingSize>0)
+            {
+                spacing.SymbolSpacingType = SymbolSpacingType.BoundingBox;
+                spacing.SymbolSpacingX = spacing.SymbolSpacingY = spacingSize;
+            } 
+            else
+            {
+                spacing.SymbolSpacingType = SymbolSpacingType.None;
+            }
         }
 
         if(textSymbol is IFontColor fontColor)

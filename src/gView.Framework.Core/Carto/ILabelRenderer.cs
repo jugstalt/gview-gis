@@ -12,6 +12,6 @@ namespace gView.Framework.Core.Carto
         LabelRenderMode RenderMode { get; }
         int RenderPriority { get; }
 
-        void Draw(IDisplay disp, IFeature feature);
+        void Draw(IDisplay disp, IFeatureLayer layer, IFeature feature);
     }
 }

@@ -1,5 +1,4 @@
-﻿using gView.Framework.Cartography;
-using gView.Framework.Core.Carto;
+﻿using gView.Framework.Core.Carto;
 using gView.Framework.Core.Data;
 using gView.Framework.Core.Data.Cursors;
 using gView.Framework.Core.Data.Filters;
@@ -13,6 +12,7 @@ using gView.Framework.Common.Diagnostics;
 using gView.GraphicsEngine.Extensions;
 using System;
 using System.Threading.Tasks;
+using gView.Framework.Cartography.Extensions;
 
 namespace gView.Framework.Cartography.LayerRenderers
 {
@@ -302,7 +302,7 @@ namespace gView.Framework.Cartography.LayerRenderers
 
                                 if (labelRenderer != null)
                                 {
-                                    labelRenderer.Draw(_map, feature);
+                                    labelRenderer.Draw(_map, layer, feature);
                                 }
 
                                 _counter.Counter++;
@@ -328,7 +328,7 @@ namespace gView.Framework.Cartography.LayerRenderers
                                     }
                                 }
 
-                                labelRenderer.Draw(_map, feature);
+                                labelRenderer.Draw(_map, layer, feature);
                                 _counter.Counter++;
                             }
                         }
