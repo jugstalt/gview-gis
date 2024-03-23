@@ -10,6 +10,8 @@ namespace gView.Framework.Core.Symbology
         float MaxFontSize { get; set; }
         float MinFontSize { get; set; }
 
+        float SymbolSpacing { get; set; }
+
         void Draw(IDisplay display, IGeometry geometry, TextSymbolAlignment symbolAlignment);
     }
 }

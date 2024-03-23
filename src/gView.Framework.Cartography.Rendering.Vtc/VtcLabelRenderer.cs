@@ -43,14 +43,18 @@ public class VtcLabelRenderer : SimpleLabelRenderer
             return false;
         }
 
-        HowManyLabels =
-            _paintSymbol.GetValueOrDeafult(GLStyleProperties.SymbolSpacing, 1f, display, feature) > 0
-                                ? RenderHowManyLabels.OnPerName
-                                : RenderHowManyLabels.OnPerFeature;
         CartoLineLabelling =
            _paintSymbol.GetValueOrDeafult(GLStyleProperties.SymbolPlacement, "", display, feature) == "line"
-                            ? CartographicLineLabeling.CurvedText
+                            ? CartographicLineLabeling.Horizontal//CartographicLineLabeling.CurvedText
                             : CartographicLineLabeling.Horizontal;
+
+        if(CartoLineLabelling == CartographicLineLabeling.CurvedText)
+        {
+            HowManyLabels =
+                _paintSymbol.GetValueOrDeafult(GLStyleProperties.SymbolSpacing, 0f, display, feature) > 0
+                                    ? RenderHowManyLabels.OnPerName
+                                   : RenderHowManyLabels.OnPerFeature;
+        }
 
         var textSymbol = base.TextSymbol;
 
@@ -70,6 +74,12 @@ public class VtcLabelRenderer : SimpleLabelRenderer
                     "bottom" => TextSymbolAlignment.Over,
                     _ => TextSymbolAlignment.Center
                 };
+
+            textSymbol.SymbolSpacing = _paintSymbol.GetValueOrDeafult(
+                    GLStyleProperties.SymbolSpacing, 
+                    0f,  // todo: 0f if text-allow-overlap = true
+                    display, 
+                    feature);
         }
 
         if(textSymbol is IFontColor fontColor)
