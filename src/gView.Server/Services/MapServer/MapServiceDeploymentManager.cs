@@ -122,7 +122,7 @@ namespace gView.Server.Services.MapServer
                     di.Create();
                 }
 
-                FileInfo fi = new FileInfo(_mapServerService.Options.ServicesPath + @"/" + name + ".mxl");
+                FileInfo fi = new FileInfo($"{_mapServerService.Options.ServicesPath}/{name}.mxl");
                 if (fi.Exists)
                 {
                     ServerMapDocument doc = new ServerMapDocument(_mapServerService);
