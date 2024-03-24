@@ -25,6 +25,7 @@ static public class GLStyleProperties
     public const string FillExtrusionColor = "fill-extrusion-color";
     public const string FillExtrusionHeight = "fill-extrusion-height";
 
+    public const string TextFont = "text-font";
     public const string TextHaloWidth = "text-halo-width";
     public const string TextHaloColor = "text-halo-color";
     public const string TextColor = "text-color";

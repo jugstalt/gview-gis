@@ -1,9 +1,9 @@
 ﻿using gView.Framework.Cartography;
 using gView.Framework.Core.Carto;
+using gView.Framework.Core.Common;
 using gView.Framework.Core.Data;
 using gView.Framework.Core.Exceptions;
 using gView.Framework.Core.MapServer;
-using gView.Framework.Core.Common;
 using gView.Framework.Core.UI;
 using gView.Framework.Data.Metadata;
 using gView.Framework.IO;
@@ -251,7 +251,17 @@ namespace gView.Server.Services.MapServer
             var map = mapDocument.Maps.First() as Map;
             //Map map = new Map();
             //map.Load(xmlStream);
-            map.Name = mapName;
+
+            if (mapDocument.Readonly && map.Name != mapName)
+            {
+                // Readonly maps: eg. VTC Print Services
+                // the will not be touthed, only copied to services folder
+                throw new Exception($"MapDocument is readonly. The name of the map ({map.Name}) must be equal with service name ({mapName})");
+            }
+            else
+            {
+                map.Name = mapName;
+            }
 
             StringBuilder errors = new StringBuilder();
             bool hasErrors = false;
@@ -322,7 +332,22 @@ namespace gView.Server.Services.MapServer
             //if (!_doc.AddMap(map)) return false;
             _mapServerService.AddMapService(mapName, MapServiceType.MXL);
 
-            await SaveConfig(mapDocument);
+            if(mapDocument.Readonly)
+            {
+                // Readonly maps: eg. VTC Print Services
+                // the will not be touthed, only copied to services folder
+                await SaveConfig(map,
+                    $"""
+                    <?xml version="1.0" encoding="utf-16"?>
+                    <MapServer culture="">
+                       {mapXml}
+                    </MapServer>
+                    """);
+            }
+            else
+            {
+                await SaveConfig(mapDocument);
+            }
 
             var result = await ReloadMap(mapName);
 
@@ -367,16 +392,34 @@ namespace gView.Server.Services.MapServer
                 XmlStream stream = new XmlStream("MapServer");
                 stream.Save("MapDocument", mapDocument);
 
-                stream.WriteStream(_mapServerService.Options.ServicesPath + "/" + map.Name + ".mxl");
+                stream.WriteStream($"{_mapServerService.Options.ServicesPath}/{map.Name}.mxl");
 
-                if (map is Map)
-                {
-                    await ApplyMetadata(map);
-                }
+                await ApplyMetadata(map);
             }
             catch (Exception ex)
             {
                 _logger.LogError($"Map {mapDocument?.Maps?.First()?.Name}: LoadConfig - {ex.Message}");
+            }
+        }
+
+        async public Task SaveConfig(IMap map, string mapXml)
+        {
+            try
+            {
+                await File.WriteAllTextAsync(
+                            $"{_mapServerService.Options.ServicesPath}/{map.Name}.mxl",
+                            mapXml,
+                            Encoding.Unicode
+                        );
+
+                if (map is Map)
+                {
+                    await ApplyMetadata((Map)map);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Map {map.Name}: LoadConfig - {ex.Message}");
             }
         }
 

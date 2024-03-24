@@ -31,6 +31,8 @@ namespace gView.Cmd.MxlUtil.Lib
             }
         }
 
+        public bool Readonly { get; set; } = false;
+
         public bool LoadMapDocument(string path)
         {
             XmlStream stream = new XmlStream("");
@@ -230,6 +232,7 @@ namespace gView.Cmd.MxlUtil.Lib
                 this.RemoveMap(_maps[0]);
             }
 
+            this.Readonly = (bool)stream.Load("readonly", this.Readonly);
             _focusMapIndex = (int)stream.Load("focusMapIndex", 0);
 
             IMap map;
@@ -260,6 +263,7 @@ namespace gView.Cmd.MxlUtil.Lib
 
         public void Save(IPersistStream stream)
         {
+            stream.Save("readonly", this.Readonly);
             stream.Save("focusMapIndex", _focusMapIndex);
 
             foreach (IMap map in _maps)

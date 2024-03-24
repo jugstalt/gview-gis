@@ -47,6 +47,8 @@ namespace gView.Server.AppCode
             }
         }
 
+        public bool Readonly { get; set; }
+
         public bool AddMap(IMap map)
         {
             if (_mapServerService.Instance == null)
@@ -169,7 +171,7 @@ namespace gView.Server.AppCode
         async public Task<bool> LoadAsync(IPersistStream stream)
         {
             RemoveAllMaps();
-
+            this.Readonly = (bool)stream.Load("readonly", false);
             IMap map;
             while ((map = (await stream.LoadAsync<IMap>("IMap", new gView.Framework.Cartography.Map()))) != null)
             {
@@ -185,6 +187,7 @@ namespace gView.Server.AppCode
 
         public void Save(IPersistStream stream)
         {
+            stream.Save("readonly", this.Readonly);
             foreach (IMap map in _maps)
             {
                 stream.Save("IMap", map);

@@ -27,7 +27,7 @@ internal class TocSettings : ICartoButton
     }
 
     public bool IsEnabled(ICartoApplicationScopeService scope)
-        => true; //  scope.Document.Map.TOC.Elements.Count() > 0;
+        => !scope.Document.Readonly; //  scope.Document.Map.TOC.Elements.Count() > 0;
 
     async public Task<bool> OnClick(ICartoApplicationScopeService scope)
     {

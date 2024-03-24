@@ -33,6 +33,7 @@ public class CartoDocument : ICartoDocument
 
     public string Name { get; set; }
     public string FilePath { get; set; } = "";
+    public bool Readonly { get; set; } = false;
 
     public IMap Map
     {
@@ -62,6 +63,8 @@ public class CartoDocument : ICartoDocument
 
     async public Task<bool> LoadAsync(IPersistStream stream)
     {
+        this.Readonly = (bool)stream.Load("readonly", false);
+
         // Kompatibility to older versions:
         // more maps in one document were possible...
         int focusIndex = (int)stream.Load("focusMapIndex", 0);
@@ -88,6 +91,7 @@ public class CartoDocument : ICartoDocument
 
     public void Save(IPersistStream stream)
     {
+        stream.Save("readonly", this.Readonly);
         stream.Save("focusMapIndex", 0);  // Compatibility to older versions
 
         stream.Save("IMap", this.Map);

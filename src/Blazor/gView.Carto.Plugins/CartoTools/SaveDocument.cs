@@ -24,7 +24,8 @@ public class SaveDocument : ICartoButton
     }
 
     public bool IsEnabled(ICartoApplicationScopeService scope)
-        => !String.IsNullOrEmpty(scope.Document.FilePath);
+        => !scope.Document.Readonly 
+        && !String.IsNullOrEmpty(scope.Document.FilePath);
 
     public Task<bool> OnClick(ICartoApplicationScopeService scope)
         => File.Exists(scope.Document.FilePath) switch

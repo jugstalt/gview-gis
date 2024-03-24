@@ -10,8 +10,9 @@ public class GLStyleLayerLayout
 
     #region Text
 
-    [JsonPropertyName("text-font")]
-    public string[] TextFont { get; set; }
+    [JsonPropertyName(GLStyleProperties.TextFont)]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public JsonElement? TextFont { get; set; }
 
     [JsonPropertyName("text-field")]
     public string TextFieldExpression { get; set; }

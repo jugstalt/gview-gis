@@ -9,6 +9,7 @@ namespace gView.Carto.Core.Abstraction;
 public interface ICartoDocument : IPersistableLoadAsync
 {
     string FilePath { get; set; }
+    bool Readonly { get; set; }
 
     IMap Map { get; }
 

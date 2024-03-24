@@ -175,7 +175,7 @@ namespace gView.Framework.IO
 
                 return false;
             }
-            catch
+            catch(Exception ex)
             {
                 return false;
             }

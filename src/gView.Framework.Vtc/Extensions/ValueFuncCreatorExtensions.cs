@@ -254,7 +254,7 @@ static internal class JsonElementArrayExtensions
 
     static public bool IsArrayOfKind(this JsonElement element, JsonValueKind kind)
         => element.IsArray()
-           && element.EnumerateArray().All(e => e.ValueKind == JsonValueKind.Number);
+           && element.EnumerateArray().All(e => e.ValueKind == kind);
 
     static public bool IsNumberArray(this JsonElement array)
         => IsArrayOfKind(array, JsonValueKind.Number);

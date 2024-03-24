@@ -12,6 +12,7 @@ using gView.Framework.IO;
 using gView.Framework.Vtc;
 using gView.GraphicsEngine;
 using gView.GraphicsEngine.Abstraction;
+using SkiaSharp;
 using System.Text.Json;
 
 namespace gView.Cmd.MxlUtil.Lib;
@@ -56,8 +57,12 @@ public class FromGLStylesJsonCommand : ICommand
             var mapName = parameters.GetRequiredValue<string>("map-name")
                                 .ToLower()
                                 .Replace(" ", "-")
-                                .Replace("/", "-")
-                                .Replace("\\", "-");
+                                .Replace("\\", "/");
+
+            if (mapName.Split("/").Length > 2)
+            {
+                throw new Exception($"Invalid map name: {parameters.GetRequiredValue<string>("map-name")}");
+            }
 
             #region Load Styles Json
 
@@ -201,9 +206,10 @@ public class FromGLStylesJsonCommand : ICommand
 
             #region Save Map
 
-            string outFile = System.IO.Path.Combine(targetpath, $"{mapName}.mxl");
+            string outFile = System.IO.Path.Combine(targetpath, $"{mapName.Split('/').Last()}.mxl");
 
             MxlDocument doc = new MxlDocument();
+            doc.Readonly = true;
             doc.AddMap(map);
             doc.FocusMap = map;
 

@@ -103,17 +103,21 @@ public class VtcLabelRenderer : SimpleLabelRenderer
         }
         if (textSymbol is IFontSymbol fontSymbol)
         {
+            var fontNames =
+                _paintSymbol.GetValueOrDeafult(GLStyleProperties.TextFont, new string[0], display, feature);
+
             var fontSize =
                 _paintSymbol.GetValueOrDeafult(GLStyleProperties.TextSize, fontSymbol.Font.Size, display, feature);
             
-            if (fontSize != fontSymbol.Font.Size)
+            if (fontSize != fontSymbol.Font.Size 
+                || !fontNames.Contains(fontSymbol.Font.Name))
             {
                 // only if differs
                 fontSymbol.Font = Current.Engine.CreateFont(
-                    fontSymbol.Font.Name,
+                    fontNames?.FirstOrDefault() ?? fontSymbol.Font.Name,
                     fontSize,
                     fontSymbol.Font.Style,
-                    fontSymbol.Font.Unit);
+                    GraphicsUnit.Pixel);
             }
         }
 
