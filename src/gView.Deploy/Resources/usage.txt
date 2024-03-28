@@ -1,0 +1,8 @@
+Usage:
+======
+
+gview.deploy.exe [parameters]
+
+parameters: 
+     -p,--profile my-profile 
+                  (eg. develepment, test, stating, production) 

@@ -77,8 +77,8 @@ namespace gView.Server.AppCode
                 parentDirectory = parentDirectory.Parent;
             }
 
-            configText = configText.Replace("{installation-path}", parentDirectory.FullName.Replace("\\", "\\\\"))
-                                   .Replace("{installation-host}", host);
+            configText = configText.Replace("{repository-path}", Path.Combine(parentDirectory.FullName, "gview-repository").Replace("\\", "\\\\"))
+                                   .Replace("{server-url}", host);
 
             return configText;
         }
@@ -92,14 +92,14 @@ namespace gView.Server.AppCode
 
         private string LinuxSetup(string configTemplateFile, string[] args)
         {
-            string repositoryPath = GetEnvironmentVariable(EnvKey_ServerRespositoryPath) ?? "/etc/gview5";
+            string repositoryPath = GetEnvironmentVariable(EnvKey_ServerRespositoryPath) ?? "/etc/gview/gview-repository";
             string onlineResource = GetEnvironmentVariable(EnvKey_ServerOnlineResourceUrl) ?? "http://localhost:5555";
 
             var fi = new FileInfo(configTemplateFile);
 
             var configText = File.ReadAllText(fi.FullName);
-            configText = configText.Replace("{installation-path}", repositoryPath)
-                                   .Replace("{installation-host}", onlineResource);
+            configText = configText.Replace("{repository-path}", repositoryPath)
+                                   .Replace("{server-url}", onlineResource);
 
             return configText;
         }

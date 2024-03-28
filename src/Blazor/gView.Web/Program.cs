@@ -9,7 +9,6 @@ using gView.Web.Extensions;
 using gView.Web.Extensions.DependencyInjection;
 using MudBlazor;
 using MudBlazor.Services;
-using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -106,4 +105,3 @@ gView.GraphicsEngine.Current.Engine = new gView.GraphicsEngine.Skia.SkiaGraphics
 gView.GraphicsEngine.Current.Encoder = new gView.GraphicsEngine.Skia.SkiaBitmapEncoding();
 
 app.Run();
- 

@@ -171,9 +171,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JsonPlayground", "src\Playg
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Framework.Symbology.Vtc", "src\gView.Framework.Symbology.Vtc\gView.Framework.Symbology.Vtc.csproj", "{A57C7046-01A5-4E0B-8BF0-C04310DBB206}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gView.Framework.Vtc", "src\gView.Framework.Vtc\gView.Framework.Vtc.csproj", "{E821716D-F351-4710-9243-D0DC6B70FAAC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Framework.Vtc", "src\gView.Framework.Vtc\gView.Framework.Vtc.csproj", "{E821716D-F351-4710-9243-D0DC6B70FAAC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gView.Framework.Cartography.Rendering.Vtc", "src\gView.Framework.Cartography.Rendering.Vtc\gView.Framework.Cartography.Rendering.Vtc.csproj", "{7A05F013-F195-42CF-854C-53B0F042EE9A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Framework.Cartography.Rendering.Vtc", "src\gView.Framework.Cartography.Rendering.Vtc\gView.Framework.Cartography.Rendering.Vtc.csproj", "{7A05F013-F195-42CF-854C-53B0F042EE9A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gView.Deploy", "src\gView.Deploy\gView.Deploy.csproj", "{5FDE2AA3-D664-4EF1-90DC-E1FF17E0A53C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -791,6 +793,14 @@ Global
 		{7A05F013-F195-42CF-854C-53B0F042EE9A}.Release|Any CPU.Build.0 = Release|Any CPU
 		{7A05F013-F195-42CF-854C-53B0F042EE9A}.Release|x64.ActiveCfg = Release|Any CPU
 		{7A05F013-F195-42CF-854C-53B0F042EE9A}.Release|x64.Build.0 = Release|Any CPU
+		{5FDE2AA3-D664-4EF1-90DC-E1FF17E0A53C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5FDE2AA3-D664-4EF1-90DC-E1FF17E0A53C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5FDE2AA3-D664-4EF1-90DC-E1FF17E0A53C}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{5FDE2AA3-D664-4EF1-90DC-E1FF17E0A53C}.Debug|x64.Build.0 = Debug|Any CPU
+		{5FDE2AA3-D664-4EF1-90DC-E1FF17E0A53C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5FDE2AA3-D664-4EF1-90DC-E1FF17E0A53C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5FDE2AA3-D664-4EF1-90DC-E1FF17E0A53C}.Release|x64.ActiveCfg = Release|Any CPU
+		{5FDE2AA3-D664-4EF1-90DC-E1FF17E0A53C}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -881,6 +891,7 @@ Global
 		{A57C7046-01A5-4E0B-8BF0-C04310DBB206} = {DE176D4E-059E-4483-9C23-16055A573204}
 		{E821716D-F351-4710-9243-D0DC6B70FAAC} = {DE176D4E-059E-4483-9C23-16055A573204}
 		{7A05F013-F195-42CF-854C-53B0F042EE9A} = {DE176D4E-059E-4483-9C23-16055A573204}
+		{5FDE2AA3-D664-4EF1-90DC-E1FF17E0A53C} = {F92CCD65-1D06-475F-8FFB-3F912C7BBE7E}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {11C25FC0-EB32-4DE1-9CBB-CF2D68D1AA9B}

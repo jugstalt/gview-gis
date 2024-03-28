@@ -122,6 +122,14 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Content Update="_config\_mapserver.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
     <None Update="gv_estag_dkm_sdet.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>gv_estag_dkm_sdet.Designer.cs</LastGenOutput>
