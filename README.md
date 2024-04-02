@@ -18,45 +18,45 @@ Some screenshots to demonstrate some of the features of gview GIS
 
 Create maps in an userfriendly UI
 
-![alt text](https://raw.githubusercontent.com/jugstalt/gview5/master/content/img/gview5-carto1.png)
+<img width="907" alt="image" src="https://github.com/jugstalt/gview5/assets/26577522/e0701c5d-f3f3-4601-8428-0696071e9c6d">
 
 Set rendering for each layer
 
-![alt text](https://raw.githubusercontent.com/jugstalt/gview5/master/content/img/gview5-carto2.png)
+<img width="1247" alt="image" src="https://github.com/jugstalt/gview5/assets/26577522/c320fb78-2507-467c-84bf-b25b25ba314e">
 
 Set labelling for any vector layer
 
-![alt text](https://raw.githubusercontent.com/jugstalt/gview5/master/content/img/gview5-carto3.png)
+<img width="1247" alt="image" src="https://github.com/jugstalt/gview5/assets/26577522/d9403f1f-2534-48b0-9af3-d335c12828a0">
 
 ## Desktop: gView DataExplorer
 
-![alt text](https://raw.githubusercontent.com/jugstalt/gview5/master/content/img/gview5-explorer1.png)
+<img width="905" alt="image" src="https://github.com/jugstalt/gview5/assets/26577522/43aa1edb-6740-442a-b99f-d7dbfb9d9a36">
 
 Browse your spatial data or copy vector data to different data formats
 
-![alt text](https://raw.githubusercontent.com/jugstalt/gview5/master/content/img/gview5-explorer2.png)
-
+<img width="909" alt="image" src="https://github.com/jugstalt/gview5/assets/26577522/225306f2-fb53-4e34-86ef-7e7aef21ba9a">
 
 ## gView Server
 
 A map server that exports gView Carto map as *GeoServices REST*, *ArcXML*, *WMS*, *WFS*, *WMTS* services
 
-![alt text](https://raw.githubusercontent.com/jugstalt/gview5/master/content/img/gview5-server1.png)
+<img width="908" alt="image" src="https://github.com/jugstalt/gview5/assets/26577522/650b0956-f34c-4932-b246-9c5504379a58">
 
 Manage the services and check the service status (running, stopped, error)
 
-![alt text](https://raw.githubusercontent.com/jugstalt/gview5/master/content/img/gview5-server2.png)
+<img width="908" alt="image" src="https://github.com/jugstalt/gview5/assets/26577522/efabd6ec-a12e-40f5-b0fe-e9eccd51f096">
 
 Set the security for a service or for a folder (group of services)
 
-![alt text](https://raw.githubusercontent.com/jugstalt/gview5/master/content/img/gview5-server3.png)
+<img width="749" alt="image" src="https://github.com/jugstalt/gview5/assets/26577522/65e5fdcd-1a6a-46c5-9442-d86ef0cb6433">
 
 Publish services by uploading gView Carto map projects
 
-![alt text](https://raw.githubusercontent.com/jugstalt/gview5/master/content/img/gview5-server4.png)
+<img width="863" alt="image" src="https://github.com/jugstalt/gview5/assets/26577522/b29d4157-4c66-42e0-afc0-8e3722f69482">
 
 Browse the services via the GeoServices Rest API in YAML or JSON
 
-![alt text](https://raw.githubusercontent.com/jugstalt/gview5/master/content/img/gview5-server5.png)
+<img width="885" alt="image" src="https://github.com/jugstalt/gview5/assets/26577522/4e603d45-88f1-4c84-a91e-b063a2c03783">
+
 
 
