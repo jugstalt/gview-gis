@@ -6,7 +6,9 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\gView.Cmd.ElasticSearch.Lib\gView.Cmd.ElasticSearch.Lib.csproj" />
     <ProjectReference Include="..\..\gView.Cmd.Fdb.Lib\gView.Cmd.Fdb.Lib.csproj" />
+    <ProjectReference Include="..\..\gView.Cmd.LuceneServer.Lib\gView.Cmd.LuceneServer.Lib.csproj" />
     <ProjectReference Include="..\..\gView.Cmd.MxlUtil.Lib\gView.Cmd.MxlUtil.Lib.csproj" />
     <ProjectReference Include="..\..\gView.Cmd.TileCache.Lib\gView.Cmd.TileCache.Lib.csproj" />
     <ProjectReference Include="..\..\gView.CopyFeatureclass.Lib\gView.CopyFeatureclass.Lib.csproj" />
