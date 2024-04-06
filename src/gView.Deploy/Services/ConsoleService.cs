@@ -69,15 +69,20 @@ class ConsoleService
         }
     }
 
-    public bool DoYouWantToContinue()
+    public bool DoYouWantToContinue() => DoYouWant("to continue");
+
+    public bool DoYouWant(string prompt, char defaultInput = 'Y')
     {
-        Console.Write("Do you want to continue Y/N [Y]");
+        Console.Write($"Do you want {prompt}? Y/N [{defaultInput.ToString().ToUpper()}]");
 
         while (true)
         {
             var input = Console.ReadLine();
 
-            if (string.IsNullOrEmpty(input) || input.Trim().ToLower() == "y")
+            if (string.IsNullOrEmpty(input))
+                input = defaultInput.ToString();
+
+            if (input.Trim().ToLower() == "y")
             {
                 return true;
             }

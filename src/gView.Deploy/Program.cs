@@ -45,6 +45,18 @@ try
         repoService.CreateProfile(profile);
     }
 
+    if (consoleService.DoYouWant("to download latetest version from GitHub"))
+    {
+        var githubReleaseService = new GitHubReleaseService("jugstalt", "gview5");
+
+        foreach(var url in await githubReleaseService.GetReleaseDownloadUrlsAsync())
+        {
+            Console.WriteLine(url); 
+        }
+        Console.WriteLine("Download not implementet! Comming soon. Please download laytest Versions manually...");
+        Console.WriteLine();
+    }
+
     if (String.IsNullOrEmpty(version))
     {
         version = consoleService.ChooseFrom(versionService.GetVersions(AppName.Server).Take(5), "version");
@@ -106,15 +118,15 @@ try
                 "",
                 deployVersionModel.ProfileTargetInstallationPath(profile, version)
              );
-
-        Console.WriteLine("Overrides");
-        versionService.CopyOverrides(profile, "server", Path.Combine(deployVersionModel.ProfileTargetInstallationPath(profile, version)), deployVersionModel);
-        versionService.CopyOverrides(profile, "web", Path.Combine(deployVersionModel.ProfileTargetInstallationPath(profile, version)), deployVersionModel);
     }
     else
     {
         consoleService.WriteBlock("Warning: version already deployed");
     }
+
+    Console.WriteLine("Overrides");
+    versionService.CopyOverrides(profile, "server", Path.Combine(deployVersionModel.ProfileTargetInstallationPath(profile, version)), deployVersionModel);
+    versionService.CopyOverrides(profile, "web", Path.Combine(deployVersionModel.ProfileTargetInstallationPath(profile, version)), deployVersionModel);
 }
 catch (Exception ex)
 {
