@@ -1,17 +1,14 @@
-﻿using gView.Framework.Core.Common;
-using gView.Framework.DataExplorer.Abstraction;
-using gView.Framework.DataExplorer.Services.Abstraction;
-using System.Threading.Tasks;
-using System;
-using gView.DataExplorer.Razor.Components.Dialogs.Models;
+﻿using gView.Cmd.Core.Abstraction;
 using gView.Cmd.TileCache.Lib;
-using gView.Server.Models;
-using System.Collections.Generic;
-using gView.Cmd.Core.Abstraction;
+using gView.DataExplorer.Razor.Components.Dialogs.Models;
 using gView.Framework.Blazor;
 using gView.Framework.Common;
-using LiteDB.Engine;
-using gView.Blazor.Core.Extensions;
+using gView.Framework.Core.Common;
+using gView.Framework.DataExplorer.Abstraction;
+using gView.Framework.DataExplorer.Services.Abstraction;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace gView.DataExplorer.Plugins.ExplorerToolCommands;
 
@@ -31,9 +28,9 @@ public class ClipCompactTileCache : IExplorerToolCommand
                                 "Clip Tile Cache",
                                 new ClipTileCacheModel());
 
-        if(model is null) return false;
+        if (model is null) return false;
 
-        if(model.Clipper is null)
+        if (model.Clipper is null)
         {
             throw new ArgumentException("Clipper featureclass is required");
         }
@@ -58,7 +55,7 @@ public class ClipCompactTileCache : IExplorerToolCommand
             { "clipper-query", model.ClipperDefinitionQuery }
         };
 
-        if(model.ClipType == TileCacheClipType.Copy)
+        if (model.ClipType == TileCacheClipType.Copy)
         {
             parameters.Add("target-folder", model.TargetCacheFolder);
             parameters.Add("jpeg-qual", model.JpegQuality);

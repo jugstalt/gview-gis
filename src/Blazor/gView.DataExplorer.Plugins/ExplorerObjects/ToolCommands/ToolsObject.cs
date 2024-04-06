@@ -1,7 +1,8 @@
 ﻿using gView.DataExplorer.Plugins.ExplorerObjects.Base;
+using gView.Framework.Common;
 using gView.Framework.Core.Common;
 using gView.Framework.DataExplorer.Abstraction;
-using gView.Framework.Common;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace gView.DataExplorer.Plugins.ExplorerObjects.ToolCommands;
@@ -51,9 +52,13 @@ internal class ToolsObject : ExplorerParentObject,
 
         var pluginManager = new PlugInManager();
 
-        foreach (var toolCommand in pluginManager.GetPluginInstances(typeof(IExplorerToolCommand)))
+        foreach (var toolCommand in pluginManager
+                                        .GetPluginInstances(typeof(IExplorerToolCommand))
+                                        .Where(p => p is IExplorerToolCommand)
+                                        .Select(p => (IExplorerToolCommand)p)
+                                        .OrderBy(p => p.Name))
         {
-            AddChildObject(new ToolObject(this, (IExplorerToolCommand)toolCommand));
+            AddChildObject(new ToolObject(this, toolCommand));
         }
 
         return true;

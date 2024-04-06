@@ -40,7 +40,7 @@ internal class DeployVersionService
         _ioService = ioService;
 
         _versionsDirectory =
-            Path.Combine(_deployRepositoryService.RepositoryRootDirectoryInfo().Parent.FullName, "download");
+            Path.Combine(_deployRepositoryService.RepositoryRootDirectoryInfo().Parent!.FullName, "download");
     }
 
     public IEnumerable<string> GetVersions(AppName appName)
