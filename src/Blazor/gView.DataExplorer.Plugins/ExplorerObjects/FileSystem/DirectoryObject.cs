@@ -3,6 +3,7 @@ using gView.Blazor.Core.Exceptions;
 using gView.DataExplorer.Core.Extensions;
 using gView.DataExplorer.Core.Services;
 using gView.DataExplorer.Plugins.ExplorerObjects.Base;
+using gView.DataExplorer.Plugins.ExplorerObjects.Fdb.ContextTools;
 using gView.DataExplorer.Razor.Components.Dialogs.Models;
 using gView.Framework.Common;
 using gView.Framework.Core.Common;
@@ -25,15 +26,19 @@ public class DirectoryObject : ExplorerParentObject<IExplorerObject>,
                                ISerializableExplorerObject,
                                IExplorerObjectDeletable,
                                IExplorerObjectRenamable,
-                               IExplorerObjectCreatable
+                               IExplorerObjectCreatable,
+                               IExplorerObjectContextTools
 {
     string _path = "";
+    private IEnumerable<IExplorerObjectContextTool>? _contextTools = null;
 
     public DirectoryObject() : base() { }
     public DirectoryObject(IExplorerObject parent, string path)
         : base(parent, 1)
     {
         _path = path;
+
+        _contextTools = [new UploadFiles()];
     }
 
     #region IExplorerObject Members
@@ -125,6 +130,12 @@ public class DirectoryObject : ExplorerParentObject<IExplorerObject>,
     }
 
     public override bool RequireRefresh() => true; // always refresh directory if requestest
+
+    #endregion
+
+    #region IExplorerObjectContextTools
+
+    public IEnumerable<IExplorerObjectContextTool> ContextTools => _contextTools ?? [];
 
     #endregion
 
