@@ -156,7 +156,14 @@ namespace gView.Framework.Common
 
             if (error.Length > 0)
             {
+                Console.WriteLine("PluginManager init errors:");
+                Console.WriteLine(error);
+                
                 //throw new Exception("PluginMananger.Init() " + Environment.NewLine + error.ToString());
+            } 
+            else
+            {
+                Console.WriteLine("Parsing for plugins finished without errors");
             }
 
             OnParseAssembly?.Invoke(null);

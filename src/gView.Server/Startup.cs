@@ -205,6 +205,7 @@ namespace gView.Server
                 //app.UseHsts();
             }
 
+            app.UseGViewServerBasePath();
             // Hack: app.UseForwardedHeaders() ... not working
             app.UseMiddleware<XForwardedMiddleware>();
             app.UseMiddleware<ArcMapPathDoubleSlashesMiddleware>();

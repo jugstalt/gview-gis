@@ -14,9 +14,26 @@ static internal class WebApplicationExtensions
         {
             app.UseAuthentication();
             app.UseAuthorization();
+        } 
+        else
+        {
+            //app.UseAuthentication();
+            app.UseAuthorization();
         }
 
         return app;
     }
+
+    static public IApplicationBuilder UseGViewWebBasePath(this WebApplication app)
+    {
+        var basePath = Environment.GetEnvironmentVariable("GVIEW_WEB_BASE_PATH");
+        if (!String.IsNullOrEmpty(basePath))
+        {
+            app.UsePathBase(basePath);
+            Console.WriteLine($"Info: Set Base Path: {basePath}"); ;
+        }
+
+        return app;
+    }
+
 }
- 

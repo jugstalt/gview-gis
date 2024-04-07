@@ -84,6 +84,7 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
+app.UseGViewWebBasePath();
 app.UseHttpsRedirection();
 
 app.UseStaticFiles();
@@ -92,7 +93,7 @@ app.UseAntiforgery();
 app.AddAuth(builder.Configuration);
 
 app.MapRazorComponents<App>()
-    .AddInteractiveServerRenderMode();
+   .AddInteractiveServerRenderMode();
 
 gView.GraphicsEngine.Current.UseSecureDisposingOnUserInteractiveUIs = true;
 

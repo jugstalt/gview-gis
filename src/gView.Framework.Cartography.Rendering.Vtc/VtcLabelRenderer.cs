@@ -8,24 +8,24 @@ using gView.Framework.Core.Symbology;
 using gView.Framework.Symbology.Vtc;
 using gView.Framework.Symbology.Vtc.Extensions;
 using gView.GraphicsEngine;
-using System.Security.Cryptography;
 
 namespace gView.Framework.Cartography.Rendering.Vtc;
 
+[RegisterPlugIn("D7C97FE9-33D0-4A4A-9443-A042364AE8E1", usage: PluginUsage.Internal)]  // internal => not register in pluginmanager
 public class VtcLabelRenderer : SimpleLabelRenderer
 {
     private VtcStyleFilter? _filter = null;
     private PaintSymbol _paintSymbol;
 
-    public VtcLabelRenderer(PaintSymbol paintSymbol) 
-        : base() 
-    { 
+    public VtcLabelRenderer(PaintSymbol paintSymbol)
+        : base()
+    {
         _paintSymbol = paintSymbol;
         base.TextSymbol = _paintSymbol.TextSymbol;
     }
 
     protected VtcLabelRenderer(PaintSymbol paintSymbol, ITextSymbol? textSymbol, string fieldname)
-        : base(textSymbol, fieldname) 
+        : base(textSymbol, fieldname)
     {
         _paintSymbol = paintSymbol;
     }
@@ -85,18 +85,18 @@ public class VtcLabelRenderer : SimpleLabelRenderer
                     display,
                     feature);
 
-            if(spacingSize>0)
+            if (spacingSize > 0)
             {
                 spacing.SymbolSpacingType = SymbolSpacingType.BoundingBox;
                 spacing.SymbolSpacingX = spacing.SymbolSpacingY = spacingSize;
-            } 
+            }
             else
             {
                 spacing.SymbolSpacingType = SymbolSpacingType.None;
             }
         }
 
-        if(textSymbol is IFontColor fontColor)
+        if (textSymbol is IFontColor fontColor)
         {
             fontColor.FontColor =
                 _paintSymbol.GetValueOrDeafult(GLStyleProperties.TextColor, fontColor.FontColor, display, feature);
@@ -108,8 +108,8 @@ public class VtcLabelRenderer : SimpleLabelRenderer
 
             var fontSize =
                 _paintSymbol.GetValueOrDeafult(GLStyleProperties.TextSize, fontSymbol.Font.Size, display, feature);
-            
-            if (fontSize != fontSymbol.Font.Size 
+
+            if (fontSize != fontSymbol.Font.Size
                 || !fontNames.Contains(fontSymbol.Font.Name))
             {
                 // only if differs
