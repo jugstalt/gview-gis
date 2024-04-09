@@ -1,7 +1,7 @@
-﻿#if DEBUG
+﻿
 using gView.Deploy.Extensions;
 using gView.Deploy.Services;
-
+#if DEBUG
 string workDirectory = @"C:\deploy\gview6";
 #else
 string workDirectory = Environment.CurrentDirectory;

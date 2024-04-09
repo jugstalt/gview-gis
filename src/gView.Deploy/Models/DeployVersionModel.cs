@@ -23,7 +23,7 @@ internal class DeployVersionModel
     public string RepositoryPath { get; set; } = "";
 
     [ModelProperty(Prompt = "gView Server online url",
-                   DefaultValue = "http://localhost:5001",
+                   DefaultValue = "http://localhost:5050",
                    Placeholder = "server-url")]
     public string ServerOnlineResource { get; set; } = "";
 }
