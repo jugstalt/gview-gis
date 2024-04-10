@@ -15,7 +15,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Configuration.AddJsonFile("_config/gview-web.config", true);
 
 // Add services to the container.
-builder.Services.AddRazorComponents()
+builder.Services
+    .AddRazorComponents()
     .AddInteractiveServerComponents();
 
 builder.Services

@@ -5,6 +5,7 @@ using gView.Web.Services;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
+using Microsoft.Extensions.Options;
 
 namespace gView.Web.Extensions.DependencyInjection;
 
@@ -32,7 +33,10 @@ static public class ServicesExtensions
                     options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
                     options.DefaultChallengeScheme = OpenIdConnectDefaults.AuthenticationScheme;
                 })
-                .AddCookie(CookieAuthenticationDefaults.AuthenticationScheme)
+                .AddCookie(CookieAuthenticationDefaults.AuthenticationScheme, options =>
+                {
+
+                })
                 .AddOpenIdConnect(OpenIdConnectDefaults.AuthenticationScheme,
                     options =>
                 {
@@ -73,20 +77,53 @@ static public class ServicesExtensions
             {
                 config.AddPolicy("gview-admin", policy =>
                     policy.RequireAssertion(context =>
-                            context.User.IsInRoleOrHasRoleClaim(authConfig.RequiredAdminRole))
+                            context.User.IsInRoleOrHasRoleClaim(authConfig.Oidc.RequiredAdminRole))
                     );
 
                 config.AddPolicy("gview-user", policy =>
                         policy.RequireAssertion(context =>
-                            context.User.IsInRoleOrHasRoleClaim(authConfig.RequiredUserRole)
-                            || context.User.IsInRoleOrHasRoleClaim(authConfig.RequiredAdminRole))
+                            context.User.IsInRoleOrHasRoleClaim(authConfig.Oidc.RequiredUserRole)
+                            || context.User.IsInRoleOrHasRoleClaim(authConfig.Oidc.RequiredAdminRole))
                     );
             });
 
             services.AddAppIdentityProvider(config =>
             {
-                config.AdminRoleName = authConfig.RequiredAdminRole;
-                config.UserRoleName = authConfig.RequiredUserRole;
+                config.AdminRoleName = authConfig.Oidc.RequiredAdminRole;
+                config.UserRoleName = authConfig.Oidc.RequiredUserRole;
+            });
+        }
+        else if("forms".Equals(authConfig.Type, StringComparison.OrdinalIgnoreCase)
+            && authConfig.Forms is not null)
+        {
+            services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+                .AddCookie(options =>
+                {
+                    options.Cookie.Name = "gViewWebCookie";
+                    options.LoginPath = "/login-forms";
+                    options.LogoutPath = "/logout-forms";
+                    options.ExpireTimeSpan = TimeSpan.FromMinutes(30);
+                    // Weitere Optionen
+                });
+
+            services.AddAppIdentityProvider(config =>
+            {
+                config.AdminRoleName = AuthConfigModel.FormsClass.AdminRole;
+                config.UserRoleName = AuthConfigModel.FormsClass.UserRole;
+            });
+
+            services.AddAuthorization(config =>
+            {
+                config.AddPolicy("gview-admin", policy =>
+                    policy.RequireAssertion(context =>
+                            context.User.IsInRoleOrHasRoleClaim(AuthConfigModel.FormsClass.AdminRole))
+                    );
+                 
+                config.AddPolicy("gview-user", policy =>
+                        policy.RequireAssertion(context =>
+                            context.User.IsInRoleOrHasRoleClaim(AuthConfigModel.FormsClass.UserRole)
+                            || context.User.IsInRoleOrHasRoleClaim(AuthConfigModel.FormsClass.AdminRole))
+                    );
             });
         }
         else
@@ -103,8 +140,8 @@ static public class ServicesExtensions
             services
                 .Configure<AppIdentityProviderOptions>((config) =>
                 {
-                    config.AdminRoleName = authConfig.RequiredAdminRole;
-                    config.UserRoleName = authConfig.RequiredUserRole;
+                    config.AdminRoleName = "";
+                    config.UserRoleName = "";
                 })
                 .AddScoped<IAppIdentityProvider, AppLocalIdentityProvider>();
         }

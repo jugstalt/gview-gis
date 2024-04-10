@@ -173,9 +173,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Framework.Cartography
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Deploy", "src\gView.Deploy\gView.Deploy.csproj", "{5FDE2AA3-D664-4EF1-90DC-E1FF17E0A53C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gView.Cmd.LuceneServer.Lib", "src\gView.Cmd.LuceneServer.Lib\gView.Cmd.LuceneServer.Lib.csproj", "{EA89A48E-9DEC-4D62-93D9-58B5B90B0ECB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Cmd.LuceneServer.Lib", "src\gView.Cmd.LuceneServer.Lib\gView.Cmd.LuceneServer.Lib.csproj", "{EA89A48E-9DEC-4D62-93D9-58B5B90B0ECB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gView.Cmd.ElasticSearch.Lib", "src\gView.Cmd.ElasticSearch.Lib\gView.Cmd.ElasticSearch.Lib.csproj", "{8204855E-470E-4A15-A368-E205E5C803ED}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Cmd.ElasticSearch.Lib", "src\gView.Cmd.ElasticSearch.Lib\gView.Cmd.ElasticSearch.Lib.csproj", "{8204855E-470E-4A15-A368-E205E5C803ED}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
