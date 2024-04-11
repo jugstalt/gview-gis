@@ -102,7 +102,7 @@ static public class ServicesExtensions
                     options.Cookie.Name = "gViewWebCookie";
                     options.LoginPath = "/login-forms";
                     options.LogoutPath = "/logout-forms";
-                    options.ExpireTimeSpan = TimeSpan.FromMinutes(30);
+                    options.ExpireTimeSpan = TimeSpan.FromDays(1);
                     // Weitere Optionen
                 });
 

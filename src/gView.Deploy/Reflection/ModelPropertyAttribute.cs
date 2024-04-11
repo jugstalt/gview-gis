@@ -1,5 +1,12 @@
 ﻿namespace gView.Deploy.Reflection;
 
+public enum PropertyFormat
+{
+    Normal,
+    Hash256,
+    Hash512
+}
+
 internal class ModelPropertyAttribute : Attribute
 {
     public string Prompt { get; set; } = String.Empty;
@@ -11,4 +18,6 @@ internal class ModelPropertyAttribute : Attribute
 
     public string RegexPattern { get; set; } = String.Empty;
     public string RegexNotMatchMessage { get; set; } = String.Empty;
+
+    public PropertyFormat PropertyFormat { get; set;} = PropertyFormat.Normal;
 }

@@ -1,5 +1,6 @@
 ﻿using gView.Deploy.Extensions;
 using gView.Deploy.Reflection;
+using gView.Security.Extensions;
 using System.Reflection;
 using System.Text.RegularExpressions;
 
@@ -133,6 +134,13 @@ class ConsoleService
                                     continue;
                                 }
                             }
+
+                            val = modelPropertyAttr.PropertyFormat switch
+                            {
+                                PropertyFormat.Hash256 => val.ToSha256Hash(),
+                                PropertyFormat.Hash512 => val.ToSha512Hash(),   
+                                _ => val
+                            };
 
                             property.SetValue(model, val, null);
                             hasChanged = true;

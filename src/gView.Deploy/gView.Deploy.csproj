@@ -26,4 +26,8 @@
     <Folder Include="Resources\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\gView.Security\gView.Security.csproj" />
+  </ItemGroup>
+
 </Project>

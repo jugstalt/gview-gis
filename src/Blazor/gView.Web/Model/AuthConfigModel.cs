@@ -25,11 +25,15 @@ public class AuthConfigModel
         public const string AdminRole = "gview-admin";
         public const string UserRole = "gview-user";
 
-        public string AdminUser { get; set; } = "";
-        public string AdminPassword { get; set; } = "";
+        public FormUser[]? AdminUsers { get; set; } = null;
+        public FormUser[]? CartoUsers { get; set; } = null;
 
-        public string User { get; set; } = "";
-        public string Password { get; set; } = "";
+        public class FormUser
+        {
+            public string Username { get; set; } = "";
+            public string PasswordHash { get; set; } = "";
+            public string[]? Roles { get; set; } = null;
+        }
     }
 
     #endregion
