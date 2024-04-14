@@ -8,21 +8,15 @@ namespace gView.Framework.Core.Carto
         event MapScaleChangedEvent MapScaleChanged;
         event RenderOverlayImageEvent RenderOverlayImage;
 
-        IEnvelope Envelope
-        {
-            get;
-        }
-        IEnvelope Limit
-        {
-            get;
-            set;
-        }
+        IEnvelope Envelope{ get; }
+        IEnvelope Limit { get; set; }
         void ZoomTo(IEnvelope envelope);
 
         double ReferenceScale { get; set; }
         double MapScale { get; set; }
 
         float WebMercatorScaleLevel { get; }
+        WebMercatorScaleBehavoir WebMercatorScaleBehavoir { get; set; }
 
         int ImageWidth { get; set; }
         int ImageHeight { get; set; }
@@ -36,26 +30,14 @@ namespace gView.Framework.Core.Carto
         GraphicsEngine.ArgbColor BackgroundColor { get; set; }
         GraphicsEngine.ArgbColor TransparentColor { get; set; }
 
-        bool MakeTransparent
-        {
-            get;
-            set;
-        }
+        bool MakeTransparent { get; set;}
 
         void World2Image(ref double x, ref double y);
         void Image2World(ref double x, ref double y);
 
-        ISpatialReference SpatialReference
-        {
-            get;
-            set;
-        }
+        ISpatialReference SpatialReference { get; set; }
 
-        IGeometricTransformer GeometricTransformer
-        {
-            get;
-            set;
-        }
+        IGeometricTransformer GeometricTransformer { get; set; }
 
         void Draw(ISymbol symbol, IGeometry geometry);
         void DrawOverlay(IGraphicsContainer container, bool clearOld);
@@ -71,9 +53,6 @@ namespace gView.Framework.Core.Carto
         IScreen Screen { get; }
         IMap Map { get; }
 
-        IDisplayTransformation DisplayTransformation
-        {
-            get;
-        }
+        IDisplayTransformation DisplayTransformation { get; }
     }
 }

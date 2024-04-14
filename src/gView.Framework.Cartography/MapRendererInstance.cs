@@ -112,7 +112,7 @@ public class MapRendererInstance : Map, IMapRenderer
 
                 #region Start Drawing/Initialisierung
 
-                ZoomTo(m_actMinX, m_actMinY, m_actMaxX, m_actMaxY);
+                ZoomTo(_actMinX, _actMinY, _actMaxX, _actMaxY);
 
                 if (cancelTracker == null)
                 {

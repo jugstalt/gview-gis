@@ -13,6 +13,9 @@ namespace gView.Framework.Geometry
 
     public class SpatialReference : ISpatialReference
     {
+        public const int EpsgWgs84 = 4326;
+        public const int EpsgWebMercator = 3857;
+
         private string _ID, _params, _description;
         private IGeodeticDatum _datum = null;
         private SpatialParameters _sParams = new SpatialParameters();

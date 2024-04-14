@@ -353,7 +353,7 @@ namespace gView.Server.AppCode
                 return true;
             }
 
-            this.ZoomTo(m_actMinX, m_actMinY, m_actMaxX, m_actMaxY);
+            this.ZoomTo(_actMinX, _actMinY, _actMaxX, _actMaxY);
 
             if (cancelTracker == null)
             {

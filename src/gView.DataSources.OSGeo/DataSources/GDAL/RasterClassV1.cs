@@ -5,7 +5,7 @@ using gView.Framework.Core.Geometry;
 using gView.Framework.Core.IO;
 using gView.Framework.Core.Common;
 using gView.Framework.Geometry;
-using gView.Framework.Geometry.Extesnsions;
+using gView.Framework.Geometry.Extensions;
 using gView.Framework.Calc.LinAlg;
 using gView.GraphicsEngine;
 using System;

@@ -1,7 +1,7 @@
 ﻿using gView.Framework.Core.Geometry;
 using System.IO;
 
-namespace gView.Framework.Geometry.Extesnsions
+namespace gView.Framework.Geometry.Extensions
 {
 
     static public class FileExtensions

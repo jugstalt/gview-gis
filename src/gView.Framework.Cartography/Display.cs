@@ -5,6 +5,7 @@ using gView.Framework.Core.Geometry;
 using gView.Framework.Core.Symbology;
 using gView.Framework.Data.Metadata;
 using gView.Framework.Geometry;
+using gView.Framework.Geometry.Extensions;
 using System;
 
 namespace gView.Framework.Cartography
@@ -16,13 +17,13 @@ namespace gView.Framework.Cartography
 
         #region Variablen
 
-        protected double m_maxX, m_maxY, m_minX, m_minY;
-        protected double m_actMinX = -10, m_actMinY = -10, m_actMaxX = 10, m_actMaxY = 10;
-        protected int m_iWidth, m_iHeight, m_fixScaleIndex;
-        protected double m_dpm = 96.0 / 0.0254;  // dots per [m]... 96 dpi werden angenommen
-        protected double m_scale;
-        protected bool m_extentChanged;
-        protected double m_fontsizeFactor, m_widthFactor, m_refScale;
+        protected double _maxX, _maxY, _minX, _minY;
+        protected double _actMinX = -10, _actMinY = -10, _actMaxX = 10, _actMaxY = 10;
+        protected int _imageWidth, _imageHeight, m_fixScaleIndex;
+        protected double _dpm = 96.0 / 0.0254;  // dots per [m]... 96 dpi werden angenommen
+        protected double _scale;
+        protected bool _extentChanged;
+        protected double _fontsizeFactor, _widthFactor, _refScale;
         //protected ArrayList m_fixScales;
         public GraphicsEngine.Abstraction.IBitmap _bitmap = null;
         public GraphicsEngine.Abstraction.ICanvas _canvas = null;
@@ -44,8 +45,8 @@ namespace gView.Framework.Cartography
         {
             Map = map;
 
-            m_extentChanged = true;
-            m_fontsizeFactor = m_widthFactor = m_refScale = -1.0;
+            _extentChanged = true;
+            _fontsizeFactor = _widthFactor = _refScale = -1.0;
             //m_fixScales=new ArrayList();
 
             _labelEngine = new LabelEngine2();
@@ -59,8 +60,8 @@ namespace gView.Framework.Cartography
         internal Display(IMap map, bool createLabelEngine)
             : this(map)
         {
-            m_extentChanged = true;
-            m_fontsizeFactor = m_widthFactor = m_refScale = -1.0;
+            _extentChanged = true;
+            _fontsizeFactor = _widthFactor = _refScale = -1.0;
             //m_fixScales = new ArrayList();
 
             _labelEngine = createLabelEngine ? new LabelEngine2() : null;
@@ -71,8 +72,8 @@ namespace gView.Framework.Cartography
             //x=(x-m_actMinX)*m_iWidth/_wWidth;
             //y=m_iHeight-(y-m_actMinY)*m_iHeight/_wHeight;
 
-            x = (x - m_actMinX) * m_iWidth / (m_actMaxX - m_actMinX);
-            y = m_iHeight - (y - m_actMinY) * m_iHeight / (m_actMaxY - m_actMinY);
+            x = (x - _actMinX) * _imageWidth / (_actMaxX - _actMinX);
+            y = _imageHeight - (y - _actMinY) * _imageHeight / (_actMaxY - _actMinY);
 
             x += _OX;
             //y -= _OX;
@@ -94,8 +95,8 @@ namespace gView.Framework.Cartography
             x -= _OX;
             y -= _OY;
 
-            x = x * (m_actMaxX - m_actMinX) / m_iWidth + m_actMinX;
-            y = (m_iHeight - y) * (m_actMaxY - m_actMinY) / m_iHeight + m_actMinY;
+            x = x * (_actMaxX - _actMinX) / _imageWidth + _actMinX;
+            y = (_imageHeight - y) * (_actMaxY - _actMinY) / _imageHeight + _actMinY;
         }
 
         public GraphicsEngine.Abstraction.ICanvas Canvas
@@ -224,29 +225,29 @@ namespace gView.Framework.Cartography
 
         public int ImageWidth
         {
-            get { return m_iWidth; }
-            set { m_iWidth = value; }
+            get { return _imageWidth; }
+            set { _imageWidth = value; }
         }
         public int ImageHeight
         {
-            get { return m_iHeight; }
-            set { m_iHeight = value; }
+            get { return _imageHeight; }
+            set { _imageHeight = value; }
         }
 
         public IEnvelope Limit
         {
             get
             {
-                return new Envelope(m_minX, m_minY, m_maxX, m_maxY);
+                return new Envelope(_minX, _minY, _maxX, _maxY);
             }
             set
             {
                 if (value != null)
                 {
-                    m_minX = value.MinX;
-                    m_minY = value.MinY;
-                    m_maxX = value.MaxX;
-                    m_maxY = value.MaxY;
+                    _minX = value.MinX;
+                    _minY = value.MinY;
+                    _maxX = value.MaxX;
+                    _maxY = value.MaxY;
                 }
             }
         }
@@ -254,43 +255,43 @@ namespace gView.Framework.Cartography
         {
             get
             {
-                return _mapUnits == GeoUnits.Unknown ? 0.0 : m_refScale;
+                return _mapUnits == GeoUnits.Unknown ? 0.0 : _refScale;
             }
             set
             {
-                m_refScale = value;
-                if (m_refScale > 0.0)
+                _refScale = value;
+                if (_refScale > 0.0)
                 {
-                    m_widthFactor = m_fontsizeFactor = m_refScale / Math.Max(m_scale, 1.0);
+                    _widthFactor = _fontsizeFactor = _refScale / Math.Max(_scale, 1.0);
                 }
                 else
                 {
-                    m_widthFactor = m_fontsizeFactor = -1;
+                    _widthFactor = _fontsizeFactor = -1;
                 }
             }
         }
 
         public double Dpm
         {
-            get { return m_dpm; }
+            get { return _dpm; }
         }
         public double Dpi
         {
             get { return Dpm * 0.0254; }
-            set { m_dpm = value / 0.0254; }
+            set { _dpm = value / 0.0254; }
         }
         public IEnvelope Envelope
         {
             get
             {
-                return new Envelope(m_actMinX, m_actMinY, m_actMaxX, m_actMaxY);
+                return new Envelope(_actMinX, _actMinY, _actMaxX, _actMaxY);
             }
             set
             {
-                m_actMinX = value.MinX;
-                m_actMinY = value.MinY;
-                m_actMaxX = value.MaxX;
-                m_actMaxY = value.MaxY;
+                _actMinX = value.MinX;
+                _actMinY = value.MinY;
+                _actMaxX = value.MaxX;
+                _actMaxY = value.MaxY;
             }
         }
 
@@ -326,11 +327,16 @@ namespace gView.Framework.Cartography
             double phi = 0.0;
             if (_mapUnits == GeoUnits.DecimalDegrees)
             {
-                phi = Math.Min(90.0, m_actMaxY) * 0.5 + Math.Max(-90.0, m_actMinY) * 0.5;
+                phi = Math.Min(90.0, _actMaxY) * 0.5 + Math.Max(-90.0, _actMinY) * 0.5;
+            }
+            else if(this.SpatialReference.IsWebMercator() 
+                && WebMercatorScaleBehavoir == WebMercatorScaleBehavoir.ApplyLatitudeCosPhi)
+            {
+                phi = this.Envelope.Center.WebMercatorToGeographic().Y;
             }
 
-            double w = Math.Abs(m_actMaxX - m_actMinX);
-            double h = Math.Abs(m_actMaxY - m_actMinY);
+            double w = Math.Abs(_actMaxX - _actMinX);
+            double h = Math.Abs(_actMaxY - _actMinY);
 
             GeoUnitConverter converter = new GeoUnitConverter();
             double dpu = converter.Convert(1.0, GeoUnits.Meters, _mapUnits, 1, phi);
@@ -340,30 +346,6 @@ namespace gView.Framework.Cartography
             double scale = ImageWidth > 0 && ImageHeight > 0 ? Math.Max(s1, s2) : Math.Max(MapScale, 1);
 
             return scale;
-
-            #region Old
-            /*
-            double phi1 = 0.0, phi2 = 0.0;
-            if (_mapUnits == GeoUnits.DecimalDegrees)
-            {
-                phi1 = Math.Abs(m_actMinY);
-                phi2 = Math.Abs(m_actMaxY);
-            }
-
-            double w = Math.Abs(m_actMaxX - m_actMinX);
-            double h = Math.Abs(m_actMaxY - m_actMinY);
-
-            GeoUnitConverter converter = new GeoUnitConverter();
-            double Wm = converter.Convert(w, _mapUnits, GeoUnits.Meters, 1, Math.Min(phi1, phi2));
-            double Hm = converter.Convert(h, _mapUnits, GeoUnits.Meters);
-
-            double s1 = Math.Abs(Wm) / iWidth * dpm;
-            double s2 = Math.Abs(Hm) / iHeight * dpm;
-            double scale = Math.Max(s1, s2);
-
-            return scale;
-            */
-            #endregion
         }
 
         private void CalcExtent(double scale, double cx, double cy)
@@ -371,7 +353,12 @@ namespace gView.Framework.Cartography
             double phi = 0.0;
             if (_mapUnits == GeoUnits.DecimalDegrees)
             {
-                phi = m_actMaxY * 0.5 + m_actMinY * 0.5;
+                phi = _actMaxY * 0.5 + _actMinY * 0.5;
+            }
+            else if (this.SpatialReference.IsWebMercator()
+                && WebMercatorScaleBehavoir == WebMercatorScaleBehavoir.ApplyLatitudeCosPhi)
+            {
+                phi = this.Envelope.Center.WebMercatorToGeographic().Y;
             }
 
             GeoUnitConverter converter = new GeoUnitConverter();
@@ -380,31 +367,10 @@ namespace gView.Framework.Cartography
             double w = ImageWidth / Dpm * scale; w *= dpu;
             double h = ImageHeight / Dpm * scale; h *= dpu;
 
-            m_actMinX = cx - w * 0.5;
-            m_actMaxX = cx + w * 0.5;
-            m_actMinY = cy - h * 0.5;
-            m_actMaxY = cy + h * 0.5;
-
-            #region Old
-            /*
-            double Wm = (iWidth / dpm) * scale;
-            double Hm = (iHeight / dpm) * scale;
-
-            double phi = 0.0;
-            if (_mapUnits == GeoUnits.DecimalDegrees)
-            {
-                phi = m_actMaxY * 0.5 + m_actMinY * 0.5;
-            }
-            GeoUnitConverter converter = new GeoUnitConverter();
-            double w = converter.Convert(Wm, GeoUnits.Meters, _mapUnits, 1, phi);
-            double h = converter.Convert(Hm, GeoUnits.Meters, _mapUnits);
-
-            m_actMinX = cx - w * 0.5;
-            m_actMaxX = cx + w * 0.5;
-            m_actMinY = cy - h * 0.5;
-            m_actMaxY = cy + h * 0.5;
-             * */
-            #endregion
+            _actMinX = cx - w * 0.5;
+            _actMaxX = cx + w * 0.5;
+            _actMinY = cy - h * 0.5;
+            _actMaxY = cy + h * 0.5;
         }
 
         #endregion
@@ -419,59 +385,7 @@ namespace gView.Framework.Cartography
             }
 
             CalcExtent(scale, cx, cy);
-            m_scale = scale;
-
-            #region old
-            /*
-			m_scale=scale;
-			double w=(iWidth/dpm)*scale;
-			double h=(iHeight/dpm)*scale;
-			double maxW=m_maxX-m_minX,
-				maxH=m_maxY-m_minY;
-			double m_old_actMinX=m_actMinX,
-				m_old_actMaxX=m_actMaxX,
-				m_old_actMinY=m_actMinY,
-				m_old_actMaxY=m_actMaxY;
-
-			if(maxW<w && (int)maxW>0) 
-			{
-				double CX=m_maxX*0.5+m_minX*0.5;
-				m_actMinX=CX-w*0.5;
-				m_actMaxX=CX+w*0.5;
-			} 
-			else 
-			{
-				m_actMinX=cx-w*0.5;
-				m_actMaxX=cx+w*0.5;
-				if(m_actMinX<m_minX && (int)maxW!=0) { m_actMinX=m_minX; m_actMaxX=m_actMinX+w; }
-				if(m_actMaxX>m_maxX && (int)maxW!=0) { m_actMaxX=m_maxX; m_actMinX=m_actMaxX-w; }
-			}
-			if(maxH<h && (int)maxH>0) 
-			{
-				double CY=m_maxY*0.5+m_minY*0.5;
-				m_actMinY=CY-h*0.5;
-				m_actMaxY=CY+h*0.5;
-			}
-			else
-			{
-				m_actMinY=cy-h*0.5;
-				m_actMaxY=cy+h*0.5;
-				if(m_actMinY<m_minY && (int)maxH>0) { m_actMinY=m_minY; m_actMaxY=m_actMinY+h; }
-				if(m_actMaxY>m_maxY && (int)maxH>0) { m_actMaxY=m_maxY; m_actMinY=m_actMaxY-h; }
-			}
-			if( Math.Abs(m_actMinX-m_old_actMinX)>1e-7 ||
-				Math.Abs(m_actMinY-m_old_actMinY)>1e-7 ||
-				Math.Abs(m_actMaxX-m_old_actMaxX)>1e-7 ||
-				Math.Abs(m_actMaxY-m_old_actMaxY)>1e-7)
-			{  
-				m_extentChanged=true;
-			}
-			if(refScale>0.0) 
-			{
-				m_widthFactor=m_fontsizeFactor=m_refScale/Math.Max(m_scale,1.0);
-			}
-            */
-            #endregion
+            _scale = scale;
 
             if (MapScaleChanged != null)
             {
@@ -480,22 +394,23 @@ namespace gView.Framework.Cartography
         }
         private void SetScale(double scale)
         {
-            double cx = m_actMaxX * 0.5 + m_actMinX * 0.5;
-            double cy = m_actMaxY * 0.5 + m_actMinY * 0.5;
+            double cx = _actMaxX * 0.5 + _actMinX * 0.5;
+            double cy = _actMaxY * 0.5 + _actMinY * 0.5;
 
             SetScale(scale, cx, cy);
         }
 
         public double MapScale
         {
-            get { return m_scale; }
+            get { return _scale; }
             set
             {
                 SetScale(value);
             }
         }
 
-        public float WebMercatorScaleLevel => (float)WebMercatorCalc.Zoom(m_scale);
+        public float WebMercatorScaleLevel => (float)WebMercatorCalc.Zoom(_scale);
+        public WebMercatorScaleBehavoir WebMercatorScaleBehavoir { get; set; } = WebMercatorScaleBehavoir.Default;
 
         public void ZoomTo(double minx, double miny, double maxx, double maxy)
         {
@@ -533,11 +448,11 @@ namespace gView.Framework.Cartography
             dx = Math.Abs(maxx - minx);
             dy = Math.Abs(maxy - miny);
 
-            m_actMinX = cx - dx / 2.0; m_actMaxX = cx + dx / 2.0;
-            m_actMinY = cy - dy / 2.0; m_actMaxY = cy + dy / 2.0;
-            m_scale = CalcScale();
+            _actMinX = cx - dx / 2.0; _actMaxX = cx + dx / 2.0;
+            _actMinY = cy - dy / 2.0; _actMaxY = cy + dy / 2.0;
+            _scale = CalcScale();
 
-            if (m_scale < 1.0)
+            if (_scale < 1.0)
             {
                 SetScale(1.0);
             }
@@ -592,11 +507,11 @@ namespace gView.Framework.Cartography
         
         public void Pan(double px, double py)
         {
-            double cx = m_actMaxX * 0.5 + m_actMinX * 0.5;
-            double cy = m_actMaxY * 0.5 + m_actMinY * 0.5;
+            double cx = _actMaxX * 0.5 + _actMinX * 0.5;
+            double cy = _actMaxY * 0.5 + _actMinY * 0.5;
             cx += px;
             cy += py;
-            SetScale(m_scale, cx, cy);
+            SetScale(_scale, cx, cy);
         }
 
         #endregion
