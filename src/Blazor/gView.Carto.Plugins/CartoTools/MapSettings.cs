@@ -36,10 +36,10 @@ internal class MapSettings : ICartoButton
             return false;
         }
 
-        clone.ZoomTo(original.Display.Envelope);
         clone.Display.ImageWidth = original.Display.ImageWidth;
         clone.Display.ImageHeight = original.Display.ImageHeight;
-
+        clone.ZoomTo(original.Display.Envelope);
+        
         var model = await scope.ShowModalDialog(
                 typeof(gView.Carto.Razor.Components.Dialogs.MapSettingsDialog),
                 "Map Settings",
@@ -64,6 +64,7 @@ internal class MapSettings : ICartoButton
             original.Display.MapUnits = clone.Display.MapUnits;
             original.Display.DisplayUnits = clone.Display.DisplayUnits;
             original.Display.BackgroundColor = clone.Display.BackgroundColor;
+            original.Display.WebMercatorScaleBehavoir = clone.Display.WebMercatorScaleBehavoir;
 
             #endregion
 

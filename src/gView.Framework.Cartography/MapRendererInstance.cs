@@ -42,6 +42,7 @@ public class MapRendererInstance : Map, IMapRenderer
         mapRenderInstance._mapUnits = original.MapUnits;
         mapRenderInstance._displayUnits = original.DisplayUnits;
         mapRenderInstance.ReferenceScale = original.ReferenceScale;
+        mapRenderInstance.WebMercatorScaleBehavoir = original.WebMercatorScaleBehavoir;
 
         mapRenderInstance.SpatialReference = original.Display.SpatialReference;
         mapRenderInstance.LayerDefaultSpatialReference = original.LayerDefaultSpatialReference != null ? original.LayerDefaultSpatialReference.Clone() as ISpatialReference : null;

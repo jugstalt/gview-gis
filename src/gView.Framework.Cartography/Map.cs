@@ -81,6 +81,7 @@ namespace gView.Framework.Cartography
             ReferenceScale = original.Display.ReferenceScale;
             Display.SpatialReference = original.Display.SpatialReference != null ? original.SpatialReference.Clone() as ISpatialReference : null;
             LayerDefaultSpatialReference = original.LayerDefaultSpatialReference != null ? original.LayerDefaultSpatialReference.Clone() as ISpatialReference : null;
+            WebMercatorScaleBehavoir = original.WebMercatorScaleBehavoir;
 
             _toc = new Toc(this); //original.TOC.Clone() as TOC;
 
@@ -1113,6 +1114,7 @@ namespace gView.Framework.Cartography
             //LayerDefaultSpatialReference
             ISpatialReference ldsRef = new SpatialReference();
             LayerDefaultSpatialReference = (ISpatialReference)stream.Load("LayerDefaultSpatialReference", null, ldsRef);
+            WebMercatorScaleBehavoir = (WebMercatorScaleBehavoir)stream.Load("WebMercatorScaleBehavoir", (int)WebMercatorScaleBehavoir.Default);
 
             _layerIDSequece = (IntegerSequence)stream.Load("layerIDSequence", new IntegerSequence(), new IntegerSequence());
 
@@ -1449,6 +1451,7 @@ namespace gView.Framework.Cartography
             {
                 stream.Save("LayerDefaultSpatialReference", LayerDefaultSpatialReference);
             }
+            stream.Save("WebMercatorScaleBehavoir", (int)this.WebMercatorScaleBehavoir);
 
             stream.Save("layerIDSequence", _layerIDSequece);
 

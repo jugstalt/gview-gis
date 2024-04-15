@@ -322,17 +322,20 @@ namespace gView.Framework.Cartography
 
         #region Scale
 
+        private const double DegToRad = Math.PI / 180.0;
+
         private double CalcScale()
         {
-            double phi = 0.0;
+            double phi = 0.0, webMercatorCosPhi = 1.0;
             if (_mapUnits == GeoUnits.DecimalDegrees)
             {
                 phi = Math.Min(90.0, _actMaxY) * 0.5 + Math.Max(-90.0, _actMinY) * 0.5;
             }
-            else if(this.SpatialReference.IsWebMercator() 
+
+            if (this.SpatialReference.IsWebMercator()
                 && WebMercatorScaleBehavoir == WebMercatorScaleBehavoir.ApplyLatitudeCosPhi)
             {
-                phi = this.Envelope.Center.WebMercatorToGeographic().Y;
+                webMercatorCosPhi = Math.Cos(this.Envelope.Center.WebMercatorToGeographic().Y * DegToRad);
             }
 
             double w = Math.Abs(_actMaxX - _actMinX);
@@ -345,20 +348,21 @@ namespace gView.Framework.Cartography
             double s2 = ImageHeight > 0 ? Math.Abs(h) / ImageHeight * Dpm : 1; s2 /= dpu;
             double scale = ImageWidth > 0 && ImageHeight > 0 ? Math.Max(s1, s2) : Math.Max(MapScale, 1);
 
-            return scale;
+            return scale * webMercatorCosPhi;
         }
 
         private void CalcExtent(double scale, double cx, double cy)
         {
-            double phi = 0.0;
+            double phi = 0.0, webMercatorCosPhi = 1.0;
             if (_mapUnits == GeoUnits.DecimalDegrees)
             {
                 phi = _actMaxY * 0.5 + _actMinY * 0.5;
             }
-            else if (this.SpatialReference.IsWebMercator()
+            
+            if (this.SpatialReference.IsWebMercator()
                 && WebMercatorScaleBehavoir == WebMercatorScaleBehavoir.ApplyLatitudeCosPhi)
             {
-                phi = this.Envelope.Center.WebMercatorToGeographic().Y;
+                webMercatorCosPhi = Math.Cos(this.Envelope.Center.WebMercatorToGeographic().Y * DegToRad);
             }
 
             GeoUnitConverter converter = new GeoUnitConverter();
@@ -367,10 +371,10 @@ namespace gView.Framework.Cartography
             double w = ImageWidth / Dpm * scale; w *= dpu;
             double h = ImageHeight / Dpm * scale; h *= dpu;
 
-            _actMinX = cx - w * 0.5;
-            _actMaxX = cx + w * 0.5;
-            _actMinY = cy - h * 0.5;
-            _actMaxY = cy + h * 0.5;
+            _actMinX = (cx - w * 0.5) / webMercatorCosPhi;
+            _actMaxX = (cx + w * 0.5) / webMercatorCosPhi;
+            _actMinY = (cy - h * 0.5) / webMercatorCosPhi;
+            _actMaxY = (cy + h * 0.5) / webMercatorCosPhi;
         }
 
         #endregion
