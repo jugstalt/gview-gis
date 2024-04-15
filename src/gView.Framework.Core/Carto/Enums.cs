@@ -38,6 +38,6 @@ namespace gView.Framework.Core.Carto
     public enum WebMercatorScaleBehavoir
     {
         Default = 0,
-        ApplyLatitudeCosPhi = 1
+        IncludeLatitudeWhenCalculateMapScale = 1
     }
 }
