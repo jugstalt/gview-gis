@@ -51,6 +51,10 @@ namespace gView.Server.Services.MapServer
                     .ToArray();
 
                 TaskQueue = new TaskQueue<IServiceRequestContext>(Options.TaskQueue_MaxThreads, Options.TaskQueue_QueueLength);
+            } 
+            else
+            {
+                logger.Log(LogLevel.Error, "mapserver configuration is invalid (mapserver.json)");
             }
         }
 

@@ -1,84 +1,41 @@
 ﻿using gView.Framework.Common;
+using gView.Server;
 using gView.Server.AppCode;
-using Microsoft.AspNetCore;
-using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System;
-using System.Collections.Generic;
 
-namespace gView.Server
+#region Init the global PluginManager
+
+PlugInManager.Init();
+
+#endregion
+
+#region First Start => init configuration
+
+new Setup().TrySetup(args);
+
+#endregion
+
+var builder = WebApplication.CreateBuilder(args);
+
+builder.Logging.AddConsole();
+builder.Configuration.AddJsonFile(
+            "_config/mapserver.json",
+            optional: true,
+            reloadOnChange: false
+       );
+
+var startup = new Startup(builder.Configuration, builder.Environment);
+
+startup.ConfigureServices(builder.Services);
+var app = builder.Build();
+startup.Configure(app);
+
+foreach (var url in builder.Configuration["urls"]?.Split(';') ?? [])
 {
-    public class Program
-    {
-        public static void Main(string[] args)
-        {
-            try
-            {
-                #region Init the global PluginManager
-
-                PlugInManager.Init();
-
-                #endregion
-
-                #region First Start => init configuration
-
-                new Setup().TrySetup(args);
-
-                #endregion
-
-                CreateHostBuilder(args).Build().Run();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Exiting program:");
-                Console.WriteLine(ex.Message);
-                Console.WriteLine(ex.StackTrace);
-            }
-        }
-
-        public static IWebHostBuilder CreateHostBuilder(string[] args)
-        {
-            var webhostBuilder = WebHost.CreateDefaultBuilder(args)
-                .ConfigureLogging(logging =>
-                {
-                    logging.AddConsole();
-                })
-                .ConfigureAppConfiguration(builder =>
-                {
-                    builder.AddJsonFile("_config/mapserver.json", optional: true, reloadOnChange: false);
-                })
-                .UseStartup<Startup>();
-
-            #region Expose Ports
-
-            List<string> urls = new List<string>();
-            for (int i = 0; i < args.Length - 1; i++)
-            {
-                switch (args[i].ToLower())
-                {
-                    case "-expose-http":
-                        urls.Add("http://localhost:" + int.Parse(args[++i]));
-                        break;
-                    case "-expose-https":
-                        urls.Add("https://localhost:" + int.Parse(args[++i]));
-                        break;
-                }
-            }
-            if (urls.Count > 0)
-            {
-                webhostBuilder = webhostBuilder.UseUrls(urls.ToArray());
-
-                foreach (var url in urls)
-                {
-                    Console.WriteLine($"Exposing: {url}");
-                }
-            }
-
-            #endregion
-
-            return webhostBuilder;
-        }
-    }
+    Console.WriteLine($"Listen to {url}");
 }
+
+app.Run();
