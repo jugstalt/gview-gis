@@ -14,6 +14,9 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Configuration.AddJsonFile("_config/gview-web.config", true);
 
+// Aspire
+builder.AddServiceDefaults();
+
 // Add services to the container.
 builder.Services
     .AddRazorComponents()
@@ -76,6 +79,9 @@ builder.Services.AddMapControlCrsService(config =>
 builder.Services.AddLeafletService();
 
 var app = builder.Build();
+
+// Aspire
+app.MapDefaultEndpoints();
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())

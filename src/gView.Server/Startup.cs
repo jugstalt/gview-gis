@@ -1,4 +1,6 @@
-﻿using gView.Framework.Common;
+﻿using gView.Facilities.Abstraction;
+using gView.Facilities.Extensions.DependencyInjection;
+using gView.Framework.Common;
 using gView.Framework.Common.Extensions;
 using gView.Framework.Core.Common;
 using gView.Framework.IO;
@@ -7,6 +9,7 @@ using gView.Server.AppCode.Configuration;
 using gView.Server.Extensions;
 using gView.Server.Extensions.DependencyInjection;
 using gView.Server.Middleware;
+using gView.Server.Services.Handlers;
 using gView.Server.Services.Hosting;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -184,6 +187,19 @@ namespace gView.Server
 
             services.AddHostedService<TaskQueueDequeueService>();
             services.AddHostedService<TimedHostedBackgroundService>();
+
+            #endregion
+
+            #region Facilities
+
+            services.AddServerFacilities(Configuration);
+
+            #endregion
+
+            #region (Message) Handlers
+
+            services.AddKeyedTransient<IMessageHandler, ReloadMapMessageHandler>(ReloadMapMessageHandler.Name);
+            services.AddKeyedTransient<IMessageHandler, RemoveMapMessageHandler>(RemoveMapMessageHandler.Name);
 
             #endregion
         }

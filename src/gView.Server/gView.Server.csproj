@@ -51,7 +51,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Aspire\gView.ServiceDefaults\gView.ServiceDefaults.csproj" />
     <ProjectReference Include="..\gView.Azure\gView.Azure.csproj" />
+    <ProjectReference Include="..\gView.Facilities\gView.Facilities.csproj" />
     <ProjectReference Include="..\gView.Framework.Cartography.Rendering.Vtc\gView.Framework.Cartography.Rendering.Vtc.csproj" />
     <ProjectReference Include="..\gView.Framework.Cartography.Rendering\gView.Framework.Cartography.Rendering.csproj" />
     <ProjectReference Include="..\gView.Framework.Cartography\gView.Framework.Cartography.csproj" />

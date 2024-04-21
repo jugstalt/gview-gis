@@ -49,5 +49,13 @@
       "path": "\\\\gis3.esn.at\\e$",
       "alias": "E:"
     }
-  ]
+  ],
+
+  "Facilities": {
+    "MessageQueue": {
+      "Type": "messagequeue-net",
+      "ConnectionString": "http://localhost:9091",
+      "Namespace": "development"
+    }
+  }
 }

@@ -203,7 +203,7 @@ public class BrowseServicesController : BaseController
 
                 if (!String.IsNullOrEmpty(folder))
                 {
-                    service = folder + "/" + service;
+                    service = $"{folder}/{service}";
                 }
 
                 if (Request.Form.Files.Count == 0)

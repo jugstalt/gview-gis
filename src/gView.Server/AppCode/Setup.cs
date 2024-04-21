@@ -2,6 +2,7 @@
 using gView.Server.Extensions;
 using System;
 using System.IO;
+using System.Linq;
 
 namespace gView.Server.AppCode
 {
@@ -60,18 +61,28 @@ namespace gView.Server.AppCode
             var fi = new FileInfo(configTemplateFile);
 
             string host = "http://localhost:5000";
-            if (!String.IsNullOrEmpty(args.GetArgumentValue("-expose-https")))
+
+            if(!string.IsNullOrEmpty(args.GetArgumentValue("--urls")))
             {
-                host = $"https://localhost:{args.GetArgumentValue("-expose-https")}";
-            }
-            else if (!String.IsNullOrEmpty(args.GetArgumentValue("-expose-http")))
-            {
-                host = $"http://localhost:{args.GetArgumentValue("-expose-http")}";
+                var urls = args.GetArgumentValue("--urls").Split(';');
+
+                var httpsUrl = urls.Where(u => u.StartsWith("https:")).FirstOrDefault();
+                var httpUrl = urls.Where(u=>u.StartsWith("http:")).FirstOrDefault();
+
+                if (!String.IsNullOrEmpty(httpsUrl))
+                {
+                    host = $"https://localhost:{new Uri(httpsUrl).Port}";
+                }
+                else if (!String.IsNullOrEmpty(httpUrl))
+                {
+                    host = $"http://localhost:{new Uri(httpUrl).Port}";
+                }
             }
 
             var configText = File.ReadAllText(fi.FullName);
 
             var parentDirectory = fi.Directory.Parent.Parent;
+
             if(parentDirectory.Name.Equals(SystemInfo.Version.ToString())) 
             {
                 parentDirectory = parentDirectory.Parent;

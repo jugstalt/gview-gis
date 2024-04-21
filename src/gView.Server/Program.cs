@@ -1,24 +1,20 @@
-﻿using gView.Framework.Common;
 using gView.Server;
-using gView.Server.AppCode;
+using gView.Server.Extensions;
+using gView.Server.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using System;
 
-#region Init the global PluginManager
+var builder = WebApplication
+                    .CreateBuilder(args)
+                    .Setup(args);
 
-PlugInManager.Init();
-
-#endregion
-
-#region First Start => init configuration
-
-new Setup().TrySetup(args);
-
-#endregion
-
-var builder = WebApplication.CreateBuilder(args);
+#if DEBUG
+// Aspire
+builder.AddServiceDefaults();
+#endif
 
 builder.Logging.AddConsole();
 builder.Configuration.AddJsonFile(
@@ -30,12 +26,18 @@ builder.Configuration.AddJsonFile(
 var startup = new Startup(builder.Configuration, builder.Environment);
 
 startup.ConfigureServices(builder.Services);
+
 var app = builder.Build();
+
+#if DEBUG
+// Aspire
+app.MapDefaultEndpoints();
+#endif
+
 startup.Configure(app);
 
-foreach (var url in builder.Configuration["urls"]?.Split(';') ?? [])
-{
-    Console.WriteLine($"Listen to {url}");
-}
-
-app.Run();
+app.LogStartupInformation(
+        builder,
+        app.Services.GetRequiredService<ILogger<Startup>>()
+   )
+   .Run();
