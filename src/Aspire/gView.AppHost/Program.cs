@@ -1,13 +1,16 @@
+using Microsoft.Extensions.DependencyInjection;
+
 var builder = DistributedApplication.CreateBuilder(args);
 
 builder.AddContainer("message-queue", "gstalt/messagequeue_net", "latest")
     .WithHttpEndpoint(9091, 8080)
-    .WithVolume(@"/etc/messagequeue:c:\dockerDrives\messagequeue")
+    .WithBindMount("messagequeue", "/etc/messagequeue")
     .WithEnvironment(e =>
     {
         e.EnvironmentVariables.Add("SWAGGERUI", "true");
         e.EnvironmentVariables.Add("MESSAGEQUEUE__PERSIST__TYPE", "filesystem");
         e.EnvironmentVariables.Add("MESSAGEQUEUE__PERSIST__ROOTPATH", "/etc/messagequeue/persist");
+        e.EnvironmentVariables.Add("MESSAGEQUEUE__MAXREQUESTPOLLINGSECONDS", "8");
     });
 builder.AddContainer("message-queue-dashboard", "gstalt/messagequeue_net_dashboard", "latest")
     .WithHttpEndpoint(9090, 8080)
