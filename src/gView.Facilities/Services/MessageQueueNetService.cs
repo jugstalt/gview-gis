@@ -25,12 +25,14 @@ internal class MessageQueueNetService : IMessageQueueService
     public Task<bool> RegisterQueueAsync(int lifetime = 0, int itemLifetime = 0)
         => _appTopicService.RegisterQueueAsync(lifetime, itemLifetime);
 
-
     async public Task<bool> EnqueueAsync(string queuePrefix, IEnumerable<string> messages, bool includeOwnQueue = false)
     {
         try
         {
-            return await _appTopicService.EnqueueAsync(messages, includeOwnQueue);
+            return await _appTopicService.EnqueueAsync<MessageQueueNetMessageHandler>(
+                    messages, 
+                    includeOwnQueue
+                );
         }
         catch (Exception ex)
         {
