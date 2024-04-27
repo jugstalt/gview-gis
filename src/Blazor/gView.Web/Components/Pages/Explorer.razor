@@ -5,4 +5,33 @@
 <MudDialogProvider @rendermode="InteractiveServer" />
 <MudSnackbarProvider @rendermode="InteractiveServer" />
 
-<DataExplorerMainPage />
+
+
+@inject IDialogService DialogService
+
+<ErrorBoundary @ref=ExplorerErrorBoundary>
+    <ChildContent>
+        <DataExplorerMainPage />
+    </ChildContent>
+    <ErrorContent Context="ex">
+        @{
+            ExplorerErrorBoundary?.Recover();
+
+            var parameters = new DialogParameters();
+            parameters.Add("Exception", ex);
+
+            DialogService.Show<GlobalErrorDialog>("Sorry, this is an unhandled Exception!",
+            parameters,
+            new DialogOptions
+                {
+                    CloseOnEscapeKey = true,
+                    CloseButton = true,
+                    MaxWidth = MaxWidth.Large
+                });
+        }
+    </ErrorContent>
+</ErrorBoundary>
+
+@code {
+    public ErrorBoundary? ExplorerErrorBoundary { get; set; }
+}

@@ -33,13 +33,16 @@ static public class ServicesExtensions
                     config.MessageQueueApiUrl = configuration["Facilities:MessageQueue:ConnectionString"] ?? "";
                     config.MessageQueueClientId = configuration["Facilities:MessageQueue:Client"] ?? "";
                     config.MessageQueueClientSecret = configuration["Facilities:MessageQueue:ClientSecret"] ?? "";
+                    config.MaxPollingSeconds = configuration["Facilities:MessageQueue:MaxPollingSeconds"] != null
+                             ? int.Parse(configuration["Facilities:MessageQueue:MaxPollingSeconds"]!)
+                             : null;
 
                     config.AppName = Const.MessageQueuePrefix;
                     config.Namespace = configuration["Facilities:MessageQueue:Namespace"] ?? "";
 
                     config.QueueLifetimeSeconds = 120;
                     config.ItemLifetimeSeconds = 120;
-                    config.ManageQueueLiftimeCycle = true;
+                    config.ManageQueueLifetimeCycle = true;
                 })
                 .AddMessageHandler<MessageQueueNetMessageHandler>();
 

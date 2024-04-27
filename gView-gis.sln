@@ -185,7 +185,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.ServiceDefaults", "sr
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Aspire", "Aspire", "{ED04259A-DF72-4758-A233-81EB7D44E0BD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gView.Facilities", "src\gView.Facilities\gView.Facilities.csproj", "{8DB0ACAB-5AF1-4D14-B6F1-A330D318A607}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Facilities", "src\gView.Facilities\gView.Facilities.csproj", "{8DB0ACAB-5AF1-4D14-B6F1-A330D318A607}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
