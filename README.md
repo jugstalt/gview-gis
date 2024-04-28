@@ -18,24 +18,23 @@ Some screenshots to demonstrate some of the features of gview GIS
 
 Create maps in an userfriendly UI
 
-![alt text](https://raw.githubusercontent.com/jugstalt/gview5/master/content/img/gview5-carto1.png)
+![image](https://github.com/jugstalt/gview-gis/assets/26577522/4bbfbf7d-b1e2-4a58-8daf-dec202e34b3b)
 
 Set rendering for each layer
 
-![alt text](https://raw.githubusercontent.com/jugstalt/gview5/master/content/img/gview5-carto2.png)
+![image](https://github.com/jugstalt/gview-gis/assets/26577522/daeca7cb-d717-49d2-bf21-5ff6f93733b0)
 
 Set labelling for any vector layer
 
-![alt text](https://raw.githubusercontent.com/jugstalt/gview5/master/content/img/gview5-carto3.png)
+![image](https://github.com/jugstalt/gview-gis/assets/26577522/c4b9d272-fba0-4995-8f93-f4a5a4ac1fbf)
 
 ## Desktop: gView DataExplorer
 
-![alt text](https://raw.githubusercontent.com/jugstalt/gview5/master/content/img/gview5-explorer1.png)
+![image](https://github.com/jugstalt/gview-gis/assets/26577522/1e5665cc-c9f5-4b4d-9778-6e23ac67dbb7)
 
 Browse your spatial data or copy vector data to different data formats
 
-![alt text](https://raw.githubusercontent.com/jugstalt/gview5/master/content/img/gview5-explorer2.png)
-
+![image](https://github.com/jugstalt/gview-gis/assets/26577522/8b1e2480-02f4-4d4c-8318-994b167eab9f)
 
 ## gView Server
 
