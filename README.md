@@ -1,12 +1,16 @@
-# gview5
+# gview6
 
-The software consists of desktop applications for creating maps and the gView server for publishing the maps as map services (WMS, GeoServices REST, etc).
+The software consists of Blazor applications for creating maps and the gView server for publishing the maps as map services (WMS, GeoServices REST, etc).
 
-*gView Carto* and *gView DataExplorer* runs on windows and require die .NET Framework >=4.7.2 
+The Blazor app *gView.Web* can started locally or run the server. It provides the gView applications *gView.Carto* and *gView.Explorer*.
+
+*gView.Web* and *gView Server* runs on Windows/Linux and require die Microsoft.AspNetCore.App 8.0 
 *gView Server* is fully .NET Core (AspNetCore 3.1.x). It can run on windows, linux, mac and as a docker container 
 
-Download the leatest release as ZIP from [Releases](https://github.com/jugstalt/gview5/releases)
-Unzip and run...
+To Deploy the software on your machine use [gView.Deploy](https://github.com/jugstalt/gview-gis/releases).
+This will also download the latest releases for your operating system.
+
+You can manually download the latest Download the leatest [Releases](https://github.com/jugstalt/gview-gis/releases) here.
 
 Read the installation documentation::
 * [English](https://docs.webgiscloud.com/gview/en/index.html)
