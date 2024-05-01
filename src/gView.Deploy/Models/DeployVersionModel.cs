@@ -14,7 +14,7 @@ internal class DeployVersionModel
     //public string Company { get; set; } = "";
 
     [ModelProperty(Prompt = "Target installation path",
-                   DefaultValue = "C:\\apps\\gview6")]
+                   DefaultValue = "C:\\apps\\gview-gis")]
     public string TargetInstallationPath { get; set; } = "";
 
     [ModelProperty(Prompt = "Repsitory path",

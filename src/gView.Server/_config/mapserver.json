@@ -52,7 +52,7 @@
   ],
 
   "Facilities": {
-    "MessageQueue": {
+    "MessageQueue_": {
       "Type": "messagequeue-net",
       "ConnectionString": "http://localhost:9091",
       "Namespace": "development"

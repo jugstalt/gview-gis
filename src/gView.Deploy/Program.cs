@@ -1,8 +1,9 @@
 ﻿
+using gView.Deploy;
 using gView.Deploy.Extensions;
 using gView.Deploy.Services;
 #if DEBUG
-string workDirectory = @"C:\deploy\gview6";
+string workDirectory = @"C:\deploy\gview-gis";
 #else
 string workDirectory = Environment.CurrentDirectory;
 #endif
@@ -49,9 +50,9 @@ try
     {
         var githubReleaseService = new GitHubReleaseService("jugstalt", "gview5");
 
-        foreach(var url in await githubReleaseService.GetReleaseDownloadUrlsAsync())
+        foreach (var url in await githubReleaseService.GetReleaseDownloadUrlsAsync())
         {
-            Console.WriteLine(url); 
+            Console.WriteLine(url);
         }
         Console.WriteLine("Download not implementet! Comming soon. Please download laytest Versions manually...");
         Console.WriteLine();
@@ -69,7 +70,15 @@ try
         return;
     }
 
-    Console.WriteLine($"Deploy version {version} to profile {profile}");
+    var product = Enum.Parse<Product>(
+            consoleService
+                .ChooseFrom(["Everything", "gView.Server", "gView.Web"], "product")
+                .Split('.')
+                .Last(),
+                true
+            );
+
+    Console.WriteLine($"Deploy '{product}' from version {version} to profile {profile}");
     if (!consoleService.DoYouWantToContinue())
     {
         return;
@@ -90,7 +99,12 @@ try
         Directory.CreateDirectory(gViewRepoPath.FullName);
     }
 
-    var targetExists = Directory.Exists(deployVersionModel.ProfileTargetInstallationPath(profile, version));
+    var webTargetExists = Directory.Exists(
+            Path.Combine(deployVersionModel.ProfileTargetInstallationPath(profile, version), "web")
+        );
+    var serverTargetExists = Directory.Exists(
+            Path.Combine(deployVersionModel.ProfileTargetInstallationPath(profile, version), "server")
+        );
 
     #region Create config overrides
 
@@ -99,39 +113,58 @@ try
     #endregion
 
     Console.WriteLine();
-    Console.WriteLine($"Deploy version {version}");
+    Console.WriteLine($"Deploy '{product}' from version {version}");
 
-    if (!targetExists)
+    if (product == Product.Everything || product == Product.Server)
     {
-        Console.WriteLine("Deploy gView Server:");
-        versionService.ExtractZipFolderRecursive(
-                AppName.Server,
-                version, 
-                "", 
-                deployVersionModel.ProfileTargetInstallationPath(profile, version)
-             );
-
-        Console.WriteLine("Deploy gView Web:");
-        versionService.ExtractZipFolderRecursive(
-                AppName.Web,
-                version,
-                "",
-                deployVersionModel.ProfileTargetInstallationPath(profile, version)
-             );
+        if (!serverTargetExists)
+        {
+            Console.WriteLine("Deploy gView Server:");
+            versionService.ExtractZipFolderRecursive(
+                    AppName.Server,
+                    version,
+                    "",
+                    deployVersionModel.ProfileTargetInstallationPath(profile, version)
+                 );
+        }
+        else
+        {
+            consoleService.WriteBlock("Warning: gview.Server version already deployed");
+        }
     }
-    else
+
+    if (product == Product.Everything || product == Product.Web)
     {
-        consoleService.WriteBlock("Warning: version already deployed");
+        if (!webTargetExists)
+        {
+            Console.WriteLine("Deploy gView Web:");
+            versionService.ExtractZipFolderRecursive(
+                    AppName.Web,
+                    version,
+                    "",
+                    deployVersionModel.ProfileTargetInstallationPath(profile, version)
+                 );
+        }
+        else
+        {
+            consoleService.WriteBlock("Warning: gView.Web version already deployed");
+        }
     }
 
     Console.WriteLine("Overrides");
-    versionService.CopyOverrides(profile, "server", Path.Combine(deployVersionModel.ProfileTargetInstallationPath(profile, version)), deployVersionModel);
-    versionService.CopyOverrides(profile, "web", Path.Combine(deployVersionModel.ProfileTargetInstallationPath(profile, version)), deployVersionModel);
+    if (product == Product.Everything || product == Product.Server)
+    {
+        versionService.CopyOverrides(profile, "server", Path.Combine(deployVersionModel.ProfileTargetInstallationPath(profile, version)), deployVersionModel);
+    }
+    if (product == Product.Everything || product == Product.Web)
+    {
+        versionService.CopyOverrides(profile, "web", Path.Combine(deployVersionModel.ProfileTargetInstallationPath(profile, version)), deployVersionModel);
+    }
 }
 catch (Exception ex)
 {
     consoleService.WriteBlock($"Error: {ex.Message}", '!');
 }
 
-Console.Write("Press ENTER to quit...");
-Console.ReadLine();
+//Console.Write("Press ENTER to quit...");
+//Console.ReadLine();
