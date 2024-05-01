@@ -19,6 +19,7 @@ using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using gView.Framework.Common.Extensions;
+using gView.Framework.Common.Json;
 
 namespace gView.Interoperability.GeoServices.Dataset
 {
@@ -341,7 +342,7 @@ namespace gView.Interoperability.GeoServices.Dataset
                         throw new Exception("Error:" + error.Error.Code + "\n" + error.Error.Message);
                     }
 
-                    return JsonSerializer.Deserialize<T>(result);
+                    return JSerializer.Deserialize<T>(result);
                 }
                 catch (TokenRequiredException ex)
                 {

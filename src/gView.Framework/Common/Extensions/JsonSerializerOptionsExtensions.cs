@@ -16,6 +16,9 @@ static public class JsonSerializerOptionsExtensions
 
         options.ReferenceHandler = ReferenceHandler.IgnoreCycles;
 
+        // Allow "NaN" with numbers
+        options.NumberHandling = JsonNumberHandling.AllowNamedFloatingPointLiterals;
+
         return options;
     }
 }
