@@ -1,12 +1,16 @@
-# gview5
+# gview6
 
-The software consists of desktop applications for creating maps and the gView server for publishing the maps as map services (WMS, GeoServices REST, etc).
+The software consists of Blazor applications for creating maps and the gView server for publishing the maps as map services (WMS, GeoServices REST, etc).
 
-*gView Carto* and *gView DataExplorer* runs on windows and require die .NET Framework >=4.7.2 
+The Blazor app *gView.Web* can started locally or run the server. It provides the gView applications *gView.Carto* and *gView.Explorer*.
+
+*gView.Web* and *gView Server* runs on Windows/Linux and require die Microsoft.AspNetCore.App 8.0 
 *gView Server* is fully .NET Core (AspNetCore 3.1.x). It can run on windows, linux, mac and as a docker container 
 
-Download the leatest release as ZIP from [Releases](https://github.com/jugstalt/gview5/releases)
-Unzip and run...
+To Deploy the software on your machine use [gView.Deploy](https://github.com/jugstalt/gview-gis/releases).
+This will also download the latest releases for your operating system.
+
+You can manually download the latest Download the leatest [Releases](https://github.com/jugstalt/gview-gis/releases) here.
 
 Read the installation documentation::
 * [English](https://docs.webgiscloud.com/gview/en/index.html)
@@ -18,45 +22,44 @@ Some screenshots to demonstrate some of the features of gview GIS
 
 Create maps in an userfriendly UI
 
-<img width="907" alt="image" src="https://github.com/jugstalt/gview5/assets/26577522/e0701c5d-f3f3-4601-8428-0696071e9c6d">
+![image](https://github.com/jugstalt/gview-gis/assets/26577522/4bbfbf7d-b1e2-4a58-8daf-dec202e34b3b)
 
 Set rendering for each layer
 
-<img width="1247" alt="image" src="https://github.com/jugstalt/gview5/assets/26577522/c320fb78-2507-467c-84bf-b25b25ba314e">
+![image](https://github.com/jugstalt/gview-gis/assets/26577522/daeca7cb-d717-49d2-bf21-5ff6f93733b0)
 
 Set labelling for any vector layer
 
-<img width="1247" alt="image" src="https://github.com/jugstalt/gview5/assets/26577522/d9403f1f-2534-48b0-9af3-d335c12828a0">
+![image](https://github.com/jugstalt/gview-gis/assets/26577522/c4b9d272-fba0-4995-8f93-f4a5a4ac1fbf)
 
 ## Desktop: gView DataExplorer
 
-<img width="905" alt="image" src="https://github.com/jugstalt/gview5/assets/26577522/43aa1edb-6740-442a-b99f-d7dbfb9d9a36">
+![image](https://github.com/jugstalt/gview-gis/assets/26577522/1e5665cc-c9f5-4b4d-9778-6e23ac67dbb7)
 
 Browse your spatial data or copy vector data to different data formats
 
-<img width="909" alt="image" src="https://github.com/jugstalt/gview5/assets/26577522/225306f2-fb53-4e34-86ef-7e7aef21ba9a">
+![image](https://github.com/jugstalt/gview-gis/assets/26577522/8b1e2480-02f4-4d4c-8318-994b167eab9f)
 
 ## gView Server
 
 A map server that exports gView Carto map as *GeoServices REST*, *ArcXML*, *WMS*, *WFS*, *WMTS* services
 
-<img width="908" alt="image" src="https://github.com/jugstalt/gview5/assets/26577522/650b0956-f34c-4932-b246-9c5504379a58">
+![alt text](https://raw.githubusercontent.com/jugstalt/gview5/master/content/img/gview5-server1.png)
 
 Manage the services and check the service status (running, stopped, error)
 
-<img width="908" alt="image" src="https://github.com/jugstalt/gview5/assets/26577522/efabd6ec-a12e-40f5-b0fe-e9eccd51f096">
+![alt text](https://raw.githubusercontent.com/jugstalt/gview5/master/content/img/gview5-server2.png)
 
 Set the security for a service or for a folder (group of services)
 
-<img width="749" alt="image" src="https://github.com/jugstalt/gview5/assets/26577522/65e5fdcd-1a6a-46c5-9442-d86ef0cb6433">
+![alt text](https://raw.githubusercontent.com/jugstalt/gview5/master/content/img/gview5-server3.png)
 
 Publish services by uploading gView Carto map projects
 
-<img width="863" alt="image" src="https://github.com/jugstalt/gview5/assets/26577522/b29d4157-4c66-42e0-afc0-8e3722f69482">
+![alt text](https://raw.githubusercontent.com/jugstalt/gview5/master/content/img/gview5-server4.png)
 
 Browse the services via the GeoServices Rest API in YAML or JSON
 
-<img width="885" alt="image" src="https://github.com/jugstalt/gview5/assets/26577522/4e603d45-88f1-4c84-a91e-b063a2c03783">
-
+![alt text](https://raw.githubusercontent.com/jugstalt/gview5/master/content/img/gview5-server5.png)
 
 
