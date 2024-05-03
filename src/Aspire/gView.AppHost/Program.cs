@@ -8,6 +8,6 @@ var builder = DistributedApplication.CreateBuilder(args);
 
 builder.AddProject<Projects.gView_Server>("gview-server");
 
-builder.AddProject<Projects.gView_Web>("gview-web");
+builder.AddProject<Projects.gView_WebApps>("gview-webapps");
 
 builder.Build().Run();

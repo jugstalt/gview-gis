@@ -46,7 +46,7 @@ internal class TocSettings : ICartoButton
 
         var model = await scope.ShowModalDialog(
             typeof(Razor.Components.Dialogs.TocOrderingDialog),
-                    "Toc Ordering",
+                    "Toc Settings",
                     new TocOrderingModel()
                     {
                         SelectedGroupElement = selectedGroupElement,

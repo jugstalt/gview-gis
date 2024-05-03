@@ -4,9 +4,9 @@ using gView.Carto.Razor.Extensions.DependencyInjection;
 using gView.DataExplorer.Plugins.Extensions.DependencyInjection;
 using gView.Razor.Extensions.DependencyInjection;
 using gView.Razor.Leaflet.Extensions.DependencyInjection;
-using gView.Web.Components;
 using gView.Web.Extensions;
 using gView.Web.Extensions.DependencyInjection;
+using gView.WebApps.Components;
 using MudBlazor;
 using MudBlazor.Services;
 

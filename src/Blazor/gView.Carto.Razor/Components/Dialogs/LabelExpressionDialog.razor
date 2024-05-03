@@ -6,7 +6,7 @@
     <DialogBody>
         <GvCard Title="Fields">
             <GvCardContent>
-                
+                <GvScrollable MaxHeight="25">
                 @if (Model?.TableClass?.Fields is not null)
                 {
                     <GvGrid ColumnCount="4">
@@ -18,7 +18,8 @@
                             continue;
                         }
                         <GvGridItem>
-                            <MudButton Variant="Variant.Outlined"
+                            <MudButton Variant="Variant.Outlined" 
+                                       Size="MudBlazor.Size.Small"
                                         @ondblclick="() => AppendField(field.name)">
                                 @($"[{field.name}]")
                             </MudButton>
@@ -26,7 +27,7 @@
                     }
                     </GvGrid>
                 }
-                
+                </GvScrollable>
             </GvCardContent>
         </GvCard>
         <GvCard Title="Expression">

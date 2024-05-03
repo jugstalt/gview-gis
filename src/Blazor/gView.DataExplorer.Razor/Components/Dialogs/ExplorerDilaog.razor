@@ -1,7 +1,10 @@
+@using gView.Blazor.Core.Services.Abstraction
+
 @inherits ModalDialogFormBase<ExplorerDialogModel>
 @inject IconService Icons
 @inject IExplorerApplicationScopeService AppScope
 @inject PluginManagerService PluginManager
+@inject IAppIdentityProvider IdentityProvider;
 
 <ModalDialogFormBase T="ExplorerDialogModel"
                       OnDialogClose="base.OnDialogClose"
@@ -187,10 +190,12 @@
 
         #endregion
 
-        _creatableExplorerTools = PluginManager.GetPlugins<IExplorerObject>(Framework.Common.Plugins.Type.IExplorerObject)
+        _creatableExplorerTools = IdentityProvider.Identity.IsAdministrator
+            ? PluginManager.GetPlugins<IExplorerObject>(Framework.Common.Plugins.Type.IExplorerObject)
                                           .Where(e => e is IExplorerObjectCreatable)
                                           .Select(e => (IExplorerObjectCreatable)e)
-                                          .ToArray();
+                                          .ToArray()
+            : null;
 
         return SetRootElementAsync(AppScope.RootExplorerObject(
                String.Join("|", Model.Filters?

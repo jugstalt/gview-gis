@@ -15,7 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Blazor\gView.Web\gView.Web.csproj" />
+    <ProjectReference Include="..\..\Blazor\gView.WebApps\gView.WebApps.csproj" />
     <ProjectReference Include="..\..\gView.Server\gView.Server.csproj" />
   </ItemGroup>
 

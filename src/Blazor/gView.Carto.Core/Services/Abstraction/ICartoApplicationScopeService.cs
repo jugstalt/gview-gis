@@ -1,4 +1,5 @@
-﻿using gView.Blazor.Core.Services;
+﻿using gView.Blazor.Core.Models;
+using gView.Blazor.Core.Services;
 using gView.Carto.Core.Abstraction;
 using gView.Carto.Core.Models.Tree;
 using gView.Framework.Blazor.Services.Abstraction;
@@ -10,6 +11,8 @@ namespace gView.Carto.Core.Services.Abstraction;
 public interface ICartoApplicationScopeService : IApplicationScope
 {
     ICartoDocument Document { get; }
+
+    AppIdentity Identity { get; }
 
     ICartoInteractiveToolService Tools { get; }
 

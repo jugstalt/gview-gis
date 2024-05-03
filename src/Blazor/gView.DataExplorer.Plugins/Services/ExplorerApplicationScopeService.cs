@@ -30,6 +30,9 @@ public class ExplorerApplicationScopeService : ApplictionBusyHandlerAndCache, IE
     private readonly ISnackbar _snackbar;
     private readonly ExplorerApplicationScopeServiceOptions _options;
     private readonly IConfigConnectionStorageService _configConnectionStorageService;
+    private readonly IAppIdentityProvider _identityProvider;
+
+
     private readonly DrivesService _drives;
 
     public ExplorerApplicationScopeService(IDialogService dialogService,
@@ -39,7 +42,8 @@ public class ExplorerApplicationScopeService : ApplictionBusyHandlerAndCache, IE
                                            ISnackbar snackbar,
                                            IConfigConnectionStorageService configConnectionStorageService,
                                            DrivesService drives,
-                                           IOptions<ExplorerApplicationScopeServiceOptions> options)
+                                           IOptions<ExplorerApplicationScopeServiceOptions> options,
+                                           IAppIdentityProvider identityProvider)
     {
         _dialogService = dialogService;
         _knownDialogs = knownDialogs;
@@ -54,6 +58,7 @@ public class ExplorerApplicationScopeService : ApplictionBusyHandlerAndCache, IE
         _drives = drives;
 
         _options = options.Value;
+        _identityProvider = identityProvider;
     }
 
 

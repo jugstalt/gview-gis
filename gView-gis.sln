@@ -155,7 +155,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Framework.Carto", "sr
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "shared", "shared", "{0ADA1A24-AC4C-4471-939B-609A83271367}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Web", "src\Blazor\gView.Web\gView.Web.csproj", "{253E5254-897D-4481-866B-00BEFB20394D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.WebApps", "src\Blazor\gView.WebApps\gView.WebApps.csproj", "{253E5254-897D-4481-866B-00BEFB20394D}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Cmd", "src\gView.Cmd\gView.Cmd.csproj", "{AD1B389D-6545-4F0B-8A5E-CFDC678C9D75}"
 EndProject
