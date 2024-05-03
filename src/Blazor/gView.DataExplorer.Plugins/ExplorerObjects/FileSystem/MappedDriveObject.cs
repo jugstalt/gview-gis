@@ -22,7 +22,7 @@ internal class MappedDriveObject : DriveObject,
     {
         _path = path;
 
-        _contextTools = [new UploadFiles()];
+        _contextTools = [];
     }
 
     #region IExplorerObjectDeletable

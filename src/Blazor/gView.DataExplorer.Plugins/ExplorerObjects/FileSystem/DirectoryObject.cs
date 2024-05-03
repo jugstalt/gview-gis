@@ -38,7 +38,7 @@ public class DirectoryObject : ExplorerParentObject<IExplorerObject>,
     {
         _path = path;
 
-        _contextTools = [new UploadFiles()];
+        _contextTools = [];
     }
 
     #region IExplorerObject Members
