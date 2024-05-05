@@ -176,7 +176,7 @@ namespace gView.Interoperability.OGC.Dataset.GML
                 FileInfo fi_gml = new FileInfo(_connectionString);
                 if (!fi_gml.Exists)
                 {
-                    return false;
+                    return true;
                 }
 
                 FileInfo fi_xsd = new FileInfo(fi_gml.FullName.Substring(0, fi_gml.FullName.Length - fi_gml.Extension.Length) + ".xsd");

@@ -2,6 +2,7 @@
 using gView.Framework.Common;
 using gView.Framework.DataExplorer.Abstraction;
 using gView.Framework.DataExplorer.Services.Abstraction;
+using MongoDB.Bson.Serialization.Serializers;
 using System;
 using System.Threading.Tasks;
 
@@ -72,13 +73,11 @@ internal class StartObject : ExplorerParentObject,
         {
             var exObject = compMan.CreateInstance<IExplorerObject>(exObjectType);
 
-            if (!(exObject is IExplorerGroupObject))
+            if (exObject is IExplorerGroupObject groupObject)
             {
-                continue;
-            }
-
-            ((IExplorerGroupObject)exObject).SetParentExplorerObject(this);
-            base.AddChildObject(exObject);
+                groupObject.SetParentExplorerObject(this);
+                base.AddChildObject(groupObject);
+            } 
         }
 
         return true;

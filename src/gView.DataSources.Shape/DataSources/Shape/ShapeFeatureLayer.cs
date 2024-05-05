@@ -16,9 +16,6 @@ using System.Threading.Tasks;
 
 namespace gView.DataSources.Shape
 {
-    /// <summary>
-    /// 
-    /// </summary>
     internal class ShapeDatasetElement : DatasetElement, IFeatureSelection
     {
         SHPFile _file = null;

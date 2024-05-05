@@ -2,6 +2,7 @@
 using gView.DataExplorer.Plugins.ExplorerObjects.Base;
 using gView.DataExplorer.Plugins.ExplorerObjects.Extensions;
 using gView.DataSources.OGR;
+using gView.Framework.Core.Common;
 using gView.Framework.Core.Data;
 using gView.Framework.Core.Geometry;
 using gView.Framework.DataExplorer.Abstraction;
@@ -12,6 +13,7 @@ using System.Threading.Tasks;
 
 namespace gView.DataExplorer.Plugins.ExplorerObjects.OSGeo.Ogr;
 
+//[RegisterPlugIn("6482DCB2-918B-417A-BD24-54C80E2202AF")]
 public class OGRFeatureClassExplorerObject : ExplorerObjectCls<IExplorerObject, IFeatureClass>,
                                              IExplorerFileObject,
                                              IExplorerObjectCustomContentValues,
@@ -25,14 +27,11 @@ public class OGRFeatureClassExplorerObject : ExplorerObjectCls<IExplorerObject, 
     private OGRFeatureClassExplorerObject(IExplorerObject parent, string filename)
         : base(parent, 1)
     {
-
+        _filename = filename;
     }
     async static public Task<OGRFeatureClassExplorerObject> Create(IExplorerObject parent, string filename)
-
     {
         var exObject = new OGRFeatureClassExplorerObject(parent, filename);
-
-        exObject._filename = filename;
 
         Dataset ds = new Dataset();
         await ds.SetConnectionString(filename);
@@ -74,6 +73,10 @@ public class OGRFeatureClassExplorerObject : ExplorerObjectCls<IExplorerObject, 
                 exObject._icon = "webgis:shape-polyline";
                 exObject._type = "OGR Polyline Featureclass";
                 break;
+            default:
+                exObject._icon = "basic:code-markup-box";
+                exObject._type = "OGR Featureclass";
+                break;
         }
 
         return exObject;
@@ -86,9 +89,21 @@ public class OGRFeatureClassExplorerObject : ExplorerObjectCls<IExplorerObject, 
         get { return "*.e00|*.gml|*.00d|*.adf"; }
     }
 
-    public Task<IExplorerFileObject?> CreateInstance(IExplorerObject parent, string filename)
+    async public Task<IExplorerFileObject?> CreateInstance(IExplorerObject parent, string filename)
     {
-        return Task.FromResult<IExplorerFileObject?>(new OGRFeatureClassExplorerObject(parent, filename));
+        try
+        {
+            if (!(new FileInfo(filename)).Exists)
+            {
+                return null;
+            }
+            
+            return await OGRFeatureClassExplorerObject.Create(parent, filename);
+        }
+        catch
+        {
+            return null;
+        }
     }
 
     #endregion
@@ -108,9 +123,10 @@ public class OGRFeatureClassExplorerObject : ExplorerObjectCls<IExplorerObject, 
         {
             try
             {
-                return new FileInfo(_filename).Name;
+                FileInfo fi = new FileInfo(_filename);
+                return fi.Name;
             }
-            catch { return ""; }
+            catch { return "???"; }
         }
     }
 

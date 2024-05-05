@@ -78,15 +78,25 @@ static internal class ApplicationScopeServiceExtensions
             parameters.Add("sref_epsg", model.SpatialReference.EpsgCode);
         }
 
-        if (model.DatasetType == NewFdbDatasetType.ImageDataset)
+        if (model.SpatialIndex?.Bounds is not null &&
+                (
+                     model.SpatialIndex.Bounds.MinX != 0D ||
+                     model.SpatialIndex.Bounds.MinY != 0D ||
+                     model.SpatialIndex.Bounds.MaxX != 0D ||
+                     model.SpatialIndex.Bounds.MaxY != 0D
+                )
+            )
         {
-            var pluginmananger = new PlugInManager();
-
             parameters.Add("si_bounds_minx", model.SpatialIndex.Bounds.MinX);
             parameters.Add("si_bounds_miny", model.SpatialIndex.Bounds.MinY);
             parameters.Add("si_bounds_maxx", model.SpatialIndex.Bounds.MaxX);
             parameters.Add("si_bounds_maxy", model.SpatialIndex.Bounds.MaxY);
             parameters.Add("si_max_levels", model.SpatialIndex.MaxLevel);
+        }
+
+        if (model.DatasetType == NewFdbDatasetType.ImageDataset)
+        {
+            var pluginmananger = new PlugInManager();
 
             parameters.Add("autofields",
                 JsonSerializer.Serialize(model.AutoFields.Keys

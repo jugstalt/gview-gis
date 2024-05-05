@@ -1,38 +1,38 @@
-using gView.DataExplorer.Plugins.ExplorerObjects.Base;
-using gView.DataSources.Shape;
+﻿using gView.DataExplorer.Plugins.ExplorerObjects.Base;
 using gView.Framework.Core.Common;
 using gView.Framework.Core.Data;
 using gView.Framework.Core.Geometry;
 using gView.Framework.DataExplorer.Abstraction;
 using gView.Framework.DataExplorer.Events;
+using gView.Interoperability.OGC.Dataset.GML;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 
-namespace gView.DataExplorer.Plugins.ExplorerObjects.ShapeFiles;
+namespace gView.DataExplorer.Plugins.ExplorerObjects.Gml;
 
-[RegisterPlugIn("665E0CD5-B3DF-436c-91B4-D4C0B3ECA5B9")]
-public class ShapeFileExplorerObject : ExplorerObjectCls<IExplorerObject, IFeatureClass>,
-                                       IExplorerFileObject,
-                                       ISerializableExplorerObject,
-                                       IExplorerObjectRenamable,
-                                       IExplorerObjectDeletable
+[RegisterPlugIn("5767BD6D-1F74-4A60-900C-646463593F92")]
+public class GmlExplorerObject : ExplorerObjectCls<IExplorerObject, IFeatureClass>,
+                                 IExplorerFileObject,
+                                 ISerializableExplorerObject,
+                                 IExplorerObjectDeletable
 {
     private string _filename = "";
-    private ShapeDataset? _shapeDataset = null;
-    private IDatasetElement? _shape = null;
+    private Dataset? _gmlDataset = null;
+    private IDatasetElement? _gml = null;
 
-    public ShapeFileExplorerObject() : base() { }
-    private ShapeFileExplorerObject(IExplorerObject parent, string filename)
+    public GmlExplorerObject() : base() { }
+    private GmlExplorerObject(IExplorerObject parent, string filename)
         : base(parent, 2)
     {
         _filename = filename;
-        OpenShape().Wait();
+        OpenGml().Wait();
     }
 
-    static private async Task<ShapeFileExplorerObject> Create(IExplorerObject parent, string filename)
+    static private async Task<GmlExplorerObject> Create(IExplorerObject parent, string filename)
     {
-        var exObject = new ShapeFileExplorerObject(parent, filename);
-        await exObject.OpenShape();
+        var exObject = new GmlExplorerObject(parent, filename);
+        await exObject.OpenGml();
 
         return exObject;
     }
@@ -43,7 +43,7 @@ public class ShapeFileExplorerObject : ExplorerObjectCls<IExplorerObject, IFeatu
     {
         get
         {
-            return "*.shp";
+            return "*.gml";
         }
     }
 
@@ -56,7 +56,7 @@ public class ShapeFileExplorerObject : ExplorerObjectCls<IExplorerObject, IFeatu
                 return null;
             }
 
-            return await ShapeFileExplorerObject.Create(parent, filename);
+            return await GmlExplorerObject.Create(parent, filename);
         }
         catch
         {
@@ -86,13 +86,13 @@ public class ShapeFileExplorerObject : ExplorerObjectCls<IExplorerObject, IFeatu
         get { return _filename; }
     }
 
-    public string Type => "ESRI Shapefile";
+    public string Type => "GML File";
 
     public string Icon
     {
         get
         {
-            switch ((_shape?.Class as IFeatureClass)?.GeometryType)
+            switch ((_gml?.Class as IFeatureClass)?.GeometryType)
             {
                 case GeometryType.Point:
                 case GeometryType.Multipoint:
@@ -103,28 +103,28 @@ public class ShapeFileExplorerObject : ExplorerObjectCls<IExplorerObject, IFeatu
                 case GeometryType.Envelope:
                     return "webgis:shape-polygon";
                 default:
-                    return "basic:smiley-hm";
+                    return "basic:code-markup";
             }
         }
     }
 
     public void Dispose()
     {
-        if (_shapeDataset != null)
+        if (_gmlDataset != null)
         {
-            _shapeDataset.Dispose();
-            _shapeDataset = null;
+            _gmlDataset.Dispose();
+            _gmlDataset = null;
         }
     }
 
     async public Task<object?> GetInstanceAsync()
     {
-        if (_shapeDataset == null)
+        if (_gmlDataset == null)
         {
-            await OpenShape();
+            await OpenGml();
         }
 
-        return ((_shape != null) ? _shape.Class : null);
+        return _gml?.Class;
     }
 
     #endregion
@@ -147,64 +147,23 @@ public class ShapeFileExplorerObject : ExplorerObjectCls<IExplorerObject, IFeatu
 
     #endregion
 
-    #region IExplorerObjectRenamable Member
-
-    public event ExplorerObjectRenamedEvent? ExplorerObjectRenamed;
-
-    async public Task<bool> RenameExplorerObject(string newName)
-    {
-        if (_shapeDataset == null)
-        {
-            await OpenShape();
-        }
-
-        if (_shapeDataset != null && _shape != null)
-        {
-            FileInfo fi = new FileInfo(_filename);
-            string name = fi.Name.Substring(0, fi.Name.Length - fi.Extension.Length);
-
-            int pos = newName.LastIndexOf(".");
-            if (pos != -1)
-            {
-                newName = newName.Substring(0, pos);
-            }
-
-            if (_shapeDataset.Rename(name, newName))
-            {
-                _shape.Title = newName;
-
-                if (ExplorerObjectRenamed != null)
-                {
-                    ExplorerObjectRenamed(this);
-                }
-            }
-            return false;
-        }
-        else
-        {
-            return false;
-        }
-    }
-
-    #endregion
-
     #region IExplorerObjectDeletable Member
 
     public event ExplorerObjectDeletedEvent? ExplorerObjectDeleted;
 
     async public Task<bool> DeleteExplorerObject(ExplorerObjectEventArgs e)
     {
-        if (_shapeDataset == null)
+        if (_gmlDataset == null)
         {
-            await OpenShape();
+            await OpenGml();
         }
 
-        if (_shapeDataset != null)
+        if (_gmlDataset != null)
         {
             FileInfo fi = new FileInfo(_filename);
             string name = fi.Name.Substring(0, fi.Name.Length - fi.Extension.Length);
 
-            if (_shapeDataset.Delete(name))
+            if (_gmlDataset.Delete())
             {
                 if (ExplorerObjectDeleted != null)
                 {
@@ -221,7 +180,7 @@ public class ShapeFileExplorerObject : ExplorerObjectCls<IExplorerObject, IFeatu
 
     #endregion
 
-    async private Task OpenShape()
+    async private Task OpenGml()
     {
         FileInfo fi = new FileInfo(_filename);
 
@@ -230,13 +189,18 @@ public class ShapeFileExplorerObject : ExplorerObjectCls<IExplorerObject, IFeatu
             throw new System.Exception($"{_filename} does not exits");
         }
 
-        _shapeDataset = new ShapeDataset();
-        await _shapeDataset.SetConnectionString(fi.Directory!.FullName);
+        _gmlDataset = new Dataset();
+        await _gmlDataset.SetConnectionString(fi.FullName);
 
-        if (!await _shapeDataset.Open() || (_shape = await _shapeDataset.Element(fi.Name)) == null)
+        //
+        // ToDo: not only the first 
+        // GML can contain multiple featureclasses
+        //
+        if (!await _gmlDataset.Open()
+            || (_gml = (await _gmlDataset.Elements()).FirstOrDefault()) == null)
         {
-            _shapeDataset.Dispose();
-            _shapeDataset = null;
+            _gmlDataset.Dispose();
+            _gmlDataset = null;
         }
     }
 }

@@ -6,9 +6,9 @@ using gView.DataSources.Fdb.MSAccess;
 using gView.DataSources.Fdb.MSSql;
 using gView.DataSources.Fdb.PostgreSql;
 using gView.DataSources.Fdb.SQLite;
+using gView.Framework.Core.Common;
 using gView.Framework.Core.Data;
 using gView.Framework.Core.Geometry;
-using gView.Framework.Core.Common;
 using gView.Framework.Data;
 using gView.Framework.Geometry;
 using System;
@@ -106,26 +106,38 @@ public class CreateDatasetCommand : ICommand
 
             var datasetType = parameters.GetRequiredValue<string>("ds_type");
 
+            #region Spatial Index Def
+
+            gViewSpatialIndexDef? spatialIndexDef = null;
+            try
+            {
+                var envelopeBuilder = new EnvelopeParameterBuilder("si_bounds");
+                var bounds = await envelopeBuilder.Build<IEnvelope>(parameters);
+
+                var maxLevels = parameters.GetRequiredValue<int>("si_max_levels");
+
+                spatialIndexDef = new gViewSpatialIndexDef(bounds, maxLevels);
+            }
+            catch
+            {
+                if (datasetType.Equals("ImageDataset", StringComparison.OrdinalIgnoreCase))
+                {
+                    throw;  // spatialIndex is required with imagedataset
+                }
+                spatialIndexDef = null;
+            }
+
+            #endregion
+
             if (datasetType.Equals("FeatureDataset", StringComparison.OrdinalIgnoreCase))
             {
-                if (await fdb.CreateDataset(parameters.GetRequiredValue<string>("ds_name"), spatialReference) < 0)
+                if (await fdb.CreateDataset(parameters.GetRequiredValue<string>("ds_name"), spatialReference, spatialIndexDef) < 0)
                 {
                     throw new Exception($"Unable to create dataset: {fdb.LastErrorMessage}");
                 }
             }
             else if (datasetType.Equals("ImageDataset", StringComparison.OrdinalIgnoreCase))
             {
-                #region Spatial Index Def
-
-                var envelopeBuilder = new EnvelopeParameterBuilder("si_bounds");
-                var bounds = await envelopeBuilder.Build<IEnvelope>(parameters);
-
-                var maxLevels = parameters.GetRequiredValue<int>("si_max_levels");
-
-                var spatialIndexDef = new gViewSpatialIndexDef(bounds, maxLevels);
-
-                #endregion
-
                 #region AutoFields
 
                 var autoFieldsBuilder = new AutoFieldsParameterBuilder();

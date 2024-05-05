@@ -93,17 +93,19 @@
         {
             <MudProgressCircular Indeterminate="true" Size="MudBlazor.Size.Small" />
         }
-            
-        <MudButton Variant="Variant.Filled"
-                    Color="Color.Default"
-                    OnClick="OnTestConnectionClick">
-            Test Connection
-        </MudButton>
-            
+        
+        @if(OfferTestConnection) 
+        {
+            <MudButton Variant="Variant.Filled"
+                        Color="Color.Default"
+                        OnClick="OnTestConnectionClick">
+                Test Connection
+            </MudButton>
+        }
         <MudButton Variant="Variant.Filled"
                     Color="Color.Primary"
                     OnClick="OnCreateConnectionClick">
-            Create Connection
+            @CreateButtonPrompt
         </MudButton>
     </div>
 }
@@ -113,6 +115,8 @@
     [Parameter] public string ProviderId { get; set; } = string.Empty;
     [Parameter] public EventCallback OnSubmit { get; set; }
     [Parameter] public RenderFragment? CustomControls { get; set; }
+    [Parameter] public bool OfferTestConnection { get; set; } = true;
+    [Parameter] public string CreateButtonPrompt { get; set; } = "Create connection";
 
     private string _currentProvider = string.Empty;
     private string? _currentScheme = string.Empty;
@@ -203,16 +207,21 @@
         DataProvider dataProvider = new();
         try
         {
-            await Task.Delay(300);
+            var connectionString = BuildDbConnectionString(useProvider: true).ConnectionString;
 
-            if (dataProvider.Open(BuildDbConnectionString(useProvider: true).ConnectionString, true))
+            if (OfferTestConnection)
             {
-                _connectionSuccessMessage = "Connection succeeded...";
-                dataProvider.Close();
-            }
-            else
-            {
-                _connectionErrorMessage = $"Error: {dataProvider.lastErrorMessage}";
+                await Task.Delay(300);
+
+                if (dataProvider.Open(connectionString, true))
+                {
+                    _connectionSuccessMessage = "Connection succeeded...";
+                    dataProvider.Close();
+                }
+                else
+                {
+                    _connectionErrorMessage = $"Error: {dataProvider.lastErrorMessage}";
+                }
             }
         }
         catch (Exception ex)

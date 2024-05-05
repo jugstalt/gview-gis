@@ -77,7 +77,10 @@ public class PostgreSqlNewFdbDatabase : ExplorerObjectCls<PostgreSqlExplorerGrou
                 throw new System.Exception(fdb.LastErrorMessage);
             }
 
-            return model.DbConnectionString.ToPostgreSqlExplorerObject(this.TryGetParent() ?? new PostgreSqlExplorerGroupObject());
+            if (parentExObject is PostgreSqlExplorerGroupObject groupObject)
+            {
+                return model.DbConnectionString.ToPostgreSqlExplorerObject(groupObject);
+            }
         }
 
         return null;
