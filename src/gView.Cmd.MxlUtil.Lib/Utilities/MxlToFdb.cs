@@ -36,7 +36,12 @@ namespace gView.Cmd.MxlUtil.Lib.Utilities
             IEnumerable<string>? dontCopyFeatues = null;
             Guid targetGuid = new Guid();
 
-            for (int i = 1; i < args.Length - 1; i++)
+            if(args.Length<2)
+            {
+                throw new IncompleteArgumentsException();
+            }
+
+            for (int i = 0; i < args.Length - 1; i++)
             {
                 switch (args[i].ToLower())
                 {
@@ -381,9 +386,8 @@ namespace gView.Cmd.MxlUtil.Lib.Utilities
         {
             return
 @"
-MxlToFdb
---------
-
+MxlToFdb:
+---------
 Copies all vector data in an MXL file to an FeatureDatabase (fdb) [SqlServer, PostGres or Sqlite).
 The result is a new MXL file with the same symbology in changed connections to the new FeatureDatabase.
 

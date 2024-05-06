@@ -23,9 +23,8 @@ namespace gView.Cmd.MxlUtil.Lib.Utilities
         {
             return
 @"
-PublishService
---------------
-
+PublishService:
+---------------
 Publish Mxl as gView Map Service
 ";
         }
@@ -53,7 +52,12 @@ Optional arguments:
             string folder = String.Empty;
             string client = String.Empty, secret = String.Empty, accessToken = String.Empty;
 
-            for (int i = 1; i < args.Length - 1; i++)
+            if (args.Length < 2)
+            {
+                throw new IncompleteArgumentsException();
+            }
+
+            for (int i = 0; i < args.Length - 1; i++)
             {
                 switch (args[i].ToLower())
                 {

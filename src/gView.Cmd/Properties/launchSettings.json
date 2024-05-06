@@ -2,7 +2,7 @@
   "profiles": {
     "gView.Cmd": {
       "commandName": "Project",
-      "commandLineArgs": "--command MxlUtil.FromGLStylesJson -uri https://gis.ktn.gv.at/osgdi/styles/basemap_ktn_vektor.json -target-path c:\\temp\\geodata -map-name test1"
+      "commandLineArgs": "-i"
     }
   }
 }

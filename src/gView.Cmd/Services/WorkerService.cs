@@ -15,15 +15,27 @@ internal class WorkerService
         _arguments = arguments;
     }
 
-    public Task<bool> Run()
+    public Task<bool> Run(bool interactive = false)
     {
         PlugInManager.InitSilent = true;
 
         if (!_arguments.HasValue("--command"))
         {
-            Console.WriteLine("Usage: gView.Cmd --command [command] [...arguments...]");
-            Console.WriteLine("       gView.Cmd --command [command] --help");
-            Console.WriteLine();
+            if (interactive)
+            {
+                Console.WriteLine("Usage: [command] [...arguments...]");
+                Console.WriteLine("       [command] --help");
+                Console.WriteLine("       help ... show this message");
+                Console.WriteLine("       quit ... quit programm");
+                Console.WriteLine();
+            }
+            else
+            {
+                Console.WriteLine("Usage: gView.Cmd --command [command] [...arguments...]");
+                Console.WriteLine("       gView.Cmd --command [command] --help");
+                Console.WriteLine();
+            }
+
 
             Console.WriteLine("Use one of the following commands:");
             foreach (var instance in _commandCollection.Instances)
@@ -42,7 +54,7 @@ internal class WorkerService
 
         var logger = new ConsoleLogger();
 
-        if(_arguments.HasValue("--help"))
+        if (_arguments.HasValue("--help"))
         {
             Console.WriteLine($"Help: {command.Name}");
             Console.WriteLine(command.Description);
@@ -52,13 +64,13 @@ internal class WorkerService
         }
 
         var commandArguments = new Dictionary<string, object>();
-        foreach(var argKey in _arguments.Keys)
+        foreach (var argKey in _arguments.Keys)
         {
-            if(argKey.StartsWith("--"))
+            if (argKey.StartsWith("--"))
             {
                 continue;
             }
-            if(argKey.StartsWith("-"))
+            if (argKey.StartsWith("-"))
             {
                 commandArguments[argKey.Substring(1)] = _arguments.GetValue(argKey);
             }

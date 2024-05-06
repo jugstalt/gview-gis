@@ -18,9 +18,8 @@ namespace gView.Cmd.MxlUtil.Lib.Untilities
         {
             return
 @"
-MxlDatasts
-----------
-
+MxlDatasets:
+------------
 Manage dataset connection in a mxl file.
 ";
         }
@@ -68,7 +67,12 @@ Optional arguments:
             List<string> parameterNames = new List<string>();
             List<string> newParameterValues = new List<string>();
 
-            for (int i = 1; i < args.Length - 1; i++)
+            if (args.Length < 2)
+            {
+                throw new IncompleteArgumentsException();
+            }
+
+            for (int i = 0; i < args.Length - 1; i++)
             {
                 switch (args[i].ToLower())
                 {
