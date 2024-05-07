@@ -73,7 +73,7 @@ internal class DeployRepositoryService
             return deployVersionModel;
         }
 
-        return System.Text.Json.JsonSerializer.Deserialize<DeployVersionModel>(File.ReadAllText(deployVersionModelFile.FullName));
+        return System.Text.Json.JsonSerializer.Deserialize<DeployVersionModel>(File.ReadAllText(deployVersionModelFile.FullName))!;
     }
 
     public void SetDeployVersionModel(string profile, DeployVersionModel deployVersionModel)

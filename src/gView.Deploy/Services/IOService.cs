@@ -45,7 +45,7 @@ internal class IOService
             return false;
         }
 
-        if (!targetFileInfo.Directory.Exists)
+        if (targetFileInfo.Directory?.Exists == false)
         {
             targetFileInfo.Directory.Create();
         }

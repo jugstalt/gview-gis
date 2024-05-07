@@ -1,4 +1,4 @@
-﻿namespace gView.CopyFeatureclass.Lib;
+﻿namespace gView.Cmd.CopyFeatureclass.Lib;
 class ReplicationInformation
 {
     public static string Replace(string? str)

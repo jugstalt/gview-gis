@@ -5,7 +5,7 @@ namespace gView.Framework.Symbology.Vtc.Extensions;
 
 static public class StringExtensions
 {
-    static public string ReplacePlaceholders(this string? str, IFeature? feature)
+    static public string? ReplacePlaceholders(this string? str, IFeature? feature)
     {
         if (feature?.Fields != null && str?.Contains("{") == true)
         {

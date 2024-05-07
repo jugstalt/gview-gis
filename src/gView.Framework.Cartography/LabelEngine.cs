@@ -94,7 +94,7 @@ namespace gView.Framework.Cartography
                 IDisplay display,
                 IFeatureLayer layer,
                 ITextSymbol symbol,
-                IGeometry geometry,
+                IGeometry? geometry,
                 bool checkForOverlap
             )
         {
@@ -230,8 +230,8 @@ namespace gView.Framework.Cartography
             )
         {
             bool outside = true;
-            IAnnotationPolygonCollision labelPolyon = null;
-            IEnvelope labelPolyonEnvelope = null;
+            IAnnotationPolygonCollision? labelPolyon = null;
+            IEnvelope? labelPolyonEnvelope = null;
 
             if (aPolygons != null)
             {
@@ -354,7 +354,7 @@ namespace gView.Framework.Cartography
         {
             bool outside = true;
 
-            if (aPolygon != null)
+            if (aPolygon != null && _bitmap != null)
             {
                 AnnotationPolygonEnvelope env = aPolygon.Envelope;
 

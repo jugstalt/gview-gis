@@ -1,22 +1,19 @@
-﻿using gView.CopyFeatureclass.Lib;
-using gView.DataExplorer.Plugins.Extensions;
+﻿using gView.Cmd.CopyFeatureclass.Lib;
+using gView.DataExplorer.Plugins.ExplorerObjects.FileSystem;
 using gView.DataExplorer.Razor.Components.Dialogs.Models;
 using gView.Framework.Blazor;
-using gView.Framework.Blazor.Services.Abstraction;
-using gView.Framework.Core.Data;
+using gView.Framework.Common;
 using gView.Framework.Core.Common;
+using gView.Framework.Core.Data;
+using gView.Framework.Core.FDB;
 using gView.Framework.DataExplorer;
 using gView.Framework.DataExplorer.Abstraction;
-using gView.Framework.Common;
+using gView.Framework.DataExplorer.Services.Abstraction;
+using gView.Razor.Dialogs;
+using gView.Razor.Dialogs.Models;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using gView.Framework.DataExplorer.Services.Abstraction;
-using gView.DataExplorer.Plugins.ExplorerObjects.FileSystem;
-using Elasticsearch.Net;
-using gView.Framework.Core.FDB;
-using gView.Razor.Dialogs;
-using gView.Razor.Dialogs.Models;
 
 namespace gView.DataExplorer.Plugins.ExplorerTools;
 
@@ -63,13 +60,13 @@ internal class Paste : IExplorerTool
         {
             var dbDict = new Dictionary<string, IFileFeatureDatabase>();
             var pluginManager = new PlugInManager();
-            
-            foreach(var type in pluginManager.GetPlugins(Framework.Common.Plugins.Type.IFileFeatureDatabase))
+
+            foreach (var type in pluginManager.GetPlugins(Framework.Common.Plugins.Type.IFileFeatureDatabase))
             {
                 var db = pluginManager.CreateInstance(type) as IFileFeatureDatabase;
-                if(db is not null)
+                if (db is not null)
                 {
-                    dbDict.Add(db.DatabaseName, db);    
+                    dbDict.Add(db.DatabaseName, db);
                 }
             }
 
@@ -82,7 +79,10 @@ internal class Paste : IExplorerTool
                     Prompt = "Format"
                 });
 
-            if (model?.SelectedValue == null) return false;
+            if (model?.SelectedValue == null)
+            {
+                return false;
+            }
 
             var fileDb = model.SelectedValue;
             destDataset = await fileDb.GetDataset(scope.CurrentExplorerObject.FullName);
@@ -135,7 +135,7 @@ internal class Paste : IExplorerTool
 
             await scope.ForceContentRefresh();
         }
-        
+
         return false;
     }
 

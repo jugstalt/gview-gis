@@ -13,7 +13,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Threading.Tasks;
 
-namespace gView.CopyFeatureclass.Lib.Features;
+namespace gView.Cmd.CopyFeatureclass.Lib.Features;
 public class FeatureImport
 {
     public delegate void ReportActionEvent(FeatureImport sender, string action);

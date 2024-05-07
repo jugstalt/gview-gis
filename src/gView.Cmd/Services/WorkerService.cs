@@ -27,6 +27,7 @@ internal class WorkerService
                 Console.WriteLine("       [command] --help");
                 Console.WriteLine("       help ... show this message");
                 Console.WriteLine("       quit ... quit programm");
+                Console.WriteLine("       clear ... clear console window");
                 Console.WriteLine();
             }
             else

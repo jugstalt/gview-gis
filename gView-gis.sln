@@ -135,7 +135,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Razor.Leaflet", "src\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Cmd.Core", "src\gView.Cmd.Core\gView.Cmd.Core.csproj", "{9B7E4D69-2A7A-4B13-BAA8-07DD6811A0BB}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.CopyFeatureclass.Lib", "src\gView.CopyFeatureclass.Lib\gView.CopyFeatureclass.Lib.csproj", "{0B60ACF3-E8D4-4EBE-9B4C-375876BE362E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Cmd.CopyFeatureclass.Lib", "src\gView.Cmd.CopyFeatureclass.Lib\gView.Cmd.CopyFeatureclass.Lib.csproj", "{0B60ACF3-E8D4-4EBE-9B4C-375876BE362E}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Cmd.Fdb.Lib", "src\gView.Cmd.Fdb.Lib\gView.Cmd.Fdb.Lib.csproj", "{998E5F11-C807-49ED-8406-E36169634574}"
 EndProject

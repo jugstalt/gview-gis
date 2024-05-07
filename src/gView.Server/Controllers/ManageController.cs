@@ -125,6 +125,11 @@ namespace gView.Server.Controllers
             }
         }
 
+        public IActionResult OidcLogin()
+        {
+            return RedirectToAction("Index");
+        }
+
         #endregion
 
         public IActionResult Collect()

@@ -2,8 +2,8 @@
 using gView.Cmd.Core.Abstraction;
 using gView.Cmd.Core.Builders;
 using gView.Cmd.Core.Extensions;
-using gView.CopyFeatureclass.Lib.Fdb;
-using gView.CopyFeatureclass.Lib.Features;
+using gView.Cmd.CopyFeatureclass.Lib.Fdb;
+using gView.Cmd.CopyFeatureclass.Lib.Features;
 using gView.DataSources.Fdb.MSAccess;
 using gView.Framework.Core.Data;
 using gView.Framework.Core.FDB;
@@ -16,7 +16,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace gView.CopyFeatureclass.Lib;
+namespace gView.Cmd.CopyFeatureclass.Lib;
 public class CopyFeatureClassCommand : ICommand
 {
     public string Name => "CopyFeatureClass";

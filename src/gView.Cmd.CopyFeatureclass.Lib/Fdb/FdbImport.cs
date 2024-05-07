@@ -15,7 +15,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace gView.CopyFeatureclass.Lib.Fdb;
+namespace gView.Cmd.CopyFeatureclass.Lib.Fdb;
 public class FdbImport
 {
     public enum TreeVersion { BinaryTree, BinaryTree2 };
