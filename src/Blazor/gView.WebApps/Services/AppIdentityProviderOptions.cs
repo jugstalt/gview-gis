@@ -1,4 +1,4 @@
-﻿namespace gView.Web.Services;
+﻿namespace gView.WebApps.Services;
 
 public class AppIdentityProviderOptions
 {

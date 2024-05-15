@@ -102,12 +102,7 @@ namespace gView.Server
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.Configure<CookiePolicyOptions>(options =>
-            {
-                // This lambda determines whether user consent for non-essential cookies is needed for a given request.
-                options.CheckConsentNeeded = context => true;
-                options.MinimumSameSitePolicy = SameSiteMode.None;
-            });
+            services.AddAuth(Configuration);
 
             services.AddMvc(o =>
                 {
@@ -232,6 +227,8 @@ namespace gView.Server
             //app.UseHttpsRedirection();
             app.UseStaticFiles();
             //app.UseCookiePolicy();
+
+            app.AddAuth(Configuration);
 
             app.UseRouting();
 

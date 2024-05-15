@@ -1,4 +1,7 @@
-﻿using System;
+﻿using gView.Framework.Security;
+using gView.Server.Extensions;
+using System;
+using System.IO;
 
 namespace gView.Server.AppCode
 {
@@ -37,6 +40,34 @@ namespace gView.Server.AppCode
 
         private static AuthToken _anonymous = new AuthToken();
         public static AuthToken Anonymous => _anonymous;
+
+        public static AuthToken Create(string path, string username, string password, AuthToken.AuthTypes authType, int expireMiniutes = 30)
+        {
+            var fi = new FileInfo(Path.Combine(path, $"{username}.lgn"));
+
+            if (fi.Exists)
+            {
+                expireMiniutes = expireMiniutes <= 0 ? 30 : expireMiniutes;
+
+                if (username.UserNameIsUrlToken())
+                {
+                    if (password == File.ReadAllText(fi.FullName))
+                    {
+                        return new AuthToken(username, authType, new TimeSpan(0, expireMiniutes, 0));
+                    }
+                }
+                else
+                {
+                    if (SecureCrypto.VerifyPassword(password, File.ReadAllText(fi.FullName), username))
+                    {
+                        return new AuthToken(username, authType, new TimeSpan(0, expireMiniutes, 0));
+                    }
+                }
+            }
+
+            return null;
+        }
+
 
         #endregion
 

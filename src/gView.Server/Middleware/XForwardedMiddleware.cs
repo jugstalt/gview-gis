@@ -13,7 +13,7 @@ namespace gView.Server.Middleware
             _next = next;
         }
 
-        public async Task InvokeAsync(HttpContext context)
+        public Task InvokeAsync(HttpContext context)
         {
             var xproto = context.Request.Headers["X-Forwarded-Proto"].ToString();
             if (xproto != null && xproto.StartsWith("https", StringComparison.OrdinalIgnoreCase))
@@ -21,7 +21,7 @@ namespace gView.Server.Middleware
                 context.Request.Scheme = "https";
             }
 
-            await _next(context);
+            return _next(context);
         }
     }
 }

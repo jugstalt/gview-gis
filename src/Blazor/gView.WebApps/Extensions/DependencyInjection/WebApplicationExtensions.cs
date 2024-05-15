@@ -1,6 +1,6 @@
-﻿using gView.Web.Model;
+﻿using gView.WebApps.Model;
 
-namespace gView.Web.Extensions.DependencyInjection;
+namespace gView.WebApps.Extensions.DependencyInjection;
 
 static internal class WebApplicationExtensions
 {

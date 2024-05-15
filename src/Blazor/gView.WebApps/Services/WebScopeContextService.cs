@@ -1,6 +1,6 @@
 ﻿using gView.Blazor.Core.Services.Abstraction;
 
-namespace gView.Web.Services;
+namespace gView.WebApps.Services;
 
 public class WebScopeContextService : IScopeContextService
 {

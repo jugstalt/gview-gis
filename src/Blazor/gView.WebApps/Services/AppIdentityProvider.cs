@@ -1,11 +1,11 @@
 ﻿using gView.Blazor.Core.Models;
 using gView.Blazor.Core.Services.Abstraction;
-using gView.Web.Extensions;
+using gView.WebApps.Extensions;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.Extensions.Options;
 
-namespace gView.Web.Services;
+namespace gView.WebApps.Services;
 
 public class AppIdentityProvider : IAppIdentityProvider
 {

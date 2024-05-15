@@ -6,7 +6,7 @@ namespace gView.Interoperability.GeoServices.Rest.Json
 {
     public class JsonServices
     {
-        [JsonPropertyName("currentVersion123")]
+        [JsonPropertyName("currentVersion")]
         public double CurrentVersion { get; set; }
 
         [JsonPropertyName("folders")]

@@ -57,5 +57,16 @@
       "ConnectionString": "http://localhost:9091",
       "Namespace": "development"
     }
+  },
+
+  "Authentication": {
+    "Type_": "oidc",
+    "RequiredManageRole": "gview-web-admin",
+    "Oidc": {
+      "Authority": "https://localhost:44300",
+      "ClientId": "gview-server",
+      "ClientSecret": "secret",
+      "scopes": [ "openid", "profile", "role" ]
+    }
   }
 }

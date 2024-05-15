@@ -36,6 +36,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using static gView.Interoperability.GeoServices.Rest.Json.JsonServices;
+using static gView.Server.Connector.ServerConnection;
 
 namespace gView.Server.Controllers;
 
@@ -128,10 +129,21 @@ public class GeoServicesRestController : BaseController
                    (await s.GetSettingsAsync()).IsRunningOrIdle() &&
                     await s.HasAnyAccess(identity))
                 {
-                    services.AddRange(await AgsServices(identity, s));
+                    var agsServices = await AgsServices(identity, s);
+                    if(agsServices?.Any() == true)
+                    {
+                        services.AddRange(agsServices);
+                    } 
+                    else if(await s.HasPublishAccess(identity))   
+                    {
+                        services.Add(new AgsService()
+                        {
+                            Name = (String.IsNullOrWhiteSpace(s.Folder) ? "" : s.Folder + "/") + s.Name,
+                            Type = ""
+                        });
+                    }
                 }
             }
-
             var jsonService = String.IsNullOrEmpty(id) ?
                 new JsonServicesRoot() : new JsonServices();
 
@@ -1913,44 +1925,9 @@ public class GeoServicesRestController : BaseController
                 {
                     throw e;
                 }
-                catch (NotAuthorizedException nae)
+                catch (MapServerAuthException)
                 {
-                    var error = new JsonError()
-                    {
-                        Error = new JsonError.ErrorDef() { Code = 403, Message = nae.Message }
-                    };
-
-                    return ResultFormat()?.ToLower() switch
-                    {
-                        "image" => Json(error),  // image request must return token errors as json explicit!
-                        _ => Result(error)
-                    };
-                }
-                catch (TokenRequiredException tre)
-                {
-                    var error = new JsonError()
-                    {
-                        Error = new JsonError.ErrorDef() { Code = 499, Message = tre.Message }
-                    };
-
-                    return ResultFormat()?.ToLower() switch
-                    {
-                        "image" => Json(error),  // image request must return token errors as json explicit! otherwise (if HTML response) clients do not refresh or get tokens 
-                        _ => Result(error)
-                    };
-                }
-                catch (InvalidTokenException ite)
-                {
-                    var error = new JsonError()
-                    {
-                        Error = new JsonError.ErrorDef() { Code = 498, Message = ite.Message }
-                    };
-
-                    return ResultFormat()?.ToLower() switch
-                    {
-                        "image" => Json(error),  // image request must return token errors as json explicit!
-                        _ => Result(error)
-                    };
+                    throw; // Handled in AuthenticationExceptionMiddleware
                 }
                 catch (MapServerException mse)
                 {

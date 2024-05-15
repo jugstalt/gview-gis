@@ -3,8 +3,6 @@ using gView.Blazor.Core.Services.Abstraction;
 using gView.Framework.Blazor.Models;
 using Microsoft.Extensions.Options;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq.Expressions;
 
 namespace gView.Blazor.Core.Services;
 
@@ -24,12 +22,12 @@ public class DrivesService
     {
         List<VirtualDrive> virtualDrives = new();
 
-        if(_options.Drives != null)
+        if (_options.Drives != null)
         {
-            foreach(var key in _options.Drives.Keys)
+            foreach (var key in _options.Drives.Keys)
             {
                 var path = _options.Drives[key];
-                if(path.Contains("{{username}}"))
+                if (path.Contains("{{username}}"))
                 {
                     path = path.Replace("{{username}}",
                         string.IsNullOrEmpty(_identityProvider.Identity.Username)
@@ -38,8 +36,8 @@ public class DrivesService
                     path.TryCreateDirectory();
                 }
                 virtualDrives.Add(new VirtualDrive(
-                        key.ToEnvironmentVairableName(), 
-                        path, 
+                        key.ToEnvironmentVairableName(),
+                        path,
                         VirtualDriveType.EnvironmentVariable
                     ));
             }
@@ -53,8 +51,8 @@ public class DrivesService
                 System.IO.DriveInfo info = new System.IO.DriveInfo(logicalDrive);
 
                 virtualDrives.Add(new VirtualDrive(
-                        info.Name.Replace("\\", ""), 
-                        info.Name, 
+                        info.Name.Replace("\\", ""),
+                        info.Name,
                         VirtualDriveType.Drive, info.DriveType
                     ));
             }
@@ -62,9 +60,4 @@ public class DrivesService
 
         return virtualDrives;
     }
-
-    #region Models
-
-   
-    #endregion
 }

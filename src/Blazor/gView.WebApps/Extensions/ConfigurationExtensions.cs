@@ -1,6 +1,6 @@
 ﻿using System.Reflection;
 
-namespace gView.Web.Extensions;
+namespace gView.WebApps.Extensions;
 
 static public class ConfigurationExtensions
 {

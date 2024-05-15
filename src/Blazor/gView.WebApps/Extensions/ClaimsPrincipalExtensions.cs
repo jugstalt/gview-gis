@@ -1,6 +1,6 @@
 ﻿using System.Security.Claims;
 
-namespace gView.Web.Extensions;
+namespace gView.WebApps.Extensions;
 
 static internal class ClaimsPrincipalExtensions
 {

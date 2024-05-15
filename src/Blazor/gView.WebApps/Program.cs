@@ -4,8 +4,8 @@ using gView.Carto.Razor.Extensions.DependencyInjection;
 using gView.DataExplorer.Plugins.Extensions.DependencyInjection;
 using gView.Razor.Extensions.DependencyInjection;
 using gView.Razor.Leaflet.Extensions.DependencyInjection;
-using gView.Web.Extensions;
-using gView.Web.Extensions.DependencyInjection;
+using gView.WebApps.Extensions;
+using gView.WebApps.Extensions.DependencyInjection;
 using gView.WebApps.Components;
 using MudBlazor;
 using MudBlazor.Services;
@@ -30,6 +30,7 @@ builder.Services
     .AddWebScopeContextService()
     .AddAuth(builder.Configuration)
     .AddDrives(builder.Configuration)
+    .AddPublishServers(builder.Configuration)
     .AddCustomTiles(builder.Configuration.Bind);
 
 builder.Services.AddMudServices(config =>

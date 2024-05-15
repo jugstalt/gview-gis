@@ -19,7 +19,7 @@
     <ProjectReference Include="..\gView.Cmd.LuceneServer.Lib\gView.Cmd.LuceneServer.Lib.csproj" />
     <ProjectReference Include="..\gView.Cmd.MxlUtil.Lib\gView.Cmd.MxlUtil.Lib.csproj" />
     <ProjectReference Include="..\gView.Cmd.TileCache.Lib\gView.Cmd.TileCache.Lib.csproj" />
-    <ProjectReference Include="..\gView.CopyFeatureclass.Lib\gView.Cmd.CopyFeatureclass.Lib.csproj" />
+    <ProjectReference Include="..\gView.Cmd.CopyFeatureclass.Lib\gView.Cmd.CopyFeatureclass.Lib.csproj" />
   </ItemGroup>
 
 </Project>

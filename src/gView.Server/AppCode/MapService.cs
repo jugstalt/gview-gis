@@ -18,16 +18,24 @@ namespace gView.Server.AppCode
                        _folder = String.Empty,
                        _name = String.Empty;
         private MapServiceType _type = MapServiceType.MXL;
+        private MapServiceAccessService _accessService;
         private MapServiceSettings _settings = null;
         private MapServiceSettings _folderSettings = null;
         private DateTime? _lastServiceRefresh = null;
-        private readonly MapServiceManager _mss;
+        private readonly MapServiceManager _mapServiceManager;
 
         public MapService() { }
-        public MapService(MapServiceManager mss, string filename, string folder, MapServiceType type)
+        public MapService(
+                    MapServiceManager mapServiceManager, 
+                    MapServiceAccessService accessService,
+                    string filename, 
+                    string folder, 
+                    MapServiceType type)
         {
-            _mss = mss;
+            _mapServiceManager = mapServiceManager;
+            _accessService = accessService;
             _type = type;
+
             try
             {
                 _filename = filename;
@@ -181,7 +189,7 @@ namespace gView.Server.AppCode
                     return;
                 }
 
-                var folderMapService = _mss.MapServices
+                var folderMapService = _mapServiceManager.MapServices
                     .Where(s => s.Type == MapServiceType.Folder && this.Folder.Equals(s.Name, StringComparison.InvariantCultureIgnoreCase))
                     .FirstOrDefault() as MapService;
 
@@ -218,7 +226,7 @@ namespace gView.Server.AppCode
 
             if (_folderSettings != null)
             {
-                CheckAccess(context, _folderSettings);
+                _accessService.CheckAccess(context, _folderSettings);
 
                 if (context.ServiceRequest != null)
                 {
@@ -234,53 +242,7 @@ namespace gView.Server.AppCode
                 }
             }
 
-            CheckAccess(context, _settings);
-        }
-
-        private void CheckAccess(IServiceRequestContext context, IMapServiceSettings settings)
-        {
-            if (settings?.AccessRules == null || settings.AccessRules.Length == 0)  // No Settings -> free service
-            {
-                return;
-            }
-
-            string userName = context.ServiceRequest?.Identity?.UserName;
-
-            var accessRule = settings
-                .AccessRules
-                .Where(r => r.Username.Equals(userName, StringComparison.InvariantCultureIgnoreCase))
-                .FirstOrDefault();
-
-            // if user not found, use rules for anonymous
-            if (accessRule == null)
-            {
-                accessRule = settings
-                    .AccessRules
-                    .Where(r => r.Username.Equals(Identity.AnonyomousUsername, StringComparison.InvariantCultureIgnoreCase))
-                    .FirstOrDefault();
-            }
-
-            if (accessRule == null || accessRule.ServiceTypes == null)
-            {
-                throw new TokenRequiredException("forbidden (user:" + userName + ")");
-            }
-
-            if (!accessRule.ServiceTypes.Contains("_all") && !accessRule.ServiceTypes.Contains("_" + context.ServiceRequestInterpreter.IdentityName.ToLower()))
-            {
-                throw new NotAuthorizedException(context.ServiceRequestInterpreter.IdentityName + " interface forbidden (user: " + userName + ")");
-            }
-
-            var accessTypes = context.ServiceRequestInterpreter.RequiredAccessTypes(context);
-            foreach (AccessTypes accessType in Enum.GetValues(typeof(AccessTypes)))
-            {
-                if (accessType != AccessTypes.None && accessTypes.HasFlag(accessType))
-                {
-                    if (!accessRule.ServiceTypes.Contains(accessType.ToString().ToLower()))
-                    {
-                        throw new NotAuthorizedException("Forbidden: " + accessType.ToString() + " access required (user: " + userName + ")");
-                    }
-                }
-            }
+            _accessService.CheckAccess(context, _settings);
         }
 
         async public Task CheckAccess(IIdentity identity, IServiceRequestInterpreter interpreter)
@@ -304,44 +266,10 @@ namespace gView.Server.AppCode
 
             if (_folderSettings != null)
             {
-                CheckAccess(identity, interpreter, _folderSettings);
+                _accessService.CheckAccess(identity, interpreter, _folderSettings);
             }
 
-            CheckAccess(identity, interpreter, _settings);
-        }
-
-        private void CheckAccess(IIdentity identity, IServiceRequestInterpreter interpreter, IMapServiceSettings settings)
-        {
-            if (settings?.AccessRules == null || settings.AccessRules.Length == 0)  // No Settings -> free service
-            {
-                return;
-            }
-
-            string userName = identity.UserName;
-
-            var accessRule = settings
-                .AccessRules
-                .Where(r => r.Username.Equals(userName, StringComparison.InvariantCultureIgnoreCase))
-                .FirstOrDefault();
-
-            // if user not found, use rules for anonymous
-            if (accessRule == null)
-            {
-                accessRule = settings
-                    .AccessRules
-                    .Where(r => r.Username.Equals(Identity.AnonyomousUsername, StringComparison.InvariantCultureIgnoreCase))
-                    .FirstOrDefault();
-            }
-
-            if (accessRule == null || accessRule.ServiceTypes == null)
-            {
-                throw new TokenRequiredException("forbidden (user:" + userName + ")");
-            }
-
-            if (!accessRule.ServiceTypes.Contains("_all") && !accessRule.ServiceTypes.Contains("_" + interpreter.IdentityName.ToLower()))
-            {
-                throw new NotAuthorizedException(interpreter.IdentityName + " interface forbidden (user: " + userName + ")");
-            }
+            _accessService.CheckAccess(identity, interpreter, _settings);
         }
 
         async public Task<bool> HasAnyAccess(IIdentity identity)
@@ -354,9 +282,11 @@ namespace gView.Server.AppCode
                 return true;
             }
 
+            var username = _accessService.Username(identity);
+
             var accessRule =
-                _folderSettings?.AccessRules?.Where(r => r.Username.Equals(identity.UserName, StringComparison.InvariantCultureIgnoreCase)).FirstOrDefault() ??
-                _settings?.AccessRules?.Where(r => r.Username.Equals(identity.UserName, StringComparison.InvariantCultureIgnoreCase)).FirstOrDefault();
+                _folderSettings?.AccessRules?.Where(r => r.Username.Equals(username, StringComparison.InvariantCultureIgnoreCase)).FirstOrDefault() ??
+                _settings?.AccessRules?.Where(r => r.Username.Equals(username, StringComparison.InvariantCultureIgnoreCase)).FirstOrDefault();
 
             if (accessRule == null)
             {
@@ -392,11 +322,12 @@ namespace gView.Server.AppCode
 
             IMapServiceAccess folderAcccessRule = null;
             IMapServiceAccess accessRule = null;
+            string username = _accessService.Username(identity);
 
             if (_folderSettings?.AccessRules != null && _folderSettings.AccessRules.Length > 0)
             {
                 folderAcccessRule =
-                    _folderSettings?.AccessRules?.Where(r => r.Username.Equals(identity.UserName, StringComparison.InvariantCultureIgnoreCase)).FirstOrDefault();
+                    _folderSettings?.AccessRules?.Where(r => r.Username.Equals(username, StringComparison.InvariantCultureIgnoreCase)).FirstOrDefault();
 
                 if (folderAcccessRule == null)
                 {
@@ -411,7 +342,7 @@ namespace gView.Server.AppCode
             }
 
             accessRule =
-               _settings?.AccessRules?.Where(r => r.Username.Equals(identity.UserName, StringComparison.InvariantCultureIgnoreCase)).FirstOrDefault();
+               _settings?.AccessRules?.Where(r => r.Username.Equals(username, StringComparison.InvariantCultureIgnoreCase)).FirstOrDefault();
 
             if (accessRule == null)
             {
@@ -462,9 +393,11 @@ namespace gView.Server.AppCode
                     return true;
                 }
 
+                string username = _accessService.Username(identity);
+
                 if (_folderSettings.AccessRules != null && _folderSettings.AccessRules.Length > 0)
                 {
-                    if (_folderSettings.AccessRules.Where(r => r.Username == identity.UserName && r.ServiceTypes.Contains("publish")).Count() > 0)
+                    if (_folderSettings.AccessRules.Where(r => r.Username == username && r.ServiceTypes.Contains("publish")).Count() > 0)
                     {
                         return true;
                     }
@@ -472,7 +405,7 @@ namespace gView.Server.AppCode
 
                 if (_type == MapServiceType.Folder && _settings.AccessRules != null && _settings.AccessRules.Length > 0)
                 {
-                    if (_settings.AccessRules.Where(r => r.Username == identity.UserName && r.ServiceTypes.Contains("publish")).Count() > 0)
+                    if (_settings.AccessRules.Where(r => r.Username == username && r.ServiceTypes.Contains("publish")).Count() > 0)
                     {
                         return true;
                     }

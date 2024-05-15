@@ -15,15 +15,18 @@ namespace gView.Server.Services.MapServer
 {
     public class MapServiceManager
     {
-        private ILogger _logger;
-        private IServiceProvider _serviceProvider;
+        private readonly ILogger _logger;
+        private readonly IServiceProvider _serviceProvider;
+        private readonly MapServiceAccessService _accessService;
 
         public MapServiceManager(
             IServiceProvider serviceProvider,
+            MapServiceAccessService accessService,
             IOptionsMonitor<MapServerManagerOptions> optionsMonitor,
             ILogger<MapServiceManager> logger = null)
         {
             _serviceProvider = serviceProvider;
+            _accessService = accessService;
             Options = optionsMonitor.CurrentValue;
             _logger = logger ?? new ConsoleLogger<MapServiceManager>();
 
@@ -69,7 +72,7 @@ namespace gView.Server.Services.MapServer
                     var msds = (MapServiceDeploymentManager)_serviceProvider.GetService(typeof(MapServiceDeploymentManager));
                     var logger = (MapServicesEventLogger)_serviceProvider.GetService(typeof(MapServicesEventLogger));
 
-                    _instance = new MapServerInstance(this, msds, logger, Options.Port);
+                    _instance = new MapServerInstance(this, msds, _accessService, logger, Options.Port);
                 }
 
                 return _instance;
@@ -104,7 +107,7 @@ namespace gView.Server.Services.MapServer
 
             foreach (var folderDirectory in new DirectoryInfo((Options.ServicesPath + "/" + folder).ToPlatformPath()).GetDirectories())
             {
-                MapService folderService = new MapService(this, folderDirectory.FullName, folder, MapServiceType.Folder);
+                MapService folderService = new MapService(this, _accessService, folderDirectory.FullName, folder, MapServiceType.Folder);
                 if (MapServices.Where(s => s.Fullname == folderService.Fullname && s.Type == folderService.Type).Count() == 0)
                 {
                     MapServices.Add(folderService);
@@ -134,7 +137,7 @@ namespace gView.Server.Services.MapServer
                 folder = mapName.Split('/')[0];
                 mapName = mapName.Split('/')[1];
             }
-            MapServices.Add(new MapService(this, mapName.Trim(), folder.Trim(), type));
+            MapServices.Add(new MapService(this, _accessService, mapName.Trim(), folder.Trim(), type));
         }
 
         private object _tryAddServiceLocker = new object();
@@ -147,7 +150,7 @@ namespace gView.Server.Services.MapServer
                     return null;
                 }
 
-                MapService mapService = new MapService(this, mapFileInfo.FullName, folder, MapServiceType.MXL);
+                MapService mapService = new MapService(this, _accessService, mapFileInfo.FullName, folder, MapServiceType.MXL);
                 if (MapServices.Where(s => s.Fullname == mapService.Fullname && s.Type == mapService.Type).Count() > 0)
                 {
                     // allready exists
@@ -163,7 +166,7 @@ namespace gView.Server.Services.MapServer
                     {
                         folderName += (folderName.Length > 0 ? "/" : "") + subFolder;
                         DirectoryInfo folderDirectory = new DirectoryInfo((Options.ServicesPath + "/" + folder).ToPlatformPath());
-                        MapService folderService = new MapService(this, folderDirectory.FullName, parentFolder, MapServiceType.Folder);
+                        MapService folderService = new MapService(this, _accessService, folderDirectory.FullName, parentFolder, MapServiceType.Folder);
 
                         if (MapServices.Where(s => s.Fullname == folderService.Fullname && s.Type == folderService.Type).Count() == 0)
                         {

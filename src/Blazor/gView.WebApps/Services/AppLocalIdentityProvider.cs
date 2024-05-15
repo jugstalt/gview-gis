@@ -2,7 +2,7 @@
 using gView.Blazor.Core.Services.Abstraction;
 using Microsoft.Extensions.Options;
 
-namespace gView.Web.Services;
+namespace gView.WebApps.Services;
 
 public class AppLocalIdentityProvider : IAppIdentityProvider
 {

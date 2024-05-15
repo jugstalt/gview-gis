@@ -4,7 +4,6 @@ using gView.Framework.Common;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.InteropServices.ObjectiveC;
 
 namespace gView.Blazor.Core.Services;
 
@@ -22,7 +21,7 @@ public class PluginManagerService
     public Guid PluginGuid(object plugin)
         => PlugInManager.PlugInID(plugin);
 
-    public IEnumerable<T> GetPlugins<T>(Plugins.Type pluginType)
+    public IEnumerable<T> GetPlugins<T>(gView.Framework.Common.Plugins.Type pluginType)
         => _plugInManager
             .GetPlugins(pluginType)
             .Where(t => _identityProvider.Identity.IsAuthorizedFor(t))
@@ -30,7 +29,7 @@ public class PluginManagerService
             .ToArray();
 
 
-    public IEnumerable<System.Type> GetPluginTypes(Plugins.Type pluginType)
+    public IEnumerable<System.Type> GetPluginTypes(gView.Framework.Common.Plugins.Type pluginType)
         => _plugInManager
             .GetPlugins(pluginType)
             .Where(t => _identityProvider.Identity.IsAuthorizedFor(t))

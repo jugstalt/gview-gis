@@ -1,13 +1,12 @@
 ﻿using gView.Blazor.Core.Services;
 using gView.Blazor.Core.Services.Abstraction;
-using gView.Web.Model;
-using gView.Web.Services;
+using gView.WebApps.Model;
+using gView.WebApps.Services;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
-using Microsoft.Extensions.Options;
 
-namespace gView.Web.Extensions.DependencyInjection;
+namespace gView.WebApps.Extensions.DependencyInjection;
 
 static public class ServicesExtensions
 {
@@ -93,7 +92,7 @@ static public class ServicesExtensions
                 config.UserRoleName = authConfig.Oidc.RequiredUserRole;
             });
         }
-        else if("forms".Equals(authConfig.Type, StringComparison.OrdinalIgnoreCase)
+        else if ("forms".Equals(authConfig.Type, StringComparison.OrdinalIgnoreCase)
             && authConfig.Forms is not null)
         {
             services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
@@ -118,7 +117,7 @@ static public class ServicesExtensions
                     policy.RequireAssertion(context =>
                             context.User.IsInRoleOrHasRoleClaim(AuthConfigModel.FormsClass.AdminRole))
                     );
-                 
+
                 config.AddPolicy("gview-user", policy =>
                         policy.RequireAssertion(context =>
                             context.User.IsInRoleOrHasRoleClaim(AuthConfigModel.FormsClass.UserRole)
@@ -156,13 +155,13 @@ static public class ServicesExtensions
 
         #region SetEnvironment Variables
 
-        if (drivesModel.Drives is not null)
-        {
-            foreach (var key in drivesModel.Drives.Keys)
-            {
-                Environment.SetEnvironmentVariable(key, drivesModel.Drives[key]);
-            }
-        }
+        //if (drivesModel.Drives is not null)
+        //{
+        //    foreach (var key in drivesModel.Drives.Keys)
+        //    {
+        //        Environment.SetEnvironmentVariable(key, drivesModel.Drives[key]);
+        //    }
+        //}
 
         #endregion
 
@@ -172,5 +171,18 @@ static public class ServicesExtensions
                 config.Drives = drivesModel.Drives;
             })
             .AddScoped<DrivesService>();
+    }
+
+    static public IServiceCollection AddPublishServers(this IServiceCollection services, IConfiguration configuration)
+    {
+        var publishModel = new PublishModel();
+        configuration.Bind("Publish", publishModel);
+
+        return services
+            .Configure<PublishMapServiceOptions>(config =>
+            {
+                config.Services = publishModel.Servers ?? [];
+            })
+            .AddScoped<PublishMapService>();
     }
 }

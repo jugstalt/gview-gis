@@ -1,4 +1,4 @@
-﻿namespace gView.Web.Model;
+﻿namespace gView.WebApps.Model;
 
 public class AuthConfigModel
 {
@@ -37,9 +37,4 @@ public class AuthConfigModel
     }
 
     #endregion
-}
-
-public class DrivesModel
-{
-    public Dictionary<string, string>? Drives { get; set; }
 }

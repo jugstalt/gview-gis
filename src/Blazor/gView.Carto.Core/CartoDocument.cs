@@ -43,7 +43,7 @@ public class CartoDocument : ICartoDocument
             _map = value;
 
             this.Modules = _scope.PluginManager
-              .GetPlugins<IMapApplicationModule>(Plugins.Type.IMapApplicationModule)
+              .GetPlugins<IMapApplicationModule>(gView.Framework.Common.Plugins.Type.IMapApplicationModule)
               .ToArray() ?? [];
 
             foreach (var module in Modules)
