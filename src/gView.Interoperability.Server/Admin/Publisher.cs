@@ -1,5 +1,6 @@
 ﻿#nullable enable
 
+using gView.Framework.IO;
 using gView.Interoperability.GeoServices.Rest.Json;
 using gView.Server.Models;
 using System;
@@ -101,7 +102,7 @@ public class Publisher
     }
 
     public Task<bool> Publish(string folder, string service, string mxl)
-        => Publish(folder, service, Encoding.UTF8.GetBytes(mxl));
+        => Publish(folder, service, XmlStream.DefaultEncoding.GetBytes(mxl));
 
     async public Task<bool> Publish(string folder, string service, byte[] mxlData)
     {
@@ -112,7 +113,7 @@ public class Publisher
         var mxlContent = new ByteArrayContent(mxlData);
         mxlContent.Headers.ContentType = MediaTypeHeaderValue.Parse("text/xml");
 
-        requestContent.Add(mxlContent, "file", $"{service}.xml");
+        requestContent.Add(mxlContent, "file", $"{service}.mxl");
 
         var response = await HttpClient.PostAsync(url, requestContent);
 

@@ -49,7 +49,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Update="_config\gview-web.config">
+    <Content Update="_config\gview-webapps.config">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>

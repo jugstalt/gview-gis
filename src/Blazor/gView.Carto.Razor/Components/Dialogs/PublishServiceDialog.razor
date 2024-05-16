@@ -5,7 +5,7 @@
 <ModalDialogFormBase T="PublishServiceModel"
                      OnDialogClose="base.OnDialogClose"
                      Model="base.Model">
-    <FormContent>
+    <DialogBody>
         @if(PublishMap.HasPublishServers && !String.IsNullOrEmpty(Model.Mxl))
         {
             <GvCard Title="gView Map Server and folder">
@@ -20,38 +20,63 @@
                         }
                     </MudSelect>
 
-                    <GvGrid ColumnCount="2">
-                        <GvGridItem>
-                            @if (_folders is not null)
-                            {
-                                <MudText Typo="Typo.body2">Folder:</MudText>
-                                <MudSelect T="string"
-                                           Value="_selectedFolder"
-                                           ValueChanged="OnFolderChanged">
-                                    <MudSelectItem Value="String.Empty">---</MudSelectItem>
-                                    @foreach (var folder in _folders)
-                                    {
-                                        <MudSelectItem Value="folder">@folder</MudSelectItem>
-                                    }
-                                </MudSelect>
-                            }
-                        </GvGridItem>
-                        <GvGridItem>
-                            @if (_serviceNames is not null)
-                            {
-                                <MudText Typo="Typo.body2">Services:</MudText>
-                                <MudList T="string" Clickable="true">
-                                    @foreach (var serviceName in _serviceNames)
-                                    {
-                                        <MudListItem Value="serviceName"
-                                                     OnClick="() => _serviceName = serviceName">
-                                            @serviceName
-                                        </MudListItem>
-                                    }
-                                </MudList>
-                            }
-                        </GvGridItem>
-                    </GvGrid>
+                    @if(_selectedServer is not null) 
+                    {
+                        @if (string.IsNullOrEmpty(_selectedServer.Client)
+                             || string.IsNullOrEmpty(_selectedServer.Secret))
+                        {
+                            <GvGrid ColumnCount="2">
+                                <GvGridItem>
+                                    <MudTextField T="string"
+                                                  Variant="Variant.Text"
+                                                  Label="Client"
+                                                  @bind-Value="_client" />
+                                </GvGridItem>
+                                <GvGridItem>
+                                    <MudTextField T="string"
+                                                  Variant="Variant.Text"
+                                                  Label="Client Secret"
+                                                  InputType="InputType.Password"
+                                                  @bind-Value="_clientSecret" />
+                                </GvGridItem>
+                            </GvGrid>
+                        }
+
+                        <MudButton Variant="Variant.Filled"
+                                   Color="Color.Primary"
+                                   OnClick="OnConnectToServerAsync">Connect</MudButton>
+                        <GvGrid ColumnCount="2">
+                            <GvGridItem>
+                                @if (_folders is not null)
+                                {
+                                    <MudText Typo="Typo.body2">Folder:</MudText>
+                                    <MudSelect T="string"
+                                               Value="_selectedFolder"
+                                               ValueChanged="OnFolderChangedAsync">
+                                        @foreach (var folder in _folders)
+                                        {
+                                            <MudSelectItem Value="folder">@folder</MudSelectItem>
+                                        }
+                                    </MudSelect>
+                                }
+                            </GvGridItem>
+                            <GvGridItem>
+                                @if (_serviceNames is not null)
+                                {
+                                    <MudText Typo="Typo.body2">Services:</MudText>
+                                    <MudList T="string" Clickable="true">
+                                        @foreach (var serviceName in _serviceNames)
+                                        {
+                                            <MudListItem Value="serviceName"
+                                                         OnClick="() => _serviceName = serviceName">
+                                                @serviceName
+                                            </MudListItem>
+                                        }
+                                    </MudList>
+                                }
+                            </GvGridItem>
+                        </GvGrid>
+                    }
                 </GvCardContent>
             </GvCard>
             
@@ -65,61 +90,61 @@
         {
             <MudAlert Severity="Severity.Error">@_errorMessage</MudAlert>
         }
-    </FormContent>
+        @if(!String.IsNullOrEmpty(_successMessage))
+        {
+            <MudAlert Severity="Severity.Success">@_successMessage</MudAlert>
+        }
+    </DialogBody>
+    <DialogButtons>
+        <MudButton Variant="Variant.Filled"
+                   OnClick="base.Close">Close</MudButton>
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   OnClick="OnPublishAsync">Publish map as service</MudButton>
+    </DialogButtons>
 </ModalDialogFormBase>
 
 @code {
     private ServerInstanceModel? _selectedServer;
+
+    private string _client = "";
+    private string _clientSecret = "";
     private string _selectedFolder = "";
     private string _serviceName = "";
 
     private IEnumerable<string>? _folders;
     private IEnumerable<string>? _serviceNames;
     private string? _errorMessage;
+    private string? _successMessage;
 
-    async protected override Task OnInitializedAsync()
+    protected override void OnInitialized()
     {
-        await base.OnInitializedAsync();
+        base.OnInitialized();
 
-        await OnServerChanged(PublishMap.Servers.FirstOrDefault());
+        OnServerChanged(PublishMap.Servers.FirstOrDefault());
     }
 
-    private Task OnServerChanged(ServerInstanceModel? server) => HandleAsync(async () =>
+    private void OnServerChanged(ServerInstanceModel? server) => Handle(() =>
     {
 
         _selectedServer = server;
         _selectedFolder = "";
+        _client = _selectedServer?.Client ?? "";
+        _clientSecret = _selectedServer?.Secret ?? "";
 
-        try
-        {
-            if (_selectedServer != null)
-            {
-                _folders = await PublishMap.GetFolders(_selectedServer);
-
-                _errorMessage = null;
-            }
-            else
-            {
-                throw new Exception("No server set to publish map service...");   
-            }
-        }
-        catch (Exception ex)
-        {
-            _errorMessage = ex.Message;
-        }
-
-        await OnFolderChanged(_selectedFolder);
+        _folders = null;
+        _serviceNames = null;
+        _successMessage = null;
     });
 
-    private Task OnFolderChanged(string folder) => HandleAsync(async () =>
+    async private Task OnConnectToServerAsync()
     {
-        _selectedFolder = folder;
-
         try
         {
             if (_selectedServer != null)
             {
-                _serviceNames = await PublishMap.GetServiceNames(_selectedServer, _selectedFolder);
+                _folders = await PublishMap.GetFolders(_selectedServer, _client, _clientSecret);
+                _selectedFolder = _folders.FirstOrDefault() ?? "";
 
                 _errorMessage = null;
             }
@@ -131,6 +156,84 @@
         catch (Exception ex)
         {
             _errorMessage = ex.Message;
+        }
+
+        await OnFolderChangedAsync(_selectedFolder);
+    }
+
+    private Task OnFolderChangedAsync(string folder) => HandleAsync(async () =>
+    {
+        _selectedFolder = folder;
+
+        if (String.IsNullOrEmpty(_selectedFolder))  // can't publish to root folder as a client
+        {
+            _serviceNames = null;
+            return;
+        }
+
+        try
+        {
+            if (_selectedServer != null)
+            {
+                _serviceNames = await PublishMap.GetServiceNames(_selectedServer, _selectedFolder, _client, _clientSecret);
+
+                _errorMessage = null;
+            }
+            else
+            {
+                throw new Exception("No server set to publish map service...");
+            }
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = ex.Message;
+        }
+    });
+
+    private Task OnPublishAsync() => HandleAsync(async () =>
+    {
+        try
+        {
+            _successMessage = null;
+
+            if(_selectedServer is null)
+            {
+                throw new Exception("No server set to publish map service...");
+            }
+            if(String.IsNullOrWhiteSpace(_selectedFolder))
+            {
+                throw new Exception("No folder selected...");
+            }
+            if(String.IsNullOrWhiteSpace(_serviceName))
+            {
+                throw new Exception("No service name provided...");
+            }
+            if(String.IsNullOrEmpty(Model.Mxl))
+            {
+                throw new Exception("XML is not definied");
+            }
+
+            _selectedFolder = _selectedFolder.Trim();
+            _serviceName = _serviceName.Trim();
+
+            if(await PublishMap.PublishMap(
+                        _selectedServer, 
+                        _selectedFolder, 
+                        _serviceName,
+                        mxl: Model.Mxl,
+                        client: _client, 
+                        secret: _clientSecret) == false)
+            {
+                throw new Exception("Publish not successful: Unknown error");
+            }
+
+            _successMessage = $"Successfully published map as service: {_selectedFolder}/{_serviceName}";
+
+            await OnFolderChangedAsync(_selectedFolder);
+        } 
+        catch(Exception ex)
+        {
+            _errorMessage = ex.Message;    
         }
     });
 }

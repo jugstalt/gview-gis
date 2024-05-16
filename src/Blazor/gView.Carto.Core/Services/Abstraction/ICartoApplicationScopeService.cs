@@ -5,6 +5,7 @@ using gView.Carto.Core.Models.Tree;
 using gView.Framework.Blazor.Services.Abstraction;
 using gView.Framework.Core.Common;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
 
 namespace gView.Carto.Core.Services.Abstraction;
@@ -35,4 +36,5 @@ public interface ICartoApplicationScopeService : IApplicationScope
 
     Task<bool> LoadCartoDocument(string mxlFilePath);
     Task<bool> SaveCartoDocument(string xmlFilePath, bool performEncryption);
+    bool SerializeCartoDocument(Stream stream);
 }

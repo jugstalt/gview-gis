@@ -1,18 +1,17 @@
-﻿using gView.Carto.Core.Abstraction;
-using gView.Framework.Cartography;
-using System.Threading.Tasks;
-using gView.Framework.Data.Relations;
-using gView.Framework.Core.Data;
-using gView.Framework.Core.Carto;
-using gView.Framework.Core.IO;
-using gView.Framework.Common;
-using gView.Framework.Core.Common;
-using System;
+﻿using gView.Blazor.Core.Services;
+using gView.Carto.Core.Abstraction;
 using gView.Carto.Core.Services.Abstraction;
+using gView.Framework.Cartography;
+using gView.Framework.Common;
+using gView.Framework.Core.Carto;
+using gView.Framework.Core.Common;
+using gView.Framework.Core.Data;
+using gView.Framework.Core.IO;
+using gView.Framework.Data.Relations;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using gView.Blazor.Core.Services;
-using static System.Formats.Asn1.AsnWriter;
+using System.Threading.Tasks;
 
 namespace gView.Carto.Core;
 
@@ -24,7 +23,7 @@ public class CartoDocument : ICartoDocument
     public CartoDocument(ICartoApplicationScopeService scope, string name = "map1")
     {
         _scope = scope;
-        
+
         this.Name = name;
         this.Map = new Map() { Name = name };
     }
@@ -142,7 +141,7 @@ public class CartoDocument : ICartoDocument
                 return;
             }
 
-            foreach(var module in _document.Modules)
+            foreach (var module in _document.Modules)
             {
                 if (module is IPersistable)
                 {
@@ -184,13 +183,13 @@ public class CartoDocument : ICartoDocument
             {
                 Guid guid = new Guid((string)stream.Load("GUID")!);
                 IMapApplicationModule? module = _document.Modules
-                    .Where(m=> guid.Equals(_pluginManager.PluginGuid(m)))
+                    .Where(m => guid.Equals(_pluginManager.PluginGuid(m)))
                     .FirstOrDefault();
 
                 if (module is IPersistable persist)
                 {
                     persist.Load(stream);
-                } 
+                }
             }
             catch { }
         }

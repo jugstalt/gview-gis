@@ -16,6 +16,9 @@ namespace gView.Framework.IO
     /// </summary>
     public class XmlStream : ErrorReport, IPersistStream
     {
+        private static Encoding _defaultEncoding = Encoding.Unicode;
+        public static Encoding DefaultEncoding { get => _defaultEncoding; }
+
         private XmlDocument _doc;
         private XmlNodePlus _parent;
         private NumberFormatInfo _nhi = global::System.Globalization.CultureInfo.InvariantCulture.NumberFormat;
@@ -118,7 +121,7 @@ namespace gView.Framework.IO
         }
         public bool WriteStream(string path, Formatting formatting)
         {
-            XmlTextWriter xmlWriter = new XmlTextWriter(path, Encoding.Unicode);
+            XmlTextWriter xmlWriter = new XmlTextWriter(path, _defaultEncoding);
             xmlWriter.Formatting = formatting;
             xmlWriter.WriteStartDocument();
             RemoveXmlDeclataion();
@@ -132,7 +135,7 @@ namespace gView.Framework.IO
         }
         public bool WriteStream(Stream stream, Formatting formatting)
         {
-            XmlTextWriter xmlWriter = new XmlTextWriter(stream, Encoding.Unicode);
+            XmlTextWriter xmlWriter = new XmlTextWriter(stream, _defaultEncoding);
             xmlWriter.Formatting = formatting;
             xmlWriter.WriteStartDocument();
             RemoveXmlDeclataion();

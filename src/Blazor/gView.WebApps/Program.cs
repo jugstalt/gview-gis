@@ -12,7 +12,7 @@ using MudBlazor.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Configuration.AddJsonFile("_config/gview-web.config", true);
+builder.Configuration.AddJsonFile("_config/gview-webapps.config", true);
 
 // Aspire
 builder.AddServiceDefaults();

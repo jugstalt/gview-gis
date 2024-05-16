@@ -36,7 +36,6 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using static gView.Interoperability.GeoServices.Rest.Json.JsonServices;
-using static gView.Server.Connector.ServerConnection;
 
 namespace gView.Server.Controllers;
 
@@ -130,12 +129,16 @@ public class GeoServicesRestController : BaseController
                     await s.HasAnyAccess(identity))
                 {
                     var agsServices = await AgsServices(identity, s);
-                    if(agsServices?.Any() == true)
+                    if (agsServices?.Any() == true)
                     {
                         services.AddRange(agsServices);
-                    } 
-                    else if(await s.HasPublishAccess(identity))   
+                    }
+                    else if (await s.HasPublishAccess(identity))
                     {
+                        // if there is only a publish rule:
+                        //    add with type unknown, 
+                        //    so the services are listed inside then
+                        //    "Publish Map" tool, for eg "carto-publish" client...
                         services.Add(new AgsService()
                         {
                             Name = (String.IsNullOrWhiteSpace(s.Folder) ? "" : s.Folder + "/") + s.Name,

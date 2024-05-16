@@ -157,6 +157,16 @@ public class CartoApplicationScopeService : ApplictionBusyHandlerAndCache, ICart
         return true;
     }
 
+    public bool SerializeCartoDocument(Stream stream)
+    {
+        XmlStream xmlStream = new XmlStream("MapApplication", true);
+        xmlStream.Save("MapDocument", this.Document);
+
+        xmlStream.WriteStream(stream, System.Xml.Formatting.Indented);
+
+        return true;
+    }
+
     public TocTreeNode? SelectedTocTreeNode { get; private set; }
 
     public Task SetSelectedTocTreeNode(TocTreeNode? selectedTocTreeNode)

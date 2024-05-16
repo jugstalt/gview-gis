@@ -4,6 +4,7 @@ using gView.Carto.Razor.Components.Dialogs.Models;
 using gView.Framework.Carto.Abstraction;
 using gView.Framework.Core.Common;
 using gView.Carto.Razor.Components.Dialogs;
+using gView.Framework.IO;
 
 namespace gView.Carto.Plugins.CartoTools;
 
@@ -27,10 +28,14 @@ public class PublishMapService : ICartoButton
 
     async public Task<bool> OnClick(ICartoApplicationScopeService scope)
     {
+        var ms = new MemoryStream();
+        scope.SerializeCartoDocument(ms);
+        string mxl = XmlStream.DefaultEncoding.GetString(ms.GetBuffer());
+
         var _ = await scope.ShowModalDialog(
                 typeof(PublishServiceDialog),
                 "Publish Map Service",
-                new PublishServiceModel() { Mxl = "empty" });
+                new PublishServiceModel() { Mxl = mxl });
 
         return true;
     }

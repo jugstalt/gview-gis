@@ -34,16 +34,35 @@ public class PublishMapService
                     ServerInstanceModel server, 
                     string folder,
                     string serviceName,
-                    string mxl
+                    string mxl,
+                    string? client = null,
+                    string? secret = null
                 )
-        => CreatePublisher(server).Publish(folder, serviceName, mxl);
+        => CreatePublisher(server, client, secret).Publish(folder, serviceName, mxl);
     
-    public Task<string[]> GetFolders(ServerInstanceModel server)
-        => CreatePublisher(server).GetFolders();
+    public Task<string[]> GetFolders(
+                    ServerInstanceModel server, 
+                    string? client = null, 
+                    string? secret = null
+                )
+        => CreatePublisher(server, client, secret).GetFolders();
 
-    public Task<string[]> GetServiceNames(ServerInstanceModel server, string folder)
-        => CreatePublisher(server).GetServiceNames(folder);
+    public Task<string[]> GetServiceNames(
+                    ServerInstanceModel server, 
+                    string folder,
+                    string? client = null,
+                    string? secret = null
+                )
+        => CreatePublisher(server, client, secret).GetServiceNames(folder);
 
-    private Publisher CreatePublisher(ServerInstanceModel server)
-        => new Publisher(server.Url, server.Client, server.Secret);
+    private Publisher CreatePublisher(
+                    ServerInstanceModel server,
+                    string? client,
+                    string? secret
+                )
+        => new Publisher(
+                        server.Url, 
+                        String.IsNullOrEmpty(client) ? server.Client : client, 
+                        String.IsNullOrEmpty(secret) ? server.Secret : secret
+                    );
 }
