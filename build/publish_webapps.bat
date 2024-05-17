@@ -4,7 +4,7 @@ echo ====================
 echo Publish gView.Server
 echo ====================
 
-cd .\..\src\blazor\gView.Web
+cd .\..\src\blazor\gView.WebApps
 
 echo Windows
 ::dotnet publish -c Release -p:PublishProfile=win64

@@ -4,5 +4,5 @@ internal enum Product
 {
     Everything = 0,
     Server = 1,
-    Web = 2
+    WebApps = 2
 }

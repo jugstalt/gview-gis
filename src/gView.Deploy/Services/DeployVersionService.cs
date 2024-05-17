@@ -6,7 +6,7 @@ namespace gView.Deploy.Services;
 internal enum AppName
 {
     Server,
-    Web
+    WebApps
 }
 
 internal class DeployVersionService
@@ -24,12 +24,12 @@ internal class DeployVersionService
         if (Platform.IsLinux)
         {
             zipPrefix.Add(AppName.Server, "server-linux64-");
-            zipPrefix.Add(AppName.Web, "web-linux64-");
+            zipPrefix.Add(AppName.WebApps, "webapps-linux64-");
         }
         else if (Platform.IsWindows)
         {
             zipPrefix.Add(AppName.Server, "server-win64-");
-            zipPrefix.Add(AppName.Web, "web-win64-");
+            zipPrefix.Add(AppName.WebApps, "webapps-win64-");
         }
         else
         {
@@ -104,13 +104,13 @@ internal class DeployVersionService
                 Path.Combine(_deployRepositoryService.ProfileDirectory(profile), "server", "override", "_config", "mapserver.json"));
         }
 
-        using (var fileStream = new FileStream(Path.Combine(_versionsDirectory, $"{ZipFile(AppName.Web, version)}"), FileMode.Open))
+        using (var fileStream = new FileStream(Path.Combine(_versionsDirectory, $"{ZipFile(AppName.WebApps, version)}"), FileMode.Open))
         using (ZipArchive zipArchive = new ZipArchive(fileStream, ZipArchiveMode.Read))
         {
             _ioService.CopyIfNotExists(
                 zipArchive,
-                 $"{version}/web/_config/_gview-web.config",
-                Path.Combine(_deployRepositoryService.ProfileDirectory(profile), "web", "override", "_config", "gview-web.config"));
+                 $"{version}/webapps/_config/_gview-webapps.config",
+                Path.Combine(_deployRepositoryService.ProfileDirectory(profile), "webapps", "override", "_config", "gview-webapps.config"));
         }
     }
 

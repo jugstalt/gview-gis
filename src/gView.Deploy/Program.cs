@@ -72,7 +72,7 @@ try
 
     var product = Enum.Parse<Product>(
             consoleService
-                .ChooseFrom(["Everything", "gView.Server", "gView.Web"], "product")
+                .ChooseFrom(["Everything", "gView.Server", "gView.WebApps"], "product")
                 .Split('.')
                 .Last(),
                 true
@@ -94,13 +94,13 @@ try
 
     if (!gViewRepoPath.Exists)
     {
-        consoleService.WriteBlock($"Create a new webgis repositiry {gViewRepoPath.FullName}");
+        consoleService.WriteBlock($"Create a new gview repositiry {gViewRepoPath.FullName}");
 
         Directory.CreateDirectory(gViewRepoPath.FullName);
     }
 
-    var webTargetExists = Directory.Exists(
-            Path.Combine(deployVersionModel.ProfileTargetInstallationPath(profile, version), "web")
+    var webAppsTargetExists = Directory.Exists(
+            Path.Combine(deployVersionModel.ProfileTargetInstallationPath(profile, version), "webapps")
         );
     var serverTargetExists = Directory.Exists(
             Path.Combine(deployVersionModel.ProfileTargetInstallationPath(profile, version), "server")
@@ -133,13 +133,13 @@ try
         }
     }
 
-    if (product == Product.Everything || product == Product.Web)
+    if (product == Product.Everything || product == Product.WebApps)
     {
-        if (!webTargetExists)
+        if (!webAppsTargetExists)
         {
-            Console.WriteLine("Deploy gView Web:");
+            Console.WriteLine("Deploy gView WebApps:");
             versionService.ExtractZipFolderRecursive(
-                    AppName.Web,
+                    AppName.WebApps,
                     version,
                     "",
                     deployVersionModel.ProfileTargetInstallationPath(profile, version)
@@ -147,7 +147,7 @@ try
         }
         else
         {
-            consoleService.WriteBlock("Warning: gView.Web version already deployed");
+            consoleService.WriteBlock("Warning: gView.WebApps version already deployed");
         }
     }
 
@@ -156,9 +156,9 @@ try
     {
         versionService.CopyOverrides(profile, "server", Path.Combine(deployVersionModel.ProfileTargetInstallationPath(profile, version)), deployVersionModel);
     }
-    if (product == Product.Everything || product == Product.Web)
+    if (product == Product.Everything || product == Product.WebApps)
     {
-        versionService.CopyOverrides(profile, "web", Path.Combine(deployVersionModel.ProfileTargetInstallationPath(profile, version)), deployVersionModel);
+        versionService.CopyOverrides(profile, "webapps", Path.Combine(deployVersionModel.ProfileTargetInstallationPath(profile, version)), deployVersionModel);
     }
 }
 catch (Exception ex)
