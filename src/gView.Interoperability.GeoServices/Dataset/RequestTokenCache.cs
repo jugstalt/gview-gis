@@ -16,7 +16,7 @@ namespace gView.Interoperability.GeoServices.Dataset
 
         static public int TicketExpiration = 60;
 
-        static public Task<string> RefreshTokenAsync(string serviceUrl, string user, string password, string currentToken = "")
+        async static public Task<string> RefreshTokenAsync(string serviceUrl, string user, string password, string currentToken = "")
         {
             string currentParameter = currentToken;
             //lock (_refreshTokenLocker)
@@ -25,7 +25,7 @@ namespace gView.Interoperability.GeoServices.Dataset
 
                 if (_tokenParams.ContainsKey(dictKey) && _tokenParams[dictKey] != currentParameter)
                 {
-                    return Task.FromResult(_tokenParams[dictKey]);
+                    return _tokenParams[dictKey];
                 }
                 else
                 {
@@ -40,7 +40,7 @@ namespace gView.Interoperability.GeoServices.Dataset
                     {
                         try
                         {
-                            tokenResponse = WebFunctions.HttpSendRequest($"{tokenServiceUrl}?{tokenParams}");
+                            tokenResponse = await WebFunctions.HttpSendRequest($"{tokenServiceUrl}?{tokenParams}");
                             break;
                         }
                         catch (WebException we)
@@ -64,13 +64,13 @@ namespace gView.Interoperability.GeoServices.Dataset
                         if (jsonToken.Token != null)
                         {
                             _tokenParams.TryAdd(dictKey, jsonToken.Token);
-                            return Task.FromResult(jsonToken.Token);
+                            return jsonToken.Token;
                         }
                     }
                 }
             }
 
-            return Task.FromResult(String.Empty);
+            return String.Empty;
         }
     }
 }

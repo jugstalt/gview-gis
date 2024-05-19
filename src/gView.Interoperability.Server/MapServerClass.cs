@@ -160,7 +160,7 @@ public class MapServerClass : IWebServiceClass
             //Logger.LogDebug("Start gView Mapserver Request");
 #endif
             ServerConnection service = new ServerConnection(ConfigTextStream.ExtractValue(_dataset._connection, "server"));
-            string resp = service.Send(_name, sb.ToString(), "BB294D9C-A184-4129-9555-398AA70284BC", user, pwd);
+            string resp = await service.SendAsync(_name, sb.ToString(), "BB294D9C-A184-4129-9555-398AA70284BC", user, pwd);
 
 #if(DEBUG)
             //Logger.LogDebug("gView Mapserver Request Finished");
@@ -223,7 +223,7 @@ public class MapServerClass : IWebServiceClass
 
             if (!_dataset._opened)
             {
-                _dataset.Open();
+                var _ = _dataset.Open().Result;
             }
 
             return _dataset.Envelope().Result;
@@ -243,7 +243,7 @@ public class MapServerClass : IWebServiceClass
             {
                 if (!_dataset._opened)
                 {
-                    _dataset.Open();
+                    var _ = _dataset.Open().Result;
                 }
 
                 return _dataset._themes;

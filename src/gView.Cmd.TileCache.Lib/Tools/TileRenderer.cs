@@ -216,7 +216,8 @@ internal class TileRenderer
         {
             try
             {
-                _connector.Send(_service, args.ToString(), "ED770739-12FA-40d7-8EF9-38FE9299564A", _user, _pwd);
+                var task = _connector.SendAsync(_service, args.ToString(), "ED770739-12FA-40d7-8EF9-38FE9299564A", _user, _pwd);
+                task.Wait();  // todo: make this async...
             }
             catch (Exception ex)
             {

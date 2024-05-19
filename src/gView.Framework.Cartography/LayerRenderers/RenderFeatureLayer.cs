@@ -1,4 +1,6 @@
-﻿using gView.Framework.Core.Carto;
+﻿#nullable enable
+
+using gView.Framework.Core.Carto;
 using gView.Framework.Core.Data;
 using gView.Framework.Core.Data.Cursors;
 using gView.Framework.Core.Data.Filters;
@@ -31,7 +33,7 @@ namespace gView.Framework.Cartography.LayerRenderers
                                   IDatasetCachingContext datasetCachingContext, 
                                   IFeatureLayer layer, ICancelTracker cancelTracker, 
                                   FeatureCounter counter,
-                                  IMapRenderer mapRenderer = null)
+                                  IMapRenderer? mapRenderer = null)
         {
             _map = map;
             _datasetCachingContext = datasetCachingContext;
@@ -116,11 +118,11 @@ namespace gView.Framework.Cartography.LayerRenderers
         }
         async private Task Render(IFeatureLayer layer)
         {
-            IFeatureRenderer clonedFeatureRenderer = null;
-            ILabelRenderer clonedLabelRenderer = null;
+            IFeatureRenderer? clonedFeatureRenderer = null;
+            ILabelRenderer? clonedLabelRenderer = null;
 
-            GraphicsEngine.Abstraction.IBitmap compositionModeCopyBitmap = null;
-            GraphicsEngine.Abstraction.ICanvas compositionModeCopyCanvas = null, originalCanvas = null;
+            GraphicsEngine.Abstraction.IBitmap? compositionModeCopyBitmap = null;
+            GraphicsEngine.Abstraction.ICanvas? compositionModeCopyCanvas = null, originalCanvas = null;
 
             try
             {
@@ -200,8 +202,8 @@ namespace gView.Framework.Cartography.LayerRenderers
 
                 #region Layer Clonen
 
-                IFeatureRenderer renderer = null;
-                ILabelRenderer labelRenderer = null;
+                IFeatureRenderer? renderer = null;
+                ILabelRenderer? labelRenderer = null;
 
                 GraphicsEngine.Current.Engine?.CloneObjectsLocker.InterLock(() =>
                 {
@@ -274,15 +276,15 @@ namespace gView.Framework.Cartography.LayerRenderers
                             if (useCompostionModeCopy)
                             {
                                 originalCanvas = _map.Display.Canvas;
-                                compositionModeCopyBitmap = GraphicsEngine.Current.Engine.CreateBitmap(
+                                compositionModeCopyBitmap = GraphicsEngine.Current.Engine?.CreateBitmap(
                                     _map.Display.Bitmap.Width, 
                                     _map.Display.Bitmap.Height, 
                                     GraphicsEngine.PixelFormat.Rgba32);
 
-                                compositionModeCopyCanvas = compositionModeCopyBitmap.CreateCanvas();
+                                compositionModeCopyCanvas = compositionModeCopyBitmap?.CreateCanvas();
 
-                                compositionModeCopyBitmap.MakeTransparent();
-                                compositionModeCopyBitmap.SetResolution(_map.Display.Bitmap.DpiX,
+                                compositionModeCopyBitmap?.MakeTransparent();
+                                compositionModeCopyBitmap?.SetResolution(_map.Display.Bitmap.DpiX,
                                                                         _map.Display.Bitmap.DpiY);
 
                                 ((Display)_map.Display).Canvas = compositionModeCopyCanvas;
@@ -345,7 +347,7 @@ namespace gView.Framework.Cartography.LayerRenderers
 
                         if (compositionModeCopyCanvas != null && compositionModeCopyBitmap != null)
                         {
-                            originalCanvas.DrawBitmap(compositionModeCopyBitmap,
+                            originalCanvas?.DrawBitmap(compositionModeCopyBitmap,
                                 new GraphicsEngine.CanvasRectangle(0, 0, compositionModeCopyBitmap.Width, compositionModeCopyBitmap.Height),
                                 new GraphicsEngine.CanvasRectangle(0, 0, compositionModeCopyBitmap.Width, compositionModeCopyBitmap.Height),
                                 opacity: (float)Math.Min(1, (100f - ((IFeatureLayerComposition)layer).CompositionModeCopyTransparency) / 100));

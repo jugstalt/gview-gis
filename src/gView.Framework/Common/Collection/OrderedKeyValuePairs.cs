@@ -57,12 +57,12 @@ public class OrderedKeyValuePairs<TKey, TValue>
 
         if (kv is null)
         {
-            _list.Add(new MutableKeyValuePair<TKey, TValue>(key, value));
+            _list.Add(new MutableKeyValuePair<TKey, TValue>(key, value ?? default!));
             _keyHashSet.Add(key);
         }
         else
         {
-            kv.Value = value;
+            kv.Value = value ?? default!;
         }
     }
 

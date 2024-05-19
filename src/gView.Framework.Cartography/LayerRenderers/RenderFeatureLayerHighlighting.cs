@@ -1,4 +1,6 @@
-﻿using gView.Framework.Common;
+﻿#nullable enable
+
+using gView.Framework.Common;
 using gView.Framework.Core.Carto;
 using gView.Framework.Core.Common;
 using gView.Framework.Core.Data;
@@ -25,7 +27,7 @@ namespace gView.Framework.Cartography.LayerRenderers
                 Map map,
                 IFeatureLayer layer,
                 ICancelTracker cancelTracker,
-                IMapRenderer mapRenderer = null,
+                IMapRenderer? mapRenderer = null,
                 int maxBulkSize = -1
             )
         {
@@ -55,7 +57,7 @@ namespace gView.Framework.Cartography.LayerRenderers
                 return;
             }
 
-            var filter = ((IFeatureHighlighting)_layer).FeatureHighlightFilter.Clone() as IQueryFilter;
+            var filter = ((IFeatureHighlighting)_layer).FeatureHighlightFilter?.Clone() as IQueryFilter;
 
             if (filter == null)
             {
@@ -98,9 +100,9 @@ namespace gView.Framework.Cartography.LayerRenderers
                         : $"({filter.WhereClause}) and ({featureLayer.FilterQuery?.WhereClause})";
             }
 
-            ISymbol symbol = null;
+            ISymbol? symbol = null;
             var pluginManager = new PlugInManager();
-            IFeatureRenderer renderer = pluginManager.CreateInstance(KnownObjects.Carto_SimpleRenderer) as IFeatureRenderer;
+            IFeatureRenderer? renderer = pluginManager.CreateInstance(KnownObjects.Carto_SimpleRenderer) as IFeatureRenderer;
             if (renderer is ISymbolCreator)
             {
                 symbol = ((ISymbolCreator)renderer).CreateStandardHighlightSymbol(_layer.LayerGeometryType);

@@ -232,7 +232,7 @@ namespace gView.Interoperability.ArcXML.Dataset
                 //string axl = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><ARCXML version=\"1.1\"><REQUEST><GET_SERVICE_INFO dpi=\"96\" toc=\"true\" /></REQUEST></ARCXML>";
 
                 await ArcIMSClass.LogAsync(context, "GetServiceInfo Response", server, service, axl);
-                axl = connector.SendRequest(axl, server, service);
+                axl = await connector.SendRequest(axl, server, service);
                 await ArcIMSClass.LogAsync(context, "GetServiceInfo Response", server, service, axl);
 
                 XmlDocument doc = new XmlDocument();

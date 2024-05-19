@@ -137,9 +137,10 @@ namespace gView.Framework.Cartography
                     #region Check with all existing labels
 
                     var labelPolygons = symbol.AnnotationPolygon(display, geometry, symbolAlignment) ?? [];
+                    
                     foreach (var labelPolygon in labelPolygons)
                     {
-                        labelAppendResult = AppendResult(display, GlobalGridId, symbol, geometry, labelPolygon, checkForOverlap, symbolAlignment);
+                        labelAppendResult = AppendResult(display, GlobalGridId, symbol, labelPolygon, checkForOverlap, symbolAlignment);
                         if(labelAppendResult == LabelAppendResult.Succeeded)
                         {
                             appendPolygon = labelPolygon;
@@ -169,7 +170,7 @@ namespace gView.Framework.Cartography
 
                         foreach (var labelPolygonWithSpacing in labelPolygonsWithSpacing)
                         {
-                            labelAppendWithSpacingResult = AppendResult(display, layer.ID, symbol, geometry, labelPolygonWithSpacing, checkForOverlap, symbolAlignment);
+                            labelAppendWithSpacingResult = AppendResult(display, layer.ID, symbol, labelPolygonWithSpacing, checkForOverlap, symbolAlignment);
                             if (labelAppendWithSpacingResult == LabelAppendResult.Succeeded)
                             {
                                 appendPolygonWithSpacing = labelPolygonWithSpacing;
@@ -229,6 +230,10 @@ namespace gView.Framework.Cartography
                 bool checkForOverlap
             )
         {
+            if (_bitmap is null)
+            {
+                return LabelAppendResult.Outside;
+            }
             bool outside = true;
             IAnnotationPolygonCollision? labelPolyon = null;
             IEnvelope? labelPolyonEnvelope = null;
@@ -253,30 +258,30 @@ namespace gView.Framework.Cartography
 
                     if (!_first && checkForOverlap)
                     {
-                        if (Algorithm == OverlapAlgorirthm.Pixel)
-                        {
-                            #region Pixel Methode
+                        //if (Algorithm == OverlapAlgorirthm.Pixel)
+                        //{
+                        //    #region Pixel Methode
 
-                            for (int x = minx; x < maxx; x++)
-                            {
-                                for (int y = miny; y < maxy; y++)
-                                {
-                                    //if (x < 0 || x >= _bm.Width || y < 0 || y >= _bm.Height) continue;
+                        //    for (int x = minx; x < maxx; x++)
+                        //    {
+                        //        for (int y = miny; y < maxy; y++)
+                        //        {
+                        //            //if (x < 0 || x >= _bm.Width || y < 0 || y >= _bm.Height) continue;
 
-                                    if (polyCollision.Contains(x, y))
-                                    {
-                                        //_bm.SetPixel(x, y, Color.Yellow);
-                                        if (!_back.Equals(_bitmap.GetPixel(x, y)))
-                                        {
-                                            return LabelAppendResult.Overlap;
-                                        }
-                                    }
-                                }
-                            }
+                        //            if (polyCollision.Contains(x, y))
+                        //            {
+                        //                //_bm.SetPixel(x, y, Color.Yellow);
+                        //                if (!_back.Equals(_bitmap.GetPixel(x, y)))
+                        //                {
+                        //                    return LabelAppendResult.Overlap;
+                        //                }
+                        //            }
+                        //        }
+                        //    }
 
-                            #endregion
-                        }
-                        else
+                        //    #endregion
+                        //}
+                        //else
                         {
                             #region Geometrie Methode
                             labelPolyon = polyCollision;
@@ -341,7 +346,7 @@ namespace gView.Framework.Cartography
             Dispose();
         }
 
-        public GraphicsEngine.Abstraction.ICanvas LabelCanvas
+        public GraphicsEngine.Abstraction.ICanvas? LabelCanvas
         {
             get { return _canvas; }
         }
@@ -350,7 +355,14 @@ namespace gView.Framework.Cartography
 
         #region Helper
 
-        private LabelAppendResult AppendResult(IDisplay display, int id, ITextSymbol symbol, IGeometry geometry, IAnnotationPolygonCollision aPolygon, bool checkForOverlap, TextSymbolAlignment symbolAlignment)
+        private LabelAppendResult AppendResult(
+                        IDisplay display, 
+                        int id, 
+                        ITextSymbol symbol,
+                        IAnnotationPolygonCollision aPolygon, 
+                        bool checkForOverlap, 
+                        TextSymbolAlignment symbolAlignment
+                )
         {
             bool outside = true;
 

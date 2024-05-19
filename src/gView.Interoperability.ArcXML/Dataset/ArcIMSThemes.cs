@@ -66,7 +66,7 @@ namespace gView.Interoperability.ArcXML.Dataset
             await ArcIMSClass.LogAsync(context, "GetFeature Request", server, service, axlRequest);
             try
             {
-                resp = connector.SendRequest(axlRequest, server, service, "Query");
+                resp = await connector.SendRequest(axlRequest, server, service, "Query");
             }
             catch (Exception ex)
             {
@@ -163,7 +163,7 @@ namespace gView.Interoperability.ArcXML.Dataset
             await ArcIMSClass.LogAsync(context, "GetRasterInfo Request", server, service, axlRequest);
             try
             {
-                resp = connector.SendRequest(axlRequest, server, service);
+                resp = await connector.SendRequest(axlRequest, server, service);
             }
             catch (Exception ex)
             {

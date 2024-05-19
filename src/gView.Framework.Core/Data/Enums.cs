@@ -1,4 +1,6 @@
-﻿namespace gView.Framework.Core.Data
+﻿using gView.GraphicsEngine;
+
+namespace gView.Framework.Core.Data
 {
     public enum FeatureLayerCompositionMode
     {
@@ -43,4 +45,45 @@
         MsGeometry = FieldType.GEOMETRY,
         MsGeography = FieldType.GEOGRAPHY
     }
+
+    public enum DatasetState { unknown = 0, opened = 1 }
+
+    public enum DatasetNameCase { ignore = 0, upper = 1, lower = 2, classNameUpper = 3, classNameLower = 4, fieldNamesUpper = 5, fieldNamesLower = 6 }
+
+    public enum MapServerGrouplayerStyle
+    {
+        Dropdownable = 0,
+        Checkbox = 1
+    }
+
+    public enum InterpolationMethod
+    {
+        Fast = InterpolationMode.Low,
+        NearestNeighbor = InterpolationMode.NearestNeighbor,
+        Bilinear = InterpolationMode.Bilinear,
+        Bicubic = InterpolationMode.Bicubic /*,
+        HighQuality = System.Drawing.Drawing2D.InterpolationMode.High */
+    }
+
+    public enum TileGridType
+    {
+        image_jpg = 0,
+        image_png = 1,
+        binary_float = 2
+    }
+    public enum TileLevelType
+    {
+        ConstantImagesize = 0,
+        ConstantGeographicTilesize = 1
+    }
+
+    public enum GridRenderMethode { None = 0, Colors = 1, HillShade = 4, NullValue = 8 }
+
+    public enum joinType
+    {
+        LeftOuterJoin = 0,
+        LeftInnerJoin = 1
+    }
+
+    public enum CombinationMethod { New, Union, Intersection, Difference, SymDifference }
 }

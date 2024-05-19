@@ -23,13 +23,13 @@ internal class DeployVersionService
         zipPrefix = new Dictionary<AppName, string>();
         if (Platform.IsLinux)
         {
-            zipPrefix.Add(AppName.Server, "server-linux64-");
-            zipPrefix.Add(AppName.WebApps, "webapps-linux64-");
+            zipPrefix.Add(AppName.Server, "gview-server-linux64-");
+            zipPrefix.Add(AppName.WebApps, "gview-webapps-linux64-");
         }
         else if (Platform.IsWindows)
         {
-            zipPrefix.Add(AppName.Server, "server-win64-");
-            zipPrefix.Add(AppName.WebApps, "webapps-win64-");
+            zipPrefix.Add(AppName.Server, "gview-server-win64-");
+            zipPrefix.Add(AppName.WebApps, "gview-webapps-win64-");
         }
         else
         {
