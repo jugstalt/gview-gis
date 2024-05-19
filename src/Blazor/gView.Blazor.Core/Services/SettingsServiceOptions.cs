@@ -7,5 +7,5 @@ using System.Threading.Tasks;
 namespace gView.Blazor.Core.Services;
 public class SettingsServiceOptions
 {
-    public string Path { get; set; }
+    public string Path { get; set; } = "";
 }

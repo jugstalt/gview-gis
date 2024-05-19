@@ -51,7 +51,7 @@
 </ModalDialogFormBase>
 
 @code {
-    private Task SpatialReferenceChanged(ISpatialReference newSpatialReference) => HandleAsync(async () =>
+    private void SpatialReferenceChanged(ISpatialReference newSpatialReference) => Handle(() =>
     {
         if (Model.SpatialReference is not null)
         {

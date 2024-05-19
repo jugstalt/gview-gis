@@ -1,4 +1,5 @@
-﻿using gView.DataExplorer.Core.Models.Content;
+﻿using gView.Blazor.Models.Content;
+using gView.DataExplorer.Core.Models.Content;
 using gView.Framework.Common;
 using gView.Framework.Core.Common;
 using gView.Framework.DataExplorer.Abstraction;
@@ -26,19 +27,19 @@ internal class TileBundleContentPage : IExplorerTabPage
 
     }
 
-    async public Task<bool> OnShow()
+    public Task<bool> OnShow()
     {
-        return true;
+        return Task.FromResult(true);
     }
 
-    async public Task<IContentItemResult> RefreshContents(bool force = false)
+    public Task<IContentItemResult> RefreshContents(bool force = false)
     {
-        return null;
+        return Task.FromResult<IContentItemResult>(ContentItemResult.Empty);
     }
 
-    async public Task SetExplorerObjectAsync(IExplorerObject? value)
+    public Task SetExplorerObjectAsync(IExplorerObject? value)
     {
-
+        return Task.CompletedTask;
     }
 
     public Task<bool> ShowWith(IExplorerObject? exObject)

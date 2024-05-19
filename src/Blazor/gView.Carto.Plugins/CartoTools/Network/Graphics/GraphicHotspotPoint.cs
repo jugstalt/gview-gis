@@ -9,7 +9,7 @@ namespace gView.Carto.Plugins.CartoTools.Network.Graphics;
 public class GraphicHotspotPoint : IGraphicElement
 {
     private string _text = String.Empty;
-    private IPoint _point = null;
+    private IPoint _point;
     private SimpleLineSymbol _lineSymbol = new SimpleLineSymbol();
     private GlowingTextSymbol _textSymbol = new GlowingTextSymbol();
 
