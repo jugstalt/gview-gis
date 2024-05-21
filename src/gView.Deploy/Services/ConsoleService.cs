@@ -13,12 +13,12 @@ class ConsoleService
         Console.WriteLine(Properties.Resources.usage);
     }
 
-    public string ChooseFrom(IEnumerable<string> items, string label, bool allowNewVales = false, string examples = "")
+    public string ChooseFrom(IEnumerable<string> items, string label, bool allowNewValues = false, string examples = "")
     {
         var itemArray = items.ToArray();
 
         Console.Write($"Choose a {label}");
-        if (allowNewVales)
+        if (allowNewValues)
         {
             Console.Write(" or create a new by enter an unique name");
         }
@@ -35,7 +35,18 @@ class ConsoleService
 
         while (true)
         {
-            Console.Write($"Input {label} index [0]: ");
+            if (allowNewValues)
+            {
+                Console.Write($"Enter a new {label} name");
+                if (itemArray.Length > 0) Console.Write(" or ");
+            }
+            if (itemArray.Length > 0)
+            {
+                Console.Write($"input {label} index [0]");
+            }
+
+            Console.Write(": ");
+
             var indexString = Console.ReadLine();
 
             if (string.IsNullOrEmpty(indexString))
@@ -58,7 +69,7 @@ class ConsoleService
             }
             else
             {
-                if (allowNewVales && !string.IsNullOrWhiteSpace(indexString))
+                if (allowNewValues && !string.IsNullOrWhiteSpace(indexString))
                 {
                     Console.WriteLine();
 
@@ -117,7 +128,9 @@ class ConsoleService
                     while (true)
                     {
                         Console.Write($"{modelPropertyAttr.Prompt} [{defaultValue}]: ");
-                        val = Console.ReadLine()?.Trim();
+                        val = modelPropertyAttr.IsPassword
+                            ? InputPassword()?.Trim()
+                            : Console.ReadLine()?.Trim();
 
                         if (String.IsNullOrEmpty(val))
                         {
@@ -157,6 +170,31 @@ class ConsoleService
         }
 
         return hasChanged;
+    }
+
+    private string InputPassword()
+    {
+        string passwort = "";
+        ConsoleKeyInfo keyInfo;
+
+        do
+        {
+            keyInfo = Console.ReadKey(true);
+
+            if (keyInfo.Key != ConsoleKey.Enter && keyInfo.Key != ConsoleKey.Backspace)
+            {
+                passwort += keyInfo.KeyChar;
+                Console.Write("*");
+            }
+            else if (keyInfo.Key == ConsoleKey.Backspace && passwort.Length > 0)
+            {
+                passwort = passwort.Substring(0, passwort.Length - 1);
+                Console.Write("\b \b"); // backshift, space, backshift
+            }
+        } while (keyInfo.Key != ConsoleKey.Enter);
+        Console.WriteLine();
+
+        return passwort;
     }
 
     public void WriteCharLine(char character)

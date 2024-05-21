@@ -20,4 +20,6 @@ internal class ModelPropertyAttribute : Attribute
     public string RegexNotMatchMessage { get; set; } = String.Empty;
 
     public PropertyFormat PropertyFormat { get; set;} = PropertyFormat.Normal;
+
+    public bool IsPassword { get; set; } = false;
 }

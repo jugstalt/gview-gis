@@ -41,7 +41,7 @@ try
 
     if (String.IsNullOrEmpty(profile))
     {
-        profile = consoleService.ChooseFrom(repoService.Profiles(), "profile", allowNewVales: true, examples: "production, staging, test").Trim();
+        profile = consoleService.ChooseFrom(repoService.Profiles(), "profile", allowNewValues: true, examples: "production, staging, test").Trim();
 
         repoService.CreateProfile(profile);
     }

@@ -23,7 +23,7 @@ internal class DeployVersionModel
     public string RepositoryPath { get; set; } = "";
 
     [ModelProperty(Prompt = "gView Server online url",
-                   DefaultValue = "http://localhost:5050",
+                   DefaultValue = "http://localhost:45622",
                    Placeholder = "server-url")]
     public string ServerOnlineResource { get; set; } = "";
 
@@ -33,6 +33,7 @@ internal class DeployVersionModel
     public string AdminUsername { get; set; } = "";
 
     [ModelProperty(Prompt = "gView Admin Password",
+                   IsPassword = true,
                    DefaultValue = "*****",
                    Placeholder = "admim-password",
                    PropertyFormat = PropertyFormat.Hash512,
@@ -47,6 +48,7 @@ internal class DeployVersionModel
     public string CartoUsername { get; set; } = "";
 
     [ModelProperty(Prompt = "gView Carto Password",
+                   IsPassword = true,
                    DefaultValue = "*****",
                    Placeholder = "carto-password",
                    PropertyFormat = PropertyFormat.Hash256,

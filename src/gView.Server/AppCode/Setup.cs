@@ -104,7 +104,7 @@ namespace gView.Server.AppCode
         private string LinuxSetup(string configTemplateFile, string[] args)
         {
             string repositoryPath = GetEnvironmentVariable(EnvKey_ServerRespositoryPath) ?? "/etc/gview/gview-repository";
-            string onlineResource = GetEnvironmentVariable(EnvKey_ServerOnlineResourceUrl) ?? "http://localhost:5555";
+            string onlineResource = GetEnvironmentVariable(EnvKey_ServerOnlineResourceUrl) ?? "http://localhost:45622";
 
             var fi = new FileInfo(configTemplateFile);
 
