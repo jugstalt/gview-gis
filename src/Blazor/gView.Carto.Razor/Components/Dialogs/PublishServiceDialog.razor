@@ -84,6 +84,20 @@
                           Label="Service Name"
                           Variant="Variant.Outlined"
                           @bind-Value="_serviceName" />
+        } else {
+            <MudText Typo="Typo.body1">
+                There are no publish server configured...
+                <br/>
+                <MudLink Href="https://docs.gviewonline.com/en/setup/config-webapps.html#publishing-maps"
+                         Target="_blank">
+                    Configure "Publish Servers"
+                </MudLink>
+                <br/>
+                <MudLink Href="https://docs.gviewonline.com/en/examples/mapservice/index.html#publishing-via-gview-carto"
+                         Target="_blank">
+                    Publish maps from gView.Carto
+                </MudLink>
+            </MudText>
         }
 
         @if(!String.IsNullOrEmpty(_errorMessage))
@@ -98,9 +112,11 @@
     <DialogButtons>
         <MudButton Variant="Variant.Filled"
                    OnClick="base.Close">Close</MudButton>
-        <MudButton Variant="Variant.Filled"
-                   Color="Color.Primary"
-                   OnClick="OnPublishAsync">Publish map as service</MudButton>
+        @if (PublishMap.HasPublishServers) {
+            <MudButton Variant="Variant.Filled"
+                       Color="Color.Primary"
+                       OnClick="OnPublishAsync">Publish map as service</MudButton>
+        }
     </DialogButtons>
 </ModalDialogFormBase>
 
