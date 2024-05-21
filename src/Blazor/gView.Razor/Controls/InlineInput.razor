@@ -9,6 +9,7 @@
 @code {
     private string _value = "";
 
+#pragma warning disable BL0007
     [Parameter]
     public string? Value
     {
@@ -25,6 +26,7 @@
             ValueChanged.InvokeAsync(value);
         }
     }
+#pragma warning restore BL0007
 
     [Parameter] public EventCallback<string> ValueChanged { get; set; }
     [Parameter] public EventCallback<string> OnCommit { get; set; }

@@ -100,7 +100,7 @@ internal class NetworkTool : ICartoTool
 
         IGeometry? queryGeometry = mapEvent
             .GetGeometry()
-            .ToProjectedEnvelope(scope, scope.DisplayService.SpatialReference);
+            .ToProjectedEnvelope(scope, scope.DisplayService.SpatialReference!);
 
         if (queryGeometry is null)
         {
@@ -309,7 +309,7 @@ internal class NetworkTool : ICartoTool
             IFeatureClass featureClass => scope.GeoTransformer.Transform(
                                                 shape,
                                                 featureClass.SpatialReference,
-                                                scope.DisplayService.SpatialReference
+                                                scope.DisplayService.SpatialReference!
                                           ),
             _ => shape
         };
