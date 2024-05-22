@@ -188,7 +188,7 @@ public class DirectoryObject : ExplorerParentObject<IExplorerObject>,
             foreach (string filter in fileFilter.Split('|'))
             {
 
-                foreach (string file in Directory.GetFiles(fullName, filter))
+                foreach (string file in Directory.GetFiles(fullName, filter, new EnumerationOptions { MatchCasing = MatchCasing.CaseInsensitive }))
                 {
                     FileInfo fi = new FileInfo(file);
                     IExplorerFileObject? obj = await exObj.CreateInstance(parent, fi.FullName);
