@@ -8,7 +8,14 @@ string workDirectory = @"C:\deploy\gview-gis";
 string workDirectory = Environment.CurrentDirectory;
 #endif
 
+Console.WriteLine($"******************************************");
+Console.WriteLine($"*                                        *");
+Console.WriteLine($"*      gView.Deploy Tool {DeployVersionService.DeployToolVersion}       *");
+Console.WriteLine($"*                                        *");
+Console.WriteLine($"******************************************");
+
 Console.WriteLine($"Work-Directory: {workDirectory}");
+Console.WriteLine();
 
 string profile = String.Empty,
        version = String.Empty;
@@ -48,13 +55,56 @@ try
 
     if (consoleService.DoYouWant("to download latetest version from GitHub"))
     {
-        var githubReleaseService = new GitHubReleaseService("jugstalt", "gview5");
-
-        foreach (var url in await githubReleaseService.GetReleaseDownloadUrlsAsync())
+        try
         {
-            Console.WriteLine(url);
+            var githubReleaseService = new GitHubReleaseService("jugstalt", "gview-gis");
+
+            var lastServerInstalledVersion = versionService.GetVersions(AppName.Server).FirstOrDefault() switch
+            {
+                string str when !String.IsNullOrEmpty(str) => new Version(str),
+                _ => new Version()
+            };
+            var lastWebAppsInstalledVersion = versionService.GetVersions(AppName.WebApps).FirstOrDefault() switch
+            {
+                string str when !String.IsNullOrEmpty(str) => new Version(str),
+                _ => new Version()
+            };
+
+            foreach (var url in await githubReleaseService.GetLatestReleaseDownloadUrlsAsync())
+            {
+                var fileName = url.Split('/').Last();
+
+                Console.WriteLine($"Found newest version of {fileName}");
+
+                if (!versionService.Exits(fileName))
+                {
+                    try
+                    {
+                        using (HttpClient client = new HttpClient())
+                        {
+                            Console.Write("downloading ...");
+                            var fileByptes = await client.GetByteArrayAsync(url);
+                            Console.Write("write to disk ...");
+                            await versionService.AppendAsync(fileName, fileByptes);
+                            Console.WriteLine("done!");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Exception on downloading file: {ex.Message}");
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("... already exists in your download folder");
+                }
+            }
         }
-        Console.WriteLine("Download not implementet! Comming soon. Please download laytest Versions manually...");
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Exception: {ex.Message}");
+        }
+
         Console.WriteLine();
     }
 

@@ -1,5 +1,6 @@
 ﻿using gView.Framework.Core.Exceptions;
 using gView.Interoperability.GeoServices.Rest.Json;
+using gView.Server.AppCode;
 using gView.Server.Services.Security;
 using Microsoft.AspNetCore.Http;
 using System;
@@ -50,6 +51,9 @@ public class AuthenticationExceptionMiddleware
             {
                 Error = new JsonError.ErrorDef() { Code = 498, Message = ite.Message }
             };
+
+            // Remove Cookie
+            context.Response.Cookies.Delete(Globals.AuthCookieName);
 
             context.Response.ContentType = "application/json";
             await context.Response.WriteAsJsonAsync(error);

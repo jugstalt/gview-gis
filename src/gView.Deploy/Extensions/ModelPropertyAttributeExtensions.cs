@@ -16,6 +16,17 @@ internal static class ModelPropertyAttributeExtensions
 
         if (!String.IsNullOrEmpty(defaultValue))
         {
+            defaultValue = defaultValue.Replace("{{ROOT}}",
+                Platform.IsLinux
+                    ? Environment.GetFolderPath(Environment.SpecialFolder.UserProfile)
+                    : Platform.IsWindows
+                        ? @"C:"
+                        : "");
+            defaultValue = defaultValue.Replace(@"{{\}}",
+                Platform.IsWindows
+                ? @"\"
+                : "/");
+
             var modelType = model.GetType();
 
             var matches = Regex.Matches(defaultValue, @"{([^{}]*)");

@@ -11,6 +11,8 @@ internal enum AppName
 
 internal class DeployVersionService
 {
+    public static readonly Version DeployToolVersion = new Version(1, 24, 2101);
+
     private readonly Dictionary<AppName, string> zipPrefix;
 
     private readonly string _versionsDirectory;
@@ -41,7 +43,18 @@ internal class DeployVersionService
 
         _versionsDirectory =
             Path.Combine(_deployRepositoryService.RepositoryRootDirectoryInfo().Parent!.FullName, "download");
+
+        if (!Directory.Exists(_versionsDirectory))
+        {
+            Directory.CreateDirectory(_versionsDirectory);
+        }
     }
+
+    public bool Exits(string filename)
+        => File.Exists(Path.Combine(_versionsDirectory, filename));
+
+    public Task AppendAsync(string filename, byte[] fileData)
+        => File.WriteAllBytesAsync(Path.Combine(_versionsDirectory, filename), fileData);
 
     public IEnumerable<string> GetVersions(AppName appName)
     {

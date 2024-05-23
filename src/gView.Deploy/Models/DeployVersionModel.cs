@@ -14,11 +14,11 @@ internal class DeployVersionModel
     //public string Company { get; set; } = "";
 
     [ModelProperty(Prompt = "Target installation path",
-                   DefaultValue = "C:\\apps\\gview-gis")]
+                   DefaultValue = "{{ROOT}}{{\\}}apps{{\\}}gview-gis")]
     public string TargetInstallationPath { get; set; } = "";
 
     [ModelProperty(Prompt = "Repsitory path",
-                   DefaultValue = "{TargetInstallationPath}/{ProfileName}/gview-repository",
+                   DefaultValue = "{TargetInstallationPath}{{\\}}{ProfileName}{{\\}}gview-repository",
                    Placeholder = "repository-path")]
     public string RepositoryPath { get; set; } = "";
 
