@@ -1,0 +1,89 @@
+@using gView.DataExplorer.Core.Models.Content
+@inherits BaseHandler
+
+<GvCard Title="Rows">
+    <GvCardContent>
+        @foreach (var row in _rows)
+        {
+            <MudButton OnClick="() => HandleToggleRowPanel(row)"
+                       Color="@(row == _selectedRow ? Color.Primary : Color.Default)"
+                       Variant="@(row == _selectedRow ? Variant.Filled : Variant.Text)"
+                       Style="width:100px">
+                @row
+            </MudButton>
+        }
+    </GvCardContent>
+</GvCard>
+
+
+@if (_images != null)
+{
+   <GvCard Title="Tiles">
+        <GvCardContent>
+            <div style="white-space:nowrap; overflow:auto;">
+                @foreach (var col in _images.Keys)
+                {
+                    <div style="margin:2px;display:inline-block">
+                        @if (_images[col] is null)
+                        {
+                            <MudButton OnClick="() => HandleLoadMore(col)">Load More...</MudButton>
+                        }
+                        else
+                        {
+                            <div>@($"{_selectedRow}/{col}")</div>
+                            <img src="@($"data:image/png;base64, {Convert.ToBase64String(_images[col]!)}")" />
+                        }
+                    </div>
+                }
+            </div>
+        </GvCardContent>
+    </GvCard>
+}
+
+
+@code{
+    [Parameter] public IExplorerTabPage? FrameworkElement { get; set; }
+    [Parameter] public IExplorerObject? CurrentExplorerObject { get; set; }
+
+    private gView.DataExplorer.Core.Models.Content.TileBundleContent? _tileBundleContent;
+    private int[] _rows = [];
+    int _selectedRow = -1;
+    private IDictionary<int, byte[]?>? _images = null;
+
+    protected override Task OnParametersSetAsync() => HandleAsync(async () =>
+    {
+        await base.OnParametersSetAsync();
+
+        if (CurrentExplorerObject is null)
+        {
+            return;
+        }
+
+        _tileBundleContent = await CurrentExplorerObject.GetInstanceAsync() as gView.DataExplorer.Core.Models.Content.TileBundleContent;
+        _rows = _tileBundleContent?.Rows().ToArray() ?? [];
+    });
+
+    private void HandleToggleRowPanel(int row) 
+    {
+        _images = _tileBundleContent?.Images(_selectedRow = row);
+    }
+
+    private void HandleLoadMore(int fromCol)
+    {
+        if(_images is null)
+        {
+            return;
+        }
+
+        _images?.Remove(fromCol);
+
+        var more = _tileBundleContent?.Images(_selectedRow, fromCol);
+        if(more is not null)
+        {
+            foreach(var col in more.Keys)
+            {
+                _images![col] = more[col];
+            }
+        }
+    }
+}

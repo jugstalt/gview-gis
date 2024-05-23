@@ -1,0 +1,24 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+	  <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\gView.Cmd.Core\gView.Cmd.Core.csproj" />
+    <ProjectReference Include="..\gView.Framework.Core\gView.Framework.Core.csproj" />
+    <ProjectReference Include="..\gView.DataSources.EventTable\gView.DataSources.EventTable.csproj" />
+    <ProjectReference Include="..\gView.DataSources.Fdb.PostgreSql\gView.DataSources.Fdb.PostgreSql.csproj" />
+    <ProjectReference Include="..\gView.DataSources.Fdb.SQLite\gView.DataSources.Fdb.SQLite.csproj" />
+    <ProjectReference Include="..\gView.DataSources.Fdb.SqlServer\gView.DataSources.Fdb.SqlServer.csproj" />
+    <ProjectReference Include="..\gView.DataSources.Fdb\gView.DataSources.Fdb.csproj" />
+    <ProjectReference Include="..\gView.DataSources.GeoJson\gView.DataSources.GeoJson.csproj" />
+    <ProjectReference Include="..\gView.DataSources.MongoDb\gView.DataSources.MongoDb.csproj" />
+    <ProjectReference Include="..\gView.DataSources.MSSqlSpatial\gView.DataSources.MSSqlSpatial.csproj" />
+    <ProjectReference Include="..\gView.DataSources.OSGeo\gView.DataSources.OSGeo.csproj" />
+    <ProjectReference Include="..\gView.DataSources.PostGIS\gView.DataSources.PostGIS.csproj" />
+    <ProjectReference Include="..\gView.DataSources.Shape\gView.DataSources.Shape.csproj" />
+  </ItemGroup>
+
+</Project>

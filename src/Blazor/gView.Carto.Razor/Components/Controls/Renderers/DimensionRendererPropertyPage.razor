@@ -1,0 +1,66 @@
+@using static gView.Framework.Cartography.Rendering.DimensionRenderer
+
+@if (_renderer is not null)
+{
+    <GvCard Title="Symbology">
+        <GvCardContent>
+            <QuickSymbolPropertiesControl Symbol="_renderer.LineSymbol"
+                                          SymbolChanged="OnSymbolChanged" />
+            <QuickSymbolPropertiesControl Symbol="_renderer.TextSymbol"
+                                          SymbolChanged="OnSymbolChanged" />
+        </GvCardContent>
+    </GvCard>
+
+
+    <GvCard Title="Design">
+        <GvCardContent>
+            <MudSelect T="DimensionLineCapType"
+                       Label="Line Cap"
+                       @bind-Value="_renderer.LineCapType">
+                @(GvUtilities.EnumToSelectItems<DimensionLineCapType>())
+            </MudSelect>
+            <MudTextField Label="Format" T="string"
+                          @bind-Value="_renderer.LabelFormat"></MudTextField>
+        </GvCardContent>
+    </GvCard>
+}
+
+@code {
+    [Parameter] public object? Instance { get; set; }
+
+    private IFeatureLayer? _layer;
+    private DimensionRenderer? _renderer;
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+
+        if (Instance is IFeatureLayer fLayer)
+        {
+            _layer = fLayer;
+            _renderer = fLayer.FeatureRenderer as DimensionRenderer;
+        }
+        else
+        {
+            _renderer = Instance as DimensionRenderer;
+        }
+    }
+
+    private void OnSymbolChanged(ISymbol symbol)
+    {
+        if (_renderer is null)
+        {
+            return;
+        }
+
+        if(symbol is ILineSymbol lineSymbol)
+        {
+            _renderer.LineSymbol = lineSymbol;
+        }
+
+        if (symbol is ITextSymbol textSymbol)
+        {
+            _renderer.TextSymbol = textSymbol;
+        }
+    }
+}

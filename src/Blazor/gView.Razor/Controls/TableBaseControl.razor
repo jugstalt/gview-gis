@@ -1,0 +1,860 @@
+@using gView.Framework.Core.Data
+@using gView.Framework.Core.Data.Cursors
+@using gView.Blazor.Models.DataTable
+@using gView.Framework.Core.Data.Filters
+@using gView.Framework.Data.Filters
+
+@inherits BaseHandler
+@implements IDisposable
+
+@inject GeoTransformerService GeoTransformer
+@inject IconService IconService
+
+@if (_tableClass is not null 
+    && _tableProperties is not null
+    && _rows is not null)
+{
+    <MudTable Items="_rows" Dense="true" Hover="true"
+              T="IRow"
+              RowClassFunc="RowClassFunc"
+              Filter="FilterFunc" 
+              OnRowClick="OnRowClick"
+              FixedHeader="true" 
+              Height="calc(100% - 95px)"
+              Virtualize="true">
+       <ToolBarContent>
+            @if(CustomToolBarContent is not null)
+            {
+                @CustomToolBarContent
+            }
+
+            <GvToolBarToolGroup MinHeight="50" PaddingTopButton="6">
+                @* StartIcon="@IconService.FromString(_tableProperties.DataMode.IconString())" *@
+                <MudMenu 
+                         EndIcon="@Icons.Material.Filled.KeyboardArrowDown" 
+                         Label="@_tableProperties.DataMode.ToString().SplitCamelCase()" 
+                         Variant="Variant.Text">
+                    @foreach (var mode in Enum.GetValues<Mode>().Where(m => m.AsApplicable(_tableProperties)))
+                    {
+                        <MudMenuItem OnClick="() => OnSetDataMode(mode)">
+                            <MudIcon Icon="@IconService.FromString(mode.IconString())" />
+                            @mode.Title(_currentLayer)
+                        </MudMenuItem>
+                    }
+                </MudMenu>
+            </GvToolBarToolGroup>
+                
+            <GvToolBarToolGroup>
+                <MudText Typo="Typo.caption">Filter:</MudText>
+                <MudIconButton OnClick="OnSetFilter"
+                               Icon="@IconService.FromString("basic:filter")" />
+                @if(!string.IsNullOrEmpty(_tableProperties.FilterWhereClause))
+                {
+                    <MudIconButton Color="Color.Secondary"
+                                   OnClick="OnUnsetFilter"
+                                   Icon="@IconService.FromString("basic:filter-remove")" />
+                }
+                <MudIconButton OnClick="OnSetOrderBy" 
+                               Icon="@IconService.FromString("webgis:construct-swap-direction")" />
+                <MudIconButton OnClick="OnFieldsSettings"
+                               Icon="@IconService.FromString("basic:resize-width")" />
+            </GvToolBarToolGroup>
+            
+            @if (HasSelection())
+            {
+                <GvToolBarToolGroup>
+                    <MudText Typo="Typo.caption">Selection:</MudText>
+                
+                    <MudIconButton Icon="@IconService.FromString("webgis:zoom-marker")"
+                                   OnClick="OnZoomToSelected" />
+                    <MudIconButton Icon="@IconService.FromString("webgis:marker-remove")"
+                                   OnClick="OnRemoveSelection" />
+                </GvToolBarToolGroup>
+            }
+
+            <MudSpacer />
+            <MudTextField @bind-Value="_tableProperties.SearchString"
+                          Placeholder="Filter loaded rows" 
+                          Adornment="Adornment.Start" 
+                          AdornmentIcon="@Icons.Material.Filled.Search" 
+                          IconSize="MudBlazor.Size.Medium" Class="mt-0"></MudTextField>
+            @if(!String.IsNullOrEmpty(_tableProperties.SearchString)) 
+            {
+                <MudIconButton Icon="@Icons.Material.Outlined.Close"
+                               OnClick="() => _tableProperties.SearchString=string.Empty"/>
+            }
+        </ToolBarContent>
+       <HeaderContent>
+            @if(_tableProperties.CanSelect)
+            {
+                <MudTh>
+                    <MudCheckBox T="bool?" 
+                                 Value="VisibleRowSelectionState()"
+                                 ValueChanged="(chk) => OnSelectVisibleRows(chk!.Value)" />
+                </MudTh>
+            }
+            <MudTh>
+                <MudIconButton Icon="@Icons.Material.Filled.Search" 
+                                Size="MudBlazor.Size.Small"
+                                Color="Color.Primary"
+                                OnClick="OnZoomToVisible"
+                                aria-label="zoomto">
+                </MudIconButton>
+            </MudTh>
+            @foreach(var field in _tableProperties.TableFields)
+            {
+                <MudTh>
+                    <MudTableSortLabel SortBy="new Func<IRow, object>((e) => e[field.name])">
+                        @field.aliasname
+                        <MudIconButton Icon="@Icons.Material.Filled.FilterAlt" 
+                                Size="MudBlazor.Size.Small"
+                                Color="_tableProperties.ColumnFilters.ContainsKey(field.name) && !string.IsNullOrEmpty(_tableProperties.ColumnFilters[field.name]) ? Color.Secondary : Color.Default"
+                                OnClick="() => OnSetColumnFilter(field.name)"
+                                aria-label="filter" />
+                    </MudTableSortLabel>
+                </MudTh>
+            }
+        </HeaderContent>
+       <RowTemplate>
+            @if(_tableProperties.CanSelect)
+            {
+                <MudTd>
+                    <MudCheckBox T="bool" 
+                                  Value="@_selectionSet.Contains(context)"
+                                  ValueChanged ="(chk) => OnSelectRow(context, chk)" />
+                </MudTd>
+            }
+            <MudTd>
+                <MudIconButton Icon="@Icons.Material.Filled.Search" 
+                                Size="MudBlazor.Size.Small"
+                                Color="@(_selectionSet.Contains(context) ? Color.Default : Color.Primary)"
+                                OnClick="() => OnZoomTo(context)"
+                                aria-label="zoomto">
+                </MudIconButton>
+            </MudTd>
+            @foreach(var field in _tableProperties.TableFields)
+            {
+                <MudTd DataLabel="@field.name">@context[field.name]</MudTd>
+            }
+        </RowTemplate>
+    </MudTable>
+
+    <div style="position:absolute;bottom:0;width:100%;height:30px;overflow:hidden">
+        <GvGrid ColumnCount="@(_tableProperties.HasMore && _tableProperties.DataMode == Mode.AllData ? 2 : 1)">
+            <GvGridItem>
+                @if (_tableProperties.DataMode == Mode.AllData)
+                {
+                    <MudText Typo="Typo.body1">
+                        @if (_loading)
+                        {
+                            <MudProgressCircular Indeterminate="true" Size="MudBlazor.Size.Small" />
+                        }
+                        @($"Loaded {_rows.Count} items {(_selectionSet?.Count > 0 ? $", {_selectionSet.Count} selected" : "")}")
+                    </MudText>
+                } 
+                else if(_tableProperties.DataMode == Mode.Selection)
+                {
+                    <MudText Typo="Typo.body1">
+                        @if (_loading)
+                        {
+                            <MudProgressCircular Indeterminate="true" Size="MudBlazor.Size.Small" />
+                        }
+                        @($"{(_rows.Count < _selectionSet?.Count ? $"{_rows.Count}/{_selectionSet?.Count}" : $"{_selectionSet?.Count}")} selected")
+                    </MudText>
+                }
+            </GvGridItem>
+            @if(_tableProperties.HasMore && _tableProperties.DataMode == Mode.AllData)
+            {
+                <GvGridItem>
+                    <MudButton Variant="Variant.Filled" Style="float:right"
+                               OnClick="() => LoadData()">Load more...</MudButton>
+                </GvGridItem>
+            }
+        </GvGrid>
+    </div>
+}
+
+@code {
+    [Parameter] public ILayer? Layer { get; set; }
+    [Parameter] public IApplicationScope? ApplicationScope {get;set;}
+    [Parameter] public RenderFragment? CustomToolBarContent { get; set; }
+    [Parameter] public EventCallback OnSelectionChanged { get; set; }
+    [Parameter] public EventCallback<IEnvelope> OnZoomToClicked { get; set; }
+    [Parameter] public EventCallback OnOpenTable { get; set; }
+    [Parameter] public EventCallback<string> OnSetWhereFilter { get; set; }
+    [Parameter] public EventCallback<HighlightFeaturesEventArgs> OnHighlightFeatures{ get; set; }
+    [Parameter] public Func<ILayer, DataTableProperties>? ProvideTableProperties { get; set; }
+
+    private const string SelectedRowClass = "selected";
+    private const string HighlightedRowClass = "highlighted";
+
+    protected ILayer? _currentLayer;
+    protected ITableClass? _tableClass;
+    protected DataTableProperties? _tableProperties;
+    protected List<IRow> _rows = new();
+    protected ISelectionSet? _selectionSet;
+
+    private ICursor? _cursor;
+    private bool _loading = false;
+    private List<int> _highlightedRows = new();
+
+    protected override Task OnInitializedAsync() => HandleAsync(async () =>
+    {
+        await base.OnInitializedAsync();
+
+        await OnSetCurrentLayer(Layer);
+    });
+
+    async private Task CreateCursor(IQueryFilter? queryFilter = null)
+    {
+        ReleaseCursor();
+        _rows.Clear();
+
+        if(_tableClass is null || _tableProperties is null)
+        {
+            return;
+        }
+
+        _loading = true;
+        await base.ForceRenderComponent();
+
+        queryFilter ??= new QueryFilter()
+        {
+            SubFields = "*"
+        };
+
+        if(_currentLayer is IFeatureLayer featureLayer)
+        {
+            queryFilter.WhereClause = featureLayer.FilterQuery?.WhereClause;
+        }
+
+        queryFilter.WhereClause = string.IsNullOrEmpty(queryFilter.WhereClause)
+            ? _tableProperties.FilterWhereClause
+            : string.IsNullOrEmpty(_tableProperties.FilterWhereClause)
+                ? queryFilter.WhereClause
+                : $"({queryFilter.WhereClause}) and ({_tableProperties.FilterWhereClause})";
+
+        if(!String.IsNullOrEmpty(_tableProperties.OrderByClause))
+        {
+            queryFilter.OrderBy = _tableProperties.OrderByClause;
+        }
+
+        _cursor = await _tableClass.Search(queryFilter);
+    }
+
+    private void ReleaseCursor()
+    {
+        if(_cursor is not null)
+        {
+            _cursor.Dispose();
+        }
+
+        _cursor = null;
+    }
+
+    private async Task LoadData(int count = 10000, bool highlightRows = false)
+    {
+        _loading = true;
+
+        try 
+        {
+            if(_tableProperties is null)
+            {
+                return;
+            }
+
+            _tableProperties.HasMore = false;
+
+            if (_cursor is null)
+            {
+                return;
+            }
+
+            for (int i = 0; i < count; i++)
+            {
+                var row = _cursor switch
+                {
+                    IFeatureCursor featureCursor => await featureCursor.NextFeature(),
+                    IRowCursor rowCursor => await rowCursor.NextRow(),
+                    _ => null
+                };
+
+                if (row is null)
+                {
+                    ReleaseCursor();
+                    return;
+                }
+
+                _rows.Add(row);
+
+                if(highlightRows)
+                {
+                    _highlightedRows.Add(row.OID);
+                }
+
+                if (_rows.Count % 100 == 0)
+                {
+                    await ForceRenderComponent();
+                }
+            }
+
+            _tableProperties.HasMore = true;
+        } 
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private async Task RebuildFilterWhereClause()
+    {
+        if(_tableProperties is null)
+        {
+            return;
+        }
+
+        StringBuilder whereClause = new();
+
+        foreach(var fieldName in _tableProperties.ColumnFilters.Keys)
+        {
+            var filterValue = _tableProperties.ColumnFilters[fieldName];
+
+            if (String.IsNullOrWhiteSpace(filterValue))
+            {
+                continue;
+            }
+
+            var field = _tableProperties.TableFields.FirstOrDefault(f => f.name == fieldName);
+            if(field is null)
+            {
+                continue;
+            }
+
+            if(whereClause.Length>0)
+            {
+                whereClause.Append(" AND ");
+            }
+
+            whereClause.Append(field.FieldWhereClauseSegment(
+                    filterValue,
+                    datasetCapabilities: _tableClass?.Dataset as IDatasetCapabilities
+                ));
+        }
+
+        if (_tableProperties.FilterWhereClause != whereClause.ToString())
+        {
+            _tableProperties.FilterWhereClause = whereClause.ToString();
+
+            await OnSetWhereFilter.InvokeAsync(_tableProperties.FilterWhereClause);
+
+            await CreateCursor();
+            await LoadData();
+        }
+    }
+
+    private bool FilterFunc(IRow row)
+    {
+        if(_tableProperties is null)
+        {
+            return false;
+        }
+
+        if (string.IsNullOrWhiteSpace(_tableProperties.SearchString))
+        {
+            return true;
+        }
+
+        var searchStringWords = _tableProperties.SearchString
+                                    .Split(' ')
+                                    .Where(s => !string.IsNullOrWhiteSpace(s))
+                                    .ToArray();
+
+        foreach (var searchStringWord in searchStringWords)
+        {
+            bool found = false;
+
+            foreach(var field in _tableProperties.TableFields)
+            {
+                var val = row[field.name];
+
+                found = val switch
+                {
+                    string str => str.Contains(searchStringWord, StringComparison.OrdinalIgnoreCase),
+                    _ => val?.ToString() == searchStringWord
+                };
+
+                if(found) { break; }
+            }
+
+            if(!found)
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private string RowClassFunc(IRow row, int index)
+
+        => $"table-base-row {(_selectionSet.Contains(row) ? SelectedRowClass : String.Empty)} {(_highlightedRows.Contains(row.OID) ? HighlightedRowClass : String.Empty)}";
+
+
+    private bool? VisibleRowSelectionState()
+    {
+        if (_tableProperties?.CanSelect == true
+            && _selectionSet is IIDSelectionSet idSelectionSet)
+        {
+            var visibleRows = _rows.Where(r => FilterFunc(r)).ToArray();
+            var selectedIds = idSelectionSet.IDs ?? [];
+            int count = visibleRows.Count(r=>selectedIds.Contains(r.OID));
+
+            return count switch
+            {
+                var x when x == visibleRows.Length => true,
+                0 => false,
+                _ => null
+            };
+        }
+
+        return null;
+    }
+
+    private bool HasSelection()
+        => _selectionSet is IIDSelectionSet { Count: > 0 };
+
+    async private Task ZoomToRows(IEnumerable<IRow> rows)
+    {
+        IEnvelope? bounds = null;
+
+        // Collect and uinion
+        foreach(var row in rows)
+        {
+            if (row is IFeature { Shape: not null } feature)
+            {
+                if(bounds is null)
+                {
+                    bounds = new Envelope(feature.Shape.Envelope);
+                } 
+                else
+                {
+                    bounds.Union(feature.Shape.Envelope);   
+                }
+            }
+        }
+
+        if (bounds is not null 
+            && _tableClass is IFeatureClass { SpatialReference: not null } featureClass)
+        {
+            var boundsWgs84 = GeoTransformer.ToWGS84(bounds, featureClass.SpatialReference).Envelope;
+            boundsWgs84.Srs = 4326;
+
+            await OnZoomToClicked.InvokeAsync(boundsWgs84);
+
+            await HighlightRows(rows);
+        }
+    }
+
+    async private Task RefreshData()
+    {
+        if(_tableClass is null 
+           || _selectionSet is null
+           || _tableProperties is null)
+        {
+            return;
+        }
+
+        if(_tableProperties.DataMode == Mode.AllData)
+        {
+            await CreateCursor();
+            await LoadData();
+        }
+        else if(_tableProperties.DataMode == Mode.Selection)
+        {
+            _loading = true;
+            await base.ForceRenderComponent();
+
+            _rows = new List<IRow>(await _tableClass.GetSelectedRows(_selectionSet, _tableProperties.OrderByClause));
+            _loading = false;
+
+        }
+        else if(_tableProperties.DataMode == Mode.Identify 
+            && _tableProperties.IdentifyFilter is not null)
+        {
+            await CreateCursor(_tableProperties.IdentifyFilter.Clone() as IQueryFilter);
+            await LoadData(highlightRows: true);
+        }
+    }
+
+    private Task HighlightRows(IEnumerable<IRow>? rows)
+    {
+        if (_currentLayer is null)
+        {
+            return Task.CompletedTask;
+        }
+
+        var hightlightFilter = !String.IsNullOrEmpty(_tableClass?.IDFieldName) && rows is not null && rows.Any()
+            ? new RowIDFilter(_tableClass.IDFieldName, rows.Select(r=>r.OID).ToList())
+            : null;
+
+        _highlightedRows.Clear();
+        if(hightlightFilter is not null)
+        {
+            _highlightedRows.AddRange(rows!.Select(r => r.OID).ToList());
+        }
+
+        return OnHighlightFeatures.InvokeAsync(
+                    new HighlightFeaturesEventArgs(
+                        _currentLayer,
+                        hightlightFilter)
+            );
+    }
+
+    #region Razor Event Hanldlers
+
+    async private Task OnSetCurrentLayer(ILayer? layer)
+    {
+        _currentLayer = layer;
+
+        if (_currentLayer?.Class is ITableClass tableClass
+            && _tableClass != tableClass)
+        {
+            _tableClass = tableClass;
+
+            _tableProperties = ProvideTableProperties?.Invoke(_currentLayer) ?? new();
+            _selectionSet = (_currentLayer as IFeatureSelection)?.SelectionSet;
+            _rows = new();
+
+            _tableProperties.TableFields = _currentLayer switch
+            {
+                IFeatureLayer fLayer => fLayer.Fields.ToEnumerable()
+                                          .Where(f => f.IsDataTableField() && f.visible),
+                _ => _tableClass.Fields.ToEnumerable()
+                                    .Where(f => f.IsDataTableField())
+            };
+
+            _tableProperties.CanSelect = _selectionSet.CanHandleRowsSelection();
+
+            foreach (var field in _tableProperties.TableFields)
+            {
+                _tableProperties.ColumnFilters[field.name] =
+                    _tableProperties.ColumnFilters.ContainsKey(field.name)
+                    ? _tableProperties.ColumnFilters[field.name]
+                    : String.Empty;
+            }
+
+            if(_tableProperties.DataMode == Mode.Identify 
+                && _currentLayer is IFeatureHighlighting highlighing)
+            {
+                await OnHighlightFeatures.InvokeAsync(
+                    new HighlightFeaturesEventArgs(
+                        _currentLayer,
+                        _tableProperties.IdentifyFilter)
+                );
+            }
+
+            await OnOpenTable.InvokeAsync();
+            await RefreshData();
+        }
+    }
+
+    private Task OnSetFilter() => HandleAsync(async () =>
+    {
+        if(_tableProperties is null 
+            || _tableClass is null
+            || _currentLayer is null
+            || ApplicationScope is null)
+        {
+            return;    
+        }
+
+        var model = await ApplicationScope.ShowModalDialog(typeof(gView.Razor.Dialogs.QueryBuilderDialog),
+            "Query Builder",
+            new QueryBuilderModel()
+            {
+                QueryString = _tableProperties.FilterWhereClause,
+                Actions = QueryBuilderAction.Query 
+                    | (_currentLayer is IFeatureSelection 
+                            ? QueryBuilderAction.Select | QueryBuilderAction.QueryAndSelect 
+                            : QueryBuilderAction.None),
+                TableClass = _tableClass
+            });
+
+        if(model is null)
+        {
+            return;
+
+        }
+
+        if ((model.SelectedAction == QueryBuilderAction.Select 
+            || model.SelectedAction == QueryBuilderAction.QueryAndSelect
+            )
+            && _selectionSet is not null
+            && !String.IsNullOrEmpty(model.QueryString))
+        {
+            if (await _tableClass.Select(new QueryFilter() { WhereClause = model.QueryString }) is ISelectionSet selectionSet)
+            {
+                ((IFeatureSelection)_currentLayer).SelectionSet = _selectionSet = selectionSet;
+                _tableProperties.DataMode = Mode.Selection;
+                await OnSelectionChanged.InvokeAsync();
+            }
+        }
+
+        if (_tableProperties.FilterWhereClause != model.QueryString)
+        {
+            _rows.Clear();
+            _loading = true;
+            await ForceRenderComponent();
+
+            if (model.SelectedAction == QueryBuilderAction.Query
+               || model.SelectedAction == QueryBuilderAction.QueryAndSelect)
+            {
+                _tableProperties.ColumnFilters.SetAllValues("");
+                _tableProperties.FilterWhereClause = model.QueryString;
+
+                await OnSetWhereFilter.InvokeAsync(model.QueryString);
+            }
+
+            if(String.IsNullOrEmpty(model.QueryString) 
+               && _selectionSet is not null
+               && _selectionSet.Count > 0) 
+            {
+                _selectionSet?.Clear();
+                await OnSelectionChanged.InvokeAsync();
+            }
+
+            await RefreshData();
+        }
+    });
+
+    private Task OnUnsetFilter() => HandleAsync(async () =>
+    {
+        if(_tableProperties is null)
+        {
+            return;    
+        }
+
+        _tableProperties.FilterWhereClause = _tableProperties.SearchString = "";
+        _tableProperties.ColumnFilters.SetAllValues("");
+
+        await OnSetWhereFilter.InvokeAsync("");
+
+        await CreateCursor();
+        await LoadData();
+    });
+
+    private Task OnSetOrderBy() => HandleAsync(async () =>
+    {
+        if(_tableProperties is null 
+            || ApplicationScope is null)
+        {
+            return;    
+        }
+
+        var model = await ApplicationScope.ShowModalDialog(typeof(gView.Razor.Dialogs.OrderByDialog),
+            "Query OrderBy",
+            new OrderByDialogModel()
+                {
+                    OrderByClause = _tableProperties.OrderByClause,
+                    Instance = _currentLayer
+                });
+
+        if(model is not null &&
+            _tableProperties.OrderByClause != model.OrderByClause)
+        {
+            _tableProperties.OrderByClause = model.OrderByClause;
+            await RefreshData();
+        }
+    });
+
+    private Task OnFieldsSettings() => HandleAsync(async () =>
+    {
+        if (_tableProperties is null
+            || ApplicationScope is null)
+        {
+            return;
+        }
+
+        var model = await ApplicationScope.ShowModalDialog(typeof(gView.Razor.Dialogs.LayerFieldsDialog),
+            "Field Settings",
+            new LayerFieldsDialogModel()
+                {
+                    Layer = _currentLayer as IFeatureLayer
+                });
+
+        if (model is not null)
+        {
+            await RefreshData();
+        }
+    });
+
+    private Task OnZoomTo(IRow row) => HandleAsync(async () =>
+    {
+        if (row is IFeature {Shape: not null } feature
+           && _tableClass is IFeatureClass { SpatialReference: not null } featureClass
+           )
+        {
+            var bounds = feature.Shape.Envelope;
+            var boundsWgs84 = GeoTransformer.ToWGS84(bounds, featureClass.SpatialReference).Envelope;
+            boundsWgs84.Srs = 4326;
+
+            await OnZoomToClicked.InvokeAsync(boundsWgs84);
+
+            await HighlightRows([row]);
+        }
+    });
+
+    private Task OnZoomToVisible() => HandleAsync(() => 
+        ZoomToRows(_rows.Where(r => FilterFunc(r)))
+    );
+
+    private Task OnZoomToSelected() => HandleAsync(async () =>
+    {
+        if (_tableClass is null 
+            || _selectionSet is null)
+        {
+            return;
+        }
+
+        var selectedRows = await _tableClass.GetSelectedRows(_selectionSet);
+
+        await ZoomToRows(selectedRows);    
+    });
+
+    private Task OnSelectRow(IRow row, bool select) => HandleAsync(async () =>
+    {
+        if (_selectionSet is IIDSelectionSet idSelectionSet)
+        {
+            if (select)
+            {
+                idSelectionSet.AddID(row.OID);
+            }
+            else
+            {
+                idSelectionSet.RemoveID(row.OID);
+
+                if(_tableProperties?.DataMode == Mode.Selection)
+                {
+                    _rows.Remove(row);
+
+                    if(_rows.Count == 0)
+                    {
+                        _tableProperties.DataMode = Mode.AllData;
+
+                        await RefreshData();
+                    }
+                }
+            }
+
+            await OnSelectionChanged.InvokeAsync();
+        }
+    });
+
+    private Task OnSelectVisibleRows(bool select) => HandleAsync(async () =>
+    {
+        if (_selectionSet is IIDSelectionSet idSelectionSet)
+        {
+            foreach(var row in _rows.Where(r=>FilterFunc(r)))
+            {
+                if (select)
+                {
+                    idSelectionSet.AddID(row.OID);
+                }
+                else
+                {
+                    idSelectionSet.RemoveID(row.OID);
+                }
+            }
+
+            await OnSelectionChanged.InvokeAsync();
+        }
+    });
+
+    private Task OnRemoveSelection() => HandleAsync(async () =>
+    {
+        _selectionSet?.Clear();
+        await OnSelectionChanged.InvokeAsync();
+
+        if(_tableProperties?.DataMode == Mode.Selection) 
+        {
+            _tableProperties.DataMode = Mode.AllData;
+
+            await CreateCursor();
+            await LoadData();
+        }
+    });
+
+    async private Task OnSetDataMode(Mode dataMode)
+    {
+        if(_tableProperties is null)
+        {
+            return;
+        }
+
+        _tableProperties.DataMode = dataMode;
+
+        if (_tableProperties.DataMode == Mode.Identify
+                && _currentLayer is IFeatureHighlighting highlighing)
+        {
+            await OnHighlightFeatures.InvokeAsync(
+                new HighlightFeaturesEventArgs(
+                    _currentLayer,
+                    _tableProperties.IdentifyFilter)
+            );
+        } 
+        else if(_currentLayer is not null)
+        {
+            await OnHighlightFeatures.InvokeAsync(
+                new HighlightFeaturesEventArgs(
+                    _currentLayer,
+                    null)
+            );
+
+            _highlightedRows.Clear();
+        }
+
+        await RefreshData();
+    }
+
+    private Task OnSetColumnFilter(string fieldName) => HandleAsync(async () =>
+    {
+        if (ApplicationScope is null ||
+            _tableProperties is null ||
+           !_tableProperties.ColumnFilters.ContainsKey(fieldName))
+        {
+            return;
+        }
+
+        var model = await ApplicationScope.ShowKnownDialog(
+            Framework.Blazor.KnownDialogs.PromptDialog,
+            "Column Filter",
+            new PromptDialogModel<string>()
+            {
+                Prompt = fieldName,
+                HelperText = "Filter for this field. You can/should use Wildcard (%) if necessary.",
+                Value = _tableProperties.ColumnFilters[fieldName]
+            });
+
+        if(model is not null
+            && _tableProperties.ColumnFilters[fieldName] != model.Value)
+        {
+            _tableProperties.ColumnFilters[fieldName] = model.Value ?? "";
+
+            await this.RebuildFilterWhereClause();
+        }
+    });
+
+    private Task OnRowClick(TableRowClickEventArgs<IRow> args)
+        => HighlightRows(_highlightedRows.Count == 1 && _highlightedRows.Contains(args.Item.OID) ? null : [args.Item]);  // if row already highlighted remove highlight (null)
+
+    #endregion
+
+    #region IDisposable
+
+    public void Dispose()
+    {
+        ReleaseCursor();
+    }
+
+    #endregion
+}

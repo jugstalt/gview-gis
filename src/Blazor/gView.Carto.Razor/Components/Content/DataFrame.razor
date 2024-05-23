@@ -1,0 +1,33 @@
+@inject CartoEventBusService EventBus
+@implements IDisposable
+
+@inject ICartoApplicationScopeService AppScope
+
+@if (AppScope.DataTableService.CurrentLayer is not null)
+{
+    <DataTableControl Layer="@AppScope.DataTableService.CurrentLayer" />
+}
+
+@code {
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+
+        EventBus.OnShowDataTableAsync += HandleShowTable;
+    }
+
+    private Task HandleShowTable(ILayer? layer)
+    {
+        if (layer is not null)
+        {
+            AppScope.DataTableService.AddIfNotExists(layer, true);
+        }
+
+        return InvokeAsync(() => StateHasChanged());
+    }
+
+    public void Dispose()
+    {
+        EventBus.OnShowDataTableAsync -= HandleShowTable;
+    }
+}

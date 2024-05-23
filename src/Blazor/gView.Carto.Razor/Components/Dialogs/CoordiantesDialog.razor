@@ -1,0 +1,67 @@
+@inherits ModalDialogFormBase<CoordiantesModel>
+
+@inject GeoTransformerService GeoTransformation
+
+<ModalDialogFormBase T="CoordiantesModel"
+                     OnDialogClose="base.OnDialogClose"
+                     Model="base.Model">
+    <DialogBody>
+                
+        <SpatialReferenceControl SpatialReference="Model.SpatialReference"
+                                 SRefChanged="SpatialReferenceChanged"/>
+
+        <GvCard Title="Coordinate">
+            <GvCardContent>
+                <GvGrid ColumnCount="2">
+                    <GvGridItem>
+                        <MudNumericField @bind-Value="Model.Coordinate.X"
+                                         Label="X" 
+                                         Format="@(Model.SpatialReference?.SpatialParameters?.IsGeographic == true ? "F6" : "F2")"
+                                         HelperText="Please enter a X-coordiante" />
+                    </GvGridItem>
+                    <GvGridItem>
+                        <MudNumericField @bind-Value="Model.Coordinate.Y"
+                                         Label="Y" 
+                                         Format="@(Model.SpatialReference?.SpatialParameters?.IsGeographic == true ? "F6" : "F2")"
+                                         HelperText="Please enter a Y-coordiante" />
+                    </GvGridItem>
+                </GvGrid>
+            </GvCardContent>
+        </GvCard>
+        <GvCard title="Map Scale">
+            <GvCardContent>
+                <MudNumericField @bind-Value="Model.MapScaleDominator"
+                                 Label="Map Scale 1:"
+                                 HelperText="Please enter a scale dominator" />
+            </GvCardContent>
+        </GvCard>
+    </DialogBody>
+    <DialogButtons>
+        <MudButton OnClick="base.Close" 
+                   Variant="Variant.Filled"
+                   Color="Color.Surface">
+            Close
+        </MudButton>
+        <MudButton OnClick="base.Submit"
+                   Variant="Variant.Filled"
+                   Color="Color.Primary">
+            Zoom To
+        </MudButton>
+    </DialogButtons>
+</ModalDialogFormBase>
+
+@code {
+    private void SpatialReferenceChanged(ISpatialReference newSpatialReference) => Handle(() =>
+    {
+        if (Model.SpatialReference is not null)
+        {
+            Model.Coordinate = GeoTransformation.Transform(
+                        Model.Coordinate,
+                        Model.SpatialReference,
+                        newSpatialReference
+                    ) as IPoint ?? new Point();
+        }
+
+        Model.SpatialReference = newSpatialReference;
+    });
+}

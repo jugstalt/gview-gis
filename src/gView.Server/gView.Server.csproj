@@ -1,0 +1,151 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+	<ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
+	<GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
+	<UserSecretsId>5f6c0b27-9e97-4ac0-9e86-471e6a2c602b</UserSecretsId>
+	<DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+  </PropertyGroup>
+	
+<!--
+	<PropertyGroup>
+		<AspNetCoreHostingModel>OutOfProcess</AspNetCoreHostingModel>
+	</PropertyGroup>
+  
+  <PropertyGroup>
+    <AspNetCoreHostingModel></AspNetCoreHostingModel>
+  </PropertyGroup>
+-->
+  
+  <ItemGroup>
+    <None Remove="proj.db" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <_WebToolingArtifacts Remove="Properties\PublishProfiles\docker-linux64.pubxml" />
+    <_WebToolingArtifacts Remove="Properties\PublishProfiles\linux64.pubxml" />
+    <_WebToolingArtifacts Remove="Properties\PublishProfiles\win64.pubxml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="proj.db">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="BuildBundlerMinifier" Version="3.2.449" />
+    <PackageReference Include="BundlerMinifier.Core" Version="3.2.449" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="8.0.5" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="8.0.5" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.5" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.5">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="8.0.0" />
+    <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.20.1" />
+    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="8.0.2" />
+    <PackageReference Include="System.Text.RegularExpressions" Version="4.3.1" />
+    <PackageReference Include="YamlDotNet" Version="13.7.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Aspire\gView.ServiceDefaults\gView.ServiceDefaults.csproj" />
+    <ProjectReference Include="..\gView.Azure\gView.Azure.csproj" />
+    <ProjectReference Include="..\gView.Facilities\gView.Facilities.csproj" />
+    <ProjectReference Include="..\gView.Framework.Cartography.Rendering.Vtc\gView.Framework.Cartography.Rendering.Vtc.csproj" />
+    <ProjectReference Include="..\gView.Framework.Cartography.Rendering\gView.Framework.Cartography.Rendering.csproj" />
+    <ProjectReference Include="..\gView.Framework.Cartography\gView.Framework.Cartography.csproj" />
+    <ProjectReference Include="..\gView.Framework.Core\gView.Framework.Core.csproj" />
+    <ProjectReference Include="..\gView.Framework.Data.Fields\gView.Framework.Data.Fields.csproj" />
+    <ProjectReference Include="..\gView.Framework.Data.Joins\gView.Framework.Data.Joins.csproj" />
+    <ProjectReference Include="..\gView.DataSources.EventTable\gView.DataSources.EventTable.csproj" />
+    <ProjectReference Include="..\gView.DataSources.Fdb.PostgreSql\gView.DataSources.Fdb.PostgreSql.csproj" />
+    <ProjectReference Include="..\gView.DataSources.Fdb.SQLite\gView.DataSources.Fdb.SQLite.csproj" />
+    <ProjectReference Include="..\gView.DataSources.Fdb.SqlServer\gView.DataSources.Fdb.SqlServer.csproj" />
+    <ProjectReference Include="..\gView.DataSources.Fdb\gView.DataSources.Fdb.csproj" />
+    <ProjectReference Include="..\gView.DataSources.GeoJson\gView.DataSources.GeoJson.csproj" />
+    <ProjectReference Include="..\gView.DataSources.MongoDb\gView.DataSources.MongoDb.csproj" />
+    <ProjectReference Include="..\gView.DataSources.MSSqlSpatial\gView.DataSources.MSSqlSpatial.csproj" />
+    <ProjectReference Include="..\gView.DataSources.OSGeo\gView.DataSources.OSGeo.csproj" />
+    <ProjectReference Include="..\gView.DataSources.PostGIS\gView.DataSources.PostGIS.csproj" />
+    <ProjectReference Include="..\gView.DataSources.Raster\gView.DataSources.Raster.csproj" />
+    <ProjectReference Include="..\gView.DataSources.Shape\gView.DataSources.Shape.csproj" />
+    <ProjectReference Include="..\gView.DataSources.TileCache\gView.DataSources.TileCache.csproj" />
+    <ProjectReference Include="..\gView.DataSources.VectorTileCache\gView.DataSources.VectorTileCache.csproj" />
+    <ProjectReference Include="..\gView.Framework.Data\gView.Framework.Data.csproj" />
+    <ProjectReference Include="..\gView.Framework.Db\gView.Framework.Db.csproj" />
+    <ProjectReference Include="..\gView.Editor.Core\gView.Editor.Core.csproj" />
+    <ProjectReference Include="..\gView.Framework.Geometry\gView.Framework.Geometry.csproj" />
+    <ProjectReference Include="..\gView.Framework.Symbology.Vtc\gView.Framework.Symbology.Vtc.csproj" />
+    <ProjectReference Include="..\gView.Framework.Vtc\gView.Framework.Vtc.csproj" />
+    <ProjectReference Include="..\gView.GraphicsEngine.Default\gView.GraphicsEngine.Default.csproj" />
+    <ProjectReference Include="..\gView.GraphicsEngine.GdiPlus\gView.GraphicsEngine.GdiPlus.csproj" />
+    <ProjectReference Include="..\gView.GraphicsEngine.Skia\gView.GraphicsEngine.Skia.csproj" />
+    <ProjectReference Include="..\gView.GraphicsEngine\gView.GraphicsEngine.csproj" />
+    <ProjectReference Include="..\gView.Interoperability.ArcXML\gView.Interoperability.ArcXML.csproj" />
+    <ProjectReference Include="..\gView.Interoperability.GeoServices\gView.Interoperability.GeoServices.csproj" />
+    <ProjectReference Include="..\gView.Interoperability.OGC\gView.Interoperability.OGC.csproj" />
+    <ProjectReference Include="..\gView.Interoperability.Server\gView.Interoperability.Server.csproj" />
+    <ProjectReference Include="..\gView.Framework.Logging\gView.Framework.Logging.csproj" />
+    <ProjectReference Include="..\gView.Framework.Calc\gView.Framework.Calc.csproj" />
+    <ProjectReference Include="..\gView.Framework.Metadata\gView.Framework.Metadata.csproj" />
+    <ProjectReference Include="..\gView.Framework.Network\gView.Framework.Network.csproj" />
+    <ProjectReference Include="..\gView.Framework.Offline\gView.Framework.Offline.csproj" />
+    <ProjectReference Include="..\gView.Framework.OGC\gView.Framework.OGC.csproj" />
+    <ProjectReference Include="..\gView.Plugins.Modules\gView.Plugins.Modules.csproj" />
+    <ProjectReference Include="..\gView.Framework.Security\gView.Framework.Security.csproj" />
+    <ProjectReference Include="..\gView.Server.Connector\gView.Server.Connector.csproj" />
+    <ProjectReference Include="..\gView.Server.Models\gView.Server.Models.csproj" />
+    <ProjectReference Include="..\gView.Framework.Symbology\gView.Framework.Symbology.csproj" />
+    <ProjectReference Include="..\gView.Framework\gView.Framework.csproj" />
+    <ProjectReference Include="..\gView.Framework.Web\gView.Framework.Web.csproj" />
+    <ProjectReference Include="..\gView.Framework.AXL\gView.Framework.AXL.csproj" />
+    <ProjectReference Include="..\gView.Framework.XML\gView.Framework.XML.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Views\GeoServices\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="gv_estag_dkm_sdet.Designer.cs">
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>gv_estag_dkm_sdet.settings</DependentUpon>
+    </Compile>
+    <Compile Update="tor_sdep.Designer.cs">
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>tor_sdep.settings</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Update="_config\_mapserver.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="gv_estag_dkm_sdet.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>gv_estag_dkm_sdet.Designer.cs</LastGenOutput>
+    </None>
+    <None Update="tor_sdep.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>tor_sdep.Designer.cs</LastGenOutput>
+    </None>
+    <None Update="_lics\credits.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="_lics\license.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+</Project>

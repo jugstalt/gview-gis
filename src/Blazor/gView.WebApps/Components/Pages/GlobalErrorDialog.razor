@@ -1,0 +1,26 @@
+﻿<div style="padding:10px">
+    @if(Exception is not null) 
+    {
+        <GvCard Title="Exception">
+            <GvCardContent>
+                <div style="min-width:320px;max-width:640px">
+                    <strong>@Exception.GetType().Name</strong>
+                    <div>@Exception.Message</div>
+                </div>
+            
+            </GvCardContent>
+        </GvCard>
+
+        <GvCard Title="Stacktrace">
+            <GvCardContent>
+                <pre style="min-width:320px;max-width:640px;min-height:300px;overflow:auto">
+                    @Exception.StackTrace
+                </pre>
+            </GvCardContent>
+        </GvCard>
+    }
+</div>
+
+@code {
+    [Parameter] public Exception? Exception { get; set; }
+}

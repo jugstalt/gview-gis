@@ -1,0 +1,63 @@
+@using gView.Framework.IO
+
+<MudTextField ReadOnly="_readonly"
+              Lines="5"
+              @bind-Value="_connectionString" />
+
+@if(Editable == true)
+{
+    @if (_readonly)
+    {
+        <MudButton Variant="Variant.Filled"
+                   OnClick="OnStartEditing">
+            Edit
+        </MudButton>
+    }
+    else
+    {
+        <MudButton Variant="Variant.Filled"
+                   OnClick="async () => await OnStopEditing(false)">
+            Cancel
+        </MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary"
+                   OnClick="async () => await OnStopEditing(true)">
+            Save
+        </MudButton>
+    }
+}
+
+@code {
+    [Parameter] public string ConnectionString { get; set; } = "";
+    [Parameter] public EventCallback<string> ConnectionStringChanged { get; set; }
+    [Parameter] public bool Editable { get; set; } = false;
+
+    private bool _readonly = true;
+    private string _connectionString = "";
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+
+        _connectionString = ConfigTextStream.SecureConfig(ConnectionString);
+        _readonly = true;
+    }
+
+    private void OnStartEditing()
+    {
+        _readonly = false;
+        _connectionString = ConnectionString;
+    }
+
+    async private Task OnStopEditing(bool save)
+    {
+        _readonly = true;
+
+        if(save)
+        {
+            ConnectionString = _connectionString;
+            await ConnectionStringChanged.InvokeAsync(ConnectionString);
+        }
+
+        _connectionString = ConfigTextStream.SecureConfig(ConnectionString);
+    }
+}

@@ -1,0 +1,413 @@
+@inherits BaseHandler
+
+@inject IApplicationScopeFactory AppScopeFactory
+@inject ICartoDocumentService CartoDocument
+
+@if(_renderer is not null && _layer is not null)
+{
+    <GvCard Title="Field / Expression">
+        <GvCardContent>
+            <GvGrid ColumnCount="2">
+                <GvGridItem>
+                    <MudSelect T="bool" Label="Label Type"
+                                @bind-Value="_renderer.UseExpression">
+                        <MudSelectItem Value="false">Field</MudSelectItem>
+                        <MudSelectItem Value="true">Expression</MudSelectItem>
+                    </MudSelect>
+                </GvGridItem>
+                <GvGridItem>
+                    @if(_renderer.UseExpression)
+                    {
+                        <div style="padding:8px">
+                        <MudButton Variant="Variant.Filled"
+                                Color="Color.Primary"
+                                OnClick="EditExpression">
+                               Edit Expression
+                        </MudButton>
+                        </div>
+                    } 
+                    else
+                    {
+                        <MudSelect T="string" Label="Value Field"
+                               Value="_renderer.FieldName"
+                               ValueChanged="(val) => OnFieldNameChanged(val)">
+                             @GvUtilities.StringsToSelectItems(_layer.FeatureClass
+                                 .Fields?
+                                 .ToEnumerable()
+                                 .Select(f => f.name) ?? [])
+                        </MudSelect>
+                    }
+                </GvGridItem>
+            </GvGrid>
+        </GvCardContent>
+    </GvCard>
+    
+    <GvCard Title="Behavoir">
+        <GvCardContent>
+            <GvGrid ColumnCount="2">
+                <GvGridItem>
+                    <MudSelect T="SimpleLabelRenderer.RenderLabelPriority" 
+                               @bind-Value="_renderer.LabelPriority"
+                               Label="Priority">
+                        @(GvUtilities.EnumToSelectItems<SimpleLabelRenderer.RenderLabelPriority>())
+                    </MudSelect>
+                </GvGridItem>
+                <GvGridItem>
+                    <MudSelect T="SimpleLabelRenderer.RenderHowManyLabels"
+                               @bind-Value="_renderer.HowManyLabels"
+                               Label="How Many Labels">
+                        @(GvUtilities.EnumToSelectItems<SimpleLabelRenderer.RenderHowManyLabels>())
+                    </MudSelect>
+                </GvGridItem>
+            </GvGrid>
+        </GvCardContent>
+    </GvCard>
+
+    <GvCard Title="Symbol / Cartography">
+        <GvCardContent>
+            <GvGrid ColumnCount="2">
+                <GvGridItem>
+                    <div style="width:250px;height:200px;" @onclick="OnEditSymbol">
+                        <img src="@(_renderer.ToBase64ImageSource(CartoDocument.CurrentMap, 250, 200))" />
+                    </div>
+                </GvGridItem>
+                <GvGridItem>
+                    <MudButton Color="Color.Primary" 
+                                Variant="Variant.Outlined"
+                               OnClick="SetRotation">Rotation</MudButton>
+                    <MudButton Color="Color.Primary"
+                                Variant="Variant.Outlined"
+                                OnClick="OnEditSymbol">Symbol</MudButton>
+                    @if(_layer.HasLineGeometry())
+                    {
+                        <MudButton Color="Color.Primary"
+                                   Variant="Variant.Outlined"
+                                   OnClick="SetCartographicsCartoLineLabelingMethod">Text Orientation</MudButton>
+                    }
+                </GvGridItem>
+            </GvGrid>
+        </GvCardContent>
+    </GvCard>
+
+    @if (_renderer.TextSymbol is not null)
+    {
+        <GvCard Title="Placement / Placement Priority">
+            <GvCardContent>
+                <MudRadioGroup T="TextSymbolAlignment"
+                               SelectedOption="_renderer.TextSymbol.TextSymbolAlignment"
+                               SelectedOptionChanged="OnSymbolAlignmentChanged"  >
+                    <table>
+                        <tr>
+                            <td>
+                                <MudRadio Size="MudBlazor.Size.Small" 
+                                          Option="TextSymbolAlignment.rightAlignOver" />
+                            </td>
+                            <td>
+                                <MudRadio Size="MudBlazor.Size.Small" 
+                                          Option="TextSymbolAlignment.Over" />
+                            </td>
+                            <td>
+                                <MudRadio Size="MudBlazor.Size.Small" 
+                                          Option="TextSymbolAlignment.leftAlignOver" />
+                            </td>
+                            @if(_layer.CanApplySecondaryLabelAlignment()) 
+                            {
+                                <td>
+                                    <MudButton Variant="Variant.Filled"
+                                               OnClick="() => AppendSecondaryAlignment(TextSymbolAlignment.rightAlignOver)"
+                                               Color="SecondaryButtonColor(TextSymbolAlignment.rightAlignOver)">
+                                        @SecondaryAlignIndexText(TextSymbolAlignment.rightAlignOver)
+                                    </MudButton>
+                                </td>
+                                <td>
+                                    <MudButton Variant="Variant.Filled"
+                                               OnClick="() => AppendSecondaryAlignment(TextSymbolAlignment.Over)"
+                                               Color="SecondaryButtonColor(TextSymbolAlignment.Over)">
+                                        @SecondaryAlignIndexText(TextSymbolAlignment.Over)
+                                    </MudButton>
+                                </td>
+                                <td>
+                                    <MudButton Variant="Variant.Filled"
+                                               OnClick="() => AppendSecondaryAlignment(TextSymbolAlignment.leftAlignOver)"
+                                               Color="SecondaryButtonColor(TextSymbolAlignment.leftAlignOver)">
+                                        @SecondaryAlignIndexText(TextSymbolAlignment.leftAlignOver)
+                                    </MudButton>
+                                </td>
+                            }
+                        </tr>
+                        <tr>
+                            <td>
+                                <MudRadio Size="MudBlazor.Size.Small" 
+                                          Option="TextSymbolAlignment.rightAlignCenter" />
+                            </td>
+                            <td>
+                                <MudRadio Size="MudBlazor.Size.Small" 
+                                          Option="TextSymbolAlignment.Center" />
+                            </td>
+                            <td>
+                                <MudRadio Size="MudBlazor.Size.Small" 
+                                          Option="TextSymbolAlignment.leftAlignCenter" />
+                            </td>
+                            @if (_layer.CanApplySecondaryLabelAlignment())
+                            {
+                                <td>
+                                    <MudButton Variant="Variant.Filled"
+                                               OnClick="() => AppendSecondaryAlignment(TextSymbolAlignment.rightAlignCenter)"
+                                               Color="SecondaryButtonColor(TextSymbolAlignment.rightAlignCenter)">
+                                        @SecondaryAlignIndexText(TextSymbolAlignment.rightAlignCenter)
+                                    </MudButton>
+                                </td>
+                                <td>
+                                    <MudButton Variant="Variant.Filled"
+                                               OnClick="() => AppendSecondaryAlignment(TextSymbolAlignment.Center)"
+                                               Color="SecondaryButtonColor(TextSymbolAlignment.Center)">
+                                        @SecondaryAlignIndexText(TextSymbolAlignment.Center)
+                                    </MudButton>
+                                </td>
+                                <td>
+                                    <MudButton Variant="Variant.Filled"
+                                               OnClick="() => AppendSecondaryAlignment(TextSymbolAlignment.leftAlignCenter)"
+                                               Color="SecondaryButtonColor(TextSymbolAlignment.leftAlignCenter)">
+                                        @SecondaryAlignIndexText(TextSymbolAlignment.leftAlignCenter)
+                                    </MudButton>
+                                </td>
+                            }
+                        </tr>
+                        <tr>
+                            <td>
+                                <MudRadio Size="MudBlazor.Size.Small" 
+                                          Option="TextSymbolAlignment.rightAlignUnder" />
+                            </td>
+                            <td>
+                                <MudRadio Size="MudBlazor.Size.Small" 
+                                          Option="TextSymbolAlignment.Under" />
+                            </td>
+                            <td>
+                                <MudRadio Size="MudBlazor.Size.Small" 
+                                          Option="TextSymbolAlignment.leftAlignUnder" />
+                            </td>
+                            @if(_layer.CanApplySecondaryLabelAlignment()) 
+                            {
+                                <td>
+                                    <MudButton Variant="Variant.Filled"
+                                               OnClick="() => AppendSecondaryAlignment(TextSymbolAlignment.rightAlignUnder)"
+                                               Color="SecondaryButtonColor(TextSymbolAlignment.rightAlignUnder)">
+                                        @SecondaryAlignIndexText(TextSymbolAlignment.rightAlignUnder)
+                                    </MudButton>
+                                </td>
+                                <td>
+                                    <MudButton Variant="Variant.Filled"
+                                               OnClick="() => AppendSecondaryAlignment(TextSymbolAlignment.Under)"
+                                               Color="SecondaryButtonColor(TextSymbolAlignment.Under)">
+                                        @SecondaryAlignIndexText(TextSymbolAlignment.Under)
+                                    </MudButton>
+                                </td>
+                                <td>
+                                    <MudButton Variant="Variant.Filled"
+                                               OnClick="() => AppendSecondaryAlignment(TextSymbolAlignment.leftAlignUnder)"
+                                               Color="SecondaryButtonColor(TextSymbolAlignment.leftAlignUnder)">
+                                        @SecondaryAlignIndexText(TextSymbolAlignment.leftAlignUnder)
+                                    </MudButton>
+                                </td>
+                            }
+                        </tr>
+                        @if (_layer.CanApplySecondaryLabelAlignment())
+                        {
+                            <tr>
+                                <td colspan="3"></td>
+                                <td colspan="3">
+                                    <MudButton Variant="Variant.Filled"
+                                               OnClick="ResetSecondaryAlignment">Reset</MudButton>
+                                </td>
+                            </tr>
+                            
+                        }
+                    </table>
+                </MudRadioGroup>
+            </GvCardContent>
+        </GvCard>
+    }
+}
+ 
+@code {
+    [Parameter] public object? Instance { get; set; }
+
+    private IFeatureLayer? _layer;
+    private SimpleLabelRenderer? _renderer;
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+
+        if (Instance is IFeatureLayer fLayer)
+        {
+            _layer = fLayer;
+            _renderer = fLayer.LabelRenderer as SimpleLabelRenderer;
+        }
+        else
+        {
+            _renderer = Instance as SimpleLabelRenderer;
+        }
+
+        if(_renderer?.TextSymbol is not null)
+        {
+            if(_renderer.TextSymbol.SecondaryTextSymbolAlignments.IsNullOrEmpty())
+            {
+                ResetSecondaryAlignment();
+            }
+        }
+    }
+
+    private void OnSymbolChanged(ITextSymbol symbol)
+    {
+        if (_renderer is not null)
+        {
+            _renderer.TextSymbol = symbol;
+        }
+    }
+
+    private void OnFieldNameChanged(string fieldName)
+    {
+        if(_renderer is null)
+        {
+            return;
+        }
+
+        _renderer.FieldName = fieldName;
+    }
+
+    private Task OnEditSymbol() => HandleAsync(async () =>
+    {
+        if(_renderer?.TextSymbol is null)
+        {
+            return;
+        }
+
+        var newSymbol = await _renderer.TextSymbol.Compose(AppScopeFactory);
+
+        if(newSymbol is ITextSymbol textSymbol)
+        {
+            _renderer.TextSymbol = textSymbol;
+        }
+    });
+
+    private void OnSymbolAlignmentChanged(TextSymbolAlignment alignment)
+    {
+        if(_renderer?.TextSymbol is not null)
+        {
+            _renderer.TextSymbol.TextSymbolAlignment = alignment;
+            _renderer.TextSymbol.SecondaryTextSymbolAlignments = [ alignment ];
+        }
+    }
+
+    private void AppendSecondaryAlignment(TextSymbolAlignment alignment)
+    {
+        if(_renderer?.TextSymbol is null)
+        {
+            return;
+        }
+
+        var secondaryAlignments = new List<TextSymbolAlignment>(_renderer.TextSymbol.SecondaryTextSymbolAlignments ?? []); 
+
+        if(secondaryAlignments.Contains(alignment))
+        {
+            secondaryAlignments.Remove(alignment);
+        } 
+        else
+        {
+            secondaryAlignments.Add(alignment);
+        }
+
+        _renderer.TextSymbol.SecondaryTextSymbolAlignments = secondaryAlignments.ToArray();
+    }
+
+    private void ResetSecondaryAlignment()
+    {
+        if(_renderer?.TextSymbol is not null
+           && _layer?.CanApplySecondaryLabelAlignment() == true) 
+        {
+            _renderer.TextSymbol.SecondaryTextSymbolAlignments
+                = [_renderer.TextSymbol.TextSymbolAlignment];
+        }
+    }
+
+    private Task SetRotation() => HandleAsync(() =>
+        _renderer?.SymbolRotation.EditProperties(AppScopeFactory, _layer?.FeatureClass)
+        ?? Task.CompletedTask);
+
+
+    private Task SetCartographicsCartoLineLabelingMethod() => HandleAsync(async () =>
+    {
+        if (_renderer is null)
+        {
+            return;
+        }
+
+        var model = await AppScopeFactory.ShowModalDialog
+            (typeof(LineLabelingCartographicMethodDialog),
+            "Cartographic Method",
+            new LineLabelingCartographicMethodModel()
+            {
+                CartographicLineLabeling = _renderer.CartoLineLabelling
+            },
+            new ModalDialogOptions()
+            {
+                Width = ModalDialogWidth.ExtraSmall
+            });
+
+        if (model is not null)
+        {
+            _renderer.CartoLineLabelling = model.CartographicLineLabeling;
+        }
+    });
+
+    private Task EditExpression() => HandleAsync(async () =>
+    {
+        if (_renderer is null)
+        {
+            return;
+        }
+
+        var model = await AppScopeFactory.ShowModalDialog
+            (typeof(LabelExpressionDialog),
+            "Label Expression",
+            new LabelExpressionModel()
+            {
+                TableClass = _layer?.FeatureClass,
+                Expression = _renderer.LabelExpression
+            });
+
+        if (model is not null)
+        {
+            _renderer.LabelExpression = model.Expression;
+        }
+    });
+
+    #region Helper
+
+    public string SecondaryAlignIndexText(TextSymbolAlignment alignment)
+    {
+        if(_renderer?.TextSymbol is null)
+        {
+            return "0";
+        }
+
+        if(_renderer.TextSymbol.SecondaryTextSymbolAlignments == null ||
+           _renderer.TextSymbol.SecondaryTextSymbolAlignments.Contains(alignment) == false)
+        {
+            return "0";
+        }
+
+        return (_renderer.TextSymbol.SecondaryTextSymbolAlignments.IndexOf(alignment) + 1).ToString();
+    }
+
+    public MudBlazor.Color SecondaryButtonColor(TextSymbolAlignment alignment)
+        => SecondaryAlignIndexText(alignment) switch
+        {
+            "0" => MudBlazor.Color.Surface,
+            "1" => MudBlazor.Color.Secondary,
+            _ => MudBlazor.Color.Success
+        };
+
+    #endregion
+}

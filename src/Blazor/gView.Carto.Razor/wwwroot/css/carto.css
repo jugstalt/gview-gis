@@ -1,0 +1,549 @@
+.carto-main {
+    position: absolute;
+    left: 0px;
+    top: 0px;
+    right: 0px;
+    bottom: 0px;
+    background: #e0e0e0;
+    user-select: none;
+}
+
+    .carto-main .toolbar {
+        position: absolute;
+        left: 0px;
+        top: 0px;
+        right: 0px;
+        height: 100px;
+        background: #f0f0f0;
+    }
+
+        .carto-main .toolbar .carto-tool-box {
+            height: 94px;
+            display: inline-block;
+            vertical-align: top;
+            margin: 2px;
+            border-radius: 4px;
+        }
+
+            .carto-main .toolbar .carto-tool-box .carto-tool {
+                height: 94px;
+                display: inline-block;
+                text-align: center;
+                padding: 8px;
+                margin: 0px 2px;
+                max-width: 64px;
+                vertical-align: top;
+                border: 1px solid transparent;
+                cursor: pointer;
+                box-sizing: border-box;
+                border-radius: 4px;
+                font-size: 0.9em;
+            }
+
+        .carto-main .toolbar .carto-tool:hover {
+            background-color: #0094ff46;
+            border: 1px solid #0094ff;
+            box-sizing: border-box;
+        }
+
+        .carto-main .toolbar .carto-tool-box .carto-tool-sub-box {
+            position: relative;
+            display: inline-block;
+            height: 94px;
+            vertical-align: top;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+            background: var(--mud-palette-primary-hover);
+        }
+
+            .carto-main .toolbar .carto-tool-box .carto-tool-sub-box > .title {
+                position: absolute;
+                bottom: 0px;
+                left: 0px;
+                right: 0px;
+                height: 20px;
+                text-align: center;
+                color: #ccc;
+                font-size: 11px;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
+            .carto-main .toolbar .carto-tool-box .carto-tool-sub-box .carto-tool {
+                height: 74px;
+            }
+
+            .carto-main .toolbar .carto-tool-box .carto-tool-sub-box .explorer-context-tool {
+                height: 37px;
+                overflow: hidden;
+                padding: 4px 7px;
+            }
+
+                .carto-main .toolbar .carto-tool-box .carto-tool-sub-box .explorer-context-tool:hover {
+                    background-color: #0094ff46;
+                    border: 1px solid #0094ff;
+                    box-sizing: border-box;
+                }
+
+                .carto-main .toolbar .carto-tool-box .carto-tool-sub-box .explorer-context-tool .title {
+                    display: inline-block;
+                    vertical-align: top;
+                }
+
+            .carto-main .toolbar .carto-tool-box .carto-tool-sub-box .info-box {
+                background-color: #ffa;
+                color: #333;
+                padding: 5px;
+                border: 1px solid #ee7;
+                border-radius: 4px;
+                display: inline-block;
+                height: 62px;
+                white-space: normal;
+                font-size: .85em;
+            }
+
+            .carto-main .toolbar .carto-tool-box .carto-tool-sub-box.current-tool {
+                min-width: 250px;
+                border: 2px solid var(--mud-palette-primary) !important;
+                padding-right: 24px;
+            }
+
+                .carto-main .toolbar .carto-tool-box .carto-tool-sub-box.current-tool .carto-tool.selected {
+                    background-color: var(--mud-palette-primary-hover) !important;
+                    border: 1px solid var(--mud-palette-primary);
+                }
+
+                    .carto-main .toolbar .carto-tool-box .carto-tool-sub-box.current-tool .carto-tool.selected .title {
+                        color: var(--mud-palette-primary) !important;
+                    }
+
+    .carto-main .toc {
+        position: absolute;
+        left: 0px;
+        top: 102px;
+        bottom: 32px;
+        width: 325px;
+        /*background: #fff;*/
+        overflow: auto;
+    }
+
+        .carto-main .toc .grouplayer-text {
+            /*font-weight: bold;*/
+            font-style: italic;
+            color: var(--mud-palette-primary);
+        }
+
+        .carto-main .toc .toctreenode-selected > .mud-treeview-item-content,
+        .carto-main .toc .toctreenode-selected > .mud-treeview-item-content .grouplayer-text {
+            background-color: var(--mud-palette-primary);
+            color: var(--mud-palette-primary-text);
+        }
+
+        .carto-main .toc .carto-initial-tool {
+            border: 1px solid var(--mud-palette-lines-default);
+            background-color: var(--mud-palette-primary-hover);
+            border-radius: 5px;
+            padding: 5px;
+            cursor: pointer;
+            margin: 16px 0px;
+        }
+
+            .carto-main .toc .carto-initial-tool .icon {
+                display: inline-block;
+                vertical-align: bottom;
+            }
+            .carto-main .toc .carto-initial-tool .title {
+                display: inline-block;
+            }
+
+            .carto-main .toc .carto-initial-tool .sub-title {
+                display: inline-block;
+                padding-left: 24px;
+                opacity:.5;
+            }
+
+    .carto-main .toc-content-splitter {
+        position: absolute;
+        left: 325px;
+        width: 5px;
+        top: 102px;
+        bottom: 27px;
+        cursor: w-resize;
+    }
+
+    .carto-main .content {
+        position: absolute;
+        left: 330px;
+        top: 102px;
+        right: 0px;
+        bottom: 32px;
+        background: #efefef;
+        overflow: auto;
+        padding: 0px;
+    }
+
+        .carto-main .content .mud-tabs {
+            position: absolute;
+            inset: 0px 0px 0px 0px;
+        }
+
+            .carto-main .content .mud-tabs .mud-tabs-panels {
+                position: absolute;
+                inset: 49px 0px 0px 0px;
+                overflow: auto;
+            }
+
+                .carto-main .content .mud-tabs .mud-tabs-panels .mud-table-container {
+                    overflow: unset !important;
+                }
+
+    .carto-main .data-content-splitter {
+        position: absolute;
+        left: 0px;
+        right: 0px;
+        bottom: 27px;
+        height: 5px;
+        cursor: n-resize;
+    }
+
+    .carto-main .data {
+        position: absolute;
+        left: 0px;
+        right:0px;
+        bottom: 27px;
+        height:0px;
+        overflow:hidden;
+    }
+        .carto-main .data .mud-table {
+            position: absolute;
+            inset: 0;
+        }
+    .carto-main .status-bar {
+        position: absolute;
+        left: 0px;
+        bottom: 0px;
+        right: 0px;
+        height: 25px;
+        background: #aaa;
+        overflow: hidden;
+    }
+
+.table-column-icon {
+    width: 30px;
+}
+
+.tocnode.selected > li > div:first-child {
+    background: var(--mud-palette-primary);
+    color: var(--mud-palette-primary-text);
+}
+
+.carto-main .context-selected {
+    background: #ffff00a9;
+}
+
+.carto-main .current-selected {
+    background: var(--mud-palette-primary);
+    color: var(--mud-palette-primary-text);
+}
+
+/**** Darkmode ****/
+.carto-main.dark {
+    background: #0094ff;
+}
+.carto-main.dark .content {
+    background: #333;
+}
+
+.explorer-dialog-item.selected {
+    background: var(--mud-palette-primary) !important;
+}
+
+.carto-main.dark .toolbar {
+    background: #333;
+}
+
+.carto-main.dark .toolbar .carto-tool-box .carto-tool-sub-box {
+    border: 1px solid #555;
+}
+
+.carto-main.dark .context-selected {
+    background: #555500a9;
+}
+
+.carto-main.dark .status-bar {
+    background: #333;
+}
+
+.carto-main.dark .sketchpen-icon-basic-bg-light-24 {
+    background-image: url(../../../sketchpen/basic/content/img/sketchpen/bg-dark/24/1/sprite.png) !important;
+}
+
+.carto-main.dark .sketchpen-icon-webgis-bg-light-24 {
+    background-image: url(../../../sketchpen/webgis/content/img/sketchpen/bg-dark/24/1/sprite.png) !important;
+}
+
+.carto-symbol-composer-button {
+    cursor: pointer;
+    width: 150px;
+    height: 50px;
+    border: 1px solid #616161;
+    border-radius: 6px;
+    margin: 5px 0px;
+}
+
+.carto-symbol-composer-preview {
+    width: 220px;
+    height: 130px;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+.carto-symbol-gallery-tile {
+    cursor: pointer;
+    position: relative;
+    display: inline-block;
+    width: 150px;
+    height: 140px;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+    .carto-symbol-gallery-tile:hover {
+        background-color: var(--mud-palette-primary-hover);
+    }
+
+.carto-symbol-gallery-tile .carto-symbol-gallery-tile-append {
+    display:none;
+}
+    .carto-symbol-gallery-tile:hover .carto-symbol-gallery-tile-append {
+        display: block;
+    }
+
+.carto-symbol-composer-stack-item {
+
+}
+
+.gview-selected-item {
+    background-color: var(--mud-palette-primary) !important;
+    color: var(--mud-palette-primary-text) !important;
+}
+
+    .carto-symbol-composer-stack-item.selected {
+        background-color: var(--mud-palette-primary);
+    }
+
+/*** UI Image Resources ***/
+.gview-ui-image {
+    background-repeat:no-repeat;
+    background-position:center;
+}
+
+    .gview-ui-image.img-legend-roads {
+        width: 160px;
+        height: 50px;
+        background-image: url(../img/legend_roads.png);
+    }
+
+    .gview-ui-image.img-carto-simple {
+        width: 160px;
+        height: 50px;
+        background-image: url(../img/carto_feature_order.png);
+    }
+
+    .gview-ui-image.img-carto-legendordering {
+        width: 160px;
+        height: 50px;
+        background-image: url(../img/carto_legend_ordering.png);
+    }
+
+    .gview-ui-image.img-carto-legendandsymbolordering {
+        width: 160px;
+        height: 50px;
+        background-image: url(../img/carto_symbol_ordering.png);
+    }
+
+    .gview-ui-image.img-rotation-geographic {
+        width: 150px;
+        height: 130px;
+        background-size: contain;
+        background-image: url(../img/rotation_geographic.png);
+    }
+    .gview-ui-image.img-rotation-arithmetic {
+        width: 150px;
+        height: 130px;
+        background-size: contain;
+        background-image: url(../img/rotation_arithmetic.png);
+    }
+
+    .gview-ui-image.img-compostion-over {
+        width: 250px;
+        height: 230px;
+        background-size: contain;
+        background-image: url(../img/composition_over.png);
+    }
+
+    .gview-ui-image.img-compostion-copy {
+        width: 250px;
+        height: 230px;
+        background-size: contain;
+        background-image: url(../img/composition_copy.png);
+    }
+
+    .gview-ui-image.img-line-labeling-parallel {
+        width: 220px;
+        height: 96px;
+        background-size: contain;
+        background-image: url(../img/label_parallel.png);
+    }
+    .gview-ui-image.img-line-labeling-curvedtext {
+        width: 220px;
+        height: 96px;
+        background-size: contain;
+        background-image: url(../img/label_curvedtext.png);
+    }
+    .gview-ui-image.img-line-labeling-horizontal {
+        width: 220px;
+        height: 96px;
+        background-size: contain;
+        background-image: url(../img/label_horizontal.png);
+    }
+    .gview-ui-image.img-line-labeling-perpendicular {
+        width: 220px;
+        height: 96px;
+        background-size: contain;
+        background-image: url(../img/label_perpenticlar.png);
+    }
+
+@media (-webkit-min-device-pixel-ratio: 1.5), (min-resolution: 144dpi) {
+
+    .carto-main.dark .sketchpen-icon-basic-bg-light-24 {
+        background-image: url("../../../sketchpen/basic/content/img/sketchpen/bg-dark/24/1.5/sprite.png") !important;
+    }
+
+    .carto-main.dark .sketchpen-icon-webgis-bg-light-24 {
+        background-image: url("../../../sketchpen/webgis/content/img/sketchpen/bg-dark/24/1.5/sprite.png") !important;
+    }
+}
+
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+
+    .carto-main.dark .sketchpen-icon-basic-bg-light-24 {
+        background-image: url("../../../sketchpen/basic/content/img/sketchpen/bg-dark/24/2/sprite.png") !important;
+    }
+
+    .carto-main.dark .sketchpen-icon-webgis-bg-light-24 {
+        background-image: url("../../../sketchpen/webgis/content/img/sketchpen/bg-dark/24/2/sprite.png") !important;
+    }
+}
+
+.carto-tile {
+    display:inline-block;
+    width:300px;
+    height:130px;
+    border: 1px solid var(--mud-palette-lines-default);
+    background-color: var(--mud-palette-primary-hover);
+    border-radius: 5px;
+    padding: 10px;
+    margin: 4px 7px;
+    cursor: pointer;
+    overflow: hidden;
+}
+
+    .carto-tile .icon {
+        display: inline-block;
+        vertical-align: bottom;
+    }
+
+    .carto-tile .title {
+        display: inline-block;
+    }
+
+    .carto-tile .sub-title {
+        display: inline-block;
+        padding-left: 24px;
+        opacity: .5;
+    }
+
+/* Icons */
+.sketchpen-icon-basic-bg-light-24 {
+    margin-top: 0px;
+    margin-bottom: 0px;
+}
+
+/* MudBlazor overrides */
+.mud-select-input > .explorer-dialog-root-select-item {
+    padding-left: 0px !important;
+}
+
+.mud-list-item .mud-icon-button {
+    padding: 2px 6px 2px 2px !important;
+}
+
+.mud-list-item .mud-icon-root {
+    margin-right: 6px;
+}
+
+.mud-table-cell {
+    white-space: nowrap;
+}
+
+.mud-table-row.table-base-row {
+    cursor:pointer;
+}
+.mud-table-row.selected,
+.mud-table-row.selected:hover,
+.mud-table-row.selected .mud-table-cell {
+    background-color: var(--mud-palette-primary) !important;
+    color: var(--mud-palette-primary-text) !important;
+}
+
+.mud-table-row.highlighted,
+.mud-table-row.highlighted:hover,
+.mud-table-row.highlighted .mud-table-cell {
+    /*border-top: 2px solid #ffa;
+    border-bottom: 2px solid #ffa;
+    background-color: #ffa !important;
+    color: #333 !important;*/
+    color: #aa0 !important;
+}
+
+/* Checkbox in toc */
+.mud-input-control.mud-input-control-boolean-input {
+    position: relative;
+    left: -5px;
+}
+
+/* Cards */
+
+.mud-card-header {
+    padding: 4px 16px;
+    border-bottom: 1px solid var(--mud-palette-lines-default);
+    background-color: var(--mud-palette-primary-hover);
+}
+
+.mud-card-content {
+    padding: 0px 16px;
+}
+
+
+.match-geoservice-table .row-notfound {
+    background: #ff000070;
+}
+
+.match-geoservice-table .row-missing {
+    background: #ff940bb8;
+}
+
+.match-geoservice-table .row-hidden {
+    background: #0b76ffa3;
+}
+
+
+.match-geoservice-table .row-ok {
+    background: #00ff216e;
+}
+
+.match-geoservice-table .cell-different {
+    background: #ff000070;
+}

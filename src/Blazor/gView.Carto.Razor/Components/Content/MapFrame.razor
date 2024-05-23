@@ -1,0 +1,348 @@
+@using gView.Blazor.Core
+@using gView.Blazor.Core.Extensions
+@using gView.Blazor.Core.Services.Abstraction
+@using Framework.Core.Data.Filters
+
+@inherits BaseHandler
+@implements IAsyncDisposable
+
+@inject LeafletService Leaflet
+@inject MapRenderService MapRenderer
+@inject GeoTransformerService GeoTransformer
+@inject ICartoApplicationScopeService AppScope
+@inject CartoEventBusService EventBus
+@inject MapControlBackgroundTilesService BackgroundTiles
+@inject MapControlCrsService CrsService 
+
+@if (_mapControl is not null)
+{
+    <LeafletMap Map="_mapControl" Crs="_mapControlCrs" />
+}
+
+@code{
+    private LMap? _mapControl;
+    private LCrs? _mapControlCrs;
+    private readonly DrawPhaseObjectDictionary<ImageLayer> _imageLayers = new();
+
+    private ISpatialReference _mapControlSRef = new SpatialReference("epsg:3857");
+    private bool _firstRendered = false;
+
+    protected override Task OnInitializedAsync() => HandleAsync(async () =>
+    {
+        await base.OnInitializedAsync();
+
+        EventBus.OnCartoDocumentLoadedAsync += HandleCartoDocumentLoadedAsync;
+        EventBus.OnRefreshMapAsync += HandleRefreshMapAsync;
+        EventBus.OnMapSettingsChangedAsync += HandleMapSettingsChanged;
+        EventBus.OnMapZoomToAsync += HandleMapZoomToAsync;
+        EventBus.OnHighlightFeaturesAsync += HandleHighlightFeaturesAsync;
+
+        MapRenderer.OnRefreshMapImage += HandleRefreshMapImage;
+        MapRenderer.OnStartRenderMap += HandleStartRenderMap;
+        MapRenderer.OnFinishedRenderMap += HandleFinishedRenderMap;
+        MapRenderer.OnStartDrawingLayer += HandleStartDrawingLayer;
+        MapRenderer.OnFinishedDrawingLayer += HandleFinishedDrawingLayer;
+
+        await HandleCartoDocumentLoadedAsync(AppScope.Document);
+    });
+
+    protected override Task OnAfterRenderAsync(bool firstRender) => HandleAsync(async () =>
+    {
+        await base.OnAfterRenderAsync(firstRender);
+
+        if(firstRender)
+        {
+            _firstRendered = true;        
+        }
+    });
+
+    #region Event Handlers
+
+    #region Eventbus Handlers
+
+    private Task HandleCartoDocumentLoadedAsync(ICartoDocument document) => HandleAsync(async () =>
+    {
+        bool reused = await CreateMapControl();
+
+        if (document.Map is Map map)
+        {
+            // project map sref to current leaflet map transformation
+            var mapBounds = GeoTransformer.Transform(map.Envelope, map.SpatialReference, _mapControlSRef).Envelope;
+            //map.SpatialReference = _mapSRef;
+            //map.Envelope = mapBounds;
+
+            MapRenderer.InitMap(map, _mapControlSRef);
+
+            if (reused && _mapControl is not null)
+            {
+                var boundsWgs84 = GeoTransformer.ToWGS84(new Envelope(mapBounds), _mapControlSRef).Envelope;
+
+                await _mapControl.FitBounds(new LatLng(boundsWgs84.LowerLeft.Y, boundsWgs84.LowerLeft.X),
+                                           new LatLng(boundsWgs84.UpperRight.Y, boundsWgs84.UpperRight.X));
+            }
+        }
+    });
+
+    private Task HandleRefreshMapAsync(DrawPhase drawPhase, int delay) => HandleAsync(() =>
+        MapRenderer.Rerender(drawPhase, delay));
+
+    private Task HandleMapSettingsChanged() => HandleAsync(() =>
+        MapRenderer.Rerender(delay: 300));
+
+    private Task HandleMapZoomToAsync(IEnvelope zoomTo) => HandleAsync(async () =>
+    {
+        if(_mapControl is not null) 
+        {
+            var zoomToWgs84 = zoomTo.Srs switch
+            {
+                4326 => zoomTo.ToMinSize(),
+                _ => GeoTransformer.ToWGS84(zoomTo, _mapControlSRef).Envelope.ToMinSize()
+            };
+
+            await _mapControl.FitBounds(
+                new LatLng(zoomToWgs84.LowerLeft.Y, zoomToWgs84.LowerLeft.X),
+                new LatLng(zoomToWgs84.UpperRight.Y, zoomToWgs84.UpperRight.X));
+        }
+    });
+
+    #endregion
+
+    #region MapControl Event Handlers
+
+    private Task HandleMapControlInitialized() => HandleAsync(async () =>
+    {
+        var tiles = BackgroundTiles.GetDefaultOrAny();
+
+        await _mapControl!.AddLayer(new gView.Razor.Leaflet.Models.Layers.TileLayer()
+        {
+            UrlTemplate = tiles.UrlTemplate,
+            Attribution = tiles.Attribution,
+            Opacity = Math.Max(tiles.Opacity, 0.1),
+            MinimumZoom = tiles.MinZoom,
+            MaximumZoom = tiles.MaxZoom > 0
+                ? tiles.MaxZoom
+                : _mapControlCrs?.Resolutions.Length - 1 ?? tiles.MaxNativeZoom,
+            MaxNativeZoom = tiles.MaxNativeZoom,
+            TileSize = tiles.TileSize?.Length == 2 && tiles.TileSize[0] > 0 && tiles.TileSize[1] > 0
+                ? new gView.Razor.Leaflet.Models.Size(tiles.TileSize[0], tiles.TileSize[1])
+                : new gView.Razor.Leaflet.Models.Size(256, 256)
+        });
+
+        var boundsWgs84 = _mapControlCrs?.Bounds?.Length == 4
+                ? GeoTransformer.ToWGS84(
+                                new Envelope(_mapControlCrs.Bounds[0], _mapControlCrs.Bounds[1],
+                                             _mapControlCrs.Bounds[2], _mapControlCrs.Bounds[3]),
+                                _mapControlSRef
+                            ).Envelope
+                : new Envelope(-180, -80, 180, 80);
+
+        await _mapControl.FitBounds(new LatLng(boundsWgs84.LowerLeft.Y, boundsWgs84.LowerLeft.X),
+                               new LatLng(boundsWgs84.UpperRight.Y, boundsWgs84.UpperRight.X));
+
+    });
+
+    async private Task HandleMapViewReset(object sender, Event e)
+    {
+        if (_mapControl == null)
+        {
+            return;
+        }
+
+        using (var mutex = await FuzzyMutexAsync.LockAsync(_mapControl.Id))
+        {
+            if (mutex.WasBlocked == false)
+            {
+                await Task.Delay(300);
+
+                var bounds = await _mapControl.GetBounds();
+                var size = await _mapControl.GetImageSize();
+
+                DrawPhase.All.WithNormalized(async (drawPhase) =>
+                {
+                    var imageLayer = _imageLayers.Get(drawPhase);
+
+                    if (imageLayer is null)
+                    {
+                        imageLayer = new ImageLayer("", bounds.SouthWest, bounds.NorthEast) { Opacity = 0.8f };
+                        await _mapControl.AddLayer(imageLayer);
+                        _imageLayers.Set(drawPhase, imageLayer);
+                    }
+                    else
+                    {
+                        await _mapControl.UpdateImageLayer(imageLayer, "", bounds.SouthWest, bounds.NorthEast);
+                    }
+                });
+
+                await HandleRefreshMapImage(null, null);
+
+                var mapBounds = GeoTransformer.FromWGS84(new Envelope(bounds.SouthWest.Lng, bounds.SouthWest.Lat, bounds.NorthEast.Lng, bounds.NorthEast.Lat), _mapControlSRef).Envelope;
+                MapRenderer.SetBoundsAndSize(mapBounds, size.Width, size.Height);
+                await MapRenderer.Rerender();
+            }
+        }
+    }
+
+    private Task HandleMapViewResetStarted(object sender, Event e)
+    {
+        MapRenderer.CancelRender();
+        return Task.CompletedTask;
+    }
+
+    private Task HandleMapClick(LMap sender, BlazorLeaflet.Models.Events.MouseEvent e)
+        => e.LatLng is not null
+        ? EventBus.FireMapClickAsync(new Point(e.LatLng.Lng, e.LatLng.Lat) { Srs = 4326 })
+        : Task.CompletedTask;
+
+    private Task HandleBBox(LMap sender, BlazorLeaflet.Models.Events.BBoxEvent e)
+        => e.NorthWest is not null && e.SouthEast is not null
+        ? EventBus.FireMapBBoxAsync(new Envelope(
+            e.NorthWest.Lng, e.SouthEast.Lat, e.SouthEast.Lng, e.NorthWest.Lat) { Srs = 4326 })
+        : Task.CompletedTask;
+
+    private Task HandleMapMouseMove(LMap sender, BlazorLeaflet.Models.Events.MouseEvent e)
+        => e.LatLng is not null
+        ? EventBus.FireMapMouseMoveAsync(
+            new PointStruct(e.LatLng.Lng, e.LatLng.Lat),
+            new PointStruct(e.LayerPoint.X, e.LayerPoint.Y))
+        : Task.CompletedTask;
+
+    #endregion
+
+    #region MapRenderer Evend Handlers
+
+    private Task HandleRefreshMapImage(IMapRenderer? mapRenderer, byte[]? data)
+    {
+        if (_mapControl is not null)
+        {
+            _imageLayers.ForAny(
+                mapRenderer is not null 
+                    ? mapRenderer.DrawPhase
+                    : DrawPhase.All, 
+                async (imageLayer) =>
+            {
+                await _mapControl.UpdateImageLayer(imageLayer, $"data:image/png;base64, {Convert.ToBase64String(data ?? Array.Empty<byte>())}", null, null);
+            });
+        }
+
+        return Task.CompletedTask;
+    }
+
+    private Task HandleHighlightFeaturesAsync(ILayer layer, IQueryFilter? filter)
+    {
+        AppScope.Document.SetHighlightLayer(layer, filter);
+
+        return MapRenderer.Rerender(DrawPhase.Highlighing);
+    }
+
+    private Task HandleStartRenderMap(IMapRenderer mapRenderer)
+        => EventBus.FireStartRenderMapAsync(mapRenderer);
+
+    private Task HandleFinishedRenderMap(IMapRenderer mapRenderer)
+        => EventBus.FireFinishedRenderMapAsync(mapRenderer);
+
+    private Task HandleStartDrawingLayer(IMapRenderer mapRenderer, string layerName)
+        => EventBus.FireStartRendererLayerAsync(mapRenderer, layerName);
+
+    private Task HandleFinishedDrawingLayer(IMapRenderer mapRenderer, ITimeEvent timeEvent)
+        => EventBus.FireFinishedRendererLayerAsync(mapRenderer, timeEvent?.Name ?? String.Empty, timeEvent);
+
+    #endregion
+
+    #endregion
+
+    #region Create/Intialize Map
+
+    public Task<bool> CreateMapControl()
+    {
+        bool reused = true;
+
+        if(_mapControlCrs is null)
+        {
+            var crsModel = CrsService.GetDefaultOrAny();
+            _mapControlSRef = new SpatialReference($"epsg:{crsModel.Epsg}");
+
+            _mapControlCrs = new LCrs()
+            {
+                Id = crsModel.Epsg,
+                Proj4Parameters =
+                    $"{String.Join(" ", _mapControlSRef.Parameters)} {_mapControlSRef.Datum?.Parameter}".Trim(),
+                Origin = crsModel.Origin!,
+                Resolutions = crsModel.Resolutions!,
+                Bounds = crsModel.Bounds
+            };
+        }
+
+        if (_mapControl is null)
+        {
+            _mapControl = Leaflet.CreateMap(_mapControl?.Id);
+            _mapControl.OnIntialized += HandleMapControlInitialized;
+
+            //LeafletMap.OnViewReset += OnMapViewRest;
+            _mapControl.OnZoomEnd += HandleMapViewReset;
+            _mapControl.OnMoveEnd += HandleMapViewReset;
+
+            _mapControl.OnZoomStart += HandleMapViewResetStarted;
+            _mapControl.OnMoveStart += HandleMapViewResetStarted;
+
+            _mapControl.OnClick += HandleMapClick;
+            _mapControl.OnBBox += HandleBBox;
+            _mapControl.OnMouseMove += HandleMapMouseMove;
+
+
+            reused = false;
+        }
+
+        //ImageLayer = null;
+
+        return Task.FromResult(reused);
+    }
+
+    #endregion
+
+    #region Dispose / Destroy
+
+    async public ValueTask DisposeAsync()
+    {
+        EventBus.OnCartoDocumentLoadedAsync -= HandleCartoDocumentLoadedAsync;
+        EventBus.OnRefreshMapAsync -= HandleRefreshMapAsync;
+        EventBus.OnMapSettingsChangedAsync -= HandleMapSettingsChanged;
+        EventBus.OnMapZoomToAsync -= HandleMapZoomToAsync;
+        EventBus.OnHighlightFeaturesAsync -= HandleHighlightFeaturesAsync;
+
+        MapRenderer.OnRefreshMapImage -= HandleRefreshMapImage;
+        MapRenderer.OnStartRenderMap -= HandleStartRenderMap;
+        MapRenderer.OnFinishedRenderMap -= HandleFinishedRenderMap;
+        MapRenderer.OnStartDrawingLayer -= HandleStartDrawingLayer;
+        MapRenderer.OnFinishedDrawingLayer -= HandleFinishedDrawingLayer;
+
+        await DestroyMapControl();
+    }
+
+    async public ValueTask DestroyMapControl()
+    {
+        if (_mapControl != null)
+        {
+            _mapControl.OnIntialized -= HandleMapControlInitialized;
+
+            //LeafletMap.OnViewReset -= OnMapViewRest;
+            _mapControl.OnZoomEnd -= HandleMapViewReset;
+            _mapControl.OnMoveEnd -= HandleMapViewReset;
+
+            _mapControl.OnZoomStart -= HandleMapViewResetStarted;
+            _mapControl.OnMoveStart -= HandleMapViewResetStarted;
+
+            _mapControl.OnClick -= HandleMapClick;
+            _mapControl.OnBBox -= HandleBBox;
+            _mapControl.OnMouseMove += HandleMapMouseMove;
+
+            if (_firstRendered) {
+                try { await _mapControl.Destroy(); } 
+                catch {}
+            }
+
+            _imageLayers.Clear(DrawPhase.All);
+        }
+    }
+
+    #endregion
+}

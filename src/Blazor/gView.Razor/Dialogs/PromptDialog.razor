@@ -1,0 +1,20 @@
+@inherits ModalDialogFormBase<PromptDialogModel<string>>
+
+<ModalDialogFormBase T="PromptDialogModel<string>"
+                     OnDialogClose="base.OnDialogClose"
+                     Model="base.Model">
+    <DialogBody>
+        <MudTextField @bind-Value="Model.Value"
+                      @onkeyup="HandleFilterKeyPress"
+                      Label="@Model.Prompt"
+                      HelperText="@Model.HelperText"
+                      Required="@Model.Required" />
+    </DialogBody>
+</ModalDialogFormBase>
+
+@code {
+    private Task HandleFilterKeyPress(KeyboardEventArgs args)
+        => args.Key == "Enter"
+            ? base.Submit()
+            : Task.CompletedTask;
+}

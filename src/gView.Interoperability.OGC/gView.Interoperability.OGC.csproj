@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\gView.Framework.Cartography.Rendering\gView.Framework.Cartography.Rendering.csproj" />
+    <ProjectReference Include="..\gView.Framework.Cartography\gView.Framework.Cartography.csproj" />
+    <ProjectReference Include="..\gView.Framework.Core\gView.Framework.Core.csproj" />
+    <ProjectReference Include="..\gView.Framework.Data\gView.Framework.Data.csproj" />
+    <ProjectReference Include="..\gView.Framework.Geometry\gView.Framework.Geometry.csproj" />
+    <ProjectReference Include="..\gView.Framework.Metadata\gView.Framework.Metadata.csproj" />
+    <ProjectReference Include="..\gView.Framework.OGC\gView.Framework.OGC.csproj" />
+    <ProjectReference Include="..\gView.Framework.Symbology\gView.Framework.Symbology.csproj" />
+    <ProjectReference Include="..\gView.Framework\gView.Framework.csproj" />
+    <ProjectReference Include="..\gView.Framework.Web\gView.Framework.Web.csproj" />
+    <ProjectReference Include="..\gView.Framework.AXL\gView.Framework.AXL.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Dataset\" />
+    <Folder Include="xsl\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="8.0.5" />
+  </ItemGroup>
+
+</Project>

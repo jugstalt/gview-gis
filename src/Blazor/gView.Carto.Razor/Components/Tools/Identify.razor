@@ -1,0 +1,38 @@
+@inherits BaseHandler
+@implements IDisposable
+
+@inject ICartoApplicationScopeService AppScope
+@inject CartoEventBusService EventBus
+
+<div style="padding:5px">
+    @if (AppScope.SelectedTocTreeNode?.TocElement.IsQueryable() == true)
+    {
+        <div class="info-box" style="width:200px">
+            <strong>Identify @(AppScope.SelectedTocTreeNode.TocElement.Name):</strong><br /> Click to map or draw a box with pressed CTRL-Key
+        </div>
+    } 
+    else
+    {
+        <div class="info-box" style="width:123px">
+            Select a theme to query in the TOC Tree
+        </div>
+    }
+</div>
+
+@code {
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+
+        EventBus.OnSelectedTocTreeNodeChangedAsync += HandleSelectedTocTreeNodeChangedAsync;
+    }
+
+    private Task HandleSelectedTocTreeNodeChangedAsync(TocTreeNode? selectedTreeNode)
+        => this.InvokeAsync(() => StateHasChanged());
+
+
+    public void Dispose()
+    {
+        EventBus.OnSelectedTocTreeNodeChangedAsync -= HandleSelectedTocTreeNodeChangedAsync;
+    }
+}

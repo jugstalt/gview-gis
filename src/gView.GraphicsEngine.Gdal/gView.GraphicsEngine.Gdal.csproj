@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\gView.DataSources.OSGeo\gView.DataSources.OSGeo.csproj" />
+    <ProjectReference Include="..\gView.GraphicsEngine\gView.GraphicsEngine.csproj" />
+  </ItemGroup>
+
+</Project>

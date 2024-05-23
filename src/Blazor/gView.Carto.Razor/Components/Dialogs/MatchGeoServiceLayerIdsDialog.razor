@@ -1,0 +1,211 @@
+@using gView.Framework.Web.Services
+@using gView.Interoperability.GeoServices.Rest.Json
+@using gView.Interoperability.GeoServices.Extensions
+@using System.Text.Json
+
+@inherits ModalDialogFormBase<MatchGeoServiceLayerIdsModel>
+
+<ModalDialogFormBase T="MatchGeoServiceLayerIdsModel"
+                         OnDialogClose="base.OnDialogClose" 
+                         ContentStyle="DialogContentStyle.Full"
+                         Model="base.Model">
+    <DialogBody>
+        <GvGrid ColumnCount="12">
+            <GvGridItem Span="10">
+                <MudTextField Label="Service Url: (https://.../MapServer)"
+                              @bind-Value="_serviceUrl" />
+            </GvGridItem>
+            <GvGridItem Span="2">
+                <MudButton Variant="Variant.Filled" 
+                            Color="Color.Primary"
+                            OnClick="OnCompareClick">
+                    Compare
+                </MudButton>
+            </GvGridItem>
+        </GvGrid>
+       
+        <GvScrollable>
+            <MudTable Items="_rows" 
+                       Dense="true" 
+                       Class="match-geoservice-table"
+                       RowClassFunc="@((context,i) => $"row-{context.Status.ToString().ToLower()}")">
+                <HeaderContent>
+                    <MudTh>Status</MudTh>
+                    <MudTh>Layer</MudTh>
+                    <MudTh>Layer Id</MudTh>
+                    <MudTh>Service Layer Id</MudTh>
+                    <MudTh>Service Layer</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd>@(context.Status != RowStatus.Unknown ? context.Status.ToString() : "")</MudTd>
+                    <MudTd>@context.TocElement?.FullName()</MudTd>
+                    <MudTd>@(context.LayerId >= 0 ? context.LayerId : "")</MudTd>
+                    <MudTd Class="@(context.GeoServiceLayerId >= 0 && context.GeoServiceLayerId != context.LayerId ? "cell-different" : "")"> 
+                        @(context.GeoServiceLayerId >= 0 ? context.GeoServiceLayerId : "")
+                    </MudTd>
+                    <MudTd>@context.GeoServieLayer</MudTd>
+                </RowTemplate>
+            </MudTable>
+        </GvScrollable>
+    </DialogBody>
+
+    <DialogButtons>
+        @if(_rows.Count(r=>r.GeoServiceLayerId>=0) > 0 && _rows.Count(r=>r.Status == RowStatus.NotFound) == 0)
+        {
+            <MudButton Variant="Variant.Filled"
+                        Color="Color.Success"
+                        OnClick="OnMatchIdsClick">
+                Match Ids
+            </MudButton>
+        }
+    </DialogButtons>
+</ModalDialogFormBase>
+
+@code {
+    private string _serviceUrl = "";
+    private List<TocElementTableRow> _rows = new();
+
+    protected override void OnInitialized() => Handle(() =>
+    {
+        base.OnInitialized();
+
+        InitTable();
+    });
+
+    private void InitTable()
+    {
+        _rows.Clear();
+
+        var toc = Model.Map?.TOC;
+        if (toc == null || toc.Elements == null)
+        {
+            return;
+        }
+
+        foreach (var tocElement in toc.Elements)
+        {
+            var layer = tocElement.Layers?.FirstOrDefault();
+            if (layer == null)
+            {
+                continue;
+            }
+
+            if (tocElement.Layers!.Count > 1)
+            {
+                throw new Exception($"More than one layer assigned to TOC Element {tocElement.Name}. This is not allowed with this Method.");
+            }
+
+            var row = new TocElementTableRow(tocElement, layer.ID);
+            _rows.Add(row);
+        }
+    }
+
+    private Task OnCompareClick() => HandleAsync(async () =>
+    {
+        InitTable();
+
+        var url = $"{_serviceUrl}/layers?f=pjson";
+        var http = HttpService.CreateInstance();
+
+        var layersJson = await http.GetStringAsync(url);
+        var serviceLayers = JsonSerializer.Deserialize<JsonLayers>(layersJson);
+
+        if (serviceLayers is null)
+        {
+            throw new Exception("Can't load map services layers");
+        }
+
+        int maxLayerId = serviceLayers.Layers.Select(l => l.Id).Max();
+
+        // Hidden Layer: Layers inside a "checkbox" group
+        // => not directly visible in the service toc
+        foreach (var hiddenRow in _rows.Where(r => r.IsHidden)) 
+        {
+            hiddenRow.Status = RowStatus.Hidden;
+            hiddenRow.GeoServiceLayerId = ++maxLayerId;
+        }
+
+        foreach(var serviceLayer in serviceLayers.Layers)
+        {
+            string layerFullname = serviceLayers.LayerFullname(serviceLayer);
+            var row = _rows.FirstOrDefault(r => r.TocElement is not null && r.TocElement.FullName() == layerFullname);
+            if(row is not null)
+            {
+                row.GeoServiceLayerId = serviceLayer.Id;
+                row.Status = RowStatus.Ok;
+            }
+            else
+            {
+                _rows.Add(new TocElementTableRow(null, -1, serviceLayer.Id, serviceLayer.Name) { Status = RowStatus.Missing });
+            }
+        }
+
+        foreach (var hiddenRow in _rows.Where(r => r.Status == RowStatus.Unknown))
+        {
+            hiddenRow.Status = RowStatus.NotFound;
+        }
+    });
+
+    private Task OnMatchIdsClick() => HandleAsync(() =>
+    {
+        foreach (var row in _rows.Where(r => r.TocElement != null))
+        {
+            if (row.GeoServiceLayerId >= 0)
+            {
+                row.TocElement!.Layers.First().ID = row.GeoServiceLayerId;
+            }
+        }
+
+        return OnCompareClick();
+    });
+
+    #region Models
+
+    private enum RowStatus
+    {
+        Unknown,
+        Ok,
+        Missing,
+        NotFound,
+        Hidden
+    }
+
+    private class TocElementTableRow
+    {
+        public TocElementTableRow(
+                ITocElement? tocElement,
+                int layerId,
+                int geoServiceLayerId = -1,
+                string geoServiceLayer = ""
+        ) => (TocElement, LayerId, GeoServiceLayerId, GeoServieLayer)
+           = (tocElement, layerId, geoServiceLayerId, geoServiceLayer);
+
+        public RowStatus Status { get; set; }
+        public ITocElement? TocElement { get; set; }
+        public int LayerId { get; set; }
+        public int GeoServiceLayerId { get; set; }
+        public string GeoServieLayer { get; set; }
+
+        public bool IsHidden
+        {
+            get
+            {
+                var parent = this.TocElement?.ParentGroup;
+
+                while (parent != null)
+                {
+                    IGroupLayer? groupLayer = parent.Layers?.FirstOrDefault() as IGroupLayer;
+                    if (groupLayer != null && groupLayer.MapServerStyle == MapServerGrouplayerStyle.Checkbox)
+                    {
+                        return true;
+                    }
+                    parent = parent.ParentGroup;
+                }
+
+                return false;
+            }
+        }
+    }
+
+    #endregion
+}

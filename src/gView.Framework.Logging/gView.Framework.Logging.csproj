@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <UserSecretsId>336e0ae8-6b52-4f65-9b8b-cfc0f82e314e</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\gView.Azure\gView.Azure.csproj" />
+  </ItemGroup>
+
+</Project>

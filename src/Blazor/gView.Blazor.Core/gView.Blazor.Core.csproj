@@ -1,0 +1,24 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="LiteDB" Version="5.0.19" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="8.0.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Options" Version="8.0.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\gView.Framework.Cartography\gView.Framework.Cartography.csproj" />
+    <ProjectReference Include="..\..\gView.Framework.Geometry\gView.Framework.Geometry.csproj" />
+    <ProjectReference Include="..\..\gView.Framework\gView.Framework.csproj" />
+    <ProjectReference Include="..\..\gView.Interoperability.Server\gView.Interoperability.Server.csproj" />
+    <ProjectReference Include="..\gView.Blazor.Models\gView.Blazor.Models.csproj" />
+    <ProjectReference Include="..\gView.Framework.Blazor\gView.Framework.Blazor.csproj" />
+  </ItemGroup>
+
+</Project>

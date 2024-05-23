@@ -1,0 +1,203 @@
+@inherits BaseHandler
+@implements IDisposable
+@inject IconService Icons
+@inject ExplorerEventBusService EventBus 
+@inject IExplorerApplicationScopeService AppScope
+
+@if (table != null)
+{
+    <MudTable Items="@table.Rows" 
+              Hover="true" 
+              Dense="true" 
+              Filter="FilterFunc"
+              T="RowItem">
+        <ToolBarContent>
+            <MudText Typo="Typo.h6">@CurrentExplorerObject?.Name</MudText>
+            <MudSpacer />
+            <MudTextField @bind-Value="_filterString"
+                          Placeholder="Filter..."
+                          Adornment="Adornment.Start"
+                          AdornmentIcon="@MudBlazor.Icons.Material.Filled.Search"
+                          IconSize="MudBlazor.Size.Medium" Class="mt-0 gview-explorer-content-filter">
+            </MudTextField>
+            @if (!String.IsNullOrEmpty(_filterString))
+            {
+                <MudIconButton Icon="@MudBlazor.Icons.Material.Outlined.Close"
+                               OnClick="() => _filterString=string.Empty" />
+            }
+        </ToolBarContent>
+        <HeaderContent>
+            @foreach(var column in table.Columns) 
+            {
+                <MudTh Class="table-column-icon">@column</MudTh>
+            }
+        </HeaderContent>
+        <RowTemplate>
+            @{
+                var first = true;
+                foreach (var column in table.Columns)
+                {
+                    <MudTd Class="@(selectedExplorerObjects?.Contains(context.ExplorerObject) == true ? "context-selected" : "")">
+                       <div style="vertical-align:top;display:inline-flex;width:100%;cursor:pointer"
+                            @onclick="@((mEvent) => OnRowClickAsync(mEvent, context))" @onclick:stopPropagation="true"
+                            @ondblclick="@(() => OnRowDoubleCLick(context))">
+                            @if (first == true && !String.IsNullOrEmpty(context.Icon))
+                            {
+                                <MudIcon Icon="@Icons.FromString(context.Icon)" />
+                                { first = false; }
+                            }
+                            <span>&nbsp;@context[column]</span>
+                       </div>
+                    </MudTd>
+                }
+            }
+        </RowTemplate>
+    </MudTable>
+}
+
+@code{
+    [Parameter] public IExplorerTabPage? FrameworkElement { get; set; }
+    [Parameter] public IExplorerObject? CurrentExplorerObject { get; set; }
+
+    private IEnumerable<IExplorerObject>? selectedExplorerObjects = null;
+    private TableItem? table;
+
+    private string _filterString = "";
+
+    protected override void OnInitialized()
+    {
+        EventBus.OnRefreshContentAsync += OnRefreshContentAsync;
+    } 
+
+    async protected override Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+
+        await base.HandleAsync(async () =>
+        {
+            if (FrameworkElement == null)
+            {
+                return;
+            }
+
+            await FrameworkElement.SetExplorerObjectAsync(CurrentExplorerObject);
+            await RefreshContentAsync();
+            await EventBus.FireContextExplorerObjectsChanged(null);
+        });
+    }
+
+    private Task OnRefreshContentAsync() => base.HandleAsync(async () =>
+    {
+        await RefreshContentAsync();
+        StateHasChanged();
+    });
+
+
+    private Task OnRowClickAsync(MouseEventArgs mEvent, RowItem row) => HandleAsync(async () =>
+    {
+        if (table == null || row.ExplorerObject == null)
+        {
+            return;
+        }
+
+        selectedExplorerObjects = row.ExplorerObject switch
+        {
+            IExplorerObjectDoubleClick => Array.Empty<IExplorerObject>(),
+            _ => row.ExplorerObject.AddToSelection(
+                    selectedExplorerObjects ?? Array.Empty<IExplorerObject>(),
+                    table.Rows.Where(r => r.ExplorerObject != null).Select(r => r.ExplorerObject!),
+                    mEvent switch
+                    {
+                        { ShiftKey: true } => GenericAddToStrategy.AddAllBetweenLastItem,
+                        { CtrlKey: true } => GenericAddToStrategy.AddOrRemoveIfExists,
+                        _ => GenericAddToStrategy.RemoveOthers
+                    })
+        };
+
+        await EventBus.FireContextExplorerObjectsChanged(selectedExplorerObjects);
+    });
+
+    private Task OnRowDoubleCLick(RowItem row) => HandleAsync(async () =>
+    {
+        _filterString = "";
+
+        if (row.ExplorerObject != null)
+        {
+            if (row.ExplorerObject is IExplorerObjectDoubleClick)
+            {
+                var args = new Framework.DataExplorer.Events.ExplorerObjectEventArgs();
+
+                await ((IExplorerObjectDoubleClick)row.ExplorerObject).ExplorerObjectDoubleClick(AppScope, args);
+
+                if (args.NewExplorerObject != null)
+                {
+                    if (CurrentExplorerObject is IExplorerParentObject)
+                    {
+                        await ((IExplorerParentObject)CurrentExplorerObject).DiposeChildObjects();  // remove all children => Force refresh
+                    }
+                    await EventBus.FireSoftRefreshContentAsync();
+                }
+            }
+            else
+            {
+                await EventBus.SetCurrentExplorerObjectAsync(row.ExplorerObject);
+            }
+        }
+    });
+
+    private Task RefreshContentAsync() => base.HandleAsync(async () =>
+    {
+        await using (var busy = await AppScope.RegisterBusyTaskAsync($"Refresh content"))
+        {
+            if (FrameworkElement?.GetExplorerObject() != null /*&&
+                await FrameworkElement.GetExplorerObject()!.SecureRefresh() == true*/)
+            {
+                var result = await FrameworkElement.RefreshContents();
+                table = result.Item as TableItem;
+            }
+        }
+    });
+
+    private bool FilterFunc(RowItem row)
+    {
+        if (table is null || string.IsNullOrWhiteSpace(_filterString))
+        {
+            return true;
+        }
+
+        var searchStringWords = _filterString
+                                    .Split(' ')
+                                    .Where(s => !string.IsNullOrWhiteSpace(s))
+                                    .ToArray();
+
+        foreach (var searchStringWord in searchStringWords)
+        {
+            bool found = false;
+
+            foreach (var column in table.Columns)
+            {
+                var val = row[column];
+
+                found = val switch
+                {
+                    string str => str.Contains(searchStringWord, StringComparison.OrdinalIgnoreCase),
+                    _ => val?.ToString() == searchStringWord
+                };
+
+                if (found) { break; }
+            }
+
+            if (!found)
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    public void Dispose()
+    {
+        EventBus.OnRefreshContentAsync -= OnRefreshContentAsync;
+    }
+}

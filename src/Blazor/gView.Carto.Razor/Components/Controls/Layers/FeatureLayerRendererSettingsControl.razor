@@ -1,0 +1,151 @@
+@inject PluginManagerService PluginManager
+@inherits BaseHandler
+
+@if(_featureRenderers is not null && _categories is not null)
+{
+    <GvGrid ColumnCount="3">
+        <GvGridItem>
+            <MudCheckBox T="bool"
+                         Checked="@(Layer?.FeatureRenderer is not null)"
+                         CheckedChanged="(chk) => RenderFeaturesChecked(chk)"
+                         Label="Render features for this layer" />
+            @if(Layer?.FeatureRenderer is not null) 
+            {
+                @foreach(var category in _categories)
+                {
+                    <GvCard Title="@category">
+                        <GvCardContentNoPadding>
+                            <MudList Dense="true" Clickable="true" 
+                                     Style="padding:0px">
+                                @foreach(var featureRenderer in _featureRenderers.Where(r=>category == r.Category))
+                                {
+                                    <MudListItem Style="white-space:nowrap;overflow:hidden" 
+                                                 Dense="true"
+                                                        Class="@(featureRenderer.GetType() == _selectedRendererType ? "gview-selected-item" : "")"
+                                                        OnClick="() => SelectRenderer(featureRenderer)">
+                                                @featureRenderer.Name
+                                           </MudListItem>
+                                }
+                            </MudList>
+                        </GvCardContentNoPadding>
+                    </GvCard>
+                }
+            }
+        </GvGridItem>
+
+        <GvGridItem Span="2">
+            @if(Layer?.FeatureRenderer is not null &&  _selectedRendererType is not null)
+            {
+                var renderer = _featureRenderers.First(r => _selectedRendererType.Equals(r.GetType()));
+
+                <GvCard Title="@renderer.Name">
+                    <GvCardContent>
+                        @if (_propertyPageRenderFragment is not null)
+                        {
+                            @(_propertyPageRenderFragment)
+                        }
+                    </GvCardContent>
+                </GvCard>
+            }
+        </GvGridItem>
+    </GvGrid>
+}
+
+@code {
+    [Parameter] public IMap? Map { get; set; }
+    [Parameter] public IFeatureLayer? Layer { get; set; }
+
+    private IFeatureRenderer[]? _featureRenderers;
+    private IPropertyPageDefinition[]? _propertyPageDefs;
+    private string[]? _categories;
+
+    private Type? _selectedRendererType;
+    private IPropertyPageDefinition? _currentPropertyPage;
+    private RenderFragment? _propertyPageRenderFragment;
+
+    protected override Task OnParametersSetAsync() => HandleAsync(async () =>
+    {
+        await base.OnParametersSetAsync();
+
+        if (Map is not null && Layer is not null)
+        {
+            _featureRenderers = PluginManager.GetPlugins<IFeatureRenderer>(gView.Framework.Common.Plugins.Type.IFeatureRenderer)
+                                             .Where(r => r.CanRender(Layer, Map))
+                                             .Select(r => r.GetType().Equals(Layer.FeatureRenderer?.GetType())
+                                                            ? Layer.FeatureRenderer!
+                                                            : r)
+                                             .ToArray();
+
+            foreach (var renderer in _featureRenderers)
+            {
+                if (renderer != Layer.FeatureRenderer && renderer is IDefault def)
+                {
+                    await def.DefaultIfEmpty(Layer);
+                }
+            }
+
+            _categories = _featureRenderers.Select(r => r.Category)
+                                           .Distinct()
+                                           .ToArray();
+
+            _propertyPageDefs = PluginManager.GetPlugins<IPropertyPageDefinition>(gView.Framework.Common.Plugins.Type.IPropertyPageDefinition)
+                                             .Where(p => p.InterfaceType == typeof(IFeatureRenderer))
+                                             .ToArray();
+
+            SelectRenderer(Layer.FeatureRenderer);
+        }
+        else
+        {
+            _featureRenderers = null;
+            _categories = null;
+        }
+    });
+
+    private void SelectRenderer(IFeatureRenderer? featureRenderer) => Handle(() =>
+    {
+        _selectedRendererType = featureRenderer?.GetType();
+
+        if (Layer is not null)
+        {
+            Layer.FeatureRenderer = featureRenderer;
+
+            _currentPropertyPage = _propertyPageDefs?.FirstOrDefault(p => p.InstanceType == featureRenderer?.GetType());
+            if (_currentPropertyPage is not null)
+            {
+                _propertyPageRenderFragment = new RenderFragment(builder =>
+                {
+                    var sequence = 0;
+                    builder.OpenComponent(sequence, _currentPropertyPage.PropertyPageType);
+                    builder.AddAttribute(++sequence, "Instance", Layer);
+                    builder.CloseComponent();
+                });
+            }
+            else
+            {
+                _propertyPageRenderFragment = null;
+            }
+        }
+    });
+
+    private void RenderFeaturesChecked(bool renderer) => Handle(() =>
+    {
+        if (Layer is null)
+        {
+            return;
+        }
+
+        if (renderer == false)
+        {
+            Layer.FeatureRenderer = null;
+        }
+        else
+        {
+            Layer.FeatureRenderer =
+                _featureRenderers?.FirstOrDefault(r => r.GetType() == _selectedRendererType)
+                ?? _featureRenderers?.FirstOrDefault(r => r is SimpleRenderer)
+                ?? _featureRenderers?.FirstOrDefault();
+
+            SelectRenderer(Layer.FeatureRenderer);
+        }
+    });
+}

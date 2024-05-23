@@ -1,0 +1,14 @@
+@inherits ModalDialogFormBase<OrderByDialogModel>
+
+<ModalDialogFormBase T="OrderByDialogModel"
+                     OnDialogClose="base.OnDialogClose"
+                     Model="base.Model">
+    <DialogBody>
+        <OrderByControl Instance="Model.Instance"
+                         OrderByClause="@Model.OrderByClause"
+                         OrderByClauseChanged="(queryString) => Model.OrderByClause = queryString" />
+    </DialogBody>
+</ModalDialogFormBase>
+
+@code {
+}

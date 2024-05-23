@@ -1,0 +1,12 @@
+@inherits ModalDialogFormBase<LayerFieldsDialogModel>
+
+<ModalDialogFormBase T="LayerFieldsDialogModel"
+                     OnDialogClose="base.OnDialogClose"
+                     Model="base.Model">
+    <DialogBody>
+        <LayerFieldsSettingsControl Layer="Model.Layer" />
+    </DialogBody>
+</ModalDialogFormBase>
+
+@code {
+}

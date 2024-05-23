@@ -1,8 +1,0 @@
-{
-  "profiles": {
-    "gView.Cmd.RasterDataset.Util": {
-      "commandName": "Project",
-      "commandLineArgs": "-db sql -s "
-    }
-  }
-}

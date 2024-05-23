@@ -1,0 +1,76 @@
+@using System.ComponentModel;
+@using System.Reflection;
+@using gView.GraphicsEngine
+
+@inherits BaseHandler
+@inject IEnumerable<IPropertyGridEditor> Editors;
+
+@if (propertiesDict.Keys.Any() && propertiesDict.Keys.All(c => c == GeneralCategory))
+{
+    <PropertyGridControlCategoryPanel Instance="Instance"
+                                      Properties="propertiesDict[GeneralCategory]"
+                                      OnPropertyChanged="OnPanelPropertyChanged" />
+}
+else 
+{
+    <MudExpansionPanels MultiExpansion="false">
+        @foreach(var category in propertiesDict.Keys)
+        {
+            var properties = propertiesDict[category];
+
+            <MudExpansionPanel Text="@category">
+                    <PropertyGridControlCategoryPanel Instance="Instance"
+                                                      Properties="properties"
+                                                      OnPropertyChanged="OnPanelPropertyChanged" />
+            </MudExpansionPanel>
+        }
+    </MudExpansionPanels>
+}
+
+@code {
+    [Parameter] public object Instance { get; set; } = new object();
+    [Parameter] public EventCallback<PropertyInfo> OnPropertyChanged { get; set; }
+
+    private const string GeneralCategory = "General";
+    private Dictionary<string, Dictionary<PropertyInfo, object?>> propertiesDict = new();
+
+    protected override void OnParametersSet() => Handle(() =>
+    {
+        base.OnParametersSet();
+
+        #region Prepare propertiesDict (Category:(PropertyInfo,value))
+
+        propertiesDict.Clear();
+
+        if (Instance is not null)
+        {
+            //var propertyInfos = Instance.GetType().GetProperties(System.Reflection.BindingFlags.Public);
+            var propertyInfos = Instance.GetType().GetProperties();
+
+            foreach (var propertyInfo in propertyInfos)
+            {
+                var browsableAttribute = propertyInfo.GetCustomAttribute<BrowsableAttribute>();
+                if (browsableAttribute?.Browsable == false)
+                {
+                    continue;
+                }
+
+                var categoryAttribute = propertyInfo.GetCustomAttribute<System.ComponentModel.CategoryAttribute>();
+                string category = String.IsNullOrEmpty(categoryAttribute?.Category) ?
+                             GeneralCategory : categoryAttribute.Category;
+
+                if (!propertiesDict.ContainsKey(category))
+                {
+                    propertiesDict.Add(category, new());
+                }
+
+                propertiesDict[category].Add(propertyInfo, propertyInfo.GetValue(Instance));
+            }
+        }
+
+        #endregion
+    });
+
+    private Task OnPanelPropertyChanged(PropertyInfo propertyInfo) => HandleAsync(()
+        => OnPropertyChanged.InvokeAsync(propertyInfo));
+}

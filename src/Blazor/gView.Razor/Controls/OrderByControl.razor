@@ -1,0 +1,217 @@
+@using gView.Framework.Core.Data
+
+@inherits BaseHandler
+
+@if(_items is not null) {
+    <GvScrollable>
+       <GvCard Title="Query">
+            <GvCardContent>
+                <MudDropContainer T="FieldItem"
+                                  Items="_items"
+                                  ItemDropped="OnReorderItems"
+                                  ItemsSelector="@((item,zone) => true)">
+                    <ChildContent>
+                        <MudDropZone T="FieldItem"
+                                     AllowReorder="true">
+                            <GvGrid ColumnCount="12">
+                                <GvGridItem Span="2">
+                                    <MudText Typo="Typo.body2">OrderBy</MudText>
+                                </GvGridItem>
+                                <GvGridItem Span="4">
+                                    <MudText Typo="Typo.body2">Name</MudText>
+                                </GvGridItem>
+                                 <GvGridItem Span="4">
+                                    <MudText Typo="Typo.body2">Type</MudText>
+                                </GvGridItem>
+                                <GvGridItem Span="2">
+                                    <MudText Typo="Typo.body2">Descending</MudText>
+                                </GvGridItem>
+                            </GvGrid>
+                        </MudDropZone>
+                    </ChildContent>
+                    <ItemRenderer>
+                        <div style="border-top:1px solid #777">
+                            <GvGrid ColumnCount="12">
+                                <GvGridItem Span="2">
+                                    <MudCheckBox Dense="true" T="bool"
+                                                 Checked="context.OrderBy" 
+                                                 CheckedChanged="(chk) => OnSetOrderBy(context, chk)" />
+                                </GvGridItem>
+                                <GvGridItem Span="4">
+                                    <div style="padding:5px 0px">
+                                        @context.Field.aliasname
+                                    </div>
+                                </GvGridItem>
+                                <GvGridItem Span="4">
+                                    <div style="padding:5px 0px">
+                                        @context.Field.type
+                                    </div>
+                                </GvGridItem>
+                                <GvGridItem Span="2">
+                                    <MudCheckBox Dense="true" T="bool"
+                                                 Checked="context.Descending" 
+                                                 CheckedChanged="(chk) => OnSetDescending(context, chk)" />
+                                </GvGridItem>
+                            </GvGrid>
+                        </div>
+                    </ItemRenderer>
+                </MudDropContainer>
+            </GvCardContent>
+        </GvCard>
+        <GvCard Title="Query">
+            <GvCardContent>
+                <MudTextField T="string" ReadOnly="true"
+                              Label="@($"SELECT * ... ORDER BY")"
+                              @bind-Value="OrderByClause"
+                              Lines="5" />
+            </GvCardContent>
+         </GvCard>
+    </GvScrollable>
+   
+}
+
+@code {
+    [Parameter] public object? Instance { get; set; }
+    [Parameter] public string OrderByClause { get; set; } = "";
+    [Parameter] public EventCallback<string> OrderByClauseChanged { get; set; }
+
+    private List<FieldItem>? _items;
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+
+        _items = Instance switch
+        {
+            ITableClass tableClass => tableClass?.Fields?.ToEnumerable()
+                                                         .Where(f => f.IsDataTableField())
+                                                         .Select(f => new FieldItem(f))
+                                                         .ToList(),
+            IFeatureLayer featureLayer => featureLayer.Fields?.ToEnumerable()
+                                                              .Where(f => f.IsDataTableField())
+                                                              .Select(f => new FieldItem(f))
+                                                              .ToList(),
+            _ => null
+        };
+
+        if (_items is not null) 
+        {
+            int pos = 0;
+            foreach (var subClauseParts in OrderByClause.Split(',').Select(s => s.Trim().Split(' ')))
+            {
+                var (field, decending) = (subClauseParts.First(), subClauseParts.Length > 1 && subClauseParts.Last().Equals("desc", StringComparison.OrdinalIgnoreCase));
+                
+                var item = _items.FirstOrDefault(f => f.Field.name == field);
+                if(item is not null)
+                {
+                    item.OrderBy = true;
+                    item.Descending = decending;
+
+                    _items.Remove(item);
+                    _items.Insert(pos++, item);
+                }
+            }
+        }
+    }
+
+    private Task BuildOrderClause()
+    {
+        StringBuilder sb = new StringBuilder();
+
+        foreach(var item in _items ?? [])
+        {
+            if(item.OrderBy)
+            {
+                if (sb.Length > 0) sb.Append(",");
+                sb.Append(item.Field.name);
+                if (item.Descending) sb.Append(" DESC");
+            }
+        }
+
+        if (OrderByClause != sb.ToString())
+        {
+            OrderByClause = sb.ToString();
+
+            return OrderByClauseChanged.InvokeAsync(OrderByClause);
+        }
+
+        return Task.CompletedTask;
+    }
+
+    #region Razor Events Handlers
+
+    async private Task OnReorderItems(MudItemDropInfo<FieldItem> dropInfo)
+    {
+        if (_items is null
+            || dropInfo.Item is null)
+        {
+            return;
+        }
+
+        List<FieldItem> orderedItems = new();
+        bool added = false;
+
+        foreach (var item in _items)
+        {
+            if (orderedItems.Count() == dropInfo.IndexInZone)
+            {
+                orderedItems.Add(dropInfo.Item.Clone());
+                added = true;
+            }
+
+            if (item.Field != dropInfo.Item.Field)
+            {
+                orderedItems.Add(item.Clone());
+            }
+        }
+        if (!added)
+        {
+            orderedItems.Add(dropInfo.Item.Clone());
+        }
+
+        _items = orderedItems;
+
+        await BuildOrderClause();
+    }
+
+    private Task OnSetOrderBy(FieldItem fieldItem, bool orderBy)
+    {
+        fieldItem.OrderBy = orderBy;
+
+        return BuildOrderClause();
+    }
+
+    private Task OnSetDescending(FieldItem fieldItem, bool descending)
+    {
+        fieldItem.Descending = descending;
+
+        return BuildOrderClause();
+    }
+
+    #endregion
+
+    #region ItemClasses
+
+    private class FieldItem
+    {
+        public FieldItem(IField field)
+        {
+            this.Field = field;
+        }
+
+        public IField Field { get; set; }
+        public bool OrderBy { get; set; }
+        public bool Descending { get; set; }
+
+        public FieldItem Clone()
+        {
+            return new FieldItem(this.Field)
+            {
+                OrderBy = this.OrderBy,
+                Descending = this.Descending
+            };
+        }
+    }
+
+    #endregion
+}

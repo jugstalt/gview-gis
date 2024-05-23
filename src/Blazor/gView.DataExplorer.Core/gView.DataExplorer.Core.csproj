@@ -1,0 +1,19 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\gView.Framework.Core\gView.Framework.Core.csproj" />
+    <ProjectReference Include="..\..\gView.Framework.Data\gView.Framework.Data.csproj" />
+    <ProjectReference Include="..\..\gView.Framework\gView.Framework.csproj" />
+    <ProjectReference Include="..\gView.Blazor.Core\gView.Blazor.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Models\Nav\" />
+  </ItemGroup>
+
+</Project>
