@@ -224,7 +224,7 @@ namespace gView.Interoperability.ArcXML.Dataset
                 Logger.LogDebug("Start ArcXML SendRequest");
 #endif
                 await ArcIMSClass.LogAsync(display as IServiceRequestContext, "GetImage Request", server, service, sb);
-                string resp = connector.SendRequest(sb, server, service);
+                string resp = await connector.SendRequest(sb, server, service);
                 await ArcIMSClass.LogAsync(display as IServiceRequestContext, "GetImage Response", server, service, resp);
 #if(DEBUG)
                 Logger.LogDebug("ArcXML SendRequest Finished");
@@ -431,7 +431,7 @@ namespace gView.Interoperability.ArcXML.Dataset
                 sb.Append("</ARCXML>");
 
                 await ArcIMSClass.LogAsync(display as IServiceRequestContext, "GetLegend Request", server, service, sb);
-                string resp = connector.SendRequest(sb, server, service);
+                string resp = await connector.SendRequest(sb, server, service);
                 await ArcIMSClass.LogAsync(display as IServiceRequestContext, "GetLegend Response", server, service, resp);
 
                 XmlDocument doc = new XmlDocument();

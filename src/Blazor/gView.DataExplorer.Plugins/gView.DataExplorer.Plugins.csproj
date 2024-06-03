@@ -6,9 +6,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\gView.Cmd.CopyFeatureclass.Lib\gView.Cmd.CopyFeatureclass.Lib.csproj" />
+    <ProjectReference Include="..\..\gView.Cmd.ElasticSearch.Lib\gView.Cmd.ElasticSearch.Lib.csproj" />
     <ProjectReference Include="..\..\gView.Cmd.Fdb.Lib\gView.Cmd.Fdb.Lib.csproj" />
+    <ProjectReference Include="..\..\gView.Cmd.LuceneServer.Lib\gView.Cmd.LuceneServer.Lib.csproj" />
+    <ProjectReference Include="..\..\gView.Cmd.MxlUtil.Lib\gView.Cmd.MxlUtil.Lib.csproj" />
     <ProjectReference Include="..\..\gView.Cmd.TileCache.Lib\gView.Cmd.TileCache.Lib.csproj" />
-    <ProjectReference Include="..\..\gView.CopyFeatureclass.Lib\gView.CopyFeatureclass.Lib.csproj" />
     <ProjectReference Include="..\..\gView.DataSources.EventTable\gView.DataSources.EventTable.csproj" />
     <ProjectReference Include="..\..\gView.DataSources.Fdb.PostgreSql\gView.DataSources.Fdb.PostgreSql.csproj" />
     <ProjectReference Include="..\..\gView.DataSources.Fdb.SQLite\gView.DataSources.Fdb.SQLite.csproj" />
@@ -20,6 +23,7 @@
     <ProjectReference Include="..\..\gView.DataSources.Shape\gView.DataSources.Shape.csproj" />
     <ProjectReference Include="..\..\gView.DataSources.TileCache\gView.DataSources.TileCache.csproj" />
     <ProjectReference Include="..\..\gView.DataSources.VectorTileCache\gView.DataSources.VectorTileCache.csproj" />
+    <ProjectReference Include="..\..\gView.Framework.Vtc\gView.Framework.Vtc.csproj" />
     <ProjectReference Include="..\..\gView.Interoperability.ArcXML\gView.Interoperability.ArcXML.csproj" />
     <ProjectReference Include="..\..\gView.Interoperability.GeoServices\gView.Interoperability.GeoServices.csproj" />
     <ProjectReference Include="..\..\gView.Interoperability.OGC\gView.Interoperability.OGC.csproj" />

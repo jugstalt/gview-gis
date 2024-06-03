@@ -7,8 +7,10 @@
     <DialogBody>
 
         <ConnectionStringControl DbConnectionString="@Model.DbConnectionString"
-                                    ProviderId="@Model.ProviderId"
-                                    OnSubmit="CreateFdb">
+                                 ProviderId="@Model.ProviderId"
+                                 OfferTestConnection="Model.CreateRepositoryOnly"
+                                 CreateButtonPrompt="Create FDB"
+                                 OnSubmit="CreateFdb">
         
             <CustomControls>
                 @* <MudTextField Label="Database Name"
@@ -16,7 +18,7 @@
                                Variant="Variant.Text"></MudTextField> *@
 
                 <MudCheckBox Label="Create Repository in existing database"
-                              @bind-Checked="@Model.CreateRepositoryOnly" />
+                             @bind-Value="@Model.CreateRepositoryOnly" />
             </CustomControls>
 
         </ConnectionStringControl>

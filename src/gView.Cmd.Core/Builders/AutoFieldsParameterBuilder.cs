@@ -5,7 +5,7 @@ using gView.Framework.Core.Data;
 using gView.Framework.Core.FDB;
 using gView.Framework.Data;
 using gView.Framework.Common;
-using Newtonsoft.Json;
+using System.Text.Json;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -42,7 +42,7 @@ public class AutoFieldsParameterBuilder : ICommandPararmeterBuilder
     public Task<T> Build<T>(IDictionary<string, object> parameters)
     {
         string autoFieldJsonString = parameters.GetRequiredValue<string>("autofields".PrependPrefix(_parameterPrefix));
-        var autoFieldsModels = JsonConvert.DeserializeObject<IEnumerable<AutoFieldModel>>(autoFieldJsonString);
+        var autoFieldsModels = JsonSerializer.Deserialize<IEnumerable<AutoFieldModel>>(autoFieldJsonString);
 
         if (typeof(T).IsAssignableFrom(typeof(IFieldCollection)))
         {

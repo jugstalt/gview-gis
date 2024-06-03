@@ -29,17 +29,20 @@ public class MapServerInstance : IMapServer
     private int _maxServices = int.MaxValue;
     private readonly MapServiceManager _mapServiceMananger;
     private readonly MapServiceDeploymentManager _mapServiceDeploymentMananger;
+    private readonly MapServiceAccessService _accessService;
     private readonly MapServicesEventLogger _logger;
     private readonly string _etcPath;
 
     public MapServerInstance(
         MapServiceManager mapServiceMananger,
         MapServiceDeploymentManager mapServiceDeploymentMananger,
+        MapServiceAccessService accessService,
         MapServicesEventLogger logger,
         int port)
     {
         _mapServiceMananger = mapServiceMananger;
         _mapServiceDeploymentMananger = mapServiceDeploymentMananger;
+        _accessService = accessService;
         _logger = logger;
 
         _log_requests = _mapServiceMananger.Options.LogServiceRequests;
@@ -413,7 +416,7 @@ public class MapServerInstance : IMapServer
 
                 if (!found)
                 {
-                    _mapServiceMananger.MapServices.Add(new MapService(_mapServiceMananger, name, String.Empty, MapServiceType.GDI));
+                    _mapServiceMananger.MapServices.Add(new MapService(_mapServiceMananger, _accessService, name, String.Empty, MapServiceType.GDI));
                 }
 
                 return await ServiceMap.CreateAsync(newMap, this, null, context);

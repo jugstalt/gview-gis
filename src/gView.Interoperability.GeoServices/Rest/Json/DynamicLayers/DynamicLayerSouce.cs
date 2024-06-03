@@ -1,13 +1,19 @@
-﻿namespace gView.Interoperability.GeoServices.Rest.Json.DynamicLayers
+﻿using System.Text.Json.Serialization;
+
+namespace gView.Interoperability.GeoServices.Rest.Json.DynamicLayers
 {
     class DynamicLayerSouce
     {
         public DynamicLayerSouce()
         {
-            this.type = "mapLayer";
+            this.Type = "mapLayer";
         }
-        public string type { get; set; }
 
-        public int mapLayerId { get; set; }
+        [JsonPropertyName("type")]
+        public string Type { get; set; }
+
+
+        [JsonPropertyName("mapLayerId")]
+        public int MapLayerId { get; set; }
     }
 }

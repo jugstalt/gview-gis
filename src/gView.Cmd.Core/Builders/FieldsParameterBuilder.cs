@@ -3,7 +3,7 @@ using gView.Cmd.Core.Extensions;
 using gView.Cmd.Core.Models;
 using gView.Framework.Core.Data;
 using gView.Framework.Data;
-using Newtonsoft.Json;
+using System.Text.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -44,7 +44,7 @@ public class FieldsParameterBuilder : ICommandPararmeterBuilder
     public Task<T> Build<T>(IDictionary<string, object> parameters)
     {
         string fieldJsonString = parameters.GetRequiredValue<string>("fields".PrependPrefix(_parameterPrefix));
-        var fieldModels = JsonConvert.DeserializeObject<IEnumerable<FieldModel>>(fieldJsonString);
+        var fieldModels = JsonSerializer.Deserialize<IEnumerable<FieldModel>>(fieldJsonString);
 
         if(fieldModels is not null && typeof(T).IsAssignableFrom(typeof(IFieldCollection)))
         {

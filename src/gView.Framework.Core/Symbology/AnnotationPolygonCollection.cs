@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace gView.Framework.Core.Symbology
 {
@@ -46,6 +47,37 @@ namespace gView.Framework.Core.Symbology
                 }
                 return env;
             }
+        }
+
+        public IAnnotationPolygonCollision WithSpacing(SymbolSpacingType type, float spacingX, float spacingY)
+        {
+            if (type == SymbolSpacingType.None) return this;
+
+            var envelope = this.Envelope;
+            float centerX = (envelope.MinX + envelope.MaxX) * 0.5f;
+            float centerY = (envelope.MinY + envelope.MaxY) * 0.5f;
+            float width = Math.Abs(envelope.MaxX - envelope.MinX);
+            float height = Math.Abs(envelope.MaxY - envelope.MinY);
+
+            var (minWidth, minHeight) = type switch
+            {
+                SymbolSpacingType.BoundingBox => (spacingX, spacingY),
+                SymbolSpacingType.Margin => (width + 2f * spacingX, height + 2f * spacingY),
+                _ => (0, 0)
+            };
+
+            if (width < minWidth || height < minHeight)
+            {
+                width = Math.Max(minWidth, width);
+                height = Math.Max(minHeight, height);
+
+                var x1 = centerX - width / 2f;
+                var y1 = centerY - height / 2f;
+
+                return new AnnotationPolygon(x1, y1, width, height);
+            }
+
+            return this;
         }
 
         #endregion

@@ -2,9 +2,11 @@
 using gView.Framework.Security;
 using gView.Framework.Security.Extensions;
 using gView.Server.AppCode;
+using gView.Server.AppCode.Extensions;
 using gView.Server.Extensions;
 using gView.Server.Services.MapServer;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -15,11 +17,17 @@ namespace gView.Server.Services.Security
     public class LoginManager
     {
         private readonly MapServiceManager _mapServerService;
+        private readonly MapServiceAccessService _mapServiceAccessService;
         private readonly EncryptionCertificateService _encryptionCertService;
 
-        public LoginManager(MapServiceManager mapServerService, EncryptionCertificateService encryptionCertService)
+        public LoginManager(
+                    MapServiceManager mapServerService, 
+                    MapServiceAccessService mapServiceAccessService,
+                    EncryptionCertificateService encryptionCertService
+            )
         {
             _mapServerService = mapServerService;
+            _mapServiceAccessService = mapServiceAccessService;
             _encryptionCertService = encryptionCertService;
         }
 
@@ -34,7 +42,7 @@ namespace gView.Server.Services.Security
                 _encryptionCertService.GetCertificate("crypto0");  // Create the Service if not exits
             }
 
-            return CreateAuthToken(di.FullName, username, password, AppCode.AuthToken.AuthTypes.Manage, exipreMinutes);
+            return AuthToken.Create(di.FullName, username, password, AppCode.AuthToken.AuthTypes.Manage, exipreMinutes);
         }
 
         public bool HasManagerLogin()
@@ -45,6 +53,11 @@ namespace gView.Server.Services.Security
 
         public IEnumerable<string> GetMangeUserNames()
         {
+            if(!String.IsNullOrEmpty(_mapServiceAccessService.AdminAlias))
+            {
+                return [_mapServiceAccessService.AdminAlias];
+            }
+
             var di = new DirectoryInfo(_mapServerService.Options.LoginManagerRootPath + "/manage");
 
             if (di.Exists)
@@ -128,7 +141,7 @@ namespace gView.Server.Services.Security
         public AuthToken GetAuthToken(string username, string password, int expireMinutes = 30)
         {
             var di = new DirectoryInfo(_mapServerService.Options.LoginManagerRootPath + "/token");
-            return CreateAuthToken(di.FullName, username, password, AppCode.AuthToken.AuthTypes.Tokenuser, expireMinutes);
+            return AuthToken.Create(di.FullName, username, password, AppCode.AuthToken.AuthTypes.Tokenuser, expireMinutes);
         }
 
         public AuthToken CreateUserAuthTokenWithoutPasswordCheck(string username, int expireMinutes = 30)
@@ -183,60 +196,9 @@ namespace gView.Server.Services.Security
 
             try
             {
-                #region From Token
+                authToken = request.HttpContext.User.ToAuthToken();
 
-                string token = request.GetGeoservicesToken();
-
-                if (!String.IsNullOrEmpty(token))
-                {
-                    return authToken = _encryptionCertService.FromToken(token);
-                }
-
-                #endregion
-
-                #region From Url (/geoservices(THE_TOKEN)/....
-
-                var urlToken = request.GetGeoServicesUrlToken();
-                if (!String.IsNullOrEmpty(urlToken))
-                {
-                    var urlTokenName = urlToken.NameOfUrlToken();
-                    var path = _mapServerService.Options.LoginManagerRootPath + "/token";
-
-                    return authToken = CreateAuthToken(path, urlTokenName, urlToken, AuthToken.AuthTypes.Tokenuser);
-                }
-
-                #endregion
-
-                #region From Cookie
-
-                string cookie = request.Cookies[Globals.AuthCookieName];
-                if (!String.IsNullOrWhiteSpace(cookie))
-                {
-                    try
-                    {
-                        return authToken = _encryptionCertService.FromToken(cookie);
-                    }
-                    catch (System.Security.Cryptography.CryptographicException)
-                    {
-                        return authToken = AuthToken.Anonymous;
-                    }
-                }
-
-                #endregion
-
-                #region Authorization Header
-
-                if (!String.IsNullOrEmpty(request.Headers["Authorization"]))
-                {
-                    var userPwd = request.Headers["Authorization"].ToString().FromAuthorizationHeader();
-                    var path = _mapServerService.Options.LoginManagerRootPath + "/token";
-
-                    return authToken = CreateAuthToken(path, userPwd.username, userPwd.password, AuthToken.AuthTypes.Tokenuser);
-                }
-
-                #endregion
-
-                return authToken = AuthToken.Anonymous;
+                return authToken;
             }
             finally
             {
@@ -255,35 +217,6 @@ namespace gView.Server.Services.Security
         #endregion
 
         #region Helper
-
-        private AuthToken CreateAuthToken(string path, string username, string password, AuthToken.AuthTypes authType, int expireMiniutes = 30)
-        {
-            var fi = new FileInfo(Path.Combine(path, $"{username}.lgn"));
-
-            if (fi.Exists)
-            {
-                expireMiniutes = expireMiniutes <= 0 ? 30 : expireMiniutes;
-
-                if (username.UserNameIsUrlToken())
-                {
-                    if (password == File.ReadAllText(fi.FullName))
-                    {
-                        return new AuthToken(username, authType, new TimeSpan(0, expireMiniutes, 0));
-                    }
-                }
-                else
-                {
-                    if (SecureCrypto.VerifyPassword(password, File.ReadAllText(fi.FullName), username))
-                    {
-                        return new AuthToken(username, authType, new TimeSpan(0, expireMiniutes, 0));
-                    }
-                }
-            }
-
-            return null;
-        }
-
-
 
         private AuthToken CreateAuthTokenWithoutPasswordCheck(string path, string username, AuthToken.AuthTypes authType, int expireMiniutes = 30)
         {

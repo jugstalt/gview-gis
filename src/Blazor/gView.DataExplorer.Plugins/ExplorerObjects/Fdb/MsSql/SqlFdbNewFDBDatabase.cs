@@ -1,15 +1,13 @@
 ﻿using gView.DataExplorer.Plugins.ExplorerObjects.Base;
 using gView.DataExplorer.Plugins.ExplorerObjects.Fdb.MsSql.Extensions;
-using gView.DataExplorer.Plugins.Extensions;
 using gView.DataExplorer.Razor.Components.Dialogs.Models;
 using gView.DataSources.Fdb.MSSql;
-using gView.Framework.Blazor.Services.Abstraction;
+using gView.Framework.Common;
 using gView.Framework.Core.Common;
 using gView.Framework.DataExplorer.Abstraction;
-using gView.Framework.IO;
-using gView.Framework.Common;
-using System.Threading.Tasks;
 using gView.Framework.DataExplorer.Services.Abstraction;
+using gView.Framework.IO;
+using System.Threading.Tasks;
 
 namespace gView.DataExplorer.Plugins.ExplorerObjects.Fdb.MsSql;
 
@@ -85,7 +83,10 @@ public class SqlFdbNewFDBDatabase : ExplorerObjectCls<SqlFdbExplorerGroupObject>
                 throw new System.Exception(fdb.LastErrorMessage);
             }
 
-            return model.DbConnectionString.ToSqlFdbExplorerObject(this.TryGetParent() ?? new SqlFdbExplorerGroupObject());
+            if (parentExObject is SqlFdbExplorerGroupObject groupObject)
+            {
+                return model.DbConnectionString.ToSqlFdbExplorerObject(groupObject);
+            }
         }
 
         return null;

@@ -351,15 +351,10 @@ namespace gView.Framework.Symbology
         [Browsable(false)]
         public SymbolSmoothing SymbolSmoothingMode
         {
-            get => OutlineSymbol != null
-                ? OutlineSymbol.SymbolSmoothingMode
-                : SymbolSmoothing.None;
+            get => base.SmoothingMode;
             set
             {
-                if (OutlineSymbol != null)
-                {
-                    OutlineSymbol.SymbolSmoothingMode = value;
-                }
+                base.SmoothingMode = value;
             }
         }
 

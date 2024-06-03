@@ -20,11 +20,11 @@ namespace gView.Interoperability.Server
             }
         }
 
-        protected override Task<string> SendRequest(IUserData userData, string axlRequest)
+        async protected override Task<string> SendRequest(IUserData userData, string axlRequest)
         {
             if (_dataset == null)
             {
-                return Task.FromResult(String.Empty);
+                return String.Empty;
             }
 
             string server = ConfigTextStream.ExtractValue(_dataset.ConnectionString, "server");
@@ -56,16 +56,16 @@ namespace gView.Interoperability.Server
             }
 
             ServerConnection conn = new ServerConnection(server);
-            string resp = conn.Send(service, axlRequest, "BB294D9C-A184-4129-9555-398AA70284BC", user, pwd);
+            string resp = await conn.SendAsync(service, axlRequest, "BB294D9C-A184-4129-9555-398AA70284BC", user, pwd);
 
             try
             {
-                return Task.FromResult(conn.Send(service, axlRequest, "BB294D9C-A184-4129-9555-398AA70284BC", user, pwd));
+                return await conn.SendAsync(service, axlRequest, "BB294D9C-A184-4129-9555-398AA70284BC", user, pwd);
             }
             catch (Exception ex)
             {
                 MapServerClass.ErrorLog(context, "Query", server, service, ex);
-                return Task.FromResult(String.Empty);
+                return String.Empty;
             }
         }
     }

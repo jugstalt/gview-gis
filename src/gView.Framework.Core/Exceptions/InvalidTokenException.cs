@@ -2,7 +2,7 @@
 
 namespace gView.Framework.Core.Exceptions
 {
-    public class InvalidTokenException : MapServerException
+    public class InvalidTokenException : MapServerAuthException
     {
         public InvalidTokenException() : base("Invalid Token (498)") { }
     }

@@ -16,45 +16,6 @@ using System.Threading.Tasks;
 
 namespace gView.DataSources.Shape
 {
-    internal class CreateSpatialIndexTree
-    {
-        private SHPFile _file;
-        private DualTree _tree;
-        private IEnvelope _bounds;
-
-        public CreateSpatialIndexTree(SHPFile file, DualTree tree, IEnvelope bounds)
-        {
-            _file = file;
-            _tree = tree;
-            _bounds = bounds;
-        }
-
-        public Task Create()
-        {
-            return Task.Run(() =>
-            {
-                _tree.CreateTree(_bounds);
-
-                for (uint i = 0; i < _file.Entities; i++)
-                {
-                    IEnvelope env = _file.ReadEnvelope(i);
-                    //if (env == null)
-                    //    continue;
-                    SHPObject obj = new SHPObject((int)i, env);
-                    //bool inserted=_tree.SHPTreeAddShapeId(obj);
-                    bool inserted = _tree.AddShape(obj);
-                    inserted = false;
-                }
-                _tree.FinishIt();
-
-                _tree.writeIDXIndex(_file.IDX_Filename);
-            });
-        }
-    }
-
-    /// <summary>
-    /// Zusammenfassung für ShapeDataset.
-    /// </summary>
     [UseDatasetNameCase(DatasetNameCase.fieldNamesUpper)]
     [MaximumFieldnameLength(10)]
     [RegisterPlugIn("80F48262-D412-41fb-BF43-2D611A2ABF42")]
@@ -64,7 +25,6 @@ namespace gView.DataSources.Shape
         private IntPtr _hTree = (IntPtr)null;
         private double _minX = 0.0, _minY = 0.0, _maxX = 0.0, _maxY = 0.0;
         private List<IDatasetElement> _elements;
-        private bool _useGUI = gViewEnvironment.UserInteractive;
         private DatasetState _state = DatasetState.unknown;
         ShapeDatabase _database = new ShapeDatabase();
 
@@ -83,12 +43,6 @@ namespace gView.DataSources.Shape
                 }
             }
             _elements.Clear();
-        }
-
-        public bool useGUI
-        {
-            set { _useGUI = value; }
-            get { return _useGUI; }
         }
 
         #region IFeatureDataset Member
@@ -231,19 +185,7 @@ namespace gView.DataSources.Shape
 				DualTree tree=new DualTree(500);
 
                 CreateSpatialIndexTree creator = new CreateSpatialIndexTree(_file, tree, (IEnvelope)(new Envelope(_minX, _minY, _maxX, _maxY)));
-
-                if (_useGUI)
-                {
-                    Thread thread = new Thread(new ThreadStart(creator.Create));
-                    gView.Framework.UI.Dialogs.FormProgress frmProgress = new gView.Framework.UI.Dialogs.FormProgress(tree, thread);
-                    frmProgress.Text = "Create Spatial Index...";
-
-                    frmProgress.ShowDialog();
-                }
-                else
-                {
-                    creator.Create();
-                }      
+                creator.Create();
 			}
 
 			gView.Framework.FDB.IIndexTree iTree=null;
@@ -339,23 +281,7 @@ namespace gView.DataSources.Shape
 
                     CreateSpatialIndexTree creator = new CreateSpatialIndexTree(shpFile, tree, (IEnvelope)(new Envelope(shpFile.Header.Xmin, shpFile.Header.Ymin, shpFile.Header.Xmax, shpFile.Header.Ymax)));
 
-                    if (_useGUI)
-                    {
-                        IProgressTaskDialog progress = ProgressDialog.CreateProgressDialogInstance();
-                        if (progress != null && progress.UserInteractive)
-                        {
-                            progress.Text = "Create Spatial Index...";
-                            progress.ShowProgressDialog(tree, creator.Create());
-                        }
-                        else
-                        {
-                            await creator.Create();
-                        }
-                    }
-                    else
-                    {
-                        await creator.Create();
-                    }
+                    await creator.Create();
                 }
 
                 IIndexTree iTree = null;

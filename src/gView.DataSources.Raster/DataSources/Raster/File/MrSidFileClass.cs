@@ -4,7 +4,7 @@ using gView.Framework.Core.Data;
 using gView.Framework.Core.Geometry;
 using gView.Framework.Core.MapServer;
 using gView.Framework.Geometry;
-using gView.Framework.Geometry.Extesnsions;
+using gView.Framework.Geometry.Extensions;
 using System;
 using System.IO;
 using System.Threading.Tasks;

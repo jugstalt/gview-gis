@@ -1,9 +1,9 @@
-﻿using gView.Framework.Core.Carto;
+﻿using gView.Framework.Common;
+using gView.Framework.Core.Carto;
 using gView.Framework.Core.Data;
 using gView.Framework.Core.Geometry;
-using gView.Framework.Common;
 using gView.Interoperability.GeoServices.Rest.Reflection;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace gView.Interoperability.GeoServices.Rest.Json.Request
 {
@@ -64,64 +64,64 @@ namespace gView.Interoperability.GeoServices.Rest.Json.Request
             }
         }
 
-        [JsonProperty(PropertyName = "bbox")]
+        [JsonPropertyName("bbox")]
         public string BBox { get; set; }
 
-        [JsonProperty(PropertyName = "size")]
+        [JsonPropertyName("size")]
         public string Size { get; set; }
 
-        [JsonProperty(PropertyName = "dpi")]
+        [JsonPropertyName("dpi")]
         public double Dpi { get; set; }
 
-        [JsonProperty(PropertyName = "imageSR")]
+        [JsonPropertyName("imageSR")]
         public string ImageSRef { get; set; }
 
-        [JsonProperty(PropertyName = "bboxSR")]
+        [JsonPropertyName("bboxSR")]
         public string BBoxSRef { get; set; }
 
-        [JsonProperty(PropertyName = "format")]
+        [JsonPropertyName("format")]
         public string ImageFormat { get; set; }
 
-        [JsonProperty(PropertyName = "layerDefs")]
+        [JsonPropertyName("layerDefs")]
         public string LayerDefs { get; set; }
 
-        [JsonProperty(PropertyName = "layers")]
+        [JsonPropertyName("layers")]
         public string Layers { get; set; }
 
-        [JsonProperty(PropertyName = "transparent")]
+        [JsonPropertyName("transparent")]
         public bool Transparent { get; set; }
 
-        [JsonProperty(PropertyName = "time")]
+        [JsonPropertyName("time")]
         public string Time { get; set; }
 
-        [JsonProperty(PropertyName = "layerTimeOptions")]
+        [JsonPropertyName("layerTimeOptions")]
         public string LayerTimeOptions { get; set; }
 
-        [JsonProperty(PropertyName = "dynamicLayers")]
+        [JsonPropertyName("dynamicLayers")]
         public string DynamicLayers { get; set; }
 
-        [JsonProperty(PropertyName = "mapScale")]
+        [JsonPropertyName("mapScale")]
         public double MapScale { get; set; }
 
-        [JsonProperty(PropertyName = "rotation")]
+        [JsonPropertyName("rotation")]
         public double Rotation { get; set; }
 
-        [JsonProperty(PropertyName = "datumTransformations")]
+        [JsonPropertyName("datumTransformations")]
         public string DatumTransformations { get; set; }
 
-        [JsonProperty(PropertyName = "mapRangeValues")]
+        [JsonPropertyName("mapRangeValues")]
         public string MapRageValues { get; set; }
 
-        [JsonProperty(PropertyName = "layerRangeValues")]
+        [JsonPropertyName("layerRangeValues")]
         public string LayerRangeValues { get; set; }
 
-        [JsonProperty(PropertyName = "layerParameterValues")]
+        [JsonPropertyName("layerParameterValues")]
         public string LayerParameterValues { get; set; }
 
-        [JsonProperty(PropertyName = "historicMoment")]
+        [JsonPropertyName("historicMoment")]
         public long HistoricMoment { get; set; }
 
-        [JsonProperty(PropertyName = "f")]
+        [JsonPropertyName("f")]
         [FormInput(Values = new string[] { "json", "pjson", "image" })]
         public string OutputFormat { get; set; }
 

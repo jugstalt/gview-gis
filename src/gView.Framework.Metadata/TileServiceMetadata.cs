@@ -506,6 +506,8 @@ namespace gView.Framework.Metadata
                     _scales.Add(s);
                 }
             }
+
+            public double[] ToArray() => _scales.ToArray();
         }
 
         private class PropertyObject

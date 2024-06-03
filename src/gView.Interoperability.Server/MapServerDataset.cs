@@ -112,7 +112,7 @@ namespace gView.Interoperability.Server
             get { return _state; }
         }
 
-        public Task<bool> Open()
+        async public Task<bool> Open()
         {
             try
             {
@@ -121,7 +121,7 @@ namespace gView.Interoperability.Server
 
                 ServerConnection server = new ServerConnection(ConfigTextStream.ExtractValue(_connection, "server"));
                 string axl = "<ARCXML version=\"1.1\"><REQUEST><GET_SERVICE_INFO fields=\"true\" envelope=\"true\" renderer=\"false\" extensions=\"false\" gv_meta=\"true\" /></REQUEST></ARCXML>";
-                axl = server.Send(_name, axl, "BB294D9C-A184-4129-9555-398AA70284BC",
+                axl = await server.SendAsync(_name, axl, "BB294D9C-A184-4129-9555-398AA70284BC",
                     ConfigTextStream.ExtractValue(_connection, "user"),
                     ConfigTextStream.ExtractValue(_connection, "pwd"));
 
@@ -299,13 +299,14 @@ namespace gView.Interoperability.Server
                     _themes.Add(theme);
                 }
                 _state = DatasetState.opened;
-                return Task.FromResult(true);
+                return true;
             }
             catch (Exception /*ex*/)
             {
                 _state = DatasetState.unknown;
                 _class = null;
-                return Task.FromResult(false);
+
+                return false;
             }
         }
 
@@ -390,7 +391,7 @@ namespace gView.Interoperability.Server
         {
             this.ConnectionString = (string)stream.Load("ConnectionString", "");
             _class = new MapServerClass(this);
-            Open();
+            var _ = Open().Result;  // todo: is it nessessary to open on load?!
         }
 
         public void Save(IPersistStream stream)

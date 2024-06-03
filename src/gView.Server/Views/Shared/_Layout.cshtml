@@ -8,7 +8,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - gView.Server</title>
+    <title>gView.Server</title>
 
     <environment include="Development">
         <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.css" />
@@ -90,7 +90,7 @@
         </script>
         <script src="~/lib/bootbox.js/bootbox.min.js"></script>
         <script src="~/lib/webportal-layout/webportal-layout.js"></script>
-        <script src="~/js/site.min.js=?@(SystemInfo.Version.ToString())" asp-append-version="true"></script>
+        <script src="~/js/site.min.js?@(SystemInfo.Version.ToString())" asp-append-version="true"></script>
     </environment>
 
     @RenderSection("Scripts", required: false)

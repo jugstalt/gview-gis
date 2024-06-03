@@ -1,4 +1,5 @@
-﻿using gView.Framework.Security;
+﻿using gView.Framework.Core.Exceptions;
+using gView.Framework.Security;
 using gView.Server.AppCode;
 using gView.Server.Services.Security;
 using System;
@@ -17,13 +18,20 @@ namespace gView.Server.Extensions
 
         static public AuthToken FromToken(this EncryptionCertificateService ecs, string token)
         {
-            string authToken = SecureCrypto.DecryptToken(ecs.GetCertificate(), token); //Crypto.Decrypt(token, Globals.MasterPassword);
+            try
+            {
+                string authToken = SecureCrypto.DecryptToken(ecs.GetCertificate(), token); //Crypto.Decrypt(token, Globals.MasterPassword);
 
-            var at = authToken.Split('|');
-            return new AuthToken(
-                at[1], 
-                (AuthTypes)int.Parse(at[2]),
-                long.Parse(at[3]));
+                var at = authToken.Split('|');
+                return new AuthToken(
+                    at[1],
+                    (AuthTypes)int.Parse(at[2]),
+                    long.Parse(at[3]));
+            }
+            catch
+            {
+                throw new InvalidTokenException();
+            }
         }
     }
 }

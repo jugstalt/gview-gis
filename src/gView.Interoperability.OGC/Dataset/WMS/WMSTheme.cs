@@ -91,11 +91,11 @@ namespace gView.Interoperability.OGC.Dataset.WMS
         #region IPointIdentify Member
 
         public IPointIdentifyContext CreatePointIdentifyContext() => new DummyPointIdentifyContext();
-        public Task<ICursor> PointQuery(IDisplay display, IPoint point, ISpatialReference sRef, IUserData userdata, IPointIdentifyContext context)
+        async public Task<ICursor> PointQuery(IDisplay display, IPoint point, ISpatialReference sRef, IUserData userdata, IPointIdentifyContext context)
         {
             if (display == null || point == null)
             {
-                return Task.FromResult<ICursor>(null);
+                return null;
             }
 
             IEnvelope dispEnvelope = display.Envelope;
@@ -138,25 +138,26 @@ namespace gView.Interoperability.OGC.Dataset.WMS
 
             if (_getFeatureInfo.Formats[_getFeatureInfo.FormatIndex].ToLower().StartsWith("xsl/"))
             {
-                return Task.FromResult<ICursor>(new UrlCursor(WMSDataset.Append2Url(_getFeatureInfo.Get_OnlineResource, request.ToString())));
+                return new UrlCursor(WMSDataset.Append2Url(_getFeatureInfo.Get_OnlineResource, request.ToString()));
             }
             else
             {
                 switch (_getFeatureInfo.Formats[_getFeatureInfo.FormatIndex].ToLower())
                 {
                     case "text/plain":
-                        response = WebFunctions.HttpSendRequest(WMSDataset.Append2Url(_getFeatureInfo.Get_OnlineResource, request.ToString()));
-                        return Task.FromResult<ICursor>(new TextCursor(response));
+                        response = await WebFunctions.HttpSendRequest(WMSDataset.Append2Url(_getFeatureInfo.Get_OnlineResource, request.ToString()));
+                        return new TextCursor(response);
                     case "text/html":
-                        return Task.FromResult<ICursor>(new UrlCursor(WMSDataset.Append2Url(_getFeatureInfo.Get_OnlineResource, request.ToString())));
+                        return new UrlCursor(WMSDataset.Append2Url(_getFeatureInfo.Get_OnlineResource, request.ToString()));
                     case "text/xml":
-                        response = WebFunctions.HttpSendRequest(WMSDataset.Append2Url(_getFeatureInfo.Get_OnlineResource, request.ToString()));
-                        return Task.FromResult<ICursor>(new RowCursor(Xml2Rows(response)));
+                        response = WMSDataset.Append2Url(_getFeatureInfo.Get_OnlineResource, request.ToString());
+                        return new RowCursor(Xml2Rows(response));
                     case "application/vnd.ogc.gml":
-                        response = WebFunctions.HttpSendRequest(WMSDataset.Append2Url(_getFeatureInfo.Get_OnlineResource, request.ToString()));
-                        return Task.FromResult<ICursor>(new RowCursor(Gml2Rows(response)));
+                        response = await WebFunctions.HttpSendRequest(WMSDataset.Append2Url(_getFeatureInfo.Get_OnlineResource, request.ToString()));
+                        return new RowCursor(Gml2Rows(response));
                 }
             }
+
             return null;
         }
 

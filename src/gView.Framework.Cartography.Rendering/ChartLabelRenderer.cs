@@ -201,7 +201,7 @@ namespace gView.Framework.Cartography.Rendering
             get { return 3 - (int)_labelPriority; }
         }
 
-        public void Draw(IDisplay disp, IFeature feature)
+        public void Draw(IDisplay disp, IFeatureLayer layer, IFeature feature)
         {
             #region Check Values
             if (_symbolTable.Count == 0)
@@ -240,7 +240,7 @@ namespace gView.Framework.Cartography.Rendering
             if (feature.Shape is IPoint)
             {
                 point = (IPoint)feature.Shape;
-                if (disp.LabelEngine.TryAppend(disp,
+                if (disp.LabelEngine.TryAppend(disp, layer,
                     ChartAnnotationPolygon(disp, point, values, valSum, valMin, valMax),
                     feature.Shape, _labelPriority != SimpleLabelRenderer.RenderLabelPriority.Always) == LabelAppendResult.Succeeded)
                 {
@@ -270,7 +270,7 @@ namespace gView.Framework.Cartography.Rendering
                             dispEnv.MinY <= p2.Y && dispEnv.MaxY >= p2.Y)
                         {
                             point = new Point((p1.X + p2.X) * 0.5, (p1.Y + p2.Y) * 0.5);
-                            if (disp.LabelEngine.TryAppend(disp,
+                            if (disp.LabelEngine.TryAppend(disp, layer,
                                 ChartAnnotationPolygon(disp, point, values, valSum, valMin, valMax),
                                 pLine, _labelPriority != SimpleLabelRenderer.RenderLabelPriority.Always) == LabelAppendResult.Succeeded)
                             {
@@ -283,13 +283,13 @@ namespace gView.Framework.Cartography.Rendering
             }
             else if (feature.Shape is IPolygon)
             {
-                LabelPolygon(disp, (IPolygon)feature.Shape, values, valSum, valMin, valMax);
+                LabelPolygon(disp, layer, (IPolygon)feature.Shape, values, valSum, valMin, valMax);
             }
         }
 
         #endregion
 
-        private bool LabelPolygon(IDisplay disp, IPolygon polygon, double[] values, double valSum, double valMin, double valMax)
+        private bool LabelPolygon(IDisplay disp, IFeatureLayer layer, IPolygon polygon, double[] values, double valSum, double valMin, double valMax)
         {
             IEnvelope env = new Envelope(_clipEnvelope);
 
@@ -338,10 +338,10 @@ namespace gView.Framework.Cartography.Rendering
             }
 
             IMultiPoint pColl = Algorithm.PolygonLabelPoints(polygon);
-            return LabelPointCollection(disp, polygon, pColl, values, valSum, valMin, valMax);
+            return LabelPointCollection(disp, layer, polygon, pColl, values, valSum, valMin, valMax);
         }
 
-        private bool LabelPointCollection(IDisplay disp, IPolygon polygon, IMultiPoint pColl, double[] values, double valSum, double valMin, double valMax)
+        private bool LabelPointCollection(IDisplay disp, IFeatureLayer layer, IPolygon polygon, IMultiPoint pColl, double[] values, double valSum, double valMin, double valMax)
         {
             if (pColl == null)
             {
@@ -350,7 +350,7 @@ namespace gView.Framework.Cartography.Rendering
 
             for (int i = 0; i < pColl.PointCount; i++)
             {
-                if (disp.LabelEngine.TryAppend(disp,
+                if (disp.LabelEngine.TryAppend(disp, layer,
                     ChartAnnotationPolygon(disp, pColl[i], values, valSum, valMin, valMax),
                     pColl[i], _labelPriority != SimpleLabelRenderer.RenderLabelPriority.Always) == LabelAppendResult.Succeeded)
                 {
@@ -363,7 +363,7 @@ namespace gView.Framework.Cartography.Rendering
                 ISmartLabelPoint slp = pColl[i] as ISmartLabelPoint;
                 if (slp != null)
                 {
-                    LabelPointCollection(disp, polygon, slp.AlernativeLabelPoints(disp), values, valSum, valMin, valMax);
+                    LabelPointCollection(disp, layer, polygon, slp.AlernativeLabelPoints(disp), values, valSum, valMin, valMax);
                 }
             }
             return false;

@@ -12,12 +12,12 @@ using gView.Framework.Metadata;
 using gView.GraphicsEngine;
 using gView.GraphicsEngine.Abstraction;
 using gView.Interoperability.Server.TileService.Extensions;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.IO;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace gView.Interoperability.Server.TileService
@@ -733,7 +733,7 @@ namespace gView.Interoperability.Server.TileService
                 configFileInfo.Directory.Create();
             }
 
-            File.WriteAllText(configFileInfo.FullName, JsonConvert.SerializeObject(config, Formatting.Indented));
+            File.WriteAllText(configFileInfo.FullName, JsonSerializer.Serialize(config, new JsonSerializerOptions() { WriteIndented = true }));
         }
 
         #region Helper

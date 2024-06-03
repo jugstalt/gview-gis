@@ -1,6 +1,6 @@
 ﻿using gView.Framework.Common;
+using gView.Framework.Common.Json;
 using gView.Interoperability.GeoServices.Rest.Json.Features.Geometry;
-using Newtonsoft.Json;
 using System;
 
 namespace gView.Interoperability.GeoServices.Extensions
@@ -13,7 +13,7 @@ namespace gView.Interoperability.GeoServices.Extensions
 
             if (geometryString.StartsWith("{") || geometryString.StartsWith("["))
             {
-                return JsonConvert.DeserializeObject<JsonGeometry>(geometryString);
+                return JSerializer.Deserialize<JsonGeometry>(geometryString);
             }
 
             var coords = geometryString.Split(',');

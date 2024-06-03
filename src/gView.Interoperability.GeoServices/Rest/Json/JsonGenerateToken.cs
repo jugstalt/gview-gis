@@ -1,5 +1,6 @@
 ﻿using gView.Interoperability.GeoServices.Rest.Reflection;
-using Newtonsoft.Json;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace gView.Interoperability.GeoServices.Rest.Json
 {
@@ -11,18 +12,18 @@ namespace gView.Interoperability.GeoServices.Rest.Json
             Expiration = 30;
         }
 
-        [JsonProperty("request")]
+        [JsonPropertyName("request")]
         [FormInput(FormInputAttribute.InputTypes.Hidden)]
         public string Request { get; set; }
 
-        [JsonProperty("username")]
+        [JsonPropertyName("username")]
         public string Username { get; set; }
 
-        [JsonProperty("password")]
+        [JsonPropertyName("password")]
         [FormInput(FormInputAttribute.InputTypes.Password)]
         public string Password { get; set; }
 
-        [JsonProperty("expiration")]
+        [JsonPropertyName("expiration")]
         public int Expiration { get; set; }
     }
 }

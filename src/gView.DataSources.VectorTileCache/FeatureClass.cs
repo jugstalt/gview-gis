@@ -22,7 +22,7 @@ namespace gView.DataSources.VectorTileCache
                 throw new ArgumentException("dataset is not intialized");
             }
 
-            var layer = dataset.Capabilities.VectorLayers
+            var layer = dataset.Capabilities.VectorLayers?
                     .Where(l => name.Equals(l.Id))
                     .FirstOrDefault();
 
@@ -60,6 +60,7 @@ namespace gView.DataSources.VectorTileCache
                     ((FieldCollection)this.Fields).Add(field);
                 }
             }
+
 
             this.SpatialReference = dataset.SpatialReference;
         }

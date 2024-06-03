@@ -60,6 +60,7 @@ namespace gView.Server.AppCode
             serviceMap._displayUnits = original.DisplayUnits;
             serviceMap._backgroundColor = original.BackgroundColor;
             serviceMap.ReferenceScale = original.ReferenceScale;
+            serviceMap.WebMercatorScaleBehavoir = original.WebMercatorScaleBehavoir;
 
             serviceMap.SpatialReference = original.Display.SpatialReference;
             serviceMap.LayerDefaultSpatialReference = original.LayerDefaultSpatialReference != null ? original.LayerDefaultSpatialReference.Clone() as ISpatialReference : null;
@@ -76,6 +77,7 @@ namespace gView.Server.AppCode
             serviceMap._requestContext = requestContext;
 
             serviceMap.SetResourceContainer(original.ResourceContainer);
+            serviceMap.SetMapEventHooks(original.MapEventHooks);
 
             return serviceMap;
         }
@@ -352,7 +354,7 @@ namespace gView.Server.AppCode
                 return true;
             }
 
-            this.ZoomTo(m_actMinX, m_actMinY, m_actMaxX, m_actMaxY);
+            this.ZoomTo(_actMinX, _actMinY, _actMaxX, _actMaxY);
 
             if (cancelTracker == null)
             {
@@ -660,7 +662,7 @@ namespace gView.Server.AppCode
                                 continue;
                             }
 
-                            RenderLabel rlt = new RenderLabel(this, fLayer, cancelTracker, new FeatureCounter());
+                            RenderLabel rlt = new RenderLabel(this, datasetCachingContext, fLayer, cancelTracker, new FeatureCounter());
                             await rlt.Render();
                         }
                     }

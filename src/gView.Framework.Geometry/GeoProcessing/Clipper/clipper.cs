@@ -1352,6 +1352,8 @@ namespace gView.Framework.Geometry.GeoProcessing.Clipper
 
         public bool AddPaths(Paths ppg, PolyType polyType, bool closed)
         {
+            if (ppg == null) return false;   // gstalt
+
             bool result = false;
             for (int i = 0; i < ppg.Count; ++i)
             {

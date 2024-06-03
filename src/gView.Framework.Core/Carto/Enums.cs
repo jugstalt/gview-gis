@@ -34,4 +34,10 @@ namespace gView.Framework.Core.Carto
     public enum GrabberMode { Pointer, Vertex }
 
     public enum LabelRenderMode { RenderWithFeature, UseRenderPriority }
+
+    public enum WebMercatorScaleBehavoir
+    {
+        Default = 0,
+        IncludeLatitudeWhenCalculateMapScale = 1
+    }
 }

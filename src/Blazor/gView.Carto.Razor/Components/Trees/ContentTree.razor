@@ -115,8 +115,8 @@ else
                                                              Visible="true" 
                                                              ExpandedIconColor="Color.Primary" />
                                 <MudCheckBox T="bool"
-                                             Checked="@context.IsChecked"
-                                             CheckedChanged="@((e) => OnCheckboxClickedAsync(context,e ))" />
+                                             Value="@context.IsChecked"
+                                             ValueChanged="@((e) => OnCheckboxClickedAsync(context,e ))" />
                                 @if(_editNameTocNode == context)
                                 {
                                     <InlineInput @bind-Value="_editedName"

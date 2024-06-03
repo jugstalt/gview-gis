@@ -2,7 +2,6 @@
 using gView.Cmd.Extensions.DependencyInjection;
 using gView.Cmd.Services;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.SqlServer.Management.SqlParser.SqlCodeDom;
 
 var servicesProvider = new ServiceCollection()
     .AddCommandCollection()
@@ -12,14 +11,76 @@ var servicesProvider = new ServiceCollection()
 
 var worker = servicesProvider.GetService<WorkerService>();
 
-try
-{
-    await worker!.Run();
+// Initialize Skia
+gView.GraphicsEngine.Current.Engine = new gView.GraphicsEngine.Skia.SkiaGraphicsEngine(96.0f);
+gView.GraphicsEngine.Current.Encoder = new gView.GraphicsEngine.Skia.SkiaBitmapEncoding();
 
-    Console.WriteLine();
-    Console.WriteLine("finished");
-}
-catch(Exception ex)
+bool interactive = args.Length == 1 && args[0] == "-i";
+
+if (interactive)
 {
-    Console.WriteLine($"Exception: {ex.Message}");
+    var cmdLineArgService = servicesProvider.GetService<CommandLineArgumentsService>();
+    cmdLineArgService!.SetArguments([]);
+
+    Console.WriteLine("Interactive mode: type command with arguments");
+    await worker!.Run(true);
+
+    Console.WriteLine("Use:");
+    Console.WriteLine("quit ... quit program");
+    Console.WriteLine("help ... show help");
+    Console.WriteLine("clear ... clear console window"); 
+
+    while (true)
+    {
+        try
+        {
+            Console.Write("Command:>");
+
+            var cmdLine = /*gView.Cmd.CommandLinePro.ReadLineWithAdvancedAutoComplete();*/ Console.ReadLine();
+
+            if ("quit".Equals(cmdLine, StringComparison.OrdinalIgnoreCase))
+            {
+                break;
+            }
+            else if("help".Equals(cmdLine, StringComparison.OrdinalIgnoreCase))
+            {
+                cmdLineArgService!.SetArguments([]);
+                await worker!.Run(true);
+                continue;
+            }
+            else if("clear".Equals(cmdLine, StringComparison.OrdinalIgnoreCase))
+            {
+                Console.Clear();
+                continue;
+            }
+            else if(string.IsNullOrWhiteSpace(cmdLine))
+            {
+                continue;
+            }
+
+            cmdLineArgService!.SetArguments(["--command", ..cmdLine.Split(' ')]);
+
+            await worker!.Run(true);
+
+            Console.WriteLine();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Exception: {ex.Message}");
+        }
+    }
+}
+else
+{
+    try
+    {
+        await worker!.Run();
+
+        Console.WriteLine();
+        Console.WriteLine("finished");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Exception: {ex.Message}");
+    }
 }

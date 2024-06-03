@@ -19,10 +19,12 @@
     <ProjectReference Include="..\gView.Framework.Geometry\gView.Framework.Geometry.csproj" />
     <ProjectReference Include="..\gView.Framework.Metadata\gView.Framework.Metadata.csproj" />
     <ProjectReference Include="..\gView.Framework.OGC\gView.Framework.OGC.csproj" />
+    <ProjectReference Include="..\gView.Interoperability.GeoServices\gView.Interoperability.GeoServices.csproj" />
     <ProjectReference Include="..\gView.Server.Connector\gView.Server.Connector.csproj" />
     <ProjectReference Include="..\gView.Framework\gView.Framework.csproj" />
     <ProjectReference Include="..\gView.Framework.Web\gView.Framework.Web.csproj" />
     <ProjectReference Include="..\gView.Framework.XML\gView.Framework.XML.csproj" />
+    <ProjectReference Include="..\gView.Server.Models\gView.Server.Models.csproj" />
   </ItemGroup>
 
 </Project>

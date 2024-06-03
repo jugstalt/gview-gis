@@ -1,25 +1,33 @@
+#nullable enable
+
+using gView.Framework.Cartography.Extensions;
 using gView.Framework.Core.Carto;
+using gView.Framework.Core.Common;
+using gView.Framework.Core.Data;
 using gView.Framework.Core.Geometry;
 using gView.Framework.Core.Symbology;
-using gView.Framework.Core.Common;
 using gView.Framework.Data;
 using gView.Framework.Geometry;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 
 namespace gView.Framework.Cartography
 {
     internal class LabelEngine2 : ILabelEngine, IDisposable
     {
-        private enum OverlapMethod { Pixel = 1, Geometry = 0 };
-        private OverlapMethod _method = OverlapMethod.Geometry;
-        private GraphicsEngine.Abstraction.IBitmap _bitmap;
+        private enum OverlapAlgorirthm { Pixel = 1, Geometry = 0 };
+
+        private const int GlobalGridId = -1;
+        private const OverlapAlgorirthm Algorithm = OverlapAlgorirthm.Geometry;
+
+        private GraphicsEngine.Abstraction.IBitmap? _bitmap = null;
         //private Display _display;
-        private GraphicsEngine.Abstraction.ICanvas _canvas = null;
+        private GraphicsEngine.Abstraction.ICanvas? _canvas = null;
         private GraphicsEngine.ArgbColor _back;
         private bool _first = true, _directDraw = false;
-        private GridArray<List<IAnnotationPolygonCollision>> _gridArrayPolygons = null;
+        private Dictionary<int, GridArray<List<IAnnotationPolygonCollision>>> _gridArrayPolygonsDict = new();
 
         public LabelEngine2()
         {
@@ -38,7 +46,7 @@ namespace gView.Framework.Cartography
                 _bitmap.Dispose();
                 _bitmap = null;
             }
-            _gridArrayPolygons = null;
+            _gridArrayPolygonsDict.Clear();
         }
 
         #region ILabelEngine Member
@@ -74,10 +82,7 @@ namespace gView.Framework.Cartography
                 _directDraw = directDraw;
                 //_bm.MakeTransparent(Color.White);
 
-                _gridArrayPolygons = new GridArray<List<IAnnotationPolygonCollision>>(
-                                                               new Envelope(0.0, 0.0, display.ImageWidth, display.ImageHeight),
-                                                               new int[] { 50, 25, 18, 10, 5, 2 },
-                                                               new int[] { 50, 25, 18, 10, 5, 2 });
+                CreateGrid(display);
             }
             catch
             {
@@ -85,161 +90,13 @@ namespace gView.Framework.Cartography
             }
         }
 
-        public LabelAppendResult _TryAppend(IDisplay display, ITextSymbol symbol, IGeometry geometry, bool checkForOverlap)
-        {
-            if (symbol == null || !(display is Display))
-            {
-                return LabelAppendResult.WrongArguments;
-            }
-
-            IAnnotationPolygonCollision labelPolyon = null;
-            if (display.GeometricTransformer != null && !(geometry is IDisplayPath))
-            {
-                geometry = display.GeometricTransformer.Transform2D(geometry) as IGeometry;
-                if (geometry == null)
-                {
-                    return LabelAppendResult.WrongArguments;
-                }
-            }
-            IEnvelope labelPolyonEnvelope = null;
-            if (symbol is ILabel)
-            {
-                foreach (var symbolAlignment in LabelAlignments(symbol))
-                {
-                    List<IAnnotationPolygonCollision> aPolygons = symbol.AnnotationPolygon(display, geometry, symbolAlignment);
-                    bool outside = true;
-
-                    if (aPolygons != null)
-                    {
-                        #region Check Outside
-
-                        foreach (IAnnotationPolygonCollision polyCollision in aPolygons)
-                        {
-                            AnnotationPolygonEnvelope env = polyCollision.Envelope;
-                            if (env.MinX < 0 || env.MinY < 0 || env.MaxX > _bitmap.Width || env.MaxY > _bitmap.Height)
-                            {
-                                return LabelAppendResult.Outside;
-                            }
-                        }
-
-                        #endregion
-
-                        foreach (IAnnotationPolygonCollision polyCollision in aPolygons)
-                        {
-                            AnnotationPolygonEnvelope env = polyCollision.Envelope;
-
-                            //int minx = (int)Math.Max(0, env.MinX);
-                            //int maxx = (int)Math.Min(_bm.Width - 1, env.MaxX);
-                            //int miny = (int)Math.Max(0, env.MinY);
-                            //int maxy = (int)Math.Min(_bm.Height, env.MaxY);
-
-                            //if (minx > _bm.Width || maxx <= 0 || miny > _bm.Height || maxy <= 0) continue;  // liegt außerhalb!!
-
-                            int minx = (int)env.MinX, miny = (int)env.MinX, maxx = (int)env.MaxX, maxy = (int)env.MaxY;
-
-                            outside = false;
-
-                            if (!_first && checkForOverlap)
-                            {
-                                if (_method == OverlapMethod.Pixel)
-                                {
-                                    #region Pixel Methode
-
-                                    for (int x = minx; x < maxx; x++)
-                                    {
-                                        for (int y = miny; y < maxy; y++)
-                                        {
-                                            //if (x < 0 || x >= _bm.Width || y < 0 || y >= _bm.Height) continue;
-
-                                            if (polyCollision.Contains(x, y))
-                                            {
-                                                //_bm.SetPixel(x, y, Color.Yellow);
-                                                if (!_back.Equals(_bitmap.GetPixel(x, y)))
-                                                {
-                                                    return LabelAppendResult.Overlap;
-                                                }
-                                            }
-                                        }
-                                    }
-
-                                    #endregion
-                                }
-                                else
-                                {
-                                    #region Geometrie Methode
-
-                                    labelPolyon = polyCollision;
-                                    foreach (List<IAnnotationPolygonCollision> indexedPolygons in _gridArrayPolygons.Collect(new Envelope(env.MinX, env.MinY, env.MaxX, env.MaxY)))
-                                    {
-                                        foreach (IAnnotationPolygonCollision lp in indexedPolygons)
-                                        {
-                                            if (lp.CheckCollision(polyCollision) == true)
-                                            {
-                                                return LabelAppendResult.Overlap;
-                                            }
-                                        }
-                                    }
-
-                                    #endregion
-                                }
-                            }
-                            else
-                            {
-                                _first = false;
-
-                                if (_method == OverlapMethod.Geometry)
-                                {
-                                    #region Geometrie Methode
-
-                                    labelPolyon = polyCollision;
-
-                                    #endregion
-                                }
-                            }
-                            labelPolyonEnvelope = new Envelope(env.MinX, env.MinY, env.MaxX, env.MaxY);
-                        }
-                    }
-
-                    if (outside)
-                    {
-                        return LabelAppendResult.Outside;
-                    }
-                }
-            }
-
-            if (labelPolyon != null)
-            {
-                List<IAnnotationPolygonCollision> indexedPolygons = _gridArrayPolygons[labelPolyonEnvelope];
-                indexedPolygons.Add(labelPolyon);
-
-                //using (System.Drawing.Drawing2D.GraphicsPath path = new System.Drawing.Drawing2D.GraphicsPath())
-                //{
-                //    path.StartFigure();
-                //    path.AddLine(labelPolyon[0], labelPolyon[1]);
-                //    path.AddLine(labelPolyon[1], labelPolyon[2]);
-                //    path.AddLine(labelPolyon[2], labelPolyon[3]);
-                //    path.CloseFigure();
-
-                //    _graphics.FillPath(Brushes.Aqua, path);
-                //}
-            }
-
-            var originalCanvas = display.Canvas;
-            ((Display)display).Canvas = _canvas;
-
-            symbol.Draw(display, geometry);
-
-            ((Display)display).Canvas = originalCanvas;
-
-            if (_directDraw)
-            {
-                symbol.Draw(display, geometry);
-            }
-
-            return LabelAppendResult.Succeeded;
-        }
-
-        public LabelAppendResult TryAppend(IDisplay display, ITextSymbol symbol, IGeometry geometry, bool checkForOverlap)
+        public LabelAppendResult TryAppend(
+                IDisplay display,
+                IFeatureLayer layer,
+                ITextSymbol symbol,
+                IGeometry? geometry,
+                bool checkForOverlap
+            )
         {
             if (symbol == null || !(display is Display))
             {
@@ -255,32 +112,131 @@ namespace gView.Framework.Cartography
                 }
             }
 
-            var labelApendResult = LabelAppendResult.Succeeded;
+            var labelAppendResult = LabelAppendResult.Succeeded;
+            var labelAppendWithSpacingResult = LabelAppendResult.Succeeded;
+
+            IAnnotationPolygonCollision? appendPolygon = null;
+            IAnnotationPolygonCollision? appendPolygonWithSpacing = null;
+
+            TextSymbolAlignment alignment = TextSymbolAlignment.Center;
 
             if (symbol is ILabel)
             {
                 foreach (var symbolAlignment in LabelAlignments(symbol))
                 {
-                    labelApendResult = LabelAppendResult.Succeeded;
+                    #region Reset values
 
-                    List<IAnnotationPolygonCollision> aPolygons = symbol.AnnotationPolygon(display, geometry, symbolAlignment);
+                    labelAppendResult = LabelAppendResult.Succeeded;
+                    labelAppendWithSpacingResult = LabelAppendResult.Succeeded;
 
-                    labelApendResult = TryAppend(display, symbol, geometry, aPolygons, checkForOverlap, symbolAlignment);
-                    if (labelApendResult == LabelAppendResult.Succeeded)
+                    appendPolygon = null;
+                    appendPolygonWithSpacing = null;
+
+                    #endregion
+
+                    #region Check with all existing labels
+
+                    var labelPolygons = symbol.AnnotationPolygon(display, geometry, symbolAlignment) ?? [];
+                    
+                    foreach (var labelPolygon in labelPolygons)
                     {
-                        break;
+                        labelAppendResult = AppendResult(display, GlobalGridId, symbol, labelPolygon, checkForOverlap, symbolAlignment);
+                        if(labelAppendResult == LabelAppendResult.Succeeded)
+                        {
+                            appendPolygon = labelPolygon;
+                            break;
+                        }
+                    }
+
+                    #endregion
+
+                    #region Check with other labels from layer, if there is a symbol spacing
+
+                    if (symbol is ISymbolSpacing spacing
+                        && spacing.SymbolSpacingType != SymbolSpacingType.None
+                        && (spacing.SymbolSpacingX > 0f || spacing.SymbolSpacingY > 0f))
+                    {
+                        //
+                        // Symbolspacing: Check if other features of this layers are close
+                        //
+                        var labelPolygonsWithSpacing = labelPolygons
+                            .Select(p => p.WithSpacing(
+                                                spacing.SymbolSpacingType,
+                                                spacing.SymbolSpacingX, 
+                                                spacing.SymbolSpacingY
+                                            )
+                            )
+                            .ToList();
+
+                        foreach (var labelPolygonWithSpacing in labelPolygonsWithSpacing)
+                        {
+                            labelAppendWithSpacingResult = AppendResult(display, layer.ID, symbol, labelPolygonWithSpacing, checkForOverlap, symbolAlignment);
+                            if (labelAppendWithSpacingResult == LabelAppendResult.Succeeded)
+                            {
+                                appendPolygonWithSpacing = labelPolygonWithSpacing;
+                                break;
+                            }
+                        }
+                    }
+
+                    #endregion
+
+
+                    if (labelAppendResult == LabelAppendResult.Succeeded
+                        && labelAppendWithSpacingResult == LabelAppendResult.Succeeded)
+                    {
+                        alignment = symbolAlignment;
+                        break;  // if both succeeded => bingo  
                     }
                 }
             }
 
-            return labelApendResult;
+            if (labelAppendResult == LabelAppendResult.Succeeded
+                && labelAppendWithSpacingResult == LabelAppendResult.Succeeded)
+            {
+                if (appendPolygon != null)
+                {
+                    List<IAnnotationPolygonCollision> indexedPolygons = GetGrid(display, GlobalGridId)[appendPolygon.Envelope.ToEnvelope()];
+                    indexedPolygons.Add(appendPolygon);
+                }
+
+                if (appendPolygonWithSpacing != null)
+                {
+                    List<IAnnotationPolygonCollision> indexedPolygons = GetGrid(display, layer.ID)[appendPolygonWithSpacing.Envelope.ToEnvelope()];
+                    indexedPolygons.Add(appendPolygonWithSpacing);
+                }
+
+                var originalCanvas = display.Canvas;
+                ((Display)display).Canvas = _canvas;
+
+                symbol.Draw(display, geometry, alignment);
+
+                ((Display)display).Canvas = originalCanvas;
+
+                if (_directDraw)
+                {
+                    symbol.Draw(display, geometry, alignment);
+                }
+            }
+
+            return labelAppendResult;
         }
 
-        public LabelAppendResult TryAppend(IDisplay display, List<IAnnotationPolygonCollision> aPolygons, IGeometry geometry, bool checkForOverlap)
+        public LabelAppendResult TryAppend(
+                IDisplay display,
+                IFeatureLayer layer,
+                List<IAnnotationPolygonCollision> aPolygons,
+                IGeometry geometry,
+                bool checkForOverlap
+            )
         {
+            if (_bitmap is null)
+            {
+                return LabelAppendResult.Outside;
+            }
             bool outside = true;
-            IAnnotationPolygonCollision labelPolyon = null;
-            IEnvelope labelPolyonEnvelope = null;
+            IAnnotationPolygonCollision? labelPolyon = null;
+            IEnvelope? labelPolyonEnvelope = null;
 
             if (aPolygons != null)
             {
@@ -302,34 +258,34 @@ namespace gView.Framework.Cartography
 
                     if (!_first && checkForOverlap)
                     {
-                        if (_method == OverlapMethod.Pixel)
-                        {
-                            #region Pixel Methode
+                        //if (Algorithm == OverlapAlgorirthm.Pixel)
+                        //{
+                        //    #region Pixel Methode
 
-                            for (int x = minx; x < maxx; x++)
-                            {
-                                for (int y = miny; y < maxy; y++)
-                                {
-                                    //if (x < 0 || x >= _bm.Width || y < 0 || y >= _bm.Height) continue;
+                        //    for (int x = minx; x < maxx; x++)
+                        //    {
+                        //        for (int y = miny; y < maxy; y++)
+                        //        {
+                        //            //if (x < 0 || x >= _bm.Width || y < 0 || y >= _bm.Height) continue;
 
-                                    if (polyCollision.Contains(x, y))
-                                    {
-                                        //_bm.SetPixel(x, y, Color.Yellow);
-                                        if (!_back.Equals(_bitmap.GetPixel(x, y)))
-                                        {
-                                            return LabelAppendResult.Overlap;
-                                        }
-                                    }
-                                }
-                            }
+                        //            if (polyCollision.Contains(x, y))
+                        //            {
+                        //                //_bm.SetPixel(x, y, Color.Yellow);
+                        //                if (!_back.Equals(_bitmap.GetPixel(x, y)))
+                        //                {
+                        //                    return LabelAppendResult.Overlap;
+                        //                }
+                        //            }
+                        //        }
+                        //    }
 
-                            #endregion
-                        }
-                        else
+                        //    #endregion
+                        //}
+                        //else
                         {
                             #region Geometrie Methode
                             labelPolyon = polyCollision;
-                            foreach (List<IAnnotationPolygonCollision> indexedPolygons in _gridArrayPolygons.Collect(new Envelope(env.MinX, env.MinY, env.MaxX, env.MaxY)))
+                            foreach (List<IAnnotationPolygonCollision> indexedPolygons in GetGrid(display).Collect(new Envelope(env.MinX, env.MinY, env.MaxX, env.MaxY)))
                             {
                                 foreach (IAnnotationPolygonCollision lp in indexedPolygons)
                                 {
@@ -346,7 +302,7 @@ namespace gView.Framework.Cartography
                     {
                         _first = false;
 
-                        if (_method == OverlapMethod.Geometry)
+                        if (Algorithm == OverlapAlgorirthm.Geometry)
                         {
                             #region Geometrie Methode
 
@@ -366,7 +322,7 @@ namespace gView.Framework.Cartography
 
             if (labelPolyon != null)
             {
-                List<IAnnotationPolygonCollision> indexedPolygons = _gridArrayPolygons[labelPolyonEnvelope];
+                List<IAnnotationPolygonCollision> indexedPolygons = GetGrid(display)[labelPolyonEnvelope];
                 indexedPolygons.Add(labelPolyon);
             }
 
@@ -390,7 +346,7 @@ namespace gView.Framework.Cartography
             Dispose();
         }
 
-        public GraphicsEngine.Abstraction.ICanvas LabelCanvas
+        public GraphicsEngine.Abstraction.ICanvas? LabelCanvas
         {
             get { return _canvas; }
         }
@@ -399,20 +355,25 @@ namespace gView.Framework.Cartography
 
         #region Helper
 
-        private LabelAppendResult TryAppend(IDisplay display, ITextSymbol symbol, IGeometry geometry, List<IAnnotationPolygonCollision> aPolygons, bool checkForOverlap, TextSymbolAlignment symbolAlignment)
+        private LabelAppendResult AppendResult(
+                        IDisplay display, 
+                        int id, 
+                        ITextSymbol symbol,
+                        IAnnotationPolygonCollision aPolygon, 
+                        bool checkForOverlap, 
+                        TextSymbolAlignment symbolAlignment
+                )
         {
-            IAnnotationPolygonCollision labelPolyon = null;
-            IEnvelope labelPolyonEnvelope = null;
-
             bool outside = true;
 
-            if (aPolygons != null)
+            if (aPolygon != null && _bitmap != null)
             {
+                AnnotationPolygonEnvelope env = aPolygon.Envelope;
+
                 #region Check Outside
 
-                foreach (IAnnotationPolygonCollision polyCollision in aPolygons)
+                if (id == GlobalGridId)
                 {
-                    AnnotationPolygonEnvelope env = polyCollision.Envelope;
                     if (env.MinX < 0 || env.MinY < 0 || env.MaxX > _bitmap.Width || env.MaxY > _bitmap.Height)
                     {
                         return LabelAppendResult.Outside;
@@ -421,114 +382,63 @@ namespace gView.Framework.Cartography
 
                 #endregion
 
-                foreach (IAnnotationPolygonCollision polyCollision in aPolygons)
+                //int minx = (int)env.MinX, miny = (int)env.MinX, maxx = (int)env.MaxX, maxy = (int)env.MaxY;
+
+                outside = false;
+
+                if (!_first && checkForOverlap)
                 {
-                    AnnotationPolygonEnvelope env = polyCollision.Envelope;
+                    //if (Algorithm == OverlapAlgorirthm.Pixel)
+                    //{
+                    //    #region Pixel Methode
 
-                    //int minx = (int)Math.Max(0, env.MinX);
-                    //int maxx = (int)Math.Min(_bm.Width - 1, env.MaxX);
-                    //int miny = (int)Math.Max(0, env.MinY);
-                    //int maxy = (int)Math.Min(_bm.Height, env.MaxY);
+                    //    for (int x = minx; x < maxx; x++)
+                    //    {
+                    //        for (int y = miny; y < maxy; y++)
+                    //        {
+                    //            //if (x < 0 || x >= _bm.Width || y < 0 || y >= _bm.Height) continue;
 
-                    //if (minx > _bm.Width || maxx <= 0 || miny > _bm.Height || maxy <= 0) continue;  // liegt außerhalb!!
+                    //            if (polyCollision.Contains(x, y))
+                    //            {
+                    //                //_bm.SetPixel(x, y, Color.Yellow);
+                    //                if (!_back.Equals(_bitmap.GetPixel(x, y)))
+                    //                {
+                    //                    return LabelAppendResult.Overlap;
+                    //                }
+                    //            }
+                    //        }
+                    //    }
 
-                    int minx = (int)env.MinX, miny = (int)env.MinX, maxx = (int)env.MaxX, maxy = (int)env.MaxY;
-
-                    outside = false;
-
-                    if (!_first && checkForOverlap)
+                    //    #endregion
+                    //}
+                    //else
                     {
-                        if (_method == OverlapMethod.Pixel)
+                        #region Geometrie Methode
+
+                        foreach (List<IAnnotationPolygonCollision> indexedPolygons in GetGrid(display, id).Collect(new Envelope(env.MinX, env.MinY, env.MaxX, env.MaxY)))
                         {
-                            #region Pixel Methode
-
-                            for (int x = minx; x < maxx; x++)
+                            foreach (IAnnotationPolygonCollision lp in indexedPolygons)
                             {
-                                for (int y = miny; y < maxy; y++)
+                                if (lp.CheckCollision(aPolygon) == true)
                                 {
-                                    //if (x < 0 || x >= _bm.Width || y < 0 || y >= _bm.Height) continue;
-
-                                    if (polyCollision.Contains(x, y))
-                                    {
-                                        //_bm.SetPixel(x, y, Color.Yellow);
-                                        if (!_back.Equals(_bitmap.GetPixel(x, y)))
-                                        {
-                                            return LabelAppendResult.Overlap;
-                                        }
-                                    }
+                                    return LabelAppendResult.Overlap;
                                 }
                             }
-
-                            #endregion
                         }
-                        else
-                        {
-                            #region Geometrie Methode
 
-                            labelPolyon = polyCollision;
-                            foreach (List<IAnnotationPolygonCollision> indexedPolygons in _gridArrayPolygons.Collect(new Envelope(env.MinX, env.MinY, env.MaxX, env.MaxY)))
-                            {
-                                foreach (IAnnotationPolygonCollision lp in indexedPolygons)
-                                {
-                                    if (lp.CheckCollision(polyCollision) == true)
-                                    {
-                                        return LabelAppendResult.Overlap;
-                                    }
-                                }
-                            }
-
-                            #endregion
-                        }
+                        #endregion
                     }
-                    else
-                    {
-                        _first = false;
-
-                        if (_method == OverlapMethod.Geometry)
-                        {
-                            #region Geometrie Methode
-
-                            labelPolyon = polyCollision;
-
-                            #endregion
-                        }
-                    }
-                    labelPolyonEnvelope = new Envelope(env.MinX, env.MinY, env.MaxX, env.MaxY);
+                }
+                else
+                {
+                    _first = false;
                 }
             }
+
 
             if (outside)
             {
                 return LabelAppendResult.Outside;
-            }
-
-            if (labelPolyon != null)
-            {
-                List<IAnnotationPolygonCollision> indexedPolygons = _gridArrayPolygons[labelPolyonEnvelope];
-                indexedPolygons.Add(labelPolyon);
-
-                //using (System.Drawing.Drawing2D.GraphicsPath path = new System.Drawing.Drawing2D.GraphicsPath())
-                //{
-                //    path.StartFigure();
-                //    path.AddLine(labelPolyon[0], labelPolyon[1]);
-                //    path.AddLine(labelPolyon[1], labelPolyon[2]);
-                //    path.AddLine(labelPolyon[2], labelPolyon[3]);
-                //    path.CloseFigure();
-
-                //    _graphics.FillPath(Brushes.Aqua, path);
-                //}
-            }
-
-            var originalCanvas = display.Canvas;
-            ((Display)display).Canvas = _canvas;
-
-            symbol.Draw(display, geometry, symbolAlignment);
-
-            ((Display)display).Canvas = originalCanvas;
-
-            if (_directDraw)
-            {
-                symbol.Draw(display, geometry, symbolAlignment);
             }
 
             return LabelAppendResult.Succeeded;
@@ -541,9 +451,32 @@ namespace gView.Framework.Cartography
                 new TextSymbolAlignment[] { label.TextSymbolAlignment };
         }
 
+        private GridArray<List<IAnnotationPolygonCollision>> CreateGrid(IDisplay display, int id = GlobalGridId)
+        {
+            if (_gridArrayPolygonsDict.ContainsKey(id)) return _gridArrayPolygonsDict[id];
+
+            var annotationPolygons = new GridArray<List<IAnnotationPolygonCollision>>(
+                                        new Envelope(0.0, 0.0, display.ImageWidth, display.ImageHeight),
+                                        new int[] { 50, 25, 18, 10, 5, 2 },
+                                        new int[] { 50, 25, 18, 10, 5, 2 }
+                                     );
+
+            _gridArrayPolygonsDict[id] = annotationPolygons;
+
+            return annotationPolygons;
+        }
+
+        private GridArray<List<IAnnotationPolygonCollision>> GetGrid(IDisplay display, int id = GlobalGridId)
+        {
+            return _gridArrayPolygonsDict.ContainsKey(id)
+                ? _gridArrayPolygonsDict[id]
+                : CreateGrid(display, id);
+        }
+
         #endregion
 
         #region Helper Classes
+
         private class LabelPolygon
         {
             PointF[] _points;
@@ -674,96 +607,7 @@ namespace gView.Framework.Cartography
             }
             #endregion
         }
-        #endregion
-    }
-
-    #region Old Label Engines
-    /*
-    internal class LabelEngine : ILabelEngine
-    {
-        List<Font> _fonts = new List<Font>();
-        List<Label> _labels = new List<Label>();
-        List<ITextSymbol> _symbols = new List<ITextSymbol>();
-        private bool _directDraw = false;
-
-        #region ILabelEngine Member
-
-        public void Init(IDisplay display, bool directDraw)
-        {
-            _directDraw = directDraw;
-        }
-        public LabelAppendResult TryAppend(IDisplay display, ITextSymbol symbol, IGeometry geometry, bool chechForOverlap)
-        {
-            if (symbol == null || geometry == null || display == null || symbol.Text.Trim() == String.Empty) return LabelAppendResult.WrongArguments;
-
-            if (!_fonts.Contains(symbol.Font))
-                _fonts.Add((Font)symbol.Font.Clone());
-            if (!_symbols.Contains(symbol))
-                _symbols.Add(symbol);
-
-            _labels.Add(new Label(_symbols.IndexOf(symbol), _fonts.IndexOf(symbol.Font), geometry, symbol.Text));
-            return LabelAppendResult.Succeeded;
-        }
-
-        public void Draw(IDisplay display, ICancelTracker cancelTracker)
-        {
-            foreach (Label label in _labels)
-            {
-                if (cancelTracker != null && !cancelTracker.Continue) return;
-
-                ITextSymbol txtSymbol = _symbols[label.SymbolID];
-
-                txtSymbol.Text = label.Text;
-                txtSymbol.Font = _fonts[label.FontID];
-                txtSymbol.Draw(display, label.Geometry);
-            }
-        }
-
-        public void Release()
-        {
-            _labels.Clear();
-
-            ReleaseTextSymbols();
-            ReleaseFonts();
-
-            //GC.Collect();
-        }
 
         #endregion
-
-        private void ReleaseTextSymbols()
-        {
-            foreach (ITextSymbol txtSymbol in _symbols)
-            {
-                txtSymbol.Release();
-            }
-            _symbols.Clear();
-        }
-        private void ReleaseFonts()
-        {
-            foreach (Font font in _fonts)
-            {
-                if (font == null) continue;
-                font.Dispose();
-            }
-            _fonts.Clear();
-        }
     }
-
-    internal class Label
-    {
-        public int SymbolID, FontID;
-        public IGeometry Geometry;
-        public string Text;
-
-        public Label(int symbolID, int fontID, IGeometry geometry, string text)
-        {
-            FontID = fontID;
-            SymbolID = symbolID;
-            Geometry = geometry;
-            Text = text;
-        }
-    }
-    */
-    #endregion
 }

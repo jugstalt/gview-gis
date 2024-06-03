@@ -1,6 +1,7 @@
 @using System.Collections.Concurrent;
 
 @inject CartoEventBusService EventBus
+@inject ICartoApplicationScopeService Scope
 @inject ICartoDocumentService CartoDocument
 @inject GeoTransformerService GeoTransformation
 
@@ -39,7 +40,7 @@
     </GvGridItem>
     <GvGridItem Span="1">
         @* X *@
-        <MudPaper Elevation="12" Style="@PaperStyle">
+        <MudPaper Elevation="12" Style="@PaperClickableStyle" @onclick="OnCoordinateClick">
             <MudText Typo="Typo.body2">
                 @(_cursorPoint is not null ? $"X: {_cursorPoint.X.ToString("0.00")}" : string.Empty)
             </MudText>
@@ -47,7 +48,7 @@
     </GvGridItem>
     <GvGridItem Span="1">
         @* Y *@
-        <MudPaper Elevation="12" Style="@PaperStyle">
+        <MudPaper Elevation="12" Style="@PaperClickableStyle" @onclick="OnCoordinateClick">
             <MudText Typo="Typo.body2">
                 @(_cursorPoint is not null ? $"Y: {_cursorPoint.Y.ToString("0.00")}" : string.Empty)
             </MudText>
@@ -55,9 +56,9 @@
     </GvGridItem>
     <GvGridItem Span="1">
         @* Scale *@
-        <MudPaper Elevation="12" Style="@PaperStyle">
+        <MudPaper Elevation="12" Style="@PaperClickableStyle" @onclick="OnScaleClick">
             <MudText Typo="Typo.body2">
-                @(_scaleDominator > 0 ? $"1:{_scaleDominator.ToString("n0")}" : string.Empty)
+                @(_scaleDominator > 0 ? $"1:{_scaleDominator.ToString("n0")} ({_level})" : string.Empty)
             </MudText>
         </MudPaper>
     </GvGridItem>
@@ -65,15 +66,17 @@
 
 @code {
     private const string PaperStyle = "padding:4px;min-height:24px;white-space:nowrap;overflow:hidden;";
+    private const string PaperClickableStyle = $"{PaperStyle};cursor:pointer";
     private const string NumberFormatProjected = "0.00";
     private const string NumberFormatGeographic = "0.000000";
 
     private string _currentRenderLayer = "";
     private int _scaleDominator;
+    private float _level;
     private ConcurrentDictionary<DrawPhase, bool> _currentDrawPhases = new();
 
     private IPoint? _cursorPoint;
-    private string _cursorNumberFormat = NumberFormatProjected;
+    //private string _cursorNumberFormat = NumberFormatProjected;
 
     protected override void OnInitialized()
     {
@@ -88,6 +91,58 @@
         EventBus.OnMapMouseMoveAsync += HandleMapMouseMove;
     }
 
+    private Task OnScaleClick() => HandleAsync(async () =>
+    {
+        var model = await Scope.ShowModalDialog(
+                typeof(MapScaleDialog),
+                "Set Map Scale",
+                new MapScaleModel() { MapScaleDominator = _scaleDominator }
+            );
+
+        if (model != null && model.MapScaleDominator >= 1)
+        {
+            CartoDocument.CurrentMap.Display.MapScale = model.MapScaleDominator;
+
+            await EventBus.FireMapZoomToAsync(CartoDocument.CurrentMap.Display.Envelope);
+        }
+    });
+
+    private Task OnCoordinateClick() => HandleAsync(async () =>
+    {
+        var model = await Scope.ShowModalDialog(
+                typeof(CoordiantesDialog),
+                "Coordiantes",
+                new CoordiantesModel()
+                {
+                    SpatialReference = CartoDocument.CurrentMap.Display.SpatialReference,
+                    MapScaleDominator = _scaleDominator,
+                    Coordinate = new Point(CartoDocument.CurrentMap.Display.Envelope.Center)
+                }
+            );
+
+        if (model != null && model.MapScaleDominator >= 1)
+        {
+            var coordinate = model.Coordinate;
+
+            if (model.SpatialReference is not null
+                && CartoDocument.CurrentMap.Display.SpatialReference is not null) { 
+                coordinate = GeoTransformation.Transform(
+                        coordinate,
+                        model.SpatialReference,
+                        CartoDocument.CurrentMap.Display.SpatialReference
+                    ) as IPoint ?? new Point();
+            }
+
+            var envelpe = CartoDocument.CurrentMap.Display.Envelope;
+            envelpe.Center = coordinate;
+
+            CartoDocument.CurrentMap.Display.ZoomTo(envelpe);
+            CartoDocument.CurrentMap.Display.MapScale = model.MapScaleDominator;
+
+            await EventBus.FireMapZoomToAsync(CartoDocument.CurrentMap.Display.Envelope);
+        }
+    });
+
     #region EventHandlers
 
     private Task HandleStartRenderMap(IMapRenderer mapRenderer)
@@ -95,6 +150,7 @@
         if(mapRenderer.DrawPhase == DrawPhase.Geography &&
            mapRenderer is IDisplay display) {
             _scaleDominator = (int)display.MapScale;
+            _level = (float)Math.Round(display.WebMercatorScaleLevel, 1);
         }
 
         _currentDrawPhases.Clear();

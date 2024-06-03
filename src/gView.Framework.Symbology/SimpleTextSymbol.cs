@@ -1,8 +1,8 @@
 ﻿using gView.Framework.Core.Carto;
+using gView.Framework.Core.Common;
 using gView.Framework.Core.Geometry;
 using gView.Framework.Core.IO;
 using gView.Framework.Core.Symbology;
-using gView.Framework.Core.Common;
 using gView.Framework.Symbology.IO;
 using gView.GraphicsEngine;
 using gView.GraphicsEngine.Abstraction;
@@ -17,9 +17,10 @@ using System.Xml;
 namespace gView.Framework.Symbology
 {
     [RegisterPlugIn("A5DA4D8D-879F-41a5-9795-F22BE5B85877")]
-    public class SimpleTextSymbol : Symbol, 
-                                    ITextSymbol, 
-                                    IFontColor, 
+    public class SimpleTextSymbol : Symbol,
+                                    ITextSymbol,
+                                    ISymbolSpacing,
+                                    IFontColor,
                                     IFontSymbol
     {
         protected string _text;
@@ -591,6 +592,25 @@ namespace gView.Framework.Symbology
         [Category("Reference Scaling")]
         public float MinFontSize { get; set; }
 
+        #region ISymbolSpacing
+
+        [Browsable(true)]
+        [Category("Spacing")]
+        [DisplayName("Symbol Spacing X")]
+        public SymbolSpacingType SymbolSpacingType { get; set; }
+
+        [Browsable(true)]
+        [Category("Spacing")]
+        [DisplayName("Symbol Spacing X (Pixel)")]
+        public float SymbolSpacingX { get; set; }
+         
+        [Browsable(true)]
+        [Category("Spacing")]
+        [DisplayName("Symbol Spacing Y (Pixel)")]
+        public float SymbolSpacingY { get; set; }
+
+        #endregion
+
         [Browsable(true)]
         public bool IncludesSuperScript { get; set; }
 
@@ -864,6 +884,11 @@ namespace gView.Framework.Symbology
 
             this.MaxFontSize = (float)stream.Load("maxfontsize", 0f);
             this.MinFontSize = (float)stream.Load("minfontsize", 0f);
+
+            this.SymbolSpacingType = (SymbolSpacingType)stream.Load("symbolspacing_type", (int)SymbolSpacingType.None);
+            this.SymbolSpacingX = (float)stream.Load("symbolspacing_x", 0f);
+            this.SymbolSpacingY = (float)stream.Load("symbolspacing_y", 0f);
+
             this.IncludesSuperScript = (bool)stream.Load("includessuperscript", false);
         }
 
@@ -900,6 +925,11 @@ namespace gView.Framework.Symbology
 
             stream.Save("maxfontsize", this.MaxFontSize);
             stream.Save("minfontsize", this.MinFontSize);
+
+            stream.Save("symbolspacing_type", (int)this.SymbolSpacingType);
+            stream.Save("symbolspacing_x", this.SymbolSpacingX);
+            stream.Save("symbolspacing_y", this.SymbolSpacingY);
+
             stream.Save("includessuperscript", this.IncludesSuperScript);
         }
 
@@ -920,6 +950,9 @@ namespace gView.Framework.Symbology
             tSym.Smoothingmode = this.Smoothingmode;
             tSym.MinFontSize = this.MinFontSize;
             tSym.MaxFontSize = this.MaxFontSize;
+            tSym.SymbolSpacingType = this.SymbolSpacingType;
+            tSym.SymbolSpacingX = this.SymbolSpacingX;
+            tSym.SymbolSpacingY = this.SymbolSpacingY;
             tSym.IncludesSuperScript = this.IncludesSuperScript;
             tSym.SecondaryTextSymbolAlignments = this.SecondaryTextSymbolAlignments;
 
@@ -955,6 +988,9 @@ namespace gView.Framework.Symbology
             tSym.Smoothingmode = this.Smoothingmode;
             tSym.MinFontSize = this.MinFontSize;
             tSym.MaxFontSize = this.MaxFontSize;
+            tSym.SymbolSpacingType = this.SymbolSpacingType;
+            tSym.SymbolSpacingX = this.SymbolSpacingX;
+            tSym.SymbolSpacingY = this.SymbolSpacingY;
             tSym.IncludesSuperScript = this.IncludesSuperScript;
             tSym.SecondaryTextSymbolAlignments = this.SecondaryTextSymbolAlignments;
 

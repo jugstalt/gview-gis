@@ -1,19 +1,19 @@
 ﻿using gView.Framework.Common.Reflection;
 using gView.Interoperability.GeoServices.Rest.Reflection;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace gView.Interoperability.GeoServices.Rest.Json
 {
     public class JsonServices
     {
-        [JsonProperty(PropertyName = "currentVersion")]
+        [JsonPropertyName("currentVersion")]
         public double CurrentVersion { get; set; }
 
-        [JsonProperty(PropertyName = "folders")]
+        [JsonPropertyName("folders")]
         [HtmlLink("{url}/{0}")]
         public string[] Folders { get; set; }
 
-        [JsonProperty(PropertyName = "services")]
+        [JsonPropertyName("services")]
         public AgsService[] Services { get; set; }
 
         #region Classes
@@ -21,7 +21,7 @@ namespace gView.Interoperability.GeoServices.Rest.Json
         [YamlGroupBy("Type")]
         public class AgsService
         {
-            [JsonProperty(PropertyName = "name")]
+            [JsonPropertyName("name")]
             //[HtmlLink("{url}/{0}/{Type}")]
             [HtmlLink("{url}/{ServiceName}/{Type}")]
             public string Name { get; set; }
@@ -40,7 +40,7 @@ namespace gView.Interoperability.GeoServices.Rest.Json
                 }
             }
 
-            [JsonProperty(PropertyName = "type")]
+            [JsonPropertyName("type")]
             public string Type { get; set; }
         }
 

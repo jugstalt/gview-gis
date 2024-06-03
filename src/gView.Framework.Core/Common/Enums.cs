@@ -11,7 +11,8 @@ namespace gView.Framework.Core.Common
     public enum PluginUsage
     {
         Server = 1,
-        Desktop = 2
+        Desktop = 2,
+        Internal = 4096  // plugins that shound not registered in pluginmanager init...
     }
 
     public enum loggingMethod { request, request_detail, error, request_detail_pro }

@@ -1,0 +1,195 @@
+﻿@page "/login-forms"
+@using Microsoft.AspNetCore.Authentication
+@using Microsoft.AspNetCore.Authentication.Cookies
+@using Microsoft.AspNetCore.Identity
+@using System.Security.Claims
+@using System.ComponentModel.DataAnnotations
+@using gView.WebApps.Model
+@using gView.Security.Extensions
+
+@inject IConfiguration Configuration
+@inject NavigationManager NavigationManager
+@inject IHttpContextAccessor HttpContextAccessor
+
+<MudThemeProvider @bind-IsDarkMode="@_isDarkMode" Theme="_theme" />
+
+<div style="max-width:600px;margin:40px auto;text-align:center">
+
+    <EditForm Model="@Model" 
+              FormName="login-forms"
+              OnValidSubmit="Login">
+        <GvCard Title="gView Web Login">
+            <GvCardContent>
+                @if(!String.IsNullOrEmpty(_errorMessage))
+                {
+                    <MudAlert Severity="Severity.Error">@_errorMessage</MudAlert>
+                }
+            
+                <MudTextField @bind-Value="Model.Username" ShrinkLabel
+                              Label="Username"
+                              Variant="Variant.Outlined"
+                              name = "Model.Username"
+                              Immediate="true" />
+
+                <MudTextField @bind-Value="Model.Password" ShrinkLabel
+                              Label="Password"
+                              Variant="Variant.Outlined"
+                              name="Model.Password"
+                              InputType="InputType.Password"/>
+                @* <div>
+                    <label>
+                        Username:
+                        <InputText @bind-Value="Model.Username" 
+                                   class="login-input"  />
+                    </label>
+                </div> 
+
+                <div>
+                    <label>
+                        Password:
+                        <InputText @bind-Value="Model.Password" 
+                                   class="login-input" 
+                                   type="password" />
+                    </label>
+                </div>*@
+
+            </GvCardContent>
+            <GvCardActions>
+                <MudButton ButtonType="ButtonType.Submit"
+                           Color="Color.Primary"
+                           Variant="Variant.Filled">
+                    Login
+                </MudButton>
+            </GvCardActions>
+        </GvCard>
+    </EditForm>
+</div>
+
+@code {
+    private MudTheme _theme = new();
+    private bool _isDarkMode = true;
+
+    private HttpContext? HttpContext;
+
+    [SupplyParameterFromForm]
+    private LoginForm Model { get; set; } = new LoginForm();
+
+    private AuthConfigModel? _authConfig;
+
+    private string _errorMessage = "";
+
+    private enum UserType
+    {
+        Unknown, User, Admin
+    }
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+
+        HttpContext = HttpContextAccessor.HttpContext!;
+
+        _authConfig = new AuthConfigModel();
+        Configuration.Bind("Authentication", _authConfig);
+    }
+
+    private async Task Login()
+    {
+        try
+        {
+            var userInfo = ValidateUser(Model.Username, Model.Password);
+
+            if (userInfo.UserType == UserType.Unknown)
+            {
+                Model.Username = Model.Password = "";
+                throw new Exception("Unknown user");
+            }
+
+            await SignInUser(Model.Username, userInfo.UserType switch
+            {
+                UserType.Admin => [AuthConfigModel.FormsClass.AdminRole, .. userInfo.roles ?? []],
+                UserType.User => [AuthConfigModel.FormsClass.UserRole, .. userInfo.roles ?? []],
+                _ => []
+            });
+
+            NavigationManager.NavigateTo($"{HttpContext!.Request.PathBase}/");
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = ex.Message;
+        }
+    }
+
+    private async Task SignInUser(string username, string[] roles)
+    {
+        var claims = new List<Claim>
+        {
+            new Claim(ClaimTypes.Name, username)
+        };
+
+        claims.AddRange(roles.Select(role => new Claim(ClaimTypes.Role, role)));
+
+        var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+
+        var authProperties = new AuthenticationProperties
+        {
+            //IsPersistent = false,
+            //ExpiresUtc = DateTime.UtcNow.AddDays(1)
+        };
+
+        if (HttpContext is not null)
+        {
+            await HttpContext.SignInAsync(
+                CookieAuthenticationDefaults.AuthenticationScheme,
+                new ClaimsPrincipal(claimsIdentity),
+                authProperties);
+        }
+    }
+
+    private (UserType UserType, string[]? roles) ValidateUser(string username, string password)
+    {
+        var authConfig = new AuthConfigModel();
+        Configuration.Bind("Authentication", authConfig);
+
+        if(string.IsNullOrWhiteSpace(username)
+          || string.IsNullOrWhiteSpace(password))
+        {
+            return (UserType.Unknown, null);
+        }
+
+        var adminUser = _authConfig?.Forms?.AdminUsers?.FirstOrDefault(u =>
+            username.Equals(u.Username, StringComparison.OrdinalIgnoreCase)
+            && password.ValidateHash(u.PasswordHash)
+        );
+
+        if(adminUser is not null)
+        {
+            return (UserType.Admin, adminUser.Roles);
+        }
+
+        var cartoUser = _authConfig?.Forms?.CartoUsers?.FirstOrDefault(u =>
+            username.Equals(u.Username, StringComparison.OrdinalIgnoreCase)
+            && password.ValidateHash(u.PasswordHash)
+        );
+
+        if (cartoUser is not null)
+        {
+            return (UserType.User, cartoUser.Roles);
+        }
+
+        return (UserType.Unknown, null);
+    }
+
+    #region Models
+
+    public class LoginForm
+    {
+        [Required]
+        public string Username { get; set; } = "";
+
+        [Required]
+        public string Password { get; set; } = "";
+    }
+
+    #endregion
+}

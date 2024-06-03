@@ -7,255 +7,254 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace gView.Interoperability.GeoServices.Request.Extensions
+namespace gView.Interoperability.GeoServices.Request.Extensions;
+
+public static class Extensions
 {
-    static class Extensions
+    static public int[] ToSize(this string val)
     {
-        static public int[] ToSize(this string val)
+        try
         {
-            try
+            if (string.IsNullOrWhiteSpace(val) || !val.Contains(","))
             {
-                if (string.IsNullOrWhiteSpace(val) || !val.Contains(","))
-                {
-                    return new int[] { 400, 400 };
-                }
+                return new int[] { 400, 400 };
+            }
 
-                var size = val.Split(',');
-                return new int[] { int.Parse(size[0]), int.Parse(size[1]) };
-            }
-            catch (Exception ex)
-            {
-                throw new ArgumentException("Error parsing size parameter: " + val, ex);
-            }
+            var size = val.Split(',');
+            return new int[] { int.Parse(size[0]), int.Parse(size[1]) };
         }
-
-        static public double[] ToBBox(this string val)
+        catch (Exception ex)
         {
-            try
-            {
-                var bbox = val.Split(',');
-                return new double[] {
-                    bbox[0].ToDouble(),
-                    bbox[1].ToDouble(),
-                    bbox[2].ToDouble(),
-                    bbox[3].ToDouble()
-                };
-            }
-            catch (Exception ex)
-            {
-                throw new ArgumentException("Error parsing bbox parameter: " + val, ex);
-            }
+            throw new ArgumentException("Error parsing size parameter: " + val, ex);
         }
+    }
 
-        #region Geometry
-
-        static public JsonGeometry ToJsonGeometry(this IGeometry shape)
+    static public double[] ToBBox(this string val)
+    {
+        try
         {
-            if (shape is IPoint)
+            var bbox = val.Split(',');
+            return new double[] {
+                bbox[0].ToDouble(),
+                bbox[1].ToDouble(),
+                bbox[2].ToDouble(),
+                bbox[3].ToDouble()
+            };
+        }
+        catch (Exception ex)
+        {
+            throw new ArgumentException("Error parsing bbox parameter: " + val, ex);
+        }
+    }
+
+    #region Geometry
+
+    static public JsonGeometry ToJsonGeometry(this IGeometry shape)
+    {
+        if (shape is IPoint)
+        {
+            var point = (IPoint)shape;
+
+            var jsonPoint = new JsonGeometry()
             {
-                var point = (IPoint)shape;
+                X = ((Point)shape).X,
+                Y = ((IPoint)shape).Y
+            };
 
-                var jsonPoint = new JsonGeometry()
+            return jsonPoint;
+        }
+        if (shape is IMultiPoint)
+        {
+            var multiPoint = (IMultiPoint)shape;
+
+            List<double?[]> points = new List<double?[]>();
+
+            for (int p = 0, pointCount = multiPoint.PointCount; p < pointCount; p++)
+            {
+                var point = multiPoint[p];
+                if (point != null)
                 {
-                    X = ((Point)shape).X,
-                    Y = ((IPoint)shape).Y
-                };
-
-                return jsonPoint;
+                    points.Add(new double?[] { point.X, point.Y });
+                }
             }
-            if (shape is IMultiPoint)
+
+            var jsonMultipoint = new JsonGeometry()
             {
-                var multiPoint = (IMultiPoint)shape;
+                Points = points.ToArray()
+            };
 
-                List<double?[]> points = new List<double?[]>();
+            return jsonMultipoint;
+        }
+        if (shape is IEnvelope)
+        {
+            return new JsonGeometry()
+            {
+                XMin = ((IEnvelope)shape).MinX,
+                YMin = ((IEnvelope)shape).MinY,
+                XMax = ((IEnvelope)shape).MaxX,
+                YMax = ((IEnvelope)shape).MaxY,
+            };
+        }
+        if (shape is IPolyline)
+        {
+            var polyline = (IPolyline)shape;
 
-                for (int p = 0, pointCount = multiPoint.PointCount; p < pointCount; p++)
+            List<double?[,]> paths = new List<double?[,]>();
+            for (int r = 0, pathCount = polyline.PathCount; r < pathCount; r++)
+            {
+                var path = polyline[r];
+                if (path == null || path.PointCount == 0)
                 {
-                    var point = multiPoint[p];
-                    if (point != null)
-                    {
-                        points.Add(new double?[] { point.X, point.Y });
-                    }
+                    continue;
                 }
 
-                var jsonMultipoint = new JsonGeometry()
+                double?[,] points = new double?[path.PointCount, 2];
+                for (int p = 0, pointCount = path.PointCount; p < pointCount; p++)
                 {
-                    Points = points.ToArray()
-                };
-
-                return jsonMultipoint;
+                    var point = path[p];
+                    points[p, 0] = point.X;
+                    points[p, 1] = point.Y;
+                }
+                paths.Add(points);
             }
-            if (shape is IEnvelope)
-            {
-                return new JsonGeometry()
-                {
-                    XMin = ((IEnvelope)shape).MinX,
-                    YMin = ((IEnvelope)shape).MinY,
-                    XMax = ((IEnvelope)shape).MaxX,
-                    YMax = ((IEnvelope)shape).MaxY,
-                };
-            }
-            if (shape is IPolyline)
-            {
-                var polyline = (IPolyline)shape;
 
-                List<double?[,]> paths = new List<double?[,]>();
-                for (int r = 0, pathCount = polyline.PathCount; r < pathCount; r++)
-                {
-                    var path = polyline[r];
-                    if (path == null || path.PointCount == 0)
-                    {
-                        continue;
-                    }
+            var jsonPolyline = new JsonGeometry()
+            {
+                Paths = paths.ToArray()
+            };
 
-                    double?[,] points = new double?[path.PointCount, 2];
-                    for (int p = 0, pointCount = path.PointCount; p < pointCount; p++)
-                    {
-                        var point = path[p];
-                        points[p, 0] = point.X;
-                        points[p, 1] = point.Y;
-                    }
-                    paths.Add(points);
+            return jsonPolyline;
+        }
+        if (shape is IPolygon)
+        {
+            var polygon = (IPolygon)shape;
+
+            List<double?[,]> rings = new List<double?[,]>();
+            for (int r = 0, ringCount = polygon.RingCount; r < ringCount; r++)
+            {
+                var ring = polygon[r];
+                if (ring == null || ring.PointCount == 0)
+                {
+                    continue;
                 }
 
-                var jsonPolyline = new JsonGeometry()
+                double?[,] points = new double?[ring.PointCount, 2];
+                for (int p = 0, pointCount = ring.PointCount; p < pointCount; p++)
                 {
-                    Paths = paths.ToArray()
-                };
-
-                return jsonPolyline;
-            }
-            if (shape is IPolygon)
-            {
-                var polygon = (IPolygon)shape;
-
-                List<double?[,]> rings = new List<double?[,]>();
-                for (int r = 0, ringCount = polygon.RingCount; r < ringCount; r++)
-                {
-                    var ring = polygon[r];
-                    if (ring == null || ring.PointCount == 0)
-                    {
-                        continue;
-                    }
-
-                    double?[,] points = new double?[ring.PointCount, 2];
-                    for (int p = 0, pointCount = ring.PointCount; p < pointCount; p++)
-                    {
-                        var point = ring[p];
-                        points[p, 0] = point.X;
-                        points[p, 1] = point.Y;
-                    }
-                    rings.Add(points);
+                    var point = ring[p];
+                    points[p, 0] = point.X;
+                    points[p, 1] = point.Y;
                 }
-
-                var jsonPolylgon = new JsonGeometry()
-                {
-                    Rings = rings.ToArray()
-                };
-
-                return jsonPolylgon;
+                rings.Add(points);
             }
+
+            var jsonPolylgon = new JsonGeometry()
+            {
+                Rings = rings.ToArray()
+            };
+
+            return jsonPolylgon;
+        }
+        return null;
+    }
+
+    static public IGeometry ToGeometry(this JsonGeometry geometry)
+    {
+        if (geometry == null)
+        {
             return null;
         }
 
-        static public IGeometry ToGeometry(this JsonGeometry geometry)
+        IGeometry shape = null;
+
+        if (geometry.X.HasValue && geometry.Y.HasValue)
         {
-            if (geometry == null)
-            {
-                return null;
-            }
+            shape = new Point(geometry.X.Value, geometry.Y.Value);
+        }
+        else if (geometry.XMin.HasValue && geometry.YMin.HasValue && geometry.XMax.HasValue && geometry.YMax.HasValue)
+        {
+            shape = new Envelope(geometry.XMin.Value, geometry.YMin.Value, geometry.XMax.Value, geometry.YMax.Value);
+        }
+        else if (geometry.Paths != null && geometry.Paths.Length > 0)
+        {
+            var polyline = new Polyline();
 
-            IGeometry shape = null;
-
-            if (geometry.X.HasValue && geometry.Y.HasValue)
+            for (int p = 0, pathCount = geometry.Paths.Length; p < pathCount; p++)
             {
-                shape = new Point(geometry.X.Value, geometry.Y.Value);
-            }
-            else if (geometry.XMin.HasValue && geometry.YMin.HasValue && geometry.XMax.HasValue && geometry.YMax.HasValue)
-            {
-                shape = new Envelope(geometry.XMin.Value, geometry.YMin.Value, geometry.XMax.Value, geometry.YMax.Value);
-            }
-            else if (geometry.Paths != null && geometry.Paths.Length > 0)
-            {
-                var polyline = new Polyline();
-
-                for (int p = 0, pathCount = geometry.Paths.Length; p < pathCount; p++)
+                var jsonPath = geometry.Paths[p];
+                if (jsonPath.Length < 1)
                 {
-                    var jsonPath = geometry.Paths[p];
-                    if (jsonPath.Length < 1)
-                    {
-                        continue;
-                    }
-
-                    var path = new Path();
-                    for (int i = 0, pointCount = jsonPath.GetLength(0); i < pointCount; i++)
-                    {
-                        path.AddPoint(new Point(jsonPath[i, 0].Value, jsonPath[i, 1].Value));
-                    }
-                    polyline.AddPath(path);
+                    continue;
                 }
 
-                shape = polyline;
-            }
-            else if (geometry.Rings != null && geometry.Rings.Length > 0)
-            {
-                var polygon = new Polygon();
-
-                for (int p = 0, ringCount = geometry.Rings.Length; p < ringCount; p++)
+                var path = new Path();
+                for (int i = 0, pointCount = jsonPath.GetLength(0); i < pointCount; i++)
                 {
-                    var jsonRing = geometry.Rings[p];
-                    if (jsonRing.Length < 1)
-                    {
-                        continue;
-                    }
+                    path.AddPoint(new Point(jsonPath[i, 0].Value, jsonPath[i, 1].Value));
+                }
+                polyline.AddPath(path);
+            }
 
-                    var ring = new Ring();
-                    for (int i = 0, pointCount = jsonRing.GetLength(0); i < pointCount; i++)
-                    {
-                        ring.AddPoint(new Point(jsonRing[i, 0].Value, jsonRing[i, 1].Value));
-                    }
-                    polygon.AddRing(ring);
+            shape = polyline;
+        }
+        else if (geometry.Rings != null && geometry.Rings.Length > 0)
+        {
+            var polygon = new Polygon();
+
+            for (int p = 0, ringCount = geometry.Rings.Length; p < ringCount; p++)
+            {
+                var jsonRing = geometry.Rings[p];
+                if (jsonRing.Length < 1)
+                {
+                    continue;
                 }
 
-                shape = polygon;
-            }
-            else if (geometry.Points != null && geometry.Points.Length > 0)
-            {
-                var multiPoint = new MultiPoint();
-
-                for (int p = 0, pointCount = geometry.Points.Length; p < pointCount; p++)
+                var ring = new Ring();
+                for (int i = 0, pointCount = jsonRing.GetLength(0); i < pointCount; i++)
                 {
-                    var point = geometry.Points[p];
-                    if (point != null && point.Length >= 2)
-                    {
-                        multiPoint.AddPoint(new Point(point[0].Value, point[1].Value));
-                    }
+                    ring.AddPoint(new Point(jsonRing[i, 0].Value, jsonRing[i, 1].Value));
                 }
-
-                shape = multiPoint;
+                polygon.AddRing(ring);
             }
 
-            if (shape != null && geometry.SpatialReference != null && geometry.SpatialReference.Wkid > 0)
+            shape = polygon;
+        }
+        else if (geometry.Points != null && geometry.Points.Length > 0)
+        {
+            var multiPoint = new MultiPoint();
+
+            for (int p = 0, pointCount = geometry.Points.Length; p < pointCount; p++)
             {
-                shape.Srs = geometry.SpatialReference.Wkid;
+                var point = geometry.Points[p];
+                if (point != null && point.Length >= 2)
+                {
+                    multiPoint.AddPoint(new Point(point[0].Value, point[1].Value));
+                }
             }
 
-            return shape;
+            shape = multiPoint;
         }
 
-        #endregion
-
-        #region EditResponse
-
-        static public IEnumerable<JsonFeatureServerResponse.JsonResponse> ToEditJsonResponse(this IEnumerable<int> objectIds, bool succeeded)
+        if (shape != null && geometry.SpatialReference != null && geometry.SpatialReference.Wkid > 0)
         {
-            return objectIds.Select(objectId => new JsonFeatureServerResponse.JsonResponse()
-            {
-                Success = succeeded,
-                ObjectId = objectId
-            });
+            shape.Srs = geometry.SpatialReference.Wkid;
         }
 
-        #endregion
+        return shape;
     }
+
+    #endregion
+
+    #region EditResponse
+
+    static public IEnumerable<JsonFeatureServerResponse.JsonResponse> ToEditJsonResponse(this IEnumerable<int> objectIds, bool succeeded)
+    {
+        return objectIds.Select(objectId => new JsonFeatureServerResponse.JsonResponse()
+        {
+            Success = succeeded,
+            ObjectId = objectId
+        });
+    }
+
+    #endregion
 }

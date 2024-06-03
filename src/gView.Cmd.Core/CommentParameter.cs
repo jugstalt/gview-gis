@@ -1,5 +1,5 @@
 ﻿using gView.Cmd.Core.Abstraction;
-using Newtonsoft.Json.Serialization;
+using System.Text.Json.Serialization;
 using System;
 using System.Collections.Generic;
 using System.Security.Cryptography.X509Certificates;

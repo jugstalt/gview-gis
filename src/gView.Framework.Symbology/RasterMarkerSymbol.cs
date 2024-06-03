@@ -1,22 +1,20 @@
 ﻿using gView.Framework.Core.Carto;
+using gView.Framework.Core.Common;
 using gView.Framework.Core.Geometry;
 using gView.Framework.Core.IO;
+using gView.Framework.Core.Reflection;
 using gView.Framework.Core.Symbology;
-using gView.Framework.Core.Common;
 using gView.Framework.Symbology.Extensions;
 using gView.GraphicsEngine;
 using gView.GraphicsEngine.Abstraction;
 using System;
 using System.ComponentModel;
 using System.IO;
-using gView.Framework.IO;
-using gView.Framework.Core.Reflection;
-using System.Diagnostics;
 
 namespace gView.Framework.Symbology
 {
     [RegisterPlugIn("230881F2-F9E4-4593-BD25-5B614B9CB503")]
-    public sealed class RasterMarkerSymbol : LegendItem, IPointSymbol, ISymbolRotation
+    public sealed class RasterMarkerSymbol : LegendItem, IPointSymbol, ISymbolRotation, IIconSymbol
     {
         private float _xOffset = 0, _yOffset = 0, _angle = 0, _rotation = 0, _hOffset = 0, _vOffset = 0;
         private float _sizeX = 10f, _sizeY = 10f;
@@ -33,7 +31,15 @@ namespace gView.Framework.Symbology
             }
             set
             {
-                _filename = value;
+                if (value != _filename)
+                {
+                    if(_image!=null)
+                    {
+                        _image.Dispose();
+                        _image = null;
+                    }
+                    _filename = value;
+                }
             }
         }
 
@@ -88,14 +94,7 @@ namespace gView.Framework.Symbology
                     {
                         if (_image == null)
                         {
-                            if (_filename.StartsWith("resource:"))
-                            {
-                                _image = Current.Engine.CreateBitmap(new MemoryStream(display.Map.ResourceContainer[_filename.Substring(9)]));
-                            }
-                            else
-                            {
-                                _image = Current.Engine.CreateBitmap(_filename);
-                            }
+                            ReloadIfEmpty(display, false);
                         }
 
                         if (_image != null)
@@ -181,6 +180,9 @@ namespace gView.Framework.Symbology
             marker.SizeY = _sizeY * fac;
             marker.Filename = _filename;
             marker.LegendLabel = _legendLabel;
+
+            
+            
 
             return marker;
         }
@@ -284,5 +286,31 @@ namespace gView.Framework.Symbology
         }
 
         #endregion ISymbol Member
+
+        public void ReloadIfEmpty(IDisplay display, bool setSize)
+        {
+            if (_image == null)
+            {
+                if (_filename.StartsWith("resource:"))
+                {
+                    var resourceData = display.Map.ResourceContainer[_filename.Substring(9)];
+                    if(resourceData == null)
+                    {
+                        throw new Exception($"Can't find map resource {_filename.Substring(9)}");
+                    }
+                    _image = Current.Engine.CreateBitmap(new MemoryStream(resourceData));
+                }
+                else
+                {
+                    _image = Current.Engine.CreateBitmap(_filename);
+                }
+            }
+
+            if (setSize && _image != null)
+            {
+                SizeX = _image.Width;
+                SizeY = _image.Height;
+            }
+        }
     }
 }

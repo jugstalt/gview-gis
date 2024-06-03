@@ -22,7 +22,7 @@ public class CartoDisplayService : IDisposable
     public int ImageHeight { get; private set; }
     public IEnvelope MapBounds { get; private set; } = new Envelope();
     public double Dpi { get; set; }
-    public ISpatialReference SpatialReference { get; private set; }
+    public ISpatialReference? SpatialReference { get; private set; }
 
     #region Event Handlers
 

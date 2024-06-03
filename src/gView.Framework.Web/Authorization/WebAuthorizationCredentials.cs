@@ -1,5 +1,5 @@
 ﻿using gView.Framework.Common.Extensions;
-using Newtonsoft.Json;
+using System.Text.Json;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -159,7 +159,7 @@ namespace gView.Framework.Web.Authorization
                                     if (httpResponseMessage.IsSuccessStatusCode)
                                     {
                                         var tokenResonseString = await httpResponseMessage.Content.ReadAsStringAsync();
-                                        var accessToken = JsonConvert.DeserializeObject<AccessTokenResponse>(tokenResonseString);
+                                        var accessToken = JsonSerializer.Deserialize<AccessTokenResponse>(tokenResonseString);
 
                                         if (!string.IsNullOrEmpty(accessToken.error))
                                         {

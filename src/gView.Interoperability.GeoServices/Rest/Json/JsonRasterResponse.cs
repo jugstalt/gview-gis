@@ -1,37 +1,37 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 
 namespace gView.Interoperability.GeoServices.Rest.Json
 {
     class JsonRasterResponse
     {
 
-        [JsonProperty("results")]
+        [JsonPropertyName("results")]
         public Result[] Results { get; set; }
 
         #region Classes
 
         public class Result
         {
-            [JsonProperty("layerId")]
+            [JsonPropertyName("layerId")]
             public int LayerId { get; set; }
 
-            [JsonProperty("layerName")]
+            [JsonPropertyName("layerName")]
             public string LayerName { get; set; }
 
-            [JsonProperty("displayFieldName")]
+            [JsonPropertyName("displayFieldName")]
             public string DisplayFieldName { get; set; }
 
-            [JsonProperty("attributes")]
+            [JsonPropertyName("attributes")]
             public object ResultAttributes { get; set; }
 
             #region Class 
 
             //public class Attributes
             //{
-            //    [JsonProperty("Class Value")]
+            //    [JsonPropertyName("Class Value")]
             //    public string ClassValue { get; set; }
 
-            //    [JsonProperty("Pixel Value")]
+            //    [JsonPropertyName("Pixel Value")]
             //    public string PixelValue { get; set; }
             //}
 

@@ -226,6 +226,8 @@ window.gViewLeafletInterops = {
             center: map.center,
             zoom: map.zoom,
             zoomControl: map.zoomControl,
+            zoomDelta: 0.5,
+            zoomSnap: 0,
             minZoom: map.minZoom ? map.minZoom : undefined,
             maxZoom: map.maxZoom ? map.maxZoom : undefined,
             maxBounds: map.maxBounds && map.maxBounds.item1 && map.maxBounds.item2 ? L.latLngBounds(map.maxBounds.item1, map.maxBounds.item2) : undefined,

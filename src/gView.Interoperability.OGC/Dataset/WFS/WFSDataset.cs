@@ -6,6 +6,7 @@ using gView.Framework.Web;
 using gView.Interoperability.OGC.Dataset.WMS;
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using System.Xml;
 
 namespace gView.Interoperability.OGC.Dataset.WFS
@@ -29,7 +30,7 @@ namespace gView.Interoperability.OGC.Dataset.WFS
             _url = url;
         }
 
-        public bool Open()
+        async public Task<bool> Open()
         {
             try
             {
@@ -37,7 +38,7 @@ namespace gView.Interoperability.OGC.Dataset.WFS
                 string param = "REQUEST=GetCapabilities&VERSION=1.0.0&SERVICE=WFS";
 
                 string url = WMSDataset.Append2Url(_url, param);
-                string response = WebFunctions.HttpSendRequest(url, "GET", null);
+                string response = await WebFunctions.HttpSendRequestAsync(url, "GET", null);
                 response = WMSDataset.RemoveDOCTYPE(response);
 
                 XmlDocument doc = new XmlDocument();
@@ -71,7 +72,7 @@ namespace gView.Interoperability.OGC.Dataset.WFS
                         title = titleNode.InnerText;
                     }
 
-                    WFSFeatureClass featureClass = new WFSFeatureClass(this, name, srs);
+                    WFSFeatureClass featureClass = await WFSFeatureClass.CreateAsync(this, name, srs);
                     //DatasetElement dselement = new DatasetElement(featureClass);
                     ILayer dselement = LayerFactory.Create(featureClass);
                     if (dselement == null)

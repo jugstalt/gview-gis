@@ -10,7 +10,7 @@ namespace gView.Framework.Common
 {
     public class SystemInfo
     {
-        public static Version Version = new Version(6, 24, 1201);
+        public static Version Version = new Version(6, 24, 2103);
 
         #region -> Private Variables
 
@@ -47,7 +47,11 @@ namespace gView.Framework.Common
 
         static public void RegisterDefaultGraphicEnginges(float dpi = 96)
         {
-            new GdiGraphicsEngine(dpi).RegisterGraphcisEngine();
+            if (IsWindows)
+            {
+                new GdiGraphicsEngine(dpi).RegisterGraphcisEngine();
+            }
+
             (GraphicsEngine.Current.Engine = new SkiaGraphicsEngine(dpi)).RegisterGraphcisEngine();
         }
 

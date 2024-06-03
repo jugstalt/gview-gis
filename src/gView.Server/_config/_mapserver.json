@@ -1,0 +1,20 @@
+{
+  "services-folder": "{repository-path}/server/configuration",
+  "output-path": "{repository-path}/server/web/output",
+  "output-url": "{server-url}/output",
+  "onlineresource-url": "{server-url}",
+  "tilecache-root": "{repository-path}/server/web/tile-caches",
+
+  "task-queue": {
+    "max-parallel-tasks": 10,
+    "max-queue-length": 1000
+  },
+
+  "allowFormsLogin": true,
+  "force-https": false,
+
+  "graphics": {
+    "rendering": "skia",
+    "encoding": "skia"
+  }
+}

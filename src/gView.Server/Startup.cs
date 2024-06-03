@@ -1,10 +1,15 @@
-﻿using gView.Framework.Core.Common;
+﻿using gView.Facilities.Abstraction;
+using gView.Facilities.Extensions.DependencyInjection;
 using gView.Framework.Common;
+using gView.Framework.Common.Extensions;
+using gView.Framework.Core.Common;
+using gView.Framework.IO;
 using gView.Server.AppCode;
 using gView.Server.AppCode.Configuration;
 using gView.Server.Extensions;
 using gView.Server.Extensions.DependencyInjection;
 using gView.Server.Middleware;
+using gView.Server.Services.Handlers;
 using gView.Server.Services.Hosting;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -13,9 +18,7 @@ using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Newtonsoft.Json;
 using System;
-using gView.Framework.IO;
 
 namespace gView.Server
 {
@@ -27,8 +30,8 @@ namespace gView.Server
             Environment = environment;
 
             SystemInfo.RegisterGdal1_10_PluginEnvironment();
-            SystemVariables.UseDiagnostic = 
-            ContextVariables.UseMetrics =    
+            SystemVariables.UseDiagnostic =
+            ContextVariables.UseMetrics =
                 "true".Equals(Configuration["diagnostics"], StringComparison.OrdinalIgnoreCase);
 
             #region Graphics Engine
@@ -97,21 +100,21 @@ namespace gView.Server
         public IConfiguration Configuration { get; }
         public IWebHostEnvironment Environment { get; }
 
-        // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.Configure<CookiePolicyOptions>(options =>
-            {
-                // This lambda determines whether user consent for non-essential cookies is needed for a given request.
-                options.CheckConsentNeeded = context => true;
-                options.MinimumSameSitePolicy = SameSiteMode.None;
-            });
+            services.AddAuth(Configuration);
 
             services.AddMvc(o =>
                 {
                     o.EnableEndpointRouting = false;
                 })
-                .AddNewtonsoftJson(opt => opt.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore);
+                // System.Text.Json
+                .AddJsonOptions(options =>
+                {
+                    options.JsonSerializerOptions.AddServerDefaults();
+                });
+            // Newtonsoft Json
+            //.AddNewtonsoftJson(options => options.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore);
 
             services.AddMapServerService(
                 config =>
@@ -181,12 +184,24 @@ namespace gView.Server
             services.AddHostedService<TimedHostedBackgroundService>();
 
             #endregion
+
+            #region Facilities
+
+            services.AddServerFacilities(Configuration);
+
+            #endregion
+
+            #region (Message) Handlers
+
+            services.AddKeyedTransient<IMessageHandler, ReloadMapMessageHandler>(ReloadMapMessageHandler.Name);
+            services.AddKeyedTransient<IMessageHandler, RemoveMapMessageHandler>(RemoveMapMessageHandler.Name);
+
+            #endregion
         }
 
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app)
         {
-            if (env.IsDevelopment())
+            if (Environment.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
                 app.UseForwardedHeaders();
@@ -199,6 +214,7 @@ namespace gView.Server
                 //app.UseHsts();
             }
 
+            app.UseGViewServerBasePath();
             // Hack: app.UseForwardedHeaders() ... not working
             app.UseMiddleware<XForwardedMiddleware>();
             app.UseMiddleware<ArcMapPathDoubleSlashesMiddleware>();
@@ -211,6 +227,8 @@ namespace gView.Server
             //app.UseHttpsRedirection();
             app.UseStaticFiles();
             //app.UseCookiePolicy();
+
+            app.AddAuth(Configuration);
 
             app.UseRouting();
 

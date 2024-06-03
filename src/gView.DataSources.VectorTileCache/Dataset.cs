@@ -8,12 +8,14 @@ using gView.Framework.Data.Abstraction;
 using gView.Framework.Data.Metadata;
 using gView.Framework.Geometry;
 using gView.Framework.IO;
-using Newtonsoft.Json;
+using System.Text.Json;
 using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
+using gView.DataSources.VectorTileCache.Json;
+using System.Linq;
 
 namespace gView.DataSources.VectorTileCache
 {
@@ -110,7 +112,7 @@ namespace gView.DataSources.VectorTileCache
             {
                 var jsonString = await responseMesssage.Content.ReadAsStringAsync();
 
-                _capabilities = JsonConvert.DeserializeObject<Json.VectorTilesCapabilities>(jsonString);
+                _capabilities = JsonSerializer.Deserialize<Json.VectorTilesCapabilities>(jsonString);
 
                 if (String.IsNullOrEmpty(_dsName))
                 {
@@ -134,6 +136,26 @@ namespace gView.DataSources.VectorTileCache
                 _dsElements = dsElements.ToArray();
             }
         }
+
+        //public bool TryAddFeatureClass(string className)
+        //{
+        //    var dsElements = new List<IDatasetElement>();
+        //    if(_dsElements!=null) dsElements.AddRange(_dsElements);
+
+        //    if (dsElements.Any(e => e.Class.Name == className))
+        //    {
+        //        return false;
+        //    }
+
+        //    dsElements.Add(new DatasetElement(new FeatureClass(this, className))
+        //    {
+        //        Title = className
+        //    });
+
+        //    _dsElements = dsElements.ToArray();
+
+        //    return true;
+        //}
 
         #endregion
 

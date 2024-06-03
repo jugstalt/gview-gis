@@ -12,7 +12,7 @@ namespace gView.Server.Middleware
             _next = next;
         }
 
-        public async Task InvokeAsync(HttpContext context)
+        public Task InvokeAsync(HttpContext context)
         {
             var path = context.Request.Path.Value;
 
@@ -25,7 +25,8 @@ namespace gView.Server.Middleware
 
                 context.Request.Path = new PathString(path);
             }
-            await _next(context);
+
+            return _next(context);
         }
     }
 }

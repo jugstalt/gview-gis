@@ -1,50 +1,52 @@
 ﻿using gView.Interoperability.GeoServices.Rest.Json.Features;
-using Newtonsoft.Json;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace gView.Interoperability.GeoServices.Rest.Json
 {
     public class JsonFeatureResponse : JsonStopWatch
     {
-        [JsonProperty("displayFieldName")]
+        [JsonPropertyName("displayFieldName")]
         public string DisplayFieldName { get; set; }
 
-        [JsonProperty("fieldAliases")]
+        [JsonPropertyName("fieldAliases")]
         public dynamic FieldAliases { get; set; } // object
 
-        [JsonProperty("geometryType")]
+        [JsonPropertyName("geometryType")]
         public string GeometryType { get; set; }
 
-        [JsonProperty("spatialReference")]
+        [JsonPropertyName("spatialReference")]
         public JsonSpatialReference SpatialReference { get; set; }
 
-        [JsonProperty("fields")]
+        [JsonPropertyName("fields")]
         public Field[] Fields { get; set; }
 
-        [JsonProperty("features")]
+        [JsonPropertyName("features")]
         public JsonFeature[] Features { get; set; }
 
-        [JsonProperty("exceededTransferLimit")]
+        [JsonPropertyName("exceededTransferLimit")]
         public bool ExceededTransferLimit { get; set; }
 
         #region Classes
 
         public class Field
         {
-            [JsonProperty("name")]
+            [JsonPropertyName("name")]
             public string Name { get; set; }
 
-            [JsonProperty("type")]
+            [JsonPropertyName("type")]
             public string Type { get; set; }
 
-            [JsonProperty("alias")]
+            [JsonPropertyName("alias")]
             public string Alias { get; set; }
 
-            [JsonProperty("length", NullValueHandling = NullValueHandling.Ignore)]
+            [JsonPropertyName("length")]
+            [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
             public int? Length { get; set; }
 
             //public class VType
             //{
-            //    [JsonProperty("value")]
+            //    [JsonPropertyName("value")]
             //    public string Value { get; set; }
             //}
         }

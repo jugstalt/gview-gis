@@ -8,12 +8,13 @@ using gView.Framework.Data.Filters;
 using gView.Framework.Data.TileCache;
 using gView.Framework.Geometry;
 using gView.Framework.Geometry.GeoProcessing;
-using Newtonsoft.Json;
+using System.Text.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using gView.GraphicsEngine;
 
 namespace gView.Cmd.TileCache.Lib.Tools;
 
@@ -46,7 +47,7 @@ internal class ClipCompact
         }
 
         string cacheSourceFolder = configFile.Directory!.FullName;
-        CompactTileConfig cacheConfig = JsonConvert.DeserializeObject<CompactTileConfig>(File.ReadAllText(configFile.FullName))!;
+        CompactTileConfig cacheConfig = JsonSerializer.Deserialize<CompactTileConfig>(File.ReadAllText(configFile.FullName))!;
         var cacheSRef = SpatialReference.FromID($"epsg:{cacheConfig.Epsg}");
         if(cacheSRef is null || cacheSRef.EpsgCode == 0)
         {
@@ -108,23 +109,6 @@ internal class ClipCompact
             logger?.LogLine($"No polygons found to clip");
             return false;
         }
-
-        #endregion
-
-        #region Image Encoding Parameters
-
-        System.Drawing.Imaging.ImageCodecInfo jpgEncoder = GetEncoder(System.Drawing.Imaging.ImageFormat.Jpeg);
-
-        // Create an Encoder object based on the GUID
-        // for the Quality parameter category.
-        System.Drawing.Imaging.Encoder myEncoder =
-            System.Drawing.Imaging.Encoder.Quality;
-
-        // Create an EncoderParameters object.
-        // An EncoderParameters object has an array of EncoderParameter
-        // objects. In this case, there is only one
-        // EncoderParameter object in the array.
-        System.Drawing.Imaging.EncoderParameters myEncoderParameters = new System.Drawing.Imaging.EncoderParameters(1);
 
         #endregion
 
@@ -228,21 +212,15 @@ internal class ClipCompact
 
                             if (jpegQuality > 0)
                             {
-                                #region New Jpeg Quality
-
                                 var ms = new System.IO.MemoryStream(data);
-                                using (System.Drawing.Image image = System.Drawing.Image.FromStream(ms))
+
+                                using(var bitmap = Current.Engine.CreateBitmap(ms))
                                 {
                                     var outputMs = new System.IO.MemoryStream();
 
-                                    System.Drawing.Imaging.EncoderParameter myEncoderParameter = new System.Drawing.Imaging.EncoderParameter(myEncoder, Convert.ToInt64(jpegQuality));
-                                    myEncoderParameters.Param[0] = myEncoderParameter;
-
-                                    image.Save(outputMs, jpgEncoder, myEncoderParameters);
+                                    bitmap.Save(outputMs, ImageFormat.Jpeg, Math.Clamp(jpegQuality, 0, 100));
                                     data = outputMs.ToArray();
                                 }
-
-                                #endregion
                             }
                             using (var stream = new System.IO.FileStream(clippedBundleFile.FullName, System.IO.FileMode.Append))
                             {
@@ -279,7 +257,7 @@ internal class ClipCompact
 
             File.WriteAllText(
                     System.IO.Path.Combine(cacheTargetFolder, "conf.json"), 
-                    JsonConvert.SerializeObject(cacheConfig, Formatting.Indented)
+                    JsonSerializer.Serialize(cacheConfig, new JsonSerializerOptions() { WriteIndented = true })
                 );
 
             #endregion
@@ -312,23 +290,6 @@ internal class ClipCompact
             }
         }
         return false;
-    }
-
-    static private System.Drawing.Imaging.ImageCodecInfo? GetEncoder(System.Drawing.Imaging.ImageFormat format)
-    {
-
-        System.Drawing.Imaging.ImageCodecInfo[] codecs
-            = System.Drawing.Imaging.ImageCodecInfo.GetImageDecoders();
-
-        foreach (var codec in codecs)
-        {
-            if (codec.FormatID == format.Guid)
-            {
-                return codec;
-            }
-        }
-
-        return null;
     }
 
     #endregion

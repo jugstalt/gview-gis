@@ -7,7 +7,7 @@ using gView.Cmd.Fdb.Lib.Raster;
 using gView.Framework.Core.Data;
 using gView.Framework.Core.Common;
 using gView.Framework.Common;
-using Newtonsoft.Json;
+using System.Text.Json;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -184,7 +184,7 @@ public class ImageDatasetUtilCommand : ICommand
 
         if (providerType!.StartsWith("[") && providerType.EndsWith("]"))
         {
-            var providerModels = JsonConvert.DeserializeObject<RasterProviderModel[]>(providerType);
+            var providerModels = JsonSerializer.Deserialize<RasterProviderModel[]>(providerType);
 
             foreach (var providerModel in providerModels!)
             {

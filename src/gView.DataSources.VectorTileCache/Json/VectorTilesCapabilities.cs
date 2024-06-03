@@ -1,43 +1,42 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 
-namespace gView.DataSources.VectorTileCache.Json
+namespace gView.DataSources.VectorTileCache.Json;
+
+class VectorTilesCapabilities
 {
-    class VectorTilesCapabilities
-    {
-        [JsonProperty("sub_domains")]
-        public object SubDomains { get; set; }  // String Array???
+    [JsonPropertyName("sub_domains")]
+    public object SubDomains { get; set; }  // String Array???
 
-        [JsonProperty("name")]
-        public string Name { get; set; }
+    [JsonPropertyName("name")]
+    public string Name { get; set; }
 
-        [JsonProperty("description")]
-        public string Description { get; set; }
+    [JsonPropertyName("description")]
+    public string Description { get; set; }
 
-        [JsonProperty("version")]
-        public string Version { get; set; }
+    [JsonPropertyName("version")]
+    public string Version { get; set; }
 
-        [JsonProperty("attribution")]
-        public string Attribution { get; set; }
+    [JsonPropertyName("attribution")]
+    public string Attribution { get; set; }
 
-        [JsonProperty("scheme")]
-        public string Scheme { get; set; }
+    [JsonPropertyName("scheme")]
+    public string Scheme { get; set; }
 
-        [JsonProperty("tiles")]
-        public string[] Tiles { get; set; }
+    [JsonPropertyName("tiles")]
+    public string[] Tiles { get; set; }
 
-        [JsonProperty("minzoom")]
-        public int MinZoom { get; set; }
+    [JsonPropertyName("minzoom")]
+    public int MinZoom { get; set; }
 
-        [JsonProperty("maxzoom")]
-        public int MaxZoom { get; set; }
+    [JsonPropertyName("maxzoom")]
+    public int MaxZoom { get; set; }
 
-        [JsonProperty("bounds")]
-        public double[] Bounds { get; set; }
+    [JsonPropertyName("bounds")]
+    public double[] Bounds { get; set; }
 
-        [JsonProperty("center")]
-        public double[] Center { get; set; }
+    [JsonPropertyName("center")]
+    public double[] Center { get; set; }
 
-        [JsonProperty("vector_layers")]
-        public VectorLayer[] VectorLayers { get; set; }
-    }
+    [JsonPropertyName("vector_layers")]
+    public VectorLayer[] VectorLayers { get; set; }
 }

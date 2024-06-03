@@ -90,7 +90,7 @@ public class ArcImsConnectionExplorerObject : ExplorerParentObject<IExplorerObje
                 connector.setAuthentification(usr, pwd);
             }
 
-            string axl = connector.SendRequest("<?xml version=\"1.0\" encoding=\"UTF-8\"?><GETCLIENTSERVICES/>", server, "catalog");
+            string axl = await connector.SendRequest("<?xml version=\"1.0\" encoding=\"UTF-8\"?><GETCLIENTSERVICES/>", server, "catalog");
             if (axl == "")
             {
                 return false;

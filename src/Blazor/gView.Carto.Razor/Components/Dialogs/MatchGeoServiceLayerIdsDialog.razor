@@ -1,7 +1,7 @@
-@using Newtonsoft.Json
 @using gView.Framework.Web.Services
 @using gView.Interoperability.GeoServices.Rest.Json
 @using gView.Interoperability.GeoServices.Extensions
+@using System.Text.Json
 
 @inherits ModalDialogFormBase<MatchGeoServiceLayerIdsModel>
 
@@ -108,7 +108,7 @@
         var http = HttpService.CreateInstance();
 
         var layersJson = await http.GetStringAsync(url);
-        var serviceLayers = JsonConvert.DeserializeObject<JsonLayers>(layersJson);
+        var serviceLayers = JsonSerializer.Deserialize<JsonLayers>(layersJson);
 
         if (serviceLayers is null)
         {

@@ -28,7 +28,7 @@ public class SaveDocumentAs : ICartoButton
 
     }
 
-    public bool IsEnabled(ICartoApplicationScopeService scope) => true;
+    public bool IsEnabled(ICartoApplicationScopeService scope) => !scope.Document.Readonly;
 
     async public Task<bool> OnClick(ICartoApplicationScopeService scope)
     {
@@ -97,16 +97,21 @@ public class SaveDocumentAs : ICartoButton
 
     async private Task<bool?> PromptPerformEncrypted(ICartoApplicationScopeService scope)
     {
+        if (scope.Identity.IsAdministrator == false)
+        {
+            return true;
+        }
+
         var model = await scope.ShowKnownDialog(
-                KnownDialogs.PromptBoolDialog,
-                title: "Encryption",
-                model: new PromptDialogModel<bool>
-                {
-                    Value = true,
-                    Prompt = "Encrypt connection strings",
-                    HelperText = "If this is not checked, connectionstring are stored in clear text in the mapping file"
-                }
-            );
+               KnownDialogs.PromptBoolDialog,
+               title: "Encryption",
+               model: new PromptDialogModel<bool>
+               {
+                   Value = true,
+                   Prompt = "Encrypt connection strings",
+                   HelperText = "If this is not checked, connectionstring are stored in clear text in the mapping file"
+               }
+           );
 
         return model switch
         {
@@ -114,6 +119,4 @@ public class SaveDocumentAs : ICartoButton
             _ => model.Value
         };
     }
-
-
 }

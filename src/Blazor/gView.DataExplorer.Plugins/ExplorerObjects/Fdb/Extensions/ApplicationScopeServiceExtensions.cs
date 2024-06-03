@@ -16,7 +16,7 @@ using gView.Framework.Core.Data;
 using gView.Framework.DataExplorer.Abstraction;
 using gView.Framework.IO;
 using gView.Framework.Common;
-using Newtonsoft.Json;
+using System.Text.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -78,18 +78,28 @@ static internal class ApplicationScopeServiceExtensions
             parameters.Add("sref_epsg", model.SpatialReference.EpsgCode);
         }
 
-        if (model.DatasetType == NewFdbDatasetType.ImageDataset)
+        if (model.SpatialIndex?.Bounds is not null &&
+                (
+                     model.SpatialIndex.Bounds.MinX != 0D ||
+                     model.SpatialIndex.Bounds.MinY != 0D ||
+                     model.SpatialIndex.Bounds.MaxX != 0D ||
+                     model.SpatialIndex.Bounds.MaxY != 0D
+                )
+            )
         {
-            var pluginmananger = new PlugInManager();
-
             parameters.Add("si_bounds_minx", model.SpatialIndex.Bounds.MinX);
             parameters.Add("si_bounds_miny", model.SpatialIndex.Bounds.MinY);
             parameters.Add("si_bounds_maxx", model.SpatialIndex.Bounds.MaxX);
             parameters.Add("si_bounds_maxy", model.SpatialIndex.Bounds.MaxY);
             parameters.Add("si_max_levels", model.SpatialIndex.MaxLevel);
+        }
+
+        if (model.DatasetType == NewFdbDatasetType.ImageDataset)
+        {
+            var pluginmananger = new PlugInManager();
 
             parameters.Add("autofields",
-                JsonConvert.SerializeObject(model.AutoFields.Keys
+                JsonSerializer.Serialize(model.AutoFields.Keys
                     .Select(k => model.AutoFields[k] == true ? k : null)
                     .Where(a => a != null)
                     .Select(a => new AutoFieldModel() { Name = a!.name ?? a.AutoFieldPrimayName, PluginGuid = PlugInManager.PlugInID(a) })
@@ -148,7 +158,7 @@ static internal class ApplicationScopeServiceExtensions
                 { "bounds_maxy", model.SpatialIndex.Bounds.MaxY },
                 { "max_levels", model.SpatialIndex.MaxLevel },
                 // Fields
-                { "fields", JsonConvert.SerializeObject(
+                { "fields", JsonSerializer.Serialize(
                     model.Fields.Values.Select(f => new FieldModel()
                     {
                         Name = f.name,

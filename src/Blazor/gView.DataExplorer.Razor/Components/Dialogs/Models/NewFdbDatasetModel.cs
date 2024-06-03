@@ -17,7 +17,7 @@ public class NewFdbDatasetModel : IDialogResultItem
         this.SpatialIndex = spatialIndex;
 
         PlugInManager pluginManager = new PlugInManager();
-        foreach (Type t in pluginManager.GetPlugins(Plugins.Type.IAutoField))
+        foreach (Type t in pluginManager.GetPlugins(gView.Framework.Common.Plugins.Type.IAutoField))
         {
             var autoField = (IAutoField)pluginManager.CreateInstance(t);
             if(autoField is Field)

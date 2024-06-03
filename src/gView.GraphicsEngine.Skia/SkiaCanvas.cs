@@ -73,7 +73,7 @@ namespace gView.GraphicsEngine.Skia
             {
                 FilterQuality = this.InterpolationMode.ToSKFilterQuality(),
                 Color = SKColors.Black.WithAlpha((byte)(255 * opacity))
-            }); ;
+            });
         }
 
         public void DrawBitmap(IBitmap bitmap, CanvasRectangleF dest, CanvasRectangleF source)

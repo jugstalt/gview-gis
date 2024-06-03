@@ -12,13 +12,14 @@ using gView.Framework.IO;
 using gView.Framework.Web.Abstraction;
 using gView.Framework.Web.Services;
 using gView.Interoperability.GeoServices.Rest.Json;
-using Newtonsoft.Json;
+using System.Text.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using gView.Framework.Common.Extensions;
+using gView.Framework.Common.Json;
 
 namespace gView.Interoperability.GeoServices.Dataset
 {
@@ -327,7 +328,7 @@ namespace gView.Interoperability.GeoServices.Dataset
 
                     if (result.Contains("\"error\":"))
                     {
-                        JsonError error = JsonConvert.DeserializeObject<JsonError>(result);
+                        JsonError error = JsonSerializer.Deserialize<JsonError>(result);
                         if (error.Error == null)
                         {
                             throw new Exception("Unknown error");
@@ -341,7 +342,7 @@ namespace gView.Interoperability.GeoServices.Dataset
                         throw new Exception("Error:" + error.Error.Code + "\n" + error.Error.Message);
                     }
 
-                    return JsonConvert.DeserializeObject<T>(result);
+                    return JSerializer.Deserialize<T>(result);
                 }
                 catch (TokenRequiredException ex)
                 {

@@ -146,10 +146,8 @@
     });
 
 
-    async private Task DarkmodeClick()
-    {
-        await ToggleDarkmode.InvokeAsync();
-    }
+    private Task DarkmodeClick() => ToggleDarkmode.InvokeAsync();
+    //private Task DarkmodeClick() => throw new Exception("Testing Errorboundary");
 
     public void Dispose()
     {

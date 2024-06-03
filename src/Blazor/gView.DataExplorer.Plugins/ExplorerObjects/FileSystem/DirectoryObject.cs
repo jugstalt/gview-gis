@@ -3,6 +3,7 @@ using gView.Blazor.Core.Exceptions;
 using gView.DataExplorer.Core.Extensions;
 using gView.DataExplorer.Core.Services;
 using gView.DataExplorer.Plugins.ExplorerObjects.Base;
+using gView.DataExplorer.Plugins.ExplorerObjects.Fdb.ContextTools;
 using gView.DataExplorer.Razor.Components.Dialogs.Models;
 using gView.Framework.Common;
 using gView.Framework.Core.Common;
@@ -25,15 +26,19 @@ public class DirectoryObject : ExplorerParentObject<IExplorerObject>,
                                ISerializableExplorerObject,
                                IExplorerObjectDeletable,
                                IExplorerObjectRenamable,
-                               IExplorerObjectCreatable
+                               IExplorerObjectCreatable,
+                               IExplorerObjectContextTools
 {
     string _path = "";
+    private IEnumerable<IExplorerObjectContextTool>? _contextTools = null;
 
     public DirectoryObject() : base() { }
     public DirectoryObject(IExplorerObject parent, string path)
         : base(parent, 1)
     {
         _path = path;
+
+        _contextTools = [];
     }
 
     #region IExplorerObject Members
@@ -128,6 +133,12 @@ public class DirectoryObject : ExplorerParentObject<IExplorerObject>,
 
     #endregion
 
+    #region IExplorerObjectContextTools
+
+    public IEnumerable<IExplorerObjectContextTool> ContextTools => _contextTools ?? [];
+
+    #endregion
+
     async internal static Task<List<IExplorerObject>> Refresh(IExplorerObject parent, string fullName)
     {
         List<IExplorerObject> childs = new List<IExplorerObject>();
@@ -177,7 +188,7 @@ public class DirectoryObject : ExplorerParentObject<IExplorerObject>,
             foreach (string filter in fileFilter.Split('|'))
             {
 
-                foreach (string file in Directory.GetFiles(fullName, filter))
+                foreach (string file in Directory.GetFiles(fullName, filter, new EnumerationOptions { MatchCasing = MatchCasing.CaseInsensitive }))
                 {
                     FileInfo fi = new FileInfo(file);
                     IExplorerFileObject? obj = await exObj.CreateInstance(parent, fi.FullName);

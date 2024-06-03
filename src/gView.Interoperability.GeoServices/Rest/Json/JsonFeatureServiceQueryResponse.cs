@@ -1,32 +1,33 @@
 ﻿using gView.Interoperability.GeoServices.Rest.Json.Features;
-using Newtonsoft.Json;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace gView.Interoperability.GeoServices.Rest.Json
 {
     public class JsonFeatureServiceQueryResponse
     {
-        [JsonProperty("objectIdFieldName")]
+        [JsonPropertyName("objectIdFieldName")]
         public string ObjectIdFieldName { get; set; }
 
-        [JsonProperty("globalIdFieldName")]
+        [JsonPropertyName("globalIdFieldName")]
         public string GlobalIdFieldName { get; set; }
 
-        [JsonProperty("fieldAliases")]
+        [JsonPropertyName("fieldAliases")]
         public dynamic FieldAliases { get; set; } // object
 
-        [JsonProperty("geometryType")]
+        [JsonPropertyName("geometryType")]
         public string GeometryType { get; set; }
 
-        [JsonProperty("spatialReference")]
+        [JsonPropertyName("spatialReference")]
         public JsonSpatialReference SpatialReference { get; set; }
 
-        [JsonProperty("fields")]
+        [JsonPropertyName("fields")]
         public JsonFeatureResponse.Field[] Fields { get; set; }
 
-        [JsonProperty("features")]
+        [JsonPropertyName("features")]
         public JsonFeature[] Features { get; set; }
 
-        [JsonProperty("exceededTransferLimit")]
+        [JsonPropertyName("exceededTransferLimit")]
         public bool ExceededTransferLimit { get; set; }
     }
 }

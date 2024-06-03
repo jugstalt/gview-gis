@@ -119,6 +119,8 @@
 
     private Task OnRowDoubleCLick(RowItem row) => HandleAsync(async () =>
     {
+        _filterString = "";
+
         if (row.ExplorerObject != null)
         {
             if (row.ExplorerObject is IExplorerObjectDoubleClick)
@@ -126,6 +128,7 @@
                 var args = new Framework.DataExplorer.Events.ExplorerObjectEventArgs();
 
                 await ((IExplorerObjectDoubleClick)row.ExplorerObject).ExplorerObjectDoubleClick(AppScope, args);
+
                 if (args.NewExplorerObject != null)
                 {
                     if (CurrentExplorerObject is IExplorerParentObject)

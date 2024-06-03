@@ -4,5 +4,4 @@
     {
         public void SetParentExplorerObject(IExplorerObject parentExplorerObject);
     }
-
 }

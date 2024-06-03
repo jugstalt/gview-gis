@@ -239,14 +239,14 @@ namespace gView.Interoperability.OGC.Dataset.WMS
 
                 if (_wfsDataset != null)
                 {
-                    ret = _wfsDataset.Open();
+                    ret = await _wfsDataset.Open();
                 }
                 if (_class != null)
                 {
                     string param = "REQUEST=GetCapabilities&VERSION=1.1.1&SERVICE=WMS";
 
                     url = Append2Url(_connection, param);
-                    string response = WebFunctions.HttpSendRequest(url, "GET", null,
+                    string response = await WebFunctions.HttpSendRequestAsync(url, "GET", null,
                                 ConfigTextStream.ExtractValue(_connectionString, "usr"),
                                 ConfigTextStream.ExtractValue(_connectionString, "pwd"));
 

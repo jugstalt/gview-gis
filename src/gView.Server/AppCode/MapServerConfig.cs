@@ -1,36 +1,39 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace gView.Server.AppCode
 {
     public class MapServerConfig
     {
-        [JsonProperty("services-folder")]
+        [JsonPropertyName("services-folder")]
         public string ServiceFolder { get; set; }
 
-        [JsonProperty("output-path")]
+        [JsonPropertyName("output-path")]
         public string OuputPath { get; set; }
-        [JsonProperty("output-url")]
+        [JsonPropertyName("output-url")]
         public string OutputUrl { get; set; }
-        [JsonProperty("onlineresource-url")]
+        [JsonPropertyName("onlineresource-url")]
         public string OnlineResourceUrl { get; set; }
 
-        [JsonProperty("tilecache-root")]
+        [JsonPropertyName("tilecache-root")]
         public string TileCacheRoot { get; set; }
 
-        [JsonProperty("security")]
+        [JsonPropertyName("security")]
         public SecurityConfig Security { get; set; }
 
-        [JsonProperty("task-queue")]
+        [JsonPropertyName("task-queue")]
         public TaskQueueConfig TaskQueue { get; set; }
 
-        [JsonProperty("external-auth-authority")]
+        [JsonPropertyName("external-auth-authority")]
         public ExtAuthAuthority ExternalAuthAuthority { get; set; }
 
-        [JsonProperty("allowFormsLogin", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("allowFormsLogin")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public bool? AllowFormsLogin { get; set; }
 
-        [JsonProperty("force-https", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("force-https")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public bool? ForceHttps { get; set; }
 
         #region Classes
@@ -42,19 +45,19 @@ namespace gView.Server.AppCode
 
         public class TaskQueueConfig
         {
-            [JsonProperty("max-parallel-tasks")]
+            [JsonPropertyName("max-parallel-tasks")]
             public int MaxParallelTasks { get; set; }
 
-            [JsonProperty("max-queue-length")]
+            [JsonPropertyName("max-queue-length")]
             public int MaxQueueLength { get; set; }
         }
 
         public class ExtAuthAuthority
         {
-            [JsonProperty("url")]
+            [JsonPropertyName("url")]
             public string Url { get; set; }
 
-            [JsonProperty("allow-access-token")]
+            [JsonPropertyName("allow-access-token")]
             public bool AllowAccessToken { get; set; }
         }
 

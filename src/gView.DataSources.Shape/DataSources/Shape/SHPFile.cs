@@ -61,10 +61,8 @@ namespace gView.DataSources.Shape
         MultiPatch = 31
     }
 
-    /// <summary>
-    /// 
-    /// </summary>
-    internal class SHPFile
+
+    internal class SHPFile : IDisposable
     {
         private string _file_SHP = "";
         private string _file_SHX = "";
@@ -232,15 +230,6 @@ namespace gView.DataSources.Shape
 
             stream = new FileStream(_file_SHP, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
             _shp = new BinaryReader(stream);
-
-            //FileInfo fi = new FileInfo(_file_IDX);
-            //if (!fi.Exists || fi.LastWriteTime < this.LastWriteTime)
-            //{
-            //    DualTree tree = new DualTree(500);
-
-            //    CreateSpatialIndexTree creator = new CreateSpatialIndexTree(this, tree, (IEnvelope)(new Envelope(this.Header.Xmin, this.Header.Ymin, this.Header.Xmax, this.Header.Ymax)));
-            //    creator.Create();
-            //}
         }
 
         public void Close()
@@ -350,6 +339,8 @@ namespace gView.DataSources.Shape
             }
             return true;
         }
+
+        public void Dispose() { this.Close(); }
 
         public DateTime LastWriteTime
         {

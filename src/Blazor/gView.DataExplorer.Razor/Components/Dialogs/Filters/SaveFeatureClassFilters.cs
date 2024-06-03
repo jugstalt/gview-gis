@@ -15,7 +15,7 @@ public class SaveFeatureClassFilters
 
             PlugInManager compMan = new PlugInManager();
             bool dsAdded = false;
-            foreach (var dsType in compMan.GetPlugins(Plugins.Type.IDataset))
+            foreach (var dsType in compMan.GetPlugins(gView.Framework.Common.Plugins.Type.IDataset))
             {
                 var ds = compMan.CreateInstance<IDataset>(dsType);
                 if (ds == null ||
@@ -50,7 +50,7 @@ public class SaveFeatureClassFilters
 
             PlugInManager compMan = new PlugInManager();
             bool dsAdded = false;
-            foreach (var dsType in compMan.GetPlugins(Plugins.Type.IDataset))
+            foreach (var dsType in compMan.GetPlugins(gView.Framework.Common.Plugins.Type.IDataset))
             {
                 var ds = compMan.CreateInstance<IDataset>(dsType);
                 if (ds == null ||

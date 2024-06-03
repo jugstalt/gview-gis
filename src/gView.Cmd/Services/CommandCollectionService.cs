@@ -13,7 +13,7 @@ internal class CommandCollectionService
 
     public IEnumerable<ICommand> Instances
         => _commandTypes
-                .Select(t => (ICommand)Activator.CreateInstance(t))
+                .Select(t => Activator.CreateInstance(t) as ICommand)
                 .Where(t => t != null)!;
 
     public ICommand? CommandByName(string name)

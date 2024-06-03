@@ -1,11 +1,11 @@
-﻿using Newtonsoft.Json;
-using System.Linq;
+﻿using System.Linq;
+using System.Text.Json.Serialization;
 
 namespace gView.Interoperability.GeoServices.Rest.Json
 {
     public class JsonLayers
     {
-        [JsonProperty("layers")]
+        [JsonPropertyName("layers")]
         public JsonLayer[] Layers { get; set; }
 
         //public void SetParentLayers()

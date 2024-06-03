@@ -9,23 +9,7 @@ internal class CommandLineArgumentsService
     {
         _arguments = new();
 
-        for (int i = 0; i < options.Value.Arguments.Length; i++)
-        {
-            if (options.Value.Arguments[i].StartsWith("-"))
-            {
-                if (i < options.Value.Arguments.Length - 1 
-                    && options.Value.Arguments[i] != "--help"
-                    )
-                {
-                    _arguments[options.Value.Arguments[i]] = options.Value.Arguments[i + 1];
-                    i++;
-                }
-                else
-                {
-                    _arguments[options.Value.Arguments[i]] = "";
-                }
-            }
-        }
+        SetArguments(options.Value.Arguments);
     }
 
     public string[] Keys => _arguments.Keys.ToArray();
@@ -41,4 +25,27 @@ internal class CommandLineArgumentsService
     }
 
     public bool HasValue(string argument) => _arguments.ContainsKey(argument);
+
+    public void SetArguments(string[] arguments)
+    {
+        _arguments.Clear();
+
+        for (int i = 0; i < arguments.Length; i++)
+        {
+            if (arguments[i].StartsWith("-"))
+            {
+                if (i < arguments.Length - 1
+                    && arguments[i] != "--help"
+                    )
+                {
+                    _arguments[arguments[i]] = arguments[i + 1];
+                    i++;
+                }
+                else
+                {
+                    _arguments[arguments[i]] = "";
+                }
+            }
+        }
+    }
 }

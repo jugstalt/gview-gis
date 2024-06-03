@@ -8,6 +8,7 @@ namespace gView.Framework.Core.UI
     {
         IEnumerable<IMap> Maps { get; }
         IMap FocusMap { get; set; }
+        bool Readonly { get; set; }
 
         bool AddMap(IMap map);
         bool RemoveMap(IMap map);

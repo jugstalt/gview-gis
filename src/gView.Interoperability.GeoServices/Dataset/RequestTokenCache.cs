@@ -1,7 +1,7 @@
 ﻿using gView.Framework.Web;
 using gView.Interoperability.GeoServices.Extensions;
 using gView.Interoperability.GeoServices.Rest.Json;
-using Newtonsoft.Json;
+using System.Text.Json;
 using System;
 using System.Collections.Concurrent;
 using System.Net;
@@ -16,7 +16,7 @@ namespace gView.Interoperability.GeoServices.Dataset
 
         static public int TicketExpiration = 60;
 
-        static public Task<string> RefreshTokenAsync(string serviceUrl, string user, string password, string currentToken = "")
+        async static public Task<string> RefreshTokenAsync(string serviceUrl, string user, string password, string currentToken = "")
         {
             string currentParameter = currentToken;
             //lock (_refreshTokenLocker)
@@ -25,7 +25,7 @@ namespace gView.Interoperability.GeoServices.Dataset
 
                 if (_tokenParams.ContainsKey(dictKey) && _tokenParams[dictKey] != currentParameter)
                 {
-                    return Task.FromResult(_tokenParams[dictKey]);
+                    return _tokenParams[dictKey];
                 }
                 else
                 {
@@ -40,7 +40,7 @@ namespace gView.Interoperability.GeoServices.Dataset
                     {
                         try
                         {
-                            tokenResponse = WebFunctions.HttpSendRequest($"{tokenServiceUrl}?{tokenParams}");
+                            tokenResponse = await WebFunctions.HttpSendRequest($"{tokenServiceUrl}?{tokenParams}");
                             break;
                         }
                         catch (WebException we)
@@ -55,22 +55,22 @@ namespace gView.Interoperability.GeoServices.Dataset
                     }
                     if (tokenResponse.Contains("\"error\":"))
                     {
-                        JsonError error = JsonConvert.DeserializeObject<JsonError>(tokenResponse);
+                        JsonError error = JsonSerializer.Deserialize<JsonError>(tokenResponse);
                         throw new Exception($"GetToken-Error:{error.Error?.Code}\n{error.Error?.Message}\n{error.Error?.Details?.ToString()}");
                     }
                     else
                     {
-                        JsonSecurityToken jsonToken = JsonConvert.DeserializeObject<JsonSecurityToken>(tokenResponse);
-                        if (jsonToken.token != null)
+                        JsonSecurityToken jsonToken = JsonSerializer.Deserialize<JsonSecurityToken>(tokenResponse);
+                        if (jsonToken.Token != null)
                         {
-                            _tokenParams.TryAdd(dictKey, jsonToken.token);
-                            return Task.FromResult(jsonToken.token);
+                            _tokenParams.TryAdd(dictKey, jsonToken.Token);
+                            return jsonToken.Token;
                         }
                     }
                 }
             }
 
-            return Task.FromResult(String.Empty);
+            return String.Empty;
         }
     }
 }

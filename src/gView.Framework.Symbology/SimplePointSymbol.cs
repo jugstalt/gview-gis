@@ -1,4 +1,6 @@
-﻿using gView.Framework.Core.Carto;
+﻿#nullable enable
+
+using gView.Framework.Core.Carto;
 using gView.Framework.Core.Geometry;
 using gView.Framework.Core.IO;
 using gView.Framework.Core.Symbology;
@@ -302,13 +304,13 @@ namespace gView.Framework.Symbology
                 _brush.Dispose();
             }
 
-            _brush = null;
+            _brush = null!;
             if (_pen != null)
             {
                 _pen.Dispose();
             }
 
-            _pen = null;
+            _pen = null!;
         }
 
         [Browsable(false)]
@@ -324,7 +326,7 @@ namespace gView.Framework.Symbology
         #region IPersistable Member
 
         [Browsable(false)]
-        public string PersistID
+        public string? PersistID
         {
             get
             {
@@ -379,13 +381,14 @@ namespace gView.Framework.Symbology
         #region IClone2
         public object Clone(CloneOptions options)
         {
-            var display = options?.Display;
+            
 
-            if (display == null)
+            if (options?.Display == null)
             {
                 return Clone();
             }
 
+            var display = options.Display;
             float fac = 1;
 
             if (options.ApplyRefScale)

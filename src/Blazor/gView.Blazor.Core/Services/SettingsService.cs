@@ -1,6 +1,8 @@
 ﻿using gView.Blazor.Core.Extensions;
 using gView.Blazor.Core.Services.Abstraction;
+using gView.Blazor.Models.MapServer;
 using gView.Blazor.Models.Settings;
+using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
 using System.Linq;

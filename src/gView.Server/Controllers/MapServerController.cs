@@ -1,7 +1,8 @@
-﻿using gView.Framework.Core.Exceptions;
-using gView.Framework.Core.MapServer;
+﻿using gView.Framework.Common;
+using gView.Framework.Common.Extensions;
 using gView.Framework.Core.Common;
-using gView.Framework.Common;
+using gView.Framework.Core.Exceptions;
+using gView.Framework.Core.MapServer;
 using gView.Server.AppCode;
 using gView.Server.AppCode.Extensions;
 using gView.Server.Models;
@@ -9,15 +10,12 @@ using gView.Server.Services.MapServer;
 using gView.Server.Services.Security;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.SqlServer.Management.SqlParser.SqlCodeDom;
-using NuGet.Protocol.Plugins;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using gView.Framework.Common.Extensions;
 
 namespace gView.Server.Controllers
 {

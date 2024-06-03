@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 
 namespace gView.Interoperability.GeoServices.Rest.Json
 {
@@ -8,31 +8,32 @@ namespace gView.Interoperability.GeoServices.Rest.Json
         {
         }
 
-        [JsonProperty("currentVersion")]
+        [JsonPropertyName("currentVersion")]
         public double CurrentVersion { get; set; }
 
-        [JsonProperty("fullVersion")]
+        [JsonPropertyName("fullVersion")]
         public string FullVersion { get; set; }
 
-        [JsonProperty("soapUrl")]
+        [JsonPropertyName("soapUrl")]
         public string SoapUrl { get; set; }
 
-        [JsonProperty("secureSoapUrl")]
+        [JsonPropertyName("secureSoapUrl")]
         public string SecureSoapUrl { get; set; }
 
+        [JsonPropertyName("authInfoInstance")]
         public AuthInfo AuthInfoInstance { get; set; }
 
         #region Classes
 
         public class AuthInfo
         {
-            [JsonProperty("isTokenBasedSecurity")]
+            [JsonPropertyName("isTokenBasedSecurity")]
             public bool IsTokenBasedSecurity { get; set; }
 
-            [JsonProperty("tokenServicesUrl")]
+            [JsonPropertyName("tokenServicesUrl")]
             public string TokenServicesUrl { get; set; }
 
-            [JsonProperty("shortLivedTokenValidity")]
+            [JsonPropertyName("shortLivedTokenValidity")]
             public int ShortLivedTokenValidity { get; set; }
         }
 

@@ -89,7 +89,7 @@
             }
             else if(_wizardModel is not null) 
             {
-                <MudRadioGroup @bind-SelectedOption="_wizardModel.FixStepMethod">
+                <MudRadioGroup @bind-Value="_wizardModel.FixStepMethod">
                 <GvCard Title="Wizard">
                     <GvCardContent>
                         <GvGrid ColumnCount="2">
@@ -114,13 +114,13 @@
                             </GvGridItem>
 
                             <GvGridItem>
-                                <MudRadio Option="StepMethod.FixWidth">
+                                <MudRadio Value="StepMethod.FixWidth">
                                     <MudNumericField @bind-Value="_wizardModel.FixStepWidth"
                                                         Label="Use Fix Step Width" />
                                 </MudRadio>
                             </GvGridItem>
                             <GvGridItem>
-                                <MudRadio Option="StepMethod.FixCount">
+                                <MudRadio Value="StepMethod.FixCount">
                                     <MudNumericField @bind-Value="_wizardModel.FixStepCount"
                                                      Label="Use Fix Step Count" />
                                 </MudRadio>
@@ -351,7 +351,7 @@
         }
     });
 
-    private Task OnCalcWizardItems() => HandleAsync(async () =>
+    private void OnCalcWizardItems() => Handle(() =>
     {
         if (_wizardModel is null || _renderer is null)
         {
@@ -380,6 +380,7 @@
         double x;
         RangeClass? rangeClass;
         ISymbol? symbol;
+
         for (x = _wizardModel.MinValue; x < _wizardModel.MaxValue - stepWidth; x += stepWidth)
         {
             symbol = AlternateSymbol(_wizardModel.MinValueSymbol!, _wizardModel.MaxValueSymbol!,
@@ -397,7 +398,9 @@
             rangeClass = new RangeClass(x, x + stepWidth);
             keySymbols.Add(new KeySymbol<RangeClass>(rangeClass, symbol));
         }
+        
         symbol = _wizardModel.MaxValueSymbol?.Clone() as ISymbol;
+        
         if (symbol is not null)
         {
             if (symbol is ILegendItem)

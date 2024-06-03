@@ -10,6 +10,7 @@ using gView.Interoperability.OGC.Dataset.GML;
 using gView.Interoperability.OGC.Dataset.WMS;
 using System;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
@@ -25,7 +26,7 @@ namespace gView.Interoperability.OGC.Dataset.WFS
         private GeometryType _geomtype = GeometryType.Unknown;
         private ISpatialReference _sRef = null;
 
-        public WFSFeatureClass(WFSDataset dataset, string name, WMSClass.SRS srs)
+        private WFSFeatureClass(WFSDataset dataset, string name, WMSClass.SRS srs)
         {
             _dataset = dataset;
             _name = name;
@@ -35,37 +36,41 @@ namespace gView.Interoperability.OGC.Dataset.WFS
             {
                 _sRef = gView.Framework.Geometry.SpatialReference.FromID(_srs.Srs[_srs.SRSIndex]);
             }
+        }
 
+        async public static Task<WFSFeatureClass> CreateAsync(WFSDataset dataset, string name, WMSClass.SRS srs)
+        {
+            var fc = new WFSFeatureClass(dataset, name, srs);
             try
             {
-                string param = "VERSION=1.0.0&REQUEST=DescribeFeatureType&TYPENAME=" + _name;
-                if (_dataset._decribeFeatureType.Get_OnlineResource.IndexOf("&SERVICE=") == -1 &&
-                    _dataset._decribeFeatureType.Get_OnlineResource.IndexOf("?SERVICE=") == -1)
+                string param = "VERSION=1.0.0&REQUEST=DescribeFeatureType&TYPENAME=" + fc._name;
+                if (fc._dataset._decribeFeatureType.Get_OnlineResource.IndexOf("&SERVICE=") == -1 &&
+                    fc._dataset._decribeFeatureType.Get_OnlineResource.IndexOf("?SERVICE=") == -1)
                 {
                     param = "SERVICE=WFS&" + param;
                 }
 
-                string url = WMSDataset.Append2Url(_dataset._decribeFeatureType.Get_OnlineResource, param);
-                string response = WebFunctions.HttpSendRequest(url, "GET", null);
+                string url = WMSDataset.Append2Url(fc._dataset._decribeFeatureType.Get_OnlineResource, param);
+                string response = await WebFunctions.HttpSendRequestAsync(url, "GET", null);
                 response = WMSDataset.RemoveDOCTYPE(response);
 
                 XmlDocument schema = new XmlDocument();
                 schema.LoadXml(response);
                 XmlSchemaReader schemaReader = new XmlSchemaReader(schema);
-                _targetNamespace = schemaReader.TargetNamespaceURI;
-                if (_targetNamespace == String.Empty)
+                fc._targetNamespace = schemaReader.TargetNamespaceURI;
+                if (fc._targetNamespace == String.Empty)
                 {
-                    return;
+                    return fc;
                 }
 
-                _fields = schemaReader.ElementFields(name, out _shapefieldName, out _geomtype);
+                fc._fields = schemaReader.ElementFields(name, out fc._shapefieldName, out fc._geomtype);
 
                 // Id Feld suchen
-                foreach (IField field in _fields.ToEnumerable())
+                foreach (IField field in fc._fields.ToEnumerable())
                 {
                     if (field.type == FieldType.ID)
                     {
-                        _idFieldname = field.name;
+                        fc._idFieldname = field.name;
                         break;
                     }
                 }
@@ -92,6 +97,8 @@ namespace gView.Interoperability.OGC.Dataset.WFS
                 //}
             }
             catch { }
+
+            return fc;
         }
 
         #region IFeatureClass Member
@@ -235,7 +242,7 @@ namespace gView.Interoperability.OGC.Dataset.WFS
                 string wfsFilter = await Filter.ToWFS(this, filter, _dataset._filter_capabilites, _dataset._gmlVersion);
                 string url = _dataset._getFeature.Get_OnlineResource;
 
-                response = WebFunctions.HttpSendRequest(url, "GET", null);
+                response = await WebFunctions.HttpSendRequestAsync(url, "GET", null);
             }
             else if (_dataset._getCapabilities.Post_OnlineResource != String.Empty)
             {
@@ -248,7 +255,7 @@ namespace gView.Interoperability.OGC.Dataset.WFS
 
                 string wfsFilter = GetFeatureRequest.Create(this, this.Name, filter, srsName, _dataset._filter_capabilites, _dataset._gmlVersion);
 
-                response = WebFunctions.HttpSendRequest(url, "POST",
+                response = await WebFunctions.HttpSendRequestAsync(url, "POST",
                     Encoding.UTF8.GetBytes(wfsFilter));
             }
             if (response == String.Empty)

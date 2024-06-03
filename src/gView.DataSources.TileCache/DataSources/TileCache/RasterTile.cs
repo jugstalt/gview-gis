@@ -268,14 +268,7 @@ namespace gView.DataSources.TileCache
 
         public string Title
         {
-            get
-            {
-                throw new NotImplementedException();
-            }
-            set
-            {
-                throw new NotImplementedException();
-            }
+            get; set;
         }
 
         public IClass Class
@@ -427,6 +420,10 @@ namespace gView.DataSources.TileCache
 
                 using (var responseMessage = await gView.DataSources.TileCache.Dataset._httpClient.GetAsync(url))
                 {
+                    if(!responseMessage.IsSuccessStatusCode)
+                    {
+                        return null;
+                    }
                     var bytes = await responseMessage.Content.ReadAsByteArrayAsync();
                     using (var ms = new MemoryStream(bytes))
                     {

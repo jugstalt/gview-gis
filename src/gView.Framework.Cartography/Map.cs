@@ -1,9 +1,9 @@
-using gView.Framework.Cartography.LayerRenderers;
 using gView.Framework.Cartography.UI;
 using gView.Framework.Common;
 using gView.Framework.Core.Carto;
 using gView.Framework.Core.Common;
 using gView.Framework.Core.Data;
+using gView.Framework.Core.Exceptions;
 using gView.Framework.Core.Geometry;
 using gView.Framework.Core.IO;
 using gView.Framework.Core.UI;
@@ -53,6 +53,7 @@ namespace gView.Framework.Cartography
 
         private IntegerSequence _layerIDSequece = new IntegerSequence();
         private IResourceContainer _resourceContainer = new ResourceContainer();
+        private IMapEventHooks _eventHooks = new MapEventHooks();
 
         public Map()
             : base(null)
@@ -80,6 +81,7 @@ namespace gView.Framework.Cartography
             ReferenceScale = original.Display.ReferenceScale;
             Display.SpatialReference = original.Display.SpatialReference != null ? original.SpatialReference.Clone() as ISpatialReference : null;
             LayerDefaultSpatialReference = original.LayerDefaultSpatialReference != null ? original.LayerDefaultSpatialReference.Clone() as ISpatialReference : null;
+            WebMercatorScaleBehavoir = original.WebMercatorScaleBehavoir;
 
             _toc = new Toc(this); //original.TOC.Clone() as TOC;
 
@@ -91,6 +93,7 @@ namespace gView.Framework.Cartography
             _layerCopyrightTexts = original._layerCopyrightTexts;
 
             SetResourceContainer(original.ResourceContainer);
+            SetMapEventHooks(original.MapEventHooks);
 
             //if (modifyLayerTitles)
             {
@@ -282,7 +285,7 @@ namespace gView.Framework.Cartography
         }
         */
 
-        
+
 
         #region getLayer
 
@@ -483,7 +486,7 @@ namespace gView.Framework.Cartography
 
             var datasetIds = _layers.Where(l => l.Class != null).Select(l => l.DatasetID).Distinct().OrderBy(id => id).ToArray();
 
-            if(datasetIds.Length==0)
+            if (datasetIds.Length == 0)
             {
                 return;
             }
@@ -788,7 +791,7 @@ namespace gView.Framework.Cartography
                              .ToList()
                              .ForEach(t =>
                              {
-                                 foreach (ILayer layer in t.Layers?.Where(l=>l is Layer && l.GroupLayer == oldLayer) ?? [])
+                                 foreach (ILayer layer in t.Layers?.Where(l => l is Layer && l.GroupLayer == oldLayer) ?? [])
                                  {
                                      ((Layer)layer).GroupLayer = newGroupLayer;
                                  }
@@ -1083,22 +1086,22 @@ namespace gView.Framework.Cartography
         async public Task<bool> LoadAsync(IPersistStream stream)
         {
             m_name = (string)stream.Load("name", "");
-            m_minX = (double)stream.Load("minx", 0.0);
-            m_minY = (double)stream.Load("miny", 0.0);
-            m_maxX = (double)stream.Load("maxx", 0.0);
-            m_maxY = (double)stream.Load("maxy", 0.0);
+            _minX = (double)stream.Load("minx", 0.0);
+            _minY = (double)stream.Load("miny", 0.0);
+            _maxX = (double)stream.Load("maxx", 0.0);
+            _maxY = (double)stream.Load("maxy", 0.0);
 
             Title = (string)stream.Load("title", string.Empty);
 
-            m_actMinX = (double)stream.Load("act_minx", 0.0);
-            m_actMinY = (double)stream.Load("act_miny", 0.0);
-            m_actMaxX = (double)stream.Load("act_maxx", 0.0);
-            m_actMaxY = (double)stream.Load("act_maxy", 0.0);
+            _actMinX = (double)stream.Load("act_minx", 0.0);
+            _actMinY = (double)stream.Load("act_miny", 0.0);
+            _actMaxX = (double)stream.Load("act_maxx", 0.0);
+            _actMaxY = (double)stream.Load("act_maxy", 0.0);
 
-            m_refScale = (double)stream.Load("refScale", 0.0);
+            _refScale = (double)stream.Load("refScale", 0.0);
 
-            m_iWidth = (int)stream.Load("iwidth", 1);
-            m_iHeight = (int)stream.Load("iheight", 1);
+            _imageWidth = (int)stream.Load("iwidth", 1);
+            _imageHeight = (int)stream.Load("iheight", 1);
 
             _backgroundColor = GraphicsEngine.ArgbColor.FromArgb(
                 (int)stream.Load("background", GraphicsEngine.ArgbColor.White.ToArgb()));
@@ -1111,8 +1114,21 @@ namespace gView.Framework.Cartography
             //LayerDefaultSpatialReference
             ISpatialReference ldsRef = new SpatialReference();
             LayerDefaultSpatialReference = (ISpatialReference)stream.Load("LayerDefaultSpatialReference", null, ldsRef);
+            WebMercatorScaleBehavoir = (WebMercatorScaleBehavoir)stream.Load("WebMercatorScaleBehavoir", (int)WebMercatorScaleBehavoir.Default);
 
             _layerIDSequece = (IntegerSequence)stream.Load("layerIDSequence", new IntegerSequence(), new IntegerSequence());
+
+            var resources = (IResourceContainer)stream.Load("MapResources", null, new ResourceContainer());
+            if (resources != null)
+            {
+                _resourceContainer = resources;
+            }
+
+            var eventHooks = (IMapEventHooks)stream.Load("MapEventHooks", null, new MapEventHooks());
+            if (eventHooks != null)
+            {
+                _eventHooks = eventHooks;
+            }
 
             IDataset dataset;
             while ((dataset = await stream.LoadPluginAsync<IDataset>("IDataset", new UnknownDataset())) != null)
@@ -1185,12 +1201,6 @@ namespace gView.Framework.Cartography
                 if (LayerAdded != null)
                 {
                     LayerAdded(this, fLayer);
-                }
-
-                var resources = (IResourceContainer)stream.Load("MapResources", null, new ResourceContainer());
-                if (resources != null)
-                {
-                    _resourceContainer = resources;
                 }
             }
 
@@ -1374,6 +1384,22 @@ namespace gView.Framework.Cartography
 
             #endregion
 
+            foreach (var eventHook in _eventHooks.EventHooks?.Where(h => h.Type == HookEventType.OnLoaded) ?? [])
+            {
+                try
+                {
+                    await eventHook.InvokeAsync(this);
+                }
+                catch (MapEventHookWarningException wex)
+                {
+                    _errorMessages.Add($"WARNING: Hook {eventHook.GetType()}: {wex.Message}");
+                }
+                catch (Exception ex)
+                {
+                    _errorMessages.Add($"ERROR: Hook {eventHook.GetType()}: {ex.Message}");
+                }
+            }
+
             if (stream.Warnings != null)
             {
                 foreach (var warning in stream.Warnings)
@@ -1398,19 +1424,19 @@ namespace gView.Framework.Cartography
         public void Save(IPersistStream stream)
         {
             stream.Save("name", m_name);
-            stream.Save("minx", m_minX);
-            stream.Save("miny", m_minY);
-            stream.Save("maxx", m_maxX);
-            stream.Save("maxy", m_maxY);
+            stream.Save("minx", _minX);
+            stream.Save("miny", _minY);
+            stream.Save("maxx", _maxX);
+            stream.Save("maxy", _maxY);
 
             stream.Save("title", Title ?? string.Empty);
 
-            stream.Save("act_minx", m_actMinX);
-            stream.Save("act_miny", m_actMinY);
-            stream.Save("act_maxx", m_actMaxX);
-            stream.Save("act_maxy", m_actMaxY);
+            stream.Save("act_minx", _actMinX);
+            stream.Save("act_miny", _actMinY);
+            stream.Save("act_maxx", _actMaxX);
+            stream.Save("act_maxy", _actMaxY);
 
-            stream.Save("refScale", m_refScale);
+            stream.Save("refScale", _refScale);
 
             stream.Save("iwidth", ImageWidth);
             stream.Save("iheight", ImageHeight);
@@ -1425,6 +1451,7 @@ namespace gView.Framework.Cartography
             {
                 stream.Save("LayerDefaultSpatialReference", LayerDefaultSpatialReference);
             }
+            stream.Save("WebMercatorScaleBehavoir", (int)this.WebMercatorScaleBehavoir);
 
             stream.Save("layerIDSequence", _layerIDSequece);
 
@@ -1496,6 +1523,11 @@ namespace gView.Framework.Cartography
             if (_resourceContainer.HasResources)
             {
                 stream.Save("MapResources", _resourceContainer);
+            }
+
+            if (_eventHooks?.EventHooks?.Any() == true)
+            {
+                stream.Save("MapEventHooks", _eventHooks);
             }
 
             #region Metadata
@@ -1752,7 +1784,8 @@ namespace gView.Framework.Cartography
                 using (var textBrush = GraphicsEngine.Current.Engine.CreateSolidBrush(GraphicsEngine.ArgbColor.Red))
                 {
                     var sizeF = Display.Canvas.MeasureText(sb.ToString().ToString(), font);
-                    int mx = Display.ImageWidth / 2 - (int)sizeF.Width / 2, my = Display.ImageHeight / 2 - (int)sizeF.Height / 2;
+                    int mx = 30, //Display.ImageWidth / 2 - (int)sizeF.Width / 2, 
+                        my = 30; //Display.ImageHeight / 2 - (int)sizeF.Height / 2;
                     Display.Canvas.FillRectangle(backgroundBrush, new GraphicsEngine.CanvasRectangle(mx - 30, my - 30, (int)sizeF.Width + 60, (int)sizeF.Height + 60));
                     Display.Canvas.DrawRectangle(borderPen, new GraphicsEngine.CanvasRectangle(mx - 30, my - 30, (int)sizeF.Width + 60, (int)sizeF.Height + 60));
                     //Display.Canvas.DrawText(sb.ToString(), font, textBrush, new GraphicsEngine.CanvasPoint(mx, my));
@@ -1788,18 +1821,22 @@ namespace gView.Framework.Cartography
 
         #endregion
 
-
         internal void FireOnUserInterface(bool lockUI)
         {
             OnUserInterface?.Invoke(this, lockUI);
 
         }
-
         protected void SetResourceContainer(IResourceContainer resourceContainer)
         {
             _resourceContainer = resourceContainer ?? _resourceContainer;
         }
         public IResourceContainer ResourceContainer => _resourceContainer;
+
+        protected void SetMapEventHooks(IMapEventHooks eventHooks)
+        {
+            _eventHooks = eventHooks;
+        }
+        public IMapEventHooks MapEventHooks => _eventHooks;
 
         #region Map / Layer Description
 

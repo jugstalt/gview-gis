@@ -237,7 +237,7 @@ namespace gView.DataSources.Fdb.SQLite
                         }
                         catch { }
 
-                        if (/*_schemaTable.Rows[i][0].ToString()*/name == "FDB_SHAPE" && obj != DBNull.Value)
+                        if (name == "FDB_SHAPE" && obj != DBNull.Value)
                         {
                             BinaryReader r = new BinaryReader(new MemoryStream());
                             r.BaseStream.Write((byte[])obj, 0, ((byte[])obj).Length);
@@ -286,7 +286,7 @@ namespace gView.DataSources.Fdb.SQLite
                         }
                         else
                         {
-                            FieldValue fv = new FieldValue(/*_schemaTable.Rows[i][0].ToString()*/name, obj);
+                            FieldValue fv = new FieldValue(name, obj);
                             feature.Fields.Add(fv);
                             if (fv.Name == "FDB_OID")
                             {

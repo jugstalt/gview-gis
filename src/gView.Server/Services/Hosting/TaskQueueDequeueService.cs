@@ -1,5 +1,4 @@
-﻿using gView.Server.Services.Logging;
-using gView.Server.Services.MapServer;
+﻿using gView.Server.Services.MapServer;
 using Microsoft.Extensions.Hosting;
 using System.Threading;
 using System.Threading.Tasks;
@@ -19,7 +18,7 @@ public class TaskQueueDequeueService : BackgroundService
     {
         while (!stoppingToken.IsCancellationRequested)
         {
-            await Task.Delay(_mapServerService.TaskQueue.Dequeue(), stoppingToken);
+            await Task.Delay(_mapServerService.TaskQueue?.Dequeue() ?? 1000, stoppingToken);
         }
     }
 }

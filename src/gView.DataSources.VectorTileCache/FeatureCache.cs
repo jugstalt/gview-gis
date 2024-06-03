@@ -4,11 +4,11 @@ using gView.Framework.Core.Geometry;
 using gView.Framework.Data.Abstraction;
 using gView.Framework.Geometry;
 using Mapbox.Vector.Tile;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace gView.DataSources.VectorTileCache
@@ -23,7 +23,10 @@ namespace gView.DataSources.VectorTileCache
         public FeatureCache(Dataset dataset)
         {
             _dataset = dataset;
-            _grid = new WebMercatorGrid();
+            _grid = new WebMercatorGrid(
+                    _dataset.Capabilities.MinZoom,
+                    _dataset.Capabilities.MaxZoom
+                );
         }
 
         internal Dataset Dataset => _dataset;
@@ -126,7 +129,7 @@ namespace gView.DataSources.VectorTileCache
 
         public string ToGeoJson(string layername)
         {
-            return JsonConvert.SerializeObject(
+            return JsonSerializer.Serialize(
                 new { type = "FeatureCollection", features = _features[layername] }
                 );
         }
@@ -145,6 +148,10 @@ namespace gView.DataSources.VectorTileCache
 
         public void Dispose()
         {
+            foreach(var bags in _features.Values)
+            {
+                bags.Clear();
+            }
             _features.Clear();
         }
 

@@ -1,6 +1,7 @@
 ﻿using gView.Interoperability.GeoServices.Rest.Json.Features.Geometry;
-using Newtonsoft.Json;
+using System.Text.Json;
 using System.Dynamic;
+using System.Text.Json.Serialization;
 
 namespace gView.Interoperability.GeoServices.Rest.Json.Features
 {
@@ -11,10 +12,11 @@ namespace gView.Interoperability.GeoServices.Rest.Json.Features
             this.Attributes = new ExpandoObject();
         }
 
-        [JsonProperty("attributes")]
+        [JsonPropertyName("attributes")]
         public ExpandoObject Attributes { get; set; }
         //JsonAttributes attributes { get; set; }
-        [JsonProperty("geometry")]
+
+        [JsonPropertyName("geometry")]
         public JsonGeometry Geometry { get; set; }
     }
 }

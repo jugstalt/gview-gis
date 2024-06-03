@@ -1,17 +1,19 @@
-﻿using gView.CopyFeatureclass.Lib;
-using gView.DataExplorer.Plugins.Extensions;
+﻿using gView.Cmd.CopyFeatureclass.Lib;
+using gView.DataExplorer.Plugins.ExplorerObjects.FileSystem;
 using gView.DataExplorer.Razor.Components.Dialogs.Models;
 using gView.Framework.Blazor;
-using gView.Framework.Blazor.Services.Abstraction;
-using gView.Framework.Core.Data;
+using gView.Framework.Common;
 using gView.Framework.Core.Common;
+using gView.Framework.Core.Data;
+using gView.Framework.Core.FDB;
 using gView.Framework.DataExplorer;
 using gView.Framework.DataExplorer.Abstraction;
-using gView.Framework.Common;
+using gView.Framework.DataExplorer.Services.Abstraction;
+using gView.Razor.Dialogs;
+using gView.Razor.Dialogs.Models;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using gView.Framework.DataExplorer.Services.Abstraction;
 
 namespace gView.DataExplorer.Plugins.ExplorerTools;
 
@@ -30,8 +32,15 @@ internal class Paste : IExplorerTool
     {
         if (scope.GetClipboardItemType() == typeof(IFeatureClass))
         {
-            return scope.CurrentExplorerObject?.ObjectType != null &&
-                   scope.CurrentExplorerObject.ObjectType.IsAssignableTo(typeof(IFeatureDataset));
+            return scope.CurrentExplorerObject switch
+            {
+                IExplorerObject explorerObject
+                        when explorerObject?.ObjectType?.IsAssignableTo(typeof(IFeatureDataset)) == true => true,
+
+                DirectoryObject => true,
+                MappedDriveObject => true,
+                _ => false
+            };
         }
 
         return false;
@@ -44,10 +53,47 @@ internal class Paste : IExplorerTool
             return false;
         }
 
-        var destination = await scope.CurrentExplorerObject.GetInstanceAsync();
-        if (destination is IFeatureDataset)
+        IFeatureDataset? destDataset = null;
+
+        if (scope.CurrentExplorerObject is DirectoryObject
+            || scope.CurrentExplorerObject is MappedDriveObject)
         {
-            IFeatureDataset destDataset = (IFeatureDataset)destination;
+            var dbDict = new Dictionary<string, IFileFeatureDatabase>();
+            var pluginManager = new PlugInManager();
+
+            foreach (var type in pluginManager.GetPlugins(Framework.Common.Plugins.Type.IFileFeatureDatabase))
+            {
+                var db = pluginManager.CreateInstance(type) as IFileFeatureDatabase;
+                if (db is not null)
+                {
+                    dbDict.Add(db.DatabaseName, db);
+                }
+            }
+
+            var model = await scope.ShowModalDialog(typeof(PromptSelectDialog<IFileFeatureDatabase>),
+                "Select target format",
+                new PromptSelectDialogModel<IFileFeatureDatabase>()
+                {
+                    Options = dbDict,
+                    Required = true,
+                    Prompt = "Format"
+                });
+
+            if (model?.SelectedValue == null)
+            {
+                return false;
+            }
+
+            var fileDb = model.SelectedValue;
+            destDataset = await fileDb.GetDataset(scope.CurrentExplorerObject.FullName);
+        }
+        else
+        {
+            destDataset = await scope.CurrentExplorerObject.GetInstanceAsync() as IFeatureDataset;
+        }
+
+        if (destDataset is not null)
+        {
             var destDatasetGuid = PlugInManager.PlugInID(destDataset);
 
             if (destDatasetGuid == Guid.Empty)

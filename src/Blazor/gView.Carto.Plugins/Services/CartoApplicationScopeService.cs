@@ -1,4 +1,5 @@
 ﻿using gView.Blazor.Core.Exceptions;
+using gView.Blazor.Core.Models;
 using gView.Blazor.Core.Services;
 using gView.Blazor.Core.Services.Abstraction;
 using gView.Carto.Core;
@@ -19,6 +20,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Options;
 using Microsoft.JSInterop;
 using MudBlazor;
+using System.Security.Permissions;
 
 namespace gView.Carto.Plugins.Services;
 public class CartoApplicationScopeService : ApplictionBusyHandlerAndCache, ICartoApplicationScopeService
@@ -32,9 +34,9 @@ public class CartoApplicationScopeService : ApplictionBusyHandlerAndCache, ICart
     private readonly ISnackbar _snackbar;
     private readonly CartoApplicationScopeServiceOptions _options;
     private readonly GeoTransformerService _geoTransformer;
-    private readonly IAppIdentityProvider _identityProvider;
     private readonly ICartoInteractiveToolService _toolService;
     private readonly SettingsService _settings;
+    private readonly IAppIdentityProvider _identityProvider;
     private readonly PluginManagerService _pluginManager;
 
     private ICartoDocument _cartoDocument;
@@ -49,12 +51,13 @@ public class CartoApplicationScopeService : ApplictionBusyHandlerAndCache, ICart
                                         GeoTransformerService geoTransformer,
                                         MapControlCrsService crsService,
                                         SpatialReferenceService sRefService,
-                                        IAppIdentityProvider identityProvider,
                                         SettingsService settings,
                                         ICartoInteractiveToolService toolService,
                                         PluginManagerService pluginManager,
+                                        IAppIdentityProvider identityProvider,
                                         IOptions<CartoApplicationScopeServiceOptions> options,
-                                        IScopeContextService? scopeContext = null)
+                                        IScopeContextService? scopeContext = null
+                                )
     {
         _dialogService = dialogService;
         _knownDialogs = knownDialogs;
@@ -64,7 +67,6 @@ public class CartoApplicationScopeService : ApplictionBusyHandlerAndCache, ICart
         _jsRuntime = jsRuntime;
         _snackbar = snackbar;
         _geoTransformer = geoTransformer;
-        _identityProvider = identityProvider;
         _settings = settings;
         _toolService = toolService;
         _options = options.Value;
@@ -89,6 +91,7 @@ public class CartoApplicationScopeService : ApplictionBusyHandlerAndCache, ICart
         _eventBus.OnMapClickAsync += HandleMapClickAsync;
         _eventBus.OnMapBBoxAsync += HandleMapBBoxAsync;
         _eventBus.OnToolEventAsync += HandleToolEventAsync;
+        _identityProvider = identityProvider;
     }
 
     public CartoEventBusService EventBus => _eventBus;
@@ -106,6 +109,8 @@ public class CartoApplicationScopeService : ApplictionBusyHandlerAndCache, ICart
             _eventBus.FireCartoDocumentLoadedAsync(value);
         }
     }
+
+    public AppIdentity Identity => _identityProvider.Identity;
 
     async public Task<bool> LoadCartoDocument(string mxlFilePath)
     {
@@ -148,6 +153,16 @@ public class CartoApplicationScopeService : ApplictionBusyHandlerAndCache, ICart
         this.Document.FilePath = xmlFilePath;
 
         await HandleCartoDocumentTouchedAsync(Document);
+
+        return true;
+    }
+
+    public bool SerializeCartoDocument(Stream stream)
+    {
+        XmlStream xmlStream = new XmlStream("MapApplication", true);
+        xmlStream.Save("MapDocument", this.Document);
+
+        xmlStream.WriteStream(stream, System.Xml.Formatting.Indented);
 
         return true;
     }

@@ -2,7 +2,7 @@
 using gView.Framework.Metadata;
 using gView.Server.Clients.Extensions;
 using gView.Server.Models;
-using Newtonsoft.Json;
+using System.Text.Json;
 using System;
 using System.Linq;
 using System.Net.Http;
@@ -49,7 +49,7 @@ public class MapServerClient
 
             if ("json".Equals(responseString, StringComparison.OrdinalIgnoreCase))
             {
-                return JsonConvert.DeserializeObject<ServicesModel>(responseString);
+                return JsonSerializer.Deserialize<ServicesModel>(responseString);
             }
 
             // xml

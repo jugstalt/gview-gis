@@ -1,4 +1,6 @@
-﻿using gView.Framework.Core.Carto;
+﻿#nullable enable
+
+using gView.Framework.Core.Carto;
 using gView.Framework.Core.Geometry;
 using gView.Framework.Core.IO;
 using gView.Framework.Core.Symbology;
@@ -186,13 +188,13 @@ namespace gView.Framework.Symbology
                 _brush.Dispose();
             }
 
-            _brush = null;
+            _brush = null!;
             if (_font != null)
             {
                 _font.Dispose();
             }
 
-            _font = null;
+            _font = null!;
         }
 
         [Browsable(false)]
@@ -246,7 +248,7 @@ namespace gView.Framework.Symbology
                 //
                 XmlDocument doc = new XmlDocument();
                 doc.LoadXml(soap);
-                XmlNode sizeNode = doc.SelectSingleNode("//Size");
+                XmlNode? sizeNode = doc.SelectSingleNode("//Size");
                 if (sizeNode != null)
                 {
                     sizeNode.InnerText = sizeNode.InnerText.Replace(".", ",");
@@ -372,7 +374,7 @@ namespace gView.Framework.Symbology
         {
             var display = options?.Display;
 
-            if (display == null)
+            if (options == null || display == null)
             {
                 return Clone();
             }

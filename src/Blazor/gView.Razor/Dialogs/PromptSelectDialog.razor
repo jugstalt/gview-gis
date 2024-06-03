@@ -1,0 +1,26 @@
+@typeparam TValue
+@inherits ModalDialogFormBase<PromptSelectDialogModel<TValue>>
+
+<ModalDialogFormBase T="PromptSelectDialogModel<TValue>"
+                     OnDialogClose="base.OnDialogClose"
+                     Model="base.Model">
+    <DialogBody>
+        @if(Model.Options is not null) 
+        {
+            <MudSelect T="TValue"
+                       @bind-Value="Model.SelectedValue"
+                       Label="@Model.Prompt"
+                       Required="@Model.Required" >
+                @foreach(var kv in Model.Options) 
+                {
+                    <MudSelectItem Value="kv.Value">@kv.Key</MudSelectItem>
+                }
+            </MudSelect>
+        }
+
+        @if (!String.IsNullOrEmpty(Model.HelperText))
+        {
+            <MudText Typo="Typo.body2">@Model.HelperText</MudText>
+        }
+    </DialogBody>
+</ModalDialogFormBase>

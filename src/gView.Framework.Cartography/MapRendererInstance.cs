@@ -42,6 +42,7 @@ public class MapRendererInstance : Map, IMapRenderer
         mapRenderInstance._mapUnits = original.MapUnits;
         mapRenderInstance._displayUnits = original.DisplayUnits;
         mapRenderInstance.ReferenceScale = original.ReferenceScale;
+        mapRenderInstance.WebMercatorScaleBehavoir = original.WebMercatorScaleBehavoir;
 
         mapRenderInstance.SpatialReference = original.Display.SpatialReference;
         mapRenderInstance.LayerDefaultSpatialReference = original.LayerDefaultSpatialReference != null ? original.LayerDefaultSpatialReference.Clone() as ISpatialReference : null;
@@ -56,6 +57,7 @@ public class MapRendererInstance : Map, IMapRenderer
         mapRenderInstance._layerCopyrightTexts = original.LayerCopyrightTexts;
 
         mapRenderInstance.SetResourceContainer(original.ResourceContainer);
+        mapRenderInstance.SetMapEventHooks(original.MapEventHooks);
 
         mapRenderInstance.Display.ImageWidth = original.Display.ImageWidth;
         mapRenderInstance.Display.ImageHeight = original.Display.ImageHeight;
@@ -111,7 +113,7 @@ public class MapRendererInstance : Map, IMapRenderer
 
                 #region Start Drawing/Initialisierung
 
-                ZoomTo(m_actMinX, m_actMinY, m_actMaxX, m_actMaxY);
+                ZoomTo(_actMinX, _actMinY, _actMaxX, _actMaxY);
 
                 if (cancelTracker == null)
                 {
@@ -332,7 +334,7 @@ public class MapRendererInstance : Map, IMapRenderer
                             FeatureCounter fCounter = new FeatureCounter();
                             DateTime startTime = DateTime.Now;
 
-                            RenderLabel rlt = new RenderLabel(this, fLayer, cancelTracker, fCounter);
+                            RenderLabel rlt = new RenderLabel(this, datasetCachingContext, fLayer, cancelTracker, fCounter);
 
                             if (cancelTracker.Continue)
                             {

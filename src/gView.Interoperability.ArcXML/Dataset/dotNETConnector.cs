@@ -2,6 +2,7 @@ using gView.Framework.Web;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 using System.Xml;
 
 namespace gView.Interoperability.ArcXML.Dataset
@@ -23,16 +24,6 @@ namespace gView.Interoperability.ArcXML.Dataset
 
         public int timeout { get { return m_timeout / 1000; } set { m_timeout = value * 1000; } }
 
-        //public string AuthentificationBase64 
-        //{
-        //    get { return m_authBase64; }
-        //    set 
-        //    {
-        //        if(value==null) value="";
-        //        m_authBase64=value; 
-        //    }
-        //}
-
         public Encoding Encoding
         {
             get { return _encoding; }
@@ -43,18 +34,14 @@ namespace gView.Interoperability.ArcXML.Dataset
         {
             _user = user.Trim();
             _passwd = passwd.Trim();
-            //if (user == "" && passwd == "")
-            //    m_authBase64 = "";
-            //else
-            //    m_authBase64 = Convert.ToBase64String(Encoding.ASCII.GetBytes(user + ":" + passwd));
         }
-        public List<string> getServiceNames(string server)
+        public Task<List<string>> GetServiceNames(string server)
         {
-            return getServiceNames(server, false);
+            return GetServiceNames(server, false);
         }
-        public List<string> getServiceNames(string server, bool onlyPublic)
+        async public Task<List<string>> GetServiceNames(string server, bool onlyPublic)
         {
-            string resp = SendRequest("<GETCLIENTSERVICES/>", server, "catalog");
+            string resp = await SendRequest("<GETCLIENTSERVICES/>", server, "catalog");
             List<string> names = new List<string>();
             try
             {
@@ -221,21 +208,21 @@ namespace gView.Interoperability.ArcXML.Dataset
             }
             return xml;
         }
-        public string SendRequest(string axl, string ServerName, string ServiceName)
+        async public Task<string> SendRequest(string axl, string ServerName, string ServiceName)
         {
-            return checkXML(SendRequest(new StringBuilder(axl), ServerName, ServiceName, ""));
+            return checkXML(await SendRequest(new StringBuilder(axl), ServerName, ServiceName, ""));
         }
-        public string SendRequest(string axl, string ServerName, string ServiceName, string CustomService)
+        async public Task<string> SendRequest(string axl, string ServerName, string ServiceName, string CustomService)
         {
-            return checkXML(SendRequest(new StringBuilder(axl), ServerName, ServiceName, CustomService));
+            return checkXML(await SendRequest(new StringBuilder(axl), ServerName, ServiceName, CustomService));
         }
-        public string SendRequest(StringBuilder sb, string ServerName, string ServiceName)
+        async public Task<string> SendRequest(StringBuilder sb, string ServerName, string ServiceName)
         {
-            return checkXML(SendRequest(sb, ServerName, ServiceName, ""));
+            return checkXML(await SendRequest(sb, ServerName, ServiceName, ""));
         }
-        public string SendRequest(StringBuilder sb, string ServerName, string ServiceName, string CustomService)
+        async public Task<string> SendRequest(StringBuilder sb, string ServerName, string ServiceName, string CustomService)
         {
-            return checkXML(SendRequest_ServletExec(sb, ServerName, ServiceName, CustomService));
+            return checkXML(await SendRequest_ServletExec(sb, ServerName, ServiceName, CustomService));
         }
 
         protected string ServerUrl(string ServerName)
@@ -250,7 +237,7 @@ namespace gView.Interoperability.ArcXML.Dataset
             //if (!serverUrls.Contains(ServerName)) return "servlet/com.esri.esrimap.Esrimap";
             //return serverUrls[ServerName].ToString();
         }
-        private string SendRequest_ServletExec(StringBuilder sb, string ServerName, string ServiceName, string CustomService)
+        private Task<string> SendRequest_ServletExec(StringBuilder sb, string ServerName, string ServiceName, string CustomService)
         {
             // 
             // Sollte beim GET_IMAGE Request auch das file Attribut im OUTPUT tag enthalten sein,
@@ -305,7 +292,7 @@ namespace gView.Interoperability.ArcXML.Dataset
             //byte [] POSTbytes=encoder.GetBytes(sb.ToString());
             byte[] POSTbytes = _encoding.GetBytes(sb.ToString());
 
-            return WebFunctions.HttpSendRequest(theURL, "POST", POSTbytes, _user, _passwd, _encoding);
+            return WebFunctions.HttpSendRequestAsync(theURL, "POST", POSTbytes, _user, _passwd, _encoding);
         }
 
         public char CommaFormat
@@ -360,35 +347,6 @@ namespace gView.Interoperability.ArcXML.Dataset
                 pos = axl.IndexOf(attribute + "=\"", pos2);
             }
             return sb.ToString();
-        }
-
-        static public string getLayerID(string server, string service, string theme)
-        {
-            string axl = "<ARCXML version=\"1.1\"><REQUEST><GET_SERVICE_INFO fields=\"false\" envelope=\"false\" renderer=\"false\" extensions=\"false\" /></REQUEST></ARCXML>";
-            dotNETConnector conn = new dotNETConnector();
-            string resp = conn.SendRequest(axl, server, service);
-
-            XmlDocument doc = new XmlDocument();
-            doc.LoadXml(resp);
-            foreach (XmlNode layer in doc.SelectNodes("//LAYERINFO"))
-            {
-                if (layer.Attributes["name"] == null || layer.Attributes["id"] == null)
-                {
-                    continue;
-                }
-
-                if (layer.Attributes["id"].Value == theme)
-                {
-                    return theme;
-                }
-
-                if (layer.Attributes["name"].Value == theme)
-                {
-                    return layer.Attributes["id"].Value;
-                }
-            }
-
-            return "";
         }
     }
 }
