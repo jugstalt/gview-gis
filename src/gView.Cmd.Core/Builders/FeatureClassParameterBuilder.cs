@@ -1,8 +1,8 @@
 ﻿using gView.Cmd.Core.Abstraction;
 using gView.Cmd.Core.Extensions;
+using gView.Framework.Common;
 using gView.Framework.Core.Data;
 using gView.Framework.Core.FDB;
-using gView.Framework.Common;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -42,6 +42,18 @@ public class FeatureClassParameterBuilder : ICommandPararmeterBuilder
             Type t when t == typeof(IFeatureDataset) => (T)await BuildFeatureDataset(parameters),
             _ => throw new ArgumentException($"Can't build type {typeof(T).Name}")
         };
+    }
+
+    async public Task<T?> TryBuildAsync<T>(IDictionary<string, object> parameters)
+    {
+        try
+        {
+            return await Build<T>(parameters);
+        }
+        catch
+        {
+            return default(T);
+        }
     }
 
     async private Task<IFeatureClass> BuildFeatureClass(IDictionary<string, object> parameters)
