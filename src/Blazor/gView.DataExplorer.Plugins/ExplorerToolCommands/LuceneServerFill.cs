@@ -22,9 +22,9 @@ internal class LuceneServerFill : IExplorerToolCommand
     async public Task<bool> OnEvent(IExplorerApplicationScopeService scope)
     {
         var model = await scope.ShowModalDialog(
-                                typeof(Razor.Components.Dialogs.LuceneServerToolDialog),
-                                "LuceneServer Tools",
-                                new LuceneServerToolModel());
+                                typeof(Razor.Components.Dialogs.LuceneServerFillToolDialog),
+                                "LuceneServer Fill Tool",
+                                new LuceneServerFillToolModel());
 
         if (model is null) return false;
 

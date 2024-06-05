@@ -30,6 +30,10 @@ internal class InitCommand : ICommand
             {
                 Description="Optional: Name of the index"
             },
+            new CommandParameter<bool>("delete_index") 
+            {
+                Description="Optional: Delete index on refill (default: true)"
+            },
             new CommandParameter<IFeatureClass>("source")
             {
                 Description="Optional: FeatureClass to import..."
@@ -48,10 +52,15 @@ internal class InitCommand : ICommand
 
         var model = new ImportConfig()
         {
-            Connection = new ImportConfig.LuceneServerConnectionConnection(),
-            Datasets = 
+            Connection = new ImportConfig.LuceneServerConnectionConnection()
+            {
+                Url = parameters.GetValueOrDefault<string>("url", "")!,
+                DefaultIndex = parameters.GetValueOrDefault<string>("index", "")!,
+                DeleteIndex = parameters.GetValueOrDefault<bool>("delete_index", true)
+            },
+            Datasets =
             [
-                new ImportConfig.DatasetConnection() 
+                new ImportConfig.DatasetConnection()
                 {
                     FeatureClasses =
                     [

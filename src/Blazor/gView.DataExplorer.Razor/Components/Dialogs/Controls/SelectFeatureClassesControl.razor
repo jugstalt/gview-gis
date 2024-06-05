@@ -1,0 +1,43 @@
+@inject IApplicationScopeFactory AppScopeFactory
+
+<GvGrid ColumnCount="6">
+    <GvGridItem Span="5">
+        <MudTextField Label="@Label"
+                      ReadOnly="true"
+                      Value="@String.Join(", ", FeatureClasses?.Select(f=>f.Name) ?? [])"
+                      Variant="Variant.Text"></MudTextField>
+    </GvGridItem>
+    <GvGridItem>
+        <MudFab Color="Color.Primary"
+                OnClick="SelectFeatureClass"
+                StartIcon="@Icons.Material.Filled.More" />
+    </GvGridItem>
+</GvGrid>
+
+@code {
+    [Parameter] public string Label { get; set; } = "FeatureClasses";
+    [Parameter] public IEnumerable<IFeatureClass>? FeatureClasses { get; set; }
+    [Parameter] public EventCallback<IEnumerable<IFeatureClass>> FeatureClassesChanged { get; set; }
+
+    async private Task SelectFeatureClass()
+    {
+        var model = await AppScopeFactory.ShowKnownDialog(
+            Framework.Blazor.KnownDialogs.ExplorerDialog,
+            model: new ExplorerDialogModel()
+                {
+                    Filters = [new OpenFeatureclassFilter()],
+                    Mode = ExploerDialogMode.Open
+                });
+
+        if (model != null && model.Result.ExplorerObjects.Count() > 0)
+        {
+
+            FeatureClasses = model.Result.ExplorerObjects
+                                .Select(e => e.GetInstanceAsync().Result as IFeatureClass)
+                                .Where(e => e != null)
+                                .ToArray()!;
+
+            await FeatureClassesChanged.InvokeAsync(FeatureClasses);
+        }
+    }
+}
