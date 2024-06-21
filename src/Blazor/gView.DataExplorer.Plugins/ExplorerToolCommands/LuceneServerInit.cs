@@ -1,12 +1,14 @@
-﻿using gView.DataExplorer.Razor.Components.Dialogs.Models;
+﻿using gView.Cmd.Core.Abstraction;
+using gView.Cmd.LuceneServer.Lib;
+using gView.DataExplorer.Razor.Components.Dialogs.Models;
+using gView.Framework.Blazor;
+using gView.Framework.Common;
 using gView.Framework.Core.Common;
 using gView.Framework.DataExplorer.Abstraction;
 using gView.Framework.DataExplorer.Services.Abstraction;
-using Microsoft.SqlServer.Management.SqlParser.SqlCodeDom;
-using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace gView.DataExplorer.Plugins.ExplorerToolCommands;
@@ -26,6 +28,45 @@ internal class LuceneServerInit : IExplorerToolCommand
                                 typeof(Razor.Components.Dialogs.LuceneServerInitToolDialog),
                                 "LuceneServer Init Tool",
                                 new LuceneServerInitToolModel());
+
+        if (model is null)
+        {
+            return false;
+        }
+
+        ICommand command = new InitCommand();
+        IDictionary<string, object> parameters = new Dictionary<string, object>()
+        {
+            { "output", model.JsonFile },
+            { "url", model.LuceneServerUrl },
+            { "index", model.IndexName },
+            { "delete_index", model.DeleteIndex },
+            { "phon_alg", model.PhoneticAlgorithm }
+        };
+
+        if (model.SourceFeatureClasses?.Any() == true)
+        {
+            var dataset = model.SourceFeatureClasses.First().Dataset;
+
+            parameters.Add("source_connstr", dataset.ConnectionString);
+            parameters.Add("source_guid", PlugInManager.PlugInID(dataset));
+            parameters.Add("source_fc", string.Join(",", model.SourceFeatureClasses.Select(fc => fc.Name)));
+        }
+
+        await scope.ShowKnownDialog(
+                    KnownDialogs.ExecuteCommand,
+                    $"Init LuceneServer Json",
+                    new ExecuteCommandModel()
+                    {
+                        CommandItems = new[]
+                        {
+                            new CommandItem()
+                            {
+                                Command = command,
+                                Parameters = parameters
+                            }
+                        }
+                    });
 
         return true;
     }

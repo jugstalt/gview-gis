@@ -37,6 +37,14 @@ static internal class DeployVersionModelExtensions
 
     static public string ProfileTargetInstallationPath(this DeployVersionModel model, string profile, string version)
     {
+        if(model.TargetInstallationPath.EndsWith("!"))
+        {
+            return Path.Combine(
+                    model.TargetInstallationPath.Substring(0, model.TargetInstallationPath.Length-1), 
+                    version
+                );
+        }
+
         return Path.Combine(model.TargetInstallationPath, profile, version);
     }
 }
