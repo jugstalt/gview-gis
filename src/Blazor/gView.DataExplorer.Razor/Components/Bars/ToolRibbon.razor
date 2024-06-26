@@ -8,10 +8,7 @@
 @if (exTools != null)
 {
     <div class="explorer-tool-box">
-        <div class="explorer-tool" @onclick="()=>DarkmodeClick()">
-            <div class=@Icons.FromString("basic:darkmode")></div>
-            <div class="title">Color Scheme</div>
-        </div>
+        
 
         @foreach (var exTool in exTools
                                 .Where(t=> t.Target == ExplorerToolTarget.General)
@@ -87,6 +84,27 @@
                 <div class="title">Context: @contextExplorerObject.Name</div>
             </div>
         }
+    </div>
+
+    <div class="explorer-tool-box" style="float:right">
+
+        @foreach (var exTool in exTools
+                           .Where(t => t.Target == ExplorerToolTarget.About)
+                           .Where(t => t.IsEnabled(AppScope))
+                           .OrderBy(t => t.SortOrder))
+        {
+            <div class="explorer-tool"
+                 alt="@exTool.ToolTip"
+                 @onclick="async () => await ToolClickAsync(exTool)">
+                <div class=@Icons.FromString(exTool.Icon)></div>
+                <div class="title">@exTool.Name</div>
+            </div>
+        }
+
+        <div class="explorer-tool" @onclick="()=>DarkmodeClick()">
+            <div class=@Icons.FromString("basic:darkmode")></div>
+            <div class="title">Color Scheme</div>
+        </div>
     </div>
 }
 
