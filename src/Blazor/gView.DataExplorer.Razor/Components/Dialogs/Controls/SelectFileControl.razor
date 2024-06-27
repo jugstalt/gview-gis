@@ -18,7 +18,10 @@
     [Parameter] public string Label { get; set; } = "File";
     [Parameter] public string File { get; set; } = string.Empty;
     [Parameter] public string Filter { get; set; } = "*.*";
+    [Parameter] public bool NewFile { get; set; } = false;
     [Parameter] public EventCallback<string> FileChanged { get; set; }
+
+
 
     async private Task SelectFile()
     {
@@ -27,14 +30,40 @@
                             model: new ExplorerDialogModel()
                                 {
                                     Filters = new List<ExplorerDialogFilter> {
-                                              new OpenFileFilter(filter: Filter)
+                                              NewFile 
+                                                ? new SaveFileFilter(filter: Filter)
+                                                : new OpenFileFilter(filter: Filter),
+
                                     },
-                                    Mode = ExploerDialogMode.Open
+                                    Mode = NewFile 
+                                             ? ExploerDialogMode.Save 
+                                             : ExploerDialogMode.Open
                                 });
 
-        if (model != null && model.Result.ExplorerObjects.Count() == 1)
+        if (model?.Result is not null && model.Result.ExplorerObjects.Count() == 1)
         {
-            await SetFile(model.Result.ExplorerObjects.First().FullName);
+            string fullName;
+
+            if(NewFile)
+            {
+                string fileTitle = model.Result.Name.Trim(),
+                       fileExtension = model.Result.SelectedFilter?.FileFilter?.Replace("*", "") ?? "";
+
+                if (!String.IsNullOrEmpty(fileExtension)
+                    && !fileTitle.EndsWith(fileExtension, StringComparison.OrdinalIgnoreCase)
+                   )
+                {
+                    fileTitle = $"{fileTitle}{fileExtension}";
+                }
+
+                fullName = System.IO.Path.Combine(model.Result.ExplorerObjects.First().FullName, fileTitle);
+            } 
+            else
+            {
+                fullName = model.Result.ExplorerObjects.First().FullName;
+            }
+
+            await SetFile(fullName);
         }
     }
 

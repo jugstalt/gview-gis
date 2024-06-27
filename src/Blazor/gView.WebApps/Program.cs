@@ -71,11 +71,11 @@ builder.Services.AddSettingsService(config =>
 });
 builder.Services.AddMapControlBackgroundTilesService(config =>
 {
-    config.Default = "basemap_at";
+    config.Default = builder.Configuration["MapControl:Tiles"] ?? "osm"; // "basemap_at";
 });
 builder.Services.AddMapControlCrsService(config =>
 {
-    config.Default = "webmercator_at";
+    config.Default = builder.Configuration["MapControl:Crs"] ?? "webmercator"; // "webmercator_at";
 });
 builder.Services.AddLeafletService();
 

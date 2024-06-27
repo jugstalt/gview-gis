@@ -11,9 +11,9 @@ using System.Threading.Tasks;
 namespace gView.DataExplorer.Plugins.ExplorerToolCommands;
 
 [RegisterPlugIn("FC112A48-B1ED-4E38-81E6-EE49A51D02D1")]
-internal class LuceneServer : IExplorerToolCommand
+internal class LuceneServerFill : IExplorerToolCommand
 {
-    public string Name => "LuceneServer";
+    public string Name => "LuceneServer.Fill";
 
     public string ToolTip => "Lucene (Search) Server - fill index, ...";
 
@@ -22,9 +22,9 @@ internal class LuceneServer : IExplorerToolCommand
     async public Task<bool> OnEvent(IExplorerApplicationScopeService scope)
     {
         var model = await scope.ShowModalDialog(
-                                typeof(Razor.Components.Dialogs.LuceneServerToolDialog),
-                                "LuceneServer Tools",
-                                new LuceneServerToolModel());
+                                typeof(Razor.Components.Dialogs.LuceneServerFillToolDialog),
+                                "LuceneServer Fill Tool",
+                                new LuceneServerFillToolModel());
 
         if (model is null) return false;
 

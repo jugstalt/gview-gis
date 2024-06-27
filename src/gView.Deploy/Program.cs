@@ -140,13 +140,20 @@ try
         repoService.SetDeployVersionModel(profile, deployVersionModel);
     }
 
-    var gViewRepoPath = new DirectoryInfo(deployVersionModel.RepositoryPath);
+    var gViewRepoPath = deployVersionModel.RepositoryPath.EndsWith("!") 
+            ? deployVersionModel.RepositoryPath.Substring(0, deployVersionModel.RepositoryPath.Length - 1) 
+            : deployVersionModel.RepositoryPath;
 
-    if (!gViewRepoPath.Exists)
+    if (!String.IsNullOrEmpty(gViewRepoPath))
     {
-        consoleService.WriteBlock($"Create a new gview repositiry {gViewRepoPath.FullName}");
+        var gViewRepoDirectory = new DirectoryInfo(gViewRepoPath);
 
-        Directory.CreateDirectory(gViewRepoPath.FullName);
+        if (!gViewRepoDirectory.Exists)
+        {
+            consoleService.WriteBlock($"Create a new gview repositiry {gViewRepoDirectory.FullName}");
+
+            Directory.CreateDirectory(gViewRepoDirectory.FullName);
+        }
     }
 
     var webAppsTargetExists = Directory.Exists(

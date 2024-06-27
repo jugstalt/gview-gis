@@ -28,7 +28,7 @@ class ConsoleService
         }
         Console.WriteLine();
 
-        for (int i = 0; i < Math.Min(itemArray.Length, 5); i++)
+        for (int i = 0; i < itemArray.Length; i++)
         {
             Console.WriteLine($"{i} ... {itemArray[i]}");
         }

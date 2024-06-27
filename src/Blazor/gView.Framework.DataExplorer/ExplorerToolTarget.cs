@@ -4,5 +4,6 @@ public enum ExplorerToolTarget
 {
     General,
     CurrentExplorerObject,
-    SelectedContextExplorerObjects
+    SelectedContextExplorerObjects,
+    About
 }

@@ -22,7 +22,7 @@ public class About : IExplorerTool
 
     public string Icon => "basic:help";
 
-    public ExplorerToolTarget Target => ExplorerToolTarget.General;
+    public ExplorerToolTarget Target => ExplorerToolTarget.About;
 
     public bool IsEnabled(IExplorerApplicationScopeService scope) => true;
 

@@ -43,6 +43,7 @@ public class ImportConfig
         [JsonPropertyName("delete_index")]
         public bool DeleteIndex { get; set; }
 
+        [JsonIgnore]
         public string MetaIndex => $"{this.DefaultIndex}.meta";
 
         [JsonIgnore]

@@ -2,7 +2,7 @@
 
 namespace gView.DataExplorer.Razor.Components.Dialogs.Models;
 
-public class LuceneServerToolModel : IDialogResultItem
+public class LuceneServerFillToolModel : IDialogResultItem
 {
     public string JsonFile { get; set; } = "";
 

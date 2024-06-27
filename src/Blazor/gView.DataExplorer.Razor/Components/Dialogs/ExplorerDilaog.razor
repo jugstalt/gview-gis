@@ -15,15 +15,15 @@
             <div>Submitting...</div>
         }
         else if (_selectedRoot is not null)
-        {            
-            if(_selectedFilter is not null)
+        {
+            if (Model.Result.SelectedFilter is not null)
             {
-                _currentListExplorerObjects = _selectedFilter.FilterExplorerObjects(_currentListExplorerObjects).ToList();
+                _currentListExplorerObjects = Model.Result.SelectedFilter.FilterExplorerObjects(_currentListExplorerObjects).ToList();
             }
 
             if (Model.Mode == ExploerDialogMode.Save)
             {
-                placeToSave = (_selectedFilter != null && _selectedRoot != null && _selectedFilter.Match(_selectedRoot).Result == true);
+                placeToSave = (Model.Result.SelectedFilter != null && _selectedRoot != null && Model.Result.SelectedFilter.Match(_selectedRoot).Result == true);
                 Model.Result.ExplorerObjects.ReplaceItems(placeToSave && _selectedRoot != null ? 
                         new[] { _selectedRoot } : 
                         Array.Empty<IExplorerObject>());
@@ -135,8 +135,8 @@
 
             @if (Model.Filters?.Any() == true)
             {
-                <MudSelect T="ExplorerDialogFilter" 
-                           Value="_selectedFilter"
+                <MudSelect T="ExplorerDialogFilter"
+                           Value="Model.Result.SelectedFilter"
                            Variant="Variant.Outlined" 
                            Label="Filter" 
                            ValueChanged="async (value) => await OnFilterSelectionChanged(value)">
@@ -172,7 +172,6 @@
 @code {
     private List<IExplorerObject> _currentListExplorerObjects = new();
     private IExplorerObject? _selectedRoot;
-    private ExplorerDialogFilter? _selectedFilter;
     private IExplorerObjectCreatable[]? _creatableExplorerTools;
 
     private bool placeToSave = false;
@@ -186,7 +185,7 @@
 
         #region Initialize Select
 
-        _selectedFilter = Model.Filters?.FirstOrDefault();
+        Model.Result.SelectedFilter = Model.Filters?.FirstOrDefault();
 
         #endregion
 
@@ -234,11 +233,11 @@
 
             #region Collect filter matching list items
 
-            if (_selectedFilter != null)
+            if (Model.Result.SelectedFilter != null)
             {
                 foreach (var item in _currentListExplorerObjects)
                 {
-                    if (await _selectedFilter.Match(exObject))
+                    if (await Model.Result.SelectedFilter.Match(exObject))
                     {
                         matchingExplorerObjects.Add(item);
                     }
@@ -267,7 +266,8 @@
         else if(Model.Mode == ExploerDialogMode.Save)
         {
             Model.Result.Name =
-                (_selectedFilter is not null && await _selectedFilter.CanOverWrite(exObject))
+                (Model.Result.SelectedFilter is not null 
+                 && await Model.Result.SelectedFilter.CanOverWrite(exObject))
                 ? exObject.Name
                 : "";
         }
@@ -307,8 +307,7 @@
 
     private Task OnFilterSelectionChanged(ExplorerDialogFilter filter) => base.HandleAsync(() =>
     {
-        _selectedFilter = filter;
-
+        Model.Result.SelectedFilter = filter;
         Model.Result.ExplorerObjects.Clear();
 
         return Task.CompletedTask;

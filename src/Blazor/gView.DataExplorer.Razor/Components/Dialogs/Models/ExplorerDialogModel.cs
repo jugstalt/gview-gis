@@ -19,7 +19,8 @@ public class ExplorerDialogModel : IDialogResultItem
     public class ModelResult
     {
         internal ModelResult() { ExplorerObjects = new List<IExplorerObject>(); }
-        public string Name { get; set; } = string.Empty;
+        public string Name { get; set; } = "";
+        public ExplorerDialogFilter? SelectedFilter { get; set; }
         public List<IExplorerObject> ExplorerObjects { get; }
     }
-}
+} 

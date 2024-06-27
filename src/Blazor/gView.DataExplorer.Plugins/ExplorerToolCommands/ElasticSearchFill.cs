@@ -11,9 +11,9 @@ using System.Threading.Tasks;
 namespace gView.DataExplorer.Plugins.ExplorerToolCommands;
 
 [RegisterPlugIn("3A8FB727-679A-4B91-81FB-1C8F8EB8665E")]
-internal class ElasticSearch : IExplorerToolCommand
+internal class ElasticSearchFill : IExplorerToolCommand
 {
-    public string Name => "ElasticSearch";
+    public string Name => "ElasticSearch.Fill";
 
     public string ToolTip => "ElasticSearch - fill index, ...";
 
