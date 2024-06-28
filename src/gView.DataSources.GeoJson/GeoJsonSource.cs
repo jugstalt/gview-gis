@@ -135,9 +135,9 @@ namespace gView.DataSources.GeoJson
 
             var geometryInterfaceType = typeof(T);
 
-            List<IFeature> features = _features == null ?
-                new List<IFeature>() :
-                new List<IFeature>(_features.Where(f => f?.Shape != null && geometryInterfaceType.IsAssignableFrom(f.Shape.GetType())));
+            List<IFeature> features = _features == null 
+                ? new List<IFeature>() 
+                : new List<IFeature>(_features.Where(f => f?.Shape != null && geometryInterfaceType.IsAssignableFrom(f.Shape.GetType())));
 
             return features;
         }
