@@ -84,7 +84,8 @@ namespace gView.Framework.Geometry.GeoProcessing
             }
 
             //Ring schliessen
-            if (Math.Abs(x0 - x2) > 1e-7 || Math.Abs(y0 - y2) > 1e-7)
+            if (Math.Abs(x0 - x2) > GeometryConst.Epsilon || 
+                Math.Abs(y0 - y2) > GeometryConst.Epsilon)
             {
                 if (isPositive(x0) != isPositive(x2))
                 {
@@ -99,6 +100,7 @@ namespace gView.Framework.Geometry.GeoProcessing
             }
             return inter;
         }
+
         #endregion
 
         #region Box
@@ -2014,39 +2016,48 @@ namespace gView.Framework.Geometry.GeoProcessing
                     continue;
                 }
 
-                double A = polygon[i].Area;
-                IPoint centroid = polygon[i].Centroid;
+                var centroidCanditates = new IPoint[]{ polygon[i].Centroid/*, polygon[i].Envelope.Center*/};
 
-                if (centroid == null)
+                foreach (var centroid in centroidCanditates)
                 {
-                    continue;
-                }
-
-                if (Jordan(polygon, centroid.X, centroid.Y))
-                {
-                    pColl.AddPoint(new SmartPolygonLabelPoint(centroid, polygon, polygon[i], centroid));
-                    //AppendContentricLabelPoints(display, polygon, polygon[i], centroid, pColl);
-                }
-                else
-                {
-
-                    List<IPoint> hPoints = HorizontalIntersectionPoints(polygon, centroid.X, centroid.Y);
-                    List<IPoint> vPoints = VerticalIntersectionPoints(polygon, centroid.X, centroid.Y);
-
-                    List<SimpleLineSegment> Lines = new List<SimpleLineSegment>();
-                    CreateLineSegments(hPoints, ref Lines);
-                    CreateLineSegments(vPoints, ref Lines);
-
-                    Lines.Sort(new SimpleLineSegmentComparerLengthInv());
-
-                    foreach (SimpleLineSegment line in Lines)
+                    if (centroid == null)
                     {
-                        IPoint center = line.Center;
+                        continue;
+                    }
 
-                        if (Jordan(polygon, center.X, center.Y))
+                    if (Jordan(polygon, centroid.X, centroid.Y))
+                    {
+                        pColl.AddPoint(new SmartPolygonLabelPoint(centroid, polygon, polygon[i], centroid));
+                        //AppendContentricLabelPoints(display, polygon, polygon[i], centroid, pColl);
+
+                        break;
+                    }
+                    else
+                    {
+
+                        List<IPoint> hPoints = HorizontalIntersectionPoints(polygon, centroid.X, centroid.Y);
+                        List<IPoint> vPoints = VerticalIntersectionPoints(polygon, centroid.X, centroid.Y);
+
+                        List<SimpleLineSegment> Lines = new List<SimpleLineSegment>();
+                        CreateLineSegments(hPoints, ref Lines);
+                        CreateLineSegments(vPoints, ref Lines);
+
+                        Lines.Sort(new SimpleLineSegmentComparerLengthInv());
+
+                        foreach (SimpleLineSegment line in Lines)
                         {
-                            pColl.AddPoint(new SmartPolygonLabelPoint(center, polygon, polygon[i], center));
-                            //AppendContentricLabelPoints(display, polygon, polygon[i], center, pColl);
+                            IPoint center = line.Center;
+
+                            if (Jordan(polygon, center.X, center.Y))
+                            {
+                                pColl.AddPoint(new SmartPolygonLabelPoint(center, polygon, polygon[i], center));
+                                //AppendContentricLabelPoints(display, polygon, polygon[i], center, pColl);
+                                break;
+                            }
+                        }
+
+                        if (pColl.PointCount > 0)
+                        {
                             break;
                         }
                     }
