@@ -11,8 +11,6 @@
     <table class="gview-property-grid">
         @foreach (var propertyInfo in Properties.Keys)
         {
-            #region Property Attributes and Rules
-
             var browsableAttribute = propertyInfo.GetCustomAttribute<BrowsableAttribute>();
             if (browsableAttribute?.Browsable == false)
             {
@@ -40,8 +38,6 @@
                     continue;
                 }
             }
-
-            #endregion
 
             <tr>
                 @if (Properties[propertyInfo] is null 
