@@ -63,7 +63,7 @@ namespace gView.GraphicsEngine.GdiPlus
         {
             if (_bitmap != null)
             {
-                _bitmap.SetResolution(dpiX, DpiY);
+                _bitmap.SetResolution(dpiX, dpiY);
             }
         }
 
