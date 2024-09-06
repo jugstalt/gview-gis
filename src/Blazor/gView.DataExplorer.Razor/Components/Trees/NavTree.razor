@@ -6,34 +6,35 @@
 @inject ExplorerEventBusService EventBus
 
 
-    <MudTreeView  Items="TreeNodes" 
-                  ExpandOnDoubleClick="true" 
-                  MultiSelection="false"
-                  Hover="true" Dense="true">
-        <ItemTemplate>
-            <div style="white-space:nowrap; overflow-x:hidden;" 
-                 class="treenode @((context == _selected) ? "selected" : "")">
-               <MudTreeViewItem  Value="@context"
-                                  Icon=@Icons.FromString(context.Icon)
-                                  Items="@context.Children"
-                                  CanExpand="@context.HasChildren" 
-                                  Expanded="@context.IsExpanded"
-                                  ExpandedChanged="@((expanded) => OnNodeExpandedChanged(context, expanded))"
-                                  Text="@context.Text"
-                                  @onclick="@(() => OnNodeClickAsync(context))" >
-                </MudTreeViewItem>
-            </div>
-        </ItemTemplate>
-    </MudTreeView>
+<MudTreeView Items="TreeNodes" T="ExplorerTreeNode"
+              ExpandOnDoubleClick="true" 
+              SelectionMode="MudBlazor.SelectionMode.MultiSelection"
+              Hover="true" Dense="true">
+    <ItemTemplate>
+        <div style="white-space:nowrap; overflow-x:hidden;" 
+                class="treenode @((context.Value == _selected) ? "selected" : "")">
+            <MudTreeViewItem  Value="@context.Value"
+                              Icon=@Icons.FromString(context.Icon!)
+                              Items="@context.Children"
+                              CanExpand="@context.HasChildren" 
+                              Expanded="@context.Value!.IsExpanded"
+                              ExpandedChanged="@((expanded) => OnNodeExpandedChanged(context!.Value!, expanded))"
+                              Text="@(context?.Value?.Text!)"
+                              @onclick="@(() => OnNodeClickAsync(context!.Value!))" >
+            </MudTreeViewItem>
+        </div>
+    </ItemTemplate>
+</MudTreeView>
 
 @code {
-    private HashSet<ExplorerTreeNode> TreeNodes { get; set; } = new HashSet<ExplorerTreeNode>();
+    private List<TreeItemData<ExplorerTreeNode>> TreeNodes { get; set; } = new();
     private ExplorerTreeNode? _selected = null;
 
     protected override Task OnInitializedAsync() => HandleAsync(async () =>
     {
         // initialize tree
-        TreeNodes.Add(_selected = new ExplorerTreeNode(AppScope.RootExplorerObject()));
+        _selected = new ExplorerTreeNode(AppScope.RootExplorerObject());
+        TreeNodes.Add(new TreeItemData<ExplorerTreeNode>() { Value = _selected });
         await LoadServerData(_selected);
         _selected.IsExpanded = true;
 
@@ -133,7 +134,9 @@
 
     async private Task<ExplorerTreeNode?> SelectTreeNode(int index, IExplorerObject[] exObjects, ExplorerTreeNode? currentNode = null)
     {
-        var treeNodes = currentNode != null ? currentNode.Children : TreeNodes;
+        var treeNodes = currentNode != null 
+            ? currentNode.Children 
+            : TreeNodes.Select(n => n.Value);
         if (treeNodes == null)
         {
             return null;

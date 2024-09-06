@@ -6,7 +6,7 @@
                      Model="base.Model">
     <FormContent>
         <MudText Typo="Typo.h6">Please select the objects you want to delete:</MudText>
-        <MudList Dense="true">
+        <MudList T="string" Dense="true">
             @foreach (var selectItem in Model.ExplorerObjects)
             {
                 <MudListItem Dense="true"> 

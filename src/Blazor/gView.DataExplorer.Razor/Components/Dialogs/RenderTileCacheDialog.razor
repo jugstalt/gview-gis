@@ -19,7 +19,7 @@
                                         }
                                     }
                                 </MudSelect>
-                                <MudCheckBox @bind-Checked="Model.Compact" Label="Create Compact Tilecache" />
+                                <MudCheckBox @bind-Value="Model.Compact" Label="Create Compact Tilecache" />
                                 <MudSelect T="GridOrientation" @bind-Value="Model.GridOrientation" Label="Orientation" Variant="Variant.Text">
                                     @if(Model.Metadata.UpperLeft)
                                     {
