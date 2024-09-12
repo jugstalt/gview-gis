@@ -1,8 +1,8 @@
 ﻿using gView.Framework.Core.Geometry;
 using gView.Framework.Geometry;
 using gView.Framework.Common;
-using gView.Interoperability.GeoServices.Rest.Json.Features.Geometry;
-using gView.Interoperability.GeoServices.Rest.Json.FeatureServer;
+using gView.Interoperability.GeoServices.Rest.DTOs.Features.Geometry;
+using gView.Interoperability.GeoServices.Rest.DTOs.FeatureServer;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -49,13 +49,13 @@ public static class Extensions
 
     #region Geometry
 
-    static public JsonGeometry ToJsonGeometry(this IGeometry shape)
+    static public JsonGeometryDTO ToJsonGeometry(this IGeometry shape)
     {
         if (shape is IPoint)
         {
             var point = (IPoint)shape;
 
-            var jsonPoint = new JsonGeometry()
+            var jsonPoint = new JsonGeometryDTO()
             {
                 X = ((Point)shape).X,
                 Y = ((IPoint)shape).Y
@@ -78,7 +78,7 @@ public static class Extensions
                 }
             }
 
-            var jsonMultipoint = new JsonGeometry()
+            var jsonMultipoint = new JsonGeometryDTO()
             {
                 Points = points.ToArray()
             };
@@ -87,7 +87,7 @@ public static class Extensions
         }
         if (shape is IEnvelope)
         {
-            return new JsonGeometry()
+            return new JsonGeometryDTO()
             {
                 XMin = ((IEnvelope)shape).MinX,
                 YMin = ((IEnvelope)shape).MinY,
@@ -118,7 +118,7 @@ public static class Extensions
                 paths.Add(points);
             }
 
-            var jsonPolyline = new JsonGeometry()
+            var jsonPolyline = new JsonGeometryDTO()
             {
                 Paths = paths.ToArray()
             };
@@ -148,7 +148,7 @@ public static class Extensions
                 rings.Add(points);
             }
 
-            var jsonPolylgon = new JsonGeometry()
+            var jsonPolylgon = new JsonGeometryDTO()
             {
                 Rings = rings.ToArray()
             };
@@ -158,7 +158,7 @@ public static class Extensions
         return null;
     }
 
-    static public IGeometry ToGeometry(this JsonGeometry geometry)
+    static public IGeometry ToGeometry(this JsonGeometryDTO geometry)
     {
         if (geometry == null)
         {
@@ -247,9 +247,9 @@ public static class Extensions
 
     #region EditResponse
 
-    static public IEnumerable<JsonFeatureServerResponse.JsonResponse> ToEditJsonResponse(this IEnumerable<int> objectIds, bool succeeded)
+    static public IEnumerable<JsonFeatureServerResponseDTO.JsonResponse> ToEditJsonResponse(this IEnumerable<int> objectIds, bool succeeded)
     {
-        return objectIds.Select(objectId => new JsonFeatureServerResponse.JsonResponse()
+        return objectIds.Select(objectId => new JsonFeatureServerResponseDTO.JsonResponse()
         {
             Success = succeeded,
             ObjectId = objectId

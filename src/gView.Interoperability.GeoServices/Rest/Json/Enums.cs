@@ -1,4 +1,4 @@
-﻿namespace gView.Interoperability.GeoServices.Rest.Json
+﻿namespace gView.Interoperability.GeoServices.Rest.DTOs
 {
     public enum EsriFieldType
     {

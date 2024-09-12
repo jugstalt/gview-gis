@@ -3,7 +3,7 @@ using gView.Framework.Core.Data.Cursors;
 using gView.Framework.Core.Geometry;
 using gView.Framework.Geometry;
 using gView.Interoperability.GeoServices.Extensions;
-using gView.Interoperability.GeoServices.Rest.Json;
+using gView.Interoperability.GeoServices.Rest.DTOs;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -46,7 +46,7 @@ namespace gView.Interoperability.GeoServices.Dataset
 
             var postData = $"{_postData}&orderByFields={_featureClass.IDFieldName}&where={where.UrlEncodeWhereClause()}";
 
-            var jsonFeatureResponse = await _dataset.TryPostAsync<JsonFeatureResponse>(_queryUrl, postData);
+            var jsonFeatureResponse = await _dataset.TryPostAsync<JsonFeatureResponseDTO>(_queryUrl, postData);
 
             #region Parse Field Types (eg. is Date?)
 

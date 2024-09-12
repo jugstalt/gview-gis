@@ -11,11 +11,11 @@ using gView.Framework.Core.Geometry;
 using gView.Framework.Core.MapServer;
 using gView.Framework.Data;
 using gView.Interoperability.GeoServices.Request;
-using gView.Interoperability.GeoServices.Rest.Json;
-using gView.Interoperability.GeoServices.Rest.Json.Features;
-using gView.Interoperability.GeoServices.Rest.Json.FeatureServer;
-using gView.Interoperability.GeoServices.Rest.Json.Renderers.SimpleRenderers;
-using gView.Interoperability.GeoServices.Rest.Json.Request;
+using gView.Interoperability.GeoServices.Rest.DTOs;
+using gView.Interoperability.GeoServices.Rest.DTOs.Features;
+using gView.Interoperability.GeoServices.Rest.DTOs.FeatureServer;
+using gView.Interoperability.GeoServices.Rest.DTOs.Renderers.SimpleRenderers;
+using gView.Interoperability.GeoServices.Rest.DTOs.Request;
 using gView.Interoperability.GeoServices.Rest.Reflection;
 using gView.Interoperability.OGC;
 using gView.Server.AppCode;
@@ -35,7 +35,7 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
-using static gView.Interoperability.GeoServices.Rest.Json.JsonServices;
+using static gView.Interoperability.GeoServices.Rest.DTOs.JsonServicesDTO;
 
 namespace gView.Server.Controllers;
 
@@ -75,11 +75,11 @@ public class GeoServicesRestController : BaseController
 
     public IActionResult RestInfo()
     {
-        return Result(new RestInfoResponse()
+        return Result(new RestInfoResponseDTO()
         {
             CurrentVersion = Version,
             FullVersion = FullVersion,
-            AuthInfoInstance = new RestInfoResponse.AuthInfo()
+            AuthInfoInstance = new RestInfoResponseDTO.AuthInfo()
             {
                 IsTokenBasedSecurity = true,
                 ShortLivedTokenValidity = 60,
@@ -148,7 +148,7 @@ public class GeoServicesRestController : BaseController
                 }
             }
             var jsonService = String.IsNullOrEmpty(id) ?
-                new JsonServicesRoot() : new JsonServices();
+                new JsonServicesRootDTO() : new JsonServicesDTO();
 
             jsonService.CurrentVersion = Version;
             jsonService.Folders = folders.ToArray();
@@ -181,7 +181,7 @@ public class GeoServicesRestController : BaseController
                 var spatialReference = map.Display.SpatialReference;
                 int epsgCode = spatialReference != null ? spatialReference.EpsgCode : 0;
 
-                return Result(new JsonMapService()
+                return Result(new JsonMapServiceDTO()
                 {
                     CurrentVersion = 10.61,
                     MapName = String.IsNullOrWhiteSpace(map.Title) ?
@@ -205,7 +205,7 @@ public class GeoServicesRestController : BaseController
                                 ((IFeatureLayer)e).GroupLayer.ID :
                                 -1;
 
-                            return new JsonMapService.Layer()
+                            return new JsonMapServiceDTO.Layer()
                             {
                                 Id = e.ID,
                                 ParentLayerId = parentLayerId,
@@ -216,22 +216,22 @@ public class GeoServicesRestController : BaseController
                             };
                         })
                         .ToArray(),
-                    SpatialReferenceInstance = epsgCode > 0 ? new JsonMapService.SpatialReference(epsgCode) : null,
-                    InitialExtend = map.Display.Envelope == null ? null : new JsonMapService.Extent()
+                    SpatialReferenceInstance = epsgCode > 0 ? new JsonMapServiceDTO.SpatialReference(epsgCode) : null,
+                    InitialExtend = map.Display.Envelope == null ? null : new JsonMapServiceDTO.Extent()
                     {
                         XMin = fullExtent != null ? fullExtent.MinX : 0D,
                         YMin = fullExtent != null ? fullExtent.MinY : 0D,
                         XMax = fullExtent != null ? fullExtent.MaxX : 0D,
                         YMax = fullExtent != null ? fullExtent.MaxY : 0D,
-                        SpatialReference = new JsonMapService.SpatialReference(epsgCode)
+                        SpatialReference = new JsonMapServiceDTO.SpatialReference(epsgCode)
                     },
-                    FullExtent = new JsonMapService.Extent()
+                    FullExtent = new JsonMapServiceDTO.Extent()
                     {
                         XMin = fullExtent != null ? fullExtent.MinX : 0D,
                         YMin = fullExtent != null ? fullExtent.MinY : 0D,
                         XMax = fullExtent != null ? fullExtent.MaxX : 0D,
                         YMax = fullExtent != null ? fullExtent.MaxY : 0D,
-                        SpatialReference = new JsonMapService.SpatialReference(epsgCode)
+                        SpatialReference = new JsonMapServiceDTO.SpatialReference(epsgCode)
                     },
                 });
             }
@@ -257,7 +257,7 @@ public class GeoServicesRestController : BaseController
                     throw new MapServerException($"unable to create map: {id}. Check log file for details");
                 }
 
-                var jsonLayers = new JsonLayers();
+                var jsonLayers = new JsonLayersDTO();
                 jsonLayers.Layers = map.MapElements
                     .Where(e =>
                     {   // Just show layer in Toc (and not hidden)
@@ -291,7 +291,7 @@ public class GeoServicesRestController : BaseController
                 throw new MapServerException($"unable to create map: {id}. Check log file for details");
             }
 
-            var jsonLayers = new JsonLayers();
+            var jsonLayers = new JsonLayersDTO();
             return Result(JsonLayer(map, layerId));
         });
     }
@@ -305,7 +305,7 @@ public class GeoServicesRestController : BaseController
 
         #region Request
 
-        JsonExportMap exportMap = Deserialize<JsonExportMap>(
+        JsonExportMapDTO exportMap = Deserialize<JsonExportMapDTO>(
             Request.HasFormContentType ?
             Request.Form :
             Request.Query);
@@ -367,7 +367,7 @@ public class GeoServicesRestController : BaseController
 
             #region Request
 
-            JsonQueryLayer queryLayer = Deserialize<JsonQueryLayer>(
+            JsonQueryLayerDTO queryLayer = Deserialize<JsonQueryLayerDTO>(
                 Request.HasFormContentType ?
                 Request.Form :
                 Request.Query);
@@ -452,7 +452,7 @@ public class GeoServicesRestController : BaseController
 
             #region Request
 
-            JsonIdentify identify = Deserialize<JsonIdentify>(
+            JsonIdentifyDTO identify = Deserialize<JsonIdentifyDTO>(
                 Request.HasFormContentType ?
                 Request.Form :
                 Request.Query);
@@ -594,7 +594,7 @@ public class GeoServicesRestController : BaseController
             var spatialReference = map.Display.SpatialReference;
             int epsg = spatialReference != null ? spatialReference.EpsgCode : 0;
 
-            return Result(new JsonFeatureService()
+            return Result(new JsonFeatureServiceDTO()
             {
                 CurrentVersion = 10.61,
                 Layers = map.MapElements
@@ -643,7 +643,7 @@ public class GeoServicesRestController : BaseController
 
                     if (fc != null || tocElement.Layers?.FirstOrDefault() is IGroupLayer)
                     {
-                        return new JsonMapService.Layer()
+                        return new JsonMapServiceDTO.Layer()
                         {
                             Id = e.ID,
                             ParentLayerId = parentLayerId,
@@ -652,7 +652,7 @@ public class GeoServicesRestController : BaseController
                             MaxScale = tocElement != null && tocElement.Layers.Count() > 0 ? Math.Max(tocElement.Layers[0].MinimumScale > 1 ? tocElement.Layers[0].MinimumScale : 0, 0) : 0,
                             MinScale = tocElement != null && tocElement.Layers.Count() > 0 ? Math.Max(tocElement.Layers[0].MaximumScale > 1 ? tocElement.Layers[0].MaximumScale : 0, 0) : 0,
                             GeometryType = e.Class is IFeatureClass ?
-                                Interoperability.GeoServices.Rest.Json.JsonLayer.ToGeometryType(geometryType).ToString() :
+                                Interoperability.GeoServices.Rest.DTOs.JsonLayerDTO.ToGeometryType(geometryType).ToString() :
                                 null,
                             LayerType = fc != null ? "Feature Layer" : "Group Layer"
                         };
@@ -662,22 +662,22 @@ public class GeoServicesRestController : BaseController
                 })
                 .Where(e => e != null)
                 .ToArray(),
-                SpatialReferenceInstance = epsg > 0 ? new JsonMapService.SpatialReference(epsg) : null,
-                InitialExtend = new JsonMapService.Extent()
+                SpatialReferenceInstance = epsg > 0 ? new JsonMapServiceDTO.SpatialReference(epsg) : null,
+                InitialExtend = new JsonMapServiceDTO.Extent()
                 {
                     XMin = fullExtent != null ? fullExtent.MinX : 0D,
                     YMin = fullExtent != null ? fullExtent.MinY : 0D,
                     XMax = fullExtent != null ? fullExtent.MaxX : 0D,
                     YMax = fullExtent != null ? fullExtent.MaxY : 0D,
-                    SpatialReference = new JsonMapService.SpatialReference(epsg)
+                    SpatialReference = new JsonMapServiceDTO.SpatialReference(epsg)
                 },
-                FullExtent = new JsonMapService.Extent()
+                FullExtent = new JsonMapServiceDTO.Extent()
                 {
                     XMin = fullExtent != null ? fullExtent.MinX : 0D,
                     YMin = fullExtent != null ? fullExtent.MinY : 0D,
                     XMax = fullExtent != null ? fullExtent.MaxX : 0D,
                     YMax = fullExtent != null ? fullExtent.MaxY : 0D,
-                    SpatialReference = new JsonMapService.SpatialReference(epsg)
+                    SpatialReference = new JsonMapServiceDTO.SpatialReference(epsg)
                 }
             });
         });
@@ -691,7 +691,7 @@ public class GeoServicesRestController : BaseController
 
             #region Request
 
-            JsonQueryLayer queryLayer = Deserialize<JsonQueryLayer>(
+            JsonQueryLayerDTO queryLayer = Deserialize<JsonQueryLayerDTO>(
                 Request.HasFormContentType ?
                 Request.Form :
                 Request.Query);
@@ -743,7 +743,7 @@ public class GeoServicesRestController : BaseController
 
             #region Request
 
-            JsonFeatureServerUpdateRequest editRequest = Deserialize<JsonFeatureServerUpdateRequest>(
+            JsonFeatureServerUpdateRequestDTO editRequest = Deserialize<JsonFeatureServerUpdateRequestDTO>(
                 Request.HasFormContentType ?
                 Request.Form :
                 Request.Query);
@@ -776,18 +776,18 @@ public class GeoServicesRestController : BaseController
 
             #endregion
 
-            return Result(JSerializer.Deserialize<JsonFeatureServerResponse>(serviceRequest.ResponseAsString));
+            return Result(JSerializer.Deserialize<JsonFeatureServerResponseDTO>(serviceRequest.ResponseAsString));
         },
         onException: (ex) =>
         {
-            return Result(new JsonFeatureServerResponse()
+            return Result(new JsonFeatureServerResponseDTO()
             {
-                AddResults = new JsonFeatureServerResponse.JsonResponse[]
+                AddResults = new JsonFeatureServerResponseDTO.JsonResponse[]
                 {
-                    new JsonFeatureServerResponse.JsonResponse()
+                    new JsonFeatureServerResponseDTO.JsonResponse()
                     {
                         Success=false,
-                        Error=new JsonFeatureServerResponse.JsonError()
+                        Error=new JsonFeatureServerResponseDTO.JsonError()
                         {
                             Code=999,
                             Description=ex.Message
@@ -806,7 +806,7 @@ public class GeoServicesRestController : BaseController
 
             #region Request
 
-            JsonFeatureServerUpdateRequest editRequest = Deserialize<JsonFeatureServerUpdateRequest>(
+            JsonFeatureServerUpdateRequestDTO editRequest = Deserialize<JsonFeatureServerUpdateRequestDTO>(
                 Request.HasFormContentType ?
                 Request.Form :
                 Request.Query);
@@ -839,18 +839,18 @@ public class GeoServicesRestController : BaseController
 
             #endregion
 
-            return Result(JSerializer.Deserialize<JsonFeatureServerResponse>(serviceRequest.ResponseAsString));
+            return Result(JSerializer.Deserialize<JsonFeatureServerResponseDTO>(serviceRequest.ResponseAsString));
         },
         onException: (ex) =>
         {
-            return Result(new JsonFeatureServerResponse()
+            return Result(new JsonFeatureServerResponseDTO()
             {
-                UpdateResults = new JsonFeatureServerResponse.JsonResponse[]
+                UpdateResults = new JsonFeatureServerResponseDTO.JsonResponse[]
                 {
-                    new JsonFeatureServerResponse.JsonResponse()
+                    new JsonFeatureServerResponseDTO.JsonResponse()
                     {
                         Success=false,
-                        Error=new JsonFeatureServerResponse.JsonError()
+                        Error=new JsonFeatureServerResponseDTO.JsonError()
                         {
                             Code=999,
                             Description=ex.Message
@@ -869,7 +869,7 @@ public class GeoServicesRestController : BaseController
 
             #region Request
 
-            JsonFeatureServerDeleteRequest editRequest = Deserialize<JsonFeatureServerDeleteRequest>(
+            JsonFeatureServerDeleteRequestDTO editRequest = Deserialize<JsonFeatureServerDeleteRequestDTO>(
                 Request.HasFormContentType ?
                 Request.Form :
                 Request.Query);
@@ -902,18 +902,18 @@ public class GeoServicesRestController : BaseController
 
             #endregion
 
-            return Result(JSerializer.Deserialize<JsonFeatureServerResponse>(serviceRequest.ResponseAsString));
+            return Result(JSerializer.Deserialize<JsonFeatureServerResponseDTO>(serviceRequest.ResponseAsString));
         },
         onException: (ex) =>
         {
-            return Result(new JsonFeatureServerResponse()
+            return Result(new JsonFeatureServerResponseDTO()
             {
-                DeleteResults = new JsonFeatureServerResponse.JsonResponse[]
+                DeleteResults = new JsonFeatureServerResponseDTO.JsonResponse[]
                                 {
-                    new JsonFeatureServerResponse.JsonResponse()
+                    new JsonFeatureServerResponseDTO.JsonResponse()
                     {
                         Success=false,
-                        Error=new JsonFeatureServerResponse.JsonError()
+                        Error=new JsonFeatureServerResponseDTO.JsonError()
                         {
                             Code=999,
                             Description=ex.Message
@@ -942,7 +942,7 @@ public class GeoServicesRestController : BaseController
                 throw new MapServerException($"unable to create map: {id}. Check log file for details");
             }
 
-            var jsonLayers = new JsonLayers();
+            var jsonLayers = new JsonLayersDTO();
             return Result(JsonFeatureServerLayer(map, layerId));
         });
     }
@@ -960,7 +960,7 @@ public class GeoServicesRestController : BaseController
             string format = ResultFormat();
             if (String.IsNullOrWhiteSpace(format))
             {
-                return Task.FromResult(FormResult(new JsonGenerateToken()));
+                return Task.FromResult(FormResult(new JsonGenerateTokenDTO()));
             }
 
             if (request?.ToLower() == "gettoken")
@@ -981,7 +981,7 @@ public class GeoServicesRestController : BaseController
                     throw new Exception("unknown username or password");
                 }
 
-                return Task.FromResult(Result(new JsonSecurityToken()
+                return Task.FromResult(Result(new JsonSecurityTokenDTO()
                 {
                     Token = _encryptionCertificate.ToToken(authToken),
                     Expires = Convert.ToInt64((new DateTime(authToken.Expire, DateTimeKind.Utc) - new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc)).TotalMilliseconds)
@@ -994,9 +994,9 @@ public class GeoServicesRestController : BaseController
         }
         catch (Exception ex)
         {
-            return Task.FromResult(Result(new JsonError()
+            return Task.FromResult(Result(new JsonErrorDTO()
             {
-                Error = new JsonError.ErrorDef() { Code = 400, Message = ex.Message }
+                Error = new JsonErrorDTO.ErrorDef() { Code = 400, Message = ex.Message }
             }));
         }
     }
@@ -1007,7 +1007,7 @@ public class GeoServicesRestController : BaseController
 
     #region Json
 
-    private JsonLayer JsonLayer(IServiceMap map, int layerId, JsonLayer result = null)
+    private JsonLayerDTO JsonLayer(IServiceMap map, int layerId, JsonLayerDTO result = null)
     {
         var datasetElement = map.MapElements.Where(e => e.ID == layerId).FirstOrDefault();
         if (datasetElement == null)
@@ -1016,12 +1016,12 @@ public class GeoServicesRestController : BaseController
         }
 
         var tocElement = map.TOC.GetTOCElement(datasetElement as ILayer);
-        bool isJsonFeatureServiceLayer = result is JsonFeatureServerLayer;
+        bool isJsonFeatureServiceLayer = result is JsonFeatureServerLayerDTO;
 
-        JsonLayerLink parentLayer = null;
+        JsonLayerLinkDTO parentLayer = null;
         if (datasetElement is ILayer && ((ILayer)datasetElement).GroupLayer != null)
         {
-            parentLayer = new JsonLayerLink()
+            parentLayer = new JsonLayerLinkDTO()
             {
                 Id = ((ILayer)datasetElement).GroupLayer.ID,
                 Name = ((ILayer)datasetElement).GroupLayer.Title
@@ -1037,13 +1037,13 @@ public class GeoServicesRestController : BaseController
                     {
                         var childTocElement = map.TOC.GetTOCElement(l);
 
-                        return new JsonLayerLink()
+                        return new JsonLayerLinkDTO()
                         {
                             Id = l.ID,
                             Name = childTocElement.Name
                         };
                     }).ToArray() :
-                    new JsonLayerLink[0];
+                    new JsonLayerLinkDTO[0];
 
             if (groupLayer.MapServerStyle == MapServerGrouplayerStyle.Checkbox)
             {
@@ -1052,7 +1052,7 @@ public class GeoServicesRestController : BaseController
             }
 
 
-            var jsonGroupLayer = new JsonLayer()
+            var jsonGroupLayer = new JsonLayerDTO()
             {
                 CurrentVersion = Version,
                 Id = groupLayer.ID,
@@ -1067,8 +1067,8 @@ public class GeoServicesRestController : BaseController
 
             if (jsonGroupLayer.SubLayers != null)
             {
-                JsonSpatialReference spatialReference = new JsonSpatialReference(map.Display.SpatialReference != null ? map.Display.SpatialReference.EpsgCode : 0);
-                JsonExtent extent = null;
+                JsonSpatialReferenceDTO spatialReference = new JsonSpatialReferenceDTO(map.Display.SpatialReference != null ? map.Display.SpatialReference.EpsgCode : 0);
+                JsonExtentDTO extent = null;
                 foreach (var subLayer in jsonGroupLayer.SubLayers)
                 {
                     var featureClass = map.MapElements.Where(e => e.ID == subLayer.Id && e.Class is IFeatureClass).Select(l => (IFeatureClass)l.Class).FirstOrDefault();
@@ -1083,7 +1083,7 @@ public class GeoServicesRestController : BaseController
                             {
                                 if (extent == null)
                                 {
-                                    extent = new JsonExtent()
+                                    extent = new JsonExtentDTO()
                                     {
                                         Xmin = featureClass.Envelope.MinX,
                                         Ymin = featureClass.Envelope.MinY,
@@ -1112,7 +1112,7 @@ public class GeoServicesRestController : BaseController
         }
         else // Featurelayer, Rasterlayer
         {
-            JsonField[] fields = new JsonField[0];
+            JsonFieldDTO[] fields = new JsonFieldDTO[0];
             if (datasetElement.Class is ITableClass)
             {
                 fields = ((ITableClass)datasetElement.Class).Fields.ToEnumerable()
@@ -1121,11 +1121,11 @@ public class GeoServicesRestController : BaseController
                     {
                         if (isJsonFeatureServiceLayer)
                         {
-                            return new JsonFeatureLayerField()
+                            return new JsonFeatureLayerFieldDTO()
                             {
                                 Name = f.name,
                                 Alias = f.aliasname,
-                                Type = JsonField.ToType(f.type).ToString(),
+                                Type = JsonFieldDTO.ToType(f.type).ToString(),
                                 Editable = f.type != FieldType.ID,
                                 Nullable = f.type != FieldType.ID,
                                 Length = f.size
@@ -1133,31 +1133,31 @@ public class GeoServicesRestController : BaseController
                         }
                         else
                         {
-                            return new JsonField()
+                            return new JsonFieldDTO()
                             {
                                 Name = f.name,
                                 Alias = f.aliasname,
-                                Type = JsonField.ToType(f.type).ToString()
+                                Type = JsonFieldDTO.ToType(f.type).ToString()
                             };
                         }
                     })
                     .ToArray();
             }
 
-            JsonExtent extent = null;
+            JsonExtentDTO extent = null;
             var spatialReference = (datasetElement.Class is IFeatureClass ? ((IFeatureClass)datasetElement.Class).SpatialReference : null) ?? (map.LayerDefaultSpatialReference ?? map.Display.SpatialReference);
             int epsgCode = spatialReference != null ? spatialReference.EpsgCode : 0;
 
             if (datasetElement.Class is IFeatureClass && ((IFeatureClass)datasetElement.Class).Envelope != null)
             {
-                extent = new JsonExtent()
+                extent = new JsonExtentDTO()
                 {
                     // DoTo: SpatialReference
                     Xmin = ((IFeatureClass)datasetElement.Class).Envelope.MinX,
                     Ymin = ((IFeatureClass)datasetElement.Class).Envelope.MinY,
                     Xmax = ((IFeatureClass)datasetElement.Class).Envelope.MaxX,
                     Ymax = ((IFeatureClass)datasetElement.Class).Envelope.MaxY,
-                    SpatialReference = new JsonSpatialReference(epsgCode)
+                    SpatialReference = new JsonSpatialReferenceDTO(epsgCode)
                 };
             }
 
@@ -1168,18 +1168,18 @@ public class GeoServicesRestController : BaseController
                 type = "Raster Layer";
             }
 
-            JsonDrawingInfo drawingInfo = null;
+            JsonDrawingInfoDTO drawingInfo = null;
             if (datasetElement is IFeatureLayer)
             {
                 var featureLayer = (IFeatureLayer)datasetElement;
 
-                drawingInfo = new JsonDrawingInfo()
+                drawingInfo = new JsonDrawingInfoDTO()
                 {
-                    Renderer = JsonRenderer.FromFeatureRenderer(featureLayer.FeatureRenderer)
+                    Renderer = JsonRendererDTO.FromFeatureRenderer(featureLayer.FeatureRenderer)
                 };
             }
 
-            result = result ?? new JsonLayer();
+            result = result ?? new JsonLayerDTO();
 
             var geometryType = datasetElement.Class is IFeatureClass ?
                 ((IFeatureClass)datasetElement.Class).GeometryType :
@@ -1202,13 +1202,13 @@ public class GeoServicesRestController : BaseController
             result.ParentLayer = parentLayer;
             result.DrawingInfo = drawingInfo;
             result.GeometryType = datasetElement.Class is IFeatureClass ?
-                Interoperability.GeoServices.Rest.Json.JsonLayer.ToGeometryType(geometryType).ToString() :
+                Interoperability.GeoServices.Rest.DTOs.JsonLayerDTO.ToGeometryType(geometryType).ToString() :
                 EsriGeometryType.esriGeometryNull.ToString();
 
             result.Description = map.GetLayerDescription(layerId);
             result.CopyrightText = map.GetLayerCopyrightText(layerId);
 
-            if (result is JsonFeatureServerLayer)
+            if (result is JsonFeatureServerLayerDTO)
             {
                 var editorModule = map.GetModule<gView.Plugins.Modules.EditorModule>();
                 if (editorModule != null)
@@ -1227,8 +1227,8 @@ public class GeoServicesRestController : BaseController
 
                         if (editOperations.Count > 0)
                         {
-                            ((JsonFeatureServerLayer)result).IsEditable = true;
-                            ((JsonFeatureServerLayer)result).EditOperations = editOperations.ToArray();
+                            ((JsonFeatureServerLayerDTO)result).IsEditable = true;
+                            ((JsonFeatureServerLayerDTO)result).EditOperations = editOperations.ToArray();
                         }
                     }
                 }
@@ -1238,20 +1238,20 @@ public class GeoServicesRestController : BaseController
         }
     }
 
-    private JsonLayer JsonFeatureServerLayer(IServiceMap map, int layerId)
+    private JsonLayerDTO JsonFeatureServerLayer(IServiceMap map, int layerId)
     {
-        return JsonLayer(map, layerId, new JsonFeatureServerLayer());
+        return JsonLayer(map, layerId, new JsonFeatureServerLayerDTO());
     }
 
     #endregion
 
     private IActionResult Result(object obj, string folder = null, string id = null, string method = null, string contentType = "text/plain")
     {
-        if (base.ActionStartTime.HasValue && obj is JsonStopWatch)
+        if (base.ActionStartTime.HasValue && obj is JsonStopWatchDTO)
         {
-            ((JsonStopWatch)obj).DurationMilliseconds = (DateTime.UtcNow - base.ActionStartTime.Value).TotalMilliseconds;
+            ((JsonStopWatchDTO)obj).DurationMilliseconds = (DateTime.UtcNow - base.ActionStartTime.Value).TotalMilliseconds;
 
-            ((JsonStopWatch)obj).AddPerformanceLoggerItem(_performanceLogger,
+            ((JsonStopWatchDTO)obj).AddPerformanceLoggerItem(_performanceLogger,
                                                           folder, id, method);
         }
 
@@ -1934,16 +1934,16 @@ public class GeoServicesRestController : BaseController
                 }
                 catch (MapServerException mse)
                 {
-                    return Result(new JsonError()
+                    return Result(new JsonErrorDTO()
                     {
-                        Error = new JsonError.ErrorDef() { Code = 999, Message = mse.Message }
+                        Error = new JsonErrorDTO.ErrorDef() { Code = 999, Message = mse.Message }
                     });
                 }
                 catch (Exception)
                 {
-                    return Result(new JsonError()
+                    return Result(new JsonErrorDTO()
                     {
-                        Error = new JsonError.ErrorDef() { Code = 999, Message = "unknown error" }
+                        Error = new JsonErrorDTO.ErrorDef() { Code = 999, Message = "unknown error" }
                     });
 
                 }

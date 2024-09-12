@@ -1,7 +1,7 @@
 ﻿using gView.Cmd.Core.Abstraction;
 using gView.Cmd.MxlUtil.Lib.Abstraction;
 using gView.Cmd.MxlUtil.Lib.Exceptions;
-using gView.Interoperability.GeoServices.Rest.Json;
+using gView.Interoperability.GeoServices.Rest.DTOs;
 using gView.Server.Models;
 using System.Text.Json;
 using System.Net.Http.Headers;
@@ -115,12 +115,12 @@ Optional arguments:
 
                             if (tokenResponseString.Contains("\"error\":"))
                             {
-                                JsonError error = JsonSerializer.Deserialize<JsonError>(tokenResponseString)!;
+                                JsonErrorDTO error = JsonSerializer.Deserialize<JsonErrorDTO>(tokenResponseString)!;
                                 throw new Exception($"GetToken-Error: {error.Error?.Code}\n{error.Error?.Message}\n{error.Error?.Details}");
                             }
                             else
                             {
-                                JsonSecurityToken? jsonToken = JsonSerializer.Deserialize<JsonSecurityToken>(tokenResponseString);
+                                JsonSecurityTokenDTO? jsonToken = JsonSerializer.Deserialize<JsonSecurityTokenDTO>(tokenResponseString);
                                 if (jsonToken?.Token != null)
                                 {
                                     accessToken = jsonToken.Token;

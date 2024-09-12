@@ -2,7 +2,7 @@
 using System;
 using static gView.Framework.Symbology.SimplePointSymbol;
 
-namespace gView.Interoperability.GeoServices.Rest.Json
+namespace gView.Interoperability.GeoServices.Rest.DTOs
 {
     static public class Extensions
     {

@@ -20,12 +20,12 @@ using gView.Framework.Common.Diagnostics;
 using gView.Interoperability.GeoServices.Exceptions;
 using gView.Interoperability.GeoServices.Extensions;
 using gView.Interoperability.GeoServices.Request.Extensions;
-using gView.Interoperability.GeoServices.Rest.Json;
-using gView.Interoperability.GeoServices.Rest.Json.Features;
-using gView.Interoperability.GeoServices.Rest.Json.FeatureServer;
-using gView.Interoperability.GeoServices.Rest.Json.Renderers.SimpleRenderers;
-using gView.Interoperability.GeoServices.Rest.Json.Request;
-using gView.Interoperability.GeoServices.Rest.Json.Response;
+using gView.Interoperability.GeoServices.Rest.DTOs;
+using gView.Interoperability.GeoServices.Rest.DTOs.Features;
+using gView.Interoperability.GeoServices.Rest.DTOs.FeatureServer;
+using gView.Interoperability.GeoServices.Rest.DTOs.Renderers.SimpleRenderers;
+using gView.Interoperability.GeoServices.Rest.DTOs.Request;
+using gView.Interoperability.GeoServices.Rest.DTOs.Response;
 using System.Text.Json;
 using System;
 using System.Collections.Generic;
@@ -41,7 +41,7 @@ namespace gView.Interoperability.GeoServices.Request
     public class GeoServicesRestInterperter : IServiceRequestInterpreter
     {
         private IMapServer _mapServer;
-        private JsonExportMap _exportMap = null;
+        private JsonExportMapDTO _exportMap = null;
         private bool _useTOC = false;
 
         #region IServiceRequestInterpreter
@@ -131,7 +131,7 @@ namespace gView.Interoperability.GeoServices.Request
         {
             try
             {
-                _exportMap = JSerializer.Deserialize<JsonExportMap>(context.ServiceRequest.Request);
+                _exportMap = JSerializer.Deserialize<JsonExportMapDTO>(context.ServiceRequest.Request);
 
                 //Console.WriteLine(_exportMap.BBox);
                 //Console.WriteLine(_exportMap.Size);
@@ -229,14 +229,14 @@ namespace gView.Interoperability.GeoServices.Request
                             await serviceMap.SaveImage(path, iFormat);
 
                             context.ServiceRequest.Succeeded = true;
-                            context.ServiceRequest.Response = new JsonExportResponse()
+                            context.ServiceRequest.Response = new JsonExportResponseDTO()
                             {
                                 Href = $"{context.ServiceRequest.OutputUrl}/{fileName}",
                                 Width = serviceMap.Display.ImageWidth,
                                 Height = serviceMap.Display.ImageHeight,
                                 ContentType = $"image/{iFormat.ToString().ToLower()}",
                                 Scale = serviceMap.Display.MapScale,
-                                Extent = new JsonExtent()
+                                Extent = new JsonExtentDTO()
                                 {
                                     Xmin = serviceMap.Display.Envelope.MinX,
                                     Ymin = serviceMap.Display.Envelope.MinY,
@@ -246,7 +246,7 @@ namespace gView.Interoperability.GeoServices.Request
                                 },
                                 IdleMilliseconds = ContextVariables.UseMetrics ? serviceMap.Metrics : null,
                                 Error = serviceMap is IMap && ((IMap)serviceMap).HasRequestExceptions ?
-                                    new JsonError.ErrorDef()
+                                    new JsonErrorDTO.ErrorDef()
                                     {
                                         Code = 999,
                                         Message = "MapExport exeption occured",
@@ -258,9 +258,9 @@ namespace gView.Interoperability.GeoServices.Request
                     else
                     {
                         context.ServiceRequest.Succeeded = false;
-                        context.ServiceRequest.Response = new JsonError()
+                        context.ServiceRequest.Response = new JsonErrorDTO()
                         {
-                            Error = new JsonError.ErrorDef()
+                            Error = new JsonErrorDTO.ErrorDef()
                             {
                                 Code = -1,
                                 Message = "No image data"
@@ -272,9 +272,9 @@ namespace gView.Interoperability.GeoServices.Request
             catch (Exception ex)
             {
                 context.ServiceRequest.Succeeded = false;
-                context.ServiceRequest.Response = new JsonError()
+                context.ServiceRequest.Response = new JsonErrorDTO()
                 {
-                    Error = new JsonError.ErrorDef()
+                    Error = new JsonErrorDTO.ErrorDef()
                     {
                         Code = ex is GeoServicesException ? ((GeoServicesException)ex).ErrorCode : -1,
                         Message = ex.Message + (ex is NullReferenceException ? $" Stacktrace: {ex.StackTrace}" : "")
@@ -369,7 +369,7 @@ namespace gView.Interoperability.GeoServices.Request
             {
                 #region Apply Dynamic Layers
 
-                var jsonDynamicLayers = JSerializer.Deserialize<JsonDynamicLayer[]>(_exportMap.DynamicLayers);
+                var jsonDynamicLayers = JSerializer.Deserialize<JsonDynamicLayerDTO[]>(_exportMap.DynamicLayers);
                 foreach (var jsonDynamicLayer in jsonDynamicLayers)
                 {
                     if (jsonDynamicLayer.Source != null)
@@ -389,7 +389,7 @@ namespace gView.Interoperability.GeoServices.Request
                             {
                                 if (jsonDynamicLayer.DrawingInfo?.Renderer != null)
                                 {
-                                    dynLayer.FeatureRenderer = JsonRenderer.FromJsonRenderer(jsonDynamicLayer.DrawingInfo.Renderer);
+                                    dynLayer.FeatureRenderer = JsonRendererDTO.FromJsonRenderer(jsonDynamicLayer.DrawingInfo.Renderer);
                                 }
                                 else
                                 {
@@ -474,15 +474,15 @@ namespace gView.Interoperability.GeoServices.Request
         {
             try
             {
-                var query = JSerializer.Deserialize<JsonQueryLayer>(context.ServiceRequest.Request);
+                var query = JSerializer.Deserialize<JsonQueryLayerDTO>(context.ServiceRequest.Request);
 
                 int featureCount = 0;
-                List<JsonFeature> jsonFeatures = new List<JsonFeature>();
-                List<JsonFeatureResponse.Field> jsonFields = new List<JsonFeatureResponse.Field>();
+                List<JsonFeatureDTO> jsonFeatures = new List<JsonFeatureDTO>();
+                List<JsonFeatureResponseDTO.Field> jsonFields = new List<JsonFeatureResponseDTO.Field>();
                 double idleMilliseconds = 0D;
                 string objectIdFieldName = String.Empty;
                 EsriGeometryType esriGeometryType = EsriGeometryType.esriGeometryAny;
-                JsonSpatialReference featureSref = null;
+                JsonSpatialReferenceDTO featureSref = null;
 
                 int limit = query.ReturnIdsOnly == true ?   // return all Ids!
                                     int.MaxValue :
@@ -534,7 +534,7 @@ namespace gView.Interoperability.GeoServices.Request
                                 }
                             }
 
-                            esriGeometryType = JsonLayer.ToGeometryType(geometryType);
+                            esriGeometryType = JsonLayerDTO.ToGeometryType(geometryType);
                         }
 
                         IQueryFilter filter;
@@ -645,7 +645,7 @@ namespace gView.Interoperability.GeoServices.Request
                         {
                             try
                             {
-                                featureSref = new JsonSpatialReference()
+                                featureSref = new JsonSpatialReferenceDTO()
                                 {
                                     Wkid = int.Parse(filter.FeatureSpatialReference.Name.Split(':')[1])
                                 };
@@ -739,7 +739,7 @@ namespace gView.Interoperability.GeoServices.Request
                                         }
                                         else
                                         {
-                                            var jsonFeature = new JsonFeature();
+                                            var jsonFeature = new JsonFeatureDTO();
                                             var attributesDict = (IDictionary<string, object>)jsonFeature.Attributes;
 
                                             if (feature.Fields != null)
@@ -760,12 +760,12 @@ namespace gView.Interoperability.GeoServices.Request
                                                         var tableField = tableClass.FindField(field.Name);
                                                         if (tableField != null)
                                                         {
-                                                            jsonFields.Add(new JsonFeatureResponse.Field()
+                                                            jsonFields.Add(new JsonFeatureResponseDTO.Field()
                                                             {
                                                                 Name = tableField.name,
                                                                 Alias = tableField.aliasname,
                                                                 Length = tableField.size > 0 ? tableField.size : null,
-                                                                Type = JsonField.ToType(tableField.type).ToString()
+                                                                Type = JsonFieldDTO.ToType(tableField.type).ToString()
                                                             });
                                                         }
                                                     }
@@ -793,14 +793,14 @@ namespace gView.Interoperability.GeoServices.Request
 
                 if (query.ReturnCountOnly == true)
                 {
-                    context.ServiceRequest.Response = new JsonFeatureCountResponse()
+                    context.ServiceRequest.Response = new JsonFeatureCountResponseDTO()
                     {
                         Count = featureCount  //jsonFeatures.Count()
                     };
                 }
                 else if (query.ReturnIdsOnly)
                 {
-                    context.ServiceRequest.Response = new JsonObjectIdResponse()
+                    context.ServiceRequest.Response = new JsonObjectIdResponseDTO()
                     {
                         ObjectIdFieldName = objectIdFieldName,
                         ObjectIds = jsonFeatures.Select(f => Convert.ToInt32(((IDictionary<string, object>)f.Attributes)[objectIdFieldName]))
@@ -808,9 +808,9 @@ namespace gView.Interoperability.GeoServices.Request
                 }
                 else if (query.ReturnExtentOnly)
                 {
-                    context.ServiceRequest.Response = new JsonExtentResponse()
+                    context.ServiceRequest.Response = new JsonExtentResponseDTO()
                     {
-                        Extend = new JsonExtent()
+                        Extend = new JsonExtentDTO()
                         {
                             Xmin = extent != null ? extent.MinX : double.NaN,
                             Ymin = extent != null ? extent.MinY : double.NaN,
@@ -827,7 +827,7 @@ namespace gView.Interoperability.GeoServices.Request
                 }
                 else if (isFeatureServer)
                 {
-                    context.ServiceRequest.Response = new JsonFeatureServiceQueryResponse()
+                    context.ServiceRequest.Response = new JsonFeatureServiceQueryResponseDTO()
                     {
                         ObjectIdFieldName = objectIdFieldName,
                         GeometryType = esriGeometryType.ToString(),
@@ -839,7 +839,7 @@ namespace gView.Interoperability.GeoServices.Request
                 }
                 else
                 {
-                    context.ServiceRequest.Response = new JsonFeatureResponse()
+                    context.ServiceRequest.Response = new JsonFeatureResponseDTO()
                     {
                         GeometryType = esriGeometryType.ToString(),
                         SpatialReference = featureSref,
@@ -855,9 +855,9 @@ namespace gView.Interoperability.GeoServices.Request
             catch (Exception ex)
             {
                 context.ServiceRequest.Succeeded = false;
-                context.ServiceRequest.Response = new JsonError()
+                context.ServiceRequest.Response = new JsonErrorDTO()
                 {
-                    Error = new JsonError.ErrorDef()
+                    Error = new JsonErrorDTO.ErrorDef()
                     {
                         Code = ex is GeoServicesException ? ((GeoServicesException)ex).ErrorCode : -1,
                         Message = ex.Message
@@ -876,7 +876,7 @@ namespace gView.Interoperability.GeoServices.Request
             {
                 // https://developers.arcgis.com/rest/services-reference/identify-map-service-.htm
 
-                var identify = JSerializer.Deserialize<JsonIdentify>(context.ServiceRequest.Request);
+                var identify = JSerializer.Deserialize<JsonIdentifyDTO>(context.ServiceRequest.Request);
                 using (var serviceMap = await context.CreateServiceMapInstance())
                 {
                     #region Parameters
@@ -889,7 +889,7 @@ namespace gView.Interoperability.GeoServices.Request
                             geometry = identify.Geometry.ToJsonGeometry().ToGeometry();
                             break;
                         default:
-                            geometry = JSerializer.Deserialize<Rest.Json.Features.Geometry.JsonGeometry>(identify.Geometry)?.ToGeometry();
+                            geometry = JSerializer.Deserialize<Rest.DTOs.Features.Geometry.JsonGeometryDTO>(identify.Geometry)?.ToGeometry();
                             break;
                     }
                     if (geometry == null)
@@ -1031,7 +1031,7 @@ namespace gView.Interoperability.GeoServices.Request
 
                     #endregion
 
-                    var results = new List<JsonIdentifyResponse.Result>();
+                    var results = new List<JsonIdentifyResponseDTO.Result>();
 
                     #region Query Layers
 
@@ -1057,7 +1057,7 @@ namespace gView.Interoperability.GeoServices.Request
 
                             while ((feature = await ((IFeatureCursor)cursor).NextFeature()) != null)
                             {
-                                var result = new JsonIdentifyResponse.Result() { LayerId = layer.ID, LayerName = layer.Title };
+                                var result = new JsonIdentifyResponseDTO.Result() { LayerId = layer.ID, LayerName = layer.Title };
 
                                 result.ResultAttributes = feature.AttributesDictionary();
 
@@ -1075,7 +1075,7 @@ namespace gView.Interoperability.GeoServices.Request
                             IRow row;
                             while ((row = await ((IRowCursor)cursor).NextRow()) != null)
                             {
-                                var result = new JsonIdentifyResponse.Result() { LayerId = layer.ID, LayerName = layer.Title };
+                                var result = new JsonIdentifyResponseDTO.Result() { LayerId = layer.ID, LayerName = layer.Title };
 
                                 result.ResultAttributes = row.AttributesDictionary()
                                                              .AppendRasterAttributes();
@@ -1091,7 +1091,7 @@ namespace gView.Interoperability.GeoServices.Request
 
                     #endregion
 
-                    context.ServiceRequest.Response = new JsonIdentifyResponse()
+                    context.ServiceRequest.Response = new JsonIdentifyResponseDTO()
                     {
                         Results = results.ToArray()
                     };
@@ -1100,9 +1100,9 @@ namespace gView.Interoperability.GeoServices.Request
             catch (Exception ex)
             {
                 context.ServiceRequest.Succeeded = false;
-                context.ServiceRequest.Response = new JsonError()
+                context.ServiceRequest.Response = new JsonErrorDTO()
                 {
-                    Error = new JsonError.ErrorDef()
+                    Error = new JsonErrorDTO.ErrorDef()
                     {
                         Code = ex is GeoServicesException ? ((GeoServicesException)ex).ErrorCode : -1,
                         Message = ex.Message
@@ -1119,7 +1119,7 @@ namespace gView.Interoperability.GeoServices.Request
         {
             try
             {
-                var legendLayers = new List<Rest.Json.Legend.Layer>();
+                var legendLayers = new List<Rest.DTOs.Legend.LayerDTO>();
 
                 using (var serviceMap = await context.CreateServiceMapInstance())
                 {
@@ -1145,7 +1145,7 @@ namespace gView.Interoperability.GeoServices.Request
                                 continue;
                             }
 
-                            var legendLayer = new Rest.Json.Legend.Layer()
+                            var legendLayer = new Rest.DTOs.Legend.LayerDTO()
                             {
                                 LayerId = featureLayer.ID,
                                 LayerName = tocElement.Name,
@@ -1154,7 +1154,7 @@ namespace gView.Interoperability.GeoServices.Request
                                 MaxScale = Convert.ToInt32(featureLayer.MinimumScale > 1 ? featureLayer.MinimumScale : 0)
                             };
 
-                            var legends = new List<Rest.Json.Legend.Legend>();
+                            var legends = new List<Rest.DTOs.Legend.LegendDTO>();
                             foreach (var tocLegendItem in tocLegendItems.Items)
                             {
                                 if (tocLegendItem.Image == null)
@@ -1165,7 +1165,7 @@ namespace gView.Interoperability.GeoServices.Request
                                 MemoryStream ms = new MemoryStream();
                                 tocLegendItem.Image.Save(ms, GraphicsEngine.ImageFormat.Png);
 
-                                legends.Add(new Rest.Json.Legend.Legend()
+                                legends.Add(new Rest.DTOs.Legend.LegendDTO()
                                 {
                                     Label = tocLegendItem?.Label,
                                     Url = Guid.NewGuid().ToString("N").ToString(),
@@ -1182,7 +1182,7 @@ namespace gView.Interoperability.GeoServices.Request
                 }
 
                 context.ServiceRequest.Succeeded = true;
-                context.ServiceRequest.Response = new Rest.Json.Legend.LegendResponse()
+                context.ServiceRequest.Response = new Rest.DTOs.Legend.LegendResponseDTO()
                 {
                     Layers = legendLayers.ToArray()
                 };
@@ -1190,9 +1190,9 @@ namespace gView.Interoperability.GeoServices.Request
             catch (Exception ex)
             {
                 context.ServiceRequest.Succeeded = false;
-                context.ServiceRequest.Response = new JsonError()
+                context.ServiceRequest.Response = new JsonErrorDTO()
                 {
-                    Error = new JsonError.ErrorDef()
+                    Error = new JsonErrorDTO.ErrorDef()
                     {
                         Code = ex is GeoServicesException ? ((GeoServicesException)ex).ErrorCode : -1,
                         Message = ex.Message
@@ -1209,7 +1209,7 @@ namespace gView.Interoperability.GeoServices.Request
         {
             try
             {
-                var editRequest = JSerializer.Deserialize<JsonFeatureServerUpdateRequest>(context.ServiceRequest.Request);
+                var editRequest = JSerializer.Deserialize<JsonFeatureServerUpdateRequestDTO>(context.ServiceRequest.Request);
 
                 using (var serviceMap = await context.CreateServiceMapInstance())
                 {
@@ -1243,11 +1243,11 @@ namespace gView.Interoperability.GeoServices.Request
 
                     context.ServiceRequest.Succeeded = true;
                     context.ServiceRequest.Response = JSerializer.Serialize(
-                        new JsonFeatureServerResponse()
+                        new JsonFeatureServerResponseDTO()
                         {
-                            AddResults = new JsonFeatureServerResponse.JsonResponse[]
+                            AddResults = new JsonFeatureServerResponseDTO.JsonResponse[]
                             {
-                                new JsonFeatureServerResponse.JsonResponse()
+                                new JsonFeatureServerResponseDTO.JsonResponse()
                                 {
                                     Success = true
                                 }
@@ -1258,14 +1258,14 @@ namespace gView.Interoperability.GeoServices.Request
             catch (Exception ex)
             {
                 context.ServiceRequest.Succeeded = false;
-                context.ServiceRequest.Response = JSerializer.Serialize(new JsonFeatureServerResponse()
+                context.ServiceRequest.Response = JSerializer.Serialize(new JsonFeatureServerResponseDTO()
                 {
-                    AddResults = new JsonFeatureServerResponse.JsonResponse[]
+                    AddResults = new JsonFeatureServerResponseDTO.JsonResponse[]
                     {
-                        new JsonFeatureServerResponse.JsonResponse()
+                        new JsonFeatureServerResponseDTO.JsonResponse()
                         {
                             Success=false,
-                            Error=new JsonFeatureServerResponse.JsonError()
+                            Error=new JsonFeatureServerResponseDTO.JsonError()
                             {
                                 Code = ex is GeoServicesException ? ((GeoServicesException)ex).ErrorCode : 999,
                                 Description = ex.Message.Split('\n')[0]
@@ -1281,7 +1281,7 @@ namespace gView.Interoperability.GeoServices.Request
         {
             try
             {
-                var editRequest = JSerializer.Deserialize<JsonFeatureServerUpdateRequest>(context.ServiceRequest.Request);
+                var editRequest = JSerializer.Deserialize<JsonFeatureServerUpdateRequestDTO>(context.ServiceRequest.Request);
 
                 using (var serviceMap = await context.CreateServiceMapInstance())
                 {
@@ -1315,7 +1315,7 @@ namespace gView.Interoperability.GeoServices.Request
 
                     context.ServiceRequest.Succeeded = true;
                     context.ServiceRequest.Response = JSerializer.Serialize(
-                        new JsonFeatureServerResponse()
+                        new JsonFeatureServerResponseDTO()
                         {
                             UpdateResults = features.Select(f => f.OID).ToEditJsonResponse(true).ToArray()
                         });
@@ -1324,14 +1324,14 @@ namespace gView.Interoperability.GeoServices.Request
             catch (Exception ex)
             {
                 context.ServiceRequest.Succeeded = false;
-                context.ServiceRequest.Response = JSerializer.Serialize(new JsonFeatureServerResponse()
+                context.ServiceRequest.Response = JSerializer.Serialize(new JsonFeatureServerResponseDTO()
                 {
-                    UpdateResults = new JsonFeatureServerResponse.JsonResponse[]
+                    UpdateResults = new JsonFeatureServerResponseDTO.JsonResponse[]
                     {
-                        new JsonFeatureServerResponse.JsonResponse()
+                        new JsonFeatureServerResponseDTO.JsonResponse()
                         {
                             Success=false,
-                            Error=new JsonFeatureServerResponse.JsonError()
+                            Error=new JsonFeatureServerResponseDTO.JsonError()
                             {
                                 Code = ex is GeoServicesException ? ((GeoServicesException)ex).ErrorCode : 999,
                                 Description = ex.Message.Split('\n')[0]
@@ -1347,7 +1347,7 @@ namespace gView.Interoperability.GeoServices.Request
         {
             try
             {
-                var editRequest = JSerializer.Deserialize<JsonFeatureServerDeleteRequest>(context.ServiceRequest.Request);
+                var editRequest = JSerializer.Deserialize<JsonFeatureServerDeleteRequestDTO>(context.ServiceRequest.Request);
 
                 using (var serviceMap = await context.CreateServiceMapInstance())
                 {
@@ -1372,7 +1372,7 @@ namespace gView.Interoperability.GeoServices.Request
 
                     context.ServiceRequest.Succeeded = true;
                     context.ServiceRequest.Response = JSerializer.Serialize(
-                        new JsonFeatureServerResponse()
+                        new JsonFeatureServerResponseDTO()
                         {
                             DeleteResults = objectIds.ToEditJsonResponse(true).ToArray()
                         });
@@ -1381,14 +1381,14 @@ namespace gView.Interoperability.GeoServices.Request
             catch (Exception ex)
             {
                 context.ServiceRequest.Succeeded = false;
-                context.ServiceRequest.Response = JSerializer.Serialize(new JsonFeatureServerResponse()
+                context.ServiceRequest.Response = JSerializer.Serialize(new JsonFeatureServerResponseDTO()
                 {
-                    DeleteResults = new JsonFeatureServerResponse.JsonResponse[]
+                    DeleteResults = new JsonFeatureServerResponseDTO.JsonResponse[]
                     {
-                        new JsonFeatureServerResponse.JsonResponse()
+                        new JsonFeatureServerResponseDTO.JsonResponse()
                         {
                             Success=false,
-                            Error=new JsonFeatureServerResponse.JsonError()
+                            Error=new JsonFeatureServerResponseDTO.JsonError()
                             {
                                 Code = ex is GeoServicesException ? ((GeoServicesException)ex).ErrorCode : 999,
                                 Description = ex.Message.Split('\n')[0]
@@ -1401,12 +1401,12 @@ namespace gView.Interoperability.GeoServices.Request
 
         #region Helper
 
-        private IFeatureLayer GetFeatureLayer(IServiceMap serviceMap, JsonFeatureServerEditRequest editRequest)
+        private IFeatureLayer GetFeatureLayer(IServiceMap serviceMap, JsonFeatureServerEditRequesDTO editRequest)
         {
             return serviceMap.MapElements.Where(e => e.ID == editRequest.LayerId).FirstOrDefault() as IFeatureLayer;
         }
 
-        private IFeatureClass GetFeatureClass(IServiceMap serviceMap, JsonFeatureServerEditRequest editRequest)
+        private IFeatureClass GetFeatureClass(IServiceMap serviceMap, JsonFeatureServerEditRequesDTO editRequest)
         {
             string filterQuery;
 
@@ -1425,7 +1425,7 @@ namespace gView.Interoperability.GeoServices.Request
             return featureClass;
         }
 
-        private List<IFeature> GetFeatures(IFeatureClass featureClass, JsonFeatureServerUpdateRequest editRequest, bool projetToFeatureClassSpatialReference)
+        private List<IFeature> GetFeatures(IFeatureClass featureClass, JsonFeatureServerUpdateRequestDTO editRequest, bool projetToFeatureClassSpatialReference)
         {
             int? fcSrs = featureClass?.SpatialReference?.EpsgCode;
 
@@ -1459,7 +1459,7 @@ namespace gView.Interoperability.GeoServices.Request
             return features;
         }
 
-        private void CheckEditableStatement(IServiceMap serviceMap, JsonFeatureServerEditRequest editRequest, EditStatements statement)
+        private void CheckEditableStatement(IServiceMap serviceMap, JsonFeatureServerEditRequesDTO editRequest, EditStatements statement)
         {
             var editModule = serviceMap.GetModule<gView.Plugins.Modules.EditorModule>();
             if (editModule == null)
@@ -1487,7 +1487,7 @@ namespace gView.Interoperability.GeoServices.Request
 
         #region Helper
 
-        private Feature ToFeature(IFeatureClass fc, JsonFeature jsonFeature)
+        private Feature ToFeature(IFeatureClass fc, JsonFeatureDTO jsonFeature)
         {
             var feature = new Feature();
 
@@ -1602,7 +1602,7 @@ namespace gView.Interoperability.GeoServices.Request
             sref = sref.Trim();
             if (sref.StartsWith("{") && sref.EndsWith("}"))
             {
-                var spatialReference = JSerializer.Deserialize<Rest.Json.JsonMapService.SpatialReference>(sref);
+                var spatialReference = JSerializer.Deserialize<Rest.DTOs.JsonMapServiceDTO.SpatialReference>(sref);
 
                 return SpatialReference.FromID("epsg:" + spatialReference.Wkid) ??
                        SpatialReference.FromID("epsg:" + spatialReference.LatestWkid);

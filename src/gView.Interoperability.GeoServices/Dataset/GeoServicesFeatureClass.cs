@@ -6,7 +6,7 @@ using gView.Framework.Data;
 using gView.Framework.Data.Filters;
 using gView.Framework.Geometry;
 using gView.Interoperability.GeoServices.Rest;
-using gView.Interoperability.GeoServices.Rest.Json;
+using gView.Interoperability.GeoServices.Rest.DTOs;
 using System;
 using System.Text;
 using System.Threading.Tasks;
@@ -19,7 +19,7 @@ namespace gView.Interoperability.GeoServices.Dataset
 
         private GeoServicesFeatureClass() { }
 
-        async static internal Task<GeoServicesFeatureClass> CreateAsync(GeoServicesDataset dataset, JsonLayer jsonLayer)
+        async static internal Task<GeoServicesFeatureClass> CreateAsync(GeoServicesDataset dataset, JsonLayerDTO jsonLayer)
         {
             var featureClass = new GeoServicesFeatureClass();
 
