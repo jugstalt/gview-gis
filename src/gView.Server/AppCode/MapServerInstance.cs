@@ -297,8 +297,6 @@ public class MapServerInstance : IMapServer
         }
     }
 
-    public int FeatureQueryLimit => 1000;
-
     #endregion
 
     async private Task<IServiceMap> FindServiceMap(string name, string alias, IServiceRequestContext context)

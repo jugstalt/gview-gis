@@ -487,10 +487,6 @@ public class GeoServicesRestInterperter : IServiceRequestInterpreter
             EsriGeometryType esriGeometryType = EsriGeometryType.esriGeometryAny;
             JsonSpatialReferenceDTO featureSref = null;
 
-            int limit = query.ReturnIdsOnly == true ?   // return all Ids!
-                                int.MaxValue :
-                                _mapServer.FeatureQueryLimit;
-
             #region GeoJson
 
             bool returnGeoJson = "geojson".Equals(query.OutputFormat, StringComparison.InvariantCultureIgnoreCase) &&
@@ -505,10 +501,15 @@ public class GeoServicesRestInterperter : IServiceRequestInterpreter
 
             Envelope extent = null;
 
+            int maxRecordCount;
+
             #endregion
 
             using (var serviceMap = await context.CreateServiceMapInstance())
             {
+                maxRecordCount = query.ReturnIdsOnly == true ?   // return all Ids!
+                                int.MaxValue :
+                                serviceMap.MapServiceProperties.MaxRecordCount;
                 string filterQuery;
 
                 var tableClasses = FindTableClass(serviceMap, query.LayerId.ToString(), out filterQuery);
@@ -659,8 +660,8 @@ public class GeoServicesRestInterperter : IServiceRequestInterpreter
                     #region Limit/Begin/Order
 
                     filter.Limit = query.ResultRecordCount > 0 ?
-                        Math.Min(query.ResultRecordCount, limit) :
-                        limit;
+                        Math.Min(query.ResultRecordCount, maxRecordCount) :
+                        maxRecordCount;
 
                     filter.BeginRecord = query.ResultOffset + 1;  // Start is 1 by IQueryFilter definition
 
@@ -837,7 +838,7 @@ public class GeoServicesRestInterperter : IServiceRequestInterpreter
                     SpatialReference = featureSref,
                     Fields = jsonFields.ToArray(),
                     Features = jsonFeatures.ToArray(),
-                    ExceededTransferLimit = jsonFeatures.Count() >= limit
+                    ExceededTransferLimit = jsonFeatures.Count() >= maxRecordCount
                 };
             }
             else
@@ -848,7 +849,7 @@ public class GeoServicesRestInterperter : IServiceRequestInterpreter
                     SpatialReference = featureSref,
                     Fields = jsonFields.ToArray(),
                     Features = jsonFeatures.ToArray(),
-                    ExceededTransferLimit = jsonFeatures.Count() >= limit,
+                    ExceededTransferLimit = jsonFeatures.Count() >= maxRecordCount,
                     IdleMilliseconds = SystemVariables.UseDiagnostic ?
                             new Dictionary<string, double> { ["0"] = idleMilliseconds } :
                             null
