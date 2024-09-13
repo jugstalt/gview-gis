@@ -39,7 +39,7 @@ internal class MapSettings : ICartoButton
         clone.Display.ImageWidth = original.Display.ImageWidth;
         clone.Display.ImageHeight = original.Display.ImageHeight;
         clone.ZoomTo(original.Display.Envelope);
-        
+
         var model = await scope.ShowModalDialog(
                 typeof(gView.Carto.Razor.Components.Dialogs.MapSettingsDialog),
                 "Map Settings",
@@ -87,6 +87,17 @@ internal class MapSettings : ICartoButton
 
             // clone and original shares resource container
             // changes are live (no cancel!)
+
+            #endregion
+
+            #region Map Server
+
+            if (original.MapServiceProperties is MapServiceProperties properties)
+            {
+                properties.MaxImageWidth = clone.MapServiceProperties.MaxImageWidth;
+                properties.MaxImageHeight = clone.MapServiceProperties.MaxImageHeight;
+                properties.MaxRecordCount = clone.MapServiceProperties.MaxRecordCount;
+            }
 
             #endregion
 

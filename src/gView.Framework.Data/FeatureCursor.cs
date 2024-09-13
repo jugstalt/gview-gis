@@ -7,6 +7,8 @@ using gView.Framework.Common.Diagnostics;
 using System;
 using System.Data;
 using System.Threading.Tasks;
+using Microsoft.SqlServer.Management.SqlParser.MetadataProvider;
+using Microsoft.SqlServer.Management.SqlParser.SqlCodeDom;
 
 namespace gView.Framework.Data
 {
@@ -32,6 +34,24 @@ namespace gView.Framework.Data
             {
                 feature.Shape = _transformer.Transform2D(feature.Shape) as IGeometry;
             }
+        }
+
+        protected IFeature CloneAndTransform(IFeature feature)
+        {
+            if (feature == null) return null;
+
+            Feature cloned = new Feature();
+
+            foreach (var f in feature.Fields ?? [])
+            {
+                cloned.Fields.Add(new FieldValue(f.Name, f.Value));
+            }
+
+            cloned.Shape = (IGeometry)feature.Shape?.Clone();
+
+            Transform(cloned);
+
+            return cloned;
         }
 
         protected IFeature CloneIfTransform(IFeature feature)

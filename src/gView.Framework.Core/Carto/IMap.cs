@@ -85,5 +85,6 @@ namespace gView.Framework.Core.Carto
 
         IResourceContainer ResourceContainer { get; }
         IMapEventHooks MapEventHooks { get; }
+        IMapServiceProperties MapServiceProperties { get; }
     }
 }

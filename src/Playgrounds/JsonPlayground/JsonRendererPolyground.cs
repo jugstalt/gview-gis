@@ -1,4 +1,4 @@
-﻿using gView.Interoperability.GeoServices.Rest.Json.Renderers.SimpleRenderers;
+﻿using gView.Interoperability.GeoServices.Rest.DTOs.Renderers.SimpleRenderers;
 using System.Text.Json;
 
 namespace JsonPlayground;
@@ -38,7 +38,7 @@ internal class JsonRendererPolyground
             }
             """;
 
-        var pointFeatureRenderer = JsonRenderer.FromJsonRenderer(JsonSerializer.Deserialize<JsonRenderer>(jsonSMSRendererString));
+        var pointFeatureRenderer = JsonRendererDTO.FromJsonRenderer(JsonSerializer.Deserialize<JsonRendererDTO>(jsonSMSRendererString));
 
         var jsonUniqueValueRenderer = """
             {
@@ -162,7 +162,7 @@ internal class JsonRendererPolyground
             }
             """;
 
-        var uniqueValueFeatureRenderer = JsonRenderer.FromJsonRenderer(JsonSerializer.Deserialize<JsonRenderer>(jsonUniqueValueRenderer));
+        var uniqueValueFeatureRenderer = JsonRendererDTO.FromJsonRenderer(JsonSerializer.Deserialize<JsonRendererDTO>(jsonUniqueValueRenderer));
 
         var jsonSFSRenderer = """
             {
@@ -191,6 +191,6 @@ internal class JsonRendererPolyground
             }
             """;
 
-        var polygonFeatureRenderer = JsonRenderer.FromJsonRenderer(JsonSerializer.Deserialize<JsonRenderer>(jsonSFSRenderer));
+        var polygonFeatureRenderer = JsonRendererDTO.FromJsonRenderer(JsonSerializer.Deserialize<JsonRendererDTO>(jsonSFSRenderer));
     }
 }

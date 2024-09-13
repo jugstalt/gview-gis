@@ -1,25 +1,25 @@
 ﻿using gView.Framework.Common;
 using gView.Framework.Common.Json;
-using gView.Interoperability.GeoServices.Rest.Json.Features.Geometry;
+using gView.Interoperability.GeoServices.Rest.DTOs.Features.Geometry;
 using System;
 
 namespace gView.Interoperability.GeoServices.Extensions
 {
     static public class JsonGeometryExtensions
     {
-        static public JsonGeometry ToJsonGeometry(this string geometryString)
+        static public JsonGeometryDTO ToJsonGeometry(this string geometryString)
         {
             geometryString = geometryString.Trim();
 
             if (geometryString.StartsWith("{") || geometryString.StartsWith("["))
             {
-                return JSerializer.Deserialize<JsonGeometry>(geometryString);
+                return JSerializer.Deserialize<JsonGeometryDTO>(geometryString);
             }
 
             var coords = geometryString.Split(',');
             if (coords.Length == 2)
             {
-                return new JsonGeometry()
+                return new JsonGeometryDTO()
                 {
                     X = coords[0].ToDouble(),
                     Y = coords[1].ToDouble()
@@ -27,7 +27,7 @@ namespace gView.Interoperability.GeoServices.Extensions
             }
             else if (coords.Length == 4)
             {
-                return new JsonGeometry()
+                return new JsonGeometryDTO()
                 {
                     XMin = coords[0].ToDouble(),
                     YMin = coords[1].ToDouble(),

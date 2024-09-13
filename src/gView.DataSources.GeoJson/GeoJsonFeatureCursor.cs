@@ -14,7 +14,11 @@ namespace gView.DataSources.GeoJson
         private readonly IQueryFilter _queryFilter;
         private int pos = 0;
 
-        public GeoJsonFeatureCursor(GeoJsonServiceFeatureClass fc, IEnumerable<IFeature> features, IQueryFilter filter)
+        public GeoJsonFeatureCursor(
+                        GeoJsonServiceFeatureClass fc, 
+                        IEnumerable<IFeature> features, 
+                        IQueryFilter filter
+                    )
             : base(fc?.SpatialReference, filter?.FeatureSpatialReference)
         {
             _features = features?.ToArray();
@@ -38,7 +42,7 @@ namespace gView.DataSources.GeoJson
 
             var feature = _features[pos++];
 
-            // ToDO: Check Filter WHERE
+            // TODO: Check Filter WHERE
             if (_spatialFilter != null)
             {
                 if (!gView.Framework.Geometry.SpatialRelation.Check(_spatialFilter, feature?.Shape))
@@ -47,7 +51,13 @@ namespace gView.DataSources.GeoJson
                 }
             }
 
-            feature = base.CloneIfTransform(feature);
+            //
+            // always clone feature. It can be changed by the "client"
+            // never give back the original feature from the Source =>
+            // because it my be a cached feature
+            //
+            feature = base.CloneAndTransform(feature);
+            
             return Task.FromResult<IFeature>(feature);
         }
 

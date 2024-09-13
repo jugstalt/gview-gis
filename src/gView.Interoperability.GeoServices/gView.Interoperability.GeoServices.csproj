@@ -8,6 +8,7 @@
     <ProjectReference Include="..\gView.Framework.Cartography.Rendering\gView.Framework.Cartography.Rendering.csproj" />
     <ProjectReference Include="..\gView.Framework.Data\gView.Framework.Data.csproj" />
     <ProjectReference Include="..\gView.Framework.OGC\gView.Framework.OGC.csproj" />
+    <ProjectReference Include="..\gView.Interoperability.Extensions\gView.Interoperability.Extensions.csproj" />
     <ProjectReference Include="..\gView.Plugins.Modules\gView.Plugins.Modules.csproj" />
     <ProjectReference Include="..\gView.Framework\gView.Framework.csproj" />
     <ProjectReference Include="..\gView.Framework.Web\gView.Framework.Web.csproj" />

@@ -1,4 +1,4 @@
-﻿using gView.Interoperability.GeoServices.Rest.Json.Features;
+﻿using gView.Interoperability.GeoServices.Rest.DTOs.Features;
 using Newtonsoft.Json;
 
 namespace JsonPlayground.Models
@@ -44,6 +44,6 @@ namespace JsonPlayground.Models
         public double? M { get; set; }
 
         [JsonProperty("spatialReference", NullValueHandling = NullValueHandling.Ignore)]
-        public JsonSpatialReference SpatialReference { get; set; }
+        public JsonSpatialReferenceDTO SpatialReference { get; set; }
     }
 }

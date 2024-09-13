@@ -68,6 +68,8 @@ namespace gView.Framework.Cartography
             _selectionEnv = new SelectionEnvironment();
 
             ReferenceScale = 500;
+
+            MapServiceProperties = new MapServiceProperties();
         }
 
         public Map(Map original, bool writeNamespace)
@@ -91,6 +93,10 @@ namespace gView.Framework.Cartography
             Title = original.Title;
             _layerDescriptions = original._layerDescriptions;
             _layerCopyrightTexts = original._layerCopyrightTexts;
+
+            MapServiceProperties = 
+                original.MapServiceProperties?.Clone()
+                ?? new MapServiceProperties();
 
             SetResourceContainer(original.ResourceContainer);
             SetMapEventHooks(original.MapEventHooks);
@@ -1382,6 +1388,12 @@ namespace gView.Framework.Cartography
 
             #endregion
 
+            #region MapServiceProperties
+
+            MapServiceProperties.Load(stream);
+
+            #endregion
+
             #endregion
 
             foreach (var eventHook in _eventHooks.EventHooks?.Where(h => h.Type == HookEventType.OnLoaded) ?? [])
@@ -1535,6 +1547,12 @@ namespace gView.Framework.Cartography
             //this.WriteMetadata(stream).Wait();
             var metadataProviders = GetMetadataProviders().Result;
             stream.Save("MetadataProviders", new PersistMetadataProviders(new List<IMetadataProvider>(metadataProviders)));
+
+            #endregion
+
+            #region MapServiceProperties
+
+            MapServiceProperties.Save(stream);
 
             #endregion
         }
@@ -1837,6 +1855,8 @@ namespace gView.Framework.Cartography
             _eventHooks = eventHooks;
         }
         public IMapEventHooks MapEventHooks => _eventHooks;
+
+        public IMapServiceProperties MapServiceProperties { get; protected set; }
 
         #region Map / Layer Description
 

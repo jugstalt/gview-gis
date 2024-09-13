@@ -29,7 +29,5 @@ namespace gView.Framework.Core.MapServer
         string EtcPath { get; }
 
         string TileCachePath { get; }
-
-        int FeatureQueryLimit { get; }
     }
 }

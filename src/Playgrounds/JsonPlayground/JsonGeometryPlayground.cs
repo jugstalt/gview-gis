@@ -2,7 +2,7 @@
 using gView.Framework.Core.Geometry;
 using gView.Framework.Geometry;
 using gView.Interoperability.GeoServices.Request.Extensions;
-using gView.Interoperability.GeoServices.Rest.Json.Features.Geometry;
+using gView.Interoperability.GeoServices.Rest.DTOs.Features.Geometry;
 using JsonPlayground.Extensions;
 using JsonPlayground.Models;
 using System.Text.Json;
@@ -60,7 +60,7 @@ internal class JsonGeometryPlayground
         => Serialize(geometry.ToNJsonGeometry()!, geometry.ToJsonGeometry());
 
 
-    static private string Serialize(NJsonGeometry nJsonGeometry, JsonGeometry jsonGeometry)
+    static private string Serialize(NJsonGeometry nJsonGeometry, JsonGeometryDTO jsonGeometry)
     {
         string jsonString1 = "", jsonString2 = "";
         try
@@ -85,12 +85,12 @@ internal class JsonGeometryPlayground
         return jsonString2;
     }
 
-    static private (JsonGeometry newtonSoft, JsonGeometry stj) Deserialize(string jsonString)
+    static private (JsonGeometryDTO newtonSoft, JsonGeometryDTO stj) Deserialize(string jsonString)
     {
-        JsonGeometry? jsonGeometry1 = null, jsonGeometry2 = null;
+        JsonGeometryDTO? jsonGeometry1 = null, jsonGeometry2 = null;
 
-        jsonGeometry1 = Newtonsoft.Json.JsonConvert.DeserializeObject<JsonGeometry>(jsonString);
-        jsonGeometry2 = System.Text.Json.JsonSerializer.Deserialize<JsonGeometry>(jsonString, JsonOptions);
+        jsonGeometry1 = Newtonsoft.Json.JsonConvert.DeserializeObject<JsonGeometryDTO>(jsonString);
+        jsonGeometry2 = System.Text.Json.JsonSerializer.Deserialize<JsonGeometryDTO>(jsonString, JsonOptions);
 
         return (jsonGeometry1, jsonGeometry2);
     }

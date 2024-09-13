@@ -34,7 +34,7 @@ namespace gView.Framework.Security.Extensions
                 }
             }
 
-            var result = Zxcvbn.Zxcvbn.MatchPassword(password);
+            var result = Zxcvbn.Core.EvaluatePassword(password);
 
             if (result.Score < 2)
             {

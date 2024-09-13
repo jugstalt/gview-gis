@@ -11,7 +11,7 @@ using gView.Framework.Geometry;
 using gView.Framework.IO;
 using gView.Framework.Web.Abstraction;
 using gView.Framework.Web.Services;
-using gView.Interoperability.GeoServices.Rest.Json;
+using gView.Interoperability.GeoServices.Rest.DTOs;
 using System.Text.Json;
 using System;
 using System.Collections.Generic;
@@ -213,8 +213,8 @@ namespace gView.Interoperability.GeoServices.Dataset
             string user = ConfigTextStream.ExtractValue(ConnectionString, "user");
             string pwd = ConfigTextStream.ExtractValue(ConnectionString, "pwd");
 
-            var jsonMapService = await TryPostAsync<JsonMapService>($"{serviceUrl}?f=json");
-            var jsonLayers = await TryPostAsync<JsonLayers>($"{serviceUrl}/layers?f=json");
+            var jsonMapService = await TryPostAsync<JsonMapServiceDTO>($"{serviceUrl}?f=json");
+            var jsonLayers = await TryPostAsync<JsonLayersDTO>($"{serviceUrl}/layers?f=json");
 
             if (jsonMapService != null)
             {
@@ -328,7 +328,7 @@ namespace gView.Interoperability.GeoServices.Dataset
 
                     if (result.Contains("\"error\":"))
                     {
-                        JsonError error = JsonSerializer.Deserialize<JsonError>(result);
+                        JsonErrorDTO error = JsonSerializer.Deserialize<JsonErrorDTO>(result);
                         if (error.Error == null)
                         {
                             throw new Exception("Unknown error");

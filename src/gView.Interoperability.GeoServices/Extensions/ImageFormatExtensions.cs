@@ -1,4 +1,4 @@
-﻿using gView.Interoperability.GeoServices.Rest.Json;
+﻿using gView.Interoperability.GeoServices.Rest.DTOs;
 
 namespace gView.Interoperability.GeoServices.Extensions
 {

@@ -16,6 +16,7 @@
     <ProjectReference Include="..\gView.Framework\gView.Framework.csproj" />
     <ProjectReference Include="..\gView.Framework.Web\gView.Framework.Web.csproj" />
     <ProjectReference Include="..\gView.Framework.AXL\gView.Framework.AXL.csproj" />
+    <ProjectReference Include="..\gView.Interoperability.Extensions\gView.Interoperability.Extensions.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -24,7 +25,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="8.0.6" />
+    <PackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="8.0.8" />
   </ItemGroup>
 
 </Project>

@@ -1,5 +1,5 @@
 ﻿using gView.Framework.Core.Exceptions;
-using gView.Interoperability.GeoServices.Rest.Json;
+using gView.Interoperability.GeoServices.Rest.DTOs;
 using gView.Server.AppCode;
 using gView.Server.Services.Security;
 using Microsoft.AspNetCore.Http;
@@ -27,9 +27,9 @@ public class AuthenticationExceptionMiddleware
         }
         catch (NotAuthorizedException nae)
         {
-            var error = new JsonError()
+            var error = new JsonErrorDTO()
             {
-                Error = new JsonError.ErrorDef() { Code = 403, Message = nae.Message }
+                Error = new JsonErrorDTO.ErrorDef() { Code = 403, Message = nae.Message }
             };
 
             context.Response.ContentType = "application/json";
@@ -37,9 +37,9 @@ public class AuthenticationExceptionMiddleware
         }
         catch (TokenRequiredException tre)
         {
-            var error = new JsonError()
+            var error = new JsonErrorDTO()
             {
-                Error = new JsonError.ErrorDef() { Code = 499, Message = tre.Message }
+                Error = new JsonErrorDTO.ErrorDef() { Code = 499, Message = tre.Message }
             };
 
             context.Response.ContentType = "application/json";
@@ -47,9 +47,9 @@ public class AuthenticationExceptionMiddleware
         }
         catch (InvalidTokenException ite)
         {
-            var error = new JsonError()
+            var error = new JsonErrorDTO()
             {
-                Error = new JsonError.ErrorDef() { Code = 498, Message = ite.Message }
+                Error = new JsonErrorDTO.ErrorDef() { Code = 498, Message = ite.Message }
             };
 
             // Remove Cookie
