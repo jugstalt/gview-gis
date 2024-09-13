@@ -16,6 +16,7 @@
     <ProjectReference Include="..\gView.Framework.Web\gView.Framework.Web.csproj" />
     <ProjectReference Include="..\gView.Framework.AXL\gView.Framework.AXL.csproj" />
     <ProjectReference Include="..\gView.Framework.XML\gView.Framework.XML.csproj" />
+    <ProjectReference Include="..\gView.Interoperability.Extensions\gView.Interoperability.Extensions.csproj" />
   </ItemGroup>
 
 </Project>

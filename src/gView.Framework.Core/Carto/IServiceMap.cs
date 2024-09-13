@@ -43,5 +43,7 @@ namespace gView.Framework.Core.Carto
             get;
             set;
         }
+
+        IMapServiceProperties MapServiceProperties { get; }
     }
 }

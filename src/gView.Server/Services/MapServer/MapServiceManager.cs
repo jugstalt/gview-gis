@@ -10,6 +10,8 @@ using System.Collections.Concurrent;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using gView.Framework.Core.Carto;
+using gView.Framework.Cartography;
 
 namespace gView.Server.Services.MapServer
 {
@@ -22,12 +24,12 @@ namespace gView.Server.Services.MapServer
         public MapServiceManager(
             IServiceProvider serviceProvider,
             MapServiceAccessService accessService,
-            IOptionsMonitor<MapServerManagerOptions> optionsMonitor,
+            IOptions<MapServerManagerOptions> optionsMonitor,
             ILogger<MapServiceManager> logger = null)
         {
             _serviceProvider = serviceProvider;
             _accessService = accessService;
-            Options = optionsMonitor.CurrentValue;
+            Options = optionsMonitor.Value;
             _logger = logger ?? new ConsoleLogger<MapServiceManager>();
 
             if (Options.IsValid)

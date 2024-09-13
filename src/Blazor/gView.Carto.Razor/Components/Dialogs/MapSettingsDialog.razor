@@ -33,8 +33,9 @@
                     <MudListItem Icon="@IconService.FromString("basic:package")" Style="white-space:nowrap"
                                  Value="Page.Resources" Text="Resources" 
                                  OnClick="() => _drawerIsOpen = false" />
-                    @*<MudListItem Icon="@IconService.FromString("basic:cloud-connect")" Style="white-space:nowrap"
-                    Value="Page.MapService" Text="Map Service" />*@
+                    <MudListItem Icon="@IconService.FromString("basic:cloud-connect")" Style="white-space:nowrap"
+                                 Value="Page.MapService" Text="Map Service"
+                                 OnClick="() => _drawerIsOpen = false"/>
                 </MudList>
             </MudDrawer>
         </MudDrawerContainer>
@@ -218,12 +219,24 @@
                             }
                         </GvScrollable>
                     </GvCardContent>
-                </GvCard>
-                
+                    </GvCard>
+
             }
             else if(Page.MapService.Equals(_currentTab))
             {
-                <MudText Typo="Typo.h1">TODO: MapService</MudText>
+                if (Model.Map.MapServiceProperties is MapServiceProperties mapServiceProperties)
+                {
+                    <GvCard Title="Map Service Limits">
+                        <GvCardContent>
+                            <MudNumericField Label="Maximum Image Size (0 ... no limit/server default)"
+                                             @bind-Value="mapServiceProperties.MaxImageWidth" />
+                            <MudNumericField Label="Maximum Image Height (0 ... no limit/server default)"
+                                             @bind-Value="mapServiceProperties.MaxImageHeight" />
+                            <MudNumericField Label="Maximum Records Count (0 ... no limit/server default)"
+                                             @bind-Value="mapServiceProperties.MaxRecordCount" />
+                        </GvCardContent>
+                    </GvCard>
+                }
             }
         </MudContainer>
     </DialogBody>

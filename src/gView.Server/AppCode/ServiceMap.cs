@@ -66,6 +66,8 @@ namespace gView.Server.AppCode
             serviceMap.LayerDefaultSpatialReference = original.LayerDefaultSpatialReference != null ? original.LayerDefaultSpatialReference.Clone() as ISpatialReference : null;
 
             serviceMap._drawScaleBar = false;
+            serviceMap.MapServiceProperties = 
+                original.MapServiceProperties ?? new MapServiceProperties();
 
             // Metadata
             await serviceMap.SetMetadataProviders(await original.GetMetadataProviders());

@@ -25,6 +25,9 @@ namespace gView.Server.AppCode
         [JsonPropertyName("task-queue")]
         public TaskQueueConfig TaskQueue { get; set; }
 
+        [JsonPropertyName("mapserver-defaults")]
+        public MapServerDefaultsConfig MapServerDefaults { get; set; }
+
         [JsonPropertyName("external-auth-authority")]
         public ExtAuthAuthority ExternalAuthAuthority { get; set; }
 
@@ -50,6 +53,18 @@ namespace gView.Server.AppCode
 
             [JsonPropertyName("max-queue-length")]
             public int MaxQueueLength { get; set; }
+        }
+
+        public class MapServerDefaultsConfig
+        {
+            [JsonPropertyName("maxImageWidth")]
+            public int MaxImageWidth { get; set; }
+
+            [JsonPropertyName("maxImageHeight")]
+            public int MaxImageHeight { get; set; }
+
+            [JsonPropertyName("maxRecordCount")]
+            public int MaxRecordCount { get; set; }
         }
 
         public class ExtAuthAuthority

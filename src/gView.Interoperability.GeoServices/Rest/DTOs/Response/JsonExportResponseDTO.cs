@@ -26,5 +26,8 @@ namespace gView.Interoperability.GeoServices.Rest.DTOs.Response
 
         [JsonPropertyName("scale")]
         public double Scale { get; set; }
+
+        [JsonPropertyName("dpi")]
+        public int Dpi { get; set; }    
     }
 }

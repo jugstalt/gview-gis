@@ -25,6 +25,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
 using gView.Framework.Common;
+using gView.Interoperability.Extensions;
 
 namespace gView.Interoperability.ArcXML
 {
@@ -313,29 +314,32 @@ namespace gView.Interoperability.ArcXML
             this.ImageFormat = ImageFormat.Png;
         }
 
-        async public Task<string> ImageRequest(IServiceMap map, IServiceRequestContext context, bool useTOC)
+        async public Task<string> ImageRequest(IServiceMap serviceMap, IServiceRequestContext context, bool useTOC)
         {
             string ret = "";
             _useTOC = useTOC;
 
-            await ModifyLAYERS(map);
+            await ModifyLAYERS(serviceMap);
 
             AXL response = new AXL("ARCXML", "1.1");
 
-            map.Display.Dpi = Dpi;
-            map.Display.ImageWidth = iWidth;
-            map.Display.ImageHeight = iHeight;
-            map.Display.Limit = Envelope;
-            map.Display.ZoomTo(Envelope);
-            //map.Display.drawScaleBar = false;
-            map.BeforeRenderLayers += new BeforeRenderLayersEvent(map_BeforeRenderLayers);
-            //map.ScaleSymbolFactor = symbolScaleFactor;
-            await map.Render();
+            serviceMap.Display.Dpi = Dpi;
+            serviceMap.Display.ImageWidth = iWidth;
+            serviceMap.Display.ImageHeight = iHeight;
 
-            string title = map.Name.Replace(",", "_").Replace("/", "_") + "_" + System.Guid.NewGuid().ToString("N") + _imageExtension;
-            if (await map.SaveImage(context.MapServer.OutputPath + @"/" + title, _imageFormat) >= 0)
+            serviceMap.ResizeImageSizeToMapServiceLimits();
+
+            serviceMap.Display.Limit = Envelope;
+            serviceMap.Display.ZoomTo(Envelope);
+            //map.Display.drawScaleBar = false;
+            serviceMap.BeforeRenderLayers += new BeforeRenderLayersEvent(map_BeforeRenderLayers);
+            //map.ScaleSymbolFactor = symbolScaleFactor;
+            await serviceMap.Render();
+
+            string title = serviceMap.Name.Replace(",", "_").Replace("/", "_") + "_" + System.Guid.NewGuid().ToString("N") + _imageExtension;
+            if (await serviceMap.SaveImage(context.MapServer.OutputPath + @"/" + title, _imageFormat) >= 0)
             {
-                ret = response.IMAGE(context.MapServer.OutputPath, context.ServiceRequest.OutputUrl, title, map.Display.Envelope);
+                ret = response.IMAGE(context.MapServer.OutputPath, context.ServiceRequest.OutputUrl, title, serviceMap.Display.Envelope);
             }
 
             return ret;

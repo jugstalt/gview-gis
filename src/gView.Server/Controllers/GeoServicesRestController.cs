@@ -26,6 +26,7 @@ using gView.Server.Services.Logging;
 using gView.Server.Services.MapServer;
 using gView.Server.Services.Security;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 using System;
 using System.Collections.Generic;
@@ -46,13 +47,15 @@ public class GeoServicesRestController : BaseController
     private readonly LoginManager _loginManagerService;
     private readonly EncryptionCertificateService _encryptionCertificate;
     private readonly PerformanceLoggerService _performanceLogger;
+    private readonly MapServerManagerOptions _mapServerManagerOptions;
 
     public GeoServicesRestController(
         MapServiceManager mapServerService,
         UrlHelperService urlHelperService,
         LoginManager loginManagerService,
         EncryptionCertificateService encryptionCertificate,
-        PerformanceLoggerService performanceLogger)
+        PerformanceLoggerService performanceLogger,
+        IOptions<MapServerManagerOptions> mapServerManagerOptions)
         : base(mapServerService, loginManagerService, encryptionCertificate)
     {
         _mapServerService = mapServerService;
@@ -60,6 +63,7 @@ public class GeoServicesRestController : BaseController
         _loginManagerService = loginManagerService;
         _encryptionCertificate = encryptionCertificate;
         _performanceLogger = performanceLogger;
+        _mapServerManagerOptions = mapServerManagerOptions.Value;
     }
 
     public const double Version = 10.61;
@@ -233,6 +237,9 @@ public class GeoServicesRestController : BaseController
                         YMax = fullExtent != null ? fullExtent.MaxY : 0D,
                         SpatialReference = new JsonMapServiceDTO.SpatialReference(epsgCode)
                     },
+                    MaxImageWidth = map.MapServiceProperties.MaxImageWidth,
+                    MaxImageHeight = map.MapServiceProperties.MaxImageHeight,
+                    MaxRecordCount = map.MapServiceProperties.MaxRecordCount
                 });
             }
         });

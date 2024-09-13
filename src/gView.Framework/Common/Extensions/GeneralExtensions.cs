@@ -5,6 +5,7 @@ using gView.Framework.Core.UI;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -58,6 +59,11 @@ namespace gView.Framework.Common.Extensions
         static public string OrTake(this string str, string orTake)
         {
             return string.IsNullOrEmpty(str) ? orTake : str;
+        }
+
+        static public int OrTake(this int number, int orTake)
+        {
+            return number != 0 ? number : orTake;
         }
 
         static public string ToInvariantString(this object obj)
