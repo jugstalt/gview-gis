@@ -129,12 +129,12 @@ namespace gView.Server
                         config.OnlineResource = Configuration["onlineresource-url"];
                         config.TileCachePath = Configuration["tilecache-root"];
 
-                        config.TaskQueue_MaxThreads = Math.Max(1, int.Parse(Configuration["task-queue:max-parallel-tasks"]));
-                        config.TaskQueue_QueueLength = Math.Max(10, int.Parse(Configuration["task-queue:max-queue-length"]));
+                        config.TaskQueue_MaxThreads = Math.Max(1, int.Parse(Configuration["task-queue:max-parallel-tasks"] ?? "1"));
+                        config.TaskQueue_QueueLength = Math.Max(10, int.Parse(Configuration["task-queue:max-queue-length"] ?? "10"));
 
-                        config.MapServerDefaults_MaxImageWidth = Math.Max(0, int.Parse(Configuration["mapserver-defaults:maxImageWidth"]));
-                        config.MapServerDefaults_MaxImageHeight = Math.Max(0, int.Parse(Configuration["mapserver-defaults:maxImageHeight"]));
-                        config.MapServerDefaults_MaxRecordCount = Math.Max(0, int.Parse(Configuration["mapserver-defaults:maxRecordCount"]));
+                        config.MapServerDefaults_MaxImageWidth = Math.Max(0, int.Parse(Configuration["mapserver-defaults:maxImageWidth"] ?? "0"));
+                        config.MapServerDefaults_MaxImageHeight = Math.Max(0, int.Parse(Configuration["mapserver-defaults:maxImageHeight"] ?? "0"));
+                        config.MapServerDefaults_MaxRecordCount = Math.Max(0, int.Parse(Configuration["mapserver-defaults:maxRecordCount"] ?? "0"));
 
                         config.ServicesPath = $"{Configuration["services-folder"]}/services";
                         config.LoginManagerRootPath = $"{Configuration["services-folder"]}/_login";
