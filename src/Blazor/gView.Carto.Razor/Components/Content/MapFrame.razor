@@ -96,6 +96,8 @@
             var zoomToWgs84 = zoomTo.Srs switch
             {
                 4326 => zoomTo.ToMinSize(),
+                int srs when srs > 0 && srs != _mapControlSRef.EpsgCode => 
+                     GeoTransformer.ToWGS84(zoomTo, new SpatialReference($"epsg:{srs}")).Envelope.ToMinSize(),
                 _ => GeoTransformer.ToWGS84(zoomTo, _mapControlSRef).Envelope.ToMinSize()
             };
 
