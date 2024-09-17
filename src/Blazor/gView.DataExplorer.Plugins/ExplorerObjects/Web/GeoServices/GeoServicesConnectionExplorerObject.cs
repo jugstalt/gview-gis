@@ -5,7 +5,7 @@ using gView.Framework.DataExplorer.Events;
 using gView.Framework.IO;
 using gView.Framework.Web.Services;
 using gView.Interoperability.GeoServices.Dataset;
-using gView.Interoperability.GeoServices.Rest.Json;
+using gView.Interoperability.GeoServices.Rest.DTOs;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -94,7 +94,7 @@ public class GeoServicesConnectionExplorerObject : ExplorerParentObject<IExplore
                 url = url.UrlAppendParameters($"token={token}");
             }
 
-            var jsonServices = await HttpService.CreateInstance().GetAsync<JsonServices>(url);
+            var jsonServices = await HttpService.CreateInstance().GetAsync<JsonServicesDTO>(url);
 
             if (jsonServices != null)
             {

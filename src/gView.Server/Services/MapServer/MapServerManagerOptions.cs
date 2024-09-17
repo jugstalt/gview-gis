@@ -25,6 +25,10 @@
         public int TaskQueue_MaxThreads { get; set; }
         public int TaskQueue_QueueLength { get; set; }
 
+        public int MapServerDefaults_MaxImageWidth { get; set; }
+        public int MapServerDefaults_MaxImageHeight { get; set; }   
+        public int MapServerDefaults_MaxRecordCount { get; set; }
+
         public int Port { get; set; }
 
     }

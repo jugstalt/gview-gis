@@ -1,6 +1,6 @@
 ﻿using gView.Framework.Web;
 using gView.Interoperability.GeoServices.Extensions;
-using gView.Interoperability.GeoServices.Rest.Json;
+using gView.Interoperability.GeoServices.Rest.DTOs;
 using System.Text.Json;
 using System;
 using System.Collections.Concurrent;
@@ -55,12 +55,12 @@ namespace gView.Interoperability.GeoServices.Dataset
                     }
                     if (tokenResponse.Contains("\"error\":"))
                     {
-                        JsonError error = JsonSerializer.Deserialize<JsonError>(tokenResponse);
+                        JsonErrorDTO error = JsonSerializer.Deserialize<JsonErrorDTO>(tokenResponse);
                         throw new Exception($"GetToken-Error:{error.Error?.Code}\n{error.Error?.Message}\n{error.Error?.Details?.ToString()}");
                     }
                     else
                     {
-                        JsonSecurityToken jsonToken = JsonSerializer.Deserialize<JsonSecurityToken>(tokenResponse);
+                        JsonSecurityTokenDTO jsonToken = JsonSerializer.Deserialize<JsonSecurityTokenDTO>(tokenResponse);
                         if (jsonToken.Token != null)
                         {
                             _tokenParams.TryAdd(dictKey, jsonToken.Token);

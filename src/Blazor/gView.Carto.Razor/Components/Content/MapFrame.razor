@@ -96,6 +96,8 @@
             var zoomToWgs84 = zoomTo.Srs switch
             {
                 4326 => zoomTo.ToMinSize(),
+                int srs when srs > 0 && srs != _mapControlSRef.EpsgCode => 
+                     GeoTransformer.ToWGS84(zoomTo, new SpatialReference($"epsg:{srs}")).Envelope.ToMinSize(),
                 _ => GeoTransformer.ToWGS84(zoomTo, _mapControlSRef).Envelope.ToMinSize()
             };
 
@@ -169,7 +171,7 @@
                     }
                     else
                     {
-                        await _mapControl.UpdateImageLayer(imageLayer, "", bounds.SouthWest, bounds.NorthEast);
+                        await _mapControl.UpdateImageLayer(imageLayer, "", bounds.SouthWest, bounds.NorthEast, size);
                     }
                 });
 
@@ -210,21 +212,24 @@
 
     #region MapRenderer Evend Handlers
 
-    private Task HandleRefreshMapImage(IMapRenderer? mapRenderer, byte[]? data)
+    async private Task HandleRefreshMapImage(IMapRenderer? mapRenderer, byte[]? data)
     {
         if (_mapControl is not null)
         {
+            var bounds = await _mapControl.GetBounds();
+            var size = await _mapControl.GetImageSize();
+
             _imageLayers.ForAny(
                 mapRenderer is not null 
                     ? mapRenderer.DrawPhase
                     : DrawPhase.All, 
                 async (imageLayer) =>
             {
-                await _mapControl.UpdateImageLayer(imageLayer, $"data:image/png;base64, {Convert.ToBase64String(data ?? Array.Empty<byte>())}", null, null);
+                await _mapControl.UpdateImageLayer(imageLayer, $"data:image/png;base64, {Convert.ToBase64String(data ?? Array.Empty<byte>())}", bounds.SouthWest, bounds.NorthEast, size);
             });
         }
 
-        return Task.CompletedTask;
+        //return Task.CompletedTask;
     }
 
     private Task HandleHighlightFeaturesAsync(ILayer layer, IQueryFilter? filter)

@@ -294,29 +294,29 @@ namespace gView.Interoperability.ArcXML
             getImage.layerDefs = properties.SelectSingleNode("LAYERLIST");
             getImage.LAYERS = rType.SelectNodes("//LAYER");
 
-            using (IServiceMap map = await context.CreateServiceMapInstance())  // _mapServer[context];
+            using (IServiceMap serviceMap = await context.CreateServiceMapInstance())  // _mapServer[context];
             {
-                if (map == null || map.Display == null)
+                if (serviceMap == null || serviceMap.Display == null)
                 {
                     //((AXLRequest)axlrequest).ResetEvent.Set();
                     serviceRequest.Response = CreateException("Service not available...");
                     return;
                 }
 
-                map.Display.Dpi = dpi;
+                serviceMap.Display.Dpi = dpi;
                 if (sRef != null)
                 {
-                    map.Display.SpatialReference = sRef;
+                    serviceMap.Display.SpatialReference = sRef;
                 }
 
                 if (displayRotation != 0.0)
                 {
-                    map.Display.DisplayTransformation.DisplayRotation = displayRotation;
+                    serviceMap.Display.DisplayTransformation.DisplayRotation = displayRotation;
                 }
 
                 if (properties.SelectSingleNode("DISPLAY[@refscale]") != null)
                 {
-                    map.Display.ReferenceScale = double.Parse(properties.SelectSingleNode("DISPLAY[@refscale]").Attributes["refscale"].Value.Replace(",", "."), _nhi);
+                    serviceMap.Display.ReferenceScale = double.Parse(properties.SelectSingleNode("DISPLAY[@refscale]").Attributes["refscale"].Value.Replace(",", "."), _nhi);
                 }
 
 
@@ -326,26 +326,26 @@ namespace gView.Interoperability.ArcXML
                     ArgbColor col = NodeAttributeColor(background, "color");
                     if (!col.Equals(ArgbColor.Empty))
                     {
-                        map.Display.BackgroundColor = col;
+                        serviceMap.Display.BackgroundColor = col;
                     }
                     col = NodeAttributeColor(background, "transcolor");
                     if (!col.Equals(ArgbColor.Empty))
                     {
-                        map.Display.TransparentColor = col;
-                        map.Display.MakeTransparent = true;
+                        serviceMap.Display.TransparentColor = col;
+                        serviceMap.Display.MakeTransparent = true;
                     }
                     else
                     {
-                        map.Display.MakeTransparent = false;
+                        serviceMap.Display.MakeTransparent = false;
                     }
                 }
 
-                if (map.Display.MakeTransparent && getImage.ImageFormat == ImageFormat.Png)
+                if (serviceMap.Display.MakeTransparent && getImage.ImageFormat == ImageFormat.Png)
                 {
                     // Beim Png sollt dann beim zeichnen keine Hintergrund Rectangle gemacht werden
                     // Darum Farbe mit A=0
                     // Sonst schaut das Bild beim PNG32 und Antialiasing immer zerrupft aus...
-                    map.Display.BackgroundColor = ArgbColor.Transparent;
+                    serviceMap.Display.BackgroundColor = ArgbColor.Transparent;
                 }
 
                 if (properties.SelectSingleNode("DRAW[@map='false']") != null)
@@ -356,11 +356,11 @@ namespace gView.Interoperability.ArcXML
                         return;
                     }
 
-                    serviceRequest.Response = await getImage.LegendRequest(map, context, _useTOC);
+                    serviceRequest.Response = await getImage.LegendRequest(serviceMap, context, _useTOC);
                 }
                 else
                 {
-                    serviceRequest.Response = await getImage.ImageRequest(map, context, _useTOC);
+                    serviceRequest.Response = await getImage.ImageRequest(serviceMap, context, _useTOC);
                 }
                 //map.Release();
             }
@@ -390,17 +390,17 @@ namespace gView.Interoperability.ArcXML
                     return;
                 }
                 string id = layer.Attributes["id"].Value;
-                using (IServiceMap map2 = await context.CreateServiceMapInstance()) //  _mapServer[context];
+                using (IServiceMap serviceMap = await context.CreateServiceMapInstance()) //  _mapServer[context];
                 {
-                    if (map2 == null)
+                    if (serviceMap == null)
                     {
                         //((AXLRequest)axlrequest).ResetEvent.Set();
                         serviceRequest.Response = CreateException("Service not available...");
                         return;
                     }
-                    getFeatures.ServiceMap = map2;
+                    getFeatures.ServiceMap = serviceMap;
                     string filterQuery = String.Empty;
-                    getFeatures.Classes = FindTableClass(map2, id, out filterQuery);
+                    getFeatures.Classes = FindTableClass(serviceMap, id, out filterQuery);
                     if (getFeatures.Classes == null || getFeatures.Classes.Count == 0)
                     {
                         //((AXLRequest)axlrequest).ResetEvent.Set();
@@ -488,14 +488,14 @@ namespace gView.Interoperability.ArcXML
 
                             if (((ISpatialFilter)filter).FilterSpatialReference == null)
                             {
-                                ((ISpatialFilter)filter).FilterSpatialReference = map2.Display.SpatialReference;
+                                ((ISpatialFilter)filter).FilterSpatialReference = serviceMap.Display.SpatialReference;
                             }
                         }
                         XmlNode buffer = query.SelectSingleNode("BUFFER[@distance]");
                         if (buffer != null && buffer.SelectSingleNode("TARGETLAYER[@id]") != null)
                         {
                             string targetID = buffer.SelectSingleNode("TARGETLAYER[@id]").Attributes["id"].Value;
-                            List<ITableClass> tClass = FindTableClass(map2, targetID);
+                            List<ITableClass> tClass = FindTableClass(serviceMap, targetID);
                             if (tClass == null || tClass.Count == 0)
                             {
                                 serviceRequest.Response = CreateException("Layer with ID='" + targetID + "' is not available...");
@@ -564,7 +564,7 @@ namespace gView.Interoperability.ArcXML
                                 {
                                     filter.BufferNode = buffer.Clone();
                                     filter.BufferNode.SelectSingleNode("TARGETLAYER[@id]").Attributes["id"].Value =
-                                        ArcXMLLayerID(map2, targetID);
+                                        ArcXMLLayerID(serviceMap, targetID);
                                 }
                                 else
                                 {
@@ -600,7 +600,7 @@ namespace gView.Interoperability.ArcXML
 
                         if (rType.Attributes["featurelimit"] != null && Convert.ToInt32(rType.Attributes["featurelimit"].Value) > 0)
                         {
-                            filter.featurelimit = Math.Min(Convert.ToInt32(rType.Attributes["featurelimit"].Value), _mapServer.FeatureQueryLimit);
+                            filter.featurelimit = Math.Min(Convert.ToInt32(rType.Attributes["featurelimit"].Value), serviceMap.MapServiceProperties.MaxRecordCount);
                         }
 
                         if (rType.Attributes["envelope"] != null)
@@ -672,7 +672,7 @@ namespace gView.Interoperability.ArcXML
                             }
                         }
 
-                        filter.ContextLayerDefaultSpatialReference = map2 is IMap ? ((IMap)map2).LayerDefaultSpatialReference : null;
+                        filter.ContextLayerDefaultSpatialReference = serviceMap is IMap ? ((IMap)serviceMap).LayerDefaultSpatialReference : null;
                         getFeatures.Filter = filter;
 
                         if (!String.IsNullOrWhiteSpace(filterQuery))
@@ -685,7 +685,7 @@ namespace gView.Interoperability.ArcXML
                         ISpatialReference sRef2 = this.SpatialReferenceFromNode(query, SpatialreferenceType.Filter);
                         if (sRef2 != null)
                         {
-                            map2.Display.SpatialReference = sRef2;
+                            serviceMap.Display.SpatialReference = sRef2;
                             if (getFeatures.Filter is ISpatialFilter)
                             {
                                 ((ISpatialFilter)getFeatures.Filter).FilterSpatialReference = sRef2;
@@ -736,16 +736,16 @@ namespace gView.Interoperability.ArcXML
                 serviceRequest.Response = CreateException("missing layerid attribute");
                 return;
             }
-            using (IServiceMap map3 = await context.CreateServiceMapInstance()) // _mapServer[context];
+            using (IServiceMap serviceMap = await context.CreateServiceMapInstance()) // _mapServer[context];
             {
-                if (map3 == null)
+                if (serviceMap == null)
                 {
                     //((AXLRequest)axlrequest).ResetEvent.Set();
                     serviceRequest.Response = CreateException("Service not available...");
                     return;
                 }
 
-                List<IClass> tables = FindClass(map3, rType.Attributes["layerid"].Value);
+                List<IClass> tables = FindClass(serviceMap, rType.Attributes["layerid"].Value);
                 if (tables == null || tables.Count == 0)
                 {
                     serviceRequest.Response = CreateException("no layer with id=" + rType.Attributes["layerid"].Value);
@@ -835,13 +835,13 @@ namespace gView.Interoperability.ArcXML
                 raster_request.SpatialReference = SpatialReferenceFromNode(rType, SpatialreferenceType.Coordsys);
                 if (raster_request.SpatialReference == null)
                 {
-                    raster_request.SpatialReference = map3.Display.SpatialReference;
+                    raster_request.SpatialReference = serviceMap.Display.SpatialReference;
                 }
 
                 XmlNode dispNode = rType.SelectSingleNode("gv_display");
                 if (dispNode != null)
                 {
-                    Display display = new Display(map3 as IMap);
+                    Display display = new Display(serviceMap as IMap);
 
                     if (dispNode.Attributes["iwidth"] == null || dispNode.Attributes["iheight"] == null)
                     {

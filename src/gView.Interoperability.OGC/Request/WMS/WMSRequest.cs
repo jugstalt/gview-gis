@@ -30,6 +30,7 @@ using System.Xml;
 using System.Xml.Serialization;
 using System.Xml.XPath;
 using System.Xml.Xsl;
+using gView.Interoperability.Extensions;
 
 namespace gView.Interoperability.OGC
 {
@@ -630,6 +631,8 @@ namespace gView.Interoperability.OGC
                     map.Display.Dpi = _parameters.dpi;
                     map.Display.ImageWidth = _parameters.Width;
                     map.Display.ImageHeight = _parameters.Height;
+                    map.ResizeImageSizeToMapServiceLimits();
+
                     map.Display.Limit = _parameters.BBOX;
                     map.Display.ZoomTo(_parameters.BBOX);
 

@@ -1,5 +1,5 @@
 @using gView.Framework.Web.Services
-@using gView.Interoperability.GeoServices.Rest.Json
+@using gView.Interoperability.GeoServices.Rest.DTOs
 @using gView.Interoperability.GeoServices.Extensions
 @using System.Text.Json
 
@@ -108,7 +108,7 @@
         var http = HttpService.CreateInstance();
 
         var layersJson = await http.GetStringAsync(url);
-        var serviceLayers = JsonSerializer.Deserialize<JsonLayers>(layersJson);
+        var serviceLayers = JsonSerializer.Deserialize<JsonLayersDTO>(layersJson);
 
         if (serviceLayers is null)
         {

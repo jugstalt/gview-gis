@@ -351,6 +351,7 @@ window.gViewLeafletInterops = {
         return gViewLeaflet.maps[mapId].getBounds();
     },
     getImageSize: function (mapId) {
+        //console.log('imagesize', gViewLeaflet.maps[mapId].getSize());
         return gViewLeaflet.maps[mapId].getSize();
     },
     destroy: function (mapId) {
@@ -367,9 +368,12 @@ window.gViewLeafletInterops = {
             map.invalidateSize();
         }
     },
-    updateImageLayer: function (mapId, layerId, url, southWest, northEast) {
-        let layer = gViewLeaflet.layers[mapId].find(l => l.id === layerId);
+    updateImageLayer: function (mapId, layerId, url, southWest, northEast, imageSize) {
+        const map = gViewLeaflet.maps[mapId];
+        const layer = gViewLeaflet.layers[mapId].find(l => l.id === layerId);
+
         if (layer !== undefined) {
+            //console.log('updateImageLayer', southWest, northEast, imageWidth, imageHeight);
             if (url) {
                 //console.log(layer, url);
                 layer.setUrl(url);
@@ -380,7 +384,22 @@ window.gViewLeafletInterops = {
                 const bounds = L.latLngBounds(southWestLL, northEastLL);
 
                 layer.setBounds(bounds);
+
+                var image = layer._image;
+
+                if (image && imageSize && imageSize.width && imageSize.height) {
+                    //console.log('imageSize', imageSize)
+                    const layerBounds = new L.Bounds(
+                        map.latLngToLayerPoint(southWestLL),
+                        map.latLngToLayerPoint(northEastLL));
+
+                    //console.log('bounds.min', layerBounds.min);
+                    L.DomUtil.setPosition(image, layerBounds.min);
+                    image.style.width = imageSize.width + 'px';
+                    image.style.height = imageSize.height + 'px';
+                }
             }
+            
         }
     },
 }

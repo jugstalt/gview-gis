@@ -7,8 +7,8 @@ using gView.Framework.Common;
 using gView.Framework.Web;
 using gView.GraphicsEngine;
 using gView.GraphicsEngine.Abstraction;
-using gView.Interoperability.GeoServices.Rest.Json.Request;
-using gView.Interoperability.GeoServices.Rest.Json.Response;
+using gView.Interoperability.GeoServices.Rest.DTOs.Request;
+using gView.Interoperability.GeoServices.Rest.DTOs.Response;
 using System.Text.Json;
 using System;
 using System.Collections.Generic;
@@ -78,7 +78,7 @@ namespace gView.Interoperability.GeoServices.Dataset
 
             //IServiceRequestContext context = display.Map as IServiceRequestContext;
 
-            var jsonExportMap = new JsonExportMap();
+            var jsonExportMap = new JsonExportMapDTO();
             if (display?.Envelope != null)
             {
                 var env = display.Envelope;
@@ -113,7 +113,7 @@ namespace gView.Interoperability.GeoServices.Dataset
 
             var urlParameters = SerializeToUrlParameters(jsonExportMap);
 
-            var response = await _dataset.TryPostAsync<JsonExportResponse>(
+            var response = await _dataset.TryPostAsync<JsonExportResponseDTO>(
                 serviceUrl
                     .UrlAppendPath("export")
                     .UrlAppendParameters("f=json")

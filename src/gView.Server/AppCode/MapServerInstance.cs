@@ -1,16 +1,18 @@
 ﻿using gView.Framework.Cartography;
+using gView.Framework.Common;
+using gView.Framework.Common.Extensions;
 using gView.Framework.Core.Carto;
+using gView.Framework.Core.Common;
 using gView.Framework.Core.Data;
 using gView.Framework.Core.Exceptions;
 using gView.Framework.Core.Geometry;
 using gView.Framework.Core.IO;
 using gView.Framework.Core.MapServer;
-using gView.Framework.Core.Common;
 using gView.Framework.Core.UI;
-using gView.Framework.Common;
 using gView.Server.AppCode.Extensions;
 using gView.Server.Services.Logging;
 using gView.Server.Services.MapServer;
+using Humanizer;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -96,7 +98,7 @@ public class MapServerInstance : IMapServer
 
                 if (!String.IsNullOrWhiteSpace(folder))
                 {
-                    name = folder + "/" + name;
+                    name = $"{folder}/{name}";
                 }
 
                 return await FindServiceMap(name, alias, context);
@@ -295,8 +297,6 @@ public class MapServerInstance : IMapServer
         }
     }
 
-    public int FeatureQueryLimit => 1000;
-
     #endregion
 
     async private Task<IServiceMap> FindServiceMap(string name, string alias, IServiceRequestContext context)
@@ -477,12 +477,16 @@ public class MapServerInstance : IMapServer
         }
 
         //return await _mapServiceDeploymentMananger.LoadMap(name) as Map;
-        
+
         using (var mutex = await FuzzyMutexAsync.LockAsync(name))
         {
             // try again, already loaded?
-            return _mapServiceDeploymentMananger.GetMapByName(name) ??
+            map = _mapServiceDeploymentMananger.GetMapByName(name) ??
                    await _mapServiceDeploymentMananger.LoadMap(name) as Map;
+
+            SetMapDefaults(map);
+            
+            return map;
         }
     }
 
@@ -509,5 +513,26 @@ public class MapServerInstance : IMapServer
         }
 
         return name;
+    }
+
+    private void SetMapDefaults(IMap map)
+    {
+        if (map.MapServiceProperties is MapServiceProperties mapServiceProperties)
+        {
+            mapServiceProperties.MaxImageWidth =
+                mapServiceProperties.MaxImageWidth
+                .OrTake(_mapServiceMananger.Options.MapServerDefaults_MaxImageWidth)
+                .OrTake(4096);
+
+            mapServiceProperties.MaxImageHeight =
+                mapServiceProperties.MaxImageHeight
+                .OrTake(_mapServiceMananger.Options.MapServerDefaults_MaxImageHeight)
+                .OrTake(4096);
+
+            mapServiceProperties.MaxRecordCount =
+                mapServiceProperties.MaxRecordCount
+                .OrTake(_mapServiceMananger.Options.MapServerDefaults_MaxRecordCount)
+                .OrTake(1000);
+        }
     }
 }

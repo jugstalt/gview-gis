@@ -1,5 +1,5 @@
 ﻿using gView.Framework.Logging.ResourceLogging;
-using gView.Interoperability.GeoServices.Rest.Json;
+using gView.Interoperability.GeoServices.Rest.DTOs;
 using gView.Server.Services.Logging;
 using System;
 
@@ -7,7 +7,7 @@ namespace gView.Server.Extensions
 {
     static public class PerformanceLoggerExtension
     {
-        static public void AddPerformanceLoggerItem(this JsonStopWatch response,
+        static public void AddPerformanceLoggerItem(this JsonStopWatchDTO response,
                                                     PerformanceLoggerService logger,
                                                     string folder,
                                                     string serviceId,

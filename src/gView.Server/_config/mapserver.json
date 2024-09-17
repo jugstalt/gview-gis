@@ -21,6 +21,12 @@
     "allow-access-token": true
   },
 
+  "mapserver-defaults": {
+    "maxImageWidth": 1024,
+    "maxImageHeight": 768,
+    "maxRecordCount": 123
+  },
+
   "Logging": {
     "LogServiceErrors": true,
     "LogServiceRequests": false,
