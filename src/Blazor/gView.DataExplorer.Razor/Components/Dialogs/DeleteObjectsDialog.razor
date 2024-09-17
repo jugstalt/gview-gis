@@ -11,7 +11,7 @@
             {
                 <MudListItem Dense="true"> 
                     <div style="display: flex; align-items: center;">
-                        <MudCheckBox @bind-Checked="selectItem.Selected" />
+                        <MudCheckBox @bind-Value="selectItem.Selected"  />
                         <MudIcon Icon="@Icons.FromString(selectItem.Item.Icon)" Style="margin-right: 6px;" />
                         <MudText>@selectItem.Item.Name</MudText>
                     </div>

@@ -10,9 +10,9 @@
         @foreach (var tabPage in _visibleTabPages)
         {
             <MudTabPanel Text="@tabPage.Title"
-                           Activated="async () => await OnShowTabPage(tabPage)"
-                           ToolTip=""
-                           Style="">
+                         Activated="async () => await OnShowTabPage(tabPage)"
+                         ToolTip=""
+                         Style="">
                 <DynamicComponent Type="@(tabPage.RazorComponent)"
                                    Parameters="@(new Dictionary<string, object?>() { ["FrameworkElement"] = tabPage, ["CurrentExplorerObject"] = CurrentExplorerObject })" />
             </MudTabPanel>

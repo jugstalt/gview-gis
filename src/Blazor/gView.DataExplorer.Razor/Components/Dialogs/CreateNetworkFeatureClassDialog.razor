@@ -73,10 +73,10 @@
 
                 @if (Model.Result.UseSnapTolerance == true)
                 {
-                    <MudTextField Label="Snap Tolerance"
+                    <MudNumericField Label="Snap Tolerance"
                                    @bind-Value="Model.Result.SnapTolerance"
                                    Format="#.00000" Culture="@_en" T="double" Immediate="false"
-                                   InputType="InputType.Number" Step="0.1"
+                                   Step="0.1"
                                    Variant="Variant.Text" />
                 }
         }

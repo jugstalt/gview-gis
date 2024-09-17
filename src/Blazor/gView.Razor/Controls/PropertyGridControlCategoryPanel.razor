@@ -100,39 +100,39 @@
                             }
                             else if (propertyInfo.PropertyType == typeof(short))
                             {
-                                <MudTextField T="short" Variant="Variant.Text"
+                                <MudNumericField T="short" Variant="Variant.Text"
                                               Value="(short)(Properties[propertyInfo] ?? 0)"
                                               ValueChanged="(val) => PropertyChanged(propertyInfo, val)"
                                               Immediate="false"
-                                              InputType="InputType.Number" Step="0.1">
-                                </MudTextField>
+                                              Step="1">
+                                </MudNumericField>
                             }
                             else if (propertyInfo.PropertyType == typeof(int))
                             {
-                                <MudTextField T="int" Variant="Variant.Text"
+                                <MudNumericField T="int" Variant="Variant.Text"
                                               Value="(int)(Properties[propertyInfo] ?? 0)"
                                               ValueChanged="(val) => PropertyChanged(propertyInfo, val)"
                                               Immediate="false"
-                                              InputType="InputType.Number" Step="1">
-                                </MudTextField>
+                                              Step="1">
+                                </MudNumericField>
                             }
                             else if (propertyInfo.PropertyType == typeof(long))
                             {
-                                <MudTextField T="long" Variant="Variant.Text"
+                                <MudNumericField T="long" Variant="Variant.Text"
                                               Value="(long)(Properties[propertyInfo] ?? 0)"
                                               ValueChanged="(val) => PropertyChanged(propertyInfo, val)"
                                               Immediate="false"
-                                              InputType="InputType.Number" Step="1">
-                                </MudTextField>
+                                              Step="1">
+                                </MudNumericField>
                             }
                             else if (propertyInfo.PropertyType == typeof(byte))
                             {
-                                <MudTextField T="byte" Variant="Variant.Text"
+                                <MudNumericField T="byte" Variant="Variant.Text"
                                               Value="(byte)(Properties[propertyInfo] ?? 0)"
                                               ValueChanged="(val) => PropertyChanged(propertyInfo, val)"
                                               Immediate="false"
-                                              InputType="InputType.Number" Step="1">
-                                </MudTextField>
+                                              Step="1">
+                                </MudNumericField>
                             }
                             else if (propertyInfo.PropertyType == typeof(float))
                             {
@@ -148,22 +148,22 @@
                                 }
                                 else
                                 {
-                                    <MudTextField T="float" Variant="Variant.Text"
+                                    <MudNumericField T="float" Variant="Variant.Text"
                                                   Value="(float)(Properties[propertyInfo] ?? 0f)"
                                                   ValueChanged="(val) => PropertyChanged(propertyInfo, val)"
                                                   Format="#.00" Culture="@_en" Immediate="false"
-                                                  InputType="InputType.Number" Step="1">
-                                    </MudTextField>
+                                                  Step="1">
+                                    </MudNumericField>
                                 }
                             }
                             else if (propertyInfo.PropertyType == typeof(double))
                             {
-                                <MudTextField T="double" Variant="Variant.Text"
+                                <MudNumericField T="double" Variant="Variant.Text"
                                               Value="(double)(Properties[propertyInfo] ?? 0D)"
                                               ValueChanged="(val) => PropertyChanged(propertyInfo, val)"
                                               Format="#.00000" Culture="@_en" Immediate="false"
-                                              InputType="InputType.Number" Step="0.1">
-                                </MudTextField>
+                                              Step="0.1">
+                                </MudNumericField>
                             }
                             else if (propertyInfo.PropertyType == typeof(ArgbColor))
                             {
@@ -186,8 +186,8 @@
                             }
                             else if (propertyInfo.PropertyType == typeof(bool))
                             {
-                                <MudCheckBox T="bool" Checked="(bool)Properties[propertyInfo]!"
-                                             CheckedChanged="(check) => PropertyChanged(propertyInfo, check)" />
+                                <MudCheckBox T="bool" Value="(bool)Properties[propertyInfo]!"
+                                             ValueChanged="(check) => PropertyChanged(propertyInfo, check)" />
                             }
                             else if(!String.IsNullOrEmpty(propDesc?.SelectOptionsPropertyName))
                             {

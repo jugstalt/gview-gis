@@ -12,7 +12,7 @@
                 <GvGridItem>
                     @GvUtilities.InfoText("Fields:")
                     <MudPaper Outlined="true" Style="height:300px;overflow-y:auto">
-                        <MudList Clickable="true" T="string">
+                        <MudList T="string">
                             @foreach (var field in TableClass.Fields.ToEnumerable())
                             {
                                 if(field.type == gView.Framework.Core.Data.FieldType.Shape)
@@ -48,7 +48,7 @@
                     @if (@* _fieldValuesLoading == false &&  *@ _fieldValues.Count > 0)
                     {
                         <MudPaper Outlined="true" Style="height:300px;overflow-y:auto">
-                            <MudList Clickable="true" T="string" >
+                            <MudList T="string" >
                                 @foreach (var fieldValue in _fieldValues)
                                 {
                                     <MudListItem @ondblclick="async () => await AppendQueryItemAsync(fieldValue, QueryItemType.Value)"

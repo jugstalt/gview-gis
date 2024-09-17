@@ -5,7 +5,7 @@
 {
     @if(_showRemoveDialog == true)
     {
-        <MudList>
+        <MudList T="string">
             @foreach(var item in _items.Where(e => e.Selected))
             {
                 <MudListItem Style="@($"color:{(item.TocElement.IsGroupElement() ? "var(--mud-palette-primary)" : "inherit")}")"
@@ -30,7 +30,7 @@
                     <GvGridItem>
                         <MudPaper>
                             <GvScrollable>
-                                <MudList Clickable="true"
+                                <MudList Clickable="true" T="ITocElement"
                                          SelectedValue="SelectedGroupElement"
                                          SelectedValueChanged="OnGroupElementSelected"
                                          Dense="true">
@@ -46,8 +46,7 @@
                     </GvGridItem>
                     <GvGridItem>
                         <GvScrollable>
-                        <MudList Dense="true" 
-                                 Clickable="true">
+                        <MudList Dense="true" T="ITocElement">
                             <MudPaper Elevation="25" Style="padding:6px">
                                 <MudToolBar DisableGutters="true" Dense="true">
                                     <MudIconButton Icon="@Icons.Material.Filled.Delete"
@@ -72,7 +71,7 @@
                 </GvGrid>
             </ChildContent>
             <ItemRenderer>
-                <MudListItem Style="@($"color:{(context.TocElement.IsGroupElement() ? "var(--mud-palette-primary)" : "inherit")}")">
+                <MudListItem T="ITocElement" Style="@($"color:{(context.TocElement.IsGroupElement() ? "var(--mud-palette-primary)" : "inherit")}")">
                     <GvGrid ColumnCount="12">
                         <GvGridItem>
                             <MudCheckBox @bind-Checked="context.Selected" T="bool" />
