@@ -13,8 +13,8 @@
             {
                 <GvCard Title="Label Renderers">
                     <GvCardContentNoPadding>
-                        <MudList Dense="true" Clickable="true"
-                                    Style="padding:0px">
+                        <MudList Dense="true" T="string"
+                                 Style="padding:0px">
                             @foreach (var labelRenderer in _labelRenderers)
                             {
                                 <MudListItem Style="white-space:nowrap;overflow:hidden"

@@ -4,13 +4,14 @@
                      OnDialogClose="base.OnDialogClose"
                      Model="base.Model">
     <FormContent>
-        <MudRadioGroup @bind-SelectedOption="Model.CartographicMethod">
+        <MudRadioGroup @bind-SelectedOption="Model.CartographicMethod"
+                       T="LegendGroupCartographicMethod">
             <GvGrid>
                
                 @foreach (var method in Enum.GetValues<LegendGroupCartographicMethod>())
                 {
                     <GvGridItem>
-                        <MudRadio Option="method">
+                        <MudRadio Value="method">
                             <div>
                                 @method.ToString().SplitCamelCase()
                             </div>

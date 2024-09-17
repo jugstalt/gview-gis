@@ -32,13 +32,13 @@
 
         <GvCard Title="Direction Of Rotation">
             <GvCardContent>
-                <MudRadioGroup @bind-SelectedOption="Model.RotationType">
+                <MudRadioGroup @bind-SelectedOption="Model.RotationType" T="RotationType" >
                     <GvGrid ColumnCount="2">
 
                         @foreach (var roationType in Enum.GetValues<RotationType>())
                         {
                             <GvGridItem>
-                                <MudRadio Option="roationType" Placement="Placement.Bottom">
+                                <MudRadio Value="roationType" Placement="Placement.Bottom">
                                     <div class="gview-ui-image img-rotation-@roationType.ToString().ToLower()"></div>
                                     <div>
                                         @roationType.ToString().SplitCamelCase()

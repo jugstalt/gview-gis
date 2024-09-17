@@ -15,7 +15,7 @@
                 {
                     <GvCard Title="@category">
                         <GvCardContentNoPadding>
-                            <MudList Dense="true" Clickable="true" 
+                            <MudList Dense="true" T="string"
                                      Style="padding:0px">
                                 @foreach(var featureRenderer in _featureRenderers.Where(r=>category == r.Category))
                                 {
