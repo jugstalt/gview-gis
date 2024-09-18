@@ -88,7 +88,7 @@
             {
                 <GvGridItem>
                     <MudPaper @onclick="()=>NavigateTo(customTile.TargetUrl)"
-                              style="min-height:250px;cursor:pointer;padding:20px;position:relative"
+                              style="@("min-height:250px;cursor:pointer;padding:20px;position:relative;".AppendBackgroundColor(customTile.BackgroundColor).AppendColor(customTile.FontColor))"
                               Elevation="25">
                         <MudText Typo="Typo.h5">@customTile.Title</MudText>
 
