@@ -436,7 +436,7 @@ namespace gView.Interoperability.Server.TileService
             catch { }
 
             //temp
-            //string pathTemp = path + @"\temp";
+            //string pathTemp = @"c:\temp";
             //DirectoryInfo diTemp = new DirectoryInfo(pathTemp);
             //if (!diTemp.Exists)
             //    diTemp.Create();
@@ -516,7 +516,7 @@ namespace gView.Interoperability.Server.TileService
 
                             if (boundingTiles != null)
                             {
-                                if (!boundingTiles.Check(tileRow, tileCol, 8, 8))
+                                if (!boundingTiles.Check(tileRow, tileCol, 1, 1))
                                 {
                                     continue;
                                 }
@@ -529,21 +529,21 @@ namespace gView.Interoperability.Server.TileService
                                 canvas.DrawBitmap(serviceMap.MapImage,
                                     new CanvasRectangleF(0f, 0f, bitmap.Width, bitmap.Height),
                                     new CanvasRectangleF(-0.5f + i * metadata.TileWidth, -0.5f + j * metadata.TileHeight, metadata.TileWidth, metadata.TileHeight));
+                                canvas.Flush();
 
                                 if (IsEmptyBitmap(bitmap, serviceMap.Display.BackgroundColor))
                                 {
                                     continue;
                                 }
 
-                                // Temp
-                                //bm.Save(pathTemp + @"\tile_" + tileRow + "_" + tileCol + ".png", ImageFormat.Png);
-
-                                canvas.Flush();
                                 MemoryStream ms = new MemoryStream();
+
                                 bitmap.Save(ms, format == ".jpg" ? ImageFormat.Jpeg : ImageFormat.Png);
-
-
                                 byte[] imageBytes = ms.ToArray();
+
+                                // Temp
+                                //System.IO.File.WriteAllBytes(pathTemp + @"\tile_" + tileRow + "_" + tileCol + ".jpg", imageBytes);
+
                                 using (var stream = new FileStream(bundleTempFilename, FileMode.Append))
                                 {
                                     stream.Write(imageBytes, 0, imageBytes.Length);
