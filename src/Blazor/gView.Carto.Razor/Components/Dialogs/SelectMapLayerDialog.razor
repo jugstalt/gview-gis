@@ -1,0 +1,52 @@
+@inherits ModalDialogFormBase<SelectMapLayerDialogModel>
+
+<ModalDialogFormBase T="SelectMapLayerDialogModel"
+                     OnDialogClose="base.OnDialogClose"
+                     Model="base.Model">
+    <DialogBody>               
+        <MudList Clickable="true" 
+                 @bind-SelectedValue="_selectedItem" >
+            @foreach(var layerName in _tocElements.Keys)
+            {
+                <MudListItem Value="_tocElements[layerName]">@layerName</MudListItem>
+            }
+        </MudList>
+    </DialogBody>
+    <DialogButtons>
+        @if ((_selectedItem as ITocElement)?.Layers?.Count() > 0) 
+        {
+            <MudButton Variant="Variant.Filled" Color="Color.Primary"
+                       OnCLick="Apply">Select: @(((ITocElement)_selectedItem).Name)</MudButton>
+        }
+    </DialogButtons>
+</ModalDialogFormBase>
+
+@code {
+    private Dictionary<string, ITocElement> _tocElements = new();
+    private object? _selectedItem;
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+
+        if (Model.Map?.TOC is IToc toc)
+        {
+            foreach(var element in toc.Elements.Where(e => e is not IGroupLayer) )
+            {
+                if(Model.LayerFilter?.Invoke(element.Layers.FirstOrDefault()) == false)
+                {
+                    continue;
+                }
+
+                _tocElements.Add(element.FullName(), element);
+            }
+        }
+    }
+
+    private Task Apply()
+    {
+        Model.SelectedLayers = (_selectedItem as ITocElement)?.Layers.ToArray();
+
+        return base.Submit();
+    }
+}

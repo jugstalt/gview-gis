@@ -521,6 +521,7 @@ public class TileServiceInterpreter : IServiceRequestInterpreter
                             canvas.DrawBitmap(serviceMap.MapImage,
                                 new CanvasRectangleF(0f, 0f, bitmap.Width, bitmap.Height),
                                 new CanvasRectangleF(-0.5f + i * metadata.TileWidth, -0.5f + j * metadata.TileHeight, metadata.TileWidth, metadata.TileHeight));
+                            canvas.Flush();
 
                             if (IsEmptyBitmap(bitmap, serviceMap.Display.BackgroundColor))
                             {
@@ -530,7 +531,6 @@ public class TileServiceInterpreter : IServiceRequestInterpreter
                             // Temp
                             //bm.Save(pathTemp + @"\tile_" + tileRow + "_" + tileCol + ".png", ImageFormat.Png);
 
-                            canvas.Flush();
                             MemoryStream ms = new MemoryStream();
                             bitmap.Save(ms, format == ".jpg" ? ImageFormat.Jpeg : ImageFormat.Png);
 

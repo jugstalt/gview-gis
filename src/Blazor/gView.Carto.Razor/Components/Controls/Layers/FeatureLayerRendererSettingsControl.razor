@@ -1,4 +1,5 @@
 @inject PluginManagerService PluginManager
+@inject ICartoApplicationScopeService AppScope
 @inherits BaseHandler
 
 @if(_featureRenderers is not null && _categories is not null)
@@ -6,8 +7,8 @@
     <GvGrid ColumnCount="3">
         <GvGridItem>
             <MudCheckBox T="bool"
-                         Checked="@(Layer?.FeatureRenderer is not null)"
-                         CheckedChanged="(chk) => RenderFeaturesChecked(chk)"
+                         Value="@(Layer?.FeatureRenderer is not null)"
+                         ValueChanged="(chk) => RenderFeaturesChecked(chk)"
                          Label="Render features for this layer" />
             @if(Layer?.FeatureRenderer is not null) 
             {
@@ -30,6 +31,14 @@
                         </GvCardContentNoPadding>
                     </GvCard>
                 }
+
+                <MudButton Variant="Variant.Filled"
+                           Color="Color.Surface"
+                           OnClick="OnCopyRendererClick">Copy Renderer...</MudButton>
+
+                <MudButton Variant="Variant.Filled"
+                           Color="Color.Surface"
+                           OnClick="OnImportRendererClick">Import Renderer...</MudButton>
             }
         </GvGridItem>
 
@@ -144,6 +153,65 @@
                 _featureRenderers?.FirstOrDefault(r => r.GetType() == _selectedRendererType)
                 ?? _featureRenderers?.FirstOrDefault(r => r is SimpleRenderer)
                 ?? _featureRenderers?.FirstOrDefault();
+
+            SelectRenderer(Layer.FeatureRenderer);
+        }
+    });
+
+    private Task OnImportRendererClick() => HandleAsync(async () =>
+    {
+        if (Layer is null) return;
+
+        var model = await AppScope.ShowKnownDialog(Framework.Blazor.KnownDialogs.ExplorerDialog,
+                                                       title: "Open map document",
+                                                       model: new ExplorerDialogModel()
+                                                           {
+                                                               Filters = new List<ExplorerDialogFilter> {
+                                                                    new OpenFileFilter("Map", "*.mxl")
+                                                               },
+                                                               Mode = ExploerDialogMode.Open
+                                                           });
+
+        var xmlFileName = model?.Result.ExplorerObjects.FirstOrDefault()?.FullName;
+        if (String.IsNullOrEmpty(xmlFileName)) 
+        {
+            return;
+        }
+
+        var stream = new Framework.IO.XmlStream("");
+        stream.ReadStream(xmlFileName);
+
+        var cartoDocument = new CartoDocument(null);
+
+        await stream.LoadAsync("MapDocument", cartoDocument);
+
+        if (cartoDocument.Map is not null)
+        {
+            await SelectRendererAsync(cartoDocument.Map);  
+        };
+    });
+
+    private Task OnCopyRendererClick() => 
+        Map is not null 
+            ? SelectRendererAsync(Map)
+            : Task.CompletedTask;
+
+    private Task SelectRendererAsync(IMap map) => HandleAsync(async () =>
+    {
+        if (Layer is null) return;
+
+        var layerModel = await AppScope.ShowModalDialog(typeof(SelectMapLayerDialog),
+                                                        "Select map layer",
+                                                        new SelectMapLayerDialogModel()
+                                                            {
+                                                                Map = map
+                                                            });
+
+        var newFeatureRenderer = (layerModel?.SelectedLayer as IFeatureLayer)?.FeatureRenderer?.Clone() as IFeatureRenderer;
+
+        if (newFeatureRenderer is not null)
+        {
+            Layer.FeatureRenderer = newFeatureRenderer;
 
             SelectRenderer(Layer.FeatureRenderer);
         }
