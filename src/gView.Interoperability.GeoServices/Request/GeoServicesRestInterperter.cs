@@ -1,6 +1,7 @@
 ﻿using gView.Framework.Common;
 using gView.Framework.Common.Diagnostics;
 using gView.Framework.Common.Json;
+using gView.Framework.Common.Json.Converters.Extensions;
 using gView.Framework.Core.Carto;
 using gView.Framework.Core.Common;
 using gView.Framework.Core.Data;
@@ -1496,7 +1497,7 @@ public class GeoServicesRestInterperter : IServiceRequestInterpreter
         var feature = new Feature();
 
         feature.Shape = jsonFeature.Geometry.ToGeometry();
-        var attributes = (IDictionary<string, object>)jsonFeature.Attributes;
+        var attributes = jsonFeature.Attributes.ToDictionaryWithNativeTypes();
         if (attributes == null)
         {
             throw new ArgumentException("No features attributes!");
