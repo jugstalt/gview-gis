@@ -25,20 +25,28 @@
                                                         Class="@(featureRenderer.GetType() == _selectedRendererType ? "gview-selected-item" : "")"
                                                         OnClick="() => SelectRenderer(featureRenderer)">
                                                 @featureRenderer.Name
-                                           </MudListItem>
+                                    </MudListItem>
                                 }
                             </MudList>
                         </GvCardContentNoPadding>
                     </GvCard>
                 }
 
-                <MudButton Variant="Variant.Filled"
-                           Color="Color.Surface"
-                           OnClick="OnCopyRendererClick">Copy Renderer...</MudButton>
-
-                <MudButton Variant="Variant.Filled"
-                           Color="Color.Surface"
-                           OnClick="OnImportRendererClick">Import Renderer...</MudButton>
+                <GvCard Title="Copy From">
+                    <MudList Dense="true" Clickable="true" 
+                                     Style="padding:0px">
+                        <MudListItem Style="white-space:nowrap;overflow:hidden"
+                                     Dense="true"
+                                     OnClick="OnCopyRendererClick">
+                            Other Layer ...
+                        </MudListItem>
+                        <MudListItem Style="white-space:nowrap;overflow:hidden"
+                                     Dense="true"
+                                     OnClick="OnImportRendererClick">
+                            Other Map (XML) ...
+                        </MudListItem>
+                    </MudList>
+                </GvCard>
             }
         </GvGridItem>
 
@@ -200,12 +208,22 @@
     {
         if (Layer is null) return;
 
-        var layerModel = await AppScope.ShowModalDialog(typeof(SelectMapLayerDialog),
-                                                        "Select map layer",
-                                                        new SelectMapLayerDialogModel()
-                                                            {
-                                                                Map = map
-                                                            });
+        var layerModel = await AppScope.ShowModalDialog(
+                typeof(SelectMapLayerDialog),
+                "Select map layer",
+                new SelectMapLayerDialogModel()
+                {
+                    Map = map,
+                    LayerFilter = (layer) =>
+                        layer switch
+                        {
+                            IFeatureLayer when Map == map && Layer.ID.Equals(layer.ID) => false,
+                            IFeatureLayer featureLayer => 
+                                featureLayer.LayerGeometryType == Layer.LayerGeometryType,
+                            _ => false
+                        }
+                }
+        );
 
         var newFeatureRenderer = (layerModel?.SelectedLayer as IFeatureLayer)?.FeatureRenderer?.Clone() as IFeatureRenderer;
 
