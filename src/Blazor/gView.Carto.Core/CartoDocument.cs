@@ -17,10 +17,10 @@ namespace gView.Carto.Core;
 
 public class CartoDocument : ICartoDocument
 {
-    private readonly ICartoApplicationScopeService _scope;
+    private readonly ICartoApplicationScopeService? _scope;
     private IMap _map = new Map();
 
-    public CartoDocument(ICartoApplicationScopeService scope, string name = "map1")
+    public CartoDocument(ICartoApplicationScopeService? scope, string name = "map1")
     {
         _scope = scope;
 
@@ -41,7 +41,7 @@ public class CartoDocument : ICartoDocument
         {
             _map = value;
 
-            this.Modules = _scope.PluginManager
+            this.Modules = _scope?.PluginManager
               .GetPlugins<IMapApplicationModule>(gView.Framework.Common.Plugins.Type.IMapApplicationModule)
               .ToArray() ?? [];
 
@@ -82,8 +82,11 @@ public class CartoDocument : ICartoDocument
 
         this.TableRelations = (TableRelations)stream.Load("TableRelations", new TableRelations(null), new TableRelations(null));
 
-        // Modules, eg MapEditLayers
-        stream.Load("Moduls", null, new ModulsPersists(_scope.PluginManager, this));
+        if (_scope is not null)
+        {
+            // Modules, eg MapEditLayers
+            stream.Load("Moduls", null, new ModulsPersists(_scope.PluginManager, this));
+        }
 
         return true;
     }
@@ -96,8 +99,11 @@ public class CartoDocument : ICartoDocument
         stream.Save("IMap", this.Map);
         stream.Save("TableRelations", this.TableRelations);
 
-        // Modules, eg MapEditLayers
-        stream.Save("Moduls", new ModulsPersists(_scope.PluginManager, this));
+        if (_scope is not null)
+        {
+            // Modules, eg MapEditLayers
+            stream.Save("Moduls", new ModulsPersists(_scope.PluginManager, this));
+        }
     }
 
     #endregion
