@@ -163,10 +163,12 @@ namespace gView.Interoperability.GeoServices.Dataset
 
                 if (jsonFeature.Attributes != null)
                 {
-                    var attribiutes = jsonFeature.Attributes.ToDictionaryWithNativeTypes();
-                    foreach (var name in attribiutes.Keys)
+                    //var attribiutes = jsonFeature.Attributes.ToDictionaryWithNativeTypes();
+                    var attributes = (IDictionary<string, object>)jsonFeature.Attributes;
+
+                    foreach (var name in attributes.Keys)
                     {
-                        object value = attribiutes[name];
+                        object value = attributes[name];
 
                         if (dateColumns.Contains(name))
                         {

@@ -12,6 +12,8 @@ static public class JsonSerializerOptionsExtensions
         {
             options.Converters.Add(new Array2DConverter());
             options.Converters.Add(new DBNullConverter());
+            //options.Converters.Add(new ObjectToInferredTypesConverter());
+            options.Converters.Add(new ExpandoObjectConverter());
         }
 
         options.ReferenceHandler = ReferenceHandler.IgnoreCycles;

@@ -1497,7 +1497,9 @@ public class GeoServicesRestInterperter : IServiceRequestInterpreter
         var feature = new Feature();
 
         feature.Shape = jsonFeature.Geometry.ToGeometry();
-        var attributes = jsonFeature.Attributes.ToDictionaryWithNativeTypes();
+        //var attributes = jsonFeature.Attributes.ToDictionaryWithNativeTypes();
+        var attributes = (IDictionary<string, object>)jsonFeature.Attributes;
+
         if (attributes == null)
         {
             throw new ArgumentException("No features attributes!");

@@ -5,6 +5,9 @@ using System.Text.Json;
 namespace gView.Framework.Common.Json.Converters.Extensions;
 static public class ExpandoObjectExtensions
 {
+    // is now solved with
+    // ExpandoObjectConverter : JsonConverter<ExpandoObject>
+    // ... so ther is hopefully no more need for this ;)
     static public IDictionary<string, object> ToDictionaryWithNativeTypes(
             this ExpandoObject expandoObject,
             bool ignoreNulls = false)
