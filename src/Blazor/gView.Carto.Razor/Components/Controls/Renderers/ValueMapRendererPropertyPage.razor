@@ -31,14 +31,38 @@
             </GvGrid>
             <MudPaper Elevation="24">
                 <MudButtonGroup Color="Color.Primary" Variant="Variant.Filled">
-                    <MudButton OnClick="OnAddAllItems" >Add All Values</MudButton>
+                    <MudButton OnClick="OnAddAllItems"
+                               Disabled="@_processingAddAllValues">
+                        @if (_processingAddAllValues)
+                        {
+                            <MudProgressCircular Class="ms-n1" Size="MudBlazor.Size.Small" Indeterminate="true" />
+                            <MudText Class="ms-2">Adding Values</MudText>
+                        }
+                        else
+                        {
+                            <MudText>Add All Values</MudText>
+                        }
+                    </MudButton>
                     <MudButton OnClick="() => _addValueItem = new()"  >Add Value</MudButton>
                     <MudButton OnClick="OnAddAllOtherValuesItem">Add "All other"</MudButton>
                 </MudButtonGroup>
+                <MudButtonGroup Color="Color.Secondary" Variant="Variant.Filled">
+                    <MudButton OnClick="OnRemoveNotExistingItems">
+                        @if (_processingRemoveNotExistingValues)
+                        {
+                            <MudProgressCircular Class="ms-n1" Size="MudBlazor.Size.Small" Indeterminate="true" />
+                            <MudText Class="ms-2">Removing Values</MudText>
+                        }
+                        else
+                        {
+                            <MudText>Remove not existing</MudText>
+                        }
+                    </MudButton>
+
+                    <MudButton OnClick="OnRemoveAllItems">Remove all</MudButton>
+                </MudButtonGroup>
           
-                <MudButton Color="Color.Secondary"
-                            Variant="Variant.Filled"
-                            OnClick="OnRemoveAllItems">Remove all</MudButton>
+                
             </MudPaper>
             <MudText Typo="Typo.h6">
                 @($"{_dictKeySymbols.IfKeyExists(_renderer.ValueField, (l) => l.Count)} items")
@@ -92,6 +116,9 @@
 
     private Dictionary<string, List<KeySymbol<string>>> _dictKeySymbols = new();
     private ValueItemModel? _addValueItem = null;
+
+    private bool _processingAddAllValues = false;
+    private bool _processingRemoveNotExistingValues = false;
 
     protected override Task OnParametersSetAsync() => HandleAsync(async () =>
     {
@@ -189,43 +216,101 @@
             return;
         }
 
-        OnRemoveAllItems();
         var keySymbols = CurrentKeySymbolsList();
 
-        await this.ForceRenderComponent();
-
-        DistinctFilter filter = new DistinctFilter(_renderer.ValueField);
-        filter.OrderBy = _renderer.ValueField;
-
-        using (IFeatureCursor cursor = (IFeatureCursor)await _layer.FeatureClass.Search(filter))
+        try
         {
-            int counter = 0;
-            IFeature feature;
-            while ((feature = await cursor.NextFeature()) is not null)
+            _processingAddAllValues = true;
+
+            await this.ForceRenderComponent();
+
+            DistinctFilter filter = new DistinctFilter(_renderer.ValueField);
+            filter.OrderBy = _renderer.ValueField;
+
+            using (IFeatureCursor cursor = (IFeatureCursor)await _layer.FeatureClass.Search(filter))
             {
-                var key = feature.Fields[0].Value?.ToString() ?? "";
-
-                var symbol = RendererFunctions.CreateStandardSymbol(_layer.LayerGeometryType);
-
-                if(symbol is null)
+                int counter = 0;
+                IFeature feature;
+                while ((feature = await cursor.NextFeature()) is not null)
                 {
-                    continue;
-                }
-                if(symbol is ILegendItem legendItem)
-                {
-                    legendItem.LegendLabel = key;
-                }
+                    var key = feature.Fields[0].Value?.ToString() ?? "";
 
-                keySymbols.Add(new KeySymbol<string>(key, symbol));
+                    if (keySymbols.ContainsKey(key)) continue;
 
-                if(++counter % 100 == 0)
-                {
-                    await ForceRenderComponent();
+                    var symbol = RendererFunctions.CreateStandardSymbol(_layer.LayerGeometryType);
+
+                    if (symbol is null)
+                    {
+                        continue;
+                    }
+                    if (symbol is ILegendItem legendItem
+                        && String.IsNullOrEmpty(legendItem.LegendLabel))
+                    {
+                        legendItem.LegendLabel = key;
+                    }
+
+                    keySymbols.Add(new KeySymbol<string>(key, symbol));
+
+                    if (++counter % 100 == 0)
+                    {
+                        await ForceRenderComponent();
+                    }
                 }
             }
+
+            ApplyChanges();
+        } 
+        finally
+        {
+            _processingAddAllValues = false;    
+        }
+    });
+
+    private Task OnRemoveNotExistingItems() => HandleAsync(async () =>
+    {
+        if (_renderer is null || _layer?.FeatureClass is null)
+        {
+            return;
         }
 
-        ApplyChanges();
+        try
+        {
+            _processingRemoveNotExistingValues = true;
+
+            await this.ForceRenderComponent();
+
+            DistinctFilter filter = new DistinctFilter(_renderer.ValueField);
+            filter.OrderBy = _renderer.ValueField;
+
+            HashSet<string> distinctValues = new();
+
+            using (IFeatureCursor cursor = (IFeatureCursor)await _layer.FeatureClass.Search(filter))
+            {
+                IFeature feature;
+                while ((feature = await cursor.NextFeature()) is not null)
+                {
+                    distinctValues.Add(feature.Fields[0].Value?.ToString() ?? "");
+                }
+            }
+
+            var keySymbols = CurrentKeySymbolsList();
+
+            foreach (var keySymbol in keySymbols.ToArray())
+            {
+                if (keySymbol.Key != ValueMapRenderer.AllOtherValuesKey
+                    && !distinctValues.Contains(keySymbol.Key))
+                {
+                    keySymbols.Remove(keySymbol);
+                    keySymbol.Symbol.Release(); 
+                }
+            }
+
+            ApplyChanges();
+        }
+        finally
+        {
+            _processingRemoveNotExistingValues = false;
+        }
     });
 
     private void OnRemoveAllItems() => Handle(() =>

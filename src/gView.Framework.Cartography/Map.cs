@@ -554,7 +554,7 @@ namespace gView.Framework.Cartography
             {
                 if (layer is IGroupLayer)
                 {
-                    if (((GroupLayer)layer).ChildLayer != null && ((GroupLayer)layer).ChildLayer.Count > 0)
+                    if (((GroupLayer)layer).ChildLayers != null && ((GroupLayer)layer).ChildLayers.Count > 0)
                     {
                         newLayers.Add(layer);
                     }
@@ -822,7 +822,7 @@ namespace gView.Framework.Cartography
 
             if (layer is IGroupLayer)
             {
-                foreach (ILayer cLayer in ((IGroupLayer)layer).ChildLayer)
+                foreach (ILayer cLayer in ((IGroupLayer)layer).ChildLayers.ToArray())
                 {
                     RemoveLayer(cLayer);
                 }
@@ -842,6 +842,13 @@ namespace gView.Framework.Cartography
             {
                 _layers.Remove(layer);
                 _toc.RemoveLayer(layer);
+            }
+
+            // also remove von grouplayers
+            foreach(var groupLayer in _layers.Where(l => l is IGroupLayer)
+                                             .Select(l => (IGroupLayer)l))
+            {
+                groupLayer.TryRemoveLayer(layer);
             }
 
             if (LayerRemoved != null)

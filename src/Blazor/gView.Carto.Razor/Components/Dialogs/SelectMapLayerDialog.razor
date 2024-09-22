@@ -3,14 +3,19 @@
 <ModalDialogFormBase T="SelectMapLayerDialogModel"
                      OnDialogClose="base.OnDialogClose"
                      Model="base.Model">
-    <DialogBody>               
+    <DialogBody>    
+        
         <MudList Clickable="true" 
-                 @bind-SelectedValue="_selectedItem" >
-            @foreach(var layerName in _tocElements.Keys)
+                 @bind-SelectedValue="_selectedItem">
+            @foreach(var layerName in _tocElements.Keys.Order())
             {
-                <MudListItem Value="_tocElements[layerName]">@layerName</MudListItem>
+                <MudListItem Value="_tocElements[layerName]"
+                             OnClick="Apply">
+                    @layerName.Replace("/", " > ")
+                </MudListItem>
             }
         </MudList>
+
     </DialogBody>
     <DialogButtons>
         @if ((_selectedItem as ITocElement)?.Layers?.Count() > 0) 
@@ -38,7 +43,10 @@
                     continue;
                 }
 
-                _tocElements.Add(element.FullName(), element);
+                _tocElements.Add(
+                        element.FullName(), 
+                        element
+                );
             }
         }
     }

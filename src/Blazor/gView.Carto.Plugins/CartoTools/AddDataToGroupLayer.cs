@@ -66,13 +66,12 @@ internal class AddDataToGroupLayer : ICartoButton
 
         foreach (var layer in layersResult.layers.OrderLayersByGeometryType().Where(l => l is Layer).Select(l => (Layer)l))
         {
-
             layer.GroupLayer = groupLayer;
 
             int pos = 1;
             if (map.TOC?.Elements != null)
             {
-                var nextLayer = groupLayer.ChildLayer.FirstOrHigherIndexOfGeometryTypeOrder(layer);
+                var nextLayer = groupLayer.ChildLayers.FirstOrHigherIndexOfGeometryTypeOrder(layer);
                 var nextTocElement = scope.Document.Map.TOC.Elements.FirstOrDefault(e => e.Layers != null && e.Layers.Contains(nextLayer));
                 pos = scope.Document.Map.TOC.Elements.IndexOf(nextTocElement);
             }
