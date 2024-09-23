@@ -37,12 +37,12 @@
                                      Style="padding:0px">
                         <MudListItem Style="white-space:nowrap;overflow:hidden"
                                      Dense="true"
-                                     OnClick="OnCopyRendererClick">
+                                     OnClick="OnCopyRendererClickAsync">
                             Other Layer ...
                         </MudListItem>
                         <MudListItem Style="white-space:nowrap;overflow:hidden"
                                      Dense="true"
-                                     OnClick="OnImportRendererClick">
+                                     OnClick="OnImportRendererClickAsync">
                             Other Map (XML) ...
                         </MudListItem>
                     </MudList>
@@ -166,7 +166,7 @@
         }
     });
 
-    private Task OnImportRendererClick() => HandleAsync(async () =>
+    private Task OnImportRendererClickAsync() => HandleAsync(async () =>
     {
         if (Layer is null) return;
 
@@ -224,7 +224,7 @@
         };
     });
 
-    private Task OnCopyRendererClick() => 
+    private Task OnCopyRendererClickAsync() => 
         Map is not null 
             ? SelectRendererAsync(Map)
             : Task.CompletedTask;
@@ -244,7 +244,8 @@
                         {
                             IFeatureLayer when Map == map && Layer.ID.Equals(layer.ID) => false,
                             IFeatureLayer featureLayer => 
-                                featureLayer.LayerGeometryType == Layer.LayerGeometryType,
+                                featureLayer.FeatureRenderer is not null
+                                && featureLayer.LayerGeometryType == Layer.LayerGeometryType,
                             _ => false
                         }
                 }
