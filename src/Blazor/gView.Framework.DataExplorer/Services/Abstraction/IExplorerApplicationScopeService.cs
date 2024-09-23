@@ -24,6 +24,8 @@ public interface IExplorerApplicationScopeService : IApplicationScope
     Type? GetClipboardItemType();
     IEnumerable<T> GetClipboardElements<T>();
 
+    ValueTask<bool> CopyContentToClientClipboardAsyc(string elementId);
+
     public string GetToolConfigFilename(params string[] paths);
     public IEnumerable<string> GetToolConfigFiles(params string[] paths);
 

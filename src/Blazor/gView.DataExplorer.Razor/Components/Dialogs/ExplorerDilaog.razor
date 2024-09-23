@@ -84,9 +84,9 @@
                                    OnClick="() => _filterString=string.Empty" />
                 }
             </MudToolBar>
-            <MudPaper Elevation="2">
-                    <MudList T="string"
-                             Style="width:900px;max-width:100%;height:420px;overflow:auto" 
+            <MudPaper Elevation="1">
+                    <MudList Clickable="true"
+                             Style="width:900px;max-width:100%;height: calc(100vh - 465px);overflow:auto" 
                              Dense="true">
                     @if (_selectedRoot?.ParentExplorerObject is not null)
                     {
@@ -127,8 +127,8 @@
             else if(Model.Mode == ExploerDialogMode.Save)
             {
                 <MudTextField @bind-Value = "Model.Result.Name" 
-                              Required = "true"
-                              Label = "Name"
+                              Required = "true" Immediate="true"
+                              Label="Name" 
                               Disabled = "@(!placeToSave)"
                               Variant = "Variant.Outlined" />
             }

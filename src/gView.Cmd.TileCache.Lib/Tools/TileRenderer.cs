@@ -94,7 +94,7 @@ internal class TileRenderer
             grid.AddLevel(level++, res);
         }
 
-        ServerConnection connector = new ServerConnection(server);
+        ServerConnection connector = new ServerConnection(server) { Timeout = 600 };
 
         int step = _cacheFormat == "compact" ? 128 : 1;
 

@@ -163,7 +163,7 @@ namespace gView.Framework.Common
             } 
             else
             {
-                Console.WriteLine("Parsing for plugins finished without errors");
+                Console.WriteLine("Parsing for plugins finished successfully");
             }
 
             OnParseAssembly?.Invoke(null);

@@ -239,6 +239,16 @@ public class ExplorerApplicationScopeService : ApplictionBusyHandlerAndCache, IE
         return directoryInfo.GetFiles().Select(f => f.FullName);
     }
 
+    public async ValueTask<bool> CopyContentToClientClipboardAsyc(string elementId)
+    {
+        try
+        {
+            await _jsRuntime.InvokeVoidAsyncIgnoreErrors("window.gview_base.copyToClipboard", elementId);
+            return true;
+        }
+        catch { return false; }
+    }
+
     #endregion
 
     #region Busy Context

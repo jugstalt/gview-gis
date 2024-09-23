@@ -101,35 +101,8 @@ namespace gView.Framework.Cartography
             SetResourceContainer(original.ResourceContainer);
             SetMapEventHooks(original.MapEventHooks);
 
-            //if (modifyLayerTitles)
-            {
-                _layerIDSequece = new IntegerSequence();
-                Append(original, writeNamespace);
-            }
-            //else
-            {
-                //_layerIDSequece = new IntegerSequence(original._layerIDSequece.Number);
-
-                //foreach (IDatasetElement element in original.MapElements)
-                //{
-                //    if (element is ILayer)
-                //    {
-                //        ILayer layer = LayerFactory.Create(element.Class, element as ILayer);
-                //        if (layer == null)  // Grouplayer (element.Class==null) ???
-                //            continue;
-
-                //        ITOCElement tocElement = _toc.GetTOCElement(element as ILayer);
-                //        if (tocElement != null)
-                //        {
-                //            tocElement.RemoveLayer(element as ILayer);
-                //            tocElement.AddLayer(layer);
-                //        }
-
-                //        //layer.Title = original.Name + ":" + layer.Title;
-                //        _layers.Add(layer);
-                //    }
-                //}
-            }
+            _layerIDSequece = new IntegerSequence();
+            Append(original, writeNamespace);
         }
 
         public void Append(Map map, bool writeNamespace)
@@ -141,6 +114,7 @@ namespace gView.Framework.Cartography
                 if (element is ILayer)
                 {
                     ILayer layer = null;
+
                     if (element.Class is IWebServiceClass)
                     {
                         IWebServiceClass wClass = ((IWebServiceClass)element.Class).Clone() as IWebServiceClass;
@@ -150,7 +124,7 @@ namespace gView.Framework.Cartography
                         }
 
                         layer = LayerFactory.Create(wClass, element as ILayer);
-                        layer.ID = _layerIDSequece.Number;
+                        layer.ID = _layerIDSequece.TakeIfUnique(element.ID, this.MapElements.Select(e => e.ID).ToArray());
 
                         ITocElement tocElement = _toc.GetTOCElement(element as ILayer);
                         if (tocElement != null)
@@ -168,7 +142,7 @@ namespace gView.Framework.Cartography
 
                         foreach (IWebServiceTheme theme in wClass.Themes)
                         {
-                            theme.ID = _layerIDSequece.Number;
+                            theme.ID = _layerIDSequece.TakeIfUnique(element.ID, this.MapElements.Select(e => e.ID).ToArray());
                             if (writeNamespace)
                             {
                                 theme.Namespace = map.Name;
@@ -188,7 +162,7 @@ namespace gView.Framework.Cartography
                             layer = LayerFactory.Create(element.Class, element as ILayer);
                         }
 
-                        layer.ID = _layerIDSequece.Number;
+                        layer.ID = _layerIDSequece.TakeIfUnique(element.ID, this.MapElements.Select(e => e.ID).ToArray());
 
                         ITocElement tocElement = _toc.GetTOCElement(element as ILayer);
                         if (tocElement != null)
@@ -219,6 +193,7 @@ namespace gView.Framework.Cartography
 
                     ITocElement newTocElement = _toc.GetTOCElement(layer);
                     ITocElement oriTocElement = map.TOC.GetTOCElement(element as ILayer);
+
                     if (newTocElement != null && oriTocElement != null)
                     {
                         _toc.RenameElement(newTocElement, oriTocElement.Name);
@@ -554,7 +529,7 @@ namespace gView.Framework.Cartography
             {
                 if (layer is IGroupLayer)
                 {
-                    if (((GroupLayer)layer).ChildLayer != null && ((GroupLayer)layer).ChildLayer.Count > 0)
+                    if (((GroupLayer)layer).ChildLayers != null && ((GroupLayer)layer).ChildLayers.Count > 0)
                     {
                         newLayers.Add(layer);
                     }
@@ -667,7 +642,7 @@ namespace gView.Framework.Cartography
 
             while (LayerIDExists(layer.ID))
             {
-                layer.ID = _layerIDSequece.Number;
+                layer.ID = _layerIDSequece.Next;
             }
         }
 
@@ -822,7 +797,7 @@ namespace gView.Framework.Cartography
 
             if (layer is IGroupLayer)
             {
-                foreach (ILayer cLayer in ((IGroupLayer)layer).ChildLayer)
+                foreach (ILayer cLayer in ((IGroupLayer)layer).ChildLayers.ToArray())
                 {
                     RemoveLayer(cLayer);
                 }
@@ -842,6 +817,13 @@ namespace gView.Framework.Cartography
             {
                 _layers.Remove(layer);
                 _toc.RemoveLayer(layer);
+            }
+
+            // also remove von grouplayers
+            foreach(var groupLayer in _layers.Where(l => l is IGroupLayer)
+                                             .Select(l => (IGroupLayer)l))
+            {
+                groupLayer.TryRemoveLayer(layer);
             }
 
             if (LayerRemoved != null)
@@ -1163,7 +1145,7 @@ namespace gView.Framework.Cartography
             {
                 while (LayerIDExists(gLayer.ID))
                 {
-                    gLayer.ID = _layerIDSequece.Number;
+                    gLayer.ID = _layerIDSequece.Next;
                 }
 
                 _layers.Add(gLayer);
@@ -1194,7 +1176,7 @@ namespace gView.Framework.Cartography
                 }
                 while (LayerIDExists(fLayer.ID))
                 {
-                    fLayer.ID = _layerIDSequece.Number;
+                    fLayer.ID = _layerIDSequece.Next;
                 }
 
                 if (fLayer.Class == null)
@@ -1268,7 +1250,7 @@ namespace gView.Framework.Cartography
                 }
                 while (LayerIDExists(rLayer.ID))
                 {
-                    rLayer.ID = _layerIDSequece.Number;
+                    rLayer.ID = _layerIDSequece.Next;
                 }
 
                 if (rLayer.Class == null)
@@ -1308,7 +1290,7 @@ namespace gView.Framework.Cartography
                 }
                 while (LayerIDExists(wLayer.ID))
                 {
-                    wLayer.ID = _layerIDSequece.Number;
+                    wLayer.ID = _layerIDSequece.Next;
                 }
 
                 if (fLayer.Class == null)
@@ -1324,7 +1306,7 @@ namespace gView.Framework.Cartography
                     {
                         while (LayerIDExists(theme.ID) || theme.ID == 0)
                         {
-                            theme.ID = _layerIDSequece.Number;
+                            theme.ID = _layerIDSequece.Next;
                         }
                     }
 

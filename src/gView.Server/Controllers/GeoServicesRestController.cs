@@ -1039,8 +1039,8 @@ public class GeoServicesRestController : BaseController
         {
             var groupLayer = (GroupLayer)datasetElement;
             string type = "Group Layer";
-            var childLayers = groupLayer.ChildLayer != null ?
-                    groupLayer.ChildLayer.Where(l => map.TOC.GetTOCElement(l) != null).Select(l =>
+            var childLayers = groupLayer.ChildLayers != null ?
+                    groupLayer.ChildLayers.Where(l => map.TOC.GetTOCElement(l) != null).Select(l =>
                     {
                         var childTocElement = map.TOC.GetTOCElement(l);
 

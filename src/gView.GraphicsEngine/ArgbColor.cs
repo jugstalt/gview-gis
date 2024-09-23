@@ -222,6 +222,9 @@ namespace gView.GraphicsEngine
             throw new FormatException("Unknown color name");
         }
 
+        static public ArgbColor FromColor(ArgbColor color)
+            => FromArgb(color.ToArgb());
+
         public static bool TryFromString(string colorString, out ArgbColor color)
         {
             try
