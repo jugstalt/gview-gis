@@ -277,7 +277,7 @@ public class CartoApplicationScopeService : ApplictionBusyHandlerAndCache, ICart
 
         var dialogOptions = new DialogOptions()
         {
-            DisableBackdropClick = true,
+            BackdropClick = false,
             CloseButton = modalDialogOptions?.ShowCloseButton ?? true,
             MaxWidth = modalDialogOptions?.Width switch
             {

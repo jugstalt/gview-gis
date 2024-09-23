@@ -14,7 +14,7 @@
                            @bind-Open="@_drawerIsOpen"  
                            OpenMiniOnHover="true" 
                            Fixed="false">
-                    <MudList Clickable="true" 
+                    <MudList T="object" SelectionMode="SelectionMode.ToggleSelection"
                              SelectedValue="_currentTab"
                              SelectedValueChanged="OnCurrentTabChanged">
                     @foreach(var propertyPageDefintion in _propertyPageDefinitions)

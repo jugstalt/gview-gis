@@ -122,7 +122,7 @@ public class ExplorerApplicationScopeService : ApplictionBusyHandlerAndCache, IE
 
         var dialogOptions = new DialogOptions()
         {
-            DisableBackdropClick = true,
+            BackdropClick = false,
             CloseButton = modalDialogOptions?.ShowCloseButton ?? true,
             MaxWidth = modalDialogOptions?.Width switch
             {

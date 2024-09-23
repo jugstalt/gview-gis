@@ -184,15 +184,14 @@
                             @GvUtilities.InfoText("Resources are binary data added to to the map. This can e.g uses image-symbols for layer renderers. The resources are stored inside the map-document. Do not add large files, to avoid large map-documents!")
 
                             <MudFileUpload T="IReadOnlyList<IBrowserFile>" FilesChanged="UploadMapResourceFiles">
-                                <ButtonTemplate>
-                                    <MudButton HtmlTag="label"
-                                               Variant="Variant.Filled"
-                                               Color="Color.Primary"
-                                               StartIcon="@Icons.Material.Filled.CloudUpload"
-                                               for="@context">
-                                        Upload Resource
-                                    </MudButton>
-                                </ButtonTemplate>
+                                    <ActivatorContent>
+                                        <MudButton HtmlTag="label"
+                                                   Variant="Variant.Filled"
+                                                   Color="Color.Primary"
+                                                   StartIcon="@Icons.Material.Filled.CloudUpload">
+                                            Upload Resource
+                                        </MudButton>
+                                </ActivatorContent>
                             </MudFileUpload>
 
                             @if (Model.Map.ResourceContainer.HasResources)

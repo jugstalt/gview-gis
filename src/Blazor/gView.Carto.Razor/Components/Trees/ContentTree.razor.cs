@@ -75,7 +75,7 @@ namespace gView.Carto.Razor.Components.Trees
                     {
                         if (parentTreeNode == null)
                         {
-                            _treeNodes.Add(childTreeNode);
+                            _treeNodes.Add(new MudBlazor.TreeItemData<TocTreeNode>() { Value = childTreeNode });
                         }
                         else
                         {
@@ -120,7 +120,7 @@ namespace gView.Carto.Razor.Components.Trees
 
             foreach (var treeNode in _treeNodes)
             {
-                treeNode?.Dispose();
+                treeNode?.Value?.Dispose();
             }
         }
     }
