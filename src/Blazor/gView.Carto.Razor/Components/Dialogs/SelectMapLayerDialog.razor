@@ -36,7 +36,7 @@
 
         if (Model.Map?.TOC is IToc toc)
         {
-            foreach(var element in toc.Elements.Where(e => e is not IGroupLayer) )
+            foreach(var element in toc.Elements.Where(e => e is not IGroupLayer))
             {
                 if(Model.LayerFilter?.Invoke(element.Layers.FirstOrDefault()) == false)
                 {

@@ -54,16 +54,57 @@
             </GvGrid>
             <MudPaper Elevation="24">
                 <MudButtonGroup Color="Color.Primary" Variant="Variant.Filled">
-                    <MudButton OnClick="OnAddAllItems" >Add All Values</MudButton>
-
-                    <MudButton OnClick="() => _addValueItem = new()"  >Add Value</MudButton>
-
-                    <MudButton OnClick="OnAddAllOtherValuesItem">Add "All other"</MudButton>
-
+                    <MudButton OnClick="OnAddAllItemsClickAsync"
+                               Disabled="@(_processingAddAllValues || _processingRemoveNotExistingValues)">
+                        @if (_processingAddAllValues)
+                        {
+                            <MudProgressCircular Class="ms-n1" Size="MudBlazor.Size.Small" Indeterminate="true" />
+                            <MudText Class="ms-2">Adding Values</MudText>
+                        }
+                        else if (_processingRemoveNotExistingValues)
+                        {
+                            <MudProgressCircular Class="ms-n1" Size="MudBlazor.Size.Small" Indeterminate="true" />
+                            <MudText Class="ms-2">Remove unused</MudText>
+                        }
+                        else
+                        {
+                            <MudText>Add All Values</MudText>
+                        }
+                    </MudButton>
+                    <MudButton OnClick="() => _addValueItem = new()">Add Value</MudButton>
+                    <MudButton OnClick="OnAddAllOtherValuesItemClick">Add "All other"</MudButton>
+                    <MudMenu Label="More ..." Variant="Variant.Filled">
+                        <MudMenuItem Icon="@MudBlazor.Icons.Material.Outlined.Cancel"
+                                     IconColor="Color.Surface">
+                            Cancel
+                        </MudMenuItem>
+                        <MudMenuItem Icon="@MudBlazor.Icons.Material.Outlined.TextFormat"
+                                     IconColor="Color.Primary"
+                                     Onclick="OnLabelStyleClickAsync">
+                            Label Style ...
+                        </MudMenuItem>
+                        <MudMenuItem Icon="@MudBlazor.Icons.Material.Outlined.CopyAll"
+                                     IconColor="Color.Primary"
+                                     Onclick="OnDataValueToLabelClick">
+                            Data Value => Label
+                        </MudMenuItem>
+                        <MudMenuItem Icon="@MudBlazor.Icons.Material.Outlined.Sort"
+                                     IconColor="Color.Primary"
+                                     OnClick="OnLabelOrderingClickAsync">
+                            Order by Labels ...
+                        </MudMenuItem>
+                        <MudMenuItem Icon="@MudBlazor.Icons.Material.Outlined.Delete"
+                                     IconColor="Color.Secondary"
+                                     OnClick="OnRemoveNotExistingItemsClickAsync">
+                            Remove, if not exsts in source
+                        </MudMenuItem>
+                        <MudMenuItem Icon="@MudBlazor.Icons.Material.Filled.Delete"
+                                     IconColor="Color.Secondary"
+                                     OnClick="OnRemoveAllItemsClick">
+                            Remove All
+                        </MudMenuItem>
+                    </MudMenu>
                 </MudButtonGroup>
-                <MudButton Color="Color.Secondary"
-                           Variant="Variant.Filled"
-                           OnClick="OnRemoveAllItems">Remove all</MudButton>
             </MudPaper>
             <MudText Typo="Typo.h6">
                 @($"{_dictKeySymbols.IfKeyExists(CurrentKey(), (l) => l.Count)} items")
@@ -127,6 +168,9 @@
 
     private Dictionary<string, List<KeySymbol<string>>> _dictKeySymbols = new();
     private ManyValueItemModel? _addValueItem = null;
+
+    private bool _processingAddAllValues = false;
+    private bool _processingRemoveNotExistingValues = false;
 
     protected override Task OnParametersSetAsync() => HandleAsync(async () =>
     {
@@ -229,72 +273,135 @@
 
     #region Button Events
 
-    private Task OnAddAllItems() => HandleAsync(async () =>
+    private Task OnAddAllItemsClickAsync() => HandleAsync(async () =>
     {
         if (_renderer is null || _layer?.FeatureClass is null)
         {
             return;
         }
 
-        OnRemoveAllItems();
+        OnRemoveAllItemsClick();
         var keySymbols = CurrentKeySymbolsList();
 
-        await this.ForceRenderComponent();
-
-        QueryFilter filter = new QueryFilter();
-        if (!String.IsNullOrEmpty(_renderer.ValueField1))
+        try
         {
-            filter.AddField(_renderer.ValueField1);
-        }
+            _processingAddAllValues = true;
+            await this.ForceRenderComponent();
 
-        if (!String.IsNullOrEmpty(_renderer.ValueField2))
-        {
-            filter.AddField(_renderer.ValueField2);
-        }
-
-        if (!String.IsNullOrEmpty(_renderer.ValueField3))
-        {
-            filter.AddField(_renderer.ValueField3);
-        }
-        filter.OrderBy = _renderer.ValueField1;
-
-        List<string> keys = new List<string>();
-
-        using (IFeatureCursor cursor = (IFeatureCursor)await _layer.FeatureClass.Search(filter))
-        {
-            IFeature feature;
-
-            while ((feature = await cursor.NextFeature()) != null)
+            QueryFilter filter = new QueryFilter();
+            if (!String.IsNullOrEmpty(_renderer.ValueField1))
             {
-                string key = _renderer.GetKey(feature);
-                if (keys.Contains(key))
+                filter.AddField(_renderer.ValueField1);
+            }
+
+            if (!String.IsNullOrEmpty(_renderer.ValueField2))
+            {
+                filter.AddField(_renderer.ValueField2);
+            }
+
+            if (!String.IsNullOrEmpty(_renderer.ValueField3))
+            {
+                filter.AddField(_renderer.ValueField3);
+            }
+            filter.OrderBy = _renderer.ValueField1;
+
+            HashSet<string> keys = new();
+
+            using (IFeatureCursor cursor = (IFeatureCursor)await _layer.FeatureClass.Search(filter))
+            {
+                IFeature feature;
+
+                while ((feature = await cursor.NextFeature()) != null)
+                {
+                    keys.Add(_renderer.GetKey(feature));
+                }
+            }
+
+            foreach (var key in keys.Order())
+            {
+                var symbol = RendererFunctions.CreateStandardSymbol(_layer.LayerGeometryType);
+
+                if (symbol is null)
                 {
                     continue;
                 }
 
-                keys.Add(key);
-            }
-        }
-        keys.Sort();
+                symbol.AddLegendLabel(key.Replace("|", ", "));
 
-        foreach(var key in keys)
+                keySymbols.Add(new KeySymbol<string>(key, symbol));
+            }
+
+            ApplyChanges();
+        }
+        finally
         {
-            var symbol = RendererFunctions.CreateStandardSymbol(_layer.LayerGeometryType);
-
-            if (symbol is null)
-            {
-                continue;
-            }
-
-            symbol.AddLegendLabel(key.Replace("|", ", "));
-
-            keySymbols.Add(new KeySymbol<string>(key, symbol));
+            _processingAddAllValues = false;
         }
-
-        ApplyChanges();
     });
 
-    private void OnRemoveAllItems() => Handle(() =>
+    private Task OnRemoveNotExistingItemsClickAsync() => HandleAsync(async () =>
+    {
+        if (_renderer is null || _layer?.FeatureClass is null)
+        {
+            return;
+        }
+
+        try
+        {
+            _processingRemoveNotExistingValues = true;
+
+            await this.ForceRenderComponent();
+
+            QueryFilter filter = new QueryFilter();
+            if (!String.IsNullOrEmpty(_renderer.ValueField1))
+            {
+                filter.AddField(_renderer.ValueField1);
+            }
+
+            if (!String.IsNullOrEmpty(_renderer.ValueField2))
+            {
+                filter.AddField(_renderer.ValueField2);
+            }
+
+            if (!String.IsNullOrEmpty(_renderer.ValueField3))
+            {
+                filter.AddField(_renderer.ValueField3);
+            }
+            filter.OrderBy = _renderer.ValueField1;
+
+            HashSet<string> distinctValues = new();
+
+            using (IFeatureCursor cursor = (IFeatureCursor)await _layer.FeatureClass.Search(filter))
+            {
+                IFeature feature;
+
+                while ((feature = await cursor.NextFeature()) != null)
+                {
+                    distinctValues.Add(_renderer.GetKey(feature));
+                }
+            }
+
+            var keySymbols = CurrentKeySymbolsList();
+
+            foreach (var keySymbol in keySymbols.ToArray())
+            {
+                if (keySymbol.Key != ValueMapRenderer.AllOtherValuesKey
+                    && !distinctValues.Contains(keySymbol.Key))
+                {
+                    keySymbols.Remove(keySymbol);
+                    keySymbol.Symbol.Release();
+                }
+            }
+
+            ApplyChanges();
+        }
+        finally
+        {
+            _processingRemoveNotExistingValues = false;
+        }
+    });
+
+    private void OnRemoveAllItemsClick() => Handle(() =>
     {
         if (_renderer is null)
         {
@@ -311,7 +418,7 @@
         ApplyChanges();
     });
 
-    private void OnAddAllOtherValuesItem() => Handle(() =>
+    private void OnAddAllOtherValuesItemClick() => Handle(() =>
     {
         if (_renderer is null)
         {
@@ -370,6 +477,77 @@
             ApplyChanges();
         }
         _addValueItem = null;
+    });
+
+    private Task OnLabelStyleClickAsync() => HandleAsync(async () =>
+    {
+        var selectPromptModel = await AppScopeFactory.ShowModalDialog(
+                typeof(gView.Razor.Dialogs.PromptSelectDialog<LabelCommand>),
+                "Label Command",
+                new PromptSelectDialogModel<LabelCommand>()
+                    {
+                        Options = EnumExtensions
+                                        .ToKeyValuePairs<LabelCommand>()
+                                        .Select(k => new KeyValuePair<string, LabelCommand>(k.Key.ApplyLabelCommand(k.Value), k.Value)),
+                        Required = true,
+                        Prompt = "Select a label command"
+                    }
+        );
+
+        if (selectPromptModel is null) return;
+
+        var keySymbols = CurrentKeySymbolsList();
+
+        foreach (var keySymbol in keySymbols)
+        {
+            keySymbol.LegendLabel = keySymbol.LegendLabel.ApplyLabelCommand(selectPromptModel.SelectedValue);
+        }
+
+        ApplyChanges();
+    });
+
+    private Task OnLabelOrderingClickAsync() => HandleAsync(async () =>
+    {
+        var key = CurrentKey();
+
+        if (_renderer is null || !_dictKeySymbols.ContainsKey(key))
+            return;
+
+        var selectPromptModel = await AppScopeFactory.ShowModalDialog(
+                typeof(gView.Razor.Dialogs.PromptSelectDialog<SortDirection>),
+                "Label Ordering",
+                new PromptSelectDialogModel<SortDirection>()
+                    {
+                        Options = EnumExtensions.ToKeyValuePairs<SortDirection>(ignoreNone: true),
+                        Required = true,
+                        Prompt = "Order by",
+                        SelectedValue = SortDirection.Ascending
+                    }
+        );
+
+        if (selectPromptModel is null) return;
+
+        _dictKeySymbols[key] = _dictKeySymbols[key]
+                                .OrderByDirection(selectPromptModel.SelectedValue, k => k.LegendLabel)
+                                .Select(k => new KeySymbol<string>(k.Key, k.Symbol))  // create new KeySymbols to enforce resortable list to refresh!
+                                .ToList();
+
+
+        ApplyChanges();
+    });
+
+    private void OnDataValueToLabelClick() => Handle(() =>
+    {
+        var keySymbols = CurrentKeySymbolsList();
+
+        foreach (var keySymbol in keySymbols)
+        {
+            if (keySymbol.Key == ValueMapRenderer.AllOtherValuesKey) continue;
+
+            keySymbol.LegendLabel = keySymbol.Key.Replace("|", ", ");
+        }
+
+        ApplyChanges();
     });
 
     private Task SetRotation() => HandleAsync(() =>
