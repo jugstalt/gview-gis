@@ -1,4 +1,7 @@
-﻿using System;
+﻿using SkiaSharp;
+using System;
+using System.Linq;
+using System.Text;
 
 namespace gView.Blazor.Core.Extensions;
 
@@ -37,4 +40,19 @@ static public class StringExtensions
 
     public static string ToEnvironmentVairableName(this string variable)
         => $"%{variable}%";
+
+    static public string AppendNonEmpty(this string? str, string seperator, params string?[] items)
+    {
+        if(items is null) return str;
+
+        StringBuilder result = new StringBuilder(str);
+
+        foreach(var item in items.Where(i=>!String.IsNullOrEmpty(str)))
+        {
+            if (result.Length > 0) result.Append(seperator);
+            result.Append(item);
+        }
+
+        return result.ToString();
+    }
 }

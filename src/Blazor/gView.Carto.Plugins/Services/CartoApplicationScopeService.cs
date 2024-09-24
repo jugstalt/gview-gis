@@ -20,7 +20,6 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Options;
 using Microsoft.JSInterop;
 using MudBlazor;
-using System.Security.Permissions;
 
 namespace gView.Carto.Plugins.Services;
 public class CartoApplicationScopeService : ApplictionBusyHandlerAndCache, ICartoApplicationScopeService
