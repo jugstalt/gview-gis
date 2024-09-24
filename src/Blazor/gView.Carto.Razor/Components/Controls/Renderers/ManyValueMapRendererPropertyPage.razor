@@ -93,6 +93,11 @@
                                      OnClick="OnLabelOrderingClickAsync">
                             Order by Labels ...
                         </MudMenuItem>
+                        <MudMenuItem Icon="@MudBlazor.Icons.Material.Outlined.TextFields"
+                                     IconColor="Color.Primary"
+                                     OnClick="OnSetValueFieldsClickAsync">
+                            Set Value Fields ...
+                        </MudMenuItem>
                         <MudMenuItem Icon="@MudBlazor.Icons.Material.Outlined.Delete"
                                      IconColor="Color.Secondary"
                                      OnClick="OnRemoveNotExistingItemsClickAsync">
@@ -550,6 +555,71 @@
         ApplyChanges();
     });
 
+    private Task OnSetValueFieldsClickAsync() => HandleAsync(async () =>
+    {
+        if (_renderer is null || _layer is null)
+            return;
+
+        var options = _layer.FeatureClass
+                                        .Fields?
+                                        .ToEnumerable()
+                                        .Select(f => new KeyValuePair<string, string>(f.name, f.name))
+                                        .Prepend(new KeyValuePair<string, string>("", ""));
+
+        var selectPromptModel = await AppScopeFactory.ShowModalDialog(
+            typeof(gView.Razor.Dialogs.PromptManySelectDialog<string>),
+            "Set Value Fields",
+            new PromptManySelectDialogModel<string>()
+            {
+                Prompts = [
+                    new PromptSelectDialogModel<string>()
+                    {
+                        Options = options,
+                        Required = true,
+                        Prompt = "Value Field 1",
+                        SelectedValue = _renderer.ValueField1
+                    },
+                    new PromptSelectDialogModel<string>()
+                    {
+                        Options = options,
+                        Required = false,
+                        Prompt = "Value Field 2",
+                        SelectedValue = _renderer.ValueField2
+                    },
+                    new PromptSelectDialogModel<string>()
+                    {
+                        Options = options,
+                        Required = false,
+                        Prompt = "Value Field 3",
+                        SelectedValue = _renderer.ValueField3
+                    }
+                ]
+            }
+
+        );
+
+        if (selectPromptModel?.Prompts is null) return;
+
+        var currentKey = CurrentKey();
+        var newKey = CreateKey(selectPromptModel.Prompts.Select(p => p.SelectedValue).ToArray());
+
+        if (currentKey == newKey) return;
+
+        List<KeySymbol<string>> newKeySymbols = new();
+
+        foreach (var keySymbol in CurrentKeySymbolsList())
+        {
+            newKeySymbols.Add(new KeySymbol<string>(keySymbol.Key, (ISymbol)keySymbol.Symbol.Clone()));
+        }
+
+        _dictKeySymbols[newKey] = newKeySymbols;
+        _renderer.ValueField1 = selectPromptModel.Prompts.First().SelectedValue;
+        _renderer.ValueField2 = selectPromptModel.Prompts.Skip(1).First().SelectedValue;
+        _renderer.ValueField3 = selectPromptModel.Prompts.Skip(2).First().SelectedValue;
+
+        ApplyChanges();
+    });
+
     private Task SetRotation() => HandleAsync(() =>
         _renderer?.SymbolRotation.EditProperties(AppScopeFactory, _layer?.FeatureClass)
         ?? Task.CompletedTask);
@@ -583,27 +653,12 @@
 
     #region Helper
 
-    private string CurrentKey()
-    {
-        if(_renderer is null)
-        {
-            return String.Empty;    
-        }
+    private string CurrentKey() => CreateKey(_renderer?.ValueField1, _renderer?.ValueField2, _renderer?.ValueField3);
 
-        var keyBuilder = new StringBuilder();
-
-        keyBuilder.Append(_renderer.ValueField1);
-        if (!String.IsNullOrEmpty(_renderer.ValueField2))
-        {
-            keyBuilder.Append($"|{_renderer.ValueField2}");
-        }
-        if (!String.IsNullOrEmpty(_renderer.ValueField3))
-        {
-            keyBuilder.Append($"|{_renderer.ValueField3}");
-        }
-
-        return keyBuilder.ToString();
-    }
+    private string CreateKey(params string?[] items)
+        => items is null 
+           ? ""
+           : items.FirstOrDefault()?.AppendNonEmpty("|", items.Skip(1).ToArray()) ?? "";
 
     private List<KeySymbol<string>> CurrentKeySymbolsList()
     {
