@@ -14,7 +14,8 @@
                            @bind-Open="@_drawerIsOpen"
                            OpenMiniOnHover="true"
                            Fixed="false">
-                    <MudList Clickable="true" @bind-SelectedValue="@_currentTab">
+                    <MudList SelectionMode="SelectionMode.SingleSelection" T="Page" 
+                             @bind-SelectedValue="@_currentTab">
 
                         @if (Model.Layer.HasErrors())
                         {
@@ -223,7 +224,7 @@
         Errors
     }
     private bool _drawerIsOpen = false;
-    private object _currentTab = Page.General;
+    private Page _currentTab = Page.General;
 
     private ISpatialReference? _sRef;
 
