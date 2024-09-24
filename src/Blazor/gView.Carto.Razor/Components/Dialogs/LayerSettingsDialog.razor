@@ -71,6 +71,9 @@
                             <MudListItem Icon="@IconService.FromString("basic:cloud-connect")" Style="white-space:nowrap"
                                          Value="Page.MapServiceBehavoir" Text="Map Service Behavoir"
                                          OnClick="() => _drawerIsOpen = false" />
+                            <MudListItem Icon="@IconService.FromString("webgis:polygon-highlighted")" Style="white-space:nowrap"
+                                         Value="Page.GroupSymbology" Text="Group Symbology"
+                                         OnClick="() => _drawerIsOpen = false" />
                         }
 
                         @if (Model.Layer.ImplementsLayerComposition())
@@ -140,6 +143,10 @@
                 else if (Page.MapServiceBehavoir.Equals(_currentTab))
                 {
                     <GroupLayerMapServerBehavoirControl Layer="Model.Layer as IGroupLayer" />
+                }
+                else if(Page.GroupSymbology.Equals(_currentTab))
+                {
+                    <GroupSymbologyControl Map="Model.Map" GroupLayer="Model.Layer as IGroupLayer" />
                 }
                 else if(Page.Source.Equals(_currentTab))
                 {
@@ -215,6 +222,7 @@
         SpatialReference,
         Filter,
         MapServiceBehavoir,
+        GroupSymbology,
         Source,
         CompositionMode,
         Raster,

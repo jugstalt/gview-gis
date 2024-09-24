@@ -1,0 +1,49 @@
+@using gView.GraphicsEngine
+@inherits BaseHandler
+
+<GvCard Title="Group Symbology">
+    <GvCardContent>
+        <ColorSelectorButton @bind-ArgbColor="_penColor" />
+
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   OnClick="OnSetPenColorClick">
+            Set Pen Color
+        </MudButton>
+    </GvCardContent>
+</GvCard>
+
+@code {
+    [Parameter] public IMap? Map { get; set; }
+    [Parameter] public IGroupLayer? GroupLayer { get; set; }
+
+    private ArgbColor _penColor;
+
+    private void OnSetPenColorClick() => Handle(() =>
+    {
+        if (Map?.MapElements is null || GroupLayer is null)
+        {
+            return;
+        }
+
+        foreach (IDatasetElement dsElement in Map.MapElements
+                                                 .Where(e=> e is IFeatureLayer featureLayer 
+                                                            && featureLayer.GroupLayer?.ID == GroupLayer.ID))
+        {
+            IFeatureLayer? fLayer = dsElement as IFeatureLayer;
+            if (fLayer?.FeatureRenderer == null)
+            {
+                continue;
+            }
+
+            IFeatureRenderer fRenderer = fLayer.FeatureRenderer;
+            foreach (ISymbol symbol in fRenderer.Symbols)
+            {
+                if(symbol is IPenColor penColor)
+                {
+                    penColor.PenColor = _penColor;
+                }
+            }
+        }
+    });
+}
