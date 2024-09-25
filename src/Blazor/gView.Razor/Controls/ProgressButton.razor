@@ -1,0 +1,28 @@
+@inherits BaseHandler
+
+<MudButton StartIcon="@(Icon == ProgressIcon ? "" : Icon)"
+           Variant="@Variant" Color="@Color"
+           OnClick="OnClick">
+    @if (Icon == ProgressIcon)
+    {
+        <MudProgressCircular Class="ms-n1" Size="MudBlazor.Size.Small" Indeterminate="true" />
+        <MudText Class="ms-2">@ProgressTitle</MudText>
+    }
+    else
+    {
+        <MudText>
+            @(Title)
+        </MudText>
+    }
+</MudButton>
+
+@code {
+    [Parameter] public string? Title { get; set; } = "Button";
+    [Parameter] public string? ProgressTitle { get; set; } = "...";
+    [Parameter] public string? Icon { get; set; }
+    [Parameter] public MudBlazor.Variant Variant { get; set; }
+    [Parameter] public MudBlazor.Color Color { get; set; }
+    [Parameter] public EventCallback OnClick { get; set; }
+
+    static public readonly string ProgressIcon = "_progress_icon_";
+}

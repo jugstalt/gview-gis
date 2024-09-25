@@ -1,49 +1,228 @@
 @using gView.GraphicsEngine
 @inherits BaseHandler
 
-<GvCard Title="Group Symbology">
-    <GvCardContent>
-        <ColorSelectorButton @bind-ArgbColor="_penColor" />
-
-        <MudButton Variant="Variant.Filled"
-                   Color="Color.Primary"
-                   OnClick="OnSetPenColorClick">
-            Set Pen Color
-        </MudButton>
-    </GvCardContent>
-</GvCard>
-
+<MudText Typo="Typo.h6">
+    @($"{(GroupLayer is null ? "Map" : GroupLayer.Title)} Symbology")
+</MudText>
+<MudAlert Severity="Severity.Warning">
+    Attention: there is no 'undo' for this methods.
+    Please save projekt before apply any method.
+</MudAlert>
+<GvGrid ColumnCount="2">
+    <GvGridItem Span="1">
+        <GvCard Title="Labelling">
+            <GvCardContent>
+                <MudText Typo="Typo.body1">
+                    Set smoothing mode for all labels in the map.
+                </MudText>
+            </GvCardContent>
+            <GvCardActions>
+                <ProgressButton Variant="Variant.Filled" Icon="@_labellingNoSmoothing"
+                                Color="Color.Secondary"
+                                OnClick="() => OnSetLabelSmoothing(SymbolSmoothing.None)"
+                                Title="No Smoothing" />
+                <ProgressButton Variant="Variant.Filled" Icon="@_labellingAntialias"
+                                Color="Color.Primary"
+                                OnClick="() => OnSetLabelSmoothing(SymbolSmoothing.AntiAlias)" 
+                                Title="Antialias" />
+            </GvCardActions>
+        </GvCard>
+    </GvGridItem>
+    <GvGridItem Span="1">
+        <GvCard Title="Feature Rendering">
+            <GvCardContent>
+                <MudText Typo="Typo.body1">
+                    Set smoothing mode for all features in the map.
+                </MudText>
+            </GvCardContent>
+            <GvCardActions>
+                <ProgressButton Variant="Variant.Filled" Icon="@_renderingNoSmoothing"
+                                Color="Color.Secondary"
+                                OnClick="() => OnSetFeatureSmoothing(SymbolSmoothing.None)" 
+                                Title="No Smoothing" />
+                <ProgressButton Variant="Variant.Filled" Icon="@_renderingAntialias"
+                                Color="Color.Primary"
+                                OnClick="() => OnSetFeatureSmoothing(SymbolSmoothing.AntiAlias)" 
+                                Title="Antialias" />
+            </GvCardActions>
+        </GvCard>
+    </GvGridItem>
+</GvGrid>
+    
+<GvGrid>
+    <GvGridItem>
+        <GvCard Title="Color">
+            <GvCardContent>
+                <GvGrid ColumnCount="2">
+                    <GvGridItem>
+                        <MudText Typo="Typo.body1">
+                            Set line/outline color for all features in the map.
+                        </MudText>
+                        <ColorSelectorButton ArgbColor="@_color" Icon="@_penIcon"
+                                             ArgbColorChanged="(c) => OnSetPenColorClick(_color = c)"
+                                             Title="Pen Color" />
+                    </GvGridItem>
+                    <GvGridItem>
+                        <MudText Typo="Typo.body1">
+                            Set fill color features in the map.
+                        </MudText>
+                        <ColorSelectorButton ArgbColor="_color" Icon="@_brushIcon"
+                                             ArgbColorChanged="(c) => OnSetBrushColorClick(_color = c)"
+                                             Title="Fill Color" />
+                    </GvGridItem>
+                    <GvGridItem>
+                        <MudText Typo="Typo.body1">
+                            Set font/text color features in the map.
+                        </MudText>
+                        <ColorSelectorButton ArgbColor="_color" Icon="@_fontColorIcon"
+                                             ArgbColorChanged="(c) => OnSetFontColorClick(_color = c)"
+                                             Title="Text Color"/>
+                    </GvGridItem>
+                </GvGrid>
+            </GvCardContent>
+        </GvCard>
+    </GvGridItem>
+</GvGrid>
+        
 @code {
     [Parameter] public IMap? Map { get; set; }
     [Parameter] public IGroupLayer? GroupLayer { get; set; }
 
-    private ArgbColor _penColor;
 
-    private void OnSetPenColorClick() => Handle(() =>
+    private ArgbColor _color;
+
+    private Task OnSetPenColorClick(ArgbColor color) => HandleAsync(() =>
+        WithUi(() =>
+            ForEachFeatureRendererSymbol<IPenColor>(pen =>
+                pen.PenColor = ArgbColor.FromArgb(pen.PenColor.A, color)
+            ),
+            UIButton.Pen
+        )
+    );
+
+    private Task OnSetBrushColorClick(ArgbColor color) => HandleAsync(() =>
+        WithUi(() =>
+            ForEachFeatureRendererSymbol<IBrushColor>(brush =>
+                brush.FillColor = ArgbColor.FromArgb(brush.FillColor.A, color)
+            ),
+            UIButton.Brush
+        )
+    );
+
+    private Task OnSetFontColorClick(ArgbColor color) => HandleAsync(() =>
+        WithUi(() =>
+            ForEachLabelRendererSymbol<IFontColor>(font =>
+                font.FontColor = ArgbColor.FromArgb(font.FontColor.A, color)
+            ),
+            UIButton.FontColor
+        )
+    );
+
+    private Task OnSetFeatureSmoothing(SymbolSmoothing smoothing) => HandleAsync(() =>
+        WithUi(() => 
+            ForEachFeatureRendererSymbol<ISymbol>(symbol =>
+                symbol.SymbolSmoothingMode = smoothing
+            ),
+            smoothing == SymbolSmoothing.None ? UIButton.RenderingNoSmoothing : UIButton.RenderingAntialias
+            )
+        );
+
+    private Task OnSetLabelSmoothing(SymbolSmoothing smoothing) => HandleAsync(() =>
+        WithUi(() =>
+            ForEachLabelRendererSymbol<ISymbol>(symbol =>
+                symbol.SymbolSmoothingMode = smoothing
+            ),
+            smoothing == SymbolSmoothing.None ? UIButton.LabellingNoSmoothing : UIButton.LabellingAntialias
+            )
+        );
+
+    #region UI
+
+    private enum UIButton
     {
-        if (Map?.MapElements is null || GroupLayer is null)
-        {
-            return;
-        }
+        All,
+        Pen,
+        Brush,
+        FontColor,
+        LabellingNoSmoothing,
+        LabellingAntialias,
+        RenderingNoSmoothing,
+        RenderingAntialias
+    }
 
-        foreach (IDatasetElement dsElement in Map.MapElements
-                                                 .Where(e=> e is IFeatureLayer featureLayer 
-                                                            && featureLayer.GroupLayer?.ID == GroupLayer.ID))
-        {
-            IFeatureLayer? fLayer = dsElement as IFeatureLayer;
-            if (fLayer?.FeatureRenderer == null)
-            {
-                continue;
-            }
+    private const string CheckIcon = MudBlazor.Icons.Material.Rounded.Check;
+    private string? _penIcon, _brushIcon, _fontColorIcon;
+    private string? _labellingNoSmoothing, _labellingAntialias;
+    private string? _renderingNoSmoothing, _renderingAntialias;
 
-            IFeatureRenderer fRenderer = fLayer.FeatureRenderer;
-            foreach (ISymbol symbol in fRenderer.Symbols)
-            {
-                if(symbol is IPenColor penColor)
-                {
-                    penColor.PenColor = _penColor;
-                }
-            }
+    async private Task WithUi(Action action, UIButton uiButton)
+    {
+        //SetUIButtonIcon(UIButton.All, null);
+
+        SetUIButtonIcon(uiButton, ProgressButton.ProgressIcon);
+
+        await ForceRenderComponent();
+        action();
+        await Task.Delay(1000);
+
+        SetUIButtonIcon(uiButton, CheckIcon);
+    }
+
+    private void SetUIButtonIcon(UIButton uIButton, string? icon)
+    {
+        switch(uIButton)
+        {
+            case UIButton.Pen: _penIcon = icon; break;
+            case UIButton.Brush: _brushIcon = icon; break;
+            case UIButton.FontColor: _fontColorIcon = icon; break;
+            case UIButton.LabellingNoSmoothing: _labellingNoSmoothing = icon; _labellingAntialias = null; break;
+            case UIButton.LabellingAntialias: _labellingAntialias = icon; _labellingNoSmoothing = null; break;
+            case UIButton.RenderingNoSmoothing: _renderingNoSmoothing = icon; _renderingAntialias = null; break;
+            case UIButton.RenderingAntialias: _renderingAntialias = icon; _renderingNoSmoothing = null; break;
+            default:
+                _penIcon = _brushIcon = _fontColorIcon = icon;
+                _labellingNoSmoothing = _labellingAntialias = icon;
+                _renderingNoSmoothing = _renderingAntialias = icon;
+                break;
         }
-    });
+    }
+
+    #endregion
+
+    #region Iterators
+
+    private void ForEachLayer<T>(Action<T> action) where T : ILayer
+        => Map?.MapElements.GetLayersInGroup<T>(GroupLayer?.ID, recursive: true).ToList().ForEach(action);
+
+    private void ForeachFeatureRenderer(Action<IFeatureRenderer> action)
+        => ForEachLayer<IFeatureLayer>((featureLayer) =>
+        {
+            if (featureLayer?.FeatureRenderer is not null) action(featureLayer.FeatureRenderer);
+        });
+
+    private void ForeachLabelRenderer(Action<ILabelRenderer> action)
+        => ForEachLayer<IFeatureLayer>((featureLayer) =>
+        {
+            if (featureLayer?.LabelRenderer is not null) action(featureLayer.LabelRenderer);
+        });
+
+    private void ForEachFeatureRendererSymbol<T>(Action<T> action)
+        => ForeachFeatureRenderer((featureRenderer) =>
+        {
+            featureRenderer.Symbols?.ToList().ForEach((symbol) =>
+            {
+                if (typeof(T).IsAssignableFrom(symbol.GetType())) action((T)symbol);
+            });
+        });
+
+    private void ForEachLabelRendererSymbol<T>(Action<T> action)
+        => ForeachLabelRenderer((labelRenderer) =>
+        {
+            labelRenderer.Symbols?.ToList().ForEach((symbol) =>
+            {
+                if (typeof(T).IsAssignableFrom(symbol.GetType())) action((T)symbol);
+            });
+        });
+
+    #endregion
 }
