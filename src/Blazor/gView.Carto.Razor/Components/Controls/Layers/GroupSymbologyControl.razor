@@ -1,5 +1,6 @@
 @using gView.GraphicsEngine
 @inherits BaseHandler
+@inject ICartoApplicationScopeService AppScope
 
 <MudText Typo="Typo.h6">
     @($"{(GroupLayer is null ? "Map" : GroupLayer.Title)} Symbology")
@@ -17,11 +18,11 @@
                 </MudText>
             </GvCardContent>
             <GvCardActions>
-                <ProgressButton Variant="Variant.Filled" Icon="@_labellingNoSmoothing"
+                <ProgressButton Variant="Variant.Filled" Icon="@_labellingNoSmoothingIcon"
                                 Color="Color.Secondary"
                                 OnClick="() => OnSetLabelSmoothing(SymbolSmoothing.None)"
                                 Title="No Smoothing" />
-                <ProgressButton Variant="Variant.Filled" Icon="@_labellingAntialias"
+                <ProgressButton Variant="Variant.Filled" Icon="@_labellingAntialiasIcon"
                                 Color="Color.Primary"
                                 OnClick="() => OnSetLabelSmoothing(SymbolSmoothing.AntiAlias)" 
                                 Title="Antialias" />
@@ -36,11 +37,11 @@
                 </MudText>
             </GvCardContent>
             <GvCardActions>
-                <ProgressButton Variant="Variant.Filled" Icon="@_renderingNoSmoothing"
+                <ProgressButton Variant="Variant.Filled" Icon="@_renderingNoSmoothingIcon"
                                 Color="Color.Secondary"
                                 OnClick="() => OnSetFeatureSmoothing(SymbolSmoothing.None)" 
                                 Title="No Smoothing" />
-                <ProgressButton Variant="Variant.Filled" Icon="@_renderingAntialias"
+                <ProgressButton Variant="Variant.Filled" Icon="@_renderingAntialiasIcon"
                                 Color="Color.Primary"
                                 OnClick="() => OnSetFeatureSmoothing(SymbolSmoothing.AntiAlias)" 
                                 Title="Antialias" />
@@ -58,28 +59,60 @@
                         <MudText Typo="Typo.body1">
                             Set line/outline color for all features in the map.
                         </MudText>
-                        <ColorSelectorButton ArgbColor="@_color" Icon="@_penIcon"
-                                             ArgbColorChanged="(c) => OnSetPenColorClick(_color = c)"
+                        <ColorSelectorButton ArgbColor="@_penColor" Icon="@_penIcon"
+                                             ArgbColorChanged="(c) => OnSetPenColorClick(_penColor = c)"
                                              Title="Pen Color" />
                     </GvGridItem>
                     <GvGridItem>
                         <MudText Typo="Typo.body1">
                             Set fill color features in the map.
                         </MudText>
-                        <ColorSelectorButton ArgbColor="_color" Icon="@_brushIcon"
-                                             ArgbColorChanged="(c) => OnSetBrushColorClick(_color = c)"
+                        <ColorSelectorButton ArgbColor="_fillColor" Icon="@_brushIcon"
+                                             ArgbColorChanged="(c) => OnSetBrushColorClick(_fillColor = c)"
                                              Title="Fill Color" />
                     </GvGridItem>
                     <GvGridItem>
                         <MudText Typo="Typo.body1">
                             Set font/text color features in the map.
                         </MudText>
-                        <ColorSelectorButton ArgbColor="_color" Icon="@_fontColorIcon"
-                                             ArgbColorChanged="(c) => OnSetFontColorClick(_color = c)"
+                        <ColorSelectorButton ArgbColor="_fontColor" Icon="@_fontColorIcon"
+                                             ArgbColorChanged="(c) => OnSetFontColorClick(_fontColor = c)"
                                              Title="Text Color"/>
                     </GvGridItem>
                 </GvGrid>
             </GvCardContent>
+        </GvCard>
+    </GvGridItem>
+</GvGrid>
+
+<GvGrid>
+    <GvGridItem>
+        <GvCard Title="Size">
+            <GvGrid ColumnCount="2">
+                <GvGridItem>
+                    <MudText Typo="Typo.body1">
+                        Set pen with (line-width) for all features in the map.
+                    </MudText>
+                    <MudNumericField @bind-Value="_penWidthFactor" 
+                                     Label="Pen-Width factor"/>
+                    <ProgressButton Variant="Variant.Filled" Icon="@_penWidthIcon"
+                               Color="Color.Primary"
+                                    Onclick="async () => { await OnSetPenWidthFactorClick(_penWidthFactor); _penWidthFactor = 1; }"
+                               Title="Apply Width Factor" />
+                </GvGridItem>
+                <GvGridItem>
+                    <MudText Typo="Typo.body1">
+                        Set symbol size (point size) for all features in the map.
+                    </MudText>
+                    <MudNumericField @bind-Value="_symbolSizeFactor" 
+                                     Label="Symbol-Size factor"/>
+                    <ProgressButton Variant="Variant.Filled" Icon="@_symbolSizeIcon"
+                               Color="Color.Primary"
+                               Onclick="async () => { await OnSetSymbolSizeFactorClick(_penWidthFactor); _symbolSizeFactor = 1; }"
+                               Title="Apply Width Factor" />
+
+                </GvGridItem>
+            </GvGrid>
         </GvCard>
     </GvGridItem>
 </GvGrid>
@@ -88,8 +121,8 @@
     [Parameter] public IMap? Map { get; set; }
     [Parameter] public IGroupLayer? GroupLayer { get; set; }
 
-
-    private ArgbColor _color;
+    private ArgbColor _penColor, _fillColor, _fontColor;
+    float _penWidthFactor = 1f, _symbolSizeFactor = 1f;
 
     private Task OnSetPenColorClick(ArgbColor color) => HandleAsync(() =>
         WithUi(() =>
@@ -115,6 +148,24 @@
                 font.FontColor = ArgbColor.FromArgb(font.FontColor.A, color)
             ),
             UIButton.FontColor
+        )
+    );
+
+    private Task OnSetPenWidthFactorClick(float widthFactor) => HandleAsync(() =>
+        WithUi(() =>
+            ForEachFeatureRendererSymbol<IPenWidth>(pen =>
+                pen.PenWidth *= widthFactor
+            ),
+            UIButton.PenWidth
+        )
+    );
+
+    private Task OnSetSymbolSizeFactorClick(float widthFactor) => HandleAsync(() =>
+        WithUi(() =>
+            ForEachFeatureRendererSymbol<ISymbolSize>(symbol =>
+                symbol.SymbolSize *= widthFactor
+        ),
+            UIButton.SymbolSize
         )
     );
 
@@ -147,13 +198,16 @@
         LabellingNoSmoothing,
         LabellingAntialias,
         RenderingNoSmoothing,
-        RenderingAntialias
+        RenderingAntialias,
+        PenWidth,
+        SymbolSize
     }
 
     private const string CheckIcon = MudBlazor.Icons.Material.Rounded.Check;
     private string? _penIcon, _brushIcon, _fontColorIcon;
-    private string? _labellingNoSmoothing, _labellingAntialias;
-    private string? _renderingNoSmoothing, _renderingAntialias;
+    private string? _labellingNoSmoothingIcon, _labellingAntialiasIcon;
+    private string? _renderingNoSmoothingIcon, _renderingAntialiasIcon;
+    private string? _penWidthIcon, _symbolSizeIcon;
 
     async private Task WithUi(Action action, UIButton uiButton)
     {
@@ -163,6 +217,7 @@
 
         await ForceRenderComponent();
         action();
+        await AppScope.EventBus.FireRefreshMapAsync();
         await Task.Delay(1000);
 
         SetUIButtonIcon(uiButton, CheckIcon);
@@ -175,14 +230,17 @@
             case UIButton.Pen: _penIcon = icon; break;
             case UIButton.Brush: _brushIcon = icon; break;
             case UIButton.FontColor: _fontColorIcon = icon; break;
-            case UIButton.LabellingNoSmoothing: _labellingNoSmoothing = icon; _labellingAntialias = null; break;
-            case UIButton.LabellingAntialias: _labellingAntialias = icon; _labellingNoSmoothing = null; break;
-            case UIButton.RenderingNoSmoothing: _renderingNoSmoothing = icon; _renderingAntialias = null; break;
-            case UIButton.RenderingAntialias: _renderingAntialias = icon; _renderingNoSmoothing = null; break;
+            case UIButton.LabellingNoSmoothing: _labellingNoSmoothingIcon = icon; _labellingAntialiasIcon = null; break;
+            case UIButton.LabellingAntialias: _labellingAntialiasIcon = icon; _labellingNoSmoothingIcon = null; break;
+            case UIButton.RenderingNoSmoothing: _renderingNoSmoothingIcon = icon; _renderingAntialiasIcon = null; break;
+            case UIButton.RenderingAntialias: _renderingAntialiasIcon = icon; _renderingNoSmoothingIcon = null; break;
+            case UIButton.PenWidth: _penWidthIcon = icon; break;
+            case UIButton.SymbolSize: _symbolSizeIcon = icon; break;
             default:
                 _penIcon = _brushIcon = _fontColorIcon = icon;
-                _labellingNoSmoothing = _labellingAntialias = icon;
-                _renderingNoSmoothing = _renderingAntialias = icon;
+                _labellingNoSmoothingIcon = _labellingAntialiasIcon = icon;
+                _renderingNoSmoothingIcon = _renderingAntialiasIcon = icon;
+                _penWidthIcon = _symbolSizeIcon = icon;
                 break;
         }
     }
