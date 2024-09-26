@@ -4,6 +4,7 @@ using gView.Framework.Data.Filters;
 using gView.GraphicsEngine;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 
 namespace gView.Framework.Data.Extensions
 {
@@ -84,6 +85,11 @@ namespace gView.Framework.Data.Extensions
                 newFeatureLayer.MaxLabelRefScaleFactor = originalFeatureLayer.MaxLabelRefScaleFactor;
 
                 newFeatureLayer.Joins = originalFeatureLayer.Joins?.Clone() as FeatureLayerJoins;
+
+                newFeatureLayer.ApplyRefScale = originalFeatureLayer.ApplyRefScale;
+                newFeatureLayer.ApplyLabelRefScale = originalFeatureLayer.ApplyLabelRefScale;
+                newFeatureLayer.MaxRefScaleFactor = originalFeatureLayer.MaxRefScaleFactor;
+                newFeatureLayer.MaxLabelRefScaleFactor = originalFeatureLayer.MaxLabelRefScaleFactor;
             }
 
             #endregion
@@ -131,7 +137,8 @@ namespace gView.Framework.Data.Extensions
                     IMap map,
                     bool recursive = true,
                     IGroupLayer targetGroupLayer = null,
-                    bool newName = true)
+                    string newName = "",
+                    bool applyNewName = true)
         {
             var result = new List<ILayer>();
 
@@ -146,9 +153,10 @@ namespace gView.Framework.Data.Extensions
 
             copy.ClonePropertiesFrom(layer);
             copy.TrySetGroupLayer(targetGroupLayer ?? layer.GroupLayer);
-            copy.Title = newName switch
+
+            copy.Title = applyNewName switch
             {
-                true => layer.NextUnusedName(map),
+                true => string.IsNullOrEmpty(newName) ? layer.NextUnusedName(map) : newName,
                 false => layer.TocNameOrLayerTitle(map)
             };
 
@@ -160,7 +168,7 @@ namespace gView.Framework.Data.Extensions
             {
                 foreach (var childLayer in groupLayer.ChildLayers ?? [])
                 {
-                    result.AddRange(childLayer.CreateCopy(map, targetGroupLayer: copyGroup, newName: false));
+                    result.AddRange(childLayer.CreateCopy(map, targetGroupLayer: copyGroup, applyNewName: false));
                 }
             }
 

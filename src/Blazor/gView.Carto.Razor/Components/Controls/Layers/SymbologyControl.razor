@@ -3,59 +3,58 @@
 @inject ICartoApplicationScopeService AppScope
 
 <MudText Typo="Typo.h6">
-    @($"{(GroupLayer is null ? "Map" : GroupLayer.Title)} Symbology")
+    @($"{(Layer is null ? "Map" : Layer.Title)} Symbology")
 </MudText>
-<MudAlert Severity="Severity.Warning">
-    Attention: there is no 'undo' for this methods.
-    Please save projekt before apply any method.
-</MudAlert>
-<GvGrid ColumnCount="2">
-    <GvGridItem Span="1">
-        <GvCard Title="Labelling">
-            <GvCardContent>
+
+@if (!CanUndo())
+{
+    <MudAlert Severity="Severity.Warning">
+        Attention: there is no 'undo' for this methods.
+        Please save projekt before apply any method.
+    </MudAlert>
+}
+<GvCard Title="Smoothing">
+    <GvCardContent>
+        <GvGrid ColumnCount="2">
+            <GvGridItem>
+                <MudText Typo="Typo.h6">Labelling:</MudText>
                 <MudText Typo="Typo.body1">
                     Set smoothing mode for all labels in the map.
                 </MudText>
-            </GvCardContent>
-            <GvCardActions>
                 <ProgressButton Variant="Variant.Filled" Icon="@_labellingNoSmoothingIcon"
                                 Color="Color.Secondary"
                                 OnClick="() => OnSetLabelSmoothing(SymbolSmoothing.None)"
                                 Title="No Smoothing" />
                 <ProgressButton Variant="Variant.Filled" Icon="@_labellingAntialiasIcon"
                                 Color="Color.Primary"
-                                OnClick="() => OnSetLabelSmoothing(SymbolSmoothing.AntiAlias)" 
+                                OnClick="() => OnSetLabelSmoothing(SymbolSmoothing.AntiAlias)"
                                 Title="Antialias" />
-            </GvCardActions>
-        </GvCard>
-    </GvGridItem>
-    <GvGridItem Span="1">
-        <GvCard Title="Feature Rendering">
-            <GvCardContent>
+            </GvGridItem>
+            <GvGridItem>
+                <MudText Typo="Typo.h6">Feature Rendering:</MudText>
                 <MudText Typo="Typo.body1">
                     Set smoothing mode for all features in the map.
                 </MudText>
-            </GvCardContent>
-            <GvCardActions>
                 <ProgressButton Variant="Variant.Filled" Icon="@_renderingNoSmoothingIcon"
                                 Color="Color.Secondary"
-                                OnClick="() => OnSetFeatureSmoothing(SymbolSmoothing.None)" 
+                                OnClick="() => OnSetFeatureSmoothing(SymbolSmoothing.None)"
                                 Title="No Smoothing" />
                 <ProgressButton Variant="Variant.Filled" Icon="@_renderingAntialiasIcon"
                                 Color="Color.Primary"
-                                OnClick="() => OnSetFeatureSmoothing(SymbolSmoothing.AntiAlias)" 
+                                OnClick="() => OnSetFeatureSmoothing(SymbolSmoothing.AntiAlias)"
                                 Title="Antialias" />
-            </GvCardActions>
-        </GvCard>
-    </GvGridItem>
-</GvGrid>
+            </GvGridItem>
+        </GvGrid>
+    </GvCardContent>
+</GvCard>
     
 <GvGrid>
     <GvGridItem>
         <GvCard Title="Color">
             <GvCardContent>
-                <GvGrid ColumnCount="2">
+                <GvGrid ColumnCount="3">
                     <GvGridItem>
+                        <MudText Typo="Typo.h6">Pens:</MudText>
                         <MudText Typo="Typo.body1">
                             Set line/outline color for all features in the map.
                         </MudText>
@@ -64,6 +63,7 @@
                                              Title="Pen Color" />
                     </GvGridItem>
                     <GvGridItem>
+                        <MudText Typo="Typo.h6">Bushes (Fill):</MudText>
                         <MudText Typo="Typo.body1">
                             Set fill color features in the map.
                         </MudText>
@@ -72,6 +72,7 @@
                                              Title="Fill Color" />
                     </GvGridItem>
                     <GvGridItem>
+                        <MudText Typo="Typo.h6">Labels:</MudText>
                         <MudText Typo="Typo.body1">
                             Set font/text color features in the map.
                         </MudText>
@@ -88,104 +89,114 @@
 <GvGrid>
     <GvGridItem>
         <GvCard Title="Size">
-            <GvGrid ColumnCount="2">
-                <GvGridItem>
-                    <MudText Typo="Typo.body1">
-                        Set pen with (line-width) for all features in the map.
-                    </MudText>
-                    <MudNumericField @bind-Value="_penWidthFactor" 
-                                     Label="Pen-Width factor"/>
-                    <ProgressButton Variant="Variant.Filled" Icon="@_penWidthIcon"
-                               Color="Color.Primary"
-                                    Onclick="async () => { await OnSetPenWidthFactorClick(_penWidthFactor); _penWidthFactor = 1; }"
-                               Title="Apply Width Factor" />
-                </GvGridItem>
-                <GvGridItem>
-                    <MudText Typo="Typo.body1">
-                        Set symbol size (point size) for all features in the map.
-                    </MudText>
-                    <MudNumericField @bind-Value="_symbolSizeFactor" 
-                                     Label="Symbol-Size factor"/>
-                    <ProgressButton Variant="Variant.Filled" Icon="@_symbolSizeIcon"
-                               Color="Color.Primary"
-                               Onclick="async () => { await OnSetSymbolSizeFactorClick(_penWidthFactor); _symbolSizeFactor = 1; }"
-                               Title="Apply Width Factor" />
+            <GvCardContent>
+                <GvGrid ColumnCount="2">
+                    <GvGridItem>
+                        <MudText Typo="Typo.h6">Pens:</MudText>
+                        <MudText Typo="Typo.body1">
+                            Set pen with (line-width) for all features in the map.
+                        </MudText>
+                        <GvGrid ColumnCount="2">
+                            <GvGridItem>
+                                <MudNumericField @bind-Value="_penWidthFactor"
+                                                 Label="Pen-Width factor" />
+                            </GvGridItem>
+                            <GvGridItem>
+                                <ProgressButton Variant="Variant.Filled" Icon="@_penWidthIcon"
+                                                Color="Color.Primary"
+                                                Onclick="async () => { await OnSetPenWidthFactorClick(_penWidthFactor); _penWidthFactor = 1; }"
+                                                Title="Apply Factor" />
+                            </GvGridItem>
+                        </GvGrid>
 
-                </GvGridItem>
-            </GvGrid>
+
+                    </GvGridItem>
+                    <GvGridItem>
+                        <MudText Typo="Typo.h6">Symbols:</MudText>
+                        <MudText Typo="Typo.body1">
+                            Set symbol size (point size) for all features in the map.
+                        </MudText>
+                        <GvGrid ColumnCount="2">
+                            <GvGridItem>
+                                <MudNumericField @bind-Value="_symbolSizeFactor"
+                                                 Label="Symbol-Size factor" />
+                            </GvGridItem>
+                            <GvGridItem>
+                                <ProgressButton Variant="Variant.Filled" Icon="@_symbolSizeIcon"
+                                                Color="Color.Primary"
+                                                Onclick="async () => { await OnSetSymbolSizeFactorClick(_symbolSizeFactor); _symbolSizeFactor = 1; }"
+                                                Title="Apply Factor" />
+                            </GvGridItem>
+                        </GvGrid>
+                    </GvGridItem>
+                </GvGrid>
+            </GvCardContent>
+            
         </GvCard>
     </GvGridItem>
 </GvGrid>
         
 @code {
     [Parameter] public IMap? Map { get; set; }
-    [Parameter] public IGroupLayer? GroupLayer { get; set; }
+    [Parameter] public ILayer? Layer { get; set; }
 
     private ArgbColor _penColor, _fillColor, _fontColor;
     float _penWidthFactor = 1f, _symbolSizeFactor = 1f;
 
-    private Task OnSetPenColorClick(ArgbColor color) => HandleAsync(() =>
-        WithUi(() =>
-            ForEachFeatureRendererSymbol<IPenColor>(pen =>
-                pen.PenColor = ArgbColor.FromArgb(pen.PenColor.A, color)
-            ),
-            UIButton.Pen
-        )
-    );
-
-    private Task OnSetBrushColorClick(ArgbColor color) => HandleAsync(() =>
-        WithUi(() =>
-            ForEachFeatureRendererSymbol<IBrushColor>(brush =>
-                brush.FillColor = ArgbColor.FromArgb(brush.FillColor.A, color)
-            ),
-            UIButton.Brush
-        )
-    );
-
-    private Task OnSetFontColorClick(ArgbColor color) => HandleAsync(() =>
-        WithUi(() =>
-            ForEachLabelRendererSymbol<IFontColor>(font =>
-                font.FontColor = ArgbColor.FromArgb(font.FontColor.A, color)
-            ),
-            UIButton.FontColor
-        )
-    );
-
-    private Task OnSetPenWidthFactorClick(float widthFactor) => HandleAsync(() =>
-        WithUi(() =>
-            ForEachFeatureRendererSymbol<IPenWidth>(pen =>
-                pen.PenWidth *= widthFactor
-            ),
-            UIButton.PenWidth
-        )
-    );
-
-    private Task OnSetSymbolSizeFactorClick(float widthFactor) => HandleAsync(() =>
-        WithUi(() =>
-            ForEachFeatureRendererSymbol<ISymbolSize>(symbol =>
-                symbol.SymbolSize *= widthFactor
+    private Task OnSetPenColorClick(ArgbColor color) => HandleWithUiAsync(() =>
+        ForEachFeatureRendererSymbol<IPenColor>(pen =>
+            pen.PenColor = ArgbColor.FromArgb(pen.PenColor.A, color)
         ),
-            UIButton.SymbolSize
-        )
+        UIButton.Pen
     );
 
-    private Task OnSetFeatureSmoothing(SymbolSmoothing smoothing) => HandleAsync(() =>
-        WithUi(() => 
-            ForEachFeatureRendererSymbol<ISymbol>(symbol =>
-                symbol.SymbolSmoothingMode = smoothing
-            ),
-            smoothing == SymbolSmoothing.None ? UIButton.RenderingNoSmoothing : UIButton.RenderingAntialias
-            )
-        );
+    private Task OnSetBrushColorClick(ArgbColor color) => HandleWithUiAsync(() =>
+        ForEachFeatureRendererSymbol<IBrushColor>(brush =>
+            brush.FillColor = ArgbColor.FromArgb(brush.FillColor.A, color)
+        ),
+        UIButton.Brush
+    );
 
-    private Task OnSetLabelSmoothing(SymbolSmoothing smoothing) => HandleAsync(() =>
-        WithUi(() =>
-            ForEachLabelRendererSymbol<ISymbol>(symbol =>
-                symbol.SymbolSmoothingMode = smoothing
-            ),
-            smoothing == SymbolSmoothing.None ? UIButton.LabellingNoSmoothing : UIButton.LabellingAntialias
-            )
-        );
+    private Task OnSetFontColorClick(ArgbColor color) =>  HandleWithUiAsync(() =>
+        ForEachLabelRendererSymbol<IFontColor>(font =>
+            font.FontColor = ArgbColor.FromArgb(font.FontColor.A, color)
+        ),
+        UIButton.FontColor
+    );
+
+    private Task OnSetPenWidthFactorClick(float widthFactor) =>  HandleWithUiAsync(() =>
+        ForEachFeatureRendererSymbol<IPenWidth>(pen =>
+            pen.PenWidth *= widthFactor
+        ),
+        UIButton.PenWidth
+    );
+
+    private Task OnSetSymbolSizeFactorClick(float sizeFactor) => HandleWithUiAsync(() =>
+            ForEachFeatureRendererSymbol<ISymbolSize>(symbol =>
+                symbol.SymbolSize *= sizeFactor
+        ),
+        UIButton.SymbolSize
+    );
+
+    private Task OnSetFeatureSmoothing(SymbolSmoothing smoothing) => HandleWithUiAsync(() => 
+        ForEachFeatureRendererSymbol<ISymbol>(symbol =>
+            symbol.SymbolSmoothingMode = smoothing
+        ),
+        smoothing == SymbolSmoothing.None ? UIButton.RenderingNoSmoothing : UIButton.RenderingAntialias
+    );
+
+    private Task OnSetLabelSmoothing(SymbolSmoothing smoothing) => HandleWithUiAsync(() =>
+        ForEachLabelRendererSymbol<ISymbol>(symbol =>
+            symbol.SymbolSmoothingMode = smoothing
+        ),
+        smoothing == SymbolSmoothing.None ? UIButton.LabellingNoSmoothing : UIButton.LabellingAntialias 
+    );
+
+    #region Helper
+
+    private bool CanUndo() => !(Layer is null || Layer is IGroupLayer);
+
+    #endregion
 
     #region UI
 
@@ -209,7 +220,7 @@
     private string? _renderingNoSmoothingIcon, _renderingAntialiasIcon;
     private string? _penWidthIcon, _symbolSizeIcon;
 
-    async private Task WithUi(Action action, UIButton uiButton)
+    private Task HandleWithUiAsync(Action action, UIButton uiButton) => HandleAsync(async () =>
     {
         //SetUIButtonIcon(UIButton.All, null);
 
@@ -217,11 +228,15 @@
 
         await ForceRenderComponent();
         action();
-        await AppScope.EventBus.FireRefreshMapAsync();
-        await Task.Delay(1000);
+
+        if (!CanUndo()) // refresh map to show changes
+        {
+            await AppScope.EventBus.FireRefreshMapAsync();
+            await Task.Delay(1000);
+        }
 
         SetUIButtonIcon(uiButton, CheckIcon);
-    }
+    });
 
     private void SetUIButtonIcon(UIButton uIButton, string? icon)
     {
@@ -250,7 +265,20 @@
     #region Iterators
 
     private void ForEachLayer<T>(Action<T> action) where T : ILayer
-        => Map?.MapElements.GetLayersInGroup<T>(GroupLayer?.ID, recursive: true).ToList().ForEach(action);
+    {
+        if(Layer is null) // all map layers
+        {
+            Map?.MapElements.GetLayersInGroup<T>(null, recursive: true).ToList().ForEach(action);
+        }
+        else if(Layer is IGroupLayer) // group Layers
+        {
+            Map?.MapElements.GetLayersInGroup<T>(Layer?.ID, recursive: true).ToList().ForEach(action);
+        }
+        else if(typeof(T).IsAssignableFrom(Layer.GetType()))  // this Layer
+        {
+            action((T)Layer);
+        }
+    }
 
     private void ForeachFeatureRenderer(Action<IFeatureRenderer> action)
         => ForEachLayer<IFeatureLayer>((featureLayer) =>
