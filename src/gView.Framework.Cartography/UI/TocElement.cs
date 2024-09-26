@@ -1,6 +1,6 @@
-﻿using gView.Framework.Core.Data;
+﻿using gView.Framework.Core.Common;
+using gView.Framework.Core.Data;
 using gView.Framework.Core.IO;
-using gView.Framework.Core.Common;
 using gView.Framework.Core.UI;
 using gView.Framework.Data;
 using System.Collections.Generic;
@@ -187,18 +187,23 @@ internal class TocElement : ITocElement
             {
                 foreach (ILayer layer in _layers)
                 {
-                    if (!(layer is Layer))
+                    if (layer is Layer l)
                     {
-                        continue;
-                    }
+                        if (layer.GroupLayer is GroupLayer prevGroupLayer)
+                        {
+                            prevGroupLayer.Remove(layer as Layer);
+                        }
 
-                    if (layer.GroupLayer is GroupLayer)
-                    {
-                        ((GroupLayer)layer.GroupLayer).Remove(layer as Layer);
-                    }
+                        l.GroupLayer =
+                            _parent != null && _parent.Layers.Count == 1
+                                ? _parent.Layers[0] as IGroupLayer
+                                : null;
 
-                    ((Layer)layer).GroupLayer =
-                        _parent != null && _parent.Layers.Count == 1 ? _parent.Layers[0] as IGroupLayer : null;
+                        if(layer.GroupLayer is GroupLayer newGroupLayer)
+                        {
+                            newGroupLayer.Add(l);
+                        }
+                    }
                 }
             }
         }

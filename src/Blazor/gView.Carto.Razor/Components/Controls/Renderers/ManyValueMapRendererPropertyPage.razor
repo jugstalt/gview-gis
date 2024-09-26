@@ -309,6 +309,7 @@
                 filter.AddField(_renderer.ValueField3);
             }
             filter.OrderBy = _renderer.ValueField1;
+            filter.WhereClause = _layer.FilterQuery?.WhereClause;
 
             HashSet<string> keys = new();
 
@@ -373,6 +374,7 @@
                 filter.AddField(_renderer.ValueField3);
             }
             filter.OrderBy = _renderer.ValueField1;
+            filter.WhereClause = _layer.FilterQuery?.WhereClause;
 
             HashSet<string> distinctValues = new();
 

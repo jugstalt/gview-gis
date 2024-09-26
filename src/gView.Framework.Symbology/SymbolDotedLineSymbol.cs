@@ -11,6 +11,7 @@ using gView.GraphicsEngine.Abstraction;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using gView.GraphicsEngine;
 
 namespace gView.Framework.Symbology
 {
@@ -21,7 +22,12 @@ namespace gView.Framework.Symbology
     }
 
     [RegisterPlugIn("C13DF1F1-FB0A-4C47-AF73-05A184880612")]
-    public class SymbolDotedLineSymbol : Symbol, ILineSymbol, IPersistable
+    public class SymbolDotedLineSymbol : Symbol, 
+                                         ILineSymbol,
+                                         IPenColor,
+                                         IBrushColor,
+                                         IFontColor,
+                                         IPersistable
     {
         [Browsable(true)]
         [DisplayName("Symbol")]
@@ -289,6 +295,105 @@ namespace gView.Framework.Symbology
             if (this.LineSymbol != null)
             {
                 this.LineSymbol.Release();
+            }
+        }
+
+        #endregion
+
+        #region IPenColor
+
+        public ArgbColor PenColor 
+        {
+            get
+            {
+                if (LineSymbol is IPenColor line)
+                {
+                    return line.PenColor;
+                }
+                if (PointSymbol is IPenColor point)
+                {
+                    return point.PenColor;
+                }
+
+                return ArgbColor.Transparent;
+            }
+
+            set
+            {
+                if (LineSymbol is IPenColor line)
+                {
+                    line.PenColor = value;
+                }
+                if (PointSymbol is IPenColor point)
+                {
+                    point.PenColor = value;
+                }
+            }
+        }
+
+        #endregion
+
+        #region IBrushColor
+
+        public ArgbColor FillColor 
+        {
+            get
+            {
+                if (PointSymbol is IBrushColor point)
+                {
+                    return point.FillColor;
+                }
+                if (LineSymbol is IBrushColor line)
+                {
+                    return line.FillColor;
+                }
+
+                return ArgbColor.Transparent;
+            }
+
+            set
+            {
+                if (LineSymbol is IBrushColor line)
+                {
+                    line.FillColor = value;
+                }
+                if (PointSymbol is IBrushColor point)
+                {
+                    point.FillColor = value;
+                }
+            }
+        }
+
+        #endregion
+
+        #region IFontColor
+
+        public ArgbColor FontColor
+        {
+            get
+            {
+                if (PointSymbol is IFontColor point)
+                {
+                    return point.FontColor;
+                }
+                if (LineSymbol is IFontColor line)
+                {
+                    return line.FontColor;
+                }
+
+                return ArgbColor.Transparent;
+            }
+
+            set
+            {
+                if (LineSymbol is IFontColor line)
+                {
+                    line.FontColor = value;
+                }
+                if (PointSymbol is IFontColor point)
+                {
+                    point.FontColor = value;
+                }
             }
         }
 

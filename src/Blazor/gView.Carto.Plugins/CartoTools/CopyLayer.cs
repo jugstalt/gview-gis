@@ -3,21 +3,14 @@ using gView.Carto.Core;
 using gView.Carto.Core.Services.Abstraction;
 using gView.Carto.Razor.Components.Dialogs;
 using gView.Carto.Razor.Components.Dialogs.Models;
-using gView.Framework.Blazor;
 using gView.Framework.Carto.Abstraction;
 using gView.Framework.Cartography;
-using gView.Framework.Core.Carto;
 using gView.Framework.Core.Common;
 using gView.Framework.Core.Data;
 using gView.Framework.Core.Data.Cursors;
 using gView.Framework.Data;
 using gView.Framework.Data.Extensions;
 using gView.Framework.Data.Filters;
-using gView.GraphicsEngine;
-using gView.Razor.Dialogs.Models;
-using gView.Razor.Leaflet;
-using SkiaSharp;
-using static System.Formats.Asn1.AsnWriter;
 
 namespace gView.Carto.Plugins.CartoTools;
 
@@ -72,11 +65,11 @@ internal class CopyLayer : ICartoButton
     {
         var map = model.Map!;
         var originalLayer = model.Layer;
-        var newLayers = originalLayer.CreateCopy(map, newName: model.NewNamePattern);
+        var copyElements = originalLayer.CreateCopy(map, newName: model.NewNamePattern);
 
-        foreach (var newLayer in newLayers)
+        foreach (var copyElement in copyElements)
         {
-            if (newLayers.IndexOf(newLayer) == 0)  // first shoud be positioned ater original
+            if (copyElements.IndexOf(copyElement) == 0)  // first shoud be positioned after original
             {
                 int pos = -1;
                 if (map.TOC?.Elements != null)
@@ -84,11 +77,17 @@ internal class CopyLayer : ICartoButton
                     var originalTocElement = scope.Document.Map.TOC.Elements.FirstOrDefault(e => e.Layers != null && e.Layers.Contains(originalLayer));
                     pos = scope.Document.Map.TOC.Elements.IndexOf(originalTocElement) + 1;
                 }
-                map.AddLayer(newLayer, pos);
+                map.AddLayer(copyElement.layer, pos);
             }
             else
             {
-                map.AddLayer(newLayer);
+                map.AddLayer(copyElement.layer);
+            }
+
+            var tocElement = map.TOC?.GetTOCElement(copyElement.layer);
+            if(tocElement is not null)
+            {
+                tocElement.Name = copyElement.tocName;
             }
         }
 
@@ -127,12 +126,18 @@ internal class CopyLayer : ICartoButton
 
                 var newName = (model.NewNamePattern ?? originalLayer.TocNameOrLayerTitle(map)).Replace($"[{model.FilterField}]", fieldValue);
 
-                var newLayer = originalLayer.CreateCopy(map, newName: newName).FirstOrDefault() as IFeatureLayer;
-                if (newLayer is null) continue;
+                var copyElement = originalLayer.CreateCopy(map, newName: newName).FirstOrDefault();
+                var copyFeatureLayer = copyElement.layer as IFeatureLayer;
+                if (copyFeatureLayer is null) continue;
 
-                newLayer.FilterQuery = new QueryFilter() { WhereClause = $"{model.FilterField}={String.Format(fieldFormatString, fieldValue)}" };
+                copyFeatureLayer.FilterQuery = new QueryFilter() { WhereClause = $"{model.FilterField}={String.Format(fieldFormatString, fieldValue)}" };
 
-                map.AddLayer(newLayer, pos + counter);
+                map.AddLayer(copyFeatureLayer, pos + counter);
+                var tocElement = map.TOC?.GetTOCElement(copyFeatureLayer);
+                if (tocElement is not null)
+                {
+                    tocElement.Name = copyElement.tocName;
+                }
 
                 counter++;
                 if (counter >= 1000)

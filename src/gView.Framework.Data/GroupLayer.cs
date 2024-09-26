@@ -39,6 +39,7 @@ namespace gView.Framework.Data
             }
 
             _childLayers.Add(layer);
+
             layer.GroupLayer = this;
         }
         public void Remove(Layer layer)

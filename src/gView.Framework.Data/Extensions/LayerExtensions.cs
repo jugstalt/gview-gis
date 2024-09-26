@@ -45,7 +45,7 @@ namespace gView.Framework.Data.Extensions
             return true;
         }
 
-        static public string TocNameOrLayerTitle(this ILayer layer, IMap map)
+        static public string TocNameOrLayerTitle(this ILayer layer, IMap? map)
             => map?.TOC?.GetTocElementByLayerId(layer.ID)?.Name
             ?? layer.Title;
 
@@ -113,6 +113,12 @@ namespace gView.Framework.Data.Extensions
             if (layer is Layer l)
             {
                 l.GroupLayer = groupLayer;
+
+                if(groupLayer is GroupLayer g)
+                {
+                    g.Add(l);
+                }
+
                 return true;
             }
 
@@ -132,7 +138,7 @@ namespace gView.Framework.Data.Extensions
             return false;
         }
 
-        static public IEnumerable<ILayer> CreateCopy(
+        static public IList<(string tocName, ILayer layer)> CreateCopy(
                     this ILayer layer,
                     IMap map,
                     bool recursive = true,
@@ -140,7 +146,7 @@ namespace gView.Framework.Data.Extensions
                     string newName = "",
                     bool applyNewName = true)
         {
-            var result = new List<ILayer>();
+            var result = new List<(string, ILayer)>();
 
             var copy = layer.Class switch
             {
@@ -154,13 +160,13 @@ namespace gView.Framework.Data.Extensions
             copy.ClonePropertiesFrom(layer);
             copy.TrySetGroupLayer(targetGroupLayer ?? layer.GroupLayer);
 
-            copy.Title = applyNewName switch
+            string tocName = applyNewName switch
             {
                 true => string.IsNullOrEmpty(newName) ? layer.NextUnusedName(map) : newName,
                 false => layer.TocNameOrLayerTitle(map)
             };
 
-            result.Add(copy);
+            result.Add((tocName, copy));
 
             if (recursive
                 && copy is IGroupLayer copyGroup

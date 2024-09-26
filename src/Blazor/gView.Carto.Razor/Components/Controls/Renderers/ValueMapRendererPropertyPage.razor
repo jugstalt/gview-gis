@@ -253,6 +253,7 @@
 
             DistinctFilter filter = new DistinctFilter(_renderer.ValueField);
             filter.OrderBy = _renderer.ValueField;
+            filter.WhereClause = _layer.FilterQuery?.WhereClause;
 
             using (IFeatureCursor cursor = (IFeatureCursor)await _layer.FeatureClass.Search(filter))
             {
@@ -308,6 +309,7 @@
 
             DistinctFilter filter = new DistinctFilter(_renderer.ValueField);
             filter.OrderBy = _renderer.ValueField;
+            filter.WhereClause = _layer.FilterQuery?.WhereClause;
 
             HashSet<string> distinctValues = new();
 
