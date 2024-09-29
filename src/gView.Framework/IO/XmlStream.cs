@@ -115,6 +115,7 @@ namespace gView.Framework.IO
                 }
             }
         }
+
         public bool WriteStream(string path)
         {
             return WriteStream(path, Formatting.Indented);
@@ -127,6 +128,7 @@ namespace gView.Framework.IO
             RemoveXmlDeclataion();
             _doc.WriteTo(xmlWriter);
             xmlWriter.Close();
+
             return true;
         }
         public bool WriteStream(Stream stream)
@@ -608,6 +610,9 @@ namespace gView.Framework.IO
         }
 
         #endregion
+
+        public string ToXmlString() 
+            => _doc?.OuterXml ?? string.Empty;
 
         public override string ToString()
         {

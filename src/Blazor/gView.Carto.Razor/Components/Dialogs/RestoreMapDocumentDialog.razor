@@ -1,0 +1,81 @@
+@using gView.Carto.Core.Models
+@using Humanizer
+@inherits ModalDialogFormBase<RestoreMapDocumentDialogModel>
+@inject ICartoApplicationScopeService AppScope
+
+<ModalDialogFormBase T="RestoreMapDocumentDialogModel"
+                     OnDialogClose="base.OnDialogClose"
+                     Model="base.Model">
+    <DialogBody>
+        <MudList Clickable="true">
+            @if(_restorePoints.Count == 0)
+            {
+                <MudAlert Severity="Severity.Info">
+                    No restore points found!
+                </MudAlert>
+            } 
+            else 
+            {
+                foreach(var restorePoint in _restorePoints)
+                {
+                    <MudListItem OnClick="() => OnItemClick(restorePoint)"
+                                 Value="restorePoint"
+                                 Style="@($"border-left: 5px solid {(_originalTimeUtc<restorePoint.TimeUtc ? "var(--mud-palette-primary)" : "transparent")}")">
+                        <MudText Typo="Typo.body1">RestorePoint: @restorePoint.Hash</MudText>
+                        <MudText Typo="Typo.caption">
+                            @($"{restorePoint.TimeUtc.Humanize()} ({restorePoint.TimeUtc} UTC)")
+                        </MudText>
+                    </MudListItem>
+                }
+            }
+        </MudList>
+    </DialogBody>
+    <DialogButtons>
+        <MudButton Color="Color.Secondary"
+                   Variant="Variant.Filled"
+                   OnClick="RemoveAllRestorePoints">
+            Remove all restore points
+        </MudButton>
+        <MudButton Color="Color.Surface"
+                   Variant="Variant.Filled"
+                   OnClick="base.Close">
+            Close
+        </MudButton>
+    </DialogButtons>
+</ModalDialogFormBase>
+
+@code {
+    private DateTime _originalTimeUtc;
+    private List<RestorePoint> _restorePoints = new();
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+
+        try
+        {
+            _originalTimeUtc = File.GetLastWriteTimeUtc(Model.MxlFilePath!);
+        }
+        catch 
+        { 
+            _originalTimeUtc = new DateTime(); 
+        }
+
+        _restorePoints.AddRange(AppScope.RestorePoints(Model.MxlFilePath));
+    }
+
+    private void OnItemClick(RestorePoint restorePoint)
+    {
+        Model.RestorePointHash = restorePoint.Hash;
+
+        base.Submit();
+    }
+
+    private void RemoveAllRestorePoints()
+    {
+        AppScope.RemoveRestorePoints(Model.MxlFilePath!);
+
+        _restorePoints.Clear();
+        _restorePoints.AddRange(AppScope.RestorePoints(Model.MxlFilePath));
+    }
+}

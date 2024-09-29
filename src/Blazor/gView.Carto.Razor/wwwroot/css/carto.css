@@ -148,6 +148,7 @@
             padding: 5px;
             cursor: pointer;
             margin: 16px 0px;
+            position: relative;
         }
 
             .carto-main .toc .carto-initial-tool .icon {
@@ -439,6 +440,7 @@
 
 .carto-tile {
     display:inline-block;
+    position: relative;
     width:300px;
     height:130px;
     border: 1px solid var(--mud-palette-lines-default);

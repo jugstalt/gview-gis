@@ -57,7 +57,7 @@ public class SaveDocumentAs : ICartoButton
 
             if (performEncryption.HasValue) // otherweise user has canceled 
             {
-                return await scope.SaveCartoDocument(mxlFilePath, performEncryption.Value);
+                return await scope.SaveCartoDocumentAsync(mxlFilePath, performEncryption.Value);
             }
         }
 

@@ -30,7 +30,7 @@ public class SaveDocument : ICartoButton
     public Task<bool> OnClick(ICartoApplicationScopeService scope)
         => File.Exists(scope.Document.FilePath) switch
         {
-            true => scope.SaveCartoDocument(scope.Document.FilePath, true),
+            true => scope.SaveCartoDocumentAsync(scope.Document.FilePath, true),
             false => Task.FromResult(false)
         };
 

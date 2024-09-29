@@ -1,6 +1,7 @@
 ﻿using gView.Blazor.Core.Models;
 using gView.Blazor.Core.Services;
 using gView.Carto.Core.Abstraction;
+using gView.Carto.Core.Models;
 using gView.Carto.Core.Models.Tree;
 using gView.Framework.Blazor.Services.Abstraction;
 using gView.Framework.Core.Common;
@@ -34,7 +35,13 @@ public interface ICartoApplicationScopeService : IApplicationScope
     TocTreeNode? SelectedTocTreeNode { get; }
     Task SetSelectedTocTreeNode(TocTreeNode? selectedTocTreeNode);
 
-    Task<bool> LoadCartoDocument(string mxlFilePath);
-    Task<bool> SaveCartoDocument(string xmlFilePath, bool performEncryption);
+    Task<bool> LoadCartoDocumentAsync(string mxlFilePath);
+    Task<bool> SaveCartoDocumentAsync(string xmlFilePath, bool performEncryption);
     bool SerializeCartoDocument(Stream stream);
+
+    void CreateRestorePoint();
+    RestorePointState LatestRestorePointState(string? mxlPath = null);
+    IEnumerable<RestorePoint> RestorePoints(string? mxlPath = null);
+    Task<bool> LoadRestorePointAsync(string mxlPath, string restorePointHash);
+    RestoreResult RemoveRestorePoints(string mxlPath);
 }

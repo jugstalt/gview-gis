@@ -61,7 +61,7 @@ public class LoadDocument : ICartoInitialButton
         return !String.IsNullOrEmpty(mxlFilePath) switch
         {
             false => false,
-            true => await scope.LoadCartoDocument(mxlFilePath)
+            true => await scope.LoadCartoDocumentAsync(mxlFilePath)
         };
     }
 

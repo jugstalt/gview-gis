@@ -18,7 +18,8 @@ static public class ServicesExtensions
                 .AddSingleton<ICartoApplicationService, CartoDesktopApplicationService>();
 
     static public IServiceCollection AddCartoApplicationScopeService(this IServiceCollection services,
-                                                                     Action<CartoApplicationScopeServiceOptions> configureOptions)
+                                                                     Action<CartoApplicationScopeServiceOptions> configureOptions,
+                                                                     Action<CartoRestoreServiceOptions> configureRestore)
     {
         return services
             .AddTransient<IPropertyGridEditor, SymbolPropertyEditor>()
@@ -28,7 +29,9 @@ static public class ServicesExtensions
             .AddTransient<IPropertyGridEditor, ColorGradientPropertyEditor>()
             .AddTransient<IPropertyGridEditor, ResourcesPickerPropertyEditor>()
             .AddTransient<ICartoDocumentService, CartoDocumentService>()
+            .AddTransient<ICartoRestoreService, CartoRestoreService>()
             .Configure(configureOptions)
+            .Configure(configureRestore)
             .AddEventBus()
             .AddDataTables()
             .AddDisplayService()

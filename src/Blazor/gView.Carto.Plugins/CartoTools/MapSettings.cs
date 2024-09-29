@@ -36,6 +36,8 @@ internal class MapSettings : ICartoButton
             return false;
         }
 
+        scope.CreateRestorePoint();
+
         clone.Display.ImageWidth = original.Display.ImageWidth;
         clone.Display.ImageHeight = original.Display.ImageHeight;
         clone.ZoomTo(original.Display.Envelope);
