@@ -1,4 +1,5 @@
 ﻿using gView.Carto.Core;
+using gView.Carto.Core.Reflection;
 using gView.Carto.Core.Services.Abstraction;
 using gView.Carto.Plugins.Extensions;
 using gView.DataExplorer.Razor.Components.Dialogs.Filters;
@@ -10,6 +11,7 @@ using gView.Framework.Core.Common;
 namespace gView.Carto.Plugins.CartoTools;
 
 [RegisterPlugIn("7C9CA04B-7DFC-4028-8CEF-25D2A02272ED")]
+[RestorePointAction(RestoreAction.SetRestorePointOnClick)]
 internal class AddData : ICartoInitialButton
 {
     public string Name => "Add Data";

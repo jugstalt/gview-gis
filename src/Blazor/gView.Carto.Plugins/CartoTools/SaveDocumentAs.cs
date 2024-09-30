@@ -28,7 +28,9 @@ public class SaveDocumentAs : ICartoButton
 
     }
 
-    public bool IsEnabled(ICartoApplicationScopeService scope) => !scope.Document.Readonly;
+    public bool IsEnabled(ICartoApplicationScopeService scope)
+        => !scope.Document.Readonly
+        && scope.Document.Map is not null;
 
     async public Task<bool> OnClick(ICartoApplicationScopeService scope)
     {

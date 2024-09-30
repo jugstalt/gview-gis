@@ -1,4 +1,5 @@
 ﻿using gView.Carto.Core;
+using gView.Carto.Core.Reflection;
 using gView.Carto.Core.Services.Abstraction;
 using gView.Framework.Carto.Abstraction;
 using gView.Framework.Cartography;
@@ -7,6 +8,7 @@ using gView.Framework.Core.Common;
 namespace gView.Carto.Plugins.CartoTools;
 
 [RegisterPlugIn("20BB9506-D6AE-4A81-AC2D-733DEE4465A4")]
+[RestorePointAction(RestoreAction.SetRestorePointOnClick)]
 internal class MapSettings : ICartoButton
 {
     public string Name => "Map Settings";
@@ -17,7 +19,7 @@ internal class MapSettings : ICartoButton
 
     public CartoToolTarget Target => CartoToolTarget.Map;
 
-    public int SortOrder => 99;
+    public int SortOrder => 9;
 
     public void Dispose()
     {
@@ -35,8 +37,6 @@ internal class MapSettings : ICartoButton
         {
             return false;
         }
-
-        scope.CreateRestorePoint();
 
         clone.Display.ImageWidth = original.Display.ImageWidth;
         clone.Display.ImageHeight = original.Display.ImageHeight;

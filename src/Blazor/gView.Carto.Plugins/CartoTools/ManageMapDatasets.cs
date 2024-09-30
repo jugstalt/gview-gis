@@ -1,4 +1,5 @@
 ﻿using gView.Carto.Core;
+using gView.Carto.Core.Reflection;
 using gView.Carto.Core.Services.Abstraction;
 using gView.Carto.Razor.Components.Dialogs.Models;
 using gView.Framework.Carto.Abstraction;
@@ -8,6 +9,7 @@ namespace gView.Carto.Plugins.CartoTools;
 
 [RegisterPlugIn("97DA61CF-120B-4ADB-BF31-C702F184A5F6")]
 [AuthorizedPlugin(RequireAdminRole = true)]
+[RestorePointAction(RestoreAction.SetRestorePointOnClick)]
 public class ManageMapDatasets : ICartoButton
 {
     public string ToolTip => "Manage Map Dataset and Connections";

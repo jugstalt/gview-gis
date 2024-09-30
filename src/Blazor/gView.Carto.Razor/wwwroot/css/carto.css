@@ -25,7 +25,8 @@
             border-radius: 4px;
         }
 
-            .carto-main .toolbar .carto-tool-box .carto-tool {
+            .carto-main .toolbar .carto-tool-box .carto-tool,
+            .mud-popover.mud-popover-open .mud-list .carto-tool {
                 height: 94px;
                 display: inline-block;
                 text-align: center;
@@ -37,7 +38,7 @@
                 cursor: pointer;
                 box-sizing: border-box;
                 border-radius: 4px;
-                font-size: 0.9em;
+                font-size: 0.7em;
             }
 
         .carto-main .toolbar .carto-tool:hover {

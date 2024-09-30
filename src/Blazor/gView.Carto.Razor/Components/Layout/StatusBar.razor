@@ -110,9 +110,9 @@
     private Task OnCoordinateClick() => HandleAsync(async () =>
     {
         var model = await Scope.ShowModalDialog(
-                typeof(CoordiantesDialog),
+                typeof(CoordinatesDialog),
                 "Coordiantes",
-                new CoordiantesModel()
+                new CoordinatesDialogModel()
                 {
                     SpatialReference = CartoDocument.CurrentMap.Display.SpatialReference,
                     MapScaleDominator = _scaleDominator,

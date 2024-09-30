@@ -23,7 +23,7 @@ public class CartoRestoreService : ICartoRestoreService
         _options = options.Value;
     }
 
-    async public Task<RestoreResult> SetRestorePoint(ICartoApplicationScopeService appScope)
+    async public Task<RestoreResult> SetRestorePoint(ICartoApplicationScopeService appScope, string description)
     {
         try
         {
@@ -47,7 +47,10 @@ public class CartoRestoreService : ICartoRestoreService
 
             string mxl = stream.ToXmlString();
             string hash = mxl.GenerateSHA1();
-            string filePath = GetRestoreFilePath(appScope.Document.FilePath, hash);
+            var filePaths = GetRestoreFilePath(appScope.Document.FilePath, hash);
+
+            var filePath = filePaths.restoreFile;
+            var descriptionPath = filePaths.descriptionFile;
 
             var fileInfo = new FileInfo(filePath);
             if (fileInfo.Exists)
@@ -55,12 +58,16 @@ public class CartoRestoreService : ICartoRestoreService
                 fileInfo.CreationTimeUtc = DateTime.UtcNow;
                 File.SetLastWriteTimeUtc(filePath, DateTime.UtcNow);
 
+                File.Delete(descriptionPath);
+                await File.WriteAllTextAsync(descriptionPath, description);
+
                 return RestoreResult.Unchanged;
             }
 
             if (!fileInfo.Directory!.Exists) fileInfo.Directory.Create();
 
             await File.WriteAllTextAsync(filePath, mxl);
+            await File.WriteAllTextAsync(descriptionPath, description);
 
             return RestoreResult.Success;
         }
@@ -70,7 +77,7 @@ public class CartoRestoreService : ICartoRestoreService
         }
     }
 
-    public IEnumerable<(string filePath, DateTime timeUtc)> GetRestorePoints(
+    public IEnumerable<(string filePath, string description, DateTime timeUtc)> GetRestorePoints(
                 string mxlFilePath,
                 int take = 10
         )
@@ -79,11 +86,26 @@ public class CartoRestoreService : ICartoRestoreService
 
         if (String.IsNullOrEmpty(mxlFilePath) || !rootDirectory.Exists) yield break;
 
+        var fileFilterPatterns = GetRestoreFilePath(mxlFilePath, "*");
+        Dictionary<string, string> descriptions = new();
+
+        foreach (var descriptionFile in rootDirectory.GetFiles(new FileInfo(fileFilterPatterns.descriptionFile).Name)
+                                                     .OrderByDescending(f => f.LastWriteTimeUtc))
+        {
+            var key = descriptionFile.Name.AsSpan(0, descriptionFile.Name.Length - descriptionFile.Extension.Length);
+            descriptions[key.ToString()] = File.ReadAllText(descriptionFile.FullName);
+
+            if (take> 0 && descriptions.Count() >= take) break;
+        }
+
         int count = 0;
-        foreach (var restoreFile in rootDirectory.GetFiles(new FileInfo(GetRestoreFilePath(mxlFilePath, "*")).Name)
+        foreach (var restoreFile in rootDirectory.GetFiles(new FileInfo(fileFilterPatterns.restoreFile).Name)
                                                  .OrderByDescending(f => f.LastWriteTimeUtc))
         {
-            yield return (restoreFile.FullName, restoreFile.CreationTimeUtc);
+            var key = restoreFile.Name.AsSpan(0, restoreFile.Name.Length - restoreFile.Extension.Length);
+            descriptions.TryGetValue(key.ToString(), out string? description);
+
+            yield return (restoreFile.FullName, description ?? "", restoreFile.CreationTimeUtc);
 
             if (take > 0 && count++ > take) yield break;
         }
@@ -93,9 +115,17 @@ public class CartoRestoreService : ICartoRestoreService
     {
         try
         {
-            foreach (var restorePoint in GetRestorePoints(mxlPath, 0))
+            var rootDirectory = new DirectoryInfo(_options.RestoreRootPath);
+            var fileFilterPatterns = GetRestoreFilePath(mxlPath, "*");
+
+            foreach (var descriptionFile in rootDirectory.GetFiles(new FileInfo(fileFilterPatterns.descriptionFile).Name).ToArray()) 
             {
-                File.Delete(restorePoint.filePath);
+                File.Delete(descriptionFile.FullName);
+            }
+
+            foreach (var restoreFile in rootDirectory.GetFiles(new FileInfo(fileFilterPatterns.restoreFile).Name).ToArray())
+            {
+                File.Delete(restoreFile.FullName);
             }
 
             return RestoreResult.Success;
@@ -108,12 +138,16 @@ public class CartoRestoreService : ICartoRestoreService
 
     #region Helper
 
-    private string GetRestoreFilePath(string mxlFilePath, string hash)
+    private (string restoreFile, string descriptionFile) GetRestoreFilePath(string mxlFilePath, string hash)
     {
         FileInfo fi = new FileInfo(mxlFilePath);
         var fileTitle = fi.Name.Substring(0, fi.Name.Length - fi.Extension.Length);
 
-        return System.IO.Path.Combine(_options.RestoreRootPath, $"{fileTitle}-{fi.Directory!.FullName.GenerateSHA1()}-{hash}.restore");
+        return 
+        (
+            System.IO.Path.Combine(_options.RestoreRootPath, $"{fileTitle}-{fi.Directory!.FullName.GenerateSHA1()}-{hash}.restore"),
+            System.IO.Path.Combine(_options.RestoreRootPath, $"{fileTitle}-{fi.Directory!.FullName.GenerateSHA1()}-{hash}.txt")
+        );
     }
 
     #endregion

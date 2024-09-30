@@ -212,11 +212,11 @@ public class CartoApplicationScopeService : ApplictionBusyHandlerAndCache, ICart
 
     #region Document Restore Points
 
-    public void CreateRestorePoint()
+    public void CreateRestorePoint(string description)
     {
         if (_restoreService is not null)
         {
-            Task.Run(() => _restoreService.SetRestorePoint(this));
+            Task.Run(() => _restoreService.SetRestorePoint(this, description));
         }
     }
 
@@ -243,6 +243,7 @@ public class CartoApplicationScopeService : ApplictionBusyHandlerAndCache, ICart
                 .Select(r => new RestorePoint()
                 {
                     Hash = r.filePath.GenerateSHA1(),
+                    Description = r.description,
                     TimeUtc = r.timeUtc
                 }) ?? Array.Empty<RestorePoint>();
 

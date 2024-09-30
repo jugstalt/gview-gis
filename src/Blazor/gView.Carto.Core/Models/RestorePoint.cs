@@ -9,5 +9,6 @@ namespace gView.Carto.Core.Models;
 public class RestorePoint
 {
     public string Hash { get; set; } = "";
+    public string Description { get; set; } = "";
     public DateTime TimeUtc { get; set; }
 }

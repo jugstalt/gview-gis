@@ -1,5 +1,6 @@
 ﻿using gView.Blazor.Core.Extensions;
 using gView.Carto.Core;
+using gView.Carto.Core.Reflection;
 using gView.Carto.Core.Services.Abstraction;
 using gView.Framework.Blazor.Models;
 using gView.Framework.Carto.Abstraction;
@@ -11,6 +12,7 @@ using gView.Framework.Data;
 namespace gView.Carto.Plugins.CartoTools;
 
 [RegisterPlugIn("EB3EDA0D-1B27-4314-B1DE-915E27B27982")]
+[RestorePointAction(RestoreAction.SetRestorePointOnClick)]
 internal class LayerSettings : ICartoButton
 {
     public string Name => "Layer Settings";

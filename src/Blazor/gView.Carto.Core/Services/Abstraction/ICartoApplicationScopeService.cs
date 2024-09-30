@@ -39,7 +39,7 @@ public interface ICartoApplicationScopeService : IApplicationScope
     Task<bool> SaveCartoDocumentAsync(string xmlFilePath, bool performEncryption);
     bool SerializeCartoDocument(Stream stream);
 
-    void CreateRestorePoint();
+    void CreateRestorePoint(string description);
     RestorePointState LatestRestorePointState(string? mxlPath = null);
     IEnumerable<RestorePoint> RestorePoints(string? mxlPath = null);
     Task<bool> LoadRestorePointAsync(string mxlPath, string restorePointHash);

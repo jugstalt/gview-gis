@@ -1,4 +1,5 @@
 ﻿using gView.Carto.Core;
+using gView.Carto.Core.Reflection;
 using gView.Carto.Core.Services.Abstraction;
 using gView.Carto.Razor.Components.Dialogs;
 using gView.Carto.Razor.Components.Dialogs.Models;
@@ -9,6 +10,7 @@ using gView.Framework.Core.Common;
 namespace gView.Carto.Plugins.CartoTools;
 
 [RegisterPlugIn("E81A05E5-4FD4-49C4-9AE1-644115E92197")]
+[RestorePointAction(RestoreAction.SetRestorePointOnClick)]
 internal class MatchGeoServiceLayerIds : ICartoButton
 {
     public string Name => "Match Service";

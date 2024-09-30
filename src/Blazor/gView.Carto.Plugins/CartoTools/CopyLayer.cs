@@ -1,5 +1,6 @@
 ﻿using gView.Blazor.Core.Extensions;
 using gView.Carto.Core;
+using gView.Carto.Core.Reflection;
 using gView.Carto.Core.Services.Abstraction;
 using gView.Carto.Razor.Components.Dialogs;
 using gView.Carto.Razor.Components.Dialogs.Models;
@@ -15,6 +16,7 @@ using gView.Framework.Data.Filters;
 namespace gView.Carto.Plugins.CartoTools;
 
 [RegisterPlugIn("7A020F6D-9744-4355-AC18-8B31723064A4")]
+[RestorePointAction(RestoreAction.SetRestorePointOnClick)]
 internal class CopyLayer : ICartoButton
 {
     public string ToolTip => "";

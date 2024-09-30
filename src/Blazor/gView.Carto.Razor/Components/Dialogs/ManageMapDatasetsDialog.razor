@@ -1,5 +1,6 @@
 @inherits ModalDialogFormBase<ManageMapDatasetsModel>
 @inject IconService IconService
+@inject ICartoApplicationScopeService AppScope
 
 @if (Model.Map is not null)
 {
@@ -25,23 +26,28 @@
                             }
                         </MudTreeView>
                     </GvScrollable>
-                    <GvPaper>
-                        @if(_datasetItems.Any(e=>e.LayerCount == 0))
-                        {
-                            <MudButton Color="Color.Primary"
-                                       Variant="Variant.Filled"
-                                       StartIcon="@Icons.Material.Filled.Delete"
-                                       OnClick="OnRemoveUnusedDatasets">
-                                Remove Unused
+                    @if (!AppScope.Document.Readonly)
+                    {
+                        <GvPaper>
+                            @if(_datasetItems.Any(e=>e.LayerCount == 0))
+                            {
+                                <MudButton Color="Color.Primary"
+                                           Variant="Variant.Filled"
+                                           StartIcon="@Icons.Material.Filled.Delete"
+                                           OnClick="OnRemoveUnusedDatasets">
+                                    Remove Unused
+                                </MudButton>
+                            }
+
+                            <MudButton Color="Color.Success"
+                                        Variant="Variant.Filled"
+                                    StartIcon="@Icons.Material.Filled.Delete"
+                                    OnClick="OnMapCompress">
+                                Compress/Clean
                             </MudButton>
-                        }
-                        <MudButton Color="Color.Success"
-                                   Variant="Variant.Filled"
-                                   StartIcon="@Icons.Material.Filled.Delete"
-                                   OnClick="OnMapCompress">
-                            Compress/Clean
-                        </MudButton>
-                    </GvPaper>
+                        
+                        </GvPaper>
+                    }
                 </GvGridItem>
                 
                 <GvGridItem Span="8">
@@ -63,25 +69,23 @@
                         <GvCard Title="Connection String">
                             <GvCardContent>
                                 <DatasetConnectionStringControl 
-                                    Editable="true"
+                                    Editable="!AppScope.Document.Readonly"
                                     ConnectionString="@_selectedDatasetItem.Dataset.ConnectionString"
                                     ConnectionStringChanged="OnConnectionStringChanged" />
                             </GvCardContent>
                         </GvCard>
                     }
-
-                    <GvPaper>
-                        @if (_selectedDatasetItem?.Dataset is not null)
-                        {
+                    @if (_selectedDatasetItem?.Dataset is not null && !AppScope.Document.Readonly)
+                    {
+                        <GvPaper>
                             <MudButton Color="Color.Secondary"
                                        Variant="Variant.Filled"
                                        StartIcon="@Icons.Material.Filled.Delete"
                                        OnClick="OnRemoveDataset">
                                 Remove Dataset!
                             </MudButton>
-                        }
-                        
-                    </GvPaper>
+                        </GvPaper>
+                    }
                 </GvGridItem>
             </GvGrid>
         </DialogBody>
