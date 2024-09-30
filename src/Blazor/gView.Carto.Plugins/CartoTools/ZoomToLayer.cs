@@ -4,10 +4,8 @@ using gView.Framework.Carto.Abstraction;
 using gView.Framework.Core.Common;
 using gView.Framework.Core.Data;
 using gView.Framework.Core.Geometry;
+using gView.Framework.Geometry;
 using gView.Framework.Geometry.Extensions;
-using gView.Framework.OGC.WMS.Version_1_1_1;
-using OSGeo_v3.OGR;
-using static gView.Interoperability.GeoServices.Rest.DTOs.JsonMapServiceDTO;
 
 namespace gView.Carto.Plugins.CartoTools;
 
@@ -50,7 +48,7 @@ internal class ZoomToLayer : ICartoButton
         }
 
 
-        if(extent is null) return false;
+        if (extent is null) return false;
 
         scope.Document.Map.Display.ZoomTo(extent);
 
@@ -60,8 +58,8 @@ internal class ZoomToLayer : ICartoButton
     }
 
     private IEnvelope? GetLayerExtent(
-                ICartoApplicationScopeService scope, 
-                ILayer layer, 
+                ICartoApplicationScopeService scope,
+                ILayer layer,
                 IEnvelope? unionWith = null
         )
     {
@@ -69,31 +67,38 @@ internal class ZoomToLayer : ICartoButton
 
         IEnvelope? layerExtent = layer switch
         {
-            IFeatureLayer featureLayer => scope.GeoTransformer.Transform(
-                                                    featureLayer.FeatureClass?.Envelope, 
-                                                    featureLayer.FeatureClass?.SpatialReference, 
-                                                    mapSref
-                                                )?.Envelope,
-            IRasterLayer rasterLayer => scope.GeoTransformer.Transform(
-                                                    rasterLayer.RasterClass?.Polygon?.Envelope, 
-                                                    rasterLayer.RasterClass?.SpatialReference, 
-                                                    mapSref
-                                                )?.Envelope,
-            IWebServiceLayer webLayer => scope.GeoTransformer.Transform(
-                                                    webLayer.WebServiceClass?.Envelope, 
-                                                    webLayer.WebServiceClass?.SpatialReference, 
-                                                    mapSref
-                                                )?.Envelope,
+            IFeatureLayer featureLayer when featureLayer.FeatureClass?.Envelope is IEnvelope envelope
+                => scope.GeoTransformer.Transform(envelope,
+                                                  featureLayer.FeatureClass?.SpatialReference,
+                                                  mapSref)?.Envelope,
+
+            IRasterLayer rasterLayer when rasterLayer.RasterClass?.Polygon?.Envelope is IEnvelope envelope
+                => scope.GeoTransformer.Transform(envelope,
+                                                  rasterLayer.RasterClass?.SpatialReference,
+                                                  mapSref)?.Envelope,
+
+            IWebServiceLayer webLayer when webLayer.WebServiceClass?.Envelope is IEnvelope envelope
+                => scope.GeoTransformer.Transform(envelope,
+                                                  webLayer.WebServiceClass?.SpatialReference,
+                                                  mapSref)?.Envelope,
+
             IGroupLayer groupLayer => groupLayer.ChildLayers
                                                 .Select(l => GetLayerExtent(scope, l))
                                                 .ToUnion(),
             _ => null
         };
 
-        if (unionWith is not null && layerExtent is not null)
+        if (layerExtent is not null)
         {
-            layerExtent.Union(unionWith);
+            layerExtent.Srs ??= mapSref?.EpsgCode;
+
+            if (unionWith is not null)
+            {
+                layerExtent.Union(unionWith);
+            }
         }
+
+        
 
         return layerExtent;
     }
