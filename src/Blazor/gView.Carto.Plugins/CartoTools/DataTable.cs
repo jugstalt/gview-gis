@@ -18,7 +18,7 @@ internal class DataTable : ICartoButton
 
     public CartoToolTarget Target => CartoToolTarget.SelectedTocItem;
 
-    public int SortOrder => 10;
+    public int SortOrder => 1;
 
     public void Dispose()
     {

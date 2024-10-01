@@ -40,28 +40,36 @@
                 font-size: 0.7em;
             }
 
-            .carto-main .toolbar .carto-tool-box .carto-tool.small,
-            .mud-popover.mud-popover-open .mud-list .carto-tool {
-                height: 25px !important;
+            .carto-main .toolbar .carto-tool-box .tool-small-chunk {
+                width: 78px;
+                height: 76px;
                 display: inline-block;
-                text-align: left;
-                padding: 2px;
-                margin: 0px 2px;
-                max-width: 74px;
-                /*vertical-align: top;*/
-                border: 1px solid transparent;
-                cursor: pointer;
-                box-sizing: border-box;
-                border-radius: 4px;
-                font-size: 0.65em;
+                vertical-align: top;
             }
 
-                .carto-main .toolbar .carto-tool-box .carto-tool.small .title {
+                .carto-main .toolbar .carto-tool-box .tool-small-chunk .carto-tool.small,
+                .mud-popover.mud-popover-open .mud-list .carto-tool {
+                    height: 25px !important;
                     display: inline-block;
-                    width: 48px;
-                    overflow: hidden;
-                    white-space: nowrap;
+                    text-align: left;
+                    padding: 2px;
+                    margin: 1px 2px;
+                    max-width: 74px;
+                    /*vertical-align: top;*/
+                    border: 1px solid transparent;
+                    cursor: pointer;
+                    box-sizing: border-box;
+                    border-radius: 4px;
+                    font-size: 0.65em;
                 }
+
+            .carto-main .toolbar .carto-tool-box .carto-tool.small .title {
+                display: inline-block;
+                width: 48px;
+                overflow: hidden;
+                white-space: nowrap;
+                text-overflow: ellipsis;
+            }
 
         .carto-main .toolbar .carto-tool:hover {
             background-color: #0094ff46;

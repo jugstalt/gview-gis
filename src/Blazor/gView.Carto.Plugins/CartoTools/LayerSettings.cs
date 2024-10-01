@@ -23,7 +23,7 @@ internal class LayerSettings : ICartoButton
 
     public CartoToolTarget Target => CartoToolTarget.SelectedTocItem;
 
-    public int SortOrder => 99;
+    public int SortOrder => 9;
 
     public void Dispose()
     {

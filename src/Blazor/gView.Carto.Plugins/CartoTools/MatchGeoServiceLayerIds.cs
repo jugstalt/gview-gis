@@ -19,7 +19,7 @@ internal class MatchGeoServiceLayerIds : ICartoButton
 
     public string Icon => "basic:globe";
 
-    public CartoToolTarget Target => CartoToolTarget.Tools;
+    public CartoToolTarget Target => CartoToolTarget.Map;
 
     public int SortOrder => 999;
 

@@ -16,9 +16,9 @@ internal class ModuleSettings: ICartoButton
 
     public string Icon => "basic:settings";
 
-    public CartoToolTarget Target => CartoToolTarget.Tools;
+    public CartoToolTarget Target => CartoToolTarget.Map;
 
-    public int SortOrder => 99;
+    public int SortOrder => 990;
 
     public void Dispose()
     {
