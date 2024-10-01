@@ -535,12 +535,14 @@ namespace gView.Framework.Cartography
 
                 if (layer is IGroupLayer groupLayer)
                 {
-                    if (groupLayer.ChildLayers != null && 
-                        groupLayer.ChildLayers.Count > 0)
-                    {
-                        // do nothing:
-                        // newLayers.Add(layer);
-                    }
+                    //if (groupLayer.ChildLayers != null && 
+                    //    groupLayer.ChildLayers.Count > 0)
+                    //{
+                    //    newLayers.Add(layer);
+                    //}
+
+                    // always keep group layers
+                    newLayers.Add(layer);
                 }
                 else
                 {
