@@ -25,8 +25,7 @@
             border-radius: 4px;
         }
 
-            .carto-main .toolbar .carto-tool-box .carto-tool,
-            .mud-popover.mud-popover-open .mud-list .carto-tool {
+            .carto-main .toolbar .carto-tool-box .carto-tool {
                 height: 94px;
                 display: inline-block;
                 text-align: center;
@@ -40,6 +39,29 @@
                 border-radius: 4px;
                 font-size: 0.7em;
             }
+
+            .carto-main .toolbar .carto-tool-box .carto-tool.small,
+            .mud-popover.mud-popover-open .mud-list .carto-tool {
+                height: 25px !important;
+                display: inline-block;
+                text-align: left;
+                padding: 2px;
+                margin: 0px 2px;
+                max-width: 74px;
+                /*vertical-align: top;*/
+                border: 1px solid transparent;
+                cursor: pointer;
+                box-sizing: border-box;
+                border-radius: 4px;
+                font-size: 0.65em;
+            }
+
+                .carto-main .toolbar .carto-tool-box .carto-tool.small .title {
+                    display: inline-block;
+                    width: 48px;
+                    overflow: hidden;
+                    white-space: nowrap;
+                }
 
         .carto-main .toolbar .carto-tool:hover {
             background-color: #0094ff46;
