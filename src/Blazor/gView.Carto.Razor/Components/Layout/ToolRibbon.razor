@@ -21,16 +21,28 @@
                                                .ToArray();
                 }
 
-                @foreach (var cartoTool in fileTools.Take(MaxFileContainerIcons))
+                @foreach (var cartoTool in fileTools.Where(c => c.SortOrder<=10).Take(MaxFileContainerIcons))
                 {
                     <div class="carto-tool"
-                         alt="@cartoTool.ToolTip"
+                         title="@cartoTool.ToolTip"
                          @onclick="async () => await OnButtonClickAsync(cartoTool)">
                         <div class=@Icons.FromString(cartoTool.Icon)></div>
                         <div class="title">@cartoTool.Name</div>
                     </div>
                 }
 
+                <div style="width:78px;height:76px;display:inline-block">
+                    @foreach (var cartoTool in fileTools.Where(c => c.SortOrder > 10))
+                    {
+                        <div class="carto-tool small"
+                             title="@cartoTool.ToolTip"
+                             @onclick="async () => await OnButtonClickAsync(cartoTool)">
+                            <div class=@Icons.FromString(cartoTool.Icon, IconSize.Small)></div>
+                            <div class="title">@cartoTool.Name</div>
+                        </div>
+                    }
+                </div>
+                
                 @if (fileTools.Count() > MaxFileContainerIcons)
                 {
                     <MudMenu Icon="@MudBlazor.Icons.Material.Filled.MoreVert">
@@ -174,8 +186,8 @@
 }
 
 @code{
-    private const int MaxFileContainerIcons = 2;
-    private const int MaxMapContainerIcons = 3;
+    private const int MaxFileContainerIcons = 10;
+    private const int MaxMapContainerIcons = 10;
 
     private ICartoButton[]? _cartoButtons;
     private ICartoApplicationScopeService? _cartoAppService;

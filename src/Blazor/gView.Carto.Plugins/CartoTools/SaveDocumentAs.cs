@@ -21,7 +21,7 @@ public class SaveDocumentAs : ICartoButton
 
     public CartoToolTarget Target => CartoToolTarget.File;
 
-    public int SortOrder => 4;
+    public int SortOrder => 14;
 
     public void Dispose()
     {

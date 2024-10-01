@@ -25,7 +25,7 @@ public class NewDocument : ICartoInitialButton
 
     public CartoToolTarget Target => CartoToolTarget.File;
 
-    public int SortOrder => 10;
+    public int SortOrder => 15;
 
     public void Dispose()
     {

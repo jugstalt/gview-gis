@@ -1,4 +1,662 @@
 
+ .sketchpen-icon-webgis-bg-dark-16 {
+    background-image: url("../img/sketchpen/bg-dark/16/1/sprite.png");
+    background-repeat: no-repeat;
+    background-size: 160px 176px;
+    width: 16px;
+    height: 16px;
+    display: inline-block;
+}.sketchpen-icon-webgis-bg-dark-16.3d {
+     background-position: -0px -0px
+}
+.sketchpen-icon-webgis-bg-dark-16.altitude {
+     background-position: -16px -0px
+}
+.sketchpen-icon-webgis-bg-dark-16.buffer {
+     background-position: -32px -0px
+}
+.sketchpen-icon-webgis-bg-dark-16.chainage {
+     background-position: -48px -0px
+}
+.sketchpen-icon-webgis-bg-dark-16.color-fill {
+     background-position: -64px -0px
+}
+.sketchpen-icon-webgis-bg-dark-16.color-point {
+     background-position: -80px -0px
+}
+.sketchpen-icon-webgis-bg-dark-16.color-stroke {
+     background-position: -96px -0px
+}
+.sketchpen-icon-webgis-bg-dark-16.color-text {
+     background-position: -112px -0px
+}
+.sketchpen-icon-webgis-bg-dark-16.compass-rose {
+     background-position: -128px -0px
+}
+.sketchpen-icon-webgis-bg-dark-16.compass {
+     background-position: -144px -0px
+}
+.sketchpen-icon-webgis-bg-dark-16.compasses-off {
+     background-position: -0px -16px
+}
+.sketchpen-icon-webgis-bg-dark-16.compasses {
+     background-position: -16px -16px
+}
+.sketchpen-icon-webgis-bg-dark-16.construct-angle-direction {
+     background-position: -32px -16px
+}
+.sketchpen-icon-webgis-bg-dark-16.construct-arc_2tangents {
+     background-position: -48px -16px
+}
+.sketchpen-icon-webgis-bg-dark-16.construct-arc_3points {
+     background-position: -64px -16px
+}
+.sketchpen-icon-webgis-bg-dark-16.construct-circle {
+     background-position: -80px -16px
+}
+.sketchpen-icon-webgis-bg-dark-16.construct-clip-line-both {
+     background-position: -96px -16px
+}
+.sketchpen-icon-webgis-bg-dark-16.construct-clip-line-difference {
+     background-position: -112px -16px
+}
+.sketchpen-icon-webgis-bg-dark-16.construct-clip-line-intersect {
+     background-position: -128px -16px
+}
+.sketchpen-icon-webgis-bg-dark-16.construct-clip-polygon-both {
+     background-position: -144px -16px
+}
+.sketchpen-icon-webgis-bg-dark-16.construct-clip-polygon-difference {
+     background-position: -0px -32px
+}
+.sketchpen-icon-webgis-bg-dark-16.construct-clip-polygon-intersect {
+     background-position: -16px -32px
+}
+.sketchpen-icon-webgis-bg-dark-16.construct-clip-polygon-xor {
+     background-position: -32px -32px
+}
+.sketchpen-icon-webgis-bg-dark-16.construct-clip {
+     background-position: -48px -32px
+}
+.sketchpen-icon-webgis-bg-dark-16.construct-copy {
+     background-position: -64px -32px
+}
+.sketchpen-icon-webgis-bg-dark-16.construct-cut {
+     background-position: -80px -32px
+}
+.sketchpen-icon-webgis-bg-dark-16.construct-default {
+     background-position: -96px -32px
+}
+.sketchpen-icon-webgis-bg-dark-16.construct-direction-direction {
+     background-position: -112px -32px
+}
+.sketchpen-icon-webgis-bg-dark-16.construct-direction-distance {
+     background-position: -128px -32px
+}
+.sketchpen-icon-webgis-bg-dark-16.construct-distance-distance {
+     background-position: -144px -32px
+}
+.sketchpen-icon-webgis-bg-dark-16.construct-edge-center {
+     background-position: -0px -48px
+}
+.sketchpen-icon-webgis-bg-dark-16.construct-edge-intersect {
+     background-position: -16px -48px
+}
+.sketchpen-icon-webgis-bg-dark-16.construct-extend-line {
+     background-position: -32px -48px
+}
+.sketchpen-icon-webgis-bg-dark-16.construct-midpoint {
+     background-position: -48px -48px
+}
+.sketchpen-icon-webgis-bg-dark-16.construct-move {
+     background-position: -64px -48px
+}
+.sketchpen-icon-webgis-bg-dark-16.construct-new-section {
+     background-position: -80px -48px
+}
+.sketchpen-icon-webgis-bg-dark-16.construct-offset {
+     background-position: -96px -48px
+}
+.sketchpen-icon-webgis-bg-dark-16.construct-ortho-close {
+     background-position: -112px -48px
+}
+.sketchpen-icon-webgis-bg-dark-16.construct-ortho-off {
+     background-position: -128px -48px
+}
+.sketchpen-icon-webgis-bg-dark-16.construct-ortho {
+     background-position: -144px -48px
+}
+.sketchpen-icon-webgis-bg-dark-16.construct-orthogonal {
+     background-position: -0px -64px
+}
+.sketchpen-icon-webgis-bg-dark-16.construct-parallel {
+     background-position: -16px -64px
+}
+.sketchpen-icon-webgis-bg-dark-16.construct-perpendicular {
+     background-position: -32px -64px
+}
+.sketchpen-icon-webgis-bg-dark-16.construct-radius {
+     background-position: -48px -64px
+}
+.sketchpen-icon-webgis-bg-dark-16.construct-rectangle {
+     background-position: -64px -64px
+}
+.sketchpen-icon-webgis-bg-dark-16.construct-swap-direction {
+     background-position: -80px -64px
+}
+.sketchpen-icon-webgis-bg-dark-16.construct-trace-off {
+     background-position: -96px -64px
+}
+.sketchpen-icon-webgis-bg-dark-16.construct-trace {
+     background-position: -112px -64px
+}
+.sketchpen-icon-webgis-bg-dark-16.construct-vertex-add {
+     background-position: -128px -64px
+}
+.sketchpen-icon-webgis-bg-dark-16.construct-vertex-pin {
+     background-position: -144px -64px
+}
+.sketchpen-icon-webgis-bg-dark-16.construct-vertex-remove {
+     background-position: -0px -80px
+}
+.sketchpen-icon-webgis-bg-dark-16.coordinates2d {
+     background-position: -16px -80px
+}
+.sketchpen-icon-webgis-bg-dark-16.coordinates3d {
+     background-position: -32px -80px
+}
+.sketchpen-icon-webgis-bg-dark-16.database-layers {
+     background-position: -48px -80px
+}
+.sketchpen-icon-webgis-bg-dark-16.extent {
+     background-position: -64px -80px
+}
+.sketchpen-icon-webgis-bg-dark-16.georef-doc {
+     background-position: -80px -80px
+}
+.sketchpen-icon-webgis-bg-dark-16.georef-image {
+     background-position: -96px -80px
+}
+.sketchpen-icon-webgis-bg-dark-16.height-profile {
+     background-position: -112px -80px
+}
+.sketchpen-icon-webgis-bg-dark-16.identify {
+     background-position: -128px -80px
+}
+.sketchpen-icon-webgis-bg-dark-16.layer-bottom {
+     background-position: -144px -80px
+}
+.sketchpen-icon-webgis-bg-dark-16.layer-middle {
+     background-position: -0px -96px
+}
+.sketchpen-icon-webgis-bg-dark-16.layer-top {
+     background-position: -16px -96px
+}
+.sketchpen-icon-webgis-bg-dark-16.layers {
+     background-position: -32px -96px
+}
+.sketchpen-icon-webgis-bg-dark-16.legend {
+     background-position: -48px -96px
+}
+.sketchpen-icon-webgis-bg-dark-16.marker-bottom {
+     background-position: -64px -96px
+}
+.sketchpen-icon-webgis-bg-dark-16.marker-draggable-bottom {
+     background-position: -80px -96px
+}
+.sketchpen-icon-webgis-bg-dark-16.marker-draggable-outline-bottom {
+     background-position: -96px -96px
+}
+.sketchpen-icon-webgis-bg-dark-16.marker-draggable-outline {
+     background-position: -112px -96px
+}
+.sketchpen-icon-webgis-bg-dark-16.marker-draggable {
+     background-position: -128px -96px
+}
+.sketchpen-icon-webgis-bg-dark-16.marker-pin-bottom {
+     background-position: -144px -96px
+}
+.sketchpen-icon-webgis-bg-dark-16.marker-pin {
+     background-position: -0px -112px
+}
+.sketchpen-icon-webgis-bg-dark-16.marker-remove {
+     background-position: -16px -112px
+}
+.sketchpen-icon-webgis-bg-dark-16.marker {
+     background-position: -32px -112px
+}
+.sketchpen-icon-webgis-bg-dark-16.markers {
+     background-position: -48px -112px
+}
+.sketchpen-icon-webgis-bg-dark-16.measure-circle {
+     background-position: -64px -112px
+}
+.sketchpen-icon-webgis-bg-dark-16.measure-polygon {
+     background-position: -80px -112px
+}
+.sketchpen-icon-webgis-bg-dark-16.measure-polyline {
+     background-position: -96px -112px
+}
+.sketchpen-icon-webgis-bg-dark-16.polygon-highlighted {
+     background-position: -112px -112px
+}
+.sketchpen-icon-webgis-bg-dark-16.polygon-selected {
+     background-position: -128px -112px
+}
+.sketchpen-icon-webgis-bg-dark-16.position-current {
+     background-position: -144px -112px
+}
+.sketchpen-icon-webgis-bg-dark-16.position-east {
+     background-position: -0px -128px
+}
+.sketchpen-icon-webgis-bg-dark-16.position-north-east {
+     background-position: -16px -128px
+}
+.sketchpen-icon-webgis-bg-dark-16.position-north-west {
+     background-position: -32px -128px
+}
+.sketchpen-icon-webgis-bg-dark-16.position-north {
+     background-position: -48px -128px
+}
+.sketchpen-icon-webgis-bg-dark-16.position-south-east {
+     background-position: -64px -128px
+}
+.sketchpen-icon-webgis-bg-dark-16.position-south-west {
+     background-position: -80px -128px
+}
+.sketchpen-icon-webgis-bg-dark-16.position-south {
+     background-position: -96px -128px
+}
+.sketchpen-icon-webgis-bg-dark-16.position-west {
+     background-position: -112px -128px
+}
+.sketchpen-icon-webgis-bg-dark-16.redlining-info {
+     background-position: -128px -128px
+}
+.sketchpen-icon-webgis-bg-dark-16.redlining {
+     background-position: -144px -128px
+}
+.sketchpen-icon-webgis-bg-dark-16.ruler {
+     background-position: -0px -144px
+}
+.sketchpen-icon-webgis-bg-dark-16.shape-circle {
+     background-position: -16px -144px
+}
+.sketchpen-icon-webgis-bg-dark-16.shape-dim-line {
+     background-position: -32px -144px
+}
+.sketchpen-icon-webgis-bg-dark-16.shape-distance-circle {
+     background-position: -48px -144px
+}
+.sketchpen-icon-webgis-bg-dark-16.shape-freehand {
+     background-position: -64px -144px
+}
+.sketchpen-icon-webgis-bg-dark-16.shape-hecto-line {
+     background-position: -80px -144px
+}
+.sketchpen-icon-webgis-bg-dark-16.shape-polygon {
+     background-position: -96px -144px
+}
+.sketchpen-icon-webgis-bg-dark-16.shape-polyline {
+     background-position: -112px -144px
+}
+.sketchpen-icon-webgis-bg-dark-16.shape-rectangle-binoculars {
+     background-position: -128px -144px
+}
+.sketchpen-icon-webgis-bg-dark-16.shape-rectangle {
+     background-position: -144px -144px
+}
+.sketchpen-icon-webgis-bg-dark-16.size-point {
+     background-position: -0px -160px
+}
+.sketchpen-icon-webgis-bg-dark-16.snapping {
+     background-position: -16px -160px
+}
+.sketchpen-icon-webgis-bg-dark-16.solar-altitude {
+     background-position: -32px -160px
+}
+.sketchpen-icon-webgis-bg-dark-16.tiles {
+     background-position: -48px -160px
+}
+.sketchpen-icon-webgis-bg-dark-16.zoom-in {
+     background-position: -64px -160px
+}
+.sketchpen-icon-webgis-bg-dark-16.zoom-marker {
+     background-position: -80px -160px
+}
+.sketchpen-icon-webgis-bg-dark-16.zoom-out {
+     background-position: -96px -160px
+}
+
+ .sketchpen-icon-webgis-bg-dark-32 {
+    background-image: url("../img/sketchpen/bg-dark/32/1/sprite.png");
+    background-repeat: no-repeat;
+    background-size: 320px 352px;
+    width: 32px;
+    height: 32px;
+    display: inline-block;
+}.sketchpen-icon-webgis-bg-dark-32.3d {
+     background-position: -0px -0px
+}
+.sketchpen-icon-webgis-bg-dark-32.altitude {
+     background-position: -32px -0px
+}
+.sketchpen-icon-webgis-bg-dark-32.buffer {
+     background-position: -64px -0px
+}
+.sketchpen-icon-webgis-bg-dark-32.chainage {
+     background-position: -96px -0px
+}
+.sketchpen-icon-webgis-bg-dark-32.color-fill {
+     background-position: -128px -0px
+}
+.sketchpen-icon-webgis-bg-dark-32.color-point {
+     background-position: -160px -0px
+}
+.sketchpen-icon-webgis-bg-dark-32.color-stroke {
+     background-position: -192px -0px
+}
+.sketchpen-icon-webgis-bg-dark-32.color-text {
+     background-position: -224px -0px
+}
+.sketchpen-icon-webgis-bg-dark-32.compass-rose {
+     background-position: -256px -0px
+}
+.sketchpen-icon-webgis-bg-dark-32.compass {
+     background-position: -288px -0px
+}
+.sketchpen-icon-webgis-bg-dark-32.compasses-off {
+     background-position: -0px -32px
+}
+.sketchpen-icon-webgis-bg-dark-32.compasses {
+     background-position: -32px -32px
+}
+.sketchpen-icon-webgis-bg-dark-32.construct-angle-direction {
+     background-position: -64px -32px
+}
+.sketchpen-icon-webgis-bg-dark-32.construct-arc_2tangents {
+     background-position: -96px -32px
+}
+.sketchpen-icon-webgis-bg-dark-32.construct-arc_3points {
+     background-position: -128px -32px
+}
+.sketchpen-icon-webgis-bg-dark-32.construct-circle {
+     background-position: -160px -32px
+}
+.sketchpen-icon-webgis-bg-dark-32.construct-clip-line-both {
+     background-position: -192px -32px
+}
+.sketchpen-icon-webgis-bg-dark-32.construct-clip-line-difference {
+     background-position: -224px -32px
+}
+.sketchpen-icon-webgis-bg-dark-32.construct-clip-line-intersect {
+     background-position: -256px -32px
+}
+.sketchpen-icon-webgis-bg-dark-32.construct-clip-polygon-both {
+     background-position: -288px -32px
+}
+.sketchpen-icon-webgis-bg-dark-32.construct-clip-polygon-difference {
+     background-position: -0px -64px
+}
+.sketchpen-icon-webgis-bg-dark-32.construct-clip-polygon-intersect {
+     background-position: -32px -64px
+}
+.sketchpen-icon-webgis-bg-dark-32.construct-clip-polygon-xor {
+     background-position: -64px -64px
+}
+.sketchpen-icon-webgis-bg-dark-32.construct-clip {
+     background-position: -96px -64px
+}
+.sketchpen-icon-webgis-bg-dark-32.construct-copy {
+     background-position: -128px -64px
+}
+.sketchpen-icon-webgis-bg-dark-32.construct-cut {
+     background-position: -160px -64px
+}
+.sketchpen-icon-webgis-bg-dark-32.construct-default {
+     background-position: -192px -64px
+}
+.sketchpen-icon-webgis-bg-dark-32.construct-direction-direction {
+     background-position: -224px -64px
+}
+.sketchpen-icon-webgis-bg-dark-32.construct-direction-distance {
+     background-position: -256px -64px
+}
+.sketchpen-icon-webgis-bg-dark-32.construct-distance-distance {
+     background-position: -288px -64px
+}
+.sketchpen-icon-webgis-bg-dark-32.construct-edge-center {
+     background-position: -0px -96px
+}
+.sketchpen-icon-webgis-bg-dark-32.construct-edge-intersect {
+     background-position: -32px -96px
+}
+.sketchpen-icon-webgis-bg-dark-32.construct-extend-line {
+     background-position: -64px -96px
+}
+.sketchpen-icon-webgis-bg-dark-32.construct-midpoint {
+     background-position: -96px -96px
+}
+.sketchpen-icon-webgis-bg-dark-32.construct-move {
+     background-position: -128px -96px
+}
+.sketchpen-icon-webgis-bg-dark-32.construct-new-section {
+     background-position: -160px -96px
+}
+.sketchpen-icon-webgis-bg-dark-32.construct-offset {
+     background-position: -192px -96px
+}
+.sketchpen-icon-webgis-bg-dark-32.construct-ortho-close {
+     background-position: -224px -96px
+}
+.sketchpen-icon-webgis-bg-dark-32.construct-ortho-off {
+     background-position: -256px -96px
+}
+.sketchpen-icon-webgis-bg-dark-32.construct-ortho {
+     background-position: -288px -96px
+}
+.sketchpen-icon-webgis-bg-dark-32.construct-orthogonal {
+     background-position: -0px -128px
+}
+.sketchpen-icon-webgis-bg-dark-32.construct-parallel {
+     background-position: -32px -128px
+}
+.sketchpen-icon-webgis-bg-dark-32.construct-perpendicular {
+     background-position: -64px -128px
+}
+.sketchpen-icon-webgis-bg-dark-32.construct-radius {
+     background-position: -96px -128px
+}
+.sketchpen-icon-webgis-bg-dark-32.construct-rectangle {
+     background-position: -128px -128px
+}
+.sketchpen-icon-webgis-bg-dark-32.construct-swap-direction {
+     background-position: -160px -128px
+}
+.sketchpen-icon-webgis-bg-dark-32.construct-trace-off {
+     background-position: -192px -128px
+}
+.sketchpen-icon-webgis-bg-dark-32.construct-trace {
+     background-position: -224px -128px
+}
+.sketchpen-icon-webgis-bg-dark-32.construct-vertex-add {
+     background-position: -256px -128px
+}
+.sketchpen-icon-webgis-bg-dark-32.construct-vertex-pin {
+     background-position: -288px -128px
+}
+.sketchpen-icon-webgis-bg-dark-32.construct-vertex-remove {
+     background-position: -0px -160px
+}
+.sketchpen-icon-webgis-bg-dark-32.coordinates2d {
+     background-position: -32px -160px
+}
+.sketchpen-icon-webgis-bg-dark-32.coordinates3d {
+     background-position: -64px -160px
+}
+.sketchpen-icon-webgis-bg-dark-32.database-layers {
+     background-position: -96px -160px
+}
+.sketchpen-icon-webgis-bg-dark-32.extent {
+     background-position: -128px -160px
+}
+.sketchpen-icon-webgis-bg-dark-32.georef-doc {
+     background-position: -160px -160px
+}
+.sketchpen-icon-webgis-bg-dark-32.georef-image {
+     background-position: -192px -160px
+}
+.sketchpen-icon-webgis-bg-dark-32.height-profile {
+     background-position: -224px -160px
+}
+.sketchpen-icon-webgis-bg-dark-32.identify {
+     background-position: -256px -160px
+}
+.sketchpen-icon-webgis-bg-dark-32.layer-bottom {
+     background-position: -288px -160px
+}
+.sketchpen-icon-webgis-bg-dark-32.layer-middle {
+     background-position: -0px -192px
+}
+.sketchpen-icon-webgis-bg-dark-32.layer-top {
+     background-position: -32px -192px
+}
+.sketchpen-icon-webgis-bg-dark-32.layers {
+     background-position: -64px -192px
+}
+.sketchpen-icon-webgis-bg-dark-32.legend {
+     background-position: -96px -192px
+}
+.sketchpen-icon-webgis-bg-dark-32.marker-bottom {
+     background-position: -128px -192px
+}
+.sketchpen-icon-webgis-bg-dark-32.marker-draggable-bottom {
+     background-position: -160px -192px
+}
+.sketchpen-icon-webgis-bg-dark-32.marker-draggable-outline-bottom {
+     background-position: -192px -192px
+}
+.sketchpen-icon-webgis-bg-dark-32.marker-draggable-outline {
+     background-position: -224px -192px
+}
+.sketchpen-icon-webgis-bg-dark-32.marker-draggable {
+     background-position: -256px -192px
+}
+.sketchpen-icon-webgis-bg-dark-32.marker-pin-bottom {
+     background-position: -288px -192px
+}
+.sketchpen-icon-webgis-bg-dark-32.marker-pin {
+     background-position: -0px -224px
+}
+.sketchpen-icon-webgis-bg-dark-32.marker-remove {
+     background-position: -32px -224px
+}
+.sketchpen-icon-webgis-bg-dark-32.marker {
+     background-position: -64px -224px
+}
+.sketchpen-icon-webgis-bg-dark-32.markers {
+     background-position: -96px -224px
+}
+.sketchpen-icon-webgis-bg-dark-32.measure-circle {
+     background-position: -128px -224px
+}
+.sketchpen-icon-webgis-bg-dark-32.measure-polygon {
+     background-position: -160px -224px
+}
+.sketchpen-icon-webgis-bg-dark-32.measure-polyline {
+     background-position: -192px -224px
+}
+.sketchpen-icon-webgis-bg-dark-32.polygon-highlighted {
+     background-position: -224px -224px
+}
+.sketchpen-icon-webgis-bg-dark-32.polygon-selected {
+     background-position: -256px -224px
+}
+.sketchpen-icon-webgis-bg-dark-32.position-current {
+     background-position: -288px -224px
+}
+.sketchpen-icon-webgis-bg-dark-32.position-east {
+     background-position: -0px -256px
+}
+.sketchpen-icon-webgis-bg-dark-32.position-north-east {
+     background-position: -32px -256px
+}
+.sketchpen-icon-webgis-bg-dark-32.position-north-west {
+     background-position: -64px -256px
+}
+.sketchpen-icon-webgis-bg-dark-32.position-north {
+     background-position: -96px -256px
+}
+.sketchpen-icon-webgis-bg-dark-32.position-south-east {
+     background-position: -128px -256px
+}
+.sketchpen-icon-webgis-bg-dark-32.position-south-west {
+     background-position: -160px -256px
+}
+.sketchpen-icon-webgis-bg-dark-32.position-south {
+     background-position: -192px -256px
+}
+.sketchpen-icon-webgis-bg-dark-32.position-west {
+     background-position: -224px -256px
+}
+.sketchpen-icon-webgis-bg-dark-32.redlining-info {
+     background-position: -256px -256px
+}
+.sketchpen-icon-webgis-bg-dark-32.redlining {
+     background-position: -288px -256px
+}
+.sketchpen-icon-webgis-bg-dark-32.ruler {
+     background-position: -0px -288px
+}
+.sketchpen-icon-webgis-bg-dark-32.shape-circle {
+     background-position: -32px -288px
+}
+.sketchpen-icon-webgis-bg-dark-32.shape-dim-line {
+     background-position: -64px -288px
+}
+.sketchpen-icon-webgis-bg-dark-32.shape-distance-circle {
+     background-position: -96px -288px
+}
+.sketchpen-icon-webgis-bg-dark-32.shape-freehand {
+     background-position: -128px -288px
+}
+.sketchpen-icon-webgis-bg-dark-32.shape-hecto-line {
+     background-position: -160px -288px
+}
+.sketchpen-icon-webgis-bg-dark-32.shape-polygon {
+     background-position: -192px -288px
+}
+.sketchpen-icon-webgis-bg-dark-32.shape-polyline {
+     background-position: -224px -288px
+}
+.sketchpen-icon-webgis-bg-dark-32.shape-rectangle-binoculars {
+     background-position: -256px -288px
+}
+.sketchpen-icon-webgis-bg-dark-32.shape-rectangle {
+     background-position: -288px -288px
+}
+.sketchpen-icon-webgis-bg-dark-32.size-point {
+     background-position: -0px -320px
+}
+.sketchpen-icon-webgis-bg-dark-32.snapping {
+     background-position: -32px -320px
+}
+.sketchpen-icon-webgis-bg-dark-32.solar-altitude {
+     background-position: -64px -320px
+}
+.sketchpen-icon-webgis-bg-dark-32.tiles {
+     background-position: -96px -320px
+}
+.sketchpen-icon-webgis-bg-dark-32.zoom-in {
+     background-position: -128px -320px
+}
+.sketchpen-icon-webgis-bg-dark-32.zoom-marker {
+     background-position: -160px -320px
+}
+.sketchpen-icon-webgis-bg-dark-32.zoom-out {
+     background-position: -192px -320px
+}
+
  .sketchpen-icon-webgis-bg-dark-24 {
     background-image: url("../img/sketchpen/bg-dark/24/1/sprite.png");
     background-repeat: no-repeat;
@@ -18,314 +676,312 @@
 .sketchpen-icon-webgis-bg-dark-24.chainage {
      background-position: -72px -0px
 }
-.sketchpen-icon-webgis-bg-dark-24.compass-rose {
+.sketchpen-icon-webgis-bg-dark-24.color-fill {
      background-position: -96px -0px
 }
-.sketchpen-icon-webgis-bg-dark-24.compass {
+.sketchpen-icon-webgis-bg-dark-24.color-point {
      background-position: -120px -0px
 }
-.sketchpen-icon-webgis-bg-dark-24.compasses-off {
+.sketchpen-icon-webgis-bg-dark-24.color-stroke {
      background-position: -144px -0px
 }
-.sketchpen-icon-webgis-bg-dark-24.compasses {
+.sketchpen-icon-webgis-bg-dark-24.color-text {
      background-position: -168px -0px
 }
-.sketchpen-icon-webgis-bg-dark-24.construct-angle-direction {
+.sketchpen-icon-webgis-bg-dark-24.compass-rose {
      background-position: -192px -0px
 }
-.sketchpen-icon-webgis-bg-dark-24.construct-arc_2tangents {
+.sketchpen-icon-webgis-bg-dark-24.compass {
      background-position: -216px -0px
 }
-.sketchpen-icon-webgis-bg-dark-24.construct-arc_3points {
+.sketchpen-icon-webgis-bg-dark-24.compasses-off {
      background-position: -0px -24px
 }
-.sketchpen-icon-webgis-bg-dark-24.construct-circle {
+.sketchpen-icon-webgis-bg-dark-24.compasses {
      background-position: -24px -24px
 }
-.sketchpen-icon-webgis-bg-dark-24.construct-clip-line-both {
+.sketchpen-icon-webgis-bg-dark-24.construct-angle-direction {
      background-position: -48px -24px
 }
-.sketchpen-icon-webgis-bg-dark-24.construct-clip-line-difference {
+.sketchpen-icon-webgis-bg-dark-24.construct-arc_2tangents {
      background-position: -72px -24px
 }
-.sketchpen-icon-webgis-bg-dark-24.construct-clip-line-intersect {
+.sketchpen-icon-webgis-bg-dark-24.construct-arc_3points {
      background-position: -96px -24px
 }
-.sketchpen-icon-webgis-bg-dark-24.construct-clip-polygon-both {
+.sketchpen-icon-webgis-bg-dark-24.construct-circle {
      background-position: -120px -24px
 }
-.sketchpen-icon-webgis-bg-dark-24.construct-clip-polygon-difference {
+.sketchpen-icon-webgis-bg-dark-24.construct-clip-line-both {
      background-position: -144px -24px
 }
-.sketchpen-icon-webgis-bg-dark-24.construct-clip-polygon-intersect {
+.sketchpen-icon-webgis-bg-dark-24.construct-clip-line-difference {
      background-position: -168px -24px
 }
-.sketchpen-icon-webgis-bg-dark-24.construct-clip-polygon-xor {
+.sketchpen-icon-webgis-bg-dark-24.construct-clip-line-intersect {
      background-position: -192px -24px
 }
-.sketchpen-icon-webgis-bg-dark-24.construct-clip {
+.sketchpen-icon-webgis-bg-dark-24.construct-clip-polygon-both {
      background-position: -216px -24px
 }
-.sketchpen-icon-webgis-bg-dark-24.construct-copy {
+.sketchpen-icon-webgis-bg-dark-24.construct-clip-polygon-difference {
      background-position: -0px -48px
 }
-.sketchpen-icon-webgis-bg-dark-24.construct-cut {
+.sketchpen-icon-webgis-bg-dark-24.construct-clip-polygon-intersect {
      background-position: -24px -48px
 }
-.sketchpen-icon-webgis-bg-dark-24.construct-default {
+.sketchpen-icon-webgis-bg-dark-24.construct-clip-polygon-xor {
      background-position: -48px -48px
 }
-.sketchpen-icon-webgis-bg-dark-24.construct-direction-direction {
+.sketchpen-icon-webgis-bg-dark-24.construct-clip {
      background-position: -72px -48px
 }
-.sketchpen-icon-webgis-bg-dark-24.construct-direction-distance {
+.sketchpen-icon-webgis-bg-dark-24.construct-copy {
      background-position: -96px -48px
 }
-.sketchpen-icon-webgis-bg-dark-24.construct-distance-distance {
+.sketchpen-icon-webgis-bg-dark-24.construct-cut {
      background-position: -120px -48px
 }
-.sketchpen-icon-webgis-bg-dark-24.construct-edge-center {
+.sketchpen-icon-webgis-bg-dark-24.construct-default {
      background-position: -144px -48px
 }
-.sketchpen-icon-webgis-bg-dark-24.construct-edge-intersect {
+.sketchpen-icon-webgis-bg-dark-24.construct-direction-direction {
      background-position: -168px -48px
 }
-.sketchpen-icon-webgis-bg-dark-24.construct-extend-line {
+.sketchpen-icon-webgis-bg-dark-24.construct-direction-distance {
      background-position: -192px -48px
 }
-.sketchpen-icon-webgis-bg-dark-24.construct-midpoint {
+.sketchpen-icon-webgis-bg-dark-24.construct-distance-distance {
      background-position: -216px -48px
 }
-.sketchpen-icon-webgis-bg-dark-24.construct-move {
+.sketchpen-icon-webgis-bg-dark-24.construct-edge-center {
      background-position: -0px -72px
 }
-.sketchpen-icon-webgis-bg-dark-24.construct-new-section {
+.sketchpen-icon-webgis-bg-dark-24.construct-edge-intersect {
      background-position: -24px -72px
 }
-.sketchpen-icon-webgis-bg-dark-24.construct-offset {
+.sketchpen-icon-webgis-bg-dark-24.construct-extend-line {
      background-position: -48px -72px
 }
-.sketchpen-icon-webgis-bg-dark-24.construct-ortho-close {
+.sketchpen-icon-webgis-bg-dark-24.construct-midpoint {
      background-position: -72px -72px
 }
-.sketchpen-icon-webgis-bg-dark-24.construct-ortho-off {
+.sketchpen-icon-webgis-bg-dark-24.construct-move {
      background-position: -96px -72px
 }
-.sketchpen-icon-webgis-bg-dark-24.construct-ortho {
+.sketchpen-icon-webgis-bg-dark-24.construct-new-section {
      background-position: -120px -72px
 }
-.sketchpen-icon-webgis-bg-dark-24.construct-orthogonal {
+.sketchpen-icon-webgis-bg-dark-24.construct-offset {
      background-position: -144px -72px
 }
-.sketchpen-icon-webgis-bg-dark-24.construct-parallel {
+.sketchpen-icon-webgis-bg-dark-24.construct-ortho-close {
      background-position: -168px -72px
 }
-.sketchpen-icon-webgis-bg-dark-24.construct-perpendicular {
+.sketchpen-icon-webgis-bg-dark-24.construct-ortho-off {
      background-position: -192px -72px
 }
-.sketchpen-icon-webgis-bg-dark-24.construct-radius {
+.sketchpen-icon-webgis-bg-dark-24.construct-ortho {
      background-position: -216px -72px
 }
-.sketchpen-icon-webgis-bg-dark-24.construct-rectangle {
+.sketchpen-icon-webgis-bg-dark-24.construct-orthogonal {
      background-position: -0px -96px
 }
-.sketchpen-icon-webgis-bg-dark-24.construct-swap-direction {
+.sketchpen-icon-webgis-bg-dark-24.construct-parallel {
      background-position: -24px -96px
 }
-.sketchpen-icon-webgis-bg-dark-24.construct-trace-off {
+.sketchpen-icon-webgis-bg-dark-24.construct-perpendicular {
      background-position: -48px -96px
 }
-.sketchpen-icon-webgis-bg-dark-24.construct-trace {
+.sketchpen-icon-webgis-bg-dark-24.construct-radius {
      background-position: -72px -96px
 }
-.sketchpen-icon-webgis-bg-dark-24.construct-vertex-add {
+.sketchpen-icon-webgis-bg-dark-24.construct-rectangle {
      background-position: -96px -96px
 }
-.sketchpen-icon-webgis-bg-dark-24.construct-vertex-pin {
+.sketchpen-icon-webgis-bg-dark-24.construct-swap-direction {
      background-position: -120px -96px
 }
-.sketchpen-icon-webgis-bg-dark-24.construct-vertex-remove {
+.sketchpen-icon-webgis-bg-dark-24.construct-trace-off {
      background-position: -144px -96px
 }
-.sketchpen-icon-webgis-bg-dark-24.coordinates2d {
+.sketchpen-icon-webgis-bg-dark-24.construct-trace {
      background-position: -168px -96px
 }
-.sketchpen-icon-webgis-bg-dark-24.coordinates3d {
+.sketchpen-icon-webgis-bg-dark-24.construct-vertex-add {
      background-position: -192px -96px
 }
-.sketchpen-icon-webgis-bg-dark-24.database-layers {
+.sketchpen-icon-webgis-bg-dark-24.construct-vertex-pin {
      background-position: -216px -96px
 }
-.sketchpen-icon-webgis-bg-dark-24.extent {
+.sketchpen-icon-webgis-bg-dark-24.construct-vertex-remove {
      background-position: -0px -120px
 }
-.sketchpen-icon-webgis-bg-dark-24.georef-doc {
+.sketchpen-icon-webgis-bg-dark-24.coordinates2d {
      background-position: -24px -120px
 }
-.sketchpen-icon-webgis-bg-dark-24.georef-image {
+.sketchpen-icon-webgis-bg-dark-24.coordinates3d {
      background-position: -48px -120px
 }
-.sketchpen-icon-webgis-bg-dark-24.height-profile {
+.sketchpen-icon-webgis-bg-dark-24.database-layers {
      background-position: -72px -120px
 }
-.sketchpen-icon-webgis-bg-dark-24.identify {
+.sketchpen-icon-webgis-bg-dark-24.extent {
      background-position: -96px -120px
 }
-.sketchpen-icon-webgis-bg-dark-24.layer-bottom {
+.sketchpen-icon-webgis-bg-dark-24.georef-doc {
      background-position: -120px -120px
 }
-.sketchpen-icon-webgis-bg-dark-24.layer-middle {
+.sketchpen-icon-webgis-bg-dark-24.georef-image {
      background-position: -144px -120px
 }
-.sketchpen-icon-webgis-bg-dark-24.layer-top {
+.sketchpen-icon-webgis-bg-dark-24.height-profile {
      background-position: -168px -120px
 }
-.sketchpen-icon-webgis-bg-dark-24.layers {
+.sketchpen-icon-webgis-bg-dark-24.identify {
      background-position: -192px -120px
 }
-.sketchpen-icon-webgis-bg-dark-24.legend {
+.sketchpen-icon-webgis-bg-dark-24.layer-bottom {
      background-position: -216px -120px
 }
-.sketchpen-icon-webgis-bg-dark-24.marker-bottom {
+.sketchpen-icon-webgis-bg-dark-24.layer-middle {
      background-position: -0px -144px
 }
-.sketchpen-icon-webgis-bg-dark-24.marker-draggable-bottom {
+.sketchpen-icon-webgis-bg-dark-24.layer-top {
      background-position: -24px -144px
 }
-.sketchpen-icon-webgis-bg-dark-24.marker-draggable-outline-bottom {
+.sketchpen-icon-webgis-bg-dark-24.layers {
      background-position: -48px -144px
 }
-.sketchpen-icon-webgis-bg-dark-24.marker-draggable-outline {
+.sketchpen-icon-webgis-bg-dark-24.legend {
      background-position: -72px -144px
 }
-.sketchpen-icon-webgis-bg-dark-24.marker-draggable {
+.sketchpen-icon-webgis-bg-dark-24.marker-bottom {
      background-position: -96px -144px
 }
-.sketchpen-icon-webgis-bg-dark-24.marker-pin-bottom {
+.sketchpen-icon-webgis-bg-dark-24.marker-draggable-bottom {
      background-position: -120px -144px
 }
-.sketchpen-icon-webgis-bg-dark-24.marker-pin {
+.sketchpen-icon-webgis-bg-dark-24.marker-draggable-outline-bottom {
      background-position: -144px -144px
 }
-.sketchpen-icon-webgis-bg-dark-24.marker-remove {
+.sketchpen-icon-webgis-bg-dark-24.marker-draggable-outline {
      background-position: -168px -144px
 }
-.sketchpen-icon-webgis-bg-dark-24.marker {
+.sketchpen-icon-webgis-bg-dark-24.marker-draggable {
      background-position: -192px -144px
 }
-.sketchpen-icon-webgis-bg-dark-24.markers {
+.sketchpen-icon-webgis-bg-dark-24.marker-pin-bottom {
      background-position: -216px -144px
 }
-.sketchpen-icon-webgis-bg-dark-24.measure-circle {
+.sketchpen-icon-webgis-bg-dark-24.marker-pin {
      background-position: -0px -168px
 }
-.sketchpen-icon-webgis-bg-dark-24.measure-polygon {
+.sketchpen-icon-webgis-bg-dark-24.marker-remove {
      background-position: -24px -168px
 }
-.sketchpen-icon-webgis-bg-dark-24.measure-polyline {
+.sketchpen-icon-webgis-bg-dark-24.marker {
      background-position: -48px -168px
 }
-.sketchpen-icon-webgis-bg-dark-24.polygon-highlighted {
+.sketchpen-icon-webgis-bg-dark-24.markers {
      background-position: -72px -168px
 }
-.sketchpen-icon-webgis-bg-dark-24.polygon-selected {
+.sketchpen-icon-webgis-bg-dark-24.measure-circle {
      background-position: -96px -168px
 }
-.sketchpen-icon-webgis-bg-dark-24.position-current {
+.sketchpen-icon-webgis-bg-dark-24.measure-polygon {
      background-position: -120px -168px
 }
-.sketchpen-icon-webgis-bg-dark-24.position-east {
+.sketchpen-icon-webgis-bg-dark-24.measure-polyline {
      background-position: -144px -168px
 }
-.sketchpen-icon-webgis-bg-dark-24.position-north-east {
+.sketchpen-icon-webgis-bg-dark-24.polygon-highlighted {
      background-position: -168px -168px
 }
-.sketchpen-icon-webgis-bg-dark-24.position-north-west {
+.sketchpen-icon-webgis-bg-dark-24.polygon-selected {
      background-position: -192px -168px
 }
-.sketchpen-icon-webgis-bg-dark-24.position-north {
+.sketchpen-icon-webgis-bg-dark-24.position-current {
      background-position: -216px -168px
 }
-.sketchpen-icon-webgis-bg-dark-24.position-south-east {
+.sketchpen-icon-webgis-bg-dark-24.position-east {
      background-position: -0px -192px
 }
-.sketchpen-icon-webgis-bg-dark-24.position-south-west {
+.sketchpen-icon-webgis-bg-dark-24.position-north-east {
      background-position: -24px -192px
 }
-.sketchpen-icon-webgis-bg-dark-24.position-south {
+.sketchpen-icon-webgis-bg-dark-24.position-north-west {
      background-position: -48px -192px
 }
-.sketchpen-icon-webgis-bg-dark-24.position-west {
+.sketchpen-icon-webgis-bg-dark-24.position-north {
      background-position: -72px -192px
 }
-.sketchpen-icon-webgis-bg-dark-24.redlining-info {
+.sketchpen-icon-webgis-bg-dark-24.position-south-east {
      background-position: -96px -192px
 }
-.sketchpen-icon-webgis-bg-dark-24.redlining {
+.sketchpen-icon-webgis-bg-dark-24.position-south-west {
      background-position: -120px -192px
 }
-.sketchpen-icon-webgis-bg-dark-24.ruler {
+.sketchpen-icon-webgis-bg-dark-24.position-south {
      background-position: -144px -192px
 }
-.sketchpen-icon-webgis-bg-dark-24.shape-circle {
+.sketchpen-icon-webgis-bg-dark-24.position-west {
      background-position: -168px -192px
 }
-.sketchpen-icon-webgis-bg-dark-24.shape-dim-line {
+.sketchpen-icon-webgis-bg-dark-24.redlining-info {
      background-position: -192px -192px
 }
-.sketchpen-icon-webgis-bg-dark-24.shape-distance-circle {
+.sketchpen-icon-webgis-bg-dark-24.redlining {
      background-position: -216px -192px
 }
-.sketchpen-icon-webgis-bg-dark-24.shape-freehand {
+.sketchpen-icon-webgis-bg-dark-24.ruler {
      background-position: -0px -216px
 }
-.sketchpen-icon-webgis-bg-dark-24.shape-hecto-line {
+.sketchpen-icon-webgis-bg-dark-24.shape-circle {
      background-position: -24px -216px
 }
-.sketchpen-icon-webgis-bg-dark-24.shape-polygon {
+.sketchpen-icon-webgis-bg-dark-24.shape-dim-line {
      background-position: -48px -216px
 }
-.sketchpen-icon-webgis-bg-dark-24.shape-polyline {
+.sketchpen-icon-webgis-bg-dark-24.shape-distance-circle {
      background-position: -72px -216px
 }
-.sketchpen-icon-webgis-bg-dark-24.shape-rectangle-binoculars {
+.sketchpen-icon-webgis-bg-dark-24.shape-freehand {
      background-position: -96px -216px
 }
-.sketchpen-icon-webgis-bg-dark-24.shape-rectangle {
+.sketchpen-icon-webgis-bg-dark-24.shape-hecto-line {
      background-position: -120px -216px
 }
-.sketchpen-icon-webgis-bg-dark-24.snapping {
+.sketchpen-icon-webgis-bg-dark-24.shape-polygon {
      background-position: -144px -216px
 }
-.sketchpen-icon-webgis-bg-dark-24.solar-altitude {
+.sketchpen-icon-webgis-bg-dark-24.shape-polyline {
      background-position: -168px -216px
 }
-.sketchpen-icon-webgis-bg-dark-24.tiles {
+.sketchpen-icon-webgis-bg-dark-24.shape-rectangle-binoculars {
      background-position: -192px -216px
 }
-.sketchpen-icon-webgis-bg-dark-24.zoom-in {
+.sketchpen-icon-webgis-bg-dark-24.shape-rectangle {
      background-position: -216px -216px
 }
-.sketchpen-icon-webgis-bg-dark-24.zoom-marker {
+.sketchpen-icon-webgis-bg-dark-24.size-point {
      background-position: -0px -240px
 }
-.sketchpen-icon-webgis-bg-dark-24.zoom-out {
+.sketchpen-icon-webgis-bg-dark-24.snapping {
      background-position: -24px -240px
 }
-
-@media (-webkit-min-device-pixel-ratio: 1.5), 
-       (min-resolution: 144dpi) {
-
-    .sketchpen-icon-webgis-bg-dark-24 {
-        background-image: url("../img/sketchpen/bg-dark/24/1.5/sprite.png");
-        background-size: 240px 264px;
-    } 
+.sketchpen-icon-webgis-bg-dark-24.solar-altitude {
+     background-position: -48px -240px
 }
-@media (-webkit-min-device-pixel-ratio: 2), 
-       (min-resolution: 192dpi) {
-
-    .sketchpen-icon-webgis-bg-dark-24 {
-        background-image: url("../img/sketchpen/bg-dark/24/2/sprite.png");
-        background-size: 240px 264px;
-    } 
+.sketchpen-icon-webgis-bg-dark-24.tiles {
+     background-position: -72px -240px
+}
+.sketchpen-icon-webgis-bg-dark-24.zoom-in {
+     background-position: -96px -240px
+}
+.sketchpen-icon-webgis-bg-dark-24.zoom-marker {
+     background-position: -120px -240px
+}
+.sketchpen-icon-webgis-bg-dark-24.zoom-out {
+     background-position: -144px -240px
 }
