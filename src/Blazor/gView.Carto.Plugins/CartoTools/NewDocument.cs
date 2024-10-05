@@ -32,10 +32,8 @@ public class NewDocument : ICartoInitialButton
 
     }
 
-    public bool IsEnabled(ICartoApplicationScopeService scope)
-    {
-        return true;
-    }
+    public bool IsVisible(ICartoApplicationScopeService scope) => true;
+    public bool IsDisabled(ICartoApplicationScopeService scope) => false;
 
     async public Task<bool> OnClick(ICartoApplicationScopeService scope)
     {

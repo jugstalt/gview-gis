@@ -32,10 +32,12 @@ internal class AddDataToGroupLayer : ICartoButton
 
     }
 
-    public bool IsEnabled(ICartoApplicationScopeService scope)
+    public bool IsVisible(ICartoApplicationScopeService scope)
     {
         return scope.SelectedTocTreeNode is TocParentNode;
     }
+
+    public bool IsDisabled(ICartoApplicationScopeService scope) => false;
 
     async public Task<bool> OnClick(ICartoApplicationScopeService scope)
     {

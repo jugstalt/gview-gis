@@ -30,8 +30,10 @@ internal class LayerSettings : ICartoButton
 
     }
 
-    public bool IsEnabled(ICartoApplicationScopeService scope)
+    public bool IsVisible(ICartoApplicationScopeService scope)
         => scope.SelectedTocTreeNode is not null;
+
+    public bool IsDisabled(ICartoApplicationScopeService scope) => false;
 
     async public Task<bool> OnClick(ICartoApplicationScopeService scope)
     {

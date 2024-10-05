@@ -26,7 +26,9 @@ internal class About : ICartoButton
 
     }
 
-    public bool IsEnabled(ICartoApplicationScopeService scope) => true;
+    public bool IsVisible(ICartoApplicationScopeService scope) => true;
+
+    public bool IsDisabled(ICartoApplicationScopeService scope) => false;
 
     async public Task<bool> OnClick(ICartoApplicationScopeService scope)
     {

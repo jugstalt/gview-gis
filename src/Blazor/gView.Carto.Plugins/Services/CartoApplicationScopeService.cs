@@ -41,6 +41,7 @@ public class CartoApplicationScopeService : ApplictionBusyHandlerAndCache, ICart
     private readonly IAppIdentityProvider _identityProvider;
     private readonly PluginManagerService _pluginManager;
     private readonly ICartoRestoreService? _restoreService;
+    private readonly IZoomHistory _zoomHistory;
 
     private ICartoDocument _cartoDocument;
 
@@ -58,6 +59,7 @@ public class CartoApplicationScopeService : ApplictionBusyHandlerAndCache, ICart
                                         ICartoInteractiveToolService toolService,
                                         PluginManagerService pluginManager,
                                         IAppIdentityProvider identityProvider,
+                                        IZoomHistory zoomHistory,
                                         IOptions<CartoApplicationScopeServiceOptions> options,
                                         IScopeContextService? scopeContext = null,
                                         ICartoRestoreService? restoreService = null
@@ -76,6 +78,7 @@ public class CartoApplicationScopeService : ApplictionBusyHandlerAndCache, ICart
         _options = options.Value;
         _pluginManager = pluginManager;
         _restoreService = restoreService;
+        _zoomHistory = zoomHistory;
 
         _cartoDocument = this.Document = new CartoDocument(this);
 
@@ -148,6 +151,8 @@ public class CartoApplicationScopeService : ApplictionBusyHandlerAndCache, ICart
 
     async private Task<bool> LoadCartoDocumentOrRestorePointAsync(string mxlFilePath, string? restoreFilePath = null)
     {
+        _zoomHistory.Clear();
+
         IMap? originalMap = null;
 
         if (Document?.Map is not null 
@@ -263,6 +268,8 @@ public class CartoApplicationScopeService : ApplictionBusyHandlerAndCache, ICart
         => _restoreService?.RemoveRestorePoints(mxlPath) ?? RestoreResult.Success;
 
     #endregion
+
+    public IZoomHistory ZoomHistory => _zoomHistory;
 
     public TocTreeNode? SelectedTocTreeNode { get; private set; }
 

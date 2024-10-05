@@ -22,7 +22,7 @@ internal class ZoomToLayer : ICartoButton
 
     public int SortOrder => 90;
 
-    public bool IsEnabled(ICartoApplicationScopeService scope)
+    public bool IsVisible(ICartoApplicationScopeService scope)
     {
         foreach (var layer in scope.SelectedTocTreeNode?.TocElement?.Layers ?? [])
         {
@@ -37,6 +37,8 @@ internal class ZoomToLayer : ICartoButton
 
         return false;
     }
+
+    public bool IsDisabled(ICartoApplicationScopeService scope) => false;
 
     async public Task<bool> OnClick(ICartoApplicationScopeService scope)
     {

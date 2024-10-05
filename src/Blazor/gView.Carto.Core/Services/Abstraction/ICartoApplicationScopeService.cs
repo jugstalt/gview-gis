@@ -5,6 +5,7 @@ using gView.Carto.Core.Models;
 using gView.Carto.Core.Models.Tree;
 using gView.Framework.Blazor.Services.Abstraction;
 using gView.Framework.Core.Common;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
@@ -44,4 +45,6 @@ public interface ICartoApplicationScopeService : IApplicationScope
     IEnumerable<RestorePoint> RestorePoints(string? mxlPath = null);
     Task<bool> LoadRestorePointAsync(string mxlPath, string restorePointHash);
     RestoreResult RemoveRestorePoints(string mxlPath);
+
+    IZoomHistory ZoomHistory { get; }
 }

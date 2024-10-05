@@ -5,10 +5,10 @@ using gView.Carto.Core.Services.Abstraction;
 using gView.Carto.Plugins.PropertyGridEditors;
 using gView.Carto.Plugins.Services;
 using gView.Carto.Plugins.Services.Dialogs;
-using gView.Framework.Blazor.Services.Abstraction;
+using gView.Carto.Razor.Services;
 using gView.Razor.Abstractions;
-using gView.Razor.Services;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace gView.Carto.Plugins.Extensions.DependencyInjection;
 static public class ServicesExtensions
@@ -30,6 +30,8 @@ static public class ServicesExtensions
             .AddTransient<IPropertyGridEditor, ResourcesPickerPropertyEditor>()
             .AddTransient<ICartoDocumentService, CartoDocumentService>()
             .AddTransient<ICartoRestoreService, CartoRestoreService>()
+            .AddTransient<IZoomHistory, ZoomHistoryService>(serviceProvider =>
+                    new ZoomHistoryService(serviceProvider.GetRequiredService<ILogger<ZoomHistoryService>>(), 10))
             .Configure(configureOptions)
             .Configure(configureRestore)
             .AddEventBus()

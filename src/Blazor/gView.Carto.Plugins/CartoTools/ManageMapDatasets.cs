@@ -22,7 +22,8 @@ public class ManageMapDatasets : ICartoButton
 
     public string Name => "Map Datasets";
 
-    public bool IsEnabled(ICartoApplicationScopeService scope) => true;
+    public bool IsVisible(ICartoApplicationScopeService scope) => true;
+    public bool IsDisabled(ICartoApplicationScopeService scope) => false;
 
     async public Task<bool> OnClick(ICartoApplicationScopeService scope)
     {

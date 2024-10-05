@@ -29,7 +29,9 @@ internal class AddData : ICartoInitialButton
 
     }
 
-    public bool IsEnabled(ICartoApplicationScopeService scope) => !scope.Document.Readonly;
+    public bool IsVisible(ICartoApplicationScopeService scope) => !scope.Document.Readonly;
+
+    public bool IsDisabled(ICartoApplicationScopeService scope) => false;
 
     async public Task<bool> OnClick(ICartoApplicationScopeService scope)
     {

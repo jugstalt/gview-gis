@@ -35,7 +35,7 @@
 
             var tools = _cartoButtons
                                     .Where(t => t.Target == toolTarget)
-                                    .Where(t => t.IsEnabled(AppScope))
+                                    .Where(t => t.IsVisible(AppScope))
                                     .OrderBy(t => t.SortOrder)
                                     .ToArray();
 
@@ -49,11 +49,11 @@
 
                 <div class="@($"carto-tool-box{(toolTarget == CartoToolTarget.SelectedTocItem ? " current-selected" : "")}")">
                 <div class="carto-tool-sub-box">
-                    @foreach (var tool in tools.Where(c => c.SortOrder <= 10).Take(MaxFileContainerIcons))
+                    @foreach (var tool in tools.Where(c => c.SortOrder <= 10).Take(MaxContainerIcons))
                     {
-                        <div class="carto-tool"
-                                title="@tool.ToolTip"
-                                @onclick="async () => await OnButtonClickAsync(tool)">
+                        <div class="@($"carto-tool{(tool.IsDisabled(AppScope) ? " disabled" : "")}")"
+                             title="@tool.ToolTip"
+                             @onclick="async () => await OnButtonClickAsync(tool)">
                             <div class=@Icons.FromString(tool.Icon)></div>
                             <div class="title">@tool.Name</div>
                         </div>
@@ -64,9 +64,9 @@
                         <div class="tool-small-chunk">
                             @foreach (var tool in toolChunk)
                             {
-                                <div class="carto-tool small"
-                                        title="@tool.ToolTip"
-                                        @onclick="async () => await OnButtonClickAsync(tool)">
+                                <div class="@($"carto-tool small{(tool.IsDisabled(AppScope) ? " disabled" : "")}")"
+                                     title="@tool.ToolTip"
+                                     @onclick="async () => await OnButtonClickAsync(tool)">
                                     <div class=@Icons.FromString(tool.Icon, IconSize.Small)></div>
                                     <div class="title">@tool.Name</div>
                                 </div>
@@ -74,15 +74,15 @@
                         </div>
                     }
 
-                    @if (tools.Count() > MaxFileContainerIcons)
+                    @if (tools.Count() > MaxContainerIcons)
                     {
                         <MudMenu Icon="@MudBlazor.Icons.Material.Filled.MoreVert">
-                            @foreach (var tool in tools.Skip(MaxFileContainerIcons))
+                            @foreach (var tool in tools.Skip(MaxContainerIcons))
                             {
                                 <MudMenuItem>
-                                    <div class="carto-tool"
-                                            alt="@tool.ToolTip"
-                                            @onclick="async () => await OnButtonClickAsync(tool)">
+                                    <div class="@($"carto-tool{(tool.IsDisabled(AppScope) ? " disabled" : "")}")"
+                                         title="@tool.ToolTip"
+                                         @onclick="async () => await OnButtonClickAsync(tool)">
                                         <div class=@Icons.FromString(tool.Icon)></div>
                                         <div class="title">@tool.Name</div>
                                     </div>
@@ -107,7 +107,7 @@
         <div class="carto-tool-box" style="float:right">
             @foreach (var cartoTool in _cartoButtons
                                                .Where(t => t.Target == CartoToolTarget.General)
-                                               .Where(t => t.IsEnabled(AppScope))
+                                               .Where(t => t.IsVisible(AppScope))
                                                .OrderBy(t => t.SortOrder))
             {
                 <div class="carto-tool"
@@ -129,8 +129,7 @@
 }
 
 @code{
-    private const int MaxFileContainerIcons = 10;
-    private const int MaxMapContainerIcons = 10;
+    private const int MaxContainerIcons = 20;  // experimential
 
     private ICartoButton[]? _cartoButtons;
     private ICartoApplicationScopeService? _cartoAppService;
@@ -144,9 +143,12 @@
 
         EventBus.OnSelectedTocTreeNodeChangedAsync += HandleSelectedTocTreeNodeChangedAsync;
         EventBus.OnCartoDocumentLoadedAsync += HandleCartoDocumentLoadedAsync;
+        EventBus.OnStartRenderMapAsync += HandleStartRenderMapAsync;
     });
 
     private Task OnButtonClickAsync(ICartoButton cartoButton) => base.HandleAsync(() => {
+
+        if (cartoButton.IsDisabled(AppScope)) return Task.CompletedTask;
 
         if (cartoButton is ICartoInteractiveTool)
         {
@@ -174,9 +176,13 @@
     private Task HandleCartoDocumentLoadedAsync(ICartoDocument cartoDocument)
         => base.InvokeAsync(() => StateHasChanged());
 
+    private Task HandleStartRenderMapAsync(IMapRenderer mapRenderer)
+        => base.InvokeAsync(() => StateHasChanged());
+
     public void Dispose()
     {
         EventBus.OnSelectedTocTreeNodeChangedAsync -= HandleSelectedTocTreeNodeChangedAsync;
         EventBus.OnCartoDocumentLoadedAsync -= HandleCartoDocumentLoadedAsync;
+        EventBus.OnStartRenderMapAsync -= HandleStartRenderMapAsync;
     }
 }

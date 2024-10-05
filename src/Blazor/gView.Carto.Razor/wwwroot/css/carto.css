@@ -77,6 +77,16 @@
             box-sizing: border-box;
         }
 
+        .carto-main .toolbar .carto-tool.disabled {
+            cursor: unset;
+            opacity: .3;
+        }
+
+            .carto-main .toolbar .carto-tool.disabled:hover {
+                background-color: unset;
+                border: 1px solid transparent;
+            }
+
         .carto-main .toolbar .carto-tool-box .carto-tool-sub-box {
             position: relative;
             display: inline-block;

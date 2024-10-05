@@ -21,7 +21,8 @@ public class PublishMapService : ICartoButton
 
     public int SortOrder => 99;
 
-    public bool IsEnabled(ICartoApplicationScopeService scope) => !String.IsNullOrEmpty(scope.Document.FilePath);
+    public bool IsVisible(ICartoApplicationScopeService scope) => !String.IsNullOrEmpty(scope.Document.FilePath);
+    public bool IsDisabled(ICartoApplicationScopeService scope) => false;
 
     async public Task<bool> OnClick(ICartoApplicationScopeService scope)
     {
