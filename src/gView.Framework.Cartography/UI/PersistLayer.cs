@@ -40,6 +40,11 @@ internal class PersistLayer : IPersistableLoadAsync
         // dataset ist bei Grouplayern immer null, darum kein abbruch
         //if(dataset==null) return;
 
+        if(dataset==null)
+        {
+            dataset = null;
+        }
+
         bool isWebTheme = (bool)stream.Load("IsWebTheme", false);
 
         string webThemeId = string.Empty;
@@ -120,7 +125,7 @@ internal class PersistLayer : IPersistableLoadAsync
             nullLayer.PersistWebThemeID = webThemeId;
             nullLayer.PersistClassName = webClassName;
             nullLayer.Title = name;
-            nullLayer.LastErrorMessage = dataset.LastErrorMessage;
+            nullLayer.LastErrorMessage = dataset?.LastErrorMessage ?? "Dataset is NULL";
         }
 
         return true;

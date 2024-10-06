@@ -162,6 +162,20 @@ else
                         <div class="@(IconService.FromString("basic:globe-table")) icon"></div>
                         <div class="title">@mapFile.DisplayPath()</div>
                         <div class="sub-title">@mapFile.LastAccess</div>
+
+                        @{
+                            var restoreState = AppScope.LatestRestorePointState(mapFile.Path); 
+
+                            if(restoreState != RestorePointState.None) 
+                            {
+                                <MudFab Color="restoreState == RestorePointState.Newer ? Color.Primary : Color.Surface"
+                                        DisableElevation="true"
+                                        Style="position:absolute;right:6px;bottom:6px"
+                                        Size="MudBlazor.Size.Small" Title="Try to restore..."
+                                        StartIcon="@Icons.Material.Outlined.Restore"
+                                        OnClick="async () => await OnShowRestorePointsAsync(mapFile.Path)"/>
+                            }
+                        }
                     </div>
                 }
             }
@@ -208,7 +222,7 @@ else
         _isLoadingMap = true;
 
         await base.ForceRenderComponent();
-        await AppScope.LoadCartoDocument(mapFile.Path);
+        await AppScope.LoadCartoDocumentAsync(mapFile.Path);
 
         _isLoadingMap = false;
     }
@@ -283,6 +297,29 @@ else
         {
             AppScope.Document.Map.Name = _editedName;
             _editMapName = false;
+        }
+    }
+
+    async private Task OnShowRestorePointsAsync(string mxlFilePath)
+    {
+        var model = await AppScope.ShowModalDialog(
+                typeof(RestoreMapDocumentDialog),
+                $"Restore: {new FileInfo(mxlFilePath).Name}",
+                new RestoreMapDocumentDialogModel()
+                    {
+                        MxlFilePath = mxlFilePath
+                    }
+        );
+
+        if (!String.IsNullOrEmpty(model?.MxlFilePath)
+            && !String.IsNullOrEmpty(model.RestorePointHash))
+        {
+            _isLoadingMap = true;
+
+            await base.ForceRenderComponent();
+            await AppScope.LoadRestorePointAsync(model.MxlFilePath, model.RestorePointHash);
+
+            _isLoadingMap = false;
         }
     }
 

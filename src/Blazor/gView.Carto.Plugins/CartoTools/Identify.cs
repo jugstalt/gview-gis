@@ -32,7 +32,8 @@ internal class Identify : ICartoTool
 
     }
 
-    public bool IsEnabled(ICartoApplicationScopeService scope) => true;
+    public bool IsVisible(ICartoApplicationScopeService scope) => true;
+    public bool IsDisabled(ICartoApplicationScopeService scope) => false;
 
     public Task<bool> OnClick(ICartoApplicationScopeService scope)
         => Task.FromResult(true);

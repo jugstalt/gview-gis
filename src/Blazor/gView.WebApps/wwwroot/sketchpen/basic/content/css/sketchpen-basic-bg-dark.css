@@ -1,4 +1,1222 @@
 
+ .sketchpen-icon-basic-bg-dark-16 {
+    background-image: url("../img/sketchpen/bg-dark/16/1/sprite.png");
+    background-repeat: no-repeat;
+    background-size: 208px 240px;
+    width: 16px;
+    height: 16px;
+    display: inline-block;
+}.sketchpen-icon-basic-bg-dark-16.account-login {
+     background-position: -0px -0px
+}
+.sketchpen-icon-basic-bg-dark-16.account-logout {
+     background-position: -16px -0px
+}
+.sketchpen-icon-basic-bg-dark-16.account {
+     background-position: -32px -0px
+}
+.sketchpen-icon-basic-bg-dark-16.admin {
+     background-position: -48px -0px
+}
+.sketchpen-icon-basic-bg-dark-16.all-devices {
+     background-position: -64px -0px
+}
+.sketchpen-icon-basic-bg-dark-16.api {
+     background-position: -80px -0px
+}
+.sketchpen-icon-basic-bg-dark-16.arrow-down {
+     background-position: -96px -0px
+}
+.sketchpen-icon-basic-bg-dark-16.arrow-left {
+     background-position: -112px -0px
+}
+.sketchpen-icon-basic-bg-dark-16.arrow-pointer {
+     background-position: -128px -0px
+}
+.sketchpen-icon-basic-bg-dark-16.arrow-right {
+     background-position: -144px -0px
+}
+.sketchpen-icon-basic-bg-dark-16.arrow-up-down {
+     background-position: -160px -0px
+}
+.sketchpen-icon-basic-bg-dark-16.arrow-up {
+     background-position: -176px -0px
+}
+.sketchpen-icon-basic-bg-dark-16.binoculars {
+     background-position: -192px -0px
+}
+.sketchpen-icon-basic-bg-dark-16.book {
+     background-position: -0px -16px
+}
+.sketchpen-icon-basic-bg-dark-16.bookmark {
+     background-position: -16px -16px
+}
+.sketchpen-icon-basic-bg-dark-16.builder {
+     background-position: -32px -16px
+}
+.sketchpen-icon-basic-bg-dark-16.bulb-remove {
+     background-position: -48px -16px
+}
+.sketchpen-icon-basic-bg-dark-16.bulb-shining {
+     background-position: -64px -16px
+}
+.sketchpen-icon-basic-bg-dark-16.bulb-three {
+     background-position: -80px -16px
+}
+.sketchpen-icon-basic-bg-dark-16.bulb-two {
+     background-position: -96px -16px
+}
+.sketchpen-icon-basic-bg-dark-16.bulb {
+     background-position: -112px -16px
+}
+.sketchpen-icon-basic-bg-dark-16.calculator {
+     background-position: -128px -16px
+}
+.sketchpen-icon-basic-bg-dark-16.camera {
+     background-position: -144px -16px
+}
+.sketchpen-icon-basic-bg-dark-16.cellphone {
+     background-position: -160px -16px
+}
+.sketchpen-icon-basic-bg-dark-16.check {
+     background-position: -176px -16px
+}
+.sketchpen-icon-basic-bg-dark-16.checkbox-checked {
+     background-position: -192px -16px
+}
+.sketchpen-icon-basic-bg-dark-16.checkbox-semi-checked {
+     background-position: -0px -32px
+}
+.sketchpen-icon-basic-bg-dark-16.checkbox-unchecked {
+     background-position: -16px -32px
+}
+.sketchpen-icon-basic-bg-dark-16.circle-pie-0 {
+     background-position: -32px -32px
+}
+.sketchpen-icon-basic-bg-dark-16.circle-pie-100 {
+     background-position: -48px -32px
+}
+.sketchpen-icon-basic-bg-dark-16.circle-pie-25 {
+     background-position: -64px -32px
+}
+.sketchpen-icon-basic-bg-dark-16.circle-pie-50 {
+     background-position: -80px -32px
+}
+.sketchpen-icon-basic-bg-dark-16.circle-pie-75 {
+     background-position: -96px -32px
+}
+.sketchpen-icon-basic-bg-dark-16.close {
+     background-position: -112px -32px
+}
+.sketchpen-icon-basic-bg-dark-16.cloud-connect {
+     background-position: -128px -32px
+}
+.sketchpen-icon-basic-bg-dark-16.cloud-download {
+     background-position: -144px -32px
+}
+.sketchpen-icon-basic-bg-dark-16.cloud-upload {
+     background-position: -160px -32px
+}
+.sketchpen-icon-basic-bg-dark-16.cloud {
+     background-position: -176px -32px
+}
+.sketchpen-icon-basic-bg-dark-16.code-c-box {
+     background-position: -192px -32px
+}
+.sketchpen-icon-basic-bg-dark-16.code-c-window {
+     background-position: -0px -48px
+}
+.sketchpen-icon-basic-bg-dark-16.code-c {
+     background-position: -16px -48px
+}
+.sketchpen-icon-basic-bg-dark-16.code-markup-box {
+     background-position: -32px -48px
+}
+.sketchpen-icon-basic-bg-dark-16.code-markup-window {
+     background-position: -48px -48px
+}
+.sketchpen-icon-basic-bg-dark-16.code-markup {
+     background-position: -64px -48px
+}
+.sketchpen-icon-basic-bg-dark-16.context-menu {
+     background-position: -80px -48px
+}
+.sketchpen-icon-basic-bg-dark-16.copy {
+     background-position: -96px -48px
+}
+.sketchpen-icon-basic-bg-dark-16.copyright {
+     background-position: -112px -48px
+}
+.sketchpen-icon-basic-bg-dark-16.cut {
+     background-position: -128px -48px
+}
+.sketchpen-icon-basic-bg-dark-16.darkmode {
+     background-position: -144px -48px
+}
+.sketchpen-icon-basic-bg-dark-16.database-plus {
+     background-position: -160px -48px
+}
+.sketchpen-icon-basic-bg-dark-16.database {
+     background-position: -176px -48px
+}
+.sketchpen-icon-basic-bg-dark-16.default {
+     background-position: -192px -48px
+}
+.sketchpen-icon-basic-bg-dark-16.deploy {
+     background-position: -0px -64px
+}
+.sketchpen-icon-basic-bg-dark-16.disk-white {
+     background-position: -16px -64px
+}
+.sketchpen-icon-basic-bg-dark-16.disk {
+     background-position: -32px -64px
+}
+.sketchpen-icon-basic-bg-dark-16.disks-white {
+     background-position: -48px -64px
+}
+.sketchpen-icon-basic-bg-dark-16.dot-filled {
+     background-position: -64px -64px
+}
+.sketchpen-icon-basic-bg-dark-16.dot-full {
+     background-position: -80px -64px
+}
+.sketchpen-icon-basic-bg-dark-16.dot {
+     background-position: -96px -64px
+}
+.sketchpen-icon-basic-bg-dark-16.download {
+     background-position: -112px -64px
+}
+.sketchpen-icon-basic-bg-dark-16.drop-0 {
+     background-position: -128px -64px
+}
+.sketchpen-icon-basic-bg-dark-16.drop-100 {
+     background-position: -144px -64px
+}
+.sketchpen-icon-basic-bg-dark-16.drop-25 {
+     background-position: -160px -64px
+}
+.sketchpen-icon-basic-bg-dark-16.drop-50 {
+     background-position: -176px -64px
+}
+.sketchpen-icon-basic-bg-dark-16.drop-75 {
+     background-position: -192px -64px
+}
+.sketchpen-icon-basic-bg-dark-16.edit-all {
+     background-position: -0px -80px
+}
+.sketchpen-icon-basic-bg-dark-16.edit-database {
+     background-position: -16px -80px
+}
+.sketchpen-icon-basic-bg-dark-16.edit-minus {
+     background-position: -32px -80px
+}
+.sketchpen-icon-basic-bg-dark-16.edit-plus {
+     background-position: -48px -80px
+}
+.sketchpen-icon-basic-bg-dark-16.edit-table {
+     background-position: -64px -80px
+}
+.sketchpen-icon-basic-bg-dark-16.edit-text {
+     background-position: -80px -80px
+}
+.sketchpen-icon-basic-bg-dark-16.edit {
+     background-position: -96px -80px
+}
+.sketchpen-icon-basic-bg-dark-16.envelope {
+     background-position: -112px -80px
+}
+.sketchpen-icon-basic-bg-dark-16.explode {
+     background-position: -128px -80px
+}
+.sketchpen-icon-basic-bg-dark-16.facebook {
+     background-position: -144px -80px
+}
+.sketchpen-icon-basic-bg-dark-16.favorites-outline {
+     background-position: -160px -80px
+}
+.sketchpen-icon-basic-bg-dark-16.favorites-remove {
+     background-position: -176px -80px
+}
+.sketchpen-icon-basic-bg-dark-16.favorites {
+     background-position: -192px -80px
+}
+.sketchpen-icon-basic-bg-dark-16.filter-remove {
+     background-position: -0px -96px
+}
+.sketchpen-icon-basic-bg-dark-16.filter {
+     background-position: -16px -96px
+}
+.sketchpen-icon-basic-bg-dark-16.folder-white {
+     background-position: -32px -96px
+}
+.sketchpen-icon-basic-bg-dark-16.folder {
+     background-position: -48px -96px
+}
+.sketchpen-icon-basic-bg-dark-16.globe-table {
+     background-position: -64px -96px
+}
+.sketchpen-icon-basic-bg-dark-16.globe-table2 {
+     background-position: -80px -96px
+}
+.sketchpen-icon-basic-bg-dark-16.globe {
+     background-position: -96px -96px
+}
+.sketchpen-icon-basic-bg-dark-16.globe2 {
+     background-position: -112px -96px
+}
+.sketchpen-icon-basic-bg-dark-16.group {
+     background-position: -128px -96px
+}
+.sketchpen-icon-basic-bg-dark-16.hammer {
+     background-position: -144px -96px
+}
+.sketchpen-icon-basic-bg-dark-16.help {
+     background-position: -160px -96px
+}
+.sketchpen-icon-basic-bg-dark-16.home {
+     background-position: -176px -96px
+}
+.sketchpen-icon-basic-bg-dark-16.key {
+     background-position: -192px -96px
+}
+.sketchpen-icon-basic-bg-dark-16.lock-closed {
+     background-position: -0px -112px
+}
+.sketchpen-icon-basic-bg-dark-16.lock-open {
+     background-position: -16px -112px
+}
+.sketchpen-icon-basic-bg-dark-16.magnifier {
+     background-position: -32px -112px
+}
+.sketchpen-icon-basic-bg-dark-16.merge {
+     background-position: -48px -112px
+}
+.sketchpen-icon-basic-bg-dark-16.monitor {
+     background-position: -64px -112px
+}
+.sketchpen-icon-basic-bg-dark-16.open-in-window {
+     background-position: -80px -112px
+}
+.sketchpen-icon-basic-bg-dark-16.optionbox-checked {
+     background-position: -96px -112px
+}
+.sketchpen-icon-basic-bg-dark-16.optionbox-semi-checked {
+     background-position: -112px -112px
+}
+.sketchpen-icon-basic-bg-dark-16.optionbox-unchecked {
+     background-position: -128px -112px
+}
+.sketchpen-icon-basic-bg-dark-16.package {
+     background-position: -144px -112px
+}
+.sketchpen-icon-basic-bg-dark-16.peak-double-down {
+     background-position: -160px -112px
+}
+.sketchpen-icon-basic-bg-dark-16.peak-double-left {
+     background-position: -176px -112px
+}
+.sketchpen-icon-basic-bg-dark-16.peak-double-right {
+     background-position: -192px -112px
+}
+.sketchpen-icon-basic-bg-dark-16.peak-double-up {
+     background-position: -0px -128px
+}
+.sketchpen-icon-basic-bg-dark-16.pin-filled {
+     background-position: -16px -128px
+}
+.sketchpen-icon-basic-bg-dark-16.pin {
+     background-position: -32px -128px
+}
+.sketchpen-icon-basic-bg-dark-16.pin0 {
+     background-position: -48px -128px
+}
+.sketchpen-icon-basic-bg-dark-16.pin1 {
+     background-position: -64px -128px
+}
+.sketchpen-icon-basic-bg-dark-16.plane {
+     background-position: -80px -128px
+}
+.sketchpen-icon-basic-bg-dark-16.pointer {
+     background-position: -96px -128px
+}
+.sketchpen-icon-basic-bg-dark-16.pointer2-minus {
+     background-position: -112px -128px
+}
+.sketchpen-icon-basic-bg-dark-16.pointer2-plus {
+     background-position: -128px -128px
+}
+.sketchpen-icon-basic-bg-dark-16.pointer2 {
+     background-position: -144px -128px
+}
+.sketchpen-icon-basic-bg-dark-16.print {
+     background-position: -160px -128px
+}
+.sketchpen-icon-basic-bg-dark-16.qr {
+     background-position: -176px -128px
+}
+.sketchpen-icon-basic-bg-dark-16.rack-wheel {
+     background-position: -192px -128px
+}
+.sketchpen-icon-basic-bg-dark-16.refresh {
+     background-position: -0px -144px
+}
+.sketchpen-icon-basic-bg-dark-16.refresh2 {
+     background-position: -16px -144px
+}
+.sketchpen-icon-basic-bg-dark-16.remove-selected {
+     background-position: -32px -144px
+}
+.sketchpen-icon-basic-bg-dark-16.remove-unselected {
+     background-position: -48px -144px
+}
+.sketchpen-icon-basic-bg-dark-16.resize-all-off {
+     background-position: -64px -144px
+}
+.sketchpen-icon-basic-bg-dark-16.resize-all {
+     background-position: -80px -144px
+}
+.sketchpen-icon-basic-bg-dark-16.resize-compress-all {
+     background-position: -96px -144px
+}
+.sketchpen-icon-basic-bg-dark-16.resize-compress {
+     background-position: -112px -144px
+}
+.sketchpen-icon-basic-bg-dark-16.resize-height {
+     background-position: -128px -144px
+}
+.sketchpen-icon-basic-bg-dark-16.resize-strech {
+     background-position: -144px -144px
+}
+.sketchpen-icon-basic-bg-dark-16.resize-width {
+     background-position: -160px -144px
+}
+.sketchpen-icon-basic-bg-dark-16.rotate-off {
+     background-position: -176px -144px
+}
+.sketchpen-icon-basic-bg-dark-16.rotate {
+     background-position: -192px -144px
+}
+.sketchpen-icon-basic-bg-dark-16.round-down {
+     background-position: -0px -160px
+}
+.sketchpen-icon-basic-bg-dark-16.round-etc {
+     background-position: -16px -160px
+}
+.sketchpen-icon-basic-bg-dark-16.round-left {
+     background-position: -32px -160px
+}
+.sketchpen-icon-basic-bg-dark-16.round-menu {
+     background-position: -48px -160px
+}
+.sketchpen-icon-basic-bg-dark-16.round-minus {
+     background-position: -64px -160px
+}
+.sketchpen-icon-basic-bg-dark-16.round-plus {
+     background-position: -80px -160px
+}
+.sketchpen-icon-basic-bg-dark-16.round-right {
+     background-position: -96px -160px
+}
+.sketchpen-icon-basic-bg-dark-16.round-up {
+     background-position: -112px -160px
+}
+.sketchpen-icon-basic-bg-dark-16.round-user {
+     background-position: -128px -160px
+}
+.sketchpen-icon-basic-bg-dark-16.round-x {
+     background-position: -144px -160px
+}
+.sketchpen-icon-basic-bg-dark-16.roundtrip {
+     background-position: -160px -160px
+}
+.sketchpen-icon-basic-bg-dark-16.rss {
+     background-position: -176px -160px
+}
+.sketchpen-icon-basic-bg-dark-16.screw-wrench-double {
+     background-position: -192px -160px
+}
+.sketchpen-icon-basic-bg-dark-16.screw-wrench {
+     background-position: -0px -176px
+}
+.sketchpen-icon-basic-bg-dark-16.secret {
+     background-position: -16px -176px
+}
+.sketchpen-icon-basic-bg-dark-16.settings {
+     background-position: -32px -176px
+}
+.sketchpen-icon-basic-bg-dark-16.share {
+     background-position: -48px -176px
+}
+.sketchpen-icon-basic-bg-dark-16.shutdown {
+     background-position: -64px -176px
+}
+.sketchpen-icon-basic-bg-dark-16.smiley-hm {
+     background-position: -80px -176px
+}
+.sketchpen-icon-basic-bg-dark-16.smiley-neutral {
+     background-position: -96px -176px
+}
+.sketchpen-icon-basic-bg-dark-16.smiley-sad {
+     background-position: -112px -176px
+}
+.sketchpen-icon-basic-bg-dark-16.smiley {
+     background-position: -128px -176px
+}
+.sketchpen-icon-basic-bg-dark-16.speechbubble-filled {
+     background-position: -144px -176px
+}
+.sketchpen-icon-basic-bg-dark-16.speechbubble {
+     background-position: -160px -176px
+}
+.sketchpen-icon-basic-bg-dark-16.spin {
+     background-position: -176px -176px
+}
+.sketchpen-icon-basic-bg-dark-16.square-medium {
+     background-position: -192px -176px
+}
+.sketchpen-icon-basic-bg-dark-16.subscription {
+     background-position: -0px -192px
+}
+.sketchpen-icon-basic-bg-dark-16.table {
+     background-position: -16px -192px
+}
+.sketchpen-icon-basic-bg-dark-16.text-minus {
+     background-position: -32px -192px
+}
+.sketchpen-icon-basic-bg-dark-16.text-plus {
+     background-position: -48px -192px
+}
+.sketchpen-icon-basic-bg-dark-16.text {
+     background-position: -64px -192px
+}
+.sketchpen-icon-basic-bg-dark-16.tools {
+     background-position: -80px -192px
+}
+.sketchpen-icon-basic-bg-dark-16.topmost {
+     background-position: -96px -192px
+}
+.sketchpen-icon-basic-bg-dark-16.trashcan-x {
+     background-position: -112px -192px
+}
+.sketchpen-icon-basic-bg-dark-16.trashcan {
+     background-position: -128px -192px
+}
+.sketchpen-icon-basic-bg-dark-16.triangle-down {
+     background-position: -144px -192px
+}
+.sketchpen-icon-basic-bg-dark-16.triangle-filled-down {
+     background-position: -160px -192px
+}
+.sketchpen-icon-basic-bg-dark-16.triangle-filled-left-down {
+     background-position: -176px -192px
+}
+.sketchpen-icon-basic-bg-dark-16.triangle-filled-left-up {
+     background-position: -192px -192px
+}
+.sketchpen-icon-basic-bg-dark-16.triangle-filled-left {
+     background-position: -0px -208px
+}
+.sketchpen-icon-basic-bg-dark-16.triangle-filled-right-down {
+     background-position: -16px -208px
+}
+.sketchpen-icon-basic-bg-dark-16.triangle-filled-right-up {
+     background-position: -32px -208px
+}
+.sketchpen-icon-basic-bg-dark-16.triangle-filled-right {
+     background-position: -48px -208px
+}
+.sketchpen-icon-basic-bg-dark-16.triangle-filled-up {
+     background-position: -64px -208px
+}
+.sketchpen-icon-basic-bg-dark-16.triangle-left-down {
+     background-position: -80px -208px
+}
+.sketchpen-icon-basic-bg-dark-16.triangle-left-up {
+     background-position: -96px -208px
+}
+.sketchpen-icon-basic-bg-dark-16.triangle-left {
+     background-position: -112px -208px
+}
+.sketchpen-icon-basic-bg-dark-16.triangle-right-down {
+     background-position: -128px -208px
+}
+.sketchpen-icon-basic-bg-dark-16.triangle-right-up {
+     background-position: -144px -208px
+}
+.sketchpen-icon-basic-bg-dark-16.triangle-right {
+     background-position: -160px -208px
+}
+.sketchpen-icon-basic-bg-dark-16.triangle-small-down {
+     background-position: -176px -208px
+}
+.sketchpen-icon-basic-bg-dark-16.triangle-small-left-down {
+     background-position: -192px -208px
+}
+.sketchpen-icon-basic-bg-dark-16.triangle-small-left-up {
+     background-position: -0px -224px
+}
+.sketchpen-icon-basic-bg-dark-16.triangle-small-left {
+     background-position: -16px -224px
+}
+.sketchpen-icon-basic-bg-dark-16.triangle-small-right-down {
+     background-position: -32px -224px
+}
+.sketchpen-icon-basic-bg-dark-16.triangle-small-right-up {
+     background-position: -48px -224px
+}
+.sketchpen-icon-basic-bg-dark-16.triangle-small-right {
+     background-position: -64px -224px
+}
+.sketchpen-icon-basic-bg-dark-16.triangle-small-up {
+     background-position: -80px -224px
+}
+.sketchpen-icon-basic-bg-dark-16.triangle-up {
+     background-position: -96px -224px
+}
+.sketchpen-icon-basic-bg-dark-16.twitter {
+     background-position: -112px -224px
+}
+.sketchpen-icon-basic-bg-dark-16.undo {
+     background-position: -128px -224px
+}
+.sketchpen-icon-basic-bg-dark-16.upload {
+     background-position: -144px -224px
+}
+.sketchpen-icon-basic-bg-dark-16.warning_green {
+     background-position: -160px -224px
+}
+.sketchpen-icon-basic-bg-dark-16.warning_red {
+     background-position: -176px -224px
+}
+.sketchpen-icon-basic-bg-dark-16.warning_yellow {
+     background-position: -192px -224px
+}
+
+@media (-webkit-min-device-pixel-ratio: 1.5), 
+       (min-resolution: 144dpi) {
+
+    .sketchpen-icon-basic-bg-dark-16 {
+        background-image: url("../img/sketchpen/bg-dark/16/1.5/sprite.png");
+        background-size: 208px 240px;
+    } 
+}
+@media (-webkit-min-device-pixel-ratio: 2), 
+       (min-resolution: 192dpi) {
+
+    .sketchpen-icon-basic-bg-dark-16 {
+        background-image: url("../img/sketchpen/bg-dark/16/2/sprite.png");
+        background-size: 208px 240px;
+    } 
+}
+ .sketchpen-icon-basic-bg-dark-32 {
+    background-image: url("../img/sketchpen/bg-dark/32/1/sprite.png");
+    background-repeat: no-repeat;
+    background-size: 416px 480px;
+    width: 32px;
+    height: 32px;
+    display: inline-block;
+}.sketchpen-icon-basic-bg-dark-32.account-login {
+     background-position: -0px -0px
+}
+.sketchpen-icon-basic-bg-dark-32.account-logout {
+     background-position: -32px -0px
+}
+.sketchpen-icon-basic-bg-dark-32.account {
+     background-position: -64px -0px
+}
+.sketchpen-icon-basic-bg-dark-32.admin {
+     background-position: -96px -0px
+}
+.sketchpen-icon-basic-bg-dark-32.all-devices {
+     background-position: -128px -0px
+}
+.sketchpen-icon-basic-bg-dark-32.api {
+     background-position: -160px -0px
+}
+.sketchpen-icon-basic-bg-dark-32.arrow-down {
+     background-position: -192px -0px
+}
+.sketchpen-icon-basic-bg-dark-32.arrow-left {
+     background-position: -224px -0px
+}
+.sketchpen-icon-basic-bg-dark-32.arrow-pointer {
+     background-position: -256px -0px
+}
+.sketchpen-icon-basic-bg-dark-32.arrow-right {
+     background-position: -288px -0px
+}
+.sketchpen-icon-basic-bg-dark-32.arrow-up-down {
+     background-position: -320px -0px
+}
+.sketchpen-icon-basic-bg-dark-32.arrow-up {
+     background-position: -352px -0px
+}
+.sketchpen-icon-basic-bg-dark-32.binoculars {
+     background-position: -384px -0px
+}
+.sketchpen-icon-basic-bg-dark-32.book {
+     background-position: -0px -32px
+}
+.sketchpen-icon-basic-bg-dark-32.bookmark {
+     background-position: -32px -32px
+}
+.sketchpen-icon-basic-bg-dark-32.builder {
+     background-position: -64px -32px
+}
+.sketchpen-icon-basic-bg-dark-32.bulb-remove {
+     background-position: -96px -32px
+}
+.sketchpen-icon-basic-bg-dark-32.bulb-shining {
+     background-position: -128px -32px
+}
+.sketchpen-icon-basic-bg-dark-32.bulb-three {
+     background-position: -160px -32px
+}
+.sketchpen-icon-basic-bg-dark-32.bulb-two {
+     background-position: -192px -32px
+}
+.sketchpen-icon-basic-bg-dark-32.bulb {
+     background-position: -224px -32px
+}
+.sketchpen-icon-basic-bg-dark-32.calculator {
+     background-position: -256px -32px
+}
+.sketchpen-icon-basic-bg-dark-32.camera {
+     background-position: -288px -32px
+}
+.sketchpen-icon-basic-bg-dark-32.cellphone {
+     background-position: -320px -32px
+}
+.sketchpen-icon-basic-bg-dark-32.check {
+     background-position: -352px -32px
+}
+.sketchpen-icon-basic-bg-dark-32.checkbox-checked {
+     background-position: -384px -32px
+}
+.sketchpen-icon-basic-bg-dark-32.checkbox-semi-checked {
+     background-position: -0px -64px
+}
+.sketchpen-icon-basic-bg-dark-32.checkbox-unchecked {
+     background-position: -32px -64px
+}
+.sketchpen-icon-basic-bg-dark-32.circle-pie-0 {
+     background-position: -64px -64px
+}
+.sketchpen-icon-basic-bg-dark-32.circle-pie-100 {
+     background-position: -96px -64px
+}
+.sketchpen-icon-basic-bg-dark-32.circle-pie-25 {
+     background-position: -128px -64px
+}
+.sketchpen-icon-basic-bg-dark-32.circle-pie-50 {
+     background-position: -160px -64px
+}
+.sketchpen-icon-basic-bg-dark-32.circle-pie-75 {
+     background-position: -192px -64px
+}
+.sketchpen-icon-basic-bg-dark-32.close {
+     background-position: -224px -64px
+}
+.sketchpen-icon-basic-bg-dark-32.cloud-connect {
+     background-position: -256px -64px
+}
+.sketchpen-icon-basic-bg-dark-32.cloud-download {
+     background-position: -288px -64px
+}
+.sketchpen-icon-basic-bg-dark-32.cloud-upload {
+     background-position: -320px -64px
+}
+.sketchpen-icon-basic-bg-dark-32.cloud {
+     background-position: -352px -64px
+}
+.sketchpen-icon-basic-bg-dark-32.code-c-box {
+     background-position: -384px -64px
+}
+.sketchpen-icon-basic-bg-dark-32.code-c-window {
+     background-position: -0px -96px
+}
+.sketchpen-icon-basic-bg-dark-32.code-c {
+     background-position: -32px -96px
+}
+.sketchpen-icon-basic-bg-dark-32.code-markup-box {
+     background-position: -64px -96px
+}
+.sketchpen-icon-basic-bg-dark-32.code-markup-window {
+     background-position: -96px -96px
+}
+.sketchpen-icon-basic-bg-dark-32.code-markup {
+     background-position: -128px -96px
+}
+.sketchpen-icon-basic-bg-dark-32.context-menu {
+     background-position: -160px -96px
+}
+.sketchpen-icon-basic-bg-dark-32.copy {
+     background-position: -192px -96px
+}
+.sketchpen-icon-basic-bg-dark-32.copyright {
+     background-position: -224px -96px
+}
+.sketchpen-icon-basic-bg-dark-32.cut {
+     background-position: -256px -96px
+}
+.sketchpen-icon-basic-bg-dark-32.darkmode {
+     background-position: -288px -96px
+}
+.sketchpen-icon-basic-bg-dark-32.database-plus {
+     background-position: -320px -96px
+}
+.sketchpen-icon-basic-bg-dark-32.database {
+     background-position: -352px -96px
+}
+.sketchpen-icon-basic-bg-dark-32.default {
+     background-position: -384px -96px
+}
+.sketchpen-icon-basic-bg-dark-32.deploy {
+     background-position: -0px -128px
+}
+.sketchpen-icon-basic-bg-dark-32.disk-white {
+     background-position: -32px -128px
+}
+.sketchpen-icon-basic-bg-dark-32.disk {
+     background-position: -64px -128px
+}
+.sketchpen-icon-basic-bg-dark-32.disks-white {
+     background-position: -96px -128px
+}
+.sketchpen-icon-basic-bg-dark-32.dot-filled {
+     background-position: -128px -128px
+}
+.sketchpen-icon-basic-bg-dark-32.dot-full {
+     background-position: -160px -128px
+}
+.sketchpen-icon-basic-bg-dark-32.dot {
+     background-position: -192px -128px
+}
+.sketchpen-icon-basic-bg-dark-32.download {
+     background-position: -224px -128px
+}
+.sketchpen-icon-basic-bg-dark-32.drop-0 {
+     background-position: -256px -128px
+}
+.sketchpen-icon-basic-bg-dark-32.drop-100 {
+     background-position: -288px -128px
+}
+.sketchpen-icon-basic-bg-dark-32.drop-25 {
+     background-position: -320px -128px
+}
+.sketchpen-icon-basic-bg-dark-32.drop-50 {
+     background-position: -352px -128px
+}
+.sketchpen-icon-basic-bg-dark-32.drop-75 {
+     background-position: -384px -128px
+}
+.sketchpen-icon-basic-bg-dark-32.edit-all {
+     background-position: -0px -160px
+}
+.sketchpen-icon-basic-bg-dark-32.edit-database {
+     background-position: -32px -160px
+}
+.sketchpen-icon-basic-bg-dark-32.edit-minus {
+     background-position: -64px -160px
+}
+.sketchpen-icon-basic-bg-dark-32.edit-plus {
+     background-position: -96px -160px
+}
+.sketchpen-icon-basic-bg-dark-32.edit-table {
+     background-position: -128px -160px
+}
+.sketchpen-icon-basic-bg-dark-32.edit-text {
+     background-position: -160px -160px
+}
+.sketchpen-icon-basic-bg-dark-32.edit {
+     background-position: -192px -160px
+}
+.sketchpen-icon-basic-bg-dark-32.envelope {
+     background-position: -224px -160px
+}
+.sketchpen-icon-basic-bg-dark-32.explode {
+     background-position: -256px -160px
+}
+.sketchpen-icon-basic-bg-dark-32.facebook {
+     background-position: -288px -160px
+}
+.sketchpen-icon-basic-bg-dark-32.favorites-outline {
+     background-position: -320px -160px
+}
+.sketchpen-icon-basic-bg-dark-32.favorites-remove {
+     background-position: -352px -160px
+}
+.sketchpen-icon-basic-bg-dark-32.favorites {
+     background-position: -384px -160px
+}
+.sketchpen-icon-basic-bg-dark-32.filter-remove {
+     background-position: -0px -192px
+}
+.sketchpen-icon-basic-bg-dark-32.filter {
+     background-position: -32px -192px
+}
+.sketchpen-icon-basic-bg-dark-32.folder-white {
+     background-position: -64px -192px
+}
+.sketchpen-icon-basic-bg-dark-32.folder {
+     background-position: -96px -192px
+}
+.sketchpen-icon-basic-bg-dark-32.globe-table {
+     background-position: -128px -192px
+}
+.sketchpen-icon-basic-bg-dark-32.globe-table2 {
+     background-position: -160px -192px
+}
+.sketchpen-icon-basic-bg-dark-32.globe {
+     background-position: -192px -192px
+}
+.sketchpen-icon-basic-bg-dark-32.globe2 {
+     background-position: -224px -192px
+}
+.sketchpen-icon-basic-bg-dark-32.group {
+     background-position: -256px -192px
+}
+.sketchpen-icon-basic-bg-dark-32.hammer {
+     background-position: -288px -192px
+}
+.sketchpen-icon-basic-bg-dark-32.help {
+     background-position: -320px -192px
+}
+.sketchpen-icon-basic-bg-dark-32.home {
+     background-position: -352px -192px
+}
+.sketchpen-icon-basic-bg-dark-32.key {
+     background-position: -384px -192px
+}
+.sketchpen-icon-basic-bg-dark-32.lock-closed {
+     background-position: -0px -224px
+}
+.sketchpen-icon-basic-bg-dark-32.lock-open {
+     background-position: -32px -224px
+}
+.sketchpen-icon-basic-bg-dark-32.magnifier {
+     background-position: -64px -224px
+}
+.sketchpen-icon-basic-bg-dark-32.merge {
+     background-position: -96px -224px
+}
+.sketchpen-icon-basic-bg-dark-32.monitor {
+     background-position: -128px -224px
+}
+.sketchpen-icon-basic-bg-dark-32.open-in-window {
+     background-position: -160px -224px
+}
+.sketchpen-icon-basic-bg-dark-32.optionbox-checked {
+     background-position: -192px -224px
+}
+.sketchpen-icon-basic-bg-dark-32.optionbox-semi-checked {
+     background-position: -224px -224px
+}
+.sketchpen-icon-basic-bg-dark-32.optionbox-unchecked {
+     background-position: -256px -224px
+}
+.sketchpen-icon-basic-bg-dark-32.package {
+     background-position: -288px -224px
+}
+.sketchpen-icon-basic-bg-dark-32.peak-double-down {
+     background-position: -320px -224px
+}
+.sketchpen-icon-basic-bg-dark-32.peak-double-left {
+     background-position: -352px -224px
+}
+.sketchpen-icon-basic-bg-dark-32.peak-double-right {
+     background-position: -384px -224px
+}
+.sketchpen-icon-basic-bg-dark-32.peak-double-up {
+     background-position: -0px -256px
+}
+.sketchpen-icon-basic-bg-dark-32.pin-filled {
+     background-position: -32px -256px
+}
+.sketchpen-icon-basic-bg-dark-32.pin {
+     background-position: -64px -256px
+}
+.sketchpen-icon-basic-bg-dark-32.pin0 {
+     background-position: -96px -256px
+}
+.sketchpen-icon-basic-bg-dark-32.pin1 {
+     background-position: -128px -256px
+}
+.sketchpen-icon-basic-bg-dark-32.plane {
+     background-position: -160px -256px
+}
+.sketchpen-icon-basic-bg-dark-32.pointer {
+     background-position: -192px -256px
+}
+.sketchpen-icon-basic-bg-dark-32.pointer2-minus {
+     background-position: -224px -256px
+}
+.sketchpen-icon-basic-bg-dark-32.pointer2-plus {
+     background-position: -256px -256px
+}
+.sketchpen-icon-basic-bg-dark-32.pointer2 {
+     background-position: -288px -256px
+}
+.sketchpen-icon-basic-bg-dark-32.print {
+     background-position: -320px -256px
+}
+.sketchpen-icon-basic-bg-dark-32.qr {
+     background-position: -352px -256px
+}
+.sketchpen-icon-basic-bg-dark-32.rack-wheel {
+     background-position: -384px -256px
+}
+.sketchpen-icon-basic-bg-dark-32.refresh {
+     background-position: -0px -288px
+}
+.sketchpen-icon-basic-bg-dark-32.refresh2 {
+     background-position: -32px -288px
+}
+.sketchpen-icon-basic-bg-dark-32.remove-selected {
+     background-position: -64px -288px
+}
+.sketchpen-icon-basic-bg-dark-32.remove-unselected {
+     background-position: -96px -288px
+}
+.sketchpen-icon-basic-bg-dark-32.resize-all-off {
+     background-position: -128px -288px
+}
+.sketchpen-icon-basic-bg-dark-32.resize-all {
+     background-position: -160px -288px
+}
+.sketchpen-icon-basic-bg-dark-32.resize-compress-all {
+     background-position: -192px -288px
+}
+.sketchpen-icon-basic-bg-dark-32.resize-compress {
+     background-position: -224px -288px
+}
+.sketchpen-icon-basic-bg-dark-32.resize-height {
+     background-position: -256px -288px
+}
+.sketchpen-icon-basic-bg-dark-32.resize-strech {
+     background-position: -288px -288px
+}
+.sketchpen-icon-basic-bg-dark-32.resize-width {
+     background-position: -320px -288px
+}
+.sketchpen-icon-basic-bg-dark-32.rotate-off {
+     background-position: -352px -288px
+}
+.sketchpen-icon-basic-bg-dark-32.rotate {
+     background-position: -384px -288px
+}
+.sketchpen-icon-basic-bg-dark-32.round-down {
+     background-position: -0px -320px
+}
+.sketchpen-icon-basic-bg-dark-32.round-etc {
+     background-position: -32px -320px
+}
+.sketchpen-icon-basic-bg-dark-32.round-left {
+     background-position: -64px -320px
+}
+.sketchpen-icon-basic-bg-dark-32.round-menu {
+     background-position: -96px -320px
+}
+.sketchpen-icon-basic-bg-dark-32.round-minus {
+     background-position: -128px -320px
+}
+.sketchpen-icon-basic-bg-dark-32.round-plus {
+     background-position: -160px -320px
+}
+.sketchpen-icon-basic-bg-dark-32.round-right {
+     background-position: -192px -320px
+}
+.sketchpen-icon-basic-bg-dark-32.round-up {
+     background-position: -224px -320px
+}
+.sketchpen-icon-basic-bg-dark-32.round-user {
+     background-position: -256px -320px
+}
+.sketchpen-icon-basic-bg-dark-32.round-x {
+     background-position: -288px -320px
+}
+.sketchpen-icon-basic-bg-dark-32.roundtrip {
+     background-position: -320px -320px
+}
+.sketchpen-icon-basic-bg-dark-32.rss {
+     background-position: -352px -320px
+}
+.sketchpen-icon-basic-bg-dark-32.screw-wrench-double {
+     background-position: -384px -320px
+}
+.sketchpen-icon-basic-bg-dark-32.screw-wrench {
+     background-position: -0px -352px
+}
+.sketchpen-icon-basic-bg-dark-32.secret {
+     background-position: -32px -352px
+}
+.sketchpen-icon-basic-bg-dark-32.settings {
+     background-position: -64px -352px
+}
+.sketchpen-icon-basic-bg-dark-32.share {
+     background-position: -96px -352px
+}
+.sketchpen-icon-basic-bg-dark-32.shutdown {
+     background-position: -128px -352px
+}
+.sketchpen-icon-basic-bg-dark-32.smiley-hm {
+     background-position: -160px -352px
+}
+.sketchpen-icon-basic-bg-dark-32.smiley-neutral {
+     background-position: -192px -352px
+}
+.sketchpen-icon-basic-bg-dark-32.smiley-sad {
+     background-position: -224px -352px
+}
+.sketchpen-icon-basic-bg-dark-32.smiley {
+     background-position: -256px -352px
+}
+.sketchpen-icon-basic-bg-dark-32.speechbubble-filled {
+     background-position: -288px -352px
+}
+.sketchpen-icon-basic-bg-dark-32.speechbubble {
+     background-position: -320px -352px
+}
+.sketchpen-icon-basic-bg-dark-32.spin {
+     background-position: -352px -352px
+}
+.sketchpen-icon-basic-bg-dark-32.square-medium {
+     background-position: -384px -352px
+}
+.sketchpen-icon-basic-bg-dark-32.subscription {
+     background-position: -0px -384px
+}
+.sketchpen-icon-basic-bg-dark-32.table {
+     background-position: -32px -384px
+}
+.sketchpen-icon-basic-bg-dark-32.text-minus {
+     background-position: -64px -384px
+}
+.sketchpen-icon-basic-bg-dark-32.text-plus {
+     background-position: -96px -384px
+}
+.sketchpen-icon-basic-bg-dark-32.text {
+     background-position: -128px -384px
+}
+.sketchpen-icon-basic-bg-dark-32.tools {
+     background-position: -160px -384px
+}
+.sketchpen-icon-basic-bg-dark-32.topmost {
+     background-position: -192px -384px
+}
+.sketchpen-icon-basic-bg-dark-32.trashcan-x {
+     background-position: -224px -384px
+}
+.sketchpen-icon-basic-bg-dark-32.trashcan {
+     background-position: -256px -384px
+}
+.sketchpen-icon-basic-bg-dark-32.triangle-down {
+     background-position: -288px -384px
+}
+.sketchpen-icon-basic-bg-dark-32.triangle-filled-down {
+     background-position: -320px -384px
+}
+.sketchpen-icon-basic-bg-dark-32.triangle-filled-left-down {
+     background-position: -352px -384px
+}
+.sketchpen-icon-basic-bg-dark-32.triangle-filled-left-up {
+     background-position: -384px -384px
+}
+.sketchpen-icon-basic-bg-dark-32.triangle-filled-left {
+     background-position: -0px -416px
+}
+.sketchpen-icon-basic-bg-dark-32.triangle-filled-right-down {
+     background-position: -32px -416px
+}
+.sketchpen-icon-basic-bg-dark-32.triangle-filled-right-up {
+     background-position: -64px -416px
+}
+.sketchpen-icon-basic-bg-dark-32.triangle-filled-right {
+     background-position: -96px -416px
+}
+.sketchpen-icon-basic-bg-dark-32.triangle-filled-up {
+     background-position: -128px -416px
+}
+.sketchpen-icon-basic-bg-dark-32.triangle-left-down {
+     background-position: -160px -416px
+}
+.sketchpen-icon-basic-bg-dark-32.triangle-left-up {
+     background-position: -192px -416px
+}
+.sketchpen-icon-basic-bg-dark-32.triangle-left {
+     background-position: -224px -416px
+}
+.sketchpen-icon-basic-bg-dark-32.triangle-right-down {
+     background-position: -256px -416px
+}
+.sketchpen-icon-basic-bg-dark-32.triangle-right-up {
+     background-position: -288px -416px
+}
+.sketchpen-icon-basic-bg-dark-32.triangle-right {
+     background-position: -320px -416px
+}
+.sketchpen-icon-basic-bg-dark-32.triangle-small-down {
+     background-position: -352px -416px
+}
+.sketchpen-icon-basic-bg-dark-32.triangle-small-left-down {
+     background-position: -384px -416px
+}
+.sketchpen-icon-basic-bg-dark-32.triangle-small-left-up {
+     background-position: -0px -448px
+}
+.sketchpen-icon-basic-bg-dark-32.triangle-small-left {
+     background-position: -32px -448px
+}
+.sketchpen-icon-basic-bg-dark-32.triangle-small-right-down {
+     background-position: -64px -448px
+}
+.sketchpen-icon-basic-bg-dark-32.triangle-small-right-up {
+     background-position: -96px -448px
+}
+.sketchpen-icon-basic-bg-dark-32.triangle-small-right {
+     background-position: -128px -448px
+}
+.sketchpen-icon-basic-bg-dark-32.triangle-small-up {
+     background-position: -160px -448px
+}
+.sketchpen-icon-basic-bg-dark-32.triangle-up {
+     background-position: -192px -448px
+}
+.sketchpen-icon-basic-bg-dark-32.twitter {
+     background-position: -224px -448px
+}
+.sketchpen-icon-basic-bg-dark-32.undo {
+     background-position: -256px -448px
+}
+.sketchpen-icon-basic-bg-dark-32.upload {
+     background-position: -288px -448px
+}
+.sketchpen-icon-basic-bg-dark-32.warning_green {
+     background-position: -320px -448px
+}
+.sketchpen-icon-basic-bg-dark-32.warning_red {
+     background-position: -352px -448px
+}
+.sketchpen-icon-basic-bg-dark-32.warning_yellow {
+     background-position: -384px -448px
+}
+
+@media (-webkit-min-device-pixel-ratio: 1.5), 
+       (min-resolution: 144dpi) {
+
+    .sketchpen-icon-basic-bg-dark-32 {
+        background-image: url("../img/sketchpen/bg-dark/32/1.5/sprite.png");
+        background-size: 416px 480px;
+    } 
+}
+@media (-webkit-min-device-pixel-ratio: 2), 
+       (min-resolution: 192dpi) {
+
+    .sketchpen-icon-basic-bg-dark-32 {
+        background-image: url("../img/sketchpen/bg-dark/32/2/sprite.png");
+        background-size: 416px 480px;
+    } 
+}
  .sketchpen-icon-basic-bg-dark-24 {
     background-image: url("../img/sketchpen/bg-dark/24/1/sprite.png");
     background-repeat: no-repeat;
@@ -36,554 +1254,560 @@
 .sketchpen-icon-basic-bg-dark-24.arrow-right {
      background-position: -216px -0px
 }
-.sketchpen-icon-basic-bg-dark-24.arrow-up {
+.sketchpen-icon-basic-bg-dark-24.arrow-up-down {
      background-position: -240px -0px
 }
-.sketchpen-icon-basic-bg-dark-24.binoculars {
+.sketchpen-icon-basic-bg-dark-24.arrow-up {
      background-position: -264px -0px
 }
-.sketchpen-icon-basic-bg-dark-24.book {
+.sketchpen-icon-basic-bg-dark-24.binoculars {
      background-position: -288px -0px
 }
-.sketchpen-icon-basic-bg-dark-24.bookmark {
+.sketchpen-icon-basic-bg-dark-24.book {
      background-position: -0px -24px
 }
-.sketchpen-icon-basic-bg-dark-24.builder {
+.sketchpen-icon-basic-bg-dark-24.bookmark {
      background-position: -24px -24px
 }
-.sketchpen-icon-basic-bg-dark-24.bulb-remove {
+.sketchpen-icon-basic-bg-dark-24.builder {
      background-position: -48px -24px
 }
-.sketchpen-icon-basic-bg-dark-24.bulb-shining {
+.sketchpen-icon-basic-bg-dark-24.bulb-remove {
      background-position: -72px -24px
 }
-.sketchpen-icon-basic-bg-dark-24.bulb-three {
+.sketchpen-icon-basic-bg-dark-24.bulb-shining {
      background-position: -96px -24px
 }
-.sketchpen-icon-basic-bg-dark-24.bulb-two {
+.sketchpen-icon-basic-bg-dark-24.bulb-three {
      background-position: -120px -24px
 }
-.sketchpen-icon-basic-bg-dark-24.bulb {
+.sketchpen-icon-basic-bg-dark-24.bulb-two {
      background-position: -144px -24px
 }
-.sketchpen-icon-basic-bg-dark-24.calculator {
+.sketchpen-icon-basic-bg-dark-24.bulb {
      background-position: -168px -24px
 }
-.sketchpen-icon-basic-bg-dark-24.camera {
+.sketchpen-icon-basic-bg-dark-24.calculator {
      background-position: -192px -24px
 }
-.sketchpen-icon-basic-bg-dark-24.cellphone {
+.sketchpen-icon-basic-bg-dark-24.camera {
      background-position: -216px -24px
 }
-.sketchpen-icon-basic-bg-dark-24.check {
+.sketchpen-icon-basic-bg-dark-24.cellphone {
      background-position: -240px -24px
 }
-.sketchpen-icon-basic-bg-dark-24.checkbox-checked {
+.sketchpen-icon-basic-bg-dark-24.check {
      background-position: -264px -24px
 }
-.sketchpen-icon-basic-bg-dark-24.checkbox-semi-checked {
+.sketchpen-icon-basic-bg-dark-24.checkbox-checked {
      background-position: -288px -24px
 }
-.sketchpen-icon-basic-bg-dark-24.checkbox-unchecked {
+.sketchpen-icon-basic-bg-dark-24.checkbox-semi-checked {
      background-position: -0px -48px
 }
-.sketchpen-icon-basic-bg-dark-24.circle-pie-0 {
+.sketchpen-icon-basic-bg-dark-24.checkbox-unchecked {
      background-position: -24px -48px
 }
-.sketchpen-icon-basic-bg-dark-24.circle-pie-100 {
+.sketchpen-icon-basic-bg-dark-24.circle-pie-0 {
      background-position: -48px -48px
 }
-.sketchpen-icon-basic-bg-dark-24.circle-pie-25 {
+.sketchpen-icon-basic-bg-dark-24.circle-pie-100 {
      background-position: -72px -48px
 }
-.sketchpen-icon-basic-bg-dark-24.circle-pie-50 {
+.sketchpen-icon-basic-bg-dark-24.circle-pie-25 {
      background-position: -96px -48px
 }
-.sketchpen-icon-basic-bg-dark-24.circle-pie-75 {
+.sketchpen-icon-basic-bg-dark-24.circle-pie-50 {
      background-position: -120px -48px
 }
-.sketchpen-icon-basic-bg-dark-24.close {
+.sketchpen-icon-basic-bg-dark-24.circle-pie-75 {
      background-position: -144px -48px
 }
-.sketchpen-icon-basic-bg-dark-24.cloud-connect {
+.sketchpen-icon-basic-bg-dark-24.close {
      background-position: -168px -48px
 }
-.sketchpen-icon-basic-bg-dark-24.cloud-download {
+.sketchpen-icon-basic-bg-dark-24.cloud-connect {
      background-position: -192px -48px
 }
-.sketchpen-icon-basic-bg-dark-24.cloud-upload {
+.sketchpen-icon-basic-bg-dark-24.cloud-download {
      background-position: -216px -48px
 }
-.sketchpen-icon-basic-bg-dark-24.cloud {
+.sketchpen-icon-basic-bg-dark-24.cloud-upload {
      background-position: -240px -48px
 }
-.sketchpen-icon-basic-bg-dark-24.code-c-box {
+.sketchpen-icon-basic-bg-dark-24.cloud {
      background-position: -264px -48px
 }
-.sketchpen-icon-basic-bg-dark-24.code-c-window {
+.sketchpen-icon-basic-bg-dark-24.code-c-box {
      background-position: -288px -48px
 }
-.sketchpen-icon-basic-bg-dark-24.code-c {
+.sketchpen-icon-basic-bg-dark-24.code-c-window {
      background-position: -0px -72px
 }
-.sketchpen-icon-basic-bg-dark-24.code-markup-box {
+.sketchpen-icon-basic-bg-dark-24.code-c {
      background-position: -24px -72px
 }
-.sketchpen-icon-basic-bg-dark-24.code-markup-window {
+.sketchpen-icon-basic-bg-dark-24.code-markup-box {
      background-position: -48px -72px
 }
-.sketchpen-icon-basic-bg-dark-24.code-markup {
+.sketchpen-icon-basic-bg-dark-24.code-markup-window {
      background-position: -72px -72px
 }
-.sketchpen-icon-basic-bg-dark-24.context-menu {
+.sketchpen-icon-basic-bg-dark-24.code-markup {
      background-position: -96px -72px
 }
-.sketchpen-icon-basic-bg-dark-24.copy {
+.sketchpen-icon-basic-bg-dark-24.context-menu {
      background-position: -120px -72px
 }
-.sketchpen-icon-basic-bg-dark-24.copyright {
+.sketchpen-icon-basic-bg-dark-24.copy {
      background-position: -144px -72px
 }
-.sketchpen-icon-basic-bg-dark-24.cut {
+.sketchpen-icon-basic-bg-dark-24.copyright {
      background-position: -168px -72px
 }
-.sketchpen-icon-basic-bg-dark-24.darkmode {
+.sketchpen-icon-basic-bg-dark-24.cut {
      background-position: -192px -72px
 }
-.sketchpen-icon-basic-bg-dark-24.database-plus {
+.sketchpen-icon-basic-bg-dark-24.darkmode {
      background-position: -216px -72px
 }
-.sketchpen-icon-basic-bg-dark-24.database {
+.sketchpen-icon-basic-bg-dark-24.database-plus {
      background-position: -240px -72px
 }
-.sketchpen-icon-basic-bg-dark-24.default {
+.sketchpen-icon-basic-bg-dark-24.database {
      background-position: -264px -72px
 }
-.sketchpen-icon-basic-bg-dark-24.deploy {
+.sketchpen-icon-basic-bg-dark-24.default {
      background-position: -288px -72px
 }
-.sketchpen-icon-basic-bg-dark-24.disk-white {
+.sketchpen-icon-basic-bg-dark-24.deploy {
      background-position: -0px -96px
 }
-.sketchpen-icon-basic-bg-dark-24.disk {
+.sketchpen-icon-basic-bg-dark-24.disk-white {
      background-position: -24px -96px
 }
-.sketchpen-icon-basic-bg-dark-24.disks-white {
+.sketchpen-icon-basic-bg-dark-24.disk {
      background-position: -48px -96px
 }
-.sketchpen-icon-basic-bg-dark-24.dot-filled {
+.sketchpen-icon-basic-bg-dark-24.disks-white {
      background-position: -72px -96px
 }
-.sketchpen-icon-basic-bg-dark-24.dot-full {
+.sketchpen-icon-basic-bg-dark-24.dot-filled {
      background-position: -96px -96px
 }
-.sketchpen-icon-basic-bg-dark-24.dot {
+.sketchpen-icon-basic-bg-dark-24.dot-full {
      background-position: -120px -96px
 }
-.sketchpen-icon-basic-bg-dark-24.download {
+.sketchpen-icon-basic-bg-dark-24.dot {
      background-position: -144px -96px
 }
-.sketchpen-icon-basic-bg-dark-24.drop-0 {
+.sketchpen-icon-basic-bg-dark-24.download {
      background-position: -168px -96px
 }
-.sketchpen-icon-basic-bg-dark-24.drop-100 {
+.sketchpen-icon-basic-bg-dark-24.drop-0 {
      background-position: -192px -96px
 }
-.sketchpen-icon-basic-bg-dark-24.drop-25 {
+.sketchpen-icon-basic-bg-dark-24.drop-100 {
      background-position: -216px -96px
 }
-.sketchpen-icon-basic-bg-dark-24.drop-50 {
+.sketchpen-icon-basic-bg-dark-24.drop-25 {
      background-position: -240px -96px
 }
-.sketchpen-icon-basic-bg-dark-24.drop-75 {
+.sketchpen-icon-basic-bg-dark-24.drop-50 {
      background-position: -264px -96px
 }
-.sketchpen-icon-basic-bg-dark-24.edit-all {
+.sketchpen-icon-basic-bg-dark-24.drop-75 {
      background-position: -288px -96px
 }
-.sketchpen-icon-basic-bg-dark-24.edit-database {
+.sketchpen-icon-basic-bg-dark-24.edit-all {
      background-position: -0px -120px
 }
-.sketchpen-icon-basic-bg-dark-24.edit-minus {
+.sketchpen-icon-basic-bg-dark-24.edit-database {
      background-position: -24px -120px
 }
-.sketchpen-icon-basic-bg-dark-24.edit-plus {
+.sketchpen-icon-basic-bg-dark-24.edit-minus {
      background-position: -48px -120px
 }
-.sketchpen-icon-basic-bg-dark-24.edit-table {
+.sketchpen-icon-basic-bg-dark-24.edit-plus {
      background-position: -72px -120px
 }
-.sketchpen-icon-basic-bg-dark-24.edit-text {
+.sketchpen-icon-basic-bg-dark-24.edit-table {
      background-position: -96px -120px
 }
-.sketchpen-icon-basic-bg-dark-24.edit {
+.sketchpen-icon-basic-bg-dark-24.edit-text {
      background-position: -120px -120px
 }
-.sketchpen-icon-basic-bg-dark-24.envelope {
+.sketchpen-icon-basic-bg-dark-24.edit {
      background-position: -144px -120px
 }
-.sketchpen-icon-basic-bg-dark-24.explode {
+.sketchpen-icon-basic-bg-dark-24.envelope {
      background-position: -168px -120px
 }
-.sketchpen-icon-basic-bg-dark-24.facebook {
+.sketchpen-icon-basic-bg-dark-24.explode {
      background-position: -192px -120px
 }
-.sketchpen-icon-basic-bg-dark-24.favorites-outline {
+.sketchpen-icon-basic-bg-dark-24.facebook {
      background-position: -216px -120px
 }
-.sketchpen-icon-basic-bg-dark-24.favorites-remove {
+.sketchpen-icon-basic-bg-dark-24.favorites-outline {
      background-position: -240px -120px
 }
-.sketchpen-icon-basic-bg-dark-24.favorites {
+.sketchpen-icon-basic-bg-dark-24.favorites-remove {
      background-position: -264px -120px
 }
-.sketchpen-icon-basic-bg-dark-24.filter-remove {
+.sketchpen-icon-basic-bg-dark-24.favorites {
      background-position: -288px -120px
 }
-.sketchpen-icon-basic-bg-dark-24.filter {
+.sketchpen-icon-basic-bg-dark-24.filter-remove {
      background-position: -0px -144px
 }
-.sketchpen-icon-basic-bg-dark-24.folder-white {
+.sketchpen-icon-basic-bg-dark-24.filter {
      background-position: -24px -144px
 }
-.sketchpen-icon-basic-bg-dark-24.folder {
+.sketchpen-icon-basic-bg-dark-24.folder-white {
      background-position: -48px -144px
 }
-.sketchpen-icon-basic-bg-dark-24.globe-table {
+.sketchpen-icon-basic-bg-dark-24.folder {
      background-position: -72px -144px
 }
-.sketchpen-icon-basic-bg-dark-24.globe-table2 {
+.sketchpen-icon-basic-bg-dark-24.globe-table {
      background-position: -96px -144px
 }
-.sketchpen-icon-basic-bg-dark-24.globe {
+.sketchpen-icon-basic-bg-dark-24.globe-table2 {
      background-position: -120px -144px
 }
-.sketchpen-icon-basic-bg-dark-24.globe2 {
+.sketchpen-icon-basic-bg-dark-24.globe {
      background-position: -144px -144px
 }
-.sketchpen-icon-basic-bg-dark-24.hammer {
+.sketchpen-icon-basic-bg-dark-24.globe2 {
      background-position: -168px -144px
 }
-.sketchpen-icon-basic-bg-dark-24.help {
+.sketchpen-icon-basic-bg-dark-24.group {
      background-position: -192px -144px
 }
-.sketchpen-icon-basic-bg-dark-24.home {
+.sketchpen-icon-basic-bg-dark-24.hammer {
      background-position: -216px -144px
 }
-.sketchpen-icon-basic-bg-dark-24.key {
+.sketchpen-icon-basic-bg-dark-24.help {
      background-position: -240px -144px
 }
-.sketchpen-icon-basic-bg-dark-24.lock-closed {
+.sketchpen-icon-basic-bg-dark-24.home {
      background-position: -264px -144px
 }
-.sketchpen-icon-basic-bg-dark-24.lock-open {
+.sketchpen-icon-basic-bg-dark-24.key {
      background-position: -288px -144px
 }
-.sketchpen-icon-basic-bg-dark-24.magnifier {
+.sketchpen-icon-basic-bg-dark-24.lock-closed {
      background-position: -0px -168px
 }
-.sketchpen-icon-basic-bg-dark-24.merge {
+.sketchpen-icon-basic-bg-dark-24.lock-open {
      background-position: -24px -168px
 }
-.sketchpen-icon-basic-bg-dark-24.monitor {
+.sketchpen-icon-basic-bg-dark-24.magnifier {
      background-position: -48px -168px
 }
-.sketchpen-icon-basic-bg-dark-24.open-in-window {
+.sketchpen-icon-basic-bg-dark-24.merge {
      background-position: -72px -168px
 }
-.sketchpen-icon-basic-bg-dark-24.optionbox-checked {
+.sketchpen-icon-basic-bg-dark-24.monitor {
      background-position: -96px -168px
 }
-.sketchpen-icon-basic-bg-dark-24.optionbox-semi-checked {
+.sketchpen-icon-basic-bg-dark-24.open-in-window {
      background-position: -120px -168px
 }
-.sketchpen-icon-basic-bg-dark-24.optionbox-unchecked {
+.sketchpen-icon-basic-bg-dark-24.optionbox-checked {
      background-position: -144px -168px
 }
-.sketchpen-icon-basic-bg-dark-24.package {
+.sketchpen-icon-basic-bg-dark-24.optionbox-semi-checked {
      background-position: -168px -168px
 }
-.sketchpen-icon-basic-bg-dark-24.peak-double-down {
+.sketchpen-icon-basic-bg-dark-24.optionbox-unchecked {
      background-position: -192px -168px
 }
-.sketchpen-icon-basic-bg-dark-24.peak-double-left {
+.sketchpen-icon-basic-bg-dark-24.package {
      background-position: -216px -168px
 }
-.sketchpen-icon-basic-bg-dark-24.peak-double-right {
+.sketchpen-icon-basic-bg-dark-24.peak-double-down {
      background-position: -240px -168px
 }
-.sketchpen-icon-basic-bg-dark-24.peak-double-up {
+.sketchpen-icon-basic-bg-dark-24.peak-double-left {
      background-position: -264px -168px
 }
-.sketchpen-icon-basic-bg-dark-24.pin-filled {
+.sketchpen-icon-basic-bg-dark-24.peak-double-right {
      background-position: -288px -168px
 }
-.sketchpen-icon-basic-bg-dark-24.pin {
+.sketchpen-icon-basic-bg-dark-24.peak-double-up {
      background-position: -0px -192px
 }
-.sketchpen-icon-basic-bg-dark-24.pin0 {
+.sketchpen-icon-basic-bg-dark-24.pin-filled {
      background-position: -24px -192px
 }
-.sketchpen-icon-basic-bg-dark-24.pin1 {
+.sketchpen-icon-basic-bg-dark-24.pin {
      background-position: -48px -192px
 }
-.sketchpen-icon-basic-bg-dark-24.plane {
+.sketchpen-icon-basic-bg-dark-24.pin0 {
      background-position: -72px -192px
 }
-.sketchpen-icon-basic-bg-dark-24.pointer {
+.sketchpen-icon-basic-bg-dark-24.pin1 {
      background-position: -96px -192px
 }
-.sketchpen-icon-basic-bg-dark-24.pointer2-minus {
+.sketchpen-icon-basic-bg-dark-24.plane {
      background-position: -120px -192px
 }
-.sketchpen-icon-basic-bg-dark-24.pointer2-plus {
+.sketchpen-icon-basic-bg-dark-24.pointer {
      background-position: -144px -192px
 }
-.sketchpen-icon-basic-bg-dark-24.pointer2 {
+.sketchpen-icon-basic-bg-dark-24.pointer2-minus {
      background-position: -168px -192px
 }
-.sketchpen-icon-basic-bg-dark-24.print {
+.sketchpen-icon-basic-bg-dark-24.pointer2-plus {
      background-position: -192px -192px
 }
-.sketchpen-icon-basic-bg-dark-24.qr {
+.sketchpen-icon-basic-bg-dark-24.pointer2 {
      background-position: -216px -192px
 }
-.sketchpen-icon-basic-bg-dark-24.rack-wheel {
+.sketchpen-icon-basic-bg-dark-24.print {
      background-position: -240px -192px
 }
-.sketchpen-icon-basic-bg-dark-24.refresh {
+.sketchpen-icon-basic-bg-dark-24.qr {
      background-position: -264px -192px
 }
-.sketchpen-icon-basic-bg-dark-24.refresh2 {
+.sketchpen-icon-basic-bg-dark-24.rack-wheel {
      background-position: -288px -192px
 }
-.sketchpen-icon-basic-bg-dark-24.remove-selected {
+.sketchpen-icon-basic-bg-dark-24.refresh {
      background-position: -0px -216px
 }
-.sketchpen-icon-basic-bg-dark-24.remove-unselected {
+.sketchpen-icon-basic-bg-dark-24.refresh2 {
      background-position: -24px -216px
 }
-.sketchpen-icon-basic-bg-dark-24.resize-all-off {
+.sketchpen-icon-basic-bg-dark-24.remove-selected {
      background-position: -48px -216px
 }
-.sketchpen-icon-basic-bg-dark-24.resize-all {
+.sketchpen-icon-basic-bg-dark-24.remove-unselected {
      background-position: -72px -216px
 }
-.sketchpen-icon-basic-bg-dark-24.resize-compress-all {
+.sketchpen-icon-basic-bg-dark-24.resize-all-off {
      background-position: -96px -216px
 }
-.sketchpen-icon-basic-bg-dark-24.resize-compress {
+.sketchpen-icon-basic-bg-dark-24.resize-all {
      background-position: -120px -216px
 }
-.sketchpen-icon-basic-bg-dark-24.resize-height {
+.sketchpen-icon-basic-bg-dark-24.resize-compress-all {
      background-position: -144px -216px
 }
-.sketchpen-icon-basic-bg-dark-24.resize-strech {
+.sketchpen-icon-basic-bg-dark-24.resize-compress {
      background-position: -168px -216px
 }
-.sketchpen-icon-basic-bg-dark-24.resize-width {
+.sketchpen-icon-basic-bg-dark-24.resize-height {
      background-position: -192px -216px
 }
-.sketchpen-icon-basic-bg-dark-24.rotate-off {
+.sketchpen-icon-basic-bg-dark-24.resize-strech {
      background-position: -216px -216px
 }
-.sketchpen-icon-basic-bg-dark-24.rotate {
+.sketchpen-icon-basic-bg-dark-24.resize-width {
      background-position: -240px -216px
 }
-.sketchpen-icon-basic-bg-dark-24.round-down {
+.sketchpen-icon-basic-bg-dark-24.rotate-off {
      background-position: -264px -216px
 }
-.sketchpen-icon-basic-bg-dark-24.round-etc {
+.sketchpen-icon-basic-bg-dark-24.rotate {
      background-position: -288px -216px
 }
-.sketchpen-icon-basic-bg-dark-24.round-left {
+.sketchpen-icon-basic-bg-dark-24.round-down {
      background-position: -0px -240px
 }
-.sketchpen-icon-basic-bg-dark-24.round-menu {
+.sketchpen-icon-basic-bg-dark-24.round-etc {
      background-position: -24px -240px
 }
-.sketchpen-icon-basic-bg-dark-24.round-minus {
+.sketchpen-icon-basic-bg-dark-24.round-left {
      background-position: -48px -240px
 }
-.sketchpen-icon-basic-bg-dark-24.round-plus {
+.sketchpen-icon-basic-bg-dark-24.round-menu {
      background-position: -72px -240px
 }
-.sketchpen-icon-basic-bg-dark-24.round-right {
+.sketchpen-icon-basic-bg-dark-24.round-minus {
      background-position: -96px -240px
 }
-.sketchpen-icon-basic-bg-dark-24.round-up {
+.sketchpen-icon-basic-bg-dark-24.round-plus {
      background-position: -120px -240px
 }
-.sketchpen-icon-basic-bg-dark-24.round-user {
+.sketchpen-icon-basic-bg-dark-24.round-right {
      background-position: -144px -240px
 }
-.sketchpen-icon-basic-bg-dark-24.round-x {
+.sketchpen-icon-basic-bg-dark-24.round-up {
      background-position: -168px -240px
 }
-.sketchpen-icon-basic-bg-dark-24.roundtrip {
+.sketchpen-icon-basic-bg-dark-24.round-user {
      background-position: -192px -240px
 }
-.sketchpen-icon-basic-bg-dark-24.rss {
+.sketchpen-icon-basic-bg-dark-24.round-x {
      background-position: -216px -240px
 }
-.sketchpen-icon-basic-bg-dark-24.screw-wrench-double {
+.sketchpen-icon-basic-bg-dark-24.roundtrip {
      background-position: -240px -240px
 }
-.sketchpen-icon-basic-bg-dark-24.screw-wrench {
+.sketchpen-icon-basic-bg-dark-24.rss {
      background-position: -264px -240px
 }
-.sketchpen-icon-basic-bg-dark-24.secret {
+.sketchpen-icon-basic-bg-dark-24.screw-wrench-double {
      background-position: -288px -240px
 }
-.sketchpen-icon-basic-bg-dark-24.settings {
+.sketchpen-icon-basic-bg-dark-24.screw-wrench {
      background-position: -0px -264px
 }
-.sketchpen-icon-basic-bg-dark-24.share {
+.sketchpen-icon-basic-bg-dark-24.secret {
      background-position: -24px -264px
 }
-.sketchpen-icon-basic-bg-dark-24.shutdown {
+.sketchpen-icon-basic-bg-dark-24.settings {
      background-position: -48px -264px
 }
-.sketchpen-icon-basic-bg-dark-24.smiley-hm {
+.sketchpen-icon-basic-bg-dark-24.share {
      background-position: -72px -264px
 }
-.sketchpen-icon-basic-bg-dark-24.smiley-neutral {
+.sketchpen-icon-basic-bg-dark-24.shutdown {
      background-position: -96px -264px
 }
-.sketchpen-icon-basic-bg-dark-24.smiley-sad {
+.sketchpen-icon-basic-bg-dark-24.smiley-hm {
      background-position: -120px -264px
 }
-.sketchpen-icon-basic-bg-dark-24.smiley {
+.sketchpen-icon-basic-bg-dark-24.smiley-neutral {
      background-position: -144px -264px
 }
-.sketchpen-icon-basic-bg-dark-24.speechbubble-filled {
+.sketchpen-icon-basic-bg-dark-24.smiley-sad {
      background-position: -168px -264px
 }
-.sketchpen-icon-basic-bg-dark-24.speechbubble {
+.sketchpen-icon-basic-bg-dark-24.smiley {
      background-position: -192px -264px
 }
-.sketchpen-icon-basic-bg-dark-24.spin {
+.sketchpen-icon-basic-bg-dark-24.speechbubble-filled {
      background-position: -216px -264px
 }
-.sketchpen-icon-basic-bg-dark-24.square-medium {
+.sketchpen-icon-basic-bg-dark-24.speechbubble {
      background-position: -240px -264px
 }
-.sketchpen-icon-basic-bg-dark-24.subscription {
+.sketchpen-icon-basic-bg-dark-24.spin {
      background-position: -264px -264px
 }
-.sketchpen-icon-basic-bg-dark-24.table {
+.sketchpen-icon-basic-bg-dark-24.square-medium {
      background-position: -288px -264px
 }
-.sketchpen-icon-basic-bg-dark-24.text-minus {
+.sketchpen-icon-basic-bg-dark-24.subscription {
      background-position: -0px -288px
 }
-.sketchpen-icon-basic-bg-dark-24.text-plus {
+.sketchpen-icon-basic-bg-dark-24.table {
      background-position: -24px -288px
 }
-.sketchpen-icon-basic-bg-dark-24.text {
+.sketchpen-icon-basic-bg-dark-24.text-minus {
      background-position: -48px -288px
 }
-.sketchpen-icon-basic-bg-dark-24.tools {
+.sketchpen-icon-basic-bg-dark-24.text-plus {
      background-position: -72px -288px
 }
-.sketchpen-icon-basic-bg-dark-24.topmost {
+.sketchpen-icon-basic-bg-dark-24.text {
      background-position: -96px -288px
 }
-.sketchpen-icon-basic-bg-dark-24.trashcan-x {
+.sketchpen-icon-basic-bg-dark-24.tools {
      background-position: -120px -288px
 }
-.sketchpen-icon-basic-bg-dark-24.trashcan {
+.sketchpen-icon-basic-bg-dark-24.topmost {
      background-position: -144px -288px
 }
-.sketchpen-icon-basic-bg-dark-24.triangle-down {
+.sketchpen-icon-basic-bg-dark-24.trashcan-x {
      background-position: -168px -288px
 }
-.sketchpen-icon-basic-bg-dark-24.triangle-filled-down {
+.sketchpen-icon-basic-bg-dark-24.trashcan {
      background-position: -192px -288px
 }
-.sketchpen-icon-basic-bg-dark-24.triangle-filled-left-down {
+.sketchpen-icon-basic-bg-dark-24.triangle-down {
      background-position: -216px -288px
 }
-.sketchpen-icon-basic-bg-dark-24.triangle-filled-left-up {
+.sketchpen-icon-basic-bg-dark-24.triangle-filled-down {
      background-position: -240px -288px
 }
-.sketchpen-icon-basic-bg-dark-24.triangle-filled-left {
+.sketchpen-icon-basic-bg-dark-24.triangle-filled-left-down {
      background-position: -264px -288px
 }
-.sketchpen-icon-basic-bg-dark-24.triangle-filled-right-down {
+.sketchpen-icon-basic-bg-dark-24.triangle-filled-left-up {
      background-position: -288px -288px
 }
-.sketchpen-icon-basic-bg-dark-24.triangle-filled-right-up {
+.sketchpen-icon-basic-bg-dark-24.triangle-filled-left {
      background-position: -0px -312px
 }
-.sketchpen-icon-basic-bg-dark-24.triangle-filled-right {
+.sketchpen-icon-basic-bg-dark-24.triangle-filled-right-down {
      background-position: -24px -312px
 }
-.sketchpen-icon-basic-bg-dark-24.triangle-filled-up {
+.sketchpen-icon-basic-bg-dark-24.triangle-filled-right-up {
      background-position: -48px -312px
 }
-.sketchpen-icon-basic-bg-dark-24.triangle-left-down {
+.sketchpen-icon-basic-bg-dark-24.triangle-filled-right {
      background-position: -72px -312px
 }
-.sketchpen-icon-basic-bg-dark-24.triangle-left-up {
+.sketchpen-icon-basic-bg-dark-24.triangle-filled-up {
      background-position: -96px -312px
 }
-.sketchpen-icon-basic-bg-dark-24.triangle-left {
+.sketchpen-icon-basic-bg-dark-24.triangle-left-down {
      background-position: -120px -312px
 }
-.sketchpen-icon-basic-bg-dark-24.triangle-right-down {
+.sketchpen-icon-basic-bg-dark-24.triangle-left-up {
      background-position: -144px -312px
 }
-.sketchpen-icon-basic-bg-dark-24.triangle-right-up {
+.sketchpen-icon-basic-bg-dark-24.triangle-left {
      background-position: -168px -312px
 }
-.sketchpen-icon-basic-bg-dark-24.triangle-right {
+.sketchpen-icon-basic-bg-dark-24.triangle-right-down {
      background-position: -192px -312px
 }
-.sketchpen-icon-basic-bg-dark-24.triangle-small-down {
+.sketchpen-icon-basic-bg-dark-24.triangle-right-up {
      background-position: -216px -312px
 }
-.sketchpen-icon-basic-bg-dark-24.triangle-small-left-down {
+.sketchpen-icon-basic-bg-dark-24.triangle-right {
      background-position: -240px -312px
 }
-.sketchpen-icon-basic-bg-dark-24.triangle-small-left-up {
+.sketchpen-icon-basic-bg-dark-24.triangle-small-down {
      background-position: -264px -312px
 }
-.sketchpen-icon-basic-bg-dark-24.triangle-small-left {
+.sketchpen-icon-basic-bg-dark-24.triangle-small-left-down {
      background-position: -288px -312px
 }
-.sketchpen-icon-basic-bg-dark-24.triangle-small-right-down {
+.sketchpen-icon-basic-bg-dark-24.triangle-small-left-up {
      background-position: -0px -336px
 }
-.sketchpen-icon-basic-bg-dark-24.triangle-small-right-up {
+.sketchpen-icon-basic-bg-dark-24.triangle-small-left {
      background-position: -24px -336px
 }
-.sketchpen-icon-basic-bg-dark-24.triangle-small-right {
+.sketchpen-icon-basic-bg-dark-24.triangle-small-right-down {
      background-position: -48px -336px
 }
-.sketchpen-icon-basic-bg-dark-24.triangle-small-up {
+.sketchpen-icon-basic-bg-dark-24.triangle-small-right-up {
      background-position: -72px -336px
 }
-.sketchpen-icon-basic-bg-dark-24.triangle-up {
+.sketchpen-icon-basic-bg-dark-24.triangle-small-right {
      background-position: -96px -336px
 }
-.sketchpen-icon-basic-bg-dark-24.twitter {
+.sketchpen-icon-basic-bg-dark-24.triangle-small-up {
      background-position: -120px -336px
 }
-.sketchpen-icon-basic-bg-dark-24.undo {
+.sketchpen-icon-basic-bg-dark-24.triangle-up {
      background-position: -144px -336px
 }
-.sketchpen-icon-basic-bg-dark-24.upload {
+.sketchpen-icon-basic-bg-dark-24.twitter {
      background-position: -168px -336px
 }
-.sketchpen-icon-basic-bg-dark-24.warning_green {
+.sketchpen-icon-basic-bg-dark-24.undo {
      background-position: -192px -336px
 }
-.sketchpen-icon-basic-bg-dark-24.warning_red {
+.sketchpen-icon-basic-bg-dark-24.upload {
      background-position: -216px -336px
 }
-.sketchpen-icon-basic-bg-dark-24.warning_yellow {
+.sketchpen-icon-basic-bg-dark-24.warning_green {
      background-position: -240px -336px
+}
+.sketchpen-icon-basic-bg-dark-24.warning_red {
+     background-position: -264px -336px
+}
+.sketchpen-icon-basic-bg-dark-24.warning_yellow {
+     background-position: -288px -336px
 }
 
 @media (-webkit-min-device-pixel-ratio: 1.5), 

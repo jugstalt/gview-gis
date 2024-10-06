@@ -19,8 +19,8 @@
                     <MudListItem Icon="@IconService.FromString("basic:settings")" Style="white-space:nowrap"
                                  Value="Page.General" Text="Map / Display" 
                                  OnClick="() => _drawerIsOpen = false" />
-                    <MudListItem Icon="@IconService.FromString("webgis:polygon-highlighted")" Style="white-space:nowrap"
-                                Value="Page.Appearence" Text="Appearence"
+                    <MudListItem Icon="@IconService.FromString("basic:bulb-shining")" Style="white-space:nowrap"
+                                Value="Page.MapSymbology" Text="Map Symbology"
                                 OnClick="() => _drawerIsOpen = false" />
                     <MudListItem Icon="@IconService.FromString("basic:globe-table")" Style="white-space:nowrap"
                                  Value="Page.SpatialReference" Text="Spatial Reference" 
@@ -80,56 +80,9 @@
                     </GvCardContent>
                     </GvCard>
                 }
-            else if(Page.Appearence.Equals(_currentTab))
+            else if(Page.MapSymbology.Equals(_currentTab))
             {
-                <GvGrid ColumnCount="2">
-                    <GvGridItem Span="1">
-                        <GvCard Title="Labelling">
-                            <GvCardContent>
-                                <MudText Typo="Typo.body1">
-                                   Set smoothing mode for all labels in the map. 
-                                   Attention: there is no 'undo' for this method. 
-                                   Please save projekt before press button.
-                                </MudText>
-                            </GvCardContent>
-                            <GvCardActions>
-                                <MudButton Variant="Variant.Filled"
-                                           Color="Color.Secondary"
-                                           OnClick="() => OnSetLabelSmoothing(SymbolSmoothing.None)" >
-                                    No Smooting
-                                </MudButton>
-                                <MudButton Variant="Variant.Filled"
-                                            Color="Color.Primary"
-                                            OnClick="() => OnSetLabelSmoothing(SymbolSmoothing.AntiAlias)">
-                                    Antialias
-                                </MudButton>
-                            </GvCardActions>
-                        </GvCard>
-                    </GvGridItem>
-                    <GvGridItem Span="1">
-                        <GvCard Title="Feature Rendering">
-                            <GvCardContent>
-                                <MudText Typo="Typo.body1">
-                                    Set smoothing mode for all features in the map. 
-                                    Attention: there is no 'undo' for this method. 
-                                    Please save projekt before press button.
-                                </MudText>
-                            </GvCardContent>
-                            <GvCardActions>
-                                <MudButton Variant="Variant.Filled"
-                                           Color="Color.Secondary"
-                                           OnClick="() => OnSetFeatureSmoothing(SymbolSmoothing.None)">
-                                    No Smooting
-                                </MudButton>
-                                <MudButton Variant="Variant.Filled"
-                                            Color="Color.Primary"
-                                            OnClick="() => OnSetFeatureSmoothing(SymbolSmoothing.AntiAlias)">
-                                    Antialias
-                                </MudButton>
-                            </GvCardActions>
-                        </GvCard>
-                    </GvGridItem>
-                </GvGrid>
+                <SymbologyControl Map = "Model.Map" Layer = "null" />
             }
             else if (Page.SpatialReference.Equals(_currentTab))
             {
@@ -257,7 +210,7 @@
     private enum Page
     {
         General = 0,
-        Appearence = 1,
+        MapSymbology = 1,
         SpatialReference = 2,
         DefaultLayerSpatialReference = 3,
         Description = 4,

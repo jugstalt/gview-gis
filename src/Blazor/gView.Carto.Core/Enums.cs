@@ -19,3 +19,17 @@ public enum CartoToolTarget
     General,
     Tools
 }
+
+public enum RestoreResult
+{
+    Success,
+    Failed,
+    Unchanged
+}
+
+public enum RestorePointState
+{
+    None,
+    Older,
+    Newer
+}

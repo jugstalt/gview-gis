@@ -18,14 +18,14 @@ internal class DataTable : ICartoButton
 
     public CartoToolTarget Target => CartoToolTarget.SelectedTocItem;
 
-    public int SortOrder => 10;
+    public int SortOrder => 1;
 
     public void Dispose()
     {
 
     }
 
-    public bool IsEnabled(ICartoApplicationScopeService scope)
+    public bool IsVisible(ICartoApplicationScopeService scope)
         => scope.SelectedTocTreeNode?
                  .TocElement?
                  .Layers?.Count == 1
@@ -33,6 +33,8 @@ internal class DataTable : ICartoButton
                 .TocElement
                 .Layers.First()
                 .Class is ITableClass;
+
+    public bool IsDisabled(ICartoApplicationScopeService scope) => false;
 
     async public Task<bool> OnClick(ICartoApplicationScopeService scope)
     {

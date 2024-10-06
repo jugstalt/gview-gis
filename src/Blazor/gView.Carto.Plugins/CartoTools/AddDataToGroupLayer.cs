@@ -1,5 +1,6 @@
 ﻿using gView.Carto.Core;
 using gView.Carto.Core.Models.Tree;
+using gView.Carto.Core.Reflection;
 using gView.Carto.Core.Services.Abstraction;
 using gView.Carto.Plugins.Extensions;
 using gView.DataExplorer.Razor.Components.Dialogs.Filters;
@@ -13,6 +14,7 @@ using gView.Framework.Data;
 namespace gView.Carto.Plugins.CartoTools;
 
 [RegisterPlugIn("14A1B7E6-6D73-4062-A7BF-5CB7600A6DB3")]
+[RestorePointAction(RestoreAction.SetRestorePointOnClick)]
 internal class AddDataToGroupLayer : ICartoButton
 {
     public string Name => "Add Data";
@@ -30,10 +32,12 @@ internal class AddDataToGroupLayer : ICartoButton
 
     }
 
-    public bool IsEnabled(ICartoApplicationScopeService scope)
+    public bool IsVisible(ICartoApplicationScopeService scope)
     {
         return scope.SelectedTocTreeNode is TocParentNode;
     }
+
+    public bool IsDisabled(ICartoApplicationScopeService scope) => false;
 
     async public Task<bool> OnClick(ICartoApplicationScopeService scope)
     {

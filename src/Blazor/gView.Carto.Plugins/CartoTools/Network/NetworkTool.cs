@@ -41,8 +41,10 @@ internal class NetworkTool : ICartoTool
 
     }
 
-    public bool IsEnabled(ICartoApplicationScopeService scope)
+    public bool IsVisible(ICartoApplicationScopeService scope)
         => scope.SelectedTocTreeNode?.TocElement.CollectionNetworkLayers()?.Any() == true;
+
+    public bool IsDisabled(ICartoApplicationScopeService scope) => false;
 
     public Task<bool> OnClick(ICartoApplicationScopeService scope)
     {

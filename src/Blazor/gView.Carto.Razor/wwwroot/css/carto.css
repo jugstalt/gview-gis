@@ -37,7 +37,38 @@
                 cursor: pointer;
                 box-sizing: border-box;
                 border-radius: 4px;
-                font-size: 0.9em;
+                font-size: 0.7em;
+            }
+
+            .carto-main .toolbar .carto-tool-box .tool-small-chunk {
+                width: 78px;
+                height: 76px;
+                display: inline-block;
+                vertical-align: top;
+            }
+
+                .carto-main .toolbar .carto-tool-box .tool-small-chunk .carto-tool.small,
+                .mud-popover.mud-popover-open .mud-list .carto-tool {
+                    height: 25px !important;
+                    display: inline-block;
+                    text-align: left;
+                    padding: 2px;
+                    margin: 1px 2px;
+                    max-width: 74px;
+                    /*vertical-align: top;*/
+                    border: 1px solid transparent;
+                    cursor: pointer;
+                    box-sizing: border-box;
+                    border-radius: 4px;
+                    font-size: 0.65em;
+                }
+
+            .carto-main .toolbar .carto-tool-box .carto-tool.small .title {
+                display: inline-block;
+                width: 48px;
+                overflow: hidden;
+                white-space: nowrap;
+                text-overflow: ellipsis;
             }
 
         .carto-main .toolbar .carto-tool:hover {
@@ -45,6 +76,16 @@
             border: 1px solid #0094ff;
             box-sizing: border-box;
         }
+
+        .carto-main .toolbar .carto-tool.disabled {
+            cursor: unset;
+            opacity: .3;
+        }
+
+            .carto-main .toolbar .carto-tool.disabled:hover {
+                background-color: unset;
+                border: 1px solid transparent;
+            }
 
         .carto-main .toolbar .carto-tool-box .carto-tool-sub-box {
             position: relative;
@@ -148,6 +189,7 @@
             padding: 5px;
             cursor: pointer;
             margin: 16px 0px;
+            position: relative;
         }
 
             .carto-main .toc .carto-initial-tool .icon {
@@ -439,6 +481,7 @@
 
 .carto-tile {
     display:inline-block;
+    position: relative;
     width:300px;
     height:130px;
     border: 1px solid var(--mud-palette-lines-default);

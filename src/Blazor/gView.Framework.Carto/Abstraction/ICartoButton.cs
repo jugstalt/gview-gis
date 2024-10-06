@@ -5,9 +5,11 @@ using System.Threading.Tasks;
 
 namespace gView.Framework.Carto.Abstraction;
 
-public interface ICartoButton : gView.Framework.Core.UI.IOrder, ICartoInteractiveButton
+public interface ICartoButton : Core.UI.IOrder, ICartoInteractiveButton
 {
-    bool IsEnabled(ICartoApplicationScopeService scope);
+    bool IsVisible(ICartoApplicationScopeService scope);
+
+    bool IsDisabled(ICartoApplicationScopeService scope);
 
     string ToolTip { get; }
 

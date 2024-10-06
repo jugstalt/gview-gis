@@ -51,10 +51,15 @@ builder.Services.AddApplicationScopeFactory();
 builder.Services.AddCartoDesktopApplicationService();
 builder.Services.AddCartoInteropServices();
 builder.Services.AddKnownCartoDialogsServices();
-builder.Services.AddCartoApplicationScopeService(config =>
-{
-    config.ConfigRootPath = Path.Combine(builder.Configuration.RepositoryPath(), "gview-carto");
-});
+builder.Services.AddCartoApplicationScopeService(
+    config =>
+    {
+        config.ConfigRootPath = Path.Combine(builder.Configuration.RepositoryPath(), "gview-carto");
+    },
+    restoreConfig =>
+    {
+        restoreConfig.RestoreRootPath = Path.Combine(builder.Configuration.RepositoryPath(), "gview-carto", "_restore");
+    });
 
 builder.Services.AddExplorerDesktopApplicationService();
 builder.Services.AddExplorerApplicationScopeService(config =>

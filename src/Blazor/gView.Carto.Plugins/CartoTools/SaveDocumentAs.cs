@@ -21,14 +21,18 @@ public class SaveDocumentAs : ICartoButton
 
     public CartoToolTarget Target => CartoToolTarget.File;
 
-    public int SortOrder => 4;
+    public int SortOrder => 14;
 
     public void Dispose()
     {
 
     }
 
-    public bool IsEnabled(ICartoApplicationScopeService scope) => !scope.Document.Readonly;
+    public bool IsVisible(ICartoApplicationScopeService scope)
+        => !scope.Document.Readonly
+        && scope.Document.Map is not null;
+
+    public bool IsDisabled(ICartoApplicationScopeService scope) => false;
 
     async public Task<bool> OnClick(ICartoApplicationScopeService scope)
     {
@@ -57,7 +61,7 @@ public class SaveDocumentAs : ICartoButton
 
             if (performEncryption.HasValue) // otherweise user has canceled 
             {
-                return await scope.SaveCartoDocument(mxlFilePath, performEncryption.Value);
+                return await scope.SaveCartoDocumentAsync(mxlFilePath, performEncryption.Value);
             }
         }
 

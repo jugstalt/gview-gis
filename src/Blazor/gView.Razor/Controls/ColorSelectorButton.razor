@@ -7,14 +7,23 @@
 @if(_color is not null)
 {
     <MudButton Style="@($"background-color:{_color.ToString(MudColorOutputFormats.Hex)};color:{TextColor.ToString(MudColorOutputFormats.Hex)};width:170px")"
+               StartIcon="@(Icon == ProgressButton.ProgressIcon ? "" : Icon)"
                OnClick="OpenColorPicker">
-        @if(_color.A == 0)
+        @if (Icon == ProgressButton.ProgressIcon)
         {
-            @("No Color")
-        } 
-        else 
+            <MudProgressCircular Class="ms-n1" Size="MudBlazor.Size.Small" Indeterminate="true" />
+            <MudText Class="ms-2">...</MudText>
+        }
+        else
         {
-            @_color.ToString(MudColorOutputFormats.HexA)
+            <MudText>
+                @(Title switch
+                {
+                    null when _color.A == 0 => "No Color",
+                    null => _color.ToString(MudColorOutputFormats.HexA),
+                    _ => Title
+                })
+            </MudText>
         }
     </MudButton>
 }
@@ -22,6 +31,8 @@
 @code {
     [Parameter] public ArgbColor ArgbColor { get; set; }
     [Parameter] public EventCallback<ArgbColor> ArgbColorChanged { get; set; }
+    [Parameter] public string? Title{ get; set; }
+    [Parameter] public string? Icon { get; set; }
 
     private MudColor? _color;
 

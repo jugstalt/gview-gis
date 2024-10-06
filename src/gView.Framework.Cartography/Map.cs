@@ -518,7 +518,8 @@ namespace gView.Framework.Cartography
 
             #endregion
 
-            foreach (var removeLayer in _toc.Layers.Where(l => l.Class == null).ToArray())
+            foreach (var removeLayer in _toc.Layers
+                .Where(l => l.Class == null && !(l is IGroupLayer)).ToArray())
             {
                 _toc.RemoveLayer(removeLayer);
             }
@@ -527,41 +528,29 @@ namespace gView.Framework.Cartography
 
             foreach (ILayer layer in _layers)
             {
-                if (layer is IGroupLayer)
+                if(_toc.GetTOCElement(layer) == null)
                 {
-                    if (((GroupLayer)layer).ChildLayers != null && ((GroupLayer)layer).ChildLayers.Count > 0)
-                    {
-                        newLayers.Add(layer);
-                    }
+                    continue;
                 }
-                else /*if (layer is IRasterCatalogLayer)*/
+
+                if (layer is IGroupLayer groupLayer)
+                {
+                    //if (groupLayer.ChildLayers != null && 
+                    //    groupLayer.ChildLayers.Count > 0)
+                    //{
+                    //    newLayers.Add(layer);
+                    //}
+
+                    // always keep group layers
+                    newLayers.Add(layer);
+                }
+                else
                 {
                     if (layer.Class != null)
                     {
                         newLayers.Add(layer);
                     }
                 }
-                //else if (layer is IRasterLayer)
-                //{
-                //    if (layer.Class != null)
-                //    {
-                //        newLayers.Add(layer);
-                //    }
-                //}
-                //else if (layer is IWebServiceLayer)
-                //{
-                //    if (layer.Class != null)
-                //    {
-                //        newLayers.Add(layer);
-                //    }
-                //}
-                //else if (layer is IFeatureLayer)
-                //{
-                //    if (layer.Class != null)
-                //    {
-                //        newLayers.Add(layer);
-                //    }
-                //}
             }
 
             _layers = newLayers; //_layers.Where(l => l.Class != null).ToList();

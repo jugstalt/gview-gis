@@ -1,0 +1,82 @@
+@inherits ModalDialogFormBase<CopyLayerDialogModel>
+
+<ModalDialogFormBase T="CopyLayerDialogModel"
+                     OnDialogClose="base.OnDialogClose"
+                     Model="base.Model">
+    <DialogBody>
+
+        <MudSelect T="CopyLayerMode"
+                   Value="Model.CopyMode"
+                   ValueChanged="OnCopyModeChanged"
+                   ReadOnly="!(Model.Layer is IFeatureLayer)"
+                   Label="Copy Layer Mode">
+            @(GvUtilities.EnumToSelectItems<CopyLayerMode>())
+        </MudSelect>
+
+        <GvCard Title="Properties">
+            <GvCardContent>
+                @if (Model.CopyMode == CopyLayerMode.SplitByFilter && Model.Layer is IFeatureLayer featureLayer)
+                {
+                    <MudSelect T="string"
+                               Value="Model.FilterField"
+                               ValueChanged="OnFieldFieldChanged"
+                               Variant="Variant.Outlined"
+                               Label="Filter Field">
+                            @GvUtilities.StringsToSelectItems(featureLayer
+                                              .Fields?
+                                              .ToEnumerable()
+                                              .Select(f => f.name) ?? [])
+                    </MudSelect>
+                }
+                <MudTextField Label="New Layer Name"
+                              @bind-Value="Model.NewNamePattern"
+                              Variant="Variant.Outlined" />
+            </GvCardContent>
+        </GvCard>
+       
+        
+    </DialogBody>
+</ModalDialogFormBase>
+
+@code {
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+
+        if (Model.Layer is null || Model.Map is null) return;
+
+        Model.NewNamePattern =
+            String.IsNullOrWhiteSpace(Model.NewNamePattern)
+            ? Model.Layer.NextUnusedName(Model.Map)
+            : Model.NewNamePattern.ToString();
+    }
+
+    private void OnCopyModeChanged(CopyLayerMode copyMode) => Handle(() =>
+    {
+        Model.CopyMode = copyMode;
+
+        SetNewNamePattern();
+    });
+
+    private void OnFieldFieldChanged(string filterField) => Handle(() =>
+    {
+        Model.FilterField = filterField;
+
+        SetNewNamePattern();
+    });
+
+    #region Helper
+
+    private void SetNewNamePattern()
+    {
+        if (Model.Layer is null || Model.Map is null) return;
+
+        Model.NewNamePattern = Model.CopyMode switch
+        {
+            CopyLayerMode.SplitByFilter => $"{Model.Layer?.TocNameOrLayerTitle(Model.Map)} [{Model.FilterField}]",
+            _ => Model.Layer.NextUnusedName(Model.Map)
+        };
+    }
+
+    #endregion
+}
