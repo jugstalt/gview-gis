@@ -2,17 +2,18 @@
 using gView.Framework.Core.Geometry;
 using Microsoft.Extensions.Logging;
 using gView.Framework.Core.Extensions;
+using gView.Framework.Common;
 
 namespace gView.Carto.Razor.Services;
 
 public class ZoomHistoryService : IZoomHistory
 {
-    private readonly Stack<StackItem> _zoomHistory;
+    private readonly LimitedSizeStack<StackItem> _zoomHistory;
     private readonly ILogger<ZoomHistoryService> _logger;
 
     public ZoomHistoryService(ILogger<ZoomHistoryService> logger, int maxItems)
     {
-        _zoomHistory = new();
+        _zoomHistory = new(maxItems);
         _logger = logger;
     }
 
@@ -26,21 +27,9 @@ public class ZoomHistoryService : IZoomHistory
             return;
         }
 
-        // if last item is less than 0.5 seconds ago, remove it
-        // maybe its from mousscrolling events, etc
-        //if (_zoomHistory.TryPeek(out StackItem? lastItem)
-        //    && (DateTime.Now - lastItem.TimeStamp).TotalSeconds < 0.5)
-        //{
-        //    _logger.Log(LogLevel.Information, "Pop latest item, because its not older than 2 secongs");
-
-        //    _ = _zoomHistory.Pop();
-        //}
-
         _logger.Log(LogLevel.Information, "Push bounds[{count}]: {bounds}", () => _zoomHistory.Count, () => bounds.ToBBoxString());
 
         _zoomHistory.Push(new StackItem(DateTime.Now, bounds));
-
-        // todo: maxItems ... shrink the stack
     }
 
     public IEnvelope? Pop()
@@ -49,7 +38,21 @@ public class ZoomHistoryService : IZoomHistory
         {
             _logger.Log(LogLevel.Information, "Pop item with bounds[{count}]: {bounds}", () => _zoomHistory.Count, () => lastItem.Bounds?.ToBBoxString());
 
-            return lastItem.Bounds;
+            while (true)
+            {
+                var prevItem = _zoomHistory.Peek();
+                if (prevItem is not null && lastItem is not null
+                    && (lastItem.TimeStamp - prevItem.TimeStamp).TotalSeconds < 1)
+                {
+                    lastItem = _zoomHistory.Pop();
+                } 
+                else
+                {
+                    break;
+                }
+            }
+
+            return lastItem?.Bounds;
         }
 
         return null;

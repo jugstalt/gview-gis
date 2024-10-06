@@ -31,7 +31,7 @@ static public class ServicesExtensions
             .AddTransient<ICartoDocumentService, CartoDocumentService>()
             .AddTransient<ICartoRestoreService, CartoRestoreService>()
             .AddTransient<IZoomHistory, ZoomHistoryService>(serviceProvider =>
-                    new ZoomHistoryService(serviceProvider.GetRequiredService<ILogger<ZoomHistoryService>>(), 10))
+                    new ZoomHistoryService(serviceProvider.GetRequiredService<ILogger<ZoomHistoryService>>(), 50))
             .Configure(configureOptions)
             .Configure(configureRestore)
             .AddEventBus()
