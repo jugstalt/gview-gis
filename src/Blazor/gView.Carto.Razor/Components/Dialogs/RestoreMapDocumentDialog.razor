@@ -7,7 +7,7 @@
                      OnDialogClose="base.OnDialogClose"
                      Model="base.Model">
     <DialogBody>
-        <MudList Clickable="true">
+        <MudList T="RestorePoint">
             @if(_restorePoints.Count == 0)
             {
                 <MudAlert Severity="Severity.Info">

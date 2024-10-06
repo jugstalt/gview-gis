@@ -49,12 +49,12 @@ else
                     @if (context.Value.TocElement.Layers.Count() == 0 
                         || context.Value.TocElement.Layers.FirstOrDefault(l=>l is NullLayer) != null)
                     {
-                        <MudTreeViewItem Value="@context"
+                        <MudTreeViewItem Value="@context.Value"
                                          Class="@(context.Value.IsSelected ? "toctreenode-selected" :"")"
-                                         @onclick="@((e) => OnNodeClickAsync(context.Value, e))" >
+                                         OnCLick="(e) => OnNodeClickAsync(context.Value, e)" >
                             <Content>
                                 <MudText Color="Color.Error" Style="padding-left:30px">
-                                    @context.Text
+                                    @context.Value.Text
                                 </MudText>
                             </Content>
                         </MudTreeViewItem>
@@ -64,13 +64,13 @@ else
                         <MudTreeViewItem Value="@context.Value"
                                          Class="@(context.Value.IsSelected ? "toctreenode-selected" :"")"
                                          Items="@context.Children"
-                                         CanExpand="@context.HasChildren"
+                                         CanExpand="@context.Value.HasChildren"
                                          Expanded="@context.Value.IsExpanded"
                                          ExpandedChanged="@((expanded) => OnNodeExpandedChanged(context.Value, expanded))"
-                                         @onclick="@((e) => OnNodeClickAsync(context.Value,e))">
+                                         OnClick="(e) => OnNodeClickAsync(context.Value,e)">
                             <Content>
                                 <MudTreeViewItemToggleButton @bind-Expanded="@context.Value.IsExpanded" 
-                                                             Visible="@context.HasChildren" 
+                                                             Visible="@context.Value.HasChildren" 
                                                              ExpandedIcon="@Icons.Material.Rounded.ArrowRight" />
                                 <MudCheckBox T="bool" 
                                              Value="@context.Value.IsChecked"

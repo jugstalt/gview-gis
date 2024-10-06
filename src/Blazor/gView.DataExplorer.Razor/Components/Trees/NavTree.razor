@@ -7,20 +7,20 @@
 
 
 <MudTreeView Items="TreeNodes" T="ExplorerTreeNode"
-              ExpandOnDoubleClick="true" 
-              SelectionMode="MudBlazor.SelectionMode.MultiSelection"
-              Hover="true" Dense="true">
+             ExpandOnDoubleClick="true" 
+             SelectionMode="MudBlazor.SelectionMode.MultiSelection"
+             Hover="true" Dense="true">
     <ItemTemplate>
         <div style="white-space:nowrap; overflow-x:hidden;" 
                 class="treenode @((context.Value == _selected) ? "selected" : "")">
             <MudTreeViewItem  Value="@context.Value"
-                              Icon=@Icons.FromString(context.Icon!)
+                              Icon=@Icons.FromString(context.Value!.Icon!)
                               Items="@context.Children"
-                              CanExpand="@context.HasChildren" 
+                              CanExpand="@context.Value!.HasChildren" 
                               Expanded="@context.Value!.IsExpanded"
                               ExpandedChanged="@((expanded) => OnNodeExpandedChanged(context!.Value!, expanded))"
                               Text="@(context?.Value?.Text!)"
-                              @onclick="@(() => OnNodeClickAsync(context!.Value!))" >
+                              OnClick="() => OnNodeClickAsync(context!.Value!)" >
             </MudTreeViewItem>
         </div>
     </ItemTemplate>
