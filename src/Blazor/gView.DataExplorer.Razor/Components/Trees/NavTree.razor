@@ -6,37 +6,37 @@
 @inject ExplorerEventBusService EventBus
 
 
-<MudTreeView Items="TreeNodes" T="ExplorerTreeNode"
-             ExpandOnDoubleClick="true" 
-             SelectionMode="MudBlazor.SelectionMode.MultiSelection"
+<MudTreeView Items="TreeNodes" T="IExplorerObject"
+             ExpandOnDoubleClick="true"
+             SelectionMode="MudBlazor.SelectionMode.SingleSelection"
              Hover="true" Dense="true">
     <ItemTemplate>
         <div style="white-space:nowrap; overflow-x:hidden;" 
-                class="treenode @((context.Value == _selected) ? "selected" : "")">
+             class="treenode @((context == _selected) ? "selected" : "")">
             <MudTreeViewItem  Value="@context.Value"
                               Icon=@Icons.FromString(context.Value!.Icon!)
                               Items="@context.Children"
-                              CanExpand="@context.Value!.HasChildren" 
-                              Expanded="@context.Value!.IsExpanded"
-                              ExpandedChanged="@((expanded) => OnNodeExpandedChanged(context!.Value!, expanded))"
-                              Text="@(context?.Value?.Text!)"
-                              OnClick="() => OnNodeClickAsync(context!.Value!)" >
+                              CanExpand="@context.HasChildren" 
+                              Expanded="@context.Expanded"
+                              ExpandedChanged="@((expanded) => OnNodeExpandedChanged((ExplorerTreeNode)context, expanded))"
+                              Text="@(context.Text)"
+                              OnClick="() => OnNodeClickAsync((ExplorerTreeNode)context)" >
             </MudTreeViewItem>
         </div>
     </ItemTemplate>
 </MudTreeView>
 
 @code {
-    private List<TreeItemData<ExplorerTreeNode>> TreeNodes { get; set; } = new();
+    private List<ExplorerTreeNode> TreeNodes { get; set; } = new();
     private ExplorerTreeNode? _selected = null;
 
     protected override Task OnInitializedAsync() => HandleAsync(async () =>
     {
         // initialize tree
         _selected = new ExplorerTreeNode(AppScope.RootExplorerObject());
-        TreeNodes.Add(new TreeItemData<ExplorerTreeNode>() { Value = _selected });
+        TreeNodes.Add(_selected);
         await LoadServerData(_selected);
-        _selected.IsExpanded = true;
+        _selected.Expanded = true;
 
         EventBus.OnSetCurrentExplorerObjectAsync += HandleSetCurrentExplorerObjectAsync;
         EventBus.OnRefreshContentAsync += OnRefreshContentAsync;
@@ -46,7 +46,7 @@
     {
         if (firstRender && _selected != null)
         {
-            await EventBus.FireCurrentExplorerObjectChanged(_selected?.ExObject);
+            await EventBus.FireCurrentExplorerObjectChanged(_selected?.Value);
         }
     });
 
@@ -54,7 +54,7 @@
     {
         await using (var busy = await AppScope.RegisterBusyTaskAsync($"Load: {node.Text}"))
         {
-            node.IsExpanded = expanded;
+            node.Expanded = expanded;
             if (expanded)
             {
                 await LoadServerData(node);
@@ -74,7 +74,7 @@
             _selected = node;
 
             await RefreshCurrentNodeAsync();
-            await EventBus.FireCurrentExplorerObjectChanged(node.ExObject);
+            await EventBus.FireCurrentExplorerObjectChanged(node.Value);
         }
     });
 
@@ -108,7 +108,7 @@
 
                 if (await RefreshCurrentNodeAsync())
                 {
-                    _selected.IsExpanded = true;
+                    _selected.Expanded = true;
                     StateHasChanged();
                 }
 
@@ -119,7 +119,7 @@
 
     private Task<bool> RefreshCurrentNodeAsync() => base.HandleFuncAsync(async () =>
     {
-        if (_selected != null && await _selected.ExObject.SecureRefreshAsync() == true)
+        if (_selected?.Value is not null && await _selected.Value.SecureRefreshAsync() == true)
         {
             _selected.Children = null;
             await LoadServerData(_selected);
@@ -134,16 +134,17 @@
 
     async private Task<ExplorerTreeNode?> SelectTreeNode(int index, IExplorerObject[] exObjects, ExplorerTreeNode? currentNode = null)
     {
-        var treeNodes = currentNode != null 
-            ? currentNode.Children 
-            : TreeNodes.Select(n => n.Value);
+        var treeNodes = currentNode is not null 
+            ? currentNode.Children?.Cast<ExplorerTreeNode>()
+            : TreeNodes;
+
         if (treeNodes == null)
         {
             return null;
         }
 
-        currentNode = treeNodes.Where(t => t.ExObject?.FullName == exObjects[index].FullName &&  // Compare Fullname & type
-                                           t.ExObject?.Type == exObjects[index].Type)            // there may be objects wih same name in folder, eg Images - one with MrSid and one with GDAL 
+        currentNode = treeNodes.Where(t => t.Value?.FullName == exObjects[index].FullName &&  // Compare Fullname & type
+                                           t.Value?.Type == exObjects[index].Type)            // there may be objects wih same name in folder, eg Images - one with MrSid and one with GDAL 
                                 .FirstOrDefault();
         if(currentNode == null)
         {
@@ -160,12 +161,12 @@
             await LoadServerData(currentNode);
         }
 
-        currentNode.IsExpanded = true;
+        currentNode.Expanded = true;
 
         return await SelectTreeNode(++index, exObjects, currentNode);
     }
 
-    private ExplorerTreeNode? FindTreeNode(HashSet<ExplorerTreeNode>? rootNodes, IExplorerObject exObject)
+    private ExplorerTreeNode? FindTreeNode(List<ExplorerTreeNode>? rootNodes, IExplorerObject exObject)
     {
         if (rootNodes == null)
         {
@@ -174,13 +175,15 @@
 
         foreach(var node in rootNodes)
         {
-            if (node.ExObject?.FullName.Equals(exObject.FullName) == true)
+            if (node.Value?.FullName.Equals(exObject.FullName) == true)
             {
                 return node;
             } 
             else
             {
-                var childNode = FindTreeNode(node.Children, exObject);
+                var childNode = FindTreeNode(
+                    node.Children?.Select(n => (ExplorerTreeNode)n).ToList(), 
+                    exObject);
                 if(childNode!=null)
                 {
                     return childNode;
@@ -193,16 +196,17 @@
 
     #endregion
 
-    public Task<HashSet<ExplorerTreeNode>?> LoadServerData(ExplorerTreeNode parentNode) => base.HandleFuncAsync(async () =>
+    private Task<IEnumerable<ExplorerTreeNode>?> LoadServerData(ExplorerTreeNode parentNode)
+        => base.HandleFuncAsync<IEnumerable<ExplorerTreeNode>?>(async () =>
     {
         if (parentNode.IsServerLoaded)
         {
-            return parentNode.Children;
+            return parentNode.Children?.Cast<ExplorerTreeNode>();
         }
 
-        var exObject = parentNode.ExObject;
+        var exObject = parentNode.Value;
 
-        parentNode.Children = new HashSet<ExplorerTreeNode>();
+        parentNode.Children = new List<TreeItemData<IExplorerObject>>();
 
         if (exObject is IExplorerParentObject)
         {
@@ -218,7 +222,7 @@
             }
         }
 
-        return parentNode.Children;
+        return parentNode.Children.Cast<ExplorerTreeNode>();
     });
 
 

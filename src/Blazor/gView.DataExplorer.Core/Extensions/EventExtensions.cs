@@ -35,7 +35,7 @@ internal static class EventExtensions
         if (eventFunction != null)
         {
             foreach (var handler in eventFunction.GetInvocationList()
-                                                .OfType<Func<T1, T2, Task>>())
+                                                 .OfType<Func<T1, T2, Task>>())
             {
                 await handler.Invoke(eventArg1, eventArg2);
             }
