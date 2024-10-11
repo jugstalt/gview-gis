@@ -43,7 +43,7 @@ internal class TocSettings : ICartoButton
             return false;
         }
 
-        var selectedTocElement = scope.SelectedTocTreeNode?.TocElement;
+        var selectedTocElement = scope.SelectedTocTreeNode?.Value;
         var selectedGroupElement = selectedTocElement is null || selectedTocElement.IsGroupElement()
                                      ? selectedTocElement
                                      : selectedTocElement.ParentGroup;

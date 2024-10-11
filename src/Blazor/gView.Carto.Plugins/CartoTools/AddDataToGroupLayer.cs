@@ -1,5 +1,5 @@
 ﻿using gView.Carto.Core;
-using gView.Carto.Core.Models.Tree;
+using gView.Carto.Core.Abstraction;
 using gView.Carto.Core.Reflection;
 using gView.Carto.Core.Services.Abstraction;
 using gView.Carto.Plugins.Extensions;
@@ -34,14 +34,14 @@ internal class AddDataToGroupLayer : ICartoButton
 
     public bool IsVisible(ICartoApplicationScopeService scope)
     {
-        return scope.SelectedTocTreeNode is TocParentNode;
+        return scope.SelectedTocTreeNode is ITocParentNode;
     }
 
     public bool IsDisabled(ICartoApplicationScopeService scope) => false;
 
     async public Task<bool> OnClick(ICartoApplicationScopeService scope)
     {
-        var groupLayer = (scope.SelectedTocTreeNode as TocParentNode)?.TocElement?.Layers?.FirstOrDefault() as IGroupLayer;
+        var groupLayer = scope.SelectedTocTreeNode?.Value?.Layers?.FirstOrDefault() as IGroupLayer;
 
         if (groupLayer is null)
         {

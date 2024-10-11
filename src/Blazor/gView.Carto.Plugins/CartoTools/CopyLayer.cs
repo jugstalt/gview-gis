@@ -38,7 +38,7 @@ internal class CopyLayer : ICartoButton
     {
         var map = scope.Document.Map as Map;
         var originalLayer = scope.SelectedTocTreeNode?
-                                 .TocElement?
+                                 .Value?
                                  .Layers?.FirstOrDefault() as Layer;
 
         if (map is null || originalLayer is null)

@@ -206,6 +206,10 @@
                 opacity:.5;
             }
 
+        .carto-main .toc .legend table {
+            color: #555;
+        }
+
     .carto-main .toc-content-splitter {
         position: absolute;
         left: 325px;
@@ -288,42 +292,6 @@
 .carto-main .current-selected {
     background: var(--mud-palette-primary);
     color: var(--mud-palette-primary-text);
-}
-
-/**** Darkmode ****/
-.carto-main.dark {
-    background: #0094ff;
-}
-.carto-main.dark .content {
-    background: #333;
-}
-
-.explorer-dialog-item.selected {
-    background: var(--mud-palette-primary) !important;
-}
-
-.carto-main.dark .toolbar {
-    background: #333;
-}
-
-.carto-main.dark .toolbar .carto-tool-box .carto-tool-sub-box {
-    border: 1px solid #555;
-}
-
-.carto-main.dark .context-selected {
-    background: #555500a9;
-}
-
-.carto-main.dark .status-bar {
-    background: #333;
-}
-
-.carto-main.dark .sketchpen-icon-basic-bg-light-24 {
-    background-image: url(../../../sketchpen/basic/content/img/sketchpen/bg-dark/24/1/sprite.png) !important;
-}
-
-.carto-main.dark .sketchpen-icon-webgis-bg-light-24 {
-    background-image: url(../../../sketchpen/webgis/content/img/sketchpen/bg-dark/24/1/sprite.png) !important;
 }
 
 .carto-symbol-composer-button {
@@ -589,4 +557,45 @@
 
 .match-geoservice-table .cell-different {
     background: #ff000070;
+}
+
+/**** Darkmode ****/
+.carto-main.dark {
+    background: #0094ff;
+}
+
+    .carto-main.dark .content {
+        background: #333;
+    }
+
+.explorer-dialog-item.selected {
+    background: var(--mud-palette-primary) !important;
+}
+
+.carto-main.dark .toolbar {
+    background: #333;
+}
+
+    .carto-main.dark .toolbar .carto-tool-box .carto-tool-sub-box {
+        border: 1px solid #555;
+    }
+
+.carto-main.dark .context-selected {
+    background: #555500a9;
+}
+
+.carto-main.dark .status-bar {
+    background: #333;
+}
+
+.carto-main.dark .sketchpen-icon-basic-bg-light-24 {
+    background-image: url(../../../sketchpen/basic/content/img/sketchpen/bg-dark/24/1/sprite.png) !important;
+}
+
+.carto-main.dark .sketchpen-icon-webgis-bg-light-24 {
+    background-image: url(../../../sketchpen/webgis/content/img/sketchpen/bg-dark/24/1/sprite.png) !important;
+}
+
+.carto-main.dark .toc .legend table {
+    color: #ccc;
 }

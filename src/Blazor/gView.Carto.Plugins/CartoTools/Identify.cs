@@ -52,7 +52,7 @@ internal class Identify : ICartoTool
 
     async public Task<bool> OnEvent(ICartoApplicationScopeService scope, ToolEventArgs mapEvent)
     {
-        var queryLayer = scope.SelectedTocTreeNode?.TocElement.CollectQueryableLayers() ?? [];
+        var queryLayer = scope.SelectedTocTreeNode?.Value?.CollectQueryableLayers() ?? [];
         if (!queryLayer.Any())
         {
             return false;

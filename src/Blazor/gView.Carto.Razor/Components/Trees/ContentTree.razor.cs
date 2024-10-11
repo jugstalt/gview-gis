@@ -1,6 +1,5 @@
 ﻿using gView.Blazor.Core.Extensions;
 using gView.Carto.Core.Abstraction;
-using gView.Carto.Core.Models.Tree;
 using gView.Carto.Core.Services.Abstraction;
 using gView.Framework.Core.Carto;
 using gView.Framework.Core.UI;
@@ -51,7 +50,7 @@ namespace gView.Carto.Razor.Components.Trees
         {
             if (map?.TOC?.Elements != null)
             {
-                foreach (var tocElement in map.TOC.Elements.Where(e => e.ParentGroup == parentTreeNode?.TocElement))
+                foreach (var tocElement in map.TOC.Elements.Where(e => e.ParentGroup == parentTreeNode?.Value))
                 {
                     var locked =
                         tocElement.LayerLocked
@@ -75,11 +74,11 @@ namespace gView.Carto.Razor.Components.Trees
                     {
                         if (parentTreeNode == null)
                         {
-                            _treeNodes.Add(new MudBlazor.TreeItemData<TocTreeNode>() { Value = childTreeNode });
+                            _treeNodes.Add(childTreeNode);
                         }
                         else
                         {
-                            parentTreeNode.Children = parentTreeNode.Children ?? new HashSet<TocTreeNode>();
+                            parentTreeNode.Children = parentTreeNode.Children ?? new();
                             parentTreeNode.Children.Add(childTreeNode);
                         }
                     }
@@ -120,7 +119,7 @@ namespace gView.Carto.Razor.Components.Trees
 
             foreach (var treeNode in _treeNodes)
             {
-                treeNode?.Value?.Dispose();
+                treeNode?.Dispose();
             }
         }
     }

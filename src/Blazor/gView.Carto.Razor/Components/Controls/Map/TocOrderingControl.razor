@@ -30,7 +30,7 @@
                     <GvGridItem>
                         <MudPaper>
                             <GvScrollable>
-                                <MudList Clickable="true" T="ITocElement"
+                                <MudList T="ITocElement"
                                          SelectedValue="SelectedGroupElement"
                                          SelectedValueChanged="OnGroupElementSelected"
                                          Dense="true">
@@ -46,25 +46,25 @@
                     </GvGridItem>
                     <GvGridItem>
                         <GvScrollable>
-                        <MudList Dense="true" T="ITocElement">
-                            <MudPaper Elevation="25" Style="padding:6px">
-                                <MudToolBar DisableGutters="true" Dense="true">
-                                    <MudIconButton Icon="@Icons.Material.Filled.Delete"
-                                                   OnClick="() => _showRemoveDialog = true"
-                                                   Disabled="!_items.Any(e => e.Selected)"
-                                                   Color="Color.Secondary"/>
-                                    <MudTextField @bind-Value="@_newGroupText"
-                                                  Label="New Group" />
-                                    <MudIconButton Icon="@Icons.Material.Filled.AddCircle"
-                                                   OnClick="CreateAndAddGroup"
-                                                   Color="Color.Primary"/>
-                                </MudToolBar>
-                            </MudPaper>
-                            <MudDivider />
-                            <MudDropZone T="TocElementWrapper"
-                                         AllowReorder="true"
-                                         Identifier="@SelectedGroupElement.FullPath()"
-                                         Class="flex-grow-1" />
+                            <MudList Dense="true" T="ITocElement">
+                                <MudPaper Elevation="25" Style="padding:6px">
+                                    <MudToolBar DisableGutters="true" Dense="true">
+                                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                                       OnClick="() => _showRemoveDialog = true"
+                                                       Disabled="!_items.Any(e => e.Selected)"
+                                                       Color="Color.Secondary"/>
+                                        <MudTextField @bind-Value="@_newGroupText"
+                                                      Label="New Group" />
+                                        <MudIconButton Icon="@Icons.Material.Filled.AddCircle"
+                                                       OnClick="CreateAndAddGroup"
+                                                       Color="Color.Primary"/>
+                                    </MudToolBar>
+                                </MudPaper>
+                                <MudDivider />
+                                <MudDropZone T="TocElementWrapper"
+                                             AllowReorder="true"
+                                             Identifier="@SelectedGroupElement.FullPath()"
+                                             Class="flex-grow-1" />
                             </MudList>
                         </GvScrollable>
                     </GvGridItem>

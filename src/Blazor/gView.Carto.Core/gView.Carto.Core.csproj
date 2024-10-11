@@ -10,4 +10,8 @@
     <ProjectReference Include="..\gView.Blazor.Core\gView.Blazor.Core.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Models\Tree\" />
+  </ItemGroup>
+
 </Project>

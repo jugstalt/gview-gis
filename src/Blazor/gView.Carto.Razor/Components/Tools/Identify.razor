@@ -5,10 +5,10 @@
 @inject CartoEventBusService EventBus
 
 <div style="padding:5px">
-    @if (AppScope.SelectedTocTreeNode?.TocElement.IsQueryable() == true)
+    @if (AppScope.SelectedTocTreeNode?.Value?.IsQueryable() == true)
     {
         <div class="info-box" style="width:200px">
-            <strong>Identify @(AppScope.SelectedTocTreeNode.TocElement.Name):</strong><br /> Click to map or draw a box with pressed CTRL-Key
+            <strong>Identify @(AppScope.SelectedTocTreeNode.Value.Name):</strong><br /> Click to map or draw a box with pressed CTRL-Key
         </div>
     } 
     else
@@ -27,7 +27,7 @@
         EventBus.OnSelectedTocTreeNodeChangedAsync += HandleSelectedTocTreeNodeChangedAsync;
     }
 
-    private Task HandleSelectedTocTreeNodeChangedAsync(TocTreeNode? selectedTreeNode)
+    private Task HandleSelectedTocTreeNodeChangedAsync(ITocTreeNode? selectedTreeNode)
         => this.InvokeAsync(() => StateHasChanged());
 
 

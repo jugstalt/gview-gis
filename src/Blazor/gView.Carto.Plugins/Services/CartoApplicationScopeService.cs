@@ -7,7 +7,6 @@ using gView.Carto.Core;
 using gView.Carto.Core.Abstraction;
 using gView.Carto.Core.Models;
 using gView.Carto.Core.Models.ToolEvents;
-using gView.Carto.Core.Models.Tree;
 using gView.Carto.Core.Services;
 using gView.Carto.Core.Services.Abstraction;
 using gView.DataExplorer.Razor.Components.Dialogs.Models;
@@ -155,7 +154,7 @@ public class CartoApplicationScopeService : ApplictionBusyHandlerAndCache, ICart
 
         IMap? originalMap = null;
 
-        if (Document?.Map is not null 
+        if (Document?.Map is not null
             && mxlFilePath.Equals(Document.FilePath))
         {
             originalMap = Document.Map;
@@ -271,9 +270,9 @@ public class CartoApplicationScopeService : ApplictionBusyHandlerAndCache, ICart
 
     public IZoomHistory ZoomHistory => _zoomHistory;
 
-    public TocTreeNode? SelectedTocTreeNode { get; private set; }
+    public ITocTreeNode? SelectedTocTreeNode { get; private set; }
 
-    public Task SetSelectedTocTreeNode(TocTreeNode? selectedTocTreeNode)
+    public Task SetSelectedTocTreeNode(ITocTreeNode? selectedTocTreeNode)
         => _eventBus.FireSelectedTocTreeNodeChangedAsync(this.SelectedTocTreeNode = selectedTocTreeNode);
 
     public CartoDataTableService DataTableService => _dataTables;

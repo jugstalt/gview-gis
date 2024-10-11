@@ -24,7 +24,7 @@ internal class ZoomToLayer : ICartoButton
 
     public bool IsVisible(ICartoApplicationScopeService scope)
     {
-        foreach (var layer in scope.SelectedTocTreeNode?.TocElement?.Layers ?? [])
+        foreach (var layer in scope.SelectedTocTreeNode?.Value?.Layers ?? [])
         {
             if ((layer is IFeatureLayer featureLayer && featureLayer.FeatureClass is not null) ||
                 (layer is IRasterLayer rasterLayer && rasterLayer.RasterClass is not null) ||
@@ -44,7 +44,7 @@ internal class ZoomToLayer : ICartoButton
     {
         IEnvelope? extent = null;
 
-        foreach (var layer in scope.SelectedTocTreeNode?.TocElement?.Layers ?? [])
+        foreach (var layer in scope.SelectedTocTreeNode?.Value?.Layers ?? [])
         {
             extent = GetLayerExtent(scope, layer, extent);
         }

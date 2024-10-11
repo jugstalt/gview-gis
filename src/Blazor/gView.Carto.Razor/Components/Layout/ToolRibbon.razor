@@ -170,7 +170,7 @@
     private Task DarkmodeClick() => ToggleDarkmode.InvokeAsync();
     //private Task DarkmodeClick() => throw new InvalidOperationException("Testing Errorboundary");
 
-    private Task HandleSelectedTocTreeNodeChangedAsync(TocTreeNode? selectedTreeNode)
+    private Task HandleSelectedTocTreeNodeChangedAsync(ITocTreeNode? selectedTreeNode)
         => base.InvokeAsync(() => StateHasChanged());
 
     private Task HandleCartoDocumentLoadedAsync(ICartoDocument cartoDocument)

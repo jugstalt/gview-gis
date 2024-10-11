@@ -2,10 +2,8 @@
 using gView.Blazor.Core.Services;
 using gView.Carto.Core.Abstraction;
 using gView.Carto.Core.Models;
-using gView.Carto.Core.Models.Tree;
 using gView.Framework.Blazor.Services.Abstraction;
 using gView.Framework.Core.Common;
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
@@ -33,8 +31,8 @@ public interface ICartoApplicationScopeService : IApplicationScope
 
     IEnumerable<IMapApplicationModule> Modules { get; }
 
-    TocTreeNode? SelectedTocTreeNode { get; }
-    Task SetSelectedTocTreeNode(TocTreeNode? selectedTocTreeNode);
+    ITocTreeNode? SelectedTocTreeNode { get; }
+    Task SetSelectedTocTreeNode(ITocTreeNode? selectedTocTreeNode);
 
     Task<bool> LoadCartoDocumentAsync(string mxlFilePath);
     Task<bool> SaveCartoDocumentAsync(string xmlFilePath, bool performEncryption);
