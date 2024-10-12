@@ -1,4 +1,6 @@
-﻿using gView.Framework.Core.Geometry;
+﻿#nullable enable
+
+using gView.Framework.Core.Geometry;
 using gView.Framework.Geometry;
 using JsonPlayground.Models;
 
@@ -147,7 +149,7 @@ static internal class GeometryExtensions
                 var path = new gView.Framework.Geometry.Path();
                 for (int i = 0, pointCount = jsonPath.GetLength(0); i < pointCount; i++)
                 {
-                    path.AddPoint(new Point(jsonPath[i, 0].Value, jsonPath[i, 1].Value));
+                    path.AddPoint(new Point(jsonPath[i, 0]!.Value, jsonPath[i, 1]!.Value));
                 }
                 polyline.AddPath(path);
             }
@@ -169,7 +171,7 @@ static internal class GeometryExtensions
                 var ring = new Ring();
                 for (int i = 0, pointCount = jsonRing.GetLength(0); i < pointCount; i++)
                 {
-                    ring.AddPoint(new Point(jsonRing[i, 0].Value, jsonRing[i, 1].Value));
+                    ring.AddPoint(new Point(jsonRing[i, 0]!.Value, jsonRing[i, 1]!.Value));
                 }
                 polygon.AddRing(ring);
             }
@@ -185,7 +187,7 @@ static internal class GeometryExtensions
                 var point = geometry.Points[p];
                 if (point != null && point.Length >= 2)
                 {
-                    multiPoint.AddPoint(new Point(point[0].Value, point[1].Value));
+                    multiPoint.AddPoint(new Point(point[0]!.Value, point[1]!.Value));
                 }
             }
 

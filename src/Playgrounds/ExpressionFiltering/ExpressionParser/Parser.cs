@@ -123,7 +123,7 @@ public class Parser
         right = Expression.Convert(right, typeof(object));
 
         // Expression für left.CompareTo(right)
-        MethodInfo compareToMethod = typeof(IComparable).GetMethod("CompareTo", new Type[] { typeof(object) });
+        MethodInfo compareToMethod = typeof(IComparable).GetMethod("CompareTo", new Type[] { typeof(object) })!;
         Expression compareToCall = Expression.Call(left, compareToMethod, right);
 
         // Konstante '0' zum Vergleich
@@ -153,7 +153,7 @@ public class Parser
         // Ausdruck für dict[key]
         MethodCallExpression getItem = Expression.Call(
             param,
-            typeof(IDictionary<string, object>).GetMethod("get_Item"),
+            typeof(IDictionary<string, object>).GetMethod("get_Item")!,
             Expression.Constant(key));
 
         // Konvertierung zu Object

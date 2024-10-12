@@ -1,8 +1,8 @@
 echo off
 
-echo ====================
-echo Publish gView.Server
-echo ====================
+echo =====================
+echo Publish gView.WebApps
+echo =====================
 
 cd .\..\src\blazor\gView.WebApps
 

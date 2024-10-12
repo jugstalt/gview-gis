@@ -1,4 +1,4 @@
-﻿using Microsoft.WindowsAzure.Storage.Table;
+﻿using Azure.Data.Tables;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
@@ -81,7 +81,7 @@ namespace gView.Framework.Logging.ResourceLogging
         #endregion
 
         async public Task<IEnumerable<T>> GetLogs<T>(string id, int seconds, bool aggregated)
-            where T : ITableEntity, new()
+            where T : class, ITableEntity, new()
         {
             if (_tableStorage != null)
             {

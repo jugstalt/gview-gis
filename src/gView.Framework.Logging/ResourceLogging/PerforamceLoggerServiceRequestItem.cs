@@ -1,10 +1,22 @@
-﻿using Microsoft.WindowsAzure.Storage.Table;
+﻿using Azure;
+using Azure.Data.Tables;
 using System;
 
 namespace gView.Framework.Logging.ResourceLogging
 {
-    public class PerforamceLoggerServiceRequestItem : TableEntity, IPerformanceLoggerItem
+    public class PerforamceLoggerServiceRequestItem : ITableEntity, IPerformanceLoggerItem
     {
+        #region ITableEntity
+
+        public string PartitionKey { get; set; }
+        public string RowKey { get; set; }
+
+        public DateTimeOffset? Timestamp { get; set; }
+
+        public ETag ETag { get; set; }
+
+        #endregion
+
         #region IResourcesLoggerItem
 
         public int Milliseconds { get; set; }

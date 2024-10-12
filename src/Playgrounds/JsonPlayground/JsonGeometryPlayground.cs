@@ -1,4 +1,6 @@
-﻿using gView.Framework.Common.Json.Converters;
+﻿#nullable enable
+
+using gView.Framework.Common.Json.Converters;
 using gView.Framework.Core.Geometry;
 using gView.Framework.Geometry;
 using gView.Interoperability.GeoServices.Request.Extensions;
@@ -85,7 +87,7 @@ internal class JsonGeometryPlayground
         return jsonString2;
     }
 
-    static private (JsonGeometryDTO newtonSoft, JsonGeometryDTO stj) Deserialize(string jsonString)
+    static private (JsonGeometryDTO? newtonSoft, JsonGeometryDTO? stj) Deserialize(string jsonString)
     {
         JsonGeometryDTO? jsonGeometry1 = null, jsonGeometry2 = null;
 

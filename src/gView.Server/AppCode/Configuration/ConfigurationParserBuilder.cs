@@ -11,8 +11,10 @@ namespace gView.Server.AppCode.Configuration
                 !String.IsNullOrWhiteSpace(configuration["AZURE_AD_ClientSecret"]))
             {
                 var keyVault = new gView.Framework.Azure.KeyVault.KeyVault(
+                    configuration["AZURE_KeyVaultUri"],
                     configuration["AZURE_AD_ClientId"],
-                    configuration["AZURE_AD_ClientSecret"]);
+                    configuration["AZURE_AD_ClientSecret"],
+                    configuration["AZURE_AD_TenantId"]);
 
                 Console.WriteLine("Add AzureKeyVaultConfigValueParser");
                 new KeyVaultConfigParser(keyVault).AddParser();
