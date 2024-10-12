@@ -25,23 +25,23 @@
                 }
                 <MudIconButton Size="MudBlazor.Size.Medium" 
                                Icon="@Icons.Material.Outlined.Refresh"
-                               Title="Create new random symbol"
+                               title="Create new random symbol"
                                OnClick="RefreshWithRandomSymbol" />
                 <MudIconButton Size="MudBlazor.Size.Medium" 
                                Disabled="_undoSymbol is null"
                                Icon="@Icons.Material.Outlined.Undo"
-                               Title="Undo"
+                               title="Undo"
                                OnClick="UndoSymbol" />
                 <MudIconButton Size="MudBlazor.Size.Medium" 
                                Color="Color.Primary"
                                Icon="@Icons.Material.Outlined.Settings"
-                               Title="Symbol Composer..."
+                               title="Symbol Composer..."
                                OnClick="OpenSymbolComposer"></MudIconButton>
                 @if(AllowDeleteSymbol) {
                     <MudIconButton Size="MudBlazor.Size.Medium" 
                                    Color="Color.Secondary"
                                    Icon="@Icons.Material.Outlined.Delete"
-                                   Title="Delete Symbol"
+                                   title="Delete Symbol"
                                    OnClick="DeleteSymbol" />
                 }
             </MudToolBar>

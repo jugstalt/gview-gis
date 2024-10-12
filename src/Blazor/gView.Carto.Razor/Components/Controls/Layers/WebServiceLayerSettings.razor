@@ -8,9 +8,9 @@
             @foreach(var theme in Layer.WebServiceClass.Themes)
             {
                 <MudCheckBox T="bool" 
-                             Checked="@(theme.Locked == false)"
+                             Value="@(theme.Locked == false)"
                              Label="@theme.Title"
-                             CheckedChanged="(visible) => theme.Locked = !visible" />
+                             ValueChanged="(visible) => theme.Locked = !visible" />
             }
 
         </GvCardContent>

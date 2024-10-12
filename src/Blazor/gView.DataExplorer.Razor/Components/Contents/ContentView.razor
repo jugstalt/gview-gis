@@ -10,7 +10,6 @@
         @foreach (var tabPage in _visibleTabPages)
         {
             <MudTabPanel Text="@tabPage.Title"
-                         Activated="async () => await OnShowTabPage(tabPage)"
                          ToolTip=""
                          Style="">
                 <DynamicComponent Type="@(tabPage.RazorComponent)"

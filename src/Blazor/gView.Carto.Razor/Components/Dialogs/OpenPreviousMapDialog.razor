@@ -37,9 +37,9 @@
                         if (restoreState != RestorePointState.None)
                         {
                             <MudFab Color="restoreState == RestorePointState.Newer ? Color.Primary : Color.Surface"
-                                    DisableElevation="true"
+                                    DropShadow="true"
                                     Style="position:absolute;right:6px;bottom:6px"
-                                    Size="MudBlazor.Size.Small" Title="Try to restore..."
+                                    Size="MudBlazor.Size.Small" title="Try to restore..."
                                     StartIcon="@Icons.Material.Outlined.Restore"
                                     OnClick="async () => await OnShowRestorePointsAsync(item.Path)" />
                         }

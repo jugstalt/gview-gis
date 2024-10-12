@@ -47,8 +47,8 @@ else
                      class="treenode">
                 @if (context is TocLayerNode layerNode)
                 {
-                    @if (context.Value.Layers.Count() == 0 
-                        || context.Value.Layers.FirstOrDefault(l=>l is NullLayer) != null)
+                    @if (context.Value?.Layers.Count() == 0 
+                        || context.Value?.Layers.FirstOrDefault(l=>l is NullLayer) != null)
                     {
                         <MudTreeViewItem Value="@context.Value"
                                          Class="@(((TocTreeNode)context).IsSelected ? "toctreenode-selected" :"")"
@@ -170,9 +170,9 @@ else
                             if(restoreState != RestorePointState.None) 
                             {
                                 <MudFab Color="restoreState == RestorePointState.Newer ? Color.Primary : Color.Surface"
-                                        DisableElevation="true"
+                                        DropShadow="true"
                                         Style="position:absolute;right:6px;bottom:6px"
-                                        Size="MudBlazor.Size.Small" Title="Try to restore..."
+                                        Size="MudBlazor.Size.Small" title="Try to restore..."
                                         StartIcon="@Icons.Material.Outlined.Restore"
                                         OnClick="async () => await OnShowRestorePointsAsync(mapFile.Path)"/>
                             }

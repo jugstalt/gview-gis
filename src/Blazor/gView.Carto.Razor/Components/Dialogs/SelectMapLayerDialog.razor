@@ -5,8 +5,7 @@
                      Model="base.Model">
     <DialogBody>    
         
-        <MudList Clickable="true" 
-                 @bind-SelectedValue="_selectedItem">
+        <MudList @bind-SelectedValue="_selectedItem">
             @foreach(var layerName in _tocElements.Keys.Order())
             {
                 <MudListItem Value="_tocElements[layerName]"

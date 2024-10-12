@@ -14,7 +14,7 @@
                                       OnSymbolSelectedForAppend="(symbol) => GallerySymbolSelected(symbol, true)" />
             </MudExpansionPanel>
         
-            <MudExpansionPanel Text="Symbol" Style="padding:6px" @bind-IsExpanded="_symbol_isExpanded">
+            <MudExpansionPanel Text="Symbol" Style="padding:6px" @bind-Expanded="_symbol_isExpanded">
                 <GvGrid ColumnCount="3">
                     <GvGridItem>
                         <GvCard Title="Stack">
@@ -48,8 +48,8 @@
                                                  class="@(_selectedSymbol == context.Symbol ? "selected " : "")carto-symbol-composer-stack-item"
                                                  @onclick="() => { _selectedSymbol = context.Symbol; }">
                                                 <MudCheckBox T="bool" Style="display:inline-block" Dense="true"
-                                                             Checked="@context.Visible"
-                                                             CheckedChanged="(visible) => { context.Visible = visible; DrawPreviewImage(); }" />
+                                                             Value="@context.Visible"
+                                                             ValueChanged="(visible) => { context.Visible = visible; DrawPreviewImage(); }" />
                                                  <div style="display:inline-block;width:150px;height:35px;background-image:url('@context.Symbol.ToBase64ImageSource(CartoDocument.CurrentMap, 150,35)')">
 
                                                  </div>

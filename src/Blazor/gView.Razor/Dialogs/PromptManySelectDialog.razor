@@ -13,7 +13,7 @@
                            @bind-Value="prompt.SelectedValue"
                            Label="@prompt.Prompt"
                            Required="@prompt.Required">
-                    @foreach (var kv in prompt.Options)
+                    @foreach (var kv in prompt.Options ?? [])
                     {
                         <MudSelectItem Value="kv.Value">@kv.Key</MudSelectItem>
                     }

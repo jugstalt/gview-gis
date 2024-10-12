@@ -36,7 +36,7 @@ public class ZoomHistoryService : IZoomHistory
     {
         if (_zoomHistory.TryPop(out StackItem? lastItem))
         {
-            _logger.Log(LogLevel.Information, "Pop item with bounds[{count}]: {bounds}", () => _zoomHistory.Count, () => lastItem.Bounds?.ToBBoxString());
+            _logger.Log(LogLevel.Information, "Pop item with bounds[{count}]: {bounds}", () => _zoomHistory.Count, () => lastItem?.Bounds?.ToBBoxString());
 
             while (true)
             {

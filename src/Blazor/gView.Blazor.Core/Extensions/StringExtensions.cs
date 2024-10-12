@@ -42,7 +42,7 @@ static public class StringExtensions
     public static string ToEnvironmentVairableName(this string variable)
         => $"%{variable}%";
 
-    static public string AppendNonEmpty(this string? str, string seperator, params string?[] items)
+    static public string? AppendNonEmpty(this string? str, string seperator, params string?[] items)
     {
         if(items is null) return str;
 

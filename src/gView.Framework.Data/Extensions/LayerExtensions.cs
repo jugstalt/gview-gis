@@ -1,10 +1,11 @@
-﻿using gView.Framework.Core.Carto;
+﻿#nullable enable
+
+using gView.Framework.Core.Carto;
 using gView.Framework.Core.Data;
 using gView.Framework.Data.Filters;
 using gView.GraphicsEngine;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Cryptography.X509Certificates;
 
 namespace gView.Framework.Data.Extensions
 {
@@ -114,7 +115,7 @@ namespace gView.Framework.Data.Extensions
             {
                 l.GroupLayer = groupLayer;
 
-                if(groupLayer is GroupLayer g)
+                if (groupLayer is GroupLayer g)
                 {
                     g.Add(l);
                 }
@@ -142,7 +143,7 @@ namespace gView.Framework.Data.Extensions
                     this ILayer layer,
                     IMap map,
                     bool recursive = true,
-                    IGroupLayer targetGroupLayer = null,
+                    IGroupLayer? targetGroupLayer = null,
                     string newName = "",
                     bool applyNewName = true)
         {

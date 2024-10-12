@@ -32,7 +32,7 @@
 
         <GvCard Title="Direction Of Rotation">
             <GvCardContent>
-                <MudRadioGroup @bind-SelectedOption="Model.RotationType" T="RotationType" >
+                <MudRadioGroup @bind-Value="Model.RotationType" T="RotationType" >
                     <GvGrid ColumnCount="2">
 
                         @foreach (var roationType in Enum.GetValues<RotationType>())

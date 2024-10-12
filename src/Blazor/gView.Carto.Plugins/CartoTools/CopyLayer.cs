@@ -68,8 +68,8 @@ internal class CopyLayer : ICartoButton
     async private Task<bool> Copy(ICartoApplicationScopeService scope, CopyLayerDialogModel model)
     {
         var map = model.Map!;
-        var originalLayer = model.Layer;
-        var copyElements = originalLayer.CreateCopy(map, newName: model.NewNamePattern);
+        var originalLayer = model.Layer!;
+        var copyElements = originalLayer.CreateCopy(map, newName: model.NewNamePattern!);
 
         foreach (var copyElement in copyElements)
         {

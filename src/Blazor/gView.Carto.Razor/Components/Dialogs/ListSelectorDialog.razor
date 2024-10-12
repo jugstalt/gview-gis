@@ -8,7 +8,7 @@
         <GvScrollable>
             @if(Model.Items is not null)
             {
-                <MudList SelectedItemChanged="OnItemSelected" T="TItem" >
+                <MudList SelectedValueChanged="OnItemSelected" T="TItem" >
                 @foreach(var item in Model.Items)
                 {
                     <MudListItem Value="item">
