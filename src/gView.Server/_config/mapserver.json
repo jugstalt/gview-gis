@@ -22,9 +22,9 @@
   },
 
   "mapserver-defaults": {
-    "maxImageWidth": 1024,
-    "maxImageHeight": 768,
-    "maxRecordCount": 123
+    "maxImageWidth": 8128,
+    "maxImageHeight": 8128,
+    "maxRecordCount_": 0
   },
 
   "Logging": {
