@@ -191,6 +191,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gView.Interoperability.Exte
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExpressionFiltering", "src\Playgrounds\ExpressionFiltering\ExpressionFiltering.csproj", "{57F4F825-DA72-4BA6-BE99-CC25B1956A7B}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "nuget", "nuget", "{1BB805B5-B882-40F6-AC9F-CD18FF6834C2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gView.Aspire.Hosting", "src\nuget\gView.Aspire.Hosting\gView.Aspire.Hosting.csproj", "{E0499676-FB29-4606-98BC-F415BBE310A6}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -863,6 +867,14 @@ Global
 		{57F4F825-DA72-4BA6-BE99-CC25B1956A7B}.Release|Any CPU.Build.0 = Release|Any CPU
 		{57F4F825-DA72-4BA6-BE99-CC25B1956A7B}.Release|x64.ActiveCfg = Release|Any CPU
 		{57F4F825-DA72-4BA6-BE99-CC25B1956A7B}.Release|x64.Build.0 = Release|Any CPU
+		{E0499676-FB29-4606-98BC-F415BBE310A6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E0499676-FB29-4606-98BC-F415BBE310A6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E0499676-FB29-4606-98BC-F415BBE310A6}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{E0499676-FB29-4606-98BC-F415BBE310A6}.Debug|x64.Build.0 = Debug|Any CPU
+		{E0499676-FB29-4606-98BC-F415BBE310A6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E0499676-FB29-4606-98BC-F415BBE310A6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E0499676-FB29-4606-98BC-F415BBE310A6}.Release|x64.ActiveCfg = Release|Any CPU
+		{E0499676-FB29-4606-98BC-F415BBE310A6}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -961,6 +973,8 @@ Global
 		{8DB0ACAB-5AF1-4D14-B6F1-A330D318A607} = {0ADA1A24-AC4C-4471-939B-609A83271367}
 		{0889B4F9-DCCE-42BC-AB35-84A521312F52} = {B3257507-BB58-4FAC-AA9A-1165F105606D}
 		{57F4F825-DA72-4BA6-BE99-CC25B1956A7B} = {35061524-C22F-4536-8EA1-8F828D2E1CC1}
+		{1BB805B5-B882-40F6-AC9F-CD18FF6834C2} = {F92CCD65-1D06-475F-8FFB-3F912C7BBE7E}
+		{E0499676-FB29-4606-98BC-F415BBE310A6} = {1BB805B5-B882-40F6-AC9F-CD18FF6834C2}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {11C25FC0-EB32-4DE1-9CBB-CF2D68D1AA9B}
