@@ -4,11 +4,11 @@ namespace Aspire.Hosting;
 
 static public class gViewServerResourceBuilderExtensions
 {
-    private const string ContainerImage = "";
+    private const string ContainerImage = "gview-server";
     private const string ContainerRegistry = "";
     private const string ContainerTag = "latest";
 
-    public static gViewServerResourceBuilder AddIdentityServerNET(
+    public static gViewServerResourceBuilder AddgViewServer(
             this IDistributedApplicationBuilder builder,
             string containerName,
             int? httpPort = null,
@@ -26,10 +26,19 @@ static public class gViewServerResourceBuilderExtensions
                           targetPort: 8080,
                           port: httpPort,
                           name: gViewServerResource.HttpEndpointName)
-                      .WithHttpsEndpoint(
-                          targetPort: 8443,
-                          port: httpsPort,
-                          name: gViewServerResource.HttpsEndpointName);
+                      //.WithHttpsEndpoint(
+                      //    targetPort: 8443,
+                      //    port: httpsPort,
+                      //    name: gViewServerResource.HttpsEndpointName);
+                      .WithVolume("gview-gis", "/home/app")
+                      .WithEnvironment(e =>
+                      {
+                          e.EnvironmentVariables.Add("ServicesFolder", "/home/app/gview-server-repository/server/configuraiton");
+                          e.EnvironmentVariables.Add("OutputPath", "/home/app/gview-server-repository/server/web/output");
+                          e.EnvironmentVariables.Add("OutputUrl", $"{resource.HttpEndpoint.Url}/output");
+                          e.EnvironmentVariables.Add("OnlineResourceUrl", $"{resource.HttpEndpoint.Url}");
+                          e.EnvironmentVariables.Add("TileCacheRoot", "/home/app/gview-server-repository/server/web/tile-caches");
+                      });
 
         return new gViewServerResourceBuilder(
             builder,

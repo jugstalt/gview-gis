@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using gView.Server.AppCode.Configuration;
+using Microsoft.Extensions.Configuration;
 using System;
 using System.IO;
 
@@ -8,7 +9,7 @@ namespace gView.Server.Extensions
     {
         static public bool TryCreateDirectoryIfNotExistes(this IConfiguration configuration, string configKey)
         {
-            var directoryPath = configuration[configKey];
+            var directoryPath = configuration.Value(configKey);
 
             if (!String.IsNullOrEmpty(directoryPath))
             {

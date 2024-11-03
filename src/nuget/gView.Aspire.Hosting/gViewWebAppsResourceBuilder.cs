@@ -7,6 +7,8 @@ public class gViewWebAppsResourceBuilder(
         IResourceBuilder<gViewWebAppsResource> resourceBuilder
     )
 {
+    internal int CustomTileIndex = 0;
+
     internal IDistributedApplicationBuilder AppBuilder { get; } = appBuilder;
     internal IResourceBuilder<gViewWebAppsResource> ResourceBuilder { get; } = resourceBuilder;
 }
