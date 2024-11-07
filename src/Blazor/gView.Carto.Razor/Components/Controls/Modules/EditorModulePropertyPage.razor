@@ -1,0 +1,139 @@
+@using gView.Plugins.Modules
+@using Framework.Editor.Core
+
+@inherits BaseHandler
+
+@if(_featureLayers is not null && _editorModule is not null)
+{
+    <GvScrollable>
+        <table style="width:100%;text-align:left">
+            <tr>
+                <th>Layer</th>
+                <th>
+                    <MudButton Variant="Variant.Filled"
+                               Color="Color.Primary"
+                               StartIcon="@MudBlazor.Icons.Material.Filled.CheckBox"
+                               OnClick="()=>OnSetStatement(EditStatements.INSERT)">
+                        INSERT
+                    </MudButton>
+                </th>
+                <th>
+                    <MudButton Variant="Variant.Filled"
+                               Color="Color.Primary"
+                               StartIcon="@MudBlazor.Icons.Material.Filled.CheckBox"
+                               OnClick="()=>OnSetStatement(EditStatements.UPDATE)">
+                        UPDATE
+                    </MudButton>
+                </th>
+                <th>
+                    <MudButton Variant="Variant.Filled"
+                               Color="Color.Primary"
+                               StartIcon="@MudBlazor.Icons.Material.Filled.CheckBox"
+                               OnClick="()=>OnSetStatement(EditStatements.DELETE)">
+                        DELETE
+                    </MudButton>
+                </th>
+            </tr>
+    
+            @foreach(var featureLayer in _featureLayers)
+            {
+                var editLayer = _editorModule.GetEditLayer(featureLayer.ID);
+                var statements = editLayer?.Statements ?? EditStatements.NONE;
+            
+                <tr>
+                    <td>@GetLayerTitle(featureLayer)</td>
+                    <td>
+                        <MudCheckBox Value="statements.HasFlag(EditStatements.INSERT)" T="bool"
+                                     ValueChanged="(chk) => OnChangeStatement(featureLayer, EditStatements.INSERT, chk)" />
+                    </td>
+                    <td>
+                        <MudCheckBox Value="statements.HasFlag(EditStatements.UPDATE)" T="bool"
+                                     ValueChanged="(chk) => OnChangeStatement(featureLayer, EditStatements.UPDATE, chk)" />
+                    </td>
+                    <td>
+                        <MudCheckBox Value="statements.HasFlag(EditStatements.DELETE)" T="bool"
+                                     ValueChanged="(chk) => OnChangeStatement(featureLayer, EditStatements.DELETE, chk)" />
+                    </td>
+                </tr>
+            }
+        </table>
+    </GvScrollable>
+}
+
+@code {
+    [Parameter] public IMapApplicationModule? Instance { get; set; }
+
+    private EditorModule? _editorModule;
+    private IFeatureLayer[]? _featureLayers;
+
+    protected override void OnParametersSet() => Handle(() =>
+    {
+        base.OnParametersSet();
+
+        _editorModule = Instance as EditorModule;
+
+        _featureLayers = _editorModule?.Map?.MapElements
+                .Where(e => e is IFeatureLayer featureLayer && featureLayer.Class is IFeatureClass)
+                .Select(e => (IFeatureLayer)e)
+                .ToArray();
+    });
+
+    private void OnChangeStatement(IFeatureLayer featureLayer, EditStatements statement, bool add) => Handle(() =>
+    {
+        if (_editorModule is null)
+        {
+            return;
+        }
+
+        var editLayer = _editorModule.GetEditLayer(featureLayer.ID);
+
+        EditStatements statements = editLayer?.Statements ?? EditStatements.NONE;
+        if (add)
+        {
+            statements |= statement;
+        }
+        else if (statements.HasFlag(statement))
+        {
+            statements -= statement;
+        }
+
+        _editorModule.SetEditLayerStatement(featureLayer.ID, featureLayer.Class.Name, statements);
+    });
+
+    private void OnSetStatement(EditStatements statement) => Handle(() =>
+    {
+        if (_editorModule is null || _featureLayers is null)
+        {
+            return;
+        }
+        var countLayers = _featureLayers.Length;
+        var countLayerWithStatement = _featureLayers
+            .Select(e => _editorModule.GetEditLayer(e.ID))
+            .Count(l => l is not null && l.Statements.HasFlag(statement));
+
+        bool add = countLayerWithStatement < countLayers / 2;  // less than half are checked
+
+        foreach(var featuerLayer in _featureLayers)
+        {
+            OnChangeStatement(featuerLayer, statement, add);
+        }
+    });
+
+    #region Helper
+
+    private string GetLayerTitle(IFeatureLayer layer)
+    {
+        if(_editorModule?.Map?.TOC is not null)
+        {
+            var tocElement = _editorModule.Map.TOC.GetTOCElement(layer);
+            if(tocElement is not null)
+            {
+                return $"{tocElement.Name} ({layer.Title})";
+            }
+        }
+
+        return layer.Title;
+    }
+
+    #endregion
+}

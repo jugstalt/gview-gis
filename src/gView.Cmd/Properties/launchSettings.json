@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "gView.Cmd": {
+      "commandName": "Project",
+      "commandLineArgs": "-i"
+    }
+  }
+}

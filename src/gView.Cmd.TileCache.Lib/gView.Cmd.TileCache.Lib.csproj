@@ -1,0 +1,16 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\gView.Framework.Cartography\gView.Framework.Cartography.csproj" />
+    <ProjectReference Include="..\gView.Cmd.Core\gView.Cmd.Core.csproj" />
+    <ProjectReference Include="..\gView.Framework.Metadata\gView.Framework.Metadata.csproj" />
+    <ProjectReference Include="..\gView.Server.Clients\gView.Server.Clients.csproj" />
+    <ProjectReference Include="..\gView.Server.Connector\gView.Server.Connector.csproj" />
+  </ItemGroup>
+
+</Project>

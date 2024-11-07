@@ -1,0 +1,72 @@
+@inject IApplicationScopeFactory AppScopeFactory
+
+<GvGrid ColumnCount="6">
+    <GvGridItem Span="5">
+        <MudTextField Label="@Label"
+                      Value="File" T="string"
+                      ValueChanged="SetFile"
+                      Variant="Variant.Text"></MudTextField>
+    </GvGridItem>
+    <GvGridItem>
+        <MudFab Color="Color.Primary"
+                OnClick="SelectFile"
+                StartIcon="@Icons.Material.Filled.FileOpen" />
+    </GvGridItem>
+</GvGrid>
+
+@code {
+    [Parameter] public string Label { get; set; } = "File";
+    [Parameter] public string File { get; set; } = string.Empty;
+    [Parameter] public string Filter { get; set; } = "*.*";
+    [Parameter] public bool NewFile { get; set; } = false;
+    [Parameter] public EventCallback<string> FileChanged { get; set; }
+
+
+
+    async private Task SelectFile()
+    {
+        var model = await AppScopeFactory.ShowKnownDialog(
+                            Framework.Blazor.KnownDialogs.ExplorerDialog,
+                            model: new ExplorerDialogModel()
+                                {
+                                    Filters = new List<ExplorerDialogFilter> {
+                                              NewFile 
+                                                ? new SaveFileFilter(filter: Filter)
+                                                : new OpenFileFilter(filter: Filter),
+
+                                    },
+                                    Mode = NewFile 
+                                             ? ExploerDialogMode.Save 
+                                             : ExploerDialogMode.Open
+                                });
+
+        if (model?.Result is not null && model.Result.ExplorerObjects.Count() == 1)
+        {
+            string fullName;
+
+            if(NewFile)
+            {
+                string fileTitle = model.Result.Name.Trim(),
+                       fileExtension = model.Result.SelectedFilter?.FileFilter?.Replace("*", "") ?? "";
+
+                if (!String.IsNullOrEmpty(fileExtension)
+                    && !fileTitle.EndsWith(fileExtension, StringComparison.OrdinalIgnoreCase)
+                   )
+                {
+                    fileTitle = $"{fileTitle}{fileExtension}";
+                }
+
+                fullName = System.IO.Path.Combine(model.Result.ExplorerObjects.First().FullName, fileTitle);
+            } 
+            else
+            {
+                fullName = model.Result.ExplorerObjects.First().FullName;
+            }
+
+            await SetFile(fullName);
+        }
+    }
+
+    private Task SetFile(string file)
+        => FileChanged.InvokeAsync(File = file);
+}

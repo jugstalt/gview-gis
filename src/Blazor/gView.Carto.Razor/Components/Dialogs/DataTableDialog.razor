@@ -1,0 +1,23 @@
+@inherits ModalDialogFormBase<DataTableModel>
+
+@inject IconService IconService
+@inject ICartoApplicationScopeService AppScope
+
+<ModalDialogFormBase T="DataTableModel" ContentStyle="DialogContentStyle.Full"
+                     OnDialogClose="base.OnDialogClose"
+                     Model="base.Model">
+    
+    <DialogBody>
+        @if(Model.Layer is not null)
+        {
+            <DataTableControl Layer="Model.Layer" />
+        }
+    </DialogBody>
+    <DialogButtons>
+
+    </DialogButtons>
+</ModalDialogFormBase>
+
+@code {
+    
+}

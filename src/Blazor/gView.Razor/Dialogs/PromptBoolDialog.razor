@@ -1,0 +1,16 @@
+@inherits ModalDialogFormBase<PromptDialogModel<bool>>
+
+<ModalDialogFormBase T="PromptDialogModel<bool>"
+                     OnDialogClose="base.OnDialogClose"
+                     Model="base.Model">
+    <DialogBody>
+        <MudCheckBox @bind-Value="Model.Value"
+                     Label="@Model.Prompt"
+                     Required="@Model.Required" />
+
+        @if (!String.IsNullOrEmpty(Model.HelperText))
+        {
+            <MudText Typo="Typo.body2">@Model.HelperText</MudText>
+        }
+    </DialogBody>
+</ModalDialogFormBase>

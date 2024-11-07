@@ -1,0 +1,33 @@
+﻿@page "/carto"
+@rendermode InteractiveServer
+@attribute [Authorize(Policy = "gview-user")]
+
+<MudDialogProvider @rendermode="InteractiveServer" />
+
+@inject IDialogService DialogService
+
+<ErrorBoundary @ref=CartoErrorBoundary>
+    <ChildContent>
+        <CartoMainPage />
+    </ChildContent>
+    <ErrorContent Context="ex">
+        @{
+            CartoErrorBoundary?.Recover();
+
+            var parameters = new DialogParameters();
+            parameters.Add("Exception", ex);
+
+            DialogService.Show<GlobalErrorDialog>("Sorry, this is an unhandled Exception!",
+                    parameters,
+                    new DialogOptions { 
+                        CloseOnEscapeKey = true,
+                        CloseButton = true,
+                        MaxWidth = MaxWidth.Large
+                    });
+        }
+    </ErrorContent>
+</ErrorBoundary>
+
+@code {
+    public ErrorBoundary? CartoErrorBoundary { get; set; }
+}

@@ -1,0 +1,164 @@
+@using Microsoft.JSInterop
+@using gView.Blazor.Core.Models
+@using gView.Blazor.Core.Services.Abstraction
+@using gView.Framework.Common
+@using gView.Razor.Services
+
+@inject NavigationManager Nav
+@inject IJSRuntime JSRuntime
+@inject IAppIdentityProvider IdentityProvider
+@inject CustomTilesService CustomTiles
+
+<MudThemeProvider @bind-IsDarkMode="@_isDarkMode" Theme="_theme" />
+
+<div class="gview-splashscreen" style="opacity:.2">
+    <div></div>
+</div>
+
+<div style="max-width:600px;margin:40px auto;text-align:center">
+    
+    <GvGrid ColumnCount="2">
+        <GvGridItem Span="2">
+            <div style="text-align:right">
+                @if(_identity?.IsAuthenticated == true && _identity.CanLogout)
+                {
+                    <MudButton Variant="Variant.Filled"
+                               Color="Color.Secondary"
+                               OnClick="() => Nav.NavigateTo(LogoutUri, false)">
+                        Logout
+                    </MudButton>
+                } 
+                else if(_identity?.IsAdministrator != true) 
+                {
+                    <MudButton Variant="Variant.Filled"
+                               Color="Color.Primary"
+                               OnClick="() => Nav.NavigateTo(LoginUri, false)">
+                        Login
+                    </MudButton>
+                }
+            </div>
+            <MudPaper Elevation="25" Style="padding:20px;position:relative">
+                <MudText Typo="Typo.h2">gView GIS</MudText>
+                <div>Version: @SystemInfo.Version</div>
+                @if(_identity?.IsAuthenticated == true ||
+                    _identity?.IsAdministrator == true ||
+                    _identity?.IsAuthorizedUser == true) 
+                {
+                    <div>User: @_identity.UserNameAndRole()</div>
+                }
+            </MudPaper>
+        </GvGridItem>
+        @if (_identity?.IsAuthorizedUser == true)
+        {
+            <GvGridItem>
+                <MudPaper @onclick="()=>NavigateTo(CartoUri)"
+                      Style="min-height:250px;cursor:pointer;padding:20px;position:relative"
+                      Elevation="25">
+                    <MudText Typo="Typo.h5">gView Carto</MudText>
+
+                    <MudText Typo="Typo.body1">
+                        Create maps, include geographic data sources, render with cartographics capabilites
+                    </MudText>
+
+                    <MudFab Color="Color.Primary" Style="position:absolute;right:20px;bottom:20px"
+                            StartIcon="@Icons.Material.Filled.OpenInNew"
+                            OnClick="()=>NavigateTo(CartoUri, true)" />
+                </MudPaper>
+            </GvGridItem>
+        }
+        @if (_identity?.IsAdministrator == true)
+        {
+            <GvGridItem>
+                <MudPaper @onclick="()=>NavigateTo(ExplorerUri)"
+                         style="min-height:250px;cursor:pointer;padding:20px;position:relative"
+                         Elevation="25">
+                    <MudText Typo="Typo.h5">gView Explorer</MudText>
+
+                    <MudText Typo="Typo.body1">
+                        Explore geographic data, copy data between datasets, run workloads to manage your data
+                    </MudText>
+
+                    <MudFab Color="Color.Primary" Style="position:absolute;right:20px;bottom:20px"
+                            StartIcon="@Icons.Material.Filled.OpenInNew"
+                            OnClick="()=>NavigateTo(ExplorerUri, true)" />
+                </MudPaper>
+            </GvGridItem>
+        
+            @foreach(var customTile in CustomTiles.Tiles)
+            {
+                <GvGridItem>
+                    <MudPaper @onclick="()=>NavigateTo(customTile.TargetUrl)"
+                              style="min-height:250px;cursor:pointer;padding:20px;position:relative"
+                              Elevation="25">
+                        <MudText Typo="Typo.h5">@customTile.Title</MudText>
+
+                        <MudText Typo="Typo.body1">
+                            @customTile.Description
+                        </MudText>
+
+                        <MudFab Color="Color.Primary" Style="position:absolute;right:20px;bottom:20px"
+                                StartIcon="@Icons.Material.Filled.OpenInNew"
+                                OnClick="()=>NavigateTo(customTile.TargetUrl, true)" />
+                    </MudPaper>
+                </GvGridItem>
+            }
+
+            <GvGridItem>
+                <MudPaper style="min-height:250px;padding:20px;position:relative"
+                          Elevation="25">
+                    <MudText Typo="Typo.h5">Used Memory</MudText>
+
+                    <MudText Typo="Typo.body1">
+                         @((int)(GC.GetTotalMemory(false) / 1024.0 / 1024.0)) MB
+                    </MudText>
+
+                    <MudFab Color="Color.Primary" Style="position:absolute;right:20px;bottom:20px"
+                            StartIcon="@Icons.Material.Filled.Memory"
+                            OnClick="CollectMemory" />
+                </MudPaper>
+            </GvGridItem>
+        }
+    </GvGrid>
+</div>
+
+
+@code {
+    private const string CartoUri = "carto";
+    private const string ExplorerUri = "explorer";
+    private const string LoginUri = "login";
+    private const string LogoutUri = "logout";
+
+    private MudTheme _theme = new();
+    private bool _isDarkMode = true;
+    private AppIdentity? _identity;
+
+    async protected override Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        _identity = IdentityProvider.Identity;
+    }
+
+    private void ToggleDarkmode()
+    {
+        _isDarkMode = !_isDarkMode;
+    }
+
+    async private Task NavigateTo(string uri, bool newTab = false)
+    {
+        if (newTab)
+        {
+            await JSRuntime.InvokeVoidAsync("open", uri, "_blank");
+        }
+        else
+        {
+            Nav.NavigateTo(uri, true);
+        }
+    }
+
+    private void CollectMemory()
+    {
+        GC.Collect();
+        GC.WaitForPendingFinalizers();
+        GC.Collect();
+    }
+}

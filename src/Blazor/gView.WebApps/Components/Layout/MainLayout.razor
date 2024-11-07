@@ -1,0 +1,30 @@
+﻿@using gView.WebApps.Components.Pages
+@inherits LayoutComponentBase
+
+@inject IDialogService DialogService
+
+@* <MudDialogProvider />
+<MudSnackbarProvider /> *@
+
+<ErrorBoundary @ref="MyErrorBoundary">
+    <ChildContent>
+        @Body
+    </ChildContent>
+    <ErrorContent>
+        <MudAlert Severity="Severity.Error">
+            An unhandled error has occurred.
+        </MudAlert>
+        <MudButton OnClick="() => MyErrorBoundary?.Recover()">Continue</MudButton>
+        @{ MyErrorBoundary?.Recover(); }
+    </ErrorContent>
+</ErrorBoundary>
+
+<div id="blazor-error-ui" style="color:black">
+    An unhandled error has occurred.
+    <a href="" class="reload">Reload</a>
+    <a class="dismiss">🗙</a>
+</div>
+
+@code {
+    public ErrorBoundary? MyErrorBoundary { get; set; }
+}

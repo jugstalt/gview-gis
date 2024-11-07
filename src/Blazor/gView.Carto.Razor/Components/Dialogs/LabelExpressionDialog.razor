@@ -1,0 +1,49 @@
+@inherits ModalDialogFormBase<LabelExpressionModel>
+
+<ModalDialogFormBase T="LabelExpressionModel"
+                     OnDialogClose="base.OnDialogClose"
+                     Model="base.Model">
+    <DialogBody>
+        <GvCard Title="Fields">
+            <GvCardContent>
+                <GvScrollable MaxHeight="25">
+                @if (Model?.TableClass?.Fields is not null)
+                {
+                    <GvGrid ColumnCount="4">
+                    @foreach (var field in Model.TableClass.Fields.ToEnumerable())
+                    {
+                        if(field.type == Framework.Core.Data.FieldType.GEOMETRY 
+                               || field.type == Framework.Core.Data.FieldType.binary)
+                        {
+                            continue;
+                        }
+                        <GvGridItem>
+                            <MudButton Variant="Variant.Outlined" 
+                                       Size="MudBlazor.Size.Small"
+                                        @ondblclick="() => AppendField(field.name)">
+                                @($"[{field.name}]")
+                            </MudButton>
+                        </GvGridItem>
+                    }
+                    </GvGrid>
+                }
+                </GvScrollable>
+            </GvCardContent>
+        </GvCard>
+        <GvCard Title="Expression">
+            <GvCardContent>
+                <MudTextField T="string"
+                              Label="@($"Expression with [field] placeholders")"
+                              @bind-Value="Model.Expression"
+                              Lines="5" />
+            </GvCardContent>
+        </GvCard>
+    </DialogBody>
+</ModalDialogFormBase>
+
+@code {
+    private void AppendField(string fieldName)
+    {
+        Model.Expression += $"[{fieldName}]";
+    }
+}

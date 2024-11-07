@@ -1,0 +1,120 @@
+@inject IApplicationScopeFactory AppScopeFactory
+
+<GvCard Title="Extent">
+    <GvCardContent>
+        <GvGrid ColumnCount="12">
+            <GvGridItem Span="4"></GvGridItem>
+            <GvGridItem Span="4">
+                <MudTextField Label="Top"
+                               @bind-Value_="Extent.MaxY"
+                               Value="Extent.MaxY"
+                               ValueChanged="async (maxy) => { Extent.MaxY = maxy; await OnExtentChanged(); }"
+                               Format="#.00000" Culture="@_en" T="double" Immediate="false"
+                               InputType="InputType.Number" Step="0.1"
+                               Variant="Variant.Text"></MudTextField>
+            </GvGridItem>
+            <GvGridItem Span="2"></GvGridItem>
+            <GvGridItem Span="2">
+                <MudButton Variant="Variant.Filled"
+                           Color="Color.Surface"
+                           OnClick="ImportExtent">Import...</MudButton>
+            </GvGridItem>
+
+            <GvGridItem Span="1"></GvGridItem>
+            <GvGridItem Span="4">
+                    <MudTextField Label="Left"
+                                  @bind-Value_="Extent.MinX"
+                                  Value="Extent.MinX"
+                                  ValueChanged="async (minx) => { Extent.MinX = minx; await OnExtentChanged(); }"
+                                  Format="#.00000" Culture="@_en" T="double" Immediate="false"
+                                  InputType="InputType.Number" Step="0.1"
+                                  Variant="Variant.Text"></MudTextField>
+                </GvGridItem>
+            <GvGridItem Span="2"></GvGridItem>
+            <GvGridItem Span="4">
+                    <MudTextField Label="Right" 
+                                  @bind-Value_="Extent.MaxX"
+                                  Value="Extent.MaxX"
+                                  ValueChanged="async (maxx) => { Extent.MaxX = maxx; await OnExtentChanged(); }"
+                                  Format="#.00000" Culture="@_en" T="double" Immediate="false"
+                                  InputType="InputType.Number" Step="0.1"
+                                  Variant="Variant.Text"></MudTextField>
+                </GvGridItem>
+            <GvGridItem Span="1"></GvGridItem>
+
+            <GvGridItem Span="4"></GvGridItem>
+            <GvGridItem Span="4">
+                <MudTextField Label="Bottom"
+                              @bind-Value_="Extent.MinY" 
+                              Value="Extent.MinY"
+                              ValueChanged="async (miny) => { Extent.MinY = miny; await OnExtentChanged(); }"
+                              Format="#.00000" Culture="@_en" T="double" Immediate="false"
+                              InputType="InputType.Number" Step="0.000001"
+                              Variant="Variant.Text"></MudTextField>
+            </GvGridItem>
+            <GvGridItem Span="4"></GvGridItem>
+       
+        </GvGrid>
+    </GvCardContent>
+</GvCard>
+
+@code {
+    [Parameter] public IEnvelope Extent { get; set; } = Envelope.Null();
+    [Parameter] public EventCallback<IEnvelope> ExtentChanged { get; set; }
+
+    private System.Globalization.CultureInfo _en = System.Globalization.CultureInfo.GetCultureInfo("en-US");
+
+    async private Task OnExtentChanged()
+    {
+        await ExtentChanged.InvokeAsync(this.Extent);
+    }
+
+    async private Task ImportExtent()
+    {
+        var model = await AppScopeFactory.ShowKnownDialog(
+            Framework.Blazor.KnownDialogs.ExplorerDialog,
+            model: new ExplorerDialogModel()
+                {
+                    Filters = new List<ExplorerDialogFilter> {
+                        new OpenDataFilter()
+                    },
+                    Mode = ExploerDialogMode.Open
+                });
+
+        IEnvelope? envelope = null;
+
+        if (model != null && model.Result.ExplorerObjects.Count() > 0)
+        {
+            foreach(var explorerElement in model.Result.ExplorerObjects)
+            {
+                var elementEnvelope = await explorerElement.GetInstanceAsync() switch
+                {
+                    IFeatureDataset dataset => await dataset.Envelope(),
+                    IFeatureClass featureClass => featureClass.Envelope,
+                    _ => null
+                };
+
+                if (elementEnvelope is null) continue;
+
+                if(envelope is null)
+                {
+                    envelope = new Envelope(elementEnvelope);
+                } else
+                {
+                    envelope.Union(envelope);
+                }
+
+            }
+        }
+
+        if(envelope is not null)
+        {
+            Extent.MinX = envelope.MinX;
+            Extent.MinY = envelope.MinY;
+            Extent.MaxX = envelope.MaxX;
+            Extent.MaxY = envelope.MaxY;
+
+            await OnExtentChanged();
+        }
+    }
+}

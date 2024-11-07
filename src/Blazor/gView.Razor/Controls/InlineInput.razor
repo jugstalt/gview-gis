@@ -1,0 +1,49 @@
+@inherits BaseHandler
+
+<input class="gview-inline-input"
+       @bind-value="Value"
+       @oninput="HandleInputChange"
+       @onblur="HandleBlur"
+       @onkeypress="HandleKeyPress" />
+
+@code {
+    private string _value = "";
+
+#pragma warning disable BL0007
+    [Parameter]
+    public string? Value
+    {
+        get => _value;
+        set
+        {
+            if (_value == value) 
+            {
+                return; 
+            }
+
+            _value = value ?? "";
+
+            ValueChanged.InvokeAsync(value);
+        }
+    }
+#pragma warning restore BL0007
+
+    [Parameter] public EventCallback<string> ValueChanged { get; set; }
+    [Parameter] public EventCallback<string> OnCommit { get; set; }
+
+    private void HandleInputChange(ChangeEventArgs e)
+    {
+        Value = e.Value?.ToString() ?? "";
+    }
+
+    private Task HandleBlur(FocusEventArgs e) => HandleAsync(() =>
+        OnCommit.InvokeAsync(Value));
+
+    private Task HandleKeyPress(KeyboardEventArgs e) => HandleAsync(() =>
+        e.Key == "Enter"
+            ? OnCommit.InvokeAsync(Value)
+            : Task.CompletedTask
+    );
+}
+
+

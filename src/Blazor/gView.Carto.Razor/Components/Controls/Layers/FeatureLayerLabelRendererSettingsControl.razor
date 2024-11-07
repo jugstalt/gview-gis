@@ -1,0 +1,141 @@
+@inject PluginManagerService PluginManager
+@inherits BaseHandler
+
+@if (_labelRenderers is not null)
+{
+    <GvGrid ColumnCount="3">
+        <GvGridItem>
+            <MudCheckBox T="bool"
+                         Checked="@(Layer?.LabelRenderer is not null)"
+                         CheckedChanged="(chk) => LabelFeaturesChecked(chk)"
+                         Label="Label features for this layer" />
+            @if (Layer?.LabelRenderer is not null)
+            {
+                <GvCard Title="Label Renderers">
+                    <GvCardContentNoPadding>
+                        <MudList Dense="true" Clickable="true"
+                                    Style="padding:0px">
+                            @foreach (var labelRenderer in _labelRenderers)
+                            {
+                                <MudListItem Style="white-space:nowrap;overflow:hidden"
+                                                Dense="true"
+                                                Class="@(labelRenderer.GetType() == _selectedRendererType ? "gview-selected-item" : "")"
+                                                OnClick="() => SelectRenderer(labelRenderer)">
+                                    @labelRenderer.Name
+                                </MudListItem>
+                            }
+                        </MudList>
+                    </GvCardContentNoPadding>
+                </GvCard>
+            }
+        </GvGridItem>
+        <GvGridItem Span="2">
+            @if (Layer?.LabelRenderer is not null && _selectedRendererType is not null)
+            {
+                var renderer = _labelRenderers.First(r => _selectedRendererType.Equals(r.GetType()));
+
+                <GvCard Title="@renderer.Name">
+                    <GvCardContent>
+                        @if (_propertyPageRenderFragment is not null)
+                        {
+                            @(_propertyPageRenderFragment)
+                        }
+                    </GvCardContent>
+                </GvCard>
+            }
+        </GvGridItem>
+    </GvGrid>
+}
+
+@code {
+    [Parameter] public IMap? Map { get; set; }
+    [Parameter] public IFeatureLayer? Layer { get; set; }
+
+    private ILabelRenderer[]? _labelRenderers;
+    private IPropertyPageDefinition[]? _propertyPageDefs;
+
+    private Type? _selectedRendererType;
+    private IPropertyPageDefinition? _currentPropertyPage;
+    private RenderFragment? _propertyPageRenderFragment;
+
+    protected override Task OnParametersSetAsync() => HandleAsync(async () =>
+    {
+        await base.OnParametersSetAsync();
+
+        if (Map is not null && Layer is not null)
+        {
+            _labelRenderers = PluginManager.GetPlugins<ILabelRenderer>(gView.Framework.Common.Plugins.Type.ILabelRenderer)
+                                             .Where(r => r.CanRender(Layer, Map))
+                                             .Select(r => r.GetType().Equals(Layer.LabelRenderer?.GetType())
+                                                            ? Layer.LabelRenderer!
+                                                            : r)
+                                             .ToArray();
+
+            foreach (var renderer in _labelRenderers)
+            {
+                if (renderer != Layer.LabelRenderer && renderer is IDefault def)
+                {
+                    await def.DefaultIfEmpty(Layer);
+                }
+            }
+
+            _propertyPageDefs = PluginManager.GetPlugins<IPropertyPageDefinition>(gView.Framework.Common.Plugins.Type.IPropertyPageDefinition)
+                                             .Where(p => p.InterfaceType == typeof(ILabelRenderer))
+                                             .ToArray();
+
+            SelectRenderer(Layer.LabelRenderer);
+        }
+        else
+        {
+            _labelRenderers = null;
+        }
+    });
+
+    private void SelectRenderer(ILabelRenderer? labelRenderer) => Handle(() =>
+    {
+        _selectedRendererType = labelRenderer?.GetType();
+
+        if (Layer is not null)
+        {
+            Layer.LabelRenderer = labelRenderer;
+
+            _currentPropertyPage = _propertyPageDefs?.FirstOrDefault(p => p.InstanceType == labelRenderer?.GetType());
+            if (_currentPropertyPage is not null)
+            {
+                _propertyPageRenderFragment = new RenderFragment(builder =>
+            {
+                var sequence = 0;
+                builder.OpenComponent(sequence, _currentPropertyPage.PropertyPageType);
+                builder.AddAttribute(++sequence, "Instance", Layer);
+                builder.CloseComponent();
+            });
+            }
+            else
+            {
+                _propertyPageRenderFragment = null;
+            }
+        }
+    });
+
+    private void LabelFeaturesChecked(bool renderer) => Handle(() =>
+    {
+        if (Layer is null)
+        {
+            return;
+        }
+
+        if (renderer == false)
+        {
+            Layer.LabelRenderer = null;
+        }
+        else
+        {
+            Layer.LabelRenderer =
+                _labelRenderers?.FirstOrDefault(r => r.GetType() == _selectedRendererType)
+                ?? _labelRenderers?.FirstOrDefault(r => r is SimpleLabelRenderer)
+                ?? _labelRenderers?.FirstOrDefault();
+
+            SelectRenderer(Layer.LabelRenderer);
+        }
+    });
+}

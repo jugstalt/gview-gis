@@ -1,0 +1,43 @@
+@inherits ModalDialogFormBase<LuceneServerInitToolModel>
+
+<ModalDialogFormBase T="LuceneServerInitToolModel"
+                     OnDialogClose="base.OnDialogClose"
+                     Model="base.Model">
+    <DialogBody>
+        <GvCard Title="Output">
+            <GvCardContent>
+                <SelectFileControl Filter="*.json" 
+                                   NewFile="true"
+                                   @bind-File="Model.JsonFile" 
+                                   Label="New Config File (*.json)" />
+            </GvCardContent>
+        </GvCard>
+
+        <GvCard Title="Lucene Server">
+            <GvCardContent>
+                <MudTextField Label="Server Url"
+                              @bind-Value="Model.LuceneServerUrl"/>
+                <MudTextField Label="Index Name"
+                              @bind-Value="Model.IndexName"/>
+                <MudSelect T="string"
+                           Label="Phonetic Algorithm"
+                           @bind-Value="Model.PhoneticAlgorithm">
+                    @foreach(var alg in Enum.GetNames(typeof(LuceneServerNET.Core.Phonetics.Algorithm)))
+                    {
+                        <MudSelectItem Value="alg">@alg</MudSelectItem>
+                    }
+                </MudSelect>   
+                <MudCheckBox Label="Delete Index when refill"
+                             @bind-Value="Model.DeleteIndex" />
+            </GvCardContent>
+        </GvCard>
+
+        <GvCard Title="Data">
+            <GvCardContent>
+                <SelectFeatureClassesControl
+                    Label="Data (FeatureClasses)"
+                    @bind-FeatureClasses="Model.SourceFeatureClasses"/>
+            </GvCardContent>
+        </GvCard>
+    </DialogBody>
+</ModalDialogFormBase>

@@ -1,0 +1,46 @@
+@inherits ModalDialogFormBase<QueryBuilderModel>
+
+<ModalDialogFormBase T="QueryBuilderModel"
+                     OnDialogClose="base.OnDialogClose"
+                     Model="base.Model">
+    <DialogBody>
+        <QueryBuilderControl TableClass="Model.TableClass"
+                             QueryString="@Model.QueryString"
+                             QueryStringChanged="(queryString) => Model.QueryString = queryString" />
+    </DialogBody>
+    <DialogButtons>
+        <MudButton Variant="Variant.Filled" 
+                   OnClick="() => base.Close()">
+            Cancel
+        </MudButton>
+
+        @if (Model.Actions == QueryBuilderAction.Query)
+        {
+            <MudButton Variant="Variant.Filled"
+                       Color="Color.Primary"
+                       OnClick="() => { Model.SelectedAction = QueryBuilderAction.Query; return base.Submit(); }">
+                Commit
+            </MudButton>
+        } 
+        else
+        {
+            <MudMenu EndIcon="@Icons.Material.Filled.KeyboardArrowDown" 
+                     Label="Commit" 
+                     Color="Color.Primary"
+                     Variant="Variant.Filled">
+                @foreach (QueryBuilderAction action in Enum.GetValues(typeof(QueryBuilderAction)))
+                {
+                    @if(action != QueryBuilderAction.None && Model.Actions.HasFlag(action))
+                    {
+                        <MudMenuItem OnClick="() => { Model.SelectedAction = action; return base.Submit(); }">
+                            @action.ToString().SplitCamelCase()
+                        </MudMenuItem>
+                    }
+                }
+            </MudMenu>
+        }
+    </DialogButtons>
+</ModalDialogFormBase>
+
+@code {
+}

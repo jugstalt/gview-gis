@@ -1,0 +1,160 @@
+@using gView.Framework.Cartography.Rendering
+@using gView.Framework.Symbology.Extensions
+
+@inherits BaseHandler
+@inject IApplicationScopeFactory AppScopeFactory
+@inject ICartoDocumentService CartoDocument
+
+@if (Symbol is not null)
+{
+    <GvGrid ColumnCount="@(ShowPropertyGrid && _quickSymbolProperties is not null && Dense == false ? 3 : 1)">
+        <GvGridItem>
+
+            @if(Dense == false)
+            {
+                <img class="carto-symbol-composer-button" style="margin:5px"
+                     @onclick="OpenSymbolComposer"
+                     src="@Symbol.ToBase64ImageSource(CartoDocument.CurrentMap, 150, 50)" />
+            }
+            <MudToolBar Dense="Dense" Style="padding:0px">
+                @if(Dense == true)
+                {
+                    <img class="carto-symbol-composer-button" style="margin:5px"
+                         @onclick="OpenSymbolComposer"
+                         src="@Symbol.ToBase64ImageSource(CartoDocument.CurrentMap, 120, 40)" />
+                }
+                <MudIconButton Size="MudBlazor.Size.Medium" 
+                               Icon="@Icons.Material.Outlined.Refresh"
+                               Title="Create new random symbol"
+                               OnClick="RefreshWithRandomSymbol" />
+                <MudIconButton Size="MudBlazor.Size.Medium" 
+                               Disabled="_undoSymbol is null"
+                               Icon="@Icons.Material.Outlined.Undo"
+                               Title="Undo"
+                               OnClick="UndoSymbol" />
+                <MudIconButton Size="MudBlazor.Size.Medium" 
+                               Color="Color.Primary"
+                               Icon="@Icons.Material.Outlined.Settings"
+                               Title="Symbol Composer..."
+                               OnClick="OpenSymbolComposer"></MudIconButton>
+                @if(AllowDeleteSymbol) {
+                    <MudIconButton Size="MudBlazor.Size.Medium" 
+                                   Color="Color.Secondary"
+                                   Icon="@Icons.Material.Outlined.Delete"
+                                   Title="Delete Symbol"
+                                   OnClick="DeleteSymbol" />
+                }
+            </MudToolBar>
+        </GvGridItem>
+        @if (ShowPropertyGrid && _quickSymbolProperties is not null)
+        {
+            <GvGridItem Span="Dense ? 1 : 2">
+                @if (Dense == false)
+                {
+                    <MudText Typo="Typo.h6">Quick Settings</MudText>
+                }
+                <PropertyGridControl Instance="_quickSymbolProperties"
+                                     OnPropertyChanged="(propertyInfo) => PropertyChanged(propertyInfo)" />
+        </GvGridItem>
+        }
+    </GvGrid>
+} 
+else if(SymbolDefaultGeometry != GeometryType.Unknown)
+{
+    <MudButton Variant="Variant.Filled"
+               OnClick="RefreshWithRandomSymbol">
+        @($"Create: {SymbolDefaultGeometry} Symbol")
+    </MudButton>
+}
+
+@code {
+    [Parameter] public ISymbol? Symbol { get; set; }
+    [Parameter] public EventCallback<ISymbol> SymbolChanged { get; set; }
+    [Parameter] public bool Dense { get; set; }
+    [Parameter] public bool ShowPropertyGrid { get; set; } = true;
+    [Parameter] public GeometryType SymbolDefaultGeometry { get; set; } = GeometryType.Unknown;
+    [Parameter] public bool AllowDeleteSymbol { get; set; } = false;
+
+    private IQuickSymbolProperties? _quickSymbolProperties { get; set; }
+    private ISymbol? _undoSymbol = null;
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+
+        SetQuickSymbolProperties();
+    }
+
+    private void SetQuickSymbolProperties() => Handle(() => 
+    {
+        _quickSymbolProperties = Symbol switch
+        {
+            IQuickSymolPropertyProvider provider => provider.GetQuickSymbolProperties(),
+            _ => null
+        };
+
+        if(SymbolDefaultGeometry == GeometryType.Unknown && Symbol is not null)
+        {
+            SymbolDefaultGeometry = Symbol.ToGeometryType();
+        }
+    });
+
+    private Task PropertyChanged(PropertyInfo propertyInfo)
+    {
+        return Task.CompletedTask;
+    }
+
+    private Task RefreshWithRandomSymbol() => HandleAsync(async () =>
+    {
+        var newSymbol = RendererFunctions.CreateStandardSymbol(
+            Symbol?.ToGeometryType() ?? SymbolDefaultGeometry, 
+            76, 3, 7);
+
+        if (newSymbol is not null)
+        {
+            _undoSymbol = Symbol?.Clone() as ISymbol;
+            Symbol = newSymbol;
+
+            SetQuickSymbolProperties();
+            await SymbolChanged.InvokeAsync(Symbol);
+        }
+    });
+
+    private Task UndoSymbol() => HandleAsync(async () =>
+    {
+        if(_undoSymbol is not null)
+        {
+            Symbol = _undoSymbol;
+            _undoSymbol = null;
+
+            SetQuickSymbolProperties();
+            await SymbolChanged.InvokeAsync(Symbol);
+        }
+    });
+
+    private Task DeleteSymbol() => HandleAsync(async () =>
+    {
+        _undoSymbol = Symbol?.Clone() as ISymbol;
+        Symbol = null;
+
+        SetQuickSymbolProperties();
+        await SymbolChanged.InvokeAsync(Symbol);
+    });
+
+    private Task OpenSymbolComposer() => HandleAsync(async () =>
+    {
+        if (Symbol is not null)
+        {
+            var newSymbol = await Symbol.Compose(AppScopeFactory);
+
+            if (newSymbol != Symbol)
+            {
+                _undoSymbol = Symbol?.Clone() as ISymbol;
+                Symbol = newSymbol;
+
+                SetQuickSymbolProperties();
+                await SymbolChanged.InvokeAsync(Symbol);
+            }
+        }
+    });
+}

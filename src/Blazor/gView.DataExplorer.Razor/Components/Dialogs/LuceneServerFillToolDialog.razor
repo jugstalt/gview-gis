@@ -1,0 +1,41 @@
+@inherits ModalDialogFormBase<LuceneServerFillToolModel>
+@inject IconService Icons
+
+<ModalDialogFormBase T="LuceneServerFillToolModel"
+                     OnDialogClose="base.OnDialogClose"
+                     Model="base.Model">
+    <DialogBody>
+        <GvCard Title="General">
+            <GvCardContent>
+                <SelectFileControl Filter="*.json" @bind-File="Model.JsonFile" Label="Import Config File (*.json)" />
+                <MudNumericField Label="PackageSize" 
+                                 Variant="Variant.Filled"
+                                 @bind-Value="Model.PackageSize" />
+            </GvCardContent>
+        </GvCard>
+
+        <GvCard Title="Optional: Basic Authentication">
+            <GvCardContent>
+                <MudTextField Label="Username" 
+                              @bind-Value="Model.BasicAuthenticationUser" />
+                <MudTextField Label="Password" InputType="InputType.Password"
+                              @bind-Value="Model.BasicAuthenticationUser" />
+            </GvCardContent>
+        </GvCard>
+
+        <GvCard Title="Optional: Proxy Settings">
+            <GvCardContent>
+                <MudTextField Label="Proxy Url"
+                              @bind-Value="Model.ProxyUrl" />
+                <MudTextField Label="Proxy Username"
+                              @bind-Value="Model.ProxyUsername" />
+                <MudTextField Label="Proxy Password" InputType="InputType.Password"
+                              @bind-Value="Model.ProxyPassword" />
+            </GvCardContent>
+        </GvCard>
+    </DialogBody>
+</ModalDialogFormBase>
+
+@code {
+
+}

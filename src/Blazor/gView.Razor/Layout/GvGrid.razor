@@ -1,0 +1,16 @@
+<CascadingValue Value="@ColumnCount">
+    
+    <MudGrid Spacing="@Spacing" Justify="Justify.FlexEnd">
+        @if (ChildContent != null)
+        {
+            @ChildContent
+        }
+    </MudGrid>
+
+</CascadingValue>
+
+@code{
+    [Parameter] public int ColumnCount { get; set; } = 1;
+    [Parameter] public int Spacing { get; set; } = 2;
+    [Parameter] public RenderFragment? ChildContent{ get; set; }
+}

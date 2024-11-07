@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\gView.Framework.Cartography.Rendering\gView.Framework.Cartography.Rendering.csproj" />
+    <ProjectReference Include="..\gView.Framework.Cartography\gView.Framework.Cartography.csproj" />
+    <ProjectReference Include="..\gView.Framework.Core\gView.Framework.Core.csproj" />
+    <ProjectReference Include="..\gView.Framework.Data\gView.Framework.Data.csproj" />
+    <ProjectReference Include="..\gView.Framework.Geometry\gView.Framework.Geometry.csproj" />
+    <ProjectReference Include="..\gView.Framework.Network\gView.Framework.Network.csproj" />
+    <ProjectReference Include="..\gView.Framework.Symbology\gView.Framework.Symbology.csproj" />
+    <ProjectReference Include="..\gView.Framework\gView.Framework.csproj" />
+    <ProjectReference Include="..\gView.Framework.Web\gView.Framework.Web.csproj" />
+    <ProjectReference Include="..\gView.Framework.AXL\gView.Framework.AXL.csproj" />
+    <ProjectReference Include="..\gView.Framework.XML\gView.Framework.XML.csproj" />
+    <ProjectReference Include="..\gView.Interoperability.Extensions\gView.Interoperability.Extensions.csproj" />
+  </ItemGroup>
+
+</Project>

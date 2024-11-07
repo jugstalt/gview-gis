@@ -1,0 +1,17 @@
+/*** QuickGrid ***/
+/* Sticky header while scrolling */
+::deep thead {
+    position: sticky;
+    top: 0;
+    color: var(--mud-palette-primary);
+    background-color: var(--mud-palette-surface);
+}
+
+::deep tr {
+    white-space: nowrap;
+}
+
+    /* Subtle stripe effect */
+    ::deep tr:nth-child(even) {
+        background: var(--mud-palette-primary-hover);
+    }

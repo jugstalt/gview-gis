@@ -1,0 +1,73 @@
+@inherits BaseHandler
+
+@inject IApplicationScopeFactory AppScopeFactory
+
+@if (_renderer is not null)
+{
+    <GvCard Title="Symbology">
+        <GvCardContent>
+            <QuickSymbolPropertiesControl Symbol="_renderer.Symbol"
+                                          SymbolChanged="OnSymbolChanged"/>
+        </GvCardContent>
+    </GvCard>
+
+    @if (_renderer.Symbol is ISymbolCollection)
+    {
+        <GvCard Title="Cartography">
+            <GvCardContent>
+            <MudSelect T="SimpleRenderer.CartographicMethod" 
+                       Label="Ordering"
+                       @bind-Value="_renderer.CartoMethod" >
+                @(GvUtilities.EnumToSelectItems<SimpleRenderer.CartographicMethod>())
+            </MudSelect>
+        </GvCardContent>
+    </GvCard>
+    }
+
+    <GvCard Title="Advanced">
+        <GvCardContent>
+            <MudPaper Elevation="24">
+                    <MudButtonGroup Color="Color.Primary" Variant="Variant.Filled">
+                    <MudButton OnClick="SetRotation"
+                               Disabled="@(!_layer.CanRotateSymbols())">
+                        Rotation
+                    </MudButton>
+            </MudButtonGroup>
+            </MudPaper>
+        </GvCardContent>
+    </GvCard>
+}
+
+@code {
+    [Parameter] public object? Instance { get; set; }
+
+    private IFeatureLayer? _layer;
+    private SimpleRenderer? _renderer;
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+
+        if (Instance is IFeatureLayer fLayer)
+        {
+            _layer = fLayer;
+            _renderer = fLayer.FeatureRenderer as SimpleRenderer;
+        }
+        else
+        {
+            _renderer = Instance as SimpleRenderer;
+        }
+    }
+
+    private void OnSymbolChanged(ISymbol symbol)
+    {
+        if(_renderer is not null)
+        {
+            _renderer.Symbol = symbol;
+        }
+    }
+
+    private Task SetRotation() => HandleAsync(() =>
+        _renderer?.SymbolRotation.EditProperties(AppScopeFactory, _layer?.FeatureClass)
+        ?? Task.CompletedTask);
+}

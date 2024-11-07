@@ -1,0 +1,535 @@
+@using gView.Carto.Razor.Components.Controls.Renderers.Models
+@using gView.Framework.Core.Data.Cursors
+@using gView.Framework.Data.Filters
+
+@inherits BaseHandler
+@implements IDisposable
+
+@inject IApplicationScopeFactory AppScopeFactory
+
+@if (_renderer is not null && _layer?.FeatureClass is not null)
+{
+    <KeySymbolListControl TKey="RangeClass"
+                          KeySymbols="@(CurrentKeySymbolsList() ?? [])"
+                          AllowReorder="false"
+                          OnKeySymbolsChanged="SymbolsListChanged"
+                          OnKeySymbolChanged="SymbolChanged">
+        <ListItemTools>
+            @if(_addQuantityItem is null && _wizardModel is null) 
+            {
+                <GvGrid ColumnCount="2">
+                    <GvGridItem>
+                        <MudSelect T="string" Label="Value Field"
+                                   Value="_renderer.ValueField"
+                                   ValueChanged="(val) => OnValueFieldChanged(val)">
+                            @GvUtilities.StringsToSelectItems(_layer.FeatureClass.Fields?
+                                        .ToEnumerable()
+                                        .Where(f => f.type switch
+                                         {
+                                             Framework.Core.Data.FieldType.ID => true,
+                                             Framework.Core.Data.FieldType.Float => true,
+                                             Framework.Core.Data.FieldType.Double => true,
+                                             Framework.Core.Data.FieldType.smallinteger => true,
+                                             Framework.Core.Data.FieldType.integer => true,
+                                             Framework.Core.Data.FieldType.biginteger => true,
+                                             _ => false
+                                         })
+                                         .Select(f => f.name) ?? [])
+                        </MudSelect>
+                    </GvGridItem>
+                    <GvGridItem>
+
+                    </GvGridItem>
+                </GvGrid>
+                <MudPaper Elevation="24">
+                    <MudButtonGroup Color="Color.Primary" Variant="Variant.Filled">
+                        <MudButton OnClick="OnSnowWizard">Wizard</MudButton>
+                        <MudButton OnClick="() => _addQuantityItem = new()">Add Value</MudButton>
+                        @* 
+                            <MudButton Color="Color.Primary"
+                            Variant="Variant.Filled"
+                            OnClick="OnAddAllOtherValuesItem">Add "All other"</MudButton>
+                            *@
+                               
+                    </MudButtonGroup>
+                    
+                    <MudButton Color="Color.Secondary"
+                                Variant="Variant.Filled"
+                                OnClick="OnRemoveAllItems">Remove all</MudButton>
+                </MudPaper>
+                <MudText Typo="Typo.h6">
+                    @($"{_dictKeySymbols.IfKeyExists(_renderer.ValueField, (l) => l.Count)} items")
+                </MudText>
+            }
+            else if (_addQuantityItem is not null)
+            {
+                <GvCard Title="Add Value Item">
+                    <GvCardContent>
+                        <GvGrid ColumnCount="2">
+                            <GvGridItem>
+                                <MudNumericField Label="Min Value"
+                                                 @bind-Value="_addQuantityItem.Min"></MudNumericField>
+                                <MudNumericField Label="Max Value"
+                                                 @bind-Value="_addQuantityItem.Max"></MudNumericField>
+                            </GvGridItem>
+                            <GvGridItem>
+                                <MudTextField Label="Label Text"
+                                              @bind-Value="_addQuantityItem.LabelText"></MudTextField>
+                            </GvGridItem>
+                        </GvGrid>
+                    </GvCardContent>
+                    <GvCardActions>
+                        <MudButton Variant="Variant.Filled"
+                                   OnClick="() => _addQuantityItem = null">Cancel</MudButton>
+                        <MudButton Variant="Variant.Filled"
+                                   Color="Color.Primary"
+                                   OnClick="OnAddValueItem">Add</MudButton>
+                    </GvCardActions>
+                </GvCard>
+            }
+            else if(_wizardModel is not null) 
+            {
+                <MudRadioGroup @bind-Value="_wizardModel.FixStepMethod">
+                <GvCard Title="Wizard">
+                    <GvCardContent>
+                        <GvGrid ColumnCount="2">
+                            <GvGridItem>
+                                <MudNumericField @bind-Value="_wizardModel.MinValue"
+                                                 Label="Minimum Value"></MudNumericField>
+                            </GvGridItem>
+                            <GvGridItem>
+                                <QuickSymbolPropertiesControl Symbol="_wizardModel.MinValueSymbol"
+                                                              ShowPropertyGrid="false"
+                                                              SymbolChanged="(sym) => _wizardModel.MinValueSymbol = sym" />
+                            </GvGridItem>
+
+                            <GvGridItem>
+                                <MudNumericField @bind-Value="_wizardModel.MaxValue"
+                                                 Label="Maximum Value"></MudNumericField>
+                            </GvGridItem>
+                            <GvGridItem>
+                                <QuickSymbolPropertiesControl Symbol="_wizardModel.MaxValueSymbol"
+                                                              ShowPropertyGrid="false"
+                                                              SymbolChanged="(sym) => _wizardModel.MaxValueSymbol = sym" />
+                            </GvGridItem>
+
+                            <GvGridItem>
+                                <MudRadio Value="StepMethod.FixWidth">
+                                    <MudNumericField @bind-Value="_wizardModel.FixStepWidth"
+                                                        Label="Use Fix Step Width" />
+                                </MudRadio>
+                            </GvGridItem>
+                            <GvGridItem>
+                                <MudRadio Value="StepMethod.FixCount">
+                                    <MudNumericField @bind-Value="_wizardModel.FixStepCount"
+                                                     Label="Use Fix Step Count" />
+                                </MudRadio>
+                            </GvGridItem>
+                        </GvGrid>
+                    </GvCardContent>
+                    <GvCardActions>
+                        <MudButton Variant="Variant.Filled"
+                                   OnClick="() => _wizardModel = null">Close</MudButton>
+                        <MudButton Variant="Variant.Filled"
+                                   Color="Color.Primary"
+                                   OnClick="OnCalcWizardItems">Calc Items</MudButton>
+                    </GvCardActions>
+                </GvCard>
+                </MudRadioGroup>
+            }
+        </ListItemTools>
+    </KeySymbolListControl>
+
+    <MudPaper Elevation="24">
+        <MudButtonGroup Color="Color.Primary" Variant="Variant.Filled">
+            <MudButton OnClick="SetRotation"
+                       Disabled="@(!_layer.CanRotateSymbols())">
+                Rotation
+            </MudButton>
+
+            @* <MudButton OnClick="SetCartographicsMethod"
+                       Variant="Variant.Filled"
+                       Color="Color.Primary">
+                Cartography
+            </MudButton> *@
+        </MudButtonGroup>
+    </MudPaper>
+}
+
+@code {
+    [Parameter] public object? Instance { get; set; }
+
+    private IFeatureLayer? _layer;
+    private QuantityRenderer? _renderer;
+
+    private Dictionary<string, List<KeySymbol<RangeClass>>> _dictKeySymbols = new();
+    private QuantityItemModel? _addQuantityItem = null;
+    private QuantityWizardModel? _wizardModel = null;
+
+    protected override Task OnParametersSetAsync() => HandleAsync(async () =>
+    {
+        await base.OnParametersSetAsync();
+
+        if (Instance is IFeatureLayer fLayer)
+        {
+            _layer = fLayer;
+            _renderer = fLayer.FeatureRenderer as QuantityRenderer;
+
+            if (_renderer is not null)
+            {
+                _renderer.GeometryType = _layer.LayerGeometryType;
+                if (String.IsNullOrEmpty(_renderer.ValueField))
+                {
+                    _renderer.ValueField = _layer.FeatureClass?.IDFieldName ?? "";
+                }
+            }
+        }
+        else
+        {
+            _renderer = Instance as QuantityRenderer;
+        }
+
+        if (_renderer is not null)
+        {
+            var keySymbols = CurrentKeySymbolsList();
+            keySymbols.Clear();
+
+            int index = 0;
+            foreach (var quantityClass in _renderer.QuantityClasses)
+            {
+                var symbol = quantityClass.Symbol?.Clone() as ISymbol;
+
+                if (symbol is not null)
+                {
+                    keySymbols.Add(new KeySymbol<RangeClass>(
+                        new RangeClass(quantityClass.Min, quantityClass.Max), symbol));
+                }
+                index++;
+            }
+        }
+    });
+
+    private void ApplyChanges()
+    {
+        if (_renderer is null)
+        {
+            return;
+        }
+
+        _renderer.QuantityClasses
+                 .ForEach(qClass => _renderer.RemoveClass(qClass));
+
+        var keySymbols = CurrentKeySymbolsList();
+        keySymbols.ForEach((keySymbol) 
+             => _renderer.AddClass(
+                     new QuantityRenderer.QuantityClass(
+                        keySymbol.Key.Min,
+                        keySymbol.Key.Max,
+                        keySymbol.Symbol.Clone() as ISymbol
+                     )
+                 )
+            );
+    }
+
+    private void SymbolsListChanged(List<KeySymbol<RangeClass>> keySymbols)
+    {
+        if (_renderer is null)
+        {
+            return;
+        }
+
+        _dictKeySymbols[_renderer.ValueField] = keySymbols;
+        ApplyChanges();
+    }
+
+    private void SymbolChanged(KeySymbol<RangeClass> keySymbol)
+    {
+        if (_renderer is null)
+        {
+            return;
+        }
+
+        ApplyChanges();
+    }
+
+    private void OnValueFieldChanged(string field)
+    {
+        if (_renderer is not null)
+        {
+            _renderer.ValueField = field;
+
+            CurrentKeySymbolsList();
+        }
+    }
+
+    #region Button Events
+
+    private Task OnSnowWizard() => HandleAsync(async () =>
+    {
+        if(_renderer is null || _layer is null)
+        {
+            return;
+        }
+
+        _wizardModel = await QuantityWizardModel.CreateAsync(_renderer, _layer);
+    });
+
+    private void OnRemoveAllItems() => Handle(() =>
+    {
+        if (_renderer is null)
+        {
+            return;
+        }
+
+        _dictKeySymbols.RemoveIfExists(_renderer.ValueField, (keySymbols) =>
+            keySymbols?.ForEach((keySymbol)
+                => keySymbol.Symbol?.Release())
+        );
+
+        CurrentKeySymbolsList();
+
+        ApplyChanges();
+    });
+
+    private void OnAddAllOtherValuesItem() => Handle(() =>
+    {
+        // if (_renderer is null)
+        // {
+        //     return;
+        // }
+
+        // var keySymbols = CurrentKeySymbolsList();
+
+        // keySymbols.Any(k => k.Key == ValueMapRenderer.AllOtherValuesKey)
+        //           .ThrowIfTrue(() => "All other values item is already added");
+
+        // var symbol = RendererFunctions.CreateStandardSymbol(_renderer.GeometryType)
+        //                           .AddLegendLabel(ValueMapRenderer.AllOtherValuesLabel);
+
+        // keySymbols.Add(new KeySymbol(ValueMapRenderer.AllOtherValuesKey, symbol));
+
+        // ApplyChanges();
+
+    });
+
+    private void OnAddValueItem() => Handle(() =>
+    {
+        if (_renderer is not null
+            && _layer is not null
+            && _addQuantityItem is not null)
+        {
+            var keySymbols = CurrentKeySymbolsList();
+
+            var rangeClass = new RangeClass(_addQuantityItem.Min, _addQuantityItem.Max);
+            if (rangeClass.Overlaps(keySymbols.Select(keySymbol => keySymbol.Key)))
+            {
+                throw new ArgumentException("Overlapping ranges are not allowed!");
+            }
+
+            var symbol = RendererFunctions
+                            .CreateStandardSymbol(_layer.LayerGeometryType)
+                            .ThrowIfNull(() => $"Can't create a symbol for {_layer.LayerGeometryType} geometry")
+                            .AddLegendLabel(_addQuantityItem.LabelText);
+
+            keySymbols.Add(new KeySymbol<RangeClass>(rangeClass, symbol));
+
+            ApplyChanges();
+        }
+        _addQuantityItem = null;
+    });
+
+    private Task OnWizardSmbolChanged(QuantityWizardSymbol sym) => HandleAsync(async () =>
+    {
+        if (_wizardModel is not null && _wizardModel[sym] is not null)
+        {
+            var newSymbol = await _wizardModel[sym]!.Compose(AppScopeFactory);
+
+            if (newSymbol != _wizardModel[sym])
+            {
+                _wizardModel[sym] = newSymbol;
+            }
+        }
+    });
+
+    private void OnCalcWizardItems() => Handle(() =>
+    {
+        if (_wizardModel is null || _renderer is null)
+        {
+            return;
+        }
+        if (Math.Abs(_wizardModel.MinValue - _wizardModel.MaxValue) < 1e-10)
+        {
+            return;
+        }
+
+        double stepWidth = _wizardModel.FixStepMethod switch
+        {
+            StepMethod.FixWidth => _wizardModel.FixStepWidth,
+            StepMethod.FixCount => (_wizardModel.MaxValue - _wizardModel.MinValue) / Math.Max(_wizardModel.FixStepCount, 1),
+            _ => 0D
+        };
+
+        if(stepWidth<=double.Epsilon)
+        {
+            return;
+        }
+
+        OnRemoveAllItems();
+        var keySymbols = CurrentKeySymbolsList();
+
+        double x;
+        RangeClass? rangeClass;
+        ISymbol? symbol;
+
+        for (x = _wizardModel.MinValue; x < _wizardModel.MaxValue - stepWidth; x += stepWidth)
+        {
+            symbol = AlternateSymbol(_wizardModel.MinValueSymbol!, _wizardModel.MaxValueSymbol!,
+                                    (float)((x - _wizardModel.MinValue) / (_wizardModel.MaxValue - _wizardModel.MinValue)));
+            if (symbol == null)
+            {
+                continue;
+            }
+
+            if (symbol is ILegendItem)
+            {
+                ((ILegendItem)symbol).LegendLabel = $"{x.ToString()} - {(x + stepWidth).ToString()}";
+            }
+
+            rangeClass = new RangeClass(x, x + stepWidth);
+            keySymbols.Add(new KeySymbol<RangeClass>(rangeClass, symbol));
+        }
+        
+        symbol = _wizardModel.MaxValueSymbol?.Clone() as ISymbol;
+        
+        if (symbol is not null)
+        {
+            if (symbol is ILegendItem)
+            {
+                ((ILegendItem)symbol).LegendLabel = $"{x.ToString()} - {(_wizardModel.MaxValue).ToString()}";
+            }
+            rangeClass = new RangeClass(x, _wizardModel.MaxValue);
+            keySymbols.Add(new KeySymbol<RangeClass>(rangeClass, symbol));
+        }
+
+        ApplyChanges();
+    });
+
+    private Task SetRotation() => HandleAsync(() =>
+        _renderer?.SymbolRotation.EditProperties(AppScopeFactory, _layer?.FeatureClass)
+        ?? Task.CompletedTask);
+
+    // private Task SetCartographicsMethod() => HandleAsync(async () =>
+    // {
+    //     if (_renderer is null)
+    //     {
+    //         return;
+    //     }
+
+    //     var model = await AppScope.ShowModalDialog
+    //         (typeof(LegendGroupCartographicMethodDialog),
+    //         "Cartographic Method",
+    //         new LegendGroupCartographicMethodModel()
+    //             {
+    //                 CartographicMethod = _renderer.CartoMethod
+    //             },
+    //         new ModalDialogOptions()
+    //             {
+    //                 Width = ModalDialogWidth.ExtraSmall
+    //             });
+
+    //     if (model is not null)
+    //     {
+    //         _renderer.CartoMethod = model.CartographicMethod;
+    //     }
+    // });
+
+    #endregion
+
+    #region Helper
+
+    private List<KeySymbol<RangeClass>> CurrentKeySymbolsList()
+    {
+        if (_renderer is not null)
+        {
+            if (!_dictKeySymbols.ContainsKey(_renderer.ValueField))
+            {
+                _dictKeySymbols[_renderer.ValueField] = [];
+            }
+
+            return _dictKeySymbols[_renderer.ValueField];
+        }
+
+        return [];
+    }
+
+    internal ISymbol? AlternateSymbol(ISymbol from, ISymbol to, float fac)
+    {
+        if (fac >= 1.0)
+        {
+            return to.Clone() as ISymbol;
+        }
+
+        var symbol = from.Clone() as ISymbol;
+        if (symbol == null)
+        {
+            return null;
+        }
+
+        if (fac == 0.0)
+        {
+            return symbol;
+        }
+
+        if (symbol is IPenColor &&
+            from is IPenColor && to is IPenColor)
+        {
+            ((IPenColor)symbol).PenColor = ((IPenColor)from).PenColor.AlterTo(
+                ((IPenColor)to).PenColor, fac);
+        }
+        if (symbol is IBrushColor &&
+            from is IBrushColor && to is IBrushColor)
+        {
+            ((IBrushColor)symbol).FillColor = ((IBrushColor)from).FillColor.AlterTo(
+                 ((IBrushColor)to).FillColor, fac);
+        }
+        if (symbol is IFontColor &&
+            from is IFontColor && to is IFontColor)
+        {
+            ((IFontColor)symbol).FontColor = ((IFontColor)from).FontColor.AlterTo(
+                 ((IFontColor)to).FontColor, fac);
+        }
+        if (symbol is IPenWidth &&
+            from is IPenWidth && to is IPenWidth)
+        {
+            ((IPenWidth)symbol).PenWidth =
+                (float)((double)((IPenWidth)from).PenWidth + (((IPenWidth)to).PenWidth - ((IPenWidth)from).PenWidth) * fac);
+        }
+        if (symbol is ISymbolSize &&
+            from is ISymbolSize && to is ISymbolSize)
+        {
+            ((ISymbolSize)symbol).SymbolSize =
+                (float)((double)((ISymbolSize)from).SymbolSize + (((ISymbolSize)to).SymbolSize - ((ISymbolSize)from).SymbolSize) * fac);
+        }
+        if (symbol is ISymbolWidth &&
+            from is ISymbolWidth && to is ISymbolWidth)
+        {
+            ((ISymbolWidth)symbol).SymbolWidth =
+                (float)((double)((ISymbolWidth)from).SymbolWidth + (((ISymbolWidth)to).SymbolWidth - ((ISymbolWidth)from).SymbolWidth) * fac);
+        }
+        return symbol;
+    }
+
+    #endregion
+
+    #region IDisposable
+
+    public void Dispose()
+    {
+        _dictKeySymbols.ForEach((key, keySymbols) =>
+            keySymbols.ForEach((keySymbol) => keySymbol.Symbol?.Release())
+        );
+        _dictKeySymbols.Clear();
+    }
+
+    #endregion
+}

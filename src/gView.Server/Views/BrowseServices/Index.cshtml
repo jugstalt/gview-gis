@@ -1,0 +1,165 @@
+﻿@model BrowseServicesIndexModel
+@{
+    ViewData["Title"] = "Browse";
+}
+
+<h1>Browse @(Model.Folder)/</h1>
+<div>
+    <ul class="browseservices">
+        @if (!String.IsNullOrWhiteSpace(Model.Folder))
+        {
+            <li class="back">
+                @Html.ActionLink("..", "Index", "BrowseServices", new { folder = "" })
+            </li>
+        }
+        @foreach (var folder in Model.Folders)
+        {
+            <li class="folder">
+                @Html.ActionLink(folder + "/", "Index", "BrowseServices", new { folder = folder })
+            </li>
+        }
+        @foreach (var mapService in Model.Services)
+        {
+            <li class="service">
+                @Html.ActionLink(mapService.Name, "ServiceCapabilities", "BrowseServices", new { id = (String.IsNullOrWhiteSpace(mapService.Folder) ? "" : mapService.Folder + "@") + mapService.Name })
+                @if(Model.IsPublisher)
+                {
+                    <div class="button-delete-service" data-folder="@(mapService.Folder)" data-service="@(mapService.Name)"></div>
+                }
+            </li>
+        }
+    </ul>
+
+    @if(Model.IsPublisher)
+    {
+        <div class="gview5-form-upload">
+            @if(!String.IsNullOrWhiteSpace(Model.Message)) {
+                <div class="gview5-@(Model.Message.ToLower().StartsWith("success:") ? "success" : (Model.Message.ToLower().StartsWith("warnings:") ? "warning": "error"))-message">
+                    @Html.Raw(Model.Message.Replace(Environment.NewLine, "<br/>"))
+                </div>
+                }
+                <form action="@Url.Action("AddService")" method="post" enctype="multipart/form-data">
+                    <div class="gview5-form-upload-header gview5-form-header">
+                        <h4>Publish Service</h4>
+                    </div>
+
+                    <div class="gview5-form-upload-body gview5-form-body @(Convert.ToBoolean(ViewData["open-publish"]) ? "" : "hidden")" >
+                        <div class="attribute">
+                            <div>
+                                <div class="label">Service Name</div>
+                                <input id="service-name-input" name="service" class="form-control" autofocus placeholder="Name..." value="@Model.ServiceName" />
+                            </div>
+                        </div>
+                        <div class="attribute">
+                            <div>
+                                <label for="mxl-file-upload" class="custom-file-upload">
+                                    <i class="fa fa-cloud-upload"></i> XML File Upload
+                                </label>
+                                <input id="mxl-file-upload" name="file" type="file" />
+                            </div>
+                        </div>
+
+                        <input type="hidden" name="folder" value="@Model.Folder" />
+                        <br/>
+                        <button type="submit" class="btn btn-primary">Publish Service</button>
+                    </div>
+                </form>
+            <br/>
+            @if (Model.IsManager && String.IsNullOrEmpty(Model.Folder))
+            {
+                <form action="@Url.Action("CreateFolder")" method="post" enctype="multipart/form-data">
+                    <div class="gview5-form-newfolder-header gview5-form-header">
+                        <h4>Create Folder</h4>
+                    </div>
+
+                    <div class="gview5-form-newfolder-body gview5-form-body @(Convert.ToBoolean(ViewData["open-create"]) ? "" : "hidden")">
+                        <div class="attribute">
+                            <div>
+                                <div class="label">Folder Name</div>
+                                <input id="folder-name-input" name="newFolder" class="form-control" autofocus placeholder="Name..." value="" />
+                            </div>
+
+                            <input type="hidden" name="folder" value="@Model.Folder" />
+                            <br />
+                            <button type="submit" class="btn btn-primary">Create New Folder</button>
+                        </div>
+                    </div>
+                </form>
+            }
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script type="text/javascript">
+        (function () {
+            $('ul.browseservices li')
+                .click(function (e) {
+                    e.stopPropagation();
+                    $(this).children('a').first()[0].click();
+                });
+
+            $('ul.browseservices li .button-delete-service')
+                .click(function (e) {
+                    e.stopPropagation();
+                    var folderName = $(this).attr('data-folder');
+                    var serviceName = $(this).attr('data-service');
+
+                    bootbox.confirm({
+                        title: "Delete service?",
+                        message: "Do you want to delete service "+folderName+"/"+serviceName+" now? This cannot be undone.",
+                        buttons: {
+                            cancel: {
+                                label: 'Better not'
+                            },
+                            confirm: {
+                                label: 'Yes, delete!',
+                                className: 'btn-danger'
+                            }
+                        },
+                        callback: function (result) {
+                            if (result === true) {
+                                var url = "/BrowseServices/DeleteService";
+                                gview.server.get({
+                                    url: url,
+                                    type: 'post',
+                                    data: { folder: folderName, service: serviceName },
+                                    success: function (result) {
+                                        window.location.href = '@(Url.Action("Index"))?folder=@(Model.Folder)';  // do not location.refresh() => triggers form again (Post)!!!
+                                    }
+                                });
+                            }
+                        }
+                    });
+                });
+
+            $('.gview5-form-header')
+                .click(function (e) {
+                    console.log('click');
+                    $(this).closest('form').find('.gview5-form-body').toggleClass('hidden');
+                });
+            
+            $('#mxl-file-upload')
+                .change(function () {
+                    var fileName = $(this).val();
+                    
+                    $(".gview5-form-upload label.custom-file-upload").html(fileName);
+
+                    if (!$('#service-name-input').val()) {
+                        var serviceName = fileName;
+                        var pos = Math.max(serviceName.lastIndexOf('/'), serviceName.lastIndexOf("\\"));
+                        if (pos > 0) {
+                            serviceName = serviceName.substr(pos + 1);
+                        }
+                        pos = serviceName.lastIndexOf('.');
+                        if (pos > 0) {
+                            serviceName = serviceName.substr(0, pos);
+                        }
+
+                        $('#service-name-input').val(serviceName);
+                    }
+                });
+        })();
+    </script>
+}
+

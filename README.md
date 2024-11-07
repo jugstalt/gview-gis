@@ -1,16 +1,21 @@
-# gview5
+# gview6
 
-The software consists of desktop applications for creating maps and the gView server for publishing the maps as map services (WMS, GeoServices REST, etc).
+The software consists of Blazor applications for creating maps and the gView server for publishing the maps as map services (WMS, GeoServices REST, etc).
 
-*gView Carto* and *gView DataExplorer* runs on windows and require die .NET Framework >=4.7.2 
-*gView Server* is fully .NET Core (AspNetCore 3.1.x). It can run on windows, linux, mac and as a docker container 
+The Blazor app _gView.Web_ can started locally or run the server. It provides the gView applications _gView.Carto_ and _gView.Explorer_.
 
-Download the leatest release as ZIP from [Releases](https://github.com/jugstalt/gview5/releases)
-Unzip and run...
+_gView.Web_ and _gView Server_ runs on Windows/Linux and require die Microsoft.AspNetCore.App 8.0
+_gView Server_ is fully .NET Core (AspNetCore 3.1.x). It can run on windows, linux, mac and as a docker container
+
+To Deploy the software on your machine use [gView.Deploy](https://github.com/jugstalt/gview-gis/releases).
+This will also download the latest releases for your operating system.
+
+You can manually download the latest Download the leatest [Releases](https://github.com/jugstalt/gview-gis/releases) here.
 
 Read the installation documentation::
-* [English](https://docs.webgiscloud.com/gview/en/index.html)
-* [German](https://docs.webgiscloud.com/gview/de/index.html)
+
+-   [English](https://docs.gviewonline.com/en/index.html)
+-   [German](https://docs.gviewonline.com/de/index.html)
 
 Some screenshots to demonstrate some of the features of gview GIS
 
@@ -18,28 +23,27 @@ Some screenshots to demonstrate some of the features of gview GIS
 
 Create maps in an userfriendly UI
 
-![alt text](https://raw.githubusercontent.com/jugstalt/gview5/master/content/img/gview5-carto1.png)
+![image](https://github.com/jugstalt/gview-gis/assets/26577522/4bbfbf7d-b1e2-4a58-8daf-dec202e34b3b)
 
 Set rendering for each layer
 
-![alt text](https://raw.githubusercontent.com/jugstalt/gview5/master/content/img/gview5-carto2.png)
+![image](https://github.com/jugstalt/gview-gis/assets/26577522/daeca7cb-d717-49d2-bf21-5ff6f93733b0)
 
 Set labelling for any vector layer
 
-![alt text](https://raw.githubusercontent.com/jugstalt/gview5/master/content/img/gview5-carto3.png)
+![image](https://github.com/jugstalt/gview-gis/assets/26577522/c4b9d272-fba0-4995-8f93-f4a5a4ac1fbf)
 
 ## Desktop: gView DataExplorer
 
-![alt text](https://raw.githubusercontent.com/jugstalt/gview5/master/content/img/gview5-explorer1.png)
+![image](https://github.com/jugstalt/gview-gis/assets/26577522/1e5665cc-c9f5-4b4d-9778-6e23ac67dbb7)
 
 Browse your spatial data or copy vector data to different data formats
 
-![alt text](https://raw.githubusercontent.com/jugstalt/gview5/master/content/img/gview5-explorer2.png)
-
+![image](https://github.com/jugstalt/gview-gis/assets/26577522/8b1e2480-02f4-4d4c-8318-994b167eab9f)
 
 ## gView Server
 
-A map server that exports gView Carto map as *GeoServices REST*, *ArcXML*, *WMS*, *WFS*, *WMTS* services
+A map server that exports gView Carto map as _GeoServices REST_, _ArcXML_, _WMS_, _WFS_, _WMTS_ services
 
 ![alt text](https://raw.githubusercontent.com/jugstalt/gview5/master/content/img/gview5-server1.png)
 
@@ -58,5 +62,3 @@ Publish services by uploading gView Carto map projects
 Browse the services via the GeoServices Rest API in YAML or JSON
 
 ![alt text](https://raw.githubusercontent.com/jugstalt/gview5/master/content/img/gview5-server5.png)
-
-

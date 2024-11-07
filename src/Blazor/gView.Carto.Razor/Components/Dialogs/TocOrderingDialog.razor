@@ -1,0 +1,14 @@
+@inherits ModalDialogFormBase<TocOrderingModel>
+
+<ModalDialogFormBase T="TocOrderingModel"
+                     OnDialogClose="base.OnDialogClose"
+                     Model="base.Model">
+    <DialogBody>
+        <TocOrderingControl Toc="Model.Toc" 
+                            MapName="@Model.MapName" 
+                            SelectedGroupElement="Model.SelectedGroupElement"/>
+    </DialogBody>
+    <DialogButtons>
+
+    </DialogButtons>
+</ModalDialogFormBase>

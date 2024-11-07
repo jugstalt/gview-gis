@@ -1,0 +1,31 @@
+@inherits BaseHandler
+
+@if(_selectionRenderer is not null)
+{
+    <QuickSymbolPropertiesControl Symbol="_selectionRenderer.Symbol"
+                                  SymbolChanged="(sym) => _selectionRenderer.Symbol = sym" />
+}
+
+@code{
+    [Parameter] public IFeatureLayer? Layer { get; set; }
+
+    private SimpleRenderer? _selectionRenderer;
+
+    protected override Task OnParametersSetAsync() => HandleAsync(async () =>
+    {
+        await base.OnParametersSetAsync();
+
+        if (Layer is not null)
+        {
+            _selectionRenderer = Layer.SelectionRenderer as SimpleRenderer;
+
+            if(_selectionRenderer is null)
+            {
+                Layer.SelectionRenderer = _selectionRenderer = new SimpleRenderer()
+                {
+                    Symbol = RendererFunctions.CreateStandardSelectionSymbol(Layer.LayerGeometryType)
+                };
+            }
+        }
+    });
+}

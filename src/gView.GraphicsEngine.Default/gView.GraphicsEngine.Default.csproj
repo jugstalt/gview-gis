@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\gView.GraphicsEngine.GdiPlus\gView.GraphicsEngine.GdiPlus.csproj" />
+    <ProjectReference Include="..\gView.GraphicsEngine.Skia\gView.GraphicsEngine.Skia.csproj" />
+    <ProjectReference Include="..\gView.GraphicsEngine\gView.GraphicsEngine.csproj" />
+  </ItemGroup>
+
+</Project>

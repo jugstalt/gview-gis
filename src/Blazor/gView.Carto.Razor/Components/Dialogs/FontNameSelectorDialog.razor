@@ -1,0 +1,103 @@
+@using gView.GraphicsEngine
+@inherits ModalDialogFormBase<FontNameSelectorModel>
+@inject ICartoDocumentService CartoDocument
+
+<ModalDialogFormBase T="FontNameSelectorModel"
+                     OnDialogClose="base.OnDialogClose"
+                     Model="base.Model">
+    <DialogBody>
+        @if(Model is not null)
+        {
+            <GvGrid ColumnCount="3">
+                <GvGridItem>
+                    <div class="mud-input">
+                        <input type="text" placeholder="Search..." @oninput="FilterList" class="mud-input-field" />
+                    </div>
+                    <div style="overflow-y:auto;max-height:700px">
+                        <MudList Clickable="true" SelectedValue="Model.FontName"
+                                 SelectedValueChanged="(val) => FontNameSelected(val?.ToString()!)">
+                            @foreach (var fontName in FilteredFontNames)
+                            {
+                                <MudListItem Value="fontName">@fontName</MudListItem>
+                            }
+                        </MudList>
+                    </div>
+                </GvGridItem>
+                <GvGridItem Span="2">
+                    @if (_chars is not null)
+                    {
+                        @foreach (byte key in _chars.Keys)
+                        {
+                            <div style="width:40px;height:80px;display:inline-block;margin:0px 2px 2px 0px">
+                                <img src="@_chars[key]" />
+                            </div>
+                        }
+                    }
+                </GvGridItem>
+            </GvGrid>
+        }
+    </DialogBody>
+</ModalDialogFormBase>
+
+@code {
+    private string? filterTerm;
+    private IEnumerable<string> installedFontNames = Current.Engine.GetInstalledFontNames();
+    private IEnumerable<string> FilteredFontNames { get; set; } = [];
+    private Dictionary<byte, string>? _chars = null;
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+
+        FilteredFontNames = installedFontNames;
+
+        FontNameSelected(Model.FontName);
+    }
+
+    private void FilterList(ChangeEventArgs e) => Handle(() =>
+    {
+        filterTerm = e?.Value?.ToString();
+
+        if(String.IsNullOrWhiteSpace(filterTerm))
+        {
+            FilteredFontNames = installedFontNames;
+        } 
+        else
+        {
+            FilteredFontNames = installedFontNames
+                                    .Where(f => f.Contains(filterTerm, StringComparison.OrdinalIgnoreCase))
+                                    .Order();
+        }
+
+        StateHasChanged();
+    });
+
+    private void FontNameSelected(string fontName)
+    {
+        Model.FontName = fontName;
+
+        _chars = new Dictionary<byte, string>();
+
+        if (!String.IsNullOrEmpty(Model.FontName))
+        {
+            var symbol = new TrueTypeMarkerSymbol();
+
+            using (var font = Current.Engine.CreateFont(Model.FontName, 20))
+            {
+                symbol.Font = font;
+                foreach(var c in "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890abcdefghijklmnopqrstuvwxyz")
+                {
+                    symbol.Charakter = new Framework.Symbology.Models.Charakter()
+                        {
+                            Value = (byte)c
+                        };
+
+                    _chars.Add((byte)c, symbol.ToBase64ImageSource(CartoDocument.CurrentMap, 40, 80));
+                }
+            }
+
+            symbol.Font = null!;
+            symbol.Release();
+        }
+    }
+}

@@ -1,0 +1,79 @@
+@using gView.Framework.Core.Data.Cursors
+@using gView.Framework.Data.Filters
+@using System.Text
+
+@inherits BaseHandler
+@implements IDisposable
+
+@inject IconService IconService
+@inject ICartoApplicationScopeService AppScope
+@inject GeoTransformerService GeoTransformer
+@inject CartoEventBusService EventBus
+@inject CartoInteropService CartoInterop
+
+@if(Layer is not null)
+{
+    <TableBaseControl Layer="Layer" ApplicationScope="AppScope"
+                      OnSelectionChanged="() => EventBus.FireRefreshMapAsync(DrawPhase.Selection)"
+                      OnZoomToClicked="(env) => EventBus.FireMapZoomToAsync(env)"
+                      OnOpenTable="() => CartoInterop.ShowDataFrame()"
+                      OnHighlightFeatures="(args) => EventBus.FireHightlightFeaturesAsync(args.Layer, args.Filter)"
+                      ProvideTableProperties="(layer) => AppScope.DataTableService.GetProperties(layer)">
+        <CustomToolBarContent>
+            <MudSelect T="ILayer"
+                       Value="Layer"
+                       Label="Layer"
+                       ValueChanged="(layer) => HandleRefreshDataTable(layer, null)">
+                @foreach (var dataTableLayer in AppScope.DataTableService.Layers)
+                {
+                    <MudSelectItem Value="dataTableLayer">
+                        <MudIcon Icon="@IconService.FromString(AppScope.DataTableService.GetProperties(dataTableLayer).DataMode.IconString())" />
+                        <div style="display:inline-block;height:20px;vertical-align:top;padding:2px 4px;">
+                            @AppScope.Document.LayerTocName(dataTableLayer)
+                        </div>
+                    </MudSelectItem>
+                }
+            </MudSelect>
+        </CustomToolBarContent>
+    </TableBaseControl>
+}
+
+@code  {
+    [Parameter] public ILayer? Layer { get; set; }
+
+    protected override Task OnInitializedAsync() => HandleAsync(async () =>
+    {
+        await base.OnInitializedAsync();
+
+        EventBus.OnRefreshDataTableAsync += HandleRefreshDataTable;
+    });
+
+    protected override Task OnParametersSetAsync() => HandleAsync(async () =>
+    {
+        await base.OnParametersSetAsync();
+
+        if (Layer is not null) 
+        {
+            await HandleRefreshDataTable(Layer, null);
+        }
+    });
+
+    private Task HandleRefreshDataTable(ILayer layer, ILayer? oldLayer) => HandleAsync(async () =>
+    {
+        if(Layer == layer 
+           || Layer == oldLayer
+           || oldLayer == null)
+        {
+            Layer = null;
+            await base.InvokeForceRenderComponent();
+            Layer = layer;
+        }
+
+        await this.InvokeAsync(() => StateHasChanged());
+    });
+
+    public void Dispose()
+    {
+        EventBus.OnRefreshDataTableAsync -= HandleRefreshDataTable;
+    }
+}   

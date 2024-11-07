@@ -1,0 +1,59 @@
+@if (Model != null)
+{
+    <GvCard Title="Scales">
+        <GvCardContent>
+            <GvGrid ColumnCount="6">
+                <GvGridItem Span="5">
+                    <MudTextField Label="New Scale" 
+                                  @bind-Value="_newScale"
+                                  Format="N6" T="double" 
+                                  Immediate="true"
+                                  InputType="InputType.Number" Step="0.1"
+                                  Variant="Variant.Text"></MudTextField>
+                </GvGridItem>
+                <GvGridItem Span="1">
+                    <MudButton OnClick="AddScale" 
+                               Variant="Variant.Filled" 
+                               Color="Color.Primary" 
+                               Size="MudBlazor.Size.Small">Add</MudButton>
+                </GvGridItem>
+
+                @foreach (var scale in Model.Scales.OrderDescending())
+                {
+                    <GvGridItem Span="5">
+                        <MudText Typo="Typo.body2">@scale.ToString()</MudText>
+                    </GvGridItem>
+                    <GvGridItem Span="1">
+                        <MudButton OnClick="() => RemoveScale(scale)"
+                                   Variant="Variant.Filled" 
+                                   Color="Color.Secondary" 
+                                   Size="MudBlazor.Size.Small">Remove</MudButton>
+                    </GvGridItem>
+                }
+            </GvGrid>
+        </GvCardContent>
+    </GvCard>
+}
+
+@code{
+    [Parameter] public TileScalesModel? Model { get; set; }
+
+    private double _newScale;
+
+    private void AddScale()
+    {
+        if (_newScale > 0 && Model != null && !Model.Scales.Contains(_newScale))
+        {
+            Model.Scales.Add(_newScale);
+            _newScale = 0D;
+        }
+    }
+
+    private void RemoveScale(double scale)
+    {
+        if (Model != null && Model.Scales.Contains(scale))
+        {
+            Model.Scales.Remove(scale);
+        }
+    }
+}

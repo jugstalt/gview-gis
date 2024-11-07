@@ -1,0 +1,11 @@
+@inherits ModalDialogFormBase<MapScaleModel>
+
+<ModalDialogFormBase T="MapScaleModel"
+                     OnDialogClose="base.OnDialogClose"
+                     Model="base.Model">
+    <DialogBody>
+        <MudNumericField @bind-Value="Model.MapScaleDominator"
+                         Label="Map Scale 1:"
+                         HelperText="Please enter a scale dominator" />
+    </DialogBody>
+</ModalDialogFormBase>

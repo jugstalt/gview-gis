@@ -1,0 +1,30 @@
+@inherits ModalDialogFormBase<ListSelectorModel<TItem>>
+@typeparam TItem
+
+<ModalDialogFormBase T="ListSelectorModel<TItem>"
+                     OnDialogClose="base.OnDialogClose"
+                     Model="base.Model">
+    <FormContent>
+        <GvScrollable>
+            @if(Model.Items is not null)
+            {
+                <MudList Clickable="true" 
+                         SelectedItemChanged="OnItemSelected">
+                @foreach(var item in Model.Items)
+                {
+                    <MudListItem Value="item">
+                        @item?.ToString()
+                    </MudListItem>
+                }
+                </MudList>
+            }
+        </GvScrollable>
+    </FormContent>
+</ModalDialogFormBase>
+
+@code {
+    private void OnItemSelected(MudListItem mudListItem)
+    {
+        Model.Result.SelectedItem = (TItem)mudListItem.Value;
+    }
+}

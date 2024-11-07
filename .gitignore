@@ -261,3 +261,8 @@ __pycache__/
 *.pyc
 
 /Blazor/gView.Razor.Leaflet/wwwroot/lib/
+/src/Blazor/gView.Web/gview-web-settings.db
+
+
+_config/gview-web.config
+/src/Blazor/gView.Web/_config/gview-web.config

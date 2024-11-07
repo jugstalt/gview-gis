@@ -1,0 +1,121 @@
+@using gView.Framework.Core.UI
+
+@inject CartoEventBusService EventBus
+@inject ICartoDocumentService CartoDocument
+
+@implements IDisposable
+@inherits BaseHandler
+
+@if (_legendItems is not null)
+{
+    <table style="margin-left: @(_inlineEditorSymbol == null ? "34px" : "0px");width:100%">
+        @if(_legendItems.Count() > ShowMaxItems)
+        {
+            <tr>
+                <td colspan="2">
+                    <MudText Typo="Typo.body2">@($"{ShowMaxItems}/{_legendItems.Count()} items...")</MudText>
+                </td>
+            </tr>
+        }
+        @foreach(var item in _legendItems.Take(ShowMaxItems))
+        {
+            <tr> 
+                @if (_inlineEditorSymbol is not null && _inlineEditorSymbol == item)
+                {
+                    <td colspan="2">
+                        <MudPaper Elevation="5" style="padding:5px">
+                            <MudTextField T="string"
+                                          @bind-Value="item.LegendLabel"
+                                          Label="Label" />
+
+                            <QuickSymbolPropertiesControl Symbol="item" 
+                                                          Dense="true"
+                                                          SymbolChanged="(newSymbol) => OnSymbolChanged(item, newSymbol)"/>
+
+                            <MudButton Variant="Variant.Filled"
+                                       Color="Color.Primary"
+                                       OnClick="SymbolEditDone">Done</MudButton>
+                            </MudPaper>
+                    </td>
+                } 
+                else 
+                {
+                    <td>
+                        <img src="@item.ToBase64ImageSource(CartoDocument.CurrentMap)"
+                             @ondblclick="() => ShowInlineSymbolEditor(item)" />
+                    </td>
+                    <td style="width:100%" @ondblclick="() => ShowInlineLabelEditor(item)">
+                        @if(_inlineEditorLegendLabel is not null && _inlineEditorLegendLabel == item)
+                        {
+                            <InlineInput @bind-Value="_inlineEditorLegendLabel.LegendLabel"
+                                         OnCommit="() => _inlineEditorLegendLabel = null"/>
+                        }
+                        <span >
+                            @item.LegendLabel
+                        </span>
+                    </td>
+                }
+            </tr>
+        }
+    </table>
+}
+
+@code {
+    [Parameter] public ITocElement? ParentElement { get; set; }
+
+    private const int ShowMaxItems = 1000;
+
+    private IEnumerable<ISymbol>? _legendItems;
+    private ISymbol? _inlineEditorSymbol = null;
+    private ILegendItem? _inlineEditorLegendLabel = null;
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+
+        _legendItems = ParentElement?.GetLegendItems();
+
+        EventBus.OnCloseTocInlineEditorsAsync += OnCloseTocInlineEditors;
+    }
+
+    private Task OnCloseTocInlineEditors() => HandleAsync(() =>
+    {
+        _inlineEditorSymbol = null;
+        _inlineEditorLegendLabel = null;
+
+        return InvokeAsync(() => StateHasChanged());
+    });
+
+    private Task ShowInlineSymbolEditor(ISymbol item) => HandleAsync(async () =>
+    {
+        await EventBus.FireCloseTocInlineEditorsAsync();
+
+        _inlineEditorLegendLabel = null;
+        _inlineEditorSymbol = item;
+    });
+
+    private void ShowInlineLabelEditor(ISymbol symbol) => Handle(() =>
+    {
+        _inlineEditorLegendLabel = symbol as ILegendItem;
+    });
+
+    private void OnSymbolChanged(ISymbol symbol, ISymbol newSymbol) => Handle(() =>
+    {
+        if (ParentElement?.SetLegendItemSymbol(symbol, newSymbol) == true)
+        {
+            _legendItems = ParentElement?.GetLegendItems();  // recollect items
+            _inlineEditorSymbol = newSymbol;
+        }
+    });
+
+    private Task SymbolEditDone() => HandleAsync(() =>
+    {
+        _inlineEditorSymbol = null;
+        return EventBus.FireRefreshMapAsync();
+    });
+
+    public void Dispose()
+    {
+        EventBus.OnCloseTocInlineEditorsAsync -= OnCloseTocInlineEditors;
+    }
+}

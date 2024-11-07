@@ -1,0 +1,213 @@
+@using System.Collections.Concurrent;
+
+@inject CartoEventBusService EventBus
+@inject ICartoApplicationScopeService Scope
+@inject ICartoDocumentService CartoDocument
+@inject GeoTransformerService GeoTransformation
+
+@implements IDisposable
+@inherits BaseHandler
+
+<GvGrid ColumnCount="12" Spacing="0">
+    <GvGridItem Span="2"> 
+        @* Current Tool *@
+        <MudPaper Elevation="12" Style="@PaperStyle">
+            <MudText Typo="Typo.body2">
+                @(string.Empty)
+            </MudText>
+        </MudPaper>
+    </GvGridItem>
+    <GvGridItem Span="3">
+        @* Busy *@
+        <MudPaper Elevation="12" Style="@PaperStyle">
+            @if (_currentDrawPhases.Count > 0)
+            {
+                <MudProgressCircular Indeterminate="true" Size="MudBlazor.Size.Small" />
+                <div style="display:inline-block;vertical-align:top">
+                    @(string.Join(", ", _currentDrawPhases.Keys))
+                </div>  
+            }
+            
+        </MudPaper>
+    </GvGridItem>
+    <GvGridItem Span="4">
+        @* Current Layer *@
+        <MudPaper Elevation="12" Style="@PaperStyle">
+            <MudText Typo="Typo.body2">
+                @(string.IsNullOrEmpty(_currentRenderLayer) ? string.Empty : $"Rendering: {_currentRenderLayer}...")
+            </MudText>
+        </MudPaper>
+    </GvGridItem>
+    <GvGridItem Span="1">
+        @* X *@
+        <MudPaper Elevation="12" Style="@PaperClickableStyle" @onclick="OnCoordinateClick">
+            <MudText Typo="Typo.body2">
+                @(_cursorPoint is not null ? $"X: {_cursorPoint.X.ToString("0.00")}" : string.Empty)
+            </MudText>
+        </MudPaper>
+    </GvGridItem>
+    <GvGridItem Span="1">
+        @* Y *@
+        <MudPaper Elevation="12" Style="@PaperClickableStyle" @onclick="OnCoordinateClick">
+            <MudText Typo="Typo.body2">
+                @(_cursorPoint is not null ? $"Y: {_cursorPoint.Y.ToString("0.00")}" : string.Empty)
+            </MudText>
+        </MudPaper>
+    </GvGridItem>
+    <GvGridItem Span="1">
+        @* Scale *@
+        <MudPaper Elevation="12" Style="@PaperClickableStyle" @onclick="OnScaleClick">
+            <MudText Typo="Typo.body2">
+                @(_scaleDominator > 0 ? $"1:{_scaleDominator.ToString("n0")} ({_level})" : string.Empty)
+            </MudText>
+        </MudPaper>
+    </GvGridItem>
+</GvGrid>
+
+@code {
+    private const string PaperStyle = "padding:4px;min-height:24px;white-space:nowrap;overflow:hidden;";
+    private const string PaperClickableStyle = $"{PaperStyle};cursor:pointer";
+    private const string NumberFormatProjected = "0.00";
+    private const string NumberFormatGeographic = "0.000000";
+
+    private string _currentRenderLayer = "";
+    private int _scaleDominator;
+    private float _level;
+    private ConcurrentDictionary<DrawPhase, bool> _currentDrawPhases = new();
+
+    private IPoint? _cursorPoint;
+    //private string _cursorNumberFormat = NumberFormatProjected;
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+
+        EventBus.OnStartRenderMapAsync += HandleStartRenderMap;
+        EventBus.OnFinishedRenderMapAsync += HandleFinishedRenderMap;
+
+        EventBus.OnStartRendererLayerAsync += HandleStartRenderLayer;
+        EventBus.OnFinishedRendererLayerAsync += HandleFinishedRendererLayer;
+
+        EventBus.OnMapMouseMoveAsync += HandleMapMouseMove;
+    }
+
+    private Task OnScaleClick() => HandleAsync(async () =>
+    {
+        var model = await Scope.ShowModalDialog(
+                typeof(MapScaleDialog),
+                "Set Map Scale",
+                new MapScaleModel() { MapScaleDominator = _scaleDominator }
+            );
+
+        if (model != null && model.MapScaleDominator >= 1)
+        {
+            CartoDocument.CurrentMap.Display.MapScale = model.MapScaleDominator;
+
+            await EventBus.FireMapZoomToAsync(CartoDocument.CurrentMap.Display.Envelope);
+        }
+    });
+
+    private Task OnCoordinateClick() => HandleAsync(async () =>
+    {
+        var model = await Scope.ShowModalDialog(
+                typeof(CoordiantesDialog),
+                "Coordiantes",
+                new CoordiantesModel()
+                {
+                    SpatialReference = CartoDocument.CurrentMap.Display.SpatialReference,
+                    MapScaleDominator = _scaleDominator,
+                    Coordinate = new Point(CartoDocument.CurrentMap.Display.Envelope.Center)
+                }
+            );
+
+        if (model != null && model.MapScaleDominator >= 1)
+        {
+            var coordinate = model.Coordinate;
+
+            if (model.SpatialReference is not null
+                && CartoDocument.CurrentMap.Display.SpatialReference is not null) { 
+                coordinate = GeoTransformation.Transform(
+                        coordinate,
+                        model.SpatialReference,
+                        CartoDocument.CurrentMap.Display.SpatialReference
+                    ) as IPoint ?? new Point();
+            }
+
+            var envelpe = CartoDocument.CurrentMap.Display.Envelope;
+            envelpe.Center = coordinate;
+
+            CartoDocument.CurrentMap.Display.ZoomTo(envelpe);
+            CartoDocument.CurrentMap.Display.MapScale = model.MapScaleDominator;
+
+            await EventBus.FireMapZoomToAsync(CartoDocument.CurrentMap.Display.Envelope);
+        }
+    });
+
+    #region EventHandlers
+
+    private Task HandleStartRenderMap(IMapRenderer mapRenderer)
+    {
+        if(mapRenderer.DrawPhase == DrawPhase.Geography &&
+           mapRenderer is IDisplay display) {
+            _scaleDominator = (int)display.MapScale;
+            _level = (float)Math.Round(display.WebMercatorScaleLevel, 1);
+        }
+
+        _currentDrawPhases.Clear();
+
+        return this.InvokeAsync(() => StateHasChanged());
+    }
+
+    private Task HandleFinishedRenderMap(IMapRenderer mapRenderer)
+    {
+        _currentDrawPhases.TryRemove(mapRenderer.DrawPhase, out _);
+
+        return this.InvokeAsync(() => StateHasChanged());
+    }
+
+    private Task HandleStartRenderLayer(IMapRenderer mapRenderer, string layerName)
+    {
+        if (mapRenderer.DrawPhase == DrawPhase.Geography)
+        {
+            _currentRenderLayer = layerName;
+        }
+
+        _currentDrawPhases.TryAdd(mapRenderer.DrawPhase, true);
+
+        return this.InvokeAsync(() => StateHasChanged());
+    }
+
+    private Task HandleFinishedRendererLayer(IMapRenderer mapRenderer, string layerName, ITimeEvent? timeEvent)
+    {
+        if (mapRenderer.DrawPhase == DrawPhase.Geography)
+        {
+            _currentRenderLayer = "";
+        }
+
+        return this.InvokeAsync(() => StateHasChanged());
+    }
+
+    private Task HandleMapMouseMove(IPoint latLng, IPoint layerPoint)
+    {
+        var spatialReferernce = CartoDocument.CurrentMap?.Display?.SpatialReference;
+
+        if (spatialReferernce is not null)
+        {
+            _cursorPoint = GeoTransformation.FromWGS84(new PointStruct(latLng), spatialReferernce) as IPoint;
+        }
+        return this.InvokeAsync(() => StateHasChanged());
+    }
+
+    #endregion
+
+    public void Dispose()
+    {
+        EventBus.OnStartRenderMapAsync -= HandleStartRenderMap;
+        EventBus.OnFinishedRenderMapAsync -= HandleFinishedRenderMap;
+
+        EventBus.OnStartRendererLayerAsync -= HandleStartRenderLayer;
+        EventBus.OnFinishedRendererLayerAsync -= HandleFinishedRendererLayer;
+
+        EventBus.OnMapMouseMoveAsync -= HandleMapMouseMove;
+    }
+}
