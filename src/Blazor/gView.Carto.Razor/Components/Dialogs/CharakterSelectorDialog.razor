@@ -10,11 +10,11 @@
 
         @if (Model?.Charakter != null)
         {
-            <MudTextField T="byte" Variant="Variant.Text"
-                          Label="Char"
-                          @bind-Value="Model.Charakter.Value"
-                          InputType="InputType.Number" Step="1">
-            </MudTextField>
+            <MudNumericField T="byte" Variant="Variant.Text"
+                             Label="Char"
+                             @bind-Value="Model.Charakter.Value"
+                             Step="1">
+            </MudNumericField>
 
             @if (_chars is not null)
             {

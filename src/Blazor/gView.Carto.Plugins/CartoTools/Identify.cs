@@ -32,7 +32,8 @@ internal class Identify : ICartoTool
 
     }
 
-    public bool IsEnabled(ICartoApplicationScopeService scope) => true;
+    public bool IsVisible(ICartoApplicationScopeService scope) => true;
+    public bool IsDisabled(ICartoApplicationScopeService scope) => false;
 
     public Task<bool> OnClick(ICartoApplicationScopeService scope)
         => Task.FromResult(true);
@@ -51,7 +52,7 @@ internal class Identify : ICartoTool
 
     async public Task<bool> OnEvent(ICartoApplicationScopeService scope, ToolEventArgs mapEvent)
     {
-        var queryLayer = scope.SelectedTocTreeNode?.TocElement.CollectQueryableLayers() ?? [];
+        var queryLayer = scope.SelectedTocTreeNode?.Value?.CollectQueryableLayers() ?? [];
         if (!queryLayer.Any())
         {
             return false;

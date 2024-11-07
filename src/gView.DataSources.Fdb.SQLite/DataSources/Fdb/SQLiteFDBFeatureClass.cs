@@ -17,9 +17,9 @@ namespace gView.DataSources.Fdb.SQLite
         private SQLiteFDB _fdb;
         private IDataset _dataset;
         private string _name = String.Empty, _aliasname = String.Empty;
-        private string m_idfield = String.Empty, m_shapeField = String.Empty;
-        private FieldCollection m_fields;
-        private IEnvelope m_envelope = null;
+        private string _idField = String.Empty, _shapeField = String.Empty;
+        private FieldCollection _fields;
+        private IEnvelope _envelope = null;
 
         private BinarySearchTree _searchTree = null;
         private GeometryDef _geomDef;
@@ -44,7 +44,7 @@ namespace gView.DataSources.Fdb.SQLite
                 fc._geomDef.SpatialReference = await ((IFeatureDataset)dataset).GetSpatialReference();
             }
 
-            fc.m_fields = new FieldCollection();
+            fc._fields = new FieldCollection();
 
             return fc;
         }
@@ -144,18 +144,18 @@ namespace gView.DataSources.Fdb.SQLite
         {
             get
             {
-                return m_fields;
+                return _fields;
             }
         }
 
         public IField FindField(string name)
         {
-            if (m_fields == null)
+            if (_fields == null)
             {
                 return null;
             }
 
-            foreach (IField field in m_fields.ToEnumerable())
+            foreach (IField field in _fields.ToEnumerable())
             {
                 if (field.name == name)
                 {
@@ -169,19 +169,19 @@ namespace gView.DataSources.Fdb.SQLite
         {
             get
             {
-                return m_idfield;
+                return _idField;
             }
-            set { m_idfield = value; }
+            set { _idField = value; }
         }
         public string ShapeFieldName
         {
-            get { return m_shapeField; }
-            set { m_shapeField = value; }
+            get { return _shapeField; }
+            set { _shapeField = value; }
         }
         public IEnvelope Envelope
         {
-            get { return m_envelope; }
-            set { m_envelope = value; }
+            get { return _envelope; }
+            set { _envelope = value; }
         }
 
         public IDataset Dataset
@@ -247,10 +247,10 @@ namespace gView.DataSources.Fdb.SQLite
             FieldCollection fields = new FieldCollection(fc.Fields);
             if (fields != null)
             {
-                fields.PrimaryDisplayField = m_fields.PrimaryDisplayField;
+                fields.PrimaryDisplayField = _fields.PrimaryDisplayField;
             }
 
-            m_fields = fields;
+            _fields = fields;
         }
 
         #endregion

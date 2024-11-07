@@ -17,19 +17,19 @@
 
             <GvGridItem Span="1"/>
             <GvGridItem Span="4">
-                <MudTextField Label="Origin X"
+                <MudNumericField Label="Origin X"
                                @bind-Value="Model.Origin.X"
-                               Format="#.00000" Culture="@_en" T="double" T="double" Immediate="true"
-                               InputType="InputType.Number" Step="0.1"
-                               Variant="Variant.Text"></MudTextField>
+                               Format="#.00000" Culture="@_en" T="double" Immediate="true"
+                               Step="0.1"
+                               Variant="Variant.Text"></MudNumericField>
             </GvGridItem>
             <GvGridItem Span="2"></GvGridItem>
             <GvGridItem Span="4">
-                <MudTextField Label="Origin Y"
+                <MudNumericField Label="Origin Y"
                                @bind-Value="Model.Origin.Y"
-                               Format="#.00000" Culture="@_en" T="double" T="double" Immediate="true"
-                               InputType="InputType.Number" Step="0.1"
-                               Variant="Variant.Text"></MudTextField>
+                               Format="#.00000" Culture="@_en" T="double" Immediate="true"
+                               Step="0.1"
+                               Variant="Variant.Text"></MudNumericField>
             </GvGridItem>
             <GvGridItem Span="1"></GvGridItem>
         </GvGrid>

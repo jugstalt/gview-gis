@@ -1,8 +1,8 @@
 echo off
 
-echo ==================
-echo Publish gView.Web
-echo ==================
+echo ====================
+echo Publish gView.Server
+echo ====================
 
 cd .\..\src\gView.Server
 

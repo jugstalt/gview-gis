@@ -222,6 +222,9 @@ namespace gView.GraphicsEngine
             throw new FormatException("Unknown color name");
         }
 
+        static public ArgbColor FromColor(ArgbColor color)
+            => FromArgb(color.ToArgb());
+
         public static bool TryFromString(string colorString, out ArgbColor color)
         {
             try
@@ -294,5 +297,224 @@ namespace gView.GraphicsEngine
         {
             return String.Join("; ", A < 255 ? new int[] { A, R, G, B } : new int[] { R, G, B });
         }
+
+        #region Transformations
+
+        // Average method
+        public ArgbColor ToGrayAverage()
+        {
+            byte gray = (byte)((R + G + B) / 3);
+            return ArgbColor.FromArgb(A, gray, gray, gray);
+        }
+
+        // Luminance method
+        public ArgbColor ToGrayLuminance()
+        {
+            byte gray = (byte)(0.299 * R + 0.587 * G + 0.114 * B);
+            return ArgbColor.FromArgb(A, gray, gray, gray);
+        }
+
+        // Max value method
+        public ArgbColor ToGrayMax()
+        {
+            byte gray = Math.Max(R, Math.Max(G, B));
+            return ArgbColor.FromArgb(A, gray, gray, gray);
+        }
+
+        // Min value method
+        public ArgbColor ToGrayMin()
+        {
+            byte gray = Math.Min(R, Math.Min(G, B));
+            return ArgbColor.FromArgb(A, gray, gray, gray);
+        }
+
+        // Desaturation method
+        public ArgbColor ToGrayDesaturation()
+        {
+            byte max = Math.Max(R, Math.Max(G, B));
+            byte min = Math.Min(R, Math.Min(G, B));
+            byte gray = (byte)((max + min) / 2);
+            return ArgbColor.FromArgb(A, gray, gray, gray);
+        }
+
+        // Decompose method
+        public ArgbColor ToGrayDecompose()
+        {
+            byte gray = (byte)(0.21 * R + 0.72 * G + 0.07 * B);
+            return ArgbColor.FromArgb(A, gray, gray, gray);
+        }
+
+        // Extracts the Red channel as a grayscale color
+        public ArgbColor GetRedChannel()
+        {
+            // Sets R, G, and B to the value of R
+            return ArgbColor.FromArgb(A, R, R, R);
+        }
+
+        // Extracts the Green channel as a grayscale color
+        public ArgbColor GetGreenChannel()
+        {
+            // Sets R, G, and B to the value of G
+            return ArgbColor.FromArgb(A, G, G, G);
+        }
+
+        // Extracts the Blue channel as a grayscale color
+        public ArgbColor GetBlueChannel()
+        {
+            // Sets R, G, and B to the value of B
+            return ArgbColor.FromArgb(A, B, B, B);
+        }
+
+        // Alternative method to extract channels in color
+        public ArgbColor GetRedChannelColor()
+        {
+            // Keeps the Red channel, sets Green and Blue to zero
+            return ArgbColor.FromArgb(A, R, 0, 0);
+        }
+
+        public ArgbColor GetGreenChannelColor()
+        {
+            // Keeps the Green channel, sets Red and Blue to zero
+            return ArgbColor.FromArgb(A, 0, G, 0);
+        }
+
+        public ArgbColor GetBlueChannelColor()
+        {
+            // Keeps the Blue channel, sets Red and Green to zero
+            return ArgbColor.FromArgb(A, 0, 0, B);
+        }
+
+        // Maps the color to a reference color based on its grayscale value
+        public ArgbColor MapToReferenceColor(ArgbColor referenceColor)
+        {
+            // Compute the grayscale value of the original color
+            double gray = 0.299 * R + 0.587 * G + 0.114 * B;
+
+            // Compute the scaling factor (ratio between 0 and 1)
+            double ratio = gray / 255.0;
+
+            // Scale the reference color's RGB components
+            byte r = (byte)(referenceColor.R * ratio);
+            byte g = (byte)(referenceColor.G * ratio);
+            byte b = (byte)(referenceColor.B * ratio);
+
+            return ArgbColor.FromArgb(A, r, g, b);
+        }
+
+        // Adjusts the hue to match the hue of a reference color
+        public ArgbColor AdjustHueToReference(ArgbColor referenceColor)
+        {
+            // Convert both colors to HSL
+            double h1, s1, l1;
+            RgbToHsl(R, G, B, out h1, out s1, out l1);
+
+            double hRef, sRef, lRef;
+            RgbToHsl(referenceColor.R, referenceColor.G, referenceColor.B, out hRef, out sRef, out lRef);
+
+            // Set the hue to the reference hue
+            double newH = hRef;
+
+            // Keep original saturation and lightness
+            double newS = s1;
+            double newL = l1;
+
+            // Convert back to RGB
+            byte r, g, b;
+            HslToRgb(newH, newS, newL, out r, out g, out b);
+
+            return ArgbColor.FromArgb(A, r, g, b);
+        }
+
+        #region Helper
+
+        // Converts RGB to HSL
+        private static void RgbToHsl(byte rByte, byte gByte, byte bByte, out double h, out double s, out double l)
+        {
+            // Normalize RGB values to [0,1]
+            double r = rByte / 255.0;
+            double g = gByte / 255.0;
+            double b = bByte / 255.0;
+
+            double max = Math.Max(r, Math.Max(g, b));
+            double min = Math.Min(r, Math.Min(g, b));
+
+            l = (max + min) / 2.0;
+
+            if (max == min)
+            {
+                h = 0;
+                s = 0;
+            }
+            else
+            {
+                double delta = max - min;
+
+                s = l > 0.5 ? delta / (2.0 - max - min) : delta / (max + min);
+
+                if (max == r)
+                {
+                    h = ((g - b) / delta + (g < b ? 6 : 0)) * 60.0;
+                }
+                else if (max == g)
+                {
+                    h = ((b - r) / delta + 2) * 60.0;
+                }
+                else
+                {
+                    h = ((r - g) / delta + 4) * 60.0;
+                }
+            }
+        }
+
+        // Converts HSL back to RGB
+        private static void HslToRgb(double h, double s, double l, out byte rByte, out byte gByte, out byte bByte)
+        {
+            double r, g, b;
+
+            if (s == 0)
+            {
+                r = g = b = l; // Achromatic case
+            }
+            else
+            {
+                double q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+                double p = 2 * l - q;
+
+                double hk = h / 360.0;
+
+                double[] t = new double[3];
+                t[0] = hk + 1.0 / 3.0; // Red component
+                t[1] = hk;             // Green component
+                t[2] = hk - 1.0 / 3.0; // Blue component
+
+                for (int i = 0; i < 3; i++)
+                {
+                    if (t[i] < 0) t[i] += 1;
+                    if (t[i] > 1) t[i] -= 1;
+
+                    if (t[i] < 1.0 / 6.0)
+                        t[i] = p + (q - p) * 6.0 * t[i];
+                    else if (t[i] < 1.0 / 2.0)
+                        t[i] = q;
+                    else if (t[i] < 2.0 / 3.0)
+                        t[i] = p + (q - p) * (2.0 / 3.0 - t[i]) * 6.0;
+                    else
+                        t[i] = p;
+                }
+
+                r = t[0];
+                g = t[1];
+                b = t[2];
+            }
+
+            // Convert back to byte values
+            rByte = (byte)Math.Round(r * 255);
+            gByte = (byte)Math.Round(g * 255);
+            bByte = (byte)Math.Round(b * 255);
+        }
+
+        #endregion
+
+        #endregion
     }
 }

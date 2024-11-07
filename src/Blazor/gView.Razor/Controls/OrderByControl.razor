@@ -34,8 +34,8 @@
                             <GvGrid ColumnCount="12">
                                 <GvGridItem Span="2">
                                     <MudCheckBox Dense="true" T="bool"
-                                                 Checked="context.OrderBy" 
-                                                 CheckedChanged="(chk) => OnSetOrderBy(context, chk)" />
+                                                 Value="context.OrderBy" 
+                                                 ValueChanged="(chk) => OnSetOrderBy(context, chk)" />
                                 </GvGridItem>
                                 <GvGridItem Span="4">
                                     <div style="padding:5px 0px">
@@ -49,8 +49,8 @@
                                 </GvGridItem>
                                 <GvGridItem Span="2">
                                     <MudCheckBox Dense="true" T="bool"
-                                                 Checked="context.Descending" 
-                                                 CheckedChanged="(chk) => OnSetDescending(context, chk)" />
+                                                 Value="context.Descending" 
+                                                 ValueChanged="(chk) => OnSetDescending(context, chk)" />
                                 </GvGridItem>
                             </GvGrid>
                         </div>

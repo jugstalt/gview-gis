@@ -284,7 +284,10 @@ public class Display : MapMetadata, IDisplay
     {
         get
         {
-            return new Envelope(_actMinX, _actMinY, _actMaxX, _actMaxY);
+            return new Envelope(_actMinX, _actMinY, _actMaxX, _actMaxY)
+            {
+                Srs = _spatialReference?.EpsgCode
+            };
         }
         set
         {

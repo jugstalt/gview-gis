@@ -1,5 +1,6 @@
 ﻿using gView.Blazor.Core.Extensions;
 using gView.Carto.Core;
+using gView.Carto.Core.Reflection;
 using gView.Carto.Core.Services.Abstraction;
 using gView.Framework.Blazor.Models;
 using gView.Framework.Carto.Abstraction;
@@ -11,6 +12,7 @@ using gView.Framework.Data;
 namespace gView.Carto.Plugins.CartoTools;
 
 [RegisterPlugIn("EB3EDA0D-1B27-4314-B1DE-915E27B27982")]
+[RestorePointAction(RestoreAction.SetRestorePointOnClick)]
 internal class LayerSettings : ICartoButton
 {
     public string Name => "Layer Settings";
@@ -21,15 +23,17 @@ internal class LayerSettings : ICartoButton
 
     public CartoToolTarget Target => CartoToolTarget.SelectedTocItem;
 
-    public int SortOrder => 99;
+    public int SortOrder => 9;
 
     public void Dispose()
     {
 
     }
 
-    public bool IsEnabled(ICartoApplicationScopeService scope)
+    public bool IsVisible(ICartoApplicationScopeService scope)
         => scope.SelectedTocTreeNode is not null;
+
+    public bool IsDisabled(ICartoApplicationScopeService scope) => false;
 
     async public Task<bool> OnClick(ICartoApplicationScopeService scope)
     {
@@ -43,7 +47,7 @@ internal class LayerSettings : ICartoButton
             return false;
         }
 
-        var originalLayer = scope.SelectedTocTreeNode?.TocElement?.Layers?.FirstOrDefault() as Layer;
+        var originalLayer = scope.SelectedTocTreeNode?.Value?.Layers?.FirstOrDefault() as Layer;
         var clonedLayer = originalLayer?.Clone();
 
         if (originalLayer is null || clonedLayer is null)  // todo: clone layer?

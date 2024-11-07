@@ -1,11 +1,11 @@
 using gView.Framework.Cartography.Rendering.Abstractions;
 using gView.Framework.Common;
 using gView.Framework.Core.Carto;
+using gView.Framework.Core.Common;
 using gView.Framework.Core.Data;
 using gView.Framework.Core.Data.Filters;
 using gView.Framework.Core.IO;
 using gView.Framework.Core.Symbology;
-using gView.Framework.Core.Common;
 using gView.Framework.Core.UI;
 using System;
 using System.Collections.Generic;
@@ -36,13 +36,10 @@ public class FeatureGroupRenderer : Cloner, IGroupRenderer, IFeatureRenderer, ID
 
     public void Draw(IDisplay disp, IFeature feature)
     {
-        foreach (IFeatureRenderer renderer in _rendererItems)
+        foreach (IFeatureRenderer renderer in _rendererItems
+                                                    .Where(i => i?.Renderer is IFeatureRenderer)
+                                                    .Select(i => i.Renderer))
         {
-            if (renderer == null)
-            {
-                continue;
-            }
-
             renderer.Draw(disp, feature);
         }
     }
@@ -51,7 +48,9 @@ public class FeatureGroupRenderer : Cloner, IGroupRenderer, IFeatureRenderer, ID
 
     public void FinishDrawing(IDisplay disp, ICancelTracker cancelTracker)
     {
-        foreach (IFeatureRenderer renderer in _rendererItems)
+        foreach (IFeatureRenderer renderer in _rendererItems
+                                                    .Where(i => i?.Renderer is IFeatureRenderer)
+                                                    .Select(i => i.Renderer))
         {
             if (renderer != null)
             {
@@ -62,7 +61,9 @@ public class FeatureGroupRenderer : Cloner, IGroupRenderer, IFeatureRenderer, ID
 
     public void PrepareQueryFilter(IFeatureLayer layer, IQueryFilter filter)
     {
-        foreach (IFeatureRenderer renderer in _rendererItems)
+        foreach (IFeatureRenderer renderer in _rendererItems
+                                                    .Where(i => i?.Renderer is IFeatureRenderer)
+                                                    .Select(i => i.Renderer))
         {
             if (renderer == null)
             {
@@ -79,26 +80,11 @@ public class FeatureGroupRenderer : Cloner, IGroupRenderer, IFeatureRenderer, ID
     }
 
     public bool HasEffect(IFeatureLayer layer, IMap map)
-    {
-        if (_rendererItems == null)
-        {
-            return false;
-        }
+        => _rendererItems?
+                        .Where(i => i?.Renderer is IFeatureRenderer)
+                        .Select(i => (IFeatureRenderer)i.Renderer)
+                        .Any(r => r.HasEffect(layer, map)) == true;
 
-        foreach (IFeatureRenderer renderer in _rendererItems)
-        {
-            if (renderer == null)
-            {
-                continue;
-            }
-
-            if (renderer.HasEffect(layer, map))
-            {
-                return true;
-            }
-        }
-        return false;
-    }
     public bool UseReferenceScale
     {
         get
@@ -108,14 +94,12 @@ public class FeatureGroupRenderer : Cloner, IGroupRenderer, IFeatureRenderer, ID
         set
         {
             _useRefScale = value;
-            foreach (IFeatureRenderer renderer in _rendererItems)
+            foreach (IFeatureRenderer feawtureRenderer in _rendererItems
+                                                            .Where(i => i.Renderer is IFeatureRenderer)
+                                                            .Select(i => (IFeatureRenderer)i.Renderer))
             {
-                if (renderer == null)
-                {
-                    continue;
-                }
 
-                renderer.UseReferenceScale = _useRefScale;
+                feawtureRenderer.UseReferenceScale = _useRefScale;
             }
         }
     }
@@ -132,9 +116,8 @@ public class FeatureGroupRenderer : Cloner, IGroupRenderer, IFeatureRenderer, ID
 
     public bool RequireClone()
     {
-        return _rendererItems?.Any(r =>
-                r != null
-                && r is IFeatureRenderer featureRenderer
+        return _rendererItems?.Any(rendererItem =>
+                rendererItem?.Renderer is IFeatureRenderer featureRenderer
                 && featureRenderer.RequireClone()) == true;
     }
 
@@ -193,7 +176,9 @@ public class FeatureGroupRenderer : Cloner, IGroupRenderer, IFeatureRenderer, ID
 
     public void Release()
     {
-        foreach (IFeatureRenderer renderer in _rendererItems)
+        foreach (IFeatureRenderer renderer in _rendererItems
+                                                    .Where(i => i?.Renderer is IFeatureRenderer)
+                                                    .Select(i => i.Renderer))
         {
             if (renderer == null)
             {
@@ -223,7 +208,9 @@ public class FeatureGroupRenderer : Cloner, IGroupRenderer, IFeatureRenderer, ID
         get
         {
             int count = 0;
-            foreach (IFeatureRenderer renderer in _rendererItems)
+            foreach (IFeatureRenderer renderer in _rendererItems
+                                                        .Where(i => i?.Renderer is IFeatureRenderer)
+                                                        .Select(i => i.Renderer))
             {
                 if (!(renderer is ILegendGroup))
                 {
@@ -239,7 +226,9 @@ public class FeatureGroupRenderer : Cloner, IGroupRenderer, IFeatureRenderer, ID
     public ILegendItem LegendItem(int index)
     {
         int count = 0;
-        foreach (IFeatureRenderer renderer in _rendererItems)
+        foreach (IFeatureRenderer renderer in _rendererItems
+                                                    .Where(i => i?.Renderer is IFeatureRenderer)
+                                                    .Select(i => i.Renderer))
         {
             if (!(renderer is ILegendGroup))
             {
@@ -257,7 +246,9 @@ public class FeatureGroupRenderer : Cloner, IGroupRenderer, IFeatureRenderer, ID
 
     public void SetSymbol(ILegendItem item, ISymbol symbol)
     {
-        foreach (IFeatureRenderer renderer in _rendererItems)
+        foreach (IFeatureRenderer renderer in _rendererItems
+                                                     .Where(i => i?.Renderer is IFeatureRenderer)
+                                                     .Select(i => i.Renderer))
         {
             if (!(renderer is ILegendGroup))
             {
@@ -332,13 +323,10 @@ public class FeatureGroupRenderer : Cloner, IGroupRenderer, IFeatureRenderer, ID
 
             if (_rendererItems != null)
             {
-                foreach (IRenderer renderer in _rendererItems)
+                foreach (IRenderer renderer in _rendererItems
+                                                   .Where(i => i?.Renderer is IRenderer)
+                                                   .Select(i => i.Renderer))
                 {
-                    if (renderer == null)
-                    {
-                        continue;
-                    }
-
                     symbols.AddRange(renderer.Symbols);
                 }
             }

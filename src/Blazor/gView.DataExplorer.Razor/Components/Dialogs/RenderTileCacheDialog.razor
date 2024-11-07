@@ -19,7 +19,7 @@
                                         }
                                     }
                                 </MudSelect>
-                                <MudCheckBox @bind-Checked="Model.Compact" Label="Create Compact Tilecache" />
+                                <MudCheckBox @bind-Value="Model.Compact" Label="Create Compact Tilecache" />
                                 <MudSelect T="GridOrientation" @bind-Value="Model.GridOrientation" Label="Orientation" Variant="Variant.Text">
                                     @if(Model.Metadata.UpperLeft)
                                     {
@@ -58,9 +58,9 @@
                                 {
                                     foreach(var scale in Model.Metadata.Scales.InnerList)
                                     {
-                                        <MudCheckBox Checked="Model.Scales.Contains(scale)" T="bool"
-                                                      CheckedChanged="(add) => ScaleChecked(scale, add)" 
-                                                      Label="@($"1:{String.Format("{0:0,0}", @scale)}")" /> 
+                                        <MudCheckBox Value="Model.Scales.Contains(scale)" T="bool"
+                                                     ValueChanged="(add) => ScaleChecked(scale, add)" 
+                                                     Label="@($"1:{String.Format("{0:0,0}", @scale)}")" /> 
                                     }
                                 }
                             </GvCardContent>

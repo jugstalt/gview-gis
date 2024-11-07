@@ -43,7 +43,7 @@
                 </GvGrid>
                 <MudPaper Elevation="24">
                     <MudButtonGroup Color="Color.Primary" Variant="Variant.Filled">
-                        <MudButton OnClick="OnSnowWizard">Wizard</MudButton>
+                        <MudButton OnClick="OnShowWizard">Wizard</MudButton>
                         <MudButton OnClick="() => _addQuantityItem = new()">Add Value</MudButton>
                         @* 
                             <MudButton Color="Color.Primary"
@@ -132,7 +132,7 @@
                                    OnClick="() => _wizardModel = null">Close</MudButton>
                         <MudButton Variant="Variant.Filled"
                                    Color="Color.Primary"
-                                   OnClick="OnCalcWizardItems">Calc Items</MudButton>
+                                   OnClick="OnWizardCreateLegendItems">Create Legend Items</MudButton>
                     </GvCardActions>
                 </GvCard>
                 </MudRadioGroup>
@@ -264,7 +264,7 @@
 
     #region Button Events
 
-    private Task OnSnowWizard() => HandleAsync(async () =>
+    private Task OnShowWizard() => HandleAsync(async () =>
     {
         if(_renderer is null || _layer is null)
         {
@@ -351,7 +351,7 @@
         }
     });
 
-    private void OnCalcWizardItems() => Handle(() =>
+    private void OnWizardCreateLegendItems() => Handle(() =>
     {
         if (_wizardModel is null || _renderer is null)
         {

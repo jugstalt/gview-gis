@@ -14,7 +14,8 @@
                         <input type="text" placeholder="Search..." @oninput="FilterList" class="mud-input-field" />
                     </div>
                     <div style="overflow-y:auto;max-height:700px">
-                        <MudList Clickable="true" SelectedValue="Model.FontName"
+                        <MudList SelectionMode="SelectionMode.ToggleSelection" T="string"
+                                 SelectedValue="Model.FontName"
                                  SelectedValueChanged="(val) => FontNameSelected(val?.ToString()!)">
                             @foreach (var fontName in FilteredFontNames)
                             {

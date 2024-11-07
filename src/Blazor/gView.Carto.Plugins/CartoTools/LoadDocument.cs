@@ -27,10 +27,9 @@ public class LoadDocument : ICartoInitialButton
 
     }
 
-    public bool IsEnabled(ICartoApplicationScopeService scope)
-    {
-        return true;
-    }
+    public bool IsVisible(ICartoApplicationScopeService scope) => true;
+
+    public bool IsDisabled(ICartoApplicationScopeService scope) => false;
 
     async public Task<bool> OnClick(ICartoApplicationScopeService scope)
     {
@@ -61,7 +60,7 @@ public class LoadDocument : ICartoInitialButton
         return !String.IsNullOrEmpty(mxlFilePath) switch
         {
             false => false,
-            true => await scope.LoadCartoDocument(mxlFilePath)
+            true => await scope.LoadCartoDocumentAsync(mxlFilePath)
         };
     }
 

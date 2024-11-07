@@ -1,6 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data.Entity.Core.Metadata.Edm;
 using System.Reflection;
+using System.Reflection.Metadata.Ecma335;
 
 namespace gView.Blazor.Core.Extensions;
 
@@ -28,5 +31,15 @@ static public class EnumExtensions
         }
 
         return false;
+    }
+
+    public static IEnumerable<KeyValuePair<string, T>> ToKeyValuePairs<T>(bool ignoreNone = false) where T : Enum
+    {
+        foreach (var value in Enum.GetValues(typeof(T)))
+        {
+            if (ignoreNone && (int)value == 0) continue;
+
+            yield return new KeyValuePair<string, T>(value.ToString()!.SplitCamelCase(), (T)value);
+        }
     }
 }

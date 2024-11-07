@@ -12,7 +12,6 @@ using gView.Framework.Core.UI;
 using gView.Server.AppCode.Extensions;
 using gView.Server.Services.Logging;
 using gView.Server.Services.MapServer;
-using Humanizer;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -485,7 +484,7 @@ public class MapServerInstance : IMapServer
                    await _mapServiceDeploymentMananger.LoadMap(name) as Map;
 
             SetMapDefaults(map);
-            
+
             return map;
         }
     }

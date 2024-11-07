@@ -1,7 +1,6 @@
 ﻿using gView.Carto.Core.Abstraction;
 using gView.Carto.Core.Extensions;
 using gView.Carto.Core.Models.ToolEvents;
-using gView.Carto.Core.Models.Tree;
 using gView.Framework.Core.Carto;
 using gView.Framework.Core.Common;
 using gView.Framework.Core.Data;
@@ -17,8 +16,8 @@ public class CartoEventBusService
     public Task FireBusyStatusChangedAsync(bool isBusy, string statusText)
         => OnBusyStatusChangedAsync?.FireAsync(isBusy, statusText) ?? Task.CompletedTask;
 
-    public event Func<TocTreeNode?, Task>? OnSelectedTocTreeNodeChangedAsync;
-    public Task FireSelectedTocTreeNodeChangedAsync(TocTreeNode? selectedTocTreeNode)
+    public event Func<ITocTreeNode?, Task>? OnSelectedTocTreeNodeChangedAsync;
+    public Task FireSelectedTocTreeNodeChangedAsync(ITocTreeNode? selectedTocTreeNode)
         => OnSelectedTocTreeNodeChangedAsync?.FireAsync(selectedTocTreeNode) ?? Task.CompletedTask;
 
     public event Func<Task>? OnCloseTocInlineEditorsAsync;

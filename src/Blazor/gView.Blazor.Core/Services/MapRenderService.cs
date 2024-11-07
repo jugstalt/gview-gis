@@ -81,8 +81,8 @@ public class MapRenderService : IDisposable
 
         if (bounds != null && iWidth.HasValue && iHeight.HasValue && sRef != null)
         {
-            bounds = _geoTransformer.Transform(bounds, sRef, _map.SpatialReference).Envelope;
-            _map.Envelope = bounds;
+            bounds = _geoTransformer.Transform(bounds, sRef, _map.SpatialReference)?.Envelope;
+            _map.Envelope = bounds ?? new Envelope(-10, -10, 10, 10);
             _map.ImageWidth = iWidth.Value;
             _map.ImageHeight = iHeight.Value;
         }
@@ -97,11 +97,13 @@ public class MapRenderService : IDisposable
         _map.Display.ImageWidth = imageWidth;
         _map.Display.ImageHeight = imageHeight;
 
+        if (bounds is null) return;
+
         _mapControlBounds = bounds;
 
         if (_mapControlSRef != null && _map.SpatialReference != null)
         {
-            _map.Display.ZoomTo(_geoTransformer.Transform(bounds, _mapControlSRef, _map.SpatialReference).Envelope);
+            _map.Display.ZoomTo(_geoTransformer.Transform(bounds, _mapControlSRef, _map.SpatialReference)?.Envelope);
         }
     }
 

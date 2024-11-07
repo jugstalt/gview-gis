@@ -94,21 +94,21 @@
         <GvCard Title="Placement / Placement Priority">
             <GvCardContent>
                 <MudRadioGroup T="TextSymbolAlignment"
-                               SelectedOption="_renderer.TextSymbol.TextSymbolAlignment"
-                               SelectedOptionChanged="OnSymbolAlignmentChanged"  >
+                               Value="_renderer.TextSymbol.TextSymbolAlignment"
+                               ValueChanged="OnSymbolAlignmentChanged"  >
                     <table>
                         <tr>
                             <td>
                                 <MudRadio Size="MudBlazor.Size.Small" 
-                                          Option="TextSymbolAlignment.rightAlignOver" />
+                                          Value="TextSymbolAlignment.rightAlignOver" />
                             </td>
                             <td>
                                 <MudRadio Size="MudBlazor.Size.Small" 
-                                          Option="TextSymbolAlignment.Over" />
+                                          Value="TextSymbolAlignment.Over" />
                             </td>
                             <td>
                                 <MudRadio Size="MudBlazor.Size.Small" 
-                                          Option="TextSymbolAlignment.leftAlignOver" />
+                                          Value="TextSymbolAlignment.leftAlignOver" />
                             </td>
                             @if(_layer.CanApplySecondaryLabelAlignment()) 
                             {
@@ -138,15 +138,15 @@
                         <tr>
                             <td>
                                 <MudRadio Size="MudBlazor.Size.Small" 
-                                          Option="TextSymbolAlignment.rightAlignCenter" />
+                                          Value="TextSymbolAlignment.rightAlignCenter" />
                             </td>
                             <td>
                                 <MudRadio Size="MudBlazor.Size.Small" 
-                                          Option="TextSymbolAlignment.Center" />
+                                          Value="TextSymbolAlignment.Center" />
                             </td>
                             <td>
                                 <MudRadio Size="MudBlazor.Size.Small" 
-                                          Option="TextSymbolAlignment.leftAlignCenter" />
+                                          Value="TextSymbolAlignment.leftAlignCenter" />
                             </td>
                             @if (_layer.CanApplySecondaryLabelAlignment())
                             {
@@ -176,15 +176,15 @@
                         <tr>
                             <td>
                                 <MudRadio Size="MudBlazor.Size.Small" 
-                                          Option="TextSymbolAlignment.rightAlignUnder" />
+                                          Value="TextSymbolAlignment.rightAlignUnder" />
                             </td>
                             <td>
                                 <MudRadio Size="MudBlazor.Size.Small" 
-                                          Option="TextSymbolAlignment.Under" />
+                                          Value="TextSymbolAlignment.Under" />
                             </td>
                             <td>
                                 <MudRadio Size="MudBlazor.Size.Small" 
-                                          Option="TextSymbolAlignment.leftAlignUnder" />
+                                          Value="TextSymbolAlignment.leftAlignUnder" />
                             </td>
                             @if(_layer.CanApplySecondaryLabelAlignment()) 
                             {

@@ -4,12 +4,12 @@
         <GvCardContent>
             <GvGrid ColumnCount="6">
                 <GvGridItem Span="5">
-                    <MudTextField Label="New Scale" 
+                    <MudNumericField Label="New Scale" 
                                   @bind-Value="_newScale"
                                   Format="N6" T="double" 
                                   Immediate="true"
-                                  InputType="InputType.Number" Step="0.1"
-                                  Variant="Variant.Text"></MudTextField>
+                                  Step="0.1"
+                                  Variant="Variant.Text"></MudNumericField>
                 </GvGridItem>
                 <GvGridItem Span="1">
                     <MudButton OnClick="AddScale" 

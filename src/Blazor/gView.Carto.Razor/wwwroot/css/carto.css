@@ -37,7 +37,38 @@
                 cursor: pointer;
                 box-sizing: border-box;
                 border-radius: 4px;
-                font-size: 0.9em;
+                font-size: 0.7em;
+            }
+
+            .carto-main .toolbar .carto-tool-box .tool-small-chunk {
+                width: 78px;
+                height: 76px;
+                display: inline-block;
+                vertical-align: top;
+            }
+
+                .carto-main .toolbar .carto-tool-box .tool-small-chunk .carto-tool.small,
+                .mud-popover.mud-popover-open .mud-list .carto-tool {
+                    height: 25px !important;
+                    display: inline-block;
+                    text-align: left;
+                    padding: 2px;
+                    margin: 1px 2px;
+                    max-width: 74px;
+                    /*vertical-align: top;*/
+                    border: 1px solid transparent;
+                    cursor: pointer;
+                    box-sizing: border-box;
+                    border-radius: 4px;
+                    font-size: 0.65em;
+                }
+
+            .carto-main .toolbar .carto-tool-box .carto-tool.small .title {
+                display: inline-block;
+                width: 48px;
+                overflow: hidden;
+                white-space: nowrap;
+                text-overflow: ellipsis;
             }
 
         .carto-main .toolbar .carto-tool:hover {
@@ -45,6 +76,16 @@
             border: 1px solid #0094ff;
             box-sizing: border-box;
         }
+
+        .carto-main .toolbar .carto-tool.disabled {
+            cursor: unset;
+            opacity: .3;
+        }
+
+            .carto-main .toolbar .carto-tool.disabled:hover {
+                background-color: unset;
+                border: 1px solid transparent;
+            }
 
         .carto-main .toolbar .carto-tool-box .carto-tool-sub-box {
             position: relative;
@@ -148,6 +189,7 @@
             padding: 5px;
             cursor: pointer;
             margin: 16px 0px;
+            position: relative;
         }
 
             .carto-main .toc .carto-initial-tool .icon {
@@ -163,6 +205,10 @@
                 padding-left: 24px;
                 opacity:.5;
             }
+
+        .carto-main .toc .legend table {
+            color: #555;
+        }
 
     .carto-main .toc-content-splitter {
         position: absolute;
@@ -246,42 +292,6 @@
 .carto-main .current-selected {
     background: var(--mud-palette-primary);
     color: var(--mud-palette-primary-text);
-}
-
-/**** Darkmode ****/
-.carto-main.dark {
-    background: #0094ff;
-}
-.carto-main.dark .content {
-    background: #333;
-}
-
-.explorer-dialog-item.selected {
-    background: var(--mud-palette-primary) !important;
-}
-
-.carto-main.dark .toolbar {
-    background: #333;
-}
-
-.carto-main.dark .toolbar .carto-tool-box .carto-tool-sub-box {
-    border: 1px solid #555;
-}
-
-.carto-main.dark .context-selected {
-    background: #555500a9;
-}
-
-.carto-main.dark .status-bar {
-    background: #333;
-}
-
-.carto-main.dark .sketchpen-icon-basic-bg-light-24 {
-    background-image: url(../../../sketchpen/basic/content/img/sketchpen/bg-dark/24/1/sprite.png) !important;
-}
-
-.carto-main.dark .sketchpen-icon-webgis-bg-light-24 {
-    background-image: url(../../../sketchpen/webgis/content/img/sketchpen/bg-dark/24/1/sprite.png) !important;
 }
 
 .carto-symbol-composer-button {
@@ -439,6 +449,7 @@
 
 .carto-tile {
     display:inline-block;
+    position: relative;
     width:300px;
     height:130px;
     border: 1px solid var(--mud-palette-lines-default);
@@ -546,4 +557,45 @@
 
 .match-geoservice-table .cell-different {
     background: #ff000070;
+}
+
+/**** Darkmode ****/
+.carto-main.dark {
+    background: #0094ff;
+}
+
+    .carto-main.dark .content {
+        background: #333;
+    }
+
+.explorer-dialog-item.selected {
+    background: var(--mud-palette-primary) !important;
+}
+
+.carto-main.dark .toolbar {
+    background: #333;
+}
+
+    .carto-main.dark .toolbar .carto-tool-box .carto-tool-sub-box {
+        border: 1px solid #555;
+    }
+
+.carto-main.dark .context-selected {
+    background: #555500a9;
+}
+
+.carto-main.dark .status-bar {
+    background: #333;
+}
+
+.carto-main.dark .sketchpen-icon-basic-bg-light-24 {
+    background-image: url(../../../sketchpen/basic/content/img/sketchpen/bg-dark/24/1/sprite.png) !important;
+}
+
+.carto-main.dark .sketchpen-icon-webgis-bg-light-24 {
+    background-image: url(../../../sketchpen/webgis/content/img/sketchpen/bg-dark/24/1/sprite.png) !important;
+}
+
+.carto-main.dark .toc .legend table {
+    color: #ccc;
 }

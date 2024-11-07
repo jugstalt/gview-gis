@@ -26,6 +26,7 @@
 
     private ISpatialReference _mapControlSRef = new SpatialReference("epsg:3857");
     private bool _firstRendered = false;
+    private IEnvelope? _lastBounds = null;
 
     protected override Task OnInitializedAsync() => HandleAsync(async () =>
     {
@@ -62,23 +63,25 @@
 
     private Task HandleCartoDocumentLoadedAsync(ICartoDocument document) => HandleAsync(async () =>
     {
+        _lastBounds = null;
+
         bool reused = await CreateMapControl();
 
         if (document.Map is Map map)
         {
             // project map sref to current leaflet map transformation
-            var mapBounds = GeoTransformer.Transform(map.Envelope, map.SpatialReference, _mapControlSRef).Envelope;
+            var mapBounds = GeoTransformer.Transform(map.Envelope, map.SpatialReference, _mapControlSRef)?.Envelope;
             //map.SpatialReference = _mapSRef;
             //map.Envelope = mapBounds;
 
             MapRenderer.InitMap(map, _mapControlSRef);
 
-            if (reused && _mapControl is not null)
+            if (reused && _mapControl is not null && mapBounds is not null)
             {
                 var boundsWgs84 = GeoTransformer.ToWGS84(new Envelope(mapBounds), _mapControlSRef).Envelope;
 
                 await _mapControl.FitBounds(new LatLng(boundsWgs84.LowerLeft.Y, boundsWgs84.LowerLeft.X),
-                                           new LatLng(boundsWgs84.UpperRight.Y, boundsWgs84.UpperRight.X));
+                                            new LatLng(boundsWgs84.UpperRight.Y, boundsWgs84.UpperRight.X));
             }
         }
     });
@@ -95,7 +98,9 @@
         {
             var zoomToWgs84 = zoomTo.Srs switch
             {
-                4326 => zoomTo.ToMinSize(),
+                SpatialReference.EpsgWgs84 => zoomTo.ToMinSize(),
+                int srs when srs > 0 && srs != _mapControlSRef.EpsgCode => 
+                     GeoTransformer.ToWGS84(zoomTo, new SpatialReference($"epsg:{srs}")).Envelope.ToMinSize(),
                 _ => GeoTransformer.ToWGS84(zoomTo, _mapControlSRef).Envelope.ToMinSize()
             };
 
@@ -137,7 +142,7 @@
                 : new Envelope(-180, -80, 180, 80);
 
         await _mapControl.FitBounds(new LatLng(boundsWgs84.LowerLeft.Y, boundsWgs84.LowerLeft.X),
-                               new LatLng(boundsWgs84.UpperRight.Y, boundsWgs84.UpperRight.X));
+                                    new LatLng(boundsWgs84.UpperRight.Y, boundsWgs84.UpperRight.X));
 
     });
 
@@ -157,6 +162,25 @@
                 var bounds = await _mapControl.GetBounds();
                 var size = await _mapControl.GetImageSize();
 
+                var boundsEnvelope = new Envelope(
+                    bounds.SouthWest.Lng, bounds.SouthWest.Lat,
+                    bounds.NorthEast.Lng, bounds.NorthEast.Lat
+                )
+                { 
+                    Srs = SpatialReference.EpsgWgs84 
+                };
+
+                if(_lastBounds is not null 
+                   && !_lastBounds.Equals(boundsEnvelope, 1e-8)) 
+                {
+                    AppScope.ZoomHistory.Push(_lastBounds);
+                }
+                if (_lastBounds is null
+                   || !_lastBounds.Equals(boundsEnvelope, 1e-8))
+                {
+                    _lastBounds = boundsEnvelope;
+                }
+
                 DrawPhase.All.WithNormalized(async (drawPhase) =>
                 {
                     var imageLayer = _imageLayers.Get(drawPhase);
@@ -169,7 +193,7 @@
                     }
                     else
                     {
-                        await _mapControl.UpdateImageLayer(imageLayer, "", bounds.SouthWest, bounds.NorthEast);
+                        await _mapControl.UpdateImageLayer(imageLayer, "", bounds.SouthWest, bounds.NorthEast, size);
                     }
                 });
 
@@ -210,21 +234,24 @@
 
     #region MapRenderer Evend Handlers
 
-    private Task HandleRefreshMapImage(IMapRenderer? mapRenderer, byte[]? data)
+    async private Task HandleRefreshMapImage(IMapRenderer? mapRenderer, byte[]? data)
     {
         if (_mapControl is not null)
         {
+            var bounds = await _mapControl.GetBounds();
+            var size = await _mapControl.GetImageSize();
+
             _imageLayers.ForAny(
                 mapRenderer is not null 
                     ? mapRenderer.DrawPhase
                     : DrawPhase.All, 
                 async (imageLayer) =>
             {
-                await _mapControl.UpdateImageLayer(imageLayer, $"data:image/png;base64, {Convert.ToBase64String(data ?? Array.Empty<byte>())}", null, null);
+                await _mapControl.UpdateImageLayer(imageLayer, $"data:image/png;base64, {Convert.ToBase64String(data ?? Array.Empty<byte>())}", bounds.SouthWest, bounds.NorthEast, size);
             });
         }
 
-        return Task.CompletedTask;
+        //return Task.CompletedTask;
     }
 
     private Task HandleHighlightFeaturesAsync(ILayer layer, IQueryFilter? filter)

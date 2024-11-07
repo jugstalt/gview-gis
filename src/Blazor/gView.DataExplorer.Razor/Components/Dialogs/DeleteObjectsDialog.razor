@@ -6,12 +6,12 @@
                      Model="base.Model">
     <FormContent>
         <MudText Typo="Typo.h6">Please select the objects you want to delete:</MudText>
-        <MudList Dense="true">
+        <MudList T="string" Dense="true">
             @foreach (var selectItem in Model.ExplorerObjects)
             {
                 <MudListItem Dense="true"> 
                     <div style="display: flex; align-items: center;">
-                        <MudCheckBox @bind-Checked="selectItem.Selected" />
+                        <MudCheckBox @bind-Value="selectItem.Selected"  />
                         <MudIcon Icon="@Icons.FromString(selectItem.Item.Icon)" Style="margin-right: 6px;" />
                         <MudText>@selectItem.Item.Name</MudText>
                     </div>

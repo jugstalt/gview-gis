@@ -68,8 +68,8 @@ public class LeafletInteropService : IDisposable
     internal ValueTask Refresh(string mapId) =>
         _jsRuntime.InvokeVoidAsync($"{_gViewLeaflet}.refresh", mapId);
 
-    internal ValueTask UpdateImageLayer(string mapId, string layerId, string url, LatLng? southWest, LatLng? northEast)
-        => _jsRuntime.InvokeVoidAsync($"{_gViewLeaflet}.updateImageLayer", mapId, layerId, url, southWest, northEast);
+    internal ValueTask UpdateImageLayer(string mapId, string layerId, string url, LatLng? southWest, LatLng? northEast, Size? imageSize)
+        => _jsRuntime.InvokeVoidAsync($"{_gViewLeaflet}.updateImageLayer", mapId, layerId, url, southWest, northEast, imageSize);
 
     #region Helper
 

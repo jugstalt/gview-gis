@@ -1,4 +1,5 @@
 @inject PluginManagerService PluginManager
+@inject ICartoApplicationScopeService AppScope
 @inherits BaseHandler
 
 @if (_labelRenderers is not null)
@@ -6,15 +7,15 @@
     <GvGrid ColumnCount="3">
         <GvGridItem>
             <MudCheckBox T="bool"
-                         Checked="@(Layer?.LabelRenderer is not null)"
-                         CheckedChanged="(chk) => LabelFeaturesChecked(chk)"
+                         Value="@(Layer?.LabelRenderer is not null)"
+                         ValueChanged="(chk) => LabelFeaturesChecked(chk)"
                          Label="Label features for this layer" />
             @if (Layer?.LabelRenderer is not null)
             {
                 <GvCard Title="Label Renderers">
                     <GvCardContentNoPadding>
-                        <MudList Dense="true" Clickable="true"
-                                    Style="padding:0px">
+                        <MudList Dense="true" T="string"
+                                 Style="padding:0px">
                             @foreach (var labelRenderer in _labelRenderers)
                             {
                                 <MudListItem Style="white-space:nowrap;overflow:hidden"
@@ -28,6 +29,21 @@
                     </GvCardContentNoPadding>
                 </GvCard>
             }
+            <GvCard Title="Copy From">
+                <MudList Dense="true" T="string"
+                         Style="padding:0px">
+                    <MudListItem Style="white-space:nowrap;overflow:hidden"
+                                 Dense="true"
+                                 OnClick="OnCopyRendererClickAsync">
+                        Other Layer ...
+                    </MudListItem>
+                    <MudListItem Style="white-space:nowrap;overflow:hidden"
+                                 Dense="true"
+                                 OnClick="OnImportRendererClickAsync">
+                        Other Map (XML) ...
+                    </MudListItem>
+                </MudList>
+            </GvCard>
         </GvGridItem>
         <GvGridItem Span="2">
             @if (Layer?.LabelRenderer is not null && _selectedRendererType is not null)
@@ -134,6 +150,100 @@
                 _labelRenderers?.FirstOrDefault(r => r.GetType() == _selectedRendererType)
                 ?? _labelRenderers?.FirstOrDefault(r => r is SimpleLabelRenderer)
                 ?? _labelRenderers?.FirstOrDefault();
+
+            SelectRenderer(Layer.LabelRenderer);
+        }
+    });
+
+    private Task OnImportRendererClickAsync() => HandleAsync(async () =>
+    {
+        if (Layer is null) return;
+
+        var lastAccessedDocuments = await AppScope.Settings.GetLastAccessedDocuments() ?? [];
+
+        var previousMapModel = lastAccessedDocuments.Count() == 0
+            ? new()
+            : await AppScope.ShowModalDialog(
+                typeof(Razor.Components.Dialogs.OpenPreviousMapDialog),
+                "Previous opened maps ...",
+                new Razor.Components.Dialogs.Models.OpenPreviousMapDialogModel()
+                    {
+                        Items = lastAccessedDocuments
+                    }
+            );
+
+        if (previousMapModel is null) return;
+
+        string? xmlFileName;
+        if (previousMapModel.Selected == null)
+        {
+            var openMapModel = await AppScope.ShowKnownDialog(Framework.Blazor.KnownDialogs.ExplorerDialog,
+                                        title: "Open map document",
+                                        model: new ExplorerDialogModel()
+                                            {
+                                                Filters = new List<ExplorerDialogFilter> {
+                                                new OpenFileFilter("Map", "*.mxl")
+                                                    },
+                                                Mode = ExploerDialogMode.Open
+                                            }
+                                 );
+
+            xmlFileName = openMapModel?.Result.ExplorerObjects.FirstOrDefault()?.FullName;
+        }
+        else
+        {
+            xmlFileName = previousMapModel.Selected.Path;
+        }
+
+        if (String.IsNullOrEmpty(xmlFileName))
+        {
+            return;
+        }
+
+        var stream = new Framework.IO.XmlStream("");
+        stream.ReadStream(xmlFileName);
+
+        var cartoDocument = new CartoDocument(null);
+
+        await stream.LoadAsync("MapDocument", cartoDocument);
+
+        if (cartoDocument.Map is not null)
+        {
+            await SelectRendererAsync(cartoDocument.Map);
+        };
+    });
+
+    private Task OnCopyRendererClickAsync() =>
+        Map is not null
+            ? SelectRendererAsync(Map)
+            : Task.CompletedTask;
+
+    private Task SelectRendererAsync(IMap map) => HandleAsync(async () =>
+    {
+        if (Layer is null) return;
+
+        var layerModel = await AppScope.ShowModalDialog(
+                typeof(SelectMapLayerDialog),
+                "Select map layer",
+                new SelectMapLayerDialogModel()
+                    {
+                        Map = map,
+                        LayerFilter = (layer) =>
+                            layer switch
+                            {
+                                IFeatureLayer when Map == map && Layer.ID.Equals(layer.ID) => false,
+                                IFeatureLayer featureLayer =>
+                                    featureLayer.LabelRenderer is not null,
+                                _ => false
+                            }
+                    }
+        );
+
+        var newLabelRenderer = (layerModel?.SelectedLayer as IFeatureLayer)?.LabelRenderer?.Clone() as ILabelRenderer;
+
+        if (newLabelRenderer is not null)
+        {
+            Layer.LabelRenderer = newLabelRenderer;
 
             SelectRenderer(Layer.LabelRenderer);
         }

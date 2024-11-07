@@ -1,0 +1,22 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+      <TargetFramework>net8.0</TargetFramework>
+      <ImplicitUsings>enable</ImplicitUsings>
+      <Nullable>enable</Nullable>
+	  <Version>6.24.4401</Version>
+	  <Copyright>2024, Jürgen Gstaltmaier</Copyright>
+	  <PackageProjectUrl>https://github.com/jugstalt/gview-gis</PackageProjectUrl>
+	  <RepositoryUrl>https://github.com/jugstalt/gview-gis</RepositoryUrl>
+	  <Authors>Jürgen Gstaltmaier</Authors>
+	  <Company />
+	  <Product />
+	  <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+	  <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
+    </PropertyGroup>
+	
+	<ItemGroup>
+		<PackageReference Include="Aspire.Hosting" Version="9.0.0-rc.1.24511.1" />
+	</ItemGroup>
+	
+</Project>

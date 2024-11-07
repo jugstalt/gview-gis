@@ -1,17 +1,19 @@
 ﻿using gView.Blazor.Core.Exceptions;
+using gView.Blazor.Core.Extensions;
 using gView.Blazor.Core.Models;
 using gView.Blazor.Core.Services;
 using gView.Blazor.Core.Services.Abstraction;
 using gView.Carto.Core;
 using gView.Carto.Core.Abstraction;
+using gView.Carto.Core.Models;
 using gView.Carto.Core.Models.ToolEvents;
-using gView.Carto.Core.Models.Tree;
 using gView.Carto.Core.Services;
 using gView.Carto.Core.Services.Abstraction;
 using gView.DataExplorer.Razor.Components.Dialogs.Models;
 using gView.Framework.Blazor;
 using gView.Framework.Blazor.Models;
 using gView.Framework.Blazor.Services;
+using gView.Framework.Core.Carto;
 using gView.Framework.Core.Common;
 using gView.Framework.Core.Data;
 using gView.Framework.Core.Geometry;
@@ -20,7 +22,6 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Options;
 using Microsoft.JSInterop;
 using MudBlazor;
-using System.Security.Permissions;
 
 namespace gView.Carto.Plugins.Services;
 public class CartoApplicationScopeService : ApplictionBusyHandlerAndCache, ICartoApplicationScopeService
@@ -38,6 +39,8 @@ public class CartoApplicationScopeService : ApplictionBusyHandlerAndCache, ICart
     private readonly SettingsService _settings;
     private readonly IAppIdentityProvider _identityProvider;
     private readonly PluginManagerService _pluginManager;
+    private readonly ICartoRestoreService? _restoreService;
+    private readonly IZoomHistory _zoomHistory;
 
     private ICartoDocument _cartoDocument;
 
@@ -55,8 +58,10 @@ public class CartoApplicationScopeService : ApplictionBusyHandlerAndCache, ICart
                                         ICartoInteractiveToolService toolService,
                                         PluginManagerService pluginManager,
                                         IAppIdentityProvider identityProvider,
+                                        IZoomHistory zoomHistory,
                                         IOptions<CartoApplicationScopeServiceOptions> options,
-                                        IScopeContextService? scopeContext = null
+                                        IScopeContextService? scopeContext = null,
+                                        ICartoRestoreService? restoreService = null
                                 )
     {
         _dialogService = dialogService;
@@ -71,6 +76,8 @@ public class CartoApplicationScopeService : ApplictionBusyHandlerAndCache, ICart
         _toolService = toolService;
         _options = options.Value;
         _pluginManager = pluginManager;
+        _restoreService = restoreService;
+        _zoomHistory = zoomHistory;
 
         _cartoDocument = this.Document = new CartoDocument(this);
 
@@ -112,38 +119,12 @@ public class CartoApplicationScopeService : ApplictionBusyHandlerAndCache, ICart
 
     public AppIdentity Identity => _identityProvider.Identity;
 
-    async public Task<bool> LoadCartoDocument(string mxlFilePath)
-    {
-        XmlStream stream = new XmlStream("");
-        stream.ReadStream(mxlFilePath);
+    #region Map/Carto Document
 
-        var cartoDocument = new CartoDocument(this)
-        {
-            FilePath = mxlFilePath
-        };
+    public Task<bool> LoadCartoDocumentAsync(string mxlFilePath)
+        => LoadCartoDocumentOrRestorePointAsync(mxlFilePath);
 
-        await stream.LoadAsync("MapDocument", cartoDocument);
-
-        if (cartoDocument.Map?.ErrorMessages?.Any() == true)
-        {
-            if (await this.ShowKnownDialog(
-                                KnownDialogs.WarningsDialog,
-                                model: new WarningsDialogModel()
-                                {
-                                    Warnings = cartoDocument.Map.ErrorMessages
-                                })
-                is null)
-            {
-                return false;
-            }
-        }
-
-        this.Document = cartoDocument;
-
-        return true;
-    }
-
-    async public Task<bool> SaveCartoDocument(string xmlFilePath, bool performEncryption)
+    async public Task<bool> SaveCartoDocumentAsync(string xmlFilePath, bool performEncryption)
     {
         XmlStream stream = new XmlStream("MapApplication", performEncryption);
         stream.Save("MapDocument", this.Document);
@@ -167,9 +148,131 @@ public class CartoApplicationScopeService : ApplictionBusyHandlerAndCache, ICart
         return true;
     }
 
-    public TocTreeNode? SelectedTocTreeNode { get; private set; }
+    async private Task<bool> LoadCartoDocumentOrRestorePointAsync(string mxlFilePath, string? restoreFilePath = null)
+    {
+        _zoomHistory.Clear();
 
-    public Task SetSelectedTocTreeNode(TocTreeNode? selectedTocTreeNode)
+        IMap? originalMap = null;
+
+        if (Document?.Map is not null
+            && mxlFilePath.Equals(Document.FilePath))
+        {
+            originalMap = Document.Map;
+        }
+        else
+        {
+            try
+            {
+                XmlStream originalMapStream = new XmlStream("");
+                originalMapStream.ReadStream(mxlFilePath);
+
+                var originalCartoDocument = new CartoDocument(null);
+                await originalMapStream.LoadAsync("MapDocument", originalCartoDocument);
+
+                originalMap = originalCartoDocument.Map;
+            }
+            catch { }
+        }
+
+        XmlStream stream = new XmlStream("");
+        stream.ReadStream(restoreFilePath ?? mxlFilePath);
+
+        var cartoDocument = new CartoDocument(this)
+        {
+            FilePath = mxlFilePath
+        };
+
+        await stream.LoadAsync("MapDocument", cartoDocument);
+
+        if (cartoDocument.Map?.ErrorMessages?.Any() == true)
+        {
+            if (await this.ShowKnownDialog(
+                                KnownDialogs.WarningsDialog,
+                                model: new WarningsDialogModel()
+                                {
+                                    Warnings = cartoDocument.Map.ErrorMessages
+                                })
+                is null)
+            {
+                return false;
+            }
+        }
+
+        if (cartoDocument.Map?.Display is null) throw new Exception("Restore point do not contain a valid map");
+
+        if (originalMap?.Display is not null)
+        {
+            cartoDocument.Map.Display.ImageWidth = originalMap.Display.ImageWidth;
+            cartoDocument.Map.Display.ImageHeight = originalMap.Display.ImageHeight;
+            cartoDocument.Map.Display.ZoomTo(originalMap.Display.Envelope);
+        }
+
+        this.Document = cartoDocument;
+
+        return true;
+    }
+
+    #endregion
+
+    #region Document Restore Points
+
+    public void CreateRestorePoint(string description)
+    {
+        if (_restoreService is not null)
+        {
+            Task.Run(() => _restoreService.SetRestorePoint(this, description));
+        }
+    }
+
+    public RestorePointState LatestRestorePointState(string? mxlPath = null)
+    {
+        mxlPath ??= Document?.FilePath;
+
+        if (_restoreService is null || String.IsNullOrEmpty(mxlPath)) return RestorePointState.None;
+
+        var restorePoint = _restoreService.GetRestorePoints(mxlPath, 1);
+        var fileInfo = new FileInfo(mxlPath);
+
+        return restorePoint.Count() switch
+        {
+            0 => RestorePointState.None,
+            1 when fileInfo.LastWriteTimeUtc > restorePoint.First().timeUtc => RestorePointState.Older,
+            _ => RestorePointState.Newer
+        };
+    }
+
+    public IEnumerable<RestorePoint> RestorePoints(string? mxlPath = null)
+        => _restoreService?
+                .GetRestorePoints(mxlPath ?? Document?.FilePath ?? "")
+                .Select(r => new RestorePoint()
+                {
+                    Hash = r.filePath.GenerateSHA1(),
+                    Description = r.description,
+                    TimeUtc = r.timeUtc
+                }) ?? Array.Empty<RestorePoint>();
+
+    public Task<bool> LoadRestorePointAsync(string mxlPath, string restorePointHash)
+    {
+        var restorePoint = _restoreService?
+                .GetRestorePoints(mxlPath ?? Document?.FilePath ?? "")
+                .Where(r => r.filePath.GenerateSHA1() == restorePointHash)
+                .FirstOrDefault();
+
+        if (restorePoint is null) throw new Exception($"Unknown restore point {restorePointHash}");
+
+        return LoadCartoDocumentOrRestorePointAsync(mxlPath!, restorePoint.Value.filePath);
+    }
+
+    public RestoreResult RemoveRestorePoints(string mxlPath)
+        => _restoreService?.RemoveRestorePoints(mxlPath) ?? RestoreResult.Success;
+
+    #endregion
+
+    public IZoomHistory ZoomHistory => _zoomHistory;
+
+    public ITocTreeNode? SelectedTocTreeNode { get; private set; }
+
+    public Task SetSelectedTocTreeNode(ITocTreeNode? selectedTocTreeNode)
         => _eventBus.FireSelectedTocTreeNodeChangedAsync(this.SelectedTocTreeNode = selectedTocTreeNode);
 
     public CartoDataTableService DataTableService => _dataTables;
@@ -277,7 +380,7 @@ public class CartoApplicationScopeService : ApplictionBusyHandlerAndCache, ICart
 
         var dialogOptions = new DialogOptions()
         {
-            DisableBackdropClick = true,
+            BackdropClick = false,
             CloseButton = modalDialogOptions?.ShowCloseButton ?? true,
             MaxWidth = modalDialogOptions?.Width switch
             {

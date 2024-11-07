@@ -114,11 +114,12 @@
         <GvCardContent>
             <GvGrid ColumnCount="2">
                 <GvGridItem>
-                    <MudRadioGroup @bind-SelectedOption="_renderer.SizeType" >
-                        <MudRadio Option="ChartLabelRenderer.RenderSizeType.ConstantSize">
+                    <MudRadioGroup Value="_renderer.SizeType" 
+                                   T="ChartLabelRenderer.RenderSizeType">
+                        <MudRadio Value="ChartLabelRenderer.RenderSizeType.ConstantSize">
                             Constant Size
                         </MudRadio>
-                        <MudRadio Option="ChartLabelRenderer.RenderSizeType.ValueOfEquatesToSize">
+                        <MudRadio Value="ChartLabelRenderer.RenderSizeType.ValueOfEquatesToSize">
                             Value of equates to size
                             <MudFab Color="Color.Primary"
                                     Size="MudBlazor.Size.Small"

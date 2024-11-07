@@ -22,7 +22,7 @@ namespace gView.Framework.Data
 
         #region IGroupLayer Member
 
-        public List<ILayer> ChildLayer
+        public List<ILayer> ChildLayers
         {
             get { return ListOperations<ILayer>.Clone(_childLayers); }
         }
@@ -39,6 +39,7 @@ namespace gView.Framework.Data
             }
 
             _childLayers.Add(layer);
+
             layer.GroupLayer = this;
         }
         public void Remove(Layer layer)

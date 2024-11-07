@@ -1,41 +1,39 @@
 using gView.Framework.Cartography.Rendering.Abstractions;
-using gView.Framework.Cartography.Rendering.UI;
+using gView.Framework.Common;
 using gView.Framework.Core.Carto;
+using gView.Framework.Core.Common;
 using gView.Framework.Core.Data;
 using gView.Framework.Core.Data.Filters;
 using gView.Framework.Core.IO;
 using gView.Framework.Core.Symbology;
-using gView.Framework.Core.Common;
 using gView.Framework.Core.UI;
-using gView.Framework.Common;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using System.Threading.Tasks;
 
 namespace gView.Framework.Cartography.Rendering
 {
     [RegisterPlugIn("CD41C987-9415-4c7c-AF5F-6385622AB768")]
-    public class ScaleDependentRenderer : 
+    public class ScaleDependentRenderer :
         IGroupRenderer,
         IFeatureRenderer,
-        IDefault, 
+        IDefault,
         ILegendGroup
     {
-        private RendererList _renderers;
+        private RendererList _rendererItems;
         private bool _useRefScale = true;
 
         public ScaleDependentRenderer()
         {
-            _renderers = new RendererList();
+            _rendererItems = new RendererList();
         }
 
         #region IGroupRenderer Member
 
         public IRendererGroup RendererItems
         {
-            get { return _renderers; }
+            get { return _rendererItems; }
         }
 
         #endregion
@@ -43,13 +41,8 @@ namespace gView.Framework.Cartography.Rendering
         #region IFeatureRenderer Member
         public void Draw(IDisplay disp, IFeature feature)
         {
-            foreach (IFeatureRenderer renderer in _renderers)
+            foreach (IFeatureRenderer renderer in _rendererItems.Where(i => i is IFeatureRenderer))
             {
-                if (renderer == null)
-                {
-                    continue;
-                }
-
                 renderer.Draw(disp, feature);
             }
         }
@@ -58,24 +51,16 @@ namespace gView.Framework.Cartography.Rendering
 
         public void FinishDrawing(IDisplay disp, ICancelTracker cancelTracker)
         {
-            foreach (IFeatureRenderer renderer in _renderers)
+            foreach (IFeatureRenderer renderer in _rendererItems.Where(i => i?.Renderer is IFeatureRenderer))
             {
-                if (renderer != null)
-                {
-                    renderer.FinishDrawing(disp, cancelTracker);
-                }
+                renderer.FinishDrawing(disp, cancelTracker);
             }
         }
 
         public void PrepareQueryFilter(IFeatureLayer layer, IQueryFilter filter)
         {
-            foreach (IFeatureRenderer renderer in _renderers)
+            foreach (IFeatureRenderer renderer in _rendererItems.Where(i => i?.Renderer is IFeatureRenderer))
             {
-                if (renderer == null)
-                {
-                    continue;
-                }
-
                 renderer.PrepareQueryFilter(layer, filter);
             }
         }
@@ -87,18 +72,13 @@ namespace gView.Framework.Cartography.Rendering
 
         public bool HasEffect(IFeatureLayer layer, IMap map)
         {
-            if (_renderers == null)
+            if (_rendererItems == null)
             {
                 return false;
             }
 
-            foreach (IFeatureRenderer renderer in _renderers)
+            foreach (IFeatureRenderer renderer in _rendererItems.Where(i => i is IFeatureRenderer))
             {
-                if (renderer == null)
-                {
-                    continue;
-                }
-
                 if (renderer.HasEffect(layer, map))
                 {
                     return true;
@@ -116,13 +96,8 @@ namespace gView.Framework.Cartography.Rendering
             set
             {
                 _useRefScale = value;
-                foreach (IFeatureRenderer renderer in _renderers)
+                foreach (IFeatureRenderer renderer in _rendererItems.Where(i => i?.Renderer is IFeatureRenderer))
                 {
-                    if (renderer == null)
-                    {
-                        continue;
-                    }
-
                     renderer.UseReferenceScale = _useRefScale;
                 }
             }
@@ -140,8 +115,8 @@ namespace gView.Framework.Cartography.Rendering
 
         public bool RequireClone()
         {
-            return _renderers?.Any(
-                r => r != null 
+            return _rendererItems?.Any(
+                r => r != null
                     && r is IFeatureRenderer featureRenderer
                     && featureRenderer.RequireClone()) == true;
         }
@@ -157,7 +132,7 @@ namespace gView.Framework.Cartography.Rendering
             ScaleRendererPersist persist;
             while ((persist = stream.Load("ScaleRenderer", null, new ScaleRendererPersist(new ScaleRenderer(null))) as ScaleRendererPersist) != null)
             {
-                _renderers.Add(persist.ScaleRenderer);
+                _rendererItems.Add(persist.ScaleRenderer);
             }
         }
 
@@ -165,13 +140,8 @@ namespace gView.Framework.Cartography.Rendering
         {
             stream.Save("useRefScale", _useRefScale);
 
-            foreach (IFeatureRenderer renderer in _renderers)
+            foreach (ScaleRenderer renderer in _rendererItems.Where(i => i is ScaleRenderer))
             {
-                if (renderer == null)
-                {
-                    continue;
-                }
-
                 stream.Save("ScaleRenderer", new ScaleRendererPersist(renderer as ScaleRenderer));
             }
         }
@@ -197,14 +167,9 @@ namespace gView.Framework.Cartography.Rendering
         public object Clone(CloneOptions options)
         {
             ScaleDependentRenderer scaledependentRenderer = new ScaleDependentRenderer();
-            foreach (IFeatureRenderer renderer in _renderers)
+            foreach (ScaleRenderer renderer in _rendererItems.Where(i => i is ScaleRenderer))
             {
-                if (renderer == null)
-                {
-                    continue;
-                }
-
-                scaledependentRenderer._renderers.Add(renderer.Clone(options) as ScaleRenderer);
+                scaledependentRenderer._rendererItems.Add(renderer.Clone(options) as ScaleRenderer);
             }
 
             scaledependentRenderer.UseReferenceScale = _useRefScale;
@@ -213,16 +178,11 @@ namespace gView.Framework.Cartography.Rendering
 
         public void Release()
         {
-            foreach (IFeatureRenderer renderer in _renderers)
+            foreach (IFeatureRenderer renderer in _rendererItems.Where(i => i?.Renderer is IFeatureRenderer))
             {
-                if (renderer == null)
-                {
-                    continue;
-                }
-
                 renderer.Release();
             }
-            _renderers.Clear();
+            _rendererItems.Clear();
         }
 
         #endregion
@@ -234,7 +194,9 @@ namespace gView.Framework.Cartography.Rendering
             get
             {
                 int count = 0;
-                foreach (IFeatureRenderer renderer in _renderers)
+                foreach (IFeatureRenderer renderer in _rendererItems
+                                                        .Where(i => i?.Renderer is IFeatureRenderer)
+                                                        .Select(i => i.Renderer))
                 {
                     if (!(renderer is ILegendGroup))
                     {
@@ -250,7 +212,9 @@ namespace gView.Framework.Cartography.Rendering
         public ILegendItem LegendItem(int index)
         {
             int count = 0;
-            foreach (IFeatureRenderer renderer in _renderers)
+            foreach (IFeatureRenderer renderer in _rendererItems
+                                                        .Where(i => i?.Renderer is IFeatureRenderer)
+                                                        .Select(i => i.Renderer))
             {
                 if (!(renderer is ILegendGroup))
                 {
@@ -268,7 +232,9 @@ namespace gView.Framework.Cartography.Rendering
 
         public void SetSymbol(ILegendItem item, ISymbol symbol)
         {
-            foreach (IFeatureRenderer renderer in _renderers)
+            foreach (IFeatureRenderer renderer in _rendererItems
+                                                        .Where(i => i?.Renderer is IFeatureRenderer)
+                                                        .Select(i => i.Renderer))
             {
                 if (!(renderer is ILegendGroup))
                 {
@@ -306,9 +272,9 @@ namespace gView.Framework.Cartography.Rendering
 
         #endregion
 
-        private class ScaleRenderer : IFeatureRenderer, 
-                                      IScaledependent, 
-                                      ILegendGroup, 
+        private class ScaleRenderer : IFeatureRenderer,
+                                      IScaledependent,
+                                      ILegendGroup,
                                       ISimplify,
                                       IRendererGroupItem
         {
@@ -329,7 +295,7 @@ namespace gView.Framework.Cartography.Rendering
             public IRenderer Renderer
             {
                 get { return _renderer; }
-                set 
+                set
                 {
                     if (value is IFeatureRenderer featureRenderer)
                     {
@@ -666,7 +632,11 @@ namespace gView.Framework.Cartography.Rendering
                 _renderer.MinimumScale = (double)stream.Load("MinScale", 0.0);
                 _renderer.MaximumScale = (double)stream.Load("MaxScale", 0.0);
 
-                _renderer.Renderer = stream.Load("Renderer", null) as IFeatureRenderer;
+                var featureRenderer = stream.Load("Renderer", null) as IFeatureRenderer;
+                if(featureRenderer is not null)
+                {
+                    _renderer.Renderer = featureRenderer;
+                }
             }
 
             public void Save(IPersistStream stream)
@@ -698,7 +668,7 @@ namespace gView.Framework.Cartography.Rendering
                 {
                     base.Add(scaleRenderer);
                 }
-                else if(item.Renderer is IFeatureRenderer featureRenderer)
+                else if (item.Renderer is IFeatureRenderer featureRenderer)
                 {
                     base.Add(new ScaleRenderer(featureRenderer));
                 }
@@ -706,7 +676,7 @@ namespace gView.Framework.Cartography.Rendering
 
             public new void Clear()
             {
-                foreach(var item in this)
+                foreach (var item in this)
                 {
                     item.Renderer?.Release();
                 }
@@ -728,15 +698,12 @@ namespace gView.Framework.Cartography.Rendering
             {
                 List<ISymbol> symbols = new List<ISymbol>();
 
-                if (_renderers != null)
+                if (_rendererItems != null)
                 {
-                    foreach (IRenderer renderer in _renderers)
+                    foreach (IRenderer renderer in _rendererItems
+                                                        .Where(i => i?.Renderer is IRenderer)
+                                                        .Select(i => i.Renderer))
                     {
-                        if (renderer == null)
-                        {
-                            continue;
-                        }
-
                         symbols.AddRange(renderer.Symbols);
                     }
                 }

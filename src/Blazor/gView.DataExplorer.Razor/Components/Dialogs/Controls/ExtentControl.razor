@@ -5,13 +5,12 @@
         <GvGrid ColumnCount="12">
             <GvGridItem Span="4"></GvGridItem>
             <GvGridItem Span="4">
-                <MudTextField Label="Top"
-                               @bind-Value_="Extent.MaxY"
+                <MudNumericField Label="Top"
                                Value="Extent.MaxY"
                                ValueChanged="async (maxy) => { Extent.MaxY = maxy; await OnExtentChanged(); }"
                                Format="#.00000" Culture="@_en" T="double" Immediate="false"
-                               InputType="InputType.Number" Step="0.1"
-                               Variant="Variant.Text"></MudTextField>
+                               Step="0.1"
+                               Variant="Variant.Text"></MudNumericField>
             </GvGridItem>
             <GvGridItem Span="2"></GvGridItem>
             <GvGridItem Span="2">
@@ -22,35 +21,32 @@
 
             <GvGridItem Span="1"></GvGridItem>
             <GvGridItem Span="4">
-                    <MudTextField Label="Left"
-                                  @bind-Value_="Extent.MinX"
+                    <MudNumericField Label="Left"
                                   Value="Extent.MinX"
                                   ValueChanged="async (minx) => { Extent.MinX = minx; await OnExtentChanged(); }"
                                   Format="#.00000" Culture="@_en" T="double" Immediate="false"
-                                  InputType="InputType.Number" Step="0.1"
-                                  Variant="Variant.Text"></MudTextField>
+                                  Step="0.1"
+                                  Variant="Variant.Text"></MudNumericField>
                 </GvGridItem>
             <GvGridItem Span="2"></GvGridItem>
             <GvGridItem Span="4">
-                    <MudTextField Label="Right" 
-                                  @bind-Value_="Extent.MaxX"
+                <MudNumericField Label="Right"
                                   Value="Extent.MaxX"
                                   ValueChanged="async (maxx) => { Extent.MaxX = maxx; await OnExtentChanged(); }"
                                   Format="#.00000" Culture="@_en" T="double" Immediate="false"
-                                  InputType="InputType.Number" Step="0.1"
-                                  Variant="Variant.Text"></MudTextField>
+                                  Step="0.1"
+                                  Variant="Variant.Text"></MudNumericField>
                 </GvGridItem>
             <GvGridItem Span="1"></GvGridItem>
 
             <GvGridItem Span="4"></GvGridItem>
             <GvGridItem Span="4">
-                <MudTextField Label="Bottom"
-                              @bind-Value_="Extent.MinY" 
+                <MudNumericField Label="Bottom"
                               Value="Extent.MinY"
                               ValueChanged="async (miny) => { Extent.MinY = miny; await OnExtentChanged(); }"
                               Format="#.00000" Culture="@_en" T="double" Immediate="false"
-                              InputType="InputType.Number" Step="0.000001"
-                              Variant="Variant.Text"></MudTextField>
+                              Step="0.000001"
+                              Variant="Variant.Text"></MudNumericField>
             </GvGridItem>
             <GvGridItem Span="4"></GvGridItem>
        

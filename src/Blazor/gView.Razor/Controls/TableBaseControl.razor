@@ -845,7 +845,9 @@
     });
 
     private Task OnRowClick(TableRowClickEventArgs<IRow> args)
-        => HighlightRows(_highlightedRows.Count == 1 && _highlightedRows.Contains(args.Item.OID) ? null : [args.Item]);  // if row already highlighted remove highlight (null)
+        => HighlightRows(_highlightedRows.Count == 1
+            && args.Item is not null
+            && _highlightedRows.Contains(args.Item.OID) ? null : [args.Item!]);  // if row already highlighted remove highlight (null)
 
     #endregion
 

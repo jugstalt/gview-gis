@@ -14,7 +14,8 @@
                            @bind-Open="@_drawerIsOpen"  
                            OpenMiniOnHover="true" 
                            Fixed="false">
-                    <MudList Clickable="true" 
+                    <MudList T="IPropertyPageDefinition" 
+                             SelectionMode="SelectionMode.SingleSelection"
                              SelectedValue="_currentTab"
                              SelectedValueChanged="OnCurrentTabChanged">
                     @foreach(var propertyPageDefintion in _propertyPageDefinitions)
@@ -48,7 +49,7 @@
 @code {
     private bool _drawerIsOpen = false;
     private IPropertyPageDefinition[]? _propertyPageDefinitions;
-    private object? _currentTab;
+    private IPropertyPageDefinition? _currentTab;
     private RenderFragment? _propertyPageRenderFragment;
 
     protected override void OnInitialized()

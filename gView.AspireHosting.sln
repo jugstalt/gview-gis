@@ -1,0 +1,38 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.12.35424.110
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gView.AspireHosting.AppHost", "src\Aspire\gView.AspireHosting\gView.AspireHosting.AppHost\gView.AspireHosting.AppHost.csproj", "{1A603CDA-CA94-4DCB-8AF4-54D38C9B181E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gView.AspireHosting.ServiceDefaults", "src\Aspire\gView.AspireHosting\gView.AspireHosting.ServiceDefaults\gView.AspireHosting.ServiceDefaults.csproj", "{4813EDD9-F788-4D8F-9B96-DC9B52CD84D2}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "nuget", "nuget", "{CDB24DCE-67BC-470F-B137-61FF9CB29BC8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gView.Aspire.Hosting", "src\nuget\gView.Aspire.Hosting\gView.Aspire.Hosting.csproj", "{9BE0D16C-231B-40EC-9DAB-F18A21F6E383}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{1A603CDA-CA94-4DCB-8AF4-54D38C9B181E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1A603CDA-CA94-4DCB-8AF4-54D38C9B181E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1A603CDA-CA94-4DCB-8AF4-54D38C9B181E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1A603CDA-CA94-4DCB-8AF4-54D38C9B181E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4813EDD9-F788-4D8F-9B96-DC9B52CD84D2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4813EDD9-F788-4D8F-9B96-DC9B52CD84D2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4813EDD9-F788-4D8F-9B96-DC9B52CD84D2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4813EDD9-F788-4D8F-9B96-DC9B52CD84D2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9BE0D16C-231B-40EC-9DAB-F18A21F6E383}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9BE0D16C-231B-40EC-9DAB-F18A21F6E383}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9BE0D16C-231B-40EC-9DAB-F18A21F6E383}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9BE0D16C-231B-40EC-9DAB-F18A21F6E383}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{9BE0D16C-231B-40EC-9DAB-F18A21F6E383} = {CDB24DCE-67BC-470F-B137-61FF9CB29BC8}
+	EndGlobalSection
+EndGlobal

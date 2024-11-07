@@ -108,8 +108,8 @@ public class LMap
 
     public async Task Refresh() => await _leafletJs.Refresh(Id);
 
-    public async Task UpdateImageLayer(ImageLayer imageLayer, string url, LatLng? southWest, LatLng? northEast) 
-        => await _leafletJs.UpdateImageLayer(Id, imageLayer.Id, url, southWest, northEast);
+    public async Task UpdateImageLayer(ImageLayer imageLayer, string url, LatLng? southWest, LatLng? northEast, Size? imageSize = null) 
+        => await _leafletJs.UpdateImageLayer(Id, imageLayer.Id, url, southWest, northEast, imageSize);
 
     #endregion
 

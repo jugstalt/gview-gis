@@ -1,4 +1,5 @@
 @inject PluginManagerService PluginManager
+@inject ICartoApplicationScopeService AppScope
 @inherits BaseHandler
 
 @if(_featureRenderers is not null && _categories is not null)
@@ -6,8 +7,8 @@
     <GvGrid ColumnCount="3">
         <GvGridItem>
             <MudCheckBox T="bool"
-                         Checked="@(Layer?.FeatureRenderer is not null)"
-                         CheckedChanged="(chk) => RenderFeaturesChecked(chk)"
+                         Value="@(Layer?.FeatureRenderer is not null)"
+                         ValueChanged="(chk) => RenderFeaturesChecked(chk)"
                          Label="Render features for this layer" />
             @if(Layer?.FeatureRenderer is not null) 
             {
@@ -15,7 +16,7 @@
                 {
                     <GvCard Title="@category">
                         <GvCardContentNoPadding>
-                            <MudList Dense="true" Clickable="true" 
+                            <MudList Dense="true" T="string"
                                      Style="padding:0px">
                                 @foreach(var featureRenderer in _featureRenderers.Where(r=>category == r.Category))
                                 {
@@ -24,12 +25,28 @@
                                                         Class="@(featureRenderer.GetType() == _selectedRendererType ? "gview-selected-item" : "")"
                                                         OnClick="() => SelectRenderer(featureRenderer)">
                                                 @featureRenderer.Name
-                                           </MudListItem>
+                                    </MudListItem>
                                 }
                             </MudList>
                         </GvCardContentNoPadding>
                     </GvCard>
                 }
+
+                <GvCard Title="Copy From">
+                    <MudList Dense="true" T="string"
+                                     Style="padding:0px">
+                        <MudListItem Style="white-space:nowrap;overflow:hidden"
+                                     Dense="true"
+                                     OnClick="OnCopyRendererClickAsync">
+                            Other Layer ...
+                        </MudListItem>
+                        <MudListItem Style="white-space:nowrap;overflow:hidden"
+                                     Dense="true"
+                                     OnClick="OnImportRendererClickAsync">
+                            Other Map (XML) ...
+                        </MudListItem>
+                    </MudList>
+                </GvCard>
             }
         </GvGridItem>
 
@@ -144,6 +161,101 @@
                 _featureRenderers?.FirstOrDefault(r => r.GetType() == _selectedRendererType)
                 ?? _featureRenderers?.FirstOrDefault(r => r is SimpleRenderer)
                 ?? _featureRenderers?.FirstOrDefault();
+
+            SelectRenderer(Layer.FeatureRenderer);
+        }
+    });
+
+    private Task OnImportRendererClickAsync() => HandleAsync(async () =>
+    {
+        if (Layer is null) return;
+
+        var lastAccessedDocuments = await AppScope.Settings.GetLastAccessedDocuments() ?? [];
+
+        var previousMapModel = lastAccessedDocuments.Count() == 0
+            ? new()
+            : await AppScope.ShowModalDialog(
+                typeof(Razor.Components.Dialogs.OpenPreviousMapDialog),
+                "Previous opened maps ...",
+                new Razor.Components.Dialogs.Models.OpenPreviousMapDialogModel()
+                    {
+                        Items = lastAccessedDocuments
+                    }
+            );
+
+        if (previousMapModel is null) return;
+
+        string? xmlFileName;
+        if (previousMapModel.Selected == null)
+        {
+            var openMapModel = await AppScope.ShowKnownDialog(Framework.Blazor.KnownDialogs.ExplorerDialog,
+                                        title: "Open map document",
+                                        model: new ExplorerDialogModel()
+                                        {
+                                            Filters = new List<ExplorerDialogFilter> {
+                                                new OpenFileFilter("Map", "*.mxl")
+                                                },
+                                            Mode = ExploerDialogMode.Open
+                                        }
+                                 );
+
+            xmlFileName = openMapModel?.Result.ExplorerObjects.FirstOrDefault()?.FullName;
+        } 
+        else
+        {
+            xmlFileName = previousMapModel.Selected.Path;
+        }
+
+        if (String.IsNullOrEmpty(xmlFileName)) 
+        {
+            return;
+        }
+
+        var stream = new Framework.IO.XmlStream("");
+        stream.ReadStream(xmlFileName);
+
+        var cartoDocument = new CartoDocument(null);
+
+        await stream.LoadAsync("MapDocument", cartoDocument);
+
+        if (cartoDocument.Map is not null)
+        {
+            await SelectRendererAsync(cartoDocument.Map);  
+        };
+    });
+
+    private Task OnCopyRendererClickAsync() => 
+        Map is not null 
+            ? SelectRendererAsync(Map)
+            : Task.CompletedTask;
+
+    private Task SelectRendererAsync(IMap map) => HandleAsync(async () =>
+    {
+        if (Layer is null) return;
+
+        var layerModel = await AppScope.ShowModalDialog(
+                typeof(SelectMapLayerDialog),
+                "Select map layer",
+                new SelectMapLayerDialogModel()
+                {
+                    Map = map,
+                    LayerFilter = (layer) =>
+                        layer switch
+                        {
+                            IFeatureLayer when Map == map && Layer.ID.Equals(layer.ID) => false,
+                            IFeatureLayer featureLayer => 
+                                featureLayer.FeatureRenderer is not null
+                                && featureLayer.LayerGeometryType == Layer.LayerGeometryType,
+                            _ => false
+                        }
+                }
+        );
+
+        var newFeatureRenderer = (layerModel?.SelectedLayer as IFeatureLayer)?.FeatureRenderer?.Clone() as IFeatureRenderer;
+
+        if (newFeatureRenderer is not null)
+        {
+            Layer.FeatureRenderer = newFeatureRenderer;
 
             SelectRenderer(Layer.FeatureRenderer);
         }

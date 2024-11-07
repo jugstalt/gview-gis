@@ -8,13 +8,13 @@
         <div style="max-width:320px;margin: 0px auto;">
             @if (_color is not null)
             {
-                <MudColorPicker DisableToolbar="false" 
-                                DisableAlpha="false"
-                                DisableColorField="false"
-                                DisablePreview="false"
-                                DisableSliders="false"
-                                DisableInputs="false"
-                                DisableModeSwitch="false"
+                <MudColorPicker ShowToolbar="true"
+                                ShowAlpha="true"
+                                ShowColorField="true"
+                                ShowPreview="true"
+                                ShowSliders="true"
+                                ShowInputs="true"
+                                ShowModeSwitch="true"
                                 ColorPickerMode="ColorPickerMode.RGB" 
                                 PickerVariant="PickerVariant.Static"
                                 @bind-Value="_color"/>

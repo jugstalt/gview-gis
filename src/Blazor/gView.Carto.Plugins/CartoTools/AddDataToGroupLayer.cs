@@ -1,5 +1,6 @@
 ﻿using gView.Carto.Core;
-using gView.Carto.Core.Models.Tree;
+using gView.Carto.Core.Abstraction;
+using gView.Carto.Core.Reflection;
 using gView.Carto.Core.Services.Abstraction;
 using gView.Carto.Plugins.Extensions;
 using gView.DataExplorer.Razor.Components.Dialogs.Filters;
@@ -13,6 +14,7 @@ using gView.Framework.Data;
 namespace gView.Carto.Plugins.CartoTools;
 
 [RegisterPlugIn("14A1B7E6-6D73-4062-A7BF-5CB7600A6DB3")]
+[RestorePointAction(RestoreAction.SetRestorePointOnClick)]
 internal class AddDataToGroupLayer : ICartoButton
 {
     public string Name => "Add Data";
@@ -30,14 +32,16 @@ internal class AddDataToGroupLayer : ICartoButton
 
     }
 
-    public bool IsEnabled(ICartoApplicationScopeService scope)
+    public bool IsVisible(ICartoApplicationScopeService scope)
     {
-        return scope.SelectedTocTreeNode is TocParentNode;
+        return scope.SelectedTocTreeNode is ITocParentNode;
     }
+
+    public bool IsDisabled(ICartoApplicationScopeService scope) => false;
 
     async public Task<bool> OnClick(ICartoApplicationScopeService scope)
     {
-        var groupLayer = (scope.SelectedTocTreeNode as TocParentNode)?.TocElement?.Layers?.FirstOrDefault() as IGroupLayer;
+        var groupLayer = scope.SelectedTocTreeNode?.Value?.Layers?.FirstOrDefault() as IGroupLayer;
 
         if (groupLayer is null)
         {
@@ -66,13 +70,12 @@ internal class AddDataToGroupLayer : ICartoButton
 
         foreach (var layer in layersResult.layers.OrderLayersByGeometryType().Where(l => l is Layer).Select(l => (Layer)l))
         {
-
             layer.GroupLayer = groupLayer;
 
             int pos = 1;
             if (map.TOC?.Elements != null)
             {
-                var nextLayer = groupLayer.ChildLayer.FirstOrHigherIndexOfGeometryTypeOrder(layer);
+                var nextLayer = groupLayer.ChildLayers.FirstOrHigherIndexOfGeometryTypeOrder(layer);
                 var nextTocElement = scope.Document.Map.TOC.Elements.FirstOrDefault(e => e.Layers != null && e.Layers.Contains(nextLayer));
                 pos = scope.Document.Map.TOC.Elements.IndexOf(nextTocElement);
             }

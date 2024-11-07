@@ -8,8 +8,7 @@
         <GvScrollable>
             @if(Model.Items is not null)
             {
-                <MudList Clickable="true" 
-                         SelectedItemChanged="OnItemSelected">
+                <MudList SelectedValueChanged="OnItemSelected" T="TItem" >
                 @foreach(var item in Model.Items)
                 {
                     <MudListItem Value="item">
@@ -23,8 +22,8 @@
 </ModalDialogFormBase>
 
 @code {
-    private void OnItemSelected(MudListItem mudListItem)
+    private void OnItemSelected(TItem mudListItem)
     {
-        Model.Result.SelectedItem = (TItem)mudListItem.Value;
+        Model.Result.SelectedItem = (TItem)mudListItem;
     }
 }

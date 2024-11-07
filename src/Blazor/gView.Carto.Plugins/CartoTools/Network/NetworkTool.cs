@@ -41,8 +41,10 @@ internal class NetworkTool : ICartoTool
 
     }
 
-    public bool IsEnabled(ICartoApplicationScopeService scope)
-        => scope.SelectedTocTreeNode?.TocElement.CollectionNetworkLayers()?.Any() == true;
+    public bool IsVisible(ICartoApplicationScopeService scope)
+        => scope.SelectedTocTreeNode?.Value?.CollectionNetworkLayers()?.Any() == true;
+
+    public bool IsDisabled(ICartoApplicationScopeService scope) => false;
 
     public Task<bool> OnClick(ICartoApplicationScopeService scope)
     {
@@ -54,7 +56,7 @@ internal class NetworkTool : ICartoTool
         }
 
         networkContext.NetworkLayers = scope.NetworkLayers();
-        networkContext.CurrentNetworkLayer = scope.SelectedTocTreeNode?.TocElement.CollectionNetworkLayers().FirstOrDefault();
+        networkContext.CurrentNetworkLayer = scope.SelectedTocTreeNode?.Value?.CollectionNetworkLayers().FirstOrDefault();
 
         return Task.FromResult(true);
     }

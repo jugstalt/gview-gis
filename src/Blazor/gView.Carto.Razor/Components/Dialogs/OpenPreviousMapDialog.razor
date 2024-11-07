@@ -1,12 +1,20 @@
 @inherits ModalDialogFormBase<OpenPreviousMapDialogModel>
 @inject SettingsService Settings
 @inject IconService IconService
+@inject ICartoApplicationScopeService AppScope
 
 <ModalDialogFormBase T="OpenPreviousMapDialogModel"
                      OnDialogClose="base.OnDialogClose"
                      Model="base.Model">
     <DialogBody>
-        @if (Model.Selected is not null)
+        @if(_isLoadingRestorePoint)
+{
+            <MudProgressCircular Indeterminate="true" Size="MudBlazor.Size.Small" />
+            <div>
+                Loading restore point ...
+            </div>  
+        } 
+        else if (Model.Selected is not null)
         {
             <MudProgressCircular Indeterminate="true" Size="MudBlazor.Size.Small" />
             <div>
@@ -22,6 +30,20 @@
                     <div class="@(IconService.FromString("basic:globe-table")) icon"></div>
                     <div class="title">@item.DisplayPath()</div>
                     <div class="sub-title">@item.LastAccess</div>
+
+                    @{
+                        var restoreState = AppScope.LatestRestorePointState(item.Path);
+
+                        if (restoreState != RestorePointState.None)
+                        {
+                            <MudFab Color="restoreState == RestorePointState.Newer ? Color.Primary : Color.Surface"
+                                    DropShadow="true"
+                                    Style="position:absolute;right:6px;bottom:6px"
+                                    Size="MudBlazor.Size.Small" title="Try to restore..."
+                                    StartIcon="@Icons.Material.Outlined.Restore"
+                                    OnClick="async () => await OnShowRestorePointsAsync(item.Path)" />
+                        }
+                    }
                 </div>
             }
 
@@ -37,7 +59,9 @@
     </DialogButtons>
 </ModalDialogFormBase>
     
-  @code {
+@code {
+    private bool _isLoadingRestorePoint = false;
+
     async private Task SelectMapFileItem(MapFileItem? item)
     {
         Model.Selected = item;
@@ -45,5 +69,34 @@
         await base.ForceRenderComponent();
 
         await base.Submit();
+    }
+
+    async private Task OnShowRestorePointsAsync(string mxlFilePath)
+    {
+        var model = await AppScope.ShowModalDialog(
+                typeof(RestoreMapDocumentDialog),
+                $"Restore: {new FileInfo(mxlFilePath).Name}",
+                new RestoreMapDocumentDialogModel()
+                    {
+                        MxlFilePath = mxlFilePath
+                    }
+        );
+
+        if (!String.IsNullOrEmpty(model?.MxlFilePath)
+            && !String.IsNullOrEmpty(model.RestorePointHash))
+        {
+            _isLoadingRestorePoint = true;
+
+            try {
+                await base.ForceRenderComponent();
+                await AppScope.LoadRestorePointAsync(model.MxlFilePath, model.RestorePointHash);
+
+            } 
+            finally
+            {
+                _isLoadingRestorePoint = false;
+            }
+            await base.Close();
+        }
     }
 }

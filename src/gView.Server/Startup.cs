@@ -13,12 +13,12 @@ using gView.Server.Services.Handlers;
 using gView.Server.Services.Hosting;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System;
+using gView.Server.Extensions;
 
 namespace gView.Server
 {
@@ -36,7 +36,7 @@ namespace gView.Server
 
             #region Graphics Engine
 
-            switch (Configuration["graphics:rendering"]?.ToString())
+            switch (Configuration.Value("graphics:rendering")?.ToString())
             {
                 case "gdi":
                 case "gdiplus":
@@ -47,7 +47,7 @@ namespace gView.Server
                     break;
             }
 
-            switch (Configuration["graphics:encoding"]?.ToString())
+            switch (Configuration.Value("graphics:encoding")?.ToString())
             {
                 case "skia":
                 case "skiasharp":
@@ -65,17 +65,17 @@ namespace gView.Server
 
             #region Globals
 
-            if (Configuration["globals:CustomCursorTimeoutSeconds"] != null)
+            if (Configuration.Value("globals:CustomCursorTimeoutSeconds") != null)
             {
-                Framework.Db.Globals.CustomCursorTimeoutSeconds = int.Parse(Configuration["globals:CustomCursorTimeoutSeconds"]);
+                Framework.Db.Globals.CustomCursorTimeoutSeconds = int.Parse(Configuration.Value("globals:CustomCursorTimeoutSeconds"));
             }
 
             #endregion
 
             #region Path Aliases
 
-            var pathAliases = Configuration.GetSection("path-aliases");
-            if (pathAliases is not null)
+            var pathAliases = Configuration.Section("path-aliases");
+            if (pathAliases?.Exists() == true)
             {
                 foreach (var pathAlias in pathAliases.GetChildren())
                 {
@@ -120,36 +120,36 @@ namespace gView.Server
                 config =>
                 {
                     config.AppRootPath = Environment.ContentRootPath;
-                    if (!String.IsNullOrWhiteSpace(Configuration["services-folder"]))
+                    if (!String.IsNullOrWhiteSpace(Configuration.Value("services-folder")))
                     {
                         config.IsValid = true;
 
-                        config.OutputPath = Configuration["output-path"];
-                        config.OutputUrl = Configuration["output-url"];
-                        config.OnlineResource = Configuration["onlineresource-url"];
-                        config.TileCachePath = Configuration["tilecache-root"];
+                        config.OutputPath = Configuration.Value("output-path");
+                        config.OutputUrl = Configuration.Value("output-url");
+                        config.OnlineResource = Configuration.Value("onlineresource-url");
+                        config.TileCachePath = Configuration.Value("tilecache-root");
 
-                        config.TaskQueue_MaxThreads = Math.Max(1, int.Parse(Configuration["task-queue:max-parallel-tasks"]));
-                        config.TaskQueue_QueueLength = Math.Max(10, int.Parse(Configuration["task-queue:max-queue-length"]));
+                        config.TaskQueue_MaxThreads = Math.Max(1, int.Parse(Configuration.Value("task-queue:max-parallel-tasks") ?? "1"));
+                        config.TaskQueue_QueueLength = Math.Max(10, int.Parse(Configuration.Value("task-queue:max-queue-length") ?? "10"));
 
-                        config.MapServerDefaults_MaxImageWidth = Math.Max(0, int.Parse(Configuration["mapserver-defaults:maxImageWidth"]));
-                        config.MapServerDefaults_MaxImageHeight = Math.Max(0, int.Parse(Configuration["mapserver-defaults:maxImageHeight"]));
-                        config.MapServerDefaults_MaxRecordCount = Math.Max(0, int.Parse(Configuration["mapserver-defaults:maxRecordCount"]));
+                        config.MapServerDefaults_MaxImageWidth = Math.Max(0, int.Parse(Configuration.Value("mapserver-defaults:maxImageWidth") ?? "0"));
+                        config.MapServerDefaults_MaxImageHeight = Math.Max(0, int.Parse(Configuration.Value("mapserver-defaults:maxImageHeight") ?? "0"));
+                        config.MapServerDefaults_MaxRecordCount = Math.Max(0, int.Parse(Configuration.Value("mapserver-defaults:maxRecordCount") ?? "0"));
 
-                        config.ServicesPath = $"{Configuration["services-folder"]}/services";
-                        config.LoginManagerRootPath = $"{Configuration["services-folder"]}/_login";
-                        config.LoggingRootPath = $"{Configuration["services-folder"]}/log";
+                        config.ServicesPath = $"{Configuration.Value("services-folder")}/services";
+                        config.LoginManagerRootPath = $"{Configuration.Value("services-folder")}/_login";
+                        config.LoggingRootPath = $"{Configuration.Value("services-folder")}/log";
 
-                        config.LogServiceErrors = Configuration["Logging:LogServiceErrors"]?.ToLower() != "false";
-                        config.LogServiceRequests = Configuration["Logging:LogServiceRequests"]?.ToLower() == "true";
-                        config.LogServiceRequestDetails = Configuration["Logging:LogServerRequestDetails"]?.ToLower() == "true";
+                        config.LogServiceErrors = Configuration.Value("Logging:LogServiceErrors")?.ToLower() != "false";
+                        config.LogServiceRequests = Configuration.Value("Logging:LogServiceRequests")?.ToLower() == "true";
+                        config.LogServiceRequestDetails = Configuration.Value("Logging:LogServerRequestDetails")?.ToLower() == "true";
 
-                        Globals.AllowFormsLogin = config.AllowFormsLogin = Configuration["allowFormsLogin"]?.ToLower() != "false";
-                        config.ForceHttps = Configuration["force-https"]?.ToLower() == "true";
+                        Globals.AllowFormsLogin = config.AllowFormsLogin = Configuration.Value("allowFormsLogin")?.ToLower() != "false";
+                        config.ForceHttps = Configuration.Value("force-https")?.ToLower() == "true";
 
-                        if (!String.IsNullOrWhiteSpace(Configuration["port"]))
+                        if (!String.IsNullOrWhiteSpace(Configuration.Value("port")))
                         {
-                            config.Port = int.Parse(Configuration["port"]);
+                            config.Port = int.Parse(Configuration.Value("port"));
                         }
                     }
                     else
@@ -158,7 +158,7 @@ namespace gView.Server
                     }
                 });
 
-            if (!String.IsNullOrEmpty(Configuration["external-auth-authority:url"]))
+            if (!String.IsNullOrEmpty(Configuration.Value("external-auth-authority:url")))
             {
                 services.AddHttpContextAccessor();
 

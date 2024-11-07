@@ -1,4 +1,5 @@
-﻿using gView.Framework.Core.Data;
+﻿using gView.Framework.Common.Json.Converters.Extensions;
+using gView.Framework.Core.Data;
 using gView.Framework.Core.Data.Cursors;
 using gView.Framework.Core.Geometry;
 using gView.Framework.Geometry;
@@ -162,10 +163,12 @@ namespace gView.Interoperability.GeoServices.Dataset
 
                 if (jsonFeature.Attributes != null)
                 {
-                    var attribiutes = (IDictionary<string, object>)jsonFeature.Attributes;
-                    foreach (var name in attribiutes.Keys)
+                    //var attribiutes = jsonFeature.Attributes.ToDictionaryWithNativeTypes();
+                    var attributes = (IDictionary<string, object>)jsonFeature.Attributes;
+
+                    foreach (var name in attributes.Keys)
                     {
-                        object value = attribiutes[name];
+                        object value = attributes[name];
 
                         if (dateColumns.Contains(name))
                         {

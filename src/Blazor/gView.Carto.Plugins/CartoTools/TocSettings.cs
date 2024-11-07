@@ -1,5 +1,6 @@
 ﻿using gView.Carto.Core;
 using gView.Carto.Core.Extensions;
+using gView.Carto.Core.Reflection;
 using gView.Carto.Core.Services.Abstraction;
 using gView.Carto.Razor.Components.Dialogs.Models;
 using gView.Framework.Blazor.Models;
@@ -10,6 +11,7 @@ using gView.Framework.Core.Common;
 namespace gView.Carto.Plugins.CartoTools;
 
 [RegisterPlugIn("D1464197-2220-4895-954A-23A1379CFDFB")]
+[RestorePointAction(RestoreAction.SetRestorePointOnClick)]
 internal class TocSettings : ICartoButton
 {
     public string Name => "TOC Settings";
@@ -20,14 +22,16 @@ internal class TocSettings : ICartoButton
 
     public CartoToolTarget Target => CartoToolTarget.Map;
 
-    public int SortOrder => 98;
+    public int SortOrder => 8;
 
     public void Dispose()
     {
     }
 
-    public bool IsEnabled(ICartoApplicationScopeService scope)
+    public bool IsVisible(ICartoApplicationScopeService scope)
         => !scope.Document.Readonly; //  scope.Document.Map.TOC.Elements.Count() > 0;
+
+    public bool IsDisabled(ICartoApplicationScopeService scope) => false;
 
     async public Task<bool> OnClick(ICartoApplicationScopeService scope)
     {
@@ -39,7 +43,7 @@ internal class TocSettings : ICartoButton
             return false;
         }
 
-        var selectedTocElement = scope.SelectedTocTreeNode?.TocElement;
+        var selectedTocElement = scope.SelectedTocTreeNode?.Value;
         var selectedGroupElement = selectedTocElement is null || selectedTocElement.IsGroupElement()
                                      ? selectedTocElement
                                      : selectedTocElement.ParentGroup;

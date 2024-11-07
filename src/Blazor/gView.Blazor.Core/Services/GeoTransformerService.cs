@@ -1,7 +1,6 @@
-﻿using gView.Framework.Geometry;
-using gView.Blazor.Core.Extensions;
-using SkiaSharp;
+﻿using gView.Blazor.Core.Extensions;
 using gView.Framework.Core.Geometry;
+using gView.Framework.Geometry;
 
 namespace gView.Blazor.Core.Services;
 
@@ -29,8 +28,13 @@ public class GeoTransformerService
         return Transform(geometry, fromSRef, toSRef);
     }
 
-    public IGeometry Transform(IGeometry geometry, ISpatialReference fromSRef, ISpatialReference toSRef)
+    public IGeometry Transform(IGeometry geometry, ISpatialReference? fromSRef, ISpatialReference? toSRef)
     {
+        if (fromSRef is null || toSRef is null)
+        {
+            return geometry;
+        }
+
         using (var transformer = GeometricTransformerFactory.Create())
         {
             transformer.SetSpatialReferences(fromSRef, toSRef);

@@ -4,7 +4,7 @@ namespace gView.Framework.Core.Data
 {
     public interface IGroupLayer : ILayer
     {
-        List<ILayer> ChildLayer { get; }
+        List<ILayer> ChildLayers { get; }
 
         MapServerGrouplayerStyle MapServerStyle { get; set; }
     }
