@@ -30,9 +30,13 @@ public class ClipCompactTileCacheCommand : ICommand
             {
                 Description = "Source tilecache path"
             },
+            new CommandParameter<int>("min-level")
+            {
+                Description="optional: Min tilecacle level. Level smaller than this values will ignored."
+            },
             new CommandParameter<int>("max-level")
             {
-                Description="optional: Max tilecacle level"
+                Description="optional: Max tilecacle level. Levels greater than this value will ignored."
             },
             new RequiredCommandParameter<IFeatureClass>("clipper")
             {
@@ -75,6 +79,7 @@ public class ClipCompactTileCacheCommand : ICommand
             };
             string targetCache = parameters.GetValueOrDefault<string>("target-folder", null) ?? "";
             int jpegQual = parameters.GetValueOrDefault<int>("jpeg-qual", -1);
+            int minLevel = parameters.GetValueOrDefault<int>("min-level", -1);
             int maxLevel = parameters.GetValueOrDefault<int>("max-level", -1);
 
             var clip = new ClipCompact(cancelTracker);
@@ -85,6 +90,7 @@ public class ClipCompactTileCacheCommand : ICommand
                     clipper,
                     clipperQuery,
                     jpegQuality: jpegQual,
+                    minLevel: minLevel,
                     maxlevel: maxLevel,
                     clipType: clipType,
                     logger: logger

@@ -48,6 +48,7 @@ public class ClipCompactTileCache : IExplorerToolCommand
         {
             { "clip-type", model.ClipType.ToString() },
             { "source-config", model.SourceCacheConfig },
+            { "min-level", model.MinLevel },
             { "max-level", model.MaxLevel },
             { "clipper_connstr", sourceDataset.ConnectionString },
             { "clipper_guid", sourceDatasetGuid.ToString() },

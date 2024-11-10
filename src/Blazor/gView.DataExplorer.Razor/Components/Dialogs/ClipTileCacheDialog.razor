@@ -16,6 +16,11 @@
                 <SelectTileCacheControl @bind-ConfFile="Model.SourceCacheConfig" />
 
                 <MudNumericField T="int" Min="-1"
+                                 Label="Min Level"
+                                 HelperText="Min Level for clipping. Use -1 for all levels"
+                                 @bind-Value="Model.MinLevel" />
+
+                <MudNumericField T="int" Min="-1"
                                  Label="Max Level"
                                  HelperText="Max Level for clipping. Use -1 for all levels"
                                  @bind-Value="Model.MaxLevel" />
