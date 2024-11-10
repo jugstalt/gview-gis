@@ -42,7 +42,7 @@ public class TileBundleFileObject : ExplorerObjectCls<IExplorerObject, TileBundl
 
     public string? Type => "Compact Tile Bundle File";
 
-    public string Icon => "basic:square-medium";
+    public string Icon => "webgis:tiles";
 
     public Task<IExplorerFileObject?> CreateInstance(IExplorerObject parent, string filePath)
     {

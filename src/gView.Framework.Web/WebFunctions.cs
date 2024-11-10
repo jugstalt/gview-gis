@@ -84,9 +84,9 @@ public class WebFunctions
     {
         return HttpSendRequestAsync(url, methode, postBytes, "", "");
     }
-    public static Task<string> HttpSendRequestAsync(string url, string methode, byte[] postBytes, string user, string password, int timeout = 0)
+    public static Task<string> HttpSendRequestAsync(string url, string methode, byte[] postBytes, string user, string password, int timeout = 0, HttpClient httpClient = null)
     {
-        return HttpSendRequestAsync(url, methode, postBytes, user, password, Encoding.Default, timeout);
+        return HttpSendRequestAsync(url, methode, postBytes, user, password, Encoding.Default, timeout, httpClient);
     }
     //public static string HttpSendRequest_old(string url, string methode, byte[] postBytes, string user, string password, Encoding encoding, int timeout = 0)
     //{
@@ -212,17 +212,20 @@ public class WebFunctions
                     string user,
                     string password,
                     Encoding encoding,
-                    int timeout = 0
+                    int timeout = 0,
+                    HttpClient httpClient = null
             )
     {
-        HttpClient httpClient;
-        if (ProxySettings.Proxy(url) != null)
+        if (httpClient is null)
         {
-            httpClient = _sharedClientWithProxy;
-        }
-        else
-        {
-            httpClient = _sharedClient;
+            if (ProxySettings.Proxy(url) != null)
+            {
+                httpClient = _sharedClientWithProxy;
+            }
+            else
+            {
+                httpClient = _sharedClient;
+            }
         }
 
         using (HttpRequestMessage request = new HttpRequestMessage(new HttpMethod(method), url))
