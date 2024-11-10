@@ -1,0 +1,104 @@
+@using gView.Framework.Data.Joins
+@inherits ModalDialogFormBase<LayerJoinsModel>
+@inject PluginManagerService Plugins
+
+@if(Model.Map is not null && Model.FeatureLayer is not null)
+{
+    <ModalDialogFormBase T="LayerJoinsModel"
+                         OnDialogClose="base.OnDialogClose"
+                         ContentStyle="DialogContentStyle.Wide"
+                         Model="base.Model">
+        <DialogBody>
+            <GvGrid ColumnCount="6">
+                <GvGridItem Span="2">
+                    <GvScrollable>
+                        <MudPaper Elevation="25">
+                            <MudToolBar>
+                                <MudMenu Label="Add Join"
+                                         StartIcon="@Icons.Material.Outlined.Add"
+                                         IconColor="Color.Primary"
+                                         Color="Color.Primary">
+                                    @foreach(var join in Plugins.GetPlugins<IFeatureLayerJoin>(Framework.Common.Plugins.Type.IFeatureLayerJoin)) 
+                                    {
+                                        <MudMenuItem OnClick="() => HandleOnAddClick(join.GetType())">
+                                            @join.Name
+                                        </MudMenuItem>
+                                    }
+                                </MudMenu>
+
+                                @if (_selectedJoin is not null)
+                                {
+                                    <MudIconButton Icon="@Icons.Material.Outlined.Delete"
+                                                   Color="Color.Secondary"
+                                                   OnClick="HandleOnDeleteClick" />
+                                }
+                            </MudToolBar>
+                        </MudPaper>
+
+                        <GvScrollable MaxHeight="70">
+                            <MudList T="IFeatureLayerJoin"
+                                     SelectionMode="SelectionMode.SingleSelection"
+                                     @bind-SelectedValue="_selectedJoin">
+
+                                <MudListSubheader>
+                                    Layer Joins
+                                </MudListSubheader>
+                                @foreach (var join in Model.FeatureLayer.Joins ?? [])
+                                {
+                                    <MudListItem Value="@join">@join.JoinName</MudListItem>
+                                }
+                            </MudList>
+                        </GvScrollable>
+                        
+                    </GvScrollable>
+
+                </GvGridItem>
+                <GvGridItem Span="4">
+                    @if(_selectedJoin is FeatureLayerJoin featureLayerJoin) 
+                    {
+                        <FeatureLayerJoinSettings Map="Model.Map"
+                                                  FeatureLayer="Model.FeatureLayer"
+                                                  Join="featureLayerJoin" />
+                            
+                    }
+                    else if(_selectedJoin is FeatureLayerDatabaseJoin databaseJoin) 
+                    {
+                        <FeatureLayerDatabaseJoinSettings Map="Model.Map"
+                                                          FeatureLayer="Model.FeatureLayer"
+                                                          Join="databaseJoin" />
+                    }
+                </GvGridItem>
+            </GvGrid>
+        </DialogBody>
+    </ModalDialogFormBase>
+}
+
+@code {
+    private IFeatureLayerJoin? _selectedJoin = null;
+
+    private void HandleOnAddClick(Type joinType) => Handle(() =>
+    {
+        if (Model.FeatureLayer is null) return;
+
+        if (Model.FeatureLayer.Joins is null)
+        {
+            Model.FeatureLayer.Joins = new FeatureLayerJoins();
+        }
+
+        var newJoin = Activator.CreateInstance(joinType) as IFeatureLayerJoin;
+
+        if (newJoin is null) return;
+
+        newJoin.JoinName = $"{newJoin.Name} {Model.FeatureLayer.Joins.Count + 1}";
+
+        Model.FeatureLayer.Joins.Add(_selectedJoin = newJoin);
+    });
+
+    private void HandleOnDeleteClick() => Handle(() =>
+    {
+        if (Model.FeatureLayer?.Joins is null || _selectedJoin is null) return;
+
+        Model.FeatureLayer.Joins.Remove(_selectedJoin);
+        _selectedJoin = null;
+    });
+}

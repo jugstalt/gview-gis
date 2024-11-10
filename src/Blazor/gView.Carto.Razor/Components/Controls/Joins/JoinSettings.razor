@@ -1,0 +1,50 @@
+@if(FeatureLayer is not null && Join is not null)
+{
+    <GvCard Title="Join">
+        <GvCardContent>
+            <GvGrid ColumnCount="2">
+                <GvGridItem>
+                    <MudTextField @bind-Value="Join.JoinName"
+                                  Label="Name"
+                                  Variant="Variant.Outlined" />
+                </GvGridItem>
+                    
+                <GvGridItem>
+                    <MudSelect @bind-Value="Join.Field"
+                               Label="Join Field"
+                               Variant="Variant.Outlined">
+                        @foreach (var field in FeatureLayer.Fields.ToEnumerable() ?? [])
+                        {
+                            <MudSelectItem Value="field.name">@field.name</MudSelectItem>
+                        }
+                    </MudSelect>
+                </GvGridItem>
+            </GvGrid>
+            
+            <MudRadioGroup @bind-Value="Join.JoinType" T="joinType" >
+                <MudRadio Value="@joinType.LeftOuterJoin">Use Outer Join</MudRadio>
+                <MudText Typo="Typo.caption">
+                    Keep all records in the target table even if there is no record in the joined table.
+                </MudText>
+                <MudRadio Value="@joinType.LeftInnerJoin">Use Inner Join</MudRadio>
+                <MudText Typo="Typo.caption">
+                    Keep only matching records in the target table.
+                </MudText>
+            </MudRadioGroup>
+
+        </GvCardContent>
+    </GvCard>
+}
+
+@code {
+    [Parameter] public IFeatureLayer? FeatureLayer { get; set; }
+    [Parameter] public IFeatureLayerJoin? Join { get; set; }
+
+    private void HandleJoinTypeChanged(joinType type) 
+    {
+        if (Join is not null)
+        {
+            Join.JoinType = type;
+        }
+    }
+}

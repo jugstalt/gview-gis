@@ -35,6 +35,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\gView.Cmd.Core\gView.Cmd.Core.csproj" />
     <ProjectReference Include="..\..\gView.Framework.Cartography\gView.Framework.Cartography.csproj" />
+    <ProjectReference Include="..\..\gView.Framework.Data.Joins\gView.Framework.Data.Joins.csproj" />
     <ProjectReference Include="..\..\gView.Interoperability.GeoServices\gView.Interoperability.GeoServices.csproj" />
     <ProjectReference Include="..\..\gView.Interoperability.OGC\gView.Interoperability.OGC.csproj" />
     <ProjectReference Include="..\..\gView.Framework\gView.Framework.csproj" />

@@ -1,0 +1,69 @@
+@using gView.Framework.Data.Joins
+
+@if(Map is not null &&
+    FeatureLayer is not null &&
+    Join is not null)
+{
+    <JoinSettings FeatureLayer="FeatureLayer" Join="Join" />
+
+    <GvCard Title="Joined Feture Class">
+        <GvCardContent>
+            <GvGrid ColumnCount="2">
+
+                <GvGridItem>
+                    <MudSelect T="int" Value="@(Join.FeatureLayer?.ID ?? -1)"
+                               ValueChanged="(id) => HandleFeatureLayerChanged(id)"
+                               Label="Feature Layer"
+                               Variant="Variant.Outlined">
+                        @foreach (IFeatureLayer featureLayer in _mapFeatureLayers)
+                        {
+                            <MudSelectItem Value="featureLayer.ID">@featureLayer.TocNameOrLayerTitle(Map)</MudSelectItem>
+                        }
+                    </MudSelect>
+                </GvGridItem>
+
+                <GvGridItem>
+                    @if (Join.FeatureLayer is not null)
+                    {
+                        <MudSelect @bind-Value="Join.JoinField"
+                                   Label="Join Field"
+                                   Variant="Variant.Outlined">
+                            @foreach (var field in Join.FeatureLayer.Fields?.ToEnumerable() ?? [])
+                            {
+                                <MudSelectItem Value="field.name">@field.name</MudSelectItem>
+                            }
+                        </MudSelect>
+                    }
+                </GvGridItem>
+            </GvGrid>
+           
+        </GvCardContent>
+    </GvCard>
+}
+
+@code {
+    [Parameter] public IMap? Map { get; set; }
+    [Parameter] public IFeatureLayer? FeatureLayer { get; set; }
+    [Parameter] public FeatureLayerJoin? Join { get; set; }
+
+    private List<IFeatureLayer> _mapFeatureLayers = new();
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+
+        if(Map is not null)
+        {
+            _mapFeatureLayers = new List<IFeatureLayer>(
+                Map.MapElements.Where(e => e is IFeatureLayer).Select(l => (IFeatureLayer)l));
+        }
+    }
+
+    private void HandleFeatureLayerChanged(int layerId)
+    {
+        if(Join is not null) 
+        {
+            Join.FeatureLayer = _mapFeatureLayers.FirstOrDefault(l => l.ID == layerId);
+        }
+    }
+}

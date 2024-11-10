@@ -48,9 +48,9 @@ internal class LayerSettings : ICartoButton
         }
 
         var originalLayer = scope.SelectedTocTreeNode?.Value?.Layers?.FirstOrDefault() as Layer;
-        var clonedLayer = originalLayer?.Clone();
+        var clonedLayer = originalLayer?.Clone(originalMap);
 
-        if (originalLayer is null || clonedLayer is null)  // todo: clone layer?
+        if (originalLayer is null || clonedLayer is null)  
         {
             return false;
         }
