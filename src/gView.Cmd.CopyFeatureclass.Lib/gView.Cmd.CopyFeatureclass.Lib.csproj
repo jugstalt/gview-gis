@@ -6,6 +6,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="MongoDB.Driver" Version="3.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\gView.Cmd.Core\gView.Cmd.Core.csproj" />
     <ProjectReference Include="..\gView.Framework.Core\gView.Framework.Core.csproj" />
     <ProjectReference Include="..\gView.DataSources.EventTable\gView.DataSources.EventTable.csproj" />

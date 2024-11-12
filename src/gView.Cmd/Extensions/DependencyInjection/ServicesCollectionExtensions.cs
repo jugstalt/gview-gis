@@ -1,5 +1,4 @@
-﻿using Amazon.Auth.AccessControlPolicy.ActionIdentifiers;
-using gView.Cmd.Services;
+﻿using gView.Cmd.Services;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace gView.Cmd.Extensions.DependencyInjection;
