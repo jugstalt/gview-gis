@@ -2,6 +2,7 @@
 using gView.Framework.Core.Data;
 using gView.Framework.Core.IO;
 using gView.Framework.Data;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace gView.Framework.Cartography.UI;
@@ -39,11 +40,6 @@ internal class PersistLayer : IPersistableLoadAsync
         IDataset dataset = _map[datasetIndex];
         // dataset ist bei Grouplayern immer null, darum kein abbruch
         //if(dataset==null) return;
-
-        if(dataset==null)
-        {
-            dataset = null;
-        }
 
         bool isWebTheme = (bool)stream.Load("IsWebTheme", false);
 
@@ -119,6 +115,20 @@ internal class PersistLayer : IPersistableLoadAsync
         // für ein späters speichern des projektes die werte merken
         if (_element is NullLayer nullLayer)
         {
+            //// 
+            ////  Use this, if you MXL is currput => all grouplayers missing!! 
+            ////  Repairs the groups with the loss of settings (scales, etc)
+            ////
+            //_element = new GroupLayer(nullLayer.Title)
+            //{
+            //    ID = _id_
+            //};
+
+            //_map.AddLayer((ILayer)_element);
+
+            //return true;
+
+
             nullLayer.PersistLayerID = _id_;
             nullLayer.PersistDatasetID = datasetIndex;
             nullLayer.PersistIsWebTheme = isWebTheme;
