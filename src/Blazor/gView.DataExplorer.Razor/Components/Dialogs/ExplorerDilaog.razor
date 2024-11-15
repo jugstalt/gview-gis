@@ -7,8 +7,8 @@
 @inject IAppIdentityProvider IdentityProvider;
 
 <ModalDialogFormBase T="ExplorerDialogModel"
-                      OnDialogClose="base.OnDialogClose"
-                      Model="base.Model">
+OnDialogClose="base.OnDialogClose"
+Model="base.Model">
     <DialogBody>
         @if(_isSubmitting)
         {
@@ -28,15 +28,15 @@
                         new[] { _selectedRoot } : 
                         Array.Empty<IExplorerObject>());
             }
-            
+
             <MudToolBar>
                 <div style="width:100%">
                     <MudSelect Value="@_selectedRoot" T="IExplorerObject"
-                               ValueChanged="async (root) => await SetRootElementAsync(root)"
-                               Label="Folder/Path"
-                               Class="explorer-dialog-root-select"
-                               Variant="Variant.Outlined"
-                               Dense="true">
+                    ValueChanged="async (root) => await SetRootElementAsync(root)"
+                    Label="Folder/Path"
+                    Class="explorer-dialog-root-select"
+                    Variant="Variant.Outlined"
+                    Dense="true">
 
                         @{ var level = 0; }
                         @foreach (var parent in _selectedRoot!.GetParents(true).Reverse())
@@ -51,43 +51,43 @@
 
                     </MudSelect>
                 </div>
-                
+
                 <MudSpacer />
                 <MudIconButton Icon="@Icons.FromString("basic:refresh")"
-                               OnClick="OnRefreshList"/>
-               
+                OnClick="OnRefreshList"/>
+
                 @if (_creatableExplorerTools?.Where(e => e.CanCreate(_selectedRoot!)).Any() == true)
                 {
                     <MudMenu Icon="@MudBlazor.Icons.Material.Filled.Add">
                         @foreach (var creatable in _creatableExplorerTools?.Where(e => e.CanCreate(_selectedRoot!))!)
                         {
                             <MudMenuItem Icon="@Icons.FromString(creatable.Icon)"
-                                         OnClick="async () => await OnCreateClickAsync(creatable)">
+                            OnClick="async () => await OnCreateClickAsync(creatable)">
                                 @creatable.Type
                             </MudMenuItem>
                         }
                     </MudMenu>
                 }
-                
+
             </MudToolBar>
 
             <MudToolBar>
                 <MudTextField @bind-Value="_filterString"
-                              Placeholder="Filter..."
-                              Adornment="Adornment.Start"
-                              AdornmentIcon="@MudBlazor.Icons.Material.Filled.Search"
-                              IconSize="MudBlazor.Size.Medium" Class="mt-0 gview-explorer-content-filter">
+                Placeholder="Filter..."
+                Adornment="Adornment.Start"
+                AdornmentIcon="@MudBlazor.Icons.Material.Filled.Search"
+                IconSize="MudBlazor.Size.Medium" Class="mt-0 gview-explorer-content-filter">
                 </MudTextField>
                 @if (!String.IsNullOrEmpty(_filterString))
                 {
                     <MudIconButton Icon="@MudBlazor.Icons.Material.Outlined.Close"
-                                   OnClick="() => _filterString=string.Empty" />
+                    OnClick="() => _filterString=string.Empty" />
                 }
             </MudToolBar>
             <MudPaper Elevation="1">
-                    <MudList T="string"
-                             Style="width:900px;max-width:100%;height: calc(100vh - 465px);overflow:auto" 
-                             Dense="true">
+                <MudList T="string"
+                Style="width:900px;max-width:100%;height: calc(100vh - 465px);overflow:auto" 
+                Dense="true">
                     @if (_selectedRoot?.ParentExplorerObject is not null)
                     {
                         <MudListItem @ondblclick="MoveUp">
@@ -98,48 +98,48 @@
                         </MudListItem>
                     }
                     @foreach (var exObject in FilteredCurrentExplorerObjects())
-                        {
-                            <MudListItem Class="@($"explorer-dialog-item {(Model.Result.ExplorerObjects.Contains(exObject) ? "selected" : "")}")"
-                                          OnClick="async (mEvent) => await OnListItemClick(mEvent, exObject)" 
-                                          @ondblclick="() => OnListItemDoubleClick(exObject)" >
-                                <div style="display: flex; align-items: center;white-space:nowrap">
-                                    <MudIcon Icon="@Icons.FromString(exObject.Icon)" Style="margin-right: 6px;" />
-                                    <MudText>@exObject.Name</MudText>
-                                    <MudText Typo="Typo.subtitle2" Color="Color.Tertiary" 
-                                             Style="width:100%;text-align:right">
-                                        @exObject.Type
-                                    </MudText>
-                                </div>
-                                
-                            </MudListItem>
-                        }
-                    </MudList>
+                    {
+                        <MudListItem Class="@($"explorer-dialog-item {(Model.Result.ExplorerObjects.Contains(exObject) ? "selected" : "")}")"
+                        OnClick="async (mEvent) => await OnListItemClick(mEvent, exObject)" 
+                        @ondblclick="() => OnListItemDoubleClick(exObject)" >
+                            <div style="display: flex; align-items: center;white-space:nowrap">
+                                <MudIcon Icon="@Icons.FromString(exObject.Icon)" Style="margin-right: 6px;" />
+                                <MudText>@exObject.Name</MudText>
+                                <MudText Typo="Typo.subtitle2" Color="Color.Tertiary" 
+                                Style="width:100%;text-align:right">
+                                    @exObject.Type
+                                </MudText>
+                            </div>
+
+                        </MudListItem>
+                    }
+                </MudList>
             </MudPaper>
 
             @if(Model.Mode == ExploerDialogMode.Open) 
             {
-                    <MudTextField Value="@String.Join(", ",Model.Result.ExplorerObjects.Select(e => e.Name))" 
-                                  Label="Selected"
-                                  Required="true"
-                                  ReadOnly="true" 
-                                  Variant="Variant.Filled" />
+                <MudTextField Value="@String.Join(", ",Model.Result.ExplorerObjects.Select(e => e.Name))" 
+                Label="Selected"
+                Required="true"
+                ReadOnly="true" 
+                Variant="Variant.Filled" />
             } 
             else if(Model.Mode == ExploerDialogMode.Save)
             {
                 <MudTextField @bind-Value = "Model.Result.Name" 
-                              Required = "true" Immediate="true"
-                              Label="Name" 
-                              Disabled = "@(!placeToSave)"
-                              Variant = "Variant.Outlined" />
+                Required = "true" Immediate="true"
+                Label="Name" 
+                Disabled = "@(!placeToSave)"
+                Variant = "Variant.Outlined" />
             }
 
             @if (Model.Filters?.Any() == true)
             {
                 <MudSelect T="ExplorerDialogFilter"
-                           Value="Model.Result.SelectedFilter"
-                           Variant="Variant.Outlined" 
-                           Label="Filter" 
-                           ValueChanged="async (value) => await OnFilterSelectionChanged(value)">
+                Value="Model.Result.SelectedFilter"
+                Variant="Variant.Outlined" 
+                Label="Filter" 
+                ValueChanged="async (value) => await OnFilterSelectionChanged(value)">
                     @foreach (var filter in Model.Filters)
                     {
                         <MudSelectItem Value="@filter" />
@@ -150,21 +150,21 @@
     </DialogBody>
     <DialogButtons>
         <MudButton Variant="Variant.Filled"
-                   Color="Color.Default"
-                   OnClick="Close">Cancel</MudButton>
+        Color="Color.Default"
+        OnClick="Close">Cancel</MudButton>
         @if(Model.Mode == ExploerDialogMode.Save)
         {
             <MudButton Variant="Variant.Filled"
-                       Disabled="@(placeToSave == false || String.IsNullOrEmpty(Model.Result.Name))"
-                       Color="Color.Primary"
-                       OnClick="OnApply">@(_isSubmitting ? "Creating..." : "Create")</MudButton>
+            Disabled="@(placeToSave == false || String.IsNullOrEmpty(Model.Result.Name))"
+            Color="Color.Primary"
+            OnClick="OnApply">@(_isSubmitting ? "Creating..." : "Create")</MudButton>
         } 
         else 
         {
             <MudButton Variant="Variant.Filled"
-                        Disabled="Model.Result.ExplorerObjects.Count == 0"
-                        Color="Color.Primary"
-                        OnClick="OnApply">@(_isSubmitting ? "Loading..." : "Open")</MudButton>
+            Disabled="Model.Result.ExplorerObjects.Count == 0"
+            Color="Color.Primary"
+            OnClick="OnApply">@(_isSubmitting ? "Loading..." : "Open")</MudButton>
         }
     </DialogButtons>
 </ModalDialogFormBase>
@@ -190,10 +190,19 @@
         #endregion
 
         _creatableExplorerTools = IdentityProvider.Identity.IsAdministrator
-            ? PluginManager.GetPlugins<IExplorerObject>(Framework.Common.Plugins.Type.IExplorerObject)
-                                          .Where(e => e is IExplorerObjectCreatable)
-                                          .Select(e => (IExplorerObjectCreatable)e)
-                                          .ToArray()
+            ? PluginManager
+                .GetPlugins<IExplorerObject>(Framework.Common.Plugins.Type.IExplorerObject)
+                .Where(e => e is IExplorerObjectCreatable &&  // only if an ctor(IExporerObject) exits
+                            e.GetType()
+                            .GetConstructors()
+                            .Any(ctor => {
+                                var parameters = ctor.GetParameters();
+                                return parameters.Length == 1 &&
+                                       typeof(IExplorerObject).IsAssignableFrom(parameters[0].ParameterType);
+                                })
+                        )
+                .Select(e => (IExplorerObjectCreatable)e)
+                .ToArray()
             : null;
 
         return SetRootElementAsync(AppScope.RootExplorerObject(
@@ -297,7 +306,13 @@
     {
         if (_selectedRoot is not null)
         {
-            var newExObject = await creatable.CreateExplorerObjectAsync(AppScope, _selectedRoot);
+            // create a new Instance with parent
+            var creableInstance = 
+                (IExplorerObjectCreatable)Activator.CreateInstance(
+                    creatable.GetType(), [_selectedRoot]
+                )!;
+
+            var newExObject = await creableInstance.CreateExplorerObjectAsync(AppScope, _selectedRoot);
             if (newExObject != null)
             {
                 await OnRefreshList();

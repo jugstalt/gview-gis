@@ -24,12 +24,12 @@ else
         @if (_editMapName)
         {
             <InlineInput @bind-Value="_editedName"
-                         OnCommit="CommitEditMapName" />
+            OnCommit="CommitEditMapName" />
         }
         else
         {
             <MudText Typo="Typo.h6"
-                     @ondblclick="StartEditMapName">
+            @ondblclick="StartEditMapName">
                 @AppScope.Document.Map.Name
             </MudText>
         }
@@ -38,74 +38,74 @@ else
     @if (_treeNodes.Any())
     {
         <MudTreeView Items="_treeNodes" T="ITocElement"
-                     ExpandOnDoubleClick="true" 
-                     SelectionMode="SelectionMode.ToggleSelection" 
-                     Hover="true" Dense="true"
-                     @key="@fullReloadKey">
+        ExpandOnDoubleClick="true" 
+        SelectionMode="SelectionMode.ToggleSelection" 
+        Hover="true" Dense="true"
+        @key="@fullReloadKey">
             <ItemTemplate>
                 <div style="white-space:nowrap; overflow-x:hidden;"
-                     class="treenode">
-                @if (context is TocLayerNode layerNode)
-                {
-                    @if (context.Value?.Layers.Count() == 0 
-                        || context.Value?.Layers.FirstOrDefault(l=>l is NullLayer) != null)
+                class="treenode">
+                    @if (context is TocLayerNode layerNode)
                     {
-                        <MudTreeViewItem Value="@context.Value"
-                                         Class="@(((TocTreeNode)context).IsSelected ? "toctreenode-selected" :"")"
-                                         OnCLick="(e) => OnNodeClickAsync((TocTreeNode)context, e)" >
-                            <Content>
-                                <MudText Color="Color.Error" Style="padding-left:30px">
-                                    @context.Text
-                                </MudText>
-                            </Content>
-                        </MudTreeViewItem>
-                    } 
-                    else
-                    {
-                        <MudTreeViewItem Value="@context.Value"
-                                         Class="@(((TocTreeNode)context).IsSelected ? "toctreenode-selected" :"")"
-                                         Items="@context.Children"
-                                         CanExpand="@context.HasChildren"
-                                         Expanded="@context.Expanded"
-                                         ExpandedChanged="@((expanded) => OnNodeExpandedChanged((TocTreeNode)context, expanded))"
-                                         OnClick="(e) => OnNodeClickAsync((TocTreeNode)context,e)">
-                            <Content>
-                                <MudTreeViewItemToggleButton @bind-Expanded="@context.Expanded" 
-                                                             Visible="@context.HasChildren" 
-                                                             ExpandedIcon="@Icons.Material.Rounded.ArrowRight" />
-                                <MudCheckBox T="bool" 
-                                             Value="@context.Selected"
-                                             Color="Color.Surface"
-                                             ValueChanged="@((e) => OnCheckboxClickedAsync((TocTreeNode)context, e))" />
-                                @if(_editNameTocNode == context.Value)
-                                {
-                                    <InlineInput @bind-Value="_editedName"
-                                                 OnCommit="CommitEditLayerName" />
-                                } 
-                                else
-                                {
-                                        <MudText @ondblclick="() => StartEditLayerName((TocTreeNode)context)">
+                        @if (context.Value?.Layers.Count() == 0 
+                           || context.Value?.Layers.FirstOrDefault(l=>l is NullLayer) != null)
+                        {
+                            <MudTreeViewItem Value="@context.Value"
+                            Class="@(((TocTreeNode)context).IsSelected ? "toctreenode-selected" :"")"
+                            OnCLick="(e) => OnNodeClickAsync((TocTreeNode)context, e)" >
+                                <Content>
+                                    <MudText Color="Color.Error" Style="padding-left:30px">
                                         @context.Text
                                     </MudText>
-                                }
-                        
+                                </Content>
+                            </MudTreeViewItem>
+                        } 
+                        else
+                        {
+                            <MudTreeViewItem Value="@context.Value"
+                            Class="@(((TocTreeNode)context).IsSelected ? "toctreenode-selected" :"")"
+                            Items="@context.Children"
+                            CanExpand="@context.HasChildren"
+                            Expanded="@context.Expanded"
+                            ExpandedChanged="@((expanded) => OnNodeExpandedChanged((TocTreeNode)context, expanded))"
+                            OnClick="(e) => OnNodeClickAsync((TocTreeNode)context,e)">
+                                <Content>
+                                    <MudTreeViewItemToggleButton @bind-Expanded="@context.Expanded" 
+                                    Visible="@context.HasChildren" 
+                                    ExpandedIcon="@Icons.Material.Rounded.ArrowRight" />
+                                    <MudCheckBox T="bool" 
+                                    Value="@context.Selected"
+                                    Color="Color.Surface"
+                                    ValueChanged="@((e) => OnCheckboxClickedAsync((TocTreeNode)context, e))" />
+                                    @if(_editNameTocNode == context)
+                                    {
+                                        <InlineInput @bind-Value="_editedName"
+                                        OnCommit="CommitEditLayerName" />
+                                    } 
+                                    else
+                                    {
+                                        <MudText @ondblclick="() => StartEditLayerName((TocTreeNode)context)">
+                                            @context.Text
+                                        </MudText>
+                                    }
+
+                                </Content>
+                            </MudTreeViewItem>
+                        }
+                    }
+                    else if (context is TocLegendNode)
+                    {
+                        <MudTreeViewItem Value="@context.Value" class="legend">
+                            <Content>
+                                <div style="white-space:nowrap; overflow-x:hidden; width:100%">
+                                    <LegendTreeItem ParentElement="context.Value" />
+                                </div>
                             </Content>
                         </MudTreeViewItem>
                     }
-                }
-                else if (context is TocLegendNode)
-                {
-                    <MudTreeViewItem Value="@context.Value" class="legend">
-                        <Content>
-                            <div style="white-space:nowrap; overflow-x:hidden; width:100%">
-                                <LegendTreeItem ParentElement="context.Value" />
-                            </div>
-                        </Content>
-                    </MudTreeViewItem>
-                }
-                else
-                {
-                    <MudTreeViewItem Value="@context.Value"
+                    else
+                    {
+                        <MudTreeViewItem Value="@context.Value"
                         Class="@(((TocTreeNode)context).IsSelected ? "toctreenode-selected" :"")"
                         Items="@context.Children"
                         CanExpand="true"
@@ -114,27 +114,27 @@ else
                         @onclick="@((e) => OnNodeClickAsync((TocTreeNode)context, e))">
                             <Content>
                                 <MudTreeViewItemToggleButton @bind-Expanded="@context.Expanded" 
-                                                             Visible="true" 
-                                                             ExpandedIconColor="Color.Primary" />
+                                Visible="true" 
+                                ExpandedIconColor="Color.Primary" />
                                 <MudCheckBox T="bool"
-                                             Value="@context.Selected"
-                                             ValueChanged="@((e) => OnCheckboxClickedAsync((TocTreeNode)context, e))" />
-                                @if(_editNameTocNode == context.Value)
+                                Value="@context.Selected"
+                                ValueChanged="@((e) => OnCheckboxClickedAsync((TocTreeNode)context, e))" />
+                                @if(_editNameTocNode == context)
                                 {
                                     <InlineInput @bind-Value="_editedName"
-                                                 OnCommit="CommitEditLayerName" />
+                                    OnCommit="CommitEditLayerName" />
                                 }  
                                 else
                                 {
                                     <MudText Class="grouplayer-text"
-                                             @ondblclick="() => StartEditLayerName((TocTreeNode)context)">
+                                    @ondblclick="() => StartEditLayerName((TocTreeNode)context)">
                                         @context.Text
                                     </MudText>
                                 }
-                        
+
                             </Content>
                         </MudTreeViewItem>
-                }
+                    }
                 </div>
             </ItemTemplate>
         </MudTreeView>
@@ -143,12 +143,12 @@ else
     {
         <div style="padding:10px">
             @GvUtilities.InfoText("This is an empty map now. To start use one of the this tools:")
-            
+
             @foreach(var cartoTool in _cartoInitialTools)
             {
                 <div class="carto-initial-tool"
-                     alt="@cartoTool.ToolTip"
-                     @onclick="async () => await cartoTool.OnClick(AppScope)">
+                alt="@cartoTool.ToolTip"
+                @onclick="async () => await cartoTool.OnClick(AppScope)">
                     <div class="@(IconService.FromString(cartoTool.Icon)) icon"></div>
                     <div class="title">@cartoTool.Name</div>
                 </div>
@@ -159,7 +159,7 @@ else
                 @foreach(var mapFile in _lastAccessed.OrderByDescending(m=>m.LastAccess))
                 {
                     <div class="carto-initial-tool"
-                         @onclick="async () => await LoadMap(mapFile)">
+                    @onclick="async () => await LoadMap(mapFile)">
                         <div class="@(IconService.FromString("basic:globe-table")) icon"></div>
                         <div class="title">@mapFile.DisplayPath()</div>
                         <div class="sub-title">@mapFile.LastAccess</div>
@@ -170,18 +170,18 @@ else
                             if(restoreState != RestorePointState.None) 
                             {
                                 <MudFab Color="restoreState == RestorePointState.Newer ? Color.Primary : Color.Surface"
-                                        DropShadow="true"
-                                        Style="position:absolute;right:6px;bottom:6px"
-                                        Size="MudBlazor.Size.Small" title="Try to restore..."
-                                        StartIcon="@Icons.Material.Outlined.Restore"
-                                        OnClick="async () => await OnShowRestorePointsAsync(mapFile.Path)"/>
+                                DropShadow="true"
+                                Style="position:absolute;right:6px;bottom:6px"
+                                Size="MudBlazor.Size.Small" title="Try to restore..."
+                                StartIcon="@Icons.Material.Outlined.Restore"
+                                OnClick="async () => await OnShowRestorePointsAsync(mapFile.Path)"/>
                             }
                         }
                     </div>
                 }
             }
         </div>
-    
+
     }
 }
 
@@ -235,8 +235,12 @@ else
         await EventBus.FireRefreshMapAsync(delay: 500);
     });
 
+
+
     private Task OnNodeClickAsync(TocTreeNode clickNode, MouseEventArgs e) => base.HandleAsync(async () =>
     {
+        if (_editedName is not null && _editNameTocNode == clickNode) return; 
+
         var isSelected = clickNode.IsSelected;
 
         foreach (var treeNode in _treeNodes)
@@ -246,6 +250,16 @@ else
         }
 
         clickNode.IsSelected = !isSelected;
+
+        if(_editMapName)
+        {
+            CommitEditMapName();
+        }
+
+        if (_editNameTocNode is not null)
+        {
+            await CommitEditLayerName();
+        }
 
         if(AppScope is not null)
         {
