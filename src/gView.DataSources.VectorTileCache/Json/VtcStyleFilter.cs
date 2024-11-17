@@ -1,4 +1,5 @@
-﻿using gView.DataSources.VectorTileCache.Json.Filters;
+﻿using gView.DataSources.VectorTileCache.Extensions;
+using gView.DataSources.VectorTileCache.Json.Filters;
 using gView.DataSources.VectorTileCache.Json.Filters.Abstratctions;
 using gView.Framework.Core.Data;
 using gView.Framework.Data.Filters;
@@ -202,6 +203,7 @@ public class VtcStyleFilter : QueryFilter
     static private IFilter ParseFilter(JsonElement element)
     {
         // ["==", "field2", 5023]
+        // ["==", ["get", "field2"], 5023
         // ["all", ["==", "field1", 11010], ["==", "field2", 5023]]
         // ["any", ["==", "field1", 11010], ["==", "field1", 11011]]
         // ["all",["==","$type","LineString"],["all",["==","class","rail"],["has","service"]]]
@@ -222,13 +224,15 @@ public class VtcStyleFilter : QueryFilter
             case "<":
                 return new EqualityFilter(
                         filterType,
-                        element[1].GetString(),   // fieldname
+                        element[1].GetFieldName(),   // fieldname
                         element[2].ToString()     // value
                     );
+            case "!":
+                return new NotEqualityFilter(ParseFilter(element[1]));
             case "in":
             case "!in":
                 return new InFilter(
-                        filterType, element[1].GetString(),   // fieldname
+                        filterType, element[1].GetFieldName(),   // fieldname
                         element.EnumerateArray().Skip(2).Select(e => e.ToString()).ToArray()  // values
                     );
             case "has":
@@ -244,6 +248,18 @@ public class VtcStyleFilter : QueryFilter
             case "any":
                 return new AnyFilter(
                         element.EnumerateArray().Skip(1).Select(ParseFilter).ToArray()  // inner filters
+                    );
+            case "match":
+                // [ "match", ["get", "fieldname" ], [ "value1", "value2" ], true, false ]
+                return new MatchFilter(
+                        element[1].GetFieldName(),
+                        element[2].EnumerateArray().Select(e => e.ToString()).ToArray(),
+                        element.GetArrayLength() > 3
+                            ? element[3].GetBoolean()
+                            : true,
+                        element.GetArrayLength() > 4
+                            ? element[4].GetBoolean()
+                            : false
                     );
         }
 

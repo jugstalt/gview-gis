@@ -19,3 +19,11 @@ class AnyFilter : IFilter
         return Filters.Any(filter => filter.Test(feature));
     }
 }
+
+class NullFilter : IFilter
+{
+    public bool Test(IFeature feature)
+    {
+        return false;
+    }
+}

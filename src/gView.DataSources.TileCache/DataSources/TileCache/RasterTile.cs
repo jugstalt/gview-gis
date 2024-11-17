@@ -428,6 +428,31 @@ namespace gView.DataSources.TileCache
                     using (var ms = new MemoryStream(bytes))
                     {
                         var bitmap = Current.Engine.CreateBitmap(ms);
+
+                        if(bitmap.Width != _dataset.TileWidth ||
+                           bitmap.Height != _dataset.TileHeight)
+                        {
+                            var tileBitmap = Current.Engine.CreateBitmap(_dataset.TileWidth, _dataset.TileHeight);
+
+                            using (var canvas = tileBitmap.CreateCanvas())
+                            {
+                                canvas.DrawBitmap(
+                                    bitmap,
+                                    new CanvasRectangle(0, 0, tileBitmap.Width, tileBitmap.Height),
+                                    new CanvasRectangle(0, 0, bitmap.Width, bitmap.Height));
+                            }
+
+                            bitmap.Dispose();
+                            bitmap = tileBitmap;
+
+                            var tileStream = new MemoryStream();
+                            bitmap.Save(tileStream, 
+                                        url.EndsWith(".png", StringComparison.OrdinalIgnoreCase)
+                                            ? ImageFormat.Png
+                                            : ImageFormat.Jpeg);
+                            bytes = tileStream.ToArray();
+                        } 
+
                         try
                         {
                             if (fi != null)

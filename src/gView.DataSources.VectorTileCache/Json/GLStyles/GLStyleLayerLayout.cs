@@ -15,8 +15,8 @@ public class GLStyleLayerLayout
     public JsonElement? TextFont { get; set; }
 
     [JsonPropertyName("text-field")]
-    //public JsonElement? TextFieldExpression { get; set; }
-    public string TextFieldExpression { get; set; }
+    public JsonElement? TextFieldExpression { get; set; }
+    //public string TextFieldExpression { get; set; }
 
     [JsonPropertyName("text-line-height")]
     public float TextLineHeight { get; set; }

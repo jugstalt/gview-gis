@@ -59,3 +59,4 @@ class EqualityFilter : IFilter
         return false;
     }
 }
+

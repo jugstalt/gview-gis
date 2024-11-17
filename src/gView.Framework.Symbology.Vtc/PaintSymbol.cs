@@ -6,6 +6,8 @@ using gView.Framework.Core.IO;
 using gView.Framework.Core.Symbology;
 using gView.Framework.Symbology.Vtc.Extensions;
 using gView.GraphicsEngine;
+using System.Diagnostics.CodeAnalysis;
+using System.Text;
 
 namespace gView.Framework.Symbology.Vtc;
 
@@ -299,17 +301,17 @@ public class StopsValueFunc : IValueFunc
 
 public class CaseValueFunc : IValueFunc
 {
-    private object? _defaultValue;
-    private List<(string field, string comparisionOperator, string? comparisionValue, object resultValue)> _values = new();
+    private IValueFunc? _defaultValueFunc;
+    private List<(string field, IValueFunc comparisionOperatorFunc, string? comparisionValue, IValueFunc resultValueFunc)> _values = new();
 
-    public void AddCase(string field, string comparisionOperator, object comparisionValue, object resultValue)
+    public void AddCase(string field, IValueFunc comparisionOperatorFunc, object comparisionValue, IValueFunc resultValueFunc)
     {
-        _values.Add((field, comparisionOperator, comparisionValue?.ToString(), resultValue));
+        _values.Add((field, comparisionOperatorFunc, comparisionValue?.ToString(), resultValueFunc));
     }
 
-    public void SetDefaultValue(object defaultValue)
+    public void SetDefaultValue(IValueFunc defaultValue)
     {
-        _defaultValue = defaultValue;
+        _defaultValueFunc = defaultValue;
     }
 
     public T? Value<T>(IDisplay display, IFeature? feature = null)
@@ -321,21 +323,137 @@ public class CaseValueFunc : IValueFunc
                 var featureValue = feature[caseValue.field]?.ToString();
                 if (featureValue == null) continue;
 
-                var fitCondition = caseValue.comparisionOperator switch
+                bool fitCondition = false;
+                if (caseValue.comparisionOperatorFunc is LiteralValueFunc)
                 {
-                    "==" => featureValue == caseValue.comparisionValue,
-                    "!=" => featureValue != caseValue.comparisionValue,
-                    _ => throw new ArgumentException($"Unknown case operator '{caseValue.comparisionOperator}'")
-                };
+                    var @operator = caseValue.comparisionOperatorFunc.Value<string>(display, feature); 
+                    fitCondition = @operator switch
+                    {
+                        "==" => featureValue == caseValue.comparisionValue,
+                        "!=" => featureValue != caseValue.comparisionValue,
+                        _ => throw new ArgumentException($"Unknown case operator '{@operator}'")
+                    };
+                }
+                else
+                {
+                    fitCondition = caseValue.comparisionOperatorFunc.Value<bool>(display, feature);
+                }
 
                 if (fitCondition)
                 {
-                    return (T?)caseValue.resultValue;
+                    return (T?)caseValue.resultValueFunc.Value<T>(display, feature);
                 }
             }
         }
 
-        return (T?)_defaultValue;
+        return (T?)_defaultValueFunc == null
+            ? default(T)
+            : _defaultValueFunc.Value<T>(display, feature);
+    }
+}
+
+public class ConcatValuesFunc : IValueFunc
+{
+    private List<IValueFunc> _valueFuncs = new();
+
+    public void Add(IValueFunc valueFunc) => _valueFuncs.Add(valueFunc);
+
+    public T? Value<T>(IDisplay display, IFeature? feature = null)
+    {
+        StringBuilder result = new StringBuilder();
+
+        foreach(var valueFunc in  _valueFuncs)
+        {
+            result.Append(valueFunc.Value<string>(display, feature));
+        }
+
+        return (T?)Convert.ChangeType(result.ToString(), typeof(T));
+    }
+}
+
+public class InterpolateValueFunc : IValueFunc
+{
+    private string[] _methods;  // linar, exp
+    private string[] _fields;  // zoom,
+    private IValueFunc[] _funcs;
+
+    public InterpolateValueFunc(string[] methods, string[] fields, IValueFunc[] funcs)
+    {
+        _methods = methods;
+        _fields = fields;
+        _funcs = funcs;
+
+        if (_funcs.Length % 2 != 0) throw new ArgumentException("Invalid Interpolation Function: number of funcs must be even");
+    }
+
+    public T? Value<T>(IDisplay display, IFeature? feature = null)
+    {
+        if (_fields.Length != 1)
+            throw new Exception("Invalid Interpolation Function: only on field/zoom implemented");
+
+        var pointValue = _fields[0] == "zoom"
+            ? display.WebMercatorScaleLevel
+            : Convert.ToSingle(feature?[_fields[0]] ?? 0);
+
+        T? result = default;
+
+        for (int i = 0; i < _funcs.Length - 1; i += 2)
+        {
+            var funcPoint1Value = _funcs[i].Value<float>(display, feature);
+
+            if (i == 0 && funcPoint1Value > pointValue)  // take first value
+            {
+                var funcValue = _funcs[i + 1].Value<T>(display, feature);
+
+                return funcValue;
+            }
+
+            if (funcPoint1Value <= pointValue)
+            {
+                var func1Value = _funcs[i + 1].Value<T>(display, feature);
+
+                if (i + 3 >= _funcs.Length)
+                {
+                    result = func1Value;
+                    continue;
+                }
+
+                var funcPoint2Value = _funcs[i + 2].Value<float>(display, feature);
+                var func2Value = _funcs[i + 3].Value<T>(display, feature);
+
+                if (_methods[0] == "linear")
+                {
+                    var factor = (pointValue - funcPoint1Value) / (funcPoint2Value - funcPoint1Value);
+
+                    if (typeof(T) == typeof(float))
+                    {
+                        float dy = Convert.ToSingle(func2Value) - Convert.ToSingle(func1Value);
+                        result = (T)Convert.ChangeType(Convert.ToSingle(func1Value) + dy * factor, typeof(T));
+                    }
+                }
+                else if (_methods[0] == "exponential")
+                {
+                    var @base = float.Parse(_methods[1], System.Globalization.CultureInfo.InvariantCulture);
+
+                    if (@base > 1f) @base *= 2.3f;  // empric !?
+
+                    if (typeof(T) == typeof(float))
+                    {
+                        var val = Convert.ToSingle(func1Value)
+                            + (Convert.ToSingle(func2Value) - Convert.ToSingle(func1Value))
+                            * (float)Math.Pow((pointValue - funcPoint1Value) / (funcPoint2Value - funcPoint1Value), @base);
+
+                        result = (T)Convert.ChangeType(Math.Min(val, Convert.ToSingle(func2Value)), typeof(T));
+                    }
+                }
+                else
+                {
+                    result = func1Value;
+                }
+            }
+        }
+
+        return result ?? throw new Exception("Interpolation Function: no value found");
     }
 }
 
@@ -386,9 +504,9 @@ public class GetValueFunc : IValueFunc
     }
 }
 
-public class LiberalValueFunc : ValueFunc<string>
+public class LiteralValueFunc : ValueFunc<string>
 {
-    public LiberalValueFunc(string value) : base(value) { }
+    public LiteralValueFunc(string value) : base(value) { }
 }
 
 public class ColorValueFunc : ValueFunc<ArgbColor>
