@@ -1,4 +1,5 @@
-﻿using gView.Framework.Core.Carto;
+﻿using gView.DataSources.VectorTileCache.Json.Filters.Abstratctions;
+using gView.Framework.Core.Carto;
 using gView.Framework.Core.Common;
 using gView.Framework.Core.Data;
 using gView.Framework.Core.Geometry;
@@ -6,8 +7,8 @@ using gView.Framework.Core.IO;
 using gView.Framework.Core.Symbology;
 using gView.Framework.Symbology.Vtc.Extensions;
 using gView.GraphicsEngine;
-using System.Diagnostics.CodeAnalysis;
 using System.Text;
+using static gView.Framework.Core.MapServer.InterpreterCapabilities;
 
 namespace gView.Framework.Symbology.Vtc;
 
@@ -302,11 +303,11 @@ public class StopsValueFunc : IValueFunc
 public class CaseValueFunc : IValueFunc
 {
     private IValueFunc? _defaultValueFunc;
-    private List<(string field, IValueFunc comparisionOperatorFunc, string? comparisionValue, IValueFunc resultValueFunc)> _values = new();
+    private List<(IFilter filter, IValueFunc valueFunc)> _cases = new();
 
-    public void AddCase(string field, IValueFunc comparisionOperatorFunc, object comparisionValue, IValueFunc resultValueFunc)
+    public void AddCase(IFilter filter, IValueFunc valueFunc)
     {
-        _values.Add((field, comparisionOperatorFunc, comparisionValue?.ToString(), resultValueFunc));
+        _cases.Add((filter, valueFunc));
     }
 
     public void SetDefaultValue(IValueFunc defaultValue)
@@ -318,37 +319,23 @@ public class CaseValueFunc : IValueFunc
     {
         if (feature != null)
         {
-            foreach (var caseValue in _values)
+            foreach (var (filter, valueFunc) in _cases)
             {
-                var featureValue = feature[caseValue.field]?.ToString();
-                if (featureValue == null) continue;
+                if(filter.Test(feature))
+                {
+                    T? value = valueFunc.Value<T>(display, feature);
 
-                bool fitCondition = false;
-                if (caseValue.comparisionOperatorFunc is LiteralValueFunc)
-                {
-                    var @operator = caseValue.comparisionOperatorFunc.Value<string>(display, feature); 
-                    fitCondition = @operator switch
-                    {
-                        "==" => featureValue == caseValue.comparisionValue,
-                        "!=" => featureValue != caseValue.comparisionValue,
-                        _ => throw new ArgumentException($"Unknown case operator '{@operator}'")
-                    };
-                }
-                else
-                {
-                    fitCondition = caseValue.comparisionOperatorFunc.Value<bool>(display, feature);
+                    return value;
                 }
 
-                if (fitCondition)
-                {
-                    return (T?)caseValue.resultValueFunc.Value<T>(display, feature);
-                }
             }
         }
 
-        return (T?)_defaultValueFunc == null
+        T? defaultValue = _defaultValueFunc == null
             ? default(T)
             : _defaultValueFunc.Value<T>(display, feature);
+
+        return defaultValue;
     }
 }
 
@@ -362,7 +349,7 @@ public class ConcatValuesFunc : IValueFunc
     {
         StringBuilder result = new StringBuilder();
 
-        foreach(var valueFunc in  _valueFuncs)
+        foreach (var valueFunc in _valueFuncs)
         {
             result.Append(valueFunc.Value<string>(display, feature));
         }
@@ -454,6 +441,46 @@ public class InterpolateValueFunc : IValueFunc
         }
 
         return result ?? throw new Exception("Interpolation Function: no value found");
+    }
+}
+
+public class StepValueFunc : IValueFunc
+{
+    private string[] _fields;  // zoom,
+    private IValueFunc[] _funcs;
+
+    public StepValueFunc(string[] fields, IValueFunc[] funcs)
+    {
+        _fields = fields;
+        _funcs = funcs;
+
+        if (_funcs.Length % 2 == 0) throw new ArgumentException("Invalid Step Function: number of funcs must be odd");
+    }
+
+    public T? Value<T>(IDisplay display, IFeature? feature = null)
+    {
+        if (_fields.Length != 1)
+            throw new Exception("Invalid Interpolation Function: only on field/zoom implemented");
+
+        var pointValue = _fields[0] == "zoom"
+            ? display.WebMercatorScaleLevel
+            : Convert.ToSingle(feature?[_fields[0]] ?? 0);
+
+        // last one is default
+        T? result = _funcs.Last().Value<T>(display, feature);
+
+        for (int i = 0; i < _funcs.Length - 1; i += 2)
+        {
+            var resultFunc = _funcs[i];
+            var funcPoint1Value = _funcs[i + 1].Value<float>(display, feature);
+
+            if (funcPoint1Value <= pointValue)
+            {
+                result = resultFunc.Value<T>(display, feature);
+            }
+        }
+
+        return result;
     }
 }
 

@@ -7,18 +7,21 @@ static internal class GLStyleLayerExtensions
 {
     static public bool RequireSpriteIcon(this IEnumerable<GLStyleLayer> layers, string iconImage)
     {
-        foreach (var layer in layers) 
-        {
-            if(layer?.Layout?
-                     .IconImage
-                     .CollectStrings()
-                     .Any(s => s.Contains(iconImage) || (s.Contains("{") && s.Contains("}"))) == true)
-            {
-                return true;
-            }
-        }
+        return true;  // take all sprites... ther can be function depending on a feature, etc...
+                      // can only be determined later on runtime!
 
-        return false;
+        //foreach (var layer in layers)
+        //{
+        //    if (layer?.Layout?
+        //             .IconImage
+        //             .CollectStrings()
+        //             .Any(s => s.Contains(iconImage) || (s.Contains("{") && s.Contains("}"))) == true)
+        //    {
+        //        return true;
+        //    }
+        //}
+
+        //return false;
     }
 
     static private IEnumerable<string> CollectStrings(this JsonElement? element)

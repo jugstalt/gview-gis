@@ -200,10 +200,18 @@ public class VtcStyleFilter : QueryFilter
         return new VtcStyleFilter(filter);
     }
 
+    static public IFilter FilterFromJsonElement(JsonElement? jsonElement)
+    {
+        if (!jsonElement.HasValue) return null;
+
+        return ParseFilter(jsonElement.Value);
+    }
+
     static private IFilter ParseFilter(JsonElement element)
     {
         // ["==", "field2", 5023]
         // ["==", ["get", "field2"], 5023
+        // ["==", 12, ["number", ["get", "the_attribute"]]],  WTF!  // todo
         // ["all", ["==", "field1", 11010], ["==", "field2", 5023]]
         // ["any", ["==", "field1", 11010], ["==", "field1", 11011]]
         // ["all",["==","$type","LineString"],["all",["==","class","rail"],["has","service"]]]
@@ -222,6 +230,17 @@ public class VtcStyleFilter : QueryFilter
             case "<=":
             case ">":
             case "<":
+                // ["==", 12, ["number", ["get", "the_attribute"]]]
+                if (element[2].ValueKind == JsonValueKind.Array)
+                {
+                    return new EqualityFilter(
+                            filterType,
+                            element[2].EnumerateArray().Skip(1).First().GetFieldName(),
+                            element[1].ToString()
+                        );
+                }
+
+                // ["==", "field2", 5023]
                 return new EqualityFilter(
                         filterType,
                         element[1].GetFieldName(),   // fieldname

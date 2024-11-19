@@ -1,5 +1,7 @@
-﻿using gView.Framework.Symbology.Vtc;
+﻿using gView.DataSources.VectorTileCache.Json;
+using gView.Framework.Symbology.Vtc;
 using gView.GraphicsEngine;
+using Microsoft.SqlServer.Management.SqlParser.SqlCodeDom;
 using System.Globalization;
 using System.Text.Json;
 
@@ -50,8 +52,8 @@ static internal class ValueFuncCreatorExtensions
                     "get" => new GetValueFunc(jsonElement.Value.EnumerateArray().Skip(1).FirstOrDefault().GetString()),
                     "concat" => jsonElement.Value.EnumerateArray().Skip(1).ToArray().ToConcatValueFunc(),
                     "to-string" => ToValueFunc(jsonElement.Value.EnumerateArray().Skip(1).ToArray().First()),
-                    "match" => new ValueFunc<string>(""), // todo
-                    "step" => new ValueFunc<int>(12),  // todo
+                    "match" => new ValueFunc<string>("xxx"), // todo
+                    "step" => jsonElement.Value.EnumerateArray().Skip(1).ToArray().ToStepValueFunc(),
                     "coalesce" => new ValueFunc<string>("coalesce func, todo"),
                     "interpolate" => jsonElement.Value.EnumerateArray().Skip(1).ToArray().ToInterpolateValueFunc(),
                     _ => jsonElement.Value.IsNumberArray()  // number or string
@@ -137,65 +139,10 @@ static internal class ValueFuncCreatorExtensions
 
         for (int i = 0; i < jsonElements.Length; i += 2)
         {
-            var conditionElement = jsonElements[i];
-            var resultValueFunc = ToValueFunc(jsonElements[i + 1]);
+            var filter = VtcStyleFilter.FilterFromJsonElement(jsonElements[i]);
+            var resultValueFunc = ToValueFunc(jsonElements[i + 1])!;
 
-            if (conditionElement.ValueKind == JsonValueKind.Array)
-            {
-                // ["==", 12, ["number", ["get", "the_attribute"]]],  WTF!
-                var conditionElements = conditionElement.EnumerateArray().ToArray();
-
-                if (conditionElements.Length == 3)
-                {
-                    var comparisonOperator = ToValueFunc(conditionElements[0]);
-                    //if (string.IsNullOrEmpty(comparisonOperator))
-                    //{
-                    //    throw new ArgumentException("Comparision operator is empty!");
-                    //}
-
-                    var comparisonValue = conditionElements[1].ToFuncValue();
-
-                    if (conditionElements[2].ValueKind == JsonValueKind.Array)
-                    {
-                        var comparisionDef = conditionElements[2].EnumerateArray().ToArray();
-                        if (comparisionDef.Length == 2 && comparisionDef[1].ValueKind == JsonValueKind.Array)
-                        {
-                            var fieldDef = comparisionDef[1].EnumerateArray().ToArray();
-                            if (fieldDef.Length == 2)
-                            {
-                                var comparisionField = fieldDef[1].GetString();
-
-                                if (String.IsNullOrEmpty(comparisionField))
-                                {
-                                    throw new ArgumentException("comparision field is empty");
-                                }
-
-                                caseValueFunc.AddCase(comparisionField, comparisonOperator, comparisonValue, resultValueFunc);
-                            }
-                            else
-                            {
-                                throw new Exception($"Unknown case format: {conditionElement}");
-                            }
-                        }
-                        else
-                        {
-                            throw new Exception($"Unknown case format: {conditionElement}");
-                        }
-                    }
-                    else
-                    {
-                        throw new Exception($"Unknown case format: {conditionElement}");
-                    }
-                }
-                else
-                {
-                    throw new Exception($"Unknown case format: {conditionElement}");
-                }
-            }
-            else
-            {
-                throw new Exception($"Unknown case contition: {conditionElement}");
-            }
+            caseValueFunc.AddCase(filter, resultValueFunc);
         }
 
         return caseValueFunc;
@@ -223,6 +170,13 @@ static internal class ValueFuncCreatorExtensions
             jsonElements[0].EnumerateArray().Select(e => e.ToString()).ToArray(),
             jsonElements[1].ToStringArray(),
             jsonElements.Skip(2).Select(e=>ToValueFunc(e)).ToArray()!);
+    }
+
+    static internal StepValueFunc ToStepValueFunc(this JsonElement[] jsonElements)
+    {
+        return new StepValueFunc(
+            jsonElements[0].ToStringArray(),
+            jsonElements.Skip(1).Select(e => ToValueFunc(e)).ToArray()!);
     }
 
     static internal object ToFuncValue(this JsonElement jsonElement)
