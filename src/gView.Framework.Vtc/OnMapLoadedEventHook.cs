@@ -191,9 +191,8 @@ public class OnMapLoadedEventHook : IMapEventHook
                     featureLayer.LabelRenderer = new VtcLabelRenderer(symbol)
                     {
                         UseExpression = true,
-                        LabelExpression = layer.Layout?.TextFieldExpression?.ToString()
-                                .Replace("{", "[")
-                                .Replace("}", "]") ?? "",
+                        LabelExpression = "",
+                        LabelExpressionValueFunc = layer.Layout?.TextFieldExpression.ToValueFunc(),
                         LabelPriority = SimpleLabelRenderer.RenderLabelPriority.Normal,
                     };
 

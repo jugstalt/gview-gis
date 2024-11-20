@@ -52,9 +52,9 @@ static internal class ValueFuncCreatorExtensions
                     "get" => new GetValueFunc(jsonElement.Value.EnumerateArray().Skip(1).FirstOrDefault().GetString()),
                     "concat" => jsonElement.Value.EnumerateArray().Skip(1).ToArray().ToConcatValueFunc(),
                     "to-string" => ToValueFunc(jsonElement.Value.EnumerateArray().Skip(1).ToArray().First()),
-                    "match" => new ValueFunc<string>("xxx"), // todo
+                    "match" => jsonElement.Value.EnumerateArray().Skip(1).ToArray().ToMatchValueFunc(),
                     "step" => jsonElement.Value.EnumerateArray().Skip(1).ToArray().ToStepValueFunc(),
-                    "coalesce" => new ValueFunc<string>("coalesce func, todo"),
+                    "coalesce" => jsonElement.Value.EnumerateArray().Skip(1).ToArray().ToCoalesceValueFunc(),
                     "interpolate" => jsonElement.Value.EnumerateArray().Skip(1).ToArray().ToInterpolateValueFunc(),
                     _ => jsonElement.Value.IsNumberArray()  // number or string
                             ? new ValueFunc<float[]>(jsonElement.Value.ToFloatArray())
@@ -162,6 +162,37 @@ static internal class ValueFuncCreatorExtensions
         }
 
         return concatValueFunc;
+    }
+
+    static internal CoalesceValueFunc ToCoalesceValueFunc(this JsonElement[] jsonElements)
+    {
+        var coalesceValueFunc = new CoalesceValueFunc();
+
+        foreach (JsonElement jsonElement in jsonElements)
+        {
+            var func = ToValueFunc(jsonElement);
+
+            if (func is null) throw new Exception($"Unknown function in coalesce expression: {jsonElement.ToString()}");
+
+            coalesceValueFunc.Add(func);
+        }
+
+        return coalesceValueFunc;
+    }
+
+    static public MatchValueFunc ToMatchValueFunc(this JsonElement[] jsonElements)
+    {
+        if (jsonElements.Length != 4)
+            throw new Exception($"Invalid match function {jsonElements.ToString()}");
+        
+        var valueFunc = ToValueFunc(jsonElements[0]);
+        var matchFuncs = jsonElements[1].EnumerateArray()
+                                .Select(e => ToValueFunc(e))
+                                .ToArray();
+        var ifMatchFunc = ToValueFunc(jsonElements[^2]);
+        var ifNotMatchFunc = ToValueFunc(jsonElements[^1]);
+
+        return new MatchValueFunc(valueFunc!, matchFuncs!, ifMatchFunc!, ifNotMatchFunc!);
     }
 
     static internal InterpolateValueFunc ToInterpolateValueFunc(this JsonElement[] jsonElements)

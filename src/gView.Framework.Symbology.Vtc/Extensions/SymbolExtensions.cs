@@ -24,7 +24,11 @@ static internal class SymbolExtensions
             if (iconName != null)
             {
                 icon.Filename = $"resource:{iconName}@2x";
-                icon.ReloadIfEmpty(display, true);
+                try
+                {
+                    icon.ReloadIfEmpty(display, true);
+                }
+                catch { }  // todo
             }
             var iconSize = valueFuncs.GetValueOrDeafult(GLStyleProperties.IconSize, 1f, display, feature);
             icon.SizeX *= iconSize;

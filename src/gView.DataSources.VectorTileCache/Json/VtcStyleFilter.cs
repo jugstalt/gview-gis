@@ -211,10 +211,11 @@ public class VtcStyleFilter : QueryFilter
     {
         // ["==", "field2", 5023]
         // ["==", ["get", "field2"], 5023
-        // ["==", 12, ["number", ["get", "the_attribute"]]],  WTF!  // todo
+        // ["==", 12, ["number", ["get", "the_attribute"]]],  WTF!  
         // ["all", ["==", "field1", 11010], ["==", "field2", 5023]]
         // ["any", ["==", "field1", 11010], ["==", "field1", 11011]]
         // ["all",["==","$type","LineString"],["all",["==","class","rail"],["has","service"]]]
+        // ["==", ["geometry_type"], "LineString"]
         if (element.ValueKind != JsonValueKind.Array)
         {
             throw new Exception($"Syntax error. Filter is not an array {element}");
@@ -230,6 +231,7 @@ public class VtcStyleFilter : QueryFilter
             case "<=":
             case ">":
             case "<":
+                
                 // ["==", 12, ["number", ["get", "the_attribute"]]]
                 if (element[2].ValueKind == JsonValueKind.Array)
                 {
@@ -240,6 +242,7 @@ public class VtcStyleFilter : QueryFilter
                         );
                 }
 
+                // ["==", ["geometry_type"], "LineString"]
                 // ["==", "field2", 5023]
                 return new EqualityFilter(
                         filterType,

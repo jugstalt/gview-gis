@@ -2,7 +2,7 @@
   "profiles": {
     "gView.Cmd": {
       "commandName": "Project",
-      "commandLineArgs": "--command MxlUtil.FromGLStylesJson -uri \"https://gis.ktn.gv.at/osgdi/styles/basemap_ktn_vektor.json\" -target-path \"c:\\temp\\GeoDaten\\vtc\" -map-name \"basemap_ktn_vektor\""
+      "commandLineArgs": "--command MxlUtil.FromGLStylesJson -uri \"https://tiles.openfreemap.org/styles/liberty\" -target-path \"c:\\temp\\GeoDaten\\vtc\" -map-name \"openfreemap_liberty\""
     }
   }
 }

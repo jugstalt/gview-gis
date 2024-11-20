@@ -358,6 +358,29 @@ public class ConcatValuesFunc : IValueFunc
     }
 }
 
+public class CoalesceValueFunc : IValueFunc
+{
+    private List<IValueFunc> _valueFuncs = new();
+
+    public void Add(IValueFunc valueFunc) => _valueFuncs.Add(valueFunc);
+
+    public T? Value<T>(IDisplay display, IFeature? feature = null)
+    {
+        HashSet<T> values = new();
+
+        foreach (var valueFunc in _valueFuncs)
+        {
+            var value = valueFunc.Value<T>(display, feature);
+            if (value is not null)
+            {
+                values.Add(value);
+            }
+        }
+
+        return (T?)Convert.ChangeType(String.Join(", ", values), typeof(T));
+    }
+}
+
 public class InterpolateValueFunc : IValueFunc
 {
     private string[] _methods;  // linar, exp
@@ -441,6 +464,40 @@ public class InterpolateValueFunc : IValueFunc
         }
 
         return result ?? throw new Exception("Interpolation Function: no value found");
+    }
+}
+
+public class MatchValueFunc : IValueFunc
+{
+    private IValueFunc _valueFunc;
+    private IValueFunc[] _matchFuncs;
+    private IValueFunc _ifMatchFunc, _ifNotMatchFunc;
+
+    public MatchValueFunc(
+        IValueFunc valueFunc,
+        IValueFunc[] matchFuncs,
+        IValueFunc ifMatchFunc,
+        IValueFunc ifNotMatchFunc)
+    {
+        _valueFunc = valueFunc;
+        _matchFuncs = matchFuncs;
+        _ifMatchFunc = ifMatchFunc;
+        _ifNotMatchFunc = ifNotMatchFunc;
+    }
+
+    public T? Value<T>(IDisplay display, IFeature? feature = null)
+    {
+        var value = _valueFunc.Value<string>(display, feature);
+
+        foreach(var matchFunc in _matchFuncs)
+        {
+            if(matchFunc.Value<string>(display, feature) == value)
+            {
+                return _ifMatchFunc.Value<T>(display, feature);
+            }
+        }
+
+        return _ifNotMatchFunc.Value<T>(display, feature);
     }
 }
 

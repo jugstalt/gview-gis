@@ -30,6 +30,13 @@ class EqualityFilter : IFilter
                 IPolygon => "Polygon",
                 _ => null
             },
+            "geometry-type" => feature.Shape switch
+            {
+                IPoint => "Point",
+                IPolyline => "LineString",
+                IPolygon => "Polygon",
+                _ => null
+            },
             _ => feature[_field]?.ToString() ?? "" // fieldvalue
         };
 

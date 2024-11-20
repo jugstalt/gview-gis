@@ -10,6 +10,7 @@
     <ProjectReference Include="..\gView.Framework.Data\gView.Framework.Data.csproj" />
     <ProjectReference Include="..\gView.Framework.Geometry\gView.Framework.Geometry.csproj" />
     <ProjectReference Include="..\gView.Framework.Calc\gView.Framework.Calc.csproj" />
+    <ProjectReference Include="..\gView.Framework.Symbology.Vtc\gView.Framework.Symbology.Vtc.csproj" />
     <ProjectReference Include="..\gView.Framework\gView.Framework.csproj" />
   </ItemGroup>
 

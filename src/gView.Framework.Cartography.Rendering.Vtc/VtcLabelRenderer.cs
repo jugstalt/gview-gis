@@ -5,6 +5,7 @@ using gView.Framework.Core.Common;
 using gView.Framework.Core.Data;
 using gView.Framework.Core.Data.Filters;
 using gView.Framework.Core.Symbology;
+using gView.Framework.Symbology;
 using gView.Framework.Symbology.Vtc;
 using gView.Framework.Symbology.Vtc.Extensions;
 using gView.GraphicsEngine;
@@ -29,6 +30,8 @@ public class VtcLabelRenderer : SimpleLabelRenderer
     {
         _paintSymbol = paintSymbol;
     }
+
+    public IValueFunc? LabelExpressionValueFunc { get; set; }
 
     public override void PrepareQueryFilter(IDisplay display, IFeatureLayer layer, IQueryFilter filter)
     {
@@ -124,12 +127,19 @@ public class VtcLabelRenderer : SimpleLabelRenderer
         return true;
     }
 
-    protected override string ModifyEvaluatedLabel(IFeature feature, string label)
+    protected override string ModifyEvaluatedLabel(IDisplay display, IFeature feature, string label)
     {
         // remove placeholder 
         // if attribute not exits in feature, there are still the placeholders in the exrpression
 
-        if (label.Contains("[") && label.Contains("]"))
+        label = LabelExpressionValueFunc?.Value<string>(display, feature) ?? "";
+
+        foreach (FieldValue fv in feature.Fields)
+        {
+            label = label.Replace($"{{{fv.Name}}}", fv.Value.ToString());
+        }
+
+        if (label.Contains("{") && label.Contains("}"))
         {
             return RemovePlaceholders(label);
         }
@@ -141,7 +151,10 @@ public class VtcLabelRenderer : SimpleLabelRenderer
         => new VtcLabelRenderer(
                 (PaintSymbol)_paintSymbol.Clone(),
                 (ITextSymbol?)(base.TextSymbol is IClone2 ? base.TextSymbol.Clone(options) : null),
-                base.FieldName);
+                base.FieldName)
+        {
+            LabelExpressionValueFunc = this.LabelExpressionValueFunc
+        };
 
     #region Helpers
 
@@ -149,7 +162,7 @@ public class VtcLabelRenderer : SimpleLabelRenderer
     {
         int startIndex, endIndex;
 
-        while ((startIndex = text.IndexOf('[')) != -1 && (endIndex = text.IndexOf(']', startIndex)) != -1)
+        while ((startIndex = text.IndexOf('{')) != -1 && (endIndex = text.IndexOf('}', startIndex)) != -1)
         {
             text = text.Remove(startIndex, endIndex - startIndex + 1);
         }
@@ -158,4 +171,6 @@ public class VtcLabelRenderer : SimpleLabelRenderer
     }
 
     #endregion
+
+
 }
