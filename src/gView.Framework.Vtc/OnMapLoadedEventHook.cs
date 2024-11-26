@@ -217,7 +217,7 @@ public class OnMapLoadedEventHook : IMapEventHook
             }
             else if (@class is IRasterClass rasterClass)
             {
-                var rasterLayer = new RasterLayer(rasterClass);
+                var rasterLayer = new VtcRasterLayer(rasterClass, layer.ToPaintSymbol(map));
 
                 map.AddLayer(rasterLayer);
 

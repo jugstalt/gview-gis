@@ -79,13 +79,8 @@ public sealed class RenderFeatureLayerSelection
             return;
         }
 
-        IGeometry filterGeom = _map.Display.Envelope;
-
-        if (_map.Display.GeometricTransformer != null)
-        {
-            filterGeom = MapHelper.Project(fClass, _map.Display);
-            //filterGeom = (IGeometry)_map.Display.GeometricTransformer.InvTransform2D(filterGeom);
-        }
+        IEnvelope filterGeom = MapHelper.Project(fClass, _map.Display,
+                    _map.Display.DisplayTransformation.RotatedBounds());
 
         int skip = 0, counter = 0;
         while (true)
@@ -96,7 +91,7 @@ public sealed class RenderFeatureLayerSelection
             //List<int> IDs=new List<int>();  // Sollte nicht null sein...
             if (selectionSet is ISpatialIndexedIDSelectionSet)
             {
-                List<int> IDs = ((ISpatialIndexedIDSelectionSet)selectionSet).IDsInEnvelope(filterGeom.Envelope)
+                List<int> IDs = ((ISpatialIndexedIDSelectionSet)selectionSet).IDsInEnvelope(filterGeom)
                      .Skip(skip).Take(_maxBulkSize).ToList();
 
                 if (IDs.Count == 0)

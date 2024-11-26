@@ -1,8 +1,7 @@
 ﻿using gView.Framework.Core.Carto;
+using gView.Framework.Core.Common;
 using gView.Framework.Core.Data;
 using gView.Framework.Core.Geometry;
-using gView.Framework.Core.Common;
-using gView.Framework.Data;
 using gView.Framework.Geometry;
 using gView.Framework.Geometry.Tiling;
 using gView.GraphicsEngine.Abstraction;
@@ -135,7 +134,7 @@ namespace gView.DataSources.TileCache
                 grid.AddLevel(i, _dataset.Scales[i] / (dpi / 0.0254));
             }
 
-            IEnvelope dispEnvelope = display.DisplayTransformation.TransformedBounds(display); //display.Envelope;
+            IEnvelope dispEnvelope = display.DisplayTransformation.RotatedBounds(); //display.Envelope;
             if (display.GeometricTransformer != null)
             {
                 dispEnvelope = ((IGeometry)display.GeometricTransformer.InvTransform2D(dispEnvelope)).Envelope;
@@ -149,7 +148,7 @@ namespace gView.DataSources.TileCache
             int col1 = grid.TileColumn(dispEnvelope.MaxX, res);
             int row1 = grid.TileRow(dispEnvelope.MinY, res);
 
-            int col_from = Math.Max(grid.TileColumn(_dataset.Extent.MinX, res) , Math.Min(col0, col1)),
+            int col_from = Math.Max(grid.TileColumn(_dataset.Extent.MinX, res), Math.Min(col0, col1)),
                 col_to = Math.Min(grid.TileColumn(_dataset.Extent.MaxX, res), Math.Max(col0, col1));
             int row_from = Math.Max(grid.TileRow(_dataset.Extent.MaxY, res), Math.Min(row0, row1)),
                 row_to = Math.Min(grid.TileRow(_dataset.Extent.MinY, res), Math.Max(row0, row1));

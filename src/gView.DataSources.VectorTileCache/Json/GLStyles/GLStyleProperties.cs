@@ -41,4 +41,6 @@ static public class GLStyleProperties
 
     public const string SymbolPlacement = "symbol-placement";
     public const string SymbolSpacing = "symbol-spacing";
+
+    public const string RasterOpacity = "raster-opacity";
 }

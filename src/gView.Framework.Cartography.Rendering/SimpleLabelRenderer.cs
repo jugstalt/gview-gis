@@ -229,10 +229,10 @@ namespace gView.Framework.Cartography.Rendering
                 filter.AddField(_symbolRotation.RotationFieldName);
             }
 
-            _clipEnvelope = new Envelope(display.DisplayTransformation.TransformedBounds(display));
+            _clipEnvelope = new Envelope(display.DisplayTransformation.RotatedBounds());
             if (display.GeometricTransformer != null)
             {
-                object e = display.GeometricTransformer.InvTransform2D(display.Envelope);
+                object e = display.GeometricTransformer.InvTransform2D(_clipEnvelope);
                 if (e is IGeometry)
                 {
                     _clipEnvelope = ((IGeometry)e).Envelope;

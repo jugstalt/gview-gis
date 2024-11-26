@@ -106,7 +106,7 @@ namespace gView.Framework.Symbology
                     {
                         var transformRotation = angle + _angle + _rotation;
 
-                        if (display.DisplayTransformation.UseTransformation)
+                        if (display.DisplayTransformation.UseDisplayRotation)
                         {
                             transformRotation -= (float)display.DisplayTransformation.DisplayRotation;
                         }
@@ -674,7 +674,7 @@ namespace gView.Framework.Symbology
                 format.LineAlignment = StringAlignment.Center;
                 format.Alignment = StringAlignment.Center;
 
-                float displayRotation = display.DisplayTransformation.UseTransformation ?
+                float displayRotation = display.DisplayTransformation.UseDisplayRotation ?
                     (float)display.DisplayTransformation.DisplayRotation :
                     0f;
 

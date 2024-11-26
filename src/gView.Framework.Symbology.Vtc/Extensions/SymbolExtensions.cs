@@ -31,8 +31,14 @@ static internal class SymbolExtensions
                 catch { }  // todo
             }
             var iconSize = valueFuncs.GetValueOrDeafult(GLStyleProperties.IconSize, 1f, display, feature);
-            icon.SizeX *= iconSize;
-            icon.SizeY *= iconSize;
+            icon.SizeX *= iconSize * 0.5f;   // 0.5f because @2x
+            icon.SizeY *= iconSize * 0.5f;
+
+            if(icon is ISymbolSpacing symbolSpacing)
+            {
+                symbolSpacing.SymbolSpacingType = SymbolSpacingType.BoundingBox;
+                symbolSpacing.SymbolSpacingX = symbolSpacing.SymbolSpacingY = 50;
+            }
         }
     }
 

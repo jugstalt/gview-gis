@@ -21,22 +21,31 @@ namespace gView.Framework.Cartography.LayerRenderers
         private float _transparency = 0.0f;
         private GraphicsEngine.ArgbColor _transColor = GraphicsEngine.ArgbColor.Transparent;
 
-        public RenderRasterLayer(Map map, 
+        public RenderRasterLayer(
+            Map map, 
             IRasterLayer layer, 
-            IRasterLayer rLayer, 
+            IRasterLayer rootLayer, 
             ICancelTracker cancelTracker,
             IMapRenderer mapRenderer = null)
         {
+            if (layer is ILayerCloneBeforeRender cloneLayer)
+                layer = (IRasterLayer)cloneLayer.CloneBeforeRender(map.Display);
+
+            if (rootLayer is ILayerCloneBeforeRender cloneRootLayer)
+                rootLayer = (IRasterLayer)cloneRootLayer.CloneBeforeRender(map.Display);
+
             _map = map;
             _layer = layer;
             _cancelTracker = cancelTracker;
-            if (rLayer != null)
+
+            if (rootLayer != null)
             {
-                _interpolMethod = rLayer.InterpolationMethod;
-                _transparency = rLayer.Opacity;
-                _transColor = rLayer.TransparentColor;
-                _filter = rLayer.FilterImplementation;
+                _interpolMethod = rootLayer.InterpolationMethod;
+                _transparency = rootLayer.Opacity;
+                _transColor = rootLayer.TransparentColor;
+                _filter = rootLayer.FilterImplementation;
             }
+
             _mapRenderer = mapRenderer;
         }
 

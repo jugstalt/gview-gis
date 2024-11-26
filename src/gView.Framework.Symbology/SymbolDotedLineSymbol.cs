@@ -122,7 +122,7 @@ namespace gView.Framework.Symbology
             {
                 IEnvelope dispEnvelope =
                     display.DisplayTransformation != null ?
-                    new Envelope(display.DisplayTransformation.TransformedBounds(display)) :
+                    new Envelope(display.DisplayTransformation.RotatedBounds()) :
                     new Envelope(display.Envelope);
 
                 //dispEnvelope.Raise(75);

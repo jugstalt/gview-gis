@@ -241,7 +241,7 @@ namespace gView.DataSources.GDAL
                     return Task.FromResult<IRasterPaintContext>(null);
                 }
 
-                IEnvelope dispEnvelope = display.DisplayTransformation.TransformedBounds(display); //display.Envelope;
+                IEnvelope dispEnvelope = display.DisplayTransformation.RotatedBounds(); //display.Envelope;
                 if (display.GeometricTransformer != null)
                 {
                     dispEnvelope = ((IGeometry)display.GeometricTransformer.InvTransform2D(dispEnvelope)).Envelope;
@@ -1122,17 +1122,17 @@ namespace gView.DataSources.GDAL
         private double _ignoreValue = 0.0;
         private bool _useIgnoreValue = false;
 
-        public GridRenderMethode ImplementsRenderMethods
+        public GridRenderMethod ImplementsRenderMethods
         {
             get
             {
                 if (_type == RasterType.image)
                 {
-                    return GridRenderMethode.None;
+                    return GridRenderMethod.None;
                 }
                 else
                 {
-                    return GridRenderMethode.Colors | GridRenderMethode.HillShade | GridRenderMethode.NullValue;
+                    return GridRenderMethod.Colors | GridRenderMethod.HillShade | GridRenderMethod.NullValue;
                 }
             }
         }

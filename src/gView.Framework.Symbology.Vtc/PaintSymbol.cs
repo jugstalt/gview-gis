@@ -84,7 +84,7 @@ public class PaintSymbol : ISymbol, IBrushColor
     {
         var geometry = feature?.Shape;
 
-        if (geometry is IPoint && _pointSymbol != null)
+        if (geometry is IPoint point && _pointSymbol != null)
         {
             if (modify)
             {
@@ -92,8 +92,7 @@ public class PaintSymbol : ISymbol, IBrushColor
             }
             display.Draw(_pointSymbol, geometry);
         }
-        else
-        if (geometry is IPolyline && _lineSymbol != null)
+        else if (geometry is IPolyline && _lineSymbol != null)
         {
             if (modify)
             {
@@ -431,6 +430,11 @@ public class InterpolateValueFunc : IValueFunc
                 var funcPoint2Value = _funcs[i + 2].Value<float>(display, feature);
                 var func2Value = _funcs[i + 3].Value<T>(display, feature);
 
+                if (funcPoint2Value <= pointValue)
+                {
+                    continue;
+                }
+
                 if (_methods[0] == "linear")
                 {
                     var factor = (pointValue - funcPoint1Value) / (funcPoint2Value - funcPoint1Value);
@@ -439,6 +443,8 @@ public class InterpolateValueFunc : IValueFunc
                     {
                         float dy = Convert.ToSingle(func2Value) - Convert.ToSingle(func1Value);
                         result = (T)Convert.ChangeType(Convert.ToSingle(func1Value) + dy * factor, typeof(T));
+
+                        break;
                     }
                 }
                 else if (_methods[0] == "exponential")
@@ -453,7 +459,16 @@ public class InterpolateValueFunc : IValueFunc
                             + (Convert.ToSingle(func2Value) - Convert.ToSingle(func1Value))
                             * (float)Math.Pow((pointValue - funcPoint1Value) / (funcPoint2Value - funcPoint1Value), @base);
 
-                        result = (T)Convert.ChangeType(Math.Min(val, Convert.ToSingle(func2Value)), typeof(T));
+                        if (Convert.ToSingle(func2Value) > Convert.ToSingle(func1Value))
+                        {
+                            result = (T)Convert.ChangeType(Math.Min(val, Convert.ToSingle(func2Value)), typeof(T));
+                        } 
+                        else
+                        {
+                            result = (T)Convert.ChangeType(Math.Max(val, Convert.ToSingle(func2Value)), typeof(T));
+                        }
+
+                        break;
                     }
                 }
                 else

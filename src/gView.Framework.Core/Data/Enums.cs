@@ -77,7 +77,7 @@ namespace gView.Framework.Core.Data
         ConstantGeographicTilesize = 1
     }
 
-    public enum GridRenderMethode { None = 0, Colors = 1, HillShade = 4, NullValue = 8 }
+    public enum GridRenderMethod { None = 0, Colors = 1, HillShade = 4, NullValue = 8 }
 
     public enum joinType
     {

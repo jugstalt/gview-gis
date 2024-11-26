@@ -65,6 +65,10 @@ public class GLStyleLayerPaint
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public JsonElement? FillExtrusionColor { get; set; }
 
+    [JsonPropertyName(GLStyleProperties.RasterOpacity)]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public JsonElement? RasterOpacity { get; set; }
+
     #endregion
 
     #region Text

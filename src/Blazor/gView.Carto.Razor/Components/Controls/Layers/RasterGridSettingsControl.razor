@@ -1,0 +1,25 @@
+@using gView.GraphicsEngine.Filters
+
+@if (Layer is not null)
+{
+    <MudCheckBox T="bool" 
+    Value="@(Layer.Class is IGridClass gridClass ? gridClass.UseHillShade : false)"
+    ValueChanged="OnHillshadeChanged" 
+    Label="Use Hillshade" />
+
+}
+
+@code {
+    [Parameter] public IRasterLayer? Layer { get; set; }
+
+    private void OnHillshadeChanged(bool useHillshade)
+    {
+        if(Layer?.Class is IGridClass gridClass)
+        {
+            gridClass.UseHillShade = useHillshade;
+            gridClass.RenderRawGridValues = 
+                gridClass.UseHillShade == false 
+                && gridClass.ColorClasses?.Any() != false;
+        }
+    }
+}

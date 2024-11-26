@@ -4,124 +4,131 @@
 @if (Model.Map is not null && Model.Layer is not null)
 {
     <ModalDialogFormBase T="LayerSettingsModel"
-                         OnDialogClose="base.OnDialogClose"
-                         ContentStyle="DialogContentStyle.Wide"
-                         Model="base.Model">
+    OnDialogClose="base.OnDialogClose"
+    ContentStyle="DialogContentStyle.Wide"
+    Model="base.Model">
         <DialogBody>
             <MudDrawerContainer Class="mud-height-full">
                 <MudDrawer Variant="@DrawerVariant.Mini" Anchor="Anchor.Left"
-                           Elevation="1"
-                           @bind-Open="@_drawerIsOpen"
-                           OpenMiniOnHover="true"
-                           Fixed="false">
+                Elevation="1"
+                @bind-Open="@_drawerIsOpen"
+                OpenMiniOnHover="true"
+                Fixed="false">
                     <MudList SelectionMode="SelectionMode.SingleSelection" T="Page" 
-                             @bind-SelectedValue="@_currentTab">
+                    @bind-SelectedValue="@_currentTab">
 
                         @if (Model.Layer.HasErrors())
                         {
                             <MudListItem Icon="@IconService.FromString("basic:warning_red")" Style="white-space:nowrap"
-                                         Value="Page.Errors" Text="Errors"
-                                         OnClick="() => _drawerIsOpen = false" />
+                            Value="Page.Errors" Text="Errors"
+                            OnClick="() => _drawerIsOpen = false" />
                         }
 
                         <MudListItem Icon="@IconService.FromString("basic:settings")" Style="white-space:nowrap"
-                                     Value="Page.General" Text="Map / Display"
-                                     OnClick="() => _drawerIsOpen = false" />
+                        Value="Page.General" Text="Map / Display"
+                        OnClick="() => _drawerIsOpen = false" />
 
                         @if(Model.Layer.CanFeatureRender())
                         {
                             <MudListItem Icon="@IconService.FromString("webgis:polygon-highlighted")" Style="white-space:nowrap"
-                                         Value="Page.FeatureRenderer" Text="Feature Renderer"
-                                         OnClick="() => _drawerIsOpen = false" />
+                            Value="Page.FeatureRenderer" Text="Feature Renderer"
+                            OnClick="() => _drawerIsOpen = false" />
 
 
                             <MudListItem Icon="@IconService.FromString("webgis:polygon-selected")" Style="white-space:nowrap"
-                                         Value="Page.FeatureSelectionRenderer" Text="Feature Selection"
-                                         OnClick="() => _drawerIsOpen = false" />
+                            Value="Page.FeatureSelectionRenderer" Text="Feature Selection"
+                            OnClick="() => _drawerIsOpen = false" />
                         }
 
                         @if (Model.Layer.CanLabelRenderer())
                         {
                             <MudListItem Icon="@IconService.FromString("basic:text")" Style="white-space:nowrap"
-                                         Value="Page.LabelRenderer" Text="Label Rendrerer"
-                                         OnClick="() => _drawerIsOpen = false" />
+                            Value="Page.LabelRenderer" Text="Label Rendrerer"
+                            OnClick="() => _drawerIsOpen = false" />
                         }
 
                         @if(Model.Layer.CanFeatureRender() || Model.Layer.CanLabelRenderer())
                         {
                             <MudListItem Icon="@IconService.FromString("basic:bulb-shining")" Style="white-space:nowrap"
-                                         Value="Page.Symbology" Text="Layer Symbology"
-                                         OnClick="() => _drawerIsOpen = false" />
+                            Value="Page.Symbology" Text="Layer Symbology"
+                            OnClick="() => _drawerIsOpen = false" />
                         }
 
                         @if(Model.Layer.ImplementsSpatialReference())
                         {
                             <MudListItem Icon="@IconService.FromString("basic:globe")" Style="white-space:nowrap"
-                                         Value="Page.SpatialReference" Text="Spatial Reference"
-                                         OnClick="() => _drawerIsOpen = false" />
+                            Value="Page.SpatialReference" Text="Spatial Reference"
+                            OnClick="() => _drawerIsOpen = false" />
                         }
 
                         @if (Model.Layer.ImplementsLayerDefinitionFilter())
                         {
                             <MudListItem Icon="@IconService.FromString("basic:filter")" Style="white-space:nowrap"
-                                         Value="Page.Filter" Text="Filter"
-                                         OnClick="() => _drawerIsOpen = false" />
+                            Value="Page.Filter" Text="Filter"
+                            OnClick="() => _drawerIsOpen = false" />
                         }
 
                         @if(Model.Layer.IsFeatureLyer())
                         {
                             <MudListItem Icon="@IconService.FromString("basic:table")" Style="white-space:nowrap"
-                                         Value="Page.LayerFields" Text="Fields"
-                                         OnClick="() => _drawerIsOpen = false" />
+                            Value="Page.LayerFields" Text="Fields"
+                            OnClick="() => _drawerIsOpen = false" />
                         }
 
                         @if(Model.Layer.IsGroupLayer()) {
                             <MudListItem Icon="@IconService.FromString("basic:cloud-connect")" Style="white-space:nowrap"
-                                         Value="Page.MapServiceBehavoir" Text="Map Service Behavoir"
-                                         OnClick="() => _drawerIsOpen = false" />
+                            Value="Page.MapServiceBehavoir" Text="Map Service Behavoir"
+                            OnClick="() => _drawerIsOpen = false" />
                             <MudListItem Icon="@IconService.FromString("basic:bulb-shining")" Style="white-space:nowrap"
-                                         Value="Page.Symbology" Text="Group Symbology"
-                                         OnClick="() => _drawerIsOpen = false" />
+                            Value="Page.Symbology" Text="Group Symbology"
+                            OnClick="() => _drawerIsOpen = false" />
                         }
 
                         @if (Model.Layer.ImplementsLayerComposition())
                         {
                             <MudListItem Icon="@IconService.FromString("webgis:layer-middle")" Style="white-space:nowrap"
-                                         Value="Page.CompositionMode" Text="Composition Mode"
-                                         OnClick="() => _drawerIsOpen = false" />
+                            Value="Page.CompositionMode" Text="Composition Mode"
+                            OnClick="() => _drawerIsOpen = false" />
                         }
 
                         @if(Model.Layer.IsRasterLayer())
                         {
                             <MudListItem Icon="@IconService.FromString("basic:drop-50")" Style="white-space:nowrap"
-                                         Value="Page.Raster" Text="Raster Settings"
-                                         OnClick="() => _drawerIsOpen = false" />
+                            Value="Page.Raster" Text="Raster Settings"
+                            OnClick="() => _drawerIsOpen = false" />
+                        }
+
+                        @if(Model.Layer.HasRasterGridClass())
+                        {
+                            <MudListItem Icon="@IconService.FromString("basic:calculator")" Style="white-space:nowrap"
+                            Value="Page.Grid" Text="Raster Grid"
+                            OnClick="() => _drawerIsOpen = false" />
                         }
 
                         @if (Model.Layer.IsWebServiceLayer())
                         {
                             <MudListItem Icon="@IconService.FromString("basic:cloud")" Style="white-space:nowrap"
-                                         Value="Page.WebService" Text="Web Service"
-                                         OnClick="() => _drawerIsOpen = false" />
+                            Value="Page.WebService" Text="Web Service"
+                            OnClick="() => _drawerIsOpen = false" />
                         }
 
                         @if (Model.Layer.Class is gView.Interoperability.OGC.Dataset.WMS.WMSClass)
                         {
                             <MudListItem Icon="@IconService.FromString("basic:cloud")" Style="white-space:nowrap"
-                                         Value="Page.WMS" Text="WMS"
-                                         OnClick="() => _drawerIsOpen = false" />
+                            Value="Page.WMS" Text="WMS"
+                            OnClick="() => _drawerIsOpen = false" />
                         }
 
                         @if (Model.Layer.HasDataSource())
                         {
                             <MudListItem Icon="@IconService.FromString("basic:database")" Style="white-space:nowrap"
-                                         Value="Page.Source" Text="Source"
-                                         OnClick="() => _drawerIsOpen = false" />
+                            Value="Page.Source" Text="Source"
+                            OnClick="() => _drawerIsOpen = false" />
                         }
 
                         <MudListItem Icon="@IconService.FromString("basic:copyright")" Style="white-space:nowrap"
-                                     Value="Page.Description" Text="Description & (c)"
-                                     OnClick="() => _drawerIsOpen = false" />
+                        Value="Page.Description" Text="Description & (c)"
+                        OnClick="() => _drawerIsOpen = false" />
 
                     </MudList>
                 </MudDrawer>
@@ -187,6 +194,10 @@
                 {
                     <RasterLayerSettingsControl Layer="Model.Layer as IRasterLayer" />
                 }
+                else if(Page.Grid.Equals(_currentTab))
+                {
+                    <RasterGridSettingsControl Layer="Model.Layer as IRasterLayer" />
+                }
                 else if(Page.WebService.Equals(_currentTab))
                 {
                     <WebServiceLayerSettings Layer="Model.Layer as IWebServiceLayer" />
@@ -234,6 +245,7 @@
         Source,
         CompositionMode,
         Raster,
+        Grid,
         WebService,
         WMS,
         Errors

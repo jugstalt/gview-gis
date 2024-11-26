@@ -139,8 +139,8 @@ namespace gView.Interoperability.ArcXML.Dataset
                 sb.Append("<REQUEST>");
                 sb.Append("<GET_IMAGE>");
                 sb.Append("<PROPERTIES>");
-                IEnvelope bounds = display.DisplayTransformation.TransformedBounds(display);
-                if (display.DisplayTransformation.UseTransformation == true)
+                IEnvelope bounds = display.DisplayTransformation.RotatedBounds();
+                if (display.DisplayTransformation.UseDisplayRotation == true)
                 {
                     iWidth = (int)(bounds.Width * display.Dpm / display.MapScale);
                     iHeight = (int)(bounds.Height * display.Dpm / display.MapScale);

@@ -3,6 +3,7 @@ using gView.Framework.Core.Common;
 using gView.Framework.Core.Data;
 using gView.Framework.Core.Geometry;
 using System.Linq;
+using System.Security.Cryptography.Pkcs;
 
 namespace gView.Blazor.Core.Extensions;
 
@@ -51,6 +52,8 @@ static public class LayerExtensions
            && !(layer is IWebServiceTheme);
 
     static public bool IsRasterLayer(this ILayer layer) => layer is IRasterLayer;
+
+    static public bool HasRasterGridClass(this ILayer layer) => layer?.Class is IGridClass;
 
     static public bool IsWebServiceLayer(this ILayer layer) => layer is IWebServiceLayer;
 

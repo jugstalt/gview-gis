@@ -237,7 +237,7 @@ namespace gView.DataSources.Fdb.PostgreSql
             double dpm = Math.Max(display.Canvas.DpiX, display.Canvas.DpiY) / 0.0254;
             double pix = display.MapScale / dpm;/*display.dpm;*/  // [m]
 
-            IEnvelope dispEnvelope = display.DisplayTransformation.TransformedBounds(display); //display.Envelope;
+            IEnvelope dispEnvelope = display.DisplayTransformation.RotatedBounds(); //display.Envelope;
             if (display.GeometricTransformer != null)
             {
                 dispEnvelope = ((IGeometry)display.GeometricTransformer.InvTransform2D(dispEnvelope)).Envelope;
@@ -676,11 +676,11 @@ namespace gView.DataSources.Fdb.PostgreSql
         private bool _useNoDataValue = false;
         private double _noDataValue = 0.0;
 
-        public GridRenderMethode ImplementsRenderMethods
+        public GridRenderMethod ImplementsRenderMethods
         {
             get
             {
-                return GridRenderMethode.Colors | GridRenderMethode.HillShade | GridRenderMethode.NullValue;
+                return GridRenderMethod.Colors | GridRenderMethod.HillShade | GridRenderMethod.NullValue;
             }
         }
 

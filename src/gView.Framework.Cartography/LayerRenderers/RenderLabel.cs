@@ -53,14 +53,9 @@ namespace gView.Framework.Cartography.LayerRenderers
                     return;
                 }
 
-                IGeometry filterGeom = _map.Display.Envelope;
-
-                if (_map.Display.GeometricTransformer != null)
-                {
-                    filterGeom = MapHelper.Project(fClass, _map.Display);
-                    //filterGeom = (IGeometry)_map.Display.GeometricTransformer.InvTransform2D(filterGeom);
-                }
-
+                IEnvelope filterGeom = MapHelper.Project(fClass, _map.Display,
+                    _map.Display.DisplayTransformation.RotatedBounds());
+               
                 SpatialFilter filter = new SpatialFilter();
                 filter.DatasetCachingContext = _datasetCachingContext;
                 filter.Geometry = filterGeom;

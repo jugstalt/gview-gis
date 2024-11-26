@@ -35,9 +35,9 @@ public class Display : MapMetadata, IDisplay
     private bool _makeTransparent = false;
     protected ILabelEngine _labelEngine;
     protected GeoUnits _mapUnits = GeoUnits.Unknown, _displayUnits = GeoUnits.Unknown;
-    private object lockThis = new object();
-    private DisplayScreen _screen;
-    private DisplayTransformation _displayTransformation = new DisplayTransformation();
+
+    private readonly DisplayScreen _screen;
+    private readonly DisplayTransformation _displayTransformation;
 
     #endregion
 
@@ -49,10 +49,11 @@ public class Display : MapMetadata, IDisplay
         _fontsizeFactor = _widthFactor = _refScale = -1.0;
         //m_fixScales=new ArrayList();
 
-        _labelEngine = new LabelEngine2();
+        _labelEngine = new LabelEngine2();   
 
         _screen = new DisplayScreen();
         _screen.RefreshSettings();
+        _displayTransformation = new DisplayTransformation(this);
 
         Dpi = GraphicsEngine.Current.Engine.ScreenDpi;
     }
@@ -79,17 +80,17 @@ public class Display : MapMetadata, IDisplay
         //y -= _OX;
         y += _OY;
 
-        if (_displayTransformation.UseTransformation)
+        if (_displayTransformation.UseDisplayRotation)
         {
-            _displayTransformation.Transform(this, ref x, ref y);
+            _displayTransformation.Rotate(ref x, ref y);
         }
     }
 
     public void Image2World(ref double x, ref double y)
     {
-        if (_displayTransformation.UseTransformation)
+        if (_displayTransformation.UseDisplayRotation)
         {
-            _displayTransformation.InvTransform(this, ref x, ref y);
+            _displayTransformation.RotateInverse(ref x, ref y);
         }
 
         x -= _OX;
@@ -487,7 +488,7 @@ public class Display : MapMetadata, IDisplay
 
     #endregion
 
-    public ILabelEngine LabelEngine { get { return _labelEngine; } }
+    public ILabelEngine LabelEngine => _labelEngine;
 
     public IGeometry Transform(IGeometry geometry, ISpatialReference geometrySpatialReference)
     {
@@ -578,7 +579,7 @@ public class Display : MapMetadata, IDisplay
         #endregion
     }
 
-    public IDisplayTransformation DisplayTransformation
+    public IDisplayRotation DisplayTransformation
     {
         get { return _displayTransformation; }
     }
