@@ -1,7 +1,6 @@
 ﻿using gView.Framework.Common;
 using gView.Framework.Common.Diagnostics;
 using gView.Framework.Common.Json;
-using gView.Framework.Common.Json.Converters.Extensions;
 using gView.Framework.Core.Carto;
 using gView.Framework.Core.Common;
 using gView.Framework.Core.Data;
@@ -1128,16 +1127,9 @@ public class GeoServicesRestInterperter : IServiceRequestInterpreter
 
             using (var serviceMap = await context.CreateServiceMapInstance())
             {
-                foreach (var layer in serviceMap.MapElements)
+                foreach (var layer in serviceMap.MapElements.Where(l => l is ILayer).Select(l => (ILayer)l))
                 {
-                    if (!(layer is IFeatureLayer) || ((IFeatureLayer)layer).FeatureRenderer == null)
-                    {
-                        continue;
-                    }
-
-                    var featureLayer = (IFeatureLayer)layer;
-
-                    var tocElement = serviceMap.TOC.GetTOCElement(featureLayer);
+                    var tocElement = serviceMap.TOC.GetTOCElement(layer);
                     if (tocElement == null)
                     {
                         continue;
@@ -1152,14 +1144,15 @@ public class GeoServicesRestInterperter : IServiceRequestInterpreter
 
                         var legendLayer = new Rest.DTOs.Legend.LayerDTO()
                         {
-                            LayerId = featureLayer.ID,
+                            LayerId = layer.ID,
                             LayerName = tocElement.Name,
                             LayerType = "Feature-Layer",
-                            MinScale = Convert.ToInt32(featureLayer.MaximumScale > 1 ? featureLayer.MaximumScale : 0),
-                            MaxScale = Convert.ToInt32(featureLayer.MinimumScale > 1 ? featureLayer.MinimumScale : 0)
+                            MinScale = Convert.ToInt32(layer.MaximumScale > 1 ? layer.MaximumScale : 0),
+                            MaxScale = Convert.ToInt32(layer.MinimumScale > 1 ? layer.MinimumScale : 0)
                         };
 
                         var legends = new List<Rest.DTOs.Legend.LegendDTO>();
+
                         foreach (var tocLegendItem in tocLegendItems.Items)
                         {
                             if (tocLegendItem.Image == null)

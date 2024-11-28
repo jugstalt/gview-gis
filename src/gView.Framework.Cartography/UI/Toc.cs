@@ -1,11 +1,12 @@
 ﻿using gView.Framework.Core.Carto;
+using gView.Framework.Core.Common;
 using gView.Framework.Core.Data;
 using gView.Framework.Core.IO;
 using gView.Framework.Core.Symbology;
-using gView.Framework.Core.Common;
 using gView.Framework.Core.UI;
 using gView.Framework.Data;
 using gView.Framework.Symbology.Extensions;
+using gView.GraphicsEngine;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -87,10 +88,10 @@ public class Toc : IToc
         }
     }
 
-    public List<ITocElement> GetChildElements (ITocElement group, bool recursive = true)
+    public List<ITocElement> GetChildElements(ITocElement group, bool recursive = true)
     {
         List<ITocElement> elements = new List<ITocElement>();
-        if (group == null 
+        if (group == null
             || (group.ElementType != TocElementType.OpenedGroup && group.ElementType != TocElementType.ClosedGroup))
         {
             return elements;
@@ -117,8 +118,8 @@ public class Toc : IToc
 
             elements.Add(element);
 
-            if (recursive && 
-                (element.ElementType == TocElementType.OpenedGroup 
+            if (recursive &&
+                (element.ElementType == TocElementType.OpenedGroup
                 || element.ElementType == TocElementType.ClosedGroup)
                 )
             {
@@ -377,18 +378,18 @@ public class Toc : IToc
     async public Task<TocLegendItems> LegendSymbol(ITocElement element)
     {
         var items = new List<TocLegendItem>();
+
         if (element == null || element.Layers == null || !_elements.Contains(element))
         {
-            return null;
+            return new TocLegendItems() { Items = [] };
         }
 
         try
         {
             foreach (ILayer layer in element.Layers)
             {
-                if (layer is IWebServiceLayer && layer.Class is IWebServiceClass)
+                if (layer is IWebServiceLayer && layer.Class is IWebServiceClass wClass)
                 {
-                    IWebServiceClass wClass = layer.Class as IWebServiceClass;
                     if (await wClass.LegendRequest(_map.Display))
                     {
                         var lBm = wClass.Legend;
@@ -404,23 +405,20 @@ public class Toc : IToc
                         });
                     }
                 }
-                else if (layer is IFeatureLayer && ((IFeatureLayer)layer).FeatureRenderer is ILegendGroup)
+                else if (layer is IFeatureLayer fLayer && fLayer.FeatureRenderer is ILegendGroup lGroup)
                 {
-                    IFeatureLayer fLayer = layer as IFeatureLayer;
-                    ILegendGroup lGroup = fLayer.FeatureRenderer as ILegendGroup;
-
                     for (int i = 0; i < lGroup.LegendItemCount; i++)
                     {
                         ILegendItem lItem = lGroup.LegendItem(i);
                         if (lItem is ISymbol)
                         {
-                            var bm = GraphicsEngine.Current.Engine.CreateBitmap(20, 20);
+                            var bm = Current.Engine.CreateBitmap(20, 20);
                             using (var canvas = bm.CreateCanvas())
                             {
                                 ISymbol symbol = lItem as ISymbol;
                                 new SymbolPreview(_map).Draw(
                                     canvas,
-                                    new GraphicsEngine.CanvasRectangle().ToLegendItemSymbolRect(),
+                                    new CanvasRectangle().ToLegendItemSymbolRect(),
                                     symbol);
                             }
                             items.Add(new TocLegendItem()
@@ -431,6 +429,60 @@ public class Toc : IToc
                         }
                     }
                     break;
+                }
+                else if (layer.Class is IGridClass gridClass && gridClass.ColorClasses?.Any() == true)
+                {
+                    int height = Math.Max(150, Math.Min(300, gridClass.ColorClasses.Length * 2));
+                    int width = 0;
+                    float classHeight = height / gridClass.ColorClasses.Length;
+
+                    var stringFormat = Current.Engine.CreateDrawTextFormat();
+                    stringFormat.Alignment = StringAlignment.Near;
+                    stringFormat.LineAlignment = StringAlignment.Center;
+
+                    using (var measureBitmap = Current.Engine.CreateBitmap(1, 1))
+                    using (var mesaureCanvas = measureBitmap.CreateCanvas())
+                    using (var measureFont = Current.Engine.CreateFont("Arial", 10f))
+                    {
+                        foreach (var colorClass in gridClass.ColorClasses.Where(c => !String.IsNullOrEmpty(c.Legend)))
+                        {
+                            width = Math.Max(width, (int)mesaureCanvas.MeasureText(colorClass.Legend, measureFont).Width);
+                        }
+                    }
+
+                    var bm = Current.Engine.CreateBitmap(width + 28, height + 10);
+                    using (var canvas = bm.CreateCanvas())
+                    using (var font = Current.Engine.CreateFont("Arial", 10f))
+                    using (var fontBrush = Current.Engine.CreateSolidBrush(ArgbColor.Black))
+                    {
+                        float y = bm.Height - 5f;
+
+                        foreach (var colorClass in gridClass.ColorClasses)
+                        {
+                            using (var brush = Current.Engine.CreateSolidBrush(colorClass.Color))
+                            {
+                                canvas.FillRectangle(brush,
+                                    new CanvasRectangleF(0f, y - classHeight, 20f, classHeight));
+                            }
+
+                            if (!String.IsNullOrEmpty(colorClass.Legend))
+                            {
+                                canvas.DrawText(
+                                        colorClass.Legend,
+                                        font,
+                                        fontBrush,
+                                        new CanvasPointF(24f, y - classHeight / 2f),
+                                        stringFormat);
+                            }
+
+                            y -= classHeight;
+                        }
+                    }
+
+                    items.Add(new TocLegendItem()
+                    {
+                        Image = bm
+                    });
                 }
             }
         }
@@ -462,7 +514,7 @@ public class Toc : IToc
             return;
         }
 
-        if(Group == null)
+        if (Group == null)
         {
             ((TocElement)element).ParentGroup = null;
             return;

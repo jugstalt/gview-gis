@@ -20,6 +20,4 @@ namespace gView.Framework.Core.UI
             }
         }
     }
-
-
 }

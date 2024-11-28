@@ -1,6 +1,6 @@
 @using gView.GraphicsEngine.Filters
 
-@if(Layer is not null)
+@if (Layer is not null)
 {
     <GvCard Title="Raster Filter & Interpolation">
         <GvCardContent>
@@ -8,7 +8,7 @@
                        @bind-Value="Layer.FilterImplementation">
                 @(GvUtilities.EnumToSelectItems<FilterImplementations>())
             </MudSelect>
-            
+
             <MudSelect Label="Interpolation Method" T="InterpolationMethod"
                        @bind-Value="Layer.InterpolationMethod">
                 @(GvUtilities.EnumToSelectItems<InterpolationMethod>())
@@ -27,7 +27,7 @@
             @GvUtilities.InfoText("Opacity 0: this settings is ignored => no transparency applied")
 
             <MudInputLabel>Transparent Color (NODATA):</MudInputLabel>
-            <ColorSelectorButton ArgbColor="Layer.TransparentColor" 
+            <ColorSelectorButton ArgbColor="Layer.TransparentColor"
                                  ArgbColorChanged="(color) => Layer.TransparentColor = color" />
             <MudButton Size="MudBlazor.Size.Small"
                        OnClick="() => Layer.TransparentColor = GraphicsEngine.ArgbColor.Transparent">
@@ -35,7 +35,7 @@
             </MudButton>
         </GvCardContent>
     </GvCard>
-        
+
 }
 
 @code {

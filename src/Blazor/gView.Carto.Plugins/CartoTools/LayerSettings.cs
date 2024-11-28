@@ -74,6 +74,13 @@ internal class LayerSettings : ICartoButton
 
         if (model is null)
         {
+            if (originalLayer.Class is IGridClass)
+            {
+                // with IGridClasses changes in Dialog maybe dont
+                // also if the Dialog cancelt.
+                // so lets refresh the map to see this changes
+                await scope.EventBus.FireRefreshMapAsync();
+            }
             return false;
         }
 
