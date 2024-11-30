@@ -195,7 +195,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "nuget", "nuget", "{1BB805B5
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gView.Aspire.Hosting", "src\nuget\gView.Aspire.Hosting\gView.Aspire.Hosting.csproj", "{E0499676-FB29-4606-98BC-F415BBE310A6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gView.Framework.GeoJsonService", "src\gView.Framework.GeoJsonService\gView.Framework.GeoJsonService.csproj", "{10B73A43-7466-4A3E-A410-10474F9401C5}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gView.GeoJsonService", "src\gView.GeoJsonService\gView.GeoJsonService.csproj", "{10B73A43-7466-4A3E-A410-10474F9401C5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gView.Endpoints", "src\gView.Endpoints\gView.Endpoints.csproj", "{2A46D444-C72D-42B5-8C72-A732AFD12CE6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -885,6 +887,14 @@ Global
 		{10B73A43-7466-4A3E-A410-10474F9401C5}.Release|Any CPU.Build.0 = Release|Any CPU
 		{10B73A43-7466-4A3E-A410-10474F9401C5}.Release|x64.ActiveCfg = Release|Any CPU
 		{10B73A43-7466-4A3E-A410-10474F9401C5}.Release|x64.Build.0 = Release|Any CPU
+		{2A46D444-C72D-42B5-8C72-A732AFD12CE6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2A46D444-C72D-42B5-8C72-A732AFD12CE6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2A46D444-C72D-42B5-8C72-A732AFD12CE6}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{2A46D444-C72D-42B5-8C72-A732AFD12CE6}.Debug|x64.Build.0 = Debug|Any CPU
+		{2A46D444-C72D-42B5-8C72-A732AFD12CE6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2A46D444-C72D-42B5-8C72-A732AFD12CE6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2A46D444-C72D-42B5-8C72-A732AFD12CE6}.Release|x64.ActiveCfg = Release|Any CPU
+		{2A46D444-C72D-42B5-8C72-A732AFD12CE6}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -985,7 +995,8 @@ Global
 		{57F4F825-DA72-4BA6-BE99-CC25B1956A7B} = {35061524-C22F-4536-8EA1-8F828D2E1CC1}
 		{1BB805B5-B882-40F6-AC9F-CD18FF6834C2} = {F92CCD65-1D06-475F-8FFB-3F912C7BBE7E}
 		{E0499676-FB29-4606-98BC-F415BBE310A6} = {1BB805B5-B882-40F6-AC9F-CD18FF6834C2}
-		{10B73A43-7466-4A3E-A410-10474F9401C5} = {DE176D4E-059E-4483-9C23-16055A573204}
+		{10B73A43-7466-4A3E-A410-10474F9401C5} = {0ADA1A24-AC4C-4471-939B-609A83271367}
+		{2A46D444-C72D-42B5-8C72-A732AFD12CE6} = {0ADA1A24-AC4C-4471-939B-609A83271367}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {11C25FC0-EB32-4DE1-9CBB-CF2D68D1AA9B}

@@ -1,5 +1,6 @@
 ﻿namespace gView.Framework.GeoJsonService.DTOs;
-public enum Enums
+
+public enum PropertyType
 {
     String,
     Integer,

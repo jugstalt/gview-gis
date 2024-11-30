@@ -15,6 +15,10 @@ public class RequestConverter : JsonConverter<BaseRequest>
 
             return type switch
             {
+                RequestTypes.GetInfo
+                    => JsonSerializer.Deserialize<GetInfoRequest>(rootElement.GetRawText(), options),
+                RequestTypes.GetServices
+                    => JsonSerializer.Deserialize<GetServicesRequest>(rootElement.GetRawText(), options),
                 RequestTypes.GetMap 
                     => JsonSerializer.Deserialize<GetMapRequest>(rootElement.GetRawText(), options),
                 RequestTypes.GetServiceCapabilities 

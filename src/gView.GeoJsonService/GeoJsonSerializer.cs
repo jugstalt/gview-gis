@@ -6,11 +6,14 @@ namespace gView.Framework.GeoJsonService;
 public class GeoJsonSerializer
 {
     static public BaseRequest? DeserializeRequest(string json)
-        => JsonSerializer.Deserialize<BaseRequest>(json, Options.SerializerOptions);
+        => JsonSerializer.Deserialize<BaseRequest>(json, Options.DeserializerOptions);
 
     static public T? Deserialize<T>(string json)
-        => JsonSerializer.Deserialize<T>(json, Options.SerializerOptions);
+        => JsonSerializer.Deserialize<T>(json, Options.DeserializerOptions);
 
     static public string Serialize<T>(T geoJsonObject)
         => JsonSerializer.Serialize(geoJsonObject, Options.SerializerOptions);
+
+    static public JsonSerializerOptions JsonSerializerOptions => Options.SerializerOptions;
+    static public JsonSerializerOptions JsonDeserializerOptions => Options.DeserializerOptions;
 }
