@@ -10,7 +10,7 @@ public class GetMapResponse
     public int Height { get; set; }
     public double ScaleDenominator { get; set; }
     public double? Rotation { get; set; }
-    public string Format { get; set; } = string.Empty;
+    public string ContentType { get; set; } = string.Empty;
 }
 
 

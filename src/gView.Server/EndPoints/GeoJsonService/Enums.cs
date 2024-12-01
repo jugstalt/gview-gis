@@ -10,3 +10,18 @@ public enum HttpMethod
     Put = 4,
     Delete = 8
 }
+
+public enum MapLayerVisibility
+{
+    Visible,
+    Invisible,
+    Include,
+    Exclude,
+}
+
+public enum MapLayerVisibilityPattern
+{
+    Defaults,
+    Normal,
+    IncludeExclude
+}

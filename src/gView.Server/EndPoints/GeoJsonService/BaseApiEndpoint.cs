@@ -181,11 +181,8 @@ public class BaseApiEndpoint : IApiEndpoint
             };
         }
 
-        if(result is byte[])
-        {
-            return Results.File((byte[])result, "image/png");
-        }
-
-        return Results.Json(result, GeoJsonSerializer.JsonSerializerOptions);
+        return result is IResult
+            ? result
+            : Results.Json(result, GeoJsonSerializer.JsonSerializerOptions);
     }
 }
