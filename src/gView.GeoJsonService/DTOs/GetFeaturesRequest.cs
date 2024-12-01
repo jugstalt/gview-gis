@@ -1,16 +1,19 @@
-﻿namespace gView.Framework.GeoJsonService.DTOs;
+﻿namespace gView.GeoJsonService.DTOs;
 
 public class GetFeaturesRequest : BaseRequest
 {
     override public string Type { get; set; } = RequestTypes.GetFeatures;
-    public string Layer { get; set; } = string.Empty;
+    public string[] OutFields { get; set; } = Array.Empty<string>();
     public string CRS { get; set; } = string.Empty;
-    public double[]? BoundingBox { get; set; } // Optional Bounding Box: [xmin, ymin, xmax, ymax]
+    public double[]? BBox { get; set; } // Optional Bounding Box: [xmin, ymin, xmax, ymax]
+    public string[]? ObjectIds { get; set; }
     public SpatialFilter? SpatialFilter { get; set; } // Optional spatial filter object
     public AttributeFilter? Filter { get; set; } // Optional attribute filter
     public int? Limit { get; set; } // Optional limit for the number of features to return
     public int? Offset { get; set; } // Optional offset for pagination
-    public bool Distinct { get; set; } = false; // Optional flag to indicate if distinct values should be returned
+    public bool? CountOnly { get; set; } 
+    public bool? IdsOnly { get; set; }
+    public bool? Distinct { get; set; } // Optional flag to indicate if distinct values should be returned
 }
 
 

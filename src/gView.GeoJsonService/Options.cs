@@ -1,8 +1,8 @@
-﻿using gView.Framework.GeoJsonService.JsonConverters;
+﻿using gView.GeoJsonService.JsonConverters;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace gView.Framework.GeoJsonService;
+namespace gView.GeoJsonService;
 
 public class Options
 {

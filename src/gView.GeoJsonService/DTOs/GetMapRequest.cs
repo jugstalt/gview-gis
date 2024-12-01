@@ -1,6 +1,4 @@
-﻿using System.Text.Json.Serialization;
-
-namespace gView.Framework.GeoJsonService.DTOs;
+﻿namespace gView.GeoJsonService.DTOs;
 
 public class GetMapRequest : BaseRequest
 {

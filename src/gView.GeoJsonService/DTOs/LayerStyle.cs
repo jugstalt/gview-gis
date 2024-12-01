@@ -1,4 +1,4 @@
-﻿namespace gView.Framework.GeoJsonService.DTOs;
+﻿namespace gView.GeoJsonService.DTOs;
 public class LayerStyle
 {
     public string Id { get; set; } = string.Empty;

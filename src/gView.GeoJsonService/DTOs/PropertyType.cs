@@ -1,4 +1,4 @@
-﻿namespace gView.Framework.GeoJsonService.DTOs;
+﻿namespace gView.GeoJsonService.DTOs;
 
 public enum PropertyType
 {
@@ -36,9 +36,11 @@ public enum LogicOperator
 public enum ComparisonOperator
 {
     Equals,
-    NotEquals,
-    GreaterThan,
-    LessThan,
+    Not_Equals,
+    Greater_Than,
+    Greater_Or_Equal_Than,
+    Less_Than,
+    Less_Or_Equal_Than,
     Like,
     In
 }

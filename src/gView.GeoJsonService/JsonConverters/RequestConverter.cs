@@ -1,8 +1,8 @@
-﻿using gView.Framework.GeoJsonService.DTOs;
+﻿using gView.GeoJsonService.DTOs;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace gView.Framework.GeoJsonService.JsonConverters;
+namespace gView.GeoJsonService.JsonConverters;
 
 public class RequestConverter : JsonConverter<BaseRequest>
 {
@@ -19,9 +19,9 @@ public class RequestConverter : JsonConverter<BaseRequest>
                     => JsonSerializer.Deserialize<GetInfoRequest>(rootElement.GetRawText(), options),
                 RequestTypes.GetServices
                     => JsonSerializer.Deserialize<GetServicesRequest>(rootElement.GetRawText(), options),
-                RequestTypes.GetMap 
+                RequestTypes.GetMap
                     => JsonSerializer.Deserialize<GetMapRequest>(rootElement.GetRawText(), options),
-                RequestTypes.GetServiceCapabilities 
+                RequestTypes.GetServiceCapabilities
                     => JsonSerializer.Deserialize<GetServiceCapabilitiesRequest>(rootElement.GetRawText(), options),
                 RequestTypes.GetFeatures
                     => JsonSerializer.Deserialize<GetFeaturesRequest>(rootElement.GetRawText(), options),

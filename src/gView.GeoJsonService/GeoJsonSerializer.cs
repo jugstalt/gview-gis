@@ -1,7 +1,7 @@
-﻿using gView.Framework.GeoJsonService.DTOs;
+﻿using gView.GeoJsonService.DTOs;
 using System.Text.Json;
 
-namespace gView.Framework.GeoJsonService;
+namespace gView.GeoJsonService;
 
 public class GeoJsonSerializer
 {

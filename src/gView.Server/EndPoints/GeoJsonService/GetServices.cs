@@ -1,6 +1,6 @@
 ﻿using gView.Framework.Core.Exceptions;
 using gView.Framework.Core.MapServer;
-using gView.Framework.GeoJsonService.DTOs;
+using gView.GeoJsonService.DTOs;
 using gView.Server.AppCode.Extensions;
 using gView.Server.Services.MapServer;
 using gView.Server.Services.Security;

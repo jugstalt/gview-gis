@@ -1,7 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace gView.Framework.GeoJsonService.DTOs;
-
+namespace gView.GeoJsonService.DTOs;
 
 [JsonPolymorphic(TypeDiscriminatorPropertyName = "name")]
 [JsonDerivedType(typeof(GetMapRequestProperties), "GetMap")]

@@ -1,6 +1,4 @@
-﻿using gView.Framework.GeoJsonService.DTOs;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Routing;
+﻿using gView.GeoJsonService.DTOs;
 using System;
 
 namespace gView.Server.EndPoints.GeoJsonService;

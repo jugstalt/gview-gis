@@ -2,8 +2,8 @@
 using gView.Framework.Core.Data;
 using gView.Framework.Core.Exceptions;
 using gView.Framework.Core.MapServer;
-using gView.Framework.GeoJsonService.DTOs;
 using gView.Framework.IO;
+using gView.GeoJsonService.DTOs;
 using gView.GraphicsEngine;
 using gView.Interoperability.Extensions;
 using gView.Server.EndPoints.GeoJsonService.Extensions;
@@ -33,11 +33,12 @@ public class GetMap : BaseApiEndpoint
     }
 
     private static Delegate Handler => (
-            HttpContext httpContext,
-            [FromServices] LoginManager loginManagerService,
-            [FromServices] MapServiceManager mapServerService,
-            string folder = "",
-            string service = "") => HandleSecureAsync<GetMapRequest>(httpContext, loginManagerService,
+                HttpContext httpContext,
+                [FromServices] LoginManager loginManagerService,
+                [FromServices] MapServiceManager mapServerService,
+                string folder = "",
+                string service = ""
+            ) => HandleSecureAsync<GetMapRequest>(httpContext, loginManagerService,
                 async (identity, mapRequest) =>
             {
                 var mapService = mapServerService.Instance.GetMapService(service, folder);

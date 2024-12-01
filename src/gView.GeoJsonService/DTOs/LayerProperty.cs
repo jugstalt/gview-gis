@@ -1,4 +1,4 @@
-﻿namespace gView.Framework.GeoJsonService.DTOs;
+﻿namespace gView.GeoJsonService.DTOs;
 public class LayerProperty
 {
     public string Name { get; set; } = string.Empty;

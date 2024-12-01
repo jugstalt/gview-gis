@@ -1,4 +1,4 @@
-﻿namespace gView.Framework.GeoJsonService;
+﻿namespace gView.GeoJsonService;
 
 public class RequestTypes
 {

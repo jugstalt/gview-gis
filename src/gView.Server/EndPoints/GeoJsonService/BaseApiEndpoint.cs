@@ -2,21 +2,15 @@
 
 using gView.Endpoints.Abstractions;
 using gView.Framework.Common;
-using gView.Framework.Core.Common;
 using gView.Framework.Core.Exceptions;
-using gView.Framework.GeoJsonService;
+using gView.GeoJsonService;
 using gView.GeoJsonService.DTOs;
 using gView.Server.Services.Security;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
-using MongoDB.Bson;
 using System;
-using System.CodeDom;
 using System.IO;
-using System.Linq;
-using System.Reflection;
-using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 
@@ -58,7 +52,7 @@ public class BaseApiEndpoint : IApiEndpoint
                 app.MapPost(route, _delegate);
             }
         }
-        if(_httpMethods.HasFlag(HttpMethod.Put))
+        if (_httpMethods.HasFlag(HttpMethod.Put))
         {
             foreach (var route in _routes)
             {
@@ -75,8 +69,8 @@ public class BaseApiEndpoint : IApiEndpoint
     }
 
     static protected object HandleSecureAsync(
-                HttpContext httpContext, 
-                LoginManager loginManagerService, 
+                HttpContext httpContext,
+                LoginManager loginManagerService,
                 Func<Identity, Task<object>> action)
     {
         object? result = null;
@@ -126,9 +120,9 @@ public class BaseApiEndpoint : IApiEndpoint
 
             T? model;
 
-            if(httpContext.Request.Method.Equals("GET", StringComparison.OrdinalIgnoreCase))
+            if (httpContext.Request.Method.Equals("GET", StringComparison.OrdinalIgnoreCase))
             {
-                model = (T)Activator.CreateInstance<T>();
+                model = Activator.CreateInstance<T>();
 
                 foreach (var propertyInfo in typeof(T).GetProperties())
                 {
@@ -141,6 +135,7 @@ public class BaseApiEndpoint : IApiEndpoint
                             Type t when t == typeof(float) => parameter.ToFloat(),
                             Type t when t == typeof(double) => parameter.ToDouble(),
                             Type t when t == typeof(long) => long.Parse(parameter),
+                            Type t when t == typeof(bool) => bool.Parse(parameter),
                             Type t when t == typeof(string) => parameter,
                             _ => JsonSerializer.Deserialize(parameter, propertyInfo.PropertyType, GeoJsonSerializer.JsonDeserializerOptions)
                         };
@@ -148,14 +143,21 @@ public class BaseApiEndpoint : IApiEndpoint
                         propertyInfo.SetValue(model, val);
                     }
                 }
-            } 
+            }
             else
             {
                 using var reader = new StreamReader(httpContext.Request.Body, leaveOpen: true);
                 string requestBody = reader.ReadToEndAsync().GetAwaiter().GetResult();
                 //httpContext.Request.Body.Position = 0;
 
-                model = GeoJsonSerializer.Deserialize<T>(requestBody)!;
+                try
+                {
+                    model = GeoJsonSerializer.Deserialize<T>(requestBody)!;
+                }
+                catch (Exception ex)
+                {
+                    throw new MapServerException($"Parse Error: {ex.Message}");
+                }
             }
 
             result = action(identity, model).GetAwaiter().GetResult();

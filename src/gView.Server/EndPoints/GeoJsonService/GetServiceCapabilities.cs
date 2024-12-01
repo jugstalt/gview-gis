@@ -1,7 +1,7 @@
 ﻿using gView.Framework.Cartography;
 using gView.Framework.Core.Data;
 using gView.Framework.Core.Exceptions;
-using gView.Framework.GeoJsonService.DTOs;
+using gView.GeoJsonService.DTOs;
 using gView.Server.AppCode.Extensions;
 using gView.Server.EndPoints.GeoJsonService.Extensions;
 using gView.Server.Services.MapServer;
@@ -79,7 +79,7 @@ public class GetServiceCapabilities : BaseApiEndpoint
                      Url = $"{url}/legend",
                      HttpMethods = [ "GET" ]
                  },
-                 new GetFeaturesRequestProperties () 
+                 new GetFeaturesRequestProperties ()
                  {
                      Url = $"{url}/features",
                      HttpMethods = [ "GET", "POST" ],
