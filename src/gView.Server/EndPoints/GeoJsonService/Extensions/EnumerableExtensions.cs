@@ -1,6 +1,8 @@
-﻿using gView.Framework.Core.Exceptions;
+﻿using gView.Framework.Core.Data;
+using gView.Framework.Core.Exceptions;
 using gView.Framework.Core.UI;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace gView.Server.EndPoints.GeoJsonService.Extensions;
@@ -74,4 +76,34 @@ internal static class EnumerableExtensions
 
         throw new MapServerException($"Invalid layer ids: dont mix include/exclude ids with normal ids");
     }
+
+    public static IEnumerable<string> CheckAllowedFunctions(this IEnumerable<string> fieldNames, ITableClass tableClass, bool isFeatureServer)
+    {
+        if (isFeatureServer && fieldNames.Count() == 1 && fieldNames.First() == "*")
+        {
+            fieldNames = tableClass.Fields.ToEnumerable()
+                    .Select(f => f.name)
+                    .Where(n => !n.IsFieldFunction())  // FeatureServer Query do not return FieldFunctions link STArea, STLength, ...
+                    .ToArray();
+        }
+
+        foreach (var fieldName in fieldNames)
+        {
+            if (fieldName.IsFieldFunction())
+            {
+                if (tableClass.Fields.FindField(fieldName) == null)
+                {
+                    throw new Exception($"Forbidden field function detected: {fieldName}");
+                }
+            }
+        }
+
+        return fieldNames;
+    }
+
+    static private bool IsFieldFunction(this string fieldName) 
+        => !String.IsNullOrEmpty(fieldName) 
+        && (fieldName.Contains("(") || fieldName.Contains(")") 
+        || fieldName.Contains(" ") || fieldName.Contains("."));
+
 }

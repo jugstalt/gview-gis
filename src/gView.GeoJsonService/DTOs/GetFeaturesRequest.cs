@@ -4,13 +4,22 @@ public class GetFeaturesRequest : BaseRequest
 {
     override public string Type { get; set; } = RequestTypes.GetFeatures;
     public string[] OutFields { get; set; } = Array.Empty<string>();
-    public string CRS { get; set; } = string.Empty;
+    public bool? ReturnGeometry { get; set; }
+    public bool? ReturnGeometryAsBBox { get; set; }
+    public string? OutCRS { get; set; } 
+    public string[]? OrderByFields { get; set; }
+    
     public double[]? BBox { get; set; } // Optional Bounding Box: [xmin, ymin, xmax, ymax]
+    public string? BBoxCRS { get; set; }
+
     public string[]? ObjectIds { get; set; }
+
     public SpatialFilter? SpatialFilter { get; set; } // Optional spatial filter object
     public AttributeFilter? Filter { get; set; } // Optional attribute filter
+
     public int? Limit { get; set; } // Optional limit for the number of features to return
     public int? Offset { get; set; } // Optional offset for pagination
+
     public bool? CountOnly { get; set; } 
     public bool? IdsOnly { get; set; }
     public bool? Distinct { get; set; } // Optional flag to indicate if distinct values should be returned

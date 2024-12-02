@@ -3,6 +3,7 @@
 using gView.Endpoints.Abstractions;
 using gView.Framework.Common;
 using gView.Framework.Core.Exceptions;
+using gView.Framework.Data.Extensions;
 using gView.GeoJsonService;
 using gView.GeoJsonService.DTOs;
 using gView.Server.Services.Security;
@@ -11,6 +12,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using System;
 using System.IO;
+using System.Runtime.Intrinsics.X86;
 using System.Text.Json;
 using System.Threading.Tasks;
 
@@ -172,6 +174,14 @@ public class BaseApiEndpoint : IApiEndpoint
             {
                 ErrorCode = 999,
                 ErrorMessage = mse.Message
+            };
+        }
+        catch(SqlDangerousStatementExceptions dse)
+        {
+            result = new ErrorResponse()
+            {
+                ErrorCode = 1,
+                ErrorMessage = dse.Message
             };
         }
         catch (Exception)
