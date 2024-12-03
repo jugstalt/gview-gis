@@ -87,7 +87,9 @@ public class GetServiceCapabilities : BaseApiEndpoint
                  }
              ],
 
-             Crs = map.Display.SpatialReference?.Name ?? "",
+             CRS = map.Display.SpatialReference is not null
+                    ? CoordinateReferenceSystem.CreateByName(map.Display.SpatialReference.Name)
+                    : null,
              FullExtent = map.FullExtent().ToBBox(),
              InitialExtent = map.FullExtent().ToBBox(),
              Units = map.Display.MapUnits.ToString(),

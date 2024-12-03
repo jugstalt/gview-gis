@@ -2,7 +2,6 @@
 
 using gView.Framework.Common.Extensions;
 using gView.Framework.Core.Carto;
-using gView.Framework.Core.Common;
 using gView.Framework.Core.Data;
 using gView.Framework.Core.Data.Cursors;
 using gView.Framework.Core.Data.Filters;
@@ -11,17 +10,14 @@ using gView.Framework.Core.Geometry;
 using gView.Framework.Data;
 using gView.Framework.Data.Extensions;
 using gView.Framework.Data.Filters;
+using gView.Framework.GeoJsonService.Extensions;
 using gView.Framework.Geometry;
-using gView.Framework.OGC.GeoJson;
 using gView.GeoJsonService.DTOs;
-using gView.Interoperability.GeoServices.Exceptions;
-using gView.Interoperability.GeoServices.Extensions;
-using gView.Interoperability.GeoServices.Rest.DTOs;
+using gView.Server.EndPoints.GeoJsonService.Extensions;
 using gView.Server.Services.MapServer;
 using gView.Server.Services.Security;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using MongoDB.Bson;
 using System;
 using System.Collections.Generic;
 using System.Data.Entity.Core.Common.CommandTrees.ExpressionBuilder;
@@ -65,7 +61,7 @@ public class GetFeatures : BaseApiEndpoint
 
                 using var serviceMap = await mapServerService.Instance.GetServiceMapAsync(mapService);
 
-                int maxRecordCount = queryRequest.IdsOnly == true  // return all Ids!
+                int maxRecordCount = queryRequest.Command == QueryCommand.IdsOnly  // return all Ids!
                                 ? int.MaxValue
                                 : serviceMap.MapServiceProperties.MaxRecordCount;
                 string filterQuery;
@@ -85,53 +81,51 @@ public class GetFeatures : BaseApiEndpoint
                     throw new MapServerException($"Layer with id {id} is not queryable");
                 }
 
-                // Todo: resolve parameters
-                string? requestWhereClause = queryRequest.Filter?.WhereClause;
-                if (!String.IsNullOrWhiteSpace(requestWhereClause))
-                {
-                    requestWhereClause.CheckWhereClauseForSqlInjection();
-                }
+                string? requestWhereClause = queryRequest.Filter?
+                            .WhereClauseWithResolveParameters()
+                            .CheckWhereClauseForSqlInjection();
 
                 int featureCount = 0;
-                List<IFeature> returnGeoJsonFeatures = new List<IFeature>();
+                var geoJsonFeatures = new List<gView.GeoJsonService.DTOs.Feature>();
                 string? objectIdFieldName = null;
+                ISpatialReference? outSref = null;
 
                 foreach (var tableClass in tableClasses)
                 {
                     objectIdFieldName = tableClass.IDFieldName;
-                    //GeometryType? jsonGeometryType;
-                    //if (tableClass is IFeatureClass)
-                    //{
-                    //    var geometryType = ((IFeatureClass)tableClass).GeometryType;
-                    //    if (geometryType == Framework.Core.Geometry.GeometryType.Unknown)
-                    //    {
-                    //        var featureLayer = serviceMap.MapElements.FirstOrDefault(l => l.ID == id) as IFeatureLayer;
-                    //        if (featureLayer != null)
-                    //        {
-                    //            geometryType = featureLayer.LayerGeometryType;
-                    //        }
-                    //    }
-
-                    //    jsonGeometryType = JsonLayerDTO.ToGeometryType(geometryType);
-                    //}
 
                     #region Filter
 
                     IQueryFilter? filter;
 
-                    if (queryRequest.SpatialFilter?.Geometry is not null)
+                    if (queryRequest.SpatialFilter is not null)
                     {
-                        filter = new Framework.Data.Filters.SpatialFilter();
-                        //var jsonGeometry = query.Geometry.ToJsonGeometry();
-                        //var filterGeometry = jsonGeometry.ToGeometry();
+                        var spatialFilter = new Framework.Data.Filters.SpatialFilter();
 
-                        //((SpatialFilter)filter).Geometry = filterGeometry;
-                        //((SpatialFilter)filter).FilterSpatialReference =
-                        //    SRef(query.InSRef) ??
-                        //    (filterGeometry.Srs > 0 ? SpatialReference.FromID($"epsg:{filterGeometry.Srs}") : null);
+                        if (queryRequest.SpatialFilter.Geometry is not null
+                           && queryRequest.SpatialFilter.BBox is not null)
+                        {
+                            throw new MapServerException("Invalid spatial filter. Set either geometry or bbox");
+                        }
+                        else if (queryRequest.SpatialFilter.Geometry is not null)
+                        {
+                            spatialFilter.Geometry = queryRequest.SpatialFilter.Geometry.ToGeometry();
+                        }
+                        else if (queryRequest.SpatialFilter.BBox is not null)
+                        {
+                            spatialFilter.Geometry = queryRequest.SpatialFilter.BBox.ToEnvelope();
+                        }
+
+                        spatialFilter.FilterSpatialReference =
+                             queryRequest.SpatialFilter.CRS is not null
+                             ? SpatialReference.FromID(queryRequest.SpatialFilter.CRS.ToSpatialReferenceName())
+                             : serviceMap.Display.SpatialReference;
+
+                        filter = spatialFilter;
                     }
-                    else if (queryRequest.Distinct == true)
+                    else if (queryRequest.Command == QueryCommand.Distinct)
                     {
+                        queryRequest.OutFields = queryRequest.OutFields.ProjectNamesAndCheckIfFieldsExists(tableClass).ToArray();
                         filter = new DistinctFilter(queryRequest.OutFields.First());
                     }
                     else if (queryRequest.ObjectIds?.Any() == true)
@@ -154,7 +148,7 @@ public class GetFeatures : BaseApiEndpoint
 
                     #region Subfields
 
-                    if (queryRequest.CountOnly == true)
+                    if (queryRequest.Command == QueryCommand.CountOnly)
                     {
                         if (tableClass is ITableClass2 && !String.IsNullOrWhiteSpace(tableClass.IDFieldName))
                         {
@@ -170,7 +164,7 @@ public class GetFeatures : BaseApiEndpoint
                             filter.SubFields = !String.IsNullOrWhiteSpace(tableClass.IDFieldName) ? tableClass.IDFieldName : "*";
                         }
                     }
-                    else if (queryRequest.IdsOnly == true)
+                    else if (queryRequest.Command == QueryCommand.IdsOnly)
                     {
                         if (String.IsNullOrEmpty(tableClass.IDFieldName))
                         {
@@ -179,7 +173,7 @@ public class GetFeatures : BaseApiEndpoint
 
                         filter.SubFields = tableClass.IDFieldName;
                     }
-                    else if (queryRequest.Distinct == true)
+                    else if (queryRequest.Command == QueryCommand.Distinct)
                     {
                         if (queryRequest.ReturnGeometry == true)
                         {
@@ -189,15 +183,16 @@ public class GetFeatures : BaseApiEndpoint
                     else
                     {
                         var outFields = queryRequest.OutFields
-                                                    .CheckAllowedFunctions(tableClass, false);
+                                                    .ProjectNamesAndCheckAllowedFunctions(tableClass, false);
 
                         filter.SubFields = String.Join(",", outFields);
                         if (queryRequest.ReturnGeometry == true)
                         {
-                            if (tableClass is IFeatureClass && !filter.HasField(((IFeatureClass)tableClass).ShapeFieldName))
-                            {
-                                filter.AddField(((IFeatureClass)tableClass).ShapeFieldName);
-                            }
+                            if (tableClass is IFeatureClass featureClass && 
+                                !filter.HasField(featureClass.ShapeFieldName))
+                                {
+                                    filter.AddField(featureClass.ShapeFieldName);
+                                }
                         }
                     }
 
@@ -205,25 +200,24 @@ public class GetFeatures : BaseApiEndpoint
 
                     #region Spatial Reference
 
-                    if (!String.IsNullOrEmpty(queryRequest.OutCRS))
+                    if (queryRequest.OutCRS is not null)
                     {
-                        filter.FeatureSpatialReference = Framework.Geometry.SpatialReference.FromID(queryRequest.OutCRS);
+                        filter.FeatureSpatialReference = SpatialReference.FromID(queryRequest.OutCRS.ToSpatialReferenceName());
                     }
                     else if (tableClass is IFeatureClass)
                     {
                         filter.FeatureSpatialReference = ((IFeatureClass)tableClass).SpatialReference;
                     }
-                    //if (filter.FeatureSpatialReference != null)
-                    //{
-                    //    try
-                    //    {
-                    //        featureSref = new JsonSpatialReferenceDTO()
-                    //        {
-                    //            Wkid = int.Parse(filter.FeatureSpatialReference.Name.Split(':')[1])
-                    //        };
-                    //    }
-                    //    catch { }
-                    //}
+
+                    outSref ??= filter.FeatureSpatialReference;
+                    if (filter.FeatureSpatialReference != null)
+                    {
+                        if (outSref is not null && outSref.Name != filter.FeatureSpatialReference.Name)
+                        {
+                            throw new MapServerException("Mixed spatial references in response are not allowed");
+                        }
+                        outSref ??= filter.FeatureSpatialReference;
+                    }
 
                     #endregion
 
@@ -237,8 +231,8 @@ public class GetFeatures : BaseApiEndpoint
                                 ? queryRequest.Offset.Value + 1
                                 : 1;  // Start is 1 by IQueryFilter definition
 
-                    filter.OrderBy =  queryRequest.OrderByFields is not null
-                                ? String.Join(",", queryRequest.OutFields) // todo: check if fields exists (sql injection?)
+                    filter.OrderBy = queryRequest.OrderByFields is not null
+                                ? String.Join(",", queryRequest.OrderByFields.ProjectNamesAndCheckIfFieldsExists(tableClass))
                                 : "";
 
                     #endregion
@@ -284,6 +278,8 @@ public class GetFeatures : BaseApiEndpoint
                                 {
                                     featureCount++;
 
+                                    var geoJsonFeature = new gView.GeoJsonService.DTOs.Feature();
+
                                     #region Shape
 
                                     if (queryRequest.ReturnGeometry != true)
@@ -299,9 +295,26 @@ public class GetFeatures : BaseApiEndpoint
                                         feature.Shape = feature.Shape?.Envelope;
                                     }
 
+                                    geoJsonFeature.Geometry = feature.Shape?.ToGeoJsonGeometry();
+                                    geoJsonFeature.BBox = feature.Shape?.Envelope.ToBBox();
+
                                     #endregion
 
-                                    returnGeoJsonFeatures.Add(feature);
+                                    #region Properties
+
+                                    foreach (var field in feature.Fields)
+                                    {
+                                        if (field.Name == objectIdFieldName)
+                                        {
+                                            geoJsonFeature.Oid = field.Value;
+                                        }
+
+                                        geoJsonFeature.Properties[field.Name] = field.Value;
+                                    }
+
+                                    #endregion
+
+                                    geoJsonFeatures.Add(geoJsonFeature);
                                 }
                             }
                         }
@@ -310,32 +323,46 @@ public class GetFeatures : BaseApiEndpoint
                     }
                 }
 
-                if (queryRequest.CountOnly == true)
+                if (queryRequest.Command == QueryCommand.CountOnly)
                 {
                     return new GetFeaturesCountOnlyResponse() { Count = featureCount };
                 }
-                else if (queryRequest.IdsOnly == true)
+                else if (queryRequest.Command == QueryCommand.IdsOnly)
                 {
+                    if (String.IsNullOrEmpty(objectIdFieldName))
+                    {
+                        throw new MapServerException("Can't return Object Ids: not Object ID field found in table.");
+                    }
                     return new GetFeaturesIdsOnlyResponse()
                     {
                         ObjectIdFieldName = objectIdFieldName,
-                        ObjectIds = returnGeoJsonFeatures.Select(f => Convert.ToInt32(f[objectIdFieldName]))
+                        ObjectIds = geoJsonFeatures
+                                      .Select(f => Convert.ToInt32(f.Properties[objectIdFieldName]))
+                                      .ToArray()
                     };
                 }
-                else if (queryRequest.Distinct == true)
+                else if (queryRequest.Command == QueryCommand.Distinct == true)
                 {
                     var distinctField = queryRequest.OutFields.First();
                     return new GetFeaturesDistinctResponse()
                     {
                         DistinctField = distinctField,
-                        DistinctValues = returnGeoJsonFeatures.Select(f => f[distinctField])
+                        DistinctValues = geoJsonFeatures
+                                            .Select(f => f.Properties[distinctField])
+                                            .ToArray()
                     };
                 }
 
-                return Results.Text(GeoJsonHelper.ToGeoJson(returnGeoJsonFeatures), "application/json");
+                return new FeatureCollection()
+                {
+                    CRS = outSref is not null
+                            ? CoordinateReferenceSystem.CreateByName(outSref.Name)
+                            : null,
+                    Features = geoJsonFeatures
+                };
             });
 
-    private const bool _useTOC = true;
+    private const bool UseTOC = true;
 
     static private List<ITableClass>? FindTableClass(IServiceMap map, string id, out string filterQuery)
     {
@@ -347,7 +374,7 @@ public class GetFeatures : BaseApiEndpoint
 
         List<ITableClass> classes = new List<ITableClass>();
 
-        foreach (ILayer element in MapServerHelper.FindMapLayers(map, _useTOC, id))
+        foreach (ILayer element in MapServerHelper.FindMapLayers(map, UseTOC, id))
         {
             if (element.Class is ITableClass tableClass)
             {

@@ -6,6 +6,7 @@ using gView.Framework.Core.Exceptions;
 using gView.Framework.Data.Extensions;
 using gView.GeoJsonService;
 using gView.GeoJsonService.DTOs;
+using gView.Server.EndPoints.GeoJsonService.Extensions;
 using gView.Server.Services.Security;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -139,7 +140,15 @@ public class BaseApiEndpoint : IApiEndpoint
                             Type t when t == typeof(long) => long.Parse(parameter),
                             Type t when t == typeof(bool) => bool.Parse(parameter),
                             Type t when t == typeof(string) => parameter,
-                            _ => JsonSerializer.Deserialize(parameter, propertyInfo.PropertyType, GeoJsonSerializer.JsonDeserializerOptions)
+
+                            Type t when t == typeof(int?) => String.IsNullOrEmpty(parameter) ? null : int.Parse(parameter),
+                            Type t when t == typeof(float?) => String.IsNullOrEmpty(parameter) ? null : parameter.ToFloat(),
+                            Type t when t == typeof(double?) => String.IsNullOrEmpty(parameter) ? null : parameter.ToDouble(),
+                            Type t when t == typeof(long?) => String.IsNullOrEmpty(parameter) ? null : long.Parse(parameter),
+                            Type t when t == typeof(bool?) => String.IsNullOrEmpty(parameter) ? null : bool.Parse(parameter),
+
+                            Type t when t.IsEnum => Enum.Parse(t, parameter, true),
+                            _ => parameter.ParseToObject(propertyInfo.PropertyType)
                         };
 
                         propertyInfo.SetValue(model, val);

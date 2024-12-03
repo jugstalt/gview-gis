@@ -9,7 +9,7 @@ public class GetServiceCapabilitiesResponse
     public string Copyright { get; set; } = "";
     public IEnumerable<SupportedRequest> SupportedRequests { get; set; } = Array.Empty<SupportedRequest>();
 
-    public string Crs { get; set; } = "";
+    public CoordinateReferenceSystem? CRS { get; set; }
     public double[]? FullExtent { get; set; }
     public double[]? InitialExtent { get; set; }
     public string? Units { get; set; } = "";

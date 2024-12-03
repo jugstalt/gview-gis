@@ -77,7 +77,10 @@ internal static class EnumerableExtensions
         throw new MapServerException($"Invalid layer ids: dont mix include/exclude ids with normal ids");
     }
 
-    public static IEnumerable<string> CheckAllowedFunctions(this IEnumerable<string> fieldNames, ITableClass tableClass, bool isFeatureServer)
+    public static IEnumerable<string> ProjectNamesAndCheckAllowedFunctions(
+                this IEnumerable<string> fieldNames,
+                ITableClass tableClass,
+                bool isFeatureServer)
     {
         if (isFeatureServer && fieldNames.Count() == 1 && fieldNames.First() == "*")
         {
@@ -87,23 +90,59 @@ internal static class EnumerableExtensions
                     .ToArray();
         }
 
+        var tableFields = tableClass.Fields.ToEnumerable();
+
         foreach (var fieldName in fieldNames)
         {
-            if (fieldName.IsFieldFunction())
+            if (fieldName == "*")
             {
-                if (tableClass.Fields.FindField(fieldName) == null)
+                yield return fieldName;
+            }
+            else
+            {
+                var field = tableFields.FirstOrDefault(f => f.name == fieldName)
+                            ?? tableFields.FirstOrDefault(f => f.name.Equals(fieldName, StringComparison.OrdinalIgnoreCase));
+
+                yield return field switch
                 {
-                    throw new Exception($"Forbidden field function detected: {fieldName}");
-                }
+                    null when fieldName.IsFieldFunction()
+                         => throw new MapServerException($"Forbidden field function detected: {fieldName}"),
+                    null => throw new MapServerException($"Field '{fieldName}' not contained in table"),
+                    _ => field.name
+                };
             }
         }
-
-        return fieldNames;
     }
 
-    static private bool IsFieldFunction(this string fieldName) 
-        => !String.IsNullOrEmpty(fieldName) 
-        && (fieldName.Contains("(") || fieldName.Contains(")") 
-        || fieldName.Contains(" ") || fieldName.Contains("."));
+    static private bool IsFieldFunction(this string fieldName)
+        => !String.IsNullOrEmpty(fieldName)
+        && (
+                fieldName.Contains("(")
+                || fieldName.Contains(")")
+                || fieldName.Contains(" ")
+                || fieldName.Contains(".")
+        );
 
+    static public IEnumerable<string> ProjectNamesAndCheckIfFieldsExists(this IEnumerable<string> fieldNames, ITableClass tableClass)
+    {
+        var tableFields = tableClass.Fields.ToEnumerable();
+
+        foreach (var fieldName in fieldNames)
+        {
+            if (fieldName == "*")
+            {
+                yield return fieldName;
+            }
+
+            var field = tableFields.FirstOrDefault(f => f.name == fieldName)
+                        ?? tableFields.FirstOrDefault(f => f.name.Equals(fieldName, StringComparison.OrdinalIgnoreCase));
+
+            if (field is null)
+            {
+                throw new MapServerException($"Field '{fieldName}' not contained in table");
+            }
+
+            yield return field.name;
+        }
+    }
 }

@@ -11,6 +11,7 @@ public enum PropertyType
 
 public enum GeometryType
 {
+    Unknown,
     Point,
     LineString,
     Polygon,
@@ -43,4 +44,12 @@ public enum ComparisonOperator
     Less_Or_Equal_Than,
     Like,
     In
+}
+
+public enum QueryCommand
+{
+    Select,
+    CountOnly,
+    Distinct,
+    IdsOnly
 }

@@ -6,6 +6,7 @@ public class GetMapResponse
     public string? ImageUrl { get; set; }
     public string? ImageBase64 { get; set; }
     public double[] BBox { get; set; } = Array.Empty<double>();
+    public CoordinateReferenceSystem? CRS { get; set; }
     public int Width { get; set; }
     public int Height { get; set; }
     public double ScaleDenominator { get; set; }

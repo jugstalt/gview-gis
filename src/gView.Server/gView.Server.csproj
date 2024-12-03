@@ -78,6 +78,7 @@
     <ProjectReference Include="..\gView.Framework.Data\gView.Framework.Data.csproj" />
     <ProjectReference Include="..\gView.Framework.Db\gView.Framework.Db.csproj" />
     <ProjectReference Include="..\gView.Editor.Core\gView.Editor.Core.csproj" />
+    <ProjectReference Include="..\gView.Framework.GeoJsonService\gView.Framework.GeoJsonService.csproj" />
     <ProjectReference Include="..\gView.Framework.Geometry\gView.Framework.Geometry.csproj" />
     <ProjectReference Include="..\gView.Framework.Symbology.Vtc\gView.Framework.Symbology.Vtc.csproj" />
     <ProjectReference Include="..\gView.Framework.Vtc\gView.Framework.Vtc.csproj" />

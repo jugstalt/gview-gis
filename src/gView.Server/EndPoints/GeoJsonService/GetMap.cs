@@ -2,6 +2,7 @@
 using gView.Framework.Core.Data;
 using gView.Framework.Core.Exceptions;
 using gView.Framework.Core.MapServer;
+using gView.Framework.Geometry;
 using gView.Framework.IO;
 using gView.GeoJsonService.DTOs;
 using gView.GraphicsEngine;
@@ -55,6 +56,11 @@ public class GetMap : BaseApiEndpoint
 
                 #region Display (ImageSize, DPI, Rotaion, Extent)
 
+                if (mapRequest.Width <= 0 || mapRequest.Height <= 0)
+                {
+                    throw new MapServerException($"Invalid image size ({mapRequest.Width},{mapRequest.Height})");
+                }
+
                 if (mapRequest.Dpi.HasValue)
                 {
                     serviceMap.Display.Dpi = mapRequest.Dpi.Value;
@@ -64,6 +70,11 @@ public class GetMap : BaseApiEndpoint
                 serviceMap.Display.ImageHeight = mapRequest.Height;
 
                 serviceMap.ResizeImageSizeToMapServiceLimits();
+
+                if (mapRequest.CRS is not null)
+                {
+                    serviceMap.Display.SpatialReference = SpatialReference.FromID(mapRequest.CRS.ToSpatialReferenceName());
+                }
 
                 serviceMap.Display.ZoomTo(mapRequest.BBox.ToEnvelope());
 
@@ -170,6 +181,9 @@ public class GetMap : BaseApiEndpoint
                     {
                         ImageBase64 = Convert.ToBase64String(ms.ToArray()),
                         BBox = serviceMap.Display.Envelope.ToBBox(),
+                        CRS = serviceMap.Display.SpatialReference is not null
+                                ? CoordinateReferenceSystem.CreateByName(serviceMap.Display.SpatialReference.Name)
+                                : null,
                         Width = serviceMap.Display.ImageWidth,
                         Height = serviceMap.Display.ImageHeight,
                         ScaleDenominator = serviceMap.Display.MapScale,
@@ -189,6 +203,9 @@ public class GetMap : BaseApiEndpoint
                     {
                         ImageUrl = $"{mapServerService.Instance.OutputUrl}/{fileName}",
                         BBox = serviceMap.Display.Envelope.ToBBox(),
+                        CRS = serviceMap.Display.SpatialReference is not null
+                                ? CoordinateReferenceSystem.CreateByName(serviceMap.Display.SpatialReference.Name)
+                                : null,
                         Width = serviceMap.Display.ImageWidth,
                         Height = serviceMap.Display.ImageHeight,
                         ScaleDenominator = serviceMap.Display.MapScale,

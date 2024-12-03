@@ -199,6 +199,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gView.GeoJsonService", "src
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gView.Endpoints", "src\gView.Endpoints\gView.Endpoints.csproj", "{2A46D444-C72D-42B5-8C72-A732AFD12CE6}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gView.Framework.GeoJsonService", "src\gView.Framework.GeoJsonService\gView.Framework.GeoJsonService.csproj", "{F6BDAA80-7852-4CEB-BA35-846A4422DBBD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -895,6 +897,14 @@ Global
 		{2A46D444-C72D-42B5-8C72-A732AFD12CE6}.Release|Any CPU.Build.0 = Release|Any CPU
 		{2A46D444-C72D-42B5-8C72-A732AFD12CE6}.Release|x64.ActiveCfg = Release|Any CPU
 		{2A46D444-C72D-42B5-8C72-A732AFD12CE6}.Release|x64.Build.0 = Release|Any CPU
+		{F6BDAA80-7852-4CEB-BA35-846A4422DBBD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F6BDAA80-7852-4CEB-BA35-846A4422DBBD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F6BDAA80-7852-4CEB-BA35-846A4422DBBD}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{F6BDAA80-7852-4CEB-BA35-846A4422DBBD}.Debug|x64.Build.0 = Debug|Any CPU
+		{F6BDAA80-7852-4CEB-BA35-846A4422DBBD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F6BDAA80-7852-4CEB-BA35-846A4422DBBD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F6BDAA80-7852-4CEB-BA35-846A4422DBBD}.Release|x64.ActiveCfg = Release|Any CPU
+		{F6BDAA80-7852-4CEB-BA35-846A4422DBBD}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -997,6 +1007,7 @@ Global
 		{E0499676-FB29-4606-98BC-F415BBE310A6} = {1BB805B5-B882-40F6-AC9F-CD18FF6834C2}
 		{10B73A43-7466-4A3E-A410-10474F9401C5} = {0ADA1A24-AC4C-4471-939B-609A83271367}
 		{2A46D444-C72D-42B5-8C72-A732AFD12CE6} = {0ADA1A24-AC4C-4471-939B-609A83271367}
+		{F6BDAA80-7852-4CEB-BA35-846A4422DBBD} = {DE176D4E-059E-4483-9C23-16055A573204}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {11C25FC0-EB32-4DE1-9CBB-CF2D68D1AA9B}
