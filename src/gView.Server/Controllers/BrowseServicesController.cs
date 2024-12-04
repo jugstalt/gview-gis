@@ -187,6 +187,7 @@ public class BrowseServicesController : BaseController
     }
 
     [HttpPost]
+    [ValidateAntiForgeryToken]
     async public Task<IActionResult> AddService(string service, string folder)
     {
         folder = (folder ?? String.Empty).ToLower();
@@ -295,6 +296,7 @@ public class BrowseServicesController : BaseController
     }
 
     [HttpPost]
+    [ValidateAntiForgeryToken]
     async public Task<IActionResult> CreateFolder(string newFolder, string folder)
     {
         folder = folder ?? String.Empty;

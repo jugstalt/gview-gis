@@ -6,6 +6,7 @@ namespace gView.GeoJsonService.DTOs;
 [JsonDerivedType(typeof(GetMapRequestProperties), "GetMap")]
 [JsonDerivedType(typeof(GetFeaturesRequestProperties), "GetFeatures")]
 [JsonDerivedType(typeof(GetLegendRequestProperties), "GetLegend")]
+[JsonDerivedType(typeof(EditFeaturesRequestProperties), "EditFeatures")]
 abstract public class SupportedRequest
 {
     abstract public string Name { get; }
@@ -26,6 +27,12 @@ public class GetFeaturesRequestProperties : SupportedRequest
     override public string Name { get; } = "GetFeatures";
     public int MaxFeaturesLimit { get; set; }
 }
+
+public class EditFeaturesRequestProperties : SupportedRequest
+{
+    override public string Name { get; } = "EditFeatures";
+}
+
 public class GetLegendRequestProperties : SupportedRequest
 {
     override public string Name { get; } = "GetLegend";

@@ -81,9 +81,14 @@ public class GetServiceCapabilities : BaseApiEndpoint
                  },
                  new GetFeaturesRequestProperties ()
                  {
-                     Url = $"{url}/features",
+                     Url = $"{url}/query",
                      HttpMethods = [ "GET", "POST" ],
                      MaxFeaturesLimit = map.MapServiceProperties.MaxRecordCount
+                 },
+                 new EditFeaturesRequestProperties() 
+                 {
+                     Url = $"{url}/features",
+                     HttpMethods = [ "POST", "PUT", "DELETE" ],
                  }
              ],
 

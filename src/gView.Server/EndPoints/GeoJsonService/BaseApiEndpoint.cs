@@ -2,8 +2,11 @@
 
 using gView.Endpoints.Abstractions;
 using gView.Framework.Common;
+using gView.Framework.Common.Json;
 using gView.Framework.Core.Exceptions;
+using gView.Framework.Core.MapServer;
 using gView.Framework.Data.Extensions;
+using gView.Framework.GeoJsonService.Request;
 using gView.GeoJsonService;
 using gView.GeoJsonService.DTOs;
 using gView.Server.EndPoints.GeoJsonService.Extensions;
@@ -13,6 +16,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using System;
 using System.IO;
+using System.Linq;
 using System.Runtime.Intrinsics.X86;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -170,6 +174,17 @@ public class BaseApiEndpoint : IApiEndpoint
                     throw new MapServerException($"Parse Error: {ex.Message}");
                 }
             }
+
+            ServiceRequest serviceRequest = new ServiceRequest("","","")
+            {
+                Method = httpContext.Request.Path.Value?.Split("/").Last().ToLowerInvariant(),
+                Identity = identity
+            };
+
+            var _ = ServiceRequestContext.TryCreate(
+                null,
+                new GeoJsonServiceRequestInterpreter(),
+                serviceRequest, checkSecurity: false).GetAwaiter().GetResult();
 
             result = action(identity, model).GetAwaiter().GetResult();
         }

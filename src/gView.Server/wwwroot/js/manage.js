@@ -13,7 +13,11 @@ window.gview.manage = (function() {
     //  Get/Post
     //
 
-    let get = function(options) {
+    let get = function (options) {
+        // add antiforgery token
+        if (options.data && $("input[name='__RequestVerificationToken']").length > 0) {
+            options.data.__RequestVerificationToken = $("input[name='__RequestVerificationToken']").val();
+        }
         $.ajax({
             url: rootUrl + options.url,
             type: options.type || 'get',
@@ -32,7 +36,7 @@ window.gview.manage = (function() {
                                 alert(result);
                             }
                     }
-                }                    ,
+                },
             error:
                 options.error ||
                 function(jqXHR, textStatus, errorThrown) {

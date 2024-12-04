@@ -44,6 +44,7 @@ public class TokenController : BaseController
     }
 
     [HttpPost]
+    [ValidateAntiForgeryToken]
     public IActionResult Login(TokenLoginModel model)
     {
         try

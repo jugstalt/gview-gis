@@ -92,6 +92,7 @@ public class ManageController : BaseController
     }
 
     [HttpPost]
+    [ValidateAntiForgeryToken]
     public IActionResult Login(ManageLoginModel model)
     {
         try
@@ -308,6 +309,7 @@ public class ManageController : BaseController
     }
 
     [HttpPost]
+    [ValidateAntiForgeryToken]
     async public Task<IActionResult> ServiceSecurity()
     {
         return await SecureApiCall(async () =>
@@ -433,6 +435,7 @@ public class ManageController : BaseController
         });
 
     [HttpPost]
+    [ValidateAntiForgeryToken]
     public Task<IActionResult> ServiceMetadata(string service, Dictionary<string, string> metadata) => SecureApiCall(async () =>
     {
         if (metadata == null && metadata.Keys.Count == 0)
@@ -524,6 +527,7 @@ public class ManageController : BaseController
     }
 
     [HttpPost]
+    [ValidateAntiForgeryToken]
     async public Task<IActionResult> FolderSecurity()
     {
         return await SecureApiCall(async () =>
@@ -636,6 +640,7 @@ public class ManageController : BaseController
     }
 
     [HttpPost]
+    [ValidateAntiForgeryToken]
     public IActionResult TokenUserCreate(CreateTokenUserModel model)
     {
         return SecureApiCall(() =>
@@ -660,6 +665,7 @@ public class ManageController : BaseController
     }
 
     [HttpPost]
+    [ValidateAntiForgeryToken]
     public IActionResult TokenUserChangePassword(ChangeTokenUserPasswordModel model)
     {
         return SecureApiCall(() =>
@@ -674,6 +680,7 @@ public class ManageController : BaseController
     }
 
     [HttpPost]
+    [ValidateAntiForgeryToken]
     public IActionResult TokenUserDelete(DeleteTokenUserModel model)
     {
         return SecureApiCall(() =>
@@ -690,6 +697,8 @@ public class ManageController : BaseController
 
     #region Url Tokens
 
+    [HttpPost]
+    [ValidateAntiForgeryToken]
     public IActionResult UrlTokenCreate(CreateUrlTokenModel model) => SecureApiCall(() =>
     {
         return SecureApiCall(() =>
@@ -713,6 +722,7 @@ public class ManageController : BaseController
     });
 
     [HttpPost]
+    [ValidateAntiForgeryToken]
     public IActionResult UrlTokenRecycle(UrlTokenModel model)
     {
         return SecureApiCall(() =>
@@ -728,6 +738,7 @@ public class ManageController : BaseController
     }
 
     [HttpPost]
+    [ValidateAntiForgeryToken]
     public IActionResult UrlTokenDelete(UrlTokenModel model)
     {
         return SecureApiCall(() =>
