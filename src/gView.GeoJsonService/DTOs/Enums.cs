@@ -53,3 +53,17 @@ public enum QueryCommand
     Distinct,
     IdsOnly
 }
+
+public enum GeometryResult
+{
+    None,
+    Geometry,
+    BBox
+}
+
+public enum MapReponseFormat
+{
+    Link,
+    Base64,
+    Image
+}

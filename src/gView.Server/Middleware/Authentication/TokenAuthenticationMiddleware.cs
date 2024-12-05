@@ -1,6 +1,4 @@
-﻿using gView.Framework.Core.Exceptions;
-using gView.Interoperability.GeoServices.Rest.DTOs;
-using gView.Server.AppCode.Extensions;
+﻿using gView.Server.AppCode.Extensions;
 using gView.Server.Extensions;
 using gView.Server.Services.Security;
 using Microsoft.AspNetCore.Http;

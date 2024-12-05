@@ -67,5 +67,14 @@ namespace gView.Framework.Core.MapServer
             Folder = folder;
             Request = request;
         }
+
+        static public ServiceRequest 
+            CreateGerneral(string method, IIdentity identity)
+            => new ServiceRequest("", "", "")
+            {
+                Method = method,
+                Identity = identity
+            };
+
     }
 }

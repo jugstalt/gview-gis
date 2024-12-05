@@ -1227,9 +1227,14 @@ public class GeoServicesRestInterperter : IServiceRequestInterpreter
                     throw new Exception("No features to add");
                 }
 
-                if (features.Where(f => f.OID > 0).Count() > 0)
+                if (features.Count(f => f.OID > 0) > 0)
                 {
                     throw new Exception("Can't insert features with existing ObjectId");
+                }
+
+                if (features.Count(f => f.Shape is null) > 0)
+                {
+                    throw new MapServerException("Insert features without geometry are not allowed");
                 }
 
                 features.GeometryMakeValid(serviceMap, featureClass);

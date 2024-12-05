@@ -24,6 +24,7 @@ static public class ServiceCollectionExtensions
         services.AddSingleton<MapServiceManager>();
         services.AddSingleton<MapServiceAccessService>();
         services.AddSingleton<EncryptionCertificateService>();
+        services.AddSingleton<JwtAccessTokenService>();
         services.AddSingleton<MapServiceDeploymentManager>();
         
         services.AddTransient<UrlHelperService>();

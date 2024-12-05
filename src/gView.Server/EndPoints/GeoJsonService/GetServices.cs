@@ -28,7 +28,7 @@ public class GetServices : BaseApiEndpoint
             [FromServices] LoginManager loginManagerService,
             [FromServices] MapServiceManager mapServerService,
             string folder = ""
-        ) => HandleSecureAsync(httpContext, loginManagerService, async (identity) =>
+        ) => HandleSecureAsync(httpContext, mapServerService, loginManagerService, "", "", async (_, identity) =>
         {
             mapServerService.ReloadServices(folder, true);
 

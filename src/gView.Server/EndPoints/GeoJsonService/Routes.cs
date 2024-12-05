@@ -9,5 +9,7 @@ internal class Routes
     public const string GetToken = "token";
     public const string GetServiceCapabilities = "capabilities";
     public const string GetMap = "map";
+    public const string GetLegend = "legend";
     public const string GetFeatures = "query";
+    public const string EditFeatures = "features";
 }

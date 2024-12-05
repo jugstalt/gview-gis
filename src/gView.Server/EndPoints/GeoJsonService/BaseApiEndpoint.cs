@@ -1,8 +1,8 @@
 ﻿#nullable enable
 
+using Azure.Core.Pipeline;
 using gView.Endpoints.Abstractions;
 using gView.Framework.Common;
-using gView.Framework.Common.Json;
 using gView.Framework.Core.Exceptions;
 using gView.Framework.Core.MapServer;
 using gView.Framework.Data.Extensions;
@@ -10,6 +10,7 @@ using gView.Framework.GeoJsonService.Request;
 using gView.GeoJsonService;
 using gView.GeoJsonService.DTOs;
 using gView.Server.EndPoints.GeoJsonService.Extensions;
+using gView.Server.Services.MapServer;
 using gView.Server.Services.Security;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -17,14 +18,13 @@ using Microsoft.AspNetCore.Routing;
 using System;
 using System.IO;
 using System.Linq;
-using System.Runtime.Intrinsics.X86;
-using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace gView.Server.EndPoints.GeoJsonService;
 
 public class BaseApiEndpoint : IApiEndpoint
 {
+    private static GeoJsonServiceRequestInterpreter RequestInterpreter = new GeoJsonServiceRequestInterpreter();
     private readonly string[] _routes;
     private readonly Delegate _delegate;
     private readonly HttpMethod _httpMethods;
@@ -75,10 +75,13 @@ public class BaseApiEndpoint : IApiEndpoint
         }
     }
 
-    static protected object HandleSecureAsync(
+    async static protected Task<object> HandleSecureAsync(
                 HttpContext httpContext,
+                MapServiceManager mapServiceManager,
                 LoginManager loginManagerService,
-                Func<Identity, Task<object>> action)
+                string folder,
+                string service,
+                Func<IMapService?, Identity, Task<object>> action)
     {
         object? result = null;
 
@@ -87,7 +90,30 @@ public class BaseApiEndpoint : IApiEndpoint
             var authToken = loginManagerService.GetAuthToken(httpContext.Request);
             var identity = new Identity(authToken.Username, authToken.IsManageUser);
 
-            result = action(identity).GetAwaiter().GetResult();
+
+            ServiceRequest serviceRequest = ServiceRequest.CreateGerneral(
+                    method: httpContext.Request.Path.Value?.Split("/").Last().ToLowerInvariant(),
+                    identity: identity);
+
+            IMapService? mapService = null;
+
+            if (!String.IsNullOrEmpty(service))
+            {
+                var serviceRequestContext = await ServiceRequestContext.TryCreate(
+                    mapServiceManager.Instance,
+                    RequestInterpreter,
+                    serviceRequest, checkSecurity: false);
+
+                mapService = mapServiceManager.Instance.GetMapService(service, folder);
+                if (mapService == null)
+                {
+                    throw new MapServerException("Unknown service");
+                }
+
+                await mapService.CheckAccess(serviceRequestContext);
+            }
+
+            result = action(mapService, identity).GetAwaiter().GetResult();
         }
         catch (MapServerAuthException)
         {
@@ -113,10 +139,13 @@ public class BaseApiEndpoint : IApiEndpoint
         return Results.Json(result, GeoJsonSerializer.JsonSerializerOptions);
     }
 
-    static protected object HandleSecureAsync<T>(
+    async static protected Task<object> HandleSecureAsync<T>(
                 HttpContext httpContext,
+                MapServiceManager mapServiceManager,
                 LoginManager loginManagerService,
-                Func<Identity, T, Task<object>> action)
+                string folder,
+                string service,
+                Func<IMapService, Identity, T, Task<object>> action)
     {
         object? result = null;
 
@@ -125,68 +154,26 @@ public class BaseApiEndpoint : IApiEndpoint
             var authToken = loginManagerService.GetAuthToken(httpContext.Request);
             var identity = new Identity(authToken.Username, authToken.IsManageUser);
 
-            T? model;
+            T? model = await httpContext.GetModel<T>();
 
-            if (httpContext.Request.Method.Equals("GET", StringComparison.OrdinalIgnoreCase))
+            ServiceRequest serviceRequest = ServiceRequest.CreateGerneral(
+                    method: httpContext.Request.Path.Value?.Split("/").Last().ToLowerInvariant(),
+                    identity: identity);
+
+            var serviceRequestContext = await ServiceRequestContext.TryCreate(
+                mapServiceManager.Instance,
+                RequestInterpreter, 
+                serviceRequest, checkSecurity: false);
+
+            var mapService = mapServiceManager.Instance.GetMapService(service, folder);
+            if (mapService == null)
             {
-                model = Activator.CreateInstance<T>();
-
-                foreach (var propertyInfo in typeof(T).GetProperties())
-                {
-                    string? parameter = httpContext.Request.Query[propertyInfo.Name];
-                    if (!String.IsNullOrEmpty(parameter))
-                    {
-                        object? val = propertyInfo.PropertyType switch
-                        {
-                            Type t when t == typeof(int) => int.Parse(parameter),
-                            Type t when t == typeof(float) => parameter.ToFloat(),
-                            Type t when t == typeof(double) => parameter.ToDouble(),
-                            Type t when t == typeof(long) => long.Parse(parameter),
-                            Type t when t == typeof(bool) => bool.Parse(parameter),
-                            Type t when t == typeof(string) => parameter,
-
-                            Type t when t == typeof(int?) => String.IsNullOrEmpty(parameter) ? null : int.Parse(parameter),
-                            Type t when t == typeof(float?) => String.IsNullOrEmpty(parameter) ? null : parameter.ToFloat(),
-                            Type t when t == typeof(double?) => String.IsNullOrEmpty(parameter) ? null : parameter.ToDouble(),
-                            Type t when t == typeof(long?) => String.IsNullOrEmpty(parameter) ? null : long.Parse(parameter),
-                            Type t when t == typeof(bool?) => String.IsNullOrEmpty(parameter) ? null : bool.Parse(parameter),
-
-                            Type t when t.IsEnum => Enum.Parse(t, parameter, true),
-                            _ => parameter.ParseToObject(propertyInfo.PropertyType)
-                        };
-
-                        propertyInfo.SetValue(model, val);
-                    }
-                }
-            }
-            else
-            {
-                using var reader = new StreamReader(httpContext.Request.Body, leaveOpen: true);
-                string requestBody = reader.ReadToEndAsync().GetAwaiter().GetResult();
-                //httpContext.Request.Body.Position = 0;
-
-                try
-                {
-                    model = GeoJsonSerializer.Deserialize<T>(requestBody)!;
-                }
-                catch (Exception ex)
-                {
-                    throw new MapServerException($"Parse Error: {ex.Message}");
-                }
+                throw new MapServerException("Unknown service");
             }
 
-            ServiceRequest serviceRequest = new ServiceRequest("","","")
-            {
-                Method = httpContext.Request.Path.Value?.Split("/").Last().ToLowerInvariant(),
-                Identity = identity
-            };
+            await mapService.CheckAccess(serviceRequestContext);
 
-            var _ = ServiceRequestContext.TryCreate(
-                null,
-                new GeoJsonServiceRequestInterpreter(),
-                serviceRequest, checkSecurity: false).GetAwaiter().GetResult();
-
-            result = action(identity, model).GetAwaiter().GetResult();
+            result = await action(mapService, identity, model!);
         }
         catch (MapServerAuthException)
         {
@@ -200,7 +187,53 @@ public class BaseApiEndpoint : IApiEndpoint
                 ErrorMessage = mse.Message
             };
         }
-        catch(SqlDangerousStatementExceptions dse)
+        catch (SqlDangerousStatementExceptions dse)
+        {
+            result = new ErrorResponse()
+            {
+                ErrorCode = 1,
+                ErrorMessage = dse.Message
+            };
+        }
+        catch (Exception)
+        {
+            result = new ErrorResponse()
+            {
+                ErrorCode = 999,
+                ErrorMessage = "Unknow error"
+            };
+        }
+
+        return result is IResult
+            ? result
+            : Results.Json(result, GeoJsonSerializer.JsonSerializerOptions);
+    }
+
+    async static protected Task<object> HandleSecureAsync<T>(
+                HttpContext httpContext,
+                Func<T, Task<object>> action)
+    {
+        object? result = null;
+
+        try
+        {
+            T? model = await httpContext.GetModel<T>();
+
+            result = await action(model!);
+        }
+        catch (MapServerAuthException)
+        {
+            throw; // Handled in AuthenticationExceptionMiddleware
+        }
+        catch (MapServerException mse)
+        {
+            result = new ErrorResponse()
+            {
+                ErrorCode = 999,
+                ErrorMessage = mse.Message
+            };
+        }
+        catch (SqlDangerousStatementExceptions dse)
         {
             result = new ErrorResponse()
             {

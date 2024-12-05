@@ -10,8 +10,8 @@ public class GetServiceCapabilitiesResponse
     public IEnumerable<SupportedRequest> SupportedRequests { get; set; } = Array.Empty<SupportedRequest>();
 
     public CoordinateReferenceSystem? CRS { get; set; }
-    public double[]? FullExtent { get; set; }
-    public double[]? InitialExtent { get; set; }
+    public BBox? FullExtent { get; set; }
+    public BBox? InitialExtent { get; set; }
     public string? Units { get; set; } = "";
 
     public IEnumerable<LayerInfo> Layers { get; set; } = Array.Empty<LayerInfo>();

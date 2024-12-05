@@ -36,23 +36,13 @@ public class GetMap : BaseApiEndpoint
     private static Delegate Handler => (
                 HttpContext httpContext,
                 [FromServices] LoginManager loginManagerService,
-                [FromServices] MapServiceManager mapServerService,
+                [FromServices] MapServiceManager mapServiceManager,
                 string folder = "",
                 string service = ""
-            ) => HandleSecureAsync<GetMapRequest>(httpContext, loginManagerService,
-                async (identity, mapRequest) =>
+            ) => HandleSecureAsync<GetMapRequest>(httpContext, mapServiceManager, loginManagerService, folder, service,
+                async (mapService, identity, mapRequest) =>
             {
-                var mapService = mapServerService.Instance.GetMapService(service, folder);
-                if (mapService == null)
-                {
-                    throw new MapServerException("Unknown service");
-                }
-                if (await mapService.HasAnyAccess(identity) == false)
-                {
-                    throw new MapServerAuthException("service forbidden");
-                }
-
-                using var serviceMap = await mapServerService.Instance.GetServiceMapAsync(mapService);
+                using var serviceMap = await mapServiceManager.Instance.GetServiceMapAsync(mapService);
 
                 #region Display (ImageSize, DPI, Rotaion, Extent)
 
@@ -166,13 +156,13 @@ public class GetMap : BaseApiEndpoint
 
                 string contentType = imageFormat.ToContentType();
 
-                if (mapRequest.ResponseFormat == "image")
+                if (mapRequest.ResponseFormat == MapReponseFormat.Image)
                 {
                     using MemoryStream ms = new();
                     await serviceMap.SaveImage(ms, imageFormat);
                     return Results.File(ms.ToArray(), contentType);
                 }
-                else if (mapRequest.ResponseFormat == "base64")
+                else if (mapRequest.ResponseFormat == MapReponseFormat.Base64)
                 {
                     using MemoryStream ms = new();
                     await serviceMap.SaveImage(ms, imageFormat);
@@ -196,12 +186,12 @@ public class GetMap : BaseApiEndpoint
                     string fileName =
                        $"{serviceMapName}_{System.Guid.NewGuid():N}.{imageFormat.ToString().ToLower()}";
 
-                    string path = ($"{mapServerService.Instance.OutputPath}/{fileName}").ToPlatformPath();
+                    string path = ($"{mapServiceManager.Instance.OutputPath}/{fileName}").ToPlatformPath();
                     await serviceMap.SaveImage(path, imageFormat);
 
                     return new GetMapResponse()
                     {
-                        ImageUrl = $"{mapServerService.Instance.OutputUrl}/{fileName}",
+                        ImageUrl = $"{mapServiceManager.Instance.OutputUrl}/{fileName}",
                         BBox = serviceMap.Display.Envelope.ToBBox(),
                         CRS = serviceMap.Display.SpatialReference is not null
                                 ? CoordinateReferenceSystem.CreateByName(serviceMap.Display.SpatialReference.Name)

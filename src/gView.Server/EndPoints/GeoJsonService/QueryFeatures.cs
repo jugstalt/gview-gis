@@ -25,9 +25,9 @@ using System.Linq;
 
 namespace gView.Server.EndPoints.GeoJsonService;
 
-public class GetFeatures : BaseApiEndpoint
+public class QueryFeatures : BaseApiEndpoint
 {
-    public GetFeatures()
+    public QueryFeatures()
         : base(
                 [
                     $"{Routes.Base}/{Routes.GetServices}/{{folder}}/{{service}}/{Routes.GetFeatures}/{{id}}",
@@ -46,19 +46,9 @@ public class GetFeatures : BaseApiEndpoint
                 int id,
                 string folder = "",
                 string service = ""
-            ) => HandleSecureAsync<GetFeaturesRequest>(httpContext, loginManagerService,
-            async (identity, queryRequest) =>
+            ) => HandleSecureAsync<GetFeaturesRequest>(httpContext, mapServerService, loginManagerService, folder, service,
+            async (mapService, identity, queryRequest) =>
             {
-                var mapService = mapServerService.Instance.GetMapService(service, folder);
-                if (mapService == null)
-                {
-                    throw new MapServerException("Unknown service");
-                }
-                if (await mapService.HasAnyAccess(identity) == false)
-                {
-                    throw new MapServerAuthException("service forbidden");
-                }
-
                 using var serviceMap = await mapServerService.Instance.GetServiceMapAsync(mapService);
 
                 int maxRecordCount = queryRequest.Command == QueryCommand.IdsOnly  // return all Ids!
@@ -66,7 +56,7 @@ public class GetFeatures : BaseApiEndpoint
                                 : serviceMap.MapServiceProperties.MaxRecordCount;
                 string filterQuery;
 
-                var tableClasses = FindTableClass(serviceMap, id.ToString(), out filterQuery);
+                var tableClasses = serviceMap.FindTableClass(id, out filterQuery);
                 if (tableClasses is null)
                 {
                     throw new MapServerException($"Can't find any tableclass with layer {id}");
@@ -175,7 +165,7 @@ public class GetFeatures : BaseApiEndpoint
                     }
                     else if (queryRequest.Command == QueryCommand.Distinct)
                     {
-                        if (queryRequest.ReturnGeometry == true)
+                        if (queryRequest.ReturnGeometry != GeometryResult.None)
                         {
                             throw new MapServerException("Geometry is not supported with DISTINCT.");
                         }
@@ -186,13 +176,13 @@ public class GetFeatures : BaseApiEndpoint
                                                     .ProjectNamesAndCheckAllowedFunctions(tableClass, false);
 
                         filter.SubFields = String.Join(",", outFields);
-                        if (queryRequest.ReturnGeometry == true)
+                        if (queryRequest.ReturnGeometry != GeometryResult.None)
                         {
-                            if (tableClass is IFeatureClass featureClass && 
+                            if (tableClass is IFeatureClass featureClass &&
                                 !filter.HasField(featureClass.ShapeFieldName))
-                                {
-                                    filter.AddField(featureClass.ShapeFieldName);
-                                }
+                            {
+                                filter.AddField(featureClass.ShapeFieldName);
+                            }
                         }
                     }
 
@@ -282,7 +272,7 @@ public class GetFeatures : BaseApiEndpoint
 
                                     #region Shape
 
-                                    if (queryRequest.ReturnGeometry != true)
+                                    if (queryRequest.ReturnGeometry == GeometryResult.None)
                                     {
                                         feature.Shape = null;  // do not geometry
                                     }
@@ -290,7 +280,7 @@ public class GetFeatures : BaseApiEndpoint
                                     {
                                         feature.Shape = geoTransfromer.Transform2D(feature.Shape) as IGeometry;
                                     }
-                                    if (queryRequest.ReturnGeometryAsBBox == true)
+                                    if (queryRequest.ReturnGeometry == GeometryResult.BBox)
                                     {
                                         feature.Shape = feature.Shape?.Envelope;
                                     }
@@ -309,7 +299,7 @@ public class GetFeatures : BaseApiEndpoint
                                             geoJsonFeature.Oid = field.Value;
                                         }
 
-                                        geoJsonFeature.Properties[field.Name] = field.Value;
+                                        geoJsonFeature.Properties[field.Name] = field.Value == DBNull.Value ? null : field.Value;
                                     }
 
                                     #endregion
@@ -348,7 +338,7 @@ public class GetFeatures : BaseApiEndpoint
                     {
                         DistinctField = distinctField,
                         DistinctValues = geoJsonFeatures
-                                            .Select(f => f.Properties[distinctField])
+                                            .Select(f => f.Properties[distinctField]!)
                                             .ToArray()
                     };
                 }
@@ -361,42 +351,4 @@ public class GetFeatures : BaseApiEndpoint
                     Features = geoJsonFeatures
                 };
             });
-
-    private const bool UseTOC = true;
-
-    static private List<ITableClass>? FindTableClass(IServiceMap map, string id, out string filterQuery)
-    {
-        filterQuery = String.Empty;
-        if (map == null)
-        {
-            return null;
-        }
-
-        List<ITableClass> classes = new List<ITableClass>();
-
-        foreach (ILayer element in MapServerHelper.FindMapLayers(map, UseTOC, id))
-        {
-            if (element.Class is ITableClass tableClass)
-            {
-                classes.Add(tableClass);
-            }
-
-            if (element is IFeatureLayer)
-            {
-                if (((IFeatureLayer)element).FilterQuery != null)
-                {
-                    string fquery = ((IFeatureLayer)element).FilterQuery.WhereClause;
-                    if (String.IsNullOrWhiteSpace(filterQuery))
-                    {
-                        filterQuery = fquery;
-                    }
-                    else if (filterQuery != fquery)
-                    {
-                        filterQuery = $"({filterQuery}) AND ({fquery})";
-                    }
-                }
-            }
-        }
-        return classes;
-    }
 }

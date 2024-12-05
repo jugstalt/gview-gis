@@ -375,7 +375,7 @@ public class Toc : IToc
 
         return previewBitmap;
     }
-    async public Task<TocLegendItems> LegendSymbol(ITocElement element)
+    async public Task<TocLegendItems> LegendSymbol(ITocElement element, int width = 20, int height = 20)
     {
         var items = new List<TocLegendItem>();
 
@@ -412,7 +412,7 @@ public class Toc : IToc
                         ILegendItem lItem = lGroup.LegendItem(i);
                         if (lItem is ISymbol)
                         {
-                            var bm = Current.Engine.CreateBitmap(20, 20);
+                            var bm = Current.Engine.CreateBitmap(width, height);
                             using (var canvas = bm.CreateCanvas())
                             {
                                 ISymbol symbol = lItem as ISymbol;
@@ -432,9 +432,9 @@ public class Toc : IToc
                 }
                 else if (layer.Class is IGridClass gridClass && gridClass.ColorClasses?.Any() == true)
                 {
-                    int height = Math.Max(150, Math.Min(300, gridClass.ColorClasses.Length * 2));
-                    int width = 0;
-                    float classHeight = height / gridClass.ColorClasses.Length;
+                    int gridItemHeight = Math.Max(150, Math.Min(300, gridClass.ColorClasses.Length * 2));
+                    int gridItemWidth = 0;
+                    float classHeight = gridItemHeight / gridClass.ColorClasses.Length;
 
                     var stringFormat = Current.Engine.CreateDrawTextFormat();
                     stringFormat.Alignment = StringAlignment.Near;
@@ -446,11 +446,11 @@ public class Toc : IToc
                     {
                         foreach (var colorClass in gridClass.ColorClasses.Where(c => !String.IsNullOrEmpty(c.Legend)))
                         {
-                            width = Math.Max(width, (int)mesaureCanvas.MeasureText(colorClass.Legend, measureFont).Width);
+                            gridItemWidth = Math.Max(gridItemWidth, (int)mesaureCanvas.MeasureText(colorClass.Legend, measureFont).Width);
                         }
                     }
 
-                    var bm = Current.Engine.CreateBitmap(width + 28, height + 10);
+                    var bm = Current.Engine.CreateBitmap(gridItemWidth + width + 8, gridItemHeight + 10);
                     using (var canvas = bm.CreateCanvas())
                     using (var font = Current.Engine.CreateFont("Arial", 10f))
                     using (var fontBrush = Current.Engine.CreateSolidBrush(ArgbColor.Black))
@@ -462,7 +462,7 @@ public class Toc : IToc
                             using (var brush = Current.Engine.CreateSolidBrush(colorClass.Color))
                             {
                                 canvas.FillRectangle(brush,
-                                    new CanvasRectangleF(0f, y - classHeight, 20f, classHeight));
+                                    new CanvasRectangleF(0f, y - classHeight, width, classHeight));
                             }
 
                             if (!String.IsNullOrEmpty(colorClass.Legend))

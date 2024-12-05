@@ -40,6 +40,7 @@ static public class ApplicationBuilderExtensions
         }
 
         app.UseMiddleware<AuthenticationExceptionMiddleware>();
+        app.UseMiddleware<JwtTokenAuthenticationMiddleware>();
         app.UseMiddleware<TokenAuthenticationMiddleware>();
         app.UseMiddleware<UrlTokenAuthenticationMiddleware>();
         app.UseMiddleware<CookieAuthenticationMiddleware>();

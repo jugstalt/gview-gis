@@ -1,20 +1,26 @@
 ﻿#nullable enable
 
-using gView.Framework.Core.Exceptions;
 using gView.Framework.Core.Geometry;
 using gView.Framework.Geometry;
+using gView.GeoJsonService.DTOs;
 
 namespace gView.Server.EndPoints.GeoJsonService.Extensions;
 
 static internal class GeometryExtensions
 {
-    static public double[]? ToBBox(this IEnvelope? envelope)
+    static public BBox? ToBBox(this IEnvelope? envelope)
         => envelope is null
             ? null
-            : [envelope.MinX, envelope.MinY, envelope.MaxX, envelope.MaxY];
+            : new BBox()
+            {
+                MinX = envelope.MinX,
+                MinY = envelope.MinY,
+                MaxX = envelope.MaxX,
+                MaxY = envelope.MaxY
+            };
 
-    static public IEnvelope ToEnvelope(this double[] bbox)
-        => bbox is not null && bbox.Length == 4
-            ? new Envelope(bbox[0], bbox[1], bbox[2], bbox[3])
-            : throw new MapServerException("Invalid bbox");
+    static public IEnvelope? ToEnvelope(this BBox? bbox)
+        => bbox is not null
+            ? new Envelope(bbox.MinX, bbox.MinY, bbox.MaxX, bbox.MaxY)
+            : null;
 }

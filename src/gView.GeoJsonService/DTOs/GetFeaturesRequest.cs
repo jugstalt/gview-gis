@@ -6,8 +6,7 @@ public class GetFeaturesRequest : BaseRequest
 
     public QueryCommand Command { get; set; } = QueryCommand.Select;
     public string[] OutFields { get; set; } = Array.Empty<string>();
-    public bool? ReturnGeometry { get; set; }
-    public bool? ReturnGeometryAsBBox { get; set; }
+    public GeometryResult ReturnGeometry { get; set; } = GeometryResult.None;
     public CoordinateReferenceSystem? OutCRS { get; set; } 
     public string[]? OrderByFields { get; set; }
 
