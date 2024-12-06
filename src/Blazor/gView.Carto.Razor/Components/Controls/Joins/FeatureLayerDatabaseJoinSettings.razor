@@ -1,0 +1,202 @@
+@using gView.Framework.Data.Joins
+@using gView.Framework.Db
+@inherits BaseHandler
+@inject ICartoApplicationScopeService AppScope;
+
+@if(Map is not null &&
+FeatureLayer is not null &&
+Join is not null)
+{
+    <JoinSettings FeatureLayer="FeatureLayer" Join="Join" />
+
+    <GvCard Title="Joined Database Table">
+        <GvCardContent>
+
+            <GvGrid ColumnCount="2">
+
+                <GvGridItem Span="2">
+                    <MudButton Variant="Variant.Filled"
+                    OnClick="HandleConnectionStringClickAsync">
+                        Database Connection
+                    </MudButton>
+                </GvGridItem>
+
+                <GvGridItem>
+                    @if (_tableNames.Any())
+                    {
+                        <MudSelect T="string" Label="Database Table"
+                        Value="Join.JoinTable"
+                        ValueChanged="(table) => HandleDatabaseTableChanged(table)"
+                        Variant="Variant.Outlined">
+                            @foreach (var tableName in _tableNames)
+                            {
+                                <MudSelectItem Value="tableName">@tableName</MudSelectItem>
+                            }
+                        </MudSelect>
+                    }
+                </GvGridItem>
+
+
+                <GvGridItem>
+                    @if(_fieldNames.Any()) 
+                    {
+                        <MudSelect T="string" Label="Join Field"
+                        @bind-Value="Join.JoinField"
+                        Variant="Variant.Outlined">
+                            @foreach (var fieldName in _fieldNames)
+                            {
+                                <MudSelectItem Value="fieldName">@fieldName</MudSelectItem>
+                            }
+                        </MudSelect>
+                    }
+                </GvGridItem>
+
+                <GvGridItem Span="2">
+                    <GvScrollable MaxHeight="30">
+                        @if(_fieldNames.Any()) 
+                        {
+                            <MudList T="string"
+                            SelectedValues="@(Join.JoinFields?.ToEnumerable().Select(f => f.name).ToArray() ?? [])"
+                            SelectedValuesChanged="(fieldNames) => HandleFieldSelectionChanged(fieldNames)"
+                            SelectionMode="SelectionMode.MultiSelection">
+                                <MudListSubheader>
+                                    Include Fields
+                                </MudListSubheader>
+                                @foreach (var fieldName in _fieldNames)
+                                {
+                                    <MudListItem Value="fieldName">@fieldName</MudListItem>
+                                }
+                            </MudList>
+                        }
+                    </GvScrollable>
+                </GvGridItem>
+
+            </GvGrid>
+
+        </GvCardContent>
+    </GvCard> 
+}
+
+@code {
+    [Parameter] public IMap? Map { get; set; }
+    [Parameter] public IFeatureLayer? FeatureLayer { get; set; }
+    [Parameter] public FeatureLayerDatabaseJoin? Join { get; set; }
+
+    private string[] _tableNames = [];
+    private string[] _fieldNames = [];
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+    }
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+
+        _tableNames = [];
+        _fieldNames = [];
+
+        if (!String.IsNullOrEmpty(Join?.JoinConnectionString))
+        {
+            _tableNames = TableNames();
+            _fieldNames = TableFields();
+        }
+    }
+
+    public Task HandleConnectionStringClickAsync() => HandleAsync(async () =>
+    {
+        if (Join is null) return;
+
+        var model = new ConnectionStringModel();
+
+        if (!String.IsNullOrEmpty(Join.JoinConnectionString))
+        {
+            model.DbConnectionString.FromString(Join.JoinConnectionString);
+        }
+
+        model = await AppScope.ShowModalDialog(
+            typeof(gView.DataExplorer.Razor.Components.Dialogs.ConnectionStringDialog),
+            "Database Connection",
+            model
+        );
+
+        if (model is null) return;
+
+        Join.JoinConnectionString = model.DbConnectionString.ToString();
+
+        _tableNames = TableNames();
+        _fieldNames = [];
+    });
+
+    public void HandleDatabaseTableChanged(string tableName) => Handle(() =>
+    {
+        if (Join is null) return;
+
+        Join.JoinTable = tableName;
+        Join.JoinField = "";
+
+        _fieldNames = TableFields();
+    });
+
+    public void HandleFieldSelectionChanged(IReadOnlyCollection<string> fieldNames) => Handle(() =>
+    {
+        if(Join is null) return;
+
+        Join.JoinFields = new FieldCollection(
+            fieldNames.Select(name => new Field(name))
+        );
+    });
+
+    #region Helper
+
+    public string[] TableNames()
+    {
+        if (String.IsNullOrEmpty(Join?.JoinConnectionString)) return [];
+
+        var dbConnectionString = new DbConnectionString();
+        dbConnectionString.FromString(Join.JoinConnectionString);
+
+        CommonDbConnection conn = new CommonDbConnection();
+        conn.ConnectionString2 = dbConnectionString.ConnectionString;
+
+        List<string> tables = new List<string>(conn.TableNames());
+        tables.Sort();
+        return tables.ToArray();
+    }
+
+    public string[] TableFields()
+    {
+        if (String.IsNullOrEmpty(Join?.JoinConnectionString)) return [];
+
+        var dbConnectionString = new DbConnectionString();
+        dbConnectionString.FromString(Join.JoinConnectionString);
+
+        if (dbConnectionString == null)
+        {
+            return [];
+        }
+
+        dbConnectionString.UseProviderInConnectionString = true;
+
+        DataProvider provider = new DataProvider();
+        provider.Open(dbConnectionString.ConnectionString);
+        string tablename = provider.ToTableName(Join.JoinTable);
+        provider.Close();
+
+        CommonDbConnection conn = new CommonDbConnection();
+        conn.ConnectionString2 = dbConnectionString.ConnectionString;
+
+        if (!conn.GetSchema(tablename))
+        {
+            throw new Exception(conn.errorMessage);
+        }
+
+        FieldCollection fields = new FieldCollection(conn.schemaTable);
+        FieldCollection f = new FieldCollection();
+
+        return fields.ToEnumerable().Select(f => f.name).ToArray();
+    }
+
+    #endregion
+}

@@ -18,7 +18,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System;
-using gView.Server.Extensions;
+using gView.Endpoints.Extensions;
 
 namespace gView.Server
 {
@@ -203,7 +203,7 @@ namespace gView.Server
             #endregion
         }
 
-        public void Configure(IApplicationBuilder app)
+        public void Configure(WebApplication app)
         {
             if (Environment.IsDevelopment())
             {
@@ -233,6 +233,8 @@ namespace gView.Server
             //app.UseCookiePolicy();
 
             app.AddAuth(Configuration);
+
+            app.RegisterApiEndpoints(typeof(Startup));
 
             app.UseRouting();
 

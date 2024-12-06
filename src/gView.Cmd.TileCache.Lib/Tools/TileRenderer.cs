@@ -94,7 +94,7 @@ internal class TileRenderer
             grid.AddLevel(level++, res);
         }
 
-        ServerConnection connector = new ServerConnection(server) { Timeout = 600 };
+        ServerConnection connector = new ServerConnection(server) { Timeout = 60 * 15 };
 
         int step = _cacheFormat == "compact" ? 128 : 1;
 
@@ -114,7 +114,12 @@ internal class TileRenderer
 
         logger?.LogLine($"TilesCount: {featureMax}");
 
-        RenderTileThreadPool threadPool = new RenderTileThreadPool(connector, service, user, pwd, _maxParallelRequests);
+        RenderTileThreadPool threadPool = new RenderTileThreadPool(
+            connector, 
+            service, 
+            user, 
+            pwd, 
+            _maxParallelRequests);
 
         var thread = threadPool.FreeThread!;
         if (_orientation == GridOrientation.UpperLeft)
@@ -180,7 +185,10 @@ internal class TileRenderer
 
         if (!String.IsNullOrEmpty(threadPool.Exceptions))
         {
-            //MessageBox.Show(threadPool.Exceptions, "Exceptions", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            logger?.LogLine("Exceptions:");
+            logger?.LogLine(threadPool.Exceptions);
+
+            throw new Exception("Some errors occurred");
         }
     }
 

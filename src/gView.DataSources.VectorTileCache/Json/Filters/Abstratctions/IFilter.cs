@@ -2,7 +2,7 @@
 
 namespace gView.DataSources.VectorTileCache.Json.Filters.Abstratctions;
 
-interface IFilter
+public interface IFilter
 {
     bool Test(IFeature feature);
 }

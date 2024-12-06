@@ -1,4 +1,5 @@
-﻿using gView.Framework.Core.Carto;
+﻿using gView.DataSources.VectorTileCache.Json.Filters.Abstratctions;
+using gView.Framework.Core.Carto;
 using gView.Framework.Core.Common;
 using gView.Framework.Core.Data;
 using gView.Framework.Core.Geometry;
@@ -6,6 +7,8 @@ using gView.Framework.Core.IO;
 using gView.Framework.Core.Symbology;
 using gView.Framework.Symbology.Vtc.Extensions;
 using gView.GraphicsEngine;
+using System.Text;
+using static gView.Framework.Core.MapServer.InterpreterCapabilities;
 
 namespace gView.Framework.Symbology.Vtc;
 
@@ -81,7 +84,7 @@ public class PaintSymbol : ISymbol, IBrushColor
     {
         var geometry = feature?.Shape;
 
-        if (geometry is IPoint && _pointSymbol != null)
+        if (geometry is IPoint point && _pointSymbol != null)
         {
             if (modify)
             {
@@ -89,8 +92,7 @@ public class PaintSymbol : ISymbol, IBrushColor
             }
             display.Draw(_pointSymbol, geometry);
         }
-        else
-        if (geometry is IPolyline && _lineSymbol != null)
+        else if (geometry is IPolyline && _lineSymbol != null)
         {
             if (modify)
             {
@@ -299,43 +301,258 @@ public class StopsValueFunc : IValueFunc
 
 public class CaseValueFunc : IValueFunc
 {
-    private object? _defaultValue;
-    private List<(string field, string comparisionOperator, string? comparisionValue, object resultValue)> _values = new();
+    private IValueFunc? _defaultValueFunc;
+    private List<(IFilter filter, IValueFunc valueFunc)> _cases = new();
 
-    public void AddCase(string field, string comparisionOperator, object comparisionValue, object resultValue)
+    public void AddCase(IFilter filter, IValueFunc valueFunc)
     {
-        _values.Add((field, comparisionOperator, comparisionValue?.ToString(), resultValue));
+        _cases.Add((filter, valueFunc));
     }
 
-    public void SetDefaultValue(object defaultValue)
+    public void SetDefaultValue(IValueFunc defaultValue)
     {
-        _defaultValue = defaultValue;
+        _defaultValueFunc = defaultValue;
     }
 
     public T? Value<T>(IDisplay display, IFeature? feature = null)
     {
         if (feature != null)
         {
-            foreach (var caseValue in _values)
+            foreach (var (filter, valueFunc) in _cases)
             {
-                var featureValue = feature[caseValue.field]?.ToString();
-                if (featureValue == null) continue;
-
-                var fitCondition = caseValue.comparisionOperator switch
+                if(filter.Test(feature))
                 {
-                    "==" => featureValue == caseValue.comparisionValue,
-                    "!=" => featureValue != caseValue.comparisionValue,
-                    _ => throw new ArgumentException($"Unknown case operator '{caseValue.comparisionOperator}'")
-                };
+                    T? value = valueFunc.Value<T>(display, feature);
 
-                if (fitCondition)
+                    return value;
+                }
+
+            }
+        }
+
+        T? defaultValue = _defaultValueFunc == null
+            ? default(T)
+            : _defaultValueFunc.Value<T>(display, feature);
+
+        return defaultValue;
+    }
+}
+
+public class ConcatValuesFunc : IValueFunc
+{
+    private List<IValueFunc> _valueFuncs = new();
+
+    public void Add(IValueFunc valueFunc) => _valueFuncs.Add(valueFunc);
+
+    public T? Value<T>(IDisplay display, IFeature? feature = null)
+    {
+        StringBuilder result = new StringBuilder();
+
+        foreach (var valueFunc in _valueFuncs)
+        {
+            result.Append(valueFunc.Value<string>(display, feature));
+        }
+
+        return (T?)Convert.ChangeType(result.ToString(), typeof(T));
+    }
+}
+
+public class CoalesceValueFunc : IValueFunc
+{
+    private List<IValueFunc> _valueFuncs = new();
+
+    public void Add(IValueFunc valueFunc) => _valueFuncs.Add(valueFunc);
+
+    public T? Value<T>(IDisplay display, IFeature? feature = null)
+    {
+        HashSet<T> values = new();
+
+        foreach (var valueFunc in _valueFuncs)
+        {
+            var value = valueFunc.Value<T>(display, feature);
+            if (value is not null)
+            {
+                values.Add(value);
+            }
+        }
+
+        return (T?)Convert.ChangeType(String.Join(", ", values), typeof(T));
+    }
+}
+
+public class InterpolateValueFunc : IValueFunc
+{
+    private string[] _methods;  // linar, exp
+    private string[] _fields;  // zoom,
+    private IValueFunc[] _funcs;
+
+    public InterpolateValueFunc(string[] methods, string[] fields, IValueFunc[] funcs)
+    {
+        _methods = methods;
+        _fields = fields;
+        _funcs = funcs;
+
+        if (_funcs.Length % 2 != 0) throw new ArgumentException("Invalid Interpolation Function: number of funcs must be even");
+    }
+
+    public T? Value<T>(IDisplay display, IFeature? feature = null)
+    {
+        if (_fields.Length != 1)
+            throw new Exception("Invalid Interpolation Function: only on field/zoom implemented");
+
+        var pointValue = _fields[0] == "zoom"
+            ? display.WebMercatorScaleLevel
+            : Convert.ToSingle(feature?[_fields[0]] ?? 0);
+
+        T? result = default;
+
+        for (int i = 0; i < _funcs.Length - 1; i += 2)
+        {
+            var funcPoint1Value = _funcs[i].Value<float>(display, feature);
+
+            if (i == 0 && funcPoint1Value > pointValue)  // take first value
+            {
+                var funcValue = _funcs[i + 1].Value<T>(display, feature);
+
+                return funcValue;
+            }
+
+            if (funcPoint1Value <= pointValue)
+            {
+                var func1Value = _funcs[i + 1].Value<T>(display, feature);
+
+                if (i + 3 >= _funcs.Length)
                 {
-                    return (T?)caseValue.resultValue;
+                    result = func1Value;
+                    continue;
+                }
+
+                var funcPoint2Value = _funcs[i + 2].Value<float>(display, feature);
+                var func2Value = _funcs[i + 3].Value<T>(display, feature);
+
+                if (funcPoint2Value <= pointValue)
+                {
+                    continue;
+                }
+
+                if (_methods[0] == "linear")
+                {
+                    var factor = (pointValue - funcPoint1Value) / (funcPoint2Value - funcPoint1Value);
+
+                    if (typeof(T) == typeof(float))
+                    {
+                        float dy = Convert.ToSingle(func2Value) - Convert.ToSingle(func1Value);
+                        result = (T)Convert.ChangeType(Convert.ToSingle(func1Value) + dy * factor, typeof(T));
+
+                        break;
+                    }
+                }
+                else if (_methods[0] == "exponential")
+                {
+                    var @base = float.Parse(_methods[1], System.Globalization.CultureInfo.InvariantCulture);
+
+                    if (@base > 1f) @base *= 2.3f;  // empric !?
+
+                    if (typeof(T) == typeof(float))
+                    {
+                        var val = Convert.ToSingle(func1Value)
+                            + (Convert.ToSingle(func2Value) - Convert.ToSingle(func1Value))
+                            * (float)Math.Pow((pointValue - funcPoint1Value) / (funcPoint2Value - funcPoint1Value), @base);
+
+                        if (Convert.ToSingle(func2Value) > Convert.ToSingle(func1Value))
+                        {
+                            result = (T)Convert.ChangeType(Math.Min(val, Convert.ToSingle(func2Value)), typeof(T));
+                        } 
+                        else
+                        {
+                            result = (T)Convert.ChangeType(Math.Max(val, Convert.ToSingle(func2Value)), typeof(T));
+                        }
+
+                        break;
+                    }
+                }
+                else
+                {
+                    result = func1Value;
                 }
             }
         }
 
-        return (T?)_defaultValue;
+        return result ?? throw new Exception("Interpolation Function: no value found");
+    }
+}
+
+public class MatchValueFunc : IValueFunc
+{
+    private IValueFunc _valueFunc;
+    private IValueFunc[] _matchFuncs;
+    private IValueFunc _ifMatchFunc, _ifNotMatchFunc;
+
+    public MatchValueFunc(
+        IValueFunc valueFunc,
+        IValueFunc[] matchFuncs,
+        IValueFunc ifMatchFunc,
+        IValueFunc ifNotMatchFunc)
+    {
+        _valueFunc = valueFunc;
+        _matchFuncs = matchFuncs;
+        _ifMatchFunc = ifMatchFunc;
+        _ifNotMatchFunc = ifNotMatchFunc;
+    }
+
+    public T? Value<T>(IDisplay display, IFeature? feature = null)
+    {
+        var value = _valueFunc.Value<string>(display, feature);
+
+        foreach(var matchFunc in _matchFuncs)
+        {
+            if(matchFunc.Value<string>(display, feature) == value)
+            {
+                return _ifMatchFunc.Value<T>(display, feature);
+            }
+        }
+
+        return _ifNotMatchFunc.Value<T>(display, feature);
+    }
+}
+
+public class StepValueFunc : IValueFunc
+{
+    private string[] _fields;  // zoom,
+    private IValueFunc[] _funcs;
+
+    public StepValueFunc(string[] fields, IValueFunc[] funcs)
+    {
+        _fields = fields;
+        _funcs = funcs;
+
+        if (_funcs.Length % 2 == 0) throw new ArgumentException("Invalid Step Function: number of funcs must be odd");
+    }
+
+    public T? Value<T>(IDisplay display, IFeature? feature = null)
+    {
+        if (_fields.Length != 1)
+            throw new Exception("Invalid Interpolation Function: only on field/zoom implemented");
+
+        var pointValue = _fields[0] == "zoom"
+            ? display.WebMercatorScaleLevel
+            : Convert.ToSingle(feature?[_fields[0]] ?? 0);
+
+        // last one is default
+        T? result = _funcs.Last().Value<T>(display, feature);
+
+        for (int i = 0; i < _funcs.Length - 1; i += 2)
+        {
+            var resultFunc = _funcs[i];
+            var funcPoint1Value = _funcs[i + 1].Value<float>(display, feature);
+
+            if (funcPoint1Value <= pointValue)
+            {
+                result = resultFunc.Value<T>(display, feature);
+            }
+        }
+
+        return result;
     }
 }
 
@@ -386,9 +603,9 @@ public class GetValueFunc : IValueFunc
     }
 }
 
-public class LiberalValueFunc : ValueFunc<string>
+public class LiteralValueFunc : ValueFunc<string>
 {
-    public LiberalValueFunc(string value) : base(value) { }
+    public LiteralValueFunc(string value) : base(value) { }
 }
 
 public class ColorValueFunc : ValueFunc<ArgbColor>

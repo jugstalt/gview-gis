@@ -2,7 +2,7 @@
 {
     public interface IGridClass
     {
-        GridRenderMethode ImplementsRenderMethods { get; }
+        GridRenderMethod ImplementsRenderMethods { get; }
 
         GridColorClass[] ColorClasses { get; set; }
 

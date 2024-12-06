@@ -227,7 +227,7 @@ public class FromGLStylesJsonCommand : ICommand
         catch (Exception ex)
         {
             logger?.LogLine($"ERROR: {ex.Message}");
-
+            logger?.LogLine(ex.StackTrace);
             return false;
         }
     }

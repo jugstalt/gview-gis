@@ -282,12 +282,14 @@ public class MapRendererInstance : Map, IMapRenderer
                                 continue;
                             }
 
-                            IEnvelope dispEnvelope = DisplayTransformation.TransformedBounds(this); //this.Envelope;
-                            if (Display.GeometricTransformer != null)
+                            IEnvelope dispEnvelope = Display.GeometricTransformer switch
                             {
-                                dispEnvelope = ((IGeometry)Display.GeometricTransformer.InvTransform2D(dispEnvelope)).Envelope;
-                            }
-
+                                null => DisplayTransformation.RotatedBounds(),
+                                _ => ((IGeometry)Display.GeometricTransformer.InvTransform2D(
+                                            DisplayTransformation.RotatedBounds())
+                                        ).Envelope
+                            };
+                            
                             if (Algorithm.IntersectBox(rLayer.RasterClass.Polygon, dispEnvelope))
                             {
                                 if (rLayer.Class is IParentRasterLayer)

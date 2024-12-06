@@ -39,7 +39,7 @@ public class OidcAuthenticationMiddleware
                             DateTime.UtcNow.AddDays(1).Ticks
                        );
 
-                context.User = authToken.ToClaimsPricipal();
+                context.User = authToken.ToClaimsPrincipal();
             }
         }
 

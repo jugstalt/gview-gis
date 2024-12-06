@@ -37,7 +37,7 @@ namespace gView.DataSources.VectorTileCache
 
             int level = _grid.GetBestLevel(displayResolution, 90D);
 
-            IEnvelope dispEnvelope = display.DisplayTransformation.TransformedBounds(display);
+            IEnvelope dispEnvelope = display.DisplayTransformation.RotatedBounds();
             if (display.GeometricTransformer != null)
             {
                 dispEnvelope = (IEnvelope)((IGeometry)display.GeometricTransformer.InvTransform2D(dispEnvelope)).Envelope;

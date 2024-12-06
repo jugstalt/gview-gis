@@ -33,8 +33,11 @@ public class BasicAuthenticationMiddleware
                 var path = Path.Combine(_mapServerService.Options.LoginManagerRootPath, "token");
 
                 var authToken = AuthToken.Create(path, userPwd.username, userPwd.password, AuthToken.AuthTypes.Tokenuser);
-            
-                context.User = authToken.ToClaimsPricipal();
+
+                if (authToken is not null)
+                {
+                    context.User = authToken.ToClaimsPrincipal();
+                }
             }
         }
 

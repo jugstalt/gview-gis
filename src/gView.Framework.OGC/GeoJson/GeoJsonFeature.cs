@@ -4,7 +4,6 @@ using gView.Framework.Geometry;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.Http.Json;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -60,7 +59,7 @@ namespace gView.Framework.OGC.GeoJson
                         Path multiLinePath = new();
                         multiLine.AddPath(multiLinePath);
 
-                        var coords = (double[][])paths[p];
+                        var coords = paths[p];
                         for (int i = 0, to2 = coords.GetLength(0); i < to2; i++)
                         {
                             multiLinePath.AddPoint(new Point(coords[i][0], coords[i][1]));
@@ -122,13 +121,13 @@ namespace gView.Framework.OGC.GeoJson
 
                         for (int p = 0, to_p = subPolygons.GetLength(0); p < to_p; p++)
                         {
-                            var rings = (double[][][])subPolygons[p];
+                            var rings = subPolygons[p];
                             for (int r = 0, to_r = rings.GetLength(0); r < to_r; r++)
                             {
                                 Ring ring = new Ring();
                                 polygon.AddRing(ring);
 
-                                var coords = (double[][])rings[r];
+                                var coords = rings[r];
                                 for (int i = 0, to2 = coords.GetLength(0); i < to2; i++)
                                 {
                                     ring.AddPoint(new Point(coords[i][0], coords[i][1]));

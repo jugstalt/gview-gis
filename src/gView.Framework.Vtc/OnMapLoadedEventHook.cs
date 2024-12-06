@@ -191,9 +191,8 @@ public class OnMapLoadedEventHook : IMapEventHook
                     featureLayer.LabelRenderer = new VtcLabelRenderer(symbol)
                     {
                         UseExpression = true,
-                        LabelExpression = layer.Layout?.TextFieldExpression?
-                                .Replace("{", "[")
-                                .Replace("}", "]") ?? "",
+                        LabelExpression = "",
+                        LabelExpressionValueFunc = layer.Layout?.TextFieldExpression.ToValueFunc(),
                         LabelPriority = SimpleLabelRenderer.RenderLabelPriority.Normal,
                     };
 
@@ -218,7 +217,7 @@ public class OnMapLoadedEventHook : IMapEventHook
             }
             else if (@class is IRasterClass rasterClass)
             {
-                var rasterLayer = new RasterLayer(rasterClass);
+                var rasterLayer = new VtcRasterLayer(rasterClass, layer.ToPaintSymbol(map));
 
                 map.AddLayer(rasterLayer);
 

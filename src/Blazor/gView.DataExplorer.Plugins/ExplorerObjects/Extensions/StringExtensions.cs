@@ -13,6 +13,7 @@ static internal class StringExtensions
         {
             FileInfo fi = new FileInfo(path);
 
+            properties.Add("LastModified", $"{fi.LastWriteTime.ToShortDateString()} {fi.LastWriteTime.ToLongTimeString()}");
             properties.Add("Size", fi.Length.ToSizeString());
         }
         catch { }

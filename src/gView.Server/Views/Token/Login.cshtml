@@ -32,6 +32,7 @@
     }
     <form action="@(UrlHelperService.AppRootUrl(this.Context.Request))/Token/Login" method="post" class="form-horizontal">
         @*<h4>Use a local account to log in.</h4>*@
+        @Html.AntiForgeryToken()
         <div asp-validation-summary="All" class="text-danger"></div>
         <div class="attribute">
             <div>

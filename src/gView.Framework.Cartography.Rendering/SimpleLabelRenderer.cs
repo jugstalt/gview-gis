@@ -185,7 +185,7 @@ namespace gView.Framework.Cartography.Rendering
         private IEnvelope _clipEnvelope = null;
 
         virtual protected bool BeforeRenderFeature(IDisplay display, IFeature feature) => true;
-        virtual protected string ModifyEvaluatedLabel(IFeature feature, string label) => label;
+        virtual protected string ModifyEvaluatedLabel(IDisplay display, IFeature feature, string label) => label;
 
         #region ILabelRenderer Members
 
@@ -229,10 +229,10 @@ namespace gView.Framework.Cartography.Rendering
                 filter.AddField(_symbolRotation.RotationFieldName);
             }
 
-            _clipEnvelope = new Envelope(display.DisplayTransformation.TransformedBounds(display));
+            _clipEnvelope = new Envelope(display.DisplayTransformation.RotatedBounds());
             if (display.GeometricTransformer != null)
             {
-                object e = display.GeometricTransformer.InvTransform2D(display.Envelope);
+                object e = display.GeometricTransformer.InvTransform2D(_clipEnvelope);
                 if (e is IGeometry)
                 {
                     _clipEnvelope = ((IGeometry)e).Envelope;
@@ -300,7 +300,7 @@ namespace gView.Framework.Cartography.Rendering
                     expr = new SimpleScriptInterpreter(expr).Interpret();
                 }
 
-                _symbol.Text = ModifyEvaluatedLabel(feature, expr);
+                _symbol.Text = ModifyEvaluatedLabel(display, feature, expr);
             }
 
             if (string.IsNullOrWhiteSpace(_symbol.Text))

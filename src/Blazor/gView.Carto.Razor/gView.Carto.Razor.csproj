@@ -29,12 +29,13 @@
   <ItemGroup>
     <PackageReference Include="Humanizer.Core" Version="2.14.1" />
     <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="8.0.10" />
-    <PackageReference Include="MudBlazor" Version="7.10.0" />
+    <PackageReference Include="MudBlazor" Version="7.15.0" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\gView.Cmd.Core\gView.Cmd.Core.csproj" />
     <ProjectReference Include="..\..\gView.Framework.Cartography\gView.Framework.Cartography.csproj" />
+    <ProjectReference Include="..\..\gView.Framework.Data.Joins\gView.Framework.Data.Joins.csproj" />
     <ProjectReference Include="..\..\gView.Interoperability.GeoServices\gView.Interoperability.GeoServices.csproj" />
     <ProjectReference Include="..\..\gView.Interoperability.OGC\gView.Interoperability.OGC.csproj" />
     <ProjectReference Include="..\..\gView.Framework\gView.Framework.csproj" />

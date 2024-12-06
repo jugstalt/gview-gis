@@ -150,12 +150,8 @@ namespace gView.Framework.Cartography.LayerRenderers
 
                 //if (!(dataset is IFeatureDataset)) return;
 
-                IGeometry filterGeom = _map.Display.DisplayTransformation.TransformedBounds(_map.Display); //_map.Display.Envelope;
-
-                if (_map.Display.GeometricTransformer != null)
-                {
-                    filterGeom = MapHelper.Project(fClass, _map.Display);
-                }
+                IEnvelope filterGeom = MapHelper.Project(fClass, _map.Display,
+                    _map.Display.DisplayTransformation.RotatedBounds());
 
                 var filter = new SpatialFilter();
                 filter.DatasetCachingContext = _datasetCachingContext;

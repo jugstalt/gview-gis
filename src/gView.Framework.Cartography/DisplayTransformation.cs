@@ -3,101 +3,104 @@ using gView.Framework.Core.Geometry;
 using gView.Framework.Geometry;
 using System;
 
-namespace gView.Framework.Cartography
+namespace gView.Framework.Cartography;
+
+internal class DisplayTransformation : IDisplayRotation
 {
-    public class DisplayTransformation : IDisplayTransformation
+    private bool _useDisplayRotation = false;
+    private double _cos = 1.0, _sin = 0.0, _rotation = 0.0;
+
+    private readonly IDisplay _display;
+
+    public DisplayTransformation(IDisplay display)
     {
-        private bool _useTransformation = false;
-        private double _cos = 1.0, _sin = 0.0, _rotation = 0.0;
+        _display = display;
+    }
 
-        public DisplayTransformation()
+    public bool UseDisplayRotation
+    {
+        get { return _useDisplayRotation; }
+    }
+
+    public double DisplayRotation
+    {
+        set
         {
+            _rotation = value;
+            _cos = Math.Cos(_rotation * Math.PI / 180.0);
+            _sin = Math.Sin(_rotation * Math.PI / 180.0);
+
+            _useDisplayRotation = _rotation != 0.0;
+        }
+        get { return _rotation; }
+    }
+
+    public void Rotate(ref double x, ref double y)
+    {
+        if (_display == null || _useDisplayRotation == false)
+        {
+            return;
         }
 
-        public bool UseTransformation
+        x -= _display.ImageWidth / 2.0;
+        y -= _display.ImageHeight / 2.0;
+
+        double x_ = x, y_ = y;
+
+        x = x_ * _cos + y_ * _sin;
+        y = -x_ * _sin + y_ * _cos;
+
+        x += _display.ImageWidth / 2.0;
+        y += _display.ImageHeight / 2.0;
+    }
+
+    public void RotateInverse(ref double x, ref double y)
+    {
+        if (_display == null || _useDisplayRotation == false)
         {
-            get { return _useTransformation; }
+            return;
         }
 
-        public double DisplayRotation
-        {
-            set
-            {
-                _rotation = value;
-                _cos = Math.Cos(_rotation * Math.PI / 180.0);
-                _sin = Math.Sin(_rotation * Math.PI / 180.0);
+        x -= _display.ImageWidth / 2.0;
+        y -= _display.ImageHeight / 2.0;
 
-                _useTransformation = _rotation != 0.0;
-            }
-            get { return _rotation; }
+        double x_ = x, y_ = y;
+
+        x = x_ * _cos - y_ * _sin;
+        y = x_ * _sin + y_ * _cos;
+
+        x += _display.ImageWidth / 2.0;
+        y += _display.ImageHeight / 2.0;
+    }
+
+    public IEnvelope RotatedBounds()
+    {
+        if (_display == null)
+        {
+            return new Envelope();
         }
 
-        public void Transform(IDisplay display, ref double x, ref double y)
+        if (_useDisplayRotation == false)
         {
-            if (display == null || _useTransformation == false)
-            {
-                return;
-            }
-
-            x -= display.ImageWidth / 2.0;
-            y -= display.ImageHeight / 2.0;
-
-            double x_ = x, y_ = y;
-
-            x = x_ * _cos + y_ * _sin;
-            y = -x_ * _sin + y_ * _cos;
-
-            x += display.ImageWidth / 2.0;
-            y += display.ImageHeight / 2.0;
+            return _display.Envelope;
         }
 
-        public void InvTransform(IDisplay display, ref double x, ref double y)
+        IEnvelope oBounds = _display.Envelope;
+        Envelope bounds = new Envelope(_display.Envelope);
+        bounds.TranslateTo(0.0, 0.0);
+
+        IPointCollection pColl = bounds.ToPointCollection(0);
+        for (int i = 0; i < pColl.PointCount; i++)
         {
-            if (display == null || _useTransformation == false)
-            {
-                return;
-            }
-
-            x -= display.ImageWidth / 2.0;
-            y -= display.ImageHeight / 2.0;
-
-            double x_ = x, y_ = y;
-
-            x = x_ * _cos - y_ * _sin;
-            y = x_ * _sin + y_ * _cos;
-
-            x += display.ImageWidth / 2.0;
-            y += display.ImageHeight / 2.0;
+            IPoint point = pColl[i];
+            double x = point.X * _cos + point.Y * _sin;
+            double y = -point.X * _sin + point.Y * _cos;
+            point.X = x;
+            point.Y = y;
         }
 
-        public IEnvelope TransformedBounds(IDisplay display)
-        {
-            if (display == null)
-            {
-                return new Envelope();
-            }
-
-            if (_useTransformation == false)
-            {
-                return display.Envelope;
-            }
-
-            IEnvelope oBounds = display.Envelope;
-            Envelope bounds = new Envelope(display.Envelope);
-            bounds.TranslateTo(0.0, 0.0);
-
-            IPointCollection pColl = bounds.ToPointCollection(0);
-            for (int i = 0; i < pColl.PointCount; i++)
-            {
-                IPoint point = pColl[i];
-                double x = point.X * _cos + point.Y * _sin;
-                double y = -point.X * _sin + point.Y * _cos;
-                point.X = x;
-                point.Y = y;
-            }
-            bounds = new Envelope(pColl.Envelope);
-            bounds.TranslateTo(oBounds.Center.X, oBounds.Center.Y);
-            return bounds;
-        }
+        bounds = new Envelope(pColl.RecalcedEnvelope);
+        bounds.TranslateTo(oBounds.Center.X, oBounds.Center.Y);
+        return bounds;
     }
 }

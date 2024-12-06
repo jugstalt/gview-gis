@@ -38,7 +38,7 @@
                     @Html.Raw(Model.Message.Replace(Environment.NewLine, "<br/>"))
                 </div>
                 }
-                <form action="@Url.Action("AddService")" method="post" enctype="multipart/form-data">
+                <form action="@Url.Action("AddService")" method="post" enctype="multipart/form-data" asp-antiforgery="true">
                     <div class="gview5-form-upload-header gview5-form-header">
                         <h4>Publish Service</h4>
                     </div>
@@ -67,7 +67,7 @@
             <br/>
             @if (Model.IsManager && String.IsNullOrEmpty(Model.Folder))
             {
-                <form action="@Url.Action("CreateFolder")" method="post" enctype="multipart/form-data">
+                <form action="@Url.Action("CreateFolder")" method="post" enctype="multipart/form-data" asp-antiforgery="true">
                     <div class="gview5-form-newfolder-header gview5-form-header">
                         <h4>Create Folder</h4>
                     </div>

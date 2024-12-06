@@ -246,7 +246,7 @@ namespace gView.DataSources.Raster.File
                     return null;
                 }
 
-                IEnvelope dispEnvelope = display.DisplayTransformation.TransformedBounds(display); //display.Envelope;
+                IEnvelope dispEnvelope = display.DisplayTransformation.RotatedBounds(); //display.Envelope;
                 if (display.GeometricTransformer != null)
                 {
                     dispEnvelope = ((IGeometry)display.GeometricTransformer.InvTransform2D(dispEnvelope)).Envelope;

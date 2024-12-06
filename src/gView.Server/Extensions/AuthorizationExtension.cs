@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.IdentityModel.Tokens;
+using System;
 
 namespace gView.Server.Extensions
 {
@@ -15,10 +16,6 @@ namespace gView.Server.Extensions
                     return (username: auth.Substring(0, auth.IndexOf(":")),
                             password: auth.Substring(auth.IndexOf(":") + 1));
 
-                }
-                if (authorizationHeader.StartsWith("Barerer "))
-                {
-                    // Not Implementet
                 }
             }
 

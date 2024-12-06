@@ -181,15 +181,15 @@ namespace gView.Framework.Data.Joins
             filter.fieldPrefix = _provider.FieldPrefix;
             filter.fieldPostfix = _provider.FieldPostfix;
 
-            string sql = "select " + filter.SubFieldsAndAlias + " from " + _provider.ToTableName(this.JoinTable);
+            string sql = $"select {filter.SubFieldsAndAlias} from {_provider.ToTableName(this.JoinTable)}";
             if (!String.IsNullOrEmpty(filter.WhereClause))
             {
-                sql += " where " + _provider.ToWhereClause(filter.WhereClause);
+                sql += $" where {_provider.ToWhereClause(filter.WhereClause)}";
             }
 
             if (!String.IsNullOrEmpty(filter.OrderBy))
             {
-                sql += " order by " + _provider.ToFieldNames(filter.OrderBy);
+                sql += $" order by {_provider.ToFieldNames(filter.OrderBy)}";
             }
 
             return Task.FromResult<ICursor>(new RowCursor(_provider.ExecuteQuery(sql)));

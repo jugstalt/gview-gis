@@ -1,5 +1,7 @@
-﻿using gView.Framework.Symbology.Vtc;
+﻿using gView.DataSources.VectorTileCache.Json;
+using gView.Framework.Symbology.Vtc;
 using gView.GraphicsEngine;
+using Microsoft.SqlServer.Management.SqlParser.SqlCodeDom;
 using System.Globalization;
 using System.Text.Json;
 
@@ -26,7 +28,7 @@ static internal class ValueFuncCreatorExtensions
                     ArgbColor color => new ColorValueFunc(color),
                     float number => new FloatValueFunc(number),
                     bool boolean => new BooleanValueFunc(boolean),
-                    string literal => new LiberalValueFunc(literal),
+                    string literal => new LiteralValueFunc(literal),
                     _ => throw new ArgumentException($"Can't convert string {value} to a value")
                 });
             }
@@ -48,7 +50,13 @@ static internal class ValueFuncCreatorExtensions
                 {
                     "case" => jsonElement.Value.EnumerateArray().Skip(1).ToArray().ToCaseValueFunc(),
                     "get" => new GetValueFunc(jsonElement.Value.EnumerateArray().Skip(1).FirstOrDefault().GetString()),
-                    _ => jsonElement.Value.IsNumberArray()
+                    "concat" => jsonElement.Value.EnumerateArray().Skip(1).ToArray().ToConcatValueFunc(),
+                    "to-string" => ToValueFunc(jsonElement.Value.EnumerateArray().Skip(1).ToArray().First()),
+                    "match" => jsonElement.Value.EnumerateArray().Skip(1).ToArray().ToMatchValueFunc(),
+                    "step" => jsonElement.Value.EnumerateArray().Skip(1).ToArray().ToStepValueFunc(),
+                    "coalesce" => jsonElement.Value.EnumerateArray().Skip(1).ToArray().ToCoalesceValueFunc(),
+                    "interpolate" => jsonElement.Value.EnumerateArray().Skip(1).ToArray().ToInterpolateValueFunc(),
+                    _ => jsonElement.Value.IsNumberArray()  // number or string
                             ? new ValueFunc<float[]>(jsonElement.Value.ToFloatArray())
                             : jsonElement.Value.IsStringArray()
                                 ? new ValueFunc<string[]>(jsonElement.Value.ToStringArray())
@@ -78,7 +86,7 @@ static internal class ValueFuncCreatorExtensions
         }
         catch (Exception ex)
         {
-            throw new Exception($"Paring Error:\n{jsonElement.Value}\n{ex.Message}");
+            throw new Exception($"Parsing Error:\n{jsonElement.Value}\n{ex.Message}");
         }
         return valueFuncs.Where(f => f != null).FirstOrDefault();  // todo: ValueFuncCollection
     }
@@ -124,74 +132,82 @@ static internal class ValueFuncCreatorExtensions
 
         if (jsonElements.Length % 2 != 0)
         {
-            caseValueFunc.SetDefaultValue(jsonElements.Last().GetString().ToFuncValue());
+            var defaultValueFunc = ToValueFunc(jsonElements.Last());
+            caseValueFunc.SetDefaultValue(defaultValueFunc!);
             jsonElements = jsonElements.Take(jsonElements.Length - 1).ToArray();
         }
 
         for (int i = 0; i < jsonElements.Length; i += 2)
         {
-            var conditionElement = jsonElements[i];
-            var resultValue = jsonElements[i + 1].ToFuncValue();
+            var filter = VtcStyleFilter.FilterFromJsonElement(jsonElements[i]);
+            var resultValueFunc = ToValueFunc(jsonElements[i + 1])!;
 
-            if (conditionElement.ValueKind == JsonValueKind.Array)
-            {
-                // ["==", 12, ["number", ["get", "the_attribute"]]],  WTF!
-                var conditionElements = conditionElement.EnumerateArray().ToArray();
-
-                if (conditionElements.Length == 3)
-                {
-                    var comparisonOperator = conditionElements[0].GetString();
-                    if (string.IsNullOrEmpty(comparisonOperator))
-                    {
-                        throw new ArgumentException("Comparision operator is empty!");
-                    }
-
-                    var comparisonValue = conditionElements[1].ToFuncValue();
-
-                    if (conditionElements[2].ValueKind == JsonValueKind.Array)
-                    {
-                        var comparisionDef = conditionElements[2].EnumerateArray().ToArray();
-                        if (comparisionDef.Length == 2 && comparisionDef[1].ValueKind == JsonValueKind.Array)
-                        {
-                            var fieldDef = comparisionDef[1].EnumerateArray().ToArray();
-                            if (fieldDef.Length == 2)
-                            {
-                                var comparisionField = fieldDef[1].GetString();
-
-                                if (String.IsNullOrEmpty(comparisionField))
-                                {
-                                    throw new ArgumentException("comparision field is empty");
-                                }
-
-                                caseValueFunc.AddCase(comparisionField, comparisonOperator, comparisonValue, resultValue);
-                            }
-                            else
-                            {
-                                throw new Exception($"Unknown case format: {conditionElement}");
-                            }
-                        }
-                        else
-                        {
-                            throw new Exception($"Unknown case format: {conditionElement}");
-                        }
-                    }
-                    else
-                    {
-                        throw new Exception($"Unknown case format: {conditionElement}");
-                    }
-                }
-                else
-                {
-                    throw new Exception($"Unknown case format: {conditionElement}");
-                }
-            }
-            else
-            {
-                throw new Exception($"Unknown case contition: {conditionElement}");
-            }
+            caseValueFunc.AddCase(filter, resultValueFunc);
         }
 
         return caseValueFunc;
+    }
+
+    static internal ConcatValuesFunc ToConcatValueFunc(this JsonElement[] jsonElements)
+    {
+        var concatValueFunc = new ConcatValuesFunc();
+
+        foreach(JsonElement jsonElement in jsonElements)
+        {
+            var func = ToValueFunc(jsonElement);
+
+            if (func is null) throw new Exception($"Unknown function in concat expression: {jsonElement.ToString()}");
+
+            concatValueFunc.Add(func);
+        }
+
+        return concatValueFunc;
+    }
+
+    static internal CoalesceValueFunc ToCoalesceValueFunc(this JsonElement[] jsonElements)
+    {
+        var coalesceValueFunc = new CoalesceValueFunc();
+
+        foreach (JsonElement jsonElement in jsonElements)
+        {
+            var func = ToValueFunc(jsonElement);
+
+            if (func is null) throw new Exception($"Unknown function in coalesce expression: {jsonElement.ToString()}");
+
+            coalesceValueFunc.Add(func);
+        }
+
+        return coalesceValueFunc;
+    }
+
+    static public MatchValueFunc ToMatchValueFunc(this JsonElement[] jsonElements)
+    {
+        if (jsonElements.Length != 4)
+            throw new Exception($"Invalid match function {jsonElements.ToString()}");
+        
+        var valueFunc = ToValueFunc(jsonElements[0]);
+        var matchFuncs = jsonElements[1].EnumerateArray()
+                                .Select(e => ToValueFunc(e))
+                                .ToArray();
+        var ifMatchFunc = ToValueFunc(jsonElements[^2]);
+        var ifNotMatchFunc = ToValueFunc(jsonElements[^1]);
+
+        return new MatchValueFunc(valueFunc!, matchFuncs!, ifMatchFunc!, ifNotMatchFunc!);
+    }
+
+    static internal InterpolateValueFunc ToInterpolateValueFunc(this JsonElement[] jsonElements)
+    {
+        return new InterpolateValueFunc(
+            jsonElements[0].EnumerateArray().Select(e => e.ToString()).ToArray(),
+            jsonElements[1].ToStringArray(),
+            jsonElements.Skip(2).Select(e=>ToValueFunc(e)).ToArray()!);
+    }
+
+    static internal StepValueFunc ToStepValueFunc(this JsonElement[] jsonElements)
+    {
+        return new StepValueFunc(
+            jsonElements[0].ToStringArray(),
+            jsonElements.Skip(1).Select(e => ToValueFunc(e)).ToArray()!);
     }
 
     static internal object ToFuncValue(this JsonElement jsonElement)

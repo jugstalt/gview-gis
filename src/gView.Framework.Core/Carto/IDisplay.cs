@@ -53,6 +53,6 @@ namespace gView.Framework.Core.Carto
         IScreen Screen { get; }
         IMap Map { get; }
 
-        IDisplayTransformation DisplayTransformation { get; }
+        IDisplayRotation DisplayTransformation { get; }
     }
 }

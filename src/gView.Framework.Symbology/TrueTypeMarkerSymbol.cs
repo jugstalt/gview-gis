@@ -108,7 +108,7 @@ namespace gView.Framework.Symbology
                 try
                 {
                     var transformRatation = _angle + _rotation;
-                    if (display.DisplayTransformation.UseTransformation)
+                    if (display.DisplayTransformation.UseDisplayRotation)
                     {
                         transformRatation -= (float)display.DisplayTransformation.DisplayRotation;
                     }

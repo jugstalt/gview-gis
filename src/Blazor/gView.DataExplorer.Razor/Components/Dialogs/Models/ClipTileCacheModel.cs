@@ -9,6 +9,7 @@ public class ClipTileCacheModel : IDialogResultItem
     public TileCacheClipType ClipType { get; set; }
 
     public string SourceCacheConfig { get; set; } = "";
+    public int MinLevel { get; set; } = -1;
     public int MaxLevel { get; set; } = -1;
 
     public string TargetCacheFolder { get; set;  } = "";

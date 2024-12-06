@@ -1,11 +1,13 @@
 # gview6
 
+gView GIS is a user-friendly Open Source GI framework for creating map and feature services.
+
 The software consists of Blazor applications for creating maps and the gView server for publishing the maps as map services (WMS, GeoServices REST, etc).
 
-The Blazor app _gView.Web_ can started locally or run the server. It provides the gView applications _gView.Carto_ and _gView.Explorer_.
+The Blazor app _gView.WebApps_ can started locally or run the server. It provides the gView applications _gView.Carto_ and _gView.Explorer_.
 
-_gView.Web_ and _gView Server_ runs on Windows/Linux and require die Microsoft.AspNetCore.App 8.0
-_gView Server_ is fully .NET Core (AspNetCore 3.1.x). It can run on windows, linux, mac and as a docker container
+_gView.WebApps_ and _gView Server_ runs on Windows or Linux (require die Microsoft.AspNetCore.App 8.0) 
+and also Docker Images are available.
 
 To Deploy the software on your machine use [gView.Deploy](https://github.com/jugstalt/gview-gis/releases).
 This will also download the latest releases for your operating system.

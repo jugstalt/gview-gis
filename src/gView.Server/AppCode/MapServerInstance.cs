@@ -483,6 +483,8 @@ public class MapServerInstance : IMapServer
             map = _mapServiceDeploymentMananger.GetMapByName(name) ??
                    await _mapServiceDeploymentMananger.LoadMap(name) as Map;
 
+            if (map is null) return null;
+
             SetMapDefaults(map);
 
             return map;
@@ -508,7 +510,7 @@ public class MapServerInstance : IMapServer
 
         if (!String.IsNullOrWhiteSpace(folder))
         {
-            name = folder + "/" + name;
+            name = $"{folder}/{name}";
         }
 
         return name;

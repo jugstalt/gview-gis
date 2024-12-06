@@ -6,9 +6,9 @@
     <GvCard>
         <GvCardContent>
             <MudSelect Label="Provider" T="string" Style='min-width:280px;'
-                       @bind-Value="_currentProvider"
-                       Variant="Variant.Outlined"
-                       Dense="true">
+            @bind-Value="_currentProviderId"
+            Variant="Variant.Outlined"
+            Dense="true">
                 @foreach (var provider in _commonDbConnections.Providers)
                 {
                     <MudSelectItem Value="@provider.Id">
@@ -17,10 +17,10 @@
                 }
             </MudSelect>
             @{
-                var schemes = _commonDbConnections.Providers.Where(p => p.Id == _currentProvider).FirstOrDefault()?.Schemes;
+                var schemes = _commonDbConnections.Providers.Where(p => p.Id == _currentProviderId).FirstOrDefault()?.Schemes;
                 if(schemes?.Where(s=>s.Name==_currentScheme).Any() != true)
                 {
-                _currentScheme = schemes?.FirstOrDefault()?.Name;
+                    _currentScheme = schemes?.FirstOrDefault()?.Name;
                 }
             }
 
@@ -28,9 +28,9 @@
             {
                 <MudSelect Label="Connection Type" T="string"
                 @bind-Value="_currentScheme"
-                           Variant="Variant.Text"
-                           Dense="true">
-                    @foreach (var scheme in _commonDbConnections.Providers.Where(p => p.Id == _currentProvider).First().Schemes)
+                Variant="Variant.Text"
+                Dense="true">
+                    @foreach (var scheme in _commonDbConnections.Providers.Where(p => p.Id == _currentProviderId).First().Schemes)
                     {
                         <MudSelectItem Value="scheme.Name">
                             @scheme.Name
@@ -54,9 +54,9 @@
                         }
                         <GvGridItem>
                             <MudTextField Label="@parameter" T="string"
-                                           @bind-Value="_parameters[parameter]"
-                                           InputType="GetInputType(parameter)"
-                                           Variant="Variant.Text"></MudTextField>
+                            @bind-Value="_parameters[parameter]"
+                            InputType="GetInputType(parameter)"
+                            Variant="Variant.Text"></MudTextField>
                         </GvGridItem>
                     }
                 </GvGrid>
@@ -93,18 +93,18 @@
         {
             <MudProgressCircular Indeterminate="true" Size="MudBlazor.Size.Small" />
         }
-        
+
         @if(OfferTestConnection) 
         {
             <MudButton Variant="Variant.Filled"
-                        Color="Color.Default"
-                        OnClick="OnTestConnectionClick">
+            Color="Color.Default"
+            OnClick="OnTestConnectionClick">
                 Test Connection
             </MudButton>
         }
         <MudButton Variant="Variant.Filled"
-                    Color="Color.Primary"
-                    OnClick="OnCreateConnectionClick">
+        Color="Color.Primary"
+        OnClick="OnCreateConnectionClick">
             @CreateButtonPrompt
         </MudButton>
     </div>
@@ -118,7 +118,7 @@
     [Parameter] public bool OfferTestConnection { get; set; } = true;
     [Parameter] public string CreateButtonPrompt { get; set; } = "Create connection";
 
-    private string _currentProvider = string.Empty;
+    private string _currentProviderId = string.Empty;
     private string? _currentScheme = string.Empty;
 
     private string _connectionString = string.Empty;
@@ -133,10 +133,15 @@
 
         await LoadConnectionStringsModel();  // intialize Conenctions/Providers
 
-        _currentProvider = ProviderId;
-        if (!String.IsNullOrEmpty(_currentProvider) && _commonDbConnections?.Providers != null)
+        _currentProviderId = ProviderId;
+        if (!String.IsNullOrEmpty(_currentProviderId) && _commonDbConnections?.Providers != null)
         {
-            _commonDbConnections.Providers = _commonDbConnections.Providers.Where(p => p.Id == _currentProvider).ToArray();
+            _commonDbConnections.Providers = _commonDbConnections.Providers.Where(p => p.Id == _currentProviderId).ToArray();
+        }
+        else if(_commonDbConnections is not null) // remove providers with command like sqlserver@create
+        {
+            _commonDbConnections.Providers =
+                _commonDbConnections.Providers.Where(p => p.Id.Contains("@") == false).ToArray();
         }
 
         if (DbConnectionString != null)
@@ -175,18 +180,18 @@
 
         if (proto == null)
         {
-            proto = DbConnectionString.Build(_currentProvider,
+            proto = DbConnectionString.Build(_currentProviderId,
                                              useProvider.HasValue ?
                                                     useProvider.HasValue :
                                                     DbConnectionString?.UseProviderInConnectionString ?? true);
         }
         else
         {
-            proto.ProviderId = _currentProvider;
+            proto.ProviderId = _currentProviderId;
         }
 
         proto.SchemaName = _currentScheme;
-        proto.TryFromConnectionString(_currentProvider, connectionString);
+        proto.TryFromConnectionString(_currentProviderId, connectionString);
 
         return proto;
     }

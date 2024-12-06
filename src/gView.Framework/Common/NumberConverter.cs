@@ -22,7 +22,17 @@
             return float.Parse(value.Replace(",", SystemInfo.Cnf.NumberDecimalSeparator));
         }
 
+        static public string ToFloatString(this float d)
+        {
+            return d.ToString(Numbers.Nhi);
+        }
+
         static public string ToDoubleString(this double d)
+        {
+            return d.ToString(Numbers.Nhi);
+        }
+
+        static public string ToDecimalString(this decimal d)
         {
             return d.ToString(Numbers.Nhi);
         }

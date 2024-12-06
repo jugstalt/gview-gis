@@ -10,13 +10,13 @@ namespace gView.Framework.Data.Extensions
     {
         #region Sql Injection
 
-        static public void CheckWhereClauseForSqlInjection(this string where)
+        static public string CheckWhereClauseForSqlInjection(this string where)
         {
             if (!string.IsNullOrWhiteSpace(where))
             {
                 if (WhereClauseWhiteList.Contains(where))
                 {
-                    return;
+                    return where;
                 }
 
                 where = where
@@ -78,6 +78,8 @@ namespace gView.Framework.Data.Extensions
                     }
                 }
             }
+
+            return where;
         }
 
         static private bool IsConstant(this Token token)

@@ -33,6 +33,7 @@ internal class ClipCompact
             IFeatureClass clipperFeatureClass,
             string? clipperDefintionQuery,
             int jpegQuality = -1,
+            int minLevel = -1,
             int maxlevel = -1,
             TileCacheClipType clipType = TileCacheClipType.Copy,
             ICommandLogger? logger = null
@@ -116,6 +117,11 @@ internal class ClipCompact
 
         foreach (var level in cacheConfig.Levels)
         {
+            if (minLevel >= 0 && level.Level < minLevel)
+            {
+                continue;
+            }
+
             if (clipType != TileCacheClipType.List)
             {
                 logger?.LogLine($"Level: {level.Level} Scale={level.Scale}");

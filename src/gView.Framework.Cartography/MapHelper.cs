@@ -8,9 +8,39 @@ using System;
 
 namespace gView.Framework.Cartography
 {
-    public class MapHelper
+    internal class MapHelper
     {
-        static public IEnvelope Project3(IFeatureClass fc, IDisplay display)
+        //static public IEnvelope Project3(IFeatureClass fc, IDisplay display)
+        //{
+        //    if (fc == null || display == null)
+        //    {
+        //        return null;
+        //    }
+
+        //    if (display.GeometricTransformer == null)
+        //    {
+        //        return display.Envelope;
+        //    }
+
+        //    //Feature feature=new Feature();
+        //    //feature.Shape=fClass.Envelope;
+        //    //_layer.FeatureRenderer.Draw(_map.Display, feature);
+
+        //    IEnvelope classEnvelope = ((IGeometry)display.GeometricTransformer.Transform2D(fc.Envelope)).Envelope;
+
+        //    classEnvelope.MinX = Math.Max(classEnvelope.MinX, display.Envelope.MinX);
+        //    classEnvelope.MinY = Math.Max(classEnvelope.MinY, display.Envelope.MinY);
+        //    classEnvelope.MaxX = Math.Min(classEnvelope.MaxX, display.Envelope.MaxX);
+        //    classEnvelope.MaxY = Math.Min(classEnvelope.MaxY, display.Envelope.MaxY);
+
+        //    IEnvelope filterGeom = ((IGeometry)display.GeometricTransformer.InvTransform2D(classEnvelope)).Envelope;
+        //    //feature = new Feature();
+        //    //feature.Shape = filterGeom;
+        //    //_layer.FeatureRenderer.Draw(_map.Display, feature);
+
+        //    return filterGeom;
+        //}
+        static public IEnvelope Project(IFeatureClass fc, IDisplay display, IEnvelope displayEnvelope)
         {
             if (fc == null || display == null)
             {
@@ -19,40 +49,10 @@ namespace gView.Framework.Cartography
 
             if (display.GeometricTransformer == null)
             {
-                return display.Envelope;
+                return displayEnvelope;
             }
 
-            //Feature feature=new Feature();
-            //feature.Shape=fClass.Envelope;
-            //_layer.FeatureRenderer.Draw(_map.Display, feature);
-
-            IEnvelope classEnvelope = ((IGeometry)display.GeometricTransformer.Transform2D(fc.Envelope)).Envelope;
-
-            classEnvelope.MinX = Math.Max(classEnvelope.MinX, display.Envelope.MinX);
-            classEnvelope.MinY = Math.Max(classEnvelope.MinY, display.Envelope.MinY);
-            classEnvelope.MaxX = Math.Min(classEnvelope.MaxX, display.Envelope.MaxX);
-            classEnvelope.MaxY = Math.Min(classEnvelope.MaxY, display.Envelope.MaxY);
-
-            IEnvelope filterGeom = ((IGeometry)display.GeometricTransformer.InvTransform2D(classEnvelope)).Envelope;
-            //feature = new Feature();
-            //feature.Shape = filterGeom;
-            //_layer.FeatureRenderer.Draw(_map.Display, feature);
-
-            return filterGeom;
-        }
-        static public IEnvelope Project(IFeatureClass fc, IDisplay display)
-        {
-            if (fc == null || display == null)
-            {
-                return null;
-            }
-
-            if (display.GeometricTransformer == null)
-            {
-                return display.Envelope;
-            }
-
-            IPointCollection pColl = display.Envelope.ToPointCollection(0);
+            IPointCollection pColl = displayEnvelope.ToPointCollection(0);
 
             IPointCollection pColl2 = (IPointCollection)display.GeometricTransformer.InvTransform2D(pColl);
             IPointCollection pColl3 = (IPointCollection)display.GeometricTransformer.Transform2D(pColl2);
@@ -61,12 +61,12 @@ namespace gView.Framework.Cartography
             if (display.SpatialReference.SpatialParameters.IsGeographic)
             {
                 // ???
-                epsi = Math.Max(display.Envelope.Width, display.Envelope.Height) / 1e2;
+                epsi = Math.Max(displayEnvelope.Width, displayEnvelope.Height) / 1e2;
             }
             else
             {
                 // ???
-                epsi = Math.Max(display.Envelope.Width, display.Envelope.Height) / 1e3;
+                epsi = Math.Max(displayEnvelope.Width, displayEnvelope.Height) / 1e3;
             }
             if (!((PointCollection)pColl).Equals(pColl3, epsi))
             {
@@ -74,31 +74,31 @@ namespace gView.Framework.Cartography
             }
             else
             {
-                return pColl2.Envelope;
+                return pColl2.RecalcedEnvelope;
             }
         }
-        static public IEnvelope Project2(IFeatureClass fc, IDisplay display)
-        {
-            if (display == null)
-            {
-                return null;
-            }
+        //static public IEnvelope Project2(IFeatureClass fc, IDisplay display)
+        //{
+        //    if (display == null)
+        //    {
+        //        return null;
+        //    }
 
-            if (display.GeometricTransformer == null)
-            {
-                return display.Envelope;
-            }
+        //    if (display.GeometricTransformer == null)
+        //    {
+        //        return display.Envelope;
+        //    }
 
-            IPointCollection pColl = display.Envelope.ToPointCollection(100);
+        //    IPointCollection pColl = display.Envelope.ToPointCollection(100);
 
-            pColl = (IPointCollection)display.GeometricTransformer.InvTransform2D(pColl);
+        //    pColl = (IPointCollection)display.GeometricTransformer.InvTransform2D(pColl);
 
-            //MultiPoint mPoint = new MultiPoint(pColl);
-            //ISymbol pSymbol = PlugInManager.Create(KnownObjects.Symbology_SimplePointSymbol) as ISymbol;
-            //display.Draw(pSymbol, mPoint);
+        //    //MultiPoint mPoint = new MultiPoint(pColl);
+        //    //ISymbol pSymbol = PlugInManager.Create(KnownObjects.Symbology_SimplePointSymbol) as ISymbol;
+        //    //display.Draw(pSymbol, mPoint);
 
-            return pColl.Envelope;
-        }
+        //    return pColl.RecalcedEnvelope;
+        //}
 
         static public IQueryFilter MapQueryFilter(IQueryFilter filter)
         {

@@ -192,6 +192,7 @@ namespace gView.Framework.Data
                 _primaryField = value;
             }
         }
+        
         #endregion
 
         #region IPersistable

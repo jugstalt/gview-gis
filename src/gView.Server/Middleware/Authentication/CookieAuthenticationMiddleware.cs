@@ -43,7 +43,7 @@ public class CookieAuthenticationMiddleware
 
                 if (authToken is not null)
                 {
-                    context.User = authToken.ToClaimsPricipal();
+                    context.User = authToken.ToClaimsPrincipal();
                 }
             }
         }

@@ -1,7 +1,9 @@
-﻿using gView.Framework.Core.Common;
+﻿using gView.Framework.Core.Carto;
+using gView.Framework.Core.Common;
 using gView.Framework.Core.Data;
 using gView.Framework.Core.Geometry;
 using System.Linq;
+using System.Security.Cryptography.Pkcs;
 
 namespace gView.Blazor.Core.Extensions;
 
@@ -51,6 +53,8 @@ static public class LayerExtensions
 
     static public bool IsRasterLayer(this ILayer layer) => layer is IRasterLayer;
 
+    static public bool HasRasterGridClass(this ILayer layer) => layer?.Class is IGridClass;
+
     static public bool IsWebServiceLayer(this ILayer layer) => layer is IWebServiceLayer;
 
     static public bool IsLocked(this ILayer layer)
@@ -79,7 +83,7 @@ static public class LayerExtensions
                 || fLayer.LayerGeometryType == GeometryType.Multipoint
             );
 
-    static public gView.Framework.Data.Layer? Clone(this gView.Framework.Data.Layer? layer)
+    static public gView.Framework.Data.Layer? Clone(this gView.Framework.Data.Layer? layer, IMap map)
     {
         var clone = layer?.PersistedClone();
 
@@ -101,9 +105,18 @@ static public class LayerExtensions
             }
 
             #endregion
+
+            #region initialize Joins
+
+            foreach (var join in clonedFeatureLayer.Joins ?? [])
+            {
+                join.OnCreate(map);
+            }
+
+            #endregion
         }
 
-        if(layer is IErrorMessage errorMessage
+        if (layer is IErrorMessage errorMessage
            && clone is IErrorMessage clonedErrorMessage) 
         {
             clonedErrorMessage.LastErrorMessage = errorMessage.LastErrorMessage;

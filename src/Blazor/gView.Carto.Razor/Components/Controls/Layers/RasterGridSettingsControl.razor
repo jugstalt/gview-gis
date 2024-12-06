@@ -1,0 +1,423 @@
+@using gView.Framework.Core.Data
+@using gView.GraphicsEngine
+
+@if (GridClass is not null)
+{
+    <MudAlert Severity="Severity.Warning">Changes in this dialog cannot be undone. Save the document before making changes here.</MudAlert>
+    <GvCard Title="Hillshade">
+        <GvCardContent>
+            <GvGrid ColumnCount="(GridClass.UseHillShade ? 4 : 1)">
+                <GvGridItem>
+                    <MudCheckBox T="bool"
+                                 Value="GridClass.UseHillShade"
+                                 ValueChanged="OnHillshadeChanged"
+                                 Label="Use Hillshade" />
+                </GvGridItem>
+
+                @if (GridClass.UseHillShade && GridClass.HillShadeVector?.Length == 3)
+                {
+                    <GvGridItem>
+                        <MudNumericField T="double"
+                                         @bind-Value="GridClass.HillShadeVector[0]"
+                                         Label="Vector [X]"
+                                         Variant="Variant.Outlined" />
+                    </GvGridItem>
+                    <GvGridItem>
+                        <MudNumericField T="double"
+                                         @bind-Value="GridClass.HillShadeVector[1]"
+                                         Label="Vector [Y]"
+                                         Variant="Variant.Outlined" />
+                    </GvGridItem>
+                    <GvGridItem>
+                        <MudNumericField T="double"
+                                         @bind-Value="GridClass.HillShadeVector[2]"
+                                         Label="Vector [Z]"
+                                         Variant="Variant.Outlined" />
+                    </GvGridItem>
+                }
+            </GvGrid>
+        </GvCardContent>
+    </GvCard>
+
+    <GvCard Title="Classes">
+        <GvCardContent>
+
+            @if (_classDialogContent == ClassDialogContent.Wizard)
+            {
+                <GvGrid ColumnCount="3">
+                    <GvGridItem Span="2">
+                        <GvGrid ColumnCount="6">
+                            <GvGridItem Span="4">
+                                <MudNumericField @bind-Value="_wizardModel.MinValue"
+                                                 Variant="Variant.Text"
+                                                 Label="Minimum Value" />
+                            </GvGridItem>
+                            <GvGridItem Span="2">
+                                <ColorSelectorButton @bind-ArgbColor="_wizardModel.MinValueColor" />
+                            </GvGridItem>
+
+                            <GvGridItem Span="6">
+                                <MudCheckBox @bind-Value="_wizardModel.UseMeanValue"
+                                             Label="Use mean value" />
+                            </GvGridItem>
+
+                            @if (_wizardModel.UseMeanValue == true)
+                            {
+                                <GvGridItem Span="4">
+                                    <MudNumericField @bind-Value="_wizardModel.MeanValue"
+                                                     Variant="Variant.Text"
+                                                     Label="Minimum Value" />
+                                </GvGridItem>
+
+                                <GvGridItem Span="2">
+                                    <ColorSelectorButton @bind-ArgbColor="_wizardModel.MeanValueColor" />
+                                </GvGridItem>
+                            }
+
+                            <GvGridItem Span="4">
+                                <MudNumericField @bind-Value="_wizardModel.MaxValue"
+                                                 Variant="Variant.Text"
+                                                 Label="Minimum Value" />
+                            </GvGridItem>
+                            <GvGridItem Span="2">
+                                <ColorSelectorButton @bind-ArgbColor="_wizardModel.MaxValueColor" />
+                            </GvGridItem>
+                        </GvGrid>
+                    </GvGridItem>
+                    <GvGridItem Span="1">
+                        <MudNumericField @bind-Value="_wizardModel.StepSize"
+                                         Label="Step Size"
+                                         Variant="Variant.Text" />
+                        <MudNumericField @bind-Value="_wizardModel.LegendStepSize"
+                                         Label="Legend Item every"
+                                         Variant="Variant.Text" />
+                    </GvGridItem>
+
+                    <GvGridItem Span="2"></GvGridItem>
+                    <GvGridItem Span="1">
+                        <MudButton Color="Color.Surface"
+                                   Variant="Variant.Filled"
+                                   OnClick="() => { _classDialogContent = ClassDialogContent.List; }">Cancel</MudButton>
+                        <MudButton Color="Color.Primary"
+                                   Variant="Variant.Filled"
+                                   OnClick="OnApplyWizard">Apply</MudButton>
+                    </GvGridItem>
+                </GvGrid>
+
+            }
+            else if (_classDialogContent == ClassDialogContent.RemoveAllClasses)
+            {
+                <MudAlert Severity="Severity.Info">Remove all Classes (no undo for this operation!)</MudAlert>
+
+                <MudButton Color="Color.Surface" Variant="Variant.Filled"
+                           OnClick="() => { _classDialogContent = ClassDialogContent.List; }">Cancel</MudButton>
+                <MudButton Color="Color.Secondary" Variant="Variant.Filled"
+                           OnClick="OnRemoveAllClasses">Remove all classes</MudButton>
+
+            }
+            else if (_classDialogContent == ClassDialogContent.AddClass && _currentClass is not null)
+            {
+                <GvGrid ColumnCount="3">
+                    <GvGridItem>
+                        <ColorSelectorButton @bind-ArgbColor="_currentClass.Color" />
+                    </GvGridItem>
+
+                    <GvGridItem>
+                        <MudNumericField Label="Minimum Value"
+                                         Variant="Variant.Text"
+                                         @bind-Value="_currentClass.MinValue" />
+                    </GvGridItem>
+                    <MudNumericField Label="Maximum Value"
+                                     Variant="Variant.Text"
+                                     @bind-Value="_currentClass.MinValue" />
+
+                    <GvGridItem Span="3">
+                        <MudTextField Label="Legend Text"
+                                      Variant="Variant.Text"
+                                      @bind-Value="_currentClass.Legend" />
+                    </GvGridItem>
+                </GvGrid>
+
+                <MudButton Color="Color.Surface" Variant="Variant.Filled"
+                           OnClick="() => { _currentClass = null; _classDialogContent = ClassDialogContent.List; }">Cancel</MudButton>
+                <MudButton Color="Color.Primary" Variant="Variant.Filled"
+                           OnClick="OnAddCurrentClass">Add</MudButton>
+            }
+            else
+            {
+                <MudButtonGroup Color="Color.Surface" Variant="Variant.Filled">
+                    <MudButton OnClick="() => { _classDialogContent = ClassDialogContent.Wizard; }">Wizard</MudButton>
+                    <MudButton OnClick="() => { _currentClass=new GridColorClass(0, 0, ArgbColor.White); _classDialogContent = ClassDialogContent.AddClass; }">Add Value</MudButton>
+                    <MudButton OnClick="() => { _classDialogContent = ClassDialogContent.RemoveAllClasses; }">Remove all</MudButton>
+                </MudButtonGroup>
+
+                <MudTable T="GridColorClass"
+                          Items="GridClass.ColorClasses ?? []"
+                          Dense="true">
+                    <HeaderContent>
+                        <MudTh></MudTh>
+
+                        <MudTh>Color</MudTh>
+                        <MudTh>Min</MudTh>
+                        <MudTh>Max</MudTh>
+                        <MudTh>Legend</MudTh><MudTh></MudTh>
+                    </HeaderContent>
+                    <RowTemplate>
+                        <MudTd>
+                            <MudIconButton Icon="@MudBlazor.Icons.Material.Filled.Delete"
+                                           Color="Color.Secondary"
+                                           Size="MudBlazor.Size.Small"
+                                           OnClick="() => OnDeleteColorClassClick(context)" />
+                        </MudTd>
+                        <MudTd>
+                            <ColorSelectorButton @bind-ArgbColor="@context.Color" />
+                        </MudTd>
+                        <MudTd>
+                            @if (_currentClass == context)
+                            {
+                                <MudNumericField @bind-Value="context.MinValue" />
+                            }
+                            else
+                            {
+                                @context.MinValue
+                            }
+                        </MudTd>
+                        <MudTd>
+                            @if (_currentClass == context)
+                            {
+                                <MudNumericField @bind-Value="context.MaxValue" />
+                            }
+                            else
+                            {
+                                @context.MaxValue
+                            }
+                        </MudTd>
+                        <MudTd>
+                            @if (_currentClass == context)
+                            {
+                                <MudTextField @bind-Value="context.Legend" />
+                            }
+                            else
+                            {
+                                @context.Legend
+                            }
+                        </MudTd>
+                        <MudTd>
+                            @if (_currentClass == context)
+                            {
+                                <MudIconButton Icon="@MudBlazor.Icons.Material.Filled.Check"
+                                               Color="Color.Success"
+                                               Size="MudBlazor.Size.Small"
+                                               OnClick="() => { _currentClass = null; }" />
+                            }
+                            else
+                            {
+                                <MudIconButton Icon="@MudBlazor.Icons.Material.Filled.Edit"
+                                               Color="Color.Primary"
+                                               Size="MudBlazor.Size.Small"
+                                               OnClick="() => OnEditColorClassClick(context)" />
+                            }
+
+                        </MudTd>
+                    </RowTemplate>
+                </MudTable>
+            }
+        </GvCardContent>
+    </GvCard>
+}
+
+@code {
+    [Parameter] public IGridClass? GridClass { get; set; }
+
+    private enum ClassDialogContent
+    {
+        List,
+        Wizard,
+        AddClass,
+        RemoveAllClasses
+    };
+
+    private ClassDialogContent _classDialogContent = ClassDialogContent.List;
+    private WizardModel _wizardModel = new();
+    private GridColorClass? _currentClass = null;
+
+    private void OnHillshadeChanged(bool useHillshade)
+    {
+        if (GridClass is not null)
+        {
+            GridClass.UseHillShade = useHillshade;
+        }
+
+        UpdateGridClassState();
+    }
+
+    private void OnRemoveAllClasses()
+    {
+        if (GridClass is not null)
+        {
+            GridClass.ColorClasses = null;
+
+            UpdateGridClassState();
+
+            _classDialogContent = ClassDialogContent.List;
+        }
+    }
+
+    private void OnAddCurrentClass()
+    {
+        if (GridClass is not null && _currentClass is not null)
+        {
+            var colorClasses = new List<GridColorClass>(GridClass.ColorClasses ?? []);
+
+            var index = colorClasses
+                            .Select((c, i) => (colorClass: c, index: i + 1))
+                            .Where(x => x.colorClass.MinValue > _currentClass.MinValue)
+                            .Select(x => x.index)
+                            .FirstOrDefault();
+
+            if (index == 0)
+            {
+                colorClasses.Add(_currentClass);
+            }
+            else
+            {
+                colorClasses.Insert(index - 1, _currentClass);
+            }
+            GridClass.ColorClasses = colorClasses.ToArray();
+
+            _classDialogContent = ClassDialogContent.List;
+        }
+    }
+
+    private void OnApplyWizard()
+    {
+        if (GridClass is null) return;
+
+        List<GridColorClass> colorClasses = new();
+
+        for (double h = _wizardModel.MinValue;
+                        h < _wizardModel.MaxValue + _wizardModel.StepSize;
+                        h += _wizardModel.StepSize)
+        {
+            colorClasses.Add(new GridColorClass(
+                h, h + _wizardModel.StepSize,
+                GradientColor(h)));
+        }
+
+        int legendStep = (int)((_wizardModel.MaxValue - _wizardModel.MinValue) / Math.Max(_wizardModel.LegendStepSize, _wizardModel.StepSize));
+
+        for (int i = 0; i < colorClasses.Count; i += legendStep)
+        {
+            if (i == 0)
+            {
+                colorClasses[i].Legend =
+                    Math.Round(colorClasses[i].MinValue, 2).ToString();
+            }
+            else
+            {
+                colorClasses[i].Legend =
+                    Math.Round(colorClasses[i].MinValue * 0.5 + colorClasses[i].MaxValue * 0.5, 2).ToString();
+            }
+        }
+        if (colorClasses.Count > 0)
+        {
+            colorClasses[colorClasses.Count - 1].Legend =
+                    Math.Round(colorClasses[colorClasses.Count - 1].MaxValue, 2).ToString();
+        }
+
+        GridClass.ColorClasses = colorClasses.ToArray();
+        UpdateGridClassState();
+
+        _classDialogContent = ClassDialogContent.List;
+    }
+
+    private void OnEditColorClassClick(GridColorClass colorClass)
+    {
+        _currentClass = colorClass;
+    }
+
+    private void OnDeleteColorClassClick(GridColorClass colorClass)
+    {
+        if (GridClass?.ColorClasses is not null)
+        {
+            GridClass.ColorClasses = GridClass.ColorClasses?.Where(c => c != colorClass).ToArray();
+        }
+    }
+
+    #region Helper
+
+    private void UpdateGridClassState()
+    {
+        // set Properties depending on properterties set in the UI
+        // => RenderRawGridValue depends on UseHillshade and ColorClasses (property used for webgis 3D output)
+        if (GridClass is not null)
+        {
+            GridClass.RenderRawGridValues =
+                GridClass.UseHillShade == false
+                && (GridClass.ColorClasses == null || GridClass.ColorClasses.Length == 0);
+        }
+    }
+
+    private GraphicsEngine.ArgbColor GradientColor(double h)
+    {
+        ArgbColor c1, c2;
+
+        if (_wizardModel.UseMeanValue)
+        {
+            if (h < _wizardModel.MeanValue)
+            {
+                c1 = _wizardModel.MinValueColor;
+                c2 = _wizardModel.MeanValueColor;
+
+                h = (h - _wizardModel.MinValue) / (_wizardModel.MeanValue - _wizardModel.MinValue);
+            }
+            else
+            {
+                c1 = _wizardModel.MeanValueColor;
+                c2 = _wizardModel.MaxValueColor;
+
+                h = (h - _wizardModel.MeanValue) / (_wizardModel.MaxValue - _wizardModel.MeanValue);
+            }
+        }
+        else
+        {
+            c1 = _wizardModel.MinValueColor;
+            c2 = _wizardModel.MaxValueColor;
+
+            h = (h - _wizardModel.MinValue) / (_wizardModel.MaxValue - _wizardModel.MinValue);
+        }
+
+        h = Math.Max(Math.Min(1.0, h), 0.0);
+
+        double r = (c2.R - c1.R) * h;
+        double g = (c2.G - c1.G) * h;
+        double b = (c2.B - c1.B) * h;
+
+        return GraphicsEngine.ArgbColor.FromArgb(
+            c1.R + (int)r,
+            c1.G + (int)g,
+            c1.B + (int)b);
+    }
+
+    #endregion
+
+    #region Models
+
+    private class WizardModel
+    {
+        public ArgbColor MinValueColor { get; set; } = ArgbColor.White;
+        public double MinValue { get; set; } = -1000;
+
+        public ArgbColor MaxValueColor { get; set; } = ArgbColor.Red;
+        public double MaxValue { get; set; } = 1000;
+
+        public bool UseMeanValue { get; set; } = true;
+        public ArgbColor MeanValueColor { get; set; } = ArgbColor.Yellow;
+        public double MeanValue { get; set; } = 0;
+
+        public double StepSize { get; set; } = 20;
+        public double LegendStepSize { get; set; } = 200;
+    }
+
+    #endregion
+}

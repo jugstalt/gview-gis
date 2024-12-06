@@ -1,12 +1,11 @@
 ﻿using gView.Framework.Core.Carto;
+using gView.Framework.Core.Common;
 using gView.Framework.Core.Data;
 using gView.Framework.Core.Data.Cursors;
 using gView.Framework.Core.Data.Filters;
 using gView.Framework.Core.IO;
-using gView.Framework.Core.Common;
 using gView.Framework.Core.UI;
 using gView.Framework.Data.Filters;
-using gView.Framework.Common;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
@@ -125,7 +124,7 @@ namespace gView.Framework.Data.Joins
                 return;
             }
 
-            filter.WhereClause = this.JoinField + " in (" + where.ToString() + ")";
+            filter.WhereClause = $"{this.JoinField} in ({where})";
 
             using (ICursor cursor = await ((ITableClass)this.FeatureLayer.Class).Search(filter))
             {

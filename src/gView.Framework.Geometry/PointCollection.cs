@@ -292,6 +292,16 @@ namespace gView.Framework.Geometry
             }
         }
 
+        public IEnvelope RecalcedEnvelope
+        {
+            get
+            {
+                _cacheEnv = null;
+
+                return this.Envelope;
+            }
+        }
+
 
         /// <summary>
         /// For the internal use of the framework

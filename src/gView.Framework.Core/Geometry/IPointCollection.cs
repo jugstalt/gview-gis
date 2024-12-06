@@ -15,6 +15,7 @@ namespace gView.Framework.Core.Geometry
         IPoint this[int pointIndex] { get; }
 
         IEnvelope Envelope { get; }
+        IEnvelope RecalcedEnvelope { get; }
 
         void Serialize(BinaryWriter w, IGeometryDef geomDef);
         void Deserialize(BinaryReader r, IGeometryDef geomDef);

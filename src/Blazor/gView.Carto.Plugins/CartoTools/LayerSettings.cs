@@ -48,9 +48,9 @@ internal class LayerSettings : ICartoButton
         }
 
         var originalLayer = scope.SelectedTocTreeNode?.Value?.Layers?.FirstOrDefault() as Layer;
-        var clonedLayer = originalLayer?.Clone();
+        var clonedLayer = originalLayer?.Clone(originalMap);
 
-        if (originalLayer is null || clonedLayer is null)  // todo: clone layer?
+        if (originalLayer is null || clonedLayer is null)  
         {
             return false;
         }
@@ -74,6 +74,13 @@ internal class LayerSettings : ICartoButton
 
         if (model is null)
         {
+            if (originalLayer.Class is IGridClass)
+            {
+                // with IGridClasses changes in Dialog maybe dont
+                // also if the Dialog cancelt.
+                // so lets refresh the map to see this changes
+                await scope.EventBus.FireRefreshMapAsync();
+            }
             return false;
         }
 

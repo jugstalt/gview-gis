@@ -27,7 +27,7 @@ namespace gView.Framework.Core.MapServer
             }
         }
 
-        async static public Task<IServiceRequestContext> TryCreate(IMapServer mapServer, IServiceRequestInterpreter interpreter, ServiceRequest request, bool checkSecurity = true)
+        async static public ValueTask<IServiceRequestContext> TryCreate(IMapServer mapServer, IServiceRequestInterpreter interpreter, ServiceRequest request, bool checkSecurity = true)
         {
             var context = new ServiceRequestContext(mapServer, interpreter, request);
 
