@@ -1,4 +1,6 @@
-﻿using Microsoft.IdentityModel.Tokens;
+﻿using gView.Server.AppCode;
+using gView.Server.AppCode.Extensions;
+using Microsoft.IdentityModel.Tokens;
 using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -17,17 +19,15 @@ public class JwtAccessTokenService
         _key = new SymmetricSecurityKey(_ecs.GetCertificate().AESPassword);
     }
 
-    public string GenerateToken(string userName, bool isTokenUser, int expireMinutes)
+    public string GenerateToken(AuthToken authToken)
     {
+        var claimsPrincipal = authToken.ToClaimsPrincipal();
         var credentials = new SigningCredentials(_key, SecurityAlgorithms.HmacSha256);
 
         var tokenDescriptor = new SecurityTokenDescriptor()
         {
-            Subject = new ClaimsIdentity(new[] {
-                new Claim(ClaimTypes.Name, userName),
-                new Claim("isTokenUser", isTokenUser.ToString())
-            }),
-            Expires = DateTime.UtcNow.AddMinutes(expireMinutes),
+            Subject = new ClaimsIdentity(claimsPrincipal.Identity),
+            Expires = new DateTime(authToken.Expire, DateTimeKind.Utc),
             SigningCredentials = credentials,
             Issuer = Issuer
         };
@@ -54,7 +54,7 @@ public class JwtAccessTokenService
             ClockSkew = TimeSpan.Zero, 
 
             ValidateIssuerSigningKey = true, 
-            IssuerSigningKey = _key
+            IssuerSigningKey = _key,
         };
 
         try

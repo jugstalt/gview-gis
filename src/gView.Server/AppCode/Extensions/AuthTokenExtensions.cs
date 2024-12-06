@@ -12,7 +12,7 @@ static public class AuthTokenExtensions
     private const string AuthTypeClaimType = "auth_type";
     private const string ExpiresClaimType = "expires_in";
 
-    static public ClaimsPrincipal ToClaimsPricipal(
+    static public ClaimsPrincipal ToClaimsPrincipal(
                 this AuthToken authToken,
                 bool stopAuthenicationMiddlewarePropagation = true
             )

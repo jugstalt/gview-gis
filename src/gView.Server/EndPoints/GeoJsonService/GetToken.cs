@@ -26,15 +26,18 @@ public class GetToken : BaseApiEndpoint
                 [FromServices] JwtAccessTokenService jwtTokenService
             ) => HandleSecureAsync<GetTokenRequest>(httpContext, async (tokenRequest) =>
             {
-                var authToken = loginManagerService.GetAuthToken(tokenRequest.Username, tokenRequest.Password, expireMinutes: tokenRequest.ExpireMinutes);
+                var authToken = loginManagerService.GetAuthToken(
+                                tokenRequest.ClientId, 
+                                tokenRequest.ClientSecret, 
+                                expireMinutes: tokenRequest.ExpireMinutes);
                 if (authToken == null)
                 {
-                    throw new MapServerException("unknown username or password");
+                    throw new MapServerException("unknown clientId or clientSecret");
                 }
 
                 return new GetTokenResponse
                 {
-                    Token = jwtTokenService.GenerateToken(authToken.Username, true, tokenRequest.ExpireMinutes)
+                    Token = jwtTokenService.GenerateToken(authToken)
                 };
             });
 }

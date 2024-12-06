@@ -1,4 +1,5 @@
-﻿using gView.Server.AppCode.Extensions;
+﻿using gView.Framework.Core.Exceptions;
+using gView.Server.AppCode.Extensions;
 using gView.Server.Extensions;
 using gView.Server.Services.Security;
 using Microsoft.AspNetCore.Http;
@@ -28,20 +29,18 @@ public class JwtTokenAuthenticationMiddleware
         {
             string authHeader = context.Request.Headers.Authorization;
 
-            if (authHeader?.StartsWith("bearer ", StringComparison.OrdinalIgnoreCase) == true)
+            if (authHeader?.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase) == true)
             {
-                var token = authHeader.Substring("bearer ".Length).Trim();
+                var token = authHeader.Substring("Bearer ".Length).Trim();
 
                 try
                 {
-                    _jwtTokenService.ValidateToken(token);
+                    context.User = _jwtTokenService.ValidateToken(token);
                 }
-                catch(SecurityTokenException)
+                catch(SecurityTokenException ste)
                 {
-
+                    throw new MapServerException(ste.Message);
                 }
-
-                //context.User = authToken.ToClaimsPricipal();
             }
         }
 

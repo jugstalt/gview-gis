@@ -31,7 +31,7 @@ public class TokenAuthenticationMiddleware
             {
                 var authToken = _encryptionCertService.FromToken(token);
 
-                context.User = authToken.ToClaimsPricipal();
+                context.User = authToken.ToClaimsPrincipal();
             }
         }
 
