@@ -18,6 +18,7 @@ using gView.Server.Services.MapServer;
 using gView.Server.Services.Security;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Data.Entity.Core.Common.CommandTrees.ExpressionBuilder;
@@ -43,10 +44,11 @@ public class QueryFeatures : BaseApiEndpoint
                 HttpContext httpContext,
                 [FromServices] LoginManager loginManagerService,
                 [FromServices] MapServiceManager mapServerService,
+                [FromServices] ILogger<QueryFeatures> logger,
                 int id,
                 string folder = "",
                 string service = ""
-            ) => HandleSecureAsync<GetFeaturesRequest>(httpContext, mapServerService, loginManagerService, folder, service,
+            ) => HandleSecureAsync<GetFeaturesRequest>(httpContext, mapServerService, loginManagerService, logger, folder, service,
             async (mapService, identity, queryRequest) =>
             {
                 using var serviceMap = await mapServerService.Instance.GetServiceMapAsync(mapService);
@@ -78,7 +80,7 @@ public class QueryFeatures : BaseApiEndpoint
                 int featureCount = 0;
                 var geoJsonFeatures = new List<gView.GeoJsonService.DTOs.Feature>();
                 string? objectIdFieldName = null;
-                ISpatialReference? outSref = null;
+                ISpatialReference outSref = queryRequest.OutCRS.ToSpatialReferenceOrDefault();
 
                 foreach (var tableClass in tableClasses)
                 {
@@ -107,9 +109,8 @@ public class QueryFeatures : BaseApiEndpoint
                         }
 
                         spatialFilter.FilterSpatialReference =
-                             queryRequest.SpatialFilter.CRS is not null
-                             ? SpatialReference.FromID(queryRequest.SpatialFilter.CRS.ToSpatialReferenceName())
-                             : serviceMap.Display.SpatialReference;
+                             queryRequest.SpatialFilter.CRS.ToSpatialReferenceOrDefault();
+                        spatialFilter.SpatialRelation = queryRequest.SpatialFilter.Operator.ToSpatialRelation();
 
                         filter = spatialFilter;
                     }
@@ -190,24 +191,7 @@ public class QueryFeatures : BaseApiEndpoint
 
                     #region Spatial Reference
 
-                    if (queryRequest.OutCRS is not null)
-                    {
-                        filter.FeatureSpatialReference = SpatialReference.FromID(queryRequest.OutCRS.ToSpatialReferenceName());
-                    }
-                    else if (tableClass is IFeatureClass)
-                    {
-                        filter.FeatureSpatialReference = ((IFeatureClass)tableClass).SpatialReference;
-                    }
-
-                    outSref ??= filter.FeatureSpatialReference;
-                    if (filter.FeatureSpatialReference != null)
-                    {
-                        if (outSref is not null && outSref.Name != filter.FeatureSpatialReference.Name)
-                        {
-                            throw new MapServerException("Mixed spatial references in response are not allowed");
-                        }
-                        outSref ??= filter.FeatureSpatialReference;
-                    }
+                    filter.FeatureSpatialReference = outSref;
 
                     #endregion
 
@@ -345,9 +329,7 @@ public class QueryFeatures : BaseApiEndpoint
 
                 return new FeatureCollection()
                 {
-                    CRS = outSref is not null
-                            ? CoordinateReferenceSystem.CreateByName(outSref.Name)
-                            : null,
+                    CRS = CoordinateReferenceSystem.CreateByName(outSref.Name),
                     Features = geoJsonFeatures
                 };
             });

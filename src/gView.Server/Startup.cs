@@ -158,6 +158,7 @@ namespace gView.Server
                     }
                 });
 
+            /*
             if (!String.IsNullOrEmpty(Configuration.Value("external-auth-authority:url")))
             {
                 services.AddHttpContextAccessor();
@@ -169,6 +170,7 @@ namespace gView.Server
                     config.AccessTokenParameterName = Configuration.GetParsedValue("external-auth-authority:access-token-url-parameter") ?? "access-token";
                 });
             }
+            */
 
             services.AddPerformanceLoggerService(config =>
             {

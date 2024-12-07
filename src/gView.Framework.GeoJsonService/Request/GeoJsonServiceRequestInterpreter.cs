@@ -13,8 +13,9 @@ public class GeoJsonServiceRequestInterpreter : IServiceRequestInterpreter
     public InterpreterCapabilities Capabilities =>
         new InterpreterCapabilities(new InterpreterCapabilities.Capability[]
         {
-            new InterpreterCapabilities.SimpleCapability("Info (REST)",InterpreterCapabilities.Method.Post,"{server}/geojsonservice/v1","1.0"),
-            new InterpreterCapabilities.SimpleCapability("Services (REST)",InterpreterCapabilities.Method.Post,"{server}/geojsonservice/v1/services","1.0"),
+            new InterpreterCapabilities.SimpleCapability("Specification",InterpreterCapabilities.Method.Get,"https://docs.gviewonline.com/en/spec/geojson_service/index.html","1.0"),
+            new InterpreterCapabilities.SimpleCapability("Info (REST)",InterpreterCapabilities.Method.Get,"{server}/geojsonservice/v1","1.0"),
+            new InterpreterCapabilities.SimpleCapability("Services (REST)",InterpreterCapabilities.Method.Get,"{server}/geojsonservice/v1/services","1.0"),
             new InterpreterCapabilities.SimpleCapability("Service Capabililites (REST)",InterpreterCapabilities.Method.Post,"{server}/geojsonservice/v1/services/{folder/service}/capabilities","1.0")
         });
 

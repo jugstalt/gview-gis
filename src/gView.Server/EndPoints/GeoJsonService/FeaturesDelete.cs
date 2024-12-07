@@ -6,6 +6,7 @@ using gView.Server.Services.MapServer;
 using gView.Server.Services.Security;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Linq;
 
@@ -30,10 +31,11 @@ public class FeaturesDelete : BaseApiEndpoint
                 HttpContext httpContext,
                 [FromServices] LoginManager loginManagerService,
                 [FromServices] MapServiceManager mapServerService,
+                [FromServices] ILogger<FeaturesDelete> logger,
                 int id,
                 string folder = "",
                 string service = ""
-            ) => HandleSecureAsync<EditFeaturesRequest>(httpContext, mapServerService, loginManagerService, folder, service,
+            ) => HandleSecureAsync<EditFeaturesRequest>(httpContext, mapServerService, loginManagerService, logger, folder, service,
                  async (mapService, identity, editRequest) =>
                  {
                      using var serviceMap = await mapServerService.Instance.GetServiceMapAsync(mapService);

@@ -21,6 +21,10 @@ public class CoordinateReferenceSystem
             {
                 return $"EPSG:{name.Substring(name.LastIndexOf(":") + 1)}";
             }
+            else if("urn:ogc:def:crs:OGC:1.3:CRS84".Equals(name, StringComparison.OrdinalIgnoreCase))
+            {
+                return "EPSG:4326";
+            }
         }
 
         return String.Empty;

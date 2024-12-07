@@ -17,8 +17,6 @@ public class RequestConverter : JsonConverter<BaseRequest>
             {
                 RequestTypes.GetInfo
                     => JsonSerializer.Deserialize<GetInfoRequest>(rootElement.GetRawText(), options),
-                RequestTypes.GetServices
-                    => JsonSerializer.Deserialize<GetServicesRequest>(rootElement.GetRawText(), options),
                 RequestTypes.GetMap
                     => JsonSerializer.Deserialize<GetMapRequest>(rootElement.GetRawText(), options),
                 RequestTypes.GetLegend
@@ -29,8 +27,6 @@ public class RequestConverter : JsonConverter<BaseRequest>
                     => JsonSerializer.Deserialize<GetFeaturesRequest>(rootElement.GetRawText(), options),
                 RequestTypes.EditFeatures
                     => JsonSerializer.Deserialize<EditFeaturesRequest>(rootElement.GetRawText(), options),
-                RequestTypes.GetToken
-                    => JsonSerializer.Deserialize<GetTokenRequest>(rootElement.GetRawText(), options),
                 _ => throw new JsonException("Unknown request type")
             };
         }

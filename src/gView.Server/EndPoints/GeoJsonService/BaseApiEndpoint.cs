@@ -1,6 +1,5 @@
 ﻿#nullable enable
 
-using Azure.Core.Pipeline;
 using gView.Endpoints.Abstractions;
 using gView.Framework.Common;
 using gView.Framework.Core.Exceptions;
@@ -15,9 +14,10 @@ using gView.Server.Services.Security;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.Logging;
 using System;
-using System.IO;
 using System.Linq;
+using System.Runtime.Intrinsics.X86;
 using System.Threading.Tasks;
 
 namespace gView.Server.EndPoints.GeoJsonService;
@@ -43,34 +43,37 @@ public class BaseApiEndpoint : IApiEndpoint
         _httpMethods = httpMethods;
     }
 
+    virtual protected RouteHandlerBuilder BuildEndpoint(RouteHandlerBuilder builder)
+        => builder;
+
     public void Register(IEndpointRouteBuilder app)
     {
         if (_httpMethods.HasFlag(HttpMethod.Get))
         {
             foreach (var route in _routes)
             {
-                app.MapGet(route, _delegate);
+                BuildEndpoint(app.MapGet(route, _delegate));
             }
         }
         if (_httpMethods.HasFlag(HttpMethod.Post))
         {
             foreach (var route in _routes)
             {
-                app.MapPost(route, _delegate);
+                BuildEndpoint(app.MapPost(route, _delegate));
             }
         }
         if (_httpMethods.HasFlag(HttpMethod.Put))
         {
             foreach (var route in _routes)
             {
-                app.MapPut(route, _delegate);
+                BuildEndpoint(app.MapPut(route, _delegate));
             }
         }
         if (_httpMethods.HasFlag(HttpMethod.Delete))
         {
             foreach (var route in _routes)
             {
-                app.MapDelete(route, _delegate);
+                BuildEndpoint(app.MapDelete(route, _delegate));
             }
         }
     }
@@ -79,6 +82,7 @@ public class BaseApiEndpoint : IApiEndpoint
                 HttpContext httpContext,
                 MapServiceManager mapServiceManager,
                 LoginManager loginManagerService,
+                ILogger logger,
                 string folder,
                 string service,
                 Func<IMapService?, Identity, Task<object>> action)
@@ -121,18 +125,22 @@ public class BaseApiEndpoint : IApiEndpoint
         }
         catch (MapServerException mse)
         {
+            logger.LogWarning("Handle GeoJson Service Request: {message}", mse.Message);
+
             result = new ErrorResponse()
             {
-                ErrorCode = 999,
+                ErrorCode = 400,
                 ErrorMessage = mse.Message
             };
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            logger.LogError("Handle GeoJson Service Request: {message}", ex.Message);
+
             result = new ErrorResponse()
             {
-                ErrorCode = 999,
-                ErrorMessage = "Unknow error"
+                ErrorCode = 500,
+                ErrorMessage = "internal server error"
             };
         }
 
@@ -143,6 +151,7 @@ public class BaseApiEndpoint : IApiEndpoint
                 HttpContext httpContext,
                 MapServiceManager mapServiceManager,
                 LoginManager loginManagerService,
+                ILogger logger,
                 string folder,
                 string service,
                 Func<IMapService, Identity, T, Task<object>> action)
@@ -162,7 +171,7 @@ public class BaseApiEndpoint : IApiEndpoint
 
             var serviceRequestContext = await ServiceRequestContext.TryCreate(
                 mapServiceManager.Instance,
-                RequestInterpreter, 
+                RequestInterpreter,
                 serviceRequest, checkSecurity: false);
 
             var mapService = mapServiceManager.Instance.GetMapService(service, folder);
@@ -181,26 +190,32 @@ public class BaseApiEndpoint : IApiEndpoint
         }
         catch (MapServerException mse)
         {
+            logger.LogWarning("Handle GeoJson Service Request: {message}", mse.Message);
+
             result = new ErrorResponse()
             {
-                ErrorCode = 999,
+                ErrorCode = 400,
                 ErrorMessage = mse.Message
             };
         }
         catch (SqlDangerousStatementExceptions dse)
         {
+            logger.LogWarning("Handle GeoJson Service Request: {message}", dse.Message);
+
             result = new ErrorResponse()
             {
-                ErrorCode = 1,
+                ErrorCode = 400,
                 ErrorMessage = dse.Message
             };
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            logger.LogError("Handle GeoJson Service Request: {message}", ex.Message);
+
             result = new ErrorResponse()
             {
-                ErrorCode = 999,
-                ErrorMessage = "Unknow error"
+                ErrorCode = 500,
+                ErrorMessage = "internal server error"
             };
         }
 
@@ -211,6 +226,7 @@ public class BaseApiEndpoint : IApiEndpoint
 
     async static protected Task<object> HandleSecureAsync<T>(
                 HttpContext httpContext,
+                ILogger logger,
                 Func<T, Task<object>> action)
     {
         object? result = null;
@@ -227,26 +243,32 @@ public class BaseApiEndpoint : IApiEndpoint
         }
         catch (MapServerException mse)
         {
+            logger.LogWarning("Handle GeoJson Service Request: {message}", mse.Message);
+
             result = new ErrorResponse()
             {
-                ErrorCode = 999,
+                ErrorCode = 400,
                 ErrorMessage = mse.Message
             };
         }
         catch (SqlDangerousStatementExceptions dse)
         {
+            logger.LogWarning("Handle GeoJson Service Request: {message}", dse.Message);
+
             result = new ErrorResponse()
             {
-                ErrorCode = 1,
+                ErrorCode = 400,
                 ErrorMessage = dse.Message
             };
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            logger.LogError("Handle GeoJson Service Request: {message}", ex.Message);
+
             result = new ErrorResponse()
             {
                 ErrorCode = 999,
-                ErrorMessage = "Unknow error"
+                ErrorMessage = "internal server error"
             };
         }
 
