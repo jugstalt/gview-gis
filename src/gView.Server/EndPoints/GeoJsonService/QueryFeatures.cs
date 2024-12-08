@@ -49,7 +49,7 @@ public class QueryFeatures : BaseApiEndpoint
                 string folder = "",
                 string service = ""
             ) => HandleSecureAsync<GetFeaturesRequest>(httpContext, mapServerService, loginManagerService, logger, folder, service,
-            async (mapService, identity, queryRequest) =>
+            async (serviceRequestContext, mapService, identity, queryRequest) =>
             {
                 using var serviceMap = await mapServerService.Instance.GetServiceMapAsync(mapService);
 

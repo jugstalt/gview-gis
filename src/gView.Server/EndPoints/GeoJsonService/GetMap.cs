@@ -42,7 +42,7 @@ public class GetMap : BaseApiEndpoint
                 string folder = "",
                 string service = ""
             ) => HandleSecureAsync<GetMapRequest>(httpContext, mapServiceManager, loginManagerService, logger, folder, service,
-                async (mapService, identity, mapRequest) =>
+                async (serviceRequestContext, mapService, identity, mapRequest) =>
             {
                 using var serviceMap = await mapServiceManager.Instance.GetServiceMapAsync(mapService);
 
@@ -190,7 +190,7 @@ public class GetMap : BaseApiEndpoint
 
                     return new GetMapResponse()
                     {
-                        ImageUrl = $"{mapServiceManager.Instance.OutputUrl}/{fileName}",
+                        ImageUrl = $"{serviceRequestContext.ServiceRequest.OutputUrl}/{fileName}",
                         BBox = serviceMap.Display.Envelope.ToBBox(),
                         CRS = serviceMap.Display.SpatialReference is not null
                                 ? CoordinateReferenceSystem.CreateByName(serviceMap.Display.SpatialReference.Name)

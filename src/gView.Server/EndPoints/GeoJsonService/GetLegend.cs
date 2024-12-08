@@ -35,7 +35,7 @@ public class GetLegend : BaseApiEndpoint
                 string folder = "",
                 string service = ""
             ) => HandleSecureAsync<GetLegendRequest>(httpContext, mapServiceManager, loginManagerService, logger, folder, service,
-                async (mapService, identity, legendRequest) =>
+                async (serviceRequestContext, mapService, identity, legendRequest) =>
                 {
                     if (legendRequest.Width <= 0 || legendRequest.Height <= 0)
                     {

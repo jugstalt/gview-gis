@@ -38,7 +38,7 @@ public class FeaturesInsert : BaseApiEndpoint
                 string folder = "",
                 string service = ""
             ) => HandleSecureAsync<EditFeaturesRequest>(httpContext, mapServerService, loginManagerService, logger, folder, service,
-                 async (mapService, identity, editRequest) =>
+                 async (serviceRequestContext, mapService, identity, editRequest) =>
                  {
                      using var serviceMap = await mapServerService.Instance.GetServiceMapAsync(mapService);
 

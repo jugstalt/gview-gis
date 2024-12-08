@@ -85,7 +85,7 @@ public class BaseApiEndpoint : IApiEndpoint
                 ILogger logger,
                 string folder,
                 string service,
-                Func<IMapService?, Identity, Task<object>> action)
+                Func<IServiceRequestContext?, IMapService?, Identity, Task<object>> action)
     {
         object? result = null;
 
@@ -100,10 +100,11 @@ public class BaseApiEndpoint : IApiEndpoint
                     identity: identity);
 
             IMapService? mapService = null;
+            IServiceRequestContext? serviceRequestContext = null;
 
             if (!String.IsNullOrEmpty(service))
             {
-                var serviceRequestContext = await ServiceRequestContext.TryCreate(
+                serviceRequestContext = await ServiceRequestContext.TryCreate(
                     mapServiceManager.Instance,
                     RequestInterpreter,
                     serviceRequest, checkSecurity: false);
@@ -117,7 +118,7 @@ public class BaseApiEndpoint : IApiEndpoint
                 await mapService.CheckAccess(serviceRequestContext);
             }
 
-            result = action(mapService, identity).GetAwaiter().GetResult();
+            result = action(serviceRequestContext, mapService, identity).GetAwaiter().GetResult();
         }
         catch (MapServerAuthException)
         {
@@ -154,7 +155,7 @@ public class BaseApiEndpoint : IApiEndpoint
                 ILogger logger,
                 string folder,
                 string service,
-                Func<IMapService, Identity, T, Task<object>> action)
+                Func<IServiceRequestContext, IMapService, Identity, T, Task<object>> action)
     {
         object? result = null;
 
@@ -182,7 +183,7 @@ public class BaseApiEndpoint : IApiEndpoint
 
             await mapService.CheckAccess(serviceRequestContext);
 
-            result = await action(mapService, identity, model!);
+            result = await action(serviceRequestContext, mapService, identity, model!);
         }
         catch (MapServerAuthException)
         {

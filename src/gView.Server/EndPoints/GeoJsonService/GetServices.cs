@@ -30,7 +30,8 @@ public class GetServices : BaseApiEndpoint
             [FromServices] MapServiceManager mapServerService,
             [FromServices] ILogger<GetServices> logger,
             string folder = ""
-        ) => HandleSecureAsync(httpContext, mapServerService, loginManagerService, logger, "", "", async (_, identity) =>
+        ) => HandleSecureAsync(httpContext, mapServerService, loginManagerService, logger, "", "",
+            async (_, _, identity) =>
         {
             mapServerService.ReloadServices(folder, true);
 

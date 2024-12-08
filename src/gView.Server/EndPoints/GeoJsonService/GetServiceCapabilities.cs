@@ -1,4 +1,5 @@
 ﻿using gView.Framework.Cartography;
+using gView.Framework.Common.Extensions;
 using gView.Framework.Core.Carto;
 using gView.Framework.Core.Data;
 using gView.Framework.Core.Geometry;
@@ -39,7 +40,8 @@ public class GetServiceCapabilities : BaseApiEndpoint
             string folder = "",
             string service = "") => HandleSecureAsync<GetServiceCapabilitiesRequest>(
                     httpContext, mapServerService, loginManagerService, logger,
-                    folder, service, async (mapService, identity, capabilitiesRequest) =>
+                    folder, service, 
+                    async (serviceRequestContext, mapService, identity, capabilitiesRequest) =>
      {
          if (String.IsNullOrEmpty(service))
          {
@@ -49,8 +51,13 @@ public class GetServiceCapabilities : BaseApiEndpoint
          string path = String.IsNullOrEmpty(folder)
                         ? service
                         : $"{folder}/{service}";
-         // todo: onlineresouce for folder...?
-         string url = $"{mapServerService.Options.OnlineResource}/{Routes.Base}/{Routes.GetServices}/{path}";
+         
+         string onlineResource =
+               serviceRequestContext.ServiceRequest.OnlineResource.OrTake(
+                   mapServerService.Options.OnlineResource
+                );
+
+         string url = $"{onlineResource}/{Routes.Base}/{Routes.GetServices}/{path}";
          var map = await mapServerService.Instance.GetServiceMapAsync(service, folder);
          var accessTypes = await mapService.GetAccessTypes(identity);
 
