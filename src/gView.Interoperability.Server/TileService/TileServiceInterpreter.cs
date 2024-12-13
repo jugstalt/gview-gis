@@ -520,7 +520,10 @@ public class TileServiceInterpreter : IServiceRequestInterpreter
                             canvas.InterpolationMode = InterpolationMode.NearestNeighbor;
                             canvas.DrawBitmap(serviceMap.MapImage,
                                 new CanvasRectangleF(0f, 0f, bitmap.Width, bitmap.Height),
-                                new CanvasRectangleF(-0.5f + i * metadata.TileWidth, -0.5f + j * metadata.TileHeight, metadata.TileWidth, metadata.TileHeight));
+                                new CanvasRectangleF(
+                                    i * metadata.TileWidth, j * metadata.TileHeight, 
+                                    metadata.TileWidth, metadata.TileHeight)
+                                );
                             canvas.Flush();
 
                             if (IsEmptyBitmap(bitmap, serviceMap.Display.BackgroundColor))

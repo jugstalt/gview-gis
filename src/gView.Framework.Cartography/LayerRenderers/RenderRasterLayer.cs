@@ -120,22 +120,9 @@ namespace gView.Framework.Cartography.LayerRenderers
                     canvas.InterpolationMode = (GraphicsEngine.InterpolationMode)_interpolMethod;
 
                     // Transformation berechnen
-                    GraphicsEngine.CanvasRectangleF rect;
-                    switch (canvas.InterpolationMode)
-                    {
-                        case GraphicsEngine.InterpolationMode.Bilinear:
-                        case GraphicsEngine.InterpolationMode.Bicubic:
-                            rect = new GraphicsEngine.CanvasRectangleF(0, 0, paintContext.Bitmap.Width - 1f, paintContext.Bitmap.Height - 1f);
-                            break;
-                        case GraphicsEngine.InterpolationMode.NearestNeighbor:
-                            rect = new GraphicsEngine.CanvasRectangleF(-0.5f, -0.5f, paintContext.Bitmap.Width, paintContext.Bitmap.Height);
-                            //rect = new GraphicsEngine.CanvasRectangleF(0f, 0f, _layer.RasterClass.Bitmap.Width, _layer.RasterClass.Bitmap.Height);
-                            break;
-                        default:
-                            rect = new GraphicsEngine.CanvasRectangleF(0, 0, paintContext.Bitmap.Width, paintContext.Bitmap.Height);
-                            break;
-                    }
-
+                    GraphicsEngine.CanvasRectangleF sourceRect = 
+                        new GraphicsEngine.CanvasRectangleF(0, 0, paintContext.Bitmap.Width, paintContext.Bitmap.Height);
+                    
                     var points = new GraphicsEngine.CanvasPointF[3];
 
                     if (paintContext is IRasterPointContext2)
@@ -235,7 +222,7 @@ namespace gView.Framework.Cartography.LayerRenderers
                     canvas.DrawBitmap(
                                   _nodataFilteredBitmap ?? _filteredBitmap ?? paintContext.Bitmap,
                                   points,
-                                  rect,
+                                  sourceRect,
                                   opacity: opaque);
 
                     _mapRenderer?.FireRefreshMapView(DrawPhase.Geography);

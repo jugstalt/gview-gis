@@ -1,12 +1,12 @@
-﻿using gView.Framework.Core.Carto;
+﻿#nullable enable
+
+using gView.Framework.Core.Carto;
 using gView.Framework.Core.Data;
-using gView.Framework.Data;
-using System.Collections.Generic;
-using System;
-using gView.Interoperability.GeoServices.Rest.DTOs.FeatureServer;
-using gView.GeoJsonService.DTOs;
-using gView.Framework.Editor.Core;
 using gView.Framework.Core.Exceptions;
+using gView.Framework.Data;
+using gView.Framework.Editor.Core;
+using System;
+using System.Collections.Generic;
 
 namespace gView.Server.EndPoints.GeoJsonService.Extensions;
 
@@ -55,14 +55,15 @@ static public class ServiceMapExtensions
         string filterQuery;
 
         var tableClasses = FindTableClass(serviceMap, id, out filterQuery);
+        if (tableClasses is null || tableClasses.Count == 0 || !(tableClasses[0] is IFeatureClass))
+        {
+            throw new Exception("FeatureService can only used with feature classes");
+        }
         if (tableClasses.Count > 1)
         {
             throw new Exception("FeatureService can't be used with aggregated feature classes");
         }
-        if (tableClasses.Count == 0 || !(tableClasses[0] is IFeatureClass))
-        {
-            throw new Exception("FeatureService can only used with feature classes");
-        }
+        
 
         var featureClass = (IFeatureClass)tableClasses[0];
 
