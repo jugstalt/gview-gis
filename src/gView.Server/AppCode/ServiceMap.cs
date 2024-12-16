@@ -370,7 +370,7 @@ namespace gView.Server.AppCode
 
                 if (_bitmap == null)
                 {
-                    _bitmap = Current.Engine.CreateBitmap(ImageWidth, ImageHeight, PixelFormat.Rgba32);
+                    _bitmap = Current.Engine.CreateBitmap(ImageWidth, ImageHeight, PixelFormat.Rgb24);
                 }
 
                 _canvas = _bitmap.CreateCanvas();

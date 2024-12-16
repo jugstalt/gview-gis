@@ -42,8 +42,9 @@
   "force-https": false,
 
   "graphics": {
-    "rendering": "skia",
-    "encoding": "gdiplus"
+    "rendering": "gdiplus",
+    "encoding": "default",
+    "defaultExportQuality": 75
   },
 
   "globals": {

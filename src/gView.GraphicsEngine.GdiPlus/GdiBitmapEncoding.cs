@@ -7,7 +7,6 @@ namespace gView.GraphicsEngine.GdiPlus;
 
 public class GdiBitmapEncoding : IBitmapEncoding
 {
-    private const int DefaultQuality = 75;
     public string EngineName => "GdiPlus";
 
     public bool CanEncode(IBitmap bitmap)
@@ -22,8 +21,8 @@ public class GdiBitmapEncoding : IBitmapEncoding
             throw new ArgumentException("Bitmap is NULL");
         }
 
-        quality = Math.Max(0, quality <= 0 ? DefaultQuality : Math.Min(quality, 100));
-
+        quality = Math.Max(0, quality <= 0 ? Current.DefaultExportQuality : Math.Min(quality, 100));
+        
         if (bitmap.EngineElement is System.Drawing.Bitmap b)
         {
             if (quality > 0 && format == ImageFormat.Jpeg)
@@ -75,7 +74,7 @@ public class GdiBitmapEncoding : IBitmapEncoding
             throw new ArgumentException("Bitmap is NULL");
         }
 
-        quality = Math.Max(0, quality <= 0 ? DefaultQuality : Math.Min(quality, 100));
+        quality = Math.Max(0, quality <= 0 ? Current.DefaultExportQuality : Math.Min(quality, 100));
 
         if (bitmap.EngineElement is System.Drawing.Bitmap b)
         {

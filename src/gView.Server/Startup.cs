@@ -61,6 +61,9 @@ namespace gView.Server
                     break;
             }
 
+            var defaultExportQuality = int.Parse(Configuration.Value("graphics:defaultExportQuality") ?? "0");
+            GraphicsEngine.Current.SetDefaultExportQuality(defaultExportQuality);
+
             #endregion
 
             #region Globals

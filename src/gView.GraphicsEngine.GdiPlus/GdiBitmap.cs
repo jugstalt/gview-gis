@@ -103,8 +103,10 @@ namespace gView.GraphicsEngine.GdiPlus
             {
                 Current.Encoder.Encode(this, filename, format, quality);
             }
-
-            new GdiBitmapEncoding().Encode(this, filename, format, quality);
+            else
+            {
+                new GdiBitmapEncoding().Encode(this, filename, format, quality);
+            }
         }
 
         public void Save(Stream stream, ImageFormat format, int quality = 0)
@@ -113,8 +115,10 @@ namespace gView.GraphicsEngine.GdiPlus
             {
                 Current.Encoder.Encode(this, stream, format, quality);
             }
-
-            new GdiBitmapEncoding().Encode(this, stream, format, quality);
+            else
+            {
+                new GdiBitmapEncoding().Encode(this, stream, format, quality);
+            }
         }
         public BitmapPixelData LockBitmapPixelData(BitmapLockMode lockMode, PixelFormat pixelFormat)
         {

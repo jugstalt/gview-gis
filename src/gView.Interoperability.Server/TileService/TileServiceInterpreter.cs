@@ -536,10 +536,7 @@ public class TileServiceInterpreter : IServiceRequestInterpreter
 
                             bool isJpeg = ".jpg".Equals(format, StringComparison.OrdinalIgnoreCase);
                             MemoryStream ms = new MemoryStream();
-                            bitmap.Save(ms,
-                                isJpeg ? ImageFormat.Jpeg : ImageFormat.Png,
-                                isJpeg ? 75 : 0);
-
+                            bitmap.Save(ms, isJpeg ? ImageFormat.Jpeg : ImageFormat.Png);
 
                             byte[] imageBytes = ms.ToArray();
                             using (var stream = new FileStream(bundleTempFilename, FileMode.Append))
