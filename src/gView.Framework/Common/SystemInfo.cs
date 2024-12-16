@@ -10,7 +10,7 @@ namespace gView.Framework.Common
 {
     public class SystemInfo
     {
-        public static Version Version = new Version(6, 24, 5004);
+        public static Version Version = new Version(6, 24, 5005);
 
         #region -> Private Variables
 
