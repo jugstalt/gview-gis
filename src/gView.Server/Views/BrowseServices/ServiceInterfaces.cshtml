@@ -1,0 +1,57 @@
+﻿@model BrowseServicesServiceModel
+
+@{
+    ViewData["Title"] = "ServiceCaps";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>Capabilities @Model.MapService.Name</h2>
+
+<table class="service-capabilities">
+    <tr>
+        <th>Name</th>
+        <th>Version</th>
+        <th>Method</th>
+        <th>Request</th>
+
+    </tr>
+    @foreach (var interpeter in Model.Interpreters)
+    {
+        if (interpeter.Capabilities == null)
+        {
+            continue;
+        }
+
+        <tr class="interpreter">
+            <td colspan="3" class="interpreter-name">
+                @(interpeter.IdentityLongName)
+            </td>
+            <td style="text-align:right" class="interpreter-name">
+                #@(interpeter.IdentityName.ToUpper())
+            </td>
+        </tr>
+
+
+        @foreach (var cap in interpeter.Capabilities.Capabilities)
+        {
+            <tr class="interpreter-capabilities">
+                <td class="cap-name">@cap.Name</td>
+                <td class="cap-version">@cap.Version</td>
+                <td class="cap-method">@cap.Method</td>
+                <td class="cap-request"><a href="@Model.ReplaceRequest(cap.RequestText)">@Model.ReplaceRequest(cap.RequestText)</a></td>
+            </tr>
+        }
+
+    }
+</table>
+
+@section Scripts {
+    <script type="text/javascript">
+        (function () {
+            $('tr.interpreter-capabilities').click(function (e) {
+                e.stopPropagation();
+                $(this).find('a').first()[0].click();
+            });
+        })();
+    </script>
+}

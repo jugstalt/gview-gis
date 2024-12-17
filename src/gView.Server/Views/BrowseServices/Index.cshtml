@@ -24,6 +24,7 @@
                 @Html.ActionLink(mapService.Name, "ServiceCapabilities", "BrowseServices", new { id = (String.IsNullOrWhiteSpace(mapService.Folder) ? "" : mapService.Folder + "@") + mapService.Name })
                 @if(Model.IsPublisher)
                 {
+                    <div class="button-service-interfaces" data-folder="@(mapService.Folder)" data-service="@(mapService.Name)"></div>
                     <div class="button-delete-service" data-folder="@(mapService.Folder)" data-service="@(mapService.Name)"></div>
                 }
             </li>
@@ -99,11 +100,22 @@
                     $(this).children('a').first()[0].click();
                 });
 
+            $('ul.browseservices li .button-service-interfaces')
+                .click(function(e) {
+                    e.stopPropagation();
+                    let folderName = $(this).attr('data-folder');
+                    let serviceName = $(this).attr('data-service');
+
+                    path="BrowseServices/ServiceInterfaces/"+(folderName ? folderName + "@@" : "")+serviceName;
+
+                    gview.server.redirectToPath(path);
+                });
+
             $('ul.browseservices li .button-delete-service')
                 .click(function (e) {
                     e.stopPropagation();
-                    var folderName = $(this).attr('data-folder');
-                    var serviceName = $(this).attr('data-service');
+                    const folderName = $(this).attr('data-folder');
+                    const serviceName = $(this).attr('data-service');
 
                     bootbox.confirm({
                         title: "Delete service?",

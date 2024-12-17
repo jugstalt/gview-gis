@@ -1,6 +1,6 @@
 ﻿namespace gView.GeoJsonService.DTOs;
 
-public abstract class BaseRequest
+public abstract class BaseResponse
 {
     abstract public string Type { get; set; }
 }

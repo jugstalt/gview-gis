@@ -11,10 +11,12 @@ public class Options
         Converters =
         {
             new JsonStringEnumConverter(),
-            new RequestConverter()
+            new RequestConverter(),
+            new ResponseConverter()
         },
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+        WriteIndented = true
     };
 
     public static JsonSerializerOptions DeserializerOptions = new JsonSerializerOptions
@@ -22,7 +24,9 @@ public class Options
         Converters =
         {
             new JsonStringEnumConverter(),
-            new RequestConverter()
+            new RequestConverter(),
+            new ResponseConverter(),
+            new SupportedRequestConverter()
         },
         PropertyNameCaseInsensitive = true
     };

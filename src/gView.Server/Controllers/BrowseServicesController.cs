@@ -2,17 +2,22 @@
 using gView.Framework.Core.Common;
 using gView.Framework.Core.Exceptions;
 using gView.Framework.Core.MapServer;
+using gView.GeoJsonService;
+using gView.GeoJsonService.DTOs;
 using gView.Server.AppCode;
 using gView.Server.AppCode.Extensions;
+using gView.Server.EndPoints.GeoJsonService;
 using gView.Server.Models;
 using gView.Server.Services.Hosting;
 using gView.Server.Services.MapServer;
 using gView.Server.Services.Security;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
@@ -25,19 +30,25 @@ public class BrowseServicesController : BaseController
     private readonly MapServiceDeploymentManager _mapServerDeployService;
     private readonly UrlHelperService _urlHelperService;
     private readonly LoginManager _loginManagerService;
+    private readonly IConfiguration _configuration;
+    private readonly HttpClient _httpClient;
 
     public BrowseServicesController(
         MapServiceManager mapServerService,
         MapServiceDeploymentManager mapServerDeployService,
         UrlHelperService urlHelperService,
         LoginManager loginManagerService,
-        EncryptionCertificateService encryptionCertificateService)
+        EncryptionCertificateService encryptionCertificateService,
+        IConfiguration configuration,
+        HttpClient httpClient)
         : base(mapServerService, loginManagerService, encryptionCertificateService)
     {
         _mapServerService = mapServerService;
         _mapServerDeployService = mapServerDeployService;
         _urlHelperService = urlHelperService;
         _loginManagerService = loginManagerService;
+        _configuration = configuration;
+        _httpClient = httpClient;
     }
 
     async public Task<IActionResult> Index(string folder, string serviceName = "", string errorMessage = "",
@@ -119,43 +130,98 @@ public class BrowseServicesController : BaseController
         });
     }
 
-    async public Task<IActionResult> ServiceCapabilities(string id)
+    public Task<IActionResult> ServiceCapabilities(string id) => SecureMethodHandler(async (identity) =>
     {
-        return await SecureMethodHandler(async (identity) =>
+        var mapService = _mapServerService.Instance.GetMapService(id.ServiceName(), id.FolderName());
+        if (mapService == null)
         {
-            var mapService = _mapServerService.Instance.GetMapService(id.ServiceName(), id.FolderName());
-            if (mapService == null)
-            {
-                throw new Exception("Unknown service: " + id);
-            }
+            throw new Exception("Unknown service: " + id);
+        }
 
-            if (!await mapService.HasAnyAccess(identity) && !await IsAccessAllowed(identity, mapService))
-            {
-                throw new NotAuthorizedException();
-            }
+        if (!await mapService.HasAnyAccess(identity) && !await IsAccessAllowed(identity, mapService))
+        {
+            throw new NotAuthorizedException();
+        }
 
-            List<IServiceRequestInterpreter> interpreters = new List<IServiceRequestInterpreter>();
-            foreach (var interpreterType in _mapServerService.Interpreters)
-            {
-                try
-                {
-                    var interpreter = new PlugInManager().CreateInstance<IServiceRequestInterpreter>(interpreterType);
-                    await mapService.CheckAccess(identity, interpreter);
-                    interpreters.Add(interpreter);
-                }
-                catch { }
-            }
+        var url = AppendPathToBaseUrl(
+                new RouteBuilder()
+                .UseCapabilitesRoute(mapService)
+                .Build()
+            );
+        var httpResponse = (await _httpClient.GetAsync(url)).EnsureSuccessStatusCode();
+        var jsonResponse = await httpResponse.Content.ReadAsStringAsync();
 
-            return View(new BrowseServicesServiceModel()
+        var response = GeoJsonSerializer.DeserializeResponse(jsonResponse);
+
+        ViewData["htmlbody"] = response.ToHtmlWithJsonObject(mapService);
+        return View("_htmlbody");
+    });
+
+    public Task<IActionResult> GeoJsonRequest(string id, string request) => SecureMethodHandler(async (identity) =>
+    {
+        if (String.IsNullOrEmpty(request))
+        {
+            throw new Exception("Invalid request");
+        }
+
+        var mapService = _mapServerService.Instance.GetMapService(id.ServiceName(), id.FolderName());
+        if (mapService == null)
+        {
+            throw new Exception("Unknown service: " + id);
+        }
+
+        if (!await mapService.HasAnyAccess(identity) && !await IsAccessAllowed(identity, mapService))
+        {
+            throw new NotAuthorizedException();
+        }
+
+        object obj = request.Split("/").First().ToLowerInvariant() switch
+        {
+            "map" => new GetMapRequest(),
+            "legend" => new GetLegendRequest(),
+            "query" => new GetFeaturesRequest(),
+            "feature" => new EditFeaturesRequest(),
+            _ => throw new Exception($"Invalid request: {request}")
+        };
+
+        ViewData["htmlBody"] = obj.ToHtmlForm();
+        return View("_htmlbody");
+    });
+
+
+    public Task<IActionResult> ServiceInterfaces(string id) => SecureMethodHandler(async (identity) =>
+    {
+        var mapService = _mapServerService.Instance.GetMapService(id.ServiceName(), id.FolderName());
+        if (mapService == null)
+        {
+            throw new Exception("Unknown service: " + id);
+        }
+
+        if (!await mapService.HasAnyAccess(identity) && !await IsAccessAllowed(identity, mapService))
+        {
+            throw new NotAuthorizedException();
+        }
+
+        List<IServiceRequestInterpreter> interpreters = new List<IServiceRequestInterpreter>();
+        foreach (var interpreterType in _mapServerService.Interpreters)
+        {
+            try
             {
-                Server = _urlHelperService.AppRootUrl(this.Request),
-                OnlineResource = Request.Scheme + "://" + Request.Host + "/ogc?",
-                MapService = _mapServerService.MapServices.Where(s => s.Name == id.ServiceName() && s.Folder == id.FolderName()).FirstOrDefault(),
-                Interpreters = interpreters
-            });
+                var interpreter = new PlugInManager().CreateInstance<IServiceRequestInterpreter>(interpreterType);
+                await mapService.CheckAccess(identity, interpreter);
+                interpreters.Add(interpreter);
+            }
+            catch { }
+        }
+
+        return View(new BrowseServicesServiceModel()
+        {
+            Server = _urlHelperService.AppRootUrl(this.Request),
+            OnlineResource = Request.Scheme + "://" + Request.Host + "/ogc?",
+            MapService = _mapServerService.MapServices.Where(s => s.Name == id.ServiceName() && s.Folder == id.FolderName()).FirstOrDefault(),
+            Interpreters = interpreters
         });
-
-    }
+    });
 
     [HttpPost]
     async public Task<IActionResult> DeleteService(string folder, string service)
@@ -335,6 +401,10 @@ public class BrowseServicesController : BaseController
     }
 
     #region Helper
+
+    private string AppendPathToBaseUrl(string path)
+        => (_configuration["onlineresource-url-internal"] ??
+           _configuration["onlineresource-url"]) + "/" + path;
 
     async override protected Task<IActionResult> SecureMethodHandler(Func<Identity, Task<IActionResult>> func, Func<Exception, IActionResult> onException = null)
     {

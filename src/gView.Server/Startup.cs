@@ -19,6 +19,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System;
 using gView.Endpoints.Extensions;
+using gView.Server.Controllers;
 
 namespace gView.Server
 {
@@ -206,6 +207,14 @@ namespace gView.Server
             services.AddKeyedTransient<IMessageHandler, RemoveMapMessageHandler>(RemoveMapMessageHandler.Name);
 
             #endregion
+
+            services.AddHttpClient<BrowseServicesController>(client =>
+            {
+                client.BaseAddress = new Uri(
+                    Configuration.Value("onlineresource-url-internal") ??
+                    Configuration.Value("onlineresource-url")
+                    ); 
+            });
         }
 
         public void Configure(WebApplication app)
