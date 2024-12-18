@@ -12,14 +12,14 @@ using System.Reflection;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using YamlDotNet.Serialization;
-using YamlDotNet.Serialization.NamingConventions;
 
 namespace gView.Server.AppCode.Extensions;
 
 static internal class HtmlExtensions
 {
-    static public string ToHtml(this object obj,
+    #region GeoServices REST
+
+    static public string GeoServicesObjectToHtml(this object obj,
                 HttpRequest request,
                 UrlHelperService urlHelperService,
                 MapServiceManager mapServerService)
@@ -303,105 +303,7 @@ static internal class HtmlExtensions
 
     #endregion
 
-    static public string ToHtmlWithYamlObject(this object obj)
-    {
-        var serializer = new SerializerBuilder()
-            .WithNamingConvention(CamelCaseNamingConvention.Instance)
-            .Build();
-        var yaml = serializer.Serialize(obj);
-
-        StringBuilder sb = new StringBuilder();
-
-        sb.Append("<div class='html-body'>");
-        sb.Append("<h3>" + obj.GetType().Name + " (YAML):</h3>");
-        sb.Append("<div class='code-block'>");
-        sb.Append("<pre>");
-        sb.Append(yaml);
-        sb.Append("</pre>");
-        sb.Append("</div>");
-        sb.Append("</div>");
-
-        return sb.ToString();
-    }
-
-    static public string ToHtmlWithJsonObject(this object obj, IMapService mapService)
-    {
-        var json = JsonSerializer.Serialize(obj,
-            new JsonSerializerOptions()
-            {
-                Converters =
-                {
-                    new JsonStringEnumConverter(),
-                },
-                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-                WriteIndented = true
-            });
-
-        StringBuilder sb = new StringBuilder();
-
-
-
-        sb.Append("<div class='html-body'>");
-        sb.Append("<h3>" + obj.GetType().Name + " (JSON):</h3>");
-
-        if (obj is BaseRequest || obj is BaseResponse)
-        {
-            sb.Append("<p>GeoJson Service");
-            sb.Append(Link("Specification", "https://docs.gviewonline.com/en/spec/geojson_service/index.html"));
-            sb.Append("</p>");
-        }
-
-        if (obj is GetServiceCapabilitiesResponse capabilities)
-        {
-            sb.Append("<div>");
-            foreach (var supportedRequest in capabilities.SupportedRequests ?? [])
-            {
-                if (supportedRequest.Url.IndexOf(mapService.Fullname) < 0) continue;
-
-                var url = supportedRequest.Url.Substring(
-                                supportedRequest.Url.LastIndexOf(mapService.Fullname) + mapService.Fullname.Length + 1);
-                
-                if (url.Contains("{layerId}"))
-                {
-                    sb.Append("<div>");
-                    foreach (var layer in capabilities.Layers?
-                                                      .Where(l => l.SuportedOperations?
-                                                                   .Contains(supportedRequest.Name) == true) ?? [])
-                    {
-                        sb.Append(Link($"{supportedRequest.Name} {layer.Name}",
-                                       $"./../GeoJsonRequest?id={mapService.Fullname}&request={url.Replace("{layerId}", layer.Id)}"));
-                    }
-                    sb.Append("</div>");
-                }
-                else
-                {
-                    sb.Append(Link(supportedRequest.Name, $"./../GeoJsonRequest?id={mapService.Fullname}&request={url}"));
-                }
-            }
-            sb.Append("</div>");
-        }
-
-        sb.Append("<div class='code-block'>");
-        sb.Append("<pre>");
-        sb.Append(json);
-        sb.Append("</pre>");
-        sb.Append("</div>");
-        sb.Append("</div>");
-
-        return sb.ToString();
-    }
-
-    #region Helper
-
-    static private string Link(string title, string url)
-    {
-        return $"<a target='_blank' href='{url}'>{title}</a>";
-    }
-
-    #endregion
-
-    static public string ToHtmlForm(this object obj)
+    static public string GeoServicesObjectToHtmlForm(this object obj)
     {
         if (obj == null)
         {
@@ -513,6 +415,165 @@ static internal class HtmlExtensions
 
         sb.Append("</table>");
 
+        sb.Append("</form>");
+        sb.Append("</div>");
+
+        return sb.ToString();
+    }
+
+    #endregion
+
+    #region GeoJson Services
+
+    static public string GeoJsonObjectToHtml(this object obj, IMapService mapService)
+    {
+        var json = JsonSerializer.Serialize(obj,
+            new JsonSerializerOptions()
+            {
+                Converters =
+                {
+                    new JsonStringEnumConverter(),
+                },
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+                WriteIndented = true
+            });
+
+        StringBuilder sb = new StringBuilder();
+
+
+
+        sb.Append("<div class='html-body'>");
+        sb.Append("<h3>" + obj.GetType().Name + " (JSON):</h3>");
+
+        if (obj is BaseRequest || obj is BaseResponse)
+        {
+            sb.Append("<p>GeoJson Service");
+            sb.Append(Link("Specification", "https://docs.gviewonline.com/en/spec/geojson_service/index.html"));
+            sb.Append("</p>");
+        }
+
+        if (obj is GetServiceCapabilitiesResponse capabilities)
+        {
+            sb.Append("<div>");
+            foreach (var supportedRequest in capabilities.SupportedRequests ?? [])
+            {
+                if (supportedRequest.Url.IndexOf(mapService.Fullname) < 0) continue;
+
+                var url = supportedRequest.Url.Substring(
+                                supportedRequest.Url.LastIndexOf(mapService.Fullname) + mapService.Fullname.Length + 1);
+
+                if (url.Contains("{layerId}"))
+                {
+                    sb.Append("<div>");
+                    foreach (var layer in capabilities.Layers?
+                                                      .Where(l => l.SuportedOperations?
+                                                                   .Contains(supportedRequest.Name) == true) ?? [])
+                    {
+                        sb.Append(Link($"{supportedRequest.Name} {layer.Name}",
+                                       $"./../GeoJsonRequest?id={mapService.Fullname}&request={url.Replace("{layerId}", layer.Id)}"));
+                    }
+                    sb.Append("</div>");
+                }
+                else
+                {
+                    sb.Append(Link(supportedRequest.Name, $"./../GeoJsonRequest?id={mapService.Fullname}&request={url}"));
+                }
+            }
+            sb.Append("</div>");
+        }
+
+        sb.Append("<div class='code-block'>");
+        sb.Append("<pre>");
+        sb.Append(json);
+        sb.Append("</pre>");
+        sb.Append("</div>");
+        sb.Append("</div>");
+
+        return sb.ToString();
+    }
+
+    static public string GeoJsonObjectToInputForm(this object obj)
+    {
+        if (obj == null)
+        {
+            return String.Empty;
+        }
+
+        StringBuilder sb = new StringBuilder();
+
+        sb.Append("<div class='html-body'>");
+        sb.Append("<form>");
+        sb.Append("<table>");
+
+        foreach (var propertyInfo in obj.GetType().GetProperties())
+        {
+            if (propertyInfo.GetMethod.IsPublic && propertyInfo.SetMethod.IsPublic)
+            {
+                string name = propertyInfo.Name;
+
+                var inputType = FormInputAttribute.InputTypes.Text;
+
+                sb.Append("<tr>");
+                sb.Append("<td>");
+
+                if (inputType != FormInputAttribute.InputTypes.Hidden)
+                {
+                    sb.Append($"<span>{propertyInfo.Name}:</span>");
+                }
+                sb.Append("</td><td class='input'>");
+
+                if (propertyInfo.PropertyType.Equals(typeof(bool)))
+                {
+                    sb.Append($"<select name='{name}' style='min-width:auto;'><option value='false'>False</option><option value='true'>True</option></select>");
+                }
+                else
+                {
+                    switch (inputType)
+                    {
+                        case FormInputAttribute.InputTypes.TextBox:
+                            sb.Append($"<textarea rows='3' name='{name}'>{(propertyInfo.GetValue(obj)?.ToString() ?? String.Empty)}</textarea>");
+                            break;
+                        case FormInputAttribute.InputTypes.TextBox10:
+                            sb.Append($"<textarea rows='10' name='{name}'>{(propertyInfo.GetValue(obj)?.ToString() ?? String.Empty)}</textarea>");
+                            break;
+                        case FormInputAttribute.InputTypes.Hidden:
+                            sb.Append($"<input type='hidden' name='{name}' value='{(propertyInfo.GetValue(obj)?.ToString() ?? String.Empty)}'>");
+                            break;
+                        case FormInputAttribute.InputTypes.Password:
+                            sb.Append($"<input name='{name}' type='password' value='{(propertyInfo.GetValue(obj)?.ToString() ?? String.Empty)}'>");
+                            break;
+                        default:
+                            if(propertyInfo.PropertyType.IsEnum)
+                            {
+                                sb.Append($"<select name='{name}' style='min-width:auto;'>");
+                                foreach (var enumValue in Enum.GetValues(propertyInfo.PropertyType))
+                                {
+                                    sb.Append($"<option value='{(int)enumValue}'>{enumValue}</option>");
+                                }
+                                sb.Append("</select>");
+                            }
+                            else
+                            {
+                                sb.Append($"<input name='{name}' value='{(propertyInfo.GetValue(obj)?.ToString() ?? String.Empty)}'>");
+                            }
+                            break;
+                    }
+                }
+                sb.Append("</td>");
+                sb.Append("</tr>");
+            }
+        }
+
+        sb.Append("<tr>");
+        sb.Append("<td>");
+        sb.Append("</td><td>");
+        sb.Append("<button>Submit</button>");
+        sb.Append("</td>");
+        sb.Append("</tr>");
+
+        sb.Append("</table>");
+
 
 
         sb.Append("</form>");
@@ -521,4 +582,15 @@ static internal class HtmlExtensions
 
         return sb.ToString();
     }
+
+    #endregion
+
+    #region Helper
+
+    static private string Link(string title, string url)
+    {
+        return $"<a target='_blank' href='{url}'>{title}</a>";
+    }
+
+    #endregion
 }

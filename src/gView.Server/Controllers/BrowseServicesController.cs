@@ -153,7 +153,7 @@ public class BrowseServicesController : BaseController
 
         var response = GeoJsonSerializer.DeserializeResponse(jsonResponse);
 
-        ViewData["htmlbody"] = response.ToHtmlWithJsonObject(mapService);
+        ViewData["htmlbody"] = response.GeoJsonObjectToHtml(mapService);
         return View("_htmlbody");
     });
 
@@ -184,7 +184,7 @@ public class BrowseServicesController : BaseController
             _ => throw new Exception($"Invalid request: {request}")
         };
 
-        ViewData["htmlBody"] = obj.ToHtmlForm();
+        ViewData["htmlBody"] = obj.GeoJsonObjectToInputForm();
         return View("_htmlbody");
     });
 

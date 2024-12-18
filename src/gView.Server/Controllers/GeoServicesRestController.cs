@@ -1294,7 +1294,7 @@ public class GeoServicesRestController : BaseController
         #region ToHtml
 
         AddNavigation();
-        ViewData["htmlbody"] = obj.ToHtml(Request, _urlHelperService, _mapServerService);
+        ViewData["htmlbody"] = obj.GeoServicesObjectToHtml(Request, _urlHelperService, _mapServerService);
         return View("_htmlbody");
 
         #endregion
@@ -1308,7 +1308,7 @@ public class GeoServicesRestController : BaseController
     public IActionResult FormResult(object obj)
     {
         AddNavigation();
-        ViewData["htmlBody"] = obj.ToHtmlForm();
+        ViewData["htmlBody"] = obj.GeoServicesObjectToHtmlForm();
         return View("_htmlbody");
     }
 
