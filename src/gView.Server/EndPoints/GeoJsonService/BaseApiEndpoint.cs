@@ -8,6 +8,7 @@ using gView.Framework.Data.Extensions;
 using gView.Framework.GeoJsonService.Request;
 using gView.GeoJsonService;
 using gView.GeoJsonService.DTOs;
+using gView.Server.AppCode.Extensions;
 using gView.Server.EndPoints.GeoJsonService.Extensions;
 using gView.Server.Services.MapServer;
 using gView.Server.Services.Security;
@@ -109,6 +110,10 @@ public class BaseApiEndpoint : IApiEndpoint
                     RequestInterpreter,
                     serviceRequest, checkSecurity: false);
 
+                // todo: Folder specific settings?
+                serviceRequest.OnlineResource = mapServiceManager.Options.OnlineResource;
+                serviceRequest.OutputUrl = mapServiceManager.Options.OutputUrl;
+
                 mapService = mapServiceManager.Instance.GetMapService(service, folder);
                 if (mapService == null)
                 {
@@ -169,6 +174,10 @@ public class BaseApiEndpoint : IApiEndpoint
             ServiceRequest serviceRequest = ServiceRequest.CreateGerneral(
                     method: httpContext.Request.Path.Value?.Split("/").Last().ToLowerInvariant(),
                     identity: identity);
+
+            // todo: Folder specific settings?
+            serviceRequest.OnlineResource = mapServiceManager.Options.OnlineResource;
+            serviceRequest.OutputUrl = mapServiceManager.Options.OutputUrl;
 
             var serviceRequestContext = await ServiceRequestContext.TryCreate(
                 mapServiceManager.Instance,

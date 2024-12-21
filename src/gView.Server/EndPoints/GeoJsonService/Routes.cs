@@ -1,5 +1,6 @@
 ﻿using gView.Framework.Core.MapServer;
 using gView.Framework.OGC.KML;
+using gView.Server.AppCode;
 using System.Text;
 
 namespace gView.Server.EndPoints.GeoJsonService;
@@ -32,7 +33,15 @@ internal class RouteBuilder
 
     public RouteBuilder UseCapabilitesRoute(IMapService mapService)
     {
-        _sb.Append($"/{Routes.GetServices}/{mapService.Fullname}/{Routes.GetServiceCapabilities}");
+        UseServiceRootRoute(mapService);
+        _sb.Append($"/{Routes.GetServiceCapabilities}");
+
+        return this;
+    }
+
+    public RouteBuilder UseServiceRootRoute(IMapService mapService)
+    {
+        _sb.Append($"/{Routes.GetServices}/{mapService.Fullname}");
 
         return this;
     }

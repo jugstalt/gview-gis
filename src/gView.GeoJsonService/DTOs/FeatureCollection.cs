@@ -1,8 +1,8 @@
 ﻿namespace gView.GeoJsonService.DTOs;
 
-public class FeatureCollection
+public class FeatureCollection : BaseResponse
 {
-    public string Type => "FeatureCollection";
+    override public string Type { get; set; } = ResponseType.FeatureCollection;
 
     public CoordinateReferenceSystem? CRS { get; set; }
 

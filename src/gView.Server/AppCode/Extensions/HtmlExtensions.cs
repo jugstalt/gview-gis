@@ -1,10 +1,12 @@
-﻿using gView.Framework.Common.Reflection;
+﻿using gView.Framework.Common;
+using gView.Framework.Common.Reflection;
 using gView.Framework.Core.MapServer;
 using gView.GeoJsonService.DTOs;
 using gView.Interoperability.GeoServices.Rest.Reflection;
 using gView.Server.Services.Hosting;
 using gView.Server.Services.MapServer;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -493,7 +495,7 @@ static internal class HtmlExtensions
         return sb.ToString();
     }
 
-    static public string GeoJsonObjectToInputForm(this object obj)
+    static public string GeoJsonObjectToInputForm(this object obj, string id, string request)
     {
         if (obj == null)
         {
@@ -503,7 +505,11 @@ static internal class HtmlExtensions
         StringBuilder sb = new StringBuilder();
 
         sb.Append("<div class='html-body'>");
-        sb.Append("<form>");
+        sb.Append("<form method='post'>");
+
+        sb.Append($"<input type='hidden' name='id' value='{id}' />");
+        sb.Append($"<input type='hidden' name='request' value='{request}' />");
+
         sb.Append("<table>");
 
         foreach (var propertyInfo in obj.GetType().GetProperties())
@@ -511,6 +517,26 @@ static internal class HtmlExtensions
             if (propertyInfo.GetMethod.IsPublic && propertyInfo.SetMethod.IsPublic)
             {
                 string name = propertyInfo.Name;
+                object value = propertyInfo.GetValue(obj);
+
+                if (name == "Type")
+                {
+                    sb.Append($"<tr><td></td><td><h2>{value}</h2></td></tr>");
+                    continue;
+                }
+
+                if (value is BBox bbox)
+                {
+                    value = $"{bbox.MinX.ToDoubleString()},{bbox.MinY.ToDoubleString()},{bbox.MaxX.ToDoubleString()},{bbox.MaxY.ToDoubleString()}";
+                }
+                else if (value is CoordinateReferenceSystem crs)
+                {
+                    value = crs.ToSpatialReferenceName();
+                }
+                else if(value is string[] stringArray)
+                {
+                    value = String.Join(",", stringArray);
+                }
 
                 var inputType = FormInputAttribute.InputTypes.Text;
 
@@ -532,16 +558,16 @@ static internal class HtmlExtensions
                     switch (inputType)
                     {
                         case FormInputAttribute.InputTypes.TextBox:
-                            sb.Append($"<textarea rows='3' name='{name}'>{(propertyInfo.GetValue(obj)?.ToString() ?? String.Empty)}</textarea>");
+                            sb.Append($"<textarea rows='3' name='{name}'>{(value?.ToString() ?? String.Empty)}</textarea>");
                             break;
                         case FormInputAttribute.InputTypes.TextBox10:
-                            sb.Append($"<textarea rows='10' name='{name}'>{(propertyInfo.GetValue(obj)?.ToString() ?? String.Empty)}</textarea>");
+                            sb.Append($"<textarea rows='10' name='{name}'>{(value?.ToString() ?? String.Empty)}</textarea>");
                             break;
                         case FormInputAttribute.InputTypes.Hidden:
-                            sb.Append($"<input type='hidden' name='{name}' value='{(propertyInfo.GetValue(obj)?.ToString() ?? String.Empty)}'>");
+                            sb.Append($"<input type='hidden' name='{name}' value='{(value?.ToString() ?? String.Empty)}'>");
                             break;
                         case FormInputAttribute.InputTypes.Password:
-                            sb.Append($"<input name='{name}' type='password' value='{(propertyInfo.GetValue(obj)?.ToString() ?? String.Empty)}'>");
+                            sb.Append($"<input name='{name}' type='password' value='{(value?.ToString() ?? String.Empty)}'>");
                             break;
                         default:
                             if(propertyInfo.PropertyType.IsEnum)
@@ -555,7 +581,7 @@ static internal class HtmlExtensions
                             }
                             else
                             {
-                                sb.Append($"<input name='{name}' value='{(propertyInfo.GetValue(obj)?.ToString() ?? String.Empty)}'>");
+                                sb.Append($"<input name='{name}' value='{(value?.ToString() ?? String.Empty)}'>");
                             }
                             break;
                     }
@@ -573,9 +599,6 @@ static internal class HtmlExtensions
         sb.Append("</tr>");
 
         sb.Append("</table>");
-
-
-
         sb.Append("</form>");
 
         sb.Append("</div>");

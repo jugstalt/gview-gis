@@ -65,6 +65,12 @@ public class ResponseConverter : JsonConverter<BaseResponse>
             {
                 ResponseType.ServiceCapabilities
                     => JsonSerializer.Deserialize<GetServiceCapabilitiesResponse>(rootElement.GetRawText(), options),
+                ResponseType.Map
+                    => JsonSerializer.Deserialize<GetMapResponse>(rootElement.GetRawText(), options),
+                ResponseType.Legend
+                    => JsonSerializer.Deserialize<GetLegendResponse>(rootElement.GetRawText(), options),
+                ResponseType.FeatureCollection
+                    => JsonSerializer.Deserialize<FeatureCollection>(rootElement.GetRawText(), options),
                 ResponseType.Error
                     => JsonSerializer.Deserialize<ErrorResponse>(rootElement.GetRawText(), options),
                 _ => throw new JsonException("Unknown response type")

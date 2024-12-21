@@ -130,6 +130,8 @@ public class BrowseServicesController : BaseController
         });
     }
 
+    #region GeoJson Service
+
     public Task<IActionResult> ServiceCapabilities(string id) => SecureMethodHandler(async (identity) =>
     {
         var mapService = _mapServerService.Instance.GetMapService(id.ServiceName(), id.FolderName());
@@ -157,6 +159,7 @@ public class BrowseServicesController : BaseController
         return View("_htmlbody");
     });
 
+    [HttpGet]
     public Task<IActionResult> GeoJsonRequest(string id, string request) => SecureMethodHandler(async (identity) =>
     {
         if (String.IsNullOrEmpty(request))
@@ -175,19 +178,90 @@ public class BrowseServicesController : BaseController
             throw new NotAuthorizedException();
         }
 
+        using var serviceMap = await _mapServerService.Instance.GetServiceMapAsync(mapService);
+        var bounds = serviceMap.FullExtent();
+
         object obj = request.Split("/").First().ToLowerInvariant() switch
         {
-            "map" => new GetMapRequest(),
+            "map" => new GetMapRequest()
+            {
+                CRS = CoordinateReferenceSystem.CreateByName(serviceMap.Display.SpatialReference.Name),
+                BBox = BBox.FromArray([
+                    bounds.MinX,
+                    bounds.MinY,
+                    bounds.MaxX,
+                    bounds.MaxY ]),
+                Width = 800,
+                Height = 600,
+                Dpi = 96,
+                Format = "png",
+                Transparent = true
+            },
             "legend" => new GetLegendRequest(),
             "query" => new GetFeaturesRequest(),
             "feature" => new EditFeaturesRequest(),
             _ => throw new Exception($"Invalid request: {request}")
         };
 
-        ViewData["htmlBody"] = obj.GeoJsonObjectToInputForm();
+        ViewData["htmlBody"] = obj.GeoJsonObjectToInputForm(id, request);
         return View("_htmlbody");
     });
 
+    [HttpPost]
+    public Task<IActionResult> GeoJsonRequest() => SecureMethodHandler(async (identity) =>
+    {
+        string id = Request.Form["id"];
+        string request = Request.Form["request"];
+
+        var mapService = _mapServerService.Instance.GetMapService(id.ServiceName(), id.FolderName());
+        if (mapService == null)
+        {
+            throw new Exception("Unknown service: " + id);
+        }
+
+        if (!await mapService.HasAnyAccess(identity) && !await IsAccessAllowed(identity, mapService))
+        {
+            throw new NotAuthorizedException();
+        }
+
+        StringBuilder sb = new();
+        foreach (var formKey in Request.Form.Keys.Where(k => k != "id" && k != "request"))
+        {
+            var value = Request.Form[formKey];
+            if (string.IsNullOrEmpty(value)) continue;
+
+            if (sb.Length > 0) sb.Append("&");
+            sb.Append($"{formKey}={value}");
+        }
+
+        var capabilitiesUrl = AppendPathToBaseUrl(
+                new RouteBuilder()
+                .UseCapabilitesRoute(mapService)
+                .Build()
+            );
+        var httpCapabilitiesResponse = (await _httpClient.GetAsync(capabilitiesUrl)).EnsureSuccessStatusCode();
+        var jsonCapabilitiesResponse = await httpCapabilitiesResponse.Content.ReadAsStringAsync();
+        var capabilitiesResponse = GeoJsonSerializer.DeserializeResponse(jsonCapabilitiesResponse) as GetServiceCapabilitiesResponse;
+
+        var requestUrl = $"{AppendPathToBaseUrl(new RouteBuilder().UseServiceRootRoute(mapService).Build())}/{request}";
+        var httpRequetResponse = (await _httpClient.GetAsync($"{requestUrl}?{sb}")).EnsureSuccessStatusCode();
+        var contentType = httpRequetResponse.Content.Headers.ContentType.MediaType;
+
+        if (contentType == "application/json")
+        {
+            var jsonRequestResponse = await httpRequetResponse.Content.ReadAsStringAsync();
+            var requestResponse = GeoJsonSerializer.DeserializeResponse(jsonRequestResponse);
+
+            ViewData["htmlbody"] = requestResponse.GeoJsonObjectToHtml(mapService);
+            return View("_htmlbody");
+        }
+
+        ViewData["content-type"] = contentType;
+        ViewData["data"] = await httpRequetResponse.Content.ReadAsByteArrayAsync();
+        return View("_binary");
+    });
+
+    #endregion
 
     public Task<IActionResult> ServiceInterfaces(string id) => SecureMethodHandler(async (identity) =>
     {
