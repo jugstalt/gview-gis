@@ -1,5 +1,6 @@
 ﻿using gView.Framework.Common;
 using gView.Framework.Core.Common;
+using gView.Framework.Core.Data;
 using gView.Framework.Core.Exceptions;
 using gView.Framework.Core.MapServer;
 using gView.GeoJsonService;
@@ -181,7 +182,29 @@ public class BrowseServicesController : BaseController
         using var serviceMap = await _mapServerService.Instance.GetServiceMapAsync(mapService);
         var bounds = serviceMap.FullExtent();
 
-        object obj = request.Split("/").First().ToLowerInvariant() switch
+        var requestParts = request.Split("/");
+        (string command, int? layerId) = requestParts switch
+        {
+        [_, _] => (requestParts[0].ToLowerInvariant(), int.Parse(requestParts[1])),
+            _ => (requestParts[0].ToLowerInvariant(), (int?)null)
+        };
+
+        var capabilitiesUrl = AppendPathToBaseUrl(
+                new RouteBuilder()
+                .UseCapabilitesRoute(mapService)
+                .Build()
+            );
+        var httpCapabilitiesResponse = (await _httpClient.GetAsync(capabilitiesUrl)).EnsureSuccessStatusCode();
+        var jsonCapabilitiesResponse = await httpCapabilitiesResponse.Content.ReadAsStringAsync();
+        var capabilitiesResponse = GeoJsonSerializer.DeserializeResponse(jsonCapabilitiesResponse) as GetServiceCapabilitiesResponse;
+
+        var supportedRequests = capabilitiesResponse.SupportedRequests.Where(r => r.Name == command).FirstOrDefault();
+        if (supportedRequests is null)
+        {
+            throw new Exception($"Command {command} is not supported in this service");
+        }
+
+        object obj = command switch
         {
             "map" => new GetMapRequest()
             {
@@ -198,20 +221,38 @@ public class BrowseServicesController : BaseController
                 Transparent = true
             },
             "legend" => new GetLegendRequest(),
-            "query" => new GetFeaturesRequest(),
+            "query" => new GetFeaturesRequest()
+            {
+                Command = QueryCommand.Select,
+                OutFields = ["*"],
+                OutCRS = CoordinateReferenceSystem.CreateByName(serviceMap.Display.SpatialReference.Name),
+                Limit = 10
+            },
             "feature" => new EditFeaturesRequest(),
             _ => throw new Exception($"Invalid request: {request}")
         };
 
-        ViewData["htmlBody"] = obj.GeoJsonObjectToInputForm(id, request);
+        ViewData["htmlBody"] = obj.GeoJsonObjectToInputForm(
+                                    id,
+                                    request,
+                                    layerId.HasValue
+                                        ? serviceMap.MapElements
+                                                    .Where(l => l.ID == layerId)
+                                                    .Select(l => serviceMap.TOC.GetTOCElement(l as ILayer))
+                                                    .FirstOrDefault()
+                                                    .Name
+                                        : "",
+                                    supportedRequests.HttpMethods
+                                    );
         return View("_htmlbody");
     });
 
     [HttpPost]
     public Task<IActionResult> GeoJsonRequest() => SecureMethodHandler(async (identity) =>
     {
-        string id = Request.Form["id"];
-        string request = Request.Form["request"];
+        string id = Request.Form["_id"];
+        string request = Request.Form["_request"];
+        string httpMethod = Request.Form["_method"].ToString().ToUpperInvariant();
 
         var mapService = _mapServerService.Instance.GetMapService(id.ServiceName(), id.FolderName());
         if (mapService == null)
@@ -224,42 +265,126 @@ public class BrowseServicesController : BaseController
             throw new NotAuthorizedException();
         }
 
+        return httpMethod switch
+        {
+            "GET" => await SendGeoJsonGetRequst(mapService, request),
+            _ => await SendGeoJsonRequest(mapService, request)
+        };
+    });
+
+    async private Task<IActionResult> SendGeoJsonGetRequst(IMapService mapService, string request)
+    {
         StringBuilder sb = new();
-        foreach (var formKey in Request.Form.Keys.Where(k => k != "id" && k != "request"))
+        foreach (var formKey in Request.Form.Keys.Where(k => !k.StartsWith("_")))
         {
             var value = Request.Form[formKey];
-            if (string.IsNullOrEmpty(value)) continue;
+            if (string.IsNullOrEmpty(value))
+            {
+                continue;
+            }
 
-            if (sb.Length > 0) sb.Append("&");
+            if (sb.Length > 0)
+            {
+                sb.Append("&");
+            }
+
             sb.Append($"{formKey}={value}");
         }
 
-        var capabilitiesUrl = AppendPathToBaseUrl(
-                new RouteBuilder()
-                .UseCapabilitesRoute(mapService)
-                .Build()
-            );
-        var httpCapabilitiesResponse = (await _httpClient.GetAsync(capabilitiesUrl)).EnsureSuccessStatusCode();
-        var jsonCapabilitiesResponse = await httpCapabilitiesResponse.Content.ReadAsStringAsync();
-        var capabilitiesResponse = GeoJsonSerializer.DeserializeResponse(jsonCapabilitiesResponse) as GetServiceCapabilitiesResponse;
+        var requestUrl = $"{new RouteBuilder().UseServiceRootRoute(mapService).Build()}/{request}";
 
-        var requestUrl = $"{AppendPathToBaseUrl(new RouteBuilder().UseServiceRootRoute(mapService).Build())}/{request}";
-        var httpRequetResponse = (await _httpClient.GetAsync($"{requestUrl}?{sb}")).EnsureSuccessStatusCode();
-        var contentType = httpRequetResponse.Content.Headers.ContentType.MediaType;
+        var httpRequestResponse = (await _httpClient.GetAsync($"{AppendPathToBaseUrl(requestUrl)}?{sb}")).EnsureSuccessStatusCode();
+
+        var contentType = httpRequestResponse.Content.Headers.ContentType.MediaType;
 
         if (contentType == "application/json")
         {
-            var jsonRequestResponse = await httpRequetResponse.Content.ReadAsStringAsync();
+            var jsonRequestResponse = await httpRequestResponse.Content.ReadAsStringAsync();
             var requestResponse = GeoJsonSerializer.DeserializeResponse(jsonRequestResponse);
 
-            ViewData["htmlbody"] = requestResponse.GeoJsonObjectToHtml(mapService);
+            ViewData["htmlbody"] = requestResponse.GeoJsonObjectToHtml(
+                    mapService,
+                    requestUrl: $"{_configuration["onlineresource-url"]}/{requestUrl}?{sb}"
+               );
             return View("_htmlbody");
+
         }
 
         ViewData["content-type"] = contentType;
-        ViewData["data"] = await httpRequetResponse.Content.ReadAsByteArrayAsync();
+        ViewData["data"] = await httpRequestResponse.Content.ReadAsByteArrayAsync();
         return View("_binary");
-    });
+    }
+
+    async private Task<IActionResult> SendGeoJsonRequest(IMapService mapService, string request)
+    {
+        var form = Request.Form;
+
+        BaseRequest requestBodyObject = request.Split("/").First().ToLowerInvariant() switch
+        {
+            "map" => new GetMapRequest()
+            {
+                Layers = form.AsArrayOrDefault<string>("Layers"),
+                CRS = form.AsObjectOrDefault("CRS", (value) => CoordinateReferenceSystem.CreateByName(value)),
+                BBox = form.AsObject("BBox", (value) => BBox.FromArray(value.Split(',').Select(n => n.ToDouble()).ToArray())),
+                Width = form.Parse<int>("Width"),
+                Height = form.Parse<int>("Height"),
+                Dpi = form.ParseOrDefault<int?>("Dpi"),
+                Rotation = form.ParseOrDefault<double?>("Rotation"),
+                Format = form["Format"],
+                Transparent = form.IsTrue("Transparent"),
+                ResponseFormat = form.AsEnumValue<MapReponseFormat>("ResponseFormat")
+            },
+            "legend" => new GetLegendRequest()
+            {
+                Width = form.Parse<int>("Width"),
+                Height = form.Parse<int>("Height"),
+                Dpi = form.ParseOrDefault<int?>("Dpi"),
+            },
+            "query" => new GetFeaturesRequest()
+            {
+                Command = form.AsEnumValue<QueryCommand>("Command"),
+                OutFields = form.AsArray<string>("OutFields"),
+                OutCRS = form.AsObjectOrDefault("OutCRS", (value) => CoordinateReferenceSystem.CreateByName(value)),
+
+                ReturnGeometry = form.AsEnumValue<GeometryResult>("ReturnGeometry"),
+
+                OrderByFields = form.AsArrayOrDefault<string>("OrderByFields"),
+                ObjectIds = form.AsArrayOrDefault<string>("ObjectIds"),
+
+                Limit = form.ParseOrDefault<int?>("Limit"),
+                Offset = form.ParseOrDefault<int?>("Offset")
+            },
+            "feature" => new EditFeaturesRequest(),
+            _ => throw new Exception($"Invalid request: {request}")
+        };
+
+        var requestBody = GeoJsonSerializer.Serialize(requestBodyObject);
+
+        var requestUrl = $"{new RouteBuilder().UseServiceRootRoute(mapService).Build()}/{request}";
+
+        var httpRequestResponse = (await _httpClient.PostAsync($"{AppendPathToBaseUrl(requestUrl)}",
+            new StringContent(requestBody))).EnsureSuccessStatusCode();
+
+        var contentType = httpRequestResponse.Content.Headers.ContentType.MediaType;
+
+        if (contentType == "application/json")
+        {
+            var jsonRequestResponse = await httpRequestResponse.Content.ReadAsStringAsync();
+            var requestResponse = GeoJsonSerializer.DeserializeResponse(jsonRequestResponse);
+
+            ViewData["htmlbody"] = requestResponse.GeoJsonObjectToHtml(
+            mapService,
+                    requestUrl: $"{_configuration["onlineresource-url"]}/{requestUrl}",
+                    requestBody: requestBody
+               );
+            return View("_htmlbody");
+
+        }
+
+        ViewData["content-type"] = contentType;
+        ViewData["data"] = await httpRequestResponse.Content.ReadAsByteArrayAsync();
+        return View("_binary");
+    }
 
     #endregion
 
@@ -489,13 +614,12 @@ public class BrowseServicesController : BaseController
                 if (e is InvalidTokenException)
                 {
                     base.RemoveAuthCookie();
-                }
-                else
-                {
-                    throw e;
+                    return RedirectToAction("Index", "Home");
                 }
 
-                return RedirectToAction("Index", "Home");
+                //throw e;
+                ViewData["errorMessage"] = e.Message;
+                return View("_errorMessage");
             };
         }
 

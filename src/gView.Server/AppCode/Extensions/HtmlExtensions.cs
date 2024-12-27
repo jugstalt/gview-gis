@@ -7,6 +7,7 @@ using gView.Server.Services.Hosting;
 using gView.Server.Services.MapServer;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
+using Microsoft.Extensions.Http.Diagnostics;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -427,7 +428,7 @@ static internal class HtmlExtensions
 
     #region GeoJson Services
 
-    static public string GeoJsonObjectToHtml(this object obj, IMapService mapService)
+    static public string GeoJsonObjectToHtml(this object obj, IMapService mapService, string requestUrl = "", string requestBody = "")
     {
         var json = JsonSerializer.Serialize(obj,
             new JsonSerializerOptions()
@@ -443,8 +444,6 @@ static internal class HtmlExtensions
 
         StringBuilder sb = new StringBuilder();
 
-
-
         sb.Append("<div class='html-body'>");
         sb.Append("<h3>" + obj.GetType().Name + " (JSON):</h3>");
 
@@ -453,6 +452,26 @@ static internal class HtmlExtensions
             sb.Append("<p>GeoJson Service");
             sb.Append(Link("Specification", "https://docs.gviewonline.com/en/spec/geojson_service/index.html"));
             sb.Append("</p>");
+        }
+
+        if (!String.IsNullOrEmpty(requestUrl))
+        {
+            sb.Append("<h4>Request Url</h4>");
+            sb.Append("<div class='code-block'>");
+            sb.Append("<pre>");
+            sb.Append(requestUrl);
+            sb.Append("</pre>");
+            sb.Append("</div>");
+        }
+
+        if (!String.IsNullOrEmpty(requestBody))
+        {
+            sb.Append("<h4>Request Body</h4>");
+            sb.Append("<div class='code-block'>");
+            sb.Append("<pre>");
+            sb.Append(requestBody);
+            sb.Append("</pre>");
+            sb.Append("</div>");
         }
 
         if (obj is GetServiceCapabilitiesResponse capabilities)
@@ -485,6 +504,7 @@ static internal class HtmlExtensions
             sb.Append("</div>");
         }
 
+        sb.Append("<h4>Response</h4>");
         sb.Append("<div class='code-block'>");
         sb.Append("<pre>");
         sb.Append(json);
@@ -495,20 +515,27 @@ static internal class HtmlExtensions
         return sb.ToString();
     }
 
-    static public string GeoJsonObjectToInputForm(this object obj, string id, string request)
+    static public string GeoJsonObjectToInputForm(
+                this object obj, 
+                string id, 
+                string request,
+                string title = "",
+                string[] httpMethods = null)
     {
         if (obj == null)
         {
             return String.Empty;
         }
 
+        httpMethods = httpMethods ?? ["GET"];
+
         StringBuilder sb = new StringBuilder();
 
         sb.Append("<div class='html-body'>");
         sb.Append("<form method='post'>");
 
-        sb.Append($"<input type='hidden' name='id' value='{id}' />");
-        sb.Append($"<input type='hidden' name='request' value='{request}' />");
+        sb.Append($"<input type='hidden' name='_id' value='{id}' />");
+        sb.Append($"<input type='hidden' name='_request' value='{request}' />");
 
         sb.Append("<table>");
 
@@ -521,7 +548,7 @@ static internal class HtmlExtensions
 
                 if (name == "Type")
                 {
-                    sb.Append($"<tr><td></td><td><h2>{value}</h2></td></tr>");
+                    sb.Append($"<tr><td><h3>{value}</h3></td><td><h3>{title}</h3></td></tr>");
                     continue;
                 }
 
@@ -575,7 +602,7 @@ static internal class HtmlExtensions
                                 sb.Append($"<select name='{name}' style='min-width:auto;'>");
                                 foreach (var enumValue in Enum.GetValues(propertyInfo.PropertyType))
                                 {
-                                    sb.Append($"<option value='{(int)enumValue}'>{enumValue}</option>");
+                                    sb.Append($"<option value='{enumValue}'>{enumValue}</option>");
                                 }
                                 sb.Append("</select>");
                             }
@@ -593,6 +620,12 @@ static internal class HtmlExtensions
 
         sb.Append("<tr>");
         sb.Append("<td>");
+        sb.Append("<select name='_method'>");
+        foreach (var httpMethod in httpMethods)
+        {
+            sb.Append($"<option value='{httpMethod}'>{httpMethod}</option>");
+        }
+        sb.Append("</select>");
         sb.Append("</td><td>");
         sb.Append("<button>Submit</button>");
         sb.Append("</td>");

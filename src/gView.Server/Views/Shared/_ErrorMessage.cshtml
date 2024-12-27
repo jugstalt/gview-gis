@@ -1,0 +1,20 @@
+﻿@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@{
+    var response = this.Context.Response;
+
+    <div style="border:2px solid red;background:#fcc;border-radius:5px;padding:10px;margin:10px;color:black">
+    
+
+    @if (ViewData["errorMessage"] != null)
+    {
+        //var buffer = System.Text.Encoding.UTF8.GetBytes((string)ViewData["htmlbody"]);
+        //response.Body.Write(buffer, 0, buffer.Length);
+
+        @Html.Raw(ViewData["errorMessage"]);
+    }
+    
+    </div>
+}

@@ -71,6 +71,12 @@ public class ResponseConverter : JsonConverter<BaseResponse>
                     => JsonSerializer.Deserialize<GetLegendResponse>(rootElement.GetRawText(), options),
                 ResponseType.FeatureCollection
                     => JsonSerializer.Deserialize<FeatureCollection>(rootElement.GetRawText(), options),
+                ResponseType.FeaturesCountOnly
+                    => JsonSerializer.Deserialize<GetFeaturesCountOnlyResponse>(rootElement.GetRawText(), options),
+                ResponseType.FeaturesIdsOnly
+                    => JsonSerializer.Deserialize<GetFeaturesIdsOnlyResponse>(rootElement.GetRawText(), options),
+                ResponseType.FeaturesDistinct
+                    => JsonSerializer.Deserialize<GetFeaturesDistinctResponse>(rootElement.GetRawText(), options),
                 ResponseType.Error
                     => JsonSerializer.Deserialize<ErrorResponse>(rootElement.GetRawText(), options),
                 _ => throw new JsonException("Unknown response type")
