@@ -1,4 +1,5 @@
 ﻿using gView.Framework.Common;
+using gView.Framework.Common.Extensions;
 using gView.Framework.Common.Reflection;
 using gView.Framework.Core.MapServer;
 using gView.GeoJsonService.DTOs;
@@ -6,8 +7,6 @@ using gView.Interoperability.GeoServices.Rest.Reflection;
 using gView.Server.Services.Hosting;
 using gView.Server.Services.MapServer;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
-using Microsoft.Extensions.Http.Diagnostics;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -479,7 +478,10 @@ static internal class HtmlExtensions
             sb.Append("<div>");
             foreach (var supportedRequest in capabilities.SupportedRequests ?? [])
             {
-                if (supportedRequest.Url.IndexOf(mapService.Fullname) < 0) continue;
+                if (supportedRequest.Url.IndexOf(mapService.Fullname) < 0)
+                {
+                    continue;
+                }
 
                 var url = supportedRequest.Url.Substring(
                                 supportedRequest.Url.LastIndexOf(mapService.Fullname) + mapService.Fullname.Length + 1);
@@ -516,8 +518,8 @@ static internal class HtmlExtensions
     }
 
     static public string GeoJsonObjectToInputForm(
-                this object obj, 
-                string id, 
+                this object obj,
+                string id,
                 string request,
                 string title = "",
                 string[] httpMethods = null)
@@ -545,6 +547,7 @@ static internal class HtmlExtensions
             {
                 string name = propertyInfo.Name;
                 object value = propertyInfo.GetValue(obj);
+                var inputType = FormInputAttribute.InputTypes.Text;
 
                 if (name == "Type")
                 {
@@ -560,12 +563,14 @@ static internal class HtmlExtensions
                 {
                     value = crs.ToSpatialReferenceName();
                 }
-                else if(value is string[] stringArray)
+                else if (value is string[] stringArray)
                 {
                     value = String.Join(",", stringArray);
                 }
-
-                var inputType = FormInputAttribute.InputTypes.Text;
+                else if (propertyInfo.PropertyType.IsTypeOrNullableType(typeof(SpatialFilter)))
+                {
+                    inputType = FormInputAttribute.InputTypes.TextBox;
+                }
 
                 sb.Append("<tr>");
                 sb.Append("<td>");
@@ -597,7 +602,7 @@ static internal class HtmlExtensions
                             sb.Append($"<input name='{name}' type='password' value='{(value?.ToString() ?? String.Empty)}'>");
                             break;
                         default:
-                            if(propertyInfo.PropertyType.IsEnum)
+                            if (propertyInfo.PropertyType.IsEnum)
                             {
                                 sb.Append($"<select name='{name}' style='min-width:auto;'>");
                                 foreach (var enumValue in Enum.GetValues(propertyInfo.PropertyType))

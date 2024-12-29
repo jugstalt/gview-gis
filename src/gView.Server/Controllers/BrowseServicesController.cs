@@ -351,6 +351,12 @@ public class BrowseServicesController : BaseController
                 OrderByFields = form.AsArrayOrDefault<string>("OrderByFields"),
                 ObjectIds = form.AsArrayOrDefault<string>("ObjectIds"),
 
+                Filter = form.AsObjectOrDefault<AttributeFilter>("Filter",
+                    (value) => new AttributeFilter()
+                    {
+                        WhereClause = value
+                    }),
+
                 Limit = form.ParseOrDefault<int?>("Limit"),
                 Offset = form.ParseOrDefault<int?>("Offset")
             },
