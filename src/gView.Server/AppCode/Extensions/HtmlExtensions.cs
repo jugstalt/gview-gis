@@ -3,6 +3,7 @@ using gView.Framework.Common.Extensions;
 using gView.Framework.Common.Reflection;
 using gView.Framework.Core.MapServer;
 using gView.GeoJsonService.DTOs;
+using gView.GeoJsonService.JsonConverters;
 using gView.Interoperability.GeoServices.Rest.Reflection;
 using gView.Server.Services.Hosting;
 using gView.Server.Services.MapServer;
@@ -427,7 +428,12 @@ static internal class HtmlExtensions
 
     #region GeoJson Services
 
-    static public string GeoJsonObjectToHtml(this object obj, IMapService mapService, string requestUrl = "", string requestBody = "")
+    static public string GeoJsonObjectToHtml(
+                this object obj, 
+                IMapService mapService, 
+                string requestUrl = "", 
+                string requestBody = "",
+                TimeSpan? requestTimeSpan = null)
     {
         var json = JsonSerializer.Serialize(obj,
             new JsonSerializerOptions()
@@ -435,6 +441,8 @@ static internal class HtmlExtensions
                 Converters =
                 {
                     new JsonStringEnumConverter(),
+                    new SupportedRequestConverter(),
+                    new ResponseConverter()
                 },
                 PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
                 DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
@@ -455,7 +463,7 @@ static internal class HtmlExtensions
 
         if (!String.IsNullOrEmpty(requestUrl))
         {
-            sb.Append("<h4>Request Url</h4>");
+            sb.Append("<h4>Request Url:</h4>");
             sb.Append("<div class='code-block'>");
             sb.Append("<pre>");
             sb.Append(requestUrl);
@@ -465,7 +473,7 @@ static internal class HtmlExtensions
 
         if (!String.IsNullOrEmpty(requestBody))
         {
-            sb.Append("<h4>Request Body</h4>");
+            sb.Append("<h4>Request Body:</h4>");
             sb.Append("<div class='code-block'>");
             sb.Append("<pre>");
             sb.Append(requestBody);
@@ -506,12 +514,20 @@ static internal class HtmlExtensions
             sb.Append("</div>");
         }
 
-        sb.Append("<h4>Response</h4>");
-        sb.Append("<div class='code-block'>");
-        sb.Append("<pre>");
-        sb.Append(json);
-        sb.Append("</pre>");
-        sb.Append("</div>");
+        sb.Append($"<h4>Response: {(requestTimeSpan.HasValue ? $"{(int)requestTimeSpan.Value.TotalMilliseconds} ms" : "")}</h4>");
+        if (obj is byte[] byteData)
+        {
+            sb.Append($"<img src='data:image/png;base64, {Convert.ToBase64String(byteData)}' />");
+        } 
+        else
+        {
+            sb.Append("<div class='code-block'>");
+            sb.Append("<pre>");
+            sb.Append(json);
+            sb.Append("</pre>");
+            sb.Append("</div>");
+        }
+        
         sb.Append("</div>");
 
         return sb.ToString();
@@ -567,6 +583,18 @@ static internal class HtmlExtensions
                 {
                     value = String.Join(",", stringArray);
                 }
+                else if (propertyInfo.PropertyType.IsTypeOrNullableType(typeof(int)))
+                {
+                    inputType = FormInputAttribute.InputTypes.Integer;
+                }
+                else if (propertyInfo.PropertyType.IsTypeOrNullableType(typeof(float)))
+                {
+                    inputType = FormInputAttribute.InputTypes.Float;
+                }
+                else if (propertyInfo.PropertyType.IsTypeOrNullableType(typeof(double)))
+                {
+                    inputType = FormInputAttribute.InputTypes.Double;
+                }
                 else if (propertyInfo.PropertyType.IsTypeOrNullableType(typeof(SpatialFilter)))
                 {
                     inputType = FormInputAttribute.InputTypes.TextBox;
@@ -600,6 +628,15 @@ static internal class HtmlExtensions
                             break;
                         case FormInputAttribute.InputTypes.Password:
                             sb.Append($"<input name='{name}' type='password' value='{(value?.ToString() ?? String.Empty)}'>");
+                            break;
+                        case FormInputAttribute.InputTypes.Integer:
+                            sb.Append($"<input name='{name}' type='number' value='{(value?.ToString() ?? String.Empty)}'>");
+                            break;
+                        case FormInputAttribute.InputTypes.Float:
+                            sb.Append($"<input name='{name}' type='number' step='.001' value='{(value?.ToString() ?? String.Empty)}'>");
+                            break;
+                        case FormInputAttribute.InputTypes.Double:
+                            sb.Append($"<input name='{name}' type='number' step='.00000001' value='{(value?.ToString() ?? String.Empty)}'>");
                             break;
                         default:
                             if (propertyInfo.PropertyType.IsEnum)

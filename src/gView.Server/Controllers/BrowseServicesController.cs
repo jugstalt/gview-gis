@@ -292,27 +292,25 @@ public class BrowseServicesController : BaseController
         }
 
         var requestUrl = $"{new RouteBuilder().UseServiceRootRoute(mapService).Build()}/{request}";
+        var beginTime = DateTime.UtcNow;
 
         var httpRequestResponse = (await _httpClient.GetAsync($"{AppendPathToBaseUrl(requestUrl)}?{sb}")).EnsureSuccessStatusCode();
 
+        var requestTimeSpan = DateTime.UtcNow - beginTime;
         var contentType = httpRequestResponse.Content.Headers.ContentType.MediaType;
 
-        if (contentType == "application/json")
+        object requestResponse = contentType switch
         {
-            var jsonRequestResponse = await httpRequestResponse.Content.ReadAsStringAsync();
-            var requestResponse = GeoJsonSerializer.DeserializeResponse(jsonRequestResponse);
+            "application/json" => GeoJsonSerializer.DeserializeResponse(await httpRequestResponse.Content.ReadAsStringAsync()),
+            _ => await httpRequestResponse.Content.ReadAsByteArrayAsync()
+        };
 
-            ViewData["htmlbody"] = requestResponse.GeoJsonObjectToHtml(
-                    mapService,
-                    requestUrl: $"{_configuration["onlineresource-url"]}/{requestUrl}?{sb}"
-               );
-            return View("_htmlbody");
-
-        }
-
-        ViewData["content-type"] = contentType;
-        ViewData["data"] = await httpRequestResponse.Content.ReadAsByteArrayAsync();
-        return View("_binary");
+        ViewData["htmlbody"] = requestResponse.GeoJsonObjectToHtml(
+                mapService,
+                requestUrl: $"{_configuration["onlineresource-url"]}/{requestUrl}?{sb}",
+                requestTimeSpan: requestTimeSpan
+           );
+        return View("_htmlbody");
     }
 
     async private Task<IActionResult> SendGeoJsonRequest(IMapService mapService, string request)
@@ -328,7 +326,7 @@ public class BrowseServicesController : BaseController
                 BBox = form.AsObject("BBox", (value) => BBox.FromArray(value.Split(',').Select(n => n.ToDouble()).ToArray())),
                 Width = form.Parse<int>("Width"),
                 Height = form.Parse<int>("Height"),
-                Dpi = form.ParseOrDefault<int?>("Dpi"),
+                Dpi = form.ParseOrDefault<float?>("Dpi"),
                 Rotation = form.ParseOrDefault<double?>("Rotation"),
                 Format = form["Format"],
                 Transparent = form.IsTrue("Transparent"),
@@ -365,31 +363,28 @@ public class BrowseServicesController : BaseController
         };
 
         var requestBody = GeoJsonSerializer.Serialize(requestBodyObject);
-
         var requestUrl = $"{new RouteBuilder().UseServiceRootRoute(mapService).Build()}/{request}";
+        var beginTime = DateTime.UtcNow;
 
         var httpRequestResponse = (await _httpClient.PostAsync($"{AppendPathToBaseUrl(requestUrl)}",
             new StringContent(requestBody))).EnsureSuccessStatusCode();
 
+        var requestTimeSpan = DateTime.UtcNow - beginTime;
         var contentType = httpRequestResponse.Content.Headers.ContentType.MediaType;
 
-        if (contentType == "application/json")
+        object requestResponse = contentType switch
         {
-            var jsonRequestResponse = await httpRequestResponse.Content.ReadAsStringAsync();
-            var requestResponse = GeoJsonSerializer.DeserializeResponse(jsonRequestResponse);
+            "application/json" => GeoJsonSerializer.DeserializeResponse(await httpRequestResponse.Content.ReadAsStringAsync()),
+            _ => await httpRequestResponse.Content.ReadAsByteArrayAsync()
+        };
 
-            ViewData["htmlbody"] = requestResponse.GeoJsonObjectToHtml(
-            mapService,
-                    requestUrl: $"{_configuration["onlineresource-url"]}/{requestUrl}",
-                    requestBody: requestBody
-               );
-            return View("_htmlbody");
-
-        }
-
-        ViewData["content-type"] = contentType;
-        ViewData["data"] = await httpRequestResponse.Content.ReadAsByteArrayAsync();
-        return View("_binary");
+        ViewData["htmlbody"] = requestResponse.GeoJsonObjectToHtml(
+                mapService,
+                requestUrl: $"{_configuration["onlineresource-url"]}/{requestUrl}",
+                requestBody: requestBody,
+                requestTimeSpan: requestTimeSpan
+           );
+        return View("_htmlbody");
     }
 
     #endregion

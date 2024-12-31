@@ -10,6 +10,11 @@ public static class RequestProperties
     public const string EditFeatures = "features";
 }
 
+//[JsonPolymorphic(TypeDiscriminatorPropertyName = "name")]
+//[JsonDerivedType(typeof(GetMapRequestProperties), RequestProperties.GetMap)]
+//[JsonDerivedType(typeof(GetFeaturesRequestProperties), RequestProperties.QueryFeatures)]
+//[JsonDerivedType(typeof(GetLegendRequestProperties), RequestProperties.GetLegend)]
+//[JsonDerivedType(typeof(EditFeaturesRequestProperties), RequestProperties.EditFeatures)]
 abstract public class SupportedRequest
 {
     public string Name { get; set; } = "";
@@ -35,7 +40,7 @@ public class GetFeaturesRequestProperties : SupportedRequest
     {
         Name = RequestProperties.QueryFeatures;
     }
-    
+
     public int MaxFeaturesLimit { get; set; }
 }
 

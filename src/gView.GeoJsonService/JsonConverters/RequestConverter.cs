@@ -124,6 +124,13 @@ public class SupportedRequestConverter : JsonConverter<SupportedRequest>
 
     public override void Write(Utf8JsonWriter writer, SupportedRequest value, JsonSerializerOptions options)
     {
-        JsonSerializer.Serialize(writer, value, value.GetType(), options);
+        if (value is GetMapRequestProperties)
+        {
+            JsonSerializer.Serialize(writer, (GetMapRequestProperties)value, typeof(GetMapRequestProperties), options);
+        }
+        else
+        {
+            JsonSerializer.Serialize(writer, value, value.GetType(), options);
+        }
     }
 }

@@ -337,19 +337,23 @@ ul.browseservices{
         }
 
         ul.browseservices li .button-service-interfaces {
-            width: 32px;
+            /*width: 32px;
             height: 32px;
-            cursor: pointer;
+            cursor: pointer;*/
             position: absolute;
             right: 40px;
             top: 0px;
-            background-image: url('../images/icons/settings-g-26.png');
+            display: inline-block;
+            color: #72b5ef;
+            margin: 6px 2px;
+            /*background-image: url('../images/icons/settings-g-26.png');
             background-repeat: no-repeat;
-            background-position: center;
+            background-position: center;*/
         }
 
             ul.browseservices li .button-service-interfaces:hover {
-                background-image: url('../images/icons/settings-b-26.png');
+                text-decoration:underline;
+                /*background-image: url('../images/icons/settings-b-26.png');*/
             }
 
         ul.browseservices li .button-delete-service {

@@ -22,9 +22,12 @@
         {
             <li class="service">
                 @Html.ActionLink(mapService.Name, "ServiceCapabilities", "BrowseServices", new { id = (String.IsNullOrWhiteSpace(mapService.Folder) ? "" : mapService.Folder + "@") + mapService.Name })
+                
+
+                <div class="button-service-interfaces" data-folder="@(mapService.Folder)" data-service="@(mapService.Name)">All Interfaces...</div>
+
                 @if(Model.IsPublisher)
                 {
-                    <div class="button-service-interfaces" data-folder="@(mapService.Folder)" data-service="@(mapService.Name)"></div>
                     <div class="button-delete-service" data-folder="@(mapService.Folder)" data-service="@(mapService.Name)"></div>
                 }
             </li>

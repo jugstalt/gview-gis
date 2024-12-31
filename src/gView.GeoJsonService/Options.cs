@@ -12,7 +12,8 @@ public class Options
         {
             new JsonStringEnumConverter(),
             new RequestConverter(),
-            new ResponseConverter()
+            new ResponseConverter(),
+            new SupportedRequestConverter()
         },
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,

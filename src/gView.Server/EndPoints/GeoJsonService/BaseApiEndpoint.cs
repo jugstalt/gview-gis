@@ -8,7 +8,6 @@ using gView.Framework.Data.Extensions;
 using gView.Framework.GeoJsonService.Request;
 using gView.GeoJsonService;
 using gView.GeoJsonService.DTOs;
-using gView.Server.AppCode.Extensions;
 using gView.Server.EndPoints.GeoJsonService.Extensions;
 using gView.Server.Services.MapServer;
 using gView.Server.Services.Security;
@@ -18,7 +17,6 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Linq;
-using System.Runtime.Intrinsics.X86;
 using System.Threading.Tasks;
 
 namespace gView.Server.EndPoints.GeoJsonService;
@@ -89,6 +87,7 @@ public class BaseApiEndpoint : IApiEndpoint
                 Func<IServiceRequestContext?, IMapService?, Identity, Task<object>> action)
     {
         object? result = null;
+        int? statusCode = null;
 
         try
         {
@@ -133,9 +132,10 @@ public class BaseApiEndpoint : IApiEndpoint
         {
             logger.LogWarning("Handle GeoJson Service Request: {message}", mse.Message);
 
+            statusCode = 400;
             result = new ErrorResponse()
             {
-                ErrorCode = 400,
+                ErrorCode = statusCode.Value,
                 ErrorMessage = mse.Message
             };
         }
@@ -143,14 +143,15 @@ public class BaseApiEndpoint : IApiEndpoint
         {
             logger.LogError("Handle GeoJson Service Request: {message}", ex.Message);
 
+            statusCode = 500;
             result = new ErrorResponse()
             {
-                ErrorCode = 500,
+                ErrorCode = statusCode.Value,
                 ErrorMessage = "internal server error"
             };
         }
 
-        return Results.Json(result, GeoJsonSerializer.JsonSerializerOptions);
+        return Results.Json(result, GeoJsonSerializer.JsonSerializerOptions, statusCode: statusCode);
     }
 
     async static protected Task<object> HandleSecureAsync<T>(
@@ -163,6 +164,7 @@ public class BaseApiEndpoint : IApiEndpoint
                 Func<IServiceRequestContext, IMapService, Identity, T, Task<object>> action)
     {
         object? result = null;
+        int? statusCode = null;
 
         try
         {
@@ -202,9 +204,10 @@ public class BaseApiEndpoint : IApiEndpoint
         {
             logger.LogWarning("Handle GeoJson Service Request: {message}", mse.Message);
 
+            statusCode = 400;
             result = new ErrorResponse()
             {
-                ErrorCode = 400,
+                ErrorCode = statusCode.Value,
                 ErrorMessage = mse.Message
             };
         }
@@ -212,26 +215,39 @@ public class BaseApiEndpoint : IApiEndpoint
         {
             logger.LogWarning("Handle GeoJson Service Request: {message}", dse.Message);
 
+            statusCode = 400;
             result = new ErrorResponse()
             {
-                ErrorCode = 400,
+                ErrorCode = statusCode.Value,
                 ErrorMessage = dse.Message
+            };
+        }
+        catch (FormatException fex)
+        {
+            logger.LogError("Handle GeoJson Service Request: {message}", fex.Message);
+
+            statusCode = 400;
+            result = new ErrorResponse()
+            {
+                ErrorCode = statusCode.Value,
+                ErrorMessage = fex.Message
             };
         }
         catch (Exception ex)
         {
             logger.LogError("Handle GeoJson Service Request: {message}", ex.Message);
 
+            statusCode = 500;
             result = new ErrorResponse()
             {
-                ErrorCode = 500,
+                ErrorCode = statusCode.Value,
                 ErrorMessage = "internal server error"
             };
         }
 
         return result is IResult
             ? result
-            : Results.Json(result, GeoJsonSerializer.JsonSerializerOptions);
+            : Results.Json(result, GeoJsonSerializer.JsonSerializerOptions, statusCode: statusCode);
     }
 
     async static protected Task<object> HandleSecureAsync<T>(
@@ -240,6 +256,7 @@ public class BaseApiEndpoint : IApiEndpoint
                 Func<T, Task<object>> action)
     {
         object? result = null;
+        int? statusCode = null;
 
         try
         {
@@ -255,9 +272,10 @@ public class BaseApiEndpoint : IApiEndpoint
         {
             logger.LogWarning("Handle GeoJson Service Request: {message}", mse.Message);
 
+            statusCode = 400;
             result = new ErrorResponse()
             {
-                ErrorCode = 400,
+                ErrorCode = statusCode.Value,
                 ErrorMessage = mse.Message
             };
         }
@@ -265,9 +283,10 @@ public class BaseApiEndpoint : IApiEndpoint
         {
             logger.LogWarning("Handle GeoJson Service Request: {message}", dse.Message);
 
+            statusCode = 400;
             result = new ErrorResponse()
             {
-                ErrorCode = 400,
+                ErrorCode = statusCode.Value,
                 ErrorMessage = dse.Message
             };
         }
@@ -275,15 +294,16 @@ public class BaseApiEndpoint : IApiEndpoint
         {
             logger.LogError("Handle GeoJson Service Request: {message}", ex.Message);
 
+            statusCode = 500;
             result = new ErrorResponse()
             {
-                ErrorCode = 999,
+                ErrorCode = statusCode.Value,
                 ErrorMessage = "internal server error"
             };
         }
 
         return result is IResult
             ? result
-            : Results.Json(result, GeoJsonSerializer.JsonSerializerOptions);
+            : Results.Json(result, GeoJsonSerializer.JsonSerializerOptions, statusCode: statusCode);
     }
 }

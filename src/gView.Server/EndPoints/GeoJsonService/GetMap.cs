@@ -76,7 +76,15 @@ public class GetMap : BaseApiEndpoint
 
                 #region ImageFormat / Transparency
 
-                if (!Enum.TryParse(mapRequest.Format.Split('/').Last(), true, out ImageFormat imageFormat))
+                var imageFormatString = mapRequest.Format.Split('/').Last().ToLowerInvariant();
+
+                if (!Enum.TryParse(imageFormatString switch
+                    {
+                        "jpg" => "jpeg",
+                        _ => imageFormatString
+                    },
+                    true, 
+                    out ImageFormat imageFormat))
                 {
                     throw new MapServerException($"Unsuported image format: {mapRequest.Format}");
                 }
@@ -183,7 +191,7 @@ public class GetMap : BaseApiEndpoint
                 {
                     string serviceMapName = serviceMap.Name.Replace("/", "_").Replace(",", "_");
                     string fileName =
-                       $"{serviceMapName}_{System.Guid.NewGuid():N}.{imageFormat.ToString().ToLower()}";
+                       $"{serviceMapName}_{System.Guid.NewGuid():N}.{imageFormatString}";
 
                     string path = ($"{mapServiceManager.Instance.OutputPath}/{fileName}").ToPlatformPath();
                     await serviceMap.SaveImage(path, imageFormat);

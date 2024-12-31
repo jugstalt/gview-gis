@@ -61,7 +61,7 @@ public class GetInfo : BaseApiEndpoint
                 {
                     ErrorCode = 500,
                     ErrorMessage = "internal server error"
-                }, GeoJsonSerializer.JsonSerializerOptions);
+                }, GeoJsonSerializer.JsonSerializerOptions, statusCode: 500);
             }
         };
 
