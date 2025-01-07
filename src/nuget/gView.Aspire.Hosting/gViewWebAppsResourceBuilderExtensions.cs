@@ -1,4 +1,5 @@
 ﻿using Aspire.Hosting.ApplicationModel;
+using System.Xml.Linq;
 
 namespace Aspire.Hosting;
 
@@ -10,13 +11,13 @@ static public class gViewWebAppsResourceBuilderExtensions
 
     public static gViewWebAppsResourceBuilder AddgViewWebApps(
             this IDistributedApplicationBuilder builder,
-            string containerName,
+            string name,
             int? httpPort = null,
             int? httpsPort = null,
             string? imageTag = null
         )
     {
-        var resource = new gViewWebAppsResource(containerName);
+        var resource = new gViewWebAppsResource(name);
 
         var resourceBuilder = builder
                       .AddResource(resource)
@@ -32,6 +33,11 @@ static public class gViewWebAppsResourceBuilderExtensions
                       //    targetPort: 8443,
                       //    port: httpsPort,
                       //    name: gViewServerResource.HttpsEndpointName);
+                      .WithAnnotation(new ContainerNameAnnotation
+                          {
+                              Name = $"{name}-{Convert.ToBase64String(Guid.NewGuid().ToByteArray()).ToLower().Replace("=", "").Replace("+", "").Replace("/", "")}"
+                          },
+                          ResourceAnnotationMutationBehavior.Replace)
                       .WithEnvironment(e =>
                       {
                           e.EnvironmentVariables.Add("RepositoryPath", "/home/data/gview-web-repository");
