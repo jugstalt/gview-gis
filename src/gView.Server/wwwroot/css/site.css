@@ -79,6 +79,13 @@ button {
     overflow: auto;
 }
 
+    .code-block pre {
+        border: none;
+        color: #efefef;
+        background: transparent;
+        font-size:14px;
+    }
+
 .yaml-code {
     font-family: Courier New, Courier, monospace;
     font-size:14px;
@@ -328,6 +335,26 @@ ul.browseservices{
         ul.browseservices li.service {
             background-image: url('../images/icons/service-26-b.png');
         }
+
+        ul.browseservices li .button-service-interfaces {
+            /*width: 32px;
+            height: 32px;
+            cursor: pointer;*/
+            position: absolute;
+            right: 40px;
+            top: 0px;
+            display: inline-block;
+            color: #72b5ef;
+            margin: 6px 2px;
+            /*background-image: url('../images/icons/settings-g-26.png');
+            background-repeat: no-repeat;
+            background-position: center;*/
+        }
+
+            ul.browseservices li .button-service-interfaces:hover {
+                text-decoration:underline;
+                /*background-image: url('../images/icons/settings-b-26.png');*/
+            }
 
         ul.browseservices li .button-delete-service {
             width: 32px;
@@ -901,6 +928,10 @@ body.light .code-block {
     background-color: #e0e0e0;
     border: solid 1px #ccc;
 }
+
+    body.light .code-block pre {
+        color: #333;
+    }
 
 body.light .html-body form {
     background-color: #e0e0e0;

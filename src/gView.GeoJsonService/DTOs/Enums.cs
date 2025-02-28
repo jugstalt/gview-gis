@@ -22,9 +22,10 @@ public enum GeometryType
 
 public enum SpatialOperator
 {
-    Within,
     Intersects,
-    Contains
+    IntersectsBBox,
+    Within,
+    Contains,
 }
 
 public enum LogicOperator
@@ -63,7 +64,7 @@ public enum GeometryResult
 
 public enum MapReponseFormat
 {
-    Link,
+    Url,
     Base64,
     Image
 }

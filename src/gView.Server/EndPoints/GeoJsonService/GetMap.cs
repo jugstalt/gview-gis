@@ -12,6 +12,7 @@ using gView.Server.Services.MapServer;
 using gView.Server.Services.Security;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -37,10 +38,11 @@ public class GetMap : BaseApiEndpoint
                 HttpContext httpContext,
                 [FromServices] LoginManager loginManagerService,
                 [FromServices] MapServiceManager mapServiceManager,
+                [FromServices] ILogger<GetMap> logger,
                 string folder = "",
                 string service = ""
-            ) => HandleSecureAsync<GetMapRequest>(httpContext, mapServiceManager, loginManagerService, folder, service,
-                async (mapService, identity, mapRequest) =>
+            ) => HandleSecureAsync<GetMapRequest>(httpContext, mapServiceManager, loginManagerService, logger, folder, service,
+                async (serviceRequestContext, mapService, identity, mapRequest) =>
             {
                 using var serviceMap = await mapServiceManager.Instance.GetServiceMapAsync(mapService);
 
@@ -61,11 +63,8 @@ public class GetMap : BaseApiEndpoint
 
                 serviceMap.ResizeImageSizeToMapServiceLimits();
 
-                if (mapRequest.CRS is not null)
-                {
-                    serviceMap.Display.SpatialReference = SpatialReference.FromID(mapRequest.CRS.ToSpatialReferenceName());
-                }
-
+                serviceMap.Display.SpatialReference = mapRequest.CRS.ToSpatialReferenceOrDefault();
+                
                 serviceMap.Display.ZoomTo(mapRequest.BBox.ToEnvelope());
 
                 if (mapRequest.Rotation.HasValue && mapRequest.Rotation.Value != 0.0)
@@ -77,7 +76,15 @@ public class GetMap : BaseApiEndpoint
 
                 #region ImageFormat / Transparency
 
-                if (!Enum.TryParse(mapRequest.Format.Split('/').Last(), true, out ImageFormat imageFormat))
+                var imageFormatString = mapRequest.Format.Split('/').Last().ToLowerInvariant();
+
+                if (!Enum.TryParse(imageFormatString switch
+                    {
+                        "jpg" => "jpeg",
+                        _ => imageFormatString
+                    },
+                    true, 
+                    out ImageFormat imageFormat))
                 {
                     throw new MapServerException($"Unsuported image format: {mapRequest.Format}");
                 }
@@ -184,14 +191,14 @@ public class GetMap : BaseApiEndpoint
                 {
                     string serviceMapName = serviceMap.Name.Replace("/", "_").Replace(",", "_");
                     string fileName =
-                       $"{serviceMapName}_{System.Guid.NewGuid():N}.{imageFormat.ToString().ToLower()}";
+                       $"{serviceMapName}_{System.Guid.NewGuid():N}.{imageFormatString}";
 
                     string path = ($"{mapServiceManager.Instance.OutputPath}/{fileName}").ToPlatformPath();
                     await serviceMap.SaveImage(path, imageFormat);
 
                     return new GetMapResponse()
                     {
-                        ImageUrl = $"{mapServiceManager.Instance.OutputUrl}/{fileName}",
+                        ImageUrl = $"{serviceRequestContext.ServiceRequest.OutputUrl}/{fileName}",
                         BBox = serviceMap.Display.Envelope.ToBBox(),
                         CRS = serviceMap.Display.SpatialReference is not null
                                 ? CoordinateReferenceSystem.CreateByName(serviceMap.Display.SpatialReference.Name)

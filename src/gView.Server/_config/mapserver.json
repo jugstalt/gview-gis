@@ -42,8 +42,9 @@
   "force-https": false,
 
   "graphics": {
-    "rendering": "skia",
-    "encoding": "gdiplus"
+    "rendering": "gdiplus",
+    "encoding": "default",
+    "defaultExportQuality": 75
   },
 
   "globals": {
@@ -63,6 +64,19 @@
       "ConnectionString": "http://localhost:9091",
       "Namespace": "development"
     }
+  },
+
+  "Jwt": {
+    "Issuer": "gview-server",
+    "MaxExpireMinutes": 10,
+    "TokenEndpoints_": [
+      {
+        "Url": "https://localhost:44300/connect/token",
+        "Method": "POST",
+        "ContentType": "application/x-www-form-urlencoded",
+        "Body": "client_id={client_id}&client_secret={client_secret}&grant_type=client_credentials&scopes=my-api"
+      }
+    ]
   },
 
   "Authentication": {

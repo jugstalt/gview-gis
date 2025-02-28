@@ -12,6 +12,8 @@ namespace gView.Framework.Data.Extensions
 
         static public string CheckWhereClauseForSqlInjection(this string where)
         {
+            string originalWhere = where;
+
             if (!string.IsNullOrWhiteSpace(where))
             {
                 if (WhereClauseWhiteList.Contains(where))
@@ -79,7 +81,7 @@ namespace gView.Framework.Data.Extensions
                 }
             }
 
-            return where;
+            return originalWhere;
         }
 
         static private bool IsConstant(this Token token)

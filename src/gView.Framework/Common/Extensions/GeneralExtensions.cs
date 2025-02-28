@@ -2,6 +2,7 @@
 using gView.Framework.Core.Data;
 using gView.Framework.Core.IO;
 using gView.Framework.Core.UI;
+using SkiaSharp;
 using System;
 using System.Collections.Generic;
 using System.Linq;

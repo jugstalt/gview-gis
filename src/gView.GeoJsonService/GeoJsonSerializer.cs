@@ -8,6 +8,9 @@ public class GeoJsonSerializer
     static public BaseRequest? DeserializeRequest(string json)
         => JsonSerializer.Deserialize<BaseRequest>(json, Options.DeserializerOptions);
 
+    static public BaseResponse? DeserializeResponse(string json)
+        => JsonSerializer.Deserialize<BaseResponse>(json, Options.DeserializerOptions);
+
     static public T? Deserialize<T>(string json)
         => JsonSerializer.Deserialize<T>(json, Options.DeserializerOptions);
 

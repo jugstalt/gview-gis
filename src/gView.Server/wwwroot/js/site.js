@@ -36,6 +36,10 @@ window.gview.server = (function () {
         });
     };
 
+    var redirectToPath = function (path) {
+        document.location.href = rootUrl + (path[0] === '/' ? path.substr(1) : path);
+    };
+
     var alert = function (msg) {
         bootbox.alert(msg);
     };
@@ -70,6 +74,7 @@ window.gview.server = (function () {
 
     return {
         get: get,
+        redirectToPath: redirectToPath,
         alert: alert,
         setRootUrl: setRootUrl,
         toggleDarkMode: toggleDarkMode

@@ -1,8 +1,8 @@
 ﻿namespace gView.GeoJsonService.DTOs;
 
-public class GetMapResponse
+public class GetMapResponse : BaseResponse
 {
-    public string Type { get; set; } = "GetMapResponse";
+    override public string Type { get; set; } = ResponseType.Map;
     public string? ImageUrl { get; set; }
     public string? ImageBase64 { get; set; }
     public BBox? BBox { get; set; }

@@ -19,6 +19,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System;
 using gView.Endpoints.Extensions;
+using gView.Server.Controllers;
 
 namespace gView.Server
 {
@@ -60,6 +61,9 @@ namespace gView.Server
                     GraphicsEngine.Current.Encoder = new GraphicsEngine.Default.BitmapEncoding();
                     break;
             }
+
+            var defaultExportQuality = int.Parse(Configuration.Value("graphics:defaultExportQuality") ?? "0");
+            GraphicsEngine.Current.SetDefaultExportQuality(defaultExportQuality);
 
             #endregion
 
@@ -158,6 +162,7 @@ namespace gView.Server
                     }
                 });
 
+            /*
             if (!String.IsNullOrEmpty(Configuration.Value("external-auth-authority:url")))
             {
                 services.AddHttpContextAccessor();
@@ -169,6 +174,7 @@ namespace gView.Server
                     config.AccessTokenParameterName = Configuration.GetParsedValue("external-auth-authority:access-token-url-parameter") ?? "access-token";
                 });
             }
+            */
 
             services.AddPerformanceLoggerService(config =>
             {
@@ -201,6 +207,14 @@ namespace gView.Server
             services.AddKeyedTransient<IMessageHandler, RemoveMapMessageHandler>(RemoveMapMessageHandler.Name);
 
             #endregion
+
+            services.AddHttpClient<BrowseServicesController>(client =>
+            {
+                client.BaseAddress = new Uri(
+                    Configuration.Value("onlineresource-url-internal") ??
+                    Configuration.Value("onlineresource-url")
+                    ); 
+            });
         }
 
         public void Configure(WebApplication app)

@@ -230,11 +230,11 @@ internal static class EnumerableExtensions
                         //break;
                     case FieldType.Date:
                         object val = geoJsonFeature.Properties[field.name]!;
-                        if (val is string)
+                        if (val is not null && val is string)
                         {
-                            if (val.ToString().Contains(" "))
+                            if (val.ToString()?.Contains(" ") == true)
                             {
-                                val = DateTime.ParseExact(val.ToString(),
+                                val = DateTime.ParseExact(val.ToString()!,
                                     new string[]{
                                         "dd.MM.yyyy HH:mm:ss",
                                         "dd.MM.yyyy HH:mm",
@@ -248,7 +248,7 @@ internal static class EnumerableExtensions
                             }
                             else
                             {
-                                val = DateTime.ParseExact(val.ToString(),
+                                val = DateTime.ParseExact(val.ToString()!,
                                     new string[]{
                                         "dd.MM.yyyy",
                                         "yyyy.MM.dd",

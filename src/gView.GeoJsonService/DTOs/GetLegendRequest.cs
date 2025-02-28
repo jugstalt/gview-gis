@@ -8,9 +8,9 @@ public class GetLegendRequest : BaseRequest
     public int? Dpi { get; set; }
 }
 
-public class GetLegendResponse
+public class GetLegendResponse : BaseResponse
 {
-    public string Type { get; set; } = "GetLegendResponse";
+    override public string Type { get; set; } = ResponseType.Legend;
 
     public IEnumerable<LegendLayer>? Layers { get; set; }
 }

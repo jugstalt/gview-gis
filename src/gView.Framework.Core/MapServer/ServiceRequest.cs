@@ -68,8 +68,7 @@ namespace gView.Framework.Core.MapServer
             Request = request;
         }
 
-        static public ServiceRequest 
-            CreateGerneral(string method, IIdentity identity)
+        static public ServiceRequest CreateGerneral(string method, IIdentity identity)
             => new ServiceRequest("", "", "")
             {
                 Method = method,

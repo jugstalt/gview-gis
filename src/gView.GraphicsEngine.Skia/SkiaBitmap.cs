@@ -160,6 +160,17 @@ namespace gView.GraphicsEngine.Skia
                     pixelData.Scan0 = Marshal.AllocHGlobal(_bitmap.ByteCount);
                     Marshal.Copy(_bitmap.Bytes, 0, pixelData.Scan0, _bitmap.ByteCount);
                 }
+                //else if(pixelFormat == PixelFormat.Gray8)
+                //{
+                //    pixelData.FreeMemory = true;
+                //    pixelData.Scan0 = Marshal.AllocHGlobal(_bitmap.RowBytes / 4 * _bitmap.Height * 1);
+                //    pixelData.Stride = _bitmap.RowBytes / 4 * 1;
+
+                //    if (lockMode == BitmapLockMode.ReadOnly || lockMode == BitmapLockMode.ReadWrite)
+                //    {
+                //        pixelData.ReadFromArgb(_bitmap.GetPixels());
+                //    }
+                //}
                 else if (pixelFormat == PixelFormat.Rgb24)
                 {
                     pixelData.FreeMemory = true;
@@ -234,8 +245,10 @@ namespace gView.GraphicsEngine.Skia
             {
                 Current.Encoder.Encode(this, filename, format, quality);
             }
-
-            new SkiaBitmapEncoding().Encode(this, filename, format, quality);
+            else
+            {
+                new SkiaBitmapEncoding().Encode(this, filename, format, quality);
+            }
         }
 
         public void Save(Stream stream, ImageFormat format, int quality = 0)
@@ -244,8 +257,10 @@ namespace gView.GraphicsEngine.Skia
             {
                 Current.Encoder.Encode(this, stream, format, quality);
             }
-
-            new SkiaBitmapEncoding().Encode(this, stream, format, quality);
+            else
+            {
+                new SkiaBitmapEncoding().Encode(this, stream, format, quality);
+            }
         }
 
         public void SetResolution(float dpiX, float dpiY)

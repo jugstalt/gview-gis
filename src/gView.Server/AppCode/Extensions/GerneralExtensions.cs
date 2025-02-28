@@ -1,10 +1,8 @@
 ﻿using gView.Framework.Core.Carto;
 using gView.Framework.Core.Data;
 using gView.Framework.Core.Geometry;
-using gView.Framework.Core.UI;
 using gView.Framework.Geometry;
 using System;
-using System.Linq;
 
 namespace gView.Server.AppCode.Extensions
 {
@@ -118,26 +116,6 @@ namespace gView.Server.AppCode.Extensions
                 Console.WriteLine($"     Message   : {ex.Message}");
                 Console.WriteLine($"     Stacktrace: {ex.StackTrace}");
             }
-        }
-    }
-
-    static public class gViewFrameworkExtensions
-    {
-        static public bool IsHidden(this ITocElement tocElement)
-        {
-            var parent = tocElement.ParentGroup;
-
-            while (parent != null)
-            {
-                IGroupLayer groupLayer = parent.Layers.FirstOrDefault() as IGroupLayer;
-                if (groupLayer != null && groupLayer.MapServerStyle == MapServerGrouplayerStyle.Checkbox)
-                {
-                    return true;
-                }
-                parent = parent.ParentGroup;
-            }
-
-            return false;
         }
     }
 }

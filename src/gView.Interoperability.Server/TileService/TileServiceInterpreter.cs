@@ -520,7 +520,10 @@ public class TileServiceInterpreter : IServiceRequestInterpreter
                             canvas.InterpolationMode = InterpolationMode.NearestNeighbor;
                             canvas.DrawBitmap(serviceMap.MapImage,
                                 new CanvasRectangleF(0f, 0f, bitmap.Width, bitmap.Height),
-                                new CanvasRectangleF(-0.5f + i * metadata.TileWidth, -0.5f + j * metadata.TileHeight, metadata.TileWidth, metadata.TileHeight));
+                                new CanvasRectangleF(
+                                    i * metadata.TileWidth, j * metadata.TileHeight, 
+                                    metadata.TileWidth, metadata.TileHeight)
+                                );
                             canvas.Flush();
 
                             if (IsEmptyBitmap(bitmap, serviceMap.Display.BackgroundColor))
@@ -531,9 +534,9 @@ public class TileServiceInterpreter : IServiceRequestInterpreter
                             // Temp
                             //bm.Save(pathTemp + @"\tile_" + tileRow + "_" + tileCol + ".png", ImageFormat.Png);
 
+                            bool isJpeg = ".jpg".Equals(format, StringComparison.OrdinalIgnoreCase);
                             MemoryStream ms = new MemoryStream();
-                            bitmap.Save(ms, format == ".jpg" ? ImageFormat.Jpeg : ImageFormat.Png);
-
+                            bitmap.Save(ms, isJpeg ? ImageFormat.Jpeg : ImageFormat.Png);
 
                             byte[] imageBytes = ms.ToArray();
                             using (var stream = new FileStream(bundleTempFilename, FileMode.Append))

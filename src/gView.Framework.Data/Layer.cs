@@ -55,7 +55,7 @@ namespace gView.Framework.Data
 
         static private void MinimumTocDependentScale(ILayer layer, ref double scale)
         {
-            if (layer == null || layer.GroupLayer == null)
+            if (layer?.GroupLayer is null)
             {
                 return;
             }
@@ -71,7 +71,7 @@ namespace gView.Framework.Data
         }
         static private void MaximumTocDependentScale(ILayer layer, ref double scale)
         {
-            if (layer == null || layer.GroupLayer == null)
+            if (layer?.GroupLayer is null)
             {
                 return;
             }

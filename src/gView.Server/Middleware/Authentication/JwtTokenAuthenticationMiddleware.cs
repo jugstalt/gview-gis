@@ -1,8 +1,7 @@
-﻿using gView.Framework.Core.Exceptions;
-using gView.Server.AppCode.Extensions;
-using gView.Server.Extensions;
+﻿using gView.Server.AppCode.Extensions;
 using gView.Server.Services.Security;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Threading.Tasks;
@@ -13,14 +12,17 @@ public class JwtTokenAuthenticationMiddleware
 {
     private readonly RequestDelegate _next;
     private readonly JwtAccessTokenService _jwtTokenService;
+    private readonly ILogger<JwtTokenAuthenticationMiddleware> _logger;
 
     public JwtTokenAuthenticationMiddleware(
                 RequestDelegate next,
-                JwtAccessTokenService jwtTokenService
+                JwtAccessTokenService jwtTokenService,
+                ILogger<JwtTokenAuthenticationMiddleware> logger
         )
     {
         _next = next;
         _jwtTokenService = jwtTokenService;
+        _logger = logger;
     }
 
     public async Task InvokeAsync(HttpContext context)
@@ -37,9 +39,9 @@ public class JwtTokenAuthenticationMiddleware
                 {
                     context.User = _jwtTokenService.ValidateToken(token);
                 }
-                catch(SecurityTokenException ste)
+                catch (SecurityTokenException ste)
                 {
-                    throw new MapServerException(ste.Message);
+                    _logger.LogWarning("Tokenvalidation: {message}", ste.Message);
                 }
             }
         }

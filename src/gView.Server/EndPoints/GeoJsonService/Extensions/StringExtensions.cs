@@ -37,6 +37,12 @@ internal static class StringExtensions
             Type t when t == typeof(CoordinateReferenceSystem) && !parameterValue.StartsWith("{")
                 => CoordinateReferenceSystem.CreateByName(parameterValue),
 
+            Type t when t == typeof(AttributeFilter) && !parameterValue.StartsWith("{")
+                => new AttributeFilter()
+                {
+                    WhereClause = parameterValue
+                },
+
             // parse json
             _ => JsonSerializer.Deserialize(parameterValue, targetType, GeoJsonSerializer.JsonDeserializerOptions)
         };

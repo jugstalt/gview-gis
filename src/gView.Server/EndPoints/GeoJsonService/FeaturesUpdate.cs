@@ -1,12 +1,12 @@
 ﻿using gView.Framework.Core.Exceptions;
 using gView.Framework.Core.FDB;
-using gView.Framework.Geometry;
 using gView.GeoJsonService.DTOs;
 using gView.Server.EndPoints.GeoJsonService.Extensions;
 using gView.Server.Services.MapServer;
 using gView.Server.Services.Security;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Linq;
 
@@ -31,11 +31,12 @@ public class FeaturesUpdate : BaseApiEndpoint
                 HttpContext httpContext,
                 [FromServices] LoginManager loginManagerService,
                 [FromServices] MapServiceManager mapServerService,
+                [FromServices] ILogger<FeaturesUpdate> logger,
                 int id,
                 string folder = "",
                 string service = ""
-            ) => HandleSecureAsync<EditFeaturesRequest>(httpContext, mapServerService, loginManagerService, folder, service,
-                 async (mapService, identity, editRequest) =>
+            ) => HandleSecureAsync<EditFeaturesRequest>(httpContext, mapServerService, loginManagerService, logger, folder, service,
+                 async (serviceRequestContext, mapService, identity, editRequest) =>
                  {
                      using var serviceMap = await mapServerService.Instance.GetServiceMapAsync(mapService);
 
@@ -48,13 +49,7 @@ public class FeaturesUpdate : BaseApiEndpoint
                          throw new MapServerException("Featureclass is not editable");
                      }
 
-                     string sRefName = editRequest.CRS.ToSpatialReferenceName();
-                     if (string.IsNullOrEmpty(sRefName))
-                     {
-                         throw new MapServerException("Invalid CRS: only name=epsg:... is allowed");
-                     }
-
-                     var geoJsonFeatureSref = SpatialReference.FromID(sRefName);
+                     var geoJsonFeatureSref = editRequest.CRS.ToSpatialReferenceOrDefault();
 
                      var features = editRequest.Features.GetFeatrues(featureClass, geoJsonFeatureSref);
                      if (features.Count() == 0)

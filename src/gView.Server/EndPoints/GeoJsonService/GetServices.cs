@@ -6,6 +6,7 @@ using gView.Server.Services.MapServer;
 using gView.Server.Services.Security;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -27,8 +28,10 @@ public class GetServices : BaseApiEndpoint
             HttpContext httpContext,
             [FromServices] LoginManager loginManagerService,
             [FromServices] MapServiceManager mapServerService,
+            [FromServices] ILogger<GetServices> logger,
             string folder = ""
-        ) => HandleSecureAsync(httpContext, mapServerService, loginManagerService, "", "", async (_, identity) =>
+        ) => HandleSecureAsync(httpContext, mapServerService, loginManagerService, logger, "", "",
+            async (_, _, identity) =>
         {
             mapServerService.ReloadServices(folder, true);
 

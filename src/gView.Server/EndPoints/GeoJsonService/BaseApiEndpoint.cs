@@ -1,6 +1,5 @@
 ﻿#nullable enable
 
-using Azure.Core.Pipeline;
 using gView.Endpoints.Abstractions;
 using gView.Framework.Common;
 using gView.Framework.Core.Exceptions;
@@ -15,8 +14,8 @@ using gView.Server.Services.Security;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.Logging;
 using System;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -43,34 +42,37 @@ public class BaseApiEndpoint : IApiEndpoint
         _httpMethods = httpMethods;
     }
 
+    virtual protected RouteHandlerBuilder BuildEndpoint(RouteHandlerBuilder builder)
+        => builder;
+
     public void Register(IEndpointRouteBuilder app)
     {
         if (_httpMethods.HasFlag(HttpMethod.Get))
         {
             foreach (var route in _routes)
             {
-                app.MapGet(route, _delegate);
+                BuildEndpoint(app.MapGet(route, _delegate));
             }
         }
         if (_httpMethods.HasFlag(HttpMethod.Post))
         {
             foreach (var route in _routes)
             {
-                app.MapPost(route, _delegate);
+                BuildEndpoint(app.MapPost(route, _delegate));
             }
         }
         if (_httpMethods.HasFlag(HttpMethod.Put))
         {
             foreach (var route in _routes)
             {
-                app.MapPut(route, _delegate);
+                BuildEndpoint(app.MapPut(route, _delegate));
             }
         }
         if (_httpMethods.HasFlag(HttpMethod.Delete))
         {
             foreach (var route in _routes)
             {
-                app.MapDelete(route, _delegate);
+                BuildEndpoint(app.MapDelete(route, _delegate));
             }
         }
     }
@@ -79,11 +81,13 @@ public class BaseApiEndpoint : IApiEndpoint
                 HttpContext httpContext,
                 MapServiceManager mapServiceManager,
                 LoginManager loginManagerService,
+                ILogger logger,
                 string folder,
                 string service,
-                Func<IMapService?, Identity, Task<object>> action)
+                Func<IServiceRequestContext?, IMapService?, Identity, Task<object>> action)
     {
         object? result = null;
+        int? statusCode = null;
 
         try
         {
@@ -96,13 +100,18 @@ public class BaseApiEndpoint : IApiEndpoint
                     identity: identity);
 
             IMapService? mapService = null;
+            IServiceRequestContext? serviceRequestContext = null;
 
             if (!String.IsNullOrEmpty(service))
             {
-                var serviceRequestContext = await ServiceRequestContext.TryCreate(
+                serviceRequestContext = await ServiceRequestContext.TryCreate(
                     mapServiceManager.Instance,
                     RequestInterpreter,
                     serviceRequest, checkSecurity: false);
+
+                // todo: Folder specific settings?
+                serviceRequest.OnlineResource = mapServiceManager.Options.OnlineResource;
+                serviceRequest.OutputUrl = mapServiceManager.Options.OutputUrl;
 
                 mapService = mapServiceManager.Instance.GetMapService(service, folder);
                 if (mapService == null)
@@ -113,7 +122,7 @@ public class BaseApiEndpoint : IApiEndpoint
                 await mapService.CheckAccess(serviceRequestContext);
             }
 
-            result = action(mapService, identity).GetAwaiter().GetResult();
+            result = action(serviceRequestContext, mapService, identity).GetAwaiter().GetResult();
         }
         catch (MapServerAuthException)
         {
@@ -121,33 +130,41 @@ public class BaseApiEndpoint : IApiEndpoint
         }
         catch (MapServerException mse)
         {
+            logger.LogWarning("Handle GeoJson Service Request: {message}", mse.Message);
+
+            statusCode = 400;
             result = new ErrorResponse()
             {
-                ErrorCode = 999,
+                ErrorCode = statusCode.Value,
                 ErrorMessage = mse.Message
             };
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            logger.LogError("Handle GeoJson Service Request: {message}", ex.Message);
+
+            statusCode = 500;
             result = new ErrorResponse()
             {
-                ErrorCode = 999,
-                ErrorMessage = "Unknow error"
+                ErrorCode = statusCode.Value,
+                ErrorMessage = "internal server error"
             };
         }
 
-        return Results.Json(result, GeoJsonSerializer.JsonSerializerOptions);
+        return Results.Json(result, GeoJsonSerializer.JsonSerializerOptions, statusCode: statusCode);
     }
 
     async static protected Task<object> HandleSecureAsync<T>(
                 HttpContext httpContext,
                 MapServiceManager mapServiceManager,
                 LoginManager loginManagerService,
+                ILogger logger,
                 string folder,
                 string service,
-                Func<IMapService, Identity, T, Task<object>> action)
+                Func<IServiceRequestContext, IMapService, Identity, T, Task<object>> action)
     {
         object? result = null;
+        int? statusCode = null;
 
         try
         {
@@ -160,9 +177,13 @@ public class BaseApiEndpoint : IApiEndpoint
                     method: httpContext.Request.Path.Value?.Split("/").Last().ToLowerInvariant(),
                     identity: identity);
 
+            // todo: Folder specific settings?
+            serviceRequest.OnlineResource = mapServiceManager.Options.OnlineResource;
+            serviceRequest.OutputUrl = mapServiceManager.Options.OutputUrl;
+
             var serviceRequestContext = await ServiceRequestContext.TryCreate(
                 mapServiceManager.Instance,
-                RequestInterpreter, 
+                RequestInterpreter,
                 serviceRequest, checkSecurity: false);
 
             var mapService = mapServiceManager.Instance.GetMapService(service, folder);
@@ -173,7 +194,7 @@ public class BaseApiEndpoint : IApiEndpoint
 
             await mapService.CheckAccess(serviceRequestContext);
 
-            result = await action(mapService, identity, model!);
+            result = await action(serviceRequestContext, mapService, identity, model!);
         }
         catch (MapServerAuthException)
         {
@@ -181,39 +202,61 @@ public class BaseApiEndpoint : IApiEndpoint
         }
         catch (MapServerException mse)
         {
+            logger.LogWarning("Handle GeoJson Service Request: {message}", mse.Message);
+
+            statusCode = 400;
             result = new ErrorResponse()
             {
-                ErrorCode = 999,
+                ErrorCode = statusCode.Value,
                 ErrorMessage = mse.Message
             };
         }
         catch (SqlDangerousStatementExceptions dse)
         {
+            logger.LogWarning("Handle GeoJson Service Request: {message}", dse.Message);
+
+            statusCode = 400;
             result = new ErrorResponse()
             {
-                ErrorCode = 1,
+                ErrorCode = statusCode.Value,
                 ErrorMessage = dse.Message
             };
         }
-        catch (Exception)
+        catch (FormatException fex)
         {
+            logger.LogError("Handle GeoJson Service Request: {message}", fex.Message);
+
+            statusCode = 400;
             result = new ErrorResponse()
             {
-                ErrorCode = 999,
-                ErrorMessage = "Unknow error"
+                ErrorCode = statusCode.Value,
+                ErrorMessage = fex.Message
+            };
+        }
+        catch (Exception ex)
+        {
+            logger.LogError("Handle GeoJson Service Request: {message}", ex.Message);
+
+            statusCode = 500;
+            result = new ErrorResponse()
+            {
+                ErrorCode = statusCode.Value,
+                ErrorMessage = "internal server error"
             };
         }
 
         return result is IResult
             ? result
-            : Results.Json(result, GeoJsonSerializer.JsonSerializerOptions);
+            : Results.Json(result, GeoJsonSerializer.JsonSerializerOptions, statusCode: statusCode);
     }
 
     async static protected Task<object> HandleSecureAsync<T>(
                 HttpContext httpContext,
+                ILogger logger,
                 Func<T, Task<object>> action)
     {
         object? result = null;
+        int? statusCode = null;
 
         try
         {
@@ -227,31 +270,40 @@ public class BaseApiEndpoint : IApiEndpoint
         }
         catch (MapServerException mse)
         {
+            logger.LogWarning("Handle GeoJson Service Request: {message}", mse.Message);
+
+            statusCode = 400;
             result = new ErrorResponse()
             {
-                ErrorCode = 999,
+                ErrorCode = statusCode.Value,
                 ErrorMessage = mse.Message
             };
         }
         catch (SqlDangerousStatementExceptions dse)
         {
+            logger.LogWarning("Handle GeoJson Service Request: {message}", dse.Message);
+
+            statusCode = 400;
             result = new ErrorResponse()
             {
-                ErrorCode = 1,
+                ErrorCode = statusCode.Value,
                 ErrorMessage = dse.Message
             };
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            logger.LogError("Handle GeoJson Service Request: {message}", ex.Message);
+
+            statusCode = 500;
             result = new ErrorResponse()
             {
-                ErrorCode = 999,
-                ErrorMessage = "Unknow error"
+                ErrorCode = statusCode.Value,
+                ErrorMessage = "internal server error"
             };
         }
 
         return result is IResult
             ? result
-            : Results.Json(result, GeoJsonSerializer.JsonSerializerOptions);
+            : Results.Json(result, GeoJsonSerializer.JsonSerializerOptions, statusCode: statusCode);
     }
 }

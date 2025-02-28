@@ -348,20 +348,8 @@ namespace gView.Framework.Cartography
                     canvas.InterpolationMode = (GraphicsEngine.InterpolationMode)_interpolMethod;
 
                     // Transformation berechnen
-                    GraphicsEngine.CanvasRectangleF rect;
-                    switch (canvas.InterpolationMode)
-                    {
-                        case GraphicsEngine.InterpolationMode.Bilinear:
-                        case GraphicsEngine.InterpolationMode.Bicubic:
-                            rect = new GraphicsEngine.CanvasRectangleF(0, 0, paintContext.Bitmap.Width - 1f, paintContext.Bitmap.Height - 1f);
-                            break;
-                        case GraphicsEngine.InterpolationMode.NearestNeighbor:
-                            rect = new GraphicsEngine.CanvasRectangleF(-0.5f, -0.5f, paintContext.Bitmap.Width, paintContext.Bitmap.Height);
-                            break;
-                        default:
-                            rect = new GraphicsEngine.CanvasRectangleF(0, 0, paintContext.Bitmap.Width, paintContext.Bitmap.Height);
-                            break;
-                    }
+                    GraphicsEngine.CanvasRectangleF sourceRect
+                        = new(0, 0, paintContext.Bitmap.Width, paintContext.Bitmap.Height);
 
                     var points = new GraphicsEngine.CanvasPointF[3];
 
@@ -434,7 +422,7 @@ namespace gView.Framework.Cartography
                     }
 
                     float opaque = 1.0f - _transparency;
-                    canvas.DrawBitmap(paintContext.Bitmap, points, rect, opacity: opaque);
+                    canvas.DrawBitmap(paintContext.Bitmap, points, sourceRect, opacity: opaque);
                 }
             }
             catch (Exception /*ex*/)

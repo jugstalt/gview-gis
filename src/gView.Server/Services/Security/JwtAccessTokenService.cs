@@ -1,22 +1,47 @@
-﻿using gView.Server.AppCode;
+﻿using gView.Framework.Core.Network;
+using gView.Server.AppCode;
 using gView.Server.AppCode.Extensions;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using System;
 using System.IdentityModel.Tokens.Jwt;
+using System.Linq;
 using System.Security.Claims;
 
 namespace gView.Server.Services.Security;
 
 public class JwtAccessTokenService
 {
-    private const string Issuer = "gview";
-    private readonly EncryptionCertificateService _ecs;
     private readonly SymmetricSecurityKey _key;
-
-    public JwtAccessTokenService(EncryptionCertificateService ecs)
+    private readonly TokenValidationParameters _validationParameters;
+    private readonly IMemoryCache _memoryCache;
+    private readonly string _issuer;
+    
+    public JwtAccessTokenService(
+                IConfiguration config, 
+                EncryptionCertificateService ecs)
     {
-        _ecs = ecs;
-        _key = new SymmetricSecurityKey(_ecs.GetCertificate().AESPassword);
+        _memoryCache = new MemoryCache(new MemoryCacheOptions()
+        {
+            SizeLimit = 1024
+        });
+
+        _key = new SymmetricSecurityKey(ecs.GetCertificate().AESPassword);
+        _validationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidIssuer = _issuer = config["Jwt:Issuer"] ?? "gview-server",
+
+            ValidateAudience = false,
+            //ValidAudience = audience,
+
+            ValidateLifetime = true,
+            ClockSkew = TimeSpan.Zero,
+
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = _key,
+        };
     }
 
     public string GenerateToken(AuthToken authToken)
@@ -29,7 +54,7 @@ public class JwtAccessTokenService
             Subject = new ClaimsIdentity(claimsPrincipal.Identity),
             Expires = new DateTime(authToken.Expire, DateTimeKind.Utc),
             SigningCredentials = credentials,
-            Issuer = Issuer
+            Issuer = _issuer
         };
 
         var tokenHandler = new JwtSecurityTokenHandler();
@@ -40,28 +65,18 @@ public class JwtAccessTokenService
 
     public ClaimsPrincipal ValidateToken(string token)
     {
-        var tokenHandler = new JwtSecurityTokenHandler();
-
-        var validationParameters = new TokenValidationParameters
+        if (_memoryCache.TryGetValue(token, out ClaimsPrincipal cachedPrincipal))
         {
-            ValidateIssuer = true, 
-            ValidIssuer = Issuer,
+            return cachedPrincipal;
+        }
 
-            ValidateAudience = false, 
-            //ValidAudience = audience,
-
-            ValidateLifetime = true, 
-            ClockSkew = TimeSpan.Zero, 
-
-            ValidateIssuerSigningKey = true, 
-            IssuerSigningKey = _key,
-        };
+        var tokenHandler = new JwtSecurityTokenHandler();
 
         try
         {
             var principal = tokenHandler.ValidateToken(
                                 token, 
-                                validationParameters, 
+                                _validationParameters, 
                                 out SecurityToken validatedToken
                             );
 
@@ -71,6 +86,20 @@ public class JwtAccessTokenService
                 {
                     throw new SecurityTokenException("Invalid token algorithm");
                 }
+            }
+
+            var expiresIn = principal.Claims
+                .FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Exp)?.Value;
+
+            if (expiresIn != null && long.TryParse(expiresIn, out var exp))
+            {
+                var expirationTime = DateTimeOffset.FromUnixTimeSeconds(exp);
+                var cacheEntryOptions = new MemoryCacheEntryOptions
+                {
+                    AbsoluteExpiration = expirationTime
+                }.SetSize(1);
+
+                _memoryCache.Set(token, principal, cacheEntryOptions);
             }
 
             return principal;

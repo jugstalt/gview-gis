@@ -10,7 +10,10 @@ static internal class GraphicsExtensions
     static private Dictionary<ImageFormat, string> ContentTypes =
         new Dictionary<ImageFormat, string>(
             Enum.GetValues<ImageFormat>()
-                .Select(f => new KeyValuePair<ImageFormat, string>(f, $"image/{f.ToString().ToLower()}"))
+                .Select(f => f switch {
+                    ImageFormat.Jpeg => new KeyValuePair<ImageFormat, string>(f, $"image/jpg"),
+                    _ => new KeyValuePair<ImageFormat, string>(f, $"image/{f.ToString().ToLowerInvariant()}")
+                 })
             );
 
     static public string ToContentType(this ImageFormat format)

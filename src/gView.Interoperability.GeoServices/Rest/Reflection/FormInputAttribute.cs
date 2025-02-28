@@ -21,7 +21,10 @@ namespace gView.Interoperability.GeoServices.Rest.Reflection
             TextBox,
             TextBox10,
             Hidden,
-            Password
+            Password,
+            Integer,
+            Float,
+            Double
         }
     }
 }

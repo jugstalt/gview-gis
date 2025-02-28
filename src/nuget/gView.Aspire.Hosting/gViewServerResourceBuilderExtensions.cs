@@ -1,4 +1,5 @@
 ﻿using Aspire.Hosting.ApplicationModel;
+using System.Xml.Linq;
 
 namespace Aspire.Hosting;
 
@@ -10,13 +11,13 @@ static public class gViewServerResourceBuilderExtensions
 
     public static gViewServerResourceBuilder AddgViewServer(
             this IDistributedApplicationBuilder builder,
-            string containerName,
+            string name,
             int? httpPort = null,
             int? httpsPort = null,
             string? imageTag = null
         )
     {
-        var resource = new gViewServerResource(containerName);
+        var resource = new gViewServerResource(name);
 
         var resourceBuilder = builder.AddResource(resource)
                       .WithImage(ContainerImage)
@@ -31,6 +32,11 @@ static public class gViewServerResourceBuilderExtensions
                       //    port: httpsPort,
                       //    name: gViewServerResource.HttpsEndpointName);
                       .WithVolume("gview-gis", "/home/app")
+                      .WithAnnotation(new ContainerNameAnnotation
+                          {
+                              Name = $"{name}-{Convert.ToBase64String(Guid.NewGuid().ToByteArray()).ToLower().Replace("=", "").Replace("+", "").Replace("/", "")}"
+                          },
+                          ResourceAnnotationMutationBehavior.Replace)
                       .WithEnvironment(e =>
                       {
                           e.EnvironmentVariables.Add("ServicesFolder", "/home/app/gview-server-repository/server/configuraiton");

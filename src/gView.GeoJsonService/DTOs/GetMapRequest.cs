@@ -11,8 +11,8 @@ public class GetMapRequest : BaseRequest
     public string Format { get; set; } = string.Empty;
     public bool Transparent { get; set; } = false;
     public double? Rotation { get; set; }
-    public int? Dpi { get; set; }
-    public MapReponseFormat ResponseFormat { get; set; } = MapReponseFormat.Link;
+    public float? Dpi { get; set; }
+    public MapReponseFormat ResponseFormat { get; set; } = MapReponseFormat.Url;
 }
 
 

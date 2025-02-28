@@ -5,6 +5,7 @@ using gView.Server.Services.MapServer;
 using gView.Server.Services.Security;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -30,10 +31,11 @@ public class GetLegend : BaseApiEndpoint
                 HttpContext httpContext,
                 [FromServices] LoginManager loginManagerService,
                 [FromServices] MapServiceManager mapServiceManager,
+                [FromServices] ILogger<GetLegend> logger,
                 string folder = "",
                 string service = ""
-            ) => HandleSecureAsync<GetLegendRequest>(httpContext, mapServiceManager, loginManagerService, folder, service,
-                async (mapService, identity, legendRequest) =>
+            ) => HandleSecureAsync<GetLegendRequest>(httpContext, mapServiceManager, loginManagerService, logger, folder, service,
+                async (serviceRequestContext, mapService, identity, legendRequest) =>
                 {
                     if (legendRequest.Width <= 0 || legendRequest.Height <= 0)
                     {
