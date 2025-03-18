@@ -10,7 +10,7 @@
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.3" />
     <PackageReference Include="Microsoft.JSInterop" Version="9.0.3" />
     <PackageReference Include="MongoDB.Driver" Version="3.2.1" />
-    <PackageReference Include="MudBlazor" Version="7.15.0" />
+    <PackageReference Include="MudBlazor" Version="7.16.0" />
   </ItemGroup>
 
   <ItemGroup>
