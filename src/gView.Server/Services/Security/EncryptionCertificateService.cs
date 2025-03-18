@@ -63,7 +63,8 @@ namespace gView.Server.Services.Security
                     new X509Certificate2(fi.FullName, CertPassword,
                                X509KeyStorageFlags.MachineKeySet
                              | X509KeyStorageFlags.PersistKeySet
-                             | X509KeyStorageFlags.Exportable));
+                             | X509KeyStorageFlags.Exportable
+                             | X509KeyStorageFlags.UserKeySet));
             }
             catch (CryptographicException cx)
             {
