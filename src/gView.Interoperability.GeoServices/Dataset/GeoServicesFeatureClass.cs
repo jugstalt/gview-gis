@@ -15,15 +15,17 @@ namespace gView.Interoperability.GeoServices.Dataset
 {
     public class GeoServicesFeatureClass : FeatureClass, IWebFeatureClass
     {
-        private GeoServicesDataset _dataaset;
+        private GeoServicesDataset _dataset;
 
         private GeoServicesFeatureClass() { }
 
         async static internal Task<GeoServicesFeatureClass> CreateAsync(GeoServicesDataset dataset, JsonLayerDTO jsonLayer)
         {
+            ArgumentNullException.ThrowIfNull(dataset, nameof(dataset));
+
             var featureClass = new GeoServicesFeatureClass();
 
-            featureClass._dataaset = dataset;
+            featureClass._dataset = dataset;
 
             featureClass.ID = jsonLayer.Id.ToString();
             featureClass.Name = jsonLayer.Name;
@@ -61,16 +63,19 @@ namespace gView.Interoperability.GeoServices.Dataset
 
             if (jsonLayer.Extent != null)
             {
-                featureClass.Envelope = new Envelope(jsonLayer.Extent.Xmin,
-                                             jsonLayer.Extent.Ymin,
-                                             jsonLayer.Extent.Xmax,
-                                             jsonLayer.Extent.Ymax);
+                featureClass.Envelope = new Envelope(
+                                    jsonLayer.Extent.Xmin,
+                                    jsonLayer.Extent.Ymin,
+                                    jsonLayer.Extent.Xmax,
+                                    jsonLayer.Extent.Ymax);
             }
 
             featureClass.SpatialReference = await dataset.GetSpatialReference();
 
             return featureClass;
         }
+
+        public override IDataset Dataset => _dataset;
 
         #region IWebFeatureClass
 
@@ -80,7 +85,7 @@ namespace gView.Interoperability.GeoServices.Dataset
 
         public override Task<IFeatureCursor> GetFeatures(IQueryFilter filter)
         {
-            string queryUrl = $"{_dataaset.ServiceUrl()}/{this.ID}/query?f=json";
+            string queryUrl = $"{_dataset.ServiceUrl()}/{this.ID}/query?f=json";
 
             string geometryType = String.Empty, geometry = String.Empty;
             int outSrefId = (filter.FeatureSpatialReference != null) ? filter.FeatureSpatialReference.EpsgCode : 0,
@@ -135,7 +140,7 @@ namespace gView.Interoperability.GeoServices.Dataset
             postBodyData.Append($"&returnCountOnly=false&returnIdsOnly=false&returnGeometry={true}");
 
             return Task.FromResult<IFeatureCursor>(
-                new GeoServicesFeatureCursor(_dataaset, this, queryUrl, postBodyData.ToString(), where));
+                new GeoServicesFeatureCursor(_dataset, this, queryUrl, postBodyData.ToString(), where));
         }
 
         async public override Task<ICursor> Search(IQueryFilter filter)

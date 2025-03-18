@@ -59,7 +59,6 @@ public class FillCommand : ICommand
 
     async public Task<bool> Run(IDictionary<string, object> parameters, ICancelTracker? cancelTracker = null, ICommandLogger? logger = null)
     {
-
         string jsonFile = parameters.GetRequiredValue<string>("json");
 
         int packageSize = parameters.GetValueOrDefault("package-size", 50000);
@@ -174,7 +173,7 @@ public class FillCommand : ICommand
                             }
                         }
 
-                        bool useGeometry = featureClassConfig.UserGeometry;
+                        bool useGeometry = featureClassConfig.UseGeometry;
 
                         IDatasetElement dsElement = await dataset.Element(featureClassConfig.Name);
                         if (dsElement == null)

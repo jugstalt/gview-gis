@@ -1,4 +1,4 @@
-@using gView.Framework.Core.Carto
+﻿@using gView.Framework.Core.Carto
 @using gView.Framework.Data.Filters
 @using gView.Blazor.Core
 
@@ -86,12 +86,12 @@
         EventBus.OnExplorerTabPageChanged += HandleExplorerTabPageChanged;
     });
 
-    protected override Task OnParametersSetAsync() => HandleAsync(async () => 
+    protected override Task OnParametersSetAsync() => HandleAsync(async () =>
     {
         await base.OnParametersSetAsync();
 
         if (_currentExplorerObject == CurrentExplorerObject &&
-            _currentFrameworkElement == FrameworkElement)
+        _currentFrameworkElement == FrameworkElement)
         {
             return; // nothing changed, do not destry map control
         }
@@ -130,7 +130,7 @@
             _ => null
         };
 
-        if(_dataSpatialReference is null)
+        if (_dataSpatialReference is null)
         {
             string dataInstanceName = dataInstance switch
             {
@@ -139,13 +139,13 @@
                 _ => ""
             };
             var model = await AppScope.ShowKnownDialog(
-                    gView.Framework.Blazor.KnownDialogs.SpatialReferenceDialog,
-                    $"{dataInstanceName} SRef is missing: Select a default",
-                     new BaseDialogModel<ISpatialReference>()
-                    {
+                gView.Framework.Blazor.KnownDialogs.SpatialReferenceDialog,
+                $"{dataInstanceName} SRef is missing: Select a default",
+                 new BaseDialogModel<ISpatialReference>()
+                     {
                          Value = AppScope.GetCacheItem<ISpatialReference>("TabPageDataView_dataSpatialReference") ?? _mapSRef
-                    }
-                );
+                     }
+            );
 
             if (model?.Value is not null)
             {
@@ -166,17 +166,28 @@
         };
 
         _dataTableLayers.Clear();
-        foreach(var datasetElement in map.MapElements)
+        foreach (var datasetElement in map.MapElements)
         {
-            if(datasetElement is IFeatureLayer featureLayer)
+            if (datasetElement is IFeatureLayer featureLayer)
             {
                 _dataTableLayers.Add(featureLayer);
             }
-        }
-        _currentDataTableLayer = _dataTableLayers.FirstOrDefault();
 
-        await FrameworkElement.SetExplorerObjectAsync(CurrentExplorerObject);
-        CreateMapControl();  
+            if (datasetElement.Class is IWebServiceClass webServiceClass)
+            {
+                foreach (var theme in webServiceClass.Themes)
+                {
+                    if (theme.Class is IFeatureClass)
+                    {
+                        _dataTableLayers.Add(theme);
+                    }
+                }
+            }
+            _currentDataTableLayer = _dataTableLayers.FirstOrDefault();
+
+            await FrameworkElement.SetExplorerObjectAsync(CurrentExplorerObject);
+            CreateMapControl();
+        }
     });
 
     async private Task OnMapViewReset(object sender, Event e)

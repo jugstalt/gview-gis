@@ -99,7 +99,7 @@ public class ImportConfig
         public string ObjectOidField { get; set; } = "";
 
         [JsonPropertyName("geometry")]
-        public bool UserGeometry { get; set; }
+        public bool UseGeometry { get; set; }
 
         [JsonPropertyName("category")]
         public string Category { get; set; }= "";
