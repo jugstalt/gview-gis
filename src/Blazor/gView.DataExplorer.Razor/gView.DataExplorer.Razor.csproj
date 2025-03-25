@@ -18,7 +18,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="9.0.3" />
-    <PackageReference Include="MudBlazor" Version="7.16.0" />
+    <PackageReference Include="MudBlazor" Version="8.3.0" />
 	<PackageReference Include="LuceneServerNET.Client" Version="2.24.4201" />
   </ItemGroup>
 

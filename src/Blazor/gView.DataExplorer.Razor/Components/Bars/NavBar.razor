@@ -1,4 +1,4 @@
-@inherits BaseHandler
+﻿@inherits BaseHandler
 @implements IDisposable
 @inject PluginManagerService PluginManager
 @inject IconService Icons
@@ -53,7 +53,7 @@
 
     #region Item Classes 
 
-    class ExplorerObjectBreadcrumbItem : BreadcrumbItem
+    record ExplorerObjectBreadcrumbItem : BreadcrumbItem
     {
         private readonly IExplorerObject _exObject;
 
