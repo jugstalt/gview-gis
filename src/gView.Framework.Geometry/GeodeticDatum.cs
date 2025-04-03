@@ -66,6 +66,12 @@ namespace gView.Framework.Geometry
         {
             get
             {
+                // only for testing
+                //if (Name.StartsWith("milit", StringComparison.OrdinalIgnoreCase))
+                //{
+                //    return "+towgs84=0,0,0,0,0,0,0 +nadgrids=AT_GIS_GRID_2021_09_28.gsb";
+                //    //return "+nadgrids=AT_GIS_GRID_2021_09_28.gsb";
+                //}
                 return "+towgs84=" +
                     _X.ToString().Replace(",", ".") + "," +
                     _Y.ToString().Replace(",", ".") + "," +
