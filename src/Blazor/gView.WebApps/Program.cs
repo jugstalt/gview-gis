@@ -4,11 +4,13 @@ using gView.Carto.Razor.Extensions.DependencyInjection;
 using gView.DataExplorer.Plugins.Extensions.DependencyInjection;
 using gView.Razor.Extensions.DependencyInjection;
 using gView.Razor.Leaflet.Extensions.DependencyInjection;
+using gView.WebApps.Components;
 using gView.WebApps.Extensions;
 using gView.WebApps.Extensions.DependencyInjection;
-using gView.WebApps.Components;
 using MudBlazor;
 using MudBlazor.Services;
+
+gView.Framework.Common.SystemInfo.RegisterProj4Lib(gView.Framework.Geometry.GeometricTransformerFactory.PROJ_LIB);
 
 var builder = WebApplication.CreateBuilder(args);
 

@@ -1,8 +1,10 @@
-﻿using gView.Framework.Core.Geometry;
+﻿using gView.Framework.Common;
+using gView.Framework.Core.Geometry;
 using gView.Framework.Core.IO;
 using gView.Framework.Geometry.Proj;
 using gView.Framework.Geometry.SpatialRefTranslation;
 using System;
+using System.Linq;
 
 namespace gView.Framework.Geometry
 {
@@ -16,8 +18,7 @@ namespace gView.Framework.Geometry
         private double _rX, _rY, _rZ;
         private double _scale;
         private string _name;
-
-        private static IFormatProvider _nhi = System.Globalization.CultureInfo.InvariantCulture.NumberFormat;
+        private string _gridShiftFile = null;
 
         public GeodeticDatum()
         {
@@ -27,9 +28,21 @@ namespace gView.Framework.Geometry
         public GeodeticDatum(string name)
         {
             ProjDB db = new ProjDB(ProjDBTables.datums);
-            Parameter = db.GetDatumParameters(name);
+            var toWgs84 = db.GetDatumParameters(name);
             db.Dispose();
             Name = name;
+
+            if (!String.IsNullOrEmpty(toWgs84))
+            {
+                this.Parameter = toWgs84;
+                return;
+            }
+
+            if(GeometricTransformerFactory.SupportedGridShifts().Contains(name))
+            {
+                _gridShiftFile = name;
+                return;
+            }
         }
         public GeodeticDatum(GeodeticDatum datum)
         {
@@ -41,10 +54,12 @@ namespace gView.Framework.Geometry
             _rZ = datum._rZ;
             _scale = datum._scale;
             _name = datum._name;
+            _gridShiftFile = datum._gridShiftFile;
         }
-        public GeodeticDatum(string name, double dx, double dy, double dz,
-                                         double rx, double ry, double rz,
-                                         double scale)
+        public GeodeticDatum(string name, 
+                            double dx, double dy, double dz,
+                            double rx, double ry, double rz,
+                            double scale)
         {
             _name = name;
             _X = dx;
@@ -66,40 +81,45 @@ namespace gView.Framework.Geometry
         {
             get
             {
-                // only for testing
-                //if (Name.StartsWith("milit", StringComparison.OrdinalIgnoreCase))
-                //{
-                //    return "+towgs84=0,0,0,0,0,0,0 +nadgrids=AT_GIS_GRID_2021_09_28.gsb";
-                //    //return "+nadgrids=AT_GIS_GRID_2021_09_28.gsb";
-                //}
-                return "+towgs84=" +
-                    _X.ToString().Replace(",", ".") + "," +
-                    _Y.ToString().Replace(",", ".") + "," +
-                    _Z.ToString().Replace(",", ".") + "," +
-                    _rX.ToString().Replace(",", ".") + "," +
-                    _rY.ToString().Replace(",", ".") + "," +
-                    _rZ.ToString().Replace(",", ".") + "," +
-                    _scale.ToString().Replace(",", ".");
+                if (!String.IsNullOrEmpty(_gridShiftFile))
+                {
+                    return $"+nadgrids={_gridShiftFile}";
+                }
+
+                return $"+towgs84={_X.ToDoubleString()},{_Y.ToDoubleString()},{_Z.ToDoubleString()},{_rX.ToDoubleString()},{_rY.ToDoubleString()},{_rY.ToDoubleString()},{_scale.ToDoubleString()}";
             }
             set
             {
-                string[] p = value.Replace("+towgs84=", "").Split(',');
-                if (p.Length < 7)
-                {
-                    return;
-                }
+                value = value?.Trim();
 
-                try
+                if (value?.StartsWith("+towgs84=") == true)
                 {
-                    _X = Convert.ToDouble(p[0], _nhi);
-                    _Y = Convert.ToDouble(p[1], _nhi);
-                    _Z = Convert.ToDouble(p[2], _nhi);
-                    _rX = Convert.ToDouble(p[3], _nhi);
-                    _rY = Convert.ToDouble(p[4], _nhi);
-                    _rZ = Convert.ToDouble(p[5], _nhi);
-                    _scale = Convert.ToDouble(p[6], _nhi);
+                    string[] p = value.Substring("+towgs84=".Length).Split(',');
+                    if (p.Length < 7)
+                    {
+                        return;
+                    }
+
+                    try
+                    {
+                        if(_X!=0D)
+                        {
+                            _X = _X;
+                        }
+                        _X = p[0].ToDouble();
+                        _Y = p[1].ToDouble();
+                        _Z = p[2].ToDouble();
+                        _rX = p[3].ToDouble();
+                        _rY = p[4].ToDouble();
+                        _rZ = p[5].ToDouble();
+                        _scale = p[6].ToDouble();
+                    }
+                    catch { }
                 }
-                catch { }
+                else if (value?.StartsWith("+nadgrids=") == true)
+                {
+                    _gridShiftFile = value.Substring("+nadgrids=".Length);
+                }
             }
         }
 
@@ -203,6 +223,7 @@ namespace gView.Framework.Geometry
             _rY = (double)stream.Load("rY", 0.0);
             _rZ = (double)stream.Load("rZ", 0.0);
             _scale = (double)stream.Load("scale", 0.0);
+            _gridShiftFile = (string)stream.Load("gridShiftFile", null);
         }
 
         public void Save(IPersistStream stream)
@@ -215,6 +236,10 @@ namespace gView.Framework.Geometry
             stream.Save("rY", _rY);
             stream.Save("rZ", _rZ);
             stream.Save("scale", _scale);
+            if(!String.IsNullOrEmpty(_gridShiftFile))
+            {
+                stream.Save("gridShiftFile", _gridShiftFile);
+            }
         }
 
         #endregion
@@ -233,6 +258,7 @@ namespace gView.Framework.Geometry
             datum._rZ = _rZ;
             datum._scale = _scale;
             datum._name = _name;
+            datum._gridShiftFile = _gridShiftFile;
 
             return datum;
         }

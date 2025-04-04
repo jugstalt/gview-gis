@@ -1,11 +1,14 @@
-﻿using gView.Facilities.Abstraction;
+﻿using gView.Endpoints.Extensions;
+using gView.Facilities.Abstraction;
 using gView.Facilities.Extensions.DependencyInjection;
 using gView.Framework.Common;
 using gView.Framework.Common.Extensions;
 using gView.Framework.Core.Common;
+using gView.Framework.Geometry;
 using gView.Framework.IO;
 using gView.Server.AppCode;
 using gView.Server.AppCode.Configuration;
+using gView.Server.Controllers;
 using gView.Server.Extensions;
 using gView.Server.Extensions.DependencyInjection;
 using gView.Server.Middleware;
@@ -18,8 +21,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System;
-using gView.Endpoints.Extensions;
-using gView.Server.Controllers;
 
 namespace gView.Server
 {
@@ -31,6 +32,7 @@ namespace gView.Server
             Environment = environment;
 
             SystemInfo.RegisterGdal1_10_PluginEnvironment();
+            SystemInfo.RegisterProj4Lib(GeometricTransformerFactory.PROJ_LIB);
             SystemVariables.UseDiagnostic =
             ContextVariables.UseMetrics =
                 "true".Equals(Configuration["diagnostics"], StringComparison.OrdinalIgnoreCase);

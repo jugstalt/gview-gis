@@ -1,22 +1,27 @@
 ﻿using System;
+using System.Security.Cryptography.X509Certificates;
 
-namespace gView.Framework.Core.Geometry
+namespace gView.Framework.Core.Geometry;
+
+public interface IGeometricTransformer : IDisposable
 {
-    public interface IGeometricTransformer : IDisposable
-    {
-        //ISpatialReference FromSpatialReference { set; get; }
-        //ISpatialReference ToSpatialReference { set; get;  }
+    //ISpatialReference FromSpatialReference { set; get; }
+    //ISpatialReference ToSpatialReference { set; get;  }
 
-        void SetSpatialReferences(ISpatialReference from, ISpatialReference to);
+    void SetSpatialReferences(ISpatialReference from, ISpatialReference to);
 
-        /*
-        int FromID { get ; }
-        int ToID { get ; }
-        */
+    /*
+    int FromID { get ; }
+    int ToID { get ; }
+    */
 
-        object Transform2D(object geometry);
-        object InvTransform2D(object geometry);
+    object Transform2D(object geometry);
+    object InvTransform2D(object geometry);
 
-        void Release();
-    }
+    void Release();
+}
+
+public interface  IDatumGridShiftProvider
+{
+    public string[] GridShiftNames();
 }

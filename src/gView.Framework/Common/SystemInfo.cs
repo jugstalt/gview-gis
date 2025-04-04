@@ -45,6 +45,14 @@ namespace gView.Framework.Common
             }
         }
 
+        static public void RegisterProj4Lib(string path)
+        {
+            if(Path.Exists(path))
+            {
+                Environment.SetEnvironmentVariable("PROJ_LIB", path);
+            }
+        }
+
         static public void RegisterDefaultGraphicEnginges(float dpi = 96)
         {
             if (IsWindows)

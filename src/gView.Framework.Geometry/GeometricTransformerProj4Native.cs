@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
 using gView.Framework.Core.Geometry;
@@ -50,7 +52,9 @@ namespace gView.Framework.Geometry
         public static extern void pj_set_searchpath(int count, IntPtr path);
     }
 
-    public sealed class GeometricTransformerProj4Nativ : IGeometricTransformer, IDisposable
+    public sealed class GeometricTransformerProj4Nativ : IGeometricTransformer, 
+                                                         IDatumGridShiftProvider,
+                                                         IDisposable
     {
         private IntPtr _fromID = IntPtr.Zero, _toID = IntPtr.Zero;
         //private int _preToID = -1, _preFromID = -1;
@@ -613,6 +617,35 @@ namespace gView.Framework.Geometry
                 _fromID = _toID = IntPtr.Zero;
                 //_preFrom = _preTo = -1;
             }
+        }
+
+        #endregion
+
+        #region IDatumGridShiftProvider Member
+
+        public string[] GridShiftNames()
+        {
+            string projLibPath = Environment.GetEnvironmentVariable("PROJ_LIB");
+
+            if (String.IsNullOrEmpty(projLibPath) ||
+                Directory.Exists(projLibPath))
+            {
+                return [];
+            }
+
+            List<string> result = new();
+
+            foreach (var file in Directory.GetFiles(projLibPath))
+            {
+                switch (System.IO.Path.GetExtension(file).ToLower())
+                {
+                    case ".gsd":
+                        result.Add(System.IO.Path.GetFileName(file));
+                        break;
+                }
+            }
+
+            return result.ToArray();
         }
 
         #endregion

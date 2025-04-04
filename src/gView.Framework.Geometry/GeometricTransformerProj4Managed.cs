@@ -1,12 +1,16 @@
 ﻿using gView.Framework.Core.Geometry;
 using Proj4Net.Core;
 using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 
 namespace gView.Framework.Geometry
 {
-    public sealed class GeometricTransformerProj4Managed : IGeometricTransformer, IDisposable
+    public sealed class GeometricTransformerProj4Managed : IGeometricTransformer,
+                                                           IDatumGridShiftProvider,
+                                                           IDisposable
     {
         private CoordinateReferenceSystem _fromSrs = null, _toSrs = null;
         private bool _toProjective = true, _fromProjective = true;
@@ -20,6 +24,11 @@ namespace gView.Framework.Geometry
         CoordinateReferenceSystem[] _projectionPipeline = null;
         BasicCoordinateTransform[] _basicCoordinateTransformations = null;
         BasicCoordinateTransform[] _basicCoordinateTransformationsInverse = null;
+
+        static GeometricTransformerProj4Managed()
+        {
+            Proj4Net.Core.IO.Paths.PROJ_LIB = GeometricTransformerFactory.PROJ_LIB;
+        }
 
         #region IGeometricTransformer Member
 
@@ -403,6 +412,35 @@ namespace gView.Framework.Geometry
         public void Release()
         {
 
+        }
+
+        #endregion
+
+        #region IDatumGridShiftProvider Member
+
+        public string[] GridShiftNames()
+        {
+            string projLibPath = Proj4Net.Core.IO.Paths.PROJ_LIB;
+
+            if (String.IsNullOrEmpty(projLibPath) ||
+                Directory.Exists(projLibPath))
+            {
+                return [];
+            }
+
+            List<string> result = new();
+
+            foreach (var file in Directory.GetFiles(projLibPath))
+            {
+                switch (System.IO.Path.GetExtension(file).ToLower())
+                {
+                    case ".gsd":
+                        result.Add(System.IO.Path.GetFileName(file));
+                        break;
+                }
+            }
+
+            return result.ToArray();
         }
 
         #endregion
