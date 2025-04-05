@@ -171,7 +171,8 @@ namespace gView.Interoperability.ArcXML
                             } ((Feature)row).Shape = GeometricTransformerFactory.Transform2D(
                                 shape,
                                 sRef,
-                                ServiceMap.Display.SpatialReference);
+                                ServiceMap.Display.SpatialReference,
+                                ServiceMap);
                         }
                     }
 
@@ -1532,7 +1533,7 @@ namespace gView.Interoperability.ArcXML
                                 continue;
                             }
 
-                            IGeometry geom = GeometricTransformerFactory.Transform2D(((IFeatureLayer)element).FeatureClass.Envelope, ((IFeatureLayer)element).FeatureClass.SpatialReference, map.Display.SpatialReference);
+                            IGeometry geom = GeometricTransformerFactory.Transform2D(((IFeatureLayer)element).FeatureClass.Envelope, ((IFeatureLayer)element).FeatureClass.SpatialReference, map.Display.SpatialReference, map);
                             if (geom != null)
                             {
                                 env = geom.Envelope;
@@ -1545,7 +1546,7 @@ namespace gView.Interoperability.ArcXML
                                 continue;
                             }
 
-                            IGeometry geom = GeometricTransformerFactory.Transform2D(((IRasterLayer)element).RasterClass.Polygon.Envelope, ((IRasterLayer)element).RasterClass.SpatialReference, map.Display.SpatialReference);
+                            IGeometry geom = GeometricTransformerFactory.Transform2D(((IRasterLayer)element).RasterClass.Polygon.Envelope, ((IRasterLayer)element).RasterClass.SpatialReference, map.Display.SpatialReference, map);
                             if (geom != null)
                             {
                                 env = geom.Envelope;
@@ -1558,7 +1559,7 @@ namespace gView.Interoperability.ArcXML
                                 continue;
                             }
 
-                            IGeometry geom = GeometricTransformerFactory.Transform2D(((IWebServiceLayer)element).WebServiceClass.Envelope, ((IWebServiceLayer)element).WebServiceClass.SpatialReference, map.Display.SpatialReference);
+                            IGeometry geom = GeometricTransformerFactory.Transform2D(((IWebServiceLayer)element).WebServiceClass.Envelope, ((IWebServiceLayer)element).WebServiceClass.SpatialReference, map.Display.SpatialReference, map);
                             if (geom != null)
                             {
                                 env = geom.Envelope;
@@ -1706,7 +1707,7 @@ namespace gView.Interoperability.ArcXML
                             }
                             if (envelope)
                             {
-                                IGeometry geom = GeometricTransformerFactory.Transform2D(fClass.Envelope, fClass.SpatialReference, map.Display.SpatialReference);
+                                IGeometry geom = GeometricTransformerFactory.Transform2D(fClass.Envelope, fClass.SpatialReference, map.Display.SpatialReference, map);
                                 if (geom != null)
                                 {
                                     ENVELOPE(xWriter, geom.Envelope);
@@ -1823,7 +1824,7 @@ namespace gView.Interoperability.ArcXML
 
                         if (envelope && rLayer.RasterClass.Polygon != null)
                         {
-                            IGeometry geom = GeometricTransformerFactory.Transform2D(rLayer.RasterClass.Polygon.Envelope, rLayer.RasterClass.SpatialReference, map.Display.SpatialReference);
+                            IGeometry geom = GeometricTransformerFactory.Transform2D(rLayer.RasterClass.Polygon.Envelope, rLayer.RasterClass.SpatialReference, map.Display.SpatialReference, map);
                             if (geom != null)
                             {
                                 ENVELOPE(xWriter, geom.Envelope);

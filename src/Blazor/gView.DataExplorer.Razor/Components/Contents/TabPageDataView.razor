@@ -224,7 +224,7 @@
 
                 await Task.Delay(300);
 
-                var mapBounds = GeoTransformer.FromWGS84(new Envelope(bounds.SouthWest.Lng, bounds.SouthWest.Lat, bounds.NorthEast.Lng, bounds.NorthEast.Lat), _mapSRef).Envelope;
+                var mapBounds = GeoTransformer.FromWGS84(new Envelope(bounds.SouthWest.Lng, bounds.SouthWest.Lat, bounds.NorthEast.Lng, bounds.NorthEast.Lat), _mapSRef, null).Envelope;
                 MapRenderer.SetBoundsAndSize(mapBounds, size.Width, size.Height);
                 await MapRenderer.Rerender();
             }
@@ -265,7 +265,7 @@
             var zoomToWgs84 = zoomTo.Srs switch
             {
                 4326 => zoomTo.ToMinSize(),
-                _ => GeoTransformer.ToWGS84(zoomTo, _mapSRef).Envelope.ToMinSize()
+                _ => GeoTransformer.ToWGS84(zoomTo, _mapSRef, null).Envelope.ToMinSize()
             };
 
             await _mapControl.FitBounds(
@@ -333,14 +333,14 @@
         IEnvelope? lMapBounds = null;
         if (_dataSpatialReference != null && dataEnvelope != null)
         {
-            lMapBounds = GeoTransformer.ToWGS84(new Envelope(dataEnvelope), _dataSpatialReference).Envelope;
+            lMapBounds = GeoTransformer.ToWGS84(new Envelope(dataEnvelope), _dataSpatialReference, null).Envelope;
         }
 
         if (lMapBounds != null)
         {
             if (MapRenderer.BoundsIntialized())
             {
-                var rendererBounds = GeoTransformer.ToWGS84(new Envelope(MapRenderer.Bounds), MapRenderer.SpatialReference).Envelope;
+                var rendererBounds = GeoTransformer.ToWGS84(new Envelope(MapRenderer.Bounds), MapRenderer.SpatialReference, null).Envelope;
                 if (lMapBounds.Contains(rendererBounds)) // stay in same Extent/Zoom
                 {
                     lMapBounds = rendererBounds;

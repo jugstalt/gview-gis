@@ -129,7 +129,8 @@
                 coordinate = GeoTransformation.Transform(
                         coordinate,
                         model.SpatialReference,
-                        CartoDocument.CurrentMap.Display.SpatialReference
+                        CartoDocument.CurrentMap.Display.SpatialReference,
+                        CartoDocument.CurrentMap.Display
                     ) as IPoint ?? new Point();
             }
 
@@ -193,7 +194,7 @@
 
         if (spatialReferernce is not null)
         {
-            _cursorPoint = GeoTransformation.FromWGS84(new PointStruct(latLng), spatialReferernce) as IPoint;
+            _cursorPoint = GeoTransformation.FromWGS84(new PointStruct(latLng), spatialReferernce, CartoDocument.CurrentMap?.Display) as IPoint;
         }
         return this.InvokeAsync(() => StateHasChanged());
     }

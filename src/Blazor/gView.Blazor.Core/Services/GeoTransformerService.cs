@@ -6,36 +6,49 @@ namespace gView.Blazor.Core.Services;
 
 public class GeoTransformerService
 {
-    public IGeometry ToWGS84(IGeometry geometry, ISpatialReference fromSRef)
+    public IGeometry ToWGS84(
+                     IGeometry geometry, 
+                     ISpatialReference fromSRef,
+                     IDatumsTransformations? datumsTransformations)
     {
         var toSRef = new SpatialReference($"epsg:4326");
 
-        return Transform(geometry, fromSRef, toSRef);
+        return Transform(geometry, fromSRef, toSRef, datumsTransformations);
     }
 
-    public IGeometry FromWGS84(IGeometry geometry, ISpatialReference toSRef)
+    public IGeometry FromWGS84(
+                    IGeometry geometry, 
+                    ISpatialReference toSRef,
+                    IDatumsTransformations? datumsTransformations)
     {
         var fromSRef = new SpatialReference($"epsg:4326");
 
-        return Transform(geometry, fromSRef, toSRef);
+        return Transform(geometry, fromSRef, toSRef, datumsTransformations);
     }
 
-    public IGeometry Transform(IGeometry geometry, int fromEpsg, int toEpsg)
+    public IGeometry Transform(
+                    IGeometry geometry, 
+                    int fromEpsg, int toEpsg,
+                    IDatumsTransformations? datumsTransformations)
     {
         var fromSRef = new SpatialReference($"epsg:{fromEpsg}");
         var toSRef = new SpatialReference($"epsg:{toEpsg}");
 
-        return Transform(geometry, fromSRef, toSRef);
+        return Transform(geometry, fromSRef, toSRef, datumsTransformations);
     }
 
-    public IGeometry Transform(IGeometry geometry, ISpatialReference? fromSRef, ISpatialReference? toSRef)
+    public IGeometry Transform(
+                    IGeometry geometry, 
+                    ISpatialReference? fromSRef, 
+                    ISpatialReference? toSRef,
+                    IDatumsTransformations? datumsTransformations)
     {
         if (fromSRef is null || toSRef is null)
         {
             return geometry;
         }
 
-        using (var transformer = GeometricTransformerFactory.Create())
+        using (var transformer = GeometricTransformerFactory.Create(datumsTransformations))
         {
             transformer.SetSpatialReferences(fromSRef, toSRef);
             var result = (transformer.Transform2D(geometry) as IGeometry)

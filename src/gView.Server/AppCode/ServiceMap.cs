@@ -81,6 +81,8 @@ namespace gView.Server.AppCode
             serviceMap.SetResourceContainer(original.ResourceContainer);
             serviceMap.SetMapEventHooks(original.MapEventHooks);
 
+            serviceMap.Transformations = original.Transformations;
+
             return serviceMap;
         }
 
@@ -364,7 +366,7 @@ namespace gView.Server.AppCode
             }
 
             using (var datasetCachingContext = new DatasetCachingContext(this))
-            using (var geoTransformer = GeometricTransformerFactory.Create())
+            using (var geoTransformer = GeometricTransformerFactory.Create(this.Display))
             {
                 //geoTransformer.ToSpatialReference = this.SpatialReference;
 

@@ -66,7 +66,7 @@ public class GetServiceCapabilities : BaseApiEndpoint
          var intialExtent = fullExtent; // map.Display.Envelope;
          map.Display.SpatialReference = capabilitiesRequest.CRS.ToSpatialReferenceOrDefault();
 
-         using (var geoTransfromer = GeometricTransformerFactory.Create())
+         using (var geoTransfromer = GeometricTransformerFactory.Create(map.Display))
          {
              geoTransfromer.SetSpatialReferences(originalMapSRef, map.Display.SpatialReference);
              fullExtent = (geoTransfromer.Transform2D(fullExtent) as IGeometry)?.Envelope;

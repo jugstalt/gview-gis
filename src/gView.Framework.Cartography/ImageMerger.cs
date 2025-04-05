@@ -236,7 +236,7 @@ namespace gView.Framework.Cartography
                             if (geoBmp.Envelope != null)
                             {
                                 double x0, y0, x1, y1, x2, y2;
-                                IGeometry geom = Geometry.GeometricTransformerFactory.Transform2D(geoBmp.Envelope, geoBmp.SpatialReference, display.SpatialReference);
+                                IGeometry geom = Geometry.GeometricTransformerFactory.Transform2D(geoBmp.Envelope, geoBmp.SpatialReference, display.SpatialReference, display);
                                 if (geom is IPolygon)
                                 {
                                     IRing ring = ((IPolygon)geom)[0];

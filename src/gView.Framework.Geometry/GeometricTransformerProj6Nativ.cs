@@ -99,10 +99,16 @@ namespace gView.Framework.Geometry
         static IntPtr _ctx;
         IntPtr _pj,_pjInv;
         private ISpatialReference _fromSRef = null, _toSRef = null;
+        private readonly IDatumsTransformations? _datumsTransformations = null;
 
         private bool _toProjective = true, _fromProjective = true;
         private const double RAD2DEG = (180.0 / Math.PI);
 
+        public GeometricTransformerProj6Nativ(IDatumsTransformations datumsTransformations)
+        { 
+            _datumsTransformations = datumsTransformations;
+        }
+           
         #region IGeometricTransformer Member
 
         private ISpatialReference FromSpatialReference
@@ -490,7 +496,7 @@ namespace gView.Framework.Geometry
 
         #endregion
 
-        static public IGeometry Transform2D(IGeometry geometry, ISpatialReference from, ISpatialReference to)
+        static public IGeometry Transform2D(IGeometry geometry, ISpatialReference from, ISpatialReference to, IDatumsTransformations? datumsTransformations)
         {
             if (geometry == null)
             {
@@ -502,7 +508,7 @@ namespace gView.Framework.Geometry
                 return geometry;
             }
 
-            using (IGeometricTransformer transformer = GeometricTransformerFactory.Create())
+            using (IGeometricTransformer transformer = GeometricTransformerFactory.Create(datumsTransformations))
             {
                 transformer.SetSpatialReferences(from, to);
                 IGeometry transformed = transformer.Transform2D(geometry) as IGeometry;
@@ -512,9 +518,9 @@ namespace gView.Framework.Geometry
             }
         }
 
-        static public IGeometry InvTransform2D(IGeometry geometry, ISpatialReference from, ISpatialReference to)
+        static public IGeometry InvTransform2D(IGeometry geometry, ISpatialReference from, ISpatialReference to, IDatumsTransformations? datumsTransformations)
         {
-            return Transform2D(geometry, to, from);
+            return Transform2D(geometry, to, from, datumsTransformations);
         }
 
         #region IDisposable Member

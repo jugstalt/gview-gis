@@ -135,6 +135,8 @@ public class Display : MapMetadata, IDisplay
         }
     }
 
+    public IDatumsTransformation[] Transformations { get; protected set; } = [];
+
     public void Draw(ISymbol symbol, IGeometry geometry)
     {
         try
@@ -502,7 +504,7 @@ public class Display : MapMetadata, IDisplay
             return geometry;
         }
 
-        IGeometricTransformer transformer = GeometricTransformerFactory.Create();
+        IGeometricTransformer transformer = GeometricTransformerFactory.Create(this);
 
         //transformer.FromSpatialReference = geometrySpatialReference;
         //transformer.ToSpatialReference = _spatialReference;

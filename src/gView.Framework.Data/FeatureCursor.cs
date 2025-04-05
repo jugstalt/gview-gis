@@ -1,14 +1,12 @@
-﻿using gView.Framework.Core.Data;
+﻿using gView.Framework.Common.Diagnostics;
+using gView.Framework.Core.Common;
+using gView.Framework.Core.Data;
 using gView.Framework.Core.Data.Cursors;
 using gView.Framework.Core.Geometry;
-using gView.Framework.Core.Common;
 using gView.Framework.Geometry;
-using gView.Framework.Common.Diagnostics;
 using System;
 using System.Data;
 using System.Threading.Tasks;
-using Microsoft.SqlServer.Management.SqlParser.MetadataProvider;
-using Microsoft.SqlServer.Management.SqlParser.SqlCodeDom;
 
 namespace gView.Framework.Data
 {

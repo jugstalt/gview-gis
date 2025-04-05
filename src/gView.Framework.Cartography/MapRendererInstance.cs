@@ -75,6 +75,8 @@ public class MapRendererInstance : Map, IMapRenderer
         //    original.FireDrawingLayer(layerName);
         //};
 
+        mapRenderInstance.Transformations = original.Transformations;
+
         return mapRenderInstance;
     }
 
@@ -120,7 +122,7 @@ public class MapRendererInstance : Map, IMapRenderer
                     cancelTracker = new CancelTracker();
                 }
 
-                IGeometricTransformer geoTransformer = GeometricTransformerFactory.Create();
+                IGeometricTransformer geoTransformer = GeometricTransformerFactory.Create(this);
 
                 _bitmap = GraphicsEngine.Current.Engine.CreateBitmap(ImageWidth, ImageHeight, GraphicsEngine.PixelFormat.Rgba32);
                 _bitmap.MakeTransparent();

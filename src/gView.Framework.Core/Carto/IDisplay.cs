@@ -3,7 +3,7 @@ using gView.Framework.Core.Symbology;
 
 namespace gView.Framework.Core.Carto
 {
-    public interface IDisplay
+    public interface IDisplay : IDatumsTransformations
     {
         event MapScaleChangedEvent MapScaleChanged;
         event RenderOverlayImageEvent RenderOverlayImage;

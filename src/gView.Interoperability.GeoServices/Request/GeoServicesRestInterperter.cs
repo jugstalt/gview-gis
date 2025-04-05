@@ -670,7 +670,7 @@ public class GeoServicesRestInterperter : IServiceRequestInterpreter
                     #endregion
 
                     bool transform = false;
-                    using (var geoTransfromer = GeometricTransformerFactory.Create())
+                    using (var geoTransfromer = GeometricTransformerFactory.Create(serviceMap.Display))
                     {
                         if (tableClass is IFeatureClass && ((IFeatureClass)tableClass).SpatialReference == null && filter.FeatureSpatialReference != null && serviceMap.LayerDefaultSpatialReference != null)
                         {
@@ -683,7 +683,7 @@ public class GeoServicesRestInterperter : IServiceRequestInterpreter
                                 ((ISpatialFilter)filter).FilterSpatialReference != null &&
                                 !serviceMap.LayerDefaultSpatialReference.EpsgCode.Equals(((ISpatialFilter)filter).FilterSpatialReference?.EpsgCode))
                             {
-                                using (var filterTransformer = GeometricTransformerFactory.Create())
+                                using (var filterTransformer = GeometricTransformerFactory.Create(serviceMap.Display))
                                 {
                                     filterTransformer.SetSpatialReferences(((SpatialFilter)filter).FilterSpatialReference, serviceMap.LayerDefaultSpatialReference);
                                     ((SpatialFilter)filter).Geometry = filterTransformer.Transform2D(((SpatialFilter)filter).Geometry) as IGeometry;

@@ -444,7 +444,7 @@ namespace gView.Interoperability.OGC.Dataset.WMS
 
             if (display.SpatialReference != null && !display.SpatialReference.Equals(this.SpatialReference))
             {
-                displayEnv = GeometricTransformerFactory.Transform2D(displayEnv, display.SpatialReference, this.SpatialReference).Envelope;
+                displayEnv = GeometricTransformerFactory.Transform2D(displayEnv, display.SpatialReference, this.SpatialReference, display).Envelope;
                 iHeight = (int)((displayEnv.Height / displayEnv.Width) * iWidth);
             }
 

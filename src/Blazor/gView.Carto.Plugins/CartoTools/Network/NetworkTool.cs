@@ -311,7 +311,8 @@ internal class NetworkTool : ICartoTool
             IFeatureClass featureClass => scope.GeoTransformer.Transform(
                                                 shape,
                                                 featureClass.SpatialReference,
-                                                scope.DisplayService.SpatialReference!
+                                                scope.DisplayService.SpatialReference!,
+                                                scope.Document?.Map?.Display
                                           ),
             _ => shape
         };

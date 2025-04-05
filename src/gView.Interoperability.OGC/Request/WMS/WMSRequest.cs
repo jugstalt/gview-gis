@@ -1184,7 +1184,7 @@ namespace gView.Interoperability.OGC
                     continue;
                 }
 
-                env = GeometricTransformerFactory.Transform2D(env, sRef, sRef_4326).Envelope;
+                env = GeometricTransformerFactory.Transform2D(env, sRef, sRef_4326, map).Envelope;
                 if (envelope == null)
                 {
                     envelope = env;

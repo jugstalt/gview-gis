@@ -773,7 +773,7 @@ namespace gView.Interoperability.OGC
                             if (fc.SpatialReference != null &&
                                 !fc.SpatialReference.Equals(sRef))
                             {
-                                transformer = GeometricTransformerFactory.Create();
+                                transformer = GeometricTransformerFactory.Create(map.Display);
                                 transformer.SetSpatialReferences(fc.SpatialReference, sRef);
                             }
                         }

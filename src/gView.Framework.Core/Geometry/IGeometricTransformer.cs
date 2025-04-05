@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Security.Cryptography.X509Certificates;
 
 namespace gView.Framework.Core.Geometry;
 
@@ -19,9 +18,4 @@ public interface IGeometricTransformer : IDisposable
     object InvTransform2D(object geometry);
 
     void Release();
-}
-
-public interface  IDatumGridShiftProvider
-{
-    public string[] GridShiftNames();
 }

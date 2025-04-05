@@ -229,7 +229,7 @@ public class QueryFeatures : BaseApiEndpoint
                                 && spatialFilter.FilterSpatialReference != null
                                 && !serviceMap.LayerDefaultSpatialReference.EpsgCode.Equals(spatialFilter.FilterSpatialReference?.EpsgCode))
                             {
-                                using (var filterTransformer = GeometricTransformerFactory.Create())
+                                using (var filterTransformer = GeometricTransformerFactory.Create(serviceMap.Display))
                                 {
                                     filterTransformer.SetSpatialReferences(spatialFilter.FilterSpatialReference, serviceMap.LayerDefaultSpatialReference);
                                     spatialFilter.Geometry = filterTransformer.Transform2D(spatialFilter.Geometry) as IGeometry;
