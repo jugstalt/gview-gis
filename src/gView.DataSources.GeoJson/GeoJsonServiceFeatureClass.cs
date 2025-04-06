@@ -126,7 +126,8 @@ namespace gView.DataSources.GeoJson
                     ((ISpatialFilter)filter).Geometry =
                        GeometricTransformerFactory.Transform2D(((ISpatialFilter)filter).Geometry,
                         ((ISpatialFilter)filter).FilterSpatialReference,
-                        this.SpatialReference);
+                        this.SpatialReference,
+                        filter.DatumTransformations);
                     ((ISpatialFilter)filter).FilterSpatialReference = null;
                 }
             }

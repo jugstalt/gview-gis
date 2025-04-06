@@ -73,19 +73,19 @@ internal class ZoomToLayer : ICartoButton
                 => scope.GeoTransformer.Transform(envelope,
                                                   featureLayer.FeatureClass?.SpatialReference,
                                                   mapSref,
-                                                  scope.Document?.Map?.Display)?.Envelope,
+                                                  scope.Document?.Map?.Display?.DatumTransformations)?.Envelope,
 
             IRasterLayer rasterLayer when rasterLayer.RasterClass?.Polygon?.Envelope is IEnvelope envelope
                 => scope.GeoTransformer.Transform(envelope,
                                                   rasterLayer.RasterClass?.SpatialReference,
                                                   mapSref,
-                                                  scope.Document?.Map?.Display)?.Envelope,
+                                                  scope.Document?.Map?.Display?.DatumTransformations)?.Envelope,
 
             IWebServiceLayer webLayer when webLayer.WebServiceClass?.Envelope is IEnvelope envelope
                 => scope.GeoTransformer.Transform(envelope,
                                                   webLayer.WebServiceClass?.SpatialReference,
                                                   mapSref,
-                                                  scope.Document?.Map?.Display)?.Envelope,
+                                                  scope.Document?.Map?.Display?.DatumTransformations)?.Envelope,
 
             IGroupLayer groupLayer => groupLayer.ChildLayers
                                                 .Select(l => GetLayerExtent(scope, l))

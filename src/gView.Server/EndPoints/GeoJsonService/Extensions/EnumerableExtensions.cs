@@ -166,7 +166,8 @@ internal static class EnumerableExtensions
     static public IEnumerable<IFeature> GetFeatrues(
                 this IEnumerable<gView.GeoJsonService.DTOs.Feature> geoJsonFeatures,
                 IFeatureClass featureClass,
-                ISpatialReference? geoJsonFeaturesSRef = null)
+                ISpatialReference? geoJsonFeaturesSRef,
+                IDatumTransformations? datumTransformations)
     {
         int? fcSrs = featureClass.SpatialReference?.EpsgCode;
 
@@ -179,7 +180,7 @@ internal static class EnumerableExtensions
                 && fcSrs.HasValue
                 && geoJsonFeaturesSRef.EpsgCode != fcSrs.Value)
             {
-                using (var transformer = GeometricTransformerFactory.Create())
+                using (var transformer = GeometricTransformerFactory.Create(datumTransformations))
                 {
                     var fromSrs = SpatialReference.FromID(geoJsonFeaturesSRef.Name);
                     var toSrs = SpatialReference.FromID($"epsg:{fcSrs}");

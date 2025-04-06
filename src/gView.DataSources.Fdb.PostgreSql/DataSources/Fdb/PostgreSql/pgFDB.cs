@@ -730,15 +730,16 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
             }
 
             return await pgFeatureCursor.Create(_conn.ConnectionString, sql, DataProvider.ToDbWhereClause("npgsql", where), orederBy, filter.Limit, filter.BeginRecord, filter.NoLock, NIDs, sFilter, fc,
-                (filter != null) ? filter.FeatureSpatialReference : null);
+                filter?.FeatureSpatialReference,
+                filter?.DatumTransformations);
 
         }
 
-        async override public Task<IFeatureCursor> QueryIDs(IFeatureClass fc, string subFields, List<int> IDs, ISpatialReference toSRef)
+        async override public Task<IFeatureCursor> QueryIDs(IFeatureClass fc, string subFields, List<int> IDs, ISpatialReference toSRef, IDatumTransformations datumTransformations)
         {
             string tabName = ((fc is pgFeatureClass) ? ((pgFeatureClass)fc).DbTableName : "fc_" + fc.Name);
             string sql = "SELECT " + subFields + " FROM " + tabName;
-            return await pgFeatureCursorIDs.Create(_conn.ConnectionString, sql, IDs, await this.GetGeometryDef(fc.Name), toSRef);
+            return await pgFeatureCursorIDs.Create(_conn.ConnectionString, sql, IDs, await this.GetGeometryDef(fc.Name), toSRef, datumTransformations);
         }
 
         async override public Task<List<IDatasetElement>> DatasetLayers(IDataset dataset)
@@ -1010,7 +1011,7 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
 
                                 byte[] geometry = new byte[writer.BaseStream.Length];
                                 writer.BaseStream.Position = 0;
-                                writer.BaseStream.Read(geometry, 0, (int)writer.BaseStream.Length);
+                                writer.BaseStream.ReadExactly(geometry, 0, (int)writer.BaseStream.Length);
                                 writer.Close();
 
                                 shapeParameter.Value = geometry;
@@ -1182,7 +1183,7 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
 
                                 byte[] geometry = new byte[writer.BaseStream.Length];
                                 writer.BaseStream.Position = 0;
-                                writer.BaseStream.Read(geometry, (int)0, (int)writer.BaseStream.Length);
+                                writer.BaseStream.ReadExactly(geometry, (int)0, (int)writer.BaseStream.Length);
                                 writer.Close();
 
                                 DbParameter parameter = factory.CreateParameter();
@@ -1379,7 +1380,7 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
 
                                 byte[] geometry = new byte[writer.BaseStream.Length];
                                 writer.BaseStream.Position = 0;
-                                writer.BaseStream.Read(geometry, (int)0, (int)writer.BaseStream.Length);
+                                writer.BaseStream.ReadExactly(geometry, (int)0, (int)writer.BaseStream.Length);
                                 writer.Close();
 
                                 DbParameter parameter = _dbProviderFactory.CreateParameter();
@@ -2103,16 +2104,17 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
             ISpatialFilter _spatialFilter;
             int _limit = 0, _beginrecord = 0;
 
-            public pgFeatureCursor(IGeometryDef geomDef, ISpatialReference toSRef) :
-                base((geomDef != null) ? geomDef.SpatialReference : null,
-                     toSRef)
+            public pgFeatureCursor(IGeometryDef geomDef, ISpatialReference toSRef, IDatumTransformations datumTransformations)
+                : base(geomDef?.SpatialReference,
+                       toSRef,
+                       datumTransformations)
             {
 
             }
 
-            async static public Task<IFeatureCursor> Create(string connString, string sql, string where, string orderBy, int limit, int beginRecord, bool nolock, List<long> nids, ISpatialFilter filter, IGeometryDef geomDef, ISpatialReference toSRef)
+            async static public Task<IFeatureCursor> Create(string connString, string sql, string where, string orderBy, int limit, int beginRecord, bool nolock, List<long> nids, ISpatialFilter filter, IGeometryDef geomDef, ISpatialReference toSRef, IDatumTransformations datumTransformations)
             {
-                var cursor = new pgFeatureCursor(geomDef, toSRef);
+                var cursor = new pgFeatureCursor(geomDef, toSRef, datumTransformations);
 
                 try
                 {
@@ -2429,15 +2431,15 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
             private int _id_pos = 0;
             private string _sql;
 
-            private pgFeatureCursorIDs(IGeometryDef geomDef, ISpatialReference toSRef)
-                : base((geomDef != null) ? geomDef.SpatialReference : null, toSRef)
+            private pgFeatureCursorIDs(IGeometryDef geomDef, ISpatialReference toSRef, IDatumTransformations datumTransformations)
+                : base(geomDef?.SpatialReference, toSRef, datumTransformations)
             {
 
             }
 
-            async public static Task<IFeatureCursor> Create(string connString, string sql, List<int> IDs, IGeometryDef geomDef, ISpatialReference toSRef)
+            async public static Task<IFeatureCursor> Create(string connString, string sql, List<int> IDs, IGeometryDef geomDef, ISpatialReference toSRef, IDatumTransformations datumTransformations)
             {
-                var cursor = new pgFeatureCursorIDs(geomDef, toSRef);
+                var cursor = new pgFeatureCursorIDs(geomDef, toSRef, datumTransformations);
 
                 try
                 {

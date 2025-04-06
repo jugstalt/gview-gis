@@ -456,7 +456,7 @@ namespace gView.DataSources.Fdb.SQLite
 
                                 byte[] geometry = new byte[writer.BaseStream.Length];
                                 writer.BaseStream.Position = 0;
-                                writer.BaseStream.Read(geometry, 0, (int)writer.BaseStream.Length);
+                                writer.BaseStream.ReadExactly(geometry, 0, (int)writer.BaseStream.Length);
                                 writer.Close();
 
                                 SQLiteParameter parameter = new SQLiteParameter("@FDB_SHAPE", geometry);
@@ -724,7 +724,7 @@ namespace gView.DataSources.Fdb.SQLite
 
                                 byte[] geometry = new byte[writer.BaseStream.Length];
                                 writer.BaseStream.Position = 0;
-                                writer.BaseStream.Read(geometry, 0, (int)writer.BaseStream.Length);
+                                writer.BaseStream.ReadExactly(geometry, 0, (int)writer.BaseStream.Length);
                                 writer.Close();
 
                                 SQLiteParameter parameter = new SQLiteParameter("@FDB_SHAPE", geometry);
@@ -1089,7 +1089,7 @@ namespace gView.DataSources.Fdb.SQLite
                 ISpatialReference filterSRef = ((ISpatialFilter)filter).FilterSpatialReference;
                 if (filterSRef != null && !filterSRef.Equals(fc.SpatialReference))
                 {
-                    sFilter.Geometry = GeometricTransformerFactory.Transform2D(((ISpatialFilter)filter).Geometry, filterSRef, fc.SpatialReference);
+                    sFilter.Geometry = GeometricTransformerFactory.Transform2D(((ISpatialFilter)filter).Geometry, filterSRef, fc.SpatialReference, filter.DatumTransformations);
                     if (sFilter.SpatialRelation == spatialRelation.SpatialRelationMapEnvelopeIntersects)
                     {
                         sFilter.Geometry = sFilter.Geometry.Envelope;
@@ -1135,13 +1135,14 @@ namespace gView.DataSources.Fdb.SQLite
             }
             return
                 await SQLiteFDBFeatureCursor.Create(_conn.ConnectionString, sql, where, filter.OrderBy, filter.Limit, filter.BeginRecord, NIDs, sFilter, fc,
-                ((filter != null) ? filter.FeatureSpatialReference : null));
+                        filter?.FeatureSpatialReference,
+                        filter?.DatumTransformations);
         }
 
-        async public override Task<IFeatureCursor> QueryIDs(IFeatureClass fc, string subFields, List<int> IDs, ISpatialReference toSRef)
+        async public override Task<IFeatureCursor> QueryIDs(IFeatureClass fc, string subFields, List<int> IDs, ISpatialReference toSRef, IDatumTransformations datumTransformations)
         {
             string sql = "SELECT " + subFields + " FROM " + FcTableName(fc);
-            return await SQLiteFDBFeatureCursorIDs.Create(_conn.ConnectionString, sql, IDs, fc, toSRef);
+            return await SQLiteFDBFeatureCursorIDs.Create(_conn.ConnectionString, sql, IDs, fc, toSRef, datumTransformations);
         }
 
         private string parseConnectionString(string connString)
@@ -1966,15 +1967,15 @@ namespace gView.DataSources.Fdb.SQLite
             int _id_pos = 0;
             string _sql;
 
-            private SQLiteFDBFeatureCursorIDs(IGeometryDef geomDef, ISpatialReference toSRef) :
-                base((geomDef != null) ? geomDef.SpatialReference : null, toSRef)
+            private SQLiteFDBFeatureCursorIDs(IGeometryDef geomDef, ISpatialReference toSRef, IDatumTransformations datumTransformations)
+                : base(geomDef?.SpatialReference, toSRef, datumTransformations)
             {
 
             }
 
-            async static public Task<IFeatureCursor> Create(string connString, string sql, List<int> IDs, IGeometryDef geomDef, ISpatialReference toSRef)
+            async static public Task<IFeatureCursor> Create(string connString, string sql, List<int> IDs, IGeometryDef geomDef, ISpatialReference toSRef, IDatumTransformations datumTransformations)
             {
-                var cursor = new SQLiteFDBFeatureCursorIDs(geomDef, toSRef);
+                var cursor = new SQLiteFDBFeatureCursorIDs(geomDef, toSRef, datumTransformations);
 
                 try
                 {

@@ -77,7 +77,7 @@ namespace gView.Framework.Data
             get { return _sRef; }
             set { _sRef = value; }
         }
-        public bool ProjectTo(ISpatialReference sRef)
+        public bool ProjectTo(ISpatialReference sRef, IDatumTransformations datumTransformations)
         {
             if (_bounds == null)
             {
@@ -86,7 +86,7 @@ namespace gView.Framework.Data
 
             if (_sRef != null && !_sRef.Equals(sRef))
             {
-                IGeometry result = GeometricTransformerFactory.Transform2D(_bounds, _sRef, sRef);
+                IGeometry result = GeometricTransformerFactory.Transform2D(_bounds, _sRef, sRef, datumTransformations);
                 if (result != null && result.Envelope != null)
                 {
                     _bounds = result.Envelope;
@@ -244,7 +244,7 @@ namespace gView.Framework.Data
             get { return _sRef; }
             set { _sRef = value; }
         }
-        public bool ProjectTo(ISpatialReference sRef)
+        public bool ProjectTo(ISpatialReference sRef, IDatumTransformations datumTransformations)
         {
             if (_extent == null)
             {
@@ -253,7 +253,7 @@ namespace gView.Framework.Data
 
             if (_sRef != null && !_sRef.Equals(sRef))
             {
-                IGeometry result = GeometricTransformerFactory.Transform2D(_extent, _sRef, sRef);
+                IGeometry result = GeometricTransformerFactory.Transform2D(_extent, _sRef, sRef, datumTransformations);
                 if (result != null && result.Envelope != null)
                 {
                     _extent = result.Envelope;

@@ -23,7 +23,7 @@ namespace gView.DataSources.MongoDb
         private bool _isWkbShape = false;
 
         public MongoDbFeatureCursor(MongoDbFeatureClass fc, IQueryFilter filter)
-            : base(fc.SpatialReference, filter.FeatureSpatialReference)
+            : base(fc.SpatialReference, filter?.FeatureSpatialReference, filter?.DatumTransformations)
         {
             IFindFluent<Json.GeometryDocument, Json.GeometryDocument> findFluent = null;
 

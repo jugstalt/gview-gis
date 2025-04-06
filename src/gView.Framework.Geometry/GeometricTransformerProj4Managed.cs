@@ -1,4 +1,5 @@
 ﻿using gView.Framework.Core.Geometry;
+using gView.Framework.Geometry.Extensions;
 using Proj4Net.Core;
 using System;
 using System.Collections.Generic;
@@ -14,7 +15,7 @@ namespace gView.Framework.Geometry
     {
         private CoordinateReferenceSystem _fromSrs = null, _toSrs = null;
         private bool _toProjective = true, _fromProjective = true;
-        private readonly IDatumsTransformations _datumsTransformations = null;
+        private readonly IDatumTransformations _datumTransformations = null;
 
         private const double RAD2DEG = (180.0 / Math.PI);
         //static private object lockThis = new object();
@@ -31,40 +32,12 @@ namespace gView.Framework.Geometry
             Proj4Net.Core.IO.Paths.PROJ_LIB = GeometricTransformerFactory.PROJ_LIB;
         }
 
-        public GeometricTransformerProj4Managed(IDatumsTransformations datumsTransformations)
+        public GeometricTransformerProj4Managed(IDatumTransformations datumTransformations)
         {
-            _datumsTransformations = datumsTransformations;
+            _datumTransformations = datumTransformations;
         }
 
         #region IGeometricTransformer Member
-
-        private ISpatialReference FromSpatialReference
-        {
-            get
-            {
-                return _fromSRef;
-            }
-            set
-            {
-                _fromSRef = value;
-                _fromSrs = _factory.CreateFromParameters("from", allParameters(value));
-                _fromProjective = (value.SpatialParameters.IsGeographic == false);
-            }
-        }
-
-        private ISpatialReference ToSpatialReference
-        {
-            get
-            {
-                return _toSRef;
-            }
-            set
-            {
-                _toSRef = value;
-                _toSrs = _factory.CreateFromParameters("to", allParameters(value));
-                _toProjective = (value.SpatialParameters.IsGeographic == false);
-            }
-        }
 
         public void SetSpatialReferences(ISpatialReference from, ISpatialReference to)
         {
@@ -114,54 +87,169 @@ namespace gView.Framework.Geometry
             }
         }
 
-        private string[] allParameters(ISpatialReference sRef)
+        public object Transform2D(object geometry)
         {
-            if (sRef == null)
-            {
-                return "".Split();
-            }
-
-            if (sRef.Datum == null)
-            {
-                return sRef.Parameters;
-            }
-
-            string parameters = "";
-            foreach (string param in sRef.Parameters)
-            {
-                parameters += param + " ";
-            }
-            parameters += sRef.Datum.Parameter;
-
-            return parameters.Split(' ');
+            return PerformTransform2D(geometry, false);
         }
-        private string allParametersString(ISpatialReference sRef)
+        public object InvTransform2D(object geometry)
+        {
+            return PerformTransform2D(geometry, true);
+        }
+
+        public void Release()
+        {
+
+        }
+
+        #endregion
+
+        #region IDatumGridShiftProvider Member
+
+        public string[] GridShiftNames()
+        {
+            string projLibPath = Proj4Net.Core.IO.Paths.PROJ_LIB;
+
+            if (String.IsNullOrEmpty(projLibPath) ||
+                Directory.Exists(projLibPath))
+            {
+                return [];
+            }
+
+            List<string> result = new();
+
+            foreach (var file in Directory.GetFiles(projLibPath))
+            {
+                switch (System.IO.Path.GetExtension(file).ToLower())
+                {
+                    case ".gsd":
+                        result.Add(System.IO.Path.GetFileName(file));
+                        break;
+                }
+            }
+
+            return result.ToArray();
+        }
+
+        #endregion
+
+        #region Static Members
+
+        static public IGeometry Transform2D(IGeometry geometry, ISpatialReference from, ISpatialReference to, IDatumTransformations datumTransformations)
+        {
+            if (geometry == null)
+            {
+                return null;
+            }
+
+            if (from == null || to == null || from.Equals(to))
+            {
+                return geometry;
+            }
+
+            using (IGeometricTransformer transformer = GeometricTransformerFactory.Create(datumTransformations))
+            {
+                //transformer.FromSpatialReference = from;
+                //transformer.ToSpatialReference = to;
+                transformer.SetSpatialReferences(from, to);
+                IGeometry transformed = transformer.Transform2D(geometry) as IGeometry;
+                transformer.Release();
+
+                return transformed;
+            }
+        }
+
+        static public IGeometry InvTransform2D(IGeometry geometry, ISpatialReference from, ISpatialReference to, IDatumTransformations datumTransformations)
+        {
+            return Transform2D(geometry, to, from, datumTransformations);
+        }
+
+        #endregion
+
+        #region IDisposable Member
+
+        public void Dispose()
+        {
+            this.Release();
+        }
+
+        #endregion
+
+        #region Private Members
+
+        private ISpatialReference FromSpatialReference
+        {
+            get
+            {
+                return _fromSRef;
+            }
+            set
+            {
+                _fromSRef = value;
+                _fromSrs = _factory.CreateFromParameters("from", AllParameters(value)?.ToArray() ?? []);
+                _fromProjective = (value.SpatialParameters.IsGeographic == false);
+            }
+        }
+        private ISpatialReference ToSpatialReference
+        {
+            get
+            {
+                return _toSRef;
+            }
+            set
+            {
+                _toSRef = value;
+                _toSrs = _factory.CreateFromParameters("to", AllParameters(value)?.ToArray() ?? []);
+                _toProjective = (value.SpatialParameters.IsGeographic == false);
+            }
+        }
+
+        private IEnumerable<string> AllParameters(ISpatialReference sRef)
+        {
+            foreach (string param in sRef?.Parameters ?? [])
+            {
+                yield return param;
+            }
+
+            var datum = _datumTransformations.GetTransformationFor(sRef.Datum);
+            var datumParameter = datum?.Parameter;
+
+            if (!string.IsNullOrEmpty(datumParameter))
+            {
+                yield return datumParameter;
+            }
+        }
+        private string AllParametersString(ISpatialReference sRef)
         {
             if (sRef == null)
             {
                 return String.Empty;
             }
 
-            StringBuilder sb = new StringBuilder();
+            var parameters = new StringBuilder();
             foreach (string param in sRef.Parameters)
             {
-                if (sb.Length > 0)
+                if (parameters.Length > 0)
                 {
-                    sb.Append(" ");
+                    parameters.Append(" ");
                 }
 
-                sb.Append(param.Trim());
+                parameters.Append(param.Trim());
             }
-            if (sRef.Datum != null && !String.IsNullOrEmpty(sRef.Datum.Parameter))
+
+            var datum = _datumTransformations.GetTransformationFor(sRef.Datum);
+            var datumParameter = datum?.Parameter;
+
+            if (!String.IsNullOrEmpty(datumParameter))
             {
-                if (sb.Length > 0)
+                if (parameters.Length > 0)
                 {
-                    sb.Append(" ");
+                    parameters.Append(" ");
                 }
 
-                sb.Append(sRef.Datum.Parameter);
+                parameters.Append(datumParameter);
             }
-            return sb.ToString();
+
+            return parameters.ToString();
         }
         private bool ParametersContain(ISpatialReference sRef, string p)
         {
@@ -175,13 +263,22 @@ namespace gView.Framework.Geometry
             return false;
         }
 
-        public object Transform2D(object geometry)
+        private bool IsEqual(CoordinateReferenceSystem c1, CoordinateReferenceSystem c2)
         {
-            return Transform2D_(geometry, false);
-        }
-        public object InvTransform2D(object geometry)
-        {
-            return Transform2D_(geometry, true);
+            if (c1.Parameters.Length != c2.Parameters.Length)
+            {
+                return false;
+            }
+
+            foreach (var p in c1.Parameters)
+            {
+                if (!c2.Parameters.Contains(p))
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
 
         private BasicCoordinateTransform[] BasicTransformations(bool inverse)
@@ -196,7 +293,7 @@ namespace gView.Framework.Geometry
             }
         }
 
-        private object Transform2D_(object geometry, bool inverse)
+        private object PerformTransform2D(object geometry, bool inverse)
         {
             if (_projectionPipeline == null)
             {
@@ -280,7 +377,7 @@ namespace gView.Framework.Geometry
             }
             if (geometry is IEnvelope)
             {
-                return Transform2D_(((IEnvelope)geometry).ToPolygon(10), inverse);
+                return PerformTransform2D(((IEnvelope)geometry).ToPolygon(10), inverse);
             }
             if (geometry is IPolyline)
             {
@@ -288,7 +385,7 @@ namespace gView.Framework.Geometry
                 IPolyline polyline = new Polyline();
                 for (int i = 0; i < count; i++)
                 {
-                    polyline.AddPath((IPath)Transform2D_(((IPolyline)geometry)[i], inverse));
+                    polyline.AddPath((IPath)PerformTransform2D(((IPolyline)geometry)[i], inverse));
                 }
                 return polyline;
             }
@@ -298,7 +395,7 @@ namespace gView.Framework.Geometry
                 IPolygon polygon = new Polygon();
                 for (int i = 0; i < count; i++)
                 {
-                    polygon.AddRing((IRing)Transform2D_(((IPolygon)geometry)[i], inverse));
+                    polygon.AddRing((IRing)PerformTransform2D(((IPolygon)geometry)[i], inverse));
                 }
                 return polygon;
             }
@@ -309,7 +406,7 @@ namespace gView.Framework.Geometry
                 IAggregateGeometry aGeom = new AggregateGeometry();
                 for (int i = 0; i < count; i++)
                 {
-                    aGeom.AddGeometry((IGeometry)Transform2D_(((IAggregateGeometry)geometry)[i], inverse));
+                    aGeom.AddGeometry((IGeometry)PerformTransform2D(((IAggregateGeometry)geometry)[i], inverse));
                 }
                 return aGeom;
             }
@@ -345,23 +442,6 @@ namespace gView.Framework.Geometry
             return new CoordinateReferenceSystem[] { from, to };
         }
 
-        private bool IsEqual(CoordinateReferenceSystem c1, CoordinateReferenceSystem c2)
-        {
-            if (c1.Parameters.Length != c2.Parameters.Length)
-            {
-                return false;
-            }
-
-            foreach (var p in c1.Parameters)
-            {
-                if (!c2.Parameters.Contains(p))
-                {
-                    return false;
-                }
-            }
-
-            return true;
-        }
 
         private void ToDeg(double[] x, double[] y)
         {
@@ -387,104 +467,6 @@ namespace gView.Framework.Geometry
                     b[i] = b[i] * RAD2DEG;
                 }
             }
-        }
-
-        //private void ToRad(double[] x, double[] y)
-        //{
-        //    if (x.Length != y.Length) return;
-
-        //    for (int i = 0; i < x.Length; i++)
-        //    {
-        //        x[i] = Math.Min(180, Math.Max(-180, x[i]));
-        //        y[i] = Math.Min(90, Math.Max(-90, y[i]));
-
-        //        x[i] /= RAD2DEG;
-        //        y[i] /= RAD2DEG;
-        //    }
-        //}
-        //private void ToRad(IntPtr buffer, int count)
-        //{
-        //    unsafe
-        //    {
-        //        double* b = (double*)buffer;
-        //        for (int i = 0; i < count; i++)
-        //        {
-        //            b[i] = Math.Min(180, Math.Max(-180, b[i]));
-        //            b[i] /= RAD2DEG;
-        //        }
-        //    }
-        //}
-
-        public void Release()
-        {
-
-        }
-
-        #endregion
-
-        #region IDatumGridShiftProvider Member
-
-        public string[] GridShiftNames()
-        {
-            string projLibPath = Proj4Net.Core.IO.Paths.PROJ_LIB;
-
-            if (String.IsNullOrEmpty(projLibPath) ||
-                Directory.Exists(projLibPath))
-            {
-                return [];
-            }
-
-            List<string> result = new();
-
-            foreach (var file in Directory.GetFiles(projLibPath))
-            {
-                switch (System.IO.Path.GetExtension(file).ToLower())
-                {
-                    case ".gsd":
-                        result.Add(System.IO.Path.GetFileName(file));
-                        break;
-                }
-            }
-
-            return result.ToArray();
-        }
-
-        #endregion
-
-        static public IGeometry Transform2D(IGeometry geometry, ISpatialReference from, ISpatialReference to, IDatumsTransformations datumsTransformations)
-        {
-            if (geometry == null)
-            {
-                return null;
-            }
-
-            if (from == null || to == null || from.Equals(to))
-            {
-                return geometry;
-            }
-
-            using (IGeometricTransformer transformer = GeometricTransformerFactory.Create(datumsTransformations))
-            {
-                //transformer.FromSpatialReference = from;
-                //transformer.ToSpatialReference = to;
-                transformer.SetSpatialReferences(from, to);
-                IGeometry transformed = transformer.Transform2D(geometry) as IGeometry;
-                transformer.Release();
-
-                return transformed;
-            }
-        }
-
-        static public IGeometry InvTransform2D(IGeometry geometry, ISpatialReference from, ISpatialReference to, IDatumsTransformations datumsTransformations)
-        {
-            return Transform2D(geometry, to, from, datumsTransformations);
-        }
-
-        #region IDisposable Member
-
-        public void Dispose()
-        {
-            this.Release();
         }
 
         #endregion

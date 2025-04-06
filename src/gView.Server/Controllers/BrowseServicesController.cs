@@ -480,7 +480,8 @@ public class BrowseServicesController : BaseController
 
                 var file = Request.Form.Files[0];
                 byte[] buffer = new byte[file.Length];
-                await file.OpenReadStream().ReadAsync(buffer, 0, buffer.Length);
+
+                await file.OpenReadStream().ReadExactlyAsync(buffer, 0, buffer.Length);
 
                 string mapXml = String.Empty;
 

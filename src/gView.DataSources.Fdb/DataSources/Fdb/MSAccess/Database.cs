@@ -1361,7 +1361,7 @@ namespace gView.DataSources.Fdb.MSAccess
         //    string sql="SELECT "+subFields+" FROM FC_"+FCName;
         //    return new AccessFDBFeatureCursorIDs(_conn.connectionString,sql,IDs,this.GetGeometryDef(FCName),toSRef);
         //}
-        abstract public Task<IFeatureCursor> QueryIDs(IFeatureClass fc, string subFields, List<int> IDs, ISpatialReference toSRef);
+        abstract public Task<IFeatureCursor> QueryIDs(IFeatureClass fc, string subFields, List<int> IDs, ISpatialReference toSRef, IDatumTransformations datumTransformations);
 
         public delegate void FeatureClassRenamedEventHandler(string oldName, string newName);
         public event FeatureClassRenamedEventHandler FeatureClassRenamed = null;
@@ -3747,7 +3747,7 @@ namespace gView.DataSources.Fdb.MSAccess
             return null;
         }
 
-        async public Task<bool> ProjectFeatureClass(IFeatureClass fc, ISpatialReference destSRef)
+        async public Task<bool> ProjectFeatureClass(IFeatureClass fc, ISpatialReference destSRef, IDatumTransformations datumTransformations)
         {
             if (_conn == null || fc == null)
             {
@@ -3776,7 +3776,7 @@ namespace gView.DataSources.Fdb.MSAccess
                 return false;
             }
 
-            IGeometricTransformer transformer = GeometricTransformerFactory.Create();
+            IGeometricTransformer transformer = GeometricTransformerFactory.Create(datumTransformations);
             //transformer.FromSpatialReference = fc.SpatialReference;
             //transformer.ToSpatialReference = destSRef;
             transformer.SetSpatialReferences(fc.SpatialReference, destSRef);
@@ -3824,7 +3824,7 @@ namespace gView.DataSources.Fdb.MSAccess
 
                         byte[] geometry = new byte[w.BaseStream.Length];
                         w.BaseStream.Position = 0;
-                        w.BaseStream.Read(geometry, (int)0, (int)w.BaseStream.Length);
+                        w.BaseStream.ReadExactly(geometry, (int)0, (int)w.BaseStream.Length);
                         w.Close();
 
                         feat[ColumnName("FDB_SHAPE")] = geometry;

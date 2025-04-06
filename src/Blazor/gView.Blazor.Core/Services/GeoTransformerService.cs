@@ -9,46 +9,46 @@ public class GeoTransformerService
     public IGeometry ToWGS84(
                      IGeometry geometry, 
                      ISpatialReference fromSRef,
-                     IDatumsTransformations? datumsTransformations)
+                     IDatumTransformations? datumTransformations)
     {
         var toSRef = new SpatialReference($"epsg:4326");
 
-        return Transform(geometry, fromSRef, toSRef, datumsTransformations);
+        return Transform(geometry, fromSRef, toSRef, datumTransformations);
     }
 
     public IGeometry FromWGS84(
                     IGeometry geometry, 
                     ISpatialReference toSRef,
-                    IDatumsTransformations? datumsTransformations)
+                    IDatumTransformations? datumTransformations)
     {
         var fromSRef = new SpatialReference($"epsg:4326");
 
-        return Transform(geometry, fromSRef, toSRef, datumsTransformations);
+        return Transform(geometry, fromSRef, toSRef, datumTransformations);
     }
 
     public IGeometry Transform(
                     IGeometry geometry, 
                     int fromEpsg, int toEpsg,
-                    IDatumsTransformations? datumsTransformations)
+                    IDatumTransformations? datumTransformations)
     {
         var fromSRef = new SpatialReference($"epsg:{fromEpsg}");
         var toSRef = new SpatialReference($"epsg:{toEpsg}");
 
-        return Transform(geometry, fromSRef, toSRef, datumsTransformations);
+        return Transform(geometry, fromSRef, toSRef, datumTransformations);
     }
 
     public IGeometry Transform(
                     IGeometry geometry, 
                     ISpatialReference? fromSRef, 
                     ISpatialReference? toSRef,
-                    IDatumsTransformations? datumsTransformations)
+                    IDatumTransformations? datumTransformations)
     {
         if (fromSRef is null || toSRef is null)
         {
             return geometry;
         }
 
-        using (var transformer = GeometricTransformerFactory.Create(datumsTransformations))
+        using (var transformer = GeometricTransformerFactory.Create(datumTransformations))
         {
             transformer.SetSpatialReferences(fromSRef, toSRef);
             var result = (transformer.Transform2D(geometry) as IGeometry)

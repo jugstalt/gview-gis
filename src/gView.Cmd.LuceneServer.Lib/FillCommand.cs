@@ -205,7 +205,7 @@ public class FillCommand : ICommand
                         logger?.LogLine("Source Spatial Reference: " + sRef.Name + " " + String.Join(" ", sRef.Parameters));
                         logger?.LogLine("IDField: " + fc.IDFieldName);
 
-                        using (var transformer = GeometricTransformerFactory.Create())
+                        using (var transformer = GeometricTransformerFactory.Create(null))
                         {
                             if (useGeometry)
                             {

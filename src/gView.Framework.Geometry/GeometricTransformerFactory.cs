@@ -22,35 +22,35 @@ namespace gView.Framework.Geometry
 
         static public GeoTranformerType TransformerType = GeoTranformerType.NativeProj4;
 
-        static public IGeometricTransformer Create(IDatumsTransformations? datumsTransformations)
+        static public IGeometricTransformer Create(IDatumTransformations? datumTransformations)
         {
             return TransformerType switch
             {
-                GeoTranformerType.NativeProj4 => new GeometricTransformerProj4Nativ(datumsTransformations),
-                GeoTranformerType.NativeProj6 => new GeometricTransformerProj6Nativ(datumsTransformations),
-                GeoTranformerType.ManagedProj4 => new GeometricTransformerProj4Managed(datumsTransformations),
+                GeoTranformerType.NativeProj4 => new GeometricTransformerProj4Nativ(datumTransformations),
+                GeoTranformerType.NativeProj6 => new GeometricTransformerProj6Nativ(datumTransformations),
+                GeoTranformerType.ManagedProj4 => new GeometricTransformerProj4Managed(datumTransformations),
                 _ => throw new NotImplementedException($"GeometricTransformerFactory: {TransformerType} not implemented!"),
             };
         }
 
-        static public IGeometry Transform2D(IGeometry geometry, ISpatialReference from, ISpatialReference to, IDatumsTransformations? datumsTransformations = null)
+        static public IGeometry Transform2D(IGeometry geometry, ISpatialReference from, ISpatialReference to, IDatumTransformations? datumTransformations)
         {
             return TransformerType switch
             {
-                GeoTranformerType.NativeProj4 => GeometricTransformerProj4Nativ.Transform2D(geometry, from, to, datumsTransformations),
-                GeoTranformerType.NativeProj6 => GeometricTransformerProj6Nativ.Transform2D(geometry, from, to, datumsTransformations),
-                GeoTranformerType.ManagedProj4 => GeometricTransformerProj4Managed.Transform2D(geometry, from, to, datumsTransformations),
+                GeoTranformerType.NativeProj4 => GeometricTransformerProj4Nativ.Transform2D(geometry, from, to, datumTransformations),
+                GeoTranformerType.NativeProj6 => GeometricTransformerProj6Nativ.Transform2D(geometry, from, to, datumTransformations),
+                GeoTranformerType.ManagedProj4 => GeometricTransformerProj4Managed.Transform2D(geometry, from, to, datumTransformations),
                 _ => throw new NotImplementedException($"GeometricTransformerFactory: {TransformerType} not implemented!"),
             };
         }
 
-        static public IGeometry InvTransform2D(IGeometry geometry, ISpatialReference from, ISpatialReference to, IDatumsTransformations? datumsTransformations)
+        static public IGeometry InvTransform2D(IGeometry geometry, ISpatialReference from, ISpatialReference to, IDatumTransformations? datumTransformations)
         {
             return TransformerType switch
             {
-                GeoTranformerType.NativeProj4 => GeometricTransformerProj4Nativ.InvTransform2D(geometry, from, to, datumsTransformations),
-                GeoTranformerType.NativeProj6 => GeometricTransformerProj6Nativ.InvTransform2D(geometry, from, to, datumsTransformations),
-                GeoTranformerType.ManagedProj4 => GeometricTransformerProj4Managed.InvTransform2D(geometry, from, to, datumsTransformations),
+                GeoTranformerType.NativeProj4 => GeometricTransformerProj4Nativ.InvTransform2D(geometry, from, to, datumTransformations),
+                GeoTranformerType.NativeProj6 => GeometricTransformerProj6Nativ.InvTransform2D(geometry, from, to, datumTransformations),
+                GeoTranformerType.ManagedProj4 => GeometricTransformerProj4Managed.InvTransform2D(geometry, from, to, datumTransformations),
                 _ => throw new NotImplementedException($"GeometricTransformerFactory: {TransformerType} not implemented!")
             };
         }

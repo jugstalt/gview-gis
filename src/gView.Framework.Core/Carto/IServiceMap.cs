@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace gView.Framework.Core.Carto
 {
-    public interface IServiceMap : IMetadata, IServiceRequestContext, IDatumsTransformations, IDisposable
+    public interface IServiceMap : IMetadata, IServiceRequestContext, IDisposable
     {
         //event LayerIsVisibleHook OverrideLayerIsVisible;
         event BeforeRenderLayersEvent BeforeRenderLayers;

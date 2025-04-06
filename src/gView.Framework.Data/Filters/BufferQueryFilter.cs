@@ -149,7 +149,9 @@ namespace gView.Framework.Data.Filters
                 //    ((ISpatialFilter)bufferQuery.RootFilter).FilterSpatialReference :
                 //    bufferQuery.RootFeatureClass.SpatialReference);
 
-                spatialFilter.FeatureSpatialReference = bufferQuery.FeatureSpatialReference;
+                spatialFilter.SetFeatureSpatialReference(
+                    bufferQuery.FeatureSpatialReference,
+                    bufferQuery.DatumTransformations);
 
                 // UserData übernehen
                 bufferQuery.CopyUserDataTo(spatialFilter);

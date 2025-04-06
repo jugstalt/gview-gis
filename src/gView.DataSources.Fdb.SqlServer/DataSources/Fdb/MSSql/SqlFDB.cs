@@ -471,18 +471,23 @@ namespace gView.DataSources.Fdb.MSSql
                 }
 
                 return await SqlFDBFeatureCursor.Create(_conn.ConnectionString, sql, where, orederBy, filter.Limit, filter.BeginRecord, filter.NoLock, NIDs, sFilter, fc,
-                    (filter != null) ? filter.FeatureSpatialReference : null);
+                                filter?.FeatureSpatialReference,
+                                filter?.DatumTransformations);
             }
         }
-        async override public Task<IFeatureCursor> QueryIDs(IFeatureClass fc, string subFields, List<int> IDs, ISpatialReference toSRef)
+        async override public Task<IFeatureCursor> QueryIDs(IFeatureClass fc, string subFields, List<int> IDs, ISpatialReference toSRef, IDatumTransformations datumTransformations)
         {
-            string tabName = ((fc is SqlFDBFeatureClass) ? ((SqlFDBFeatureClass)fc).DbTableName : "FC_" + fc.Name);
-            string sql = "SELECT " + subFields + " FROM " + tabName;
-            return await SqlFDBFeatureCursorIDs.Create(_conn.ConnectionString, sql, IDs, await this.GetGeometryDef(fc.Name), toSRef);
+            string tabName = ((fc is SqlFDBFeatureClass) 
+                ? ((SqlFDBFeatureClass)fc).DbTableName 
+                : $"FC_{fc.Name}");
+            string sql = $"SELECT {subFields} FROM {tabName}";
+
+            return await SqlFDBFeatureCursorIDs.Create(_conn.ConnectionString, sql, IDs, await this.GetGeometryDef(fc.Name), toSRef, datumTransformations);
         }
+
         #endregion
 
-        async override public Task<IDatasetElement> DatasetElement(/*SqlFDBDataset*/IDataset dataset, string elementName)
+        async override public Task<IDatasetElement> DatasetElement(IDataset dataset, string elementName)
         {
             SqlFDBDataset sqlDataset = dataset as SqlFDBDataset;
             if (sqlDataset == null)
@@ -1461,7 +1466,7 @@ namespace gView.DataSources.Fdb.MSSql
 
                                 byte[] geometry = new byte[writer.BaseStream.Length];
                                 writer.BaseStream.Position = 0;
-                                writer.BaseStream.Read(geometry, (int)0, (int)writer.BaseStream.Length);
+                                writer.BaseStream.ReadExactly(geometry, (int)0, (int)writer.BaseStream.Length);
                                 writer.Close();
 
                                 SqlParameter parameter = new SqlParameter("@FDB_SHAPE", geometry);
@@ -1728,7 +1733,7 @@ namespace gView.DataSources.Fdb.MSSql
 
                                 byte[] geometry = new byte[writer.BaseStream.Length];
                                 writer.BaseStream.Position = 0;
-                                writer.BaseStream.Read(geometry, (int)0, (int)writer.BaseStream.Length);
+                                writer.BaseStream.ReadExactly(geometry, (int)0, (int)writer.BaseStream.Length);
                                 writer.Close();
 
                                 SqlParameter parameter = new SqlParameter("@FDB_SHAPE", geometry);

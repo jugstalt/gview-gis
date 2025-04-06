@@ -23,11 +23,11 @@ namespace gView.Framework.AXL
     {
         private static IFormatProvider _nhi = System.Globalization.CultureInfo.InvariantCulture.NumberFormat;
 
-        public static IQueryFilter Query(XmlNode query, ITableClass tc)
+        public static IQueryFilter Query(XmlNode query, ITableClass tc, IDatumTransformations datumTransformations)
         {
-            return Query(query, tc, null);
+            return Query(query, tc, null, datumTransformations);
         }
-        public static IQueryFilter Query(XmlNode query, ITableClass tc, IFeatureClass rootFeateatureClass)
+        public static IQueryFilter Query(XmlNode query, ITableClass tc, IFeatureClass rootFeateatureClass, IDatumTransformations datumTransformations)
         {
             if (tc == null || query == null)
             {
@@ -70,7 +70,9 @@ namespace gView.Framework.AXL
             XmlNode featureCoordsys = query.SelectSingleNode("FEATURECOORDSYS");
             if (featureCoordsys != null)
             {
-                filter.FeatureSpatialReference = ArcXMLGeometry.AXL2SpatialReference(featureCoordsys);
+                filter.SetFeatureSpatialReference(
+                            ArcXMLGeometry.AXL2SpatialReference(featureCoordsys),
+                            datumTransformations);
             }
 
             XmlNode spatialFilter = query.SelectSingleNode("SPATIALFILTER");
@@ -95,7 +97,7 @@ namespace gView.Framework.AXL
                 bFilter.BufferDistance = Convert.ToDouble(bufferNode.Attributes["distance"].Value.Replace(",", "."), _nhi);
                 bFilter.RootFilter = filter;
                 bFilter.RootFeatureClass = rootFeateatureClass;
-                bFilter.FeatureSpatialReference = filter.FeatureSpatialReference;
+                bFilter.SetFeatureSpatialReference(filter.FeatureSpatialReference, datumTransformations);
 
                 filter = bFilter;
             }

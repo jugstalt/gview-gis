@@ -254,7 +254,8 @@ namespace gView.Interoperability.OGC.Dataset.WMS
                     _envelope = GeometricTransformerFactory.Transform2D(
                         _srs.LatLonBoundingBox,
                         gView.Framework.Geometry.SpatialReference.FromID("EPSG:4326"),
-                        _sRef).Envelope;
+                        _sRef,
+                        null).Envelope;
                 }
             }
         }
@@ -444,7 +445,7 @@ namespace gView.Interoperability.OGC.Dataset.WMS
 
             if (display.SpatialReference != null && !display.SpatialReference.Equals(this.SpatialReference))
             {
-                displayEnv = GeometricTransformerFactory.Transform2D(displayEnv, display.SpatialReference, this.SpatialReference, display).Envelope;
+                displayEnv = GeometricTransformerFactory.Transform2D(displayEnv, display.SpatialReference, this.SpatialReference, display.DatumTransformations).Envelope;
                 iHeight = (int)((displayEnv.Height / displayEnv.Width) * iWidth);
             }
 
@@ -989,7 +990,7 @@ namespace gView.Interoperability.OGC.Dataset.WMS
                     ISpatialReference sRef = gView.Framework.Geometry.SpatialReference.FromID(srs);
                     ISpatialReference epsg_4326 = gView.Framework.Geometry.SpatialReference.FromID("epsg:4326");
 
-                    IGeometry geom = GeometricTransformerFactory.Transform2D(LatLonBoundingBox, epsg_4326, sRef);
+                    IGeometry geom = GeometricTransformerFactory.Transform2D(LatLonBoundingBox, epsg_4326, sRef, null);
                     if (geom != null)
                     {
                         env = geom.Envelope;

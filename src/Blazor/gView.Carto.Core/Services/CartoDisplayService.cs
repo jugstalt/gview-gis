@@ -23,6 +23,7 @@ public class CartoDisplayService : IDisposable
     public IEnvelope MapBounds { get; private set; } = new Envelope();
     public double Dpi { get; set; }
     public ISpatialReference? SpatialReference { get; private set; }
+    public IDatumTransformations? DatumTransformations { get; private set; }
 
     #region Event Handlers
 
@@ -37,6 +38,7 @@ public class CartoDisplayService : IDisposable
             MapBounds = new Envelope(display.Envelope);
             Dpi = display.Dpi;
             SpatialReference = display.SpatialReference;
+            DatumTransformations = display.DatumTransformations;
         }
 
         return Task.CompletedTask;

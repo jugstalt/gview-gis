@@ -5,6 +5,7 @@ using gView.Framework.Geometry.Proj;
 using gView.Framework.Geometry.SpatialRefTranslation;
 using Proj4Net.Core.Datum;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Xml.Linq;
 
@@ -20,7 +21,6 @@ public class GeodeticDatum : IGeodeticDatum
     private double _rX, _rY, _rZ;
     private double _scale;
     private string _name;
-    private string _gridShiftFile = null;
 
     public GeodeticDatum()
     {
@@ -42,7 +42,7 @@ public class GeodeticDatum : IGeodeticDatum
 
         if(GeometricTransformerFactory.SupportedGridShifts().Contains(name))
         {
-            _gridShiftFile = name;
+            GridShiftFile = name;
             return;
         }
     }
@@ -56,7 +56,7 @@ public class GeodeticDatum : IGeodeticDatum
         _rZ = datum._rZ;
         _scale = datum._scale;
         _name = datum._name;
-        _gridShiftFile = datum._gridShiftFile;
+        GridShiftFile = datum.GridShiftFile;
     }
     public GeodeticDatum(string name, 
                         double dx, double dy, double dz,
@@ -73,6 +73,13 @@ public class GeodeticDatum : IGeodeticDatum
         _scale = scale;
     }
 
+    public GeodeticDatum(string name,
+                         string gridShiftFile)
+    {
+        _name = name;
+        GridShiftFile = gridShiftFile;
+    }
+
     public string Name
     {
         get { return _name; }
@@ -83,9 +90,9 @@ public class GeodeticDatum : IGeodeticDatum
     {
         get
         {
-            if (!String.IsNullOrEmpty(_gridShiftFile))
+            if (!String.IsNullOrEmpty(GridShiftFile))
             {
-                return $"+nadgrids={_gridShiftFile}";
+                return $"+nadgrids={GridShiftFile}";
             }
 
             return $"+towgs84={_X.ToDoubleString()},{_Y.ToDoubleString()},{_Z.ToDoubleString()},{_rX.ToDoubleString()},{_rY.ToDoubleString()},{_rZ.ToDoubleString()},{_scale.ToDoubleString()}";
@@ -116,7 +123,7 @@ public class GeodeticDatum : IGeodeticDatum
             }
             else if (value?.StartsWith("+nadgrids=") == true)
             {
-                _gridShiftFile = value.Substring("+nadgrids=".Length);
+                GridShiftFile = value.Substring("+nadgrids=".Length);
             }
         }
     }
@@ -207,6 +214,39 @@ public class GeodeticDatum : IGeodeticDatum
         }
     }
 
+    public string GridShiftFile { get; set; }
+
+    public bool IsEqual(IGeodeticDatum geodeticDatum, bool equalName, bool equalParameter)
+    {
+        if (geodeticDatum == null)
+        {
+            return false;
+        }
+
+        if (equalName && !this.Name.Equals(geodeticDatum.Name, StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        if (equalParameter && !this.Parameter.Equals(geodeticDatum.Parameter, StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        if(!String.IsNullOrEmpty(GridShiftFile))
+        {
+            return GridShiftFile.Equals(geodeticDatum.GridShiftFile);
+        }
+
+        return this.X_Axis == geodeticDatum.X_Axis &&
+               this.Y_Axis == geodeticDatum.Y_Axis &&
+               this.Z_Axis == geodeticDatum.Z_Axis &&
+               this.X_Rotation == geodeticDatum.X_Rotation &&
+               this.Y_Rotation == geodeticDatum.Y_Rotation &&
+               this.Z_Rotation == geodeticDatum.Z_Rotation &&
+               this.Scale_Diff == geodeticDatum.Scale_Diff;
+    }
+
     #endregion
 
     #region IPersistable Member
@@ -221,7 +261,7 @@ public class GeodeticDatum : IGeodeticDatum
         _rY = (double)stream.Load("rY", 0.0);
         _rZ = (double)stream.Load("rZ", 0.0);
         _scale = (double)stream.Load("scale", 0.0);
-        _gridShiftFile = (string)stream.Load("gridShiftFile", null);
+        GridShiftFile = (string)stream.Load("gridShiftFile", null);
     }
 
     public void Save(IPersistStream stream)
@@ -234,9 +274,9 @@ public class GeodeticDatum : IGeodeticDatum
         stream.Save("rY", _rY);
         stream.Save("rZ", _rZ);
         stream.Save("scale", _scale);
-        if(!String.IsNullOrEmpty(_gridShiftFile))
+        if(!String.IsNullOrEmpty(GridShiftFile))
         {
-            stream.Save("gridShiftFile", _gridShiftFile);
+            stream.Save("gridShiftFile", GridShiftFile);
         }
     }
 
@@ -256,12 +296,14 @@ public class GeodeticDatum : IGeodeticDatum
         datum._rZ = _rZ;
         datum._scale = _scale;
         datum._name = _name;
-        datum._gridShiftFile = _gridShiftFile;
+        datum.GridShiftFile = GridShiftFile;
 
         return datum;
     }
 
     #endregion
+
+    #region Static Members
 
     public static GeodeticDatum FromESRIWKT(string wkt)
     {
@@ -274,9 +316,11 @@ public class GeodeticDatum : IGeodeticDatum
     }
 
     public static readonly GeodeticDatum WGS84 = new GeodeticDatum("WGS84", 0D, 0D, 0D, 0D, 0D, 0D, 0D);
+
+    #endregion
 }
 
-public class DatumsTransformation : IDatumsTransformation
+public class DatumTransformation : IDatumTransformation
 {
     public IGeodeticDatum FromDatum { get; set; }
 
@@ -309,9 +353,9 @@ public class DatumsTransformation : IDatumsTransformation
 
     #region IClone Member
 
-    public object Clone()
+    public IDatumTransformation Clone()
     {
-        return new DatumsTransformation()
+        return new DatumTransformation()
         {
             FromDatum = FromDatum?.Clone() as GeodeticDatum,
             ToDatum = ToDatum.Clone() as GeodeticDatum,
@@ -320,4 +364,38 @@ public class DatumsTransformation : IDatumsTransformation
     }
 
     #endregion
+}
+
+public class DatumTransformations : IDatumTransformations
+{
+    public IDatumTransformation[] Transformations { get; set; }
+
+    public IDatumTransformations Clone()
+    {
+        return new DatumTransformations()
+        {
+            Transformations = Transformations?.Select(t => t.Clone()).ToArray()
+        };
+    }
+
+    public void Load(IPersistStream stream)
+    {
+        var datumTransformations = new List<IDatumTransformation>();
+        IDatumTransformation datumTransformation;
+        
+        while ((datumTransformation = (IDatumTransformation)stream.Load("IDatumTransformation", null, new DatumTransformation())) != null)
+        {
+            datumTransformations.Add(datumTransformation);
+        }
+
+        Transformations = datumTransformations.ToArray();
+    }
+
+    public void Save(IPersistStream stream)
+    {
+        foreach (var datumTransformation in Transformations ?? [])
+        {
+            stream.Save("IDatumTransformation", datumTransformation);
+        }
+    }
 }

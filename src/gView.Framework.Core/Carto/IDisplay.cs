@@ -3,7 +3,7 @@ using gView.Framework.Core.Symbology;
 
 namespace gView.Framework.Core.Carto
 {
-    public interface IDisplay : IDatumsTransformations
+    public interface IDisplay
     {
         event MapScaleChangedEvent MapScaleChanged;
         event RenderOverlayImageEvent RenderOverlayImage;
@@ -54,5 +54,7 @@ namespace gView.Framework.Core.Carto
         IMap Map { get; }
 
         IDisplayRotation DisplayTransformation { get; }
+
+        IDatumTransformations DatumTransformations { get; }
     }
 }

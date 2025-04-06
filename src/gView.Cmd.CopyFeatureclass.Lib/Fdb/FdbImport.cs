@@ -54,15 +54,15 @@ public class FdbImport
         set { _schemaOnly = value; }
     }
 
-    public Task<bool> ImportToNewFeatureclass(IFeatureDatabase fdb, string dsname, string fcname, IFeatureClass sourceFC, FieldTranslation fieldTranslation, bool project)
+    public Task<bool> ImportToNewFeatureclass(IFeatureDatabase fdb, string dsname, string fcname, IFeatureClass sourceFC, FieldTranslation fieldTranslation, bool project, IDatumTransformations? datumTransformations)
     {
-        return ImportToNewFeatureclass(fdb, dsname, fcname, sourceFC, fieldTranslation, true, null);
+        return ImportToNewFeatureclass(fdb, dsname, fcname, sourceFC, fieldTranslation, true, datumTransformations, null);
     }
-    public Task<bool> ImportToNewFeatureclass(IFeatureDatabase fdb, string dsname, string fcname, IFeatureClass sourceFC, FieldTranslation fieldTranslation, bool project, List<IQueryFilter>? filters)
+    public Task<bool> ImportToNewFeatureclass(IFeatureDatabase fdb, string dsname, string fcname, IFeatureClass sourceFC, FieldTranslation fieldTranslation, bool project, IDatumTransformations? datumTransformations, List<IQueryFilter>? filters)
     {
-        return ImportToNewFeatureclass(fdb, dsname, fcname, sourceFC, fieldTranslation, true, filters, null);
+        return ImportToNewFeatureclass(fdb, dsname, fcname, sourceFC, fieldTranslation, true, datumTransformations, filters, null);
     }
-    async public Task<bool> ImportToNewFeatureclass(IFeatureDatabase fdb, string dsname, string fcname, IFeatureClass sourceFC, FieldTranslation fieldTranslation, bool project, List<IQueryFilter>? filters, ISpatialIndexDef? sIndexDef, GeometryType? sourceGeometryType = null)
+    async public Task<bool> ImportToNewFeatureclass(IFeatureDatabase fdb, string dsname, string fcname, IFeatureClass sourceFC, FieldTranslation fieldTranslation, bool project, IDatumTransformations? datumTransformations, List<IQueryFilter>? filters, ISpatialIndexDef? sIndexDef, GeometryType? sourceGeometryType = null)
     {
         if (!_cancelTracker.Continue)
         {
@@ -199,7 +199,7 @@ public class FdbImport
 
             if (project && destFC.SpatialReference != null && !destFC.SpatialReference.Equals(sourceFC.SpatialReference))
             {
-                _transformer = GeometricTransformerFactory.Create();
+                _transformer = GeometricTransformerFactory.Create(datumTransformations);
                 //_transformer.FromSpatialReference = sourceFC.SpatialReference;
                 //_transformer.ToSpatialReference = destFC.SpatialReference;
                 _transformer.SetSpatialReferences(sourceFC.SpatialReference, destFC.SpatialReference);
@@ -208,7 +208,7 @@ public class FdbImport
             if (!Envelope.IsNull(sIndexDef.SpatialIndexBounds) &&
                 sIndexDef.SpatialReference != null && !sIndexDef.SpatialReference.Equals(destFC.SpatialReference))
             {
-                if (!sIndexDef.ProjectTo(destFC.SpatialReference))
+                if (!sIndexDef.ProjectTo(destFC.SpatialReference, datumTransformations))
                 {
                     _errMsg = "Can't project SpatialIndex Boundaries...";
                     destDS.Dispose();

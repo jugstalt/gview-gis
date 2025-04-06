@@ -15,11 +15,14 @@ namespace gView.Framework.Data
         private IGeometricTransformer _transformer = null;
         private bool _knowsFunctions = true;
 
-        public FeatureCursor(ISpatialReference fcSRef, ISpatialReference toSRef)
+        public FeatureCursor(
+                ISpatialReference fcSRef, 
+                ISpatialReference toSRef,
+                IDatumTransformations datumTransformations)
         {
             if (fcSRef != null && !fcSRef.Equals(toSRef))
             {
-                _transformer = GeometricTransformerFactory.Create();
+                _transformer = GeometricTransformerFactory.Create(datumTransformations);
                 //_transformer.FromSpatialReference = fcSRef;
                 //_transformer.ToSpatialReference = toSRef;
                 _transformer.SetSpatialReferences(fcSRef, toSRef);

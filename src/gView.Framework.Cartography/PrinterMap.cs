@@ -32,7 +32,7 @@ namespace gView.Framework.Cartography
             Display.ReferenceScale = original.ReferenceScale;
             Display.SpatialReference = original.SpatialReference != null ? original.SpatialReference.Clone() as ISpatialReference : null;
 
-            Transformations = original.Transformations;
+            DatumTransformations = original.DatumTransformations?.Clone();
 
             foreach (IGraphicElement grElement in original.Display.GraphicsContainer.Elements)
             {

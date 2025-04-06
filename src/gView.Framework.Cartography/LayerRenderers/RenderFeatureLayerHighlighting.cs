@@ -73,7 +73,8 @@ namespace gView.Framework.Cartography.LayerRenderers
                     GeometricTransformerFactory.Transform2D(
                         new Envelope(_map.Envelope),
                         _map.SpatialReference,
-                        spatialFilter.FilterSpatialReference).Envelope);
+                        spatialFilter.FilterSpatialReference,
+                        _map.Display?.DatumTransformations).Envelope);
 
                 spatialFilter.Geometry = spatialFilter.Geometry switch
                 {

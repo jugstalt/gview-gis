@@ -1,9 +1,7 @@
-﻿using System;
-using System.Linq;
-using System.Reflection;
+﻿using gView.Framework.Core.Geometry;
+using System;
 using System.Runtime.InteropServices;
 using System.Text;
-using gView.Framework.Core.Geometry;
 
 // slow!!
 namespace gView.Framework.Geometry
@@ -97,18 +95,18 @@ namespace gView.Framework.Geometry
 
         //static private object LockThis1 = new object();
         static IntPtr _ctx;
-        IntPtr _pj,_pjInv;
+        IntPtr _pj, _pjInv;
         private ISpatialReference _fromSRef = null, _toSRef = null;
-        private readonly IDatumsTransformations? _datumsTransformations = null;
+        private readonly IDatumTransformations _datumTransformations = null;
 
         private bool _toProjective = true, _fromProjective = true;
         private const double RAD2DEG = (180.0 / Math.PI);
 
-        public GeometricTransformerProj6Nativ(IDatumsTransformations datumsTransformations)
-        { 
-            _datumsTransformations = datumsTransformations;
+        public GeometricTransformerProj6Nativ(IDatumTransformations datumTransformations)
+        {
+            _datumTransformations = datumTransformations;
         }
-           
+
         #region IGeometricTransformer Member
 
         private ISpatialReference FromSpatialReference
@@ -496,7 +494,7 @@ namespace gView.Framework.Geometry
 
         #endregion
 
-        static public IGeometry Transform2D(IGeometry geometry, ISpatialReference from, ISpatialReference to, IDatumsTransformations? datumsTransformations)
+        static public IGeometry Transform2D(IGeometry geometry, ISpatialReference from, ISpatialReference to, IDatumTransformations datumTransformations)
         {
             if (geometry == null)
             {
@@ -508,7 +506,7 @@ namespace gView.Framework.Geometry
                 return geometry;
             }
 
-            using (IGeometricTransformer transformer = GeometricTransformerFactory.Create(datumsTransformations))
+            using (IGeometricTransformer transformer = GeometricTransformerFactory.Create(datumTransformations))
             {
                 transformer.SetSpatialReferences(from, to);
                 IGeometry transformed = transformer.Transform2D(geometry) as IGeometry;
@@ -518,9 +516,9 @@ namespace gView.Framework.Geometry
             }
         }
 
-        static public IGeometry InvTransform2D(IGeometry geometry, ISpatialReference from, ISpatialReference to, IDatumsTransformations? datumsTransformations)
+        static public IGeometry InvTransform2D(IGeometry geometry, ISpatialReference from, ISpatialReference to, IDatumTransformations datumTransformations)
         {
-            return Transform2D(geometry, to, from, datumsTransformations);
+            return Transform2D(geometry, to, from, datumTransformations);
         }
 
         #region IDisposable Member

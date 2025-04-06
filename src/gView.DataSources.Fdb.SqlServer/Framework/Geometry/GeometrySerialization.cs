@@ -30,7 +30,7 @@ namespace gView.Framework.Geometry
 
                     byte[] bytes = new byte[writer.BaseStream.Length];
                     writer.BaseStream.Position = 0;
-                    writer.BaseStream.Read(bytes, (int)0, (int)writer.BaseStream.Length);
+                    writer.BaseStream.ReadExactly(bytes, (int)0, (int)writer.BaseStream.Length);
                     writer.Close();
 
                     return new SqlBytes(bytes);

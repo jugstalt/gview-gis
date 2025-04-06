@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using gView.Framework.Core.Geometry;
+using gView.Framework.Geometry.Extensions;
 
 namespace gView.Framework.Geometry
 {
@@ -62,145 +64,17 @@ namespace gView.Framework.Geometry
         static private object LockThis1 = new object();
 
         private ISpatialReference _fromSRef = null, _toSRef = null;
-        private readonly IDatumsTransformations _datumsTransformations = null;
+        private readonly IDatumTransformations _datumTransformations = null;
 
         private bool _toProjective = true, _fromProjective = true;
         private const double RAD2DEG = (180.0 / Math.PI);
 
-        public GeometricTransformerProj4Nativ(IDatumsTransformations datumsTransformations)
+        public GeometricTransformerProj4Nativ(IDatumTransformations datumTransformations)
         {
-            _datumsTransformations = datumsTransformations;
+            _datumTransformations = datumTransformations;
         }
 
         #region IGeometricTransformer Member
-
-        private ISpatialReference FromSpatialReference
-        {
-            get
-            {
-                return _fromSRef;
-            }
-            set
-            {
-                lock (LockThis1)  // pj_free und pj_init nicht ThreadSave!!!
-                {
-                    try
-                    {
-                        //Console.Write("FromID: " + this.GetHashCode()+"\t"+ System.Threading.Thread.CurrentThread.ManagedThreadId + "\t");
-
-                        if (_fromSRef != null && value != null &&
-                            _fromSRef.Equals(value))
-                        {
-                            return;
-                        }
-
-                        _fromSRef = value;
-
-                        if (_fromID != IntPtr.Zero)
-                        {
-                            Proj4Wrapper.pj_free(_fromID);
-                        }
-
-                        if (value == null)
-                        {
-                            return;
-                        }
-
-                        if (value.Parameters == null)
-                        {
-                            return;
-                        }
-
-                        string[] parms = allParameters(value);
-                        _fromID = Proj4Wrapper.pj_init(parms.Length, parms);
-
-                        //if (ParametersContain(value, "+nadgrids=@null"))
-                        //    _preFromID = Proj4Wrapper.pj_init(5, new string[] { "+proj=longlat", "+ellps=WGS84", "+datum=WGS84", "+towgs84=0,0,0,0,0,0,0", "+no_defs" });
-
-                        #region Variante mit pj_init_plus
-                        //_fromStr = Marshal.StringToHGlobalAnsi(allParametersString(value));
-                        //_fromID = Proj4Wrapper.pj_init_plus(_fromStr);
-                        //Marshal.FreeHGlobal(_fromStr);
-                        //_fromID = Proj4Wrapper.pj_init_plus(allParametersString(value));
-                        #endregion
-
-                    }
-                    catch (Exception ex)
-                    {
-                        //Console.WriteLine("\tERROR:" + _fromID.ToString());
-                        throw new Exception(value.ToString() + "\r\n" + ex.Message + "\r\n" + ex.StackTrace);
-                    }
-                    //Console.WriteLine();
-                    //if (value.SpatialParameters.IsGeographic)
-                    //{
-                    //    _fromProjective = false;
-                    //}
-                    _fromProjective = (value.SpatialParameters.IsGeographic == false);
-                }
-            }
-        }
-
-        private ISpatialReference ToSpatialReference
-        {
-            get
-            {
-                return _toSRef;
-            }
-            set
-            {
-                lock (LockThis1)  // pj_free und pj_init nicht ThreadSave!!!
-                {
-                    try
-                    {
-                        if (_toSRef != null && value != null &&
-                            _toSRef.Equals(value))
-                        {
-                            return;
-                        }
-
-                        _toSRef = value;
-
-                        if (_toID != IntPtr.Zero)
-                        {
-                            Proj4Wrapper.pj_free(_toID);
-                        }
-
-                        if (value == null)
-                        {
-                            return;
-                        }
-
-                        if (value.Parameters == null)
-                        {
-                            return;
-                        }
-
-                        string[] parms = allParameters(value);
-                        _toID = Proj4Wrapper.pj_init(parms.Length, parms);
-
-                        //if (ParametersContain(value, "+nadgrids=@null"))
-                        //    _preToID = Proj4Wrapper.pj_init(5, new string[] { "+proj=longlat", "+ellps=WGS84", "+datum=WGS84", "+towgs84=0,0,0,0,0,0,0", "+no_defs" });
-
-                        #region Variante pj_init_plus
-                        //_toStr = Marshal.StringToHGlobalAnsi(allParametersString(value));
-                        //_toID = Proj4Wrapper.pj_init_plus(_toStr);
-                        //Marshal.FreeHGlobal(_toStr);
-                        //Console.WriteLine("ToID:" + _toID);
-                        #endregion
-                    }
-                    catch (Exception ex)
-                    {
-                        //Console.WriteLine(ex.Message);
-                        throw new Exception(value.ToString() + "\r\n" + _toID + "\r\n" + ex.Message + "\r\n" + ex.StackTrace);
-                    }
-                }
-                //if (value.SpatialParameters.IsGeographic)
-                //{
-                //    _toProjective = false;
-                //}
-                _toProjective = (value.SpatialParameters.IsGeographic == false);
-            }
-        }
 
         public void SetSpatialReferences(ISpatialReference from, ISpatialReference to)
         {
@@ -259,54 +133,275 @@ namespace gView.Framework.Geometry
             }
         }
 
-        private string[] allParameters(ISpatialReference sRef)
+        public object Transform2D(object geometry)
         {
-            if (sRef == null)
-            {
-                return "".Split();
-            }
-
-            if (sRef.Datum == null)
-            {
-                return sRef.Parameters;
-            }
-
-            string parameters = "";
-            foreach (string param in sRef.Parameters)
-            {
-                parameters += param + " ";
-            }
-            parameters += sRef.Datum.Parameter;
-
-            return parameters.Split(' ');
+            return PerformTransform2D(geometry, _fromID, _toID, _fromProjective, _toProjective);
         }
-        private string allParametersString(ISpatialReference sRef)
+        public object InvTransform2D(object geometry)
+        {
+            return PerformTransform2D(geometry, _toID, _fromID, _toProjective, _fromProjective);
+        }
+
+        public void Release()
+        {
+            lock (LockThis1)
+            {
+                //try
+                //{
+                //    if (_preToID > 0) Proj4Wrapper.pj_free(_preToID);
+                //}
+                //catch { }
+                //try
+                //{
+                //    if (_preFromID > 0) Proj4Wrapper.pj_free(_preFromID);
+                //}
+                //catch { }
+                try
+                {
+                    if (_fromID != IntPtr.Zero)
+                    {
+                        Proj4Wrapper.pj_free(_fromID);
+                    }
+                }
+                catch { }
+                try
+                {
+                    if (_toID != IntPtr.Zero)
+                    {
+                        Proj4Wrapper.pj_free(_toID);
+                    }
+                }
+                catch { }
+                _fromSRef = _toSRef = null;
+                _fromID = _toID = IntPtr.Zero;
+                //_preFrom = _preTo = -1;
+            }
+        }
+
+        #endregion
+
+        #region IDatumGridShiftProvider Member
+
+        public string[] GridShiftNames()
+        {
+            string projLibPath = Environment.GetEnvironmentVariable("PROJ_LIB");
+
+            if (String.IsNullOrEmpty(projLibPath) ||
+                Directory.Exists(projLibPath))
+            {
+                return [];
+            }
+
+            List<string> result = new();
+
+            foreach (var file in Directory.GetFiles(projLibPath))
+            {
+                switch (System.IO.Path.GetExtension(file).ToLower())
+                {
+                    case ".gsd":
+                        result.Add(System.IO.Path.GetFileName(file));
+                        break;
+                }
+            }
+
+            return result.ToArray();
+        }
+
+        #endregion
+
+        #region Static Members
+
+        static public IGeometry Transform2D(IGeometry geometry, ISpatialReference from, ISpatialReference to, IDatumTransformations datumTransformations)
+        {
+            if (geometry == null)
+            {
+                return null;
+            }
+
+            if (from == null || to == null || from.Equals(to))
+            {
+                return geometry;
+            }
+
+            using (IGeometricTransformer transformer = GeometricTransformerFactory.Create(datumTransformations))
+            {
+                //transformer.FromSpatialReference = from;
+                //transformer.ToSpatialReference = to;
+                transformer.SetSpatialReferences(from, to);
+                IGeometry transformed = transformer.Transform2D(geometry) as IGeometry;
+                transformer.Release();
+
+                return transformed;
+            }
+        }
+
+        static public IGeometry InvTransform2D(IGeometry geometry, ISpatialReference from, ISpatialReference to, IDatumTransformations datumTransformations)
+        {
+            return Transform2D(geometry, to, from, datumTransformations);
+        }
+
+        #endregion
+
+        #region IDisposable Member
+
+        public void Dispose()
+        {
+            this.Release();
+        }
+
+        #endregion
+
+        #region Helpers
+
+        private ISpatialReference FromSpatialReference
+        {
+            get
+            {
+                return _fromSRef;
+            }
+            set
+            {
+                lock (LockThis1)  // pj_free und pj_init nicht ThreadSave!!!
+                {
+                    try
+                    {
+                        //Console.Write("FromID: " + this.GetHashCode()+"\t"+ System.Threading.Thread.CurrentThread.ManagedThreadId + "\t");
+
+                        if (_fromSRef != null && value != null &&
+                            _fromSRef.Equals(value))
+                        {
+                            return;
+                        }
+
+                        _fromSRef = value;
+
+                        if (_fromID != IntPtr.Zero)
+                        {
+                            Proj4Wrapper.pj_free(_fromID);
+                        }
+
+                        if (value == null)
+                        {
+                            return;
+                        }
+
+                        if (value.Parameters == null)
+                        {
+                            return;
+                        }
+
+                        string[] parms = AllParameters(value).ToArray() ?? [];
+                        _fromID = Proj4Wrapper.pj_init(parms.Length, parms);
+                    }
+                    catch (Exception ex)
+                    {
+                        //Console.WriteLine("\tERROR:" + _fromID.ToString());
+                        throw new Exception(value.ToString() + "\r\n" + ex.Message + "\r\n" + ex.StackTrace);
+                    }
+
+                    _fromProjective = (value.SpatialParameters.IsGeographic == false);
+                }
+            }
+        }
+        private ISpatialReference ToSpatialReference
+        {
+            get
+            {
+                return _toSRef;
+            }
+            set
+            {
+                lock (LockThis1)  // pj_free und pj_init nicht ThreadSave!!!
+                {
+                    try
+                    {
+                        if (_toSRef != null && value != null &&
+                            _toSRef.Equals(value))
+                        {
+                            return;
+                        }
+
+                        _toSRef = value;
+
+                        if (_toID != IntPtr.Zero)
+                        {
+                            Proj4Wrapper.pj_free(_toID);
+                        }
+
+                        if (value == null)
+                        {
+                            return;
+                        }
+
+                        if (value.Parameters == null)
+                        {
+                            return;
+                        }
+
+                        string[] parms = AllParameters(value).ToArray() ?? [];
+                        _toID = Proj4Wrapper.pj_init(parms.Length, parms);
+                    }
+                    catch (Exception ex)
+                    {
+                        //Console.WriteLine(ex.Message);
+                        throw new Exception(value.ToString() + "\r\n" + _toID + "\r\n" + ex.Message + "\r\n" + ex.StackTrace);
+                    }
+                }
+                //if (value.SpatialParameters.IsGeographic)
+                //{
+                //    _toProjective = false;
+                //}
+                _toProjective = (value.SpatialParameters.IsGeographic == false);
+            }
+        }
+
+        private IEnumerable<string> AllParameters(ISpatialReference sRef)
+        {
+            foreach (string param in sRef?.Parameters ?? [])
+            {
+                yield return param;
+            }
+
+            var datum = _datumTransformations.GetTransformationFor(sRef.Datum);
+            var datumParameter = datum?.Parameter;
+
+            if (!string.IsNullOrEmpty(datumParameter))
+            {
+                yield return datumParameter;
+            }
+        }
+        private string AllParametersString(ISpatialReference sRef)
         {
             if (sRef == null)
             {
                 return String.Empty;
             }
 
-            StringBuilder sb = new StringBuilder();
+            var parameters = new StringBuilder();
             foreach (string param in sRef.Parameters)
             {
-                if (sb.Length > 0)
+                if (parameters.Length > 0)
                 {
-                    sb.Append(" ");
+                    parameters.Append(" ");
                 }
 
-                sb.Append(param.Trim());
+                parameters.Append(param.Trim());
             }
-            if (sRef.Datum != null && !String.IsNullOrEmpty(sRef.Datum.Parameter))
+
+            var datum = _datumTransformations.GetTransformationFor(sRef.Datum);
+            var datumParameter = datum?.Parameter;
+
+            if (!String.IsNullOrEmpty(datumParameter))
             {
-                if (sb.Length > 0)
+                if (parameters.Length > 0)
                 {
-                    sb.Append(" ");
+                    parameters.Append(" ");
                 }
 
-                sb.Append(sRef.Datum.Parameter);
+                parameters.Append(datumParameter);
             }
-            return sb.ToString();
+
+            return parameters.ToString();
         }
         private bool ParametersContain(ISpatialReference sRef, string p)
         {
@@ -320,16 +415,7 @@ namespace gView.Framework.Geometry
             return false;
         }
 
-        public object Transform2D(object geometry)
-        {
-            return Transform2D_(geometry, _fromID, _toID, _fromProjective, _toProjective);
-        }
-        public object InvTransform2D(object geometry)
-        {
-            return Transform2D_(geometry, _toID, _fromID, _toProjective, _fromProjective);
-        }
-
-        private object Transform2D_(object geometry, IntPtr from, IntPtr to, bool fromProjective, bool toProjektive)
+        private object PerformTransform2D(object geometry, IntPtr from, IntPtr to, bool fromProjective, bool toProjektive)
         {
             if (geometry == null)
             {
@@ -497,7 +583,7 @@ namespace gView.Framework.Geometry
             }
             if (geometry is IEnvelope)
             {
-                return Transform2D_(((IEnvelope)geometry).ToPolygon(10), from, to, fromProjective, toProjektive);
+                return PerformTransform2D(((IEnvelope)geometry).ToPolygon(10), from, to, fromProjective, toProjektive);
             }
             if (geometry is IPolyline)
             {
@@ -505,7 +591,7 @@ namespace gView.Framework.Geometry
                 IPolyline polyline = new Polyline();
                 for (int i = 0; i < count; i++)
                 {
-                    polyline.AddPath((IPath)Transform2D_(((IPolyline)geometry)[i], from, to, fromProjective, toProjektive));
+                    polyline.AddPath((IPath)PerformTransform2D(((IPolyline)geometry)[i], from, to, fromProjective, toProjektive));
                 }
                 return polyline;
             }
@@ -515,7 +601,7 @@ namespace gView.Framework.Geometry
                 IPolygon polygon = new Polygon();
                 for (int i = 0; i < count; i++)
                 {
-                    polygon.AddRing((IRing)Transform2D_(((IPolygon)geometry)[i], from, to, fromProjective, toProjektive));
+                    polygon.AddRing((IRing)PerformTransform2D(((IPolygon)geometry)[i], from, to, fromProjective, toProjektive));
                 }
                 return polygon;
             }
@@ -526,7 +612,7 @@ namespace gView.Framework.Geometry
                 IAggregateGeometry aGeom = new AggregateGeometry();
                 for (int i = 0; i < count; i++)
                 {
-                    aGeom.AddGeometry((IGeometry)Transform2D_(((IAggregateGeometry)geometry)[i], from, to, fromProjective, toProjektive));
+                    aGeom.AddGeometry((IGeometry)PerformTransform2D(((IAggregateGeometry)geometry)[i], from, to, fromProjective, toProjektive));
                 }
                 return aGeom;
             }
@@ -587,109 +673,6 @@ namespace gView.Framework.Geometry
                     b[i] /= RAD2DEG;
                 }
             }
-        }
-
-        public void Release()
-        {
-            lock (LockThis1)
-            {
-                //try
-                //{
-                //    if (_preToID > 0) Proj4Wrapper.pj_free(_preToID);
-                //}
-                //catch { }
-                //try
-                //{
-                //    if (_preFromID > 0) Proj4Wrapper.pj_free(_preFromID);
-                //}
-                //catch { }
-                try
-                {
-                    if (_fromID != IntPtr.Zero)
-                    {
-                        Proj4Wrapper.pj_free(_fromID);
-                    }
-                }
-                catch { }
-                try
-                {
-                    if (_toID != IntPtr.Zero)
-                    {
-                        Proj4Wrapper.pj_free(_toID);
-                    }
-                }
-                catch { }
-                _fromSRef = _toSRef = null;
-                _fromID = _toID = IntPtr.Zero;
-                //_preFrom = _preTo = -1;
-            }
-        }
-
-        #endregion
-
-        #region IDatumGridShiftProvider Member
-
-        public string[] GridShiftNames()
-        {
-            string projLibPath = Environment.GetEnvironmentVariable("PROJ_LIB");
-
-            if (String.IsNullOrEmpty(projLibPath) ||
-                Directory.Exists(projLibPath))
-            {
-                return [];
-            }
-
-            List<string> result = new();
-
-            foreach (var file in Directory.GetFiles(projLibPath))
-            {
-                switch (System.IO.Path.GetExtension(file).ToLower())
-                {
-                    case ".gsd":
-                        result.Add(System.IO.Path.GetFileName(file));
-                        break;
-                }
-            }
-
-            return result.ToArray();
-        }
-
-        #endregion
-
-        static public IGeometry Transform2D(IGeometry geometry, ISpatialReference from, ISpatialReference to, IDatumsTransformations datumsTransformations)
-        {
-            if (geometry == null)
-            {
-                return null;
-            }
-
-            if (from == null || to == null || from.Equals(to))
-            {
-                return geometry;
-            }
-
-            using (IGeometricTransformer transformer = GeometricTransformerFactory.Create(datumsTransformations))
-            {
-                //transformer.FromSpatialReference = from;
-                //transformer.ToSpatialReference = to;
-                transformer.SetSpatialReferences(from, to);
-                IGeometry transformed = transformer.Transform2D(geometry) as IGeometry;
-                transformer.Release();
-
-                return transformed;
-            }
-        }
-
-        static public IGeometry InvTransform2D(IGeometry geometry, ISpatialReference from, ISpatialReference to, IDatumsTransformations datumsTransformations)
-        {
-            return Transform2D(geometry, to, from, datumsTransformations);
-        }
-
-        #region IDisposable Member
-
-        public void Dispose()
-        {
-            this.Release();
         }
 
         #endregion

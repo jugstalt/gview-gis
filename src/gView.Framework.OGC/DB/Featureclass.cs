@@ -416,7 +416,7 @@ namespace gView.Framework.OGC.DB
 
         async public Task<int> ExecuteCount(IQueryFilter filter)
         {
-            filter.GeometryToSpatialReference(this.SpatialReference);
+            filter.GeometryToSpatialReference(this.SpatialReference, filter?.DatumTransformations);
 
             using (DbConnection connection = _dataset.ProviderFactory.CreateConnection())
             {

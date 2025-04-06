@@ -36,6 +36,7 @@ internal class ClipCompact
             int minLevel = -1,
             int maxlevel = -1,
             TileCacheClipType clipType = TileCacheClipType.Copy,
+            IDatumTransformations? datumTransformations = null,
             ICommandLogger? logger = null
         )
     {
@@ -80,14 +81,14 @@ internal class ClipCompact
 
         List<IPolygon> clipperPolygons = new List<IPolygon>();
 
-        using (var cursor = await clipperFeatureClass.GetFeatures(
-                new QueryFilter()
-                {
-                    SubFields = clipperFeatureClass.ShapeFieldName,
-                    FeatureSpatialReference = cacheSRef,
-                    WhereClause = clipperDefintionQuery ?? ""
-                })
-            )
+        var filter = new QueryFilter()
+        {
+            SubFields = clipperFeatureClass.ShapeFieldName,
+            WhereClause = clipperDefintionQuery ?? ""
+        };
+        filter.SetFeatureSpatialReference(cacheSRef, datumTransformations);
+
+        using (var cursor = await clipperFeatureClass.GetFeatures(filter))
         {
             IFeature feature;
 

@@ -1309,7 +1309,8 @@ namespace gView.Framework.Cartography
             stream.Load("IClasses", null, new PersistableClasses(_layers));
             _toc = (Toc)await stream.LoadAsync<IToc>("ITOC", new Toc(this));
 
-            stream.Load("IGraphicsContainer", null, GraphicsContainer);
+            stream.Load("IGraphicsContainer", null, Display.GraphicsContainer);
+            stream.Load("IDatumTransformations", null, Display.DatumTransformations);
 
             foreach (ILayer layer in _layers)
             {
@@ -1473,7 +1474,10 @@ namespace gView.Framework.Cartography
             stream.Save("IClasses", new PersistableClasses(_layers));
             stream.Save("ITOC", _toc);
             stream.Save("IGraphicsContainer", Display.GraphicsContainer);
-
+            if (Display.DatumTransformations?.Transformations.Any() == true)
+            {
+                stream.Save("IDatumTransformations", Display.DatumTransformations);
+            }
             if (_layerDescriptions != null)
             {
                 var descriptionsKeys = _layerDescriptions.Keys

@@ -107,7 +107,7 @@ public class FromGLStylesJsonCommand : ICommand
             if (stylesCapabilities.Center != null && stylesCapabilities.Center.Length == 2)
             {
                 var centerPoint = new Point(stylesCapabilities.Center[0], stylesCapabilities.Center[1]);
-                centerPoint = GeometricTransformerFactory.Transform2D(centerPoint, sRef4326, sRef) as Point;
+                centerPoint = GeometricTransformerFactory.Transform2D(centerPoint, sRef4326, sRef, null) as Point;
 
                 if (centerPoint != null)
                 {

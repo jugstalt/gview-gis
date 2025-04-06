@@ -59,12 +59,22 @@ namespace gView.Server.Services.Security
                     CreateCert(name);
                 }
 
-                _cert = new X509CertificateWrapper(
-                    new X509Certificate2(fi.FullName, CertPassword,
-                               X509KeyStorageFlags.MachineKeySet
-                             | X509KeyStorageFlags.PersistKeySet
-                             | X509KeyStorageFlags.Exportable
-                             | X509KeyStorageFlags.UserKeySet));
+                var pkcs12Cert = X509CertificateLoader.LoadPkcs12(
+                    File.ReadAllBytes(fi.FullName), 
+                    CertPassword,
+                    X509KeyStorageFlags.MachineKeySet
+                    | X509KeyStorageFlags.PersistKeySet
+                    | X509KeyStorageFlags.Exportable
+                    | X509KeyStorageFlags.UserKeySet);    
+
+                _cert = new X509CertificateWrapper(pkcs12Cert);
+
+                //_cert = new X509CertificateWrapper(
+                //    new X509Certificate2(fi.FullName, CertPassword,
+                //               X509KeyStorageFlags.MachineKeySet
+                //             | X509KeyStorageFlags.PersistKeySet
+                //             | X509KeyStorageFlags.Exportable
+                //             | X509KeyStorageFlags.UserKeySet));
             }
             catch (CryptographicException cx)
             {

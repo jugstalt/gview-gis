@@ -43,7 +43,7 @@ namespace gView.DataSources.VectorTileCache
                 dispEnvelope = (IEnvelope)((IGeometry)display.GeometricTransformer.InvTransform2D(dispEnvelope)).Envelope;
             }
 
-            dispEnvelope = GeometricTransformerFactory.Transform2D(dispEnvelope, _dataset.SpatialReference, _dataset.WebMercatorSpatialReference)?.Envelope;
+            dispEnvelope = GeometricTransformerFactory.Transform2D(dispEnvelope, _dataset.SpatialReference, _dataset.WebMercatorSpatialReference, display.DatumTransformations)?.Envelope;
 
             double res = _grid.GetLevelResolution(level);
             int col0 = _grid.TileColumn(dispEnvelope.MinX, res);

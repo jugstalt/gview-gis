@@ -130,7 +130,7 @@
                         coordinate,
                         model.SpatialReference,
                         CartoDocument.CurrentMap.Display.SpatialReference,
-                        CartoDocument.CurrentMap.Display
+                        CartoDocument.CurrentMap.Display.DatumTransformations
                     ) as IPoint ?? new Point();
             }
 
@@ -194,7 +194,7 @@
 
         if (spatialReferernce is not null)
         {
-            _cursorPoint = GeoTransformation.FromWGS84(new PointStruct(latLng), spatialReferernce, CartoDocument.CurrentMap?.Display) as IPoint;
+            _cursorPoint = GeoTransformation.FromWGS84(new PointStruct(latLng), spatialReferernce, CartoDocument.CurrentMap?.Display?.DatumTransformations) as IPoint;
         }
         return this.InvokeAsync(() => StateHasChanged());
     }
