@@ -210,7 +210,7 @@ namespace gView.Framework.Geometry
                 yield return param;
             }
 
-            var datum = _datumTransformations.GetTransformationFor(sRef.Datum);
+            var datum = _datumTransformations.GetTransformationDatumFor(sRef.Datum);
             var datumParameter = datum?.Parameter;
 
             if (!string.IsNullOrEmpty(datumParameter))
@@ -236,7 +236,7 @@ namespace gView.Framework.Geometry
                 parameters.Append(param.Trim());
             }
 
-            var datum = _datumTransformations.GetTransformationFor(sRef.Datum);
+            var datum = _datumTransformations.GetTransformationDatumFor(sRef.Datum);
             var datumParameter = datum?.Parameter;
 
             if (!String.IsNullOrEmpty(datumParameter))

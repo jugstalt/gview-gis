@@ -7,6 +7,7 @@ namespace gView.Framework.Core.Geometry;
 
 public interface IDatumTransformation : IPersistable, IClone<IDatumTransformation>
 {
+    public bool Use { get; set; }
     public IGeodeticDatum FromDatum { get; }
     public IGeodeticDatum ToDatum { get; }
 

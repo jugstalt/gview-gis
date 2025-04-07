@@ -346,16 +346,21 @@ public class DatumTransformation : IDatumTransformation
 
     public IGeodeticDatum TransformationDatum { get; set; }
 
+    public bool Use { get; set; } = true;
+
     #region IPersistable Member
 
     public void Load(IPersistStream stream)
     {
+        Use = (bool)stream.Load("Use", true);
         FromDatum = stream.Load("FromDatum", null, new GeodeticDatum()) as GeodeticDatum;
         TransformationDatum = stream.Load("TransformationDatum", null, new GeodeticDatum()) as GeodeticDatum;
     }
 
     public void Save(IPersistStream stream)
     {
+        stream.Save("Use", Use);
+
         if (FromDatum != null)
         {
             stream.Save("FromDatum", FromDatum);
@@ -375,6 +380,7 @@ public class DatumTransformation : IDatumTransformation
     {
         return new DatumTransformation()
         {
+            Use = Use,
             FromDatum = FromDatum?.Clone() as GeodeticDatum,
             ToDatum = ToDatum.Clone() as GeodeticDatum,
             TransformationDatum = TransformationDatum?.Clone() as GeodeticDatum

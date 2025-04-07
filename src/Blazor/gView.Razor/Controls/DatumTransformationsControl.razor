@@ -13,27 +13,29 @@
                 Striped="true"
                 MultiSelection="false">
         <HeaderContent>
+            <MudTh>Use</MudTh>
             <MudTh>From Datum</MudTh>
             <MudTh>Transformation Datum</MudTh>
             <MudTh></MudTh>
             <MudTh></MudTh>
         </HeaderContent>
         <RowTemplate Context="datumTransformation">
+            <MudTd>
+                <MudCheckBox @bind-Value="datumTransformation.Use" T="bool" />
+            </MudTd>
             <MudTd>@datumTransformation.FromDatum?.Name</MudTd>
             <MudTd>@datumTransformation.TransformationDatum?.Name</MudTd>
             <MudTd>
-                <MudButton Variant="Variant.Filled"
-                           Color="Color.Primary"
-                           OnClick="() => OnEdit(datumTransformation)">
-                    Edit
-                </MudButton>
+                <MudIconButton Icon="@MudBlazor.Icons.Material.Filled.Edit"
+                               Color="Color.Primary"
+                               Size="MudBlazor.Size.Small"
+                               OnClick="() => OnEdit(datumTransformation)" />
             </MudTd>
             <MudTd>
-                <MudButton Variant="Variant.Filled"
-                            Color="Color.Error"
-                            OnClick="() => OnRemove(datumTransformation)">
-                    Remove
-                </MudButton>
+                <MudIconButton Icon="@MudBlazor.Icons.Material.Filled.Delete"
+                               Color="Color.Error"
+                               Size="MudBlazor.Size.Small"
+                               OnClick="() => OnRemove(datumTransformation)" />
             </MudTd>
         </RowTemplate>
     </MudTable>
