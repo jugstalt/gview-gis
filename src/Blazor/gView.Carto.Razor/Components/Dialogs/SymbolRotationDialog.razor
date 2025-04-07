@@ -38,7 +38,8 @@
                         @foreach (var roationType in Enum.GetValues<RotationType>())
                         {
                             <GvGridItem>
-                                <MudRadio Value="roationType" Placement="Placement.Bottom">
+                                <MudRadio Value="roationType"
+                                          LabelPlacement="Placement.Bottom">
                                     <div class="gview-ui-image img-rotation-@roationType.ToString().ToLower()"></div>
                                     <div>
                                         @roationType.ToString().SplitCamelCase()

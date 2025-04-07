@@ -17,6 +17,7 @@ using System.Data.Common;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using gView.Framework.Db.Extensions;
 
 namespace gView.DataSources.MSSqlSpatial
 {
@@ -32,7 +33,7 @@ namespace gView.DataSources.MSSqlSpatial
         {
             try
             {
-                _factory = System.Data.SqlClient.SqlClientFactory.Instance;
+                _factory = Microsoft.Data.SqlClient.SqlClientFactory.Instance;
             }
             catch
             {
@@ -766,5 +767,10 @@ namespace gView.DataSources.MSSqlSpatial
         }
 
         #endregion
+
+        protected override string ModifyConnectionString(string connectionString)
+        {
+            return base.ModifyConnectionString(connectionString).AppendTrustServerCertificate();
+        }
     }
 }

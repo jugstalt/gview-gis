@@ -16,6 +16,7 @@ using System.Data.Common;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using gView.Framework.Db.Extensions;
 
 namespace gView.DataSources.MSSqlSpatial.DataSources.Sde
 {
@@ -34,7 +35,7 @@ namespace gView.DataSources.MSSqlSpatial.DataSources.Sde
         {
             try
             {
-                _factory = System.Data.SqlClient.SqlClientFactory.Instance;
+                _factory = Microsoft.Data.SqlClient.SqlClientFactory.Instance;
             }
             catch
             {
@@ -418,6 +419,11 @@ namespace gView.DataSources.MSSqlSpatial.DataSources.Sde
             }
 
             return await RepoProvider.GetInsertRowId(sdeLayer);
+        }
+
+        protected override string ModifyConnectionString(string connectionString)
+        {
+            return base.ModifyConnectionString(connectionString).AppendTrustServerCertificate();
         }
     }
 }

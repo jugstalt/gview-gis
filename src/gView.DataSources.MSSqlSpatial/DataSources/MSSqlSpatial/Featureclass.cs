@@ -2,7 +2,6 @@
 using gView.Framework.Core.Geometry;
 using gView.Framework.Data;
 using System;
-using System.Data.Common;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -10,7 +9,7 @@ namespace gView.DataSources.MSSqlSpatial
 {
     public class Featureclass : gView.Framework.OGC.DB.OgcSpatialFeatureclass
     {
-        private static string[] IdFieldCandidates = new string[] {  "gview_id", "id", "objectid", "row_id",  "object_id", "row_id" };
+        private static string[] IdFieldCandidates = new string[] { "gview_id", "id", "objectid", "row_id", "object_id", "row_id" };
 
         private Featureclass(GeometryDataset dataset, string name, string idFieldName, string shapeFieldName, bool isView)
         {
@@ -47,7 +46,7 @@ namespace gView.DataSources.MSSqlSpatial
                             if ((field.type == FieldType.integer || field.type == FieldType.biginteger || field.type == FieldType.ID))
                             {
                                 featureClass._idfield = field.name;
-                                ((Field)field).type = FieldType.ID;
+                                field.type = FieldType.ID;
 
                                 break;
                             }
