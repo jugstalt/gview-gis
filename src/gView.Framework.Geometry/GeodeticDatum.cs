@@ -3,11 +3,9 @@ using gView.Framework.Core.Geometry;
 using gView.Framework.Core.IO;
 using gView.Framework.Geometry.Proj;
 using gView.Framework.Geometry.SpatialRefTranslation;
-using Proj4Net.Core.Datum;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Xml.Linq;
 
 namespace gView.Framework.Geometry;
 
@@ -17,6 +15,8 @@ namespace gView.Framework.Geometry;
 
 public class GeodeticDatum : IGeodeticDatum
 {
+    private const double DoubleTolerance = 1e-8;
+
     private double _X, _Y, _Z;
     private double _rX, _rY, _rZ;
     private double _scale;
@@ -40,7 +40,7 @@ public class GeodeticDatum : IGeodeticDatum
             return;
         }
 
-        if(GeometricTransformerFactory.SupportedGridShifts().Contains(name))
+        if (GeometricTransformerFactory.SupportedGridShifts().Contains(name))
         {
             GridShiftFile = name;
             return;
@@ -58,7 +58,7 @@ public class GeodeticDatum : IGeodeticDatum
         _name = datum._name;
         GridShiftFile = datum.GridShiftFile;
     }
-    public GeodeticDatum(string name, 
+    public GeodeticDatum(string name,
                         double dx, double dy, double dz,
                         double rx, double ry, double rz,
                         double scale)
@@ -223,28 +223,37 @@ public class GeodeticDatum : IGeodeticDatum
             return false;
         }
 
-        if (equalName && !this.Name.Equals(geodeticDatum.Name, StringComparison.OrdinalIgnoreCase))
+        bool hasEqualName = false, hasEqualParameters = false;
+        if (equalName)
         {
-            return false;
+            hasEqualName = this.Name.Equals(geodeticDatum.Name, StringComparison.OrdinalIgnoreCase);
         }
 
-        if (equalParameter && !this.Parameter.Equals(geodeticDatum.Parameter, StringComparison.OrdinalIgnoreCase))
+        //if (equalParameter && !this.Parameter.Equals(geodeticDatum.Parameter, StringComparison.OrdinalIgnoreCase))
+        //{
+        //    return false;
+        //}
+
+        if (equalParameter)
         {
-            return false;
+            if (!String.IsNullOrEmpty(GridShiftFile))
+            {
+                hasEqualParameters = GridShiftFile.Equals(geodeticDatum.GridShiftFile);
+            }
+            else
+            {
+                hasEqualParameters =
+                    this.X_Axis.EqualWithTolerance(geodeticDatum.X_Axis, DoubleTolerance) &&
+                    this.Y_Axis.EqualWithTolerance(geodeticDatum.Y_Axis, DoubleTolerance) &&
+                    this.Z_Axis.EqualWithTolerance(geodeticDatum.Z_Axis, DoubleTolerance) &&
+                    this.X_Rotation.EqualWithTolerance(geodeticDatum.X_Rotation, DoubleTolerance) &&
+                    this.Y_Rotation.EqualWithTolerance(geodeticDatum.Y_Rotation, DoubleTolerance) &&
+                    this.Z_Rotation.EqualWithTolerance(geodeticDatum.Z_Rotation, DoubleTolerance) &&
+                    this.Scale_Diff.EqualWithTolerance(geodeticDatum.Scale_Diff, DoubleTolerance);
+            }
         }
 
-        if(!String.IsNullOrEmpty(GridShiftFile))
-        {
-            return GridShiftFile.Equals(geodeticDatum.GridShiftFile);
-        }
-
-        return this.X_Axis == geodeticDatum.X_Axis &&
-               this.Y_Axis == geodeticDatum.Y_Axis &&
-               this.Z_Axis == geodeticDatum.Z_Axis &&
-               this.X_Rotation == geodeticDatum.X_Rotation &&
-               this.Y_Rotation == geodeticDatum.Y_Rotation &&
-               this.Z_Rotation == geodeticDatum.Z_Rotation &&
-               this.Scale_Diff == geodeticDatum.Scale_Diff;
+        return hasEqualName || hasEqualParameters;
     }
 
     #endregion
@@ -267,14 +276,18 @@ public class GeodeticDatum : IGeodeticDatum
     public void Save(IPersistStream stream)
     {
         stream.Save("name", _name);
-        stream.Save("X", _X);
-        stream.Save("Y", _Y);
-        stream.Save("Z", _Z);
-        stream.Save("rX", _rX);
-        stream.Save("rY", _rY);
-        stream.Save("rZ", _rZ);
-        stream.Save("scale", _scale);
-        if(!String.IsNullOrEmpty(GridShiftFile))
+
+        if (String.IsNullOrEmpty(GridShiftFile))
+        {
+            stream.Save("X", _X);
+            stream.Save("Y", _Y);
+            stream.Save("Z", _Z);
+            stream.Save("rX", _rX);
+            stream.Save("rY", _rY);
+            stream.Save("rZ", _rZ);
+            stream.Save("scale", _scale);
+        }
+        else
         {
             stream.Save("gridShiftFile", GridShiftFile);
         }
@@ -318,6 +331,11 @@ public class GeodeticDatum : IGeodeticDatum
     public static readonly GeodeticDatum WGS84 = new GeodeticDatum("WGS84", 0D, 0D, 0D, 0D, 0D, 0D, 0D);
 
     #endregion
+
+    private bool AreDoublesEqual(double a, double b, double tolerance = 1e-8)
+    {
+        return Math.Abs(a - b) < tolerance;
+    }
 }
 
 public class DatumTransformation : IDatumTransformation
@@ -382,7 +400,7 @@ public class DatumTransformations : IDatumTransformations
     {
         var datumTransformations = new List<IDatumTransformation>();
         IDatumTransformation datumTransformation;
-        
+
         while ((datumTransformation = (IDatumTransformation)stream.Load("IDatumTransformation", null, new DatumTransformation())) != null)
         {
             datumTransformations.Add(datumTransformation);

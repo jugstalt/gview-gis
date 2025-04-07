@@ -3,6 +3,7 @@ using gView.Framework.Geometry.Proj;
 using System.Collections.Generic;
 using System.Data;
 using System.Threading.Tasks;
+using System.Linq;
 
 namespace gView.Blazor.Core.Services;
 
@@ -30,7 +31,7 @@ public class SpatialReferenceService
         return Task.FromResult<IDictionary<string, string>>(result);
     }
 
-    public Task<IDictionary<string, string>> GetDatums()
+    public Task<IDictionary<string, string>> GetDatums(bool addGridShifts = false)
     {
         var result = new Dictionary<string, string>();
         var dataTable = _datumsDb.GetDatumTable();
@@ -38,6 +39,14 @@ public class SpatialReferenceService
         foreach (DataRow row in dataTable.Rows)
         {
             result.Add(row[0].ToString() ?? "", row[0].ToString() ?? "");
+        }
+
+        if(addGridShifts)
+        {
+            GeometricTransformerFactory.SupportedGridShifts().ToList().ForEach(gridShift =>
+            {
+                result.Add(gridShift, gridShift);
+            });
         }
 
         return Task.FromResult<IDictionary<string, string>>(result);

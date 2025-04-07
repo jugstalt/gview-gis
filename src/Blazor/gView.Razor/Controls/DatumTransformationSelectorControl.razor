@@ -1,0 +1,93 @@
+﻿@inherits BaseHandler
+@inject IApplicationScopeFactory AppScopeFactory
+
+<GvCard Title="Datum Transforamtion">
+    <GvCardContent>
+        <GvGrid ColumnCount="2">
+            <GvGridItem>
+                <MudText Typo="Typo.caption">From Datum:</MudText>
+                @if(DatumTransformation?.FromDatum is not null)
+                {
+                    <MudText Typo="Typo.subtitle1">@DatumTransformation.FromDatum.Name</MudText>
+                    <MudText Typo="Typo.caption">@DatumTransformation.FromDatum.Parameter</MudText>
+                }
+
+                <GvCardActions>
+                    <MudButton Variant="Variant.Text"
+                               Color="Color.Primary"
+                               OnClick="SelectFromDatum">Select</MudButton>
+                </GvCardActions>
+            </GvGridItem>
+            <GvGridItem>
+                <MudText Typo="Typo.caption">Transformation Datum:</MudText>
+                @if (DatumTransformation?.TransformationDatum is not null)
+                {
+                    <MudText Typo="Typo.subtitle1">@DatumTransformation.TransformationDatum.Name</MudText>
+                    <MudText Typo="Typo.caption">@DatumTransformation.TransformationDatum.Parameter</MudText>
+                }
+
+                <GvCardActions>
+                    <MudButton Variant="Variant.Text"
+                               Color="Color.Primary"
+                               OnClick="SelectTransformationDatum">Select</MudButton>
+                </GvCardActions>
+            </GvGridItem>
+        </GvGrid>       
+    </GvCardContent>
+</GvCard>
+
+@code {
+    [Parameter] public IDatumTransformation? DatumTransformation { get; set; }
+    [Parameter] public EventCallback<IDatumTransformation> DatumTransformationChanged { get; set; }
+
+    private Task SelectFromDatum() => HandleAsync(async () =>
+    {
+        var model = await AppScopeFactory.ShowKnownDialog<BaseDialogModel<IGeodeticDatum>>(KnownDialogs.GeographicDatumSelectorDialog);
+
+        if (model?.Value != null)
+        {
+            DatumTransformation = DatumTransformation ?? new DatumTransformation();
+
+            if (DatumTransformation is DatumTransformation datumTransformation)
+            {
+                datumTransformation.FromDatum = model.Value;
+            }
+            else
+            {
+                DatumTransformation = new DatumTransformation
+                {
+                    FromDatum = model.Value,
+                    TransformationDatum = DatumTransformation?.TransformationDatum
+                };
+            }
+            
+            await DatumTransformationChanged.InvokeAsync(DatumTransformation);
+        }
+    });
+
+    private Task SelectTransformationDatum() => HandleAsync(async () =>
+    {
+        var model = await AppScopeFactory.ShowKnownDialog<BaseDialogModel<IGeodeticDatum>>(KnownDialogs.GeographicDatumAndGridShiftSelectorDialog);
+
+        if (model?.Value != null)
+        {
+            DatumTransformation = DatumTransformation ?? new DatumTransformation();
+
+            if (DatumTransformation is DatumTransformation datumTransformation)
+            {
+                datumTransformation.TransformationDatum = model.Value;
+            }
+            else
+            {
+                DatumTransformation = new DatumTransformation
+                {
+                    FromDatum = DatumTransformation.FromDatum,
+                    TransformationDatum = model.Value
+                };
+            }
+
+
+            await DatumTransformationChanged.InvokeAsync(DatumTransformation);
+        }
+    });
+}

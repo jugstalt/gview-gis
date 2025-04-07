@@ -910,7 +910,7 @@ public class GeoServicesRestInterperter : IServiceRequestInterpreter
                 }
                 var mapExtent = new Envelope(bbox[0], bbox[1], bbox[2], bbox[3]);
 
-                var imageDisplay = identify.ImageDisplay?.Split(',').Select(f => NumberConverter.ToFloat(f)).ToArray();
+                var imageDisplay = identify.ImageDisplay?.Split(',').Select(f => NumberExtensions.ToFloat(f)).ToArray();
                 if (imageDisplay == null || imageDisplay.Length != 3)
                 {
                     throw new Exception("Invalid identify image display. Use <width>, <height>, <dpi>");

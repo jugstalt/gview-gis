@@ -4,6 +4,7 @@ using gView.Carto.Core.Services.Abstraction;
 using gView.Framework.Carto.Abstraction;
 using gView.Framework.Cartography;
 using gView.Framework.Core.Common;
+using gView.Framework.Geometry;
 
 namespace gView.Carto.Plugins.CartoTools;
 
@@ -75,6 +76,10 @@ internal class MapSettings : ICartoButton
 
             original.SpatialReference = clone.SpatialReference;
             original.LayerDefaultSpatialReference = clone.LayerDefaultSpatialReference;
+            if (original.DatumTransformations is DatumTransformations datumTransformations)
+            {
+                datumTransformations.Transformations = clone.DatumTransformations.Transformations;
+            }
 
             #endregion
 

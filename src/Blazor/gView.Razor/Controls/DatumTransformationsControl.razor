@@ -1,0 +1,106 @@
+﻿@inherits BaseHandler
+@inject IApplicationScopeFactory AppScopeFactory
+
+<MudButton Variant="Variant.Filled"
+            Color="Color.Primary"
+            OnClick="OnAdd">
+            Add
+</MudButton>
+@if (DatumTransformations?.Transformations?.Any() == true) {
+    <MudTable Items="DatumTransformations.Transformations"
+                T="IDatumTransformation"
+                Hover="true"
+                Striped="true"
+                MultiSelection="false">
+        <HeaderContent>
+            <MudTh>From Datum</MudTh>
+            <MudTh>Transformation Datum</MudTh>
+            <MudTh></MudTh>
+            <MudTh></MudTh>
+        </HeaderContent>
+        <RowTemplate Context="datumTransformation">
+            <MudTd>@datumTransformation.FromDatum?.Name</MudTd>
+            <MudTd>@datumTransformation.TransformationDatum?.Name</MudTd>
+            <MudTd>
+                <MudButton Variant="Variant.Filled"
+                           Color="Color.Primary"
+                           OnClick="() => OnEdit(datumTransformation)">
+                    Edit
+                </MudButton>
+            </MudTd>
+            <MudTd>
+                <MudButton Variant="Variant.Filled"
+                            Color="Color.Error"
+                            OnClick="() => OnRemove(datumTransformation)">
+                    Remove
+                </MudButton>
+            </MudTd>
+        </RowTemplate>
+    </MudTable>
+}
+
+@code {
+    [Parameter] public IDatumTransformations DatumTransformations { get; set; } = default!;
+
+    private Task OnAdd()
+       => HandleAsync(async () =>
+       {
+           var model = await AppScopeFactory.ShowKnownDialog<DatumTransformationDialogModel>(KnownDialogs.DatumTransformationDialog);
+
+           if(model?.DatumTransformation is not null 
+               && model.DatumTransformation.FromDatum is not null
+               && model.DatumTransformation.TransformationDatum is not null)
+           {
+               var transformations = new List<IDatumTransformation>(DatumTransformations.Transformations ?? []);
+               transformations.Add(model.DatumTransformation);
+
+               if (DatumTransformations is DatumTransformations datumTransformations)
+               {
+                   datumTransformations.Transformations = transformations.ToArray();
+               }
+           }
+       });
+
+    private Task OnEdit(IDatumTransformation datumTransformation)
+       => HandleAsync(async () =>
+       {
+           var model = await AppScopeFactory.ShowKnownDialog<DatumTransformationDialogModel>(KnownDialogs.DatumTransformationDialog,
+                model: new DatumTransformationDialogModel()
+                {
+                    DatumTransformation = datumTransformation   
+                });
+
+           if (model?.DatumTransformation is not null
+              && model.DatumTransformation.FromDatum is not null
+              && model.DatumTransformation.TransformationDatum is not null)
+           {
+               var transformations = new List<IDatumTransformation>();
+               foreach(var dt in DatumTransformations.Transformations ?? [])
+               {
+                   if (dt == datumTransformation)
+                   {
+                       transformations.Add(model.DatumTransformation);
+                   }
+                   else
+                   {
+                       transformations.Add(dt);
+                   }
+               }
+
+               if (DatumTransformations is DatumTransformations datumTransformations)
+               {
+                   datumTransformations.Transformations = transformations.ToArray();
+               }
+           }
+       });
+
+    private void OnRemove(IDatumTransformation datumTransformation) => Handle(() =>
+        {
+            var transformations = new List<IDatumTransformation>(DatumTransformations.Transformations ?? []);
+
+            if (DatumTransformations is DatumTransformations datumTransformations)
+            {
+                datumTransformations.Transformations = datumTransformations.Transformations.Where(dt => dt != datumTransformation).ToArray();
+            }
+        });
+}

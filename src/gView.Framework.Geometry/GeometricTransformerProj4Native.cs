@@ -187,7 +187,7 @@ namespace gView.Framework.Geometry
             string projLibPath = Environment.GetEnvironmentVariable("PROJ_LIB");
 
             if (String.IsNullOrEmpty(projLibPath) ||
-                Directory.Exists(projLibPath))
+                !Directory.Exists(projLibPath))
             {
                 return [];
             }
@@ -198,7 +198,7 @@ namespace gView.Framework.Geometry
             {
                 switch (System.IO.Path.GetExtension(file).ToLower())
                 {
-                    case ".gsd":
+                    case ".gsb":
                         result.Add(System.IO.Path.GetFileName(file));
                         break;
                 }
