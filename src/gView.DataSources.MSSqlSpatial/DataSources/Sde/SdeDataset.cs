@@ -423,7 +423,7 @@ namespace gView.DataSources.MSSqlSpatial.DataSources.Sde
 
         protected override string ModifyConnectionString(string connectionString)
         {
-            return base.ModifyConnectionString(connectionString).AppendTrustServerCertificate();
+            return base.ModifyConnectionString(connectionString).AppendSqlServerParametersIfNotExists();
         }
     }
 }

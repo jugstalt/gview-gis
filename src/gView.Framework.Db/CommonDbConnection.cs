@@ -109,7 +109,7 @@ namespace gView.Framework.Db
                    value.ToLower().IndexOf("mssql:") == 0)
                 {
                     _connectionString = value.Substring(value.IndexOf(":") + 1, value.Length - value.IndexOf(":") - 1);
-                    _connectionString = _connectionString.AppendTrustServerCertificate();
+                    _connectionString = _connectionString.AppendSqlServerParametersIfNotExists();
                     _dbtype = DBType.sql;
                 }
                 else if (value.ToLower().IndexOf("odbc:") == 0)
@@ -127,7 +127,7 @@ namespace gView.Framework.Db
                          value.ToLower().IndexOf("postgre:") == 0)
                 {
                     _connectionString = value.Substring(value.IndexOf(":") + 1, value.Length - value.IndexOf(":") - 1);
-                    _connectionString = DbConnectionString.ParseNpgsqlConnectionString(_connectionString);
+                    _connectionString = _connectionString.ParseNpgsqlConnectionString();
                     _dbtype = DBType.npgsql;
                 }
                 else

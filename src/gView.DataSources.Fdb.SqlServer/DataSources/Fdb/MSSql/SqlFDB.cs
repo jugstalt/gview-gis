@@ -43,7 +43,7 @@ namespace gView.DataSources.Fdb.MSSql
         {
             StringBuilder sb = new StringBuilder();
 
-            foreach (string p in connString.AppendTrustServerCertificate().Split(';'))
+            foreach (string p in connString.AppendSqlServerParametersIfNotExists().Split(';'))
             {
                 if (p.ToLower().IndexOf("dsname=") == 0)
                 {

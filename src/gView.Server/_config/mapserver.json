@@ -88,5 +88,12 @@
       "ClientSecret": "secret",
       "scopes": [ "openid", "profile", "role" ]
     }
+  },
+
+  "SqlServer": {
+    "AppendParameters": [
+      "TrustServerCertificate=false",
+      "Encrypt=true"
+    ]
   }
 }

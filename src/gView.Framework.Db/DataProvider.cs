@@ -70,7 +70,7 @@ namespace gView.Framework.Db
                     case "sqlclient":
                     case "sql":
                     case "mssql":
-                        _sqlConnection = new SqlConnection(connStr.AppendTrustServerCertificate());
+                        _sqlConnection = new SqlConnection(connStr.AppendSqlServerParametersIfNotExists());
                         if (testIt)
                         {
                             _sqlConnection.Open();
@@ -85,7 +85,7 @@ namespace gView.Framework.Db
                             _dbFactory = DataProvider.PostgresProvider;
 
                             _dbConnection = _dbFactory.CreateConnection();
-                            _dbConnection.ConnectionString = DbConnectionString.ParseNpgsqlConnectionString(connStr);
+                            _dbConnection.ConnectionString = connStr.ParseNpgsqlConnectionString();
                             if (testIt)
                             {
                                 _dbConnection.Open();

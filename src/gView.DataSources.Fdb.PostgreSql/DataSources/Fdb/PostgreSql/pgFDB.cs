@@ -117,7 +117,7 @@ namespace gView.DataSources.Fdb.PostgreSql
         {
             try
             {
-                connString = DbConnectionString.ParseNpgsqlConnectionString(connString);
+                connString = connString.ParseNpgsqlConnectionString();
 
                 if (_conn != null)
                 {

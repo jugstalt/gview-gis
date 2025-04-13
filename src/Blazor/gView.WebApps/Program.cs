@@ -2,6 +2,7 @@ using gView.Blazor.Core.Extensions.DependencyInjection;
 using gView.Carto.Plugins.Extensions.DependencyInjection;
 using gView.Carto.Razor.Extensions.DependencyInjection;
 using gView.DataExplorer.Plugins.Extensions.DependencyInjection;
+using gView.Framework.Db.Extensions;
 using gView.Razor.Extensions.DependencyInjection;
 using gView.Razor.Leaflet.Extensions.DependencyInjection;
 using gView.WebApps.Components;
@@ -9,12 +10,23 @@ using gView.WebApps.Extensions;
 using gView.WebApps.Extensions.DependencyInjection;
 using MudBlazor;
 using MudBlazor.Services;
+using System.Configuration;
 
 gView.Framework.Common.SystemInfo.RegisterProj4Lib(gView.Framework.Geometry.GeometricTransformerFactory.PROJ_LIB);
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Configuration.AddJsonFile("_config/gview-webapps.config", true);
+
+#region SqlServer
+
+builder.Configuration
+    .GetSection("SqlServer:AppendParameters")
+    .Get<string[]>()
+    .SetSqlServerParametersToAppend();
+
+
+#endregion
 
 // Aspire
 builder.AddServiceDefaults();
