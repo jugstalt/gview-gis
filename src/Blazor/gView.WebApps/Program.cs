@@ -10,7 +10,6 @@ using gView.WebApps.Extensions;
 using gView.WebApps.Extensions.DependencyInjection;
 using MudBlazor;
 using MudBlazor.Services;
-using System.Configuration;
 
 gView.Framework.Common.SystemInfo.RegisterProj4Lib(gView.Framework.Geometry.GeometricTransformerFactory.PROJ_LIB);
 

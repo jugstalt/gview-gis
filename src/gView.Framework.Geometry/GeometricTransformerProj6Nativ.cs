@@ -1,5 +1,7 @@
 ﻿using gView.Framework.Core.Geometry;
+using gView.Framework.Geometry.Extensions;
 using System;
+using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Text;
 
@@ -74,7 +76,7 @@ namespace gView.Framework.Geometry
         public static extern void proj_trans_array(
             IntPtr projPtr,
             PJ_DIRECTION direction,
-            ulong n,                          // Number of coordinates
+            ulong n,               // Number of coordinates
             [In, Out] IntPtr data  // Array of coordinates
         );
 
@@ -95,6 +97,19 @@ namespace gView.Framework.Geometry
 
         //static private object LockThis1 = new object();
         static IntPtr _ctx;
+
+        static GeometricTransformerProj6Nativ()
+        {
+            if (_ctx == IntPtr.Zero)
+            {
+                _ctx = Proj6Wrapper.proj_context_create();
+
+                Proj6Wrapper.proj_context_set_search_paths(_ctx, PROJ_LIB.Length, PROJ_LIB);
+            }
+        }
+        
+        static Dictionary<string, IntPtr> _projCache = new Dictionary<string, IntPtr>();
+
         IntPtr _pj, _pjInv;
         private ISpatialReference _fromSRef = null, _toSRef = null;
         private readonly IDatumTransformations _datumTransformations = null;
@@ -139,63 +154,55 @@ namespace gView.Framework.Geometry
         {
             this.ToSpatialReference = to;
             this.FromSpatialReference = from;
-
-            if (_ctx == IntPtr.Zero)
-            {
-                _ctx = Proj6Wrapper.proj_context_create();
-
-                Proj6Wrapper.proj_context_set_search_paths(_ctx, PROJ_LIB.Length, PROJ_LIB);
-            }
         }
 
-        private string[] allParameters(ISpatialReference sRef)
+        private IEnumerable<string> AllParameters(ISpatialReference sRef)
         {
-            if (sRef == null)
+            foreach (string param in sRef?.Parameters ?? [])
             {
-                return "".Split();
+                yield return param;
             }
 
-            if (sRef.Datum == null)
-            {
-                return sRef.Parameters;
-            }
+            var datum = _datumTransformations.GetTransformationDatumFor(sRef.Datum);
+            var datumParameter = datum?.Parameter;
 
-            string parameters = "";
-            foreach (string param in sRef.Parameters)
+            if (!string.IsNullOrEmpty(datumParameter))
             {
-                parameters += param + " ";
+                yield return datumParameter;
             }
-            parameters += sRef.Datum.Parameter;
-
-            return parameters.Split(' ');
         }
-        private string allParametersString(ISpatialReference sRef)
+        private string AllParametersString(ISpatialReference sRef)
         {
-            if (sRef == null)
+            if(sRef == null)
             {
                 return String.Empty;
             }
 
-            StringBuilder sb = new StringBuilder();
+            var parameters = new StringBuilder();
             foreach (string param in sRef.Parameters)
             {
-                if (sb.Length > 0)
+                if (parameters.Length > 0)
                 {
-                    sb.Append(" ");
+                    parameters.Append(" ");
                 }
 
-                sb.Append(param.Trim());
+                parameters.Append(param.Trim());
             }
-            if (sRef.Datum != null && !String.IsNullOrEmpty(sRef.Datum.Parameter))
+
+            var datum = _datumTransformations.GetTransformationDatumFor(sRef.Datum);
+            var datumParameter = datum?.Parameter;
+
+            if (!String.IsNullOrEmpty(datumParameter))
             {
-                if (sb.Length > 0)
+                if (parameters.Length > 0)
                 {
-                    sb.Append(" ");
+                    parameters.Append(" ");
                 }
 
-                sb.Append(sRef.Datum.Parameter);
+                parameters.Append(datumParameter);
             }
-            return sb.ToString();
+
+            return parameters.ToString();
         }
         private bool ParametersContain(ISpatialReference sRef, string p)
         {
@@ -216,12 +223,18 @@ namespace gView.Framework.Geometry
                 return null;
             }
 
+            string key = $"{AllParametersString(_fromSRef)}=>{AllParametersString(_toSRef)}";
+            _pj = _projCache.ContainsKey(key) ? _projCache[key] : IntPtr.Zero;
+
             if (_pj == IntPtr.Zero)
             {
                 _pj = Proj6Wrapper.proj_create_crs_to_crs(_ctx,
-                    allParametersString(_fromSRef),
-                    allParametersString(_toSRef),
+                    AllParametersString(_fromSRef),
+                    AllParametersString(_toSRef),
                     IntPtr.Zero);
+                
+                _projCache[key] = _pj;
+                Console.WriteLine($"Allocated transformation: {key}");
             }
 
             return Transform2D_(geometry, _pj, _fromProjective, _toProjective);
@@ -233,12 +246,18 @@ namespace gView.Framework.Geometry
                 return null;
             }
 
+            string key = $"{AllParametersString(_toSRef)}=>{AllParametersString(_fromSRef)}";
+            _pjInv = _projCache.ContainsKey(key) ? _projCache[key] : IntPtr.Zero;
+
             if (_pjInv == IntPtr.Zero)
             {
                 _pjInv = Proj6Wrapper.proj_create_crs_to_crs(_ctx,
-                    allParametersString(_fromSRef),
-                    allParametersString(_toSRef),
+                    AllParametersString(_toSRef),
+                    AllParametersString(_fromSRef),
                     IntPtr.Zero);
+
+                _projCache[key] = _pjInv;
+                Console.WriteLine($"Allocated transformation: {key}");
             }
 
             return Transform2D_(geometry, _pjInv, _toProjective, _fromProjective);
@@ -270,51 +289,76 @@ namespace gView.Framework.Geometry
                     return geometry;
                 }
 
-                IntPtr buffer = Marshal.AllocHGlobal(pointCount * 4 * sizeof(double));
-                try
+                var coordArray = new PJ_COORD[pointCount];
+                for (int i = 0; i < pointCount; i++)
                 {
-                    IntPtr xPtr = IntPtr.Zero, yPtr = IntPtr.Zero;
-                    unsafe
+                    coordArray[i] = new PJ_COORD
                     {
-                        double* b = (double*)buffer;
-
-                        for (int i = 0; i < pointCount; i++)
-                        {
-                            b[i * 4] = pColl[i].X;
-                            b[i * 4 + 1] = pColl[i].Y;
-                            b[i * 4 + 2] = pColl[i].Z;
-                            b[i * 4 + 3] = 0;
-                        }
-
-                        xPtr = (IntPtr)(&b[0]);
-                        yPtr = (IntPtr)(&b[pointCount]);
-                    }
-
-                    Proj6Wrapper.proj_trans_array(_pj, PJ_DIRECTION.PJ_FWD, (ulong)pointCount, buffer);
-
-                    IPointCollection target = geometry switch
-                    {
-                        IRing => new Ring(),
-                        IPath => new Path(),
-                        IMultiPoint => new MultiPoint(),
-                        _ => new PointCollection()
+                        x = pColl[i].X,
+                        y = pColl[i].Y,
+                        z = pColl[i].Z
                     };
-
-                    unsafe
-                    {
-                        double* b = (double*)buffer;
-                        for (int i = 0; i < pointCount; i++)
-                        {
-                            target.AddPoint(new Point(b[i * 4], b[i * 4 + 1]));
-                        }
-
-                        return target;
-                    }
                 }
-                finally
+                Proj6Wrapper.proj_trans_array(pj, PJ_DIRECTION.PJ_FWD, (ulong)coordArray.Length, coordArray);
+
+                IPointCollection target = geometry switch
                 {
-                    Marshal.FreeHGlobal(buffer);
+                    IRing => new Ring(),
+                    IPath => new Path(),
+                    IMultiPoint => new MultiPoint(),
+                    _ => new PointCollection()
+                };
+                for (int i = 0; i < pointCount; i++)
+                {
+                    target.AddPoint(new Point(
+                        coordArray[i].x,
+                        coordArray[i].y,
+                        coordArray[i].z
+                    ));
                 }
+                return target;
+
+                //IntPtr buffer = Marshal.AllocHGlobal(pointCount * 4 * sizeof(double));
+                //try
+                //{
+                //    unsafe
+                //    {
+                //        double* b = (double*)buffer;
+
+                //        for (int i = 0; i < pointCount; i++)
+                //        {
+                //            b[i * 4] = pColl[i].X;
+                //            b[i * 4 + 1] = pColl[i].Y;
+                //            b[i * 4 + 2] = pColl[i].Z;
+                //            b[i * 4 + 3] = 0;
+                //        }
+                //    }
+
+                //    Proj6Wrapper.proj_trans_array(_pj, PJ_DIRECTION.PJ_FWD, (ulong)pointCount, buffer);
+                    
+                //    IPointCollection target = geometry switch
+                //    {
+                //        IRing => new Ring(),
+                //        IPath => new Path(),
+                //        IMultiPoint => new MultiPoint(),
+                //        _ => new PointCollection()
+                //    };
+
+                //    unsafe
+                //    {
+                //        double* b = (double*)buffer;
+                //        for (int i = 0; i < pointCount; i++)
+                //        {
+                //            target.AddPoint(new Point(b[i * 4], b[i * 4 + 1]));
+                //        }
+
+                //        return target;
+                //    }
+                //}
+                //finally
+                //{
+                //    Marshal.FreeHGlobal(buffer);
+                //}
 
                 /*
                 var coordArray = new PJ_COORD[pointCount];
@@ -473,17 +517,17 @@ namespace gView.Framework.Geometry
 
         public void Release()
         {
-            if (_pj != IntPtr.Zero)
-            {
-                Proj6Wrapper.proj_destroy(_pj);
-                _pj = IntPtr.Zero;
-            }
+            //if (_pj != IntPtr.Zero)
+            //{
+            //    Proj6Wrapper.proj_destroy(_pj);
+            //    _pj = IntPtr.Zero;
+            //}
 
-            if (_pjInv != IntPtr.Zero)
-            {
-                Proj6Wrapper.proj_destroy(_pjInv);
-                _pjInv = IntPtr.Zero;
-            }
+            //if (_pjInv != IntPtr.Zero)
+            //{
+            //    Proj6Wrapper.proj_destroy(_pjInv);
+            //    _pjInv = IntPtr.Zero;
+            //}
 
             //if (_ctx != IntPtr.Zero)
             //{
