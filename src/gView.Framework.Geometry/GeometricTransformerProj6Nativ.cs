@@ -100,11 +100,18 @@ namespace gView.Framework.Geometry
 
         static GeometricTransformerProj6Nativ()
         {
-            if (_ctx == IntPtr.Zero)
+            try
             {
-                _ctx = Proj6Wrapper.proj_context_create();
+                if (_ctx == IntPtr.Zero)
+                {
+                    _ctx = Proj6Wrapper.proj_context_create();
 
-                Proj6Wrapper.proj_context_set_search_paths(_ctx, PROJ_LIB.Length, PROJ_LIB);
+                    Proj6Wrapper.proj_context_set_search_paths(_ctx, PROJ_LIB.Length, PROJ_LIB);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Proj6Wrapper: {ex.Message}");
             }
         }
         

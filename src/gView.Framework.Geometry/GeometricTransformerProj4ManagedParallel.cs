@@ -9,7 +9,7 @@ using System.Text;
 
 namespace gView.Framework.Geometry;
 
-public sealed class GeometricTransformerProj4Managed : IGeometricTransformer,
+public sealed class GeometricTransformerProj4ManagedParallel : IGeometricTransformer,
                                                        IDatumGridShiftProvider,
                                                        IDisposable
 {
@@ -27,12 +27,12 @@ public sealed class GeometricTransformerProj4Managed : IGeometricTransformer,
     BasicCoordinateTransform _basicCoordinateTransformation = null;
     BasicCoordinateTransform _basicCoordinateTransformationInverse = null;
 
-    static GeometricTransformerProj4Managed()
+    static GeometricTransformerProj4ManagedParallel()
     {
         Proj4Net.Core.IO.Paths.PROJ_LIB = GeometricTransformerFactory.PROJ_LIB;
     }
 
-    public GeometricTransformerProj4Managed(IDatumTransformations datumTransformations)
+    public GeometricTransformerProj4ManagedParallel(IDatumTransformations datumTransformations)
     {
         _datumTransformations = datumTransformations;
     }
@@ -284,6 +284,11 @@ public sealed class GeometricTransformerProj4Managed : IGeometricTransformer,
 
     private object PerformTransform2D(object geometry, bool inverse)
     {
+        //if (_projectionPipeline == null)
+        //{
+        //    return geometry;
+        //}
+
         CoordinateReferenceSystem from = _fromSrs, to = _toSrs;
         bool fromProjective = _fromProjective, toProjektive = _toProjective;
 
@@ -306,7 +311,6 @@ public sealed class GeometricTransformerProj4Managed : IGeometricTransformer,
             }
 
             IPointCollection target = null;
-
             var basicTransformation = BasicTransformation(inverse);
 
             if (pColl is IRing)
@@ -328,19 +332,18 @@ public sealed class GeometricTransformerProj4Managed : IGeometricTransformer,
 
             target.AddPoints(Enumerable.Range(0, pointCount).Select(i => new Point()).ToArray());
 
-            var cFrom = new Coordinate();
-
-            for (int i = 0; i < pointCount; i++)
-            {
-                cFrom.X = pColl[i].X;
-                cFrom.Y = pColl[i].Y;
-
-                var transformedCoordinate = basicTransformation.Transform(cFrom);
-
-                var collectionPoint = target[i];
-                collectionPoint.X = transformedCoordinate.X;
-                collectionPoint.Y = transformedCoordinate.Y;
-            }
+            basicTransformation.Transform(pointCount,
+                (i, from) =>
+                {
+                    from.X = pColl[i].X;
+                    from.Y = pColl[i].Y;
+                },
+                (i, transformedCoordinate) =>
+                {
+                    var collectionPoint = target[i];
+                    collectionPoint.X = transformedCoordinate.X;
+                    collectionPoint.Y = transformedCoordinate.Y;
+                }, pointCount > 100);
 
             return target;
         }

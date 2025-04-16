@@ -463,15 +463,7 @@ namespace gView.Framework.Geometry
                         }
                         if (from != IntPtr.Zero && to != IntPtr.Zero)
                         {
-                            //if (preTo > 0)
-                            //{
-                            //    Proj4Wrapper.pj_transform(from, preTo, pointCount, 0, xPtr, yPtr, (IntPtr)0);
-                            //    Proj4Wrapper.pj_transform(preTo, to, pointCount, 0, xPtr, yPtr, (IntPtr)0);
-                            //}
-                            //else
-                            //{
                             Proj4Wrapper.pj_transform(from, to, pointCount, 0, xPtr, yPtr, IntPtr.Zero);
-                            //}
                         }
                         if (!toProjektive)
                         {
@@ -496,12 +488,16 @@ namespace gView.Framework.Geometry
                             target = new PointCollection();
                         }
 
+                        target.AddPoints(Enumerable.Range(0, pointCount).Select(i => new Point()).ToArray());
+
                         unsafe
                         {
                             double* b = (double*)buffer;
                             for (int i = 0; i < pointCount; i++)
                             {
-                                target.AddPoint(new Point(b[i], b[pointCount + i]));
+                                var targetPoint = target[i];
+                                targetPoint.X = b[i];
+                                targetPoint.Y = b[pointCount + i];
                             }
 
                             return target;

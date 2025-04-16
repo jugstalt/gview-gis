@@ -100,14 +100,21 @@ namespace gView.Framework.Geometry
 
         static GeometricTransformerProj9Nativ()
         {
-            if (_ctx == IntPtr.Zero)
+            try
             {
-                _ctx = Proj9Wrapper.proj_context_create();
+                if (_ctx == IntPtr.Zero)
+                {
+                    _ctx = Proj9Wrapper.proj_context_create();
 
-                Proj9Wrapper.proj_context_set_search_paths(_ctx, PROJ_LIB.Length, PROJ_LIB);
+                    Proj9Wrapper.proj_context_set_search_paths(_ctx, PROJ_LIB.Length, PROJ_LIB);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Proj9Nativ: {ex.Message}");
             }
         }
-        
+
         static Dictionary<string, IntPtr> _projCache = new Dictionary<string, IntPtr>();
 
         IntPtr _pj, _pjInv;
@@ -199,7 +206,7 @@ namespace gView.Framework.Geometry
                     parameters.Append(" ");
                 }
 
-                parameters.Append(datumParameter);
+                parameters.Append(datumParameter/*.Replace("+nadgrids=", "+grids=")*/);
             }
 
             return parameters.ToString();
@@ -300,6 +307,12 @@ namespace gView.Framework.Geometry
                     };
                 }
                 Proj9Wrapper.proj_trans_array(pj, PJ_DIRECTION.PJ_FWD, (ulong)coordArray.Length, coordArray);
+                int err = Proj9Wrapper.proj_errno(pj);
+                if (err != 0)
+                {
+                    throw new Exception("Proj Error Code: " + err);
+                }
+
 
                 IPointCollection target = geometry switch
                 {
