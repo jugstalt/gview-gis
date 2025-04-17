@@ -1,4 +1,5 @@
-﻿using gView.Endpoints.Extensions;
+﻿using DnsClient.Internal;
+using gView.Endpoints.Extensions;
 using gView.Facilities.Abstraction;
 using gView.Facilities.Extensions.DependencyInjection;
 using gView.Framework.Common;
@@ -67,6 +68,29 @@ public class Startup
 
         var defaultExportQuality = int.Parse(Configuration.Value("graphics:defaultExportQuality") ?? "0");
         GraphicsEngine.Current.SetDefaultExportQuality(defaultExportQuality);
+
+        #endregion
+
+        #region Proj Engine
+
+        switch (Configuration.Value("graphics:rendering")?.ToString()?.ToLower())
+        {
+            case "nativeproj4":
+                GeometricTransformerFactory.TransformerType = GeoTranformerType.NativeProj4;
+                break;
+            case "managedproj4":
+                GeometricTransformerFactory.TransformerType = GeoTranformerType.ManagedProj4;
+                break;
+            default:
+                GeometricTransformerFactory.TransformerType = GeoTranformerType.ManagedProj4Parallel;
+                break;
+        }
+
+        Console.WriteLine();
+        Console.WriteLine("Proj Eninge:");
+        Console.WriteLine("============");
+        Console.WriteLine($"Engine={GeometricTransformerFactory.TransformerType}");
+        Console.WriteLine();
 
         #endregion
 
@@ -226,7 +250,7 @@ public class Startup
             client.BaseAddress = new Uri(
                 Configuration.Value("onlineresource-url-internal") ??
                 Configuration.Value("onlineresource-url")
-                ); 
+                );
         });
     }
 
