@@ -1,4 +1,4 @@
-using gView.Framework.Cartography.UI;
+ï»¿using gView.Framework.Cartography.UI;
 using gView.Framework.Common;
 using gView.Framework.Core.Carto;
 using gView.Framework.Core.Common;
@@ -22,7 +22,7 @@ using System.Threading.Tasks;
 namespace gView.Framework.Cartography
 {
     /// <summary>
-    /// Zusammenfassung für Map.
+    /// Zusammenfassung fÃ¼r Map.
     /// </summary>
     public class Map : Display, IMap, IPersistableLoadAsync, IMetadata, IDebugging, IRefreshSequences
     {
@@ -84,6 +84,7 @@ namespace gView.Framework.Cartography
             Display.SpatialReference = original.Display.SpatialReference != null ? original.SpatialReference.Clone() as ISpatialReference : null;
             LayerDefaultSpatialReference = original.LayerDefaultSpatialReference != null ? original.LayerDefaultSpatialReference.Clone() as ISpatialReference : null;
             WebMercatorScaleBehavoir = original.WebMercatorScaleBehavoir;
+            this.DatumTransformations = original.DatumTransformations?.Clone();
 
             _toc = new Toc(this); //original.TOC.Clone() as TOC;
 
@@ -441,7 +442,7 @@ namespace gView.Framework.Cartography
                     }
                 }
 
-                // Zukünftig:
+                // ZukÃ¼nftig:
                 // Weiters die Liste mit den Standalone Tables durchsuchen...
 
                 return null;
@@ -995,8 +996,8 @@ namespace gView.Framework.Cartography
         }
 
         /// <summary>
-        /// Setzt die Display.Geotransformer variable, abhängig davon, ob ein Layer Transformiert werden muss.
-        /// Soll keine Transformation ausgeführt werden wird Display.Geotransformer auf null gesetzt...
+        /// Setzt die Display.Geotransformer variable, abhÃ¤ngig davon, ob ein Layer Transformiert werden muss.
+        /// Soll keine Transformation ausgefÃ¼hrt werden wird Display.Geotransformer auf null gesetzt...
         /// !!! Transformiert wird in den unterliegenden Thread (Display.DrawSymbol,...) immer dann, wenn Display.Geotransformater != null ist!!!
         /// </summary>
         /// <param name="layer"></param>
@@ -1309,7 +1310,8 @@ namespace gView.Framework.Cartography
             stream.Load("IClasses", null, new PersistableClasses(_layers));
             _toc = (Toc)await stream.LoadAsync<IToc>("ITOC", new Toc(this));
 
-            stream.Load("IGraphicsContainer", null, GraphicsContainer);
+            stream.Load("IGraphicsContainer", null, Display.GraphicsContainer);
+            stream.Load("IDatumTransformations", null, Display.DatumTransformations);
 
             foreach (ILayer layer in _layers)
             {
@@ -1473,7 +1475,10 @@ namespace gView.Framework.Cartography
             stream.Save("IClasses", new PersistableClasses(_layers));
             stream.Save("ITOC", _toc);
             stream.Save("IGraphicsContainer", Display.GraphicsContainer);
-
+            if (Display.DatumTransformations?.Transformations?.Any() == true)
+            {
+                stream.Save("IDatumTransformations", Display.DatumTransformations);
+            }
             if (_layerDescriptions != null)
             {
                 var descriptionsKeys = _layerDescriptions.Keys

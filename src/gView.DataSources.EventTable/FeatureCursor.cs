@@ -24,8 +24,9 @@ namespace gView.DataSources.EventTable
 
         private FeatureCursor(EventTableConnection etconn, IQueryFilter filter)
             : base(
-                    (etconn != null ? etconn.SpatialReference : null),
-                    (filter != null ? filter.FeatureSpatialReference : null))
+                    etconn?.SpatialReference,
+                    filter?.FeatureSpatialReference,
+                    filter?.DatumTransformations)
         {
 
         }

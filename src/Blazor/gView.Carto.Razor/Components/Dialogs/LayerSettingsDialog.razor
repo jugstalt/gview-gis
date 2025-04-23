@@ -1,3 +1,4 @@
+@using gView.Framework.Geometry.Extensions
 @inherits ModalDialogFormBase<LayerSettingsModel>
 @inject IconService IconService
 
@@ -177,6 +178,17 @@
                     if (_sRef is not null)
                     {
                         <SpatialReferenceControl SpatialReference="_sRef" ReadOnly="true" />
+
+                        @if (_transformation is not null)
+                        {
+                            <GvCard Title="Use Datum Transformation (from MapSettings):">
+                                <GvCardContent>
+                                    <MudText Typo="Typo.body1">
+                                        @($"{_transformation.FromDatum.Name} => {_transformation.TransformationDatum.Name} ({_transformation.TransformationDatum.Parameter})")
+                                    </MudText>
+                                </GvCardContent>
+                            </GvCard>
+                        }
                     }
                     else
                     {
@@ -229,6 +241,7 @@
     </ModalDialogFormBase>
 }
 
+
 @code
 {
     private enum Page
@@ -255,6 +268,7 @@
     private Page _currentTab = Page.General;
 
     private ISpatialReference? _sRef;
+    private IDatumTransformation? _transformation;
 
     protected override void OnInitialized()
     {
@@ -266,6 +280,8 @@
         }
 
         _sRef = Model.Layer?.GetSpatialReference();
+        _transformation = Model.Map?.Display?.DatumTransformations
+                .GetTransformationFor(_sRef?.Datum);
     }
 
     protected Task Apply()

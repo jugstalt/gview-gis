@@ -104,7 +104,7 @@ namespace gView.Interoperability.OGC.Request.WMTS
                 QueryString queryString = new QueryString(request);
                 if (queryString.HasValue("service", "wmts") && queryString.HasValue("request", "getcapabilities") && queryString.HasValue("version", "1.0.0"))
                 {
-                    WmtsCapabilities100(context, metadata);
+                    await WmtsCapabilities100(context, metadata);
                     return;
                 }
                 else if (queryString.HasValue("service", "wmts") && queryString.HasValue("request", "getmetadata") && queryString.HasValue("version", "1.0.0"))
@@ -239,7 +239,7 @@ namespace gView.Interoperability.OGC.Request.WMTS
                     using (FileStream fs = File.Open(fi.FullName, FileMode.Open, FileAccess.Read, FileShare.Read)) //new FileStream(bundleFilename, FileMode.Open, FileAccess.Read))
                     {
                         byte[] data = new byte[fi.Length];
-                        await fs.ReadAsync(data, 0, data.Length);
+                        await fs.ReadExactlyAsync(data, 0, data.Length);
                         return data;
                     }
                 }
@@ -388,7 +388,7 @@ namespace gView.Interoperability.OGC.Request.WMTS
                     fs.Position = tilePosition;
 
                     byte[] data = new byte[tileLength];
-                    await fs.ReadAsync(data, 0, tileLength);
+                    await fs.ReadExactlyAsync(data, 0, tileLength);
                     return data;
                 }
             }
@@ -440,7 +440,7 @@ namespace gView.Interoperability.OGC.Request.WMTS
 
         #endregion
 
-        private void WmtsCapabilities100(IServiceRequestContext context, TileServiceMetadata metadata)
+        async private Task WmtsCapabilities100(IServiceRequestContext context, TileServiceMetadata metadata)
         {
             gView.Framework.OGC.WMTS.Version_1_0_0.Capabilities capabilities = new Framework.OGC.WMTS.Version_1_0_0.Capabilities()
             {
@@ -513,6 +513,8 @@ namespace gView.Interoperability.OGC.Request.WMTS
 
             #endregion
 
+            using var serviceMap = await context.CreateServiceMapInstance();
+
             #region Contents
 
             capabilities.Contents = new gView.Framework.OGC.WMTS.Version_1_0_0.ContentsType();
@@ -539,7 +541,7 @@ namespace gView.Interoperability.OGC.Request.WMTS
                 }
 
                 ISpatialReference sRef = SpatialReference.FromID("epsg:" + epsg);
-                IEnvelope extent4326 = GeometricTransformerFactory.Transform2D(extent, sRef, sRef4326).Envelope;
+                IEnvelope extent4326 = GeometricTransformerFactory.Transform2D(extent, sRef, sRef4326, serviceMap.Display?.DatumTransformations).Envelope;
 
                 if (double.IsInfinity(extent4326.MinX))
                 {
@@ -866,7 +868,7 @@ namespace gView.Interoperability.OGC.Request.WMTS
                 {
                     byte[] data = new byte[8];
                     fs.Position = indexPosition;
-                    await fs.ReadAsync(data, 0, 8);
+                    await fs.ReadExactlyAsync(data, 0, 8);
 
                     int position = BitConverter.ToInt32(data, 0);
                     int tileLength = BitConverter.ToInt32(data, 4);

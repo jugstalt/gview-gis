@@ -29,15 +29,17 @@ namespace gView.DataSources.Fdb.SQLite
         IGeometryDef _geomDef;
         int _limit = 0, _beginRecord = 0;
 
-        private SQLiteFDBFeatureCursor(IGeometryDef geomDef, ISpatialReference toSRef) :
-            base((geomDef != null) ? geomDef.SpatialReference : null, toSRef)
+        private SQLiteFDBFeatureCursor(IGeometryDef geomDef, ISpatialReference toSRef, IDatumTransformations datumTransformations)
+            : base(geomDef?.SpatialReference, 
+                   toSRef,
+                   datumTransformations)
         {
 
         }
 
-        async static public Task<IFeatureCursor> Create(string connString, string sql, string where, string orderby, int limit, int beginRecord, List<long> nids, ISpatialFilter filter, IGeometryDef geomDef, ISpatialReference toSRef)
+        async static public Task<IFeatureCursor> Create(string connString, string sql, string where, string orderby, int limit, int beginRecord, List<long> nids, ISpatialFilter filter, IGeometryDef geomDef, ISpatialReference toSRef, IDatumTransformations datumTransformations)
         {
-            var cursor = new SQLiteFDBFeatureCursor(geomDef, toSRef);
+            var cursor = new SQLiteFDBFeatureCursor(geomDef, toSRef, datumTransformations);
 
             //try 
             {

@@ -9,7 +9,11 @@ using System.Threading.Tasks;
 
 namespace gView.Framework.Core.Carto
 {
-    public interface IMap : IDisposable, IClone, IMetadata, IDataCopyright, IPersistableLoadAsync
+    public interface IMap : IDisposable, 
+                            IClone, 
+                            IMetadata, 
+                            IDataCopyright, 
+                            IPersistableLoadAsync
     {
         event LayerAddedEvent LayerAdded;
         event LayerRemovedEvent LayerRemoved;

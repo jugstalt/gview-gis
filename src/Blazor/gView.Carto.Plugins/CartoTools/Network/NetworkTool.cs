@@ -113,9 +113,10 @@ internal class NetworkTool : ICartoTool
         {
             SubFields = "FDB_OID FDB_SHAPE",
             FilterSpatialReference = scope.DisplayService.SpatialReference,
-            FeatureSpatialReference = scope.DisplayService.SpatialReference,
             Geometry = queryGeometry
         };
+
+        spatialFilter.SetFeatureSpatialReference(scope.DisplayService.SpatialReference, scope.DisplayService.DatumTransformations);
 
         IFeatureCursor cursor = await networkFeatureClass.GetNodeFeatures(spatialFilter);
         IFeature feature;
@@ -262,10 +263,8 @@ internal class NetworkTool : ICartoTool
             return null;
         }
 
-        RowIDFilter filter = new RowIDFilter(String.Empty)
-        {
-            FeatureSpatialReference = scope.DisplayService.SpatialReference,
-        };
+        RowIDFilter filter = new RowIDFilter(String.Empty);
+        filter.SetFeatureSpatialReference(scope.DisplayService.SpatialReference, scope.DisplayService.DatumTransformations);
         foreach (NetworkEdgeOutput edge in edgeCollection)
         {
             filter.IDs.Add(edge.EdgeId);
@@ -311,7 +310,8 @@ internal class NetworkTool : ICartoTool
             IFeatureClass featureClass => scope.GeoTransformer.Transform(
                                                 shape,
                                                 featureClass.SpatialReference,
-                                                scope.DisplayService.SpatialReference!
+                                                scope.DisplayService.SpatialReference!,
+                                                scope.Document?.Map?.Display?.DatumTransformations
                                           ),
             _ => shape
         };

@@ -314,7 +314,7 @@ namespace gView.Interoperability.OGC
                             Framework.OGC.WMS.Version_1_1_1.BoundingBox[] bboxes = new Framework.OGC.WMS.Version_1_1_1.BoundingBox[0];
                             foreach (string s in caps.Capability.Layer.SRS)
                             {
-                                IEnvelope env = TransFormEPSG4326Envelope(env4326, s, parameters.Version);
+                                IEnvelope env = TransFormEPSG4326Envelope(env4326, s, parameters.Version, map.Display?.DatumTransformations);
                                 if (env == null)
                                 {
                                     continue;
@@ -487,7 +487,7 @@ namespace gView.Interoperability.OGC
                             Framework.OGC.WMS.Version_1_3_0.BoundingBox[] bboxes = new Framework.OGC.WMS.Version_1_3_0.BoundingBox[0];
                             foreach (string s in caps.Capability.Layer[0].CRS)
                             {
-                                IEnvelope env = TransFormEPSG4326Envelope(env4326, s, parameters.Version);
+                                IEnvelope env = TransFormEPSG4326Envelope(env4326, s, parameters.Version, map.Display?.DatumTransformations);
                                 if (env == null)
                                 {
                                     continue;
@@ -1184,7 +1184,7 @@ namespace gView.Interoperability.OGC
                     continue;
                 }
 
-                env = GeometricTransformerFactory.Transform2D(env, sRef, sRef_4326).Envelope;
+                env = GeometricTransformerFactory.Transform2D(env, sRef, sRef_4326, map.Display?.DatumTransformations).Envelope;
                 if (envelope == null)
                 {
                     envelope = env;
@@ -1198,7 +1198,7 @@ namespace gView.Interoperability.OGC
             return (envelope != null) ? envelope : new Envelope(-180, -90, 180, 90);
         }
 
-        private IEnvelope TransFormEPSG4326Envelope(IEnvelope env4326, string projID, string version)
+        private IEnvelope TransFormEPSG4326Envelope(IEnvelope env4326, string projID, string version, IDatumTransformations datumTransformations)
         {
             if (env4326 == null)
             {
@@ -1224,7 +1224,7 @@ namespace gView.Interoperability.OGC
                 }
                 else
                 {
-                    envelope = GeometricTransformerFactory.Transform2D(env4326, from, to).Envelope;
+                    envelope = GeometricTransformerFactory.Transform2D(env4326, from, to, datumTransformations).Envelope;
                 }
             }
 

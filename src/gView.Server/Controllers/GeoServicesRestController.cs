@@ -1471,14 +1471,14 @@ public class GeoServicesRestController : BaseController
                 {
                     if (!String.IsNullOrWhiteSpace(val))
                     {
-                        propertyInfo.SetValue(instance, NumberConverter.ToDouble(keyValuePair.Value.ToString()));
+                        propertyInfo.SetValue(instance, NumberExtensions.ToDouble(keyValuePair.Value.ToString()));
                     }
                 }
                 else if (propertyInfo.PropertyType == typeof(float))
                 {
                     if (!String.IsNullOrWhiteSpace(val))
                     {
-                        propertyInfo.SetValue(instance, NumberConverter.ToFloat(keyValuePair.Value.ToString()));
+                        propertyInfo.SetValue(instance, NumberExtensions.ToFloat(keyValuePair.Value.ToString()));
                     }
                 }
                 else if (propertyInfo.PropertyType == typeof(System.Int16))

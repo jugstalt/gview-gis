@@ -6,6 +6,8 @@
         SpatialReferenceDialog,
         GeographicProjectionSelectorDialog,
         GeographicDatumSelectorDialog,
+        GeographicDatumAndGridShiftSelectorDialog,
+        DatumTransformationDialog,
         ConnectionString,
         ExecuteCommand,
         PropertyGridDialog,

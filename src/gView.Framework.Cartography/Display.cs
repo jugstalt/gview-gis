@@ -38,6 +38,7 @@ public class Display : MapMetadata, IDisplay
 
     private readonly DisplayScreen _screen;
     private readonly DisplayTransformation _displayTransformation;
+    private IDatumTransformations _datumTransformations;
 
     #endregion
 
@@ -49,11 +50,26 @@ public class Display : MapMetadata, IDisplay
         _fontsizeFactor = _widthFactor = _refScale = -1.0;
         //m_fixScales=new ArrayList();
 
-        _labelEngine = new LabelEngine2();   
+        _labelEngine = new LabelEngine2();
 
         _screen = new DisplayScreen();
         _screen.RefreshSettings();
         _displayTransformation = new DisplayTransformation(this);
+        _datumTransformations = new DatumTransformations()
+        {
+            //Transformations = new IDatumTransformation[] {
+            //    new DatumTransformation()
+            //    {
+            //        FromDatum = new GeodeticDatum(
+            //            "Militar_Geographische_Institut_Ferro",
+            //            577.326, 90.129, 463.919,
+            //            5.137, 1.474, 5.297,
+            //            2.4232),
+            //        TransformationDatum = new GeodeticDatum(
+            //            "GIS Grid AT", "AT_GIS_GRID_2021_09_28.gsb")
+            //    },
+            //}
+        };
 
         Dpi = GraphicsEngine.Current.Engine.ScreenDpi;
     }
@@ -502,7 +518,7 @@ public class Display : MapMetadata, IDisplay
             return geometry;
         }
 
-        IGeometricTransformer transformer = GeometricTransformerFactory.Create();
+        IGeometricTransformer transformer = GeometricTransformerFactory.Create(DatumTransformations);
 
         //transformer.FromSpatialReference = geometrySpatialReference;
         //transformer.ToSpatialReference = _spatialReference;
@@ -582,5 +598,11 @@ public class Display : MapMetadata, IDisplay
     public IDisplayRotation DisplayTransformation
     {
         get { return _displayTransformation; }
+    }
+
+    public IDatumTransformations DatumTransformations
+    {
+        get { return _datumTransformations; }
+        protected set { _datumTransformations = value; }
     }
 }

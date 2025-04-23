@@ -422,7 +422,8 @@ public class DirectoryObject : ExplorerParentObject<IExplorerObject>,
                 ((IFeatureClass)element).Name,
                 (IFeatureClass)element,
                 null,
-                true))
+                true,
+                null))
             {
                 //MessageBox.Show(_import.lastErrorMsg);
                 throw new Exception(_import.lastErrorMsg);

@@ -234,6 +234,7 @@ public class CopyFeatureClassCommand : ICommand
                                                            sourceFC,
                                                            fieldTranslation,
                                                            project: true,
+                                                           datumTransformations: null,
                                                            filters: null,
                                                            sIndexDef: treeDef,
                                                            sourceGeometryType: sourceGeometryType))
@@ -260,6 +261,7 @@ public class CopyFeatureClassCommand : ICommand
                                                           sourceFC,
                                                           fieldTranslation,
                                                           true,
+                                                          null,
                                                           sourceGeometryType: sourceGeometryType))
                 {
                     throw new Exception($"ERROR: {import.lastErrorMsg}");

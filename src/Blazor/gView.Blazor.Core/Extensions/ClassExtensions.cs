@@ -19,7 +19,7 @@ static public class ClassExtensions
         };
     }
 
-    public static IEnvelope? GetProjectedEnvelope(this IClass @class, GeoTransformerService geoTransformer, ISpatialReference sref)
+    public static IEnvelope? GetProjectedEnvelope(this IClass @class, GeoTransformerService geoTransformer, ISpatialReference sref, IDatumTransformations? datumTransformations)
     {
         var extent = @class.ClassEnvelope();
         var classSref = @class.ClassSpatialReference();
@@ -29,7 +29,7 @@ static public class ClassExtensions
             return null;  // better null than wrong (unprojected)
         }
 
-        return geoTransformer.Transform(extent, classSref, sref).Envelope;
+        return geoTransformer.Transform(extent, classSref, sref, datumTransformations).Envelope;
     }
 
     public static ISpatialReference? ClassSpatialReference(this IClass @class)
@@ -46,7 +46,8 @@ static public class ClassExtensions
     public static (ILayer layer,IEnvelope? extent) ToLayerAndExtent(
                                 this IClass @class,
                                 GeoTransformerService? geoTransformer = null,
-                                ISpatialReference? sRef = null)
+                                ISpatialReference? sRef = null,
+                                IDatumTransformations? datumTransformations = null)
     {
         var layer = LayerFactory.Create(@class);
 
@@ -58,7 +59,7 @@ static public class ClassExtensions
 
             if (extent is not null && layerSRef is not null)
             {
-                extent = geoTransformer.Transform(extent, layerSRef, sRef).Envelope;
+                extent = geoTransformer.Transform(extent, layerSRef, sRef, datumTransformations).Envelope;
             }
         }
 

@@ -1,22 +1,23 @@
+using gView.Framework.Common;
+using gView.Framework.Core.Common;
 using gView.Framework.Core.Data;
 using gView.Framework.Core.Data.Cursors;
 using gView.Framework.Core.Data.Filters;
 using gView.Framework.Core.FDB;
 using gView.Framework.Core.Geometry;
-using gView.Framework.Core.Common;
 using gView.Framework.Core.UI;
 using gView.Framework.Data;
 using gView.Framework.Data.Filters;
 using gView.Framework.Db;
+using gView.Framework.Db.Extensions;
 using gView.Framework.Geometry;
 using gView.Framework.Offline;
 using gView.Framework.OGC.WKT;
-using gView.Framework.Common;
+using Microsoft.Data.SqlClient;
 using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
-using System.Data.SqlClient;
 using System.Data.SqlTypes;
 using System.IO;
 using System.Text;
@@ -38,10 +39,11 @@ namespace gView.DataSources.Fdb.MSSql
         {
         }
 
-        private string parseConnectionString(string connString)
+        private string ParseConnectionString(string connString)
         {
             StringBuilder sb = new StringBuilder();
-            foreach (string p in connString.Split(';'))
+
+            foreach (string p in connString.AppendSqlServerParametersIfNotExists().Split(';'))
             {
                 if (p.ToLower().IndexOf("dsname=") == 0)
                 {
@@ -59,6 +61,7 @@ namespace gView.DataSources.Fdb.MSSql
 
                 sb.Append(p);
             }
+
             return sb.ToString();
         }
 
@@ -230,8 +233,8 @@ namespace gView.DataSources.Fdb.MSSql
 
                 _conn = new CommonDbConnection();
 
-                _conn.ConnectionString = parseConnectionString(connString);
-                _conn.dbType = gView.Framework.Db.DBType.sql;
+                _conn.ConnectionString = ParseConnectionString(connString);
+                _conn.dbType = DBType.sql;
 
                 await SetVersion();
 
@@ -244,16 +247,7 @@ namespace gView.DataSources.Fdb.MSSql
                 {
                     _seVersion = 0;
                 }
-                /*
-                if(_connection!=null) 
-                {
-                    if(_connection.State==ConnectionState.Open) _connection.Close();
-                    _connection.Dispose();
-                    _connection=null;
-                }
-                _connection=new SqlConnection(parseConnectionString(connString));
-                _connection.Open();
-                */
+
                 return true;
             }
             catch (Exception /*ex*/)
@@ -471,18 +465,23 @@ namespace gView.DataSources.Fdb.MSSql
                 }
 
                 return await SqlFDBFeatureCursor.Create(_conn.ConnectionString, sql, where, orederBy, filter.Limit, filter.BeginRecord, filter.NoLock, NIDs, sFilter, fc,
-                    (filter != null) ? filter.FeatureSpatialReference : null);
+                                filter?.FeatureSpatialReference,
+                                filter?.DatumTransformations);
             }
         }
-        async override public Task<IFeatureCursor> QueryIDs(IFeatureClass fc, string subFields, List<int> IDs, ISpatialReference toSRef)
+        async override public Task<IFeatureCursor> QueryIDs(IFeatureClass fc, string subFields, List<int> IDs, ISpatialReference toSRef, IDatumTransformations datumTransformations)
         {
-            string tabName = ((fc is SqlFDBFeatureClass) ? ((SqlFDBFeatureClass)fc).DbTableName : "FC_" + fc.Name);
-            string sql = "SELECT " + subFields + " FROM " + tabName;
-            return await SqlFDBFeatureCursorIDs.Create(_conn.ConnectionString, sql, IDs, await this.GetGeometryDef(fc.Name), toSRef);
+            string tabName = ((fc is SqlFDBFeatureClass)
+                ? ((SqlFDBFeatureClass)fc).DbTableName
+                : $"FC_{fc.Name}");
+            string sql = $"SELECT {subFields} FROM {tabName}";
+
+            return await SqlFDBFeatureCursorIDs.Create(_conn.ConnectionString, sql, IDs, await this.GetGeometryDef(fc.Name), toSRef, datumTransformations);
         }
+
         #endregion
 
-        async override public Task<IDatasetElement> DatasetElement(/*SqlFDBDataset*/IDataset dataset, string elementName)
+        async override public Task<IDatasetElement> DatasetElement(IDataset dataset, string elementName)
         {
             SqlFDBDataset sqlDataset = dataset as SqlFDBDataset;
             if (sqlDataset == null)
@@ -498,7 +497,7 @@ namespace gView.DataSources.Fdb.MSSql
                 string imageSpace = isImageDatasetResult.imageSpace;
                 if (isImageDatasetResult.isImageDataset)
                 {
-                    IDatasetElement fLayer = (await DatasetElement(sqlDataset, elementName + "_IMAGE_POLYGONS")) as IDatasetElement;
+                    IDatasetElement fLayer = await DatasetElement(sqlDataset, elementName + "_IMAGE_POLYGONS");
                     if (fLayer != null && fLayer.Class is IFeatureClass)
                     {
                         SqlFDBImageCatalogClass iClass = new SqlFDBImageCatalogClass(sqlDataset, this, fLayer.Class as IFeatureClass, sRef, imageSpace);
@@ -750,7 +749,7 @@ namespace gView.DataSources.Fdb.MSSql
                     ((SqlFDBFeatureClass)layer.Class).ShapeFieldName = "FDB_SHAPE";
                     if (sRef != null)
                     {
-                        ((SqlFDBFeatureClass)layer.Class).SpatialReference = (ISpatialReference)(new SpatialReference((SpatialReference)sRef));
+                        ((SqlFDBFeatureClass)layer.Class).SpatialReference = new SpatialReference((SpatialReference)sRef);
                     }
                 }
                 var fields = await this.FeatureClassFields(dataset.DatasetName, layer.Class.Name);
@@ -1461,7 +1460,7 @@ namespace gView.DataSources.Fdb.MSSql
 
                                 byte[] geometry = new byte[writer.BaseStream.Length];
                                 writer.BaseStream.Position = 0;
-                                writer.BaseStream.Read(geometry, (int)0, (int)writer.BaseStream.Length);
+                                writer.BaseStream.ReadExactly(geometry, 0, (int)writer.BaseStream.Length);
                                 writer.Close();
 
                                 SqlParameter parameter = new SqlParameter("@FDB_SHAPE", geometry);
@@ -1549,7 +1548,7 @@ namespace gView.DataSources.Fdb.MSSql
                                     parameters.Append(",");
                                 }
 
-                                IGeometryDef geomDef = fClass as IGeometryDef;
+                                IGeometryDef geomDef = fClass;
                                 fields.Append("[FDB_NID]");
                                 //parameters.Append("dbo.InsertSINode ('" + fClass.Name + "',@FDB_SHAPE)");
                                 parameters.Append("@FDB_NID");
@@ -1728,7 +1727,7 @@ namespace gView.DataSources.Fdb.MSSql
 
                                 byte[] geometry = new byte[writer.BaseStream.Length];
                                 writer.BaseStream.Position = 0;
-                                writer.BaseStream.Read(geometry, (int)0, (int)writer.BaseStream.Length);
+                                writer.BaseStream.ReadExactly(geometry, 0, (int)writer.BaseStream.Length);
                                 writer.Close();
 
                                 SqlParameter parameter = new SqlParameter("@FDB_SHAPE", geometry);
@@ -2147,7 +2146,7 @@ namespace gView.DataSources.Fdb.MSSql
 
                         byte[] obj = (byte[])row["FDB_SHAPE"];
                         BinaryReader r = new BinaryReader(new MemoryStream());
-                        r.BaseStream.Write((byte[])obj, 0, ((byte[])obj).Length);
+                        r.BaseStream.Write(obj, 0, obj.Length);
                         r.BaseStream.Position = 0;
 
                         IGeometry p = null;
@@ -2873,7 +2872,7 @@ namespace gView.DataSources.Fdb.MSSql
             {
                 if (_factory == null)
                 {
-                    _factory = System.Data.SqlClient.SqlClientFactory.Instance;
+                    _factory = SqlClientFactory.Instance;
                 }
 
                 return _factory;

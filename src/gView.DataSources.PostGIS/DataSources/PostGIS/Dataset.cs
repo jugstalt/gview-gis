@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Data.Common;
 using System.Text;
 using System.Threading.Tasks;
+using gView.Framework.Db.Extensions;
 
 namespace gView.DataSources.PostGIS
 {
@@ -71,7 +72,7 @@ namespace gView.DataSources.PostGIS
         async public override Task<bool> SetConnectionString(string value)
         {
             var ret = await base.SetConnectionString(value);
-            _connectionString = DbConnectionString.ParseNpgsqlConnectionString(_connectionString);
+            _connectionString = _connectionString.ParseNpgsqlConnectionString();
 
             return ret;
         }
@@ -121,7 +122,7 @@ namespace gView.DataSources.PostGIS
         {
             try
             {
-                _connectionString = DbConnectionString.ParseNpgsqlConnectionString(_connectionString);
+                _connectionString = _connectionString.ParseNpgsqlConnectionString();
                 _factory = Npgsql.NpgsqlFactory.Instance;
 
                 #region Version

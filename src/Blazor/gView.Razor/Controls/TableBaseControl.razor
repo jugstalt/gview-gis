@@ -446,7 +446,7 @@
         if (bounds is not null 
             && _tableClass is IFeatureClass { SpatialReference: not null } featureClass)
         {
-            var boundsWgs84 = GeoTransformer.ToWGS84(bounds, featureClass.SpatialReference).Envelope;
+            var boundsWgs84 = GeoTransformer.ToWGS84(bounds, featureClass.SpatialReference, null).Envelope;
             boundsWgs84.Srs = 4326;
 
             await OnZoomToClicked.InvokeAsync(boundsWgs84);
@@ -695,7 +695,7 @@
            )
         {
             var bounds = feature.Shape.Envelope;
-            var boundsWgs84 = GeoTransformer.ToWGS84(bounds, featureClass.SpatialReference).Envelope;
+            var boundsWgs84 = GeoTransformer.ToWGS84(bounds, featureClass.SpatialReference, null).Envelope;
             boundsWgs84.Srs = 4326;
 
             await OnZoomToClicked.InvokeAsync(boundsWgs84);

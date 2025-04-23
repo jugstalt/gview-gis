@@ -57,10 +57,12 @@ namespace gView.Framework.Data.Filters
             this.WhereClause = filter.WhereClause;
             this.BeginRecord = filter.BeginRecord;
             this.OrderBy = filter.OrderBy;
-            this._featureSRef = (filter.FeatureSpatialReference != null) ? filter.FeatureSpatialReference.Clone() as ISpatialReference : null;
+            this._featureSRef = (filter.FeatureSpatialReference != null) 
+                ? filter.FeatureSpatialReference.Clone() as ISpatialReference 
+                : null;
             this.ContextLayerDefaultSpatialReference = filter.ContextLayerDefaultSpatialReference != null ?
                 filter.ContextLayerDefaultSpatialReference.Clone() as ISpatialReference : null;
-
+            this.DatumTransformations = filter.DatumTransformations?.Clone();
             this.Limit = filter.Limit;
 
             this.IgnoreUndefinedFields = filter.IgnoreUndefinedFields;
@@ -105,6 +107,7 @@ namespace gView.Framework.Data.Filters
             copyto._featureSRef = _featureSRef;
             copyto.CancelTracker = CancelTracker;
             copyto.DatasetCachingContext = this.DatasetCachingContext;
+            copyto.DatumTransformations = this.DatumTransformations;
 
             this.CopyUserDataTo(copyto);
         }
@@ -406,13 +409,21 @@ namespace gView.Framework.Data.Filters
             {
                 return _featureSRef;
             }
-            set
+            private set
             {
                 _featureSRef = value;
             }
         }
 
         public ISpatialReference ContextLayerDefaultSpatialReference { get; set; }
+
+        public IDatumTransformations DatumTransformations { get; private set; }
+
+        public void SetFeatureSpatialReference(ISpatialReference sRef, IDatumTransformations datumTransformations)
+        {
+            _featureSRef = sRef;
+            DatumTransformations = datumTransformations;    
+        }
 
         public bool IgnoreUndefinedFields
         {

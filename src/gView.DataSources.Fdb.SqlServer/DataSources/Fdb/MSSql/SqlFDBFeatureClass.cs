@@ -113,7 +113,7 @@ namespace gView.DataSources.Fdb.MSSql
 
             if (filter is IRowIDFilter)
             {
-                return await _fdb.QueryIDs(this, filter.SubFieldsAndAlias, ((IRowIDFilter)filter).IDs, filter.FeatureSpatialReference);
+                return await _fdb.QueryIDs(this, filter.SubFieldsAndAlias, ((IRowIDFilter)filter).IDs, filter.FeatureSpatialReference, filter.DatumTransformations);
             }
             else
             {

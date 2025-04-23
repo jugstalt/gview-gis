@@ -812,7 +812,7 @@ namespace gView.DataSources.GDAL
             if (this.SpatialReference != null && sRef != null &&
                 !sRef.Equals(this.SpatialReference))
             {
-                point = GeometricTransformerFactory.Transform2D(point, sRef, this.SpatialReference) as IPoint;
+                point = GeometricTransformerFactory.Transform2D(point, sRef, this.SpatialReference, display.DatumTransformations) as IPoint;
             }
             if (point == null)
             {
@@ -871,7 +871,7 @@ namespace gView.DataSources.GDAL
             if (this.SpatialReference != null && sRef != null &&
                 !sRef.Equals(this.SpatialReference))
             {
-                point = GeometricTransformerFactory.Transform2D(point, sRef, this.SpatialReference) as IPoint;
+                point = GeometricTransformerFactory.Transform2D(point, sRef, this.SpatialReference, display.DatumTransformations) as IPoint;
             }
             if (point == null)
             {

@@ -1,4 +1,4 @@
-{
+﻿{
   "services-folder_": "C:\\ProgramData\\gView\\mapServer\\gview5",
   "services-folder": "C:\\Development_OpenSource\\GeoDaten\\gview5",
   "output-path": "C:\\Development_OpenSource\\GeoDaten\\output",
@@ -47,6 +47,10 @@
     "defaultExportQuality": 75
   },
 
+  "proj-engine": {
+    "engine": "NativeProj4" // ManagedProj4, ManageProj4Parallel
+  },
+
   "globals": {
     "CustomCursorTimeoutSeconds": -1
   },
@@ -88,5 +92,12 @@
       "ClientSecret": "secret",
       "scopes": [ "openid", "profile", "role" ]
     }
+  },
+
+  "SqlServer": {
+    "AppendParameters": [
+      "TrustServerCertificate=false",
+      "Encrypt=true"
+    ]
   }
 }

@@ -20,7 +20,7 @@ class Bundle
         {
             byte[] data = new byte[length];
             fs.Position = pos;
-            fs.Read(data, 0, data.Length);
+            fs.ReadExactly(data, 0, data.Length);
 
             return data;
         }

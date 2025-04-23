@@ -948,43 +948,44 @@ namespace gView.Framework.XML
         private IQueryFilter _filter = null;
         private IArcXmlGET_FEATURES_Attributes _attributes;
 
-        public AXLFeatureCursor(string resp, ISpatialReference fcSRef, ISpatialReference toSRef)
-            : base(fcSRef, toSRef)
-        {
-            _pos = 0;
-            try
-            {
-                XmlDocument doc = new XmlDocument();
-                doc.LoadXml(resp);
+        //public AXLFeatureCursor(string resp, ISpatialReference fcSRef, ISpatialReference toSRef)
+        //    : base(fcSRef, toSRef)
+        //{
+        //    _pos = 0;
+        //    try
+        //    {
+        //        XmlDocument doc = new XmlDocument();
+        //        doc.LoadXml(resp);
 
-                _features = doc.SelectNodes("//FEATURE");
-            }
-            catch (Exception /*ex*/)
-            {
-                _features = null;
-            }
-        }
-        public AXLFeatureCursor(string resp, AXLFeatureClass fc, ISpatialReference toSRef)
-            : base((fc != null) ? fc.SpatialReference : null,
-                   toSRef)
-        {
-            _pos = 0;
-            _fc = fc;
-            try
-            {
-                XmlDocument doc = new XmlDocument();
-                doc.LoadXml(resp);
+        //        _features = doc.SelectNodes("//FEATURE");
+        //    }
+        //    catch (Exception /*ex*/)
+        //    {
+        //        _features = null;
+        //    }
+        //}
+        //public AXLFeatureCursor(string resp, AXLFeatureClass fc, ISpatialReference toSRef)
+        //    : base(fc?.SpatialReference,
+        //           toSRef)
+        //{
+        //    _pos = 0;
+        //    _fc = fc;
+        //    try
+        //    {
+        //        XmlDocument doc = new XmlDocument();
+        //        doc.LoadXml(resp);
 
-                _features = doc.SelectNodes("//FEATURE");
-            }
-            catch (Exception /*ex*/)
-            {
-                _features = null;
-            }
-        }
+        //        _features = doc.SelectNodes("//FEATURE");
+        //    }
+        //    catch (Exception /*ex*/)
+        //    {
+        //        _features = null;
+        //    }
+        //}
         public AXLFeatureCursor(AXLFeatureClass fc, IQueryFilter filter)
-            : base((fc != null) ? fc.SpatialReference : null,
-                   (filter != null) ? filter.FeatureSpatialReference : null)
+            : base(fc?.SpatialReference,
+                   filter?.FeatureSpatialReference,
+                   filter?.DatumTransformations)
         {
             _fc = fc;
             _filter = filter;

@@ -12,11 +12,11 @@ namespace gView.Server.AppCode
         {
             try
             {
-                FileInfo fi = new FileInfo("_config/mapserver.json");
-                if (!fi.Exists)
+                FileInfo mapServerConfigFileInfo = new FileInfo("_config/mapserver.json");
+                if (!mapServerConfigFileInfo.Exists)
                 {
-                    fi = new FileInfo("_config/_mapserver.json");
-                    if (fi.Exists)
+                    var protoMapServerConfigFileInfo = new FileInfo("_setup/_mapserver.json");
+                    if (protoMapServerConfigFileInfo.Exists)
                     {
                         string configContent = String.Empty;
 
@@ -27,18 +27,18 @@ namespace gView.Server.AppCode
 
                         if (SystemInfo.IsWindows)
                         {
-                            configContent = WindowsSetup(fi.FullName, args);
+                            configContent = WindowsSetup(protoMapServerConfigFileInfo.FullName, args);
                         }
                         else if (SystemInfo.IsLinux)
                         {
-                            configContent = LinuxSetup(fi.FullName, args);
+                            configContent = LinuxSetup(protoMapServerConfigFileInfo.FullName, args);
                         }
 
                         if (!String.IsNullOrEmpty(configContent))
                         {
                             Console.WriteLine(configContent);
 
-                            File.WriteAllText($"{fi.Directory.FullName}/mapserver.json", configContent);
+                            File.WriteAllText(mapServerConfigFileInfo.FullName, configContent);
                         }
                     }
                 }

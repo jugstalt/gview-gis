@@ -26,8 +26,9 @@ namespace gView.Framework.OGC.DB
         OgcSpatialFeatureclass _fc = null;
 
         private OgcSpatialFeatureCursor(OgcSpatialFeatureclass fc, IQueryFilter filter)
-            : base((fc != null) ? fc.SpatialReference : null,
-                   (filter != null) ? filter.FeatureSpatialReference : null)
+            : base(fc?.SpatialReference,
+                   filter?.FeatureSpatialReference, 
+                   filter?.DatumTransformations)
         {
             base.CancelTracker = filter?.CancelTracker;
             base.DiagnosticParameters = SystemVariables.UseDiagnostic ?
@@ -61,7 +62,8 @@ namespace gView.Framework.OGC.DB
                     ((ISpatialFilter)filter).Geometry =
                         GeometricTransformerFactory.Transform2D(((ISpatialFilter)filter).Geometry,
                          ((ISpatialFilter)filter).FilterSpatialReference,
-                         fc.SpatialReference);
+                         fc.SpatialReference,
+                         filter.DatumTransformations);
                     ((ISpatialFilter)filter).FilterSpatialReference = null;
                     if (((ISpatialFilter)filter).SpatialRelation == spatialRelation.SpatialRelationMapEnvelopeIntersects &&
                        ((ISpatialFilter)filter).Geometry != null)

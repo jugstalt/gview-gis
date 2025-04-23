@@ -639,11 +639,13 @@ public class GeoServicesRestInterperter : IServiceRequestInterpreter
                     }
                     if (!String.IsNullOrWhiteSpace(query.OutSRef))
                     {
-                        filter.FeatureSpatialReference = SRef(query.OutSRef);
+                        filter.SetFeatureSpatialReference(SRef(query.OutSRef), serviceMap.Display?.DatumTransformations);
                     }
                     else if (tableClass is IFeatureClass)
                     {
-                        filter.FeatureSpatialReference = ((IFeatureClass)tableClass).SpatialReference;
+                        filter.SetFeatureSpatialReference(
+                            ((IFeatureClass)tableClass).SpatialReference,
+                            serviceMap.Display?.DatumTransformations);
                     }
                     if (filter.FeatureSpatialReference != null)
                     {
@@ -670,7 +672,7 @@ public class GeoServicesRestInterperter : IServiceRequestInterpreter
                     #endregion
 
                     bool transform = false;
-                    using (var geoTransfromer = GeometricTransformerFactory.Create())
+                    using (var geoTransfromer = GeometricTransformerFactory.Create(serviceMap.Display?.DatumTransformations))
                     {
                         if (tableClass is IFeatureClass && ((IFeatureClass)tableClass).SpatialReference == null && filter.FeatureSpatialReference != null && serviceMap.LayerDefaultSpatialReference != null)
                         {
@@ -683,7 +685,7 @@ public class GeoServicesRestInterperter : IServiceRequestInterpreter
                                 ((ISpatialFilter)filter).FilterSpatialReference != null &&
                                 !serviceMap.LayerDefaultSpatialReference.EpsgCode.Equals(((ISpatialFilter)filter).FilterSpatialReference?.EpsgCode))
                             {
-                                using (var filterTransformer = GeometricTransformerFactory.Create())
+                                using (var filterTransformer = GeometricTransformerFactory.Create(serviceMap.Display?.DatumTransformations))
                                 {
                                     filterTransformer.SetSpatialReferences(((SpatialFilter)filter).FilterSpatialReference, serviceMap.LayerDefaultSpatialReference);
                                     ((SpatialFilter)filter).Geometry = filterTransformer.Transform2D(((SpatialFilter)filter).Geometry) as IGeometry;
@@ -908,7 +910,7 @@ public class GeoServicesRestInterperter : IServiceRequestInterpreter
                 }
                 var mapExtent = new Envelope(bbox[0], bbox[1], bbox[2], bbox[3]);
 
-                var imageDisplay = identify.ImageDisplay?.Split(',').Select(f => NumberConverter.ToFloat(f)).ToArray();
+                var imageDisplay = identify.ImageDisplay?.Split(',').Select(f => NumberExtensions.ToFloat(f)).ToArray();
                 if (imageDisplay == null || imageDisplay.Length != 3)
                 {
                     throw new Exception("Invalid identify image display. Use <width>, <height>, <dpi>");
@@ -1029,7 +1031,8 @@ public class GeoServicesRestInterperter : IServiceRequestInterpreter
 
                 var spatialFilter = new SpatialFilter();
 
-                spatialFilter.FilterSpatialReference = spatialFilter.FeatureSpatialReference = sRef;
+                spatialFilter.FilterSpatialReference = sRef;
+                spatialFilter.SetFeatureSpatialReference(sRef, serviceMap.Display?.DatumTransformations);
                 spatialFilter.Geometry = geometry;
                 spatialFilter.SubFields = "*";
 
@@ -1221,7 +1224,7 @@ public class GeoServicesRestInterperter : IServiceRequestInterpreter
                     throw new Exception("Featureclass is not editable");
                 }
 
-                List<IFeature> features = GetFeatures(featureClass, editRequest, true);
+                List<IFeature> features = GetFeatures(featureClass, editRequest, true, serviceMap.Display?.DatumTransformations);
                 if (features.Count == 0)
                 {
                     throw new Exception("No features to add");
@@ -1298,7 +1301,7 @@ public class GeoServicesRestInterperter : IServiceRequestInterpreter
                     throw new Exception("Featureclass is not editable");
                 }
 
-                List<IFeature> features = GetFeatures(featureClass, editRequest, true);
+                List<IFeature> features = GetFeatures(featureClass, editRequest, true, serviceMap.Display?.DatumTransformations);
                 if (features.Count == 0)
                 {
                     throw new Exception("No features to add");
@@ -1428,7 +1431,7 @@ public class GeoServicesRestInterperter : IServiceRequestInterpreter
         return featureClass;
     }
 
-    private List<IFeature> GetFeatures(IFeatureClass featureClass, JsonFeatureServerUpdateRequestDTO editRequest, bool projetToFeatureClassSpatialReference)
+    private List<IFeature> GetFeatures(IFeatureClass featureClass, JsonFeatureServerUpdateRequestDTO editRequest, bool projetToFeatureClassSpatialReference, IDatumTransformations datumTransformations)
     {
         int? fcSrs = featureClass?.SpatialReference?.EpsgCode;
 
@@ -1441,7 +1444,7 @@ public class GeoServicesRestInterperter : IServiceRequestInterpreter
             {
                 if (feature.Shape != null && feature.Shape.Srs.HasValue && !feature.Shape.Srs.Equals(fcSrs))
                 {
-                    using (var transformer = GeometricTransformerFactory.Create())
+                    using (var transformer = GeometricTransformerFactory.Create(datumTransformations))
                     {
                         var fromSrs = SpatialReference.FromID("epsg:" + feature.Shape.Srs.ToString());
                         var toSrs = SpatialReference.FromID("epsg:" + fcSrs.ToString());

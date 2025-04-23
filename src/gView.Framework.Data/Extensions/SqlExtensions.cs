@@ -24,8 +24,8 @@ namespace gView.Framework.Data.Extensions
                 where = where
                     //.Replace(" in ", "=")
                     .Replace("<>", "=")
-                    .Replace("<=", "=")
                     .Replace(">=", "=")
+                    .Replace("<=", "=")
                     .Replace("<", "=")
                     .Replace(">", "=");
 

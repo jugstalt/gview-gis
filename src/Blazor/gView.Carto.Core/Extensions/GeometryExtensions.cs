@@ -26,7 +26,7 @@ static public class GeometryExtensions
                         {
                             IPoint p => new Point(p),  // clone the original geometry
                             _ => new Envelope(geometry.Envelope),
-                        }, sRef);
+                        }, sRef, scope.Document?.Map?.Display?.DatumTransformations);
 
         if (geometry is IPoint point)
         {

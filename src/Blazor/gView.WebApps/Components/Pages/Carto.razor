@@ -18,13 +18,13 @@
             var parameters = new DialogParameters();
             parameters.Add("Exception", ex);
 
-            DialogService.Show<GlobalErrorDialog>("Sorry, this is an unhandled Exception!",
+            DialogService.ShowAsync<GlobalErrorDialog>("Sorry, this is an unhandled Exception!",
                     parameters,
                     new DialogOptions { 
                         CloseOnEscapeKey = true,
                         CloseButton = true,
                         MaxWidth = MaxWidth.Large
-                    });
+                    }).Wait();
         }
     </ErrorContent>
 </ErrorBoundary>

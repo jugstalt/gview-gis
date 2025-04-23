@@ -1,4 +1,4 @@
-@using Microsoft.AspNetCore.Components.Forms
+﻿@using Microsoft.AspNetCore.Components.Forms
 
 @inherits ModalDialogFormBase<MapSettingsModel>
 @inject IconService IconService
@@ -103,7 +103,13 @@
                             </MudSelect>
                     </GvCardContent>
                 </GvCard>
-                
+
+                <GvCard Title="Datum Transformations">
+                        <GvCardContent>
+                            @GvUtilities.InfoText("Datum Transformations are used to transform from one geodetic datum to another. This is only needed if the transformation to WGS84 differs from ESPG Datum Parameters.")
+                            <DatumTransformationsControl DatumTransformations="Model.Map.DatumTransformations" />
+                        </GvCardContent>
+                </GvCard>                
             }
             else if(Page.DefaultLayerSpatialReference.Equals(_currentTab))
             {

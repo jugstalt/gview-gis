@@ -11,6 +11,6 @@ namespace gView.Framework.Core.FDB
         int MaxPerNode { get; }
         int Levels { get; }
         ISpatialReference SpatialReference { get; }
-        bool ProjectTo(ISpatialReference sRef);
+        bool ProjectTo(ISpatialReference sRef, IDatumTransformations datumTransformations);
     }
 }

@@ -773,7 +773,7 @@ namespace gView.Interoperability.OGC
                             if (fc.SpatialReference != null &&
                                 !fc.SpatialReference.Equals(sRef))
                             {
-                                transformer = GeometricTransformerFactory.Create();
+                                transformer = GeometricTransformerFactory.Create(map.Display?.DatumTransformations);
                                 transformer.SetSpatialReferences(fc.SpatialReference, sRef);
                             }
                         }
@@ -783,7 +783,7 @@ namespace gView.Interoperability.OGC
                             !fc.SpatialReference.Equals(((ISpatialFilter)filter).FilterSpatialReference))
                         {
 
-                            transformer = GeometricTransformerFactory.Create();
+                            transformer = GeometricTransformerFactory.Create(map.Display?.DatumTransformations);
                             transformer.SetSpatialReferences(fc.SpatialReference, ((ISpatialFilter)filter).FilterSpatialReference);
                             srsName = ((ISpatialFilter)filter).FilterSpatialReference.Name;
                         }
@@ -857,7 +857,7 @@ namespace gView.Interoperability.OGC
                 StringBuilder sb_env = new StringBuilder();
                 foreach (string s in metadata.EPSGCodes)
                 {
-                    IEnvelope env = TransFormEPSG4326Envelope(env4326, s);
+                    IEnvelope env = TransFormEPSG4326Envelope(env4326, s, map.Display?.DatumTransformations);
                     if (env == null)
                     {
                         continue;
@@ -899,12 +899,12 @@ namespace gView.Interoperability.OGC
             ISpatialReference sRef = fc.SpatialReference;
             ISpatialReference sRef_4326 = SpatialReference.FromID("epsg:4326");
 
-            IEnvelope env = GeometricTransformerFactory.Transform2D(fc.Envelope, sRef, sRef_4326).Envelope;
+            IEnvelope env = GeometricTransformerFactory.Transform2D(fc.Envelope, sRef, sRef_4326, map.Display?.DatumTransformations).Envelope;
 
             return env;
         }
 
-        private IEnvelope TransFormEPSG4326Envelope(IEnvelope env4326, string projID)
+        private IEnvelope TransFormEPSG4326Envelope(IEnvelope env4326, string projID, IDatumTransformations datumTransformations)
         {
             if (projID.ToLower() == "epsg:4326")
             {
@@ -923,7 +923,7 @@ namespace gView.Interoperability.OGC
                 return env4326;
             }
 
-            return GeometricTransformerFactory.Transform2D(env4326, from, to).Envelope;
+            return GeometricTransformerFactory.Transform2D(env4326, from, to, datumTransformations).Envelope;
         }
 
         private List<XmlSchemaWriter.FeatureClassSchema> CollectFeatureClassSchemas(IServiceMap map, WFSParameterDescriptor parameters)

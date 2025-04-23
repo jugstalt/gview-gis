@@ -19,7 +19,7 @@ namespace gView.DataSources.GeoJson
                         IEnumerable<IFeature> features, 
                         IQueryFilter filter
                     )
-            : base(fc?.SpatialReference, filter?.FeatureSpatialReference)
+            : base(fc?.SpatialReference, filter?.FeatureSpatialReference, filter?.DatumTransformations)
         {
             _features = features?.ToArray();
             _queryFilter = filter;

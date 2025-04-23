@@ -1,4 +1,4 @@
-@inherits BaseHandler
+﻿@inherits BaseHandler
 @inject SpatialReferenceService SRefService
 
 <style>
@@ -61,18 +61,21 @@
     IEnumerable<KeyValuePair<string, string>>? filteredItems;
 
     [Parameter] public IGeodeticDatum? GeodeticDatum { get; set; }
+    [Parameter] public bool AddGridShifts { get; set; } = false;
     [Parameter] public EventCallback<IGeodeticDatum> GeodeticDatumChanged { get; set; }
 
-    protected override Task OnInitializedAsync()
-       => HandleAsync(async () =>
-       {
-           items = (await GetDatums()).ToList();
-           filteredItems = items.ToArray();
-       });
+    protected override Task OnParametersSetAsync() => HandleAsync(async () =>
+    {
+        await base.OnParametersSetAsync();
+
+        items = (await GetDatums()).ToList();
+
+        filteredItems = items.ToArray();
+    });
 
     async private Task<IEnumerable<KeyValuePair<string, string>>> GetDatums()
     {
-        return await SRefService.GetDatums();
+        return await SRefService.GetDatums(AddGridShifts);
     }
 
     private void FilterTable(ChangeEventArgs e)

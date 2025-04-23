@@ -1,14 +1,12 @@
-﻿using gView.Framework.Core.Data;
+﻿using gView.Framework.Common.Diagnostics;
+using gView.Framework.Core.Common;
+using gView.Framework.Core.Data;
 using gView.Framework.Core.Data.Cursors;
 using gView.Framework.Core.Geometry;
-using gView.Framework.Core.Common;
 using gView.Framework.Geometry;
-using gView.Framework.Common.Diagnostics;
 using System;
 using System.Data;
 using System.Threading.Tasks;
-using Microsoft.SqlServer.Management.SqlParser.MetadataProvider;
-using Microsoft.SqlServer.Management.SqlParser.SqlCodeDom;
 
 namespace gView.Framework.Data
 {
@@ -17,11 +15,14 @@ namespace gView.Framework.Data
         private IGeometricTransformer _transformer = null;
         private bool _knowsFunctions = true;
 
-        public FeatureCursor(ISpatialReference fcSRef, ISpatialReference toSRef)
+        public FeatureCursor(
+                ISpatialReference fcSRef, 
+                ISpatialReference toSRef,
+                IDatumTransformations datumTransformations)
         {
             if (fcSRef != null && !fcSRef.Equals(toSRef))
             {
-                _transformer = GeometricTransformerFactory.Create();
+                _transformer = GeometricTransformerFactory.Create(datumTransformations);
                 //_transformer.FromSpatialReference = fcSRef;
                 //_transformer.ToSpatialReference = toSRef;
                 _transformer.SetSpatialReferences(fcSRef, toSRef);
