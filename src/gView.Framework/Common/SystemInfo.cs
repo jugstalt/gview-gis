@@ -1,4 +1,4 @@
-using gView.GraphicsEngine.GdiPlus;
+﻿using gView.GraphicsEngine.GdiPlus;
 using gView.GraphicsEngine.Skia;
 using System;
 using System.Globalization;
@@ -10,7 +10,7 @@ namespace gView.Framework.Common
 {
     public class SystemInfo
     {
-        public static Version Version = new Version(6, 25, 101);
+        public static Version Version = new Version(6, 25, 1701);
 
         #region -> Private Variables
 

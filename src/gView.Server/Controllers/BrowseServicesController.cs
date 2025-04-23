@@ -101,16 +101,16 @@ public class BrowseServicesController : BaseController
                 }
             }
 
-            List<IMapService> services = new List<IMapService>();
-            foreach (var s in _mapServerService.MapServices)
+            List<IMapService> mapServices = new List<IMapService>();
+            foreach (var mapService in _mapServerService.MapServices)
             {
-                if (s.Type != MapServiceType.Folder &&
-                    s.Folder == folder &&
-                    (await s.GetSettingsAsync()).IsRunningOrIdle() &&
-                     await s.HasAnyAccess(identity) &&
-                     await IsAccessAllowed(identity, s))
+                if (mapService.Type != MapServiceType.Folder &&
+                    mapService.Folder == folder &&
+                    (await mapService.GetSettingsAsync()).IsRunningOrIdle() &&
+                     await mapService.HasAnyAccess(identity) &&
+                     await IsAccessAllowed(identity, mapService))
                 {
-                    services.Add(s);
+                    mapServices.Add(mapService);
                 }
             }
 
@@ -123,7 +123,7 @@ public class BrowseServicesController : BaseController
                 IsManager = isManager,
                 Folder = folder,
                 Folders = folders.ToArray(),
-                Services = services.ToArray(),
+                Services = mapServices.ToArray(),
 
                 ServiceName = serviceName,
                 Message = errorMessage
