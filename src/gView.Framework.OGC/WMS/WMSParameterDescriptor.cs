@@ -1,7 +1,7 @@
+ï»¿using gView.Framework.Common;
 using gView.Framework.Core.Geometry;
 using gView.Framework.Geometry;
 using gView.Framework.OGC.Exceptions;
-using gView.Framework.Common;
 using gView.Framework.Web.Services;
 using gView.GraphicsEngine;
 using System;
@@ -11,93 +11,95 @@ using System.IO;
 using System.Linq;
 using System.Text;
 
-namespace gView.Framework.OGC.WMS
+namespace gView.Framework.OGC.WMS;
+
+public enum WMSRequestType
 {
-    public enum WMSRequestType
-    {
-        GetCapabilities,
-        GetMap,
-        GetFeatureInfo,
-        GetLegendGraphic,
-        DescriptTiles,
-        GetTile,
+    GetCapabilities,
+    GetMap,
+    GetFeatureInfo,
+    GetLegendGraphic,
+    DescriptTiles,
+    GetTile,
 
-        GenerateTiles
+    GenerateTiles
+}
+
+public enum WMSExceptionType
+{
+    se_xml,
+    se_blank,
+    se_in_image
+}
+
+public enum WMSInfoFormat
+{
+    gml,
+    html,
+    text,
+    xml,
+    xsl,
+    geojson
+}
+
+public enum WMSImageFormat
+{
+    png,
+    gif,
+    jpeg,
+    bmp,
+    kml
+}
+
+
+public class WMSParameterDescriptor
+{
+    #region Request Parameters
+
+    private int _width = 200;
+    private int _height = 200;
+    private int _srs = 4326;
+    private int _featureInfoX = 0;
+    private int _featureInfoY = 0;
+    private int _featureInfoMaxRows = 0;
+
+    private WMSRequestType _request = WMSRequestType.GetCapabilities;
+    private WMSImageFormat _format = WMSImageFormat.png;
+    private WMSExceptionType _exceptions = WMSExceptionType.se_xml;
+    private WMSInfoFormat _infoFormat = WMSInfoFormat.html;
+    private string _infoFormatXsl = String.Empty;
+    private IEnvelope _bbox = null;
+    private string[] _layers = Array.Empty<string>();
+    private string[] _queryLayers = Array.Empty<string>();
+    private string _version = "1.1.1";
+    private bool _transparent = false;
+    private ArgbColor _bgColor = ArgbColor.White;
+    private string _sldString = String.Empty;
+
+    private string _layer = String.Empty, _style = String.Empty;
+    private double _scale = 0.0;
+    private int _tileRow = 0, _tileCol = 0;
+
+    private int _bboxsrs = 0, _zoomlevel = 0;
+    private string _requestKey = String.Empty;
+
+    private double _dpi = 96.0;
+
+    #endregion
+
+    public WMSParameterDescriptor()
+    {
+
     }
 
-    public enum WMSExceptionType
+    #region Parse
+    public (byte[] data, string contentType) ParseParameters(string[] parameters)
     {
-        se_xml,
-        se_blank,
-        se_in_image
+        return ParseParameters(new Parameters(parameters));
     }
-
-    public enum WMSInfoFormat
+    private (byte[] data, string contentType) ParseParameters(Parameters request)
     {
-        gml,
-        html,
-        text,
-        xml,
-        xsl,
-        geojson
-    }
-
-    public enum WMSImageFormat
-    {
-        png,
-        gif,
-        jpeg,
-        bmp,
-        kml
-    }
-
-
-    public class WMSParameterDescriptor
-    {
-        #region request parameters
-
-        private int miWidth = 200;
-        private int miHeight = 200;
-        private int miSRS = 4326;
-        private int miFeatureInfoX = 0;
-        private int miFeatureInfoY = 0;
-        private int miFeatureInfoMaxRows = 0;
-
-        private WMSRequestType meRequest = WMSRequestType.GetCapabilities;
-        private WMSImageFormat meFormat = WMSImageFormat.png;
-        private WMSExceptionType meExceptions = WMSExceptionType.se_xml;
-        private WMSInfoFormat meInfoFormat = WMSInfoFormat.html;
-        private string meInfoFormatXsl = String.Empty;
-        private IEnvelope moBox = null;
-        private string[] msLayers = Array.Empty<string>();
-        private string[] msQueryLayers = Array.Empty<string>();
-        private string msVersion = "1.1.1";
-        private bool mbTransparent = false;
-        private ArgbColor moBgColor = ArgbColor.White;
-        private string sldString = String.Empty;
-
-        private string msLayer = String.Empty, msStyle = String.Empty;
-        private double miScale = 0.0;
-        private int miTileRow = 0, miTileCol = 0;
-
-        private int _bboxsrs = 0, _zoomlevel = 0;
-        private string _requestKey = String.Empty;
-
-        public double dpi = 96.0;
-
-        #endregion
-
-        public WMSParameterDescriptor()
-        {
-
-        }
-
-        #region Parse
-        public (byte[] data, string contentType) ParseParameters(string[] parameters)
-        {
-            return ParseParameters(new Parameters(parameters));
-        }
-        private (byte[] data, string contentType) ParseParameters(Parameters request)
+        try
         {
             if (request["VERSION"] == null && request["WMTVER"] == null)
             {
@@ -190,7 +192,7 @@ namespace gView.Framework.OGC.WMS
                 }
             }
 
-            #region Nicht Standard (für GenerateTiles Request: WMS2Tiles für Bing Map Controll!!)
+            #region Nicht Standard (fÃ¼r GenerateTiles Request: WMS2Tiles fÃ¼r Bing Map Controll!!)
             if (this.Request == WMSRequestType.GenerateTiles)
             {
                 if (request["BBOXSRS"] != null)
@@ -423,7 +425,14 @@ namespace gView.Framework.OGC.WMS
                     }
                     if (request["BGCOLOR"] != null)
                     {
-                        this.BgColor = ArgbColor.FromHexString(request["BGCOLOR"]);
+                        try
+                        {
+                            this.BgColor = ArgbColor.FromHexString(request["BGCOLOR"]);
+                        }
+                        catch (Exception)
+                        {
+                            throw new Exception($"Invalid BGCOLOR {request["BGCOLOR"]}");
+                        }
                     }
                     if (request["STYLES"] != null)
                     {
@@ -438,23 +447,23 @@ namespace gView.Framework.OGC.WMS
                     }
                     if (request["DPI"] != null)
                     {
-                        this.dpi = request["DPI"].ToDouble();
+                        _dpi = request["DPI"].ToDouble();
                     }
                     if (this.Request == WMSRequestType.GetMap)
                     {
                         if (request["SLD"] != null)
                         {
                             var awaiter = HttpService.CreateInstance().GetStringAsync(request["SLD"]).GetAwaiter();
-                            sldString = awaiter.GetResult();
+                            _sldString = awaiter.GetResult();
 
-                            if (sldString == null)
+                            if (_sldString == null)
                             {
-                                sldString = String.Empty;
+                                _sldString = String.Empty;
                             }
                         }
                         else if (request["SLD_BODY"] != null)
                         {
-                            sldString = request["SLD_BODY"];
+                            _sldString = request["SLD_BODY"];
                         }
                     }
                 }
@@ -571,36 +580,41 @@ namespace gView.Framework.OGC.WMS
 
             return (null, null);
         }
-
-        public void ParseParameters(Dictionary<string, Microsoft.Extensions.Primitives.StringValues> dict)
+        catch (Exception ex)
         {
-            var parameters = dict.Keys.Select(k => k + "=" + dict[k].ToString()).ToArray();
-            var parseResult = ParseParameters(parameters);
+            return WriteError(ex.Message);
+        }
+    }
 
-            if (parseResult.data != null)
-            {
-                throw new ParseParametersException(parseResult.data, parseResult.contentType);
-            }
+    public void ParseParameters(Dictionary<string, Microsoft.Extensions.Primitives.StringValues> dict)
+    {
+        var parameters = dict.Keys.Select(k => k + "=" + dict[k].ToString()).ToArray();
+        var parseResult = ParseParameters(parameters);
+
+        if (parseResult.data != null)
+        {
+            throw new ParseParametersException(parseResult.data, parseResult.contentType);
+        }
+    }
+
+    #endregion
+
+    #region ErrorReport
+    private (byte[] data, string contentType) WriteError(String msg)
+    {
+        return WriteError(msg, null);
+    }
+
+    private (byte[] data, string contentType) WriteError(String msg, String code)
+    {
+        if (this.Format == WMSImageFormat.kml)
+        {
+            return WriteKMLError(msg, code);
         }
 
-        #endregion
-
-        #region ErrorReport
-        private (byte[] data, string contentType) WriteError(String msg)
+        if (this.Exceptions == WMSExceptionType.se_xml)
         {
-            return WriteError(msg, null);
-        }
-
-        private (byte[] data, string contentType) WriteError(String msg, String code)
-        {
-            if (this.Format == WMSImageFormat.kml)
-            {
-                return WriteKMLError(msg, code);
-            }
-
-            if (this.Exceptions == WMSExceptionType.se_xml)
-            {
-                string sMsg = @"<?xml version=""1.0"" encoding=""UTF-8"" standalone=""no"" ?>
+            string sMsg = @"<?xml version=""1.0"" encoding=""UTF-8"" standalone=""no"" ?>
 <!DOCTYPE ServiceExceptionReport SYSTEM
  ""http://www.digitalearth.gov/wmt/xml/exception_1_1_0.dtd"">
 <ServiceExceptionReport version=""1.1.0"">
@@ -608,357 +622,358 @@ namespace gView.Framework.OGC.WMS
     message.
   </ServiceException>     
 </ServiceExceptionReport>";
-                sMsg = sMsg.Replace("message.", msg);
-                if (code != null)
+            sMsg = sMsg.Replace("message.", msg);
+            if (code != null)
+            {
+                sMsg = sMsg.Replace("<ServiceException>", "<ServiceException code=\"" + code + "\">");
+            }
+
+            return (Encoding.UTF8.GetBytes(sMsg),
+                this.Version == "1.1.1" ? "application/vnd.ogc.se_xml" : "text/xml");
+        }
+        else /*if (this.Exceptions == WMSExceptionType.se_in_image)*/
+        {
+            using (var bm = Current.Engine.CreateBitmap(this.Width, this.Height, GraphicsEngine.PixelFormat.Rgba32))
+            using (var canvas = bm.CreateCanvas())
+            using (var font = Current.Engine.CreateFont(Current.Engine.GetDefaultFontName(), 12f))
+            using (var brush = Current.Engine.CreateSolidBrush(ArgbColor.Black))
+            {
+                if (!this.Transparent)
                 {
-                    sMsg = sMsg.Replace("<ServiceException>", "<ServiceException code=\"" + code + "\">");
+                    canvas.Clear(this.BgColor);
+                }
+                else
+                {
+                    bm.MakeTransparent(this.BgColor);
                 }
 
-                return (Encoding.UTF8.GetBytes(sMsg),
-                    this.Version == "1.1.1" ? "application/vnd.ogc.se_xml" : "text/xml");
-            }
-            else /*if (this.Exceptions == WMSExceptionType.se_in_image)*/
-            {
-                using (var bm = Current.Engine.CreateBitmap(this.Width, this.Height, GraphicsEngine.PixelFormat.Rgba32))
-                using (var canvas = bm.CreateCanvas())
-                using (var font = Current.Engine.CreateFont(Current.Engine.GetDefaultFontName(), 12f))
-                using (var brush = Current.Engine.CreateSolidBrush(ArgbColor.Black))
-                {
-                    if (!this.Transparent)
-                    {
-                        canvas.Clear(this.BgColor);
-                    }
-                    else
-                    {
-                        bm.MakeTransparent(this.BgColor);
-                    }
+                var sz = canvas.MeasureText(msg, font);
+                var rect = new RectangleF(5f, 5f, sz.Width, sz.Height);
 
-                    var sz = canvas.MeasureText(msg, font);
-                    var rect = new RectangleF(5f, 5f, sz.Width, sz.Height);
+                canvas.DrawText(msg, font, brush,
+                    new CanvasRectangleF(5f, 5f, sz.Width, sz.Height));
 
-                    canvas.DrawText(msg, font, brush,
-                        new CanvasRectangleF(5f, 5f, sz.Width, sz.Height));
+                var ms = new MemoryStream();
+                bm.Save(ms, SystemDrawingGetImageFormat());
 
-                    var ms = new MemoryStream();
-                    bm.Save(ms, SystemDrawingGetImageFormat());
-
-                    return (ms.ToArray(), this.MimeType);
-                }
-            }
-            //else
-            //{
-            //    // Empty Image??
-            //    using (var bm = Current.Engine.CreateBitmap(this.Width, this.Height, GraphicsEngine.PixelFormat.Rgba32))
-            //    using (var canvas = bm.CreateCanvas())
-            //    {
-            //        if (!this.Transparent)
-            //        {
-            //            canvas.Clear(this.BgColor);
-            //        }
-            //        else
-            //        {
-            //            bm.MakeTransparent(this.BgColor);
-            //        }
-
-            //        var ms = new MemoryStream();
-            //        bm.Save(ms, SystemDrawingGetImageFormat());
-
-            //        return (ms.ToArray(), this.MimeType);
-            //    }
-            //}
-
-        }
-
-        protected (byte[] data, string contentType) WriteKMLError(string msg, string code)
-        {
-            String sRet = String.Empty;
-
-            sRet = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
-            sRet += "<kml xmlns=\"http://earth.google.com/kml/2.0\">";
-            sRet += "<Folder>";
-            sRet += "<name>ERROR</name>";
-            sRet += "<description>" + msg + "</description>";
-            sRet += "</Folder>";
-            sRet += "</kml>";
-
-            return (Encoding.UTF8.GetBytes(sRet), "application/vnd.google-earth.kml+xml");
-        }
-
-        #endregion
-
-        #region Helper
-
-        public GraphicsEngine.ImageFormat GetImageFormat()
-        {
-            switch (this.Format)
-            {
-                case WMSImageFormat.gif:
-                    return GraphicsEngine.ImageFormat.Gif;
-                case WMSImageFormat.bmp:
-                    return GraphicsEngine.ImageFormat.Bmp;
-                case WMSImageFormat.jpeg:
-                    return GraphicsEngine.ImageFormat.Jpeg;
-                case WMSImageFormat.png:
-                    return GraphicsEngine.ImageFormat.Png;
-                default: return GraphicsEngine.ImageFormat.Png;
+                return (ms.ToArray(), this.MimeType);
             }
         }
+        //else
+        //{
+        //    // Empty Image??
+        //    using (var bm = Current.Engine.CreateBitmap(this.Width, this.Height, GraphicsEngine.PixelFormat.Rgba32))
+        //    using (var canvas = bm.CreateCanvas())
+        //    {
+        //        if (!this.Transparent)
+        //        {
+        //            canvas.Clear(this.BgColor);
+        //        }
+        //        else
+        //        {
+        //            bm.MakeTransparent(this.BgColor);
+        //        }
 
-        public GraphicsEngine.ImageFormat SystemDrawingGetImageFormat()
+        //        var ms = new MemoryStream();
+        //        bm.Save(ms, SystemDrawingGetImageFormat());
+
+        //        return (ms.ToArray(), this.MimeType);
+        //    }
+        //}
+
+    }
+
+    protected (byte[] data, string contentType) WriteKMLError(string msg, string code)
+    {
+        String sRet = String.Empty;
+
+        sRet = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
+        sRet += "<kml xmlns=\"http://earth.google.com/kml/2.0\">";
+        sRet += "<Folder>";
+        sRet += "<name>ERROR</name>";
+        sRet += "<description>" + msg + "</description>";
+        sRet += "</Folder>";
+        sRet += "</kml>";
+
+        return (Encoding.UTF8.GetBytes(sRet), "application/vnd.google-earth.kml+xml");
+    }
+
+    #endregion
+
+    #region Helper
+
+    public GraphicsEngine.ImageFormat GetImageFormat()
+    {
+        switch (this.Format)
         {
-            switch (this.Format)
-            {
-                case WMSImageFormat.gif:
-                    return GraphicsEngine.ImageFormat.Gif;
-                case WMSImageFormat.bmp:
-                    return GraphicsEngine.ImageFormat.Bmp;
-                case WMSImageFormat.jpeg:
-                    return GraphicsEngine.ImageFormat.Jpeg;
-                default:
-                    return GraphicsEngine.ImageFormat.Png;
-            }
+            case WMSImageFormat.gif:
+                return GraphicsEngine.ImageFormat.Gif;
+            case WMSImageFormat.bmp:
+                return GraphicsEngine.ImageFormat.Bmp;
+            case WMSImageFormat.jpeg:
+                return GraphicsEngine.ImageFormat.Jpeg;
+            case WMSImageFormat.png:
+                return GraphicsEngine.ImageFormat.Png;
+            default: return GraphicsEngine.ImageFormat.Png;
         }
+    }
 
-        public string GetContentType()
+    public GraphicsEngine.ImageFormat SystemDrawingGetImageFormat()
+    {
+        switch (this.Format)
         {
-            switch (this.Format)
+            case WMSImageFormat.gif:
+                return GraphicsEngine.ImageFormat.Gif;
+            case WMSImageFormat.bmp:
+                return GraphicsEngine.ImageFormat.Bmp;
+            case WMSImageFormat.jpeg:
+                return GraphicsEngine.ImageFormat.Jpeg;
+            default:
+                return GraphicsEngine.ImageFormat.Png;
+        }
+    }
+
+    public string GetContentType()
+    {
+        switch (this.Format)
+        {
+            case WMSImageFormat.gif:
+                return "image/gif";
+            case WMSImageFormat.bmp:
+                return "image/bmp";
+            case WMSImageFormat.jpeg:
+                return "image/jpg";
+
+            case WMSImageFormat.png:
+            default:
+                return "image/png";
+        }
+    }
+
+    #endregion
+
+    public int FeatureInfoX
+    {
+        get { return _featureInfoX; }
+        set { _featureInfoX = value; }
+    }
+
+    public int FeatureInfoY
+    {
+        get { return _featureInfoY; }
+        set { _featureInfoY = value; }
+    }
+
+    public int FeatureInfoMaxRows
+    {
+        get { return _featureInfoMaxRows; }
+        set { _featureInfoMaxRows = value; }
+    }
+
+    public int Width
+    {
+        get { return _width; }
+        set { _width = value; }
+    }
+
+    public int Height
+    {
+        get { return _height; }
+        set { _height = value; }
+    }
+
+    public int SRS
+    {
+        get { return _srs; }
+        set { _srs = value; }
+    }
+
+    public int BBoxSRS
+    {
+        get { return _bboxsrs; }
+        set { _bboxsrs = value; }
+    }
+
+    public int ZoomLevel
+    {
+        get { return _zoomlevel; }
+        set { _zoomlevel = value; }
+    }
+
+    public string RequestKey
+    {
+        get { return _requestKey; }
+    }
+
+    public WMSRequestType Request
+    {
+        get { return _request; }
+        set { _request = value; }
+    }
+
+    public WMSExceptionType Exceptions
+    {
+        get { return _exceptions; }
+        set { _exceptions = value; }
+    }
+
+    public WMSInfoFormat InfoFormat
+    {
+        get { return _infoFormat; }
+        set { _infoFormat = value; }
+    }
+
+    public string InfoFormatXsl
+    {
+        get { return _infoFormatXsl; }
+        set { _infoFormatXsl = value; }
+    }
+
+    public string Version
+    {
+        get { return _version; }
+        set { _version = value; }
+    }
+
+    public IEnvelope BBOX
+    {
+        get { return _bbox; }
+        set { _bbox = value; }
+    }
+
+    public WMSImageFormat Format
+    {
+        get { return _format; }
+        set { _format = value; }
+    }
+
+    public string[] Layers
+    {
+        get { return _layers; }
+        set { _layers = value; }
+    }
+
+    public string[] QueryLayers
+    {
+        get { return _queryLayers; }
+        set { _queryLayers = value; }
+    }
+
+    public ArgbColor BgColor
+    {
+        get { return _bgColor; }
+        set { _bgColor = value; }
+    }
+
+    public bool Transparent
+    {
+        get { return _transparent; }
+        set { _transparent = value; }
+    }
+
+    public string MimeType
+    {
+        get
+        {
+            switch (Format)
             {
-                case WMSImageFormat.gif:
-                    return "image/gif";
                 case WMSImageFormat.bmp:
                     return "image/bmp";
+                case WMSImageFormat.gif:
+                    return "image/gif";
                 case WMSImageFormat.jpeg:
-                    return "image/jpg";
-
+                    return "image/jpeg";
                 case WMSImageFormat.png:
+                    return "image/png";
+                case WMSImageFormat.kml:
+                    return "application/vnd.google-earth.kml+xml";
+
                 default:
                     return "image/png";
             }
         }
+    }
 
-        #endregion
+    public string Layer
+    {
+        get { return _layer; }
+        set { _layer = value; }
+    }
+    public string Style
+    {
+        get { return _style; }
+        set { _style = value; }
+    }
+    public double Scale
+    {
+        get { return _scale; }
+        set { _scale = value; }
+    }
+    public int TileRow
+    {
+        get { return _tileRow; }
+        set { _tileRow = value; }
+    }
+    public int TileCol
+    {
+        get { return _tileCol; }
+        set { _tileCol = value; }
+    }
 
-        public int FeatureInfoX
+    public double Dpi { get { return _dpi; } set { _dpi = value; } }
+
+    private class Parameters
+    {
+        private Dictionary<string, string> _parameters = new Dictionary<string, string>();
+
+        public Parameters(string[] list)
         {
-            get { return miFeatureInfoX; }
-            set { miFeatureInfoX = value; }
+            if (list == null)
+            {
+                return;
+            }
+
+            foreach (string l in list)
+            {
+                string[] p = l.Split('=');
+
+                string p1 = p[0].Trim().ToUpper(), pp;
+                StringBuilder p2 = new StringBuilder();
+                for (int i = 1; i < p.Length; i++)
+                {
+                    if (p2.Length > 0)
+                    {
+                        p2.Append('=');
+                    }
+
+                    p2.Append(p[i]);
+                }
+                if (_parameters.TryGetValue(p1, out pp))
+                {
+                    continue;
+                }
+
+                _parameters.Add(p1, p2.ToString());
+            }
         }
 
-        public int FeatureInfoY
-        {
-            get { return miFeatureInfoY; }
-            set { miFeatureInfoY = value; }
-        }
-
-        public int FeatureInfoMaxRows
-        {
-            get { return miFeatureInfoMaxRows; }
-            set { miFeatureInfoMaxRows = value; }
-        }
-
-        public int Width
-        {
-            get { return miWidth; }
-            set { miWidth = value; }
-        }
-
-        public int Height
-        {
-            get { return miHeight; }
-            set { miHeight = value; }
-        }
-
-        public int SRS
-        {
-            get { return miSRS; }
-            set { miSRS = value; }
-        }
-
-        public int BBoxSRS
-        {
-            get { return _bboxsrs; }
-            set { _bboxsrs = value; }
-        }
-
-        public int ZoomLevel
-        {
-            get { return _zoomlevel; }
-            set { _zoomlevel = value; }
-        }
-
-        public string RequestKey
-        {
-            get { return _requestKey; }
-        }
-
-        public WMSRequestType Request
-        {
-            get { return meRequest; }
-            set { meRequest = value; }
-        }
-
-        public WMSExceptionType Exceptions
-        {
-            get { return meExceptions; }
-            set { meExceptions = value; }
-        }
-
-        public WMSInfoFormat InfoFormat
-        {
-            get { return meInfoFormat; }
-            set { meInfoFormat = value; }
-        }
-
-        public string InfoFormatXsl
-        {
-            get { return meInfoFormatXsl; }
-            set { meInfoFormatXsl = value; }
-        }
-
-        public string Version
-        {
-            get { return msVersion; }
-            set { msVersion = value; }
-        }
-
-        public IEnvelope BBOX
-        {
-            get { return moBox; }
-            set { moBox = value; }
-        }
-
-        public WMSImageFormat Format
-        {
-            get { return meFormat; }
-            set { meFormat = value; }
-        }
-
-        public string[] Layers
-        {
-            get { return msLayers; }
-            set { msLayers = value; }
-        }
-
-        public string[] QueryLayers
-        {
-            get { return msQueryLayers; }
-            set { msQueryLayers = value; }
-        }
-
-        public ArgbColor BgColor
-        {
-            get { return moBgColor; }
-            set { moBgColor = value; }
-        }
-
-        public bool Transparent
-        {
-            get { return mbTransparent; }
-            set { mbTransparent = value; }
-        }
-
-        public string MimeType
+        public string this[string parameter]
         {
             get
             {
-                switch (Format)
+                string o;
+                if (!_parameters.TryGetValue(parameter.ToUpper(), out o))
                 {
-                    case WMSImageFormat.bmp:
-                        return "image/bmp";
-                    case WMSImageFormat.gif:
-                        return "image/gif";
-                    case WMSImageFormat.jpeg:
-                        return "image/jpeg";
-                    case WMSImageFormat.png:
-                        return "image/png";
-                    case WMSImageFormat.kml:
-                        return "application/vnd.google-earth.kml+xml";
-
-                    default:
-                        return "image/png";
+                    return null;
                 }
+
+                return o;
             }
         }
+    }
 
-        public string Layer
-        {
-            get { return msLayer; }
-            set { msLayer = value; }
-        }
-        public string Style
-        {
-            get { return msStyle; }
-            set { msStyle = value; }
-        }
-        public double Scale
-        {
-            get { return miScale; }
-            set { miScale = value; }
-        }
-        public int TileRow
-        {
-            get { return miTileRow; }
-            set { miTileRow = value; }
-        }
-        public int TileCol
-        {
-            get { return miTileCol; }
-            set { miTileCol = value; }
-        }
-
-        private class Parameters
-        {
-            private Dictionary<string, string> _parameters = new Dictionary<string, string>();
-
-            public Parameters(string[] list)
-            {
-                if (list == null)
-                {
-                    return;
-                }
-
-                foreach (string l in list)
-                {
-                    string[] p = l.Split('=');
-
-                    string p1 = p[0].Trim().ToUpper(), pp;
-                    StringBuilder p2 = new StringBuilder();
-                    for (int i = 1; i < p.Length; i++)
-                    {
-                        if (p2.Length > 0)
-                        {
-                            p2.Append('=');
-                        }
-
-                        p2.Append(p[i]);
-                    }
-                    if (_parameters.TryGetValue(p1, out pp))
-                    {
-                        continue;
-                    }
-
-                    _parameters.Add(p1, p2.ToString());
-                }
-            }
-
-            public string this[string parameter]
-            {
-                get
-                {
-                    string o;
-                    if (!_parameters.TryGetValue(parameter.ToUpper(), out o))
-                    {
-                        return null;
-                    }
-
-                    return o;
-                }
-            }
-        }
-
-        public string SLD_BODY
-        {
-            get { return sldString; }
-        }
+    public string SLD_BODY
+    {
+        get { return _sldString; }
     }
 }
