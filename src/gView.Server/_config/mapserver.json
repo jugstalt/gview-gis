@@ -48,7 +48,7 @@
   },
 
   "proj-engine": {
-    "engine": "NativeProj4" // ManagedProj4, ManageProj4Parallel
+    "engine": "ManageProj4Parallel" // ManagedProj4, NativeProj4
   },
 
   "globals": {

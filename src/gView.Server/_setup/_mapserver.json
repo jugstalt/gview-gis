@@ -1,4 +1,4 @@
-{
+﻿{
   "services-folder": "{repository-path}/server/configuration",
   "output-path": "{repository-path}/server/web/output",
   "output-url": "{server-url}/output",
@@ -16,5 +16,9 @@
   "graphics": {
     "rendering": "skia",
     "encoding": "skia"
+  },
+
+  "proj-engine": {
+    "engine": "ManageProj4Parallel" // ManagedProj4, NativeProj4
   }
 }

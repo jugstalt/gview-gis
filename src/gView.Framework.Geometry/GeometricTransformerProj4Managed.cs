@@ -23,7 +23,6 @@ public sealed class GeometricTransformerProj4Managed : IGeometricTransformer,
     private CoordinateReferenceSystemFactory _factory = new CoordinateReferenceSystemFactory();
     private ISpatialReference _fromSRef = null, _toSRef = null;
 
-    CoordinateReferenceSystem[] _projectionPipeline = null;
     BasicCoordinateTransform _basicCoordinateTransformation = null;
     BasicCoordinateTransform _basicCoordinateTransformationInverse = null;
 

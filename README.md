@@ -1,4 +1,4 @@
-# gview6
+# gView GIS
 
 <p align="center">
   <img src="https://img.shields.io/badge/License-Apache%202.0-blue.svg">
@@ -7,8 +7,8 @@
 </p>
 
 <p align="center">
-    <a href="https://docs.gviewonline.com/en/index.html"><img src="https://img.shields.io/badge/Documentation-English-green?style=flat-round"></a>
-    <a href="https://docs.gviewonline.com/de/index.html"><img src="https://img.shields.io/badge/Documentation-German-green?style=flat-round"></a>
+    <a href="https://docs.gviewonline.com/en/index.html" target="_blank"><img src="https://img.shields.io/badge/Documentation-English-green?style=flat-round"></a>
+    <a href="https://docs.gviewonline.com/de/index.html" target="_blank"><img src="https://img.shields.io/badge/Documentation-German-green?style=flat-round"></a>
 </p>
 
 gView GIS is a user-friendly Open Source GI framework for creating map and feature services.
