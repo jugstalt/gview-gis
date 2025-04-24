@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace gView.DataSources.Fdb.SQLite
 {
-    public class SQLiteFDBFeatureClass : IFeatureClass, IRefreshable
+    public class SQLiteFDBFeatureClass : IFeatureClass, IRefreshable, IFeatureCursorRequiresWrapperForOrdering
     {
         private SQLiteFDB _fdb;
         private IDataset _dataset;

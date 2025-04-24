@@ -16,14 +16,4 @@ namespace gView.Framework.Core.Data.Cursors
         /// </remarks>
         Task<IFeature> NextFeature();
     }
-
-
-
-    /*
-    public interface IFeatureBuffer 
-    {
-        IFeature CreateFeature();
-        bool Store();
-    }
-    */
 }

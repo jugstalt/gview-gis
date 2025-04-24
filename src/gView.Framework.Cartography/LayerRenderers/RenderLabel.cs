@@ -1,15 +1,16 @@
-﻿using gView.Framework.Core.Carto;
+﻿using gView.Framework.Cartography.Extensions;
+using gView.Framework.Common;
+using gView.Framework.Core.Carto;
+using gView.Framework.Core.Common;
 using gView.Framework.Core.Data;
 using gView.Framework.Core.Data.Cursors;
 using gView.Framework.Core.Data.Filters;
 using gView.Framework.Core.Geometry;
-using gView.Framework.Core.Common;
+using gView.Framework.Data.Extensions;
 using gView.Framework.Data.Filters;
-using gView.Framework.Common;
 using gView.GraphicsEngine.Extensions;
 using System;
 using System.Threading.Tasks;
-using gView.Framework.Cartography.Extensions;
 
 namespace gView.Framework.Cartography.LayerRenderers
 {
@@ -65,6 +66,8 @@ namespace gView.Framework.Cartography.LayerRenderers
                 if (_layer.FilterQuery != null)
                 {
                     filter.WhereClause = _layer.FilterQuery.WhereClause;
+                    filter.OrderBy = _layer.FilterQuery.OrderBy;
+
                     if (_layer.FilterQuery is ISpatialFilter)
                     {
                         //filter.FuzzyQuery = ((ISpatialFilter)_layer.FilterQuery).FuzzyQuery;
@@ -105,7 +108,7 @@ namespace gView.Framework.Cartography.LayerRenderers
 
                 #endregion
 
-                using (IFeatureCursor fCursor = await fClass.GetFeatures(filter))
+                using (IFeatureCursor fCursor = await fClass.GetFeaturesOrderedIfRequired(filter))
                 {
                     if (fCursor != null)
                     {

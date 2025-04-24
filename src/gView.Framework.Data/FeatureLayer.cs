@@ -316,10 +316,12 @@ namespace gView.Framework.Data
             _geometryType = (GeometryType)stream.Load("geomType", (int)GeometryType.Unknown);
 
             string filterQuery = (string)stream.Load("FilterQuery", "");
-            if (filterQuery != null)
+            string filterOrderBy = (string)stream.Load("FilterOrderBy", "");
+            if (!String.IsNullOrEmpty(filterQuery) || !String.IsNullOrEmpty(filterOrderBy))
             {
                 QueryFilter filter = new QueryFilter();
                 filter.WhereClause = filterQuery;
+                filter.OrderBy = filterOrderBy;
                 this.FilterQuery = filter;
             }
 
@@ -394,6 +396,7 @@ namespace gView.Framework.Data
                 {
                     stream.Save("FilterQuery", this.FilterQuery.WhereClause);
                 }
+                stream.Save("FilterOrderBy", this.FilterQuery.OrderBy);
             }
 
             if (_joins != null)

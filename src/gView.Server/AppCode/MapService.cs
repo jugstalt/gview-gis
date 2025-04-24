@@ -272,35 +272,88 @@ namespace gView.Server.AppCode
             _accessService.CheckAccess(identity, interpreter, _settings);
         }
 
+        //async public Task<bool> HasAnyAccess(IIdentity identity)
+        //{
+        //    await ReloadServiceSettings();
+
+        //    if ((_folderSettings.AccessRules == null || _folderSettings.AccessRules.Length == 0) &&
+        //        (_settings.AccessRules == null || _settings.AccessRules.Length == 0))
+        //    {
+        //        return true;
+        //    }
+
+        //    var username = _accessService.Username(identity);
+
+        //    var accessRule =
+        //        _folderSettings?.AccessRules?.Where(r => r.Username.Equals(username, StringComparison.InvariantCultureIgnoreCase)).FirstOrDefault() ??
+        //        _settings?.AccessRules?.Where(r => r.Username.Equals(username, StringComparison.InvariantCultureIgnoreCase)).FirstOrDefault();
+
+        //    if (accessRule == null)
+        //    {
+        //        accessRule =
+        //            _folderSettings?.AccessRules?.Where(r => r.Username.Equals(Identity.AnonyomousUsername, StringComparison.InvariantCultureIgnoreCase)).FirstOrDefault() ??
+        //            _settings?.AccessRules?.Where(r => r.Username.Equals(Identity.AnonyomousUsername, StringComparison.InvariantCultureIgnoreCase)).FirstOrDefault();
+        //    }
+
+        //    if (accessRule != null && accessRule.ServiceTypes != null && accessRule.ServiceTypes.Length > 0)
+        //    {
+        //        return true;
+        //    }
+
+        //    return false;
+        //}
+
         async public Task<bool> HasAnyAccess(IIdentity identity)
         {
             await ReloadServiceSettings();
 
-            if ((_folderSettings.AccessRules == null || _folderSettings.AccessRules.Length == 0) &&
-                (_settings.AccessRules == null || _settings.AccessRules.Length == 0))
+            bool folderHasAccessRules = _folderSettings?.AccessRules?.Any() == true;
+            bool hasAccessRules = _settings?.AccessRules?.Any() == true;
+
+            if (!folderHasAccessRules && !hasAccessRules)
             {
+                // no accessrules => everyone has access
                 return true;
             }
 
             var username = _accessService.Username(identity);
 
-            var accessRule =
-                _folderSettings?.AccessRules?.Where(r => r.Username.Equals(username, StringComparison.InvariantCultureIgnoreCase)).FirstOrDefault() ??
-                _settings?.AccessRules?.Where(r => r.Username.Equals(username, StringComparison.InvariantCultureIgnoreCase)).FirstOrDefault();
+            var anyFolderAccessRule = 
+                _folderSettings?
+                    .AccessRules?
+                    .Where(r => r.Username.Equals(username, StringComparison.InvariantCultureIgnoreCase))
+                    .FirstOrDefault() ?? 
+                _folderSettings?
+                    .AccessRules?
+                    .Where(r => r.Username.Equals(Identity.AnonyomousUsername, StringComparison.InvariantCultureIgnoreCase))
+                    .FirstOrDefault();
 
-            if (accessRule == null)
+            if(folderHasAccessRules && anyFolderAccessRule is null)
             {
-                accessRule =
-                    _folderSettings?.AccessRules?.Where(r => r.Username.Equals(Identity.AnonyomousUsername, StringComparison.InvariantCultureIgnoreCase)).FirstOrDefault() ??
-                    _settings?.AccessRules?.Where(r => r.Username.Equals(Identity.AnonyomousUsername, StringComparison.InvariantCultureIgnoreCase)).FirstOrDefault();
+                return false;
             }
 
-            if (accessRule != null && accessRule.ServiceTypes != null && accessRule.ServiceTypes.Length > 0)
+            var anyAccessRule = 
+                _settings?
+                    .AccessRules?
+                    .Where(r => r.Username.Equals(username, StringComparison.InvariantCultureIgnoreCase))
+                    .FirstOrDefault() ?? 
+                _settings?
+                    .AccessRules?
+                    .Where(r => r.Username.Equals(Identity.AnonyomousUsername, StringComparison.InvariantCultureIgnoreCase))
+                    .FirstOrDefault();
+
+            if (hasAccessRules && anyAccessRule is null)
             {
-                return true;
+                return false;
             }
 
-            return false;
+            anyAccessRule ??= anyFolderAccessRule;
+
+            return
+                anyAccessRule is not null &&
+                anyAccessRule.ServiceTypes is not null &&
+                anyAccessRule.ServiceTypes.Length > 0;
         }
 
         async public Task<AccessTypes> GetAccessTypes(IIdentity identity)
