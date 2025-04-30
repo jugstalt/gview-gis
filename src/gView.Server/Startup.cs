@@ -73,7 +73,7 @@ public class Startup
 
         #region Proj Engine
 
-        switch (Configuration.Value("graphics:rendering")?.ToString()?.ToLower())
+        switch (Configuration.Value("proj-engine:engine")?.ToString()?.ToLower())
         {
             case "nativeproj4":
                 GeometricTransformerFactory.TransformerType = GeoTranformerType.NativeProj4;

@@ -5,10 +5,11 @@
                      Model="base.Model">
     <FormContent>
         <GeographicDatumSelectorControl @ref="control"
+                                        ExcludeGeoCentric="true"
                                         GeodeticDatumChanged="() => DatumChanged()" />
     </FormContent>
     <DialogButtons>
-       
+
     </DialogButtons>
 </ModalDialogFormBase>
 
@@ -21,10 +22,10 @@
 
     private void DatumChanged()
     {
-        if(control?.GeodeticDatum != null)
+        if (control?.GeodeticDatum != null)
         {
             Model.Value = control.GeodeticDatum;
             base.Submit();
-        }       
+        }
     }
 }

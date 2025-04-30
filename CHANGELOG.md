@@ -31,5 +31,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
     [Online Documentation](https://docs.gviewonline.com/en/setup/config-server.html)
 
 -   **Projection:** Intoduced gridshifts for transforming to WGS84.
+    (still in beta)
 
 ## Fixed

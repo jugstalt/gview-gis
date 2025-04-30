@@ -2,5 +2,9 @@
 
 public interface IDatumGridShiftProvider
 {
-    public string[] GridShiftNames();
+    (string shortName, string name)[] GridShiftNames();
+
+    (string shortName, string name)[] EllipsoidNames();
+
+    string GridParameter(string shiftShortName, string ellipsoidShortName);
 }

@@ -182,9 +182,9 @@ namespace gView.Framework.Geometry
 
         #region IDatumGridShiftProvider Member
 
-        public string[] GridShiftNames()
+        public (string shortName, string name)[] GridShiftNames()
         {
-            string projLibPath = Environment.GetEnvironmentVariable("PROJ_LIB");
+            string projLibPath = Proj4Net.Core.IO.Paths.PROJ_LIB;
 
             if (String.IsNullOrEmpty(projLibPath) ||
                 !Directory.Exists(projLibPath))
@@ -192,20 +192,29 @@ namespace gView.Framework.Geometry
                 return [];
             }
 
-            List<string> result = new();
+            List<(string, string)> result = new();
 
             foreach (var file in Directory.GetFiles(projLibPath))
             {
                 switch (System.IO.Path.GetExtension(file).ToLower())
                 {
                     case ".gsb":
-                        result.Add(System.IO.Path.GetFileName(file));
+                        result.Add((System.IO.Path.GetFileName(file), System.IO.Path.GetFileName(file)));
                         break;
                 }
             }
 
             return result.ToArray();
         }
+
+        public (string shortName, string name)[] EllipsoidNames() => [];
+
+        public string GridParameter(string shiftName, string ellipsoidShortName)
+            => (shiftName ?? "", ellipsoidShortName ?? "") switch
+            {
+                ("", _) => "",
+                (_, _) => $"+nadgrids={shiftName}"
+            };
 
         #endregion
 

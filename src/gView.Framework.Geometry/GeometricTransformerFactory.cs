@@ -9,9 +9,7 @@ namespace gView.Framework.Geometry
     {
         ManagedProj4Parallel = 0,
         ManagedProj4 = 1,
-        NativeProj4 = 2,
-        //NativeProj6 = 3,
-        //NativeProj9 = 4,
+        NativeProj4 = 2
     }
 
     static public class GeometricTransformerFactory
@@ -23,8 +21,6 @@ namespace gView.Framework.Geometry
             System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location)!,
             "share",
             TransformerType switch {
-                //GeoTranformerType.NativeProj6 => "proj6",
-                //GeoTranformerType.NativeProj9 => "proj9",
                 _ => "proj"
             }
             );
@@ -68,15 +64,24 @@ namespace gView.Framework.Geometry
             };
         }
 
-        static public string[] SupportedGridShifts()
+        static public (string shortName, string name)[] SupportedGridShifts()
         {
             return TransformerType switch
             {
                 GeoTranformerType.NativeProj4 => new GeometricTransformerProj4Nativ(null).GridShiftNames(),
-                //GeoTranformerType.NativeProj6 => [],
-                //GeoTranformerType.NativeProj9 => [],
                 GeoTranformerType.ManagedProj4 => new GeometricTransformerProj4Managed(null).GridShiftNames(),
                 GeoTranformerType.ManagedProj4Parallel => new GeometricTransformerProj4ManagedParallel(null).GridShiftNames(),
+                _ => throw new NotImplementedException($"GeometricTransformerFactory: {TransformerType} not implemented!")
+            };
+        }
+
+        static public (string shortName, string name)[] SupportedEllipsoids()
+        {
+            return TransformerType switch
+            {
+                GeoTranformerType.NativeProj4 => new GeometricTransformerProj4Nativ(null).EllipsoidNames(),
+                GeoTranformerType.ManagedProj4 => new GeometricTransformerProj4Managed(null).EllipsoidNames(),
+                GeoTranformerType.ManagedProj4Parallel => new GeometricTransformerProj4ManagedParallel(null).EllipsoidNames(),
                 _ => throw new NotImplementedException($"GeometricTransformerFactory: {TransformerType} not implemented!")
             };
         }

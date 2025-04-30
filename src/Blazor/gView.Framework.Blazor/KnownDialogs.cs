@@ -6,6 +6,7 @@
         SpatialReferenceDialog,
         GeographicProjectionSelectorDialog,
         GeographicDatumSelectorDialog,
+        GeographicDatumNonGeoCentricDialog,
         GeographicDatumAndGridShiftSelectorDialog,
         DatumTransformationDialog,
         ConnectionString,

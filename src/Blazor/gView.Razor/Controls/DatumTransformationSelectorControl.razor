@@ -42,7 +42,7 @@
 
     private Task SelectFromDatum() => HandleAsync(async () =>
     {
-        var model = await AppScopeFactory.ShowKnownDialog<BaseDialogModel<IGeodeticDatum>>(KnownDialogs.GeographicDatumSelectorDialog);
+        var model = await AppScopeFactory.ShowKnownDialog<BaseDialogModel<IGeodeticDatum>>(KnownDialogs.GeographicDatumNonGeoCentricDialog);
 
         if (model?.Value != null)
         {

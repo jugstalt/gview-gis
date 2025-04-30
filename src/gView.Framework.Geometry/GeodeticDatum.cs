@@ -40,10 +40,13 @@ public class GeodeticDatum : IGeodeticDatum
             return;
         }
 
-        if (GeometricTransformerFactory.SupportedGridShifts().Contains(name))
+        foreach (var namePart in name.Split(","))
         {
-            GridShiftFile = name;
-            return;
+            if (GeometricTransformerFactory.SupportedGridShifts().Select(g => g.shortName).Contains(namePart))
+            {
+                GridShiftFile = name;
+                return;
+            }
         }
     }
     public GeodeticDatum(GeodeticDatum datum)

@@ -13,7 +13,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Proj4Net.Core" Version="2.25.1602" />
+    <PackageReference Include="Proj4Net.Core" Version="2.25.1802" />
   </ItemGroup>
 
   <ItemGroup>
