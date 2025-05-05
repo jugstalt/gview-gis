@@ -4,10 +4,10 @@ using gView.Framework.Core.Data.Filters;
 using gView.Framework.Core.Geometry;
 using gView.Framework.Data;
 using gView.Framework.Db.Extensions;
+using Microsoft.Data.SqlClient;
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.SqlClient;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
@@ -31,17 +31,17 @@ namespace gView.DataSources.Fdb.MSSql
         ISpatialFilter _spatialFilter;
         public int _limit = 0, _beginRecord = 0;
 
-        private SqlFDBFeatureCursor(IGeometryDef geomDef, ISpatialReference toSRef) :
-            base((geomDef != null) ? geomDef.SpatialReference : null,
-                 /*(filter!=null) ? filter.FeatureSpatialReference : null*/
-                 toSRef)
+        private SqlFDBFeatureCursor(IGeometryDef geomDef, ISpatialReference toSRef, IDatumTransformations datumTransformations)
+            : base(geomDef?.SpatialReference,
+                   toSRef,
+                   datumTransformations)
         {
 
         }
 
-        async public static Task<IFeatureCursor> Create(string connString, string sql, string where, string orderBy, int limit, int beginRecord, bool nolock, List<long> nids, ISpatialFilter filter, IGeometryDef geomDef, ISpatialReference toSRef)
+        async public static Task<IFeatureCursor> Create(string connString, string sql, string where, string orderBy, int limit, int beginRecord, bool nolock, List<long> nids, ISpatialFilter filter, IGeometryDef geomDef, ISpatialReference toSRef, IDatumTransformations datumTransformations)
         {
-            var cursor = new SqlFDBFeatureCursor(geomDef, toSRef);
+            var cursor = new SqlFDBFeatureCursor(geomDef, toSRef, datumTransformations);
 
             try
             {

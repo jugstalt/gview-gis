@@ -53,7 +53,7 @@ public class FeaturesInsert : BaseApiEndpoint
 
                      var geoJsonFeatureSref = editRequest.CRS.ToSpatialReferenceOrDefault();
 
-                     var features = editRequest.Features.GetFeatrues(featureClass, geoJsonFeatureSref);
+                     var features = editRequest.Features.GetFeatrues(featureClass, geoJsonFeatureSref, serviceMap.Display?.DatumTransformations);
                      if (features.Count() == 0)
                      {
                          throw new MapServerException("No features to add");

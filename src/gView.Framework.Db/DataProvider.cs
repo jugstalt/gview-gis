@@ -2,8 +2,9 @@ using Oracle.ManagedDataAccess.Client;
 using System;
 using System.Data;
 using System.Data.Common;
-using System.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 using System.Text;
+using gView.Framework.Db.Extensions;
 
 namespace gView.Framework.Db
 {
@@ -12,10 +13,10 @@ namespace gView.Framework.Db
     /// </summary>
     public class DataProvider
     {
-        private SqlConnection sqlConnection = null;
-        private OracleConnection oracleConnection = null;
-        private DbConnection dbConnection = null;
-        private DbProviderFactory dbFactory = null;
+        private SqlConnection _sqlConnection = null;
+        private OracleConnection _oracleConnection = null;
+        private DbConnection _dbConnection = null;
+        private DbProviderFactory _dbFactory = null;
         private string _errMsg = "";
 
         public DataProvider()
@@ -59,21 +60,21 @@ namespace gView.Framework.Db
                 {
                     case "oracleclient":
                     case "oracle":
-                        oracleConnection = new OracleConnection(connStr);
+                        _oracleConnection = new OracleConnection(connStr);
                         if (testIt)
                         {
-                            oracleConnection.Open();
-                            oracleConnection.Close();
+                            _oracleConnection.Open();
+                            _oracleConnection.Close();
                         }
                         break;
                     case "sqlclient":
                     case "sql":
                     case "mssql":
-                        sqlConnection = new SqlConnection(connStr);
+                        _sqlConnection = new SqlConnection(connStr.AppendSqlServerParametersIfNotExists());
                         if (testIt)
                         {
-                            sqlConnection.Open();
-                            sqlConnection.Close();
+                            _sqlConnection.Open();
+                            _sqlConnection.Close();
                         }
                         break;
                     case "postgre":
@@ -81,14 +82,14 @@ namespace gView.Framework.Db
                     case "npgsql":
                         try
                         {
-                            dbFactory = DataProvider.PostgresProvider;
+                            _dbFactory = DataProvider.PostgresProvider;
 
-                            dbConnection = dbFactory.CreateConnection();
-                            dbConnection.ConnectionString = DbConnectionString.ParseNpgsqlConnectionString(connStr);
+                            _dbConnection = _dbFactory.CreateConnection();
+                            _dbConnection.ConnectionString = connStr.ParseNpgsqlConnectionString();
                             if (testIt)
                             {
-                                dbConnection.Open();
-                                dbConnection.Close();
+                                _dbConnection.Open();
+                                _dbConnection.Close();
                             }
                             break;
                         }
@@ -112,27 +113,27 @@ namespace gView.Framework.Db
         }
         public void Close()
         {
-            if (oracleConnection != null)
+            if (_oracleConnection != null)
             {
-                oracleConnection.Close();
-                oracleConnection.Dispose();
+                _oracleConnection.Close();
+                _oracleConnection.Dispose();
             }
-            if (sqlConnection != null)
+            if (_sqlConnection != null)
             {
-                sqlConnection.Close();
-                sqlConnection.Dispose();
+                _sqlConnection.Close();
+                _sqlConnection.Dispose();
             }
-            if (dbConnection != null)
+            if (_dbConnection != null)
             {
-                dbConnection.Close();
-                dbConnection.Dispose();
+                _dbConnection.Close();
+                _dbConnection.Dispose();
             }
-            sqlConnection = null;
-            sqlConnection = null;
-            sqlConnection = null;
-            sqlConnection = null;
-            dbConnection = null;
-            dbFactory = null;
+            _sqlConnection = null;
+            _sqlConnection = null;
+            _sqlConnection = null;
+            _sqlConnection = null;
+            _dbConnection = null;
+            _dbFactory = null;
         }
 
         public DataTable ExecuteQuery(string sql)
@@ -141,30 +142,30 @@ namespace gView.Framework.Db
             {
                 DataSet ds = new DataSet();
 
-                if (oracleConnection != null)
+                if (_oracleConnection != null)
                 {
-                    oracleConnection.Open();
-                    OracleDataAdapter adapter = new OracleDataAdapter(sql, oracleConnection);
+                    _oracleConnection.Open();
+                    OracleDataAdapter adapter = new OracleDataAdapter(sql, _oracleConnection);
                     adapter.Fill(ds);
-                    oracleConnection.Close();
+                    _oracleConnection.Close();
                 }
-                else if (sqlConnection != null)
+                else if (_sqlConnection != null)
                 {
-                    sqlConnection.Open();
-                    SqlDataAdapter adapter = new SqlDataAdapter(sql, sqlConnection);
+                    _sqlConnection.Open();
+                    SqlDataAdapter adapter = new SqlDataAdapter(sql, _sqlConnection);
                     adapter.Fill(ds);
-                    sqlConnection.Close();
+                    _sqlConnection.Close();
                 }
-                else if (dbConnection != null && dbFactory != null)
+                else if (_dbConnection != null && _dbFactory != null)
                 {
-                    DbCommand command = dbFactory.CreateCommand();
-                    command.Connection = dbConnection;
+                    DbCommand command = _dbFactory.CreateCommand();
+                    command.Connection = _dbConnection;
                     command.CommandText = sql;
-                    dbConnection.Open();
-                    DbDataAdapter adapter = dbFactory.CreateDataAdapter();
+                    _dbConnection.Open();
+                    DbDataAdapter adapter = _dbFactory.CreateDataAdapter();
                     adapter.SelectCommand = command;
                     adapter.Fill(ds);
-                    dbConnection.Close();
+                    _dbConnection.Close();
                 }
                 if (ds.Tables.Count == 0)
                 {
@@ -175,19 +176,19 @@ namespace gView.Framework.Db
             }
             catch (Exception ex)
             {
-                if (oracleConnection != null)
+                if (_oracleConnection != null)
                 {
-                    oracleConnection.Close();
+                    _oracleConnection.Close();
                 }
 
-                if (sqlConnection != null)
+                if (_sqlConnection != null)
                 {
-                    sqlConnection.Close();
+                    _sqlConnection.Close();
                 }
 
-                if (dbConnection != null)
+                if (_dbConnection != null)
                 {
-                    dbConnection.Close();
+                    _dbConnection.Close();
                 }
 
                 _errMsg = ex.Message;
@@ -217,7 +218,7 @@ namespace gView.Framework.Db
         {
             tableName = tableName.Trim();
 
-            if (dbConnection != null && dbConnection.GetType().ToString().ToLower().Contains(".npgsqlconnection"))
+            if (_dbConnection != null && _dbConnection.GetType().ToString().ToLower().Contains(".npgsqlconnection"))
             {
                 return ToDbTableName("npgsql", tableName);
             }
@@ -229,7 +230,7 @@ namespace gView.Framework.Db
         {
             fieldName = fieldName.Trim();
 
-            if (dbConnection != null && dbConnection.GetType().ToString().ToLower().Contains(".npgsqlconnection"))
+            if (_dbConnection != null && _dbConnection.GetType().ToString().ToLower().Contains(".npgsqlconnection"))
             {
                 return ToDbTableName("npgsql", fieldName);
             }
@@ -239,7 +240,7 @@ namespace gView.Framework.Db
 
         public string ToFieldNames(string fieldNames)
         {
-            if (dbConnection != null && dbConnection.GetType().ToString().ToLower().Contains(".npgsqlconnection"))
+            if (_dbConnection != null && _dbConnection.GetType().ToString().ToLower().Contains(".npgsqlconnection"))
             {
                 return ToDbFieldNames("npgsql", fieldNames);
             }
@@ -250,7 +251,7 @@ namespace gView.Framework.Db
         {
             where = where.Trim();
 
-            if (dbConnection != null && dbConnection.GetType().ToString().ToLower().Contains(".npgsqlconnection"))
+            if (_dbConnection != null && _dbConnection.GetType().ToString().ToLower().Contains(".npgsqlconnection"))
             {
                 return ToDbWhereClause("npgsql", where);
             }
@@ -262,7 +263,7 @@ namespace gView.Framework.Db
         {
             get
             {
-                if (dbConnection != null && dbConnection.GetType().ToString().ToLower().Contains(".npgsqlconnection"))
+                if (_dbConnection != null && _dbConnection.GetType().ToString().ToLower().Contains(".npgsqlconnection"))
                 {
                     return "\"";
                 }
@@ -274,7 +275,7 @@ namespace gView.Framework.Db
         {
             get
             {
-                if (dbConnection != null && dbConnection.GetType().ToString().ToLower().Contains(".npgsqlconnection"))
+                if (_dbConnection != null && _dbConnection.GetType().ToString().ToLower().Contains(".npgsqlconnection"))
                 {
                     return "\"";
                 }

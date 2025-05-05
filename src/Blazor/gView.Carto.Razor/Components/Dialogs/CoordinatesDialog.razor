@@ -1,6 +1,7 @@
 @inherits ModalDialogFormBase<CoordinatesDialogModel>
 
 @inject GeoTransformerService GeoTransformation
+@inject ICartoApplicationScopeService AppScope
 
 <ModalDialogFormBase T="CoordinatesDialogModel"
                      OnDialogClose="base.OnDialogClose"
@@ -58,7 +59,8 @@
             Model.Coordinate = GeoTransformation.Transform(
                         Model.Coordinate,
                         Model.SpatialReference,
-                        newSpatialReference
+                        newSpatialReference,
+                        AppScope.Document?.Map?.Display?.DatumTransformations
                     ) as IPoint ?? new Point();
         }
 

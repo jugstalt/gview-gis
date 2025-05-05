@@ -5,6 +5,7 @@ using gView.Framework.Core.Exceptions;
 using gView.Framework.Core.MapServer;
 using gView.GeoJsonService;
 using gView.GeoJsonService.DTOs;
+using gView.Interoperability.GeoServices.Rest.DTOs;
 using gView.Server.AppCode;
 using gView.Server.AppCode.Extensions;
 using gView.Server.EndPoints.GeoJsonService;
@@ -12,6 +13,7 @@ using gView.Server.Models;
 using gView.Server.Services.Hosting;
 using gView.Server.Services.MapServer;
 using gView.Server.Services.Security;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using System;
@@ -99,16 +101,16 @@ public class BrowseServicesController : BaseController
                 }
             }
 
-            List<IMapService> services = new List<IMapService>();
-            foreach (var s in _mapServerService.MapServices)
+            List<IMapService> mapServices = new List<IMapService>();
+            foreach (var mapService in _mapServerService.MapServices)
             {
-                if (s.Type != MapServiceType.Folder &&
-                    s.Folder == folder &&
-                    (await s.GetSettingsAsync()).IsRunningOrIdle() &&
-                     await s.HasAnyAccess(identity) &&
-                     await IsAccessAllowed(identity, s))
+                if (mapService.Type != MapServiceType.Folder &&
+                    mapService.Folder == folder &&
+                    (await mapService.GetSettingsAsync()).IsRunningOrIdle() &&
+                     await mapService.HasAnyAccess(identity) &&
+                     await IsAccessAllowed(identity, mapService))
                 {
-                    services.Add(s);
+                    mapServices.Add(mapService);
                 }
             }
 
@@ -121,7 +123,7 @@ public class BrowseServicesController : BaseController
                 IsManager = isManager,
                 Folder = folder,
                 Folders = folders.ToArray(),
-                Services = services.ToArray(),
+                Services = mapServices.ToArray(),
 
                 ServiceName = serviceName,
                 Message = errorMessage
@@ -146,18 +148,24 @@ public class BrowseServicesController : BaseController
             throw new NotAuthorizedException();
         }
 
-        var url = AppendPathToBaseUrl(
-                new RouteBuilder()
+        var url = new RouteBuilder()
                 .UseCapabilitesRoute(mapService)
-                .Build()
-            );
-        var httpResponse = (await _httpClient.GetAsync(url)).EnsureSuccessStatusCode();
+                .Build();
+
+        var httpResponse = (await _httpClient.GetAsync(AppendPathToBaseUrlAndToken(url))).EnsureSuccessStatusCode();
         var jsonResponse = await httpResponse.Content.ReadAsStringAsync();
 
-        var response = GeoJsonSerializer.DeserializeResponse(jsonResponse);
+        try
+        {
+            var response = GeoJsonSerializer.DeserializeResponse(jsonResponse);
 
-        ViewData["htmlbody"] = response.GeoJsonObjectToHtml(mapService);
-        return View("_htmlbody");
+            ViewData["htmlbody"] = response.GeoJsonObjectToHtml(mapService);
+            return View("_htmlbody");
+        } 
+        catch
+        {
+            throw new Exception(jsonResponse);
+        }
     });
 
     [HttpGet]
@@ -189,14 +197,23 @@ public class BrowseServicesController : BaseController
             _ => (requestParts[0].ToLowerInvariant(), (int?)null)
         };
 
-        var capabilitiesUrl = AppendPathToBaseUrl(
+        var capabilitiesUrl =
                 new RouteBuilder()
                 .UseCapabilitesRoute(mapService)
-                .Build()
-            );
-        var httpCapabilitiesResponse = (await _httpClient.GetAsync(capabilitiesUrl)).EnsureSuccessStatusCode();
+                .Build();
+
+        var httpCapabilitiesResponse = (await _httpClient.GetAsync(AppendPathToBaseUrlAndToken(capabilitiesUrl))).EnsureSuccessStatusCode();
         var jsonCapabilitiesResponse = await httpCapabilitiesResponse.Content.ReadAsStringAsync();
-        var capabilitiesResponse = GeoJsonSerializer.DeserializeResponse(jsonCapabilitiesResponse) as GetServiceCapabilitiesResponse;
+
+        GetServiceCapabilitiesResponse capabilitiesResponse;
+        try
+        {
+            capabilitiesResponse = GeoJsonSerializer.DeserializeResponse(jsonCapabilitiesResponse) as GetServiceCapabilitiesResponse;
+        }
+        catch
+        {
+            throw new Exception(jsonCapabilitiesResponse);
+        }
 
         var supportedRequests = capabilitiesResponse.SupportedRequests.Where(r => r.Name == command).FirstOrDefault();
         if (supportedRequests is null)
@@ -291,10 +308,15 @@ public class BrowseServicesController : BaseController
             sb.Append($"{formKey}={value}");
         }
 
-        var requestUrl = $"{new RouteBuilder().UseServiceRootRoute(mapService).Build()}/{request}";
+        var requestUrl = new RouteBuilder()
+            .UseServiceRootRoute(mapService)
+            .AppendUrlPath(request)
+            .AppendQueryString(sb.ToString())
+            .Build();
+
         var beginTime = DateTime.UtcNow;
 
-        var httpRequestResponse = (await _httpClient.GetAsync($"{AppendPathToBaseUrl(requestUrl)}?{sb}")).EnsureSuccessStatusCode();
+        var httpRequestResponse = (await _httpClient.GetAsync($"{AppendPathToBaseUrlAndToken(requestUrl)}")).EnsureSuccessStatusCode();
 
         var requestTimeSpan = DateTime.UtcNow - beginTime;
         var contentType = httpRequestResponse.Content.Headers.ContentType.MediaType;
@@ -307,7 +329,7 @@ public class BrowseServicesController : BaseController
 
         ViewData["htmlbody"] = requestResponse.GeoJsonObjectToHtml(
                 mapService,
-                requestUrl: $"{_configuration["onlineresource-url"]}/{requestUrl}?{sb}",
+                requestUrl: $"{_configuration["onlineresource-url"]}/{requestUrl}",
                 requestTimeSpan: requestTimeSpan
            );
         return View("_htmlbody");
@@ -363,10 +385,14 @@ public class BrowseServicesController : BaseController
         };
 
         var requestBody = GeoJsonSerializer.Serialize(requestBodyObject);
-        var requestUrl = $"{new RouteBuilder().UseServiceRootRoute(mapService).Build()}/{request}";
+        var requestUrl = new RouteBuilder()
+                .UseServiceRootRoute(mapService)
+                .AppendUrlPath(request)
+                .Build();
+
         var beginTime = DateTime.UtcNow;
 
-        var httpRequestResponse = (await _httpClient.PostAsync($"{AppendPathToBaseUrl(requestUrl)}",
+        var httpRequestResponse = (await _httpClient.PostAsync($"{AppendPathToBaseUrlAndToken(requestUrl)}",
             new StringContent(requestBody))).EnsureSuccessStatusCode();
 
         var requestTimeSpan = DateTime.UtcNow - beginTime;
@@ -480,7 +506,8 @@ public class BrowseServicesController : BaseController
 
                 var file = Request.Form.Files[0];
                 byte[] buffer = new byte[file.Length];
-                await file.OpenReadStream().ReadAsync(buffer, 0, buffer.Length);
+
+                await file.OpenReadStream().ReadExactlyAsync(buffer, 0, buffer.Length);
 
                 string mapXml = String.Empty;
 
@@ -602,9 +629,24 @@ public class BrowseServicesController : BaseController
 
     #region Helper
 
-    private string AppendPathToBaseUrl(string path)
-        => (_configuration["onlineresource-url-internal"] ??
+    private string AppendPathToBaseUrlAndToken(string path)
+    {
+        var url = (_configuration["onlineresource-url-internal"] ??
            _configuration["onlineresource-url"]) + "/" + path;
+
+        var token = this.Request.Query["token"];
+        if (string.IsNullOrEmpty(token))
+        {
+            token = this.Request.Cookies[Globals.AuthCookieName];
+        }
+
+        if(!String.IsNullOrEmpty(token))
+        {
+            url += (url.Contains("?") ? "&" : "?") + $"token={token}";
+        }
+
+        return url;
+    }
 
     async override protected Task<IActionResult> SecureMethodHandler(Func<Identity, Task<IActionResult>> func, Func<Exception, IActionResult> onException = null)
     {

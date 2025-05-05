@@ -116,7 +116,8 @@ namespace gView.Framework.Data.Filters
             pFilter.Geometry = GeometricTransformerFactory.Transform2D(
                 filter.Geometry,
                 filter.FilterSpatialReference,
-                to);
+                to,
+                filter.DatumTransformations);
 
             return pFilter;
         }

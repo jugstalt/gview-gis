@@ -20,8 +20,9 @@ namespace gView.Framework.OGC.GML
         private GmlVersion _gmlVersion;
 
         public FeatureCursor(IFeatureClass fc, XmlNode featureCollection, XmlNamespaceManager ns, IQueryFilter filter, GmlVersion gmlVersion)
-            : base((fc != null) ? fc.SpatialReference : null,
-                   (filter != null) ? filter.FeatureSpatialReference : null)
+            : base(fc?.SpatialReference,
+                   filter?.FeatureSpatialReference,
+                   filter?.DatumTransformations)
         {
             _ns = ns;
             _filter = filter;
@@ -148,8 +149,9 @@ namespace gView.Framework.OGC.GML
         private GmlVersion _gmlVersion;
 
         public FeatureCursor2(IFeatureClass fc, XmlTextReader reader, XmlNamespaceManager ns, IQueryFilter filter, GmlVersion gmlVersion)
-            : base((fc != null) ? fc.SpatialReference : null,
-                   (filter != null) ? filter.FeatureSpatialReference : null)
+            : base(fc?.SpatialReference,
+                   filter?.FeatureSpatialReference, 
+                   filter?.DatumTransformations)
         {
             _ns = ns;
             _filter = filter;

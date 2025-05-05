@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace gView.DataSources.Fdb.MSSql
 {
-    public class SqlFDBFeatureClass : IFeatureClass, IRefreshable
+    public class SqlFDBFeatureClass : IFeatureClass, IRefreshable, IFeatureCursorRequiresWrapperForOrdering
     {
         private SqlFDB _fdb;
         private IDataset _dataset;
@@ -113,7 +113,7 @@ namespace gView.DataSources.Fdb.MSSql
 
             if (filter is IRowIDFilter)
             {
-                return await _fdb.QueryIDs(this, filter.SubFieldsAndAlias, ((IRowIDFilter)filter).IDs, filter.FeatureSpatialReference);
+                return await _fdb.QueryIDs(this, filter.SubFieldsAndAlias, ((IRowIDFilter)filter).IDs, filter.FeatureSpatialReference, filter.DatumTransformations);
             }
             else
             {

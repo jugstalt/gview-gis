@@ -33,7 +33,7 @@ class BundleIndex
         {
             byte[] data = new byte[8];
             fs.Position = indexPosition;
-            fs.Read(data, 0, 8);
+            fs.ReadExactly(data, 0, 8);
 
             int position = BitConverter.ToInt32(data, 0);
             tileLength = BitConverter.ToInt32(data, 4);

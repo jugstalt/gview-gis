@@ -113,7 +113,7 @@ internal class DeployVersionService
         {
             _ioService.CopyIfNotExists(
                 zipArchive,
-                $"{version}/server/_config/_mapserver.json",
+                $"{version}/server/_setup/_mapserver.json",
                 Path.Combine(_deployRepositoryService.ProfileDirectory(profile), "server", "override", "_config", "mapserver.json"));
         }
 
@@ -122,7 +122,7 @@ internal class DeployVersionService
         {
             _ioService.CopyIfNotExists(
                 zipArchive,
-                 $"{version}/webapps/_config/_gview-webapps.config",
+                 $"{version}/webapps/_setup/_gview-webapps.config",
                 Path.Combine(_deployRepositoryService.ProfileDirectory(profile), "webapps", "override", "_config", "gview-webapps.config"));
         }
     }

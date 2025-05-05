@@ -123,7 +123,7 @@ static internal class HtmlExtensions
             sb.Append("<div class='property-name" + (newLine ? " array" : "") + "'>" + spacesValue + propertyInfo.Name + ":&nbsp;</div>");
             sb.Append("<div class='property-value'>");
 
-            if (isArray || propertyInfo.PropertyType.IsArray)
+            if (propertyInfo.PropertyType.IsArray)
             {
                 var array = (Array)propertyInfo.GetValue(obj);
                 if (array == null)

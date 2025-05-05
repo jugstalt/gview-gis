@@ -573,7 +573,7 @@ namespace gView.Interoperability.ArcXML
                                     bFilter.SubFields = "*";
                                     bFilter.RootFeatureClass = getFeatures.Classes[0] as IFeatureClass;
                                     bFilter.BufferDistance = Convert.ToDouble(buffer.Attributes["distance"].Value.Replace(".", ","));
-                                    bFilter.FeatureSpatialReference = filter.FeatureSpatialReference;
+                                    bFilter.SetFeatureSpatialReference(filter.FeatureSpatialReference, serviceMap.Display?.DatumTransformations);
                                     filter = bFilter;
 
                                     getFeatures.Classes = tClass;
@@ -694,11 +694,11 @@ namespace gView.Interoperability.ArcXML
                         ISpatialReference sRef3 = this.SpatialReferenceFromNode(query, SpatialreferenceType.Feature);
                         if (sRef3 != null)
                         {
-                            getFeatures.Filter.FeatureSpatialReference = sRef3;
+                            getFeatures.Filter.SetFeatureSpatialReference(sRef3, serviceMap.Display?.DatumTransformations);
                             if (getFeatures.Filter is IBufferQueryFilter &&
                                 ((IBufferQueryFilter)getFeatures.Filter).RootFilter != null)
                             {
-                                ((IBufferQueryFilter)getFeatures.Filter).RootFilter.FeatureSpatialReference = sRef3;
+                                ((IBufferQueryFilter)getFeatures.Filter).RootFilter.SetFeatureSpatialReference(sRef3, serviceMap.Display?.DatumTransformations);
                             }
                         }
                     }
@@ -1114,7 +1114,7 @@ namespace gView.Interoperability.ArcXML
                         queryNode = rType.SelectSingleNode("SPATIALQUERY");
                     }
 
-                    IQueryFilter filter = ObjectFromAXLFactory.Query(queryNode, netFc as ITableClass);
+                    IQueryFilter filter = ObjectFromAXLFactory.Query(queryNode, netFc as ITableClass, map2.Display?.DatumTransformations);
                     if (filter == null)
                     {
                         //((AXLRequest)axlrequest).ResetEvent.Set();

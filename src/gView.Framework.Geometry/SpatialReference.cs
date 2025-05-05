@@ -1,4 +1,4 @@
-using gView.Framework.Core.Geometry;
+﻿using gView.Framework.Core.Geometry;
 using gView.Framework.Core.IO;
 using gView.Framework.Geometry.Proj;
 using gView.Framework.Geometry.SpatialRefTranslation;
@@ -115,7 +115,14 @@ namespace gView.Framework.Geometry
         {
             get
             {
-                return _params.Split(' ');
+                var parameters =  _params.Split(' ');
+
+                if(_datum?.Parameter.StartsWith("+nadgrids=") == true)
+                {
+                    parameters = parameters.Where(p => !p.StartsWith("+nadgrids=")).ToArray();
+                }
+
+                return parameters;
             }
             set
             {
@@ -201,7 +208,7 @@ namespace gView.Framework.Geometry
         {
             if (sRef == null)
             {
-                return true; // keine Projektion m�glich/notwendig!!!
+                return true; // keine Projektion möglich/notwendig!!!
             }
 
             string[] parms1 = this.Parameters;
@@ -271,7 +278,7 @@ namespace gView.Framework.Geometry
 
         public override string ToString()
         {
-            return "SpatialReference: " + _params + ((_datum != null) ? _datum.Parameter : "");
+            return "SpatialReference: " + _params + ((_datum != null) ? " " + _datum.Parameter : "");
         }
 
         public string ToString(string param)

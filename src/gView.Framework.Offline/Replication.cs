@@ -1917,7 +1917,7 @@ namespace gView.Framework.Offline
         public event CheckIn_MessageEventHandler CheckIn_Message;
 
         public enum ProcessType { CheckinAndRelease = 0, Reconcile = 1 }
-        async public Task<(bool sucess, string errMsg)> Process(IFeatureClass parentFc, IFeatureClass childFc, ProcessType type)
+        async public Task<(bool sucess, string errMsg)> Process(IFeatureClass parentFc, IFeatureClass childFc, ProcessType type, IDatumTransformations datumTransformations)
         {
             string errMsg = String.Empty;
             CheckinConst c = new CheckinConst();
@@ -2104,7 +2104,7 @@ SELECT " + c.parentFc_id + @"," + c.parentDb.DbColName("OBJECT_GUID") + ",0," + 
                 await LockReplicationSession(parentFc, c.checkout_guid, LockState.Softlock);
                 await LockReplicationSession(childFc, c.checkout_guid, LockState.Softlock);
 
-                var checkInResult = await CheckIn(parentFc, childFc, c);
+                var checkInResult = await CheckIn(parentFc, childFc, c, datumTransformations);
 
                 if (!checkInResult.success)
                 {
@@ -2122,7 +2122,7 @@ SELECT " + c.parentFc_id + @"," + c.parentDb.DbColName("OBJECT_GUID") + ",0," + 
                     case ProcessType.Reconcile:
                         c.SwapParentChild();
 
-                        var postResult = await Post(parentFc, childFc, c);
+                        var postResult = await Post(parentFc, childFc, c, datumTransformations);
 
                         if (!postResult.success)
                         {
@@ -2331,23 +2331,23 @@ SELECT " + c.parentFc_id + @"," + c.parentDb.DbColName("OBJECT_GUID") + ",0," + 
             }
         }
 
-        async private Task<(bool success, string errMsg)> CheckIn(IFeatureClass parentFc, IFeatureClass childFc, CheckinConst c)
+        async private Task<(bool success, string errMsg)> CheckIn(IFeatureClass parentFc, IFeatureClass childFc, CheckinConst c, IDatumTransformations datumTransformations)
         {
             if (CheckIn_BeginCheckIn != null)
             {
                 CheckIn_BeginCheckIn(this);
             }
 
-            return await CheckIn(parentFc, childFc, true, c);
+            return await CheckIn(parentFc, childFc, true, c, datumTransformations);
         }
-        async private Task<(bool success, string errMsg)> Post(IFeatureClass parentFc, IFeatureClass childFc, CheckinConst c)
+        async private Task<(bool success, string errMsg)> Post(IFeatureClass parentFc, IFeatureClass childFc, CheckinConst c, IDatumTransformations datumTransformations)
         {
             if (CheckIn_BeginPost != null)
             {
                 CheckIn_BeginPost(this);
             }
 
-            return await CheckIn(childFc, parentFc, false, c);
+            return await CheckIn(childFc, parentFc, false, c, datumTransformations);
         }
 
         async public Task<bool> ReleaseVersion(IFeatureClass parentFc, IFeatureClass childFc)
@@ -2482,7 +2482,7 @@ SELECT " + c.parentFc_id + @"," + c.parentDb.DbColName("OBJECT_GUID") + ",0," + 
                 return false;
             }
         }
-        async private Task<(bool success, string errMsg)> CheckIn(IFeatureClass parentFc, IFeatureClass childFc, bool checkin, CheckinConst c)
+        async private Task<(bool success, string errMsg)> CheckIn(IFeatureClass parentFc, IFeatureClass childFc, bool checkin, CheckinConst c, IDatumTransformations datumTransformations)
         {
             string errMsg = String.Empty;
             if (parentFc == null || childFc == null || c == null)
@@ -2567,7 +2567,7 @@ SELECT " + c.parentFc_id + @"," + c.parentDb.DbColName("OBJECT_GUID") + ",0," + 
                             }
 
                             #region Insert
-                            child_feature = await GetFeatureByObjectGuid(c.childDb, childFc, c.child_repl_id_fieldname, object_guid, parentSRef);
+                            child_feature = await GetFeatureByObjectGuid(c.childDb, childFc, c.child_repl_id_fieldname, object_guid, parentSRef, datumTransformations);
                             if (child_feature == null)
                             {
                                 // dürte eigentlich nicht vorkommen
@@ -2597,7 +2597,7 @@ SELECT " + c.parentFc_id + @"," + c.parentDb.DbColName("OBJECT_GUID") + ",0," + 
                             }
 
                             #region Update
-                            child_feature = await GetFeatureByObjectGuid(c.childDb, childFc, c.child_repl_id_fieldname, object_guid, parentSRef);
+                            child_feature = await GetFeatureByObjectGuid(c.childDb, childFc, c.child_repl_id_fieldname, object_guid, parentSRef, datumTransformations);
                             if (child_feature == null)
                             {
                                 // dürte eigentlich nicht vorkommen
@@ -2675,7 +2675,7 @@ SELECT " + c.parentFc_id + @"," + c.parentDb.DbColName("OBJECT_GUID") + ",0," + 
                             }
                             #endregion
 
-                            parent_feature = await GetFeatureByObjectGuid(c.parentDb, parentFc, c.parent_repl_id_fieldname, object_guid, parentSRef);
+                            parent_feature = await GetFeatureByObjectGuid(c.parentDb, parentFc, c.parent_repl_id_fieldname, object_guid, parentSRef, datumTransformations);
                             if (parent_feature == null)
                             {
                                 // dürfe nicht sein, außer Feature wurde gelöscht
@@ -2777,7 +2777,7 @@ SELECT " + c.parentFc_id + @"," + c.parentDb.DbColName("OBJECT_GUID") + ",0," + 
                             }
                             #endregion
 
-                            parent_feature = await GetFeatureByObjectGuid(c.parentDb, parentFc, c.parent_repl_id_fieldname, object_guid, parentSRef);
+                            parent_feature = await GetFeatureByObjectGuid(c.parentDb, parentFc, c.parent_repl_id_fieldname, object_guid, parentSRef, datumTransformations);
                             if (parent_feature == null)
                             {
                                 // dürfe nicht sein, außer Feature wurde gelöscht
@@ -2817,12 +2817,18 @@ SELECT " + c.parentFc_id + @"," + c.parentDb.DbColName("OBJECT_GUID") + ",0," + 
 
             }
         }
-        async private Task<IFeature> GetFeatureByObjectGuid(IFeatureDatabaseReplication db, IFeatureClass fc, string replicGuidFieldName, Guid guid, ISpatialReference destSRef)
+        async private Task<IFeature> GetFeatureByObjectGuid(
+                IFeatureDatabaseReplication db, 
+                IFeatureClass fc, 
+                string replicGuidFieldName, 
+                Guid guid, 
+                ISpatialReference destSRef,
+                IDatumTransformations datumTransformations)
         {
             QueryFilter filter = new QueryFilter();
             filter.AddField("*");
             filter.WhereClause = (db != null ? db.DbColName(replicGuidFieldName) : replicGuidFieldName) + "=" + db.GuidToSql(guid);
-            filter.FeatureSpatialReference = destSRef;
+            filter.SetFeatureSpatialReference(destSRef, datumTransformations);
 
             using (IFeatureCursor cursor = await fc.GetFeatures(filter))
             {

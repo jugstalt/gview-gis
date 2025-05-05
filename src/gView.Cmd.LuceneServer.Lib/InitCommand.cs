@@ -72,6 +72,30 @@ public class InitCommand : ICommand
             {
                 var fcDef = datasetConnection.FeatureClasses.First();
                 fcDef.Name = fc.Name;
+                fcDef.UseGeometry = true;
+                fcDef.ObjectOidField = fc.IDFieldName;
+                fcDef.SRefId = fc.SpatialReference.EpsgCode;
+
+                var fields = fc.Fields.ToEnumerable() ?? [];
+
+                fcDef.IndexItemProto = new Item()
+                {
+                    SuggestedText = String.Join(" ",
+                        fields.Where(f => f.type == FieldType.String)
+                              .Select(f => $"{{{f.name}}}")
+                              .Take(2)),
+                    SubText = String.Join(" ", 
+                        fields.Where(f=>f.type == FieldType.String)
+                              .Select(f=>$"{{{f.name}}}")
+                              .Skip(2)
+                              .Take(2)),
+                    ThumbnailUrl = ""
+                };
+
+                fcDef.Meta = new Meta()
+                {
+
+                };
             }
         }
 

@@ -6,7 +6,7 @@ using gView.Framework.Db.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
@@ -24,15 +24,15 @@ namespace gView.DataSources.Fdb.MSSql
         int _id_pos = 0;
         string _sql;
 
-        private SqlFDBFeatureCursorIDs(IGeometryDef geomDef, ISpatialReference toSRef)
-            : base((geomDef != null) ? geomDef.SpatialReference : null, toSRef)
+        private SqlFDBFeatureCursorIDs(IGeometryDef geomDef, ISpatialReference toSRef, IDatumTransformations datumTransformations)
+            : base(geomDef?.SpatialReference, toSRef, datumTransformations)
         {
 
         }
 
-        async static public Task<IFeatureCursor> Create(string connString, string sql, List<int> IDs, IGeometryDef geomDef, ISpatialReference toSRef)
+        async static public Task<IFeatureCursor> Create(string connString, string sql, List<int> IDs, IGeometryDef geomDef, ISpatialReference toSRef, IDatumTransformations datumTransformations)
         {
-            var cursor = new SqlFDBFeatureCursorIDs(geomDef, toSRef);
+            var cursor = new SqlFDBFeatureCursorIDs(geomDef, toSRef, datumTransformations);
 
             try
             {

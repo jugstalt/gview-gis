@@ -22,7 +22,7 @@ static public class ApplicationBuilderExtensions
             Console.WriteLine($"Info: Set Base Path: {basePath}"); ;
         }
 
-        return app;
+        return app.UsePathBase("/gview-server");
     }
 
     static public IApplicationBuilder AddAuth(this IApplicationBuilder app,

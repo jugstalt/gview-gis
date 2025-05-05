@@ -32,8 +32,11 @@ namespace gView.Framework.Core.Data.Filters
         string fieldPrefix { get; set; }
         string fieldPostfix { get; set; }
 
-        ISpatialReference FeatureSpatialReference { get; set; }
+        ISpatialReference FeatureSpatialReference { get; /*set;*/ }
         ISpatialReference ContextLayerDefaultSpatialReference { get; set; }
+
+        IDatumTransformations DatumTransformations { get; }
+        void SetFeatureSpatialReference(ISpatialReference sRef, IDatumTransformations datumTransformations);
 
         ICancelTracker CancelTracker { get; set; }
 

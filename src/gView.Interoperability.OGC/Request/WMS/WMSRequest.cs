@@ -1,4 +1,4 @@
-using gView.Framework.Core.Carto;
+ï»¿using gView.Framework.Core.Carto;
 using gView.Framework.Core.Data;
 using gView.Framework.Core.Data.Cursors;
 using gView.Framework.Core.Exceptions;
@@ -314,7 +314,7 @@ namespace gView.Interoperability.OGC
                             Framework.OGC.WMS.Version_1_1_1.BoundingBox[] bboxes = new Framework.OGC.WMS.Version_1_1_1.BoundingBox[0];
                             foreach (string s in caps.Capability.Layer.SRS)
                             {
-                                IEnvelope env = TransFormEPSG4326Envelope(env4326, s, parameters.Version);
+                                IEnvelope env = TransFormEPSG4326Envelope(env4326, s, parameters.Version, map.Display?.DatumTransformations);
                                 if (env == null)
                                 {
                                     continue;
@@ -487,7 +487,7 @@ namespace gView.Interoperability.OGC
                             Framework.OGC.WMS.Version_1_3_0.BoundingBox[] bboxes = new Framework.OGC.WMS.Version_1_3_0.BoundingBox[0];
                             foreach (string s in caps.Capability.Layer[0].CRS)
                             {
-                                IEnvelope env = TransFormEPSG4326Envelope(env4326, s, parameters.Version);
+                                IEnvelope env = TransFormEPSG4326Envelope(env4326, s, parameters.Version, map.Display?.DatumTransformations);
                                 if (env == null)
                                 {
                                     continue;
@@ -566,11 +566,14 @@ namespace gView.Interoperability.OGC
             }
         }
 
-        async virtual public Task<(byte[] body, string contentType)> WMS_GetMap(string service, WMSParameterDescriptor parameters, IServiceRequestContext context)
+        async virtual public Task<(byte[] body, string contentType)> WMS_GetMap(
+            string service, 
+            WMSParameterDescriptor parameters, 
+            IServiceRequestContext context)
         {
-            // Immer neue Requestklasse erzeugen, damit Request multithreadfähig
+            // Immer neue Requestklasse erzeugen, damit Request multithreadfÃ¤hig
             // ist.
-            // Parameter wie Layer müssen erhalten bleiben, wenn ServicMap später
+            // Parameter wie Layer mÃ¼ssen erhalten bleiben, wenn ServicMap spÃ¤ter
             // BeforeRenderlayers aufruft...
 
             await _mapServer.LogAsync(context, "Service:" + service, loggingMethod.request, "WMS GetMap");
@@ -628,7 +631,7 @@ namespace gView.Interoperability.OGC
                         _parameters.BBOX = new Envelope(ll, ur);
                     }
 
-                    map.Display.Dpi = _parameters.dpi;
+                    map.Display.Dpi = _parameters.Dpi;
                     map.Display.ImageWidth = _parameters.Width;
                     map.Display.ImageHeight = _parameters.Height;
                     map.ResizeImageSizeToMapServiceLimits();
@@ -640,14 +643,20 @@ namespace gView.Interoperability.OGC
                     {
                         map.Display.MakeTransparent = true;
                         map.Display.TransparentColor = GraphicsEngine.ArgbColor.White;
+                    } 
+                    else
+                    {
+                        map.Display.MakeTransparent = false;
+                        map.Display.BackgroundColor = _parameters.BgColor;
                     }
+                    
                     map.BeforeRenderLayers += new BeforeRenderLayersEvent(map_BeforeRenderLayers);
                     await map.Render();
 
                     if (map.MapImage != null)
                     {
                         //
-                        // Zurück in das richtige Koordinatenfenster verzerren
+                        // ZurÃ¼ck in das richtige Koordinatenfenster verzerren
                         //
                         double minx, miny, maxx, maxy;
                         minx = _parameters.BBOX.MinX; miny = _parameters.BBOX.MinY;
@@ -1184,7 +1193,7 @@ namespace gView.Interoperability.OGC
                     continue;
                 }
 
-                env = GeometricTransformerFactory.Transform2D(env, sRef, sRef_4326).Envelope;
+                env = GeometricTransformerFactory.Transform2D(env, sRef, sRef_4326, map.Display?.DatumTransformations).Envelope;
                 if (envelope == null)
                 {
                     envelope = env;
@@ -1198,7 +1207,7 @@ namespace gView.Interoperability.OGC
             return (envelope != null) ? envelope : new Envelope(-180, -90, 180, 90);
         }
 
-        private IEnvelope TransFormEPSG4326Envelope(IEnvelope env4326, string projID, string version)
+        private IEnvelope TransFormEPSG4326Envelope(IEnvelope env4326, string projID, string version, IDatumTransformations datumTransformations)
         {
             if (env4326 == null)
             {
@@ -1224,7 +1233,7 @@ namespace gView.Interoperability.OGC
                 }
                 else
                 {
-                    envelope = GeometricTransformerFactory.Transform2D(env4326, from, to).Envelope;
+                    envelope = GeometricTransformerFactory.Transform2D(env4326, from, to, datumTransformations).Envelope;
                 }
             }
 
@@ -1432,7 +1441,7 @@ namespace gView.Interoperability.OGC
    xmlns:ogc=""http://www.opengis.net/ogc""
    xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"">");
 
-            // TODO: Bounding Box einfügen !!!
+            // TODO: Bounding Box einfÃ¼gen !!!
 
             foreach (FeatureType feature in features)
             {

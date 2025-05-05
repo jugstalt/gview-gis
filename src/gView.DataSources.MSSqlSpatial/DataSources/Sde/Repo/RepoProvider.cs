@@ -36,7 +36,7 @@ namespace gView.DataSources.MSSqlSpatial.DataSources.Sde.Repo
             SdeGeometryColumns.Clear();
             SdeLayerMultiversionViewNames.Clear();
 
-            var providerFactory = System.Data.SqlClient.SqlClientFactory.Instance;
+            var providerFactory = Microsoft.Data.SqlClient.SqlClientFactory.Instance;
 
             string sdeSchemaName = TableSchemaName("sde_layers");
             if (String.IsNullOrWhiteSpace(sdeSchemaName))
@@ -122,7 +122,7 @@ namespace gView.DataSources.MSSqlSpatial.DataSources.Sde.Repo
 
         public string TableSchemaName(string dbName)
         {
-            var providerFactory = System.Data.SqlClient.SqlClientFactory.Instance;
+            var providerFactory = Microsoft.Data.SqlClient.SqlClientFactory.Instance;
 
             using (DbConnection connection = providerFactory.CreateConnection())
             {
@@ -157,7 +157,7 @@ namespace gView.DataSources.MSSqlSpatial.DataSources.Sde.Repo
 
         async public Task<int> GetInsertRowId(SdeLayer sdeLayer)
         {
-            var providerFactory = System.Data.SqlClient.SqlClientFactory.Instance;
+            var providerFactory = Microsoft.Data.SqlClient.SqlClientFactory.Instance;
 
             string sdeSchemaName = TableSchemaName("sde_layers");
             if (String.IsNullOrWhiteSpace(sdeSchemaName))
@@ -187,7 +187,7 @@ SELECT @newid ""Next RowID""";
         {
             try
             {
-                var providerFactory = System.Data.SqlClient.SqlClientFactory.Instance;
+                var providerFactory = Microsoft.Data.SqlClient.SqlClientFactory.Instance;
 
                 using (DbConnection connection = providerFactory.CreateConnection())
                 {
@@ -219,7 +219,7 @@ SELECT @newid ""Next RowID""";
         {
             try
             {
-                var providerFactory = System.Data.SqlClient.SqlClientFactory.Instance;
+                var providerFactory = Microsoft.Data.SqlClient.SqlClientFactory.Instance;
 
                 using (DbConnection connection = providerFactory.CreateConnection())
                 {

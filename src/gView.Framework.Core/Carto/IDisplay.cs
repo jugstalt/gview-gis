@@ -54,5 +54,7 @@ namespace gView.Framework.Core.Carto
         IMap Map { get; }
 
         IDisplayRotation DisplayTransformation { get; }
+
+        IDatumTransformations DatumTransformations { get; }
     }
 }

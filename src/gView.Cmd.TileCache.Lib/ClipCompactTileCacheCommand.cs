@@ -93,6 +93,7 @@ public class ClipCompactTileCacheCommand : ICommand
                     minLevel: minLevel,
                     maxlevel: maxLevel,
                     clipType: clipType,
+                    datumTransformations: null,
                     logger: logger
                 );
         }

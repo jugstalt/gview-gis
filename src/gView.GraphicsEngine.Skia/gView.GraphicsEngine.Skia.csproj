@@ -2,10 +2,26 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <Version>6.24.3101</Version>
 	  <LangVersion>12</LangVersion>
   </PropertyGroup>
 
+	<PropertyGroup>
+		<Version>6.25.1401</Version>
+		<PackageProjectUrl>https://github.com/jugstalt/gview-gis</PackageProjectUrl>
+		<PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+		<RepositoryUrl>https://github.com/jugstalt/gview-gis</RepositoryUrl>
+		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+		<Authors>Jürgen Gstaltmaier</Authors>
+		<Copyright>2025, Jürgen Gstaltmaier</Copyright>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<None Include="..\..\LICENSE">
+			<Pack>True</Pack>
+			<PackagePath></PackagePath>
+		</None>
+	</ItemGroup>
+	
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
   </PropertyGroup>

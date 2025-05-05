@@ -49,12 +49,12 @@ public class FeatureImport
 
     private int FeatureBufferSize { get; set; }
 
-    public Task<bool> ImportToNewFeatureclass(IFeatureDataset destDS, string fcname, IFeatureClass sourceFC, FieldTranslation fieldTranslation, bool project, GeometryType? sourceGeometryType = null)
+    public Task<bool> ImportToNewFeatureclass(IFeatureDataset destDS, string fcname, IFeatureClass sourceFC, FieldTranslation fieldTranslation, bool project, IDatumTransformations? datumTransformations, GeometryType? sourceGeometryType = null)
     {
-        return ImportToNewFeatureclass(destDS, fcname, sourceFC, fieldTranslation, project, null, sourceGeometryType);
+        return ImportToNewFeatureclass(destDS, fcname, sourceFC, fieldTranslation, project, datumTransformations, null, sourceGeometryType);
     }
 
-    async public Task<bool> ImportToNewFeatureclass(IFeatureDataset destDS, string fcname, IFeatureClass sourceFC, FieldTranslation fieldTranslation, bool project, List<IQueryFilter>? filters, GeometryType? sourceGeometryType = null)
+    async public Task<bool> ImportToNewFeatureclass(IFeatureDataset destDS, string fcname, IFeatureClass sourceFC, FieldTranslation fieldTranslation, bool project, IDatumTransformations? datumTransformations, List<IQueryFilter>? filters, GeometryType? sourceGeometryType = null)
     {
         if (destDS == null)
         {
@@ -89,10 +89,10 @@ public class FeatureImport
             }
         }
 
-        return await ImportToNewFeatureclass(destDS, fcname, sourceFC, fieldTranslation, project, filters, nameCase, sourceGeometryType);
+        return await ImportToNewFeatureclass(destDS, fcname, sourceFC, fieldTranslation, project, datumTransformations, filters, nameCase, sourceGeometryType);
     }
 
-    async private Task<bool> ImportToNewFeatureclass(IFeatureDataset destDS, string fcname, IFeatureClass sourceFC, FieldTranslation fieldTranslation, bool project, List<IQueryFilter>? filters, DatasetNameCase namecase, GeometryType? sourceGeometryType = null)
+    async private Task<bool> ImportToNewFeatureclass(IFeatureDataset destDS, string fcname, IFeatureClass sourceFC, FieldTranslation fieldTranslation, bool project, IDatumTransformations? datumTransformations, List<IQueryFilter>? filters, DatasetNameCase namecase, GeometryType? sourceGeometryType = null)
     {
         if (!_cancelTracker.Continue)
         {
@@ -194,7 +194,7 @@ public class FeatureImport
 
             if (project && destFC.SpatialReference != null && !destFC.SpatialReference.Equals(sourceFC.SpatialReference))
             {
-                _transformer = GeometricTransformerFactory.Create();
+                _transformer = GeometricTransformerFactory.Create(datumTransformations);
                 //_transformer.FromSpatialReference = sourceFC.SpatialReference;
                 //_transformer.ToSpatialReference = destFC.SpatialReference;
                 _transformer.SetSpatialReferences(sourceFC.SpatialReference, destFC.SpatialReference);

@@ -546,8 +546,9 @@ namespace gView.DataSources.Shape
         private string _uniqueField = String.Empty;
 
         public ShapeFeatureCursor(IFeatureClass fc, SHPFile file, IQueryFilter filter, IIndexTree tree)
-            : base((fc != null) ? fc.SpatialReference : null,
-                   (filter != null) ? filter.FeatureSpatialReference : null)
+            : base(fc?.SpatialReference,
+                   filter?.FeatureSpatialReference, 
+                   filter?.DatumTransformations)
         {
             base.KnowsFunctions = false;
 

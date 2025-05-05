@@ -1,6 +1,8 @@
-﻿namespace gView.Framework.Common
+﻿using System;
+
+namespace gView.Framework.Common
 {
-    static public class NumberConverter
+    static public class NumberExtensions
     {
         static public double ToDouble(this string value)
         {
@@ -35,6 +37,11 @@
         static public string ToDecimalString(this decimal d)
         {
             return d.ToString(Numbers.Nhi);
+        }
+
+        static public bool EqualWithTolerance(this double a, double b, double tolerance = 1e-8)
+        {
+            return Math.Abs(a - b) < tolerance;
         }
     }
 }

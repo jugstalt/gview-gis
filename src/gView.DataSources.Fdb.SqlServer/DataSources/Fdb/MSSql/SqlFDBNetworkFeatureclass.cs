@@ -14,7 +14,7 @@ using gView.Framework.Network.Build;
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -114,7 +114,7 @@ namespace gView.DataSources.Fdb.MSSql
                 }
             }
             fc._pageManager = new NetworkObjectSerializer.PageManager(
-                System.Data.SqlClient.SqlClientFactory.Instance,
+                SqlClientFactory.Instance,
                 fc._fdb.ConnectionString, fc._name,
                 fc._fdb.TableName("FC_" + fc._name),
                 fc._fdb.TableName(fc._name + "_Edges"),

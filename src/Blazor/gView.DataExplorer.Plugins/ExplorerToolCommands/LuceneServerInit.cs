@@ -6,6 +6,7 @@ using gView.Framework.Common;
 using gView.Framework.Core.Common;
 using gView.Framework.DataExplorer.Abstraction;
 using gView.Framework.DataExplorer.Services.Abstraction;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
@@ -47,6 +48,11 @@ internal class LuceneServerInit : IExplorerToolCommand
         if (model.SourceFeatureClasses?.Any() == true)
         {
             var dataset = model.SourceFeatureClasses.First().Dataset;
+
+            if(dataset is null)
+            {
+                throw new Exception("FeatureClass has no dataset!");
+            }
 
             parameters.Add("source_connstr", dataset.ConnectionString);
             parameters.Add("source_guid", PlugInManager.PlugInID(dataset));

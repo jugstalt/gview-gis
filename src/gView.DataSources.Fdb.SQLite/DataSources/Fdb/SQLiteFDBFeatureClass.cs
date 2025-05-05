@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace gView.DataSources.Fdb.SQLite
 {
-    public class SQLiteFDBFeatureClass : IFeatureClass, IRefreshable
+    public class SQLiteFDBFeatureClass : IFeatureClass, IRefreshable, IFeatureCursorRequiresWrapperForOrdering
     {
         private SQLiteFDB _fdb;
         private IDataset _dataset;
@@ -108,7 +108,7 @@ namespace gView.DataSources.Fdb.SQLite
             if (filter is IRowIDFilter)
             {
                 filter.fieldPostfix = filter.fieldPrefix = "\"";
-                return await _fdb.QueryIDs(this, filter.SubFieldsAndAlias, ((IRowIDFilter)filter).IDs, filter.FeatureSpatialReference);
+                return await _fdb.QueryIDs(this, filter.SubFieldsAndAlias, ((IRowIDFilter)filter).IDs, filter.FeatureSpatialReference, filter.DatumTransformations);
             }
             else
             {

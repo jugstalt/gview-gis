@@ -191,7 +191,7 @@ public class QueryFeatures : BaseApiEndpoint
 
                     #region Spatial Reference
 
-                    filter.FeatureSpatialReference = outSref;
+                    filter.SetFeatureSpatialReference(outSref, serviceMap.Display?.DatumTransformations);
 
                     #endregion
 
@@ -213,7 +213,7 @@ public class QueryFeatures : BaseApiEndpoint
 
                     bool transform = false;
 
-                    using (var geoTransfromer = GeometricTransformerFactory.Create())
+                    using (var geoTransfromer = GeometricTransformerFactory.Create(serviceMap.Display?.DatumTransformations))
                     {
                         if (tableClass is IFeatureClass featureClass
                             && featureClass.SpatialReference == null
@@ -229,7 +229,7 @@ public class QueryFeatures : BaseApiEndpoint
                                 && spatialFilter.FilterSpatialReference != null
                                 && !serviceMap.LayerDefaultSpatialReference.EpsgCode.Equals(spatialFilter.FilterSpatialReference?.EpsgCode))
                             {
-                                using (var filterTransformer = GeometricTransformerFactory.Create())
+                                using (var filterTransformer = GeometricTransformerFactory.Create(serviceMap.Display?.DatumTransformations))
                                 {
                                     filterTransformer.SetSpatialReferences(spatialFilter.FilterSpatialReference, serviceMap.LayerDefaultSpatialReference);
                                     spatialFilter.Geometry = filterTransformer.Transform2D(spatialFilter.Geometry) as IGeometry;

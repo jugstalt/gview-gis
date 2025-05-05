@@ -171,7 +171,8 @@ namespace gView.Interoperability.ArcXML
                             } ((Feature)row).Shape = GeometricTransformerFactory.Transform2D(
                                 shape,
                                 sRef,
-                                ServiceMap.Display.SpatialReference);
+                                ServiceMap.Display.SpatialReference,
+                                ServiceMap.Display.DatumTransformations);
                         }
                     }
 
@@ -412,7 +413,7 @@ namespace gView.Interoperability.ArcXML
             return "";
         }
 
-        async void map_BeforeRenderLayers(IServiceMap sender, IServiceRequestContext context, List<ILayer> layers)
+        async void map_BeforeRenderLayers(IServiceMap serviceMap, IServiceRequestContext context, List<ILayer> layers)
         {
             if (layers == null)
             {
@@ -445,11 +446,11 @@ namespace gView.Interoperability.ArcXML
 
                     try
                     {
-                        foreach (ILayer layer in MapServerHelper.FindMapLayers(sender, _useTOC, layerDef.Attributes["id"].Value, layers))
+                        foreach (ILayer layer in MapServerHelper.FindMapLayers(serviceMap, _useTOC, layerDef.Attributes["id"].Value, layers))
                         {
                             layer.Visible = Convert.ToBoolean(layerDef.Attributes["visible"].Value);
 
-                            if (sender.Display.ReferenceScale > 0D && layer is IFeatureLayer)
+                            if (serviceMap.Display.ReferenceScale > 0D && layer is IFeatureLayer)
                             {
                                 if (layerDef.Attributes["applyRefScale"] != null &&
                                     layerDef.Attributes["applyRefScale"].Value.ToLower() == "false")
@@ -474,7 +475,7 @@ namespace gView.Interoperability.ArcXML
             {
                 foreach (XmlNode layerdef in layerDefs.SelectNodes("LAYERDEF[@id]"))
                 {
-                    MapServerHelper.Layers msLayers = MapServerHelper.FindMapLayers(sender, _useTOC, layerdef.Attributes["id"].Value, layers);
+                    MapServerHelper.Layers msLayers = MapServerHelper.FindMapLayers(serviceMap, _useTOC, layerdef.Attributes["id"].Value, layers);
 
                     foreach (ILayer layer in msLayers)
                     {
@@ -491,7 +492,7 @@ namespace gView.Interoperability.ArcXML
                                 continue;
                             }
 
-                            SetLayerObjects(aClass, layerID, fLayer, layerdef, layers);
+                            SetLayerObjects(serviceMap, aClass, layerID, fLayer, layerdef, layers);
                         }
                     }
                 }
@@ -516,7 +517,7 @@ namespace gView.Interoperability.ArcXML
                             IGraphicElement grElement = ObjectFromAXLFactory.GraphicElement(OBJECT);
                             if (grElement != null)
                             {
-                                sender.Display.GraphicsContainer.Elements.Add(grElement);
+                                serviceMap.Display.GraphicsContainer.Elements.Add(grElement);
                             }
                         }
                     }
@@ -540,12 +541,12 @@ namespace gView.Interoperability.ArcXML
                         //IDatasetElement e = null;
                         if (targetNode != null)
                         {
-                            aLayers = MapServerHelper.FindMapLayers(sender, _useTOC, targetNode.Attributes["id"].Value, layers);
+                            aLayers = MapServerHelper.FindMapLayers(serviceMap, _useTOC, targetNode.Attributes["id"].Value, layers);
                         }
                         //e = FindElement(layers, targetNode.Attributes["id"].Value);
                         else
                         {
-                            aLayers = MapServerHelper.FindMapLayers(sender, _useTOC, datasetNode.Attributes["fromlayer"].Value, layers);
+                            aLayers = MapServerHelper.FindMapLayers(serviceMap, _useTOC, datasetNode.Attributes["fromlayer"].Value, layers);
                         }
                         //e = FindElement(layers, datasetNode.Attributes["fromlayer"].Value);
 
@@ -559,10 +560,10 @@ namespace gView.Interoperability.ArcXML
                                 XmlNode clonedLAYER = LAYER.Clone();
                                 if (_useTOC)
                                 {
-                                    IQueryFilter filter = ParseChildNodesForQueryFilter(LAYER, e.Class as ITableClass);
+                                    IQueryFilter filter = ParseChildNodesForQueryFilter(LAYER, e.Class as ITableClass, serviceMap.Display?.DatumTransformations);
                                     if (filter != null)
                                     {
-                                        if (!await MapServerHelper.ModifyFilter(sender, e.Class as ITableClass, filter))
+                                        if (!await MapServerHelper.ModifyFilter(serviceMap, e.Class as ITableClass, filter))
                                         {
                                             continue;
                                         }
@@ -574,7 +575,7 @@ namespace gView.Interoperability.ArcXML
                                 if (aClass != null)
                                 {
                                     aClass.AppendedLayers.Add(
-                                        Transform2LayerIDs(sender, aClass, layers, clonedLAYER));
+                                        Transform2LayerIDs(serviceMap, aClass, layers, clonedLAYER));
                                     continue;
                                 }
                                 else
@@ -594,11 +595,11 @@ namespace gView.Interoperability.ArcXML
                                             continue;
                                         }
 
-                                        SetLayerObjects(null, "", fLayer, clonedLAYER, layers);
+                                        SetLayerObjects(serviceMap, null, "", fLayer, clonedLAYER, layers);
                                         if (fLayer.FilterQuery is IBufferQueryFilter &&
                                             fLayer.FeatureRenderer is SimpleRenderer)
                                         {
-                                            sender.Display.GraphicsContainer.Elements.Add(
+                                            serviceMap.Display.GraphicsContainer.Elements.Add(
                                                 await ObjectFromAXLFactory.GraphicElement(
                                                     ((SimpleRenderer)fLayer.FeatureRenderer).Symbol,
                                                     (IBufferQueryFilter)fLayer.FilterQuery));
@@ -621,13 +622,19 @@ namespace gView.Interoperability.ArcXML
                     {
                         IFeatureLayer fLayer = (IFeatureLayer)element;
 
-                        SetLayerObjects(null, "", fLayer, LAYER, layers);
+                        SetLayerObjects(serviceMap, null, "", fLayer, LAYER, layers);
                     }
                 }
             }
         }
 
-        private void SetLayerObjects(ArcIMSClass aClass, string LayerID, IFeatureLayer fLayer, XmlNode layerdef, List<ILayer> layers)
+        private void SetLayerObjects(
+                    IServiceMap serviceMap,
+                    ArcIMSClass aClass, 
+                    string LayerID, 
+                    IFeatureLayer fLayer, 
+                    XmlNode layerdef, 
+                    List<ILayer> layers)
         {
             if (fLayer == null || layerdef == null)
             {
@@ -650,7 +657,7 @@ namespace gView.Interoperability.ArcXML
                     }
 
                     IQueryFilter orig = fLayer.FilterQuery;
-                    fLayer.FilterQuery = ObjectFromAXLFactory.Query(child, fLayer.FeatureClass, rootFeatureClass);
+                    fLayer.FilterQuery = ObjectFromAXLFactory.Query(child, fLayer.FeatureClass, rootFeatureClass, serviceMap.Display?.DatumTransformations);
                     if (orig != null)
                     {
                         if (fLayer.FilterQuery == null)
@@ -740,13 +747,13 @@ namespace gView.Interoperability.ArcXML
             }
             return false;
         }
-        private IQueryFilter ParseChildNodesForQueryFilter(XmlNode parentNode, ITableClass tc)
+        private IQueryFilter ParseChildNodesForQueryFilter(XmlNode parentNode, ITableClass tc, IDatumTransformations datumTransformations)
         {
             foreach (XmlNode child in parentNode.ChildNodes)
             {
                 if (child.Name == "QUERY" || child.Name == "SPATIALQUERY")
                 {
-                    IQueryFilter filter = ObjectFromAXLFactory.Query(child, tc);
+                    IQueryFilter filter = ObjectFromAXLFactory.Query(child, tc, datumTransformations);
                     return filter;
                 }
             }
@@ -863,8 +870,8 @@ namespace gView.Interoperability.ArcXML
         /// Webservice abhängen. Wenn nicht werden die Filter entsprechend umgebaut!
         /// zB beim Serviceübergreifenden Buffern...
         /// </summary>
-        /// <param name="map"></param>
-        async private Task ModifyLAYERS(IServiceMap map)
+        /// <param name="serviceMap"></param>
+        async private Task ModifyLAYERS(IServiceMap serviceMap)
         {
             if (LAYERS == null)
             {
@@ -901,8 +908,8 @@ namespace gView.Interoperability.ArcXML
 
                     if (bufferNode != null && targetNode != null)
                     {
-                        MapServerHelper.Layers target = MapServerHelper.FindMapLayers(map, _useTOC, targetNode.Attributes["id"].Value);
-                        MapServerHelper.Layers fromlayer = MapServerHelper.FindMapLayers(map, _useTOC, datasetNode.Attributes["fromlayer"].Value);
+                        MapServerHelper.Layers target = MapServerHelper.FindMapLayers(serviceMap, _useTOC, targetNode.Attributes["id"].Value);
+                        MapServerHelper.Layers fromlayer = MapServerHelper.FindMapLayers(serviceMap, _useTOC, datasetNode.Attributes["fromlayer"].Value);
 
                         if (target.Count == 1 && fromlayer.Count == 1 &&
                             target[0] is IWebServiceTheme)
@@ -912,12 +919,12 @@ namespace gView.Interoperability.ArcXML
                                !((IWebServiceTheme)fromlayer[0]).ServiceClass.Equals(targetWebClass)) ||
                                !(fromlayer[0] is IWebServiceTheme))
                             {
-                                IQueryFilter filter = ObjectFromAXLFactory.Query(queryNode, target[0].Class as ITableClass, fromlayer[0].Class as IFeatureClass);
-                                filter.SetUserData("IServiceRequestContext", map);
+                                IQueryFilter filter = ObjectFromAXLFactory.Query(queryNode, target[0].Class as ITableClass, fromlayer[0].Class as IFeatureClass, serviceMap.Display?.DatumTransformations);
+                                filter.SetUserData("IServiceRequestContext", serviceMap);
 
                                 if (filter is IBufferQueryFilter)
                                 {
-                                    ((IBufferQueryFilter)filter).RootFilter.SetUserData("IServiceRequestContext", map);
+                                    ((IBufferQueryFilter)filter).RootFilter.SetUserData("IServiceRequestContext", serviceMap);
                                     filter = await BufferQueryFilter.ConvertToSpatialFilter((IBufferQueryFilter)filter);
                                 }
 
@@ -938,7 +945,7 @@ namespace gView.Interoperability.ArcXML
                                 symbol.PenColor = ArgbColor.FromArgb(150, ArgbColor.Red);
 
                                 IGraphicElement grElement = new AcetateGraphicElement(symbol, ((ISpatialFilter)filter).Geometry);
-                                map.Display.GraphicsContainer.Elements.Add(grElement);
+                                serviceMap.Display.GraphicsContainer.Elements.Add(grElement);
                             }
                         }
                     }
@@ -1532,7 +1539,7 @@ namespace gView.Interoperability.ArcXML
                                 continue;
                             }
 
-                            IGeometry geom = GeometricTransformerFactory.Transform2D(((IFeatureLayer)element).FeatureClass.Envelope, ((IFeatureLayer)element).FeatureClass.SpatialReference, map.Display.SpatialReference);
+                            IGeometry geom = GeometricTransformerFactory.Transform2D(((IFeatureLayer)element).FeatureClass.Envelope, ((IFeatureLayer)element).FeatureClass.SpatialReference, map.Display.SpatialReference, map.Display.DatumTransformations);
                             if (geom != null)
                             {
                                 env = geom.Envelope;
@@ -1545,7 +1552,7 @@ namespace gView.Interoperability.ArcXML
                                 continue;
                             }
 
-                            IGeometry geom = GeometricTransformerFactory.Transform2D(((IRasterLayer)element).RasterClass.Polygon.Envelope, ((IRasterLayer)element).RasterClass.SpatialReference, map.Display.SpatialReference);
+                            IGeometry geom = GeometricTransformerFactory.Transform2D(((IRasterLayer)element).RasterClass.Polygon.Envelope, ((IRasterLayer)element).RasterClass.SpatialReference, map.Display.SpatialReference, map.Display.DatumTransformations);
                             if (geom != null)
                             {
                                 env = geom.Envelope;
@@ -1558,7 +1565,7 @@ namespace gView.Interoperability.ArcXML
                                 continue;
                             }
 
-                            IGeometry geom = GeometricTransformerFactory.Transform2D(((IWebServiceLayer)element).WebServiceClass.Envelope, ((IWebServiceLayer)element).WebServiceClass.SpatialReference, map.Display.SpatialReference);
+                            IGeometry geom = GeometricTransformerFactory.Transform2D(((IWebServiceLayer)element).WebServiceClass.Envelope, ((IWebServiceLayer)element).WebServiceClass.SpatialReference, map.Display.SpatialReference, map.Display.DatumTransformations);
                             if (geom != null)
                             {
                                 env = geom.Envelope;
@@ -1706,7 +1713,7 @@ namespace gView.Interoperability.ArcXML
                             }
                             if (envelope)
                             {
-                                IGeometry geom = GeometricTransformerFactory.Transform2D(fClass.Envelope, fClass.SpatialReference, map.Display.SpatialReference);
+                                IGeometry geom = GeometricTransformerFactory.Transform2D(fClass.Envelope, fClass.SpatialReference, map.Display.SpatialReference, map.Display.DatumTransformations);
                                 if (geom != null)
                                 {
                                     ENVELOPE(xWriter, geom.Envelope);
@@ -1823,7 +1830,7 @@ namespace gView.Interoperability.ArcXML
 
                         if (envelope && rLayer.RasterClass.Polygon != null)
                         {
-                            IGeometry geom = GeometricTransformerFactory.Transform2D(rLayer.RasterClass.Polygon.Envelope, rLayer.RasterClass.SpatialReference, map.Display.SpatialReference);
+                            IGeometry geom = GeometricTransformerFactory.Transform2D(rLayer.RasterClass.Polygon.Envelope, rLayer.RasterClass.SpatialReference, map.Display.SpatialReference, map.Display.DatumTransformations);
                             if (geom != null)
                             {
                                 ENVELOPE(xWriter, geom.Envelope);

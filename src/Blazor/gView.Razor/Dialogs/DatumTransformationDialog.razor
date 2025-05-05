@@ -1,0 +1,14 @@
+﻿@inherits ModalDialogFormBase<DatumTransformationDialogModel>
+
+<ModalDialogFormBase T="DatumTransformationDialogModel"
+                     OnDialogClose="base.OnDialogClose"
+                     Model="base.Model">
+    <DialogBody>
+        <DatumTransformationSelectorControl
+                        DatumTransformation="Model.DatumTransformation"
+                        DatumTransformationChanged="(datumTransformation) => Model.DatumTransformation = datumTransformation" />
+    </DialogBody>
+</ModalDialogFormBase>
+
+@code {
+}

@@ -1,4 +1,4 @@
-@using gView.Framework.Data.Filters
+﻿@using gView.Framework.Data.Filters
 
 @inherits BaseHandler
 @inject IApplicationScopeFactory AppScopeFactory
@@ -7,9 +7,9 @@
 {
     <GvCard Title="Definition Query (Filter)">
         <GvCardContent>
-            <MudTextField T="string" @ref="_input"
+            <MudTextField T="string" @ref="_whereClause"
                           Value="Layer.FilterQuery?.WhereClause"
-                          OnBlur="ApplyInputValue"
+                          OnBlur="ApplyInputValues"
                           Label="Filter Query" 
                           Lines="12"/>
         </GvCardContent>
@@ -20,30 +20,39 @@
         </div>
         
     </GvCard>    
+    <GvCard Title="Render Ordering">
+        <GvCardContent>
+            <MudTextField T="string" @ref="_orderBy"
+                          Value="Layer.FilterQuery?.OrderBy"
+                          OnBlur="ApplyInputValues"
+                          Label="Order By"
+                          Lines="1" />
+        </GvCardContent>
+    </GvCard>
 }
 
 @code {
     [Parameter] public IFeatureLayer? Layer { get; set; }
-    private MudTextField<string>? _input;
+    private MudTextField<string>? _whereClause;
+    private MudTextField<string>? _orderBy;
 
-    private void ApplyInputValue()
-        => SetQueryString(_input?.Value);
+    private void ApplyInputValues()
+        => SetFilterQuery(_whereClause?.Value, _orderBy?.Value);
 
-    private void SetQueryString(string? queryString)
+
+    private void SetFilterQuery(string? whereClause, string? orderBy)
     {
         if (Layer is not null)
         {
-            if (String.IsNullOrWhiteSpace(queryString))
+            if (string.IsNullOrWhiteSpace(whereClause) && string.IsNullOrWhiteSpace(orderBy))
             {
                 Layer.FilterQuery = null;
+                return;
             }
-            else
-            {
-                Layer.FilterQuery = new QueryFilter()
-                {
-                    WhereClause = queryString
-                };
-            }
+
+            Layer.FilterQuery ??= new QueryFilter();
+            Layer.FilterQuery.WhereClause = whereClause?.Trim();
+            Layer.FilterQuery.OrderBy = orderBy?.Trim();
         }
     }
 
@@ -61,7 +70,7 @@
 
         if (model is not null)
         {
-            SetQueryString(model.QueryString);
+            SetFilterQuery(model.QueryString, _orderBy?.Value);
         }
     });
 }

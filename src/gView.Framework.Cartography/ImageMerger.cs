@@ -236,7 +236,7 @@ namespace gView.Framework.Cartography
                             if (geoBmp.Envelope != null)
                             {
                                 double x0, y0, x1, y1, x2, y2;
-                                IGeometry geom = Geometry.GeometricTransformerFactory.Transform2D(geoBmp.Envelope, geoBmp.SpatialReference, display.SpatialReference);
+                                IGeometry geom = Geometry.GeometricTransformerFactory.Transform2D(geoBmp.Envelope, geoBmp.SpatialReference, display.SpatialReference, display.DatumTransformations);
                                 if (geom is IPolygon)
                                 {
                                     IRing ring = ((IPolygon)geom)[0];
@@ -366,7 +366,7 @@ namespace gView.Framework.Cartography
                                     IDisplay sourceDisplay)
         {
             GraphicsEngine.BitmapPixelData destData = null, sourceData = null;
-            using (var transformer = Geometry.GeometricTransformerFactory.Create())
+            using (var transformer = Geometry.GeometricTransformerFactory.Create(destDisplay?.DatumTransformations))
             {
                 try
                 {

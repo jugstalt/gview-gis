@@ -643,7 +643,8 @@ namespace gView.Framework.OGC.WFS
                 IGeometry pGeometry = GeometricTransformerFactory.Transform2D(
                     sFilter.Geometry,
                     sFilter.FilterSpatialReference,
-                    featureSRef);
+                    featureSRef,
+                    sFilter.DatumTransformations);
                 SpatialFilter filter = new SpatialFilter();
                 filter.Geometry = pGeometry;
                 filter.SpatialRelation = sFilter.SpatialRelation;

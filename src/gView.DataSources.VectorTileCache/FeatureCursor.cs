@@ -15,7 +15,7 @@ namespace gView.DataSources.VectorTileCache
         private int _pos = 0;
 
         public FeatureCursor(FeatureClass fc, IQueryFilter filter)
-            : base(fc?.SpatialReference, filter?.FeatureSpatialReference)
+            : base(fc?.SpatialReference, filter?.FeatureSpatialReference, filter?.DatumTransformations)
         {
             _fc = fc;
             _cache = filter?.DatasetCachingContext?.GetCache<FeatureCache>();

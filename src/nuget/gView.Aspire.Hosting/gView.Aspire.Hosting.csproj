@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-      <TargetFramework>net8.0</TargetFramework>
+      <TargetFramework>net9.0</TargetFramework>
       <ImplicitUsings>enable</ImplicitUsings>
       <Nullable>enable</Nullable>
 	  <Version>6.24.4401</Version>
@@ -16,7 +16,7 @@
     </PropertyGroup>
 	
 	<ItemGroup>
-		<PackageReference Include="Aspire.Hosting" Version="9.0.0" />
+		<PackageReference Include="Aspire.Hosting" Version="9.2.1" />
 	</ItemGroup>
 	
 </Project>

@@ -6,7 +6,7 @@ using gView.Framework.Data;
 using gView.Framework.OGC.WKT;
 using System;
 using System.Data;
-using System.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -20,8 +20,9 @@ namespace gView.DataSources.Fdb.MSSql
         private SqlCommand _command;
 
         private SqlFDBFeatureCursor2008(IFeatureClass fc, IQueryFilter filter)
-            : base((fc != null) ? fc.SpatialReference : null,
-            (filter != null) ? filter.FeatureSpatialReference : null)
+            : base(fc?.SpatialReference,
+                   filter?.FeatureSpatialReference,
+                   filter.DatumTransformations)
         {
 
         }

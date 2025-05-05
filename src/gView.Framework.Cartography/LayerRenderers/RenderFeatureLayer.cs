@@ -15,6 +15,7 @@ using gView.GraphicsEngine.Extensions;
 using System;
 using System.Threading.Tasks;
 using gView.Framework.Cartography.Extensions;
+using gView.Framework.Data.Extensions;
 
 namespace gView.Framework.Cartography.LayerRenderers
 {
@@ -60,7 +61,7 @@ namespace gView.Framework.Cartography.LayerRenderers
 
             #region JSON FilterCollection
 
-            if (_layer.FilterQuery != null && !string.IsNullOrEmpty(_layer.FilterQuery.JsonWhereClause))
+            if (!string.IsNullOrEmpty(_layer.FilterQuery?.JsonWhereClause))
             {
                 try
                 {
@@ -72,6 +73,7 @@ namespace gView.Framework.Cartography.LayerRenderers
 
                     IFeatureLayer flayer = (IFeatureLayer)LayerFactory.Create(_layer.Class, _layer);
                     flayer.FilterQuery = (IQueryFilter)_layer.FilterQuery.Clone();
+
                     foreach (DisplayFilter df in dfc)
                     {
                         // immer neu klonen (wegen PenWidth...)!!
@@ -165,6 +167,8 @@ namespace gView.Framework.Cartography.LayerRenderers
                 if (layer.FilterQuery != null)
                 {
                     filter.WhereClause = layer.FilterQuery.WhereClause;
+                    filter.OrderBy = layer.FilterQuery.OrderBy;
+
                     if (layer.FilterQuery is IBufferQueryFilter)
                     {
                         ISpatialFilter sFilter = await BufferQueryFilter.ConvertToSpatialFilter(layer.FilterQuery as IBufferQueryFilter);
@@ -175,6 +179,7 @@ namespace gView.Framework.Cartography.LayerRenderers
                         filter.SpatialRelation = spatialRelation.SpatialRelationIntersects;
                         filter.Geometry = sFilter.Geometry;
                     }
+
                     if (layer.FilterQuery is ISpatialFilter)
                     {
                         //filter.FuzzyQuery = ((ISpatialFilter)layer.FilterQuery).FuzzyQuery;
@@ -254,7 +259,7 @@ namespace gView.Framework.Cartography.LayerRenderers
 
                 #endregion
 
-                using (IFeatureCursor fCursor = await fClass.GetFeatures(MapHelper.MapQueryFilter(filter)))
+                using (IFeatureCursor fCursor = await fClass.GetFeaturesOrderedIfRequired(MapHelper.MapQueryFilter(filter)))
                 {
                     _map.FireOnUserInterface(false);
 

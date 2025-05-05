@@ -8,7 +8,10 @@ namespace gView.Framework.Data.Extensions
 {
     static public class QueryFilterExtensions
     {
-        static public void GeometryToSpatialReference(this IQueryFilter filter, ISpatialReference targetSRef)
+        static public void GeometryToSpatialReference(
+                    this IQueryFilter filter, 
+                    ISpatialReference targetSRef,
+                    IDatumTransformations datumTransformations)
         {
             if (targetSRef != null &&
                filter is ISpatialFilter &&
@@ -22,7 +25,8 @@ namespace gView.Framework.Data.Extensions
                         GeometricTransformerFactory.Transform2D(
                             spatialFilter.Geometry,
                             spatialFilter.FilterSpatialReference,
-                            targetSRef);
+                            targetSRef,
+                            datumTransformations);
                 spatialFilter.FilterSpatialReference = targetSRef;
             }
         }

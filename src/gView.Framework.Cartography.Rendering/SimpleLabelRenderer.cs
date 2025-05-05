@@ -1,3 +1,4 @@
+ï»¿using gView.Framework.Cartography.Rendering.Exntensions;
 using gView.Framework.Common;
 using gView.Framework.Core.Carto;
 using gView.Framework.Core.Common;
@@ -159,29 +160,7 @@ namespace gView.Framework.Cartography.Rendering
             }
         }
 
-        private List<string> _expressionFields = new List<string>();
-        private void ExtractExpressionFields()
-        {
-            string expr = _expression;
-            _expressionFields = new List<string>();
-            while (true)
-            {
-                if (expr == null || expr == "")
-                {
-                    break;
-                }
-
-                int p1 = expr.IndexOf("[");
-                int p2 = expr.IndexOf("]");
-                if (p1 >= p2)
-                {
-                    break;
-                }
-
-                _expressionFields.Add(expr.Substring(p1 + 1, p2 - p1 - 1));
-                expr = expr.Substring(p2 + 1, expr.Length - p2 - 1);
-            }
-        }
+        
         private IEnvelope _clipEnvelope = null;
 
         virtual protected bool BeforeRenderFeature(IDisplay display, IFeature feature) => true;
@@ -198,8 +177,7 @@ namespace gView.Framework.Cartography.Rendering
 
             if (_useExpression)
             {
-                ExtractExpressionFields();
-                foreach (string fieldname in _expressionFields)
+                foreach (string fieldname in _expression.ExtractFieldNames())
                 {
                     if (layer.FeatureClass.FindField(fieldname) != null)
                     {
@@ -290,7 +268,7 @@ namespace gView.Framework.Cartography.Rendering
                 }
                 if (_useExpression)
                 {
-                    expr = expr.Replace($"[{fv.Name}]", fv.Value.ToString());
+                    expr = expr.EvaluateExpression(fv);
                 }
             }
             if (_useExpression)
@@ -632,7 +610,7 @@ namespace gView.Framework.Cartography.Rendering
                 {
                     double tolerance = 1.0 * disp.MapScale / disp.Dpm;  // 1 Pixel
 
-                    // Wichtig bei Flächen mit sehr vielen Vertices... Bundesländer, Länder Thema kann sonst beim Clippen abstürzen
+                    // Wichtig bei FlÃ¤chen mit sehr vielen Vertices... BundeslÃ¤nder, LÃ¤nder Thema kann sonst beim Clippen abstÃ¼rzen
                     //if (polygon.TotalPointCount > MaxPolygonTotalPointCount)
                     //{
                     //polygon = SpatialAlgorithms.Algorithm.SnapOutsidePointsToEnvelope(polygon, env);

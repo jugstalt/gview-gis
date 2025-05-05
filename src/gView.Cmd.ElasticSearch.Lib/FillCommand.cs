@@ -190,7 +190,7 @@ public class FillCommand : ICommand
                     Console.WriteLine("Source Spatial Reference: " + sRef.Name + " " + String.Join(" ", sRef.Parameters));
                     Console.WriteLine("IDField: " + fc.IDFieldName);
 
-                    using (var transformer = GeometricTransformerFactory.Create())
+                    using (var transformer = GeometricTransformerFactory.Create(null))
                     {
                         if (useGeometry)
                         {

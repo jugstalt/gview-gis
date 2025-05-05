@@ -1,4 +1,4 @@
-@inherits BaseHandler
+﻿@inherits BaseHandler
 @inject SpatialReferenceService SRefService
 
 <style>
@@ -31,64 +31,138 @@
         }
 </style>
 
-<div class="mud-input">
-    <input type="text" placeholder="Search..." @oninput="FilterTable" @bind-value="searchTerm" class="mud-input-field" />
-</div>
 
-@if (filteredItems != null)
+
+@if (filteredDatums != null)
 {
-    <MudTable Items="@filteredItems" T="KeyValuePair<string, string>"
-              Hover="true"
-              Bordered="true"
-              Striped="true"
-              MultiSelection="false"
-              SelectedItemChanged="(item) => OnSelect(item)">
-        <HeaderContent>
-            <MudTh>Id</MudTh>
-        </HeaderContent>
-        <RowTemplate Context="item">
-            <MudTd>@item.Key</MudTd>
-        </RowTemplate>
-        <PagerContent>
-            <MudTablePager PageSizeOptions="new int[] { 10 }" />
-        </PagerContent>
-    </MudTable>
+    <div style="min-height:80vh">
+        <MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true">
+            <MudTabPanel Text="Geographic Datum/Transformation">
+                <div class="mud-input">
+                    <input type="text" placeholder="Search..." @oninput="FilterDatumsTable" @bind-value="_searchDatumsTerm" class="mud-input-field" />
+                </div>
+
+                <MudTable Items="@filteredDatums" T="KeyValuePair<string, string>"
+                          Hover="true"
+                          Bordered="true"
+                          Striped="true"
+                          MultiSelection="false"
+                          SelectedItemChanged="(item) => OnSelectDatum(item)">
+                    <HeaderContent>
+                        <MudTh>Id</MudTh>
+                    </HeaderContent>
+                    <RowTemplate Context="item">
+                        <MudTd>
+                            @item.Key
+                        </MudTd>
+                    </RowTemplate>
+                    <PagerContent>
+                        <MudTablePager PageSizeOptions="new int[] { 6 }" />
+                    </PagerContent>
+                </MudTable>
+            </MudTabPanel>
+            @if (ellipsoids is not null)
+            {
+                <MudTabPanel Text="Ellipsoid (optional)">
+                    <div class="mud-input">
+                        <input type="text" placeholder="Search..." @oninput="FilterEllipsoidTable" @bind-value="_searchEllipsoidTerm" class="mud-input-field" />
+                    </div>
+                    <MudTable Items="@filteredEllipsoids" T="KeyValuePair<string, string>"
+                              Hover="true"
+                              Bordered="true"
+                              Striped="true"
+                              MultiSelection="false"
+                              SelectedItemChanged="(item) => OnSelectEllipsoid(item)">
+                        <HeaderContent>
+                            <MudTh>Id</MudTh>
+                        </HeaderContent>
+                        <RowTemplate Context="item">
+                            <MudTd>
+                                @item.Key
+                            </MudTd>
+                        </RowTemplate>
+                        <PagerContent>
+                            <MudTablePager PageSizeOptions="new int[] { 6 }" />
+                        </PagerContent>
+                    </MudTable>
+                </MudTabPanel>
+            }
+        </MudTabs>
+        @if (_selectByButton && !String.IsNullOrEmpty(_selectedDatumId))
+        {
+            <div style="text-align:right; padding-top:20px;">
+                <MudButton Color="Color.Primary"
+                           Variant="Variant.Filled"
+                           OnClick="OnSubmit">
+                    @($"Select: {_selectedDatumId} {(String.IsNullOrEmpty(_selectedEllipsoidId) ? "" : " (" + _selectedEllipsoidId + ")")}")
+                </MudButton>
+            </div>
+        }
+    </div>
+    
 }
 
 @code {
-    private string searchTerm = string.Empty;
-    List<KeyValuePair<string, string>>? items;
-    IEnumerable<KeyValuePair<string, string>>? filteredItems;
+    private string _searchDatumsTerm = string.Empty;
+    private string _searchEllipsoidTerm = string.Empty;
+
+    private string _selectedDatumId = String.Empty;
+    private string _selectedEllipsoidId = String.Empty;
+
+    private bool _selectByButton = false;
+
+    List<KeyValuePair<string, string>>? datums;
+    IEnumerable<KeyValuePair<string, string>>? filteredDatums;
+    IEnumerable<KeyValuePair<string, string>>? ellipsoids;
+    IEnumerable<KeyValuePair<string, string>>? filteredEllipsoids;
 
     [Parameter] public IGeodeticDatum? GeodeticDatum { get; set; }
+    [Parameter] public bool AddGridShifts { get; set; } = false;
+    [Parameter] public bool AddEllipsoids { get; set; } = false;    
+    [Parameter] public bool ExcludeGeoCentric { get; set; } = false;
+    [Parameter] public string Ellipsoid { get; set; } = string.Empty;
     [Parameter] public EventCallback<IGeodeticDatum> GeodeticDatumChanged { get; set; }
 
-    protected override Task OnInitializedAsync()
-       => HandleAsync(async () =>
-       {
-           items = (await GetDatums()).ToList();
-           filteredItems = items.ToArray();
-       });
+    protected override Task OnParametersSetAsync() => HandleAsync(async () =>
+    {
+        await base.OnParametersSetAsync();
+
+        datums = (await GetDatums()).ToList();
+        filteredDatums = datums.ToArray();
+
+        if(AddEllipsoids)
+        {
+            ellipsoids = (await GetEllipsoids()).ToList();
+            filteredEllipsoids = ellipsoids.ToArray();
+
+            _selectByButton = true;
+        }
+    });
 
     async private Task<IEnumerable<KeyValuePair<string, string>>> GetDatums()
     {
-        return await SRefService.GetDatums();
+        return await SRefService.GetDatums(AddGridShifts, ExcludeGeoCentric);
     }
 
-    private void FilterTable(ChangeEventArgs e)
+    async private Task<IEnumerable<KeyValuePair<string, string>>> GetEllipsoids()
+    {
+        return await SRefService.GetEllipsoids();
+    }
+
+    private void FilterDatumsTable(ChangeEventArgs e)
         => Handle(() =>
             {
-                if (items != null)
+                if (datums is not null)
                 {
                     string? searchTerm = e.Value?.ToString();
 
                     if (String.IsNullOrEmpty(searchTerm))
                     {
-                        filteredItems = items.ToArray();
+                        filteredDatums = datums.ToArray();
                     }
                     else
                     {
-                        filteredItems = items
+                        filteredDatums = datums
                             .Where(item => item.Key.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
                                    item.Value.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)).ToArray();
                     }
@@ -98,10 +172,58 @@
             });
 
 
-    private Task OnSelect(KeyValuePair<string, string> item)
+    private void FilterEllipsoidTable(ChangeEventArgs e)
+        => Handle(() =>
+            {
+                if (ellipsoids is not null)
+                {
+                    string? searchTerm = e.Value?.ToString();
+
+                    if (String.IsNullOrEmpty(searchTerm))
+                    {
+                        filteredEllipsoids = ellipsoids.ToArray();
+                    }
+                    else
+                    {
+                        filteredEllipsoids = ellipsoids
+                            .Where(item => item.Key.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
+                                   item.Value.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)).ToArray();
+                    }
+
+                    StateHasChanged();
+                }
+            });
+
+    private Task OnSelectDatum(KeyValuePair<string, string> item)
         => HandleAsync(async () =>
         {
-            GeodeticDatum = await SRefService.GetGeodeticDatum(item.Key);
-            await GeodeticDatumChanged.InvokeAsync();
+            _selectedDatumId = item.Key;
+            GeodeticDatum = await SRefService.GetGeodeticDatum(GetGeodeticDatumName());
+
+            if (_selectByButton == false)
+            {
+                await OnSubmit();
+            }
         });
+
+    private Task OnSelectEllipsoid(KeyValuePair<string, string> item)
+    => HandleAsync(async () =>
+    {
+        _selectedEllipsoidId = item.Key;
+        GeodeticDatum = await SRefService.GetGeodeticDatum(GetGeodeticDatumName());
+    });
+
+    private Task OnSubmit() => HandleAsync(async () =>
+    {
+        await GeodeticDatumChanged.InvokeAsync();
+    });
+
+    #region Helper 
+
+    private string GetGeodeticDatumName()
+    {
+        return _selectedDatumId + (String.IsNullOrEmpty(_selectedEllipsoidId) ? "" : ",ellps:" + _selectedEllipsoidId);
+    }
+
+    #endregion
 }

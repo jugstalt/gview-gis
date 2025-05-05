@@ -41,9 +41,9 @@ namespace gView.Interoperability.GeoServices.Dataset
         {
             _features.Clear();
 
-            string where = String.IsNullOrEmpty(_where) ?
-                $"{_featureClass.IDFieldName}>{_lastOid}" :
-                $"{_where} and {_featureClass.IDFieldName}>{_lastOid}";
+            string where = String.IsNullOrEmpty(_where) 
+                ? $"{_featureClass.IDFieldName}>{_lastOid}" 
+                : $"{_where} and {_featureClass.IDFieldName}>{_lastOid}";
 
             var postData = $"{_postData}&orderByFields={_featureClass.IDFieldName}&where={where.UrlEncodeWhereClause()}";
 

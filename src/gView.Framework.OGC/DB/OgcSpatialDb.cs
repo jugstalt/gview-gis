@@ -19,6 +19,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using gView.Framework.Common.Extensions;
+using gView.Framework.Db.Extensions;
 
 namespace gView.Framework.OGC.DB
 {
@@ -116,6 +117,8 @@ namespace gView.Framework.OGC.DB
             {
                 _connectionString = value;
             }
+
+            _connectionString = ModifyConnectionString(_connectionString);
 
             if (ConnectionStringChanged != null)
             {
@@ -1361,5 +1364,10 @@ namespace gView.Framework.OGC.DB
         virtual public string CaseInsensitivLikeOperator => "like";
 
         #endregion
+
+        virtual protected string ModifyConnectionString(string connectionString)
+        {
+            return connectionString;
+        }
     }
 }

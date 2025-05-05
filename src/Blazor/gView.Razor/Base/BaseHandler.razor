@@ -1,4 +1,6 @@
+﻿@using Microsoft.Extensions.Logging
 @inject IDialogService DialogService
+@inject ILogger<BaseHandler> Logger
 
 @code {
     protected void Handle(Action action)
@@ -64,6 +66,8 @@
 
     async private Task HandleException(Exception ex)
     {
+        Logger.LogError(ex, ex.Message);
+
         await DialogService.ShowMessageBox(
                 "Error",
                 ex.Message);

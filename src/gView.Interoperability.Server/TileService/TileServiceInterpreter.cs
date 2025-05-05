@@ -608,7 +608,7 @@ public class TileServiceInterpreter : IServiceRequestInterpreter
                 fs.Position = tilePosition;
 
                 byte[] data = new byte[tileLength];
-                fs.Read(data, 0, tileLength);
+                fs.ReadExactly(data, 0, tileLength);
 
                 context.ServiceRequest.Response = new MapServerResponse()
                 {
@@ -674,7 +674,7 @@ public class TileServiceInterpreter : IServiceRequestInterpreter
                 fs.Position = tilePosition;
 
                 byte[] data = new byte[tileLength];
-                fs.Read(data, 0, tileLength);
+                fs.ReadExactlyAsync(data, 0, tileLength);
 
                 return data;
             }
@@ -1027,7 +1027,7 @@ public class TileServiceInterpreter : IServiceRequestInterpreter
             {
                 byte[] data = new byte[8];
                 fs.Position = indexPosition;
-                fs.Read(data, 0, 8);
+                fs.ReadExactly(data, 0, 8);
 
                 int position = BitConverter.ToInt32(data, 0);
                 tileLength = BitConverter.ToInt32(data, 4);

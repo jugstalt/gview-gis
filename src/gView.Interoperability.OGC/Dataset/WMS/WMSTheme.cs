@@ -110,7 +110,7 @@ namespace gView.Interoperability.OGC.Dataset.WMS
                     // übergeben wird, sollte sich ändern...
                     // --> World2Image stimmt nicht 100%
                     //
-                    dispEnvelope = GeometricTransformerFactory.Transform2D(dispEnvelope, sRef, mySRef).Envelope;
+                    dispEnvelope = GeometricTransformerFactory.Transform2D(dispEnvelope, sRef, mySRef, display.DatumTransformations).Envelope;
                 }
             }
             double x = point.X, y = point.Y;

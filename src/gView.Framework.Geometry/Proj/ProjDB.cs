@@ -1,4 +1,4 @@
-using gView.Framework.Db;
+﻿using gView.Framework.Db;
 using gView.Framework.Common;
 using System;
 using System.Data;
@@ -8,7 +8,7 @@ namespace gView.Framework.Geometry.Proj
 {
     public enum ProjDBTables { projs, datums }
     /// <summary>
-    /// Zusammenfassung f�r ProjDB.
+    /// Zusammenfassung für ProjDB.
     /// </summary>
     public class ProjDB
     {
@@ -67,35 +67,6 @@ namespace gView.Framework.Geometry.Proj
             return true;
         }
 
-        public bool createProjection(string id, string param, string description, string category)
-        {
-            //_err="";
-            //DataSet ds=new DataSet();
-            //if(_conn.SQLQuery(ref ds,"SELECT * FROM "+_table+" WHERE ID=-1","PROJS",true)) 
-            //{
-            //    DataRow row=ds.Tables[0].NewRow();
-            //    row["PROJ_ID"]=id;
-            //    row["PROJ_P4"]=param;
-            //    row["PROJ_DESCRIPTION"]=description;
-            //    row["PROJ_CATEGORY"]=category;
-            //    ds.Tables[0].Rows.Add(row);
-
-            //    if(!_conn.UpdateData(ref ds,"PROJS")) 
-            //    {
-            //        _err=_conn.errorMessage;
-            //        return false;
-            //    }
-            //} 
-            //else 
-            //{
-            //    _err=_conn.errorMessage;
-            //    return false;
-            //}
-            //return true;
-
-            throw new NotImplementedException();
-        }
-
         public string GetParameters(string ID)
         {
             DataTable tab = DbSelect("PROJ_P4", _table, "PROJ_ID like '" + ID + "'");
@@ -128,7 +99,12 @@ namespace gView.Framework.Geometry.Proj
             }
 
             DataRow row = tab.Rows[0];
-            string param = string.Format("+towgs84={0},{1},{2},{3},{4},{5},{6}",
+            return GetDatumParameters(row);
+        }
+
+        private string GetDatumParameters(DataRow row)
+        {
+            return string.Format("+towgs84={0},{1},{2},{3},{4},{5},{6}",
                 ((double)row["DATUM_Dx"]).ToString(_nhi),
                 ((double)row["DATUM_Dy"]).ToString(_nhi),
                 ((double)row["DATUM_Dz"]).ToString(_nhi),
@@ -136,8 +112,18 @@ namespace gView.Framework.Geometry.Proj
                 ((double)row["DATUM_Ry"]).ToString(_nhi),
                 ((double)row["DATUM_Rz"]).ToString(_nhi),
                 ((double)row["DATUM_Ppm"]).ToString(_nhi));
+        }
 
-            return param;
+        public bool IsGeoCentricDatum(DataRow row)
+        {
+            return 
+                (double)row["DATUM_Dx"] == 0D &&
+                (double)row["DATUM_Dy"] == 0D &&
+                (double)row["DATUM_Dz"] == 0D &&
+                (double)row["DATUM_Rx"] == 0D &&
+                (double)row["DATUM_Ry"] == 0D &&
+                (double)row["DATUM_Rz"] == 0D &&
+                (double)row["DATUM_Ppm"] == 0D;
         }
 
         public string GetDescription(string ID)
@@ -178,9 +164,9 @@ namespace gView.Framework.Geometry.Proj
             return tab;
         }
 
-        public DataTable GetDatumTable(string where = "")
+        public DataTable GetDatumTable(string where = "", string columns = "DATUM_NAME")
         {
-            DataTable tab = DbSelect("DATUM_NAME", _table, where);
+            DataTable tab = DbSelect(columns, _table, where);
             return tab;
         }
 

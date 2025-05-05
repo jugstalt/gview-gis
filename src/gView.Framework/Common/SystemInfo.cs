@@ -1,4 +1,4 @@
-using gView.GraphicsEngine.GdiPlus;
+﻿using gView.GraphicsEngine.GdiPlus;
 using gView.GraphicsEngine.Skia;
 using System;
 using System.Globalization;
@@ -10,7 +10,7 @@ namespace gView.Framework.Common
 {
     public class SystemInfo
     {
-        public static Version Version = new Version(6, 25, 101);
+        public static Version Version = new Version(7, 25, 1901);
 
         #region -> Private Variables
 
@@ -42,6 +42,14 @@ namespace gView.Framework.Common
 
                 Environment.SetEnvironmentVariable("PATH", $"{Path.GetDirectoryName(Assembly.GetEntryAssembly().Location)}");
                 Environment.SetEnvironmentVariable("GDAL_DRIVER_PATH", $"{Path.GetDirectoryName(Assembly.GetEntryAssembly().Location)}\\gdalplugins");
+            }
+        }
+
+        static public void RegisterProj4Lib(string path)
+        {
+            if(Path.Exists(path))
+            {
+                Environment.SetEnvironmentVariable("PROJ_LIB", path);
             }
         }
 

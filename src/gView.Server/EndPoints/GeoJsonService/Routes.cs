@@ -1,6 +1,8 @@
 ﻿using gView.Framework.Core.MapServer;
 using gView.Framework.OGC.KML;
 using gView.Server.AppCode;
+using Microsoft.AspNetCore.Http;
+using Microsoft.SqlServer.Management.SqlParser.SqlCodeDom;
 using System.Text;
 
 namespace gView.Server.EndPoints.GeoJsonService;
@@ -50,6 +52,21 @@ internal class RouteBuilder
     {
         _sb.Append(_sb.ToString().Contains("?") ? "&" : "?");
         _sb.Append($"crs={crsName}");
+
+        return this;
+    }
+
+    public RouteBuilder AppendUrlPath(string path)
+    {
+        _sb.Append($"/{path}");
+
+        return this;
+    }
+
+    public RouteBuilder AppendQueryString(string queryString)
+    {
+        _sb.Append(_sb.ToString().Contains("?") ? "&" : "?");
+        _sb.Append(queryString);
 
         return this;
     }

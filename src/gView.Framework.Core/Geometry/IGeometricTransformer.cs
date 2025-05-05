@@ -1,22 +1,13 @@
 ﻿using System;
 
-namespace gView.Framework.Core.Geometry
+namespace gView.Framework.Core.Geometry;
+
+public interface IGeometricTransformer : IDisposable
 {
-    public interface IGeometricTransformer : IDisposable
-    {
-        //ISpatialReference FromSpatialReference { set; get; }
-        //ISpatialReference ToSpatialReference { set; get;  }
+    void SetSpatialReferences(ISpatialReference from, ISpatialReference to);
 
-        void SetSpatialReferences(ISpatialReference from, ISpatialReference to);
+    object Transform2D(object geometry);
+    object InvTransform2D(object geometry);
 
-        /*
-        int FromID { get ; }
-        int ToID { get ; }
-        */
-
-        object Transform2D(object geometry);
-        object InvTransform2D(object geometry);
-
-        void Release();
-    }
+    void Release();
 }
