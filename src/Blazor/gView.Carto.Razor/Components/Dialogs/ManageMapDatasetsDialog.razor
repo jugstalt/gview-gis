@@ -6,10 +6,11 @@
 {
     <ModalDialogFormBase T="ManageMapDatasetsModel"
                          OnDialogClose="base.OnDialogClose"
+                         ContentStyle="DialogContentStyle.Full"
                          Model="base.Model">
         <DialogBody>
             <GvGrid ColumnCount="12">
-                <GvGridItem Span="4">
+                <GvGridItem Span="6">
                     <GvScrollable MaxHeight="400">
                         <MudTreeView T="string">
                             @foreach(var datasetItem in _datasetItems)
@@ -20,7 +21,7 @@
                                                  OnClick="() => OnDatasetItemSelected(datasetItem)">
                                     @foreach (var datasetElement in Model.Map.MapElements?.Where(e => e?.DatasetID == datasetItem.Index) ?? [])
                                     {
-                                        <MudTreeViewItem Value="@($"{datasetElement?.Class?.Name ?? "???"}")" />
+                                        <MudTreeViewItem Value="@($"{datasetElement?.Class?.Name ?? "???"}")" title="@($"{datasetElement?.Class?.Name ?? "???"}")" />
                                     }
                                 </MudTreeViewItem>
                             }
@@ -50,7 +51,7 @@
                     }
                 </GvGridItem>
                 
-                <GvGridItem Span="8">
+                <GvGridItem Span="6">
                     @if(_selectedDatasetItem is not null)
                     {
                         <GvCard Title="Dataset Info">
