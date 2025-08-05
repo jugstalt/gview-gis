@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Unreleased
+## Added
+## Fixed
+
+## 7.25.3291
+
+## Fixed
+
+- Manage Map Datasets Dialog Width: [Issue #40](https://github.com/jugstalt/gview-gis/issues/40)]
+
+## 7.25.1901
 
 ### Added
 
@@ -33,6 +43,3 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 -   **Projection:** Intoduced gridshifts for transforming to WGS84.
     (still in beta)
 
-## Fixed
-
-- Manage Map Datasets Dialog Width: [Issue #40](https://github.com/jugstalt/gview-gis/issues/40)]
