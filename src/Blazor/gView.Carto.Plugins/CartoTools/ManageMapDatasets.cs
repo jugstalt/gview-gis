@@ -2,6 +2,7 @@
 using gView.Carto.Core.Reflection;
 using gView.Carto.Core.Services.Abstraction;
 using gView.Carto.Razor.Components.Dialogs.Models;
+using gView.Framework.Blazor.Models;
 using gView.Framework.Carto.Abstraction;
 using gView.Framework.Core.Common;
 
@@ -33,12 +34,12 @@ public class ManageMapDatasets : ICartoButton
                 new ManageMapDatasetsModel()
                 {
                     Map = scope.Document.Map,
-                }/*,
+                },
                 new ModalDialogOptions()
                 {
                     Width = ModalDialogWidth.ExtraExtraLarge,
                     FullWidth = true
-                }*/);
+                });
 
         await scope.EventBus.FireMapSettingsChangedAsync();
 

@@ -34,3 +34,5 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
     (still in beta)
 
 ## Fixed
+
+- Manage Map Datasets Dialog Width: [Issue #40](https://github.com/jugstalt/gview-gis/issues/40)]
