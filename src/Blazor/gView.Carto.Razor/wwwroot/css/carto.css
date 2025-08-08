@@ -377,13 +377,27 @@
         width: 150px;
         height: 130px;
         background-size: contain;
-        background-image: url(../img/rotation_geographic.png);
+        background-image: url(../img/sketchpen-axis-geographic.png);
+    }
+
+    .gview-ui-image.img-rotation-arithmeticminus90 {
+        width: 150px;
+        height: 130px;
+        background-size: contain;
+        background-image: url(../img/sketchpen-axis-arithmetic-minus-90.png);
+    }
+
+    .gview-ui-image.img-rotation-geographicplus90 {
+        width: 150px;
+        height: 130px;
+        background-size: contain;
+        background-image: url(../img/sketchpen-axis-geographic-plus-90.png);
     }
     .gview-ui-image.img-rotation-arithmetic {
         width: 150px;
         height: 130px;
         background-size: contain;
-        background-image: url(../img/rotation_arithmetic.png);
+        background-image: url(../img/sketchpen-axis-arithmetic.png);
     }
 
     .gview-ui-image.img-compostion-over {

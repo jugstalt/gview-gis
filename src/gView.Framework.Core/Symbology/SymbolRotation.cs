@@ -1,12 +1,12 @@
-﻿using gView.Framework.Core.IO;
-using gView.Framework.Core.Common;
+﻿using gView.Framework.Core.Common;
+using gView.Framework.Core.IO;
 using System;
 
 namespace gView.Framework.Core.Symbology
 {
     public class SymbolRotation : IPersistable, IClone
     {
-        private RotationType _rotType = RotationType.arithmetic;
+        private RotationType _rotType = RotationType.ArithmeticMinus90;
         private RotationUnit _rotUnit = RotationUnit.deg;
         private string _rotationFieldName = "";
 
@@ -43,11 +43,17 @@ namespace gView.Framework.Core.Symbology
 
             switch (_rotType)
             {
-                case RotationType.arithmetic:
+                case RotationType.ArithmeticMinus90:
                     rotation = 90 - rotation;
                     break;
-                case RotationType.geographic:
-                    //rotation = 90 - rotation;
+                case RotationType.Arithmetic:
+                    rotation = -rotation;
+                    break;
+                case RotationType.GeographicPlus90:
+                    // rotation = rotation 
+                    break;
+                case RotationType.Geographic:
+                    rotation = -90 + rotation;  // RoationType.geographic2
                     break;
             }
 
@@ -69,7 +75,7 @@ namespace gView.Framework.Core.Symbology
         public void Load(IPersistStream stream)
         {
             _rotationFieldName = (string)stream.Load("RotationFieldname", "");
-            _rotType = (RotationType)stream.Load("RotationType", RotationType.arithmetic);
+            _rotType = (RotationType)stream.Load("RotationType", RotationType.ArithmeticMinus90);
             _rotUnit = (RotationUnit)stream.Load("RotationUnit", RotationUnit.deg);
         }
 

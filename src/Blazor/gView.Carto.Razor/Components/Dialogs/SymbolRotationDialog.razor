@@ -33,22 +33,30 @@
         <GvCard Title="Direction Of Rotation">
             <GvCardContent>
                 <MudRadioGroup @bind-Value="Model.RotationType" T="RotationType" >
+                    <MudText Typo="Typo.body2">Geographic:</MudText> 
                     <GvGrid ColumnCount="2">
-
-                        @foreach (var roationType in Enum.GetValues<RotationType>())
+                        @foreach (var rotationType in new RotationType[] { RotationType.GeographicPlus90, RotationType.Geographic })
                         {
                             <GvGridItem>
-                                <MudRadio Value="roationType"
+                                <MudRadio Value="rotationType"
                                           LabelPlacement="Placement.Bottom">
-                                    <div class="gview-ui-image img-rotation-@roationType.ToString().ToLower()"></div>
-                                    <div>
-                                        @roationType.ToString().SplitCamelCase()
-                                    </div>
+                                    <div class="gview-ui-image img-rotation-@rotationType.ToString().ToLower()"></div>
                                 </MudRadio>
                             </GvGridItem>
                         }
-
-                        </GvGrid>
+                    </GvGrid>
+                    <MudText Typo="Typo.body2">Arithmetic:</MudText>
+                    <GvGrid ColumnCount="2">
+                        @foreach (var rotationType in new RotationType[] { RotationType.Arithmetic, RotationType.ArithmeticMinus90 })
+                        {
+                            <GvGridItem>
+                                <MudRadio Value="rotationType"
+                                          LabelPlacement="Placement.Bottom">
+                                    <div class="gview-ui-image img-rotation-@rotationType.ToString().ToLower()"></div>
+                                </MudRadio>
+                            </GvGridItem>
+                        }
+                     </GvGrid>
                 </MudRadioGroup>
            </GvCardContent>
         </GvCard>
