@@ -35,7 +35,7 @@
                 <MudRadioGroup @bind-Value="Model.RotationType" T="RotationType" >
                     <MudText Typo="Typo.body2">Geographic:</MudText> 
                     <GvGrid ColumnCount="2">
-                        @foreach (var rotationType in new RotationType[] { RotationType.GeographicPlus90, RotationType.Geographic })
+                        @foreach (var rotationType in new RotationType[] { RotationType.Geographic, RotationType.GeographicPlus90 })
                         {
                             <GvGridItem>
                                 <MudRadio Value="rotationType"
