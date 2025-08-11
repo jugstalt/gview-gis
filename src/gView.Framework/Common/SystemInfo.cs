@@ -10,7 +10,7 @@ namespace gView.Framework.Common
 {
     public class SystemInfo
     {
-        public static Version Version = new Version(7, 25, 3201);
+        public static Version Version = new Version(7, 25, 3301);
 
         #region -> Private Variables
 
@@ -53,7 +53,7 @@ namespace gView.Framework.Common
             }
         }
 
-        static public void RegisterDefaultGraphicEnginges(float dpi = 96)
+        static public void RegisterDefaultGraphicEngines(float dpi = 96)
         {
             if (IsWindows)
             {

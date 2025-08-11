@@ -27,7 +27,7 @@ namespace gView.Cmd.MxlUtil.Lib
 
             if (Current.Engine == null)
             {
-                SystemInfo.RegisterDefaultGraphicEnginges();
+                SystemInfo.RegisterDefaultGraphicEngines();
             }
         }
 

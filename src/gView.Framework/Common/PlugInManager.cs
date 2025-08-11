@@ -67,7 +67,7 @@ namespace gView.Framework.Common
             var currentEngine = GraphicsEngine.Current.Engine;
             if (GraphicsEngine.Current.Engine == null)
             {
-                SystemInfo.RegisterDefaultGraphicEnginges();
+                SystemInfo.RegisterDefaultGraphicEngines();
             }
 
             if (_pluginTypes != null)

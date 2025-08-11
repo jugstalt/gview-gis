@@ -9,7 +9,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## Added
 ## Fixed
 
-## 7.25.3291
+## 7.25.3301
+## Added
+
+- Introduced additional System-Rotation-Types: (geographic - 0 => north, arithmetic - 0 => east)
+
+## 7.25.3201
 
 ## Fixed
 
