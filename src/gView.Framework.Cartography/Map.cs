@@ -1,4 +1,5 @@
-﻿using gView.Framework.Cartography.UI;
+﻿using gView.Framework.Cartography.Extensions;
+using gView.Framework.Cartography.UI;
 using gView.Framework.Common;
 using gView.Framework.Core.Carto;
 using gView.Framework.Core.Common;
@@ -1119,12 +1120,12 @@ namespace gView.Framework.Cartography
                     }
                     if (!string.IsNullOrWhiteSpace(dataset.LastErrorMessage))
                     {
-                        _errorMessages.Add(dataset.LastErrorMessage);
+                        _errorMessages.AddErrorMessage(dataset.LastErrorMessage);
                     }
                 }
                 catch (Exception ex)
                 {
-                    _errorMessages.Add(ex.Message);
+                    _errorMessages.AddErrorMessage(ex.Message);
                 }
 
                 _datasets.Add(dataset);
@@ -1171,7 +1172,7 @@ namespace gView.Framework.Cartography
 
                 if (fLayer.Class == null)
                 {
-                    _errorMessages.Add("Invalid layer: " + fLayer.Title + "\n" + errorMessage);
+                    _errorMessages.AddErrorMessage("Invalid layer: " + fLayer.Title + "\n" + errorMessage);
                 }
 
                 _layers.Add(fLayer);
@@ -1207,7 +1208,7 @@ namespace gView.Framework.Cartography
 
                 if (rcLayer.Class == null)
                 {
-                    _errorMessages.Add("Invalid layer: " + rcLayer.Title + "\n" + errorMessage);
+                    _errorMessages.AddErrorMessage("Invalid layer: " + rcLayer.Title + "\n" + errorMessage);
                 }
 
                 _layers.Add(rcLayer);
@@ -1245,7 +1246,7 @@ namespace gView.Framework.Cartography
 
                 if (rLayer.Class == null)
                 {
-                    _errorMessages.Add("Invalid layer: " + rLayer.Title + "\n" + errorMessage);
+                    _errorMessages.AddErrorMessage("Invalid layer: " + rLayer.Title + "\n" + errorMessage);
                 }
 
                 _layers.Add(rLayer);
@@ -1377,11 +1378,11 @@ namespace gView.Framework.Cartography
                 }
                 catch (MapEventHookWarningException wex)
                 {
-                    _errorMessages.Add($"WARNING: Hook {eventHook.GetType()}: {wex.Message}");
+                    _errorMessages.AddWarningMessage($"Hook {eventHook.GetType()}: {wex.Message}");
                 }
                 catch (Exception ex)
                 {
-                    _errorMessages.Add($"ERROR: Hook {eventHook.GetType()}: {ex.Message}");
+                    _errorMessages.AddErrorMessage($"Hook {eventHook.GetType()}: {ex.Message}");
                 }
             }
 
@@ -1389,7 +1390,7 @@ namespace gView.Framework.Cartography
             {
                 foreach (var warning in stream.Warnings)
                 {
-                    _errorMessages.Add(warning);
+                    _errorMessages.AddWarningMessage(warning);
                 }
             }
 
@@ -1397,7 +1398,7 @@ namespace gView.Framework.Cartography
             {
                 foreach (var error in stream.Errors)
                 {
-                    _errorMessages.Add(error);
+                    _errorMessages.AddErrorMessage(error);
                 }
             }
 
@@ -1811,7 +1812,7 @@ namespace gView.Framework.Cartography
             get { return _errorMessages.ToArray(); }
         }
 
-        public bool HasErrorMessages { get { return _errorMessages != null && _errorMessages.Count > 0; } }
+        public bool HasErrorMessages { get { return _errorMessages?.Any() == true; } }
 
         #endregion
 

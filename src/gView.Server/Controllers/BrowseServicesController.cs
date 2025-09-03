@@ -187,7 +187,9 @@ public class BrowseServicesController : BaseController
             throw new NotAuthorizedException();
         }
 
-        using var serviceMap = await _mapServerService.Instance.GetServiceMapAsync(mapService);
+        using var serviceMap = (await _mapServerService.Instance.GetServiceMapAsync(mapService))
+                                                       .ThrowIfNull();
+
         var bounds = serviceMap.FullExtent();
 
         var requestParts = request.Split("/");
@@ -626,6 +628,10 @@ public class BrowseServicesController : BaseController
             }
         });
     }
+
+    [HttpPost] // use this without Antiforgery (used by carto webapp)
+    public Task<IActionResult> PublishService(string service, string folder)
+        => AddService(service, folder);
 
     #region Helper
 

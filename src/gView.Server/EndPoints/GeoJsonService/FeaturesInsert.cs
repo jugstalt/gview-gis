@@ -2,6 +2,7 @@
 using gView.Framework.Core.FDB;
 using gView.Framework.Geometry;
 using gView.GeoJsonService.DTOs;
+using gView.Server.AppCode.Extensions;
 using gView.Server.EndPoints.GeoJsonService.Extensions;
 using gView.Server.Services.MapServer;
 using gView.Server.Services.Security;
@@ -40,7 +41,7 @@ public class FeaturesInsert : BaseApiEndpoint
             ) => HandleSecureAsync<EditFeaturesRequest>(httpContext, mapServerService, loginManagerService, logger, folder, service,
                  async (serviceRequestContext, mapService, identity, editRequest) =>
                  {
-                     using var serviceMap = await mapServerService.Instance.GetServiceMapAsync(mapService);
+                     using var serviceMap = (await mapServerService.Instance.GetServiceMapAsync(mapService)).ThrowIfNull();
 
                      var featureClass = serviceMap.CheckEditableStatement(id, Framework.Editor.Core.EditStatements.INSERT).GetFeatureClass(id);
 

@@ -36,9 +36,11 @@ internal class IOService
         var targetFileInfo = new FileInfo(targetFile);
         if (targetFileInfo.Exists)
         {
+            Console.WriteLine($"  {targetFile} already exists.");
             return false;
         }
 
+        Console.WriteLine($"  Copy new file {targetFile} from zip archive");
         var entry = zipArchive.GetEntry(path);
         if (entry == null)
         {
@@ -47,10 +49,12 @@ internal class IOService
 
         if (targetFileInfo.Directory?.Exists == false)
         {
+            Console.WriteLine($"    Create new target directory {targetFileInfo.Directory.FullName}");
             targetFileInfo.Directory.Create();
         }
 
         entry.ExtractToFile(targetFile);
+        Console.WriteLine("    ... successfully copied");
 
         return true;
     }

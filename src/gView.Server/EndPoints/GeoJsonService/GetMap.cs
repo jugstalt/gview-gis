@@ -7,6 +7,7 @@ using gView.Framework.IO;
 using gView.GeoJsonService.DTOs;
 using gView.GraphicsEngine;
 using gView.Interoperability.Extensions;
+using gView.Server.AppCode.Extensions;
 using gView.Server.EndPoints.GeoJsonService.Extensions;
 using gView.Server.Services.MapServer;
 using gView.Server.Services.Security;
@@ -44,7 +45,7 @@ public class GetMap : BaseApiEndpoint
             ) => HandleSecureAsync<GetMapRequest>(httpContext, mapServiceManager, loginManagerService, logger, folder, service,
                 async (serviceRequestContext, mapService, identity, mapRequest) =>
             {
-                using var serviceMap = await mapServiceManager.Instance.GetServiceMapAsync(mapService);
+                using var serviceMap = (await mapServiceManager.Instance.GetServiceMapAsync(mapService)).ThrowIfNull();
 
                 #region Display (ImageSize, DPI, Rotaion, Extent)
 

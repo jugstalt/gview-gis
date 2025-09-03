@@ -1,6 +1,7 @@
 ﻿using gView.Framework.Core.Data;
 using gView.Framework.Core.Exceptions;
 using gView.GeoJsonService.DTOs;
+using gView.Server.AppCode.Extensions;
 using gView.Server.Services.MapServer;
 using gView.Server.Services.Security;
 using Microsoft.AspNetCore.Http;
@@ -43,7 +44,7 @@ public class GetLegend : BaseApiEndpoint
                     }
 
                     var legendLayers = new List<LegendLayer>();
-                    using var serviceMap = await mapServiceManager.Instance.GetServiceMapAsync(mapService);
+                    using var serviceMap = (await mapServiceManager.Instance.GetServiceMapAsync(mapService)).ThrowIfNull();
 
                     if (legendRequest.Dpi.HasValue && legendRequest.Dpi.Value > 0)
                     {

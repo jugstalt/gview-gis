@@ -165,6 +165,7 @@ try
 
     #region Create config overrides
 
+    Console.WriteLine("Init overrides.");
     versionService.InitOverrides(profile, version);
 
     #endregion

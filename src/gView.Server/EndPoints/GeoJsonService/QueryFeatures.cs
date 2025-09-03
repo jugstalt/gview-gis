@@ -13,6 +13,7 @@ using gView.Framework.Data.Filters;
 using gView.Framework.GeoJsonService.Extensions;
 using gView.Framework.Geometry;
 using gView.GeoJsonService.DTOs;
+using gView.Server.AppCode.Extensions;
 using gView.Server.EndPoints.GeoJsonService.Extensions;
 using gView.Server.Services.MapServer;
 using gView.Server.Services.Security;
@@ -51,7 +52,7 @@ public class QueryFeatures : BaseApiEndpoint
             ) => HandleSecureAsync<GetFeaturesRequest>(httpContext, mapServerService, loginManagerService, logger, folder, service,
             async (serviceRequestContext, mapService, identity, queryRequest) =>
             {
-                using var serviceMap = await mapServerService.Instance.GetServiceMapAsync(mapService);
+                using var serviceMap = (await mapServerService.Instance.GetServiceMapAsync(mapService)).ThrowIfNull();
 
                 int maxRecordCount = queryRequest.Command == QueryCommand.IdsOnly  // return all Ids!
                                 ? int.MaxValue

@@ -445,7 +445,7 @@ public class ManageController : BaseController
 
         var pluginManager = new PlugInManager();
         var mapService = _mapServiceMananger.GetMapService(service);
-        var map = await _mapServiceMananger.Instance.GetServiceMapAsync(mapService);
+        var map = (await _mapServiceMananger.Instance.GetServiceMapAsync(mapService)).ThrowIfNull();
 
         var deserializer = new DeserializerBuilder()
                 .WithNamingConvention(CamelCaseNamingConvention.Instance)

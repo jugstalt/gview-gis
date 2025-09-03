@@ -107,7 +107,7 @@ public class Publisher
     async public Task<bool> Publish(string folder, string service, byte[] mxlData)
     {
         var token = await GetToken();
-        var url = $"{_server}/BrowseServices/AddService?service={service}&folder={folder}&token={token}&f=json";
+        var url = $"{_server}/BrowseServices/PublishService?service={service}&folder={folder}&token={token}&f=json";
 
         var requestContent = new MultipartFormDataContent();
         var mxlContent = new ByteArrayContent(mxlData);
@@ -116,6 +116,12 @@ public class Publisher
         requestContent.Add(mxlContent, "file", $"{service}.mxl");
 
         var response = await HttpClient.PostAsync(url, requestContent);
+        
+        if(!response.IsSuccessStatusCode)
+        {
+            throw new Exception($"Publish response with status code {response.StatusCode}: {await response.Content.ReadAsStringAsync()}");
+        }
+
 
         var mapServerResponse = JsonSerializer.Deserialize<AdminMapServerResponse>(await response.Content.ReadAsStringAsync())!;
         if (mapServerResponse.Success == false)
