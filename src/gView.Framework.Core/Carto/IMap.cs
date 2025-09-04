@@ -70,8 +70,8 @@ namespace gView.Framework.Core.Carto
             set;
         }
 
-        IEnumerable<string> ErrorMessages { get; }
-        bool HasErrorMessages { get; }
+        IEnumerable<string> ErrorMessages(ErrorMessageLevel type = ErrorMessageLevel.Any);
+        bool HasErrorMessages(ErrorMessageLevel type = ErrorMessageLevel.Any);
 
         void ResetRequestExceptions();
 

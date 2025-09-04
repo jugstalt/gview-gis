@@ -17,6 +17,7 @@ using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -50,7 +51,7 @@ namespace gView.Framework.Cartography
         public List<IDataset> _datasets;
         public List<ILayer> _layers = new List<ILayer>();
         public bool _debug = true;
-        private ConcurrentBag<string> _errorMessages = new ConcurrentBag<string>();
+        private ConcurrentBag<ErrorMessage> _errorMessages = new ConcurrentBag<ErrorMessage>();
 
         private IntegerSequence _layerIDSequece = new IntegerSequence();
         private IResourceContainer _resourceContainer = new ResourceContainer();
@@ -1292,7 +1293,7 @@ namespace gView.Framework.Cartography
 
                 if (fLayer.Class == null)
                 {
-                    _errorMessages.Add("Invalid layer: " + wLayer.Title + "\n" + errorMessage);
+                    _errorMessages.AddErrorMessage($"Invalid layer: {wLayer.Title}\n{errorMessage}");
                 }
 
                 _layers.Add(wLayer);
@@ -1655,6 +1656,26 @@ namespace gView.Framework.Cartography
 
         #endregion
 
+        #region Sub Classes
+
+        internal class ErrorMessage
+        {
+            private ErrorMessage() { }
+            public string Message { get; private set; }
+            public ErrorMessageLevel MessageType { get; private set; }
+
+            internal static ErrorMessage Create(ErrorMessageLevel type, string message)
+            {
+                return new ErrorMessage()
+                {
+                    MessageType = type,
+                    Message = message
+                };
+            }
+        }
+
+        #endregion
+
         public Toc DataViewTOC
         {
             set
@@ -1813,12 +1834,30 @@ namespace gView.Framework.Cartography
 
         public IEnumerable<Exception> RequestExceptions { get { return _requestExceptions?.ToArray(); } }
 
-        public IEnumerable<string> ErrorMessages
+        public IEnumerable<string> ErrorMessages(ErrorMessageLevel errorLevel = ErrorMessageLevel.Any)
         {
-            get { return _errorMessages.ToArray(); }
+            var filteredMessages = errorLevel switch
+            {
+                ErrorMessageLevel.Any => _errorMessages,
+                _ => _errorMessages.Where(m => (int)m.MessageType >= (int)errorLevel)
+            };
+
+            return filteredMessages
+                    .Select(m =>
+                        m.Message?.StartsWith(m.MessageType.ToString(), StringComparison.OrdinalIgnoreCase) == true
+                            ? m.Message
+                            : $"{m.MessageType.ToString()}: {m.Message}")
+                    .ToArray();
         }
 
-        public bool HasErrorMessages { get { return _errorMessages?.Any() == true; } }
+        public bool HasErrorMessages(ErrorMessageLevel errorLevel = ErrorMessageLevel.Any)
+        {
+            return errorLevel switch
+            {
+                ErrorMessageLevel.Any => _errorMessages?.Any() == true,
+                _ => _errorMessages?.Where(m => (int)m.MessageType >= (int)errorLevel).Any() == true
+            };
+        }
 
         #endregion
 

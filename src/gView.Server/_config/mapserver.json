@@ -53,6 +53,9 @@
     "CustomCursorTimeoutSeconds": -1
   },
 
+  "CriticalErrorLevel": {
+    "ErrorType": "any"
+  },
   "path-aliases": [
     {
       "path": "\\\\gis3.esn.at\\e$",

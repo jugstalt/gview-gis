@@ -4,6 +4,7 @@ using gView.Facilities.Abstraction;
 using gView.Facilities.Extensions.DependencyInjection;
 using gView.Framework.Common;
 using gView.Framework.Common.Extensions;
+using gView.Framework.Core.Carto;
 using gView.Framework.Core.Common;
 using gView.Framework.Db.Extensions;
 using gView.Framework.Geometry;
@@ -187,6 +188,16 @@ public class Startup
 
                     Globals.AllowFormsLogin = config.AllowFormsLogin = Configuration.Value("allowFormsLogin")?.ToLower() != "false";
                     config.ForceHttps = Configuration.Value("force-https")?.ToLower() == "true";
+
+                    config.CriticalErrorLevel = Configuration.Value("CriticalErrorLevel:ErrorType")?.ToLower() switch
+                    {
+                        "any" => ErrorMessageLevel.Any,
+                        "warning" => ErrorMessageLevel.Warning,
+                        "error" => ErrorMessageLevel.Error,
+                        "critical" => ErrorMessageLevel.Critical,
+                        "never" => ErrorMessageLevel.Never,
+                        _ => ErrorMessageLevel.Error  // default: Only Errors should block a service to load or publish
+                    };
 
                     if (!String.IsNullOrWhiteSpace(Configuration.Value("port")))
                     {

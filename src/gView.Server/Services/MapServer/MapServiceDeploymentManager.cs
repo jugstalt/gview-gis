@@ -26,9 +26,9 @@ namespace gView.Server.Services.MapServer;
 
 public class MapServiceDeploymentManager
 {
-    private readonly MapServiceManager _mapServerService;
-    private readonly AccessControlService _accessControlService;
-    private readonly IMessageQueueService _queueService;
+    private readonly MapServiceManager _mapServiceManager;
+    private readonly AccessControlService _accessControl;
+    private readonly IMessageQueueService _queue;
     private readonly ILogger<MapServiceDeploymentManager> _logger;
 
     // Singleton
@@ -39,17 +39,17 @@ public class MapServiceDeploymentManager
                                        IMessageQueueService queueService,
                                        ILogger<MapServiceDeploymentManager> logger = null)
     {
-        _mapServerService = mapServicerService;
-        _accessControlService = accessControlService;
-        _queueService = queueService;
+        _mapServiceManager = mapServicerService;
+        _accessControl = accessControlService;
+        _queue = queueService;
         _logger = logger ?? new ConsoleLogger<MapServiceDeploymentManager>();
 
-        MapDocument = new ServerMapDocument(_mapServerService);
+        MapDocument = new ServerMapDocument(_mapServiceManager);
     }
 
     async public Task<bool> AddMap(string mapName, string mapXml, string usr, string pwd)
     {
-        await _accessControlService.CheckPublishAccess(mapName.FolderName(), usr, pwd);
+        await _accessControl.CheckPublishAccess(mapName.FolderName(), usr, pwd);
 
         if (await AddMap(mapName, mapXml))
         {
@@ -62,7 +62,7 @@ public class MapServiceDeploymentManager
 
     async public Task<bool> AddMap(string mapName, string mapXml, IIdentity identity)
     {
-        await _accessControlService.CheckPublishAccess(mapName.FolderName(), identity);
+        await _accessControl.CheckPublishAccess(mapName.FolderName(), identity);
 
         if (await AddMap(mapName, mapXml))
         {
@@ -75,7 +75,7 @@ public class MapServiceDeploymentManager
 
     async public Task<bool> RemoveMap(string mapName, string usr, string pwd)
     {
-        await _accessControlService.CheckPublishAccess(mapName.FolderName(), usr, pwd);
+        await _accessControl.CheckPublishAccess(mapName.FolderName(), usr, pwd);
 
         if (RemoveMap(mapName))
         {
@@ -88,7 +88,7 @@ public class MapServiceDeploymentManager
 
     async public Task<bool> RemoveMap(string mapName, IIdentity identity)
     {
-        await _accessControlService.CheckPublishAccess(mapName.FolderName(), identity);
+        await _accessControl.CheckPublishAccess(mapName.FolderName(), identity);
 
         if (RemoveMap(mapName))
         {
@@ -101,7 +101,7 @@ public class MapServiceDeploymentManager
 
     async public Task<bool> ReloadMap(string mapName, string usr, string pwd)
     {
-        await _accessControlService.CheckPublishAccess(mapName.FolderName(), usr, pwd);
+        await _accessControl.CheckPublishAccess(mapName.FolderName(), usr, pwd);
 
         if (await ReloadMap(mapName))
         {
@@ -114,7 +114,7 @@ public class MapServiceDeploymentManager
 
     async public Task<string> GetMetadata(string mapName, string usr, string pwd)
     {
-        await _accessControlService.CheckPublishAccess(mapName.FolderName(), usr, pwd);
+        await _accessControl.CheckPublishAccess(mapName.FolderName(), usr, pwd);
 
         if (!await ReloadMap(mapName))
         {
@@ -124,7 +124,7 @@ public class MapServiceDeploymentManager
         //if (IMS.mapServer == null || IMS.mapServer[mapName] == null)
         //    return String.Empty;
 
-        FileInfo fi = new FileInfo((_mapServerService.Options.ServicesPath + @"/" + mapName + ".meta").ToPlatformPath());
+        FileInfo fi = new FileInfo((_mapServiceManager.Options.ServicesPath + @"/" + mapName + ".meta").ToPlatformPath());
         if (!fi.Exists)
         {
             return String.Empty;
@@ -139,9 +139,9 @@ public class MapServiceDeploymentManager
     }
     async public Task<bool> SetMetadata(string mapName, string metadata, string usr, string pwd)
     {
-        await _accessControlService.CheckPublishAccess(mapName.FolderName(), usr, pwd);
+        await _accessControl.CheckPublishAccess(mapName.FolderName(), usr, pwd);
 
-        FileInfo fi = new FileInfo(_mapServerService.Options.ServicesPath + @"/" + mapName + ".meta");
+        FileInfo fi = new FileInfo(_mapServiceManager.Options.ServicesPath + @"/" + mapName + ".meta");
 
         StringReader sr = new StringReader(metadata);
         XmlStream xmlStream = new XmlStream("");
@@ -162,16 +162,16 @@ public class MapServiceDeploymentManager
         IMap map = null;
         try
         {
-            DirectoryInfo di = new DirectoryInfo(_mapServerService.Options.ServicesPath);
+            DirectoryInfo di = new DirectoryInfo(_mapServiceManager.Options.ServicesPath);
             if (!di.Exists)
             {
                 di.Create();
             }
 
-            FileInfo fi = new FileInfo($"{_mapServerService.Options.ServicesPath}/{name}.mxl");
+            FileInfo fi = new FileInfo($"{_mapServiceManager.Options.ServicesPath}/{name}.mxl");
             if (fi.Exists)
             {
-                ServerMapDocument doc = new ServerMapDocument(_mapServerService);
+                ServerMapDocument doc = new ServerMapDocument(_mapServiceManager);
                 await doc.LoadMapDocumentAsync(fi.FullName);
 
                 if (doc.Maps.Count() == 1)
@@ -186,19 +186,19 @@ public class MapServiceDeploymentManager
 
                     await ApplyMetadata(map as Map);
 
-                    if (map.HasErrorMessages || !MapDocument.AddMap(map))
+                    if (map.HasErrorMessages(_mapServiceManager.Options.CriticalErrorLevel)
+                        || !MapDocument.AddMap(map))
                     {
                         return null;
                     }
 
                     MapDocument.SetMapModules(map, doc.GetMapModules(map));
 
-                    var mapService = _mapServerService.MapServices.Where(s => s.Fullname == map.Name).FirstOrDefault();
+                    var mapService = _mapServiceManager.MapServices.Where(s => s.Fullname == map.Name).FirstOrDefault();
                     if (mapService != null)
                     {
                         mapService.ServiceRefreshed();
                     }
-
 
                     return map;
                 }
@@ -208,16 +208,16 @@ public class MapServiceDeploymentManager
         catch (Exception ex)
         {
             _logger.LogError($"Map {name}: LoadConfig - {ex.Message}");
-            _mapServerService?.Instance?.LogAsync(name, "LoadMap.Exception", loggingMethod.error, ex.Message);
+            _mapServiceManager?.Instance?.LogAsync(name, "LoadMap.Exception", loggingMethod.error, ex.Message);
         }
         finally
         {
-            if (map != null && map.HasErrorMessages)
+            if (map != null && map.HasErrorMessages(ErrorMessageLevel.Any))
             {
-                foreach (var errorMessage in map.ErrorMessages)
+                foreach (var errorMessage in map.ErrorMessages(ErrorMessageLevel.Any))
                 {
                     _logger.LogWarning($"{map.Name}: LoadMap - {errorMessage} ");
-                    _mapServerService?.Instance?.LogAsync(map.Name, "LoadMap.MapErrors", loggingMethod.error, errorMessage);
+                    _mapServiceManager?.Instance?.LogAsync(map.Name, "LoadMap.MapErrors", loggingMethod.error, errorMessage);
                 }
             }
         }
@@ -245,7 +245,7 @@ public class MapServiceDeploymentManager
         string folder = mapName.FolderName();
         if (!String.IsNullOrWhiteSpace(folder))
         {
-            if (!Directory.Exists((_mapServerService.Options.ServicesPath + "/" + folder).ToPlatformPath()))
+            if (!Directory.Exists((_mapServiceManager.Options.ServicesPath + "/" + folder).ToPlatformPath()))
             {
                 throw new MapServerException("Folder not exists");
             }
@@ -256,12 +256,12 @@ public class MapServiceDeploymentManager
             return await ReloadMap(mapName);
         }
 
-        if ((await _mapServerService.Instance.Maps(null)).Count() >= _mapServerService.Instance.MaxServices)
+        if ((await _mapServiceManager.Instance.Maps(null)).Count() >= _mapServiceManager.Instance.MaxServices)
         {
             // Überprüfen, ob schon eine Service mit gleiche Namen gibt...
             // wenn ja, ist es nur einem Refresh eines bestehenden Services
             bool found = false;
-            foreach (IMapService existingMap in await _mapServerService.Instance.Maps(null))
+            foreach (IMapService existingMap in await _mapServiceManager.Instance.Maps(null))
             {
                 if (existingMap.Name == mapName)
                 {
@@ -286,7 +286,7 @@ public class MapServiceDeploymentManager
             }
         }
 
-        ServerMapDocument mapDocument = new ServerMapDocument(_mapServerService);
+        ServerMapDocument mapDocument = new ServerMapDocument(_mapServiceManager);
         await mapDocument.LoadAsync(xmlStream);
 
         if (mapDocument.Maps.Count() == 0)
@@ -322,14 +322,14 @@ public class MapServiceDeploymentManager
             }
         }
 
-        if (map.HasErrorMessages)
+        if (map.HasErrorMessages(ErrorMessageLevel.Any))
         {
             //errors.Append("Map Errors/Warnings:" + Environment.NewLine);
-            foreach (var errorMessage in map.ErrorMessages)
+            foreach (var errorMessage in map.ErrorMessages(ErrorMessageLevel.Any))
             {
                 errors.Append(errorMessage + Environment.NewLine);
-                hasErrors |= errorMessage.ToLower().StartsWith("warning:") == false;  // Warnings should not throw an exception
             }
+            hasErrors |= map.HasErrorMessages(_mapServiceManager.Options.CriticalErrorLevel);
         }
         if (map.LastException != null)
         {
@@ -355,7 +355,7 @@ public class MapServiceDeploymentManager
 
         if (hasErrors)
         {
-            throw new MapServerException("Errors: " + Environment.NewLine + errors.ToString());
+            throw new MapServerException($"Critical Errors:{Environment.NewLine}{errors.ToString()}");
         }
 
         XmlStream pluginStream = new XmlStream("Moduls");
@@ -376,7 +376,7 @@ public class MapServiceDeploymentManager
         //}
 
         //if (!_doc.AddMap(map)) return false;
-        _mapServerService.AddMapService(mapName, MapServiceType.MXL);
+        _mapServiceManager.AddMapService(mapName, MapServiceType.MXL);
 
         if (mapDocument.Readonly)
         {
@@ -407,15 +407,15 @@ public class MapServiceDeploymentManager
 
     internal bool RemoveMap(string mapName)
     {
-        var mapService = _mapServerService.GetMapService(mapName);
+        var mapService = _mapServiceManager.GetMapService(mapName);
         if (mapService != null)
         {
-            _mapServerService.MapServices = new ConcurrentBag<IMapService>(_mapServerService.MapServices.Except(new[] { mapService }));
+            _mapServiceManager.MapServices = new ConcurrentBag<IMapService>(_mapServiceManager.MapServices.Except(new[] { mapService }));
         }
         MapDocument.RemoveMap(mapName);
         RemoveConfig(mapName);
 
-        _mapServerService.ReloadServices(mapName.FolderName(), true);
+        _mapServiceManager.ReloadServices(mapName.FolderName(), true);
 
         _logger.LogInformation("Removed map {mapName} successfully", mapName);
 
@@ -440,7 +440,7 @@ public class MapServiceDeploymentManager
             XmlStream stream = new XmlStream("MapServer");
             stream.Save("MapDocument", mapDocument);
 
-            stream.WriteStream($"{_mapServerService.Options.ServicesPath}/{map.Name}.mxl");
+            stream.WriteStream($"{_mapServiceManager.Options.ServicesPath}/{map.Name}.mxl");
 
             await ApplyMetadata(map);
         }
@@ -455,7 +455,7 @@ public class MapServiceDeploymentManager
         try
         {
             await File.WriteAllTextAsync(
-                        $"{_mapServerService.Options.ServicesPath}/{map.Name}.mxl",
+                        $"{_mapServiceManager.Options.ServicesPath}/{map.Name}.mxl",
                         mapXml,
                         Encoding.Unicode
                     );
@@ -475,19 +475,19 @@ public class MapServiceDeploymentManager
     {
         try
         {
-            FileInfo fi = new FileInfo(_mapServerService.Options.ServicesPath + "/" + mapName + ".mxl");
+            FileInfo fi = new FileInfo(_mapServiceManager.Options.ServicesPath + "/" + mapName + ".mxl");
             if (fi.Exists)
             {
                 fi.Delete();
             }
 
-            fi = new FileInfo(_mapServerService.Options.ServicesPath + "/" + mapName + ".svc");
+            fi = new FileInfo(_mapServiceManager.Options.ServicesPath + "/" + mapName + ".svc");
             if (fi.Exists)
             {
                 fi.Delete();
             }
 
-            fi = new FileInfo(_mapServerService.Options.ServicesPath + "/" + mapName + ".meta");
+            fi = new FileInfo(_mapServiceManager.Options.ServicesPath + "/" + mapName + ".meta");
             if (fi.Exists)
             {
                 fi.Delete();
@@ -529,7 +529,7 @@ public class MapServiceDeploymentManager
                 return;
             }
 
-            FileInfo fi = new FileInfo(_mapServerService.Options.ServicesPath + @"/" + map.Name + ".meta");
+            FileInfo fi = new FileInfo(_mapServiceManager.Options.ServicesPath + @"/" + map.Name + ".meta");
 
             IEnumerable<IMapApplicationModule> modules = null;
             if (MapDocument is IMapDocumentModules)
@@ -537,7 +537,7 @@ public class MapServiceDeploymentManager
                 modules = ((IMapDocumentModules)MapDocument).GetMapModules(map);
             }
 
-            IServiceMap sMap = await ServiceMap.CreateAsync(map, _mapServerService.Instance, modules, null);
+            IServiceMap sMap = await ServiceMap.CreateAsync(map, _mapServiceManager.Instance, modules, null);
             XmlStream xmlStream;
             // 1. Bestehende Metadaten auf sds anwenden
             if (fi.Exists)
@@ -570,13 +570,13 @@ public class MapServiceDeploymentManager
     }
 
     async private Task FireReloadMapMessage(string mapName)
-        => await _queueService.EnqueueAsync(
+        => await _queue.EnqueueAsync(
                 Facilities.Const.MessageQueuePrefix,
                 [$"{ReloadMapMessageHandler.Name}:{mapName}"]
             );
 
     async private Task FireRemoveMapMessage(string mapName)
-        => await _queueService.EnqueueAsync(
+        => await _queue.EnqueueAsync(
                 Facilities.Const.MessageQueuePrefix,
                 [$"{RemoveMapMessageHandler.Name}:{mapName}"]
             );

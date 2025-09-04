@@ -20,5 +20,9 @@
 
   "proj-engine": {
     "engine": "ManageProj4Parallel" // ManagedProj4, NativeProj4
+  },
+
+  "CriticalErrorLevel": {
+    "ErrorType": "error"
   }
 }

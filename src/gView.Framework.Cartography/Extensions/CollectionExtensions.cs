@@ -1,5 +1,7 @@
 ﻿#nullable enable
 
+using gView.Framework.Core.Carto;
+using gView.Framework.Core.Common;
 using System;
 using System.Collections.Concurrent;
 using System.Linq;
@@ -7,30 +9,25 @@ using System.Linq;
 namespace gView.Framework.Cartography.Extensions;
 internal static class CollectionExtensions
 {
-    const string ErrorPrefix = "ERROR:";
-    const string WarningPrefix = "WARNING:";
-
-    private static void AddMessage(this ConcurrentBag<string> messages, string prefix, string message)
+    private static void AddMessage(this ConcurrentBag<Map.ErrorMessage> messages, ErrorMessageLevel type, string message)
     {
-        messages.Add(message?.StartsWith(prefix, StringComparison.OrdinalIgnoreCase) == true
-            ? message
-            : $"{prefix} {message}");
+        messages.Add(Map.ErrorMessage.Create(type, message));
     }
 
-    static public void AddErrorMessage(this ConcurrentBag<string> messages, string errorMessage)
+    static public void AddErrorMessage(this ConcurrentBag<Map.ErrorMessage> messages, string errorMessage)
     {
-        messages.AddMessage(ErrorPrefix, errorMessage);
+        messages.AddMessage(ErrorMessageLevel.Error, errorMessage);
     }
 
-    static public void AddWarningMessage(this ConcurrentBag<string> messages, string warning)
+    static public void AddWarningMessage(this ConcurrentBag<Map.ErrorMessage> messages, string warning)
     {
-        messages.AddMessage(WarningPrefix, warning);
+        messages.AddMessage(ErrorMessageLevel.Warning, warning);
     }
 
-    static public bool HasErrorMessages(this ConcurrentBag<string>? messages)
+    static public bool HasErrorMessages(this ConcurrentBag<Map.ErrorMessage>? messages)
     {
         return messages?
-            .Where(m => m.StartsWith(ErrorPrefix, StringComparison.OrdinalIgnoreCase))
+            .Where(m => m.MessageType == ErrorMessageLevel.Error)
             .Any() == true;
     }
 }

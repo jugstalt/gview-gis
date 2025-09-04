@@ -184,13 +184,13 @@ public class CartoApplicationScopeService : ApplictionBusyHandlerAndCache, ICart
 
         await stream.LoadAsync("MapDocument", cartoDocument);
 
-        if (cartoDocument.Map?.ErrorMessages?.Any() == true)
+        if (cartoDocument.Map?.ErrorMessages()?.Any() == true)
         {
             if (await this.ShowKnownDialog(
                                 KnownDialogs.WarningsDialog,
                                 model: new WarningsDialogModel()
                                 {
-                                    Warnings = cartoDocument.Map.ErrorMessages
+                                    Warnings = cartoDocument.Map.ErrorMessages()
                                 })
                 is null)
             {

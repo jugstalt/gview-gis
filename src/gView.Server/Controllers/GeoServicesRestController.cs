@@ -174,13 +174,8 @@ public class GeoServicesRestController : BaseController
 
             await mapService.CheckAccess(identity, _mapServerService.GetInterpreter(typeof(GeoServicesRestInterperter)));
 
-            using (var map = await _mapServerService.Instance.GetServiceMapAsync(id, folder))
+            using (var map = (await _mapServerService.Instance.GetServiceMapAsync(id, folder)).ThrowIfNull(id))
             {
-                if (map == null)
-                {
-                    throw new MapServerException($"unable to create map: {id}. Check log file for details");
-                }
-
                 IEnvelope fullExtent = map.FullExtent();
                 var spatialReference = map.Display.SpatialReference;
                 int epsgCode = spatialReference != null ? spatialReference.EpsgCode : 0;
@@ -257,13 +252,8 @@ public class GeoServicesRestController : BaseController
 
             await mapService.CheckAccess(identity, _mapServerService.GetInterpreter(typeof(GeoServicesRestInterperter)));
 
-            using (var map = await _mapServerService.Instance.GetServiceMapAsync(id, folder))
+            using (var map = (await _mapServerService.Instance.GetServiceMapAsync(id, folder)).ThrowIfNull(id))
             {
-                if (map == null)
-                {
-                    throw new MapServerException($"unable to create map: {id}. Check log file for details");
-                }
-
                 var jsonLayers = new JsonLayersDTO();
                 jsonLayers.Layers = map.MapElements
                     .Where(e =>
@@ -292,11 +282,7 @@ public class GeoServicesRestController : BaseController
 
             await mapService.CheckAccess(identity, _mapServerService.GetInterpreter(typeof(GeoServicesRestInterperter)));
 
-            var map = await _mapServerService.Instance.GetServiceMapAsync(id, folder);
-            if (map == null)
-            {
-                throw new MapServerException($"unable to create map: {id}. Check log file for details");
-            }
+            var map = (await _mapServerService.Instance.GetServiceMapAsync(id, folder)).ThrowIfNull(id);
 
             var jsonLayers = new JsonLayersDTO();
             return Result(JsonLayer(map, layerId));
@@ -591,11 +577,7 @@ public class GeoServicesRestController : BaseController
 
             await mapService.CheckAccess(identity, _mapServerService.GetInterpreter(typeof(GeoServicesRestInterperter)));
 
-            var map = await _mapServerService.Instance.GetServiceMapAsync(id, folder);
-            if (map == null)
-            {
-                throw new MapServerException($"unable to create map: {id}. Check log file for details");
-            }
+            var map = (await _mapServerService.Instance.GetServiceMapAsync(id, folder)).ThrowIfNull(id);
 
             gView.Framework.Geometry.Envelope fullExtent = null;
             var spatialReference = map.Display.SpatialReference;
@@ -943,11 +925,7 @@ public class GeoServicesRestController : BaseController
 
             await mapService.CheckAccess(identity, _mapServerService.GetInterpreter(typeof(GeoServicesRestInterperter)));
 
-            var map = await _mapServerService.Instance.GetServiceMapAsync(id, folder);
-            if (map == null)
-            {
-                throw new MapServerException($"unable to create map: {id}. Check log file for details");
-            }
+            var map = (await _mapServerService.Instance.GetServiceMapAsync(id, folder)).ThrowIfNull(id);
 
             var jsonLayers = new JsonLayersDTO();
             return Result(JsonFeatureServerLayer(map, layerId));

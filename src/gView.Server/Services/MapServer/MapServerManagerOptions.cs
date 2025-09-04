@@ -1,4 +1,6 @@
-﻿namespace gView.Server.Services.MapServer
+﻿using gView.Framework.Core.Carto;
+
+namespace gView.Server.Services.MapServer
 {
     public class MapServerManagerOptions
     {
@@ -30,6 +32,8 @@
         public int MapServerDefaults_MaxRecordCount { get; set; }
 
         public int Port { get; set; }
+
+        public ErrorMessageLevel CriticalErrorLevel { get; set; }
 
     }
 }

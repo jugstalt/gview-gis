@@ -5,6 +5,7 @@ using gView.Cmd.MxlUtil.Lib.Abstraction;
 using gView.Cmd.MxlUtil.Lib.Exceptions;
 using gView.Cmd.MxlUtil.Lib;
 using gView.Cmd.Core.Abstraction;
+using gView.Framework.Core.Carto;
 
 namespace gView.Cmd.MxlUtil.Lib.Untilities
 {
@@ -118,9 +119,9 @@ Optional arguments:
                 throw new Exception("No map loaded");
             }
 
-            if (map.HasErrorMessages)
+            if (map.HasErrorMessages(ErrorMessageLevel.Any))
             {
-                throw new Exception($"Can't load source mxl {inFile}:{Environment.NewLine}{String.Join('\n', map.ErrorMessages)}");
+                throw new Exception($"Can't load source mxl {inFile}:{Environment.NewLine}{String.Join('\n', map.ErrorMessages(ErrorMessageLevel.Any))}");
             }
 
             bool saveOutput = false;

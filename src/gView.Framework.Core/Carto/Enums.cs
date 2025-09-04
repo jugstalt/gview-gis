@@ -41,10 +41,13 @@ namespace gView.Framework.Core.Carto
         IncludeLatitudeWhenCalculateMapScale = 1
     }
 
-    public enum ErrorMessageType 
+    // higher numbers should be more critical
+    public enum ErrorMessageLevel 
     { 
         Any = 0, 
         Warning = 1,
-        Error = 2
+        Error = 2,
+        Critical = 3,
+        Never = 999
     }
 }

@@ -58,19 +58,19 @@ public class GetServiceCapabilities : BaseApiEndpoint
                 );
 
          string url = $"{onlineResource}/{Routes.Base}/{Routes.GetServices}/{path}";
-         var map = await mapServerService.Instance.GetServiceMapAsync(service, folder);
+         var map = (await mapServerService.Instance.GetServiceMapAsync(service, folder)).ThrowIfNull(service);
          var accessTypes = await mapService.GetAccessTypes(identity);
 
          var originalMapSRef = map.Display.SpatialReference;
          var fullExtent = map.FullExtent();
-         var intialExtent = fullExtent; // map.Display.Envelope;
+         var initialExtent = fullExtent; // map.Display.Envelope;
          map.Display.SpatialReference = capabilitiesRequest.CRS.ToSpatialReferenceOrDefault();
 
-         using (var geoTransfromer = GeometricTransformerFactory.Create(map.Display?.DatumTransformations))
+         using (var geoTransformer = GeometricTransformerFactory.Create(map.Display?.DatumTransformations))
          {
-             geoTransfromer.SetSpatialReferences(originalMapSRef, map.Display.SpatialReference);
-             fullExtent = (geoTransfromer.Transform2D(fullExtent) as IGeometry)?.Envelope;
-             intialExtent = (geoTransfromer.Transform2D(intialExtent) as IGeometry)?.Envelope;
+             geoTransformer.SetSpatialReferences(originalMapSRef, map.Display.SpatialReference);
+             fullExtent = (geoTransformer.Transform2D(fullExtent) as IGeometry)?.Envelope;
+             initialExtent = (geoTransformer.Transform2D(initialExtent) as IGeometry)?.Envelope;
          }
 
          return new GetServiceCapabilitiesResponse()
@@ -92,7 +92,7 @@ public class GetServiceCapabilities : BaseApiEndpoint
                             ? fullExtent.ToBBox()
                             : null,
              InitialExtent = accessTypes.HasFlag(AccessTypes.Map)
-                            ? intialExtent.ToBBox()
+                            ? initialExtent.ToBBox()
                             : null,
              Units = accessTypes.HasFlag(AccessTypes.Map)
                             ? map.Display.MapUnits.ToString()

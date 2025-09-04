@@ -204,7 +204,7 @@ public class BaseApiEndpoint : IApiEndpoint
         {
             logger.LogWarning("Handle GeoJson Service Request: {message}", mse.Message);
 
-            statusCode = 400;
+            statusCode = mse.StatusCode ?? 400;
             result = new ErrorResponse()
             {
                 ErrorCode = statusCode.Value,

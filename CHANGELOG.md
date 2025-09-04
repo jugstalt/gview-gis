@@ -9,6 +9,16 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## Added
 ## Fixed
 
+## 7.25.3601
+## Added
+
+- ``mapserver.config``: Added support for ``CriticalErrorLevel``
+  [Online Documentation](https://docs.gviewonline.com/en/setup/config-server.html)
+
+## Fixed
+
+- Bug: Publish services from gView.Carto to gView.Server failed (400: Badrequest)
+
 ## 7.25.3301
 ## Added
 
