@@ -68,7 +68,7 @@ internal class MapSettings : ICartoButton
             original.Display.MapUnits = clone.Display.MapUnits;
             original.Display.DisplayUnits = clone.Display.DisplayUnits;
             original.Display.BackgroundColor = clone.Display.BackgroundColor;
-            original.Display.WebMercatorScaleBehavoir = clone.Display.WebMercatorScaleBehavoir;
+            original.Display.WebMercatorScaleBehavior = clone.Display.WebMercatorScaleBehavior;
 
             #endregion
 

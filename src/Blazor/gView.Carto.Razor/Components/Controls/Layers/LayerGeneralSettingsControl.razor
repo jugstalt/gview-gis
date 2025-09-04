@@ -12,7 +12,7 @@
                 Layer.MinimumScale = Math.Abs(Layer.MinimumScale);
                 Layer.MaximumScale = Math.Abs(Layer.MaximumScale);
 
-                <MudNumericField Label="Minimun Scale 1:  (higher scale dominator)"
+                <MudNumericField Label="Minimum Scale 1:  (higher scale dominator)"
                                  @bind-Value="Layer.MaximumScale"/>
                 <MudNumericField Label="Maximum Scale 1:  (lower scale dominator)"
                                  @bind-Value="Layer.MinimumScale"/>
@@ -26,15 +26,15 @@
 
             @if (Layer is IFeatureLayer fLayer) 
             {
-                <MudSelect T="RefScaleBehavoir"
-                           Value="_renderRefScaleBehavoir"
-                           ValueChanged="RenderRefScaleBehavoirChanged"
-                           Label="Reference Scale Behavoir">
-                    <MudSelectItem Value="RefScaleBehavoir.IgnoreRefScale">Do not apply reference scale</MudSelectItem>
-                    <MudSelectItem Value="RefScaleBehavoir.ApplyRefScale">Apply reference scale</MudSelectItem>
-                    <MudSelectItem Value="RefScaleBehavoir.ApplyRefScaleWithMaxUpscale">Apply reference scale (max scale up)</MudSelectItem>
+                <MudSelect T="RefScaleBehavior"
+                           Value="_renderRefScaleBehavior"
+                           ValueChanged="RenderRefScaleBehaviorChanged"
+                           Label="Reference Scale Behavior">
+                    <MudSelectItem Value="RefScaleBehavior.IgnoreRefScale">Do not apply reference scale</MudSelectItem>
+                    <MudSelectItem Value="RefScaleBehavior.ApplyRefScale">Apply reference scale</MudSelectItem>
+                    <MudSelectItem Value="RefScaleBehavior.ApplyRefScaleWithMaxUpscale">Apply reference scale (max scale up)</MudSelectItem>
                 </MudSelect>
-                @if (_renderRefScaleBehavoir == RefScaleBehavoir.ApplyRefScaleWithMaxUpscale)
+                @if (_renderRefScaleBehavior == RefScaleBehavior.ApplyRefScaleWithMaxUpscale)
                 {
                     fLayer.MaxRefScaleFactor = Math.Max(1f, fLayer.MaxRefScaleFactor);
 
@@ -73,15 +73,15 @@
 
                 @if (Layer is IFeatureLayer fLayer)
                 {
-                    <MudSelect T="RefScaleBehavoir"
-                               Value="_labelRefScaleBehavoir"
-                               ValueChanged="LabelRefScaleBehavoirChanged"
-                               Label="Reference Scale Behavoir">
-                        <MudSelectItem Value="RefScaleBehavoir.IgnoreRefScale">Do not apply reference scale</MudSelectItem>
-                        <MudSelectItem Value="RefScaleBehavoir.ApplyRefScale">Apply reference scale</MudSelectItem>
-                        <MudSelectItem Value="RefScaleBehavoir.ApplyRefScaleWithMaxUpscale">Apply reference scale (max scale up)</MudSelectItem>
+                    <MudSelect T="RefScaleBehavior"
+                               Value="_labelRefScaleBehavior"
+                               ValueChanged="LabelRefScaleBehaviorChanged"
+                               Label="Reference Scale Behavior">
+                        <MudSelectItem Value="RefScaleBehavior.IgnoreRefScale">Do not apply reference scale</MudSelectItem>
+                        <MudSelectItem Value="RefScaleBehavior.ApplyRefScale">Apply reference scale</MudSelectItem>
+                        <MudSelectItem Value="RefScaleBehavior.ApplyRefScaleWithMaxUpscale">Apply reference scale (max scale up)</MudSelectItem>
                     </MudSelect>
-                    @if (_labelRefScaleBehavoir == RefScaleBehavoir.ApplyRefScaleWithMaxUpscale)
+                    @if (_labelRefScaleBehavior == RefScaleBehavior.ApplyRefScaleWithMaxUpscale)
                     {
                         fLayer.MaxLabelRefScaleFactor = Math.Max(1f, fLayer.MaxLabelRefScaleFactor);
 
@@ -119,15 +119,15 @@
     private bool _renderAtAllScales;
     private bool _labelAtAllScales;
 
-    private enum RefScaleBehavoir
+    private enum RefScaleBehavior
     {
         IgnoreRefScale = -1,
         ApplyRefScale = 0,
         ApplyRefScaleWithMaxUpscale = 1
     }
 
-    private RefScaleBehavoir _renderRefScaleBehavoir;
-    private RefScaleBehavoir _labelRefScaleBehavoir;
+    private RefScaleBehavior _renderRefScaleBehavior;
+    private RefScaleBehavior _labelRefScaleBehavior;
 
     protected override void OnInitialized()
     {
@@ -146,62 +146,62 @@
 
         if(Layer is IFeatureLayer fLayer)
         {
-            _renderRefScaleBehavoir = fLayer switch
+            _renderRefScaleBehavior = fLayer switch
             {
-                { ApplyRefScale: false } => RefScaleBehavoir.IgnoreRefScale,
-                { MaxRefScaleFactor: >= 1f} => RefScaleBehavoir.ApplyRefScaleWithMaxUpscale,
-                { ApplyRefScale: true } => RefScaleBehavoir.ApplyRefScale
+                { ApplyRefScale: false } => RefScaleBehavior.IgnoreRefScale,
+                { MaxRefScaleFactor: >= 1f} => RefScaleBehavior.ApplyRefScaleWithMaxUpscale,
+                { ApplyRefScale: true } => RefScaleBehavior.ApplyRefScale
             };
 
-            _labelRefScaleBehavoir = fLayer switch
+            _labelRefScaleBehavior = fLayer switch
             {
-                { ApplyLabelRefScale: false } => RefScaleBehavoir.IgnoreRefScale,
-                { MaxLabelRefScaleFactor: >= 1f } => RefScaleBehavoir.ApplyRefScaleWithMaxUpscale,
-                { ApplyLabelRefScale: true } => RefScaleBehavoir.ApplyRefScale
+                { ApplyLabelRefScale: false } => RefScaleBehavior.IgnoreRefScale,
+                { MaxLabelRefScaleFactor: >= 1f } => RefScaleBehavior.ApplyRefScaleWithMaxUpscale,
+                { ApplyLabelRefScale: true } => RefScaleBehavior.ApplyRefScale
             };
         }
     }
 
-    private void RenderRefScaleBehavoirChanged(RefScaleBehavoir refScaleBehavoir)
+    private void RenderRefScaleBehaviorChanged(RefScaleBehavior refScaleBehavior)
     {
         if(Layer is IFeatureLayer fLayer)
         {
-            _renderRefScaleBehavoir = refScaleBehavoir;
+            _renderRefScaleBehavior = refScaleBehavior;
 
-            switch(refScaleBehavoir)
+            switch(refScaleBehavior)
             {
-                case RefScaleBehavoir.IgnoreRefScale:
+                case RefScaleBehavior.IgnoreRefScale:
                     fLayer.ApplyRefScale = false;
                     fLayer.MaxRefScaleFactor = 0f;
                     break;
-                case RefScaleBehavoir.ApplyRefScale:
+                case RefScaleBehavior.ApplyRefScale:
                     fLayer.ApplyRefScale = true;
                     fLayer.MaxRefScaleFactor = 0f;
                     break;
-                case RefScaleBehavoir.ApplyRefScaleWithMaxUpscale:
+                case RefScaleBehavior.ApplyRefScaleWithMaxUpscale:
                     fLayer.ApplyRefScale = true;
                     break;
             }
         }
     }
 
-    private void LabelRefScaleBehavoirChanged(RefScaleBehavoir refScaleBehavoir)
+    private void LabelRefScaleBehaviorChanged(RefScaleBehavior refScaleBehavior)
     {
         if (Layer is IFeatureLayer fLayer)
         {
-            _labelRefScaleBehavoir = refScaleBehavoir;
+            _labelRefScaleBehavior = refScaleBehavior;
 
-            switch (refScaleBehavoir)
+            switch (refScaleBehavior)
             {
-                case RefScaleBehavoir.IgnoreRefScale:
+                case RefScaleBehavior.IgnoreRefScale:
                     fLayer.ApplyLabelRefScale = false;
                     fLayer.MaxLabelRefScaleFactor = 0f;
                     break;
-                case RefScaleBehavoir.ApplyRefScale:
+                case RefScaleBehavior.ApplyRefScale:
                     fLayer.ApplyLabelRefScale = true;
                     fLayer.MaxLabelRefScaleFactor = 0f;
                     break;
-                case RefScaleBehavoir.ApplyRefScaleWithMaxUpscale:
+                case RefScaleBehavior.ApplyRefScaleWithMaxUpscale:
                     fLayer.ApplyLabelRefScale = true;
                     break;
             }

@@ -60,7 +60,7 @@ namespace gView.Server.AppCode
             serviceMap._displayUnits = original.DisplayUnits;
             serviceMap._backgroundColor = original.BackgroundColor;
             serviceMap.ReferenceScale = original.ReferenceScale;
-            serviceMap.WebMercatorScaleBehavoir = original.WebMercatorScaleBehavoir;
+            serviceMap.WebMercatorScaleBehavior = original.WebMercatorScaleBehavior;
 
             serviceMap.SpatialReference = original.Display.SpatialReference;
             serviceMap.LayerDefaultSpatialReference = original.LayerDefaultSpatialReference != null ? original.LayerDefaultSpatialReference.Clone() as ISpatialReference : null;

@@ -84,7 +84,7 @@ namespace gView.Framework.Cartography
             ReferenceScale = original.Display.ReferenceScale;
             Display.SpatialReference = original.Display.SpatialReference != null ? original.SpatialReference.Clone() as ISpatialReference : null;
             LayerDefaultSpatialReference = original.LayerDefaultSpatialReference != null ? original.LayerDefaultSpatialReference.Clone() as ISpatialReference : null;
-            WebMercatorScaleBehavoir = original.WebMercatorScaleBehavoir;
+            WebMercatorScaleBehavior = original.WebMercatorScaleBehavior;
             this.DatumTransformations = original.DatumTransformations?.Clone();
 
             _toc = new Toc(this); //original.TOC.Clone() as TOC;
@@ -1093,7 +1093,13 @@ namespace gView.Framework.Cartography
             //LayerDefaultSpatialReference
             ISpatialReference ldsRef = new SpatialReference();
             LayerDefaultSpatialReference = (ISpatialReference)stream.Load("LayerDefaultSpatialReference", null, ldsRef);
-            WebMercatorScaleBehavoir = (WebMercatorScaleBehavoir)stream.Load("WebMercatorScaleBehavoir", (int)WebMercatorScaleBehavoir.Default);
+
+            // there was a typo in "WebMercatorScaleBehavior" in some legacy files...
+            // so check the old name first:
+            var legacyTypoWebMercatorBehavior = (int)stream.Load("WebMercatorScaleBehavoir", -99);
+            WebMercatorScaleBehavior = legacyTypoWebMercatorBehavior == -99 
+                ? (WebMercatorScaleBehavior)stream.Load("WebMercatorScaleBehavior", (int)WebMercatorScaleBehavior.Default)
+                : (WebMercatorScaleBehavior)legacyTypoWebMercatorBehavior;
 
             _layerIDSequece = (IntegerSequence)stream.Load("layerIDSequence", new IntegerSequence(), new IntegerSequence());
 
@@ -1437,7 +1443,7 @@ namespace gView.Framework.Cartography
             {
                 stream.Save("LayerDefaultSpatialReference", LayerDefaultSpatialReference);
             }
-            stream.Save("WebMercatorScaleBehavoir", (int)this.WebMercatorScaleBehavoir);
+            stream.Save("WebMercatorScaleBehavior", (int)this.WebMercatorScaleBehavior);
 
             stream.Save("layerIDSequence", _layerIDSequece);
 

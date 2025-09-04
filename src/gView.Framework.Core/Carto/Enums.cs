@@ -35,9 +35,16 @@ namespace gView.Framework.Core.Carto
 
     public enum LabelRenderMode { RenderWithFeature, UseRenderPriority }
 
-    public enum WebMercatorScaleBehavoir
+    public enum WebMercatorScaleBehavior
     {
         Default = 0,
         IncludeLatitudeWhenCalculateMapScale = 1
+    }
+
+    public enum ErrorMessageType 
+    { 
+        Any = 0, 
+        Warning = 1,
+        Error = 2
     }
 }

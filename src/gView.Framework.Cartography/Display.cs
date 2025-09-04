@@ -353,7 +353,7 @@ public class Display : MapMetadata, IDisplay
         }
 
         if (this.SpatialReference.IsWebMercator()
-            && WebMercatorScaleBehavoir == WebMercatorScaleBehavoir.IncludeLatitudeWhenCalculateMapScale)
+            && WebMercatorScaleBehavior == WebMercatorScaleBehavior.IncludeLatitudeWhenCalculateMapScale)
         {
             webMercatorCosPhi = Math.Cos(this.Envelope.Center.WebMercatorToGeographic().Y * DegToRad);
         }
@@ -380,7 +380,7 @@ public class Display : MapMetadata, IDisplay
         }
 
         if (this.SpatialReference.IsWebMercator()
-            && WebMercatorScaleBehavoir == WebMercatorScaleBehavoir.IncludeLatitudeWhenCalculateMapScale)
+            && WebMercatorScaleBehavior == WebMercatorScaleBehavior.IncludeLatitudeWhenCalculateMapScale)
         {
             webMercatorCosPhi = Math.Cos(this.Envelope.Center.WebMercatorToGeographic().Y * DegToRad);
         }
@@ -434,7 +434,7 @@ public class Display : MapMetadata, IDisplay
     }
 
     public float WebMercatorScaleLevel => (float)WebMercatorCalc.Zoom(_scale);
-    public WebMercatorScaleBehavoir WebMercatorScaleBehavoir { get; set; } = WebMercatorScaleBehavoir.Default;
+    public WebMercatorScaleBehavior WebMercatorScaleBehavior { get; set; } = WebMercatorScaleBehavior.Default;
 
     public void ZoomTo(double minx, double miny, double maxx, double maxy)
     {

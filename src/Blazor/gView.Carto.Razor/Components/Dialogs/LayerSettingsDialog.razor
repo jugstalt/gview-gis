@@ -79,7 +79,7 @@
                         @if (Model.Layer.IsGroupLayer())
                         {
                             <MudListItem Icon="@IconService.FromString("basic:cloud-connect")" Style="white-space:nowrap"
-                                         Value="Page.MapServiceBehavoir" Text="Map Service Behavoir"
+                                         Value="Page.MapServiceBehavior" Text="Map Service Behavior"
                                          OnClick="() => _drawerIsOpen = false" />
                             <MudListItem Icon="@IconService.FromString("basic:bulb-shining")" Style="white-space:nowrap"
                                          Value="Page.Symbology" Text="Group Symbology"
@@ -157,9 +157,9 @@
                 {
                     <LayerDescriptionControl Map="Model.Map" Layer="Model.Layer" />
                 }
-                else if (Page.MapServiceBehavoir.Equals(_currentTab))
+                else if (Page.MapServiceBehavior.Equals(_currentTab))
                 {
-                    <GroupLayerMapServerBehavoirControl Layer="Model.Layer as IGroupLayer" />
+                    <GroupLayerMapServerBehaviorControl Layer="Model.Layer as IGroupLayer" />
                 }
                 else if (Page.Symbology.Equals(_currentTab))
                 {
@@ -254,7 +254,7 @@
         Description,
         SpatialReference,
         Filter,
-        MapServiceBehavoir,
+        MapServiceBehavior,
         Symbology,
         Source,
         CompositionMode,
