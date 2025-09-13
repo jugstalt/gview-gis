@@ -10,7 +10,7 @@
     <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="9.0.8" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.8" />
     <PackageReference Include="Microsoft.Extensions.Options" Version="9.0.8" />
-	<PackageReference Include="MessageQueueNET.Client" Version="3.24.5101" />
+	<PackageReference Include="MessageQueueNET.Client" Version="3.25.3702" />
   </ItemGroup>
 
 </Project>
