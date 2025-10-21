@@ -81,7 +81,11 @@ public class FillCommand : ICommand
                 throw new Exception("Invalid config. No connection defined");
             }
 
-            var httpClientHandler = new HttpClientHandler();
+            var httpClientHandler = new HttpClientHandler()
+            {
+                // Accept all server certificates (including self-signed)
+                ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+            };
             if (!String.IsNullOrEmpty(proxyUrl))
             {
                 httpClientHandler.Proxy = new WebProxy

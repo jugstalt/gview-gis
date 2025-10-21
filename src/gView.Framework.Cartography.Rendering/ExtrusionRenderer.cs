@@ -54,7 +54,7 @@ public class ExtrusionRenderer : Cloner, IFeatureRenderer2
 
     public string Name => "Extrusion Renderer";
 
-    public List<ISymbol> Symbols => [this.Symbol];
+    public List<ISymbol> Symbols => this.Symbol is not null ? [this.Symbol] : [];
 
     public bool CanRender(IFeatureLayer layer, IMap map)
         => layer?.Class is IFeatureClass;
