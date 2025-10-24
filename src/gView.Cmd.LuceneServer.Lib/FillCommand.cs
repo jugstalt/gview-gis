@@ -12,6 +12,7 @@ using gView.Framework.Geometry;
 using gView.Framework.Geometry.GeoProcessing;
 using LuceneServerNET.Client;
 using System.Net;
+using System.Security.Authentication;
 using System.Text;
 using System.Text.Json;
 
@@ -83,8 +84,11 @@ public class FillCommand : ICommand
 
             var httpClientHandler = new HttpClientHandler()
             {
+#pragma warning disable SYSLIB0039 // allow old protocols (tls, tls11)
                 // Accept all server certificates (including self-signed)
+                SslProtocols = SslProtocols.Tls12 | SslProtocols.Tls13 | SslProtocols.Tls | SslProtocols.Tls11,
                 ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+#pragma warning restore SYSLIB0039
             };
             if (!String.IsNullOrEmpty(proxyUrl))
             {

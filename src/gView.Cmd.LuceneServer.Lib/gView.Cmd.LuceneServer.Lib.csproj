@@ -7,7 +7,7 @@
   </PropertyGroup>
 	
 	<ItemGroup>
-		<PackageReference Include="LuceneServerNET.Client" Version="2.24.4201" />
+		<PackageReference Include="LuceneServerNET.Client" Version="2.25.4201" />
 	</ItemGroup>
 	
 	<ItemGroup>
