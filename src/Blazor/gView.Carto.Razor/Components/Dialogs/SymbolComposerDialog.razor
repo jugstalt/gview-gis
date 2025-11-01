@@ -1,4 +1,4 @@
-@inherits ModalDialogFormBase<SymbolComposerModel>
+﻿@inherits ModalDialogFormBase<SymbolComposerModel>
 @inject PluginManagerService PluginManager
 @inject ICartoDocumentService CartoDocument
 
@@ -166,8 +166,12 @@
 
         CreateSymbolStack(Model.Symbol);
 
+        var firstSymbol = Model.Symbol is ISymbolCollection symbolCollection && symbolCollection.Symbols?.Count > 0
+            ? symbolCollection.Symbols.First().Symbol
+			: Model.Symbol;
+
         _creatableSymbolTypes = PluginManager.GetPluginTypes(Plugins.Type.ISymbol)
-                                             .Where(t => Model.Symbol.HasSameSymbolBaseType(t) && !(t.IsAssignableTo(typeof(ISymbolCollection))))
+                                             .Where(t => firstSymbol.HasSameSymbolBaseType(t) && !(t.IsAssignableTo(typeof(ISymbolCollection))))
                                              .ToArray();
     }
 

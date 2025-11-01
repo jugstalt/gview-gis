@@ -6,12 +6,12 @@
 
   <ItemGroup>
     <PackageReference Include="Azure.Data.Tables" Version="12.11.0" />
-    <PackageReference Include="Azure.Identity" Version="1.14.2" />
+    <PackageReference Include="Azure.Identity" Version="1.17.0" />
     <PackageReference Include="Azure.Security.KeyVault.Certificates" Version="4.8.0" />
 	<PackageReference Include="Azure.Security.KeyVault.Secrets" Version="4.8.0" />
-	<PackageReference Include="Azure.Storage.Common" Version="12.24.0" />
+	<PackageReference Include="Azure.Storage.Common" Version="12.25.0" />
     <!--<PackageReference Include="Microsoft.Azure.KeyVault" Version="3.0.5" />-->
-    <PackageReference Include="Microsoft.Identity.Client" Version="4.74.1" />
+    <PackageReference Include="Microsoft.Identity.Client" Version="4.78.0" />
     <!--<PackageReference Include="WindowsAzure.Storage" Version="9.3.3" />-->
   </ItemGroup>
 

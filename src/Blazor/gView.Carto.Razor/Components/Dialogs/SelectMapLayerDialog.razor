@@ -1,15 +1,16 @@
-@inherits ModalDialogFormBase<SelectMapLayerDialogModel>
+﻿@inherits ModalDialogFormBase<SelectMapLayerDialogModel>
 
 <ModalDialogFormBase T="SelectMapLayerDialogModel"
                      OnDialogClose="base.OnDialogClose"
                      Model="base.Model">
     <DialogBody>    
         
-        <MudList @bind-SelectedValue="_selectedItem">
+        <MudList T="ITocElement"
+                 SelectedValue="_selectedItem"
+                 SelectedValueChanged="async (item) => await OnItemSelected(item)">
             @foreach(var layerName in _tocElements.Keys.Order())
             {
-                <MudListItem Value="_tocElements[layerName]"
-                             OnClick="Apply">
+                <MudListItem Value="_tocElements[layerName]">
                     @layerName.Replace("/", " > ")
                 </MudListItem>
             }
@@ -20,14 +21,14 @@
         @if ((_selectedItem as ITocElement)?.Layers?.Count() > 0) 
         {
             <MudButton Variant="Variant.Filled" Color="Color.Primary"
-                       OnCLick="Apply">Select: @(((ITocElement)_selectedItem).Name)</MudButton>
+                       OnClick="Apply">Select: @(((ITocElement)_selectedItem).Name)</MudButton>
         }
     </DialogButtons>
 </ModalDialogFormBase>
 
 @code {
     private Dictionary<string, ITocElement> _tocElements = new();
-    private object? _selectedItem;
+    private ITocElement? _selectedItem;
 
     protected override void OnInitialized()
     {
@@ -52,8 +53,14 @@
 
     private Task Apply()
     {
-        Model.SelectedLayers = (_selectedItem as ITocElement)?.Layers.ToArray();
+        Model.SelectedLayers = _selectedItem?.Layers.ToArray();
 
         return base.Submit();
+    }
+
+    private Task OnItemSelected(ITocElement item)
+    {
+        _selectedItem = item;   
+        return Apply();
     }
 }

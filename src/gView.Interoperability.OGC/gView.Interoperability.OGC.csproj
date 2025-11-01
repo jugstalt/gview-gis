@@ -25,7 +25,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="9.0.8" />
+    <PackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="9.0.10" />
   </ItemGroup>
 
 </Project>
