@@ -1,23 +1,21 @@
-using gView.Framework.Cartography.Rendering.UI;
+﻿using gView.Framework.Common;
 using gView.Framework.Core.Carto;
+using gView.Framework.Core.Common;
 using gView.Framework.Core.Data;
 using gView.Framework.Core.Data.Filters;
 using gView.Framework.Core.Geometry;
 using gView.Framework.Core.IO;
 using gView.Framework.Core.Symbology;
-using gView.Framework.Core.Common;
 using gView.Framework.Core.UI;
-using gView.Framework.Common;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using System.Threading.Tasks;
 
 namespace gView.Framework.Cartography.Rendering
 {
     [RegisterPlugIn("9D278A19-9547-4BC5-824E-E4F45EA1BB7A")]
-    public class QuantityRenderer : Cloner, IFeatureRenderer, IDefault, ILegendGroup
+    public class QuantityRenderer : Cloner, IFeatureRenderer, IDefault, ILegendGroup, ILegendDependentFields
     {
         private string _valueField = string.Empty;
         private ISymbol _defaultSymbol = null;
@@ -443,6 +441,43 @@ if (layer.FeatureClass.GeometryType == geometryType.Unknown ||
                     }
                 }
             }
+        }
+
+        #endregion
+
+        #region ILegendDependentFields
+
+        public string[] LegendDependentFields { get => [this.ValueField]; }
+
+        public string LegendSymbolOrderField => this.ValueField;
+
+        public string LegendSymbolKeyFromFeature(IFeature feature)
+        {
+            object od = feature[this.ValueField];
+            if (od != null && od != DBNull.Value)
+            {
+                try
+                {
+                    double d = Convert.ToDouble(od);
+                    var quantityClasses = this.QuantityClasses?
+                        .Where(qc => qc != null
+                                     && qc.Min <= d && qc.Max >= d)
+                        .FirstOrDefault();
+
+                    return quantityClasses?.Symbol?.LegendLabel ?? "";
+                }
+                catch { }
+            }
+
+            return "";
+        }
+
+        public ILegendItem LegendItemFromSymbolKey(string symbolKey)
+        {
+            return this.QuantityClasses?
+                .Where(qc => qc?.Symbol?.LegendLabel == symbolKey)
+                .FirstOrDefault()?
+                .Symbol ?? this.DefaultSymbol;
         }
 
         #endregion

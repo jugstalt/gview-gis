@@ -375,7 +375,7 @@ public class Toc : IToc
 
         return previewBitmap;
     }
-    async public Task<TocLegendItems> LegendSymbol(ITocElement element, int width = 20, int height = 20)
+    async public Task<TocLegendItems> LegendSymbol(ITocElement element, int width = 20, int height = 20, HashSet<string> symbolKeys = null)
     {
         var items = new List<TocLegendItem>();
 
@@ -407,26 +407,40 @@ public class Toc : IToc
                 }
                 else if (layer is IFeatureLayer fLayer && fLayer.FeatureRenderer is ILegendGroup lGroup)
                 {
-                    for (int i = 0; i < lGroup.LegendItemCount; i++)
+                    List<ILegendItem> legendItems = new();
+                    if (fLayer.FeatureRenderer is ILegendDependentFields legendDependent
+                        && symbolKeys is not null)  // only add legend items for the given symbol keys (optimize legend)
                     {
-                        ILegendItem lItem = lGroup.LegendItem(i);
-                        if (lItem is ISymbol)
+                        foreach (var key in symbolKeys)
                         {
-                            var bm = Current.Engine.CreateBitmap(width, height);
-                            using (var canvas = bm.CreateCanvas())
-                            {
-                                ISymbol symbol = lItem as ISymbol;
-                                new SymbolPreview(_map).Draw(
-                                    canvas,
-                                    new CanvasRectangle().ToLegendItemSymbolRect(),
-                                    symbol);
-                            }
-                            items.Add(new TocLegendItem()
-                            {
-                                Image = bm,
-                                Label = lItem.LegendLabel
-                            });
+                            legendItems.Add(legendDependent.LegendItemFromSymbolKey(key));
                         }
+                    }
+                    else
+                    {
+                        for (int i = 0; i < lGroup.LegendItemCount; i++)
+                        {
+                            ILegendItem lItem = lGroup.LegendItem(i);
+                            legendItems.Add(lItem);
+                        }
+                    }
+
+                    foreach (var lItem in legendItems.Select(l => l as ISymbol).Where(l => l is not null))
+                    {
+                        var bm = Current.Engine.CreateBitmap(width, height);
+                        using (var canvas = bm.CreateCanvas())
+                        {
+                            ISymbol symbol = lItem as ISymbol;
+                            new SymbolPreview(_map).Draw(
+                                canvas,
+                                new CanvasRectangle().ToLegendItemSymbolRect(),
+                                symbol);
+                        }
+                        items.Add(new TocLegendItem()
+                        {
+                            Image = bm,
+                            Label = lItem.LegendLabel
+                        });
                     }
                     break;
                 }

@@ -1,4 +1,4 @@
-using gView.Framework.Common;
+ï»¿using gView.Framework.Common;
 using gView.Framework.Common.Collection;
 using gView.Framework.Core.Carto;
 using gView.Framework.Core.Data;
@@ -18,7 +18,7 @@ using System.Threading.Tasks;
 namespace gView.Framework.Cartography.Rendering;
 
 [RegisterPlugIn("73117665-EFA6-4B49-BBFD-0C956876E3FB")]
-public class ManyValueMapRenderer : Cloner, IFeatureRenderer, IDefault, ILegendGroup
+public class ManyValueMapRenderer : Cloner, IFeatureRenderer, IDefault, ILegendGroup, ILegendDependentFields
 {
     private string _valueField1 = string.Empty, _valueField2 = string.Empty, _valueField3 = string.Empty;
     private OrderedKeyValuePairs<string, ISymbol> _symbolTable = new();
@@ -536,7 +536,7 @@ public class ManyValueMapRenderer : Cloner, IFeatureRenderer, IDefault, ILegendG
         ValueField1 = (string)stream.Load("field1", "");
         ValueField2 = (string)stream.Load("field2", "");
         ValueField3 = (string)stream.Load("field3", "");
-        // Kompatibilität zu äteren Projekten
+        // KompatibilitÃ¤t zu Ã¤teren Projekten
         ISymbol defSymbol = (ISymbol)stream.Load("default", null);
         if (defSymbol != null)
         {
@@ -627,7 +627,46 @@ public class ManyValueMapRenderer : Cloner, IFeatureRenderer, IDefault, ILegendG
             }
         }
     }
-    
+
+    #endregion
+
+    #region ILegendDependentFields
+
+    public string[] LegendDependentFields {
+        get => (String.IsNullOrEmpty(this.ValueField1), String.IsNullOrEmpty(this.ValueField2), String.IsNullOrEmpty(this.ValueField3)) switch
+        {
+            (false, true, true) => [this.ValueField1],
+            (false, false, true) => [this.ValueField1, this.ValueField2],
+            (false, false, false) => [this.ValueField1, this.ValueField2, this.ValueField3],
+            _ => []
+        };
+    }
+
+    public string LegendSymbolOrderField => "";
+
+    public string LegendSymbolKeyFromFeature(IFeature feature)
+    {
+        var key = GetKey(feature);
+
+        if (key != null && _symbolTable.ContainsKey(key))
+        {
+            return key;
+        }
+
+        return ValueMapRenderer.AllOtherValuesKey;
+    }
+
+    public ILegendItem LegendItemFromSymbolKey(string symbolKey)
+    {
+        if(_symbolTable.TryGetValue(symbolKey, out ISymbol symbol))
+        {
+            return symbol;
+        }
+
+        return null;
+    }
+
+
     #endregion
 
     #region IClone2

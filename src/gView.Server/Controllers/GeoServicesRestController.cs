@@ -2,7 +2,6 @@
 using gView.Framework.Common;
 using gView.Framework.Common.Extensions;
 using gView.Framework.Common.Json;
-using gView.Framework.Common.Reflection;
 using gView.Framework.Core.Carto;
 using gView.Framework.Core.Common;
 using gView.Framework.Core.Data;
@@ -16,7 +15,6 @@ using gView.Interoperability.GeoServices.Rest.DTOs.Features;
 using gView.Interoperability.GeoServices.Rest.DTOs.FeatureServer;
 using gView.Interoperability.GeoServices.Rest.DTOs.Renderers.SimpleRenderers;
 using gView.Interoperability.GeoServices.Rest.DTOs.Request;
-using gView.Interoperability.GeoServices.Rest.Reflection;
 using gView.Interoperability.OGC;
 using gView.Server.AppCode;
 using gView.Server.AppCode.Extensions;
@@ -66,8 +64,8 @@ public class GeoServicesRestController : BaseController
         _mapServerManagerOptions = mapServerManagerOptions.Value;
     }
 
-    public const double Version = 10.61;
-    public const string FullVersion = "10.6.1";
+    public const double Version = 10.71;
+    public const string FullVersion = "10.7.1";
     //private const string DefaultFolder = "default";
 
     public int JsonExportResponse { get; private set; }
@@ -182,7 +180,7 @@ public class GeoServicesRestController : BaseController
 
                 return Result(new JsonMapServiceDTO()
                 {
-                    CurrentVersion = 10.61,
+                    CurrentVersion = 10.71,
                     MapName = String.IsNullOrWhiteSpace(map.Title) ?
                         (map.Name.Contains("/") ? map.Name.Substring(map.Name.LastIndexOf("/") + 1) : map.Name) :
                         map.Title,
@@ -437,6 +435,54 @@ public class GeoServicesRestController : BaseController
         });
     }
 
+    public Task<IActionResult> QueryLegends(string id, string folder = "")
+    => SecureMethodHandler(async (identity) =>
+    {
+        var interpreter = _mapServerService.GetInterpreter(typeof(GeoServicesRestInterperter));
+
+        #region Request
+
+        var queryLegends = Deserialize<JsonQueryLegendsDTO>(
+            Request.HasFormContentType ?
+            Request.Form :
+            Request.Query);
+
+        ServiceRequest serviceRequest = new ServiceRequest(id, folder, JSerializer.Serialize(queryLegends))
+        {
+            OnlineResource = _mapServerService.Options.OnlineResource,
+            OutputUrl = _mapServerService.Options.OutputUrl,
+            Method = "querylegends",
+            Identity = identity
+        };
+
+        #endregion
+
+        #region Queue & Wait
+
+        IServiceRequestContext context = await ServiceRequestContext.TryCreate(
+            _mapServerService.Instance,
+            interpreter,
+            serviceRequest);
+
+        string format = ResultFormat();
+        if (String.IsNullOrWhiteSpace(format))
+        {
+            using (var serviceMap = await context.CreateServiceMapInstance())
+            {
+                queryLegends.InitForm(serviceMap);
+                return FormResult(queryLegends);
+            }
+        }
+
+        await _mapServerService.TaskQueue.AwaitRequest(interpreter.Request, context);
+        
+        #endregion
+
+        return Result(serviceRequest.Response, folder, id, "QueryLegends");
+
+        
+    });
+
     async public Task<IActionResult> Identify(string id, string folder = "")
     {
         return await SecureMethodHandler(async (identity) =>
@@ -585,7 +631,7 @@ public class GeoServicesRestController : BaseController
 
             return Result(new JsonFeatureServiceDTO()
             {
-                CurrentVersion = 10.61,
+                CurrentVersion = 10.71,
                 Layers = map.MapElements
                 .Where(e =>
                 {
@@ -1189,7 +1235,7 @@ public class GeoServicesRestController : BaseController
             result.GeometryType = datasetElement.Class is IFeatureClass ?
                 Interoperability.GeoServices.Rest.DTOs.JsonLayerDTO.ToGeometryType(geometryType).ToString() :
                 EsriGeometryType.esriGeometryNull.ToString();
-
+            result.SupportsDynamicLegends = tocElement?.Layers?.Any(l => l is IFeatureLayer) ?? false;
             result.Description = map.GetLayerDescription(layerId);
             result.CopyrightText = map.GetLayerCopyrightText(layerId);
 

@@ -42,6 +42,7 @@ public class GeoServicesRestInterperter : IServiceRequestInterpreter
 {
     private IMapServer _mapServer;
     private JsonExportMapDTO _exportMap = null;
+
     private bool _useTOC = false;
 
     #region IServiceRequestInterpreter
@@ -78,6 +79,9 @@ public class GeoServicesRestInterperter : IServiceRequestInterpreter
                 break;
             case "legend":
                 await Legend(context);
+                break;
+            case "querylegends":
+                await QueryLegends(context);
                 break;
             case "featureserver_query":
                 await Query(context, true);
@@ -422,31 +426,6 @@ public class GeoServicesRestInterperter : IServiceRequestInterpreter
 
             #endregion
         }
-    }
-
-    private bool LayerAndParentIsInArray(IServiceMap map, ITocElement tocElement, int[] layerIds)
-    {
-        if (tocElement == null)
-        {
-            return false;
-        }
-
-        while (tocElement != null)
-        {
-            if (tocElement.Layers != null)
-            {
-                foreach (var layer in tocElement.Layers)
-                {
-                    if (!layerIds.Contains(layer.ID))
-                    {
-                        return false;
-                    }
-                }
-            }
-            tocElement = tocElement.ParentGroup;
-        }
-
-        return true;
     }
 
     private bool LayerOrParentIsInArray(IServiceMap map, ITocElement tocElement, int[] layerIds)
@@ -1139,6 +1118,149 @@ public class GeoServicesRestInterperter : IServiceRequestInterpreter
                     }
 
                     using (var tocLegendItems = await serviceMap.TOC.LegendSymbol(tocElement))
+                    {
+                        if (tocLegendItems.Items == null || tocLegendItems.Items.Count() == 0)
+                        {
+                            continue;
+                        }
+
+                        var legendLayer = new Rest.DTOs.Legend.LayerDTO()
+                        {
+                            LayerId = layer.ID,
+                            LayerName = tocElement.Name,
+                            LayerType = "Feature-Layer",
+                            MinScale = Convert.ToInt32(layer.MaximumScale > 1 ? layer.MaximumScale : 0),
+                            MaxScale = Convert.ToInt32(layer.MinimumScale > 1 ? layer.MinimumScale : 0)
+                        };
+
+                        var legends = new List<Rest.DTOs.Legend.LegendDTO>();
+
+                        foreach (var tocLegendItem in tocLegendItems.Items)
+                        {
+                            if (tocLegendItem.Image == null)
+                            {
+                                continue;
+                            }
+
+                            MemoryStream ms = new MemoryStream();
+                            tocLegendItem.Image.Save(ms, GraphicsEngine.ImageFormat.Png);
+
+                            legends.Add(new Rest.DTOs.Legend.LegendDTO()
+                            {
+                                Label = tocLegendItem?.Label,
+                                Url = Guid.NewGuid().ToString("N").ToString(),
+                                ImageData = Convert.ToBase64String(ms.ToArray()),
+                                ContentType = "image/png",
+                                Width = tocLegendItem.Image.Width,
+                                Height = tocLegendItem.Image.Height
+                            });
+                        }
+                        legendLayer.Legend = legends.ToArray();
+                        legendLayers.Add(legendLayer);
+                    }
+                }
+            }
+
+            context.ServiceRequest.Succeeded = true;
+            context.ServiceRequest.Response = new Rest.DTOs.Legend.LegendResponseDTO()
+            {
+                Layers = legendLayers.ToArray()
+            };
+        }
+        catch (Exception ex)
+        {
+            context.ServiceRequest.Succeeded = false;
+            context.ServiceRequest.Response = new JsonErrorDTO()
+            {
+                Error = new JsonErrorDTO.ErrorDef()
+                {
+                    Code = ex is GeoServicesException ? ((GeoServicesException)ex).ErrorCode : -1,
+                    Message = ex.Message
+                }
+            };
+        }
+    }
+
+    #endregion
+
+    #region QueryLegends
+
+    async private Task QueryLegends(IServiceRequestContext context)
+    {
+        try
+        {
+            var queryLegendsRequest = JSerializer.Deserialize<JsonQueryLegendsDTO>(context.ServiceRequest.Request);
+            var legendLayers = new List<Rest.DTOs.Legend.LayerDTO>();
+
+            using (var serviceMap = await context.CreateServiceMapInstance())
+            {
+                #region SpatialReference
+
+                if (!String.IsNullOrWhiteSpace(queryLegendsRequest.BBoxSRef))
+                {
+                    serviceMap.Display.SpatialReference = SRef(queryLegendsRequest.BBoxSRef);
+                }
+
+                #endregion
+
+                #region Display
+
+                serviceMap.Display.Dpi = queryLegendsRequest.Dpi;
+                //serviceMap.ScaleSymbolFactor = (float)_exportMap.Dpi / 96f;
+
+                var size = queryLegendsRequest.Size.ToSize();
+                serviceMap.Display.ImageWidth = size[0];
+                serviceMap.Display.ImageHeight = size[1];
+
+                serviceMap.ResizeImageSizeToMapServiceLimits();
+
+                if (queryLegendsRequest.Rotation != 0.0)
+                {
+                    serviceMap.Display.DisplayTransformation.DisplayRotation = queryLegendsRequest.Rotation;
+                }
+
+                var bbox = queryLegendsRequest.BBox.ToBBox();
+
+                serviceMap.Display.ZoomTo(new Envelope(bbox[0], bbox[1], bbox[2], bbox[3]));
+
+                var filter = new SpatialFilter();
+                filter.Geometry = serviceMap.Display.Envelope;
+                filter.FilterSpatialReference = serviceMap.Display.SpatialReference;
+
+                // todo: quick and dirty - use show:1,2,3, .... 
+                var layerIds = String.IsNullOrEmpty(queryLegendsRequest.Layers) 
+                    ? serviceMap.MapElements.Where(l=> l is IFeatureLayer).Select(l => l.ID).ToArray()
+                    : queryLegendsRequest.Layers.Split(":")[1].Split(",")
+                                                   .Select(id => int.Parse(id)).ToArray();
+
+                #endregion
+
+                foreach (var layer in serviceMap.MapElements
+                                                .Where(l => l is IFeatureLayer)
+                                                .Select(l => (IFeatureLayer)l)
+                                                .Where(l => layerIds.Contains(l.ID)))
+                {
+                    if(!layer.RenderInScale(serviceMap.Display))
+                    {
+                        continue; 
+                    }
+
+                    var tocElement = serviceMap.TOC.GetTOCElement(layer);
+                    if (tocElement == null)
+                    {
+                        continue;
+                    }
+
+                    filter.SubFields = layer.FeatureClass.IDFieldName ?? "*";
+                    filter.WhereClause = layer.FilterQuery?.WhereClause;
+
+                    var hasLegendItemsResult = await layer.HasLegendItems(filter);
+                    if(!hasLegendItemsResult.hasItems)
+                    {
+                        continue;
+                    }
+
+                    using (var tocLegendItems = await serviceMap.TOC.LegendSymbol(tocElement, symbolKeys: hasLegendItemsResult.itemKeys))
                     {
                         if (tocLegendItems.Items == null || tocLegendItems.Items.Count() == 0)
                         {

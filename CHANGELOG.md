@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## Added
 ## Fixed
 
+## 7.25.4401
+## Added
+
+- ``GeoServices Rest``: Implemented `/queryLegends` endpoint to retrieve 
+  optimized legends for layers in a map service (only symobls within the current map extent).
+
 ## 7.25.3601
 ## Added
 

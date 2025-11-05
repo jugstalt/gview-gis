@@ -1,6 +1,5 @@
 ﻿using gView.Framework.Core.Geometry;
 using gView.Interoperability.GeoServices.Rest.Reflection;
-using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace gView.Interoperability.GeoServices.Rest.DTOs
@@ -61,6 +60,9 @@ namespace gView.Interoperability.GeoServices.Rest.DTOs
 
         [JsonPropertyName("copyrightText")]
         public string CopyrightText { get; set; }
+
+        [JsonPropertyName("supportsDynamicLegends")]
+        public bool SupportsDynamicLegends { get; set; } = false;
 
         //[JsonIgnore]
         //public string FullName

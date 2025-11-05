@@ -44,6 +44,6 @@ namespace gView.Framework.Core.UI
         Task<GraphicsEngine.Abstraction.IBitmap> Legend();
         Task<GraphicsEngine.Abstraction.IBitmap> Legend(ITocElement element);
         Task<GraphicsEngine.Abstraction.IBitmap> Legend(List<ITocElement> elements);
-        Task<TocLegendItems> LegendSymbol(ITocElement element, int width = 20, int height = 20);
+        Task<TocLegendItems> LegendSymbol(ITocElement element, int width = 20, int height = 20, HashSet<string> symbolKeys = null);
     }
 }

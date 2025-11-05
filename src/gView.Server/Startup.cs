@@ -444,6 +444,29 @@ public class Startup
                 defaults: new { controller = "GeoServicesRest", Action = "Legend" }
             );
 
+            routes.MapRoute(
+                name: "geoservices_rest_service_querylegends",
+                template: "geoservices/rest/services/{folder}/{id}/mapserver/querylegends",
+                defaults: new { controller = "GeoServicesRest", Action = "QueryLegends" }
+            );
+            routes.MapRoute(
+                name: "geoservices_rest_service_querylegend2",
+                template: "geoservices/rest/services/{id}/mapserver/querylegends",
+                defaults: new { controller = "GeoServicesRest", Action = "QueryLegends" }
+            );
+
+            // Experimental
+            routes.MapRoute(
+                name: "geoservices_rest_service_querylegend_token",
+                template: "geoservices({urltoken})/rest/services/{folder}/{id}/mapserver/querylegends",
+                defaults: new { controller = "GeoServicesRest", Action = "QueryLegends" }
+            );
+            routes.MapRoute(
+                name: "geoservices_rest_service_querylegend2_token",
+                template: "geoservices({urltoken})/rest/services/{id}/mapserver/querylegends",
+                defaults: new { controller = "GeoServicesRest", Action = "QueryLegends" }
+            );
+
             #endregion
 
             #region WmsServer 

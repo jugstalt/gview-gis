@@ -1,4 +1,4 @@
-using gView.Framework.Common;
+ï»¿using gView.Framework.Common;
 using gView.Framework.Common.Collection;
 using gView.Framework.Core.Carto;
 using gView.Framework.Core.Data;
@@ -18,7 +18,7 @@ namespace gView.Framework.Cartography.Rendering;
 public enum LegendGroupCartographicMethod { Simple = 0, LegendOrdering = 1, LegendAndSymbolOrdering = 2 }
 
 [RegisterPlugIn("C7A92674-0120-4f3d-BC03-F1210136B5C6")]
-public class ValueMapRenderer : Cloner, IFeatureRenderer, IDefault, ILegendGroup
+public class ValueMapRenderer : Cloner, IFeatureRenderer, IDefault, ILegendGroup, ILegendDependentFields
 {
     public const string AllOtherValuesKey = "__gview_all_other_values__";
     public const string AllOtherValuesLabel = "All other values";
@@ -495,7 +495,7 @@ public class ValueMapRenderer : Cloner, IFeatureRenderer, IDefault, ILegendGroup
     public void Load(IPersistStream stream)
     {
         _valueField = (string)stream.Load("field", "");
-        // Kompatibilität zu äteren Projekten
+        // KompatibilitÃ¤t zu Ã¤teren Projekten
         ISymbol defSymbol = (ISymbol)stream.Load("default", null);
         if (defSymbol != null)
         {
@@ -588,6 +588,36 @@ public class ValueMapRenderer : Cloner, IFeatureRenderer, IDefault, ILegendGroup
                 return;
             }
         }
+    }
+
+    #endregion
+
+    #region ILegendDependentFields
+
+    public string[] LegendDependentFields { get => [this.ValueField]; }
+
+    public string LegendSymbolOrderField => "";
+
+    public string LegendSymbolKeyFromFeature(IFeature feature)
+    {
+        var key = feature[this.ValueField]?.ToString();
+
+        if(key == null || !this.Keys.Contains(key))
+        {
+            key = AllOtherValuesKey;
+        }
+
+        return key;
+    }
+
+    public ILegendItem LegendItemFromSymbolKey(string symbolKey)
+    {
+        if (_symbolTable.TryGetValue(symbolKey, out ISymbol symbol))
+        {
+            return symbol;
+        }
+
+        return null;
     }
 
     #endregion
