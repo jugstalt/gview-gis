@@ -9,8 +9,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## Added
 
 - WebApps: GaphicsEnginge is configurable via `graphics-engine` in `gview-webapps.config` in the same way as in `mapserver.config`.
-  - `GdiPlus`
-  - `SkiaSharp` (default) 
+  - `gdiplus`
+  - `skia` (default) 
   
   ``` javascript
   "graphics": {
