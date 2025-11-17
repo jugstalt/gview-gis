@@ -42,6 +42,7 @@ public class Startup
 
         #region Graphics Engine
 
+        SystemInfo.RegisterDefaultGraphicEngines(96.0f);
         switch (Configuration.Value("graphics:rendering")?.ToString())
         {
             case "gdi":

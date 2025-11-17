@@ -36,6 +36,7 @@
 	
   <ItemGroup>
     <ProjectReference Include="..\..\Aspire\gView.ServiceDefaults\gView.ServiceDefaults.csproj" />
+    <ProjectReference Include="..\..\gView.GraphicsEngine.Default\gView.GraphicsEngine.Default.csproj" />
     <ProjectReference Include="..\..\gView.GraphicsEngine.GdiPlus\gView.GraphicsEngine.GdiPlus.csproj" />
     <ProjectReference Include="..\..\gView.GraphicsEngine.Skia\gView.GraphicsEngine.Skia.csproj" />
     <ProjectReference Include="..\..\gView.GraphicsEngine\gView.GraphicsEngine.csproj" />

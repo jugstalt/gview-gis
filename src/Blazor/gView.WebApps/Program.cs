@@ -1,8 +1,10 @@
-using gView.Blazor.Core.Extensions.DependencyInjection;
+﻿using gView.Blazor.Core.Extensions.DependencyInjection;
 using gView.Carto.Plugins.Extensions.DependencyInjection;
 using gView.Carto.Razor.Extensions.DependencyInjection;
 using gView.DataExplorer.Plugins.Extensions.DependencyInjection;
+using gView.Framework.Common;
 using gView.Framework.Db.Extensions;
+using gView.GraphicsEngine.Abstraction;
 using gView.Razor.Extensions.DependencyInjection;
 using gView.Razor.Leaflet.Extensions.DependencyInjection;
 using gView.WebApps.Components;
@@ -10,6 +12,7 @@ using gView.WebApps.Extensions;
 using gView.WebApps.Extensions.DependencyInjection;
 using MudBlazor;
 using MudBlazor.Services;
+using System.Configuration;
 
 gView.Framework.Common.SystemInfo.RegisterProj4Lib(gView.Framework.Geometry.GeometricTransformerFactory.PROJ_LIB);
 
@@ -121,14 +124,44 @@ app.AddAuth(builder.Configuration);
 app.MapRazorComponents<App>()
    .AddInteractiveServerRenderMode();
 
-gView.GraphicsEngine.Current.UseSecureDisposingOnUserInteractiveUIs = true;
+//gView.GraphicsEngine.Current.UseSecureDisposingOnUserInteractiveUIs = true;
+//SystemInfo.RegisterDefaultGraphicEngines();
 
 // Gdi+
-gView.GraphicsEngine.Current.Engine = new gView.GraphicsEngine.GdiPlus.GdiGraphicsEngine(96.0f);
-gView.GraphicsEngine.Current.Encoder = new gView.GraphicsEngine.GdiPlus.GdiBitmapEncoding();
+//gView.GraphicsEngine.Current.Engine = new gView.GraphicsEngine.GdiPlus.GdiGraphicsEngine(96.0f);
+//gView.GraphicsEngine.Current.Encoder = new gView.GraphicsEngine.GdiPlus.GdiBitmapEncoding();
 
 // Skia
 //gView.GraphicsEngine.Current.Engine = new gView.GraphicsEngine.Skia.SkiaGraphicsEngine(96.0f);
 //gView.GraphicsEngine.Current.Encoder = new gView.GraphicsEngine.Skia.SkiaBitmapEncoding();
+
+#region Graphics Engine
+
+gView.GraphicsEngine.Current.UseSecureDisposingOnUserInteractiveUIs = true;
+SystemInfo.RegisterDefaultGraphicEngines(96.0f);
+
+switch (builder.Configuration["graphics:rendering"]?.ToString())
+{
+    case "gdi":
+    case "gdiplus":
+        gView.GraphicsEngine.Current.Engine = new gView.GraphicsEngine.GdiPlus.GdiGraphicsEngine(96.0f);
+        break;
+    default:
+        gView.GraphicsEngine.Current.Engine = new gView.GraphicsEngine.Skia.SkiaGraphicsEngine(96.0f);
+        break;
+}
+
+switch (builder.Configuration["graphics:encoding"]?.ToString())
+{
+    case "skia":
+    case "skiasharp":
+        gView.GraphicsEngine.Current.Encoder = new gView.GraphicsEngine.Skia.SkiaBitmapEncoding();
+        break;
+    default:
+        gView.GraphicsEngine.Current.Encoder = new gView.GraphicsEngine.Default.BitmapEncoding();
+        break;
+}
+
+#endregion
 
 app.Run();

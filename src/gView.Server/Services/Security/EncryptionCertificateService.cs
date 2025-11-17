@@ -65,7 +65,9 @@ namespace gView.Server.Services.Security
                     X509KeyStorageFlags.MachineKeySet
                     | X509KeyStorageFlags.PersistKeySet
                     | X509KeyStorageFlags.Exportable
-                    | X509KeyStorageFlags.UserKeySet);    
+                    | X509KeyStorageFlags.UserKeySet
+                    //| X509KeyStorageFlags.EphemeralKeySet
+                    );     
 
                 _cert = new X509CertificateWrapper(pkcs12Cert);
 
