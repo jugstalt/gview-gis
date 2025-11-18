@@ -5,7 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## 7.x
+
+Using .NET 9
+If you run *gView Server* on Microsoft Internet Information Server (IIS) note the following:
+
+If the gView Server ApplicationPool is not running under a system account such as ``LocalSystem``, you must set the ``Load User Profile`` option to ``True`` for this ApplicationPool 
+under ``Advanced Settings…`` in the ``Process Model`` section. Otherwise, the application may encounter issues accessing the ``*.pfx`` certificate. 
+In that case, the application will terminate with an error message upon startup.
+
 ## Unreleased
+## Added
+## Fixed
+
+## 7.25.4601
 ## Added
 
 - WebApps: GaphicsEnginge is configurable via `graphics-engine` in `gview-webapps.config` in the same way as in `mapserver.config`.
