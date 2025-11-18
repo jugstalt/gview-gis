@@ -66,23 +66,16 @@ namespace gView.Server.Services.Security
                     | X509KeyStorageFlags.PersistKeySet
                     | X509KeyStorageFlags.Exportable
                     | X509KeyStorageFlags.UserKeySet
-                    //| X509KeyStorageFlags.EphemeralKeySet
                     );     
 
                 _cert = new X509CertificateWrapper(pkcs12Cert);
-
-                //_cert = new X509CertificateWrapper(
-                //    new X509Certificate2(fi.FullName, CertPassword,
-                //               X509KeyStorageFlags.MachineKeySet
-                //             | X509KeyStorageFlags.PersistKeySet
-                //             | X509KeyStorageFlags.Exportable
-                //             | X509KeyStorageFlags.UserKeySet));
             }
-            catch (CryptographicException cx)
+            catch (CryptographicException/* cx*/)
             {
                 if (throwException == true)
                 {
-                    throw new MapServerException("gView internal Certificate: " + cx.Message);
+                    //throw new MapServerException("gView internal Certificate: " + cx.Message);
+                    throw;
                 }
 
                 CreateCert(name);
