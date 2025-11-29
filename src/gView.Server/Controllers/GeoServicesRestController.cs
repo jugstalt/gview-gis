@@ -193,14 +193,19 @@ public class GeoServicesRestController : BaseController
 
                             return tocElement == null ? false : tocElement.IsHidden() == false;
                         })
+                        .OrderBy(e =>
+                        {
+                            var tocElement = map.TOC.GetTOCElement(e as ILayer);
+                            return map.TOC.GetTOCElementOrder(tocElement);
+                        })
                         .Select(e =>
                         {
                             var tocElement = map.TOC.GetTOCElement(e as ILayer);
 
                             int parentLayerId =
-                                (e is IFeatureLayer && ((IFeatureLayer)e).GroupLayer != null) ?
-                                ((IFeatureLayer)e).GroupLayer.ID :
-                                -1;
+                                (e is ILayer layer && layer.GroupLayer != null) 
+                                    ? layer.GroupLayer.ID
+                                    : -1;
 
                             return new JsonMapServiceDTO.Layer()
                             {
@@ -259,6 +264,11 @@ public class GeoServicesRestController : BaseController
                         var tocElement = map.TOC.GetTOCElement(e as ILayer);
 
                         return tocElement == null ? false : tocElement.IsHidden() == false;
+                    })
+                    .OrderBy(e =>
+                    {
+                        var tocElement = map.TOC.GetTOCElement(e as ILayer);
+                        return map.TOC.GetTOCElementOrder(tocElement);
                     })
                     .Select(e => JsonLayer(map, e.ID))
                     .ToArray();
@@ -1050,12 +1060,12 @@ public class GeoServicesRestController : BaseController
         bool isJsonFeatureServiceLayer = result is JsonFeatureServerLayerDTO;
 
         JsonLayerLinkDTO parentLayer = null;
-        if (datasetElement is ILayer && ((ILayer)datasetElement).GroupLayer != null)
+        if (datasetElement is ILayer l && l.GroupLayer != null)
         {
             parentLayer = new JsonLayerLinkDTO()
             {
-                Id = ((ILayer)datasetElement).GroupLayer.ID,
-                Name = ((ILayer)datasetElement).GroupLayer.Title
+                Id = l.GroupLayer.ID,
+                Name = l.GroupLayer.Title
             };
         }
 
@@ -1082,12 +1092,11 @@ public class GeoServicesRestController : BaseController
                 childLayers = null;
             }
 
-
             var jsonGroupLayer = new JsonLayerDTO()
             {
                 CurrentVersion = Version,
                 Id = groupLayer.ID,
-                Name = groupLayer.Title,
+                Name = tocElement?.Name ?? groupLayer.Title,
                 DefaultVisibility = groupLayer.Visible,
                 MaxScale = Math.Max(groupLayer.MinimumScale > 1 ? groupLayer.MinimumScale : 0, 0),
                 MinScale = Math.Max(groupLayer.MaximumScale > 1 ? groupLayer.MaximumScale : 0, 0),

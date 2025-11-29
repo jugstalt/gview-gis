@@ -27,6 +27,8 @@ namespace gView.Framework.Core.UI
         ITocElement GetTocElementByLayerId(int layerId);
         //ITOCElement GetTOCElement(IClass element);
 
+        int GetTOCElementOrder(ITocElement element);
+
         List<ITocElement> GroupElements { get; }
 
         void RenameElement(ITocElement element, string newName);

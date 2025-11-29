@@ -678,6 +678,9 @@ public class Toc : IToc
         return null;
     }
 
+    public int GetTOCElementOrder(ITocElement element)
+        => _elements.IndexOf(element);
+
     public List<ITocElement> GroupElements
     {
         get
