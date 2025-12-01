@@ -1,4 +1,4 @@
-using gView.Framework.Core.Data;
+ï»¿using gView.Framework.Core.Data;
 using gView.Framework.Core.Data.Cursors;
 using gView.Framework.Core.Data.Filters;
 using gView.Framework.Core.FDB;
@@ -269,7 +269,7 @@ namespace gView.Framework.Offline
 
             if (await FeatureClassHasReplications(fc))
             {
-                // Feld kann nicht gelöscht werden, wenns Replikationen gibt...
+                // Feld kann nicht gelÃ¶scht werden, wenns Replikationen gibt...
                 return false;
             }
 
@@ -819,7 +819,7 @@ namespace gView.Framework.Offline
                 return -1;
             }
         }
-        // gibt NULL zurück, wenn keine Sessions vorhanden...
+        // gibt NULL zurÃ¼ck, wenn keine Sessions vorhanden...
         async public static Task<List<Guid>> FeatureClassSessions(IFeatureClass fc)
         {
             if (!await FeatureClassHasRelicationID(fc))
@@ -1623,8 +1623,8 @@ namespace gView.Framework.Offline
                                     errMsg = "Can't delete feature. Solve conflict first...";
                                     return false;
                                 }
-                                // erst überprüfen ob objekt schon in der Difftable steht!
-                                // wenn ja, einträge Löschen und nix schreiben.
+                                // erst Ã¼berprÃ¼fen ob objekt schon in der Difftable steht!
+                                // wenn ja, eintrÃ¤ge LÃ¶schen und nix schreiben.
                                 using (DbConnection connection3 = db.ProviderFactory.CreateConnection())
                                 {
                                     connection3.ConnectionString = db.DatabaseConnectionString;
@@ -1695,7 +1695,7 @@ namespace gView.Framework.Offline
         {
             errMsg = String.Empty;
 
-            // erst überprüfen ob objekt schon in der Difftable steht!
+            // erst Ã¼berprÃ¼fen ob objekt schon in der Difftable steht!
             // wenn ja, dann braucht nix eingetragen werden.
             using (DbConnection connection = db.ProviderFactory.CreateConnection())
             {
@@ -1718,10 +1718,10 @@ namespace gView.Framework.Offline
 
                 if (obj2 != null && Convert.ToInt32(obj2) != 0)
                 {
-                    // bei einem Udpate einfach das aktuelle Datum für alle Differences setzen...
+                    // bei einem Udpate einfach das aktuelle Datum fÃ¼r alle Differences setzen...
                     if (connection.GetType().Equals(typeof(System.Data.OleDb.OleDbConnection)))
                     {
-                        // weil: Access schreibt nix, wenn Datum als Parameter übergeben wird...
+                        // weil: Access schreibt nix, wenn Datum als Parameter Ã¼bergeben wird...
                         command2.CommandText = "UPDATE GV_CHECKOUT_DIFFERENCE SET DIFF_DATUM='" + td.ToShortDateString() + " " + td.ToLongTimeString() + "' WHERE CHECKOUT_GUID=@CHECKOUT_GUID AND OBJECT_GUID=@OBJECT_GUID";
                     }
                     else
@@ -1954,7 +1954,7 @@ namespace gView.Framework.Offline
 
                 await IncReplicationState(parentFc, c.checkout_guid);
                 await IncReplicationState(childFc, c.checkout_guid);
-                // 0,5 sec warten, damit letzte Änderungen, die mit alter 
+                // 0,5 sec warten, damit letzte Ã„nderungen, die mit alter 
                 // StateID geschrieben werden in der Datenbank landen...
                 System.Threading.Thread.Sleep(500);
 
@@ -2570,7 +2570,7 @@ SELECT " + c.parentFc_id + @"," + c.parentDb.DbColName("OBJECT_GUID") + ",0," + 
                             child_feature = await GetFeatureByObjectGuid(c.childDb, childFc, c.child_repl_id_fieldname, object_guid, parentSRef, datumTransformations);
                             if (child_feature == null)
                             {
-                                // dürte eigentlich nicht vorkommen
+                                // dÃ¼rte eigentlich nicht vorkommen
                                 continue;
                             }
                             if (!await c.parentDb.Insert(parentFc_lock, child_feature))
@@ -2600,7 +2600,7 @@ SELECT " + c.parentFc_id + @"," + c.parentDb.DbColName("OBJECT_GUID") + ",0," + 
                             child_feature = await GetFeatureByObjectGuid(c.childDb, childFc, c.child_repl_id_fieldname, object_guid, parentSRef, datumTransformations);
                             if (child_feature == null)
                             {
-                                // dürte eigentlich nicht vorkommen
+                                // dÃ¼rte eigentlich nicht vorkommen
                                 continue;
                             }
 
@@ -2678,7 +2678,7 @@ SELECT " + c.parentFc_id + @"," + c.parentDb.DbColName("OBJECT_GUID") + ",0," + 
                             parent_feature = await GetFeatureByObjectGuid(c.parentDb, parentFc, c.parent_repl_id_fieldname, object_guid, parentSRef, datumTransformations);
                             if (parent_feature == null)
                             {
-                                // dürfe nicht sein, außer Feature wurde gelöscht
+                                // dÃ¼rfe nicht sein, auÃŸer Feature wurde gelÃ¶scht
                                 // dann sollte es allerdings im diff table sichtbar sein!!!
                                 //if (checkin)
                                 //{
@@ -2686,8 +2686,8 @@ SELECT " + c.parentFc_id + @"," + c.parentDb.DbColName("OBJECT_GUID") + ",0," + 
                                 //}
                                 //else
                                 {
-                                    // kann allerdings auch beim Post vorkommen, wenn Feature in Parent verändert
-                                    // und in der Child Verions gelöscht wurde
+                                    // kann allerdings auch beim Post vorkommen, wenn Feature in Parent verÃ¤ndert
+                                    // und in der Child Verions gelÃ¶scht wurde
                                     // Dann: INSERT
                                     if (!await c.parentDb.Insert(parentFc_lock, child_feature))
                                     {
@@ -2739,7 +2739,7 @@ SELECT " + c.parentFc_id + @"," + c.parentDb.DbColName("OBJECT_GUID") + ",0," + 
                                 }
                                 else if (c.conflictHandling == ConflictHandling.NORMAL)
                                 {
-                                    // wenn beide gelöscht wurden -> kein konflikt!
+                                    // wenn beide gelÃ¶scht wurden -> kein konflikt!
                                     if ((SqlStatement)diff2["SQL_STATEMENT"] != SqlStatement.DELETE)
                                     {
                                         WriteConflict(c.parentDb, c.parentFc_id, c.checkout_name, diff2, childDiffRow, object_guid);
@@ -2757,7 +2757,7 @@ SELECT " + c.parentFc_id + @"," + c.parentDb.DbColName("OBJECT_GUID") + ",0," + 
                                 }
                                 else if (c.conflictHandling == ConflictHandling.CHILD_WINS)
                                 {
-                                    // Parent löschen. Standard -> so tun als ob kein Konflikt
+                                    // Parent lÃ¶schen. Standard -> so tun als ob kein Konflikt
                                 }
                                 else if (c.conflictHandling == ConflictHandling.NEWER_WINS)
                                 {
@@ -2780,7 +2780,7 @@ SELECT " + c.parentFc_id + @"," + c.parentDb.DbColName("OBJECT_GUID") + ",0," + 
                             parent_feature = await GetFeatureByObjectGuid(c.parentDb, parentFc, c.parent_repl_id_fieldname, object_guid, parentSRef, datumTransformations);
                             if (parent_feature == null)
                             {
-                                // dürfe nicht sein, außer Feature wurde gelöscht
+                                // dÃ¼rfe nicht sein, auÃŸer Feature wurde gelÃ¶scht
                                 // dann sollte es allerdings im diff table sichtbar sein!!!
                                 //throw new Exception("inkonsistent data!");
                                 break;
@@ -2936,7 +2936,7 @@ SELECT " + c.parentFc_id + @"," + c.parentDb.DbColName("OBJECT_GUID") + ",0," + 
                         }
                         else if (first == SqlStatement.INSERT && last == SqlStatement.DELETE)
                         {
-                            // alle löschen
+                            // alle lÃ¶schen
                             command2.CommandText = "DELETE FROM " + db.TableName("GV_CHECKOUT_DIFFERENCE") + " WHERE " + db.DbColName("CHECKOUT_GUID") + "=@CHECKOUT_GUID AND " + db.DbColName("OBJECT_GUID") + "=@OBJECT_GUID AND " + db.DbColName("REPLICATION_STATE") + "<=" + replState.ToString();
                             command2.ExecuteNonQuery();
                         }
@@ -3249,11 +3249,11 @@ SELECT " + c.parentFc_id + @"," + c.parentDb.DbColName("OBJECT_GUID") + ",0," + 
                 get
                 {
                     List<FieldConflict> fields = new List<FieldConflict>();
-                    foreach (FieldConflict field in FieldConflicts)
+                    foreach (FieldConflict @field in FieldConflicts)
                     {
-                        if (field.ConflictTable != null)
+                        if (@field.ConflictTable != null)
                         {
-                            fields.Add(field);
+                            fields.Add(@field);
                         }
                     }
                     return fields;
@@ -3264,11 +3264,11 @@ SELECT " + c.parentFc_id + @"," + c.parentDb.DbColName("OBJECT_GUID") + ",0," + 
                 get
                 {
                     List<FieldConflict> fields = new List<FieldConflict>();
-                    foreach (FieldConflict field in FieldConflicts)
+                    foreach (FieldConflict @field in FieldConflicts)
                     {
-                        if (field.ConflictTable == null)
+                        if (@field.ConflictTable == null)
                         {
-                            fields.Add(field);
+                            fields.Add(@field);
                         }
                     }
                     return fields;
@@ -3560,7 +3560,7 @@ SELECT " + c.parentFc_id + @"," + c.parentDb.DbColName("OBJECT_GUID") + ",0," + 
                 IFeature sFeature = this.SolvedFeature;
                 if (sFeature == null)
                 {
-                    // Feature ist zu löschen
+                    // Feature ist zu lÃ¶schen
                     if (Feature != null && await db.Delete(FeatureClass, Feature.OID) == false)
                     {
                         errMsg = "SolveConflict -> " + db.LastErrorMessage;
@@ -3569,7 +3569,7 @@ SELECT " + c.parentFc_id + @"," + c.parentDb.DbColName("OBJECT_GUID") + ",0," + 
                 }
                 else if (sFeature.OID == -1)
                 {
-                    // Ursprüngliches Features wurde gelöscht und soll jetzt
+                    // UrsprÃ¼ngliches Features wurde gelÃ¶scht und soll jetzt
                     // "upgedatet" werden. -> neuer Insert mit OBJECT_GUID
                     string repl_field_name = await Replication.FeatureClassReplicationIDFieldname(FeatureClass);
                     if (String.IsNullOrEmpty(repl_field_name))

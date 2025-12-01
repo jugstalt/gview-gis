@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data.Entity.Core.Metadata.Edm;
 using System.Reflection;
-using System.Reflection.Metadata.Ecma335;
 
 namespace gView.Blazor.Core.Extensions;
 

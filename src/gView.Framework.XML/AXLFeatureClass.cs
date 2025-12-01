@@ -1,4 +1,4 @@
-using gView.Framework.Core.Carto;
+ï»¿using gView.Framework.Core.Carto;
 using gView.Framework.Core.Data;
 using gView.Framework.Core.Data.Cursors;
 using gView.Framework.Core.Data.Filters;
@@ -284,19 +284,19 @@ namespace gView.Framework.XML
                     XmlDocument doc = new XmlDocument();
                     doc.LoadXml("<LAYERDEF>" + value + "</LAYERDEF>");
 
-                    foreach (XmlNode field in doc.SelectNodes("//FIELD"))
+                    foreach (XmlNode @field in doc.SelectNodes("//FIELD"))
                     {
-                        if (field.Attributes["name"] == null)
+                        if (@field.Attributes["name"] == null)
                         {
                             continue;
                         }
 
                         Field f = new Field();
-                        f.name = ArcXMLGeometry.shortName(field.Attributes["name"].Value);
+                        f.name = ArcXMLGeometry.shortName(@field.Attributes["name"].Value);
 
-                        if (field.Attributes["type"] != null)
+                        if (@field.Attributes["type"] != null)
                         {
-                            switch (field.Attributes["type"].Value)
+                            switch (@field.Attributes["type"].Value)
                             {
                                 case "-99":
                                     this.IDFieldName = f.name;
@@ -336,14 +336,14 @@ namespace gView.Framework.XML
                             }
                         }
 
-                        if (field.Attributes["precision"] != null)
+                        if (@field.Attributes["precision"] != null)
                         {
-                            f.precision = Convert.ToInt32(field.Attributes["precision"].Value);
+                            f.precision = Convert.ToInt32(@field.Attributes["precision"].Value);
                         }
 
-                        if (field.Attributes["size"] != null)
+                        if (@field.Attributes["size"] != null)
                         {
-                            f.size = Convert.ToInt32(field.Attributes["size"].Value);
+                            f.size = Convert.ToInt32(@field.Attributes["size"].Value);
                         }
 
                         _fields.Add(f);
@@ -791,7 +791,7 @@ namespace gView.Framework.XML
                     spatialQueryNode.Attributes.Append(attr);
                 }
 
-                // FEATURECOORDSYS und FILTERCOORDSYS müssen beim Buffern auch im 
+                // FEATURECOORDSYS und FILTERCOORDSYS mÃ¼ssen beim Buffern auch im 
                 // TARGETLAYER stehen!!! Sonst projeziert IMS nicht richtig!!!
                 if (spatialQueryNode.SelectSingleNode("FEATURECOORDSYS") == null &&
                     filter != null && filter.FeatureSpatialReference != null)
@@ -1119,8 +1119,8 @@ namespace gView.Framework.XML
                 }
                 IFeature feature = AXLFeatureClass.ConvertAXLNode2Feature(_features[_pos++], _fc, _attributes);
 
-                // kein Transform durchführen, da der Server schon automatisch
-                // die Projektion durchführen sollte, wenn ein FeatureCoordSys Knoten
+                // kein Transform durchfÃ¼hren, da der Server schon automatisch
+                // die Projektion durchfÃ¼hren sollte, wenn ein FeatureCoordSys Knoten
                 // im Request steht...
                 // Transform(feature);
 

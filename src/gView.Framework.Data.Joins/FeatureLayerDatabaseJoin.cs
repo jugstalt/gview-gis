@@ -71,11 +71,11 @@ namespace gView.Framework.Data.Joins
                 _fields = value;
                 if (_fields != null)
                 {
-                    foreach (IField field in _fields.ToEnumerable())
+                    foreach (IField @field in _fields.ToEnumerable())
                     {
-                        if (field is Field)
+                        if (@field is Field)
                         {
-                            ((Field)field).SaveType = true;
+                            ((Field)@field).SaveType = true;
                         }
                     }
                 }

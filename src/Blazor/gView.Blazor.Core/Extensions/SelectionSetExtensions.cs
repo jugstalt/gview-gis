@@ -1,7 +1,6 @@
 ﻿using gView.Framework.Core.Data;
 using Proj4Net.Core.Units;
 using System.Collections.Generic;
-using System.Data.Entity.Core.Common.CommandTrees.ExpressionBuilder;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography;

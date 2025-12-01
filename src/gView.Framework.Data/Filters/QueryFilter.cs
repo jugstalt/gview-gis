@@ -195,14 +195,14 @@ namespace gView.Framework.Data.Filters
             get
             {
                 var subfields = new StringBuilder();
-                foreach (string field in m_fields)
+                foreach (string @field in m_fields)
                 {
                     if (subfields.Length > 0)
                     {
                         subfields.Append(" ");
                     }
 
-                    subfields.Append(field.ToSubFieldName(m_fieldPrefix, m_fieldPostfix));
+                    subfields.Append(@field.ToSubFieldName(m_fieldPrefix, m_fieldPostfix));
                 }
                 return subfields.ToString();
             }
@@ -217,9 +217,9 @@ namespace gView.Framework.Data.Filters
                         value = value.Replace(" ", ",");
                     }
 
-                    foreach (string field in value.Replace(";", ",").Split(','))
+                    foreach (string @field in value.Replace(";", ",").Split(','))
                     {
-                        string f = field.Trim();
+                        string f = @field.Trim();
                         if (f == "")
                         {
                             continue;
@@ -235,32 +235,32 @@ namespace gView.Framework.Data.Filters
             get
             {
                 string subfields = "";
-                foreach (string field in m_fields)
+                foreach (string @field in m_fields)
                 {
                     if (subfields != "")
                     {
                         subfields += ",";
                     }
 
-                    if (field == "*")
+                    if (@field == "*")
                     {
-                        subfields += field;
+                        subfields += @field;
                     }
                     else
                     {
-                        if (m_fieldPrefix != null && field.IndexOf(m_fieldPrefix) != 0 && field.IndexOf("(") == -1 && field.IndexOf(")") == -1)
+                        if (m_fieldPrefix != null && @field.IndexOf(m_fieldPrefix) != 0 && @field.IndexOf("(") == -1 && @field.IndexOf(")") == -1)
                         {
                             subfields += m_fieldPrefix;
                         }
 
-                        subfields += field;
+                        subfields += @field;
 
-                        if (m_fieldPrefix != null && field.IndexOf(m_fieldPostfix, m_fieldPrefix.Length) != field.Length - m_fieldPostfix.Length && field.IndexOf("(") == -1 && field.IndexOf(")") == -1)
+                        if (m_fieldPrefix != null && @field.IndexOf(m_fieldPostfix, m_fieldPrefix.Length) != @field.Length - m_fieldPostfix.Length && @field.IndexOf("(") == -1 && @field.IndexOf(")") == -1)
                         {
                             subfields += m_fieldPostfix;
                         }
 
-                        string alias = Alias(field);
+                        string alias = Alias(@field);
                         if (alias != "" && alias != null)
                         {
                             subfields += " as " + alias;
@@ -340,11 +340,11 @@ namespace gView.Framework.Data.Filters
 
                 StringBuilder sb = new StringBuilder();
 
-                foreach (string field in m_orderBy.Replace(",", " ").Split(' '))
+                foreach (string @field in m_orderBy.Replace(",", " ").Split(' '))
                 {
-                    if (sb.Length > 0 && (field.ToLower() == "asc" || field.ToLower() == "desc"))
+                    if (sb.Length > 0 && (@field.ToLower() == "asc" || @field.ToLower() == "desc"))
                     {
-                        sb.Append(" " + field);
+                        sb.Append(" " + @field);
                     }
                     else
                     {
@@ -353,13 +353,13 @@ namespace gView.Framework.Data.Filters
                             sb.Append(",");
                         }
 
-                        if (field.IndexOf(m_fieldPrefix) != 0 && field.IndexOf("(") == -1 && field.IndexOf(")") == -1)
+                        if (@field.IndexOf(m_fieldPrefix) != 0 && @field.IndexOf("(") == -1 && @field.IndexOf(")") == -1)
                         {
                             sb.Append(m_fieldPrefix);
                         }
 
-                        sb.Append(field);
-                        if (field.IndexOf(m_fieldPostfix, Math.Min(m_fieldPrefix.Length, field.Length)) != field.Length - m_fieldPostfix.Length && field.IndexOf("(") == -1 && field.IndexOf(")") == -1)
+                        sb.Append(@field);
+                        if (@field.IndexOf(m_fieldPostfix, Math.Min(m_fieldPrefix.Length, @field.Length)) != @field.Length - m_fieldPostfix.Length && @field.IndexOf("(") == -1 && @field.IndexOf(")") == -1)
                         {
                             sb.Append(m_fieldPostfix);
                         }

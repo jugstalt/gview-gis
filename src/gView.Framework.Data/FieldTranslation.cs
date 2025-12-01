@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using gView.Framework.Core.Data;
 
@@ -33,10 +33,10 @@ namespace gView.Framework.Data
             get
             {
                 FieldCollection destFields = new FieldCollection();
-                foreach (IField field in _fields.Keys)
+                foreach (IField @field in _fields.Keys)
                 {
-                    Field f = new Field(field);
-                    f.name = _fields[field];
+                    Field f = new Field(@field);
+                    f.name = _fields[@field];
                     switch (_case)
                     {
                         case NameCase.lower:
@@ -56,9 +56,9 @@ namespace gView.Framework.Data
             get
             {
                 FieldCollection sourceFields = new FieldCollection();
-                foreach (IField field in _fields.Keys)
+                foreach (IField @field in _fields.Keys)
                 {
-                    Field f = new Field(field);
+                    Field f = new Field(@field);
                     sourceFields.Add(f);
                 }
                 return sourceFields;

@@ -1,13 +1,11 @@
 ﻿#nullable enable
 
 using gView.Framework.Common.Extensions;
-using gView.Framework.Core.Carto;
 using gView.Framework.Core.Data;
 using gView.Framework.Core.Data.Cursors;
 using gView.Framework.Core.Data.Filters;
 using gView.Framework.Core.Exceptions;
 using gView.Framework.Core.Geometry;
-using gView.Framework.Data;
 using gView.Framework.Data.Extensions;
 using gView.Framework.Data.Filters;
 using gView.Framework.GeoJsonService.Extensions;
@@ -22,7 +20,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
-using System.Data.Entity.Core.Common.CommandTrees.ExpressionBuilder;
 using System.Linq;
 
 namespace gView.Server.EndPoints.GeoJsonService;
@@ -277,14 +274,14 @@ public class QueryFeatures : BaseApiEndpoint
 
                                     #region Properties
 
-                                    foreach (var field in feature.Fields)
+                                    foreach (var @field in feature.Fields)
                                     {
-                                        if (field.Name == objectIdFieldName)
+                                        if (@field.Name == objectIdFieldName)
                                         {
-                                            geoJsonFeature.Oid = field.Value;
+                                            geoJsonFeature.Oid = @field.Value;
                                         }
 
-                                        geoJsonFeature.Properties[field.Name] = field.Value == DBNull.Value ? null : field.Value;
+                                        geoJsonFeature.Properties[@field.Name] = @field.Value == DBNull.Value ? null : @field.Value;
                                     }
 
                                     #endregion

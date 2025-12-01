@@ -1,4 +1,4 @@
-using gView.Framework.Core.Data;
+﻿using gView.Framework.Core.Data;
 using gView.Framework.Data;
 using System;
 using System.Collections.Generic;
@@ -941,20 +941,20 @@ namespace gView.DataSources.Shape
                 FieldCollection fields = new FieldCollection();
 
                 // ID
-                Field field = new Field();
-                field.name = _idField;
-                field.type = Framework.Core.Data.FieldType.ID;
-                fields.Add(field);
+                Field @field = new Field();
+                @field.name = _idField;
+                @field.type = Framework.Core.Data.FieldType.ID;
+                fields.Add(@field);
 
                 foreach (FieldDescriptor fd in _fields)
                 {
-                    field = new Field();
-                    field.name = fd.FieldName;
-                    field.size = fd.FieldLength;
-                    field.precision = fd.DecimalCount;
-                    field.type = FieldType(fd);
+                    @field = new Field();
+                    @field.name = fd.FieldName;
+                    @field.size = fd.FieldLength;
+                    @field.precision = fd.DecimalCount;
+                    @field.type = FieldType(fd);
 
-                    fields.Add(field);
+                    fields.Add(@field);
                 }
 
                 return fields;

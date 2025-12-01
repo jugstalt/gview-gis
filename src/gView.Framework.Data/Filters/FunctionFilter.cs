@@ -30,34 +30,34 @@ namespace gView.Framework.Data.Filters
             get
             {
                 string subfields = "";
-                foreach (string field in m_fields)
+                foreach (string @field in m_fields)
                 {
                     if (subfields != "")
                     {
                         subfields += ",";
                     }
 
-                    if (field == "*")
+                    if (@field == "*")
                     {
-                        subfields += field;
+                        subfields += @field;
                     }
                     else
                     {
                         subfields += _function + "(";
-                        if (field.IndexOf(m_fieldPrefix) != 0 && field.IndexOf("(") == -1 && field.IndexOf(")") == -1)
+                        if (@field.IndexOf(m_fieldPrefix) != 0 && @field.IndexOf("(") == -1 && @field.IndexOf(")") == -1)
                         {
                             subfields += m_fieldPrefix;
                         }
 
-                        subfields += field;
-                        if (field.IndexOf(m_fieldPostfix) != field.Length - m_fieldPostfix.Length && field.IndexOf("(") == -1 && field.IndexOf(")") == -1)
+                        subfields += @field;
+                        if (@field.IndexOf(m_fieldPostfix) != @field.Length - m_fieldPostfix.Length && @field.IndexOf("(") == -1 && @field.IndexOf(")") == -1)
                         {
                             subfields += m_fieldPostfix;
                         }
 
                         subfields += ")";
 
-                        string alias = Alias(field);
+                        string alias = Alias(@field);
                         if (alias != "" && alias != null)
                         {
                             subfields += " as " + alias;
