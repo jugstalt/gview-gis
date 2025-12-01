@@ -18,6 +18,11 @@ In that case, the application will terminate with an error message upon startup.
 ## Added
 ## Fixed
 
+## 7.25.4901
+## Added
+
+- Toc Ordering in GeoServices Rest Services is the same as in gView.Carto now.
+
 ## 7.25.4601
 ## Added
 
