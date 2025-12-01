@@ -9,7 +9,7 @@ namespace gView.GraphicsEngine.Skia
     {
         private CanvasRectangleF[] _rectF;
 
-        public DisplayCharacterRanges(SKCanvas canvas, SKPaint font, IDrawTextFormat format, string text)
+        public DisplayCharacterRanges(SKCanvas canvas, SKFont font, IDrawTextFormat format, string text)
         {
             if (String.IsNullOrEmpty(text))
             {
@@ -20,13 +20,13 @@ namespace gView.GraphicsEngine.Skia
             _rectF = new CanvasRectangleF[text.Length];
 
             var rect = new SKRect();
-            font.MeasureText("_", ref rect);
+            font.MeasureText("_", out rect);
             float spaceWidth = rect.Width;
 
             float xOffset = 0, height = 0; ;
             for (int i = 0, to = text.Length; i < to; i++)
             {
-                font.MeasureText($"{text[i]}_", ref rect);
+                font.MeasureText($"{text[i]}_", out rect);
 
                 _rectF[i].Left = rect.Left + xOffset;
                 _rectF[i].Top = rect.Top;
