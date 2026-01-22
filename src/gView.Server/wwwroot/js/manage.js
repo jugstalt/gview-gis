@@ -1068,7 +1068,7 @@ window.gview.manage = (function() {
                 case 'edit':
                     return 'Features';
                 case 'publish':
-                    return 'Publish Serivices';
+                    return 'Publish Services';
             }
         }
         return type;
