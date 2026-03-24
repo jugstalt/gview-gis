@@ -68,7 +68,7 @@ public class PostGISNewConnectionObject :
         {
             DbConnectionString dbConnStr = model.DbConnectionString;
             ConfigConnections connStream = ConfigConnections.Create(
-                    this.ConfigStorage(),
+                    appScope.ConfigConnectionStorage ?? this.ConfigStorage(),
                     "postgis", 
                     "546B0513-D71D-4490-9E27-94CD5D72C64A"
                 );

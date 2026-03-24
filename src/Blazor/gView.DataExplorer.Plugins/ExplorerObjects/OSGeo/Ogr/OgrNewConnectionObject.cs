@@ -59,7 +59,7 @@ public class OgrNewConnectionObject : ExplorerObjectCls<OgrDatasetGroupObject>,
         if (model != null)
         {
             ConfigConnections connStream = ConfigConnections.Create(
-                    this.ConfigStorage(),
+                    appScope.ConfigConnectionStorage ?? this.ConfigStorage(),
                     "OGR", 
                     "ca7011b3-0812-47b6-a999-98a900c4087d"
                 );

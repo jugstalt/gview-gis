@@ -59,7 +59,7 @@ namespace gView.DataExplorer.Plugins.ExplorerObjects.Tiles.Vector
             if (model != null)
             {
                 ConfigConnections connStream = ConfigConnections.Create(
-                        this.ConfigStorage(),
+                        appScope.ConfigConnectionStorage ?? this.ConfigStorage(),
                         "VectorTileCache", 
                         "b9d6ae5b-9ca1-4a52-890f-caa4009784d4"
                     );

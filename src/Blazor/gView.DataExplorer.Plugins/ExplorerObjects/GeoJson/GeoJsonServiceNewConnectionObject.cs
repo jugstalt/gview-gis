@@ -69,7 +69,7 @@ namespace gView.DataExplorer.Plugins.ExplorerObjects.GeoJson
                 string name = connectionString.ExtractConnectionStringParameter("target");
 
                 ConfigConnections config = ConfigConnections.Create(
-                        this.ConfigStorage(),
+                        appScope.ConfigConnectionStorage ?? this.ConfigStorage(),
                         GeoJsonServiceGroupObject.ConfigName, 
                         GeoJsonServiceGroupObject.EncKey
                     );

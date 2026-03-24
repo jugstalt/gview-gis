@@ -7,9 +7,12 @@ namespace gView.DataSources.MSSqlSpatial.DataSources.Sde.Repo
     {
         public SdeGeometryColumn() { }
 
-        public SdeGeometryColumn(DbDataReader reader)
+        public SdeGeometryColumn(DbDataReader reader, Version sdeVersion)
         {
-            this.DatabaseName = reader["f_table_catalog"]?.ToString();
+            if (sdeVersion.Major < 11)
+            {
+                this.DatabaseName = reader["f_table_catalog"]?.ToString();
+            }
             this.TableName = reader["f_table_name"]?.ToString();
             this.Owner = reader["f_table_schema"]?.ToString();
 

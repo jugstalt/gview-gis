@@ -101,7 +101,7 @@ namespace gView.DataSources.MSSqlSpatial.DataSources.Sde.Repo
                 {
                     while (await reader.ReadAsync())
                     {
-                        SdeGeometryColumns.Add(new SdeGeometryColumn(reader));
+                        SdeGeometryColumns.Add(new SdeGeometryColumn(reader, SdeVersion));
                     }
                 }
 

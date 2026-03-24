@@ -62,7 +62,7 @@ public class GeoServicesNewConnectionExplorerObject : ExplorerObjectCls<IExplore
         {
             var connectionString = model.ToConnectionString();
             ConfigConnections connStream = ConfigConnections.Create(
-                    this.ConfigStorage(),
+                    appScope.ConfigConnectionStorage ?? this.ConfigStorage(),
                     "geoservices_connection",
                     "546B0513-D71D-4490-9E27-94CD5D72C64A"
                 );
