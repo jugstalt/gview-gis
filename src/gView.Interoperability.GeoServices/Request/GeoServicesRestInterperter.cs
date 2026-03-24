@@ -278,15 +278,7 @@ public class GeoServicesRestInterperter : IServiceRequestInterpreter
         }
         catch (Exception ex)
         {
-            context.ServiceRequest.Succeeded = false;
-            context.ServiceRequest.Response = new JsonErrorDTO()
-            {
-                Error = new JsonErrorDTO.ErrorDef()
-                {
-                    Code = ex is GeoServicesException ? ((GeoServicesException)ex).ErrorCode : -1,
-                    Message = ex.Message + (ex is NullReferenceException ? $" Stacktrace: {ex.StackTrace}" : "")
-                }
-            };
+            await context.HandleMapServerException(ex);
         }
     }
 
@@ -366,7 +358,7 @@ public class GeoServicesRestInterperter : IServiceRequestInterpreter
             }
             catch (Exception ex)
             {
-                throw new Exception($"Can't parse layer definitions: {ex.Message}");
+                throw new MapServerException($"Can't parse layer definitions: {ex.Message}");
             }
 
             #endregion
@@ -494,7 +486,7 @@ public class GeoServicesRestInterperter : IServiceRequestInterpreter
                 var tableClasses = FindTableClass(serviceMap, query.LayerId.ToString(), out filterQuery);
                 if (isFeatureServer == true && tableClasses.Count > 1)
                 {
-                    throw new Exception("FeatureService can't be used with aggregated feature classes");
+                    throw new MapServerException("FeatureService can't be used with aggregated feature classes");
                 }
 
                 if (!String.IsNullOrWhiteSpace(query.Where))
@@ -580,7 +572,7 @@ public class GeoServicesRestInterperter : IServiceRequestInterpreter
                     {
                         if (String.IsNullOrEmpty(tableClass.IDFieldName))
                         {
-                            throw new Exception("Can't query IdsOnly. Table has no ID-Field.");
+                            throw new MapServerException("Can't query IdsOnly. Table has no ID-Field.");
                         }
 
                         filter.SubFields = tableClass.IDFieldName;
@@ -593,14 +585,14 @@ public class GeoServicesRestInterperter : IServiceRequestInterpreter
                         }
                         else
                         {
-                            throw new Exception("ReturnExtentOnly can only applied on tables with shape/geometry field");
+                            throw new MapServerException("ReturnExtentOnly can only applied on tables with shape/geometry field");
                         }
                     }
                     else if (query.ReturnDistinctValues)
                     {
                         if (query.ReturnGeometry)
                         {
-                            throw new Exception("Geometry is not supported with DISTINCT.");
+                            throw new MapServerException("Geometry is not supported with DISTINCT.");
                         }
                     }
                     else
@@ -839,15 +831,7 @@ public class GeoServicesRestInterperter : IServiceRequestInterpreter
         }
         catch (Exception ex)
         {
-            context.ServiceRequest.Succeeded = false;
-            context.ServiceRequest.Response = new JsonErrorDTO()
-            {
-                Error = new JsonErrorDTO.ErrorDef()
-                {
-                    Code = ex is GeoServicesException ? ((GeoServicesException)ex).ErrorCode : -1,
-                    Message = ex.Message
-                }
-            };
+            await context.HandleMapServerException(ex);
         }
     }
 
@@ -879,7 +863,7 @@ public class GeoServicesRestInterperter : IServiceRequestInterpreter
                 }
                 if (geometry == null)
                 {
-                    throw new Exception("Invalid identify geometry");
+                    throw new MapServerException("Invalid identify geometry");
                 }
 
                 var bbox = identify.MapExtent?.ToBBox();
@@ -892,7 +876,7 @@ public class GeoServicesRestInterperter : IServiceRequestInterpreter
                 var imageDisplay = identify.ImageDisplay?.Split(',').Select(f => NumberExtensions.ToFloat(f)).ToArray();
                 if (imageDisplay == null || imageDisplay.Length != 3)
                 {
-                    throw new Exception("Invalid identify image display. Use <width>, <height>, <dpi>");
+                    throw new MapServerException("Invalid identify image display. Use <width>, <height>, <dpi>");
                 }
 
                 ISpatialReference sRef = SpatialReference.FromID("epsg:" + identify.SRef);
@@ -998,7 +982,7 @@ public class GeoServicesRestInterperter : IServiceRequestInterpreter
                     }
                     catch (Exception ex)
                     {
-                        throw new Exception($"Can't parse layer definitions: {ex.Message}");
+                        throw new MapServerException($"Can't parse layer definitions: {ex.Message}");
                     }
 
                     #endregion
@@ -1085,15 +1069,7 @@ public class GeoServicesRestInterperter : IServiceRequestInterpreter
         }
         catch (Exception ex)
         {
-            context.ServiceRequest.Succeeded = false;
-            context.ServiceRequest.Response = new JsonErrorDTO()
-            {
-                Error = new JsonErrorDTO.ErrorDef()
-                {
-                    Code = ex is GeoServicesException ? ((GeoServicesException)ex).ErrorCode : -1,
-                    Message = ex.Message
-                }
-            };
+            await context.HandleMapServerException(ex);
         }
     }
 
@@ -1169,15 +1145,7 @@ public class GeoServicesRestInterperter : IServiceRequestInterpreter
         }
         catch (Exception ex)
         {
-            context.ServiceRequest.Succeeded = false;
-            context.ServiceRequest.Response = new JsonErrorDTO()
-            {
-                Error = new JsonErrorDTO.ErrorDef()
-                {
-                    Code = ex is GeoServicesException ? ((GeoServicesException)ex).ErrorCode : -1,
-                    Message = ex.Message
-                }
-            };
+            await context.HandleMapServerException(ex);
         }
     }
 
@@ -1312,15 +1280,7 @@ public class GeoServicesRestInterperter : IServiceRequestInterpreter
         }
         catch (Exception ex)
         {
-            context.ServiceRequest.Succeeded = false;
-            context.ServiceRequest.Response = new JsonErrorDTO()
-            {
-                Error = new JsonErrorDTO.ErrorDef()
-                {
-                    Code = ex is GeoServicesException ? ((GeoServicesException)ex).ErrorCode : -1,
-                    Message = ex.Message
-                }
-            };
+            await context.HandleMapServerException(ex);
         }
     }
 
@@ -1343,18 +1303,18 @@ public class GeoServicesRestInterperter : IServiceRequestInterpreter
                 var database = dataset?.Database as IFeatureUpdater;
                 if (database == null)
                 {
-                    throw new Exception("Featureclass is not editable");
+                    throw new MapServerException("Featureclass is not editable");
                 }
 
                 List<IFeature> features = GetFeatures(featureClass, editRequest, true, serviceMap.Display?.DatumTransformations);
                 if (features.Count == 0)
                 {
-                    throw new Exception("No features to add");
+                    throw new MapServerException("No features to add");
                 }
 
                 if (features.Count(f => f.OID > 0) > 0)
                 {
-                    throw new Exception("Can't insert features with existing ObjectId");
+                    throw new MapServerException("Can't insert features with existing ObjectId");
                 }
 
                 if (features.Count(f => f.Shape is null) > 0)
@@ -1385,23 +1345,7 @@ public class GeoServicesRestInterperter : IServiceRequestInterpreter
         }
         catch (Exception ex)
         {
-            context.ServiceRequest.Succeeded = false;
-            context.ServiceRequest.Response = JSerializer.Serialize(new JsonFeatureServerResponseDTO()
-            {
-                AddResults = new JsonFeatureServerResponseDTO.JsonResponse[]
-                {
-                    new JsonFeatureServerResponseDTO.JsonResponse()
-                    {
-                        Success=false,
-                        Error=new JsonFeatureServerResponseDTO.JsonError()
-                        {
-                            Code = ex is GeoServicesException ? ((GeoServicesException)ex).ErrorCode : 999,
-                            Description = ex.Message.Split('\n')[0]
-                            //Description = $"{ex.Message}\n{ex.StackTrace}"
-                        }
-                    }
-                }
-            });
+            await context.HandleFeatureServerException(ex);
         }
     }
 
@@ -1420,18 +1364,18 @@ public class GeoServicesRestInterperter : IServiceRequestInterpreter
                 var database = dataset?.Database as IFeatureUpdater;
                 if (database == null)
                 {
-                    throw new Exception("Featureclass is not editable");
+                    throw new MapServerException("Featureclass is not editable");
                 }
 
                 List<IFeature> features = GetFeatures(featureClass, editRequest, true, serviceMap.Display?.DatumTransformations);
                 if (features.Count == 0)
                 {
-                    throw new Exception("No features to add");
+                    throw new MapServerException("No features to add");
                 }
 
                 if (features.Where(f => f.OID <= 0).Count() > 0)
                 {
-                    throw new Exception("Can't update features without existing ObjectId");
+                    throw new MapServerException("Can't update features without existing ObjectId");
                 }
 
                 features.GeometryMakeValid(serviceMap, featureClass);
@@ -1451,23 +1395,7 @@ public class GeoServicesRestInterperter : IServiceRequestInterpreter
         }
         catch (Exception ex)
         {
-            context.ServiceRequest.Succeeded = false;
-            context.ServiceRequest.Response = JSerializer.Serialize(new JsonFeatureServerResponseDTO()
-            {
-                UpdateResults = new JsonFeatureServerResponseDTO.JsonResponse[]
-                {
-                    new JsonFeatureServerResponseDTO.JsonResponse()
-                    {
-                        Success=false,
-                        Error=new JsonFeatureServerResponseDTO.JsonError()
-                        {
-                            Code = ex is GeoServicesException ? ((GeoServicesException)ex).ErrorCode : 999,
-                            Description = ex.Message.Split('\n')[0]
-                            //Description = $"{ex.Message}\n{ex.StackTrace}"
-                        }
-                    }
-                }
-            });
+            await context.HandleFeatureServerException(ex);
         }
     }
 
@@ -1486,7 +1414,7 @@ public class GeoServicesRestInterperter : IServiceRequestInterpreter
                 var database = dataset?.Database as IFeatureUpdater;
                 if (database == null)
                 {
-                    throw new Exception("Featureclass is not editable");
+                    throw new MapServerException("Featureclass is not editable");
                 }
 
                 var objectIds = editRequest.ObjectIds.Split(',').Select(s => int.Parse(s));
@@ -1508,22 +1436,7 @@ public class GeoServicesRestInterperter : IServiceRequestInterpreter
         }
         catch (Exception ex)
         {
-            context.ServiceRequest.Succeeded = false;
-            context.ServiceRequest.Response = JSerializer.Serialize(new JsonFeatureServerResponseDTO()
-            {
-                DeleteResults = new JsonFeatureServerResponseDTO.JsonResponse[]
-                {
-                    new JsonFeatureServerResponseDTO.JsonResponse()
-                    {
-                        Success=false,
-                        Error=new JsonFeatureServerResponseDTO.JsonError()
-                        {
-                            Code = ex is GeoServicesException ? ((GeoServicesException)ex).ErrorCode : 999,
-                            Description = ex.Message.Split('\n')[0]
-                        }
-                    }
-                }
-            });
+            await context.HandleFeatureServerException(ex);
         }
     }
 
@@ -1541,11 +1454,11 @@ public class GeoServicesRestInterperter : IServiceRequestInterpreter
         var tableClasses = FindTableClass(serviceMap, editRequest.LayerId.ToString(), out filterQuery);
         if (tableClasses.Count > 1)
         {
-            throw new Exception("FeatureService can't be used with aggregated feature classes");
+            throw new MapServerException("FeatureService can't be used with aggregated feature classes");
         }
         if (tableClasses.Count == 0 || !(tableClasses[0] is IFeatureClass))
         {
-            throw new Exception("FeatureService can only used with feature classes");
+            throw new MapServerException("FeatureService can only used with feature classes");
         }
 
         var featureClass = (IFeatureClass)tableClasses[0];
@@ -1592,18 +1505,18 @@ public class GeoServicesRestInterperter : IServiceRequestInterpreter
         var editModule = serviceMap.GetModule<gView.Plugins.Modules.EditorModule>();
         if (editModule == null)
         {
-            throw new Exception("No editor module available for service");
+            throw new MapServerException("No editor module available for service");
         }
 
         var editLayer = editModule.GetEditLayer(editRequest.LayerId);
         if (editLayer == null)
         {
-            throw new Exception("No editable layer found with id=" + editRequest.LayerId);
+            throw new MapServerException($"No editable layer found with id={editRequest.LayerId}");
         }
 
         if (!editLayer.Statements.HasFlag(statement))
         {
-            throw new Exception("Editoperation " + statement + " not allowed for layer with id=" + editRequest.LayerId);
+            throw new MapServerException($"Editoperation {statement} not allowed for layer with id={editRequest.LayerId}");
         }
     }
 
@@ -1625,7 +1538,7 @@ public class GeoServicesRestInterperter : IServiceRequestInterpreter
 
         if (attributes == null)
         {
-            throw new ArgumentException("No features attributes!");
+            throw new MapServerException("No features attributes!");
         }
 
         for (int f = 0, fieldCount = fc.Fields.Count; f < fieldCount; f++)
@@ -1758,7 +1671,7 @@ public class GeoServicesRestInterperter : IServiceRequestInterpreter
             return GraphicsEngine.ArgbColor.FromArgb(col[3], col[0], col[1], col[2]);
         }
 
-        throw new Exception("Invalid symbol color: [" + String.Join(",", col) + "]");
+        throw new MapServerException($"Invalid symbol color: [{String.Join(",", col)}]");
     }
 
     #endregion
