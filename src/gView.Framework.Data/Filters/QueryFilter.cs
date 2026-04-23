@@ -275,7 +275,7 @@ namespace gView.Framework.Data.Filters
         {
             get
             {
-                if (m_whereClause.StartsWith("[") || m_whereClause.StartsWith("{"))
+                if (m_whereClause.IsJsonObjectOrArray())
                 {
                     if (!String.IsNullOrEmpty(m_whereClause2))
                     {

@@ -11,6 +11,8 @@ using gView.Framework.Core.UI;
 using gView.Framework.Data;
 using gView.Framework.Data.Extensions;
 using gView.Framework.Geometry;
+using gView.Framework.Geometry.Extensions;
+using gView.Framework.Geometry.Proj;
 using gView.Framework.IO;
 using System;
 using System.Collections;
@@ -1089,11 +1091,11 @@ namespace gView.Framework.Cartography
             _mapUnits = (GeoUnits)stream.Load("MapUnits", 0);
             _displayUnits = (GeoUnits)stream.Load("DisplayUnits", 0);
 
-            ISpatialReference sRef = new SpatialReference();
-            SpatialReference = (ISpatialReference)stream.Load("SpatialReference", null, sRef);
+            //Map SpatialReference
+            //Make it valid, old version maybe only save id/name, no parameters... MakeValid load it by id if necessary
+            SpatialReference = ((ISpatialReference)stream.Load("SpatialReference", null, new SpatialReference())).MakeValid(_errorMessages);
             //LayerDefaultSpatialReference
-            ISpatialReference ldsRef = new SpatialReference();
-            LayerDefaultSpatialReference = (ISpatialReference)stream.Load("LayerDefaultSpatialReference", null, ldsRef);
+            LayerDefaultSpatialReference = ((ISpatialReference)stream.Load("LayerDefaultSpatialReference", null, new SpatialReference())).MakeValid(_errorMessages);
 
             // there was a typo in "WebMercatorScaleBehavior" in some legacy files...
             // so check the old name first:
