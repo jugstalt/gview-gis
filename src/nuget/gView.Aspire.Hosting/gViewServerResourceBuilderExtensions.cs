@@ -5,7 +5,7 @@ namespace Aspire.Hosting;
 
 static public class gViewServerResourceBuilderExtensions
 {
-    private const string ContainerImage = "gview-server";
+    private const string ContainerImage = "gstalt/gview-server";
     private const string ContainerRegistry = "";
     private const string ContainerTag = "latest";
 
@@ -14,13 +14,14 @@ static public class gViewServerResourceBuilderExtensions
             string name,
             int? httpPort = null,
             int? httpsPort = null,
+            string? imageName = null,
             string? imageTag = null
         )
     {
         var resource = new gViewServerResource(name);
 
         var resourceBuilder = builder.AddResource(resource)
-                      .WithImage(ContainerImage)
+                      .WithImage(imageName ?? ContainerImage)
                       .WithImageRegistry(ContainerRegistry)
                       .WithImageTag(imageTag ?? ContainerTag)
                       .WithHttpEndpoint(

@@ -4,8 +4,8 @@
       <TargetFramework>net10.0</TargetFramework>
       <ImplicitUsings>enable</ImplicitUsings>
       <Nullable>enable</Nullable>
-	  <Version>7.25.4202</Version>
-	  <Copyright>2025, Jürgen Gstaltmaier</Copyright>
+	  <Version>8.26.1702</Version>
+	  <Copyright>2026, Jürgen Gstaltmaier</Copyright>
 	  <PackageProjectUrl>https://github.com/jugstalt/gview-gis</PackageProjectUrl>
 	  <RepositoryUrl>https://github.com/jugstalt/gview-gis</RepositoryUrl>
 	  <Authors>Jürgen Gstaltmaier</Authors>

@@ -5,7 +5,7 @@ namespace Aspire.Hosting;
 
 static public class gViewWebAppsResourceBuilderExtensions
 {
-    private const string ContainerImage = "gview-webapps";
+    private const string ContainerImage = "gstalt/gview-webapps";
     private const string ContainerRegistry = "";
     private const string ContainerTag = "latest";
 
@@ -14,6 +14,7 @@ static public class gViewWebAppsResourceBuilderExtensions
             string name,
             int? httpPort = null,
             int? httpsPort = null,
+            string? imageName = null,
             string? imageTag = null
         )
     {
@@ -21,7 +22,7 @@ static public class gViewWebAppsResourceBuilderExtensions
 
         var resourceBuilder = builder
                       .AddResource(resource)
-                      .WithImage(ContainerImage)
+                      .WithImage(imageName ?? ContainerImage)
                       .WithImageRegistry(ContainerRegistry)
                       .WithImageTag(imageTag ?? ContainerTag)
                       .WithVolume("gview-gis","/home/data")
