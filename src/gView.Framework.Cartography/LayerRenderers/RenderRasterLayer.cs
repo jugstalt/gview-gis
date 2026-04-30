@@ -239,10 +239,7 @@ namespace gView.Framework.Cartography.LayerRenderers
                 }
                 if (_map != null)
                 {
-                    if (_map != null)
-                    {
-                        _map.AddRequestException(new Exception("RenderRasterLayerThread: " + (_layer != null ? _layer.Title : string.Empty) + "\n" + ex.Message, ex));
-                    }
+                    _map.AddRequestException(new Exception("RenderRasterLayerThread: " + (_layer != null ? _layer.Title : string.Empty) + "\n" + ex.Message, ex));
                 }
             }
             finally

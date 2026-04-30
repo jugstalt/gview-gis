@@ -6,7 +6,7 @@ using System.Text;
 
 namespace gView.Framework.OGC
 {
-    public class OGC
+    public class OGC_v7
     {
         public enum WkbByteOrder : byte
         {
@@ -61,19 +61,6 @@ namespace gView.Framework.OGC
 
         public readonly static System.Globalization.NumberFormatInfo numberFormat_EnUS = new System.Globalization.CultureInfo("en-US", false).NumberFormat;
 
-        /// <summary>
-        /// If true, circular arc segments (wkbCircularString) are geometrically interpolated
-        /// into linear point sequences. If false, the original control points are used as-is.
-        /// </summary>
-        public const bool InterpolateCircularArcs = true;
-
-        /// <summary>
-        /// Angular step size in degrees used to interpolate circular arc segments (wkbCircularString).
-        /// Only applies when <see cref="InterpolateCircularArcs"/> is true.
-        /// Smaller values produce a smoother curve at the cost of more points.
-        /// </summary>
-        public const double CircularArcAngleStepDegrees = 5.0;
-
         public static string Envelope2box2(IEnvelope envelope, ISpatialReference sRef)
         {
             if (envelope == null)
@@ -123,6 +110,71 @@ namespace gView.Framework.OGC
             }
 
             return WKBToGeometry(reader, (WkbByteOrder)byteOrder);
+        }
+
+        private static IGeometry WKBToGeometry__old_iso_wkb(BinaryReader reader, WkbByteOrder byteOrder)
+        {
+            // Get the type of this geometry.
+            uint type = (uint)ReadUInt32(reader, (WkbByteOrder)byteOrder);
+
+            // https://github.com/jugstalt/gview5/issues/17
+            // https://libgeos.org/specifications/wkb/  (ISO or Extended WKB?)
+            // check if Extended WKB
+            // int newSrid = (type & 0x20000000) != 0 ? reader.ReadInt32() : -1; // < --only if interestested on SRID
+            // type = (type & 0xffff) % 1000; // ** < --can type correctly to Enum
+
+            // Otherwise its maybe ISO WKB
+            bool hasZ = false, hasM = false;
+            if (type >= 1000 && type < 2000)
+            {
+                hasZ = true;
+                type -= 1000;
+            }
+            else if (type >= 2000 && type < 3000)
+            {
+                hasM = true;
+                type -= 2000;
+            }
+            else if (type >= 3000 && type < 4000)
+            {
+                hasZ = hasM = true;
+                type -= 3000;
+            }
+
+            if (!Enum.IsDefined(typeof(WKBGeometryType), type))
+            {
+                throw new ArgumentException("Geometry type not recognized");
+            }
+
+            switch ((WKBGeometryType)type)
+            {
+                case WKBGeometryType.wkbPoint:
+                    return CreatePoint(reader, byteOrder, hasZ, hasM);
+
+                case WKBGeometryType.wkbLineString:
+                    return CreateLineString(reader, byteOrder, hasZ, hasM);
+
+                case WKBGeometryType.wkbPolygon:
+                    return CreatePolygon(reader, byteOrder, hasZ, hasM);
+
+                case WKBGeometryType.wkbMultiPoint:
+                    return CreateMultiPoint(reader, byteOrder, hasZ, hasM);
+
+                case WKBGeometryType.wkbMultiLineString:
+                    return CreateMultiLineString(reader, byteOrder, hasZ, hasM);
+
+                case WKBGeometryType.wkbMultiPolygon:
+                    return CreateMultiPolygon(reader, byteOrder, hasZ, hasM);
+
+                case WKBGeometryType.wkbGeometryCollection:
+                    return CreateGeometryCollection(reader, byteOrder, hasZ, hasM);
+
+                //case WKBGeometryType.wkbMultiCurve:
+                //    return CreateMultiCurve(reader, byteOrder, hasZ, hasM);
+
+                default:
+                    throw new NotSupportedException("Geometry type '" + ((WKBGeometryType)type).ToString() + "' not supported");
+            }
         }
 
         private static IGeometry WKBToGeometry(BinaryReader reader, WkbByteOrder byteOrder)
@@ -193,19 +245,8 @@ namespace gView.Framework.OGC
                 case WKBGeometryType.wkbGeometryCollection:
                     geometry = CreateGeometryCollection(reader, byteOrder, hasZ, hasM);
                     break;
-                case WKBGeometryType.wkbCurvePolygon:
-                    geometry = CreateCurvePolygon(reader, byteOrder, hasZ, hasM);
-                    break;
-                case WKBGeometryType.wkbCircularString:
-                case WKBGeometryType.wkbCurve:
-                    geometry = CreateCircularString(reader, byteOrder, hasZ, hasM);
-                    break;
-                case WKBGeometryType.wkbCompoundCurve:
-                    geometry = CreateCompoundCurve(reader, byteOrder, hasZ, hasM);
-                    break;
-                case WKBGeometryType.wkbMultiCurve:
-                    geometry = CreateMultiCurve(reader, byteOrder, hasZ, hasM);
-                    break;
+                //case WKBGeometryType.wkbMultiCurve:
+                //    return CreateMultiCurve(reader, byteOrder, hasZ, hasM);
 
                 default:
                     throw new NotSupportedException("Geometry type '" + ((WKBGeometryType)baseGeometryType).ToString() + "' not supported");
@@ -359,81 +400,6 @@ namespace gView.Framework.OGC
             }
         }
 
-        /// <summary>
-        /// Interpolates a circular arc defined by three points (p0 = start, p1 = on-arc, p2 = end)
-        /// into a sequence of linear points using <see cref="CircularArcAngleStepDegrees"/> as step size.
-        /// Points are appended to <paramref name="target"/>. The start point p0 is NOT added (caller owns it);
-        /// all intermediate points and p2 are added.
-        /// </summary>
-        private static void InterpolateCircularArc(IPoint p0, IPoint p1, IPoint p2, IPointCollection target)
-        {
-            double ax = p0.X, ay = p0.Y;
-            double bx = p1.X, by = p1.Y;
-            double cx = p2.X, cy = p2.Y;
-
-            // Compute circumcenter of triangle (p0, p1, p2)
-            double ax2 = ax * ax, ay2 = ay * ay;
-            double bx2 = bx * bx, by2 = by * by;
-            double cx2 = cx * cx, cy2 = cy * cy;
-
-            double D = 2.0 * (ax * (by - cy) + bx * (cy - ay) + cx * (ay - by));
-
-            if (Math.Abs(D) < 1e-10)
-            {
-                // Degenerate arc (collinear points) — treat as straight line
-                target.AddPoint(new Point(cx, cy));
-                return;
-            }
-
-            double ux = ((ax2 + ay2) * (by - cy) + (bx2 + by2) * (cy - ay) + (cx2 + cy2) * (ay - by)) / D;
-            double uy = ((ax2 + ay2) * (cx - bx) + (bx2 + by2) * (ax - cx) + (cx2 + cy2) * (bx - ax)) / D;
-
-            double radius = Math.Sqrt((ax - ux) * (ax - ux) + (ay - uy) * (ay - uy));
-
-            double startAngle = Math.Atan2(ay - uy, ax - ux);
-            double midAngle = Math.Atan2(by - uy, bx - ux);
-            double endAngle = Math.Atan2(cy - uy, cx - ux);
-
-            // Determine sweep direction: clockwise or counter-clockwise
-            // The on-arc midpoint p1 determines which arc to travel
-            bool ccw = IsCounterClockwise(startAngle, midAngle, endAngle);
-
-            double stepRad = CircularArcAngleStepDegrees * Math.PI / 180.0;
-            double sweep;
-
-            if (ccw)
-            {
-                sweep = endAngle - startAngle;
-                if (sweep < 0) sweep += 2.0 * Math.PI;
-            }
-            else
-            {
-                sweep = startAngle - endAngle;
-                if (sweep < 0) sweep += 2.0 * Math.PI;
-                sweep = -sweep;
-            }
-
-            int steps = Math.Max(1, (int)Math.Ceiling(Math.Abs(sweep) / stepRad));
-
-            for (int s = 1; s <= steps; s++)
-            {
-                double angle = startAngle + sweep * s / steps;
-                double x = ux + radius * Math.Cos(angle);
-                double y = uy + radius * Math.Sin(angle);
-                target.AddPoint(new Point(x, y));
-            }
-        }
-
-        private static bool IsCounterClockwise(double startAngle, double midAngle, double endAngle)
-        {
-            // Normalize midAngle and endAngle relative to startAngle into [0, 2π)
-            double twoPi = 2.0 * Math.PI;
-            double mid = (midAngle - startAngle + twoPi) % twoPi;
-            double end = (endAngle - startAngle + twoPi) % twoPi;
-            // If mid comes before end in CCW direction, the arc is CCW
-            return mid < end;
-        }
-
         private static Point CreatePoint(BinaryReader reader, WkbByteOrder byteOrder, bool hasZ, bool hasM)
         {
             // Create and return the point.
@@ -539,12 +505,12 @@ namespace gView.Framework.OGC
             // Loop on the number of points.
             for (int i = 0; i < numPoints; i++)
             {
-                // Each embedded geometry has its own byte-order byte — use the
-                // self-contained overload so the header is read correctly.
-                if (WKBToGeometry(reader) is IPoint p)
-                {
-                    points.AddPoint(p);
-                }
+                // Read point header
+                reader.ReadByte();
+                ReadUInt32(reader, byteOrder);
+
+                // Create the next point and add it to the point array.
+                points.AddPoint(CreatePoint(reader, byteOrder, hasZ, hasM));
             }
             return points;
         }
@@ -564,32 +530,6 @@ namespace gView.Framework.OGC
             return pline;
         }
 
-        /// <summary>
-        /// Creates a Polyline from a wkbCircularString. The arc control points are interpolated
-        /// into linear segments when <see cref="InterpolateCircularArcs"/> is true.
-        /// </summary>
-        private static Polyline CreateCircularString(BinaryReader reader, WkbByteOrder byteOrder, bool hasZ, bool hasM)
-        {
-            Polyline pline = new Polyline();
-            gView.Framework.Geometry.Path path = new gView.Framework.Geometry.Path();
-            ReadCircularStringPoints(reader, byteOrder, path, hasZ, hasM);
-            pline.AddPath(path);
-            return pline;
-        }
-
-        /// <summary>
-        /// Creates a Polyline from a wkbCompoundCurve. Linear and circular arc segments are
-        /// flattened into a single path; arcs are interpolated when <see cref="InterpolateCircularArcs"/> is true.
-        /// </summary>
-        private static Polyline CreateCompoundCurve(BinaryReader reader, WkbByteOrder byteOrder, bool hasZ, bool hasM)
-        {
-            Polyline pline = new Polyline();
-            gView.Framework.Geometry.Path path = new gView.Framework.Geometry.Path();
-            ReadCompoundCurvePoints(reader, byteOrder, path, hasZ, hasM);
-            pline.AddPath(path);
-            return pline;
-        }
-
         private static void WriteLineString(IPath path, BinaryWriter writer, WkbByteOrder byteOrder, bool hasZ, bool hasM)
         {
             WritePointCollection(path, writer, byteOrder, hasZ, hasM);
@@ -606,14 +546,14 @@ namespace gView.Framework.OGC
             // Loop on the number of linestrings.
             for (int i = 0; i < numLineStrings; i++)
             {
-                // Each embedded geometry has its own byte-order byte — use the
-                // self-contained overload so the header is read correctly.
-                if (WKBToGeometry(reader) is IPolyline p)
+                // Read linestring header
+                reader.ReadByte();
+                ReadUInt32(reader, byteOrder);
+
+                Polyline p = CreateLineString(reader, byteOrder, hasZ, hasM);
+                for (int r = 0; r < p.PathCount; r++)
                 {
-                    for (int r = 0; r < p.PathCount; r++)
-                    {
-                        pline.AddPath(p[r]);
-                    }
+                    pline.AddPath(p[r]);
                 }
             }
 
@@ -632,178 +572,6 @@ namespace gView.Framework.OGC
                 writer.Write((uint)WKBGeometryType.wkbLineString);
 
                 WritePointCollection(polyline[i], writer, byteOrder, hasZ, hasM);
-            }
-        }
-
-        private static Polygon CreateCurvePolygon(BinaryReader reader, WkbByteOrder byteOrder, bool hasZ, bool hasM)
-        {
-            // A CurvePolygon stores each ring as an embedded WKB geometry.
-            // Supported ring types: wkbLineString (linear), wkbCircularString (arc-interpolated),
-            // wkbCompoundCurve (mixed linear + arc segments).
-            int numRings = (int)ReadUInt32(reader, byteOrder);
-
-            Polygon polygon = new Polygon();
-
-            for (int i = 0; i < numRings; i++)
-            {
-                byte ringByteOrder = reader.ReadByte();
-                WkbByteOrder ringOrder = (WkbByteOrder)ringByteOrder;
-                uint ringType = (uint)ReadUInt32(reader, ringOrder);
-
-                bool ringHasZ = hasZ, ringHasM = hasM;
-
-                // Handle ISO WKB Z/M offsets
-                if (ringType >= 3000 && ringType < 4000) { ringHasZ = ringHasM = true; ringType -= 3000; }
-                else if (ringType >= 2000 && ringType < 3000) { ringHasM = true; ringType -= 2000; }
-                else if (ringType >= 1000 && ringType < 2000) { ringHasZ = true; ringType -= 1000; }
-                // Handle Extended WKB Z/M flags
-                else if ((ringType & 0xE0000000) != 0)
-                {
-                    ringHasZ = (ringType & 0x80000000) != 0;
-                    ringHasM = (ringType & 0x40000000) != 0;
-                    bool hasSRID = (ringType & 0x20000000) != 0;
-                    ringType = ringType & 0x1FFFFFFF;
-                    if (hasSRID) ReadUInt32(reader, ringOrder); // skip SRID
-                }
-
-                Ring ring = new Ring();
-
-                switch ((WKBGeometryType)ringType)
-                {
-                    case WKBGeometryType.wkbCircularString:
-                    case WKBGeometryType.wkbCurve:
-                        ReadCircularStringPoints(reader, ringOrder, ring, ringHasZ, ringHasM);
-                        break;
-                    case WKBGeometryType.wkbCompoundCurve:
-                        ReadCompoundCurvePoints(reader, ringOrder, ring, ringHasZ, ringHasM);
-                        break;
-                    default:
-                        // wkbLineString and anything else: plain point list
-                        ReadPointCollection(reader, ringOrder, ring, ringHasZ, ringHasM);
-                        break;
-                }
-
-                polygon.AddRing(ring);
-            }
-
-            return polygon;
-        }
-
-        /// <summary>
-        /// Reads a wkbCircularString point sequence and interpolates each arc triplet
-        /// (P0, P1_arc, P2) into linear segments using <see cref="CircularArcAngleStepDegrees"/>.
-        /// </summary>
-        private static void ReadCircularStringPoints(BinaryReader reader, WkbByteOrder byteOrder,
-                                                     IPointCollection target, bool hasZ, bool hasM)
-        {
-            int numPoints = (int)ReadUInt32(reader, byteOrder);
-
-            if (numPoints == 0) return;
-
-            // Read all raw control points first
-            var raw = new Point[numPoints];
-            for (int i = 0; i < numPoints; i++)
-            {
-                raw[i] = new Point(ReadDouble(reader, byteOrder), ReadDouble(reader, byteOrder));
-                if (hasZ && hasM) { raw[i].Z = ReadDouble(reader, byteOrder); raw[i].M = ReadDouble(reader, byteOrder); }
-                else if (hasZ) { raw[i].Z = ReadDouble(reader, byteOrder); }
-                else if (hasM) { raw[i].M = ReadDouble(reader, byteOrder); }
-            }
-
-            if (!InterpolateCircularArcs)
-            {
-                // No interpolation: use original control points as-is
-                foreach (var p in raw) target.AddPoint(p);
-                return;
-            }
-
-            // Add the very first point
-            target.AddPoint(raw[0]);
-
-            // Each arc segment is a triplet (raw[k], raw[k+1], raw[k+2]); step by 2
-            for (int k = 0; k + 2 < numPoints; k += 2)
-            {
-                InterpolateCircularArc(raw[k], raw[k + 1], raw[k + 2], target);
-            }
-        }
-
-        /// <summary>
-        /// Reads a wkbCompoundCurve, which consists of embedded WKB segments
-        /// (each either wkbLineString or wkbCircularString), and flattens all points
-        /// with proper arc interpolation into <paramref name="target"/>.
-        /// </summary>
-        private static void ReadCompoundCurvePoints(BinaryReader reader, WkbByteOrder byteOrder,
-                                                    IPointCollection target, bool hasZ, bool hasM)
-        {
-            int numSegments = (int)ReadUInt32(reader, byteOrder);
-            bool firstSegment = true;
-
-            for (int s = 0; s < numSegments; s++)
-            {
-                byte segByteOrder = reader.ReadByte();
-                WkbByteOrder segOrder = (WkbByteOrder)segByteOrder;
-                uint segType = (uint)ReadUInt32(reader, segOrder);
-
-                // Handle Z/M flags (same logic as above)
-                bool segHasZ = hasZ, segHasM = hasM;
-                if (segType >= 3000 && segType < 4000) { segHasZ = segHasM = true; segType -= 3000; }
-                else if (segType >= 2000 && segType < 3000) { segHasM = true; segType -= 2000; }
-                else if (segType >= 1000 && segType < 2000) { segHasZ = true; segType -= 1000; }
-                else if ((segType & 0xE0000000) != 0)
-                {
-                    segHasZ = (segType & 0x80000000) != 0;
-                    segHasM = (segType & 0x40000000) != 0;
-                    bool hasSRID = (segType & 0x20000000) != 0;
-                    segType = segType & 0x1FFFFFFF;
-                    if (hasSRID) ReadUInt32(reader, segOrder);
-                }
-
-                int numPoints = (int)ReadUInt32(reader, segOrder);
-                if (numPoints == 0) continue;
-
-                var raw = new Point[numPoints];
-                for (int i = 0; i < numPoints; i++)
-                {
-                    raw[i] = new Point(ReadDouble(reader, segOrder), ReadDouble(reader, segOrder));
-                    if (segHasZ && segHasM) { raw[i].Z = ReadDouble(reader, segOrder); raw[i].M = ReadDouble(reader, segOrder); }
-                    else if (segHasZ) { raw[i].Z = ReadDouble(reader, segOrder); }
-                    else if (segHasM) { raw[i].M = ReadDouble(reader, segOrder); }
-                }
-
-                // For all segments after the first, the start point equals the previous end point — skip it
-                int startIdx = firstSegment ? 0 : 1;
-                firstSegment = false;
-
-                if ((WKBGeometryType)segType == WKBGeometryType.wkbCircularString)
-                {
-                    if (!InterpolateCircularArcs)
-                    {
-                        // No interpolation: use original control points as-is
-                        for (int i = startIdx; i < numPoints; i++) target.AddPoint(raw[i]);
-                    }
-                    else
-                    {
-                        // Add start point of first segment (or skip if continuation)
-                        if (startIdx == 0) target.AddPoint(raw[0]);
-
-                        for (int k = 0; k + 2 < numPoints; k += 2)
-                        {
-                            // When continuing (startIdx==1), raw[0] is the shared point already in target
-                            IPoint arcStart = k == 0 && startIdx == 1
-                                ? target[target.PointCount - 1]
-                                : raw[k];
-                            InterpolateCircularArc(arcStart, raw[k + 1], raw[k + 2], target);
-                        }
-                    }
-                }
-                else
-                {
-                    // Linear segment
-                    for (int i = startIdx; i < numPoints; i++)
-                    {
-                        target.AddPoint(raw[i]);
-                    }
-                }
             }
         }
 
@@ -891,14 +659,15 @@ namespace gView.Framework.OGC
             // Loop on the number of polygons.
             for (int i = 0; i < numPolygons; i++)
             {
-                // Each embedded geometry has its own byte-order byte — use the
-                // self-contained overload so the header is read correctly.
-                if (WKBToGeometry(reader) is IPolygon p)
+                // read polygon header
+                reader.ReadByte();
+                ReadUInt32(reader, byteOrder);
+
+                // TODO: Validate type
+                Polygon p = CreatePolygon(reader, byteOrder, hasZ, hasM);
+                for (int r = 0; r < p.RingCount; r++)
                 {
-                    for (int r = 0; r < p.RingCount; r++)
-                    {
-                        polygon.AddRing(p[r]);
-                    }
+                    polygon.AddRing(p[r]);
                 }
             }
             return polygon;
@@ -941,9 +710,9 @@ namespace gView.Framework.OGC
 
             for (int g = 0; g < numGeometries; g++)
             {
-                // Each embedded geometry has its own byte-order byte — use the
-                // self-contained overload so the header is read correctly.
-                IGeometry geometry = WKBToGeometry(reader);
+                reader.ReadByte(); // read the reseved byte => always 1?
+
+                IGeometry geometry = WKBToGeometry(reader, byteOrder);
 
                 if (geometry != null)
                 {
@@ -963,9 +732,7 @@ namespace gView.Framework.OGC
 
             for (int g = 0; g < numGeometries; g++)
             {
-                // Each embedded geometry has its own byte-order byte — use the
-                // self-contained overload so the header is read correctly.
-                IGeometry geometry = WKBToGeometry(reader);
+                IGeometry geometry = WKBToGeometry(reader, byteOrder);
                 if (geometry is IPolyline)
                 {
                     for (var p = 0; p < ((IPolyline)geometry).PathCount; p++)
