@@ -25,16 +25,14 @@ namespace gView.DataSources.MSSqlSpatial.DataSources.Sde
 
             featureClass._name = name;
 
-            featureClass._geomType = await dataset.RepoProvider.FeatureClassGeometryType(featureClass);
+            (featureClass._geomType, featureClass._hasZ, featureClass._hasM) = await dataset.RepoProvider.FeatureClassGeometryType(featureClass);
             featureClass._fields = await dataset.RepoProvider.FeatureClassFields(featureClass);
 
             featureClass._idfield = featureClass._fields.ToEnumerable()
-                .Where(f => f.type == FieldType.ID)
-                .FirstOrDefault()?.name;
+                .FirstOrDefault(f => f.type == FieldType.ID)?.name;
 
             featureClass._shapefield = featureClass._fields.ToEnumerable()
-                .Where(f => f.type == FieldType.Shape)
-                .FirstOrDefault()?.name;
+                .FirstOrDefault(f => f.type == FieldType.Shape)?.name;
 
             if (!String.IsNullOrEmpty(featureClass._shapefield))
             {

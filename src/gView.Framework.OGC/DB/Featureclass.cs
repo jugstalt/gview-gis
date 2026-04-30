@@ -18,6 +18,7 @@ namespace gView.Framework.OGC.DB
         protected string _name, _shapefield, _idfield;
         protected GeometryType _geomType;
         protected bool _hasZ = false;
+        protected bool _hasM = false;
         protected OgcSpatialDataset _dataset;
         protected IEnvelope _envelope;
         protected FieldCollection _fields = new FieldCollection();
@@ -462,7 +463,7 @@ namespace gView.Framework.OGC.DB
 
         public bool HasM
         {
-            get { return false; }
+            get { return _hasM; }
         }
 
         virtual public ISpatialReference SpatialReference

@@ -28,6 +28,11 @@ namespace gView.Interoperability.GeoServices.Rest.DTOs
         [JsonPropertyName("geometryType")]
         public string GeometryType { get; set; }
 
+        [JsonPropertyName("hasZ")]
+        public bool HasZ { get; set; }
+        [JsonPropertyName("hasM")]
+        public bool HasM { get; set; }
+
         [JsonPropertyName("subLayers")]
         public JsonLayerLinkDTO[] SubLayers { get; set; }
 

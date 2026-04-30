@@ -28,5 +28,8 @@ namespace gView.DataSources.MSSqlSpatial.DataSources.Sde.Repo
         public string GeometryColumn { get; set; }
 
         public int? GeometryType { get; set; }
+
+        public bool HasZ { get; set; }
+        public bool HasM { get; set; }
     }
 }

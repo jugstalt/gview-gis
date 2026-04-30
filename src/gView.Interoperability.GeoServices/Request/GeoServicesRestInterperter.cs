@@ -749,7 +749,10 @@ public class GeoServicesRestInterperter : IServiceRequestInterpreter
                                             }
                                         }
 
-                                        jsonFeature.Geometry = feature.Shape?.ToJsonGeometry();
+                                        var featureClass = tableClass as IFeatureClass;
+                                        jsonFeature.Geometry = feature.Shape?.ToJsonGeometry(
+                                            query.ReturnZ && featureClass?.HasZ == true, 
+                                            query.ReturnM && featureClass?.HasM == true);
 
                                         jsonFeatures.Add(jsonFeature);
                                         firstFeature = false;

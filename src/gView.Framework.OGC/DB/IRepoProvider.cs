@@ -13,6 +13,6 @@ namespace gView.Framework.OGC.DB
 
         Task<FieldCollection> FeatureClassFields(IFeatureClass fc);
 
-        Task<GeometryType> FeatureClassGeometryType(IFeatureClass fc);
+        Task<(GeometryType geometryType, bool hasZ, bool hasM)> FeatureClassGeometryType(IFeatureClass fc);
     }
 }

@@ -49,24 +49,26 @@ public static class Extensions
 
     #region Geometry
 
-    static public JsonGeometryDTO ToJsonGeometry(this IGeometry shape)
+    static public JsonGeometryDTO ToJsonGeometry(this IGeometry shape, bool addZ = false, bool addM = false)
     {
-        if (shape is IPoint)
+        if (shape is IPoint p1)
         {
-            var point = (IPoint)shape;
-
             var jsonPoint = new JsonGeometryDTO()
             {
-                X = ((Point)shape).X,
-                Y = ((IPoint)shape).Y
+                HasZ = addZ ? true : null,
+                HasM = addM ? true : null,
+
+                X = p1.X,
+                Y = p1.Y,
+                Z = addZ ? p1.Z : null,
+                M = addM ? p1.M : null
             };
 
             return jsonPoint;
         }
-        if (shape is IMultiPoint)
-        {
-            var multiPoint = (IMultiPoint)shape;
 
+        if (shape is IMultiPoint multiPoint)
+        {
             List<double?[]> points = new List<double?[]>();
 
             for (int p = 0, pointCount = multiPoint.PointCount; p < pointCount; p++)
@@ -74,12 +76,21 @@ public static class Extensions
                 var point = multiPoint[p];
                 if (point != null)
                 {
-                    points.Add(new double?[] { point.X, point.Y });
+                    points.Add(
+                        (addZ, addM) switch {
+                            (true, true) => new double?[] { point.X, point.Y, point.Z, point.M },
+                            (true, false) => new double?[] { point.X, point.Y, point.Z },
+                            (false, true) => new double?[] { point.X, point.Y, point.M },
+                            _ => new double?[] { point.X, point.Y }
+                        });
                 }
             }
 
             var jsonMultipoint = new JsonGeometryDTO()
             {
+                HasZ = addZ ? true : null,
+                HasM = addM ? true : null,
+
                 Points = points.ToArray()
             };
 
@@ -95,10 +106,8 @@ public static class Extensions
                 YMax = ((IEnvelope)shape).MaxY,
             };
         }
-        if (shape is IPolyline)
+        if (shape is IPolyline polyline)
         {
-            var polyline = (IPolyline)shape;
-
             List<double?[,]> paths = new List<double?[,]>();
             for (int r = 0, pathCount = polyline.PathCount; r < pathCount; r++)
             {
@@ -108,27 +117,30 @@ public static class Extensions
                     continue;
                 }
 
-                double?[,] points = new double?[path.PointCount, 2];
+                double?[,] points = new double?[path.PointCount, 2 + (addZ ? 1 : 0) + (addM ? 1 : 0)];
                 for (int p = 0, pointCount = path.PointCount; p < pointCount; p++)
                 {
                     var point = path[p];
                     points[p, 0] = point.X;
                     points[p, 1] = point.Y;
+                    if (addZ) points[p, 2] = point.Z;
+                    if (addM) points[p, addZ ? 3 : 2] = point.M;
                 }
                 paths.Add(points);
             }
 
             var jsonPolyline = new JsonGeometryDTO()
             {
+                HasZ = addZ ? true : null,
+                HasM = addM ? true : null,
+
                 Paths = paths.ToArray()
             };
 
             return jsonPolyline;
         }
-        if (shape is IPolygon)
+        if (shape is IPolygon polygon)
         {
-            var polygon = (IPolygon)shape;
-
             List<double?[,]> rings = new List<double?[,]>();
             for (int r = 0, ringCount = polygon.RingCount; r < ringCount; r++)
             {
@@ -138,18 +150,23 @@ public static class Extensions
                     continue;
                 }
 
-                double?[,] points = new double?[ring.PointCount, 2];
+                double?[,] points = new double?[ring.PointCount, 2 + (addZ ? 1 : 0) + (addM ? 1 : 0)];
                 for (int p = 0, pointCount = ring.PointCount; p < pointCount; p++)
                 {
                     var point = ring[p];
                     points[p, 0] = point.X;
                     points[p, 1] = point.Y;
+                    if (addZ) points[p, 2] = point.Z;
+                    if (addM) points[p, addZ ? 3 : 2] = point.M;
                 }
                 rings.Add(points);
             }
 
             var jsonPolylgon = new JsonGeometryDTO()
             {
+                HasZ = addZ ? true : null,
+                HasM = addM ? true : null,
+
                 Rings = rings.ToArray()
             };
 

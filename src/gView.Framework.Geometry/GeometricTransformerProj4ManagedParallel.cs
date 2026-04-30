@@ -320,6 +320,9 @@ public sealed class GeometricTransformerProj4ManagedParallel : DatumGridShiftPro
                     var collectionPoint = target[i];
                     collectionPoint.X = transformedCoordinate.X;
                     collectionPoint.Y = transformedCoordinate.Y;
+
+                    collectionPoint.Z = pColl[i].Z;
+                    collectionPoint.M = pColl[i].M;
                 }, pointCount > 100);
 
             return target;
@@ -332,7 +335,7 @@ public sealed class GeometricTransformerProj4ManagedParallel : DatumGridShiftPro
 
             Coordinate cFrom = new(point.X, point.Y);
             var cTo = basicTransformation.Transform(cFrom);
-            target = new Point(cTo.X, cTo.Y);
+            target = new Point(cTo.X, cTo.Y) { Z = point.Z, M = point.M };
 
             return target;
         }

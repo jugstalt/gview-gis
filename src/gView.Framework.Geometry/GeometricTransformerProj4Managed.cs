@@ -310,6 +310,9 @@ public sealed class GeometricTransformerProj4Managed : DatumGridShiftProviderMan
                 var collectionPoint = target[i];
                 collectionPoint.X = transformedCoordinate.X;
                 collectionPoint.Y = transformedCoordinate.Y;
+
+                collectionPoint.Z = pColl[i].Z;
+                collectionPoint.M = pColl[i].M;
             }
 
             return target;
@@ -322,7 +325,7 @@ public sealed class GeometricTransformerProj4Managed : DatumGridShiftProviderMan
 
             Coordinate cFrom = new(point.X, point.Y);
             var cTo = basicTransformation.Transform(cFrom);
-            target = new Point(cTo.X, cTo.Y);
+            target = new Point(cTo.X, cTo.Y) { Z = point.Z, M = point.Z };
 
             return target;
         }

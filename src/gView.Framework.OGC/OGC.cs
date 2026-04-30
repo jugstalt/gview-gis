@@ -496,21 +496,16 @@ namespace gView.Framework.OGC
             {
                 // Add the coordinate.
                 Point p = new Point(ReadDouble(reader, byteOrder), ReadDouble(reader, byteOrder));
-                pColl.AddPoint(p);
+                
+                (p.Z, p.M) = (hasZ, hasM) switch
+                {
+                    (true, true) => (ReadDouble(reader, byteOrder), ReadDouble(reader, byteOrder)),
+                    (true, false) => (ReadDouble(reader, byteOrder), p.M),
+                    (false, true) => (p.Z, ReadDouble(reader, byteOrder)),
+                    (false, false) => (p.Z, p.M)
+                };
 
-                if (hasZ == true && hasM == true)
-                {
-                    p.Z = ReadDouble(reader, byteOrder);
-                    p.M = ReadDouble(reader, byteOrder);
-                }
-                else if (hasM == true)
-                {
-                    p.M = ReadDouble(reader, byteOrder);
-                }
-                else if (hasZ == true)
-                {
-                    p.Z = ReadDouble(reader, byteOrder);
-                }
+                pColl.AddPoint(p);
             }
         }
 
