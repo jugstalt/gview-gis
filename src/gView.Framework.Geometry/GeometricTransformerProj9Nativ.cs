@@ -2,6 +2,7 @@
 using gView.Framework.Geometry.Extensions;
 using System;
 using System.Collections.Generic;
+using System.Net.Http.Headers;
 using System.Runtime.InteropServices;
 using System.Text;
 
@@ -223,7 +224,7 @@ namespace gView.Framework.Geometry
             return false;
         }
 
-        public object Transform2D(object geometry)
+        public object Transform2D(object geometry, TransformMethod method = TransformMethod._2D)
         {
             if (geometry == null)
             {
@@ -244,9 +245,9 @@ namespace gView.Framework.Geometry
                 Console.WriteLine($"Allocated transformation: {key}");
             }
 
-            return Transform2D_(geometry, _pj, _fromProjective, _toProjective);
+            return Transform2D_(geometry, _pj, _fromProjective, _toProjective, method);
         }
-        public object InvTransform2D(object geometry)
+        public object InvTransform2D(object geometry, TransformMethod method = TransformMethod._2D)
         {
             if (geometry == null)
             {
@@ -267,7 +268,7 @@ namespace gView.Framework.Geometry
                 Console.WriteLine($"Allocated transformation: {key}");
             }
 
-            return Transform2D_(geometry, _pjInv, _toProjective, _fromProjective);
+            return Transform2D_(geometry, _pjInv, _toProjective, _fromProjective, method);
         }
 
         //private object Transform2D_(object geometry, ISpatialReference from, ISpatialReference to, bool fromProjective, bool toProjektive)
@@ -285,7 +286,7 @@ namespace gView.Framework.Geometry
         //    return Transform2D_(geometry, _pj, fromProjective, toProjektive);
         //}
 
-        private object Transform2D_(object geometry, IntPtr pj, bool fromProjective, bool toProjektive)
+        private object Transform2D_(object geometry, IntPtr pj, bool fromProjective, bool toProjektive, TransformMethod method)
         {
             if (geometry is IPointCollection)
             {
@@ -323,11 +324,24 @@ namespace gView.Framework.Geometry
                 };
                 for (int i = 0; i < pointCount; i++)
                 {
-                    target.AddPoint(new Point(
+                    var newPoint = new Point(
                         coordArray[i].x,
                         coordArray[i].y,
                         coordArray[i].z
-                    ));
+                    );
+
+                    switch(method)
+                    {
+                        case TransformMethod._3D:
+                            newPoint.M = pColl[i].M;
+                            break;
+                        case TransformMethod.KeepZM:
+                            newPoint.Z = pColl[i].Z;
+                            newPoint.M = pColl[i].M;
+                            break;
+                    }
+
+                    target.AddPoint(newPoint);
                 }
                 return target;
 
@@ -412,16 +426,16 @@ namespace gView.Framework.Geometry
                 return result;
                 */
             }
-            if (geometry is IPoint)
+            if (geometry is IPoint inPoint)
             {
-                double[] x = { ((IPoint)geometry).X };
-                double[] y = { ((IPoint)geometry).Y };
+                //double[] x = { inPoint.X };
+                //double[] y = { inPoint.Y };
 
                 var coord = new PJ_COORD()
                 {
-                    x = ((IPoint)geometry).X,
-                    y = ((IPoint)geometry).Y,
-                    z = ((IPoint)geometry).Z
+                    x = inPoint.X,
+                    y = inPoint.Y,
+                    z = inPoint.Z
                 };
 
                 var outCoord = Proj9Wrapper.proj_trans(_pj, PJ_DIRECTION.PJ_FWD, coord);
@@ -432,11 +446,24 @@ namespace gView.Framework.Geometry
                     throw new Exception($"proj_trans() Fehlercode: {errorNo}");
                 }
 
-                return new Point(outCoord.x, outCoord.y);
+                var newPoint = new Point(outCoord.x, outCoord.y, outCoord.z);
+
+                switch (method)
+                {
+                    case TransformMethod._3D:
+                        newPoint.M = inPoint.M;
+                        break;
+                    case TransformMethod.KeepZM:
+                        newPoint.Z = inPoint.Z;
+                        newPoint.M = inPoint.M;
+                        break;
+                }
+
+                return newPoint;
             }
             if (geometry is IEnvelope)
             {
-                return Transform2D_(((IEnvelope)geometry).ToPolygon(10), _pj, fromProjective, toProjektive);
+                return Transform2D_(((IEnvelope)geometry).ToPolygon(10), _pj, fromProjective, toProjektive, method);
             }
             if (geometry is IPolyline)
             {
@@ -444,7 +471,7 @@ namespace gView.Framework.Geometry
                 IPolyline polyline = new Polyline();
                 for (int i = 0; i < count; i++)
                 {
-                    polyline.AddPath((IPath)Transform2D_(((IPolyline)geometry)[i], _pj, fromProjective, toProjektive));
+                    polyline.AddPath((IPath)Transform2D_(((IPolyline)geometry)[i], _pj, fromProjective, toProjektive, method));
                 }
                 return polyline;
             }
@@ -454,7 +481,7 @@ namespace gView.Framework.Geometry
                 IPolygon polygon = new Polygon();
                 for (int i = 0; i < count; i++)
                 {
-                    polygon.AddRing((IRing)Transform2D_(((IPolygon)geometry)[i], _pj, fromProjective, toProjektive));
+                    polygon.AddRing((IRing)Transform2D_(((IPolygon)geometry)[i], _pj, fromProjective, toProjektive, method));
                 }
                 return polygon;
             }
@@ -465,7 +492,7 @@ namespace gView.Framework.Geometry
                 IAggregateGeometry aGeom = new AggregateGeometry();
                 for (int i = 0; i < count; i++)
                 {
-                    aGeom.AddGeometry((IGeometry)Transform2D_(((IAggregateGeometry)geometry)[i], _pj, fromProjective, toProjektive));
+                    aGeom.AddGeometry((IGeometry)Transform2D_(((IAggregateGeometry)geometry)[i], _pj, fromProjective, toProjektive, method));
                 }
                 return aGeom;
             }

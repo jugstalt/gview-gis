@@ -71,17 +71,17 @@ public sealed class GeometricTransformerProj4ManagedParallel : DatumGridShiftPro
         }
     }
 
-    public object Transform2D(object geometry)
+    public object Transform2D(object geometry, TransformMethod method = TransformMethod._2D)
     {
         _basicCoordinateTransformation = new BasicCoordinateTransform(_fromSrs, _toSrs);
 
-        return PerformTransform2D(geometry, false);
+        return PerformTransform2D(geometry, method, false);
     }
-    public object InvTransform2D(object geometry)
+    public object InvTransform2D(object geometry, TransformMethod method = TransformMethod._2D)
     {
         _basicCoordinateTransformationInverse = new BasicCoordinateTransform(_toSrs, _fromSrs);
 
-        return PerformTransform2D(geometry, true);
+        return PerformTransform2D(geometry, method, true);
     }
 
     public void Release()
@@ -259,7 +259,7 @@ public sealed class GeometricTransformerProj4ManagedParallel : DatumGridShiftPro
         }
     }
 
-    private object PerformTransform2D(object geometry, bool inverse)
+    private object PerformTransform2D(object geometry, TransformMethod method, bool inverse)
     {
         //if (_projectionPipeline == null)
         //{
@@ -314,6 +314,13 @@ public sealed class GeometricTransformerProj4ManagedParallel : DatumGridShiftPro
                 {
                     from.X = pColl[i].X;
                     from.Y = pColl[i].Y;
+
+                    switch (method)
+                    {
+                        case TransformMethod._3D:
+                            from.Z = pColl[i].Z;
+                            break;
+                    }
                 },
                 (i, transformedCoordinate) =>
                 {
@@ -321,8 +328,17 @@ public sealed class GeometricTransformerProj4ManagedParallel : DatumGridShiftPro
                     collectionPoint.X = transformedCoordinate.X;
                     collectionPoint.Y = transformedCoordinate.Y;
 
-                    collectionPoint.Z = pColl[i].Z;
-                    collectionPoint.M = pColl[i].M;
+                    switch (method)
+                    {
+                        case TransformMethod._3D:
+                            collectionPoint.Z = collectionPoint.Z;
+                            collectionPoint.M = pColl[i].M;
+                            break;
+                        case TransformMethod.KeepZM:
+                            collectionPoint.Z = pColl[i].Z;
+                            collectionPoint.M = pColl[i].M;
+                            break;
+                    }
                 }, pointCount > 100);
 
             return target;
@@ -333,15 +349,31 @@ public sealed class GeometricTransformerProj4ManagedParallel : DatumGridShiftPro
 
             var basicTransformation = BasicTransformation(inverse);
 
-            Coordinate cFrom = new(point.X, point.Y);
-            var cTo = basicTransformation.Transform(cFrom);
-            target = new Point(cTo.X, cTo.Y) { Z = point.Z, M = point.M };
+            Coordinate cFrom = method switch
+            {
+                TransformMethod._3D => new(point.X, point.Y, point.Z),
+                _ => new(point.X, point.Y)
+            };
 
+            var cTo = basicTransformation.Transform(cFrom);
+            target = new Point(cTo.X, cTo.Y);
+
+            switch (method)
+            {
+                case TransformMethod._3D:
+                    target.Z = cTo.Z;
+                    target.M = point.M;
+                    break;
+                case TransformMethod.KeepZM:
+                    target.Z = point.Z;
+                    target.M = point.M;
+                    break;
+            }
             return target;
         }
         if (geometry is IEnvelope envelope)
         {
-            return PerformTransform2D(envelope.ToPolygon(10), inverse);
+            return PerformTransform2D(envelope.ToPolygon(10), method, inverse);
         }
         if (geometry is IPolyline polyline)
         {
@@ -349,7 +381,7 @@ public sealed class GeometricTransformerProj4ManagedParallel : DatumGridShiftPro
             IPolyline newPolyline = new Polyline();
             for (int i = 0; i < count; i++)
             {
-                newPolyline.AddPath((IPath)PerformTransform2D(polyline[i], inverse));
+                newPolyline.AddPath((IPath)PerformTransform2D(polyline[i], method, inverse));
             }
             return newPolyline;
         }
@@ -359,7 +391,7 @@ public sealed class GeometricTransformerProj4ManagedParallel : DatumGridShiftPro
             IPolygon newPolygon = new Polygon();
             for (int i = 0; i < count; i++)
             {
-                newPolygon.AddRing((IRing)PerformTransform2D(polygon[i], inverse));
+                newPolygon.AddRing((IRing)PerformTransform2D(polygon[i], method, inverse));
             }
             return newPolygon;
         }
@@ -370,7 +402,7 @@ public sealed class GeometricTransformerProj4ManagedParallel : DatumGridShiftPro
             IAggregateGeometry newAggrGeom = new AggregateGeometry();
             for (int i = 0; i < count; i++)
             {
-                newAggrGeom.AddGeometry((IGeometry)PerformTransform2D(aggrGeom[i], inverse));
+                newAggrGeom.AddGeometry((IGeometry)PerformTransform2D(aggrGeom[i], method, inverse));
             }
             return newAggrGeom;
         }
