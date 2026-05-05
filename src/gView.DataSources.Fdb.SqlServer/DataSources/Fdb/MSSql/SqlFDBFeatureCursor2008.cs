@@ -20,7 +20,8 @@ namespace gView.DataSources.Fdb.MSSql
         private SqlCommand _command;
 
         private SqlFDBFeatureCursor2008(IFeatureClass fc, IQueryFilter filter)
-            : base(fc?.SpatialReference,
+            : base(fc,
+                   fc?.SpatialReference,
                    filter?.FeatureSpatialReference,
                    filter.DatumTransformations)
         {

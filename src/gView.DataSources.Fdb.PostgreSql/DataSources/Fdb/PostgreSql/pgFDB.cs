@@ -2105,7 +2105,8 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
             int _limit = 0, _beginrecord = 0;
 
             public pgFeatureCursor(IGeometryDef geomDef, ISpatialReference toSRef, IDatumTransformations datumTransformations)
-                : base(geomDef?.SpatialReference,
+                : base(geomDef,
+                       geomDef?.SpatialReference,
                        toSRef,
                        datumTransformations)
             {
@@ -2432,7 +2433,7 @@ WHERE c.relname = '" + tableName.Replace("\"", "") + @"'";
             private string _sql;
 
             private pgFeatureCursorIDs(IGeometryDef geomDef, ISpatialReference toSRef, IDatumTransformations datumTransformations)
-                : base(geomDef?.SpatialReference, toSRef, datumTransformations)
+                : base(geomDef, geomDef?.SpatialReference, toSRef, datumTransformations)
             {
 
             }

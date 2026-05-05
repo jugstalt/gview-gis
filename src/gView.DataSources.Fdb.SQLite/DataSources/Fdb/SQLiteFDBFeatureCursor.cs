@@ -30,7 +30,8 @@ namespace gView.DataSources.Fdb.SQLite
         int _limit = 0, _beginRecord = 0;
 
         private SQLiteFDBFeatureCursor(IGeometryDef geomDef, ISpatialReference toSRef, IDatumTransformations datumTransformations)
-            : base(geomDef?.SpatialReference, 
+            : base(geomDef, 
+                   geomDef?.SpatialReference, 
                    toSRef,
                    datumTransformations)
         {

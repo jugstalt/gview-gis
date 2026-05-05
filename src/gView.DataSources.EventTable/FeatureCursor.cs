@@ -22,8 +22,8 @@ namespace gView.DataSources.EventTable
         private DbConnection _dbConnection = null;
         private ISpatialFilter _spatialFilter = null;
 
-        private FeatureCursor(EventTableConnection etconn, IQueryFilter filter)
-            : base(
+        private FeatureCursor(IFeatureClass fc, EventTableConnection etconn, IQueryFilter filter)
+            : base(fc,
                     etconn?.SpatialReference,
                     filter?.FeatureSpatialReference,
                     filter?.DatumTransformations)
@@ -33,7 +33,7 @@ namespace gView.DataSources.EventTable
 
         async static public Task<FeatureCursor> Create(EventTableConnection etconn, IQueryFilter filter, IFeatureClass fc)
         {
-            var cursor = new FeatureCursor(etconn, filter);
+            var cursor = new FeatureCursor(fc, etconn, filter);
 
             cursor._etcon = etconn;
             if (etconn != null)
@@ -102,7 +102,7 @@ namespace gView.DataSources.EventTable
 
                 var limits = conn.LimitResults(filter, fc);
                 string commandText = $"select {limits.top} {fields} from {etconn.TableName} {(String.IsNullOrEmpty(where) ? String.Empty : " WHERE " + where)} {limits.limit}";
-                
+
                 var dataReaderResult = await conn.DataReaderAsync(commandText);
 
                 cursor._dbReader = dataReaderResult.reader;

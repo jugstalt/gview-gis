@@ -983,7 +983,8 @@ namespace gView.Framework.XML
         //    }
         //}
         public AXLFeatureCursor(AXLFeatureClass fc, IQueryFilter filter)
-            : base(fc?.SpatialReference,
+            : base(fc,
+                   fc?.SpatialReference,
                    filter?.FeatureSpatialReference,
                    filter?.DatumTransformations)
         {
