@@ -10,7 +10,7 @@ namespace gView.Framework.Common
 {
     public class SystemInfo
     {
-        public static Version Version = new Version(8, 26, 1702);
+        public static Version Version = new Version(8, 26, 1805);
 
         #region -> Private Variables
 
@@ -38,10 +38,14 @@ namespace gView.Framework.Common
         {
             if (IsWindows)
             {
-                //Directory.SetCurrentDirectory(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location));
+                //Console.WriteLine($"Current Directory: {Directory.GetCurrentDirectory()}");
+                //Directory.SetCurrentDirectory(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location));
+                Console.WriteLine($"Current Directory: {Directory.GetCurrentDirectory()}");
 
-                Environment.SetEnvironmentVariable("PATH", $"{Path.GetDirectoryName(Assembly.GetEntryAssembly().Location)}");
-                Environment.SetEnvironmentVariable("GDAL_DRIVER_PATH", $"{Path.GetDirectoryName(Assembly.GetEntryAssembly().Location)}\\gdalplugins");
+                Console.WriteLine($"SET PATH={Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)}");
+                Environment.SetEnvironmentVariable("PATH", $"{Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)}");
+                Console.WriteLine($"SET GDAL_DRIVER_PATH={Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)}\\gdalplugins");
+                Environment.SetEnvironmentVariable("GDAL_DRIVER_PATH", $"{Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)}\\gdalplugins");
             }
         }
 
