@@ -4,7 +4,6 @@ using gView.Carto.Razor.Extensions.DependencyInjection;
 using gView.DataExplorer.Plugins.Extensions.DependencyInjection;
 using gView.Framework.Common;
 using gView.Framework.Db.Extensions;
-using gView.GraphicsEngine.Abstraction;
 using gView.Razor.Extensions.DependencyInjection;
 using gView.Razor.Leaflet.Extensions.DependencyInjection;
 using gView.WebApps.Components;
@@ -12,9 +11,9 @@ using gView.WebApps.Extensions;
 using gView.WebApps.Extensions.DependencyInjection;
 using MudBlazor;
 using MudBlazor.Services;
-using System.Configuration;
 
-gView.Framework.Common.SystemInfo.RegisterProj4Lib(gView.Framework.Geometry.GeometricTransformerFactory.PROJ_LIB);
+SystemInfo.RegisterGdal1_10_PluginEnvironment();
+SystemInfo.RegisterProj4Lib(gView.Framework.Geometry.GeometricTransformerFactory.PROJ_LIB);
 
 var builder = WebApplication.CreateBuilder(args);
 
