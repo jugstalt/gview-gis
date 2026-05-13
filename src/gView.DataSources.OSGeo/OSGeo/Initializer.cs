@@ -32,6 +32,13 @@ namespace gView.DataSources.OSGeo
                         System.IO.Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
                         "gdalplugins"));
 
+                    // Raster-Block-Cache: wichtig bei wiederholtem Lesen / Kacheln / Overviews
+                    //OSGeo_v3.GDAL.Gdal.SetConfigOption("GDAL_CACHEMAX", "512");      // MB bei GDAL 3.x
+
+                    // Multithreading, falls Treiber/Operation es nutzt
+                    // OSGeo_v3.GDAL.Gdal.SetConfigOption("GDAL_NUM_THREADS", "ALL_CPUS");
+                    // OSGeo_v3.GDAL.Gdal.SetConfigOption("GDAL_NUM_THREADS", "2");  // 2 or 4, better for IIS Apps
+
                     OSGeo_v3.GDAL.Gdal.AllRegister();
                     OSGeo_v3.OGR.Ogr.RegisterAll();
                     
