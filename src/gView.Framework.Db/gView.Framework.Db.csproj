@@ -24,7 +24,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Data.SqlClient" Version="7.0.0" />
+    <PackageReference Include="Microsoft.Data.SqlClient" Version="7.0.1" />
     <PackageReference Include="Npgsql" Version="10.0.2" />
     <PackageReference Include="Oracle.ManagedDataAccess.Core" Version="23.26.200" />
     <PackageReference Include="System.Data.SqlClient" Version="4.9.1" />
