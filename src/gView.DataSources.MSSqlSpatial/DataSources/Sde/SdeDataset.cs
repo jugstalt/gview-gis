@@ -144,7 +144,7 @@ namespace gView.DataSources.MSSqlSpatial.DataSources.Sde
 
             AsSqlParameter = false;
 
-            var wkt = WKT.ToWKT(shape);
+            var wkt = WKT.ToWKT(shape, fClass.HasZ, fClass.HasM);
 
             sqlStatementHeader.Append("DECLARE @");
             sqlStatementHeader.Append(fClass.ShapeFieldName);

@@ -9,13 +9,13 @@ namespace gView.Framework.OGC.WKT
     {
         public readonly static System.Globalization.NumberFormatInfo _nhi = new System.Globalization.CultureInfo("en-US", false).NumberFormat;
 
-        public static string ToWKT(IGeometry geometry)
+        public static string ToWKT(IGeometry geometry, bool addZ = false, bool addM = false)
         {
             StringBuilder sb = new StringBuilder();
             if (geometry is IPoint)
             {
                 sb.Append("POINT(");
-                AppendPoint(sb, (IPoint)geometry);
+                AppendPoint(sb, (IPoint)geometry, addZ, addM);
                 sb.Append(")");
             }
             else if (geometry is IMultiPoint)
@@ -36,17 +36,30 @@ namespace gView.Framework.OGC.WKT
                     }
 
                     sb.Append("(");
-                    AppendPoint(sb, mPoint);
+                    AppendPoint(sb, mPoint, addZ, addM);
                     sb.Append(")");
                     first = false;
                 }
                 sb.Append(")");
             }
-            else if (geometry is IPolyline)
+            else if (geometry is IPolyline polyline)
             {
-                sb.Append("MULTILINESTRING(");
-                AppendPolyline(sb, (IPolyline)geometry);
-                sb.Append(")");
+                switch(polyline.PathCount)
+                {
+                    case 0:
+                        sb.Append("MULTILINESTRING EMPTY");
+                        break;
+                    case 1:
+                        sb.Append("LINESTRING");
+                        AppendPointCollection(sb, polyline[0], addZ, addM);
+                        break;
+                    default:
+                        sb.Append("MULTILINESTRING(");
+                        AppendPolyline(sb, (IPolyline)geometry, addZ, addM);
+                        sb.Append(")");
+                        break;
+                }
+                
             }
             else if (geometry is IPolygon)
             {
@@ -57,7 +70,7 @@ namespace gView.Framework.OGC.WKT
                         break;
                     case 1:
                         sb.Append("POLYGON(");
-                        AppendPolygon(sb, (IPolygon)geometry);
+                        AppendPolygon(sb, (IPolygon)geometry, addZ, addM);
                         sb.Append(")");
                         break;
                     default:
@@ -70,7 +83,7 @@ namespace gView.Framework.OGC.WKT
                         if (polygons.Count == 1)
                         {
                             sb.Append("POLYGON(");
-                            AppendPolygon(sb, polygons[0]);
+                            AppendPolygon(sb, polygons[0], addZ, addM);
                             sb.Append(")");
                         }
                         else
@@ -88,7 +101,7 @@ namespace gView.Framework.OGC.WKT
                                 }
 
                                 sb.Append("(");
-                                AppendPolygon(sb, mPoly);
+                                AppendPolygon(sb, mPoly, addZ, addM);
                                 sb.Append(")");
 
                                 first = false;
@@ -142,17 +155,30 @@ namespace gView.Framework.OGC.WKT
             return sb.ToString();
         }
 
-        private static void AppendPoint(StringBuilder sb, IPoint point)
+        private static void AppendPoint(StringBuilder sb, IPoint point, bool addZ, bool addM)
         {
             if (point == null)
             {
                 return;
             }
 
-            sb.Append(point.X.ToString(_nhi) + " " + point.Y.ToString(_nhi));
+            sb.Append($"{point.X.ToString(_nhi)} {point.Y.ToString(_nhi)}");
+            
+            if(addZ || addM)
+            {
+                sb.Append(
+                    (addZ, addM) switch
+                    {
+                        (true, false) => $" {point.Z.ToString(_nhi)}",
+                        (true, true) => $" {point.Z.ToString(_nhi)} {point.M.ToString(_nhi)}",
+                        (false, true) => $" NULL {point.M.ToString(_nhi)}",
+                        _ => ""
+                    }
+                    );
+            }
         }
 
-        private static void AppendPointCollection(StringBuilder sb, IPointCollection pColl)
+        private static void AppendPointCollection(StringBuilder sb, IPointCollection pColl, bool addZ, bool addM)
         {
             if (pColl == null || pColl.PointCount == 0)
             {
@@ -171,14 +197,14 @@ namespace gView.Framework.OGC.WKT
                         sb.Append(",");
                     }
 
-                    AppendPoint(sb, p);
+                    AppendPoint(sb, p, addZ, addM);
                     first = false;
                 }
             }
             sb.Append(")");
         }
 
-        private static void AppendPolyline(StringBuilder sb, IPolyline pLine)
+        private static void AppendPolyline(StringBuilder sb, IPolyline pLine, bool addZ, bool addM)
         {
             if (pLine == null || pLine.PathCount == 0)
             {
@@ -196,13 +222,13 @@ namespace gView.Framework.OGC.WKT
                         sb.Append(",");
                     }
 
-                    AppendPointCollection(sb, p);
+                    AppendPointCollection(sb, p, addZ, addM);
                     first = false;
                 }
             }
         }
 
-        private static void AppendPolygon(StringBuilder sb, IPolygon poly)
+        private static void AppendPolygon(StringBuilder sb, IPolygon poly, bool addZ, bool addM)
         {
             if (poly == null || poly.RingCount == 0)
             {
@@ -221,7 +247,7 @@ namespace gView.Framework.OGC.WKT
                     }
 
                     r.ClosePath();
-                    AppendPointCollection(sb, r);
+                    AppendPointCollection(sb, r, addZ, addM);
                     first = false;
                 }
             }
