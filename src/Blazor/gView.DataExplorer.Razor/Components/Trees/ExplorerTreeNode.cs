@@ -5,6 +5,8 @@ namespace gView.DataExplorer.Razor.Components.Trees;
 
 internal class ExplorerTreeNode : TreeItemData<IExplorerObject>
 {
+    private readonly List<ITreeItemData<IExplorerObject>> _children = new();
+
     public ExplorerTreeNode(IExplorerObject exObject)
     {
         this.Value = exObject;
@@ -15,11 +17,20 @@ internal class ExplorerTreeNode : TreeItemData<IExplorerObject>
 
         if (exObject is IExplorerParentObject)
         {
-            base.Children = new()
-            {
-                new ExplorerTreeNode(DummyObjectInstance)
-            };
+            _children.Add(new ExplorerTreeNode(DummyObjectInstance));
         }
+
+        base.Children = _children;
+    }
+
+    public void RemoveAllChildren()
+    {
+        _children.Clear();
+    }
+
+    public void AddChild(ExplorerTreeNode child)
+    {
+        _children.Add(child);
     }
 
     public bool IsServerLoaded

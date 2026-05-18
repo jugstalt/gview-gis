@@ -68,9 +68,13 @@
     {
         Logger.LogError(ex, ex.Message);
 
-        await DialogService.ShowMessageBox(
+        await DialogService.ShowMessageBoxAsync(
                 "Error",
-                ex.Message);
+                ex.Message
+    #if DEBUG
+                + "\n" + ex.StackTrace
+    #endif
+        );
     }
 
     async protected Task ForceRenderComponent()

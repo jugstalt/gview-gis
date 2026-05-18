@@ -78,8 +78,7 @@ namespace gView.Carto.Razor.Components.Trees
                         }
                         else
                         {
-                            parentTreeNode.Children = parentTreeNode.Children ?? new();
-                            parentTreeNode.Children.Add(childTreeNode);
+                            parentTreeNode.AddChild(childTreeNode);
                         }
                     }
 
