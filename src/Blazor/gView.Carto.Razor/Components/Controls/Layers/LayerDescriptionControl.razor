@@ -1,13 +1,15 @@
+﻿@using MudBlazor.Extensions
+
 @if(Map is not null && Layer is not null)
 {
     <GvCard Title="Description & Copyright">
         <GvCardContent>
             <MudTextField Label="Decription" T="string" Lines="5" @ref="description"
                           Text="@Map.GetLayerDescription(Layer.ID)"
-                          OnBlur="()=>Map.SetLayerDescription(Layer.ID, description!.Value)" />
+                          OnBlur="()=>Map.SetLayerDescription(Layer.ID, description!.GetState(x => x.Value))" />
             <MudTextField Label="Copyright" T="string" Lines="5" @ref="copyright"
                           Text="@Map.GetLayerCopyrightText(Layer.ID)"
-                          OnBlur="()=>Map.SetLayerCopyrightText(Layer.ID, copyright!.Value)" />
+                          OnBlur="()=>Map.SetLayerCopyrightText(Layer.ID, copyright!.GetState(x => x.Value))" />
         </GvCardContent>
     </GvCard>
 }

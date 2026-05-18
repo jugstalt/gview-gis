@@ -15,7 +15,7 @@ public class ModalDialogFormBase<T> : ModalDialogForm
         {
             if (_form != null)
             {
-                await _form.Validate();
+                await _form.ValidateAsync();
 
                 if (_form.IsValid != true)
                 {

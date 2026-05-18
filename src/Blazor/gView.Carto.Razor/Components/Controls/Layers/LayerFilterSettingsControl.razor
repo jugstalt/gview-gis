@@ -37,7 +37,7 @@
     private MudTextField<string>? _orderBy;
 
     private void ApplyInputValues()
-        => SetFilterQuery(_whereClause?.Value, _orderBy?.Value);
+        => SetFilterQuery(_whereClause?.GetState(x=>x.Value), _orderBy?.GetState(x => x.Value));
 
 
     private void SetFilterQuery(string? whereClause, string? orderBy)
@@ -70,7 +70,7 @@
 
         if (model is not null)
         {
-            SetFilterQuery(model.QueryString, _orderBy?.Value);
+            SetFilterQuery(model.QueryString, _orderBy?.GetState(x=> x.Value));
         }
     });
 }

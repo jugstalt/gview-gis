@@ -4,11 +4,7 @@
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
   </PropertyGroup>
-
-  <ItemGroup>
-    <PackageReference Include="MongoDB.Driver" Version="3.8.1" />
-  </ItemGroup>
-
+	
   <ItemGroup>
     <ProjectReference Include="..\..\gView.Cmd.CopyFeatureclass.Lib\gView.Cmd.CopyFeatureclass.Lib.csproj" />
     <ProjectReference Include="..\..\gView.Cmd.ElasticSearch.Lib\gView.Cmd.ElasticSearch.Lib.csproj" />

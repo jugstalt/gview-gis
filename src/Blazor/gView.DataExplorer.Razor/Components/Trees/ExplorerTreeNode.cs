@@ -34,8 +34,8 @@ internal class ExplorerTreeNode : TreeItemData<IExplorerObject>
     }
 
     public bool IsServerLoaded
-        => (this.Children is null
-            || this.Children.FirstOrDefault()?.Value is DummyExplorerObject) == false;
+        => (_children.Count == 0
+            || _children.FirstOrDefault()?.Value is DummyExplorerObject) == false;
 
     public override bool Equals(TreeItemData<IExplorerObject>? other)
     {
