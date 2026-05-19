@@ -1,4 +1,4 @@
-@inject ICartoApplicationScopeService AppScope
+﻿@inject ICartoApplicationScopeService AppScope
 @inherits BaseHandler
 
 @if(_items is not null)
@@ -72,7 +72,8 @@
                 </GvGrid>
             </ChildContent>
             <ItemRenderer>
-                <MudListItem T="ITocElement" Style="@($"color:{(context.TocElement.IsGroupElement() ? "var(--mud-palette-primary)" : "inherit")}")">
+                <MudListItem T="ITocElement" 
+                             Style="@($"color:{(context.TocElement.IsGroupElement() ? "var(--mud-palette-primary)" : "inherit")}")">
                     <GvGrid ColumnCount="12">
                         <GvGridItem>
                             <MudCheckBox @bind-Value="context.Selected" T="bool" />
@@ -92,8 +93,9 @@
     [Parameter] public IToc? Toc { get; set; }
     [Parameter] public string MapName { get; set; } = "Map";
     [Parameter] public ITocElement? SelectedGroupElement { get; set; }
+    [Parameter] public ITocElement? SeletedTocElement { get; set; }
 
-    private TocElementWrapper[]? _items;
+    private TocElementWrapper[]? _items = null;
     private string _newGroupText = "";
     private bool _showRemoveDialog = false;
 
@@ -112,8 +114,10 @@
         _items = Toc?.Elements
                         .Select(e => new TocElementWrapper(e)
                         {
-                            // copy selection state from previous items
-                            Selected = _items?.FirstOrDefault(i => i.TocElement == e)?.Selected == true
+                           
+                            Selected = _items is null 
+                                            ? SeletedTocElement is not null && e == SeletedTocElement           // Intial: Selected the selected TOC Element
+                                            : _items.FirstOrDefault(i => i.TocElement == e)?.Selected == true   // copy selection state from previous items
                         })
                         .ToArray();
     }
