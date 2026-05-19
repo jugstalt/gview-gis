@@ -3,12 +3,12 @@
 @inherits BaseHandler
 @implements IDisposable
 
-@inject IconService IconService
 @inject ICartoApplicationService CartoApplication
 @inject ICartoApplicationScopeService AppScope
 @inject PluginManagerService PluginManager
 @inject CartoEventBusService EventBus
 @inject SettingsService Settings
+@inject IconService IconService
 
 @if(_isLoadingMap)
 {
@@ -29,7 +29,8 @@ else
         else
         {
             <MudText Typo="Typo.h6"
-            @ondblclick="StartEditMapName">
+                     @ondblclick="StartEditMapName"
+                     @oncontextmenu="@((args) => OpenContextMenu(args, @AppScope.Document.Map))">
                 @AppScope.Document.Map.Name
             </MudText>
         }
@@ -38,10 +39,11 @@ else
     @if (_treeNodes.Any())
     {
         <MudTreeView Items="_treeNodes" T="ITocElement"
-        ExpandOnDoubleClick="true" 
-        SelectionMode="SelectionMode.ToggleSelection" 
-        Hover="true" Dense="true"
-        @key="@fullReloadKey">
+                     ExpandOnDoubleClick="true" 
+                     SelectionMode="SelectionMode.ToggleSelection" 
+                     @bind-SelectedValue="_selectedTocElement"
+                     Hover="true" Dense="true"
+                     @key="@fullReloadKey">
             <ItemTemplate>
                 <div style="white-space:nowrap; overflow-x:hidden;"
                 class="treenode">
@@ -62,13 +64,14 @@ else
                         } 
                         else
                         {
-                            <MudTreeViewItem Value="@context.Value"
-                                            Class="@(((TocTreeNode)context).IsSelected ? "toctreenode-selected" :"")"
-                                            Items="@context.Children"
-                                            CanExpand="@context.HasChildren"
-                                            Expanded="@context.Expanded"
-                                            ExpandedChanged="@((expanded) => OnNodeExpandedChanged((TocTreeNode)context, expanded))"
-                                            OnClick="(e) => OnNodeClickAsync((TocTreeNode)context,e)">
+                            <MudTreeViewItem Value="@context.Value" 
+                                             @oncontextmenu="@((args) => OpenContextMenu(args, context))"
+                                             Class="@(((TocTreeNode)context).IsSelected ? "toctreenode-selected" :"")"
+                                             Items="@context.Children"
+                                             CanExpand="@context.HasChildren"
+                                             Expanded="@context.Expanded"
+                                             ExpandedChanged="@((expanded) => OnNodeExpandedChanged((TocTreeNode)context, expanded))"
+                                             OnClick="(e) => OnNodeClickAsync((TocTreeNode)context,e)">
                                                 <Content>
                                                     <MudTreeViewItemToggleButton @bind-Expanded="@context.Expanded" 
                                                         Visible="@context.HasChildren" 
@@ -105,34 +108,35 @@ else
                     }
                     else
                     {
-                        <MudTreeViewItem Value="@context.Value"
-                        Class="@(((TocTreeNode)context).IsSelected ? "toctreenode-selected" :"")"
-                        Items="@context.Children"
-                        CanExpand="true"
-                        Expanded="@context.Expanded"
-                        ExpandedChanged="@((expanded) => OnNodeExpandedChanged((TocTreeNode)context, expanded))"
-                        @onclick="@((e) => OnNodeClickAsync((TocTreeNode)context, e))">
-                            <Content>
-                                <MudTreeViewItemToggleButton @bind-Expanded="@context.Expanded" 
-                                    Visible="true" 
-                                    ExpandedIconColor="Color.Primary" />
-                                <MudCheckBox T="bool"
-                                    Value="@context.Selected"
-                                    ValueChanged="@((e) => OnCheckboxClickedAsync((TocTreeNode)context, e))" />
-                                @if(_editNameTocNode == context)
-                                {
-                                    <InlineInput @bind-Value="_editedName"
-                                    OnCommit="CommitEditLayerName" />
-                                }  
-                                else
-                                {
-                                    <MudText Class="grouplayer-text"
-                                    @ondblclick="() => StartEditLayerName((TocTreeNode)context)">
-                                        @context.Text
-                                    </MudText>
-                                }
+                        <MudTreeViewItem Value="@context.Value" 
+                                         @oncontextmenu="@((args) => OpenContextMenu(args, context))"
+                                        Class="@(((TocTreeNode)context).IsSelected ? "toctreenode-selected" :"")"
+                                        Items="@context.Children"
+                                        CanExpand="true"
+                                        Expanded="@context.Expanded"
+                                        ExpandedChanged="@((expanded) => OnNodeExpandedChanged((TocTreeNode)context, expanded))"
+                                        @onclick="@((e) => OnNodeClickAsync((TocTreeNode)context, e))">
+                                            <Content>
+                                                <MudTreeViewItemToggleButton @bind-Expanded="@context.Expanded" 
+                                                    Visible="true" 
+                                                    ExpandedIconColor="Color.Primary" />
+                                                <MudCheckBox T="bool"
+                                                    Value="@context.Selected"
+                                                    ValueChanged="@((e) => OnCheckboxClickedAsync((TocTreeNode)context, e))" />
+                                                @if(_editNameTocNode == context)
+                                                {
+                                                    <InlineInput @bind-Value="_editedName"
+                                                    OnCommit="CommitEditLayerName" />
+                                                }  
+                                                else
+                                                {
+                                                    <MudText Class="grouplayer-text"
+                                                    @ondblclick="() => StartEditLayerName((TocTreeNode)context)">
+                                                        @context.Text
+                                                    </MudText>
+                                                }
 
-                            </Content>
+                                            </Content>
                         </MudTreeViewItem>
                     }
                 </div>
@@ -195,6 +199,8 @@ else
     private bool _editMapName = false;
     private bool _isLoadingMap = false;
 
+    private ITocElement? _selectedTocElement;
+
     // force a full reload after rebuild
     // otherwise some items (legends) will be cached!
     private object fullReloadKey = Guid.NewGuid();
@@ -202,6 +208,7 @@ else
     protected override Task OnInitializedAsync() => base.HandleAsync(async () =>
     {
         await base.OnInitializedAsync();
+
 
         _cartoInitialTools = PluginManager.GetPlugins<ICartoButton>(gView.Framework.Common.Plugins.Type.ICartoButton)
             .Where(t => t is ICartoInitialButton)
@@ -337,6 +344,44 @@ else
             _isLoadingMap = false;
         }
     }
+
+    #region ContextMenu
+
+    private bool _contextMenuAlreadyHandled= false;
+
+    private async Task OpenContextMenu(MouseEventArgs args, ITreeItemData<ITocElement> item)
+    {
+        if (_contextMenuAlreadyHandled)
+        {
+            return;
+        }
+        _contextMenuAlreadyHandled = true;
+
+        try
+        {
+            if (item.Value != _selectedTocElement && item is TocTreeNode tocTreeNode)
+            {
+                await OnNodeClickAsync(tocTreeNode, args);
+            }
+
+            //select node
+            _selectedTocElement = item.Value;
+
+            await AppScope.EventBus.FireShowContextMenuAsync(args, item.Value!);
+        } 
+        finally
+        {
+            await Task.Yield();  // release after Bubbling-Cyle (avoid bubbline ebent to parent nodes)
+            _contextMenuAlreadyHandled = false;
+        }
+    }
+
+    private async Task OpenContextMenu(MouseEventArgs args, IMap map)
+    {
+        await AppScope.EventBus.FireShowContextMenuAsync(args, map);
+    }
+
+    #endregion
 
     #region Helper
 

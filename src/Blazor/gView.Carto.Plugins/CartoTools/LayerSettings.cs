@@ -2,6 +2,7 @@
 using gView.Carto.Core;
 using gView.Carto.Core.Reflection;
 using gView.Carto.Core.Services.Abstraction;
+using gView.Carto.Razor.Components.Dialogs;
 using gView.Framework.Blazor.Models;
 using gView.Framework.Carto.Abstraction;
 using gView.Framework.Cartography;
@@ -13,7 +14,7 @@ namespace gView.Carto.Plugins.CartoTools;
 
 [RegisterPlugIn("EB3EDA0D-1B27-4314-B1DE-915E27B27982")]
 [RestorePointAction(RestoreAction.SetRestorePointOnClick)]
-internal class LayerSettings : ICartoButton
+internal class LayerSettings : ICartoButtonWithSubItems
 {
     public string Name => "Layer Settings";
 
@@ -25,6 +26,28 @@ internal class LayerSettings : ICartoButton
 
     public int SortOrder => 9;
 
+    public IEnumerable<CartoButtonSubItem> SubItems(ICartoApplicationScopeService scope)
+    {
+        yield return new((int)LayerSettingsDialog.Page.General, "Map / Display", this.Icon);
+
+        var layer = scope.SelectedTocTreeNode?.Value?.Layers?.FirstOrDefault() as Layer;
+
+        if(layer?.CanFeatureRender() == true)
+        {
+            yield return new((int)LayerSettingsDialog.Page.FeatureRenderer, "Feature Renderer", "webgis:polygon-highlighted");
+        }
+
+        if (layer?.CanLabelRenderer() == true)
+        {
+            yield return new((int)LayerSettingsDialog.Page.LabelRenderer, "Label Renderer", "basic:text");
+        }
+
+        if(layer?.ImplementsLayerDefinitionFilter() == true)
+        {
+            yield return new((int)LayerSettingsDialog.Page.Filter, "Filter", "basic:filter");
+        }
+    }
+
     public void Dispose()
     {
 
@@ -35,7 +58,10 @@ internal class LayerSettings : ICartoButton
 
     public bool IsDisabled(ICartoApplicationScopeService scope) => false;
 
-    async public Task<bool> OnClick(ICartoApplicationScopeService scope)
+    public Task<bool> OnClick(ICartoApplicationScopeService scope)
+        => OnClick(scope, (int)LayerSettingsDialog.Page.General);
+    
+    async public Task<bool> OnClick(ICartoApplicationScopeService scope, int subItemId)
     {
         await scope.EventBus.FireCloseTocInlineEditorsAsync();
 
@@ -50,7 +76,7 @@ internal class LayerSettings : ICartoButton
         var originalLayer = scope.SelectedTocTreeNode?.Value?.Layers?.FirstOrDefault() as Layer;
         var clonedLayer = originalLayer?.Clone(originalMap);
 
-        if (originalLayer is null || clonedLayer is null)  
+        if (originalLayer is null || clonedLayer is null)
         {
             return false;
         }
@@ -64,7 +90,8 @@ internal class LayerSettings : ICartoButton
                                                             new Razor.Components.Dialogs.Models.LayerSettingsModel()
                                                             {
                                                                 Map = clonedMap,
-                                                                Layer = clonedLayer
+                                                                Layer = clonedLayer,
+                                                                StartPage = (LayerSettingsDialog.Page)subItemId
                                                             },
                                                             new ModalDialogOptions()
                                                             {

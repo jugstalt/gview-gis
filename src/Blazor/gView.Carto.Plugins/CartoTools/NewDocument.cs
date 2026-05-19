@@ -1,15 +1,10 @@
 ﻿using gView.Carto.Core;
-using gView.Carto.Core.Abstraction;
 using gView.Carto.Core.Reflection;
 using gView.Carto.Core.Services.Abstraction;
-using gView.Carto.Plugins.Extensions;
 using gView.Carto.Plugins.Services;
-using gView.Framework.Blazor.Services.Abstraction;
-using gView.Framework.Carto;
 using gView.Framework.Carto.Abstraction;
 using gView.Framework.Core.Common;
 using gView.Framework.Core.Geometry;
-using gView.Framework.Geometry;
 
 namespace gView.Carto.Plugins.CartoTools;
 
