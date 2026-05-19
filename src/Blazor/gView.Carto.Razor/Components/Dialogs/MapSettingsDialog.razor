@@ -128,10 +128,10 @@
                             <MudTextField Label="Title" T="string" @bind-Value="Model.Map.Title" />
                             <MudTextField Label="Decription" T="string" Lines="5" @ref="description"
                                           Text="@Model.Map.GetLayerDescription(Map.MapDescriptionId)"
-                                          OnBlur="()=>Model.Map.SetLayerDescription(Map.MapDescriptionId, description!.Value)" />
+                                          OnBlur="()=>Model.Map.SetLayerDescription(Map.MapDescriptionId, description!.GetState(x => x.Value))" />
                             <MudTextField Label="Copyright" T="string" Lines="5" @ref="copyright"
                                           Text="@Model.Map.GetLayerCopyrightText(Map.MapCopyrightTextId)"
-                                          OnBlur="()=>Model.Map.SetLayerCopyrightText(Map.MapCopyrightTextId, copyright!.Value)" />
+                                          OnBlur="()=>Model.Map.SetLayerCopyrightText(Map.MapCopyrightTextId, copyright!.GetState(x => x.Value))" />
                     </GvCardContent>
                 </GvCard>
                 
@@ -144,14 +144,6 @@
                             @GvUtilities.InfoText("Resources are binary data added to to the map. This can e.g uses image-symbols for layer renderers. The resources are stored inside the map-document. Do not add large files, to avoid large map-documents!")
 
                             <MudFileUpload T="IReadOnlyList<IBrowserFile>" FilesChanged="UploadMapResourceFiles">
-                                    <ActivatorContent>
-                                        <MudButton HtmlTag="label"
-                                                   Variant="Variant.Filled"
-                                                   Color="Color.Primary"
-                                                   StartIcon="@Icons.Material.Filled.CloudUpload">
-                                            Upload Resource
-                                        </MudButton>
-                                </ActivatorContent>
                             </MudFileUpload>
 
                             @if (Model.Map.ResourceContainer.HasResources)

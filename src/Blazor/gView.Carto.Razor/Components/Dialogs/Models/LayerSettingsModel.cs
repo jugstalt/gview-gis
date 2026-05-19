@@ -8,4 +8,6 @@ public class LayerSettingsModel : IDialogResultItem
 {
     public Map? Map { get; set; } = null;
     public ILayer? Layer { get; set; } = null;
+
+    public LayerSettingsDialog.Page StartPage { get; set; } = LayerSettingsDialog.Page.General;
 }

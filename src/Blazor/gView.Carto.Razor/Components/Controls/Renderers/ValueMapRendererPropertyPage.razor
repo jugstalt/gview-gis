@@ -1,4 +1,4 @@
-@using gView.Carto.Razor.Components.Controls.Renderers.Models
+﻿@using gView.Carto.Razor.Components.Controls.Renderers.Models
 @using gView.Framework.Core.Data.Cursors
 @using gView.Framework.Data.Filters
 @using gView.Blazor.Core.Extensions
@@ -441,7 +441,7 @@
                 "Label Command",
                 new PromptSelectDialogModel<LabelCommand>()
                 {
-                    Options = EnumExtensions
+                    Options = EnumExt
                                     .ToKeyValuePairs<LabelCommand>()
                                     .Select(k => new KeyValuePair<string, LabelCommand>(k.Key.ApplyLabelCommand(k.Value), k.Value)),
                     Required = true,
@@ -471,7 +471,7 @@
                 "Label Ordering",
                 new PromptSelectDialogModel<SortDirection>()
                     {
-                        Options = EnumExtensions.ToKeyValuePairs<SortDirection>(ignoreNone: true),
+                        Options = EnumExt.ToKeyValuePairs<SortDirection>(ignoreNone: true),
                         Required = true,
                         Prompt = "Order by",
                         SelectedValue = SortDirection.Ascending

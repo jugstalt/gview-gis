@@ -6,30 +6,32 @@ namespace gView.Carto.Razor.Components.Trees;
 
 abstract public class TocTreeNode : TreeItemData<ITocElement>, IDisposable, ITocTreeNode
 {
-    public TocTreeNode(ITocElement tocElement)
-    {
-        this.Value = tocElement;
+    private readonly List<TocTreeNode> _children = new();
 
-        this.Text = this.Value.Name ?? string.Empty;
+    protected TocTreeNode(ITocElement tocElement)
+    {
+        Value = tocElement;
+        Text = Value.Name ?? string.Empty;
+
+        Children = _children;
     }
 
-    public override bool HasChildren
-    {
-        get => this.Children?.Any() ?? false;
-    }
+    public override bool HasChildren => _children.Count > 0;
 
     public bool IsSelected { get; set; }
 
+    public void AddChild(TocTreeNode child)
+    {
+        _children.Add(child);
+    }
+
     public virtual void Dispose()
     {
-        if (Children is not null)
+        foreach (var child in _children)
         {
-            foreach (TocTreeNode childNode in Children)
-            {
-                childNode.Dispose();
-            }
-
-            Children = null;
+            child.Dispose();
         }
+
+        _children.Clear();
     }
 }

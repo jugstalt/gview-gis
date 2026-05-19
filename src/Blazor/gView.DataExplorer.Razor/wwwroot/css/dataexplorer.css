@@ -284,3 +284,7 @@
 .mud-card-content {
     padding: 0px 16px;
 }
+
+.opacity_0 {
+    opacity: 0;
+}

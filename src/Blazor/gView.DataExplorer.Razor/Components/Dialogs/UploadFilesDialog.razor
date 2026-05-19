@@ -1,4 +1,4 @@
-@using Microsoft.AspNetCore.Components.Forms
+﻿@using Microsoft.AspNetCore.Components.Forms
 @inherits ModalDialogFormBase<UploadFilesModel>
 
 <ModalDialogFormBase T="UploadFilesModel"
@@ -12,12 +12,12 @@
                                AppendMultipleFiles
                                OnFilesChanged="OnInputFileChanged"
                                Hidden="@false"
-                               InputClass="absolute mud-width-full mud-height-full overflow-hidden z-20"
-                               InputStyle="opacity:0"
+                               InputClass="absolute mud-width-full mud-height-full overflow-hidden z-20 opacity_0"
                                @ondragenter="@SetDragClass"
                                @ondragleave="@ClearDragClass"
                                @ondragend="@ClearDragClass">
-                    <ActivatorContent>
+                 </MudFileUpload>
+
                     @if(_isUploading)
                     {
                         @foreach (var file in _files)
@@ -66,8 +66,6 @@
                         </MudToolBar>
                         
                     }
-                    </ActivatorContent>
-                </MudFileUpload>
             
         </MudStack>
     </DialogBody>

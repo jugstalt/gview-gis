@@ -1,4 +1,4 @@
-@inherits ModalDialogFormBase<NewFdbFeatureClassModel>
+﻿@inherits ModalDialogFormBase<NewFdbFeatureClassModel>
 @inject IExplorerApplicationScopeService AppScope
 
 <ModalDialogFormBase T="NewFdbFeatureClassModel"
@@ -18,8 +18,8 @@
                 </GvGridItem>
 
                 <GvGridItem>
-                     <MudTabs Elevation="1" Rounded="true" PanelClass="pa-6" ApplyEffectsToContainer="true">
-                        <MudTabPanel Text="Gemetry/Index">
+                     <MudTabs Elevation="1" Rounded="true" ApplyEffectsToContainer="true">
+                    <MudTabPanel Text="Gemetry/Index" PanelClass="pa-6">
                             <GvGrid ColumnCount="1">
                                 <GvGridItem>
                                     <MudSelect Label=""
