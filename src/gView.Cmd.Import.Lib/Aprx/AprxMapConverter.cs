@@ -25,7 +25,8 @@ internal class AprxMapConverter
     private readonly Action<string>? _warn;
     private string _currentLayerName = string.Empty;
     private readonly DatasetPluginOptions? _datasetOptions;
-    private IDataset? _sharedDataset;
+    // Pool of open datasets keyed by their effective connection string (after {dbname} substitution)
+    private readonly Dictionary<string, IDataset> _datasetPool = new(StringComparer.OrdinalIgnoreCase);
 
     /// <param name="warn">Optional callback invoked for non-fatal conversion warnings.</param>
     /// <param name="datasetPlugin">When supplied, all imported feature classes are bound to this dataset instead of <see cref="UnknownFeatureDataset"/>.</param>
@@ -35,20 +36,64 @@ internal class AprxMapConverter
         _datasetOptions = datasetPlugin;
     }
 
-    private IFeatureClass CreateFeatureClassFromPlugin(string datasetName)
+    private IFeatureClass CreateFeatureClassFromPlugin(string rawFcName)
     {
-        // Lazily create and open the shared dataset on first use
-        if (_sharedDataset == null)
-        {
-            var pluginManager = new PlugInManager();
-            _sharedDataset = pluginManager.CreateInstance(_datasetOptions!.PluginGuid) as IDataset
-                ?? throw new InvalidOperationException($"Plugin '{_datasetOptions.PluginGuid}' could not be instantiated as IDataset.");
+        // --- 0. Parse "dbname.schema.tablename" ---
+        // SDE names can be: tablename | schema.tablename | dbname.schema.tablename
+        // gView does not use the dbname part in element names.
+        var parts = rawFcName.Split('.');
+        string dbName = parts.Length >= 3 ? parts[0] : string.Empty;
+        // gView name: strip the leading dbname if present
+        string gviewName = parts.Length >= 3
+            ? string.Join(".", parts.Skip(1))   // schema.tablename
+            : rawFcName;
 
-            _sharedDataset.SetConnectionString(_datasetOptions.ConnectionString).GetAwaiter().GetResult();
-            _sharedDataset.Open().GetAwaiter().GetResult();
+        // --- Build effective connection string (substitute {dbname} if present) ---
+        string effectiveCs = _datasetOptions!.ConnectionString;
+        if (!string.IsNullOrEmpty(dbName) && effectiveCs.Contains("{dbname}", StringComparison.OrdinalIgnoreCase))
+        {
+            effectiveCs = effectiveCs.Replace("{dbname}", dbName, StringComparison.OrdinalIgnoreCase);
         }
 
-        return new UnknownFeatureClass(_sharedDataset, datasetName);
+        // --- 1. Get or create a dataset for this effective connection string ---
+        if (!_datasetPool.TryGetValue(effectiveCs, out var dataset))
+        {
+            var pluginManager = new PlugInManager();
+            dataset = pluginManager.CreateInstance(_datasetOptions.PluginGuid) as IDataset
+                ?? throw new InvalidOperationException(
+                    $"Plugin '{_datasetOptions.PluginGuid}' could not be instantiated as IDataset.");
+
+            dataset.SetConnectionString(effectiveCs).GetAwaiter().GetResult();
+            dataset.Open().GetAwaiter().GetResult();
+            _datasetPool[effectiveCs] = dataset;
+        }
+
+        // --- 2. Resolve the element name the dataset actually knows ---
+        // Try the full gView name first (schema.tablename), then just the table name.
+        var element = dataset.Element(gviewName).GetAwaiter().GetResult();
+        if (element == null && gviewName != rawFcName)
+        {
+            // Already stripped dbname above; now also try bare table name (no schema)
+            var tableOnly = parts.Last();
+            element = dataset.Element(tableOnly).GetAwaiter().GetResult();
+            if (element != null)
+            {
+                gviewName = tableOnly;
+            }
+        }
+
+        if (element?.Class is IFeatureClass fc)
+        {
+            return fc;
+        }
+
+        // Fallback: element not found in dataset — use a placeholder bound to the dataset
+        if (element == null)
+        {
+            _warn?.Invoke($"Layer '{_currentLayerName}': element '{gviewName}' not found in dataset. Using placeholder.");
+        }
+
+        return new UnknownFeatureClass(dataset, gviewName);
     }
 
     /// <summary>
@@ -111,7 +156,11 @@ internal class AprxMapConverter
     {
         var groupLayer = new GroupLayer(cimGroup.Name ?? string.Empty)
         {
-            Visible = cimGroup.Visibility
+            Visible = cimGroup.Visibility,
+            MinimumScale = cimGroup.MaxScale,
+            MaximumScale = cimGroup.MinScale,
+            MinimumLabelScale = cimGroup.MaxScale,
+            MaximumLabelScale = cimGroup.MinScale
         };
 
         // Add the group to the map first so its TOC entry exists
@@ -141,7 +190,11 @@ internal class AprxMapConverter
             {
                 var childGroup = new GroupLayer(cimGroup.Name ?? string.Empty)
                 {
-                    Visible = cimGroup.Visibility
+                    Visible = cimGroup.Visibility,
+                    MinimumScale = cimGroup.MaxScale,
+                    MaximumScale = cimGroup.MinScale,
+                    MinimumLabelScale = cimGroup.MaxScale,
+                    MaximumLabelScale = cimGroup.MinScale
                 };
 
                 parentGroupLayer.Add(childGroup);
@@ -194,7 +247,11 @@ internal class AprxMapConverter
     {
         var groupLayer = new GroupLayer(cimGroup.Name ?? string.Empty)
         {
-            Visible = cimGroup.Visibility
+            Visible = cimGroup.Visibility,
+            MinimumScale = cimGroup.MaxScale,
+            MaximumScale = cimGroup.MinScale,
+            MinimumLabelScale = cimGroup.MaxScale,
+            MaximumLabelScale = cimGroup.MinScale
         };
 
         if (cimGroup.LayerDefinitions != null)
@@ -237,10 +294,10 @@ internal class AprxMapConverter
             Visible = cimFeature.Visibility,
             // Title may differ from the feature class name (display alias)
             Title = featureClass.Name, //cimFeature.Name ?? String.Empty,
-            MinimumScale = cimFeature.MinScale,
-            MaximumScale = cimFeature.MaxScale,
-            MinimumLabelScale = cimFeature.MinScale,
-            MaximumLabelScale = cimFeature.MaxScale,
+            MinimumScale = cimFeature.MaxScale,
+            MaximumScale = cimFeature.MinScale,
+            MinimumLabelScale = cimFeature.MaxScale,
+            MaximumLabelScale = cimFeature.MinScale,
         };
 
         layer.ID = cimFeature.ServiceLayerId;

@@ -15,4 +15,15 @@ internal class CimGroupLayer : CimBaseLayer
 
     [JsonPropertyName("layerDefinitions")]
     public List<CimBaseLayer>? LayerDefinitions { get; set; }
+
+    /// <summary>Minimum display scale (0 = no restriction).</summary>
+    [JsonPropertyName("minScale")]
+    public double MinScale { get; set; }
+
+    /// <summary>Maximum display scale (0 = no restriction).</summary>
+    [JsonPropertyName("maxScale")]
+    public double MaxScale { get; set; }
+
+    [JsonPropertyName("serviceLayerID")]
+    public int ServiceLayerId { get; set; }
 }
