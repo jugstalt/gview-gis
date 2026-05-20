@@ -1,4 +1,4 @@
-@using System.Text
+﻿@using System.Text
 @using gView.Framework.IO
 
 @GvUtilities.InfoText("All values here are for information only. You can not change this values on this page.")
@@ -13,6 +13,16 @@
                           Value="_dataset.DatasetName" />
             <MudTextField Label="Connection String" ReadOnly="true" Lines="5"
                           Value="PrepareConnectionString(_dataset.ConnectionString)" />
+        </GvCardContent>
+    </GvCard>
+}
+
+@if(Layer?.Class is IFeatureClass featureClass)
+{
+    <GvCard Title="Feature Class">
+        <GvCardContent>
+            <MudTextField Label="Name" ReadOnly="true" 
+                          Value="@featureClass.Name" />
         </GvCardContent>
     </GvCard>
 }

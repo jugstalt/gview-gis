@@ -46,6 +46,11 @@ internal class LayerSettings : ICartoButtonWithSubItems
         {
             yield return new((int)LayerSettingsDialog.Page.Filter, "Filter", "basic:filter");
         }
+
+        if(layer?.HasDataSource() == true)
+        {
+            yield return new((int)LayerSettingsDialog.Page.Source, "Source", "basic:database");
+        }
     }
 
     public void Dispose()

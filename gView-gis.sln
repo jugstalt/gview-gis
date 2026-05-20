@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.1.32328.378
+# Visual Studio Version 18
+VisualStudioVersion = 18.7.11811.120
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gView.Framework", "src\gView.Framework\gView.Framework.csproj", "{E50D8014-0FB8-4B67-8291-0ABEE04A1403}"
 EndProject
@@ -200,6 +200,10 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gView.Endpoints", "src\gView.Endpoints\gView.Endpoints.csproj", "{2A46D444-C72D-42B5-8C72-A732AFD12CE6}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gView.Framework.GeoJsonService", "src\gView.Framework.GeoJsonService\gView.Framework.GeoJsonService.csproj", "{F6BDAA80-7852-4CEB-BA35-846A4422DBBD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gView.Cmd.Import.Lib", "src\gView.Cmd.Import.Lib\gView.Cmd.Import.Lib.csproj", "{1E1313BA-C519-2255-891C-B511934DF65C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gView.DataSources.Unknown", "src\gView.DataSources.Unknown\gView.DataSources.Unknown.csproj", "{FD8A3401-8E23-4F30-BCA4-4C92BD22559C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -905,6 +909,22 @@ Global
 		{F6BDAA80-7852-4CEB-BA35-846A4422DBBD}.Release|Any CPU.Build.0 = Release|Any CPU
 		{F6BDAA80-7852-4CEB-BA35-846A4422DBBD}.Release|x64.ActiveCfg = Release|Any CPU
 		{F6BDAA80-7852-4CEB-BA35-846A4422DBBD}.Release|x64.Build.0 = Release|Any CPU
+		{1E1313BA-C519-2255-891C-B511934DF65C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1E1313BA-C519-2255-891C-B511934DF65C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1E1313BA-C519-2255-891C-B511934DF65C}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{1E1313BA-C519-2255-891C-B511934DF65C}.Debug|x64.Build.0 = Debug|Any CPU
+		{1E1313BA-C519-2255-891C-B511934DF65C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1E1313BA-C519-2255-891C-B511934DF65C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1E1313BA-C519-2255-891C-B511934DF65C}.Release|x64.ActiveCfg = Release|Any CPU
+		{1E1313BA-C519-2255-891C-B511934DF65C}.Release|x64.Build.0 = Release|Any CPU
+		{FD8A3401-8E23-4F30-BCA4-4C92BD22559C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FD8A3401-8E23-4F30-BCA4-4C92BD22559C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FD8A3401-8E23-4F30-BCA4-4C92BD22559C}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{FD8A3401-8E23-4F30-BCA4-4C92BD22559C}.Debug|x64.Build.0 = Debug|Any CPU
+		{FD8A3401-8E23-4F30-BCA4-4C92BD22559C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FD8A3401-8E23-4F30-BCA4-4C92BD22559C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FD8A3401-8E23-4F30-BCA4-4C92BD22559C}.Release|x64.ActiveCfg = Release|Any CPU
+		{FD8A3401-8E23-4F30-BCA4-4C92BD22559C}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -1008,6 +1028,8 @@ Global
 		{10B73A43-7466-4A3E-A410-10474F9401C5} = {0ADA1A24-AC4C-4471-939B-609A83271367}
 		{2A46D444-C72D-42B5-8C72-A732AFD12CE6} = {0ADA1A24-AC4C-4471-939B-609A83271367}
 		{F6BDAA80-7852-4CEB-BA35-846A4422DBBD} = {B3257507-BB58-4FAC-AA9A-1165F105606D}
+		{1E1313BA-C519-2255-891C-B511934DF65C} = {E3346CF3-359E-4F92-BD8F-1E946130BC6A}
+		{FD8A3401-8E23-4F30-BCA4-4C92BD22559C} = {84A4527B-D47D-4E2A-80F0-31C6569B1ED2}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {11C25FC0-EB32-4DE1-9CBB-CF2D68D1AA9B}
