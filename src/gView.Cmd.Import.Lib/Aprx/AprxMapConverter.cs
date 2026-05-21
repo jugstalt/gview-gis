@@ -125,6 +125,9 @@ internal class AprxMapConverter
             map.ZoomTo(new Envelope(extent.XMin, extent.YMin, extent.XMax, extent.YMax));
         }
 
+        map.Display.ReferenceScale = 1000;
+        map.Display.DisplayUnits = map.Display.MapUnits = GeoUnits.Meters;
+
         // Add layers in the same order as in the APRX so the TOC matches
         foreach (var cimLayer in mapResult.Layers)
         {
@@ -516,8 +519,8 @@ internal class AprxMapConverter
 
         var rotType = rotVar.RotationTypeZ switch
         {
-            "Arithmetic" => RotationType.Arithmetic,
-            "Geographic" => RotationType.Geographic,
+            "Arithmetic" => RotationType.ArithmeticMinus90,
+            "Geographic" => RotationType.GeographicPlus90,
             _            => RotationType.ArithmeticMinus90   // default / unknown
         };
 
@@ -537,36 +540,75 @@ internal class AprxMapConverter
     {
         var renderer = new SimpleLabelRenderer();
 
-        // Determine the label field/expression
-        var fieldName = cimLabel.FieldNames?.FirstOrDefault()
-                     ?? cimLabel.Expression
-                     ?? string.Empty;
-
-        renderer.FieldName = fieldName;
+        // --- Determine whether the expression is a simple field reference ---
+        var expression = cimLabel.Expression ?? cimLabel.FieldNames?.FirstOrDefault() ?? string.Empty;
+        var fieldMatch = System.Text.RegularExpressions.Regex.Match(expression, @"^\[([^\]]+)\]$");
+        if (fieldMatch.Success)
+        {
+            renderer.FieldName = fieldMatch.Groups[1].Value;
+        }
+        else if (!string.IsNullOrEmpty(expression))
+        {
+            // Complex expression: set on renderer as-is so gView can evaluate it
+            renderer.FieldName = expression;   // used as fallback field name
+            renderer.LabelExpression = expression;
+            renderer.UseExpression = true;
+        }
 
         if (cimLabel.TextSymbol?.Symbol is CimTextSymbol textSym)
         {
-            ApplyTextSymbol(renderer, textSym);
+            renderer.TextSymbol = BuildTextSymbol(textSym);
         }
-
-        // Note: SimpleLabelRenderer does not expose a WhereClause;
-        // label filtering via where-clause requires a FilterDependentLabelRenderer
-        // which is not yet implemented in gView. The property is ignored for now.
 
         return renderer;
     }
 
-    private void ApplyTextSymbol(SimpleLabelRenderer renderer, CimTextSymbol cimText)
+    private ITextSymbol BuildTextSymbol(CimTextSymbol cimText)
     {
         float fontSize = cimText.Height > 0 ? (float)cimText.Height : 10f;
-        string fontFamily = string.IsNullOrWhiteSpace(cimText.FontFamilyName)
-            ? "Arial"
-            : cimText.FontFamilyName;
+        string fontFamily = string.IsNullOrWhiteSpace(cimText.FontFamilyName) ? "Arial" : cimText.FontFamilyName;
 
-        if (renderer.TextSymbol is SimpleTextSymbol textSymbol)
+        // Resolve font style flags from "fontStyleName" ("Bold", "Italic", "Bold Italic", "Regular", …)
+        bool bold = cimText.FontStyleName?.Contains("Bold", StringComparison.OrdinalIgnoreCase) == true;
+        bool italic = cimText.FontStyleName?.Contains("Italic", StringComparison.OrdinalIgnoreCase) == true;
+        var fontStyle = (bold, italic) switch
         {
-            textSymbol.Font = gView.GraphicsEngine.Current.Engine.CreateFont(fontFamily, fontSize);
+            (true, true) => gView.GraphicsEngine.FontStyle.Bold | gView.GraphicsEngine.FontStyle.Italic,
+            (true, false) => gView.GraphicsEngine.FontStyle.Bold,
+            (false, true) => gView.GraphicsEngine.FontStyle.Italic,
+            _ => gView.GraphicsEngine.FontStyle.Regular
+        };
+        var font = gView.GraphicsEngine.Current.Engine.CreateFont(fontFamily, fontSize, fontStyle);
+
+        // Resolve text (foreground) color from the nested TextFillSymbol
+        var textColor = ArgbColor.Black;
+        if (cimText.TextFillSymbol?.Symbol is CimPolygonSymbol fillPoly)
+        {
+            var solidFill = fillPoly.SymbolLayers?.OfType<CimSolidFill>().FirstOrDefault();
+            if (solidFill?.Color != null)
+                textColor = ToArgbColor(solidFill.Color);
         }
+
+        // --- Halo → GlowingTextSymbol ---
+        if (cimText.HaloSize > 0 && cimText.HaloSymbol is CimPolygonSymbol haloPoly)
+        {
+            var haloFill = haloPoly.SymbolLayers?.OfType<CimSolidFill>().FirstOrDefault();
+            var haloColor = haloFill?.Color != null ? ToArgbColor(haloFill.Color) : ArgbColor.White;
+
+            var glow = new GlowingTextSymbol();
+            glow.Font = font;
+            glow.Color = textColor;
+            glow.GlowingColor = haloColor;
+            glow.GlowingWidth = (int)Math.Round(cimText.HaloSize);
+            glow.GlowingSmoothingmode = SymbolSmoothing.AntiAlias;
+            return glow;
+        }
+
+        // --- Plain text symbol ---
+        var sym = new SimpleTextSymbol();
+        sym.Font = font;
+        sym.Color = textColor;
+        return sym;
     }
 
     // -----------------------------------------------------------------------

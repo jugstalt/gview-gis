@@ -31,7 +31,7 @@ internal class CimTextSymbol : CimSymbol
     public CimSymbolReference? TextFillSymbol { get; set; }
 
     [JsonPropertyName("haloSymbol")]
-    public CimSymbolReference? HaloSymbol { get; set; }
+    public CimSymbol? HaloSymbol { get; set; }
 
     [JsonPropertyName("haloSize")]
     public double HaloSize { get; set; }
