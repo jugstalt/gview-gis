@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace gView.Cmd.Import.Aprx.Models;
+namespace gView.Cmd.MxlUtil.Lib.Utilities.Aprx.Models;
 
 /// <summary>
 /// An item inside GISProject.json that references a map or other project resource.

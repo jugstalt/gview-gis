@@ -28,7 +28,7 @@ namespace gView.Cmd.MxlUtil.Lib.Utilities
 
         public string Name => "MxlToFdb";
 
-        async public Task<bool> Run(string[] args, ICommandLogger? logger = null)
+        async public Task<bool> Run(string[] args, ICancelTracker? cancelTracker = null, ICommandLogger? logger = null)
         {
             string inFile = String.Empty;
             string outFile = String.Empty;

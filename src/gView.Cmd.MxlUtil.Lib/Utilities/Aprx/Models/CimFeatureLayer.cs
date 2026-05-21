@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace gView.Cmd.Import.Aprx.Models;
+namespace gView.Cmd.MxlUtil.Lib.Utilities.Aprx.Models;
 
 /// <summary>
 /// CIM feature layer definition (type = "CIMFeatureLayer").

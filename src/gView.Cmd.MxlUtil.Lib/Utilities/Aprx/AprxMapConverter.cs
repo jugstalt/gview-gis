@@ -1,11 +1,10 @@
-﻿using gView.Cmd.Import.Aprx.Models;
+﻿using gView.Cmd.MxlUtil.Lib.Utilities.Aprx.Models;
 using gView.DataSources.Unknown;
 using gView.Framework.Cartography;
 using gView.Framework.Cartography.Rendering;
 using gView.Framework.Common;
 using gView.Framework.Core.Carto;
 using gView.Framework.Core.Data;
-using gView.Framework.Core.Geometry;
 using gView.Framework.Core.Symbology;
 using gView.Framework.Data;
 using gView.Framework.Data.Filters;
@@ -14,7 +13,7 @@ using gView.Framework.Symbology;
 using gView.Framework.Symbology.Models;
 using gView.GraphicsEngine;
 
-namespace gView.Cmd.Import.Aprx;
+namespace gView.Cmd.MxlUtil.Lib.Utilities.Aprx;
 
 /// <summary>
 /// Converts a parsed <see cref="AprxMapResult"/> (CIM model) into a gView <see cref="Map"/>
@@ -190,40 +189,40 @@ internal class AprxMapConverter
         switch (cimLayer)
         {
             case CimGroupLayer cimGroup:
-            {
-                var childGroup = new GroupLayer(cimGroup.Name ?? string.Empty)
                 {
-                    Visible = cimGroup.Visibility,
-                    MinimumScale = cimGroup.MaxScale,
-                    MaximumScale = cimGroup.MinScale,
-                    MinimumLabelScale = cimGroup.MaxScale,
-                    MaximumLabelScale = cimGroup.MinScale
-                };
-
-                parentGroupLayer.Add(childGroup);
-                map.AddLayer(childGroup);
-
-                if (cimGroup.LayerDefinitions != null)
-                {
-                    foreach (var grandChild in cimGroup.LayerDefinitions)
+                    var childGroup = new GroupLayer(cimGroup.Name ?? string.Empty)
                     {
-                        AddChildLayer(map, childGroup, grandChild);
+                        Visible = cimGroup.Visibility,
+                        MinimumScale = cimGroup.MaxScale,
+                        MaximumScale = cimGroup.MinScale,
+                        MinimumLabelScale = cimGroup.MaxScale,
+                        MaximumLabelScale = cimGroup.MinScale
+                    };
+
+                    parentGroupLayer.Add(childGroup);
+                    map.AddLayer(childGroup);
+
+                    if (cimGroup.LayerDefinitions != null)
+                    {
+                        foreach (var grandChild in cimGroup.LayerDefinitions)
+                        {
+                            AddChildLayer(map, childGroup, grandChild);
+                        }
                     }
+                    break;
                 }
-                break;
-            }
 
             case CimFeatureLayer cimFeature:
-            {
-                var layer = CreateFeatureLayer(cimFeature);
-                parentGroupLayer.Add(layer);
-                map.AddLayer(layer);
+                {
+                    var layer = CreateFeatureLayer(cimFeature);
+                    parentGroupLayer.Add(layer);
+                    map.AddLayer(layer);
 
-                // Set the layer name
-                map.TOC.GetTOCElement(layer)?.Name = cimFeature.Name;
+                    // Set the layer name
+                    map.TOC.GetTOCElement(layer)?.Name = cimFeature.Name;
 
-                break;
-            }
+                    break;
+                }
         }
     }
 
@@ -325,7 +324,7 @@ internal class AprxMapConverter
                 if (field is null) continue;
 
                 field.visible = fieldDescription.Visible;
-                field.aliasname = fieldDescription.Alias;   
+                field.aliasname = fieldDescription.Alias;
             }
         }
 
@@ -542,7 +541,7 @@ internal class AprxMapConverter
         {
             "Arithmetic" => RotationType.ArithmeticMinus90,
             "Geographic" => RotationType.GeographicPlus90,
-            _            => RotationType.ArithmeticMinus90   // default / unknown
+            _ => RotationType.ArithmeticMinus90   // default / unknown
         };
 
         renderer.SymbolRotation = new SymbolRotation
@@ -688,7 +687,7 @@ internal class AprxMapConverter
 
     private SimplePointSymbol ConvertSimplePointFromLayers(List<CimSymbolLayer>? layers)
     {
-        var fill   = layers?.OfType<CimSolidFill>().FirstOrDefault();
+        var fill = layers?.OfType<CimSolidFill>().FirstOrDefault();
         var stroke = layers?.OfType<CimSolidStroke>().FirstOrDefault();
 
         var symbol = new SimplePointSymbol() { SymbolSmoothingMode = SymbolSmoothing.AntiAlias };
@@ -698,8 +697,8 @@ internal class AprxMapConverter
         }
         if (stroke?.Color != null)
         {
-            ((IPenColor)symbol).PenColor  = ToArgbColor(stroke.Color);
-            ((IPenWidth)symbol).PenWidth  = (float)stroke.Width;
+            ((IPenColor)symbol).PenColor = ToArgbColor(stroke.Color);
+            ((IPenWidth)symbol).PenWidth = (float)stroke.Width;
         }
         return symbol;
     }
@@ -838,10 +837,10 @@ internal class AprxMapConverter
             var outlineForThis = i == 0 ? stroke : null;
             IFillSymbol fs = fillLayers[i] switch
             {
-                CimHatchFill hatch  => ConvertHatchFill(hatch, outlineForThis),
-                CimSolidFill fill   => ConvertSolidFill(fill, outlineForThis),
-                CimPictureFill      => ConvertSolidFill(null, outlineForThis),  // unsupported → plain fill
-                _                   => ConvertSolidFill(null, outlineForThis)
+                CimHatchFill hatch => ConvertHatchFill(hatch, outlineForThis),
+                CimSolidFill fill => ConvertSolidFill(fill, outlineForThis),
+                CimPictureFill => ConvertSolidFill(null, outlineForThis),  // unsupported → plain fill
+                _ => ConvertSolidFill(null, outlineForThis)
             };
             fillSymbols.Add(fs);
         }
@@ -913,14 +912,14 @@ internal class AprxMapConverter
 
         return r switch
         {
-            < 10 or >= 170      => HatchStyle.Horizontal,          //   0° – horizontal
-            >= 10  and < 35     => HatchStyle.LightDownwardDiagonal,// ~22°
-            >= 35  and < 55     => HatchStyle.ForwardDiagonal,      //  45°
-            >= 55  and < 80     => HatchStyle.DarkDownwardDiagonal, // ~67°
-            >= 80  and < 100    => HatchStyle.Vertical,             //  90°
-            >= 100 and < 125    => HatchStyle.LightUpwardDiagonal,  // ~112°
-            >= 125 and < 145    => HatchStyle.BackwardDiagonal,     // 135°
-            _                   => HatchStyle.DarkUpwardDiagonal    // ~157°
+            < 10 or >= 170 => HatchStyle.Horizontal,          //   0° – horizontal
+            >= 10 and < 35 => HatchStyle.LightDownwardDiagonal,// ~22°
+            >= 35 and < 55 => HatchStyle.ForwardDiagonal,      //  45°
+            >= 55 and < 80 => HatchStyle.DarkDownwardDiagonal, // ~67°
+            >= 80 and < 100 => HatchStyle.Vertical,             //  90°
+            >= 100 and < 125 => HatchStyle.LightUpwardDiagonal,  // ~112°
+            >= 125 and < 145 => HatchStyle.BackwardDiagonal,     // 135°
+            _ => HatchStyle.DarkUpwardDiagonal    // ~157°
         };
     }
 

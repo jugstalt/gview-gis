@@ -1,7 +1,7 @@
 ﻿using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace gView.Cmd.Import.Aprx.Models;
+namespace gView.Cmd.MxlUtil.Lib.Utilities.Aprx.Models;
 
 /// <summary>
 /// Wrapper document for a *.lyrx file inside an APRX.

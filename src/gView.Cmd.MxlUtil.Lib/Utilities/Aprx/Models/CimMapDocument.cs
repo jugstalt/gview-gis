@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace gView.Cmd.Import.Aprx.Models;
+namespace gView.Cmd.MxlUtil.Lib.Utilities.Aprx.Models;
 
 /// <summary>
 /// Wrapper document that contains one or more map definitions (*.mapx inside the APRX).

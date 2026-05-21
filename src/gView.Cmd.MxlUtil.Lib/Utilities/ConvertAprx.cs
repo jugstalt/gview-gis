@@ -1,61 +1,82 @@
-﻿using gView.Cmd.Core;
-using gView.Cmd.Core.Abstraction;
-using gView.Cmd.Core.Extensions;
-using gView.Cmd.Import.Aprx;
-using gView.Framework.Cartography;
+﻿using gView.Cmd.Core.Abstraction;
+using gView.Cmd.MxlUtil.Lib.Abstraction;
+using gView.Cmd.MxlUtil.Lib.Exceptions;
+using gView.Cmd.MxlUtil.Lib.Utilities.Aprx;
 using gView.Framework.Common;
 using gView.Framework.Core.Common;
 using gView.Framework.IO;
 using gView.GraphicsEngine;
 
-namespace gView.Cmd.Import;
+namespace gView.Cmd.MxlUtil.Lib.Utilities;
 
-public class ImportAPRX : ICommand
+internal class ConvertAprx : IMxlUtility
 {
-    public string Name => "ImportAPRX";
+    public string Name => "ConvertAprx";
 
-    public string Description => "Import an ESRI APRX File and save it as gView MXL";
-
-    public string ExecutableName => "";
-
-    public IEnumerable<ICommandParameterDescription> ParameterDescriptions =>
-    [
-        new RequiredCommandParameter<string>("input")
-        {
-            Description = "Path to an ESRI APRX file or a directory containing APRX files"
-        },
-        new CommandParameter<string>("output")
-        {
-            Description = "Output path for the MXL file, or output directory when input is a directory (default: same location as input)"
-        },
-        new CommandParameter<bool>("silent")
-        {
-            Description = "If true, only the input file, errors, and the final result are printed (default: false)"
-        },
-        new CommandParameter<string>("dataset")
-        {
-            Description = "Plugin GUID of the dataset to use for all imported feature classes (optional). When omitted, an UnknownFeatureDataset is used."
-        },
-        new CommandParameter<string>("dataset-connectionstring")
-        {
-            Description = "Connection string for the dataset plugin specified by 'dataset' (optional)."
-        }
-    ];
-
-    public async Task<bool> Run(
-            IDictionary<string, object> parameters,
-            ICancelTracker? cancelTracker = null,
-            ICommandLogger? logger = null)
+    public string Description()
     {
+        return """
+              ConvertAprx:
+              ------------
+              Converts ESRI Aprx files to MXL (experimental).
+              """;
+    }
+
+    public string HelpText()
+    {
+        return
+            """
+            Required arguments:
+            -input <an aprx file or a folder with aprx files>
+
+            Optional arguments:
+            -output <Output path for the MXL file, or output directory when input is a directory (default: same location as input)>
+            -silent <If true, only the input file, errors, and the final result are printed (default: false)>
+            
+            -dataset <Plugin GUID of the dataset to use for all imported feature classes (optional). When omitted, an UnknownFeatureDataset is used.>
+            -dataset-connectionstring <Connection string for the dataset plugin specified by 'dataset' (optional).>
+            """;
+    }
+
+    async public Task<bool> Run(string[] args, ICancelTracker? cancelTracker = null, ICommandLogger? logger = null)
+    {
+
+        string input = "", output = "", datasetGuidStr = "", datasetCs = "";
+        bool silent = false;
+
+        for (int i = 0; i < args.Length - 1; i++)
+        {
+            switch (args[i].ToLower())
+            {
+                case "-input":
+                    input = args[++i];
+                    break;
+                case "-output":
+                    output = args[++i];
+                    break;
+                case "-silent":
+                    silent = "true".Equals(args[++i], StringComparison.OrdinalIgnoreCase);
+                    break;
+                case "-dataset":
+                case "-ds":
+                    datasetGuidStr = args[++i];
+                    break;
+                case "-dataset-connectionstring":
+                case "-ds-cs":
+                    datasetCs = args[++i];
+                    break;
+            }
+        }
+
+        if (String.IsNullOrEmpty(input))
+        {
+            throw new IncompleteArgumentsException();
+        }
+
         try
         {
-            var input = parameters.GetRequiredValue<string>("input");
-            var output = parameters.GetValueOrDefault<string>("output", null);
-            var silent = parameters.GetValueOrDefault<bool>("silent", false);
-            var datasetGuidStr = parameters.GetValueOrDefault<string>("dataset", null);
-            var datasetCs = parameters.GetValueOrDefault<string>("dataset-connectionstring", null);
-
             DatasetPluginOptions? datasetOptions = null;
+
             if (!string.IsNullOrWhiteSpace(datasetGuidStr))
             {
                 if (!Guid.TryParse(datasetGuidStr, out var datasetGuid))
@@ -170,6 +191,12 @@ public class ImportAPRX : ICommand
             var xmlStream = new XmlStream("");
             xmlStream.Save("MapDocument", doc);
 
+            var xmlFileInfo = new FileInfo(mxlFile);
+            if (xmlFileInfo.Directory?.Exists == false)
+            {
+                xmlFileInfo.Directory.Create();
+            }
+
             xmlStream.WriteStream(mxlFile);
             log.Success($"Successfully migrated => {mxlFile}");
 
@@ -236,7 +263,7 @@ public class ImportAPRX : ICommand
             //inner?.LogLine("── Summary ──────────────────────────────────────");
 
             PrintGroup("warning", _warnings, ConsoleColor.Yellow, "[WARN]");
-            PrintGroup("error",   _errors,   ConsoleColor.Red,    "[ERROR]");
+            PrintGroup("error", _errors, ConsoleColor.Red, "[ERROR]");
 
             WriteColored("─────────────────────────────────────────────────", ConsoleColor.White);
             //inner?.LogLine("─────────────────────────────────────────────────");

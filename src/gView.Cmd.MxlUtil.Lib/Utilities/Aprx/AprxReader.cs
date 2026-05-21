@@ -1,8 +1,8 @@
-﻿using gView.Cmd.Import.Aprx.Models;
+﻿using gView.Cmd.MxlUtil.Lib.Utilities.Aprx.Models;
 using System.IO.Compression;
 using System.Text.Json;
 
-namespace gView.Cmd.Import.Aprx;
+namespace gView.Cmd.MxlUtil.Lib.Utilities.Aprx;
 
 /// <summary>
 /// Reads an ESRI APRX file (ZIP archive containing CIM JSON files) and returns

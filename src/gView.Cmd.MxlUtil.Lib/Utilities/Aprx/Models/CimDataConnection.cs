@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace gView.Cmd.Import.Aprx.Models;
+namespace gView.Cmd.MxlUtil.Lib.Utilities.Aprx.Models;
 
 /// <summary>
 /// Describes the data source (feature class) bound to a feature layer.

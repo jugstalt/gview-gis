@@ -25,7 +25,7 @@ internal class TileCacheInfoCommand : ICommand
         },
         new RequiredCommandParameter<string>("service")
         {
-            Description = "The service to pre-render, eg. folder@servicename"
+            Description = "The service, eg. folder@servicename"
         }
 
     };

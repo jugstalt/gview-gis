@@ -1,6 +1,6 @@
-﻿using gView.Cmd.Import.Aprx.Models;
+﻿using gView.Cmd.MxlUtil.Lib.Utilities.Aprx.Models;
 
-namespace gView.Cmd.Import.Aprx;
+namespace gView.Cmd.MxlUtil.Lib.Utilities.Aprx;
 
 /// <summary>
 /// Holds the parsed <see cref="CimMap"/> together with its fully resolved layer definitions.
