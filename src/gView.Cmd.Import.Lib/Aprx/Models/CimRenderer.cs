@@ -13,6 +13,8 @@ namespace gView.Cmd.Import.Aprx.Models;
 [JsonDerivedType(typeof(CimClassBreaksRenderer), "CIMClassBreaksRenderer")]
 internal class CimRenderer
 {
+    [JsonPropertyName("visualVariables")]
+    public List<CimVisualVariable>? VisualVariables { get; set; }
 }
 
 /// <summary>
@@ -128,4 +130,36 @@ internal class CimClassBreak
 
     [JsonPropertyName("symbol")]
     public CimSymbolReference? Symbol { get; set; }
+}
+
+/// <summary>Base for CIM visual variables (rotation, size, color, etc.).</summary>
+[JsonPolymorphic(TypeDiscriminatorPropertyName = "type",
+    UnknownDerivedTypeHandling = JsonUnknownDerivedTypeHandling.FallBackToBaseType)]
+[JsonDerivedType(typeof(CimRotationVisualVariable), "CIMRotationVisualVariable")]
+internal class CimVisualVariable
+{
+}
+
+/// <summary>
+/// Rotation visual variable. Only the Z-axis rotation (<see cref="VisualVariableInfoZ"/>)
+/// and <see cref="RotationTypeZ"/> are used by the converter.
+/// </summary>
+internal class CimRotationVisualVariable : CimVisualVariable
+{
+    [JsonPropertyName("visualVariableInfoZ")]
+    public CimVisualVariableInfo? VisualVariableInfoZ { get; set; }
+
+    /// <summary>"Arithmetic" or "Geographic".</summary>
+    [JsonPropertyName("rotationTypeZ")]
+    public string? RotationTypeZ { get; set; }
+}
+
+internal class CimVisualVariableInfo
+{
+    /// <summary>Expression string, e.g. "[FieldName]" or a more complex expression.</summary>
+    [JsonPropertyName("expression")]
+    public string? Expression { get; set; }
+
+    [JsonPropertyName("visualVariableInfoType")]
+    public string? VisualVariableInfoType { get; set; }
 }

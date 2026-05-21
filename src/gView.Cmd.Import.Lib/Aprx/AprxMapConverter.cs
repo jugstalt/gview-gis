@@ -357,6 +357,7 @@ internal class AprxMapConverter
         {
             legendItem.LegendLabel = cimSimple.Label;
         }
+        TryApplyRotation(renderer, cimSimple);
         return renderer;
     }
 
@@ -400,6 +401,7 @@ internal class AprxMapConverter
             }
         }
 
+        TryApplyRotation(renderer, cimUnique);
         return renderer;
     }
 
@@ -440,6 +442,7 @@ internal class AprxMapConverter
             }
         }
 
+        TryApplyRotation(renderer, cimUnique);
         return renderer;
     }
 
@@ -480,7 +483,50 @@ internal class AprxMapConverter
         {
             renderer.Symbol = ConvertSymbolReference(firstBreak.Symbol);
         }
+        TryApplyRotation(renderer, cimBreaks);
         return renderer;
+    }
+
+    /// <summary>
+    /// Reads <c>visualVariables</c> from <paramref name="cimRenderer"/>, finds the first
+    /// <see cref="CimRotationVisualVariable"/> whose Z-axis info has a non-empty expression,
+    /// extracts the field name (pattern <c>[FieldName]</c>), and sets it on the renderer's
+    /// <see cref="SymbolRotation"/>. Emits a warning if the expression cannot be mapped to a
+    /// simple field name.
+    /// </summary>
+    private void TryApplyRotation(dynamic renderer, CimRenderer cimRenderer)
+    {
+        var rotVar = cimRenderer.VisualVariables
+            ?.OfType<CimRotationVisualVariable>()
+            .FirstOrDefault(v => !string.IsNullOrEmpty(v.VisualVariableInfoZ?.Expression));
+
+        if (rotVar == null) return;
+
+        var expression = rotVar.VisualVariableInfoZ!.Expression!;
+
+        // Simple field reference: "[FieldName]"
+        var match = System.Text.RegularExpressions.Regex.Match(expression, @"^\[([^\]]+)\]$");
+        if (!match.Success)
+        {
+            _warn?.Invoke($"Layer '{_currentLayerName}': rotation expression '{expression}' cannot be mapped to a simple field name and will be ignored.");
+            return;
+        }
+
+        var fieldName = match.Groups[1].Value;
+
+        var rotType = rotVar.RotationTypeZ switch
+        {
+            "Arithmetic" => RotationType.Arithmetic,
+            "Geographic" => RotationType.Geographic,
+            _            => RotationType.ArithmeticMinus90   // default / unknown
+        };
+
+        renderer.SymbolRotation = new SymbolRotation
+        {
+            RotationFieldName = fieldName,
+            RotationType = rotType,
+            RotationUnit = RotationUnit.deg
+        };
     }
 
     // -----------------------------------------------------------------------
