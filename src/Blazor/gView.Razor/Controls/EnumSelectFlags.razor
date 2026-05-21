@@ -1,0 +1,59 @@
+﻿@typeparam TEnum where TEnum : struct, Enum
+
+<MudSelect T="TEnum"
+           MultiSelection="true"
+           SelectedValues="SelectedValues"
+           SelectedValuesChanged="OnSelectedValuesChanged"
+           ToStringFunc="Format"
+           MultiSelectionTextFunc="GetMultiSelectionText">
+    @foreach (var value in Enum.GetValues<TEnum>())
+    {
+        if (Convert.ToInt64(value) == 0)
+            continue;
+
+        <MudSelectItem T="TEnum" Value="@value">
+            @Format(value)
+        </MudSelectItem>
+    }
+</MudSelect>
+
+@code {
+    [Parameter] public IReadOnlyCollection<TEnum> SelectedValues { get; set; } = [];
+    [Parameter] public EventCallback<object?> Changed { get; set; }
+
+    private async Task OnSelectedValuesChanged(IEnumerable<TEnum> values)
+    {
+        SelectedValues = values.ToArray();
+
+        long combined = 0;
+
+        foreach (var value in values)
+        {
+            combined |= Convert.ToInt64(value);
+        }
+
+        var enumValue = Enum.ToObject(typeof(TEnum), combined);
+
+        await Changed.InvokeAsync(enumValue);
+    }
+
+    private string GetMultiSelectionText(IReadOnlyList<string> selectedValues)
+    {
+        var selectedNonZeroValues = SelectedValues?
+            .Where(v => Convert.ToInt64(v) != 0)
+            .ToArray() ?? [];
+
+        if (!selectedNonZeroValues.Any())
+        {
+            var zeroValue = Enum.GetValues<TEnum>()
+                .FirstOrDefault(x => Convert.ToInt64(x) == 0);
+
+            return Format(zeroValue);
+        }
+
+        return string.Join(", ", selectedNonZeroValues.Select(Format));
+    }
+
+    private string Format(TEnum value)
+        => value.ToString().SplitCamelCase();
+}

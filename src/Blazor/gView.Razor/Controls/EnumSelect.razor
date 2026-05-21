@@ -1,0 +1,27 @@
+﻿@typeparam TEnum where TEnum : struct, Enum
+
+<MudSelect T="TEnum"
+           Value="Value"
+           ValueChanged="OnValueChanged"
+           ToStringFunc="Format">
+    @foreach (var value in Enum.GetValues<TEnum>())
+    {
+        <MudSelectItem T="TEnum" Value="@value">
+            @Format(value)
+        </MudSelectItem>
+    }
+</MudSelect>
+
+@code {
+    [Parameter] public TEnum Value { get; set; }
+    [Parameter] public EventCallback<object?> Changed { get; set; }
+
+    private async Task OnValueChanged(TEnum value)
+    {
+        Value = value;
+        await Changed.InvokeAsync(value);
+    }
+
+    private string Format(TEnum value)
+        => value.ToString().SplitCamelCase();
+}

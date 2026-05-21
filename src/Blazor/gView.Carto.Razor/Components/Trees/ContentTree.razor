@@ -242,8 +242,6 @@ else
         await EventBus.FireRefreshMapAsync(delay: 500);
     });
 
-
-
     private Task OnNodeClickAsync(TocTreeNode clickNode, MouseEventArgs e) => base.HandleAsync(async () =>
     {
         if (_editedName is not null && _editNameTocNode == clickNode) return; 
@@ -359,7 +357,8 @@ else
 
         try
         {
-            if (item.Value != _selectedTocElement && item is TocTreeNode tocTreeNode)
+            if (item != AppScope.SelectedTocTreeNode 
+                && item is TocTreeNode tocTreeNode)
             {
                 await OnNodeClickAsync(tocTreeNode, args);
             }
