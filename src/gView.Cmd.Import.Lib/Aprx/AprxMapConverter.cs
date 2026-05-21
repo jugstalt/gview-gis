@@ -305,13 +305,28 @@ internal class AprxMapConverter
 
         layer.ID = cimFeature.ServiceLayerId;
 
-        // Definition query
-        if (!string.IsNullOrWhiteSpace(cimFeature.DefinitionExpression))
+        if (cimFeature.FeatureTable is not null)
         {
-            layer.FilterQuery = new QueryFilter
+            // Definition query: featureTable.definitionExpression takes priority
+            var definitionExpression = cimFeature.FeatureTable.DefinitionExpression
+                ?? cimFeature.DefinitionExpression;
+
+            if (!string.IsNullOrWhiteSpace(definitionExpression))
             {
-                WhereClause = cimFeature.DefinitionExpression
-            };
+                layer.FilterQuery = new QueryFilter
+                {
+                    WhereClause = definitionExpression
+                };
+            }
+
+            foreach (var fieldDescription in cimFeature.FeatureTable.FieldDescriptions ?? [])
+            {
+                var field = layer.Fields.FindField(fieldDescription.FieldName) as Field;
+                if (field is null) continue;
+
+                field.visible = fieldDescription.Visible;
+                field.aliasname = fieldDescription.Alias;   
+            }
         }
 
         // Feature renderer
@@ -434,13 +449,19 @@ internal class AprxMapConverter
                     if (symbol is ILegendItem li)
                         li.LegendLabel = cls.Label ?? string.Empty;
 
-                    // Build the composite key: "val1|val2|val3" (same format as ManyValueMapRenderer.GetKey)
-                    var key = cls.Values?.FirstOrDefault() is { } uv
-                        ? string.Join("|", uv.FieldValues ?? [])
-                        : null;
+                    foreach (var values in cls.Values ?? [])  // there can be more than one 
+                    {
+                        // Build the composite key: "val1|val2|val3" (same format as ManyValueMapRenderer.GetKey)
+                        var key = values is { } uv
+                            ? string.Join("|", uv.FieldValues?
+                                .Select(v => "<Null>".Equals(v, StringComparison.OrdinalIgnoreCase)   // ESRI Null is Empty...
+                                     ? ""
+                                     : v) ?? [])
+                            : null;
 
-                    if (!string.IsNullOrEmpty(key))
-                        renderer[key] = symbol;
+                        if (!string.IsNullOrEmpty(key))
+                            renderer[key] = (ISymbol)symbol.Clone();
+                    }
                 }
             }
         }
@@ -696,6 +717,7 @@ internal class AprxMapConverter
         var markerColor = marker.Color
             ?? (marker.Symbol as CimPolygonSymbol)
                    ?.SymbolLayers?.OfType<CimSolidFill>().FirstOrDefault()?.Color;
+
         if (markerColor != null)
         {
             ttmSymbol.Color = ToArgbColor(markerColor);

@@ -11,8 +11,22 @@ internal class CimFeatureTable
     [JsonPropertyName("type")]
     public string? Type { get; set; }
 
+    /// <summary>
+    /// SQL definition expression / filter applied to the feature class,
+    /// e.g. "NIS1STAT &lt;&gt; 'Erfasst'". Takes priority over the layer-level
+    /// <c>definitionExpression</c> when present.
+    /// </summary>
+    [JsonPropertyName("definitionExpression")]
+    public string? DefinitionExpression { get; set; }
+
     [JsonPropertyName("dataConnection")]
     public CimDataConnection? DataConnection { get; set; }
+
+    [JsonPropertyName("displayField")]
+    public string? DisplayField { get; set; }
+
+    [JsonPropertyName("fieldDescriptions")]
+    public List<CimFieldDescription>? FieldDescriptions { get; set; }
 }
 
 /// <summary>
@@ -50,4 +64,28 @@ internal class CimDataConnection
     /// <summary>Optional URL for web service connections.</summary>
     [JsonPropertyName("url")]
     public string? Url { get; set; }
+}
+
+/// <summary>
+/// Describes display properties of a single field within a feature table.
+/// </summary>
+internal class CimFieldDescription
+{
+    [JsonPropertyName("type")]
+    public string? Type { get; set; }
+
+    /// <summary>The actual field name in the dataset.</summary>
+    [JsonPropertyName("fieldName")]
+    public string? FieldName { get; set; }
+
+    /// <summary>Display alias shown in the UI (may differ from <see cref="FieldName"/>).</summary>
+    [JsonPropertyName("alias")]
+    public string? Alias { get; set; }
+
+    /// <summary>Whether the field is visible in attribute tables / pop-ups.</summary>
+    [JsonPropertyName("visible")]
+    public bool Visible { get; set; } = true;
+
+    [JsonPropertyName("searchMode")]
+    public string? SearchMode { get; set; }
 }
