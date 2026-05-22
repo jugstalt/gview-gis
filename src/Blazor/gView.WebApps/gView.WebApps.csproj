@@ -37,7 +37,7 @@
     <ProjectReference Include="..\..\Aspire\gView.ServiceDefaults\gView.ServiceDefaults.csproj" />
     <ProjectReference Include="..\..\gView.GraphicsEngine.Default\gView.GraphicsEngine.Default.csproj" />
     <ProjectReference Include="..\..\gView.GraphicsEngine.GdiPlus\gView.GraphicsEngine.GdiPlus.csproj" />
-    <ProjectReference Include="..\..\gView.GraphicsEngine.Skia3x\gView.GraphicsEngine.Skia3x.csproj" />
+		
     <ProjectReference Include="..\..\gView.GraphicsEngine\gView.GraphicsEngine.csproj" />
     <ProjectReference Include="..\..\gView.Security\gView.Security.csproj" />
     <ProjectReference Include="..\gView.Blazor.Core\gView.Blazor.Core.csproj" />
@@ -49,7 +49,7 @@
     <ProjectReference Include="..\gView.Razor\gView.Razor.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
+	<ItemGroup>
     <Content Update="_config\gview-webapps.config">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <ExcludeFromSingleFile>true</ExcludeFromSingleFile>

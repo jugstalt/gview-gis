@@ -146,7 +146,7 @@ switch (builder.Configuration["graphics:rendering"]?.ToString())
         gView.GraphicsEngine.Current.Engine = new gView.GraphicsEngine.GdiPlus.GdiGraphicsEngine(96.0f);
         break;
     default:
-        gView.GraphicsEngine.Current.Engine = new gView.GraphicsEngine.Skia3x.SkiaGraphicsEngine(96.0f);
+        gView.GraphicsEngine.Current.Engine = new gView.GraphicsEngine.Skia.SkiaGraphicsEngine(96.0f);
         break;
 }
 
@@ -154,7 +154,7 @@ switch (builder.Configuration["graphics:encoding"]?.ToString())
 {
     case "skia":
     case "skiasharp":
-        gView.GraphicsEngine.Current.Encoder = new gView.GraphicsEngine.Skia3x.SkiaBitmapEncoding();
+        gView.GraphicsEngine.Current.Encoder = new gView.GraphicsEngine.Skia.SkiaBitmapEncoding();
         break;
     default:
         gView.GraphicsEngine.Current.Encoder = new gView.GraphicsEngine.Default.BitmapEncoding();

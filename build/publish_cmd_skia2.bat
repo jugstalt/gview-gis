@@ -7,11 +7,11 @@ echo ==================
 cd .\..\src\gView.Cmd
 
 echo Windows
-dotnet publish -c Release -p:PublishProfile=win64 -p:SkiaVariant=Skia3
+dotnet publish -c Release -p:PublishProfile=win64 -p:SkiaVariant=Skia2
 if errorlevel 1 goto error
 
 echo Linux
-dotnet publish -c Release -p:PublishProfile=linux64 -p:SkiaVariant=Skia3
+dotnet publish -c Release -p:PublishProfile=linux64 -p:SkiaVariant=Skia2
 if errorlevel 1 goto error
 
 echo ==================

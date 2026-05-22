@@ -50,7 +50,7 @@ public class Startup
                 GraphicsEngine.Current.Engine = new gView.GraphicsEngine.GdiPlus.GdiGraphicsEngine(96.0f);
                 break;
             default:
-                GraphicsEngine.Current.Engine = new GraphicsEngine.Skia3x.SkiaGraphicsEngine(96.0f);
+                GraphicsEngine.Current.Engine = new GraphicsEngine.Skia.SkiaGraphicsEngine(96.0f);
                 break;
         }
 
@@ -58,7 +58,7 @@ public class Startup
         {
             case "skia":
             case "skiasharp":
-                GraphicsEngine.Current.Encoder = new GraphicsEngine.Skia3x.SkiaBitmapEncoding();
+                GraphicsEngine.Current.Encoder = new GraphicsEngine.Skia.SkiaBitmapEncoding();
                 break;
             //case "gdal":
             //    GraphicsEngine.Current.Encoder = new GraphicsEngine.Gdal.GdalBitmapEncoding();

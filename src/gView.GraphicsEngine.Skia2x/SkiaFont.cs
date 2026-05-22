@@ -15,8 +15,6 @@ namespace gView.GraphicsEngine.Skia
 
         private IThreadLocker _locker = null;
         private SKPaint _skPaint;
-        private SKFont _skFont;
-        private SkiaFontPaint _skFontPaint;
 
         public SkiaFont(string name, float size, FontStyle fontStyle, GraphicsUnit unit/*, char? typefaceCharakter = null*/)
         {
@@ -33,8 +31,7 @@ namespace gView.GraphicsEngine.Skia
                     SKTypeface.FromFamilyName(name, fontStyle.ToSKFontStyle())
                 );
 
-            //var skFont = new SKFont(fontTypeFace, size: pixelSize);
-            _skFont = new SKFont(fontTypeFace, size: pixelSize);
+            var skFont = new SKFont(fontTypeFace, size: pixelSize);
 
             // SKTypeface is not thread safe
             // https://groups.google.com/g/skia-discuss/c/-G1cyl1QD9E
@@ -44,7 +41,7 @@ namespace gView.GraphicsEngine.Skia
             }
             _threadLockers.TryGetValue(fontTypeFace.Handle, out _locker);
 
-            _skPaint = new SKPaint()
+            _skPaint = new SKPaint(skFont)
             {
                 Style = SKPaintStyle.Fill
             };
@@ -53,8 +50,6 @@ namespace gView.GraphicsEngine.Skia
             this.Size = size;
             this.Style = fontStyle;
             this.Unit = unit;
-
-            _skFontPaint = new SkiaFontPaint(_skFont, _skPaint);
 
             //if (typefaceCharakter.HasValue)
             //{
@@ -75,25 +70,13 @@ namespace gView.GraphicsEngine.Skia
 
         public GraphicsUnit Unit { get; }
 
-        public object EngineElement => _skFontPaint;
+        public object EngineElement => _skPaint;
 
         public IThreadLocker LockObject => _locker;
 
         public void Dispose()
         {
-            _skFont.Dispose();
             _skPaint.Dispose();
         }
-    }
-
-    class SkiaFontPaint
-    {
-        public SkiaFontPaint(SKFont font, SKPaint paint)
-        {
-            SKFont = font;
-            SKPaint = paint;
-        }
-        public SKFont SKFont { get; }
-        public SKPaint SKPaint { get; }
     }
 }

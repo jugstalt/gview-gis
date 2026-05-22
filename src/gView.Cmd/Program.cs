@@ -16,8 +16,8 @@ var servicesProvider = new ServiceCollection()
 var worker = servicesProvider.GetService<WorkerService>();
 
 // Initialize Skia
-gView.GraphicsEngine.Current.Engine = new gView.GraphicsEngine.Skia3x.SkiaGraphicsEngine(96.0f);
-gView.GraphicsEngine.Current.Encoder = new gView.GraphicsEngine.Skia3x.SkiaBitmapEncoding();
+gView.GraphicsEngine.Current.Engine = new gView.GraphicsEngine.Skia.SkiaGraphicsEngine(96.0f);
+gView.GraphicsEngine.Current.Encoder = new gView.GraphicsEngine.Skia.SkiaBitmapEncoding();
 
 bool interactive = args.Length == 1 && args[0] == "-i";
 

@@ -9,19 +9,19 @@ cd .\..\src\gView.Server
 echo Windows
 ::dotnet publish -c Release -p:PublishProfile=win64
 ::if errorlevel 1 goto error
-dotnet build -c Release -p:DeployOnBuild=true -p:PublishProfile=win64 -p:SkiaVariant=Skia3
+dotnet build -c Release -p:DeployOnBuild=true -p:PublishProfile=win64 -p:SkiaVariant=Skia2
 if errorlevel 1 goto error
 
 echo Linux
 ::dotnet publish -c Release -p:PublishProfile=linux64
 ::if errorlevel 1 goto error
-dotnet build -c Release -p:DeployOnBuild=true -p:PublishProfile=linux64 -p:SkiaVariant=Skia3
+dotnet build -c Release -p:DeployOnBuild=true -p:PublishProfile=linux64 -p:SkiaVariant=Skia2
 if errorlevel 1 goto error
 
 echo Docker
 ::dotnet publish -c Release -p:PublishProfile=docker-linux64
 ::if errorlevel 1 goto error
-dotnet build -c Release -p:DeployOnBuild=true -p:PublishProfile=docker-linux64 -p:SkiaVariant=Skia3
+dotnet build -c Release -p:DeployOnBuild=true -p:PublishProfile=docker-linux64 -p:SkiaVariant=Skia2
 if errorlevel 1 goto error
 
 echo ==================

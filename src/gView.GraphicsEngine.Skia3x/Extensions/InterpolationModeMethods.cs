@@ -1,6 +1,6 @@
 ﻿using SkiaSharp;
 
-namespace gView.GraphicsEngine.Skia3x.Extensions
+namespace gView.GraphicsEngine.Skia.Extensions
 {
     static class InterpolationModeMethods
     {

@@ -82,7 +82,6 @@
     <ProjectReference Include="..\gView.GeoJsonService\gView.GeoJsonService.csproj" />
     <ProjectReference Include="..\gView.GraphicsEngine.Default\gView.GraphicsEngine.Default.csproj" />
     <ProjectReference Include="..\gView.GraphicsEngine.GdiPlus\gView.GraphicsEngine.GdiPlus.csproj" />
-    <ProjectReference Include="..\gView.GraphicsEngine.Skia3x\gView.GraphicsEngine.Skia3x.csproj" />
     <ProjectReference Include="..\gView.GraphicsEngine\gView.GraphicsEngine.csproj" />
     <ProjectReference Include="..\gView.Interoperability.ArcXML\gView.Interoperability.ArcXML.csproj" />
     <ProjectReference Include="..\gView.Interoperability.GeoServices\gView.Interoperability.GeoServices.csproj" />
