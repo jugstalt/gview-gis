@@ -3,7 +3,7 @@ using SkiaSharp;
 using System;
 using System.IO;
 
-namespace gView.GraphicsEngine.Skia;
+namespace gView.GraphicsEngine.Skia3x;
 
 public class SkiaBitmapEncoding : IBitmapEncoding
 {

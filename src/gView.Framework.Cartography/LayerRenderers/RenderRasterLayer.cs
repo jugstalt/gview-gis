@@ -41,7 +41,7 @@ namespace gView.Framework.Cartography.LayerRenderers
             if (rootLayer != null)
             {
                 _interpolMethod = rootLayer.InterpolationMethod;
-                _transparency = rootLayer.Opacity;
+                _transparency = rootLayer.Opacity / 100f;
                 _transColor = rootLayer.TransparentColor;
                 _filter = rootLayer.FilterImplementation;
             }

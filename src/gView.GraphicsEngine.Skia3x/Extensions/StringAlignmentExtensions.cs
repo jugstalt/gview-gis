@@ -1,6 +1,6 @@
 ﻿using SkiaSharp;
 
-namespace gView.GraphicsEngine.Skia.Extensions
+namespace gView.GraphicsEngine.Skia3x.Extensions
 {
     static class StringAlignmentExtensions
     {

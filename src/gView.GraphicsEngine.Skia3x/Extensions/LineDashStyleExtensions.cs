@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 
-namespace gView.GraphicsEngine.Skia.Extensions
+namespace gView.GraphicsEngine.Skia3x.Extensions
 {
     static class LineDashStyleExtensions
     {

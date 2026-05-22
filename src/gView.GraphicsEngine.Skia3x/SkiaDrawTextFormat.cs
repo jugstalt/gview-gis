@@ -1,19 +1,17 @@
 ﻿using gView.GraphicsEngine.Abstraction;
-using gView.GraphicsEngine.Skia.Extensions;
+using gView.GraphicsEngine.Skia3x.Extensions;
 using SkiaSharp;
 
-namespace gView.GraphicsEngine.Skia
+namespace gView.GraphicsEngine.Skia3x
 {
     class SkiaDrawTextFormat : IDrawTextFormat
     {
-        private SKPaint _skPaint;
+        private SKTextAlign _skTextAlign;
 
         public SkiaDrawTextFormat()
         {
-            _skPaint = new SKPaint()
-            {
-                TextAlign = SKTextAlign.Left
-            };
+            _skTextAlign = SKTextAlign.Left;
+            
             this.LineAlignment = StringAlignment.Near;
         }
 
@@ -21,11 +19,11 @@ namespace gView.GraphicsEngine.Skia
         {
             get
             {
-                return _skPaint.TextAlign.ToStringAlignment();
+                return _skTextAlign.ToStringAlignment();
             }
             set
             {
-                _skPaint.TextAlign = value.ToSkTextAlign();
+                _skTextAlign = value.ToSkTextAlign();
             }
         }
         public StringAlignment LineAlignment
@@ -33,6 +31,6 @@ namespace gView.GraphicsEngine.Skia
             get; set;
         }
 
-        public object EngineElement => _skPaint;
+        public object EngineElement => _skTextAlign;
     }
 }

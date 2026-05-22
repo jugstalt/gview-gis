@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
-namespace gView.GraphicsEngine.Skia
+namespace gView.GraphicsEngine.Skia3x
 {
     public class SkiaGraphicsEngine : IGraphicsEngine
     {
@@ -22,7 +22,7 @@ namespace gView.GraphicsEngine.Skia
 
         #region IGraphicsEngine
 
-        public string EngineName => "SkiaSharp";
+        public string EngineName => "SkiaSharp 3.x";
 
         public float ScreenDpi { get; }
 

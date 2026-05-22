@@ -1,7 +1,7 @@
 ﻿using SkiaSharp;
 using System;
 
-namespace gView.GraphicsEngine.Skia.Extensions
+namespace gView.GraphicsEngine.Skia3x.Extensions
 {
     static public class PixelFormatExtensions
     {

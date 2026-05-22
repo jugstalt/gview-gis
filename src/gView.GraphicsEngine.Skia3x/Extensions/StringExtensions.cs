@@ -2,7 +2,7 @@
 using System.Linq;
 using System.Runtime.CompilerServices;
 
-namespace gView.GraphicsEngine.Skia.Extensions
+namespace gView.GraphicsEngine.Skia3x.Extensions
 {
     static class StringExtensions
     {

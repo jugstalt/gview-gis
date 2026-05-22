@@ -1,4 +1,4 @@
-﻿namespace gView.GraphicsEngine.Skia
+﻿namespace gView.GraphicsEngine.Skia3x
 {
     class SkiaBitmapPixelData : BitmapPixelData
     {

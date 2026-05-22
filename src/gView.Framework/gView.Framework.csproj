@@ -7,7 +7,7 @@
   <ItemGroup>
     <ProjectReference Include="..\gView.Framework.Core\gView.Framework.Core.csproj" />
     <ProjectReference Include="..\gView.GraphicsEngine.GdiPlus\gView.GraphicsEngine.GdiPlus.csproj" />
-    <ProjectReference Include="..\gView.GraphicsEngine.Skia\gView.GraphicsEngine.Skia.csproj" />
+    <ProjectReference Include="..\gView.GraphicsEngine.Skia3x\gView.GraphicsEngine.Skia3x.csproj" />
   </ItemGroup>
 
   <ItemGroup>

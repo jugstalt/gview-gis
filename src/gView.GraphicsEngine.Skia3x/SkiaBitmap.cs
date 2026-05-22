@@ -1,14 +1,14 @@
 ﻿using gView.GraphicsEngine.Abstraction;
 using gView.GraphicsEngine.Extensions;
 using gView.GraphicsEngine.Filters;
-using gView.GraphicsEngine.Skia.Extensions;
+using gView.GraphicsEngine.Skia3x.Extensions;
 using SkiaSharp;
 using System;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 
-namespace gView.GraphicsEngine.Skia
+namespace gView.GraphicsEngine.Skia3x
 {
     internal class SkiaBitmap : IBitmap
     {

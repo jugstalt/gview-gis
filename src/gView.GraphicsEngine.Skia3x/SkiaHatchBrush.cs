@@ -1,9 +1,9 @@
 ﻿using gView.GraphicsEngine.Abstraction;
-using gView.GraphicsEngine.Skia.Extensions;
+using gView.GraphicsEngine.Skia3x.Extensions;
 using SkiaSharp;
 using System.Collections.Generic;
 
-namespace gView.GraphicsEngine.Skia
+namespace gView.GraphicsEngine.Skia3x
 {
     class SkiaHatchBrush : IBrush
     {

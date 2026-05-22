@@ -1,8 +1,8 @@
 ﻿using gView.GraphicsEngine.Abstraction;
-using gView.GraphicsEngine.Skia.Extensions;
+using gView.GraphicsEngine.Skia3x.Extensions;
 using SkiaSharp;
 
-namespace gView.GraphicsEngine.Skia
+namespace gView.GraphicsEngine.Skia3x
 {
     class SkiaSolidBrush : IBrush
     {

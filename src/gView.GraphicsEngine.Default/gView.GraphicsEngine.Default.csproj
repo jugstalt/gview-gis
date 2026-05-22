@@ -6,7 +6,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\gView.GraphicsEngine.GdiPlus\gView.GraphicsEngine.GdiPlus.csproj" />
-    <ProjectReference Include="..\gView.GraphicsEngine.Skia\gView.GraphicsEngine.Skia.csproj" />
+    <ProjectReference Include="..\gView.GraphicsEngine.Skia3x\gView.GraphicsEngine.Skia3x.csproj" />
     <ProjectReference Include="..\gView.GraphicsEngine\gView.GraphicsEngine.csproj" />
   </ItemGroup>
 
